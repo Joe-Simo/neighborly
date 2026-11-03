@@ -1,0 +1,158 @@
+[
+ {
+  "id": "s00",
+  "layout": "title",
+  "clips": [],
+  "label": "",
+  "text": "",
+  "fixed": 3,
+  "dur": 3
+ },
+ {
+  "id": "s01",
+  "layout": "cap",
+  "clips": [
+   [
+    1.9,
+    19.4
+   ]
+  ],
+  "label": "Live app at neighborly-church.vercel.app",
+  "text": "Neighborly helps a small church reach the neighbors who need it most, in their own language. The church types its ZIP code. Neighborly pulls Census table C16001 for that ZIP and shows which languages people speak at home, and how many speak English less than very well.",
+  "dur": 17.57
+ },
+ {
+  "id": "s02",
+  "layout": "cap",
+  "clips": [
+   [
+    19.4,
+    24.1
+   ]
+  ],
+  "label": "Pick the languages",
+  "text": "The biggest need is pre-selected. Here the church publishes in Spanish and Haitian Creole.",
+  "dur": 5.95
+ },
+ {
+  "id": "s03",
+  "layout": "cap",
+  "clips": [
+   [
+    24.1,
+    34.0
+   ]
+  ],
+  "label": "One announcement",
+  "text": "Then one announcement, from a fictional sample church, Grace Fellowship: a free dinner for neighbors. Code finds every date, time, address, phone number, email and verse reference, and checks each one in every translation.",
+  "dur": 14.15
+ },
+ {
+  "id": "s04",
+  "layout": "cap",
+  "clips": [
+   [
+    34.0,
+    41.6
+   ]
+  ],
+  "label": "Scripture guard",
+  "text": "If a paragraph quotes the verse itself, Neighborly stops. The AI translates the reference, never scripture.",
+  "dur": 7.25
+ },
+ {
+  "id": "s05",
+  "layout": "cap",
+  "clips": [
+   [
+    41.6,
+    53.0
+   ],
+   [
+    100.0,
+    109.4
+   ]
+  ],
+  "label": "Translating (real wait of about one minute, shortened)",
+  "text": "Translation runs on free open models. The progress panel shows the real server step and the seconds so far. Then a second, separate call turns each block back into English, without seeing the original.",
+  "dur": 14.7
+ },
+ {
+  "id": "s06",
+  "layout": "cap",
+  "clips": [
+   [
+    109.4,
+    130.4
+   ]
+  ],
+  "label": "Review: code checks and back-translation",
+  "text": "Each block sits beside its back-translation. Green chips mean code found that fact in the translation. The verse is inserted from a public-domain Bible, Reina Valera 1909 for Spanish. The AI does not write it.",
+  "dur": 14.38
+ },
+ {
+  "id": "s07",
+  "layout": "cap",
+  "clips": [
+   [
+    130.4,
+    136.5
+   ],
+   [
+    152.5,
+    162.3
+   ]
+  ],
+  "label": "A changed meaning gets caught",
+  "text": "Now a change in meaning. A reviewer edit moves the dinner to 6:30. Code flags the time that no longer matches the English, and a fresh back-translation reads 6:30 too, so the change is plain to see.",
+  "dur": 13.38
+ },
+ {
+  "id": "s08",
+  "layout": "cap",
+  "clips": [
+   [
+    162.3,
+    180.1
+   ]
+  ],
+  "label": "Approval is gated",
+  "text": "Without a reviewer name, nothing gets approved. A flagged block also needs a tick that a person checked it. Here the reviewer puts the right time back.",
+  "dur": 9.88
+ },
+ {
+  "id": "s09",
+  "layout": "cap",
+  "clips": [
+   [
+    180.1,
+    209.6
+   ]
+  ],
+  "label": "Locked until every block is approved",
+  "text": "The flyer stays locked until a named, fluent reviewer approves every block in every language, for the exact wording. Editing after approval resets the block. There is no verified public-domain Haitian Creole Bible here, so Neighborly keeps the reference and inserts no verse.",
+  "dur": 17.89
+ },
+ {
+  "id": "s10",
+  "layout": "cap",
+  "clips": [
+   [
+    209.6,
+    234.5
+   ]
+  ],
+  "label": "Printable flyers",
+  "text": "Then the one page flyers open, in Spanish and Haitian Creole, ready to print, with a line that says AI helped and a volunteer checked it.",
+  "dur": 8.84
+ },
+ {
+  "id": "s11",
+  "layout": "end",
+  "clips": [],
+  "label": "",
+  "text": "The safeguards: a person approves every block, code checks the numbers, it asks for no member data, and scripture comes only from public-domain text. Neighborly is live at neighborly-church.vercel.app.",
+  "say": "The safeguards: a person approves every block, code checks the numbers, it asks for no member data, and scripture comes only from public-domain text. Neighborly is live at neighborly church dot vercel dot app.",
+  "dur": 13.25
+ }
+]
