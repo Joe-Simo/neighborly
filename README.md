@@ -1,6 +1,6 @@
 # Neighborly
 
-**Live demo:** LIVE_URL
+**Live demo:** https://neighborly-church.vercel.app
 
 Neighborly helps a church invite its neighbors in the languages they speak at home. A volunteer enters the church's ZIP code and sees which languages people nearby speak, from US Census data. They write or paste an announcement. AI drafts each translation, a separate AI call turns it back into English, and code checks every time, date, number, phone and address. A fluent volunteer then approves each block. Only then can the church export a web snippet or email text.
 
@@ -42,7 +42,7 @@ Many churches want to welcome neighbors who read Spanish, Haitian Creole, Vietna
 
 ## Limits
 
-See the [Limits and safeguards page](LIVE_URL/limits). In short: AI translations can be wrong and back-translation does not prove they are right; Census estimates for small groups have wide margins; Census groups some languages together (for example French, Haitian, or Cajun); the free AI tier runs out; the server cache lasts only as long as a server instance. A printable flyer and scripture from published Bible translations are planned.
+See the [Limits and safeguards page](https://neighborly-church.vercel.app/limits). In short: AI translations can be wrong and back-translation does not prove they are right; Census estimates for small groups have wide margins; Census groups some languages together (for example French, Haitian, or Cajun); the free AI tier runs out; the server cache lasts only as long as a server instance. A printable flyer and scripture from published Bible translations are planned.
 
 ## Data sources
 
