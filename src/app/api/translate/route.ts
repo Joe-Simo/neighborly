@@ -5,7 +5,7 @@ import { LlmUnavailable } from "@/lib/llm";
 import { quotesScripture } from "@/lib/scripture-ref";
 import { translate } from "@/lib/translate";
 
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 const body = z.object({
   lang: z.enum(LANGUAGE_CODES),

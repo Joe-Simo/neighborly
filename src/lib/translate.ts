@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { type GlossaryEntry, glossaryForPrompt } from "./glossary";
 import { languageByCode } from "./languages";
-import { chatJson, LlmUnavailable, reserveCalls, tidy } from "./llm";
+import { chatJson, LLM_MODELS, LlmUnavailable, reserveCalls, rotated, tidy } from "./llm";
 import { withStore } from "./store";
 import recorded from "@/data/recorded.json";
 
@@ -54,18 +54,45 @@ function backSystem(name: string, n: number) {
   ].join("\n");
 }
 
+/**
+ * One step (translate or back-translate) with one retry on a different free model when the first try times out
+ * or returns something unusable. The retry costs one more reserved call and only runs if the deadline leaves time.
+ * Quota answers are never retried. Every failure is logged as one line with no prompt text and no secrets.
+ */
+async function step(lang: string, name: "translate" | "back", system: string, blocks: string[], deadline: number): Promise<{ blocks: string[]; model: string }> {
+  const orders = [LLM_MODELS, rotated(LLM_MODELS)];
+  let last: LlmUnavailable | null = null;
+  for (let i = 0; i < orders.length; i++) {
+    const left = deadline - Date.now() - 2_000;
+    if (left < 12_000) break;
+    if (i > 0) await reserveCalls(1);
+    try {
+      const { json, model } = await chatJson(system, JSON.stringify({ blocks }), { timeoutMs: Math.min(50_000, left), models: orders[i] });
+      const parsed = blocksOut(blocks.length).safeParse(json);
+      if (!parsed.success) throw new LlmUnavailable("error", "The model returned the wrong number of blocks.", "shape");
+      return { blocks: parsed.data.blocks.map(tidy), model };
+    } catch (e) {
+      const err = e instanceof LlmUnavailable ? e : new LlmUnavailable("error", "The AI service failed.");
+      console.error(`neighborly: ${name} ${lang} try ${i + 1} failed: ${err.code}/${err.reason ?? (e instanceof Error ? e.name : "unknown")}`);
+      if (err.code !== "error") throw err;
+      last = err;
+    }
+  }
+  throw last ?? new LlmUnavailable("error", "The AI service did not answer in time.", "timeout");
+}
+
 /** The back-translation is a separate call that never sees the English, so it reports what the translation says. */
-export async function backTranslate(lang: string, blocks: string[], reserved = false): Promise<{ blocks: string[]; model: string }> {
+export async function backTranslate(lang: string, blocks: string[], reserved = false, deadline = Date.now() + 55_000): Promise<{ blocks: string[]; model: string }> {
   const l = languageByCode(lang);
   if (!l) throw new Error("unknown language");
   if (!reserved) await reserveCalls(1);
-  const { json, model } = await chatJson(backSystem(l.name, blocks.length), JSON.stringify({ blocks }));
-  const parsed = blocksOut(blocks.length).safeParse(json);
-  if (!parsed.success) throw new LlmUnavailable("error", "The back-translation did not match the blocks.");
-  return { blocks: parsed.data.blocks.map(tidy), model };
+  return step(lang, "back", backSystem(l.name, blocks.length), blocks, deadline);
 }
 
 export type Phase = "translating" | "back-translating";
+
+/** The translate route may run 180 seconds; both steps and any retries share this budget. */
+export const TRANSLATE_BUDGET_MS = 170_000;
 
 export async function translate(lang: string, blocks: string[], glossary: GlossaryEntry[], onPhase: (p: Phase) => void = () => {}): Promise<TranslationResult> {
   const l = languageByCode(lang);
@@ -74,15 +101,13 @@ export async function translate(lang: string, blocks: string[], glossary: Glossa
   const key = cacheKey(lang, blocks, glossaryLines);
   const hit = await withStore((s) => s.cacheGet<TranslationResult>(key)).catch(() => null);
   if (hit?.value) return { ...hit.value, origin: "cache" };
+  const deadline = Date.now() + TRANSLATE_BUDGET_MS;
   try {
     await reserveCalls(2);
     onPhase("translating");
-    const { json, model } = await chatJson(translateSystem(l.name, l.native, glossaryLines, blocks.length), JSON.stringify({ blocks }));
-    const parsed = blocksOut(blocks.length).safeParse(json);
-    if (!parsed.success) throw new LlmUnavailable("error", "The translation did not match the blocks.");
-    const text = parsed.data.blocks.map(tidy);
+    const { blocks: text, model } = await step(lang, "translate", translateSystem(l.name, l.native, glossaryLines, blocks.length), blocks, deadline);
     onPhase("back-translating");
-    const back = await backTranslate(lang, text, true);
+    const back = await backTranslate(lang, text, true, deadline);
     const result: TranslationResult = {
       lang,
       origin: "live",
@@ -93,6 +118,7 @@ export async function translate(lang: string, blocks: string[], glossary: Glossa
     await withStore((s) => s.cacheSet(key, result)).catch(() => {});
     return result;
   } catch (e) {
+    if (!(e instanceof LlmUnavailable)) console.error(`neighborly: translate ${lang} failed: ${e instanceof Error ? e.name : "unknown"}`);
     const rec = (recorded as Recorded[]).find((r) => r.key === recordedKey(lang, blocks));
     if (rec) {
       return {

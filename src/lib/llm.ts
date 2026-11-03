@@ -38,15 +38,33 @@ export function tidy(s: string) {
   return s.replace(/\s*\u2014\s*/g, ", ").replace(/\s*\u2013\s*/g, " to ").replace(/[\u2010-\u2012]/g, "-").trim();
 }
 
+export type FailReason = "timeout" | "network" | "http" | "refused" | "no-json" | "bad-json" | "shape";
+
 export class LlmUnavailable extends Error {
-  constructor(public code: "no-key" | "quota" | "error", message: string) {
+  constructor(
+    public code: "no-key" | "quota" | "error",
+    message: string,
+    public reason?: FailReason,
+  ) {
     super(message);
   }
 }
 
-export async function chatJson(system: string, user: string, maxTokens = 1800, timeoutMs = 55_000): Promise<{ json: unknown; model: string }> {
+const isTimeout = (e: unknown) => e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError");
+
+/**
+ * One chat call that always fails with LlmUnavailable, never a raw error. OpenRouter sends response headers
+ * early and holds the body open while a free model works, so the timeout must also cover reading the body.
+ */
+export async function chatJson(
+  system: string,
+  user: string,
+  { maxTokens = 1800, timeoutMs = 45_000, models = LLM_MODELS }: { maxTokens?: number; timeoutMs?: number; models?: string[] } = {},
+): Promise<{ json: unknown; model: string }> {
   if (!process.env.OPENROUTER_API_KEY?.trim()) throw new LlmUnavailable("no-key", "No model key on this server.");
+  const signal = AbortSignal.timeout(timeoutMs);
   let res: Response;
+  let text: string;
   try {
     res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -57,8 +75,8 @@ export async function chatJson(system: string, user: string, maxTokens = 1800, t
         "X-Title": "Neighborly",
       },
       body: JSON.stringify({
-        model: LLM_MODELS[0],
-        models: LLM_MODELS.slice(0, 3),
+        model: models[0],
+        models: models.slice(0, 3),
         temperature: 0.1,
         max_tokens: maxTokens,
         response_format: { type: "json_object" },
@@ -67,32 +85,39 @@ export async function chatJson(system: string, user: string, maxTokens = 1800, t
           { role: "user", content: user },
         ],
       }),
-      signal: AbortSignal.timeout(timeoutMs),
+      signal,
     });
-  } catch {
-    throw new LlmUnavailable("error", "The AI service did not answer in time.");
+    text = await res.text();
+  } catch (e) {
+    if (isTimeout(e)) throw new LlmUnavailable("error", "The AI service did not answer in time.", "timeout");
+    throw new LlmUnavailable("error", "Could not reach the AI service.", "network");
   }
-  const text = await res.text();
   if (!res.ok) {
     if (res.status === 429) {
       if (/per-day|daily|free-models-per-day/i.test(text)) await withStore((l) => l.exhausted(nextUtcMidnight())).catch(() => {});
-      throw new LlmUnavailable("quota", "The free AI tier is busy or used up.");
+      throw new LlmUnavailable("quota", "The free AI tier is busy or used up.", "http");
     }
-    throw new LlmUnavailable("error", `The AI service returned ${res.status}.`);
+    throw new LlmUnavailable("error", `The AI service returned ${res.status}.`, "http");
   }
-  let data: { model?: string; error?: { message?: string }; choices?: { message?: { content?: string | null } }[] };
+  let data: { model?: string; error?: { message?: string }; choices?: { finish_reason?: string; message?: { content?: string | null; refusal?: string | null } }[] };
   try {
-    data = JSON.parse(text);
+    // Keep-alive padding before the JSON is allowed.
+    data = JSON.parse(text.trim());
   } catch {
-    throw new LlmUnavailable("error", "The AI service sent an unreadable answer.");
+    throw new LlmUnavailable("error", "The AI service sent an unreadable answer.", "bad-json");
   }
-  if (data.error) throw new LlmUnavailable("error", "The AI service reported an error.");
-  const raw = (data.choices?.[0]?.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/g, "");
+  if (data.error) throw new LlmUnavailable("error", "The AI service reported an error.", "http");
+  const choice = data.choices?.[0];
+  if (choice?.message?.refusal) throw new LlmUnavailable("error", "The model declined the request.", "refused");
+  const raw = (choice?.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/g, "");
   const json = raw.match(/\{[\s\S]*\}/)?.[0];
-  if (!json) throw new LlmUnavailable("error", "The model did not return JSON.");
+  if (!json) throw new LlmUnavailable("error", "The model did not return JSON.", "no-json");
   try {
-    return { json: JSON.parse(json), model: data.model ?? LLM_MODELS[0] };
+    return { json: JSON.parse(json), model: data.model ?? models[0] };
   } catch {
-    throw new LlmUnavailable("error", "The model returned broken JSON.");
+    throw new LlmUnavailable("error", "The model returned broken JSON.", "bad-json");
   }
 }
+
+/** The same list with the first model moved to the end, for a second try that starts somewhere else. */
+export const rotated = (models: string[] = LLM_MODELS) => (models.length > 1 ? [...models.slice(1), models[0]] : models);
