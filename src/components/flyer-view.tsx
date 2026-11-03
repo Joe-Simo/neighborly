@@ -51,10 +51,12 @@ export function FlyerView() {
     <>
       <div className="no-print sticky top-0 z-10 border-b border-line bg-paper/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <Link href="/#publish" className="text-sm font-semibold text-accent-ink underline-offset-2 hover:underline">
-            Back to the workspace
-          </Link>
-          <p className="text-sm text-mute">Letter size, one page. Choose &ldquo;Save as PDF&rdquo; in the print dialog for a file.</p>
+          <div className="min-w-0 flex-1">
+            <Link href="/#publish" className="text-sm font-semibold text-accent-ink underline-offset-2 hover:underline">
+              Back to the workspace
+            </Link>
+            <p className="text-sm text-mute">Letter size, one page. Choose &ldquo;Save as PDF&rdquo; in the print dialog for a file.</p>
+          </div>
           <button type="button" className="btn btn-primary btn-sm" onClick={() => window.print()}>
             Print this flyer
           </button>
