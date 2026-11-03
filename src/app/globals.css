@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #faf7f1;
+  --card: #ffffff;
+  --ink: #1c2530;
+  --mute: #5d6672;
+  --line: #e6e0d4;
+  --accent: #0e6b66;
+  --accent-ink: #0a4f4b;
+  --accent-soft: #e3f1ef;
+  --gold: #b7791f;
+  --gold-soft: #fbf0dc;
+  --ok: #1d7347;
+  --ok-soft: #e3f3e9;
+  --warn: #8a5300;
+  --warn-soft: #fdf1da;
+  --bad: #a3282b;
+  --bad-soft: #fbe6e4;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans SC", "Noto Sans KR", "Noto Sans Arabic", sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@layer components {
+  .font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: 0 1px 0 rgba(28, 37, 48, 0.03), 0 8px 24px -16px rgba(28, 37, 48, 0.18);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background-color 150ms, color 150ms, border-color 150ms, transform 150ms;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-ink);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .btn-ok {
+    background: var(--ok);
+    color: #fff;
+  }
+  .btn-sm {
+    min-height: 36px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .field {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #cfc7b8;
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .field:focus {
+    border-color: var(--accent);
+    outline: 3px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    outline-offset: 0;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.5;
+    border: 1px solid transparent;
+  }
+  .chip-ok {
+    background: var(--ok-soft);
+    color: var(--ok);
+  }
+  .chip-check {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .chip-missing {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .chip-neutral {
+    background: #f1ede5;
+    color: var(--mute);
+  }
+
+  mark.fact {
+    background: var(--gold-soft);
+    color: inherit;
+    border-bottom: 2px solid var(--gold);
+    border-radius: 3px;
+    padding: 0 2px;
+  }
+  mark.fact-missing {
+    background: var(--bad-soft);
+    border-bottom-color: var(--bad);
+  }
+  mark.fact-check {
+    background: var(--warn-soft);
+    border-bottom-color: var(--warn);
+  }
+  mark.drift {
+    background: transparent;
+    color: inherit;
+    text-decoration: underline wavy var(--gold);
+    text-underline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .rise {
+      animation: rise 260ms ease-out both;
+    }
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+    }
+    .shimmer {
+      background: linear-gradient(90deg, #f1ede5 0%, #faf7f1 50%, #f1ede5 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s linear infinite;
+    }
+    @keyframes shimmer {
+      to {
+        background-position: -200% 0;
+      }
+    }
+    .bar {
+      transition: width 500ms ease-out;
+    }
+  }
+}

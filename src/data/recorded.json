@@ -1,0 +1,234 @@
+[
+ {
+  "key": "11553b662bbecae6c6027a896cf77023963423ea108e7702b6e74eb8d90843db",
+  "sample": "sunday",
+  "lang": "es",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "generatedAt": "2026-11-03T14:20:52.080Z",
+  "blocks": [
+   {
+    "text": "Acompáñennos este domingo",
+    "back": "Accompany us this Sunday"
+   },
+   {
+    "text": "Todos son bienvenidos en Grace Fellowship este domingo, 15 de noviembre. Nuestro culto comienza a las 10:30 AM en 250 Grace Lane.",
+    "back": "All are welcome at Grace Fellowship this Sunday, 15 of November. Our worship begins at the 10:30 AM in 250 Grace Lane."
+   },
+   {
+    "text": "El registro de niños abre a las 10:15 AM en la Sala Familiar. Traiga a su niño a la recepción y le daremos una etiqueta con el mismo nombre.",
+    "back": "The registration of children opens at the 10:15 AM in the Family Room. Bring to your child to the reception and we will give to you a tag with the same name."
+   },
+   {
+    "text": "El estacionamiento gratis está detrás del edificio. ¿Preguntas? Llame al (239) 555-0142 o envíe un correo a hello@gracefellowship.example.",
+    "back": "The free parking is behind the building. Questions? Call to the (239) 555-0142 or send an email to hello@gracefellowship.example."
+   },
+   {
+    "text": "Este mensaje fue traducido con ayuda de IA y revisado por un voluntario de nuestra iglesia.",
+    "back": "This message was translated with help of AI and reviewed by a volunteer of our church."
+   }
+  ]
+ },
+ {
+  "key": "e889142f26e9f7faf9adb06e0cde3753eb737514e59e4447c705ff9b0828fe72",
+  "sample": "sunday",
+  "lang": "zh-Hans",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "generatedAt": "2026-11-03T14:21:22.700Z",
+  "blocks": [
+   {
+    "text": "欢迎您本周日来参加",
+    "back": "Welcome you this Sunday come participate"
+   },
+   {
+    "text": "大家都欢迎在 Grace Fellowship 于 11 月 15 日周日参加。我们的 崇拜 上午 10:30 在 250 Grace Lane 开始。",
+    "back": "Everyone all welcome at Grace Fellowship on 11 month 15 day Sunday participate. Our worship morning 10:30 at 250 Grace Lane begins."
+   },
+   {
+    "text": "儿童签到 于上午 10:15 在家庭室开始。请带孩子到前台，我们会给您一张配对的名牌。",
+    "back": "Children check-in at morning 10:15 at family room begins. Please bring children to front desk, we will give you a piece of matching name tag."
+   },
+   {
+    "text": "免费停车场在楼后。有问题？请拨打 (239) 555-0142 或发邮件至 hello@gracefellowship.example。",
+    "back": "Free parking lot at building rear. Have questions? Please dial (239) 555-0142 or send email to hello@gracefellowship.example."
+   },
+   {
+    "text": "本信息由 AI 协助翻译，并由我们教会的一位 志愿者 核对。",
+    "back": "This information by AI assisted translation, and by our church's a volunteer verified."
+   }
+  ]
+ },
+ {
+  "key": "f4ceacce149e7f308cabbe8968dee15798c63d1416780aa84e32648766ebbc7c",
+  "sample": "sunday",
+  "lang": "ht",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free + google/gemma-4-31b-it:free",
+  "generatedAt": "2026-11-03T14:21:53.366Z",
+  "blocks": [
+   {
+    "text": "Vini ak nou dimanch sa a",
+    "back": "Come with us this Sunday"
+   },
+   {
+    "text": "Tout moun byenveni nan Grace Fellowship dimanch sa a, November 15. Sèvis adorasyon nou an kòmanse a 10:30 AM nan 250 Grace Lane.",
+    "back": "Everyone welcome at Grace Fellowship this Sunday, November 15. Our worship service starts at 10:30 AM at 250 Grace Lane."
+   },
+   {
+    "text": "Enskripsyon timoun yo ouvri a 10:15 AM nan Family Room. Mennen pitit ou nan biwo devan e nou pral ba ou yon mak etik non ki koresponn.",
+    "back": "Children's registration opens at 10:15 AM in the Family Room. Take your child to the front office and we will give you a corresponding name tag."
+   },
+   {
+    "text": "Pak gratis la nan dèyè bilding la. Ou gen kesyon? Rele (239) 555-0142 oswa imèl hello@gracefellowship.example.",
+    "back": "Free parking is in the back of the building. You have questions? Call (239) 555-0142 or email hello@gracefellowship.example."
+   },
+   {
+    "text": "Mesaj sa a te tradwi ak èd AI e tcheke pa yon volontè nan legliz nou an.",
+    "back": "This message was translated with the help of AI and checked by a volunteer in our church."
+   }
+  ]
+ },
+ {
+  "key": "b1231305907a1847843d3bb5b467e38743015a55931b0f9dcc4e542ba185a479",
+  "sample": "sunday",
+  "lang": "vi",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "generatedAt": "2026-11-03T14:22:18.154Z",
+  "blocks": [
+   {
+    "text": "Hãy cùng chúng tôi vào Chủ Nhật này",
+    "back": "Let's together us into this Sunday"
+   },
+   {
+    "text": "Mọi người đều được chào đón tại Grace Fellowship vào Chủ Nhật này, November 15. Buổi thờ phượng của chúng tôi bắt đầu lúc 10:30 AM tại 250 Grace Lane.",
+    "back": "Everyone is welcomed at Grace Fellowship this Sunday, November 15. Our worship service starts at 10:30 AM at 250 Grace Lane."
+   },
+   {
+    "text": "Đăng ký trẻ em mở lúc 10:15 AM tại Family Room. Hãy đưa con đến quầy tiếp tân và chúng tôi sẽ trao cho bạn một thẻ tên trùng khớp.",
+    "back": "Children registration opens at 10:15 AM at Family Room. Please bring child to reception desk and we will give you a matching name tag."
+   },
+   {
+    "text": "Bãi đỗ xe miễn phí nằm phía sau tòa nhà. Có thắc mắc? Gọi (239) 555-0142 hoặc gửi email đến hello@gracefellowship.example.",
+    "back": "Free parking lot lies behind building. Have questions? Call (239) 555-0142 or send email to hello@gracefellowship.example."
+   },
+   {
+    "text": "Tin nhắn này đã được dịch bằng sự hỗ trợ của AI và được kiểm tra bởi một tình nguyện viên từ nhà thờ của chúng tôi.",
+    "back": "This message has been translated with AI support and checked by a volunteer from our church."
+   }
+  ]
+ },
+ {
+  "key": "4b4346e7b15a360a6ed8629b7ae668d5700d4dd32011d777751bbd81bd54e2e8",
+  "sample": "meal",
+  "lang": "es",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "generatedAt": "2026-11-03T14:22:36.306Z",
+  "blocks": [
+   {
+    "text": "Comida de Acción de Gracias gratis para la comunidad",
+    "back": "Free Thanksgiving meal for the community"
+   },
+   {
+    "text": "El jueves 26 de noviembre, Grace Fellowship servirá una comida de Acción de Gracias gratis de 12:00 PM a 2:00 PM. Todos en el vecindario están invitados, y a nadie le pedirán que firme nada.",
+    "back": "On Thursday November 26, Grace Fellowship will serve a free Thanksgiving meal from 12:00 PM to 2:00 PM. Everyone in the neighborhood is invited, and no one will be asked to sign anything."
+   },
+   {
+    "text": "Nuestra despensa de alimentos está abierta todos los martes de 4 PM a 6 PM. Cada familia puede llevarse una caja de víveres, como 20 libras.",
+    "back": "Our food pantry is open every Tuesday from 4 PM to 6 PM. Each family can take a box of groceries, like 20 pounds."
+   },
+   {
+    "text": "Necesitamos 15 voluntarios para ayudar a servir. Regístrate en gracefellowship.example/meal.",
+    "back": "We need 15 volunteers to help serve. Register at gracefellowship.example/meal."
+   },
+   {
+    "text": "Este mensaje fue traducido con ayuda de IA y revisado por un voluntario de nuestra iglesia.",
+    "back": "This message was translated with help from AI and reviewed by a volunteer from our church."
+   }
+  ]
+ },
+ {
+  "key": "360a9d81b93563b521dc85602b460713477197b0d444f65277313a94d9d5dc3f",
+  "sample": "meal",
+  "lang": "zh-Hans",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "generatedAt": "2026-11-03T14:23:29.099Z",
+  "blocks": [
+   {
+    "text": "免费社区感恩节大餐",
+    "back": "Free Community Thanksgiving Feast"
+   },
+   {
+    "text": "11月26日星期四，Grace Fellowship将从中午12:00到下午2:00提供免费感恩节大餐。欢迎邻里所有人参加，无需签署任何文件。",
+    "back": "November 26 Thursday, Grace Fellowship will from noon 12:00 to afternoon 2:00 provide free Thanksgiving feast. Welcome neighborhood all people participate, no need sign any documents."
+   },
+   {
+    "text": "我们的食物银行每周二下午4:00到6:00开放。每户家庭可领取一箱食品，约20磅。",
+    "back": "Our food bank every Tuesday afternoon 4:00 to 6:00 open. Each household can receive one box food, about 20 pounds."
+   },
+   {
+    "text": "我们需要15名志愿者帮忙分发。请在 gracefellowship.example/meal 报名。",
+    "back": "We need 15 volunteers help distribute. Please at gracefellowship.example/meal sign up."
+   },
+   {
+    "text": "本消息由AI协助翻译，并由教会的一名志愿者核对。",
+    "back": "This message by AI assist translate, and by church's one volunteer verify."
+   }
+  ]
+ },
+ {
+  "key": "458a90c2137cba30c6955262c81fdc96f8705a2aa802c6bdf7a006af82ae1269",
+  "sample": "groups",
+  "lang": "es",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "generatedAt": "2026-11-03T14:24:03.311Z",
+  "blocks": [
+   {
+    "text": "Clase de inglés y grupos pequeños",
+    "back": "English class and small groups"
+   },
+   {
+    "text": "Clase gratuita de conversación en inglés todos los miércoles a las 6:30 PM. Las clases son para adultos de todos los niveles, y se ofrece cuidado de niños.",
+    "back": "Free English conversation class every Wednesday at 6:30 PM. The classes are for adults of all levels, and childcare is offered."
+   },
+   {
+    "text": "Los grupos pequeños se reúnen en casas el viernes a las 7 PM. Un grupo pequeño es un lugar para compartir una comida, leer la Biblia juntos y orar los unos por los otros.",
+    "back": "The small groups meet in houses on Friday at 7 PM. A small group is a place to share a meal, read the Bible together and pray for one another."
+   },
+   {
+    "text": "La Santa Cena se ofrece en cada culto del domingo. Si tienes preguntas al respecto, un pastor estará feliz de hablar contigo después del culto.",
+    "back": "The Holy Supper is offered in every Sunday service. If you have questions about it, a pastor will be happy to speak with you after the service."
+   },
+   {
+    "text": "Este mensaje fue traducido con ayuda de IA y revisado por un voluntario de nuestra iglesia.",
+    "back": "This message was translated with the help of AI and reviewed by a volunteer from our church."
+   }
+  ]
+ },
+ {
+  "key": "116b81454048d412fec7d369e4861ac4ff6b738b8da32da6e9b207ac511a04ae",
+  "sample": "groups",
+  "lang": "ru",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "generatedAt": "2026-11-03T14:24:38.372Z",
+  "blocks": [
+   {
+    "text": "Английский класс и малые группы",
+    "back": "English class and small groups"
+   },
+   {
+    "text": "Бесплатный разговорный клуб по английскому каждый среду в 6:30 вечера. Занятия для взрослых любого уровня, и предоставляется присмотр за детьми.",
+    "back": "Free English conversation club every Wednesday at 6:30 evening. Classes for adults of any level, and supervision for children is provided."
+   },
+   {
+    "text": "Малые группы встречаются в домах в пятницу в 7 вечера. Малая группа, это место, где можно поделиться едой, вместе прочитать Библию и помолиться друг за друга.",
+    "back": "Small groups meet in homes on Friday at 7 evening. Small group, this is a place where one can share food, together read the Bible and pray for each other."
+   },
+   {
+    "text": "Причастие предлагается на каждом воскресном богослужении. Если у вас есть вопросы, пастор с радостью поговорит с вами после службы.",
+    "back": "Communion is offered at every Sunday service. If you have questions, the pastor will gladly talk with you after the service."
+   },
+   {
+    "text": "Это сообщение переведено с помощью ИИ и проверено волонтером нашей церкви.",
+    "back": "This message was translated using AI and checked by a volunteer of our church."
+   }
+  ]
+ }
+]
