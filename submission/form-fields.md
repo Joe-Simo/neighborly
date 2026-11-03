@@ -1,6 +1,6 @@
 # Neighborly: submission form fields (draft)
 
-AI for Church Hackathon 2026, Outreach and Evangelism track. Draft only, not submitted.
+AI for Church Hackathon 2026, Outreach and Evangelism track. Ready to paste into the final form.
 
 ## Tagline
 
@@ -44,10 +44,14 @@ Many churches sit in neighborhoods where thousands of people speak Spanish, Hait
 
 Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, zod, Vitest. OpenRouter free models for translation and back-translation. US Census Bureau ACS 2024 5-year API for language data. Public-domain Bible text from eBible.org, bundled at build time. Vercel Hobby for hosting and Vercel Blob (free tier) for the shared cache and daily cap. Print CSS for the flyers.
 
+## Demo video link
+
+https://vimeo.com/1242902319
+
 ## Live demo link
 
 https://neighborly-church.vercel.app
 
 ## Repo link
 
-https://github.com/Joe-Simo/neighborly (private; judges need to be given read access before submission)
+https://github.com/Joe-Simo/neighborly (public, MIT license)

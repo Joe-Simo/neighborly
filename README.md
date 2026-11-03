@@ -2,6 +2,8 @@
 
 **Live demo:** https://neighborly-church.vercel.app
 
+**Demo video (2.5 minutes):** https://vimeo.com/1242902319
+
 Neighborly helps a church invite its neighbors in the languages they speak at home. A volunteer enters the church's ZIP code and sees which languages people nearby speak, from US Census data. They write or paste an announcement. AI drafts each translation, a separate AI call turns it back into English, and code checks every time, date, number, phone and address. A fluent volunteer then approves each block. Only then can the church export a web snippet, email text or a printable one-page flyer per language. When the announcement cites a Bible verse, Neighborly inserts the verse from a public-domain Bible in that language, never from AI.
 
 Built for the [AI for Church Hackathon 2026](https://aiforchurch.com/hackathon), Outreach and Evangelism track.
