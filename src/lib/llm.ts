@@ -1,35 +1,36 @@
 import "server-only";
+import { withStore } from "./store";
 
 /**
  * Free open models on OpenRouter. The free tier allows about 50 requests a day for the whole account,
- * so the server caps its own calls, caches by hash, and falls back to labelled recorded examples.
+ * so the server caps its own calls in a shared store (callers reserve with reserveCalls first), caches by hash,
+ * and falls back to labelled recorded examples.
  */
 export const LLM_MODELS = (process.env.NEIGHBORLY_LLM_MODELS ?? "google/gemma-4-31b-it:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-26b-a4b-it:free")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 
-export const DAILY_CAP = Number(process.env.NEIGHBORLY_LLM_CALLS_PER_DAY ?? 36);
+export { DAILY_CAP } from "./store";
 
-let exhaustedUntil = 0;
-let day = "";
-let calls = 0;
-
-const today = () => new Date().toISOString().slice(0, 10);
 const nextUtcMidnight = () => {
   const d = new Date();
   d.setUTCHours(24, 0, 0, 0);
   return d.getTime();
 };
 
-export function llmStatus() {
-  if (day !== today()) {
-    day = today();
-    calls = 0;
-  }
+/** Live AI state, read from the shared store so every server instance reports the same count. */
+export async function llmStatus() {
   const enabled = !!process.env.OPENROUTER_API_KEY?.trim();
-  const resting = Date.now() < exhaustedUntil || calls >= DAILY_CAP;
-  return { enabled, resting, callsToday: calls, cap: DAILY_CAP, models: LLM_MODELS };
+  const { value, mode } = await withStore((l) => l.usage());
+  return { enabled, resting: value.resting, callsToday: value.calls, cap: value.cap, models: LLM_MODELS, store: mode };
+}
+
+/** Claim n calls against the shared daily cap before making them. */
+export async function reserveCalls(n: number) {
+  if (!process.env.OPENROUTER_API_KEY?.trim()) throw new LlmUnavailable("no-key", "No model key on this server.");
+  const { value } = await withStore((l) => l.reserve(n));
+  if (!value.ok) throw new LlmUnavailable("quota", "The free AI tier is used up for today.");
 }
 
 /** House style: no em or en dashes in anything we show. */
@@ -44,10 +45,7 @@ export class LlmUnavailable extends Error {
 }
 
 export async function chatJson(system: string, user: string, maxTokens = 1800, timeoutMs = 55_000): Promise<{ json: unknown; model: string }> {
-  const s = llmStatus();
-  if (!s.enabled) throw new LlmUnavailable("no-key", "No model key on this server.");
-  if (s.resting) throw new LlmUnavailable("quota", "The free AI tier is used up for today.");
-  calls++;
+  if (!process.env.OPENROUTER_API_KEY?.trim()) throw new LlmUnavailable("no-key", "No model key on this server.");
   let res: Response;
   try {
     res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -77,7 +75,7 @@ export async function chatJson(system: string, user: string, maxTokens = 1800, t
   const text = await res.text();
   if (!res.ok) {
     if (res.status === 429) {
-      if (/per-day|daily|free-models-per-day/i.test(text)) exhaustedUntil = nextUtcMidnight();
+      if (/per-day|daily|free-models-per-day/i.test(text)) await withStore((l) => l.exhausted(nextUtcMidnight())).catch(() => {});
       throw new LlmUnavailable("quota", "The free AI tier is busy or used up.");
     }
     throw new LlmUnavailable("error", `The AI service returned ${res.status}.`);

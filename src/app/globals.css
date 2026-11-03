@@ -134,6 +134,8 @@ body {
     font-weight: 500;
     line-height: 1.5;
     border: 1px solid transparent;
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
   .chip-ok {
     background: var(--ok-soft);
@@ -197,5 +199,27 @@ body {
     .bar {
       transition: width 500ms ease-out;
     }
+  }
+}
+
+@page {
+  size: letter;
+  margin: 0.55in;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .flyer-sheet {
+    break-inside: avoid;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

@@ -1,9 +1,10 @@
-import { type ReviewBlock, type Review } from "./approval";
+import { exportGate, type ReviewBlock, type Review } from "./approval";
 import type { NeighborhoodLanguages } from "./census";
 import { type BlockFlags, flagBlock } from "./checks";
 import { checkGlossary, type GlossaryEntry, type GlossaryHit, STARTER_GLOSSARY } from "./glossary";
 import { textHash } from "./hash";
-import { SAMPLE_CHURCH, SAMPLES } from "./samples";
+import { languageByCode } from "./languages";
+import { SAMPLE_CHURCH, SAMPLES, toBlocks } from "./samples";
 
 export type BlockDraft = {
   ai: string;
@@ -18,6 +19,9 @@ export type BlockDraft = {
 export type LangDraft = {
   code: string;
   status: "idle" | "loading" | "ready" | "error";
+  /** While loading: "queued" until the request starts, then what the server says it is doing. */
+  phase?: "queued" | "translating" | "back-translating";
+  startedAt?: number;
   error?: string;
   origin?: "live" | "cache" | "recorded";
   model?: string;
@@ -102,4 +106,19 @@ export function toReview(l: LangDraft, source: string[], glossary: GlossaryEntry
       review: fresh ? b.review : { status: "pending" },
     })),
   };
+}
+
+/** The export gate for a whole workspace. The publish step and the flyer page share it, so neither can skip a check. */
+export function publishState(w: Workspace) {
+  const source = toBlocks(w.title, w.body);
+  const active = w.selected.map((c) => w.langs[c]).filter(Boolean);
+  const nameOf = (code: string) => languageByCode(code)?.name ?? code;
+  const reviews = active.filter((l) => l.status === "ready").map((l) => toReview(l, source, w.glossary, nameOf(l.code)));
+  const gate = exportGate(
+    active.map((l) =>
+      l.status === "ready" ? toReview(l, source, w.glossary, nameOf(l.code)) : { code: l.code, name: nameOf(l.code), reviewer: l.reviewer, blocks: [{ text: "", problems: 0, review: { status: "pending" as const } }] },
+    ),
+  );
+  const blockedReason = !active.length ? "Pick at least one language in step 1." : active.some((l) => l.status !== "ready") ? "Translate every selected language first." : null;
+  return { source, active, reviews, gate, blockedReason, ready: gate.ready && !blockedReason };
 }

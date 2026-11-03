@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { blockState } from "@/lib/approval";
 import type { GlossaryEntry } from "@/lib/glossary";
 import { languageByCode } from "@/lib/languages";
+import { attribution, passagesFor } from "@/lib/scripture";
 import { type LangDraft, sameBlocks, viewBlock } from "@/lib/workspace";
 import { HighlightedSource } from "./highlight";
 import { Notice, StatusChip } from "./ui";
@@ -19,11 +20,12 @@ type Props = {
   onRecheck: () => Promise<void>;
   onTranslate: () => void;
   onRemove: () => void;
+  translateDisabled?: boolean;
 };
 
 const BLOCK_LABEL = (i: number, n: number) => (i === 0 ? "Title" : i === n - 1 ? "AI disclosure line" : `Paragraph ${i}`);
 
-export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFlags, onApprove, onUnapprove, onRecheck, onTranslate, onRemove }: Props) {
+export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFlags, onApprove, onUnapprove, onRecheck, onTranslate, onRemove, translateDisabled }: Props) {
   const lang = languageByCode(draft.code)!;
   const [editing, setEditing] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<number, string>>({});
@@ -75,7 +77,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
       <div className="p-4 sm:p-5">
         {draft.status === "idle" || draft.status === "error" ? (
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className="btn btn-primary" onClick={onTranslate}>
+            <button type="button" className="btn btn-primary" onClick={onTranslate} disabled={translateDisabled}>
               Translate into {lang.name}
             </button>
             {draft.status === "error" ? (
@@ -89,11 +91,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
         ) : null}
 
         {draft.status === "loading" ? (
-          <div role="status" className="grid gap-3">
-            <p className="text-sm text-mute">Translating, then back-translating with a separate call. Free models can take 20 to 60 seconds.</p>
-            <div className="shimmer h-20 rounded-xl" aria-hidden="true" />
-            <div className="shimmer h-20 rounded-xl" aria-hidden="true" />
-          </div>
+          <Progress draft={draft} name={lang.name} />
         ) : null}
 
         {draft.status === "ready" ? (
@@ -111,20 +109,20 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
                 <Notice tone="warn" role="status">
                   The English changed after this was translated, so its approvals no longer count. Translate again to continue.
                 </Notice>
-                <button type="button" className="btn btn-primary btn-sm" onClick={onTranslate}>
+                <button type="button" className="btn btn-primary btn-sm" onClick={onTranslate} disabled={translateDisabled}>
                   Translate again
                 </button>
               </div>
             ) : null}
 
             <div className="mb-5 flex flex-wrap items-end gap-3">
-              <div>
+              <div className="w-full sm:w-auto">
                 <label htmlFor={`reviewer-${draft.code}`} className="mb-1.5 block text-sm font-semibold">
                   Reviewer fluent in {lang.name}
                 </label>
                 <input
                   id={`reviewer-${draft.code}`}
-                  className="field w-64"
+                  className="field w-full sm:w-64"
                   placeholder="Full name"
                   value={draft.reviewer}
                   onChange={(e) => onReviewer(e.target.value)}
@@ -146,7 +144,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
               <span>{lang.name}</span>
               <span>Back into English, by a separate AI call</span>
             </div>
-            <ol className="grid gap-4">
+            <ol className="grid grid-cols-1 gap-4">
               {draft.blocks.map((b, i) => {
                 const v = views[i];
                 const state = states[i];
@@ -157,7 +155,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
                       <span className="text-xs font-semibold uppercase tracking-wide text-mute">{BLOCK_LABEL(i, draft.blocks.length)}</span>
                       <StateTag state={state} />
                     </div>
-                    <div className="grid gap-3 lg:grid-cols-3 lg:gap-4">
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-4">
                       <div>
                         <span className="text-xs font-semibold text-mute lg:hidden">English</span>
                         <p className="leading-relaxed">
@@ -221,6 +219,11 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
                           </StatusChip>
                         </li>
                       ))}
+                      {v.flags.verseText ? (
+                        <li>
+                          <StatusChip status="missing">{v.flags.verseText}</StatusChip>
+                        </li>
+                      ) : null}
                       {v.flags.drift.length && v.backCurrent ? (
                         <li>
                           <StatusChip status="neutral" title="Words from the English that did not come back. Often fine. Read the underlined words.">
@@ -273,6 +276,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
                 );
               })}
             </ol>
+            <ScripturePanel source={source} code={draft.code} name={lang.name} dir={lang.dir} />
           </>
         ) : null}
       </div>
@@ -291,4 +295,85 @@ function StateTag({ state }: { state: string }) {
   if (state === "stale") return <StatusChip status="check">Edited after approval</StatusChip>;
   if (state === "needs-flag-check") return <StatusChip status="check">Flags not confirmed</StatusChip>;
   return <StatusChip status="neutral">Waiting for review</StatusChip>;
+}
+
+const PHASES = [
+  { id: "queued", label: "Waiting in line" },
+  { id: "translating", label: "Translating" },
+  { id: "back-translating", label: "Back-translating with a separate call" },
+] as const;
+
+/** Free models often take 20 to 60 seconds. Show the real step from the server, the time so far, and an honest estimate. */
+function Progress({ draft, name }: { draft: LangDraft; name: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const phase = draft.phase ?? "translating";
+  const step = PHASES.findIndex((p) => p.id === phase);
+  const secs = draft.startedAt ? Math.max(0, Math.round((now - draft.startedAt) / 1000)) : 0;
+  // Estimate only: about 25 s per call on the free tier. Never reaches 100 until the answer is back.
+  const est = phase === "queued" ? 0 : Math.min(95, (phase === "back-translating" ? 50 : 0) + Math.min(45, (secs / 25) * 45));
+  return (
+    <div role="status" aria-live="polite" className="grid grid-cols-1 gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="font-semibold">
+          {phase === "queued" ? `${name} is waiting for the language ahead of it to finish.` : `${PHASES[step].label} into ${name}...`}
+        </p>
+        {phase !== "queued" ? <span className="text-sm text-mute tabular-nums">{secs} s so far</span> : null}
+      </div>
+      <ol className="flex flex-wrap gap-2 text-sm" aria-label="Steps">
+        {PHASES.slice(1).map((p, i) => {
+          const done = step > i + 1;
+          const current = step === i + 1;
+          return (
+            <li key={p.id} aria-current={current ? "step" : undefined} className={`chip ${done ? "chip-ok" : current ? "border-accent/30 bg-accent-soft text-accent-ink" : "chip-neutral"}`}>
+              <span aria-hidden="true">{done ? "✓" : i + 1}</span> {p.label}
+            </li>
+          );
+        })}
+        <li className="chip chip-neutral">
+          <span aria-hidden="true">3</span> Code checks run in your browser
+        </li>
+      </ol>
+      <div className="h-2 overflow-hidden rounded-full bg-line" aria-hidden="true">
+        <div className="bar h-full rounded-full bg-accent" style={{ width: `${est}%` }} />
+      </div>
+      <p className="text-xs text-mute">The bar is an estimate. Free AI models usually take 20 to 60 seconds for both calls. You can keep working on other languages.</p>
+      <div className="shimmer h-16 rounded-xl" aria-hidden="true" />
+    </div>
+  );
+}
+
+/** Verses come from bundled public-domain Bibles, never from the AI. */
+function ScripturePanel({ source, code, name, dir }: { source: string[]; code: string; name: string; dir: "ltr" | "rtl" }) {
+  const passages = passagesFor(source, code, name);
+  if (!passages.length) return null;
+  return (
+    <section aria-label="Scripture" className="mt-5 rounded-xl border border-gold/40 bg-gold-soft/50 p-4">
+      <h4 className="text-sm font-semibold">Scripture, inserted from a public-domain Bible (not AI)</h4>
+      <ul className="mt-2 grid grid-cols-1 gap-3">
+        {passages.map((p, i) =>
+          p.kind === "text" ? (
+            <li key={i}>
+              <blockquote lang={code} dir={dir} className="font-display text-lg leading-relaxed">
+                &ldquo;{p.text}&rdquo;
+              </blockquote>
+              <p className="mt-1 text-sm text-mute">
+                {attribution(p)}.{" "}
+                <a href={p.url} className="underline underline-offset-2 hover:text-accent-ink" target="_blank" rel="noreferrer">
+                  Source<span className="sr-only"> for {p.label} (opens in a new tab)</span>
+                </a>
+              </p>
+            </li>
+          ) : (
+            <li key={i} className="text-sm">
+              <span className="font-semibold">{p.english}</span>: {p.note}
+            </li>
+          ),
+        )}
+      </ul>
+    </section>
+  );
 }

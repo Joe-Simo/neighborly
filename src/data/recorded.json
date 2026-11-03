@@ -230,5 +230,63 @@
     "back": "This message was translated using AI and checked by a volunteer of our church."
    }
   ]
+ },
+ {
+  "key": "c424428e317ec8c60536bc5da2166ceddb055d6566a686e1157671fdf759ed85",
+  "sample": "welcome",
+  "lang": "es",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free + google/gemma-4-31b-it:free",
+  "generatedAt": "2026-11-03T14:47:06.499Z",
+  "blocks": [
+   {
+    "text": "Cena con nuestros vecinos",
+    "back": "Dinner with our neighbors"
+   },
+   {
+    "text": "Grace Fellowship invita a todos los vecinos a una cena gratis el sábado 21 de noviembre a las 5:30 p. m. en el Fellowship Hall en 250 Grace Lane.",
+    "back": "Grace Fellowship invites all neighbors to a free dinner Saturday November 21 at 5:30 p. m. in the Fellowship Hall at 250 Grace Lane."
+   },
+   {
+    "text": "Nuestro tema viene de Hebreos 13:2, que nos recuerda recibir a los extraños. Los niños son bienvenidos y habrá un plato vegetariano.",
+    "back": "Our theme comes from Hebrews 13:2, which reminds us to receive strangers. Children are welcome and there will be a vegetarian dish."
+   },
+   {
+    "text": "Para avisarnos cuántos vendrán, llame al (239) 555-0142 o envíe un correo a hello@gracefellowship.example.",
+    "back": "To let us know how many will come, call (239) 555-0142 or send an email to hello@gracefellowship.example."
+   },
+   {
+    "text": "Este mensaje fue traducido con ayuda de IA y revisado por un voluntario de nuestra iglesia.",
+    "back": "This message was translated with help of AI and reviewed by a volunteer of our church."
+   }
+  ]
+ },
+ {
+  "key": "060b5ab75706618ec149d70b6e8773b4be86e81ff907b96c3a09d7f99deaa6c9",
+  "sample": "welcome",
+  "lang": "ht",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "generatedAt": "2026-11-03T14:47:49.302Z",
+  "blocks": [
+   {
+    "text": "Dine ak vwazin nou yo",
+    "back": "Dinner with our neighbors"
+   },
+   {
+    "text": "Grace Fellowship envite tout vwazin vin jwenn yon dine gratis samdi 21 novanm, a 5:30 PM nan Fellowship Hall nan 250 Grace Lane.",
+    "back": "Grace Fellowship invites all neighbors to come find a free dinner Saturday 21 November, at 5:30 PM in Fellowship Hall at 250 Grace Lane."
+   },
+   {
+    "text": "Tèm nou an soti nan Ebre 13:2, ki rapel nou pou nou resevwa etranje yo. Timoun yo byenveni, e pral gen yon plat vejetaryen.",
+    "back": "Our theme comes from Hebrews 13:2, which reminds us to welcome strangers. Children are welcome, and there will be a vegetarian dish."
+   },
+   {
+    "text": "Pou di nou konbyen moun ki pral vin, rele (239) 555-0142 oswa voye imel nan hello@gracefellowship.example.",
+    "back": "To tell us how many people will come, call (239) 555-0142 or send email to hello@gracefellowship.example."
+   },
+   {
+    "text": "Mesaj sa a te tradwi ak èd ENTELIJANS ATIFISYÈL e tcheke pa yon volontè soti nan legliz nou an.",
+    "back": "This message was translated with help ARTIFICIAL INTELLIGENCE and checked by a volunteer from our church."
+   }
+  ]
  }
 ]

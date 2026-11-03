@@ -17,7 +17,7 @@ export const viewport: Viewport = { themeColor: "#faf7f1", width: "device-width"
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
-      <body className="min-h-dvh">
+      <body className="min-h-dvh break-words">
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-white">
           Skip to the workspace
         </a>

@@ -4,7 +4,9 @@
  * then searched for in the translation. Weekday and month names are checked in the English back-translation.
  */
 
-export type FactKind = "time" | "date" | "money" | "phone" | "email" | "url" | "address" | "number";
+import { findReferences } from "./scripture-ref";
+
+export type FactKind = "verse" | "time" | "date" | "money" | "phone" | "email" | "url" | "address" | "number";
 
 export type Fact = {
   kind: FactKind;
@@ -57,6 +59,11 @@ export function extractFacts(text: string): Fact[] {
     }
   };
 
+  // Bible references first, so "Hebrews 13:2" is not read as the time 13:02.
+  for (const r of findReferences(masked)) {
+    facts.push({ kind: "verse", raw: r.raw, index: r.index, digits: [String(r.chapter), String(r.from), ...(r.to > r.from ? [String(r.to)] : [])] });
+    masked = masked.slice(0, r.index) + " ".repeat(r.raw.length) + masked.slice(r.index + r.raw.length);
+  }
   take(/\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b/g, () => ({ kind: "email", digits: [] }));
   take(/\b(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|org|net|church|example|edu|gov|us|io)(?:\/[^\s)]*)?/gi, () => ({ kind: "url", digits: [] }));
   take(/(?:\+?1[\s.-]?)?(?:\(\d{3}\)\s?|\b\d{3}[\s.-])\d{3}[\s.-]\d{4}\b|\b\d{3}-\d{4}\b/g, (m) => ({ kind: "phone", digits: [m[0].replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "")] }));
@@ -146,6 +153,7 @@ export function checkFacts(source: string, translation: string): { checks: FactC
       return { fact, ...r };
     }
     const missing = fact.digits.filter((d) => !available.includes(d.includes(".") ? d : stripZeros(d)) && !t.includes(d));
+    if (missing.length === 0 && fact.kind === "verse") return { fact, status: "ok", note: "Chapter and verse numbers kept" };
     if (missing.length === 0) return { fact, status: "ok", note: fact.kind === "date" ? "Day number found. Month and weekday are checked in the back-translation." : "Same number" };
     return { fact, status: "missing", note: `${missing.join(", ")} not found${fact.kind === "date" ? " (the day of the month)" : ""}` };
   });
@@ -211,6 +219,8 @@ export type BlockFlags = {
   extras: ExtraNumber[];
   calendar: WordCheck[];
   drift: string[];
+  /** Set when a paragraph that cites scripture came back much longer, which can mean the AI wrote out the verse. */
+  verseText: string | null;
   /** Problems a reviewer must look at before approving. */
   problems: number;
 };
@@ -219,6 +229,18 @@ export function flagBlock(source: string, translation: string, back: string | nu
   const { checks, extras } = checkFacts(source, translation);
   const calendar = back ? checkCalendarWords(source, back) : [];
   const drift = back ? driftWords(source, back) : [];
-  const problems = checks.filter((c) => c.status !== "ok").length + extras.length + calendar.filter((c) => c.status !== "ok").length;
-  return { facts: checks, extras, calendar, drift, problems };
+  const verseText = addedVerseText(source, translation);
+  const problems = checks.filter((c) => c.status !== "ok").length + extras.length + calendar.filter((c) => c.status !== "ok").length + (verseText ? 1 : 0);
+  return { facts: checks, extras, calendar, drift, verseText, problems };
+}
+
+/**
+ * The prompt tells the model never to write verse text. This checks it: a paragraph that cites a verse and comes back
+ * far longer than the English gets flagged, because the extra words may be a verse the AI wrote from memory.
+ */
+export function addedVerseText(source: string, translation: string): string | null {
+  if (findReferences(source).length === 0) return null;
+  const len = (s: string) => s.replace(/\s+/g, " ").trim().length;
+  if (len(translation) <= Math.max(len(source) * 1.8, len(source) + 120)) return null;
+  return "This paragraph cites scripture and the translation is much longer than the English. Make sure the AI did not write out the verse. Neighborly adds verse text itself, only from a public-domain Bible.";
 }

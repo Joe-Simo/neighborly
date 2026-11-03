@@ -10,7 +10,16 @@ const SECTIONS: { title: string; items: string[] }[] = [
       "Translations come from free open models on OpenRouter (for example Google Gemma and NVIDIA Nemotron). Each translation shows which model produced it.",
       "A second, separate call translates the result back into English without seeing the original. This catches some meaning changes. It does not prove a translation is right: two AI calls can make the same mistake.",
       "AI translations can be wrong, too formal, too casual, or wrong for a dialect. Haitian Creole, Tagalog and Vietnamese are weaker than Spanish in most models. That is why a fluent person approves every block.",
-      "The AI is never asked to write sermons, theology or scripture. Scripture should come from a published Bible translation, not from AI. Scripture support is planned and will quote published translations only.",
+      "The AI is never asked to write sermons, theology or scripture. It is told to keep Bible references as references and never to write out a verse.",
+    ],
+  },
+  {
+    title: "Scripture",
+    items: [
+      "When the English cites a verse (for example Hebrews 13:2), Neighborly adds the verse text itself from a public-domain Bible bundled with the app: King James Version (English), Reina-Valera 1909 (Spanish), Louis Segond 1910 (French), Lutherbibel 1912 (German), Russian Synodal 1876, Vietnamese Cadman 1923 and 1925, Korean Bible 1910 and Arabic Smith and Van Dyck 1865. The text was copied from eBible.org, which marks each one as public domain. The King James Version is public domain outside the United Kingdom; in the UK the Crown holds rights by letters patent.",
+      "Only a short list of verses often used in invitations is bundled. A verse that is not on the list is shown as a reference with a note. Nothing is generated.",
+      "Chinese, Haitian Creole, Portuguese, Tagalog, Hindi, Ukrainian and Polish have no Bible here whose public-domain status we could verify, so they show the reference with a plain note. Readers can look it up in their own Bible.",
+      "If the English quotes a verse in full, translation is turned off until only the reference is left. If a translation comes back much longer than an English paragraph that cites a verse, it is flagged, because the AI may have written the verse out.",
     ],
   },
   {
@@ -43,10 +52,11 @@ const SECTIONS: { title: string; items: string[] }[] = [
   {
     title: "Limits of this first version",
     items: [
-      "The free AI tier allows a limited number of calls per day. When it is used up, the three sample announcements fall back to recorded AI output, clearly labelled with the model and date. Your own text cannot be translated until the next day.",
-      "Translations are cached on the server by a hash of the text, language and glossary, and only for as long as that server instance runs.",
+      "The free AI tier allows a limited number of calls per day. When it is used up, the sample announcements fall back to recorded AI output, clearly labelled with the model and date. Your own text cannot be translated until the next day.",
+      "The daily call count and the translation cache are shared by every server through Vercel Blob on its free Hobby plan (no card, hard limits, nothing can be billed). Translations are cached by a hash of the text, language and glossary. If the store is unavailable or its free limits are used up, each server falls back to counting and caching on its own until the store comes back, so for a while the daily count can be lower than the real one. The status line at the top of the workspace says which mode is in use.",
       "Fifteen languages are offered. Census groups with no matching language here (for example Other Asian and Pacific Island languages) are shown but cannot be translated yet.",
-      "Still to come: a printable flyer, scripture from published translations, and sharing a review link with a volunteer on another device.",
+      "The flyer is printed from your browser, letter size. Very long announcements print in smaller type to stay on one page.",
+      "Still to come: sharing a review link with a volunteer on another device, and more bundled verses.",
     ],
   },
 ];

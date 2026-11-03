@@ -36,6 +36,16 @@ Small groups meet in homes on Friday at 7 PM. A small group is a place to share 
 
 Communion is offered at every Sunday worship service. If you have questions about it, a pastor is happy to talk with you after the service.`,
   },
+  {
+    id: "welcome",
+    label: "Neighbors dinner with a Bible verse",
+    title: "Dinner with our neighbors",
+    body: `Grace Fellowship invites every neighbor to a free dinner on Saturday, November 21, at 5:30 PM in the Fellowship Hall at 250 Grace Lane.
+
+Our theme comes from Hebrews 13:2, which reminds us to welcome strangers. Children are welcome, and there will be a vegetarian dish.
+
+To tell us how many are coming, call (239) 555-0142 or email hello@gracefellowship.example.`,
+  },
 ];
 
 /** Title first, then one block per paragraph, then the AI disclosure line, which is translated and reviewed like the rest. */

@@ -1,0 +1,376 @@
+{
+  "generatedAt": "2026-11-03T14:37:05.655Z",
+  "method": "Copied from eBible.org chapter pages by scripts/fetch-scripture.mjs. No AI.",
+  "sources": {
+    "en": {
+      "id": "eng-kjv2006",
+      "name": "King James Version",
+      "year": "1769 text",
+      "status": "Public domain outside the United Kingdom. In the UK the Crown holds rights by letters patent.",
+      "evidence": "https://ebible.org/eng-kjv2006/copyright.htm",
+      "statement": "Public Domain Language: English Dialect: archaic British Letters patent issued by King James with no expiration date means that to print this translation in the United Kingdom or import printed copies into the UK, you need permission. Currently, the Cambridge University Press, the Oxford University Press, and Collins have the exclusive right to print this Bible translation in the UK."
+    },
+    "es": {
+      "id": "spaRV1909",
+      "name": "Reina-Valera 1909",
+      "year": "1909",
+      "status": "Public domain (published 1909).",
+      "evidence": "https://ebible.org/spaRV1909/copyright.htm",
+      "statement": "Public Domain Language: Español (Spanish) Dialect: Castellano 1909 Translation by: Reina y Valera Dominio Público"
+    },
+    "fr": {
+      "id": "fraLSG",
+      "name": "Louis Segond 1910",
+      "year": "1910",
+      "status": "Public domain (published 1910).",
+      "evidence": "https://ebible.org/fraLSG/copyright.htm",
+      "statement": "Public Domain Language: français (French) Translation by: Louis Segond Contributor: Public Domain The first edition of the Bible Segond was published in 1910 Cette Bible est dans le domaine public. Il n'est pas protégé par copyright. This Bible is in the Public Domain. It is not copyrighted."
+    },
+    "de": {
+      "id": "deu1912",
+      "name": "Lutherbibel 1912",
+      "year": "1912",
+      "status": "Public domain (published 1912).",
+      "evidence": "https://ebible.org/deu1912/copyright.htm",
+      "statement": "Public Domain Language: Deutsch (German, Standard) Translation by: Martin Luther"
+    },
+    "ru": {
+      "id": "russyn",
+      "name": "Synodal Translation",
+      "year": "1876",
+      "status": "Public domain (published 1876).",
+      "evidence": "https://ebible.org/russyn/copyright.htm",
+      "statement": "Public Domain Language: русский (Russian)"
+    },
+    "vi": {
+      "id": "vie1934",
+      "name": "Kinh Thánh (Cadman)",
+      "year": "NT 1923, OT 1925",
+      "status": "Public domain. eBible.org reports the copyright expired: New Testament on January 1, 2019, Old Testament on January 1, 2021.",
+      "evidence": "https://ebible.org/vie1934/copyright.htm",
+      "statement": "Public Domain Language: Tiếng Việt (Vietnamese) Translation by: William Cadman (1883-1948) Contributor: Christian and Missionary Alliance"
+    },
+    "ko": {
+      "id": "kor",
+      "name": "Korean Bible 1910",
+      "year": "1910",
+      "status": "Public domain (1910 translation).",
+      "evidence": "https://ebible.org/kor/copyright.htm",
+      "statement": "Public Domain Language: 한국인 (Korean) Contributor: 레널즈, 이승두, 김정삼"
+    },
+    "ar": {
+      "id": "arb-vd",
+      "name": "Smith and Van Dyck",
+      "year": "1865",
+      "status": "Public domain (published 1865).",
+      "evidence": "https://ebible.org/arb-vd/copyright.htm",
+      "statement": "Public Domain Language: العربية (Arabic) Dialect: standard Translation by: Syrian Mission Contributor: American Bible Society"
+    }
+  },
+  "books": {
+    "en": {
+      "LEV": "Leviticus",
+      "MAT": "Matthew",
+      "LUK": "Luke",
+      "JHN": "John",
+      "ROM": "Romans",
+      "HEB": "Hebrews"
+    },
+    "es": {
+      "LEV": "Levítico",
+      "MAT": "San Mateo",
+      "LUK": "San Lucas",
+      "JHN": "Juan",
+      "ROM": "Romanos",
+      "HEB": "Hebreos"
+    },
+    "fr": {
+      "LEV": "Lévitique",
+      "MAT": "Matthieu",
+      "LUK": "Luc",
+      "JHN": "Jean",
+      "ROM": "Romains",
+      "HEB": "Hébreux"
+    },
+    "de": {
+      "LEV": "3. Mose",
+      "MAT": "Matthäus",
+      "LUK": "Lukas",
+      "JHN": "Johannes",
+      "ROM": "Römer",
+      "HEB": "Hebräer"
+    },
+    "ru": {
+      "LEV": "Левит",
+      "MAT": "Евангелие от Матфея",
+      "LUK": "Евангелие от Луки",
+      "JHN": "Евангелие от Иоанна",
+      "ROM": "Послание к Римлянам",
+      "HEB": "Послание к Евреям"
+    },
+    "vi": {
+      "LEV": "Lê-vi",
+      "MAT": "Ma-thi-ơ",
+      "LUK": "Lu-ca",
+      "JHN": "Giăng",
+      "ROM": "La-mã",
+      "HEB": "Hê-bơ-rơ"
+    },
+    "ko": {
+      "LEV": "레위기",
+      "MAT": "마태복음",
+      "LUK": "누가복음",
+      "JHN": "요한복음",
+      "ROM": "로마서",
+      "HEB": "히브리서"
+    },
+    "ar": {
+      "LEV": "اَللَّاوِيِّينَ",
+      "MAT": "مَتَّى",
+      "LUK": "لُوقا",
+      "JHN": "يوحنَّا",
+      "ROM": "رُوما",
+      "HEB": "عِبرانِيّين"
+    }
+  },
+  "verses": {
+    "LEV.19.34": {
+      "en": {
+        "text": "But the stranger that dwelleth with you shall be unto you as one born among you, and thou shalt love him as thyself; for ye were strangers in the land of Egypt: I am the LORD your God.",
+        "url": "https://ebible.org/eng-kjv2006/LEV19.htm#V34"
+      },
+      "es": {
+        "text": "Como á un natural de vosotros tendréis al extranjero que peregrinare entre vosotros; y ámalo como á ti mismo; porque peregrinos fuisteis en la tierra de Egipto: Yo Jehová vuestro Dios.",
+        "url": "https://ebible.org/spaRV1909/LEV19.htm#V34"
+      },
+      "fr": {
+        "text": "Vous traiterez l’étranger en séjour parmi vous comme un indigène du milieu de vous; vous l’aimerez comme vous-mêmes, car vous avez été étrangers dans le pays d’Égypte. Je suis l’Éternel, votre Dieu.",
+        "url": "https://ebible.org/fraLSG/LEV19.htm#V34"
+      },
+      "de": {
+        "text": "Er soll bei euch wohnen wie ein Einheimischer unter euch, und sollst ihn lieben wie dich selbst; denn ihr seid auch Fremdlinge gewesen in Ägyptenland. Ich bin der HERR, euer Gott.",
+        "url": "https://ebible.org/deu1912/LEV19.htm#V34"
+      },
+      "ru": {
+        "text": "пришлец, поселившийся у вас, да будет для вас то же, что туземец ваш; люби его, как себя; ибо и вы были пришельцами в земле Египетской. Я Господь, Бог ваш.",
+        "url": "https://ebible.org/russyn/LEV19.htm#V34"
+      },
+      "vi": {
+        "text": "Kẻ khách kiều ngụ giữa các ngươi sẽ kể như kẻ đã sanh đẻ giữa các ngươi; hãy thương yêu người như mình, vì các ngươi đã làm khách kiều ngụ trong xứ Ê-díp-tô: Ta là Giê-hô-va, Đức Chúa Trời của các ngươi.",
+        "url": "https://ebible.org/vie1934/LEV19.htm#V34"
+      },
+      "ko": {
+        "text": "너희와 함께 있는 타국인을 너희 중에서 낳은 자 같이 여기며 자기같이 사랑하라 ! 너희도 애굽 땅에서 객이 되었더니라 나는 너희 하나님 여호와니라 !",
+        "url": "https://ebible.org/kor/LEV19.htm#V34"
+      },
+      "ar": {
+        "text": "كَٱلْوَطَنِيِّ مِنْكُمْ يَكُونُ لَكُمُ ٱلْغَرِيبُ ٱلنَّازِلُ عِنْدَكُمْ، وَتُحِبُّهُ كَنَفْسِكَ، لِأَنَّكُمْ كُنْتُمْ غُرَبَاءَ فِي أَرْضِ مِصْرَ. أَنَا ٱلرَّبُّ إِلَهُكُمْ.",
+        "url": "https://ebible.org/arb-vd/LEV19.htm#V34"
+      }
+    },
+    "MAT.11.28": {
+      "en": {
+        "text": "Come unto me, all ye that labour and are heavy laden, and I will give you rest.",
+        "url": "https://ebible.org/eng-kjv2006/MAT11.htm#V28"
+      },
+      "es": {
+        "text": "Venid á mí todos los que estáis trabajados y cargados, que yo os haré descansar.",
+        "url": "https://ebible.org/spaRV1909/MAT11.htm#V28"
+      },
+      "fr": {
+        "text": "Venez à moi, vous tous qui êtes fatigués et chargés, et je vous donnerai du repos.",
+        "url": "https://ebible.org/fraLSG/MAT11.htm#V28"
+      },
+      "de": {
+        "text": "Kommet her zu mir alle, die ihr mühselig und beladen seid; ich will euch erquicken.",
+        "url": "https://ebible.org/deu1912/MAT11.htm#V28"
+      },
+      "ru": {
+        "text": "Придите ко Мне все труждающиеся и обремененные, и Я успокою вас;",
+        "url": "https://ebible.org/russyn/MAT11.htm#V28"
+      },
+      "vi": {
+        "text": "Hỡi những kẻ mệt mỏi và gánh nặng, hãy đến cùng ta, ta sẽ cho các ngươi được yên nghỉ.",
+        "url": "https://ebible.org/vie1934/MAT11.htm#V28"
+      },
+      "ko": {
+        "text": "수고하고 무거운 짐진 자들아 ! 다 내게로 오라 내가 너희를 쉬게 하리라",
+        "url": "https://ebible.org/kor/MAT11.htm#V28"
+      },
+      "ar": {
+        "text": "تَعَالَوْا إِلَيَّ يا جَمِيعَ ٱلْمُتْعَبِينَ وَٱلثَّقِيلِي ٱلْأَحْمَالِ، وَأَنَا أُرِيحُكُمْ.",
+        "url": "https://ebible.org/arb-vd/MAT11.htm#V28"
+      }
+    },
+    "MAT.25.35": {
+      "en": {
+        "text": "For I was an hungred, and ye gave me meat: I was thirsty, and ye gave me drink: I was a stranger, and ye took me in:",
+        "url": "https://ebible.org/eng-kjv2006/MAT25.htm#V35"
+      },
+      "es": {
+        "text": "Porque tuve hambre, y me disteis de comer; tuve sed, y me disteis de beber; fuí huésped, y me recogisteis;",
+        "url": "https://ebible.org/spaRV1909/MAT25.htm#V35"
+      },
+      "fr": {
+        "text": "Car j’ai eu faim, et vous m’avez donné à manger; j’ai eu soif, et vous m’avez donné à boire; j’étais étranger, et vous m’avez recueilli;",
+        "url": "https://ebible.org/fraLSG/MAT25.htm#V35"
+      },
+      "de": {
+        "text": "Denn ich bin hungrig gewesen, und ihr habt mich gespeist. Ich bin durstig gewesen, und ihr habt mich getränkt. Ich bin Gast gewesen, und ihr habt mich beherbergt.",
+        "url": "https://ebible.org/deu1912/MAT25.htm#V35"
+      },
+      "ru": {
+        "text": "ибо алкал Я, и вы дали Мне есть; жаждал, и вы напоили Меня; был странником, и вы приняли Меня;",
+        "url": "https://ebible.org/russyn/MAT25.htm#V35"
+      },
+      "vi": {
+        "text": "Vì ta đói, các ngươi đã cho ta ăn; ta khát, các ngươi đã cho ta uống; ta là khách lạ, các ngươi tiếp rước ta;",
+        "url": "https://ebible.org/vie1934/MAT25.htm#V35"
+      },
+      "ko": {
+        "text": "내가 주릴 때에 너희가 먹을 것을 주었고 목마를 때에 마시게 하였고 나그네 되었을 때에 영접하였고",
+        "url": "https://ebible.org/kor/MAT25.htm#V35"
+      },
+      "ar": {
+        "text": "لِأَنِّي جُعْتُ فَأَطْعَمْتُمُونِي. عَطِشْتُ فَسَقَيْتُمُونِي. كُنْتُ غَرِيبًا فَآوَيْتُمُونِي.",
+        "url": "https://ebible.org/arb-vd/MAT25.htm#V35"
+      }
+    },
+    "LUK.14.13": {
+      "en": {
+        "text": "But when thou makest a feast, call the poor, the maimed, the lame, the blind:",
+        "url": "https://ebible.org/eng-kjv2006/LUK14.htm#V13"
+      },
+      "es": {
+        "text": "Mas cuando haces banquete, llama á los pobres, los mancos, los cojos, los ciegos;",
+        "url": "https://ebible.org/spaRV1909/LUK14.htm#V13"
+      },
+      "fr": {
+        "text": "Mais, lorsque tu donnes un festin, invite des pauvres, des estropiés, des boiteux, des aveugles.",
+        "url": "https://ebible.org/fraLSG/LUK14.htm#V13"
+      },
+      "de": {
+        "text": "Sondern wenn du ein Mahl machst, so lade die Armen, die Krüppel, die Lahmen, die Blinden,",
+        "url": "https://ebible.org/deu1912/LUK14.htm#V13"
+      },
+      "ru": {
+        "text": "Но, когда делаешь пир, зови нищих, увечных, хромых, слепых,",
+        "url": "https://ebible.org/russyn/LUK14.htm#V13"
+      },
+      "vi": {
+        "text": "Song khi ngươi đãi tiệc, hãy mời những kẻ nghèo khó, tàn tật, què, đui,",
+        "url": "https://ebible.org/vie1934/LUK14.htm#V13"
+      },
+      "ko": {
+        "text": "잔치를 배설하거든 차라리 가난한 자들과 병신들과 저는 자들과 소경들을 청하라",
+        "url": "https://ebible.org/kor/LUK14.htm#V13"
+      },
+      "ar": {
+        "text": "بَلْ إِذَا صَنَعْتَ ضِيَافَةً فَٱدْعُ: ٱلْمَسَاكِينَ، ٱلْجُدْعَ، ٱلْعُرْجَ، ٱلْعُمْيَ،",
+        "url": "https://ebible.org/arb-vd/LUK14.htm#V13"
+      }
+    },
+    "JHN.3.16": {
+      "en": {
+        "text": "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",
+        "url": "https://ebible.org/eng-kjv2006/JHN03.htm#V16"
+      },
+      "es": {
+        "text": "Porque de tal manera amó Dios al mundo, que ha dado á su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.",
+        "url": "https://ebible.org/spaRV1909/JHN03.htm#V16"
+      },
+      "fr": {
+        "text": "Car Dieu a tant aimé le monde qu’il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu’il ait la vie éternelle.",
+        "url": "https://ebible.org/fraLSG/JHN03.htm#V16"
+      },
+      "de": {
+        "text": "Also hat Gott die Welt geliebt, daß er seinen eingeborenen Sohn gab, auf daß alle, die an ihn glauben, nicht verloren werden, sondern das ewige Leben haben.",
+        "url": "https://ebible.org/deu1912/JHN03.htm#V16"
+      },
+      "ru": {
+        "text": "Ибо так возлюбил Бог мир, что отдал Сына Своего Единородного, дабы всякий, верующий в Него, не погиб, но имел жизнь вечную.",
+        "url": "https://ebible.org/russyn/JHN03.htm#V16"
+      },
+      "vi": {
+        "text": "Vì Đức Chúa Trời yêu thương thế gian, đến nỗi đã ban Con một của Ngài, hầu cho hễ ai tin Con ấy không bị hư mất mà được sự sống đời đời.",
+        "url": "https://ebible.org/vie1934/JHN03.htm#V16"
+      },
+      "ko": {
+        "text": "하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니 이는 저를 믿는 자마다 멸망치 않고 영생을 얻게 하려 하심이니라",
+        "url": "https://ebible.org/kor/JHN03.htm#V16"
+      },
+      "ar": {
+        "text": "لِأَنَّهُ هَكَذَا أَحَبَّ ٱللهُ ٱلْعَالَمَ حَتَّى بَذَلَ ٱبْنَهُ ٱلْوَحِيدَ، لِكَيْ لَا يَهْلِكَ كُلُّ مَنْ يُؤْمِنُ بِهِ، بَلْ تَكُونُ لَهُ ٱلْحَيَاةُ ٱلْأَبَدِيَّةُ.",
+        "url": "https://ebible.org/arb-vd/JHN03.htm#V16"
+      }
+    },
+    "ROM.15.7": {
+      "en": {
+        "text": "Wherefore receive ye one another, as Christ also received us to the glory of God.",
+        "url": "https://ebible.org/eng-kjv2006/ROM15.htm#V7"
+      },
+      "es": {
+        "text": "Por tanto, sobrellevaos los unos á los otros, como también Cristo nos sobrellevó, para gloria de Dios.",
+        "url": "https://ebible.org/spaRV1909/ROM15.htm#V7"
+      },
+      "fr": {
+        "text": "Accueillez-vous donc les uns les autres, comme Christ vous a accueillis, pour la gloire de Dieu.",
+        "url": "https://ebible.org/fraLSG/ROM15.htm#V7"
+      },
+      "de": {
+        "text": "Darum nehmet euch untereinander auf, gleichwie euch Christus hat aufgenommen zu Gottes Lobe.",
+        "url": "https://ebible.org/deu1912/ROM15.htm#V7"
+      },
+      "ru": {
+        "text": "Посему принимайте друг друга, как и Христос принял вас в славу Божию.",
+        "url": "https://ebible.org/russyn/ROM15.htm#V7"
+      },
+      "vi": {
+        "text": "Vậy thì, anh em hãy tiếp lấy nhau, cũng như Đấng Christ đã tiếp anh em, để Đức Chúa Trời được vinh hiển.",
+        "url": "https://ebible.org/vie1934/ROM15.htm#V7"
+      },
+      "ko": {
+        "text": "이러므로 그리스도께서 우리를 받아 하나님께 영광을 돌리심과 같이 너희도 서로 받으라",
+        "url": "https://ebible.org/kor/ROM15.htm#V7"
+      },
+      "ar": {
+        "text": "لِذَلِكَ ٱقْبَلُوا بَعْضُكُمْ بَعْضًا كَمَا أَنَّ ٱلْمَسِيحَ أَيْضًا قَبِلَنَا، لِمَجْدِ ٱللهِ.",
+        "url": "https://ebible.org/arb-vd/ROM15.htm#V7"
+      }
+    },
+    "HEB.13.2": {
+      "en": {
+        "text": "Be not forgetful to entertain strangers: for thereby some have entertained angels unawares.",
+        "url": "https://ebible.org/eng-kjv2006/HEB13.htm#V2"
+      },
+      "es": {
+        "text": "No olvidéis la hospitalidad, porque por ésta algunos, sin saberlo, hospedaron ángeles.",
+        "url": "https://ebible.org/spaRV1909/HEB13.htm#V2"
+      },
+      "fr": {
+        "text": "N’oubliez pas l’hospitalité; car, en l’exerçant, quelques-uns ont logé des anges, sans le savoir.",
+        "url": "https://ebible.org/fraLSG/HEB13.htm#V2"
+      },
+      "de": {
+        "text": "Gastfrei zu sein vergesset nicht; denn dadurch haben etliche ohne ihr Wissen Engel beherbergt.",
+        "url": "https://ebible.org/deu1912/HEB13.htm#V2"
+      },
+      "ru": {
+        "text": "Страннолюбия не забывайте; ибо чрез него некоторые, не зная, оказали гостеприимство Ангелам.",
+        "url": "https://ebible.org/russyn/HEB13.htm#V2"
+      },
+      "vi": {
+        "text": "Chớ quên sự tiếp khách; có khi kẻ làm điều đó, đã tiếp đãi thiên sứ mà không biết.",
+        "url": "https://ebible.org/vie1934/HEB13.htm#V2"
+      },
+      "ko": {
+        "text": "손님 대접하기를 잊지 말라 이로써 부지중에 천사들을 대접한 이들이 있었느니라",
+        "url": "https://ebible.org/kor/HEB13.htm#V2"
+      },
+      "ar": {
+        "text": "لَا تَنْسُوا إِضَافَةَ ٱلْغُرَبَاءِ، لِأَنْ بِهَا أَضَافَ أُنَاسٌ مَلَائِكَةً وَهُمْ لَا يَدْرُونَ.",
+        "url": "https://ebible.org/arb-vd/HEB13.htm#V2"
+      }
+    }
+  }
+}

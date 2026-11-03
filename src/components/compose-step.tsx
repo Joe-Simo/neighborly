@@ -4,7 +4,9 @@ import { extractFacts } from "@/lib/checks";
 import type { GlossaryEntry } from "@/lib/glossary";
 import { languageByCode } from "@/lib/languages";
 import { SAMPLES, toBlocks } from "@/lib/samples";
-import { Step } from "./ui";
+import { englishLabel, referencesIn, SCRIPTURE_SOURCES } from "@/lib/scripture";
+import { quotesScripture } from "@/lib/scripture-ref";
+import { Notice, Step } from "./ui";
 
 type Props = {
   sampleId: string | null;
@@ -17,12 +19,16 @@ type Props = {
   onGlossary: (g: GlossaryEntry[]) => void;
 };
 
-const KIND_LABEL: Record<string, string> = { time: "Time", date: "Date", money: "Money", phone: "Phone", email: "Email", url: "Link", address: "Address", number: "Number" };
+const KIND_LABEL: Record<string, string> = { verse: "Bible verse", time: "Time", date: "Date", money: "Money", phone: "Phone", email: "Email", url: "Link", address: "Address", number: "Number" };
 
 export function ComposeStep({ sampleId, title, body, glossary, selected, onSample, onText, onGlossary }: Props) {
   const blocks = useMemo(() => toBlocks(title, body), [title, body]);
   const facts = useMemo(() => blocks.flatMap((b) => extractFacts(b)), [blocks]);
   const chars = blocks.join("").length;
+  const refs = useMemo(() => referencesIn(blocks), [blocks]);
+  const quoted = blocks.some(quotesScripture);
+  const withText = selected.filter((c) => SCRIPTURE_SOURCES[c]).map((c) => languageByCode(c)?.name ?? c);
+  const withoutText = selected.filter((c) => !SCRIPTURE_SOURCES[c]).map((c) => languageByCode(c)?.name ?? c);
   const [open, setOpen] = useState(false);
 
   return (
@@ -49,7 +55,7 @@ export function ComposeStep({ sampleId, title, body, glossary, selected, onSampl
         </div>
       </fieldset>
 
-      <div className="mt-5 grid gap-4">
+      <div className="mt-5 grid grid-cols-1 gap-4">
         <div>
           <label htmlFor="title" className="mb-1.5 block text-sm font-semibold">
             Title
@@ -82,6 +88,24 @@ export function ComposeStep({ sampleId, title, body, glossary, selected, onSampl
           <p className="mt-1 text-sm text-mute">No times, dates, numbers or addresses found.</p>
         )}
       </div>
+
+      {refs.length ? (
+        <div className="mt-4 rounded-2xl border border-line bg-white p-4" aria-live="polite">
+          <h3 className="text-sm font-semibold">Scripture</h3>
+          <p className="mt-1 text-sm text-mute">
+            This announcement cites {refs.map(englishLabel).join(", ")}. The AI translates only the reference. Neighborly adds the verse text itself from a public-domain Bible
+            {withText.length ? ` (available for English and ${withText.join(", ")})` : " (available for English)"}
+            {withoutText.length ? `. ${withoutText.join(", ")} will show the reference with a note instead` : ""}.
+          </p>
+          {quoted ? (
+            <div className="mt-3">
+              <Notice tone="bad" role="alert">
+                A paragraph seems to quote the verse. Remove the quote and keep only the reference, so the AI never translates or rewrites scripture. Translation stays off until then.
+              </Notice>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <details className="mt-5 rounded-2xl border border-line" open={open} onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}>
         <summary className="cursor-pointer rounded-2xl px-4 py-3 font-semibold">

@@ -1,14 +1,17 @@
 "use client";
 import { useState } from "react";
 import type { Gate } from "@/lib/approval";
-import { Notice, Step } from "./ui";
+import type { PublishedLanguage } from "@/lib/publish";
+import { attribution } from "@/lib/scripture";
+import { Step } from "./ui";
 
-type Props = { gate: Gate; blockedReason: string | null; snippet: string | null; email: string | null; preview: { code: string; dir: string; native: string; blocks: string[] }[] };
+type Props = { gate: Gate; blockedReason: string | null; snippet: string | null; email: string | null; preview: PublishedLanguage[] };
+type Tab = "preview" | "flyer" | "web" | "email";
 
 const STATE_TEXT = { pending: "waiting for approval", stale: "edited after approval", "needs-flag-check": "flags not confirmed" } as const;
 
 export function PublishStep({ gate, blockedReason, snippet, email, preview }: Props) {
-  const [tab, setTab] = useState<"preview" | "web" | "email">("preview");
+  const [tab, setTab] = useState<Tab>("preview");
   const [copied, setCopied] = useState<string | null>(null);
   const ready = gate.ready && !blockedReason && snippet && email;
 
@@ -67,10 +70,12 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
         </div>
       ) : (
         <div className="rise">
-          <div role="tablist" aria-label="Export format" className="inline-flex rounded-full border border-line bg-paper p-1">
+          <div role="tablist" aria-label="Export format" className="-mx-1 flex max-w-full overflow-x-auto px-1 pb-1">
+            <div className="inline-flex shrink-0 rounded-full border border-line bg-paper p-1">
             {(
               [
                 ["preview", "Preview"],
+                ["flyer", "Printable flyers"],
                 ["web", "Web snippet"],
                 ["email", "Email text"],
               ] as const
@@ -81,12 +86,13 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
                 id={`tab-${k}`}
                 aria-selected={tab === k}
                 aria-controls={`panel-${k}`}
-                className={`rounded-full px-4 py-2 text-sm font-semibold ${tab === k ? "bg-white text-ink shadow-sm" : "text-mute"}`}
+                className={`min-h-10 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap ${tab === k ? "bg-white text-ink shadow-sm" : "text-mute hover:text-ink"}`}
                 onClick={() => setTab(k)}
               >
                 {label}
               </button>
             ))}
+            </div>
           </div>
           <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} className="mt-4">
             {tab === "preview" ? (
@@ -94,14 +100,49 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
                 {preview.map((p) => (
                   <section key={p.code} lang={p.code} dir={p.dir} className="rounded-2xl border border-line bg-white p-5">
                     <p className="text-xs font-semibold uppercase tracking-wide text-mute">{p.native}</p>
-                    <h3 className="font-display mt-1 text-xl font-semibold">{p.blocks[0]}</h3>
-                    {p.blocks.slice(1).map((b, i) => (
-                      <p key={i} className={`mt-2 leading-relaxed ${i === p.blocks.length - 2 ? "text-sm text-mute" : ""}`}>
+                    <h3 className="font-display mt-1 text-xl font-semibold">{p.title}</h3>
+                    {p.paragraphs.map((b, i) => (
+                      <p key={i} className="mt-2 leading-relaxed">
                         {b}
                       </p>
                     ))}
+                    {p.verses.map((v, i) => (
+                      <blockquote key={i} className="mt-3 border-s-4 border-gold ps-3">
+                        <p className="font-display leading-relaxed">&ldquo;{v.text}&rdquo;</p>
+                        <p className="mt-1 text-xs text-mute" dir="auto">{attribution(v)}</p>
+                      </blockquote>
+                    ))}
+                    {p.disclosure ? <p className="mt-3 text-sm text-mute">{p.disclosure}</p> : null}
                   </section>
                 ))}
+              </div>
+            ) : tab === "flyer" ? (
+              <div>
+                <p className="max-w-2xl text-sm text-mute">
+                  One letter-size page per language, with the approved text, any verse from a public-domain Bible, and the translated AI disclosure line. Each opens in a new tab ready to print or save as PDF.
+                </p>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {preview.map((p) => (
+                    <li key={p.code}>
+                      <a
+                        href={`/flyer?lang=${encodeURIComponent(p.code)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex min-h-14 items-center justify-between gap-3 rounded-2xl border border-line bg-white px-4 py-3 font-semibold hover:border-accent"
+                      >
+                        <span>
+                          {p.name}{" "}
+                          <span lang={p.code} className="font-normal text-mute">
+                            {p.code === "en" ? "" : p.native}
+                          </span>
+                        </span>
+                        <span className="text-sm text-accent-ink">
+                          Open flyer<span className="sr-only"> for {p.name} (opens in a new tab)</span>
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ) : (
               <>
@@ -125,9 +166,6 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
                 </div>
               </>
             )}
-          </div>
-          <div className="mt-4">
-            <Notice>A printable flyer and scripture passages from published Bible translations are planned next.</Notice>
           </div>
         </div>
       )}
