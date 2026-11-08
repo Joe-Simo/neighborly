@@ -46,7 +46,7 @@ Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, zod, Vitest. Open
 
 ## Demo video link
 
-https://vimeo.com/1242902319
+https://vimeo.com/1244881382
 
 ## Live demo link
 
