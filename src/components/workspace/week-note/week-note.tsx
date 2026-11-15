@@ -7,6 +7,8 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { api } from "../../../../convex/_generated/api";
 import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspace } from "@/components/workspace/context";
+import { CountUp } from "@/components/workspace/primitives";
+import { WeekFigures } from "@/components/workspace/volunteer/week-figures";
 import { formatDate, type Words } from "@/lib/words";
 
 type Counts = FunctionReturnType<typeof api.drafts.weekNote>;
@@ -53,8 +55,8 @@ export function mondayOf(now: number, timeZone: string) {
   return now - ((["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(name) + 7) % 7) * day;
 }
 
-/** At most four lines, the most pressing first, each with the room where it is dealt with. */
-export function weekLines(text: Words["monday"], counts: Counts): Line[] {
+/** At most four lines unless told otherwise, the most pressing first, each with the room where it is dealt with. */
+export function weekLines(text: Words["monday"], counts: Counts, most = 4): Line[] {
   const calls: Line["parts"] = [
     { text: text.calls(counts.callsWaiting) },
     ...(counts.callsFirstByAssistant ? [{ text: text.firstByAssistant(counts.callsFirstByAssistant), assistant: true as const }] : []),
@@ -69,7 +71,7 @@ export function weekLines(text: Words["monday"], counts: Counts): Line[] {
     { count: counts.openPlaces, area: "commitments", parts: [{ text: text.places(counts.openPlaces) }], brief: text.brief.places(counts.openPlaces) },
     { count: counts.away, area: "time-off", parts: [{ text: text.away(counts.away) }], brief: text.brief.away(counts.away) },
   ];
-  return all.filter((line) => line.count > 0).slice(0, 4).map(({ area, parts, brief }) => ({ area, parts, brief }));
+  return all.filter((line) => line.count > 0).slice(0, most).map(({ area, parts, brief }) => ({ area, parts, brief }));
 }
 
 /**
@@ -96,7 +98,9 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
       return;
     }
   }, [counts]);
-  if (away || allowed === false) return null;
+  if (allowed === false) return null;
+  // Read and put away: the three figures stay, on their own, until next Monday's note.
+  if (away) return <WeekFigures />;
   // Counts on their way: for those who lead, the note's place is kept in paper at the size it last had,
   // so nothing below it moves when it arrives. No remembered number is shown, only its shape.
   if (!counts) return isOwner || data.canCoordinate ? <WeekNoteView counts={remembered(last)} monday={monday} brief={brief} waiting onDone={() => {}} /> : null;
@@ -135,20 +139,31 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
   };
   const text = words.monday;
   const lines = weekLines(text, counts);
-  if (!lines.length) return null;
-  const hold = waiting ? held : "";
+  if (!lines.length) return waiting ? null : <WeekFigures />;
   if (brief && !open) {
     return (
-      <p className={`mb-7 flex flex-wrap items-baseline gap-x-3 text-[17px] leading-snug text-[var(--live-ink)] ${waiting ? held : "paper-rise"}`} aria-hidden={waiting || undefined} inert={waiting}>
-        <span>
-          <strong className="font-[650]">{text.brief.label}:</strong> {lines.slice(0, 3).map((line) => line.brief).join(", ")}.
-        </span>
-        <button type="button" className={quietLink} onClick={() => setOpen(true)}>
-          {text.read}
-        </button>
-      </p>
+      <>
+        <p className={`!mb-8 flex flex-wrap items-baseline gap-x-3 gap-y-2 text-[17px] leading-snug text-[var(--live-ink)] ${waiting ? held : "paper-rise"}`} aria-hidden={waiting || undefined} inert={waiting}>
+          <span>
+            <strong className="font-[650]">{text.brief.label}:</strong> {lines.slice(0, 3).map((line) => line.brief).join(", ")}.
+          </span>
+          <button type="button" className={quietLink} onClick={() => setOpen(true)}>
+            {text.read}
+          </button>
+        </p>
+        {!waiting && <WeekFigures />}
+      </>
     );
   }
+  // The sheet leads with the three figures, each a way into its room. Under them it says only what a
+  // figure cannot: who put a call first and how long the oldest has waited, then what else is waiting.
+  const figures = [
+    { area: "help-line", label: words.week.figures.calls, value: counts.callsWaiting },
+    { area: "visits", label: words.week.figures.visits, value: counts.visitsPlanned },
+    { area: "neighbors", label: words.week.figures.requests, value: counts.requestsOpen },
+  ] as const;
+  const callDetail = lines.find((line) => line.area === "help-line")?.parts.slice(1) ?? [];
+  const also = weekLines(text, counts, 6).filter((line) => !figures.some((figure) => figure.area === line.area));
   return (
     <div className={`grid transition-[grid-template-rows,opacity,translate] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] ${leaving ? "-translate-y-2 grid-rows-[0fr] overflow-hidden opacity-0" : "grid-rows-[1fr]"}`} aria-hidden={waiting || undefined} inert={waiting}>
       <div className="min-h-0">
@@ -156,31 +171,47 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
           <p className={`help-sheet-label !text-[var(--live-muted)] ${waiting ? "invisible" : ""}`}>
             {formatDate(words.locale, monday, { timeZone: data.church.timeZone, weekday: "long", month: "long", day: "numeric" })}
           </p>
-          <h2 id={waiting ? undefined : "week-note"} className={hold}>
+          <h2 id={waiting ? undefined : "week-note"} className={waiting ? held : undefined}>
             <span>{text.title}</span>
           </h2>
-          {/* From 761px each line keeps a 60-character measure and its room sits in one steady column on the right. */}
-          <ul className={`mt-5 mb-5 grid list-none gap-3 p-0 text-[19px] leading-snug text-[var(--live-ink)] min-[761px]:gap-0 ${waiting ? "" : "paper-rows"}`}>
-            {lines.map((line) => (
-              <li key={line.area} className={`flex flex-wrap items-baseline gap-x-4 min-[761px]:grid min-[761px]:grid-cols-[minmax(0,60ch)_auto] min-[761px]:justify-between min-[761px]:gap-x-10 min-[761px]:border-t min-[761px]:border-[#e6e2d2] min-[761px]:py-3.5 min-[761px]:first:border-t-0 min-[761px]:first:pt-0 ${waiting ? `${held} min-[761px]:before:top-[calc(0.875rem+0.3em)] min-[761px]:first:before:top-[0.3em]` : ""}`}>
+          <div className={`week-figures !mt-6 !mb-0 !border-y-0 gap-y-4 ${waiting ? "" : "paper-rows"}`}>
+            {figures.map(({ area, label, value }) => (
+              <Link key={area} href={`/app/${area}`} className={`!py-0 ${waiting ? held : ""}`}>
+                <CountUp value={value} />
+                <span>{label}</span>
+              </Link>
+            ))}
+            {callDetail.length > 0 && (
+              <p className={`col-span-3 !m-0 !max-w-[34ch] text-[17px] leading-snug !text-[var(--live-ink)] min-[600px]:!max-w-none ${waiting ? held : ""}`}>
                 <span>
-                  {line.parts.map((part, index) => (
+                  {callDetail.map((part, index) => (
                     <span key={part.text} className={part.assistant ? "text-[var(--help-plum)]" : undefined}>
                       {index > 0 && " "}
                       {part.text}
                     </span>
                   ))}
                 </span>
-                <Link href={`/app/${line.area}`} className={`${quietLink} min-[761px]:!min-h-0`}>
-                  {words.menu[line.area]}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <p className={`!max-w-none text-[15px] ${waiting ? "invisible" : ""}`}>{text.origin}</p>
-          <button type="button" className={`${quietLink} !text-[15px] ${waiting ? "invisible" : ""}`} onClick={putAway}>
-            {text.done}
-          </button>
+              </p>
+            )}
+          </div>
+          {also.length > 0 && (
+            <ul className={`mt-7 mb-0 grid list-none gap-x-10 gap-y-3 border-t border-[#e6e2d2] p-0 pt-5 text-[17px] leading-snug text-[var(--live-ink)] min-[761px]:grid-cols-3 ${waiting ? "" : "paper-rows"}`}>
+              {also.map((line) => (
+                <li key={line.area} className={`flex flex-wrap items-baseline gap-x-3 min-[761px]:block ${waiting ? held : ""}`}>
+                  <span>{line.parts.map((part) => part.text).join(" ")}</span>
+                  <Link href={`/app/${line.area}`} className={`${quietLink} min-[761px]:!min-h-0 min-[761px]:mt-1.5 min-[761px]:!flex`}>
+                    {words.menu[line.area]}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className={`mt-6 flex flex-wrap items-baseline justify-between gap-x-6 ${waiting ? "invisible" : ""}`}>
+            <p className="!m-0 !max-w-none text-[15px]">{text.origin}</p>
+            <button type="button" className={`${quietLink} !text-[15px] min-[761px]:!min-h-0`} onClick={putAway}>
+              {text.done}
+            </button>
+          </div>
         </section>
       </div>
     </div>
