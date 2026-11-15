@@ -71,6 +71,7 @@ export function DateField({
   const [own, setOwn] = useState(defaultValue);
   const [typed, setTyped] = useState<string>();
   const [label, setLabel] = useState("");
+  const [beside, setBeside] = useState(false);
   const chosen = value ?? own;
   const allowed = (day: string) => (!min || day >= min) && (!max || day <= max);
   const choose = (day: string) => {
@@ -124,16 +125,28 @@ export function DateField({
             ref={(input) => setLabel(input?.labels?.[0]?.querySelector("span")?.textContent ?? "")}
             onClick={() => sheet && setOpen(true)}
             onKeyDown={(event) => {
+              const opener = event.currentTarget.nextElementSibling;
               if (event.key === "ArrowDown" || (sheet && (event.key === "Enter" || event.key === " "))) {
                 event.preventDefault();
-                setOpen(true);
+                if (sheet) setOpen(true);
+                else if (opener instanceof HTMLElement) opener.click();
               } else if (event.key === "Enter") {
                 event.preventDefault();
                 keep();
               }
             }}
           />
-          <button type="button" className="live-date-open" disabled={disabled} tabIndex={sheet ? -1 : 0} aria-label={words.dateField.choose} onClick={() => setOpen(!open)}>
+          <button type="button" className="live-date-open" disabled={disabled} tabIndex={sheet ? -1 : 0} aria-label={words.dateField.choose} onClick={(event) => {
+            // The month opens below. A field low on the screen is brought up first; where the page ends
+            // and there is still no room, the month opens beside the field, so it never covers what is being read above.
+            const field = event.currentTarget.parentElement;
+            const room = () => (field ? innerHeight - field.getBoundingClientRect().bottom : 0);
+            if (!open && !sheet && field) {
+              if (room() < 380) field.scrollIntoView({ block: "center" });
+              setBeside(room() < 380);
+            }
+            setOpen(!open);
+          }}>
             <ChevronDown aria-hidden="true" />
           </button>
           {/* What the form reads and checks. A form's reset empties it, and the field with it. */}
@@ -155,7 +168,7 @@ export function DateField({
           />
         </span>
       </PopoverAnchor>
-      <PopoverContent className="live-date-sheet" collisionPadding={12}>
+      <PopoverContent className="live-date-sheet" collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
         {month}
       </PopoverContent>
       <Dialog open={open && sheet} onOpenChange={setOpen}>
