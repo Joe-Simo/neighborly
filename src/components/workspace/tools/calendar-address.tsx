@@ -103,7 +103,8 @@ export function CalendarAddress() {
     );
   return (
     <CalendarAddressView
-      address={address}
+      // The site passes /calendar/ through to the feed, so the address a person sees and keeps is the site's own.
+      address={address && `${window.location.origin}${new URL(address).pathname}`}
       busy={busy}
       error={error}
       onCreate={() => {
