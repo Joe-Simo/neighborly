@@ -1,7 +1,7 @@
 "use client";
 
 import "./reports.css";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,11 @@ import {
 const share = (part: number, of: number): CSSProperties =>
   ({ "--share": `${of > 0 ? Math.max(0, Math.round((part / of) * 1000) / 10) : 0}%` }) as CSSProperties;
 
+const watchMotion = (changed: () => void) => {
+  const motion = matchMedia("(prefers-reduced-motion: reduce)");
+  motion.addEventListener("change", changed);
+  return () => motion.removeEventListener("change", changed);
+};
 /**
  * One of the year's figures. On arrival they count up once, 60ms apart; a change of year rolls on from there.
  * `step` is the smallest amount shown on the way (100 for money, which is kept in cents). Still under Reduce Motion.
@@ -43,7 +48,10 @@ function Figure({
   step?: number;
   format?: (amount: number) => string;
 }) {
-  const [arrived, setArrived] = useState(() => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  // Read after hydration, so the server and the first client render agree; under Reduce Motion the figure is simply there.
+  const still = useSyncExternalStore(watchMotion, () => matchMedia("(prefers-reduced-motion: reduce)").matches, () => false);
+  const [counted, setArrived] = useState(false);
+  const arrived = still || counted;
   useEffect(() => {
     // The same wave as the bars: after the frame's own arrival, if it is still sweeping in.
     const frame = document.querySelector(".live-app");

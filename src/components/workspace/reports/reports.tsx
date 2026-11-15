@@ -10,7 +10,7 @@ import { readFailure, stateWords } from "@/components/workspace/failure";
 import { HelpRoom } from "@/components/workspace/help-line/room";
 import { LiveFailure, LiveState } from "@/components/workspace/states";
 import { csvFileName, reportCsv } from "@/components/workspace/reports/lines";
-import { YearCheck, type YearCheckResult } from "@/components/workspace/reports/year-check";
+import { YearCheck, YearChecking, type YearCheckResult } from "@/components/workspace/reports/year-check";
 import {
   ReportLoading,
   QuarterSwitch,
@@ -138,7 +138,9 @@ function Report() {
         </div>
       }
       sheet={
-        found?.failed ? (
+        checking && !quarter ? (
+          <YearChecking requests={shown.requests.received} visits={shown.visits} />
+        ) : found?.failed ? (
           <LiveFailure message={found.failed} kept="The report itself is not affected. You can still print or save the year." />
         ) : (
           found?.result &&

@@ -1,3 +1,4 @@
+import { measured as m } from "../jev-set";
 import type { Words } from "./en";
 import type { Terms, WordSet } from "./sets";
 
@@ -396,7 +397,8 @@ export function ht(set: WordSet): Words {
         limit: "Limit li yo",
         limitDetail: (checks) => `${checks.toLocaleString("en-US")} verifikasyon pa mwa pou chak ${t.group}, ak senk pa minit pou chak moun. Apre sa, oswa lè nou pa ka jwenn asistan an, ekran yo travay ak règ fiks epi yo di sa.`,
         measured: "Kijan nou te mezire l",
-        measuredDetail: "Sou douz nòt apèl envante, ki te apa de sa nou te sèvi pou ajiste l yo, li ranpli 42 nan 48 chan kòrèkteman, li kite 6 vid pou yon moun, e li pa t fè okenn erè (15 novanm 2026). Nan yon tès anvan li te fè yon erè; nou korije règ ki te lakòz li a, kidonk douz nòt sa yo deja enfliyanse yon règ. Douz nòt se yon ti tès, e nòt an panyòl ak an kreyòl se yon ti pati ladan l.",
+        measuredDetail: (date) =>
+          `Sou ${m.notes} nòt apèl envante, ki te apa de sa nou te sèvi pou ajiste l yo, li ranpli ${m.right} nan ${m.right + m.blank + m.wrong} chan kòrèkteman, li kite ${m.blank} vid pou yon moun, e li fè ${m.wrong} erè (mezire ${date}). Nan yon tès anvan li te fè yon erè; nou korije règ ki te lakòz li a, kidonk nòt sa yo deja enfliyanse yon règ. Se yon ti tès, e nòt an panyòl ak an kreyòl se yon ti pati ladan l.`,
       },
       made: { checked: "Asistan an ranpli sa apati nòt apèl la epi li konpare l ak nòt la.", review: "Sa ranpli apati nòt apèl la ak règ fiks. Asistan an pa t ka verifye l, kidonk konpare chak detay ak nòt la." },
       unsaved: "Anyen pa anrejistre toutotan ou pa di sa.",

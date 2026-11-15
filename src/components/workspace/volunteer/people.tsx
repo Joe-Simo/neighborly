@@ -30,6 +30,8 @@ export function PeopleSection() {
   const managing = data.people.find((person) => person.id === managingId);
   return (
     <>
+      {/* The rows are titled h3, so the list carries the h2 a screen reader steps by. */}
+      <h2 className="sr-only">{words.menu.people}</h2>
       <div className="live-list">
         {data.people.map((person) => (
           <div className="live-row live-person-row people-row" key={person.id} data-away={person.active ? undefined : ""}>

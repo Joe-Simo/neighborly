@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { FunctionReturnType } from "convex/server";
 import { ChevronDown, Sparkles } from "lucide-react";
@@ -24,7 +24,29 @@ const english = {
   openShort: "Open",
   happened: { open: "received", approved: "approved", paid: "marked paid", declined: "declined", closed: "closed" },
   visit: "Home visit",
+  reading: "Reading the year",
+  readingWhat: "{requests}, {visits} and the ledger.",
+  /** Said when the assistant could not read the notes: nothing was read, so nothing is claimed about what they say. */
+  unread: "The assistant could not read the notes this time. The counting was done; the notes below are for you to read.",
+  notRead: "Not read by the assistant. Please read the note yourself.",
+  noteMaySayPaid: "The note may say this was paid, and no payment is recorded.",
+  visitMayBeDone: "The note may say this visit happened, and it is not marked done.",
 };
+
+/** The sheet while the year is being read: it lies where the verdict will, so nothing moves when the verdict arrives. */
+export function YearChecking({ requests, visits }: { requests: number; visits: number }) {
+  const sheet = useRef<HTMLElement>(null);
+  useEffect(() => {
+    sheet.current?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }, []);
+  return (
+    <section ref={sheet} className="help-sheet report-check paper-rest" aria-busy="true" role="status" data-reading="">
+      <p className="help-sheet-label">Before you send it</p>
+      <h2>{english.reading}<span className="report-reading" aria-hidden="true"><i /><i /><i /></span></h2>
+      <p>{english.readingWhat.replace("{requests}", english.requests(requests)).replace("{visits}", english.visits(visits))}</p>
+    </section>
+  );
+}
 
 /**
  * What the check before sending found, on the screen's one sheet. Lines the assistant read are in plum;
@@ -85,6 +107,14 @@ export function YearCheck({
 
   // Nothing found is the yes: once the sheet has been laid down, its corner turns green and presses flat.
   const clear = result.flags.length === 0;
+  // A note nobody read is not a finding: when the assistant could not read, the sheet says so and claims nothing about the note.
+  const unsure = result.verification === "review";
+  const fromNote = (kind: Flag["kind"]) => kind === "noteSaysPaid" || kind === "visitNotMarked";
+  const title = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    title.current?.focus({ preventScroll: true });
+    title.current?.closest("section")?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }, []);
   const [folded, setFolded] = useState(false);
   useEffect(() => {
     if (!clear) return;
@@ -99,7 +129,7 @@ export function YearCheck({
       data-clear={clear}
     >
       <p className="help-sheet-label">{text.title}</p>
-      <h2 id="year-check-title" tabIndex={-1}>
+      <h2 id="year-check-title" tabIndex={-1} ref={title}>
         {result.flags.length ? text.count(result.flags.length) : text.clear}
       </h2>
       <p>
@@ -108,15 +138,18 @@ export function YearCheck({
           .replace("{visits}", text.visits(checked.visits))
           .replace("{time}", formatDate(words.locale, checked.at, { hour: "numeric", minute: "2-digit", timeZone }))}
       </p>
+      {unsure && !clear && <p className="report-check-unsure">{text.unread}</p>}
       {groups.size > 0 && (
         <ul className="paper-rows">
           {[...groups].map(([key, flags]) => {
             const [{ kind, source }] = flags;
             const shown = flags.length === 1 || open.includes(key);
             return (
-              <li key={key} data-source={source}>
-                <p className="help-why">{text[kind]}</p>
-                {source === "assistant" ? (
+              <li key={key} data-source={unsure && fromNote(kind) ? "unread" : source}>
+                <p className="help-why">{unsure && kind === "noteSaysPaid" ? text.noteMaySayPaid : unsure && kind === "visitNotMarked" ? text.visitMayBeDone : text[kind]}</p>
+                {unsure && fromNote(kind) ? (
+                  <p>{text.notRead}</p>
+                ) : source === "assistant" ? (
                   <p className="help-assistant">
                     <Sparkles size={16} aria-hidden="true" />
                     {text.byAssistant}

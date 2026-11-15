@@ -228,11 +228,9 @@
 .visits-done .help-person { flex-shrink: 0; }
 .visits-done > span:not(.help-person) { flex: 1; }
 .visits-done > .help-person { flex: none; }
-.visits-done > button { flex-shrink: 0; }
 @media (max-width: 640px) {
   .visits-done { flex-wrap: wrap; }
   .visits-done > span:not(.help-person) { flex-basis: calc(100% - 80px); }
-  .visits-done > button { margin-left: auto; }
 }
 .help-row.visits-filed { animation: paper-settle 420ms var(--paper-ease) backwards, visits-filed 900ms ease-out 420ms backwards; }
 @media (prefers-reduced-motion: reduce) {

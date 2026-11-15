@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
-import { Check, CircleCheck, Printer } from "lucide-react";
+import { CircleCheck, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -112,7 +112,7 @@ function Visits() {
   return (
     <div className="visits-room">
       {done && (
-        <VisitsDone pair={fresh?.pair} onDone={() => setDone("")}>
+        <VisitsDone key={done} pair={fresh?.pair}>
           {done}
         </VisitsDone>
       )}
@@ -238,21 +238,28 @@ function Pair({
   );
 }
 
-/** The line after a step is taken, put away with Done. After a pair is asked, their initials come together beside the words. */
+/**
+ * The line after a step is taken. It is seen for six seconds, then leaves the page and
+ * stays as a message for screen readers. After a pair is asked, their initials come
+ * together beside the words.
+ */
 export function VisitsDone({
   pair,
-  onDone,
   children,
 }: {
   pair?: string[];
-  onDone: () => void;
   children: string;
 }) {
+  const [seen, setSeen] = useState(true);
   const line = useRef<HTMLDivElement>(null);
-  useEffect(() => line.current?.focus(), [children]);
+  useEffect(() => {
+    line.current?.focus();
+    const leave = setTimeout(() => setSeen(false), 6000);
+    return () => clearTimeout(leave);
+  }, []);
   return (
     <div
-      className="live-success help-done visits-done paper-rise"
+      className={seen ? "live-success help-done visits-done paper-rise" : "sr-only"}
       role="status"
       tabIndex={-1}
       ref={line}
@@ -263,9 +270,6 @@ export function VisitsDone({
         <CircleCheck size={22} aria-hidden="true" />
       )}
       <span>{children}</span>
-      <Button variant="outline" onClick={onDone}>
-        Done
-      </Button>
     </div>
   );
 }
@@ -370,7 +374,7 @@ export function VisitsView({
                       suggested.pair && onAsk(suggested, suggested.pair)
                     }
                   >
-                    <Check size={18} aria-hidden="true" /> Ask this pair
+                    Ask this pair
                   </Button>
                   <Button
                     variant="outline"

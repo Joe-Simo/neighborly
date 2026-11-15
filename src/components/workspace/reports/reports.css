@@ -535,6 +535,19 @@
 .report-check { margin: 32px 0 44px; }
 .report-check[data-clear="true"] .help-sheet-label { color: var(--live-accent); }
 .report-check p { font-size: 17px; }
+/* While the year is read: three marks that take ink one after another. Still under Reduce Motion. */
+.report-reading { display: inline-flex; gap: 7px; margin-left: 14px; vertical-align: middle; }
+.report-reading i { width: 7px; height: 7px; border-radius: 50%; background: var(--live-accent); opacity: 0.22; animation: report-reading 1200ms var(--paper-ease) infinite; }
+.report-reading i:nth-child(2) { animation-delay: 200ms; }
+.report-reading i:nth-child(3) { animation-delay: 400ms; }
+@keyframes report-reading { 0%, 60%, 100% { opacity: 0.22; } 30% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .report-reading i { animation: none; opacity: 0.6; } }
+.report-check[data-reading] > p:last-child { margin-bottom: 0; }
+/* The title takes focus so a screen reader says the verdict; it is not a control, so it draws no ring. */
+.report-check h2:focus { outline: none; }
+/* The honest line when the assistant could not read: plum, the attention colour, and never louder than the findings. */
+.report-check .report-check-unsure { padding: 14px 18px; border-left: 2px solid var(--help-plum); background: color-mix(in srgb, var(--help-plum) 7%, transparent); }
+.report-check li[data-source="unread"] { border-left: 2px dashed var(--help-plum); padding-left: 18px; }
 .report-check > p:not(.help-sheet-label) { margin-bottom: 22px; }
 /* The findings rise one by one, once the sheet has been laid down. */
 .report-check ul { --paper-wait: 240ms; }
