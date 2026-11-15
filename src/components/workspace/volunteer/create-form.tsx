@@ -6,6 +6,7 @@ import { LoaderCircle } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { DateField, WhenField } from "@/components/workspace/date-field";
+import { useWorkspace } from "@/components/workspace/context";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -26,6 +27,8 @@ export function LiveCreateForm({
   error: string;
   onSubmit: (command: LiveCommand) => Promise<void>;
 }) {
+  // The announcement is a member's screen, so it speaks their language; the leaders' forms stay English.
+  const form = useWorkspace().words.actions.announcementForm;
   const suggest = useAction(api.drafts.suggestTeam);
   const [draftDescription, setDraftDescription] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -187,7 +190,7 @@ export function LiveCreateForm({
         kind === "task" ||
         kind === "meeting" ||
         kind === "announcement") && (
-        <LiveField label="Title">
+        <LiveField label={kind === "announcement" ? form.title : "Title"}>
           <Input name="title" required maxLength={180} />
         </LiveField>
       )}
@@ -287,7 +290,7 @@ export function LiveCreateForm({
         </>
       )}
       {kind === "announcement" && (
-        <LiveField label="Message">
+        <LiveField label={form.message}>
           <Textarea name="body" required rows={5} maxLength={6000} />
         </LiveField>
       )}
@@ -301,10 +304,12 @@ export function LiveCreateForm({
           {pending ? (
             <>
               <LoaderCircle size={16} />
-              Saving…
+              {kind === "announcement" ? form.saving : "Saving…"}
             </>
           ) : kind === "invite" ? (
             "Create invitation"
+          ) : kind === "announcement" ? (
+            form.save
           ) : (
             "Save"
           )}
