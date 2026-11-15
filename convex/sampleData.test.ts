@@ -37,6 +37,13 @@ describe("sample conference", () => {
     expect(data.churches).toMatchObject([{ _id: churchId, sample: true }]);
     expect(data.memberships.filter((member) => member.role === "owner")).toHaveLength(1);
     expect(data.neighbors).toHaveLength(40);
+    // The overview reads at most 200 commitments, so the coming weeks must come first and the total stay under it.
+    expect(data.commitments.length).toBeLessThanOrEqual(200);
+    const finished = data.commitments.filter((shift) => shift.end < Date.now());
+    expect(finished.length).toBeGreaterThanOrEqual(150);
+    expect(finished.every((shift) => shift.assigneeId !== null)).toBe(true);
+    expect(data.commitments.findIndex((shift) => shift.end < Date.now())).toBeGreaterThan(0);
+    expect(data.teams.map((team) => team.name).sort()).toEqual(["Help line", "Home visitors", "Pantry"]);
     expect(data.calls.length).toBeGreaterThanOrEqual(60);
     for (const status of ["open", "approved", "declined", "paid", "closed"] as const)
       expect(data.assistanceRequests.some((request) => request.status === status), status).toBe(true);

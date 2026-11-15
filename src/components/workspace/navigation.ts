@@ -111,4 +111,16 @@ export const headings: Record<LiveArea, LiveHeading> = {
     room: "help",
     art: { src: "/assets/painted-world/meal.webp", position: "88% 70%", size: "auto 190%" },
   },
+  reports: {
+    title: "The year, added up.",
+    deck: "Counts for your council's yearly report, ready to print.",
+    room: "help",
+    art: { src: "/assets/painted-world/welcome.webp", position: "62% 40%", size: "auto 150%" },
+  },
+  visits: {
+    title: "Two by two.",
+    deck: "Home visits, the pair who are going, and what they found.",
+    room: "help",
+    art: { src: "/assets/painted-world/visit.webp", position: "60% 22%", size: "auto 170%" },
+  },
 };

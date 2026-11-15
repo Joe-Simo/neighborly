@@ -9,5 +9,7 @@ export const liveAreas = [
   "help-line",
   "neighbors",
   "treasury",
+  "reports",
+  "visits",
 ] as const;
 export type LiveArea = (typeof liveAreas)[number];

@@ -77,6 +77,20 @@ export const load = internalMutation({
       if (start < now) continue;
       await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start, end: start + 3 * 3600000, location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: week === 4 ? null : others[(week * 3 + slot) % others.length], coordinatorId: others[1], version: 1 });
     }
+    // A year of finished shifts, so hours by team have something to add up: the help line twice a week
+    // and the pantry on Saturdays. Kept under the 200 the overview reads, after the coming weeks above.
+    const pantry = await ctx.db.insert("teams", { churchId, name: "Pantry", description: "Sorts donations and packs food bags on Saturday mornings." });
+    const pantryCrew = others.slice(6, 11);
+    for (const [index, memberId] of pantryCrew.entries()) await ctx.db.insert("teamMembers", { churchId, teamId: pantry, memberId, teamRole: index === 0 ? "coordinator" : "member", approved: true, status: "active" });
+    const helpLineCrew = others.filter((_, index) => index % 2 === 1);
+    for (let week = 1; week <= 52; week++) {
+      for (const [slot, weekday] of [2, 4].entries()) {
+        const start = monday.minus({ weeks: week }).plus({ days: weekday - 1, hours: 9 }).toMillis();
+        await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start, end: start + 3 * 3600000, location: "Parish office", preparation: "", assigneeId: helpLineCrew[(week * 2 + slot) % helpLineCrew.length], coordinatorId: others[1], version: 1 });
+      }
+      const saturday = monday.minus({ weeks: week }).plus({ days: 5, hours: 10 }).toMillis();
+      await ctx.db.insert("commitments", { churchId, teamId: pantry, title: "Pantry morning", start: saturday, end: saturday + 2 * 3600000, location: "Parish hall", preparation: "", assigneeId: pantryCrew[week % pantryCrew.length], coordinatorId: pantryCrew[0], version: 1 });
+    }
     await ctx.db.insert("timeOff", { churchId, memberId: others[5], start: isoDay(now + 9 * DAY), end: isoDay(now + 16 * DAY), note: "Visiting family." });
     await ctx.db.insert("tasks", { churchId, title: "Restock the food pantry shelf", dueAt: now + 4 * DAY, assigneeId: others[4], complete: false });
     await ctx.db.insert("tasks", { churchId, title: "Send thank-you notes for the fall collection", dueAt: null, assigneeId: others[2], complete: true });

@@ -14,7 +14,11 @@ import type {
 } from "@/components/workspace/types";
 
 /** The one button a help room puts in the page head, such as "Log a call". */
-export type LiveHeadAction = { label: string; run: () => void };
+/**
+ * quiet draws it in the outline style. Set it while a sheet with its own filled button
+ * is on screen, so the screen never has two filled buttons.
+ */
+export type LiveHeadAction = { label: string; run: () => void; quiet?: boolean };
 
 export type Workspace = {
   area: LiveArea;

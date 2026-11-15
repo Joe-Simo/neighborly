@@ -142,8 +142,12 @@ describe("the year's counts for the sample conference", () => {
     const march = data.visits.filter((visit) => visit.status === "completed" && visit.scheduledAt >= Date.parse("2026-03-01T05:00:00Z") && visit.scheduledAt < Date.parse("2026-04-01T04:00:00Z"));
     expect(report.months[5].visits).toBe(march.length);
 
-    expect(report.time).toMatchObject({ activeMembers: 12, shiftHours: 0, hours: report.visitHours, teams: [] });
-    expect(report.time.membersServing).toBe(new Set(data.visits.filter((visit) => visit.status === "completed" && inYear(visit.scheduledAt)).flatMap((visit) => visit.visitors.map((visitor) => visitor.memberId))).size);
+    // The sample conference now has a year of finished help-line and pantry shifts.
+    expect(report.time).toMatchObject({ activeMembers: 12 });
+    expect(report.time.shiftHours).toBeGreaterThan(0);
+    expect(report.time.hours).toBeCloseTo(report.visitHours + report.time.shiftHours, 5);
+    expect(report.time.teams.map((team) => team.name).sort()).toEqual(["Help line", "Pantry"]);
+    expect(report.time.membersServing).toBeGreaterThanOrEqual(new Set(data.visits.filter((visit) => visit.status === "completed" && inYear(visit.scheduledAt)).flatMap((visit) => visit.visitors.map((visitor) => visitor.memberId))).size);
 
     // The same year written down as plain numbers, so a change to the arithmetic cannot pass unnoticed.
     expect({ households: report.households, people: report.people, visits: report.visits, helpPaid: report.helpPaid, hours: report.visitHours, miles: report.visitMiles, calls: report.calls.taken, requests: report.requests.received }).toMatchInlineSnapshot(`
