@@ -547,3 +547,9 @@
 @media print {
   .report .report-check, .report .report-error { display: none !important; }
 }
+
+/* Room for the longest small line ("21 vouchers given, worth $810 · 78 people") on one line, in every bar row alike. */
+@media screen and (min-width: 1100px) {
+  .report .help-bars li { grid-template-columns: 330px minmax(0, 1fr) 120px; }
+  .report .report-teams li { grid-template-columns: 330px minmax(0, 1fr) 150px; }
+}
