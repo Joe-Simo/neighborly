@@ -65,10 +65,12 @@ final class ShellViewController: CAPBridgeViewController {
         scripts.add(PrintRequests { [weak self] in self?.printPage() }, name: "kindHelpsPrint")
         // In the app a long press brings up no web callout, a tap leaves no
         // grey flash, and a button's words are not selected by accident.
+        // Giving stays on the web: the App Store does not allow it in an
+        // app, so the link to give is not shown here on any page.
         scripts.addUserScript(WKUserScript(
             source: """
             const appFeel = document.createElement("style");
-            appFeel.textContent = "*{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}a,button,summary,label,nav,[role=button],[role=tab],[role=menuitem]{-webkit-user-select:none;user-select:none}";
+            appFeel.textContent = "*{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}a,button,summary,label,nav,[role=button],[role=tab],[role=menuitem]{-webkit-user-select:none;user-select:none}a[href*='github.com/sponsors']{display:none!important}";
             document.documentElement.appendChild(appFeel);
             """,
             injectionTime: .atDocumentEnd,
