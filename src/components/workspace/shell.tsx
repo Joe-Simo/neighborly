@@ -15,6 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import type { LiveArea } from "@/components/workspace/areas";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
   WorkspaceProvider,
   type LiveHeadAction,
@@ -327,23 +328,18 @@ export function LiveWorkspace({
               {pagination}
             </main>
           </div>
-          <Dialog
+          <LiveDialog
             open={dialog !== null}
-            onOpenChange={(value) => {
-              if (!value && !pending) setDialog(null);
+            onClose={() => {
+              if (!pending) setDialog(null);
             }}
-          >
-            <DialogContent className="live-dialog">
-              <DialogHeader>
-                <DialogTitle>{dialog && (actions[dialog] ?? actionTitles[dialog])}</DialogTitle>
-                <DialogDescription>
-                  {dialog === "invite"
+            title={dialog && (actions[dialog] ?? actionTitles[dialog])}
+            description={<>{dialog === "invite"
                     ? "They’ll choose to join your private group workspace."
                     : dialog === "commitment" || dialog === "meeting"
                       ? `Times are in ${data.church.timeZone}.`
-                      : "Make the next step clear for your team."}
-                </DialogDescription>
-              </DialogHeader>
+                      : "Make the next step clear for your team."}</>}
+          >
               {dialog === "timeOff" ? (
                 <LiveTimeOffForm
                   data={data}
@@ -367,8 +363,7 @@ export function LiveWorkspace({
                   />
                 )
               )}
-            </DialogContent>
-          </Dialog>
+          </LiveDialog>
           <PaperSurface
             title={selected?.title ?? words.detail.fallbackTitle}
             variant="workspace"
@@ -393,20 +388,15 @@ export function LiveWorkspace({
           onClose={() => setSelectedCommitment(null)}
         />
         </PaperSurface>
-        <Dialog
+        <LiveDialog
           open={editingCommitment !== null}
-          onOpenChange={(open) => {
-            if (!open && !pending) setEditingCommitment(null);
+          onClose={() => {
+            if (!pending) setEditingCommitment(null);
           }}
+          title={<>Edit commitment</>}
+          description={<>Times use {data.church.timeZone}. You’ll review the changes before
+                saving.</>}
         >
-          <DialogContent className="live-dialog">
-            <DialogHeader>
-              <DialogTitle>Edit commitment</DialogTitle>
-              <DialogDescription>
-                Times use {data.church.timeZone}. You’ll review the changes before
-                saving.
-              </DialogDescription>
-            </DialogHeader>
             {editingCommitment && (
               <LiveCommitmentEditor
                 key={editingCommitment.id + ":" + editingCommitment.version}
@@ -425,19 +415,15 @@ export function LiveWorkspace({
                 }}
               />
             )}
-          </DialogContent>
-        </Dialog>
-        <Dialog
+        </LiveDialog>
+        <LiveDialog
           open={confirmation !== null}
-          onOpenChange={(value) => {
-            if (!value && !pending) setConfirmation(null);
+          onClose={() => {
+            if (!pending) setConfirmation(null);
           }}
+          title={confirmation?.title}
+          description={confirmation?.body}
         >
-          <DialogContent className="live-dialog">
-            <DialogHeader>
-              <DialogTitle>{confirmation?.title}</DialogTitle>
-              <DialogDescription>{confirmation?.body}</DialogDescription>
-            </DialogHeader>
             {error && (
               <div className="live-error" role="alert">
                 {error}
@@ -464,22 +450,16 @@ export function LiveWorkspace({
                 Confirm
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-        <Dialog
+        </LiveDialog>
+        <LiveDialog
           open={!!release}
-          onOpenChange={(value) => {
-            if (!value && !pending) setRelease(null);
+          onClose={() => {
+            if (!pending) setRelease(null);
           }}
+          title={words.detail.changeTitle}
+          description={<>{release &&
+                  `${release.title} · ${when(release.start, release.end)}`}</>}
         >
-          <DialogContent className="live-dialog">
-            <DialogHeader>
-              <DialogTitle>{words.detail.changeTitle}</DialogTitle>
-              <DialogDescription>
-                {release &&
-                  `${release.title} · ${when(release.start, release.end)}`}
-              </DialogDescription>
-            </DialogHeader>
             <p>
               This releases this date only. Your other commitments and your place
               on the team stay the same. The date will need cover.
@@ -517,8 +497,7 @@ export function LiveWorkspace({
                 Confirm change
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+        </LiveDialog>
       </div>
     </WorkspaceProvider>
   );
