@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, TextureLoader, Vector2, Vector4, WebGLRenderer, type Texture } from "three";
+import { ImageBitmapLoader, LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Texture, Vector2, Vector4, WebGLRenderer } from "three";
 
 const vertex = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`;
 
@@ -56,25 +56,41 @@ vec3 relight(vec3 col, vec3 n, vec2 t, float d){
   return mix(col, night, uDusk);
 }
 
-// A person stands on their own card at one distance, lifted from the painting, and breathes around their feet.
-vec4 figureAt(sampler2D pose, vec2 b, vec2 pivot, float nearness, vec2 feet, float side, float pace){
-  vec2 t = texAt(b, pivot, nearness);
-  float turn = sin(uTime * pace) * .007;
-  vec2 arm = (t - feet) * vec2(IMAGE, 1.);
-  t = feet + vec2(arm.x * cos(turn) - arm.y * sin(turn), arm.x * sin(turn) + arm.y * cos(turn)) / vec2(IMAGE, 1.);
+// One painting of a person, cut to their half of the courtyard.
+vec4 poseAt(sampler2D pose, vec2 t, float side){
   vec4 figure = texture2D(pose, t);
   figure.a *= step(0., (t.x - .7) * side) * step(0., t.y) * step(t.y, 1.);
-  if (figure.a > .004) figure.rgb = relight(figure.rgb, normalize(vec3(0., 0., 1.) + reliefAt(pose, t)), t, nearness);
-  return figure;
+  return vec4(figure.rgb * figure.a, figure.a);
 }
 
-// Each person was painted three times: at rest, noticing you, and answering. One whole painting dissolves into the next, so nothing slides or tears.
-vec3 person(vec3 col, vec2 b, vec2 pivot, float nearness, vec2 feet, float side, float pace, float noticing, float answering){
-  vec4 rest = figureAt(uFigures, b, pivot, nearness, feet, side, pace);
-  vec3 seen = mix(col, rest.rgb, rest.a);
-  if (noticing > .002) { vec4 pose = figureAt(uIdle, b, pivot, nearness, feet, side, pace); seen = mix(seen, mix(col, pose.rgb, pose.a), noticing); }
-  if (answering > .002) { vec4 pose = figureAt(uAnswer, b, pivot, nearness, feet, side, pace); seen = mix(seen, mix(col, pose.rgb, pose.a), answering); }
-  return seen;
+// The raised hand truly waves: the forearm swings about the elbow while the rest of the painting holds still.
+vec2 waveAt(vec2 t){
+  const vec2 ELBOW = vec2(.8292, .5254);
+  float hold = 1. - smoothstep(.7, 1.15, length((t - vec2(.8281, .5062)) / PX / vec2(12., 21.)));
+  float swing = sin(uTime * 10.) * .2 * hold;
+  vec2 arm = (t - ELBOW) / PX;
+  return ELBOW + vec2(arm.x * cos(swing) - arm.y * sin(swing), arm.x * sin(swing) + arm.y * cos(swing)) * PX;
+}
+
+// A person stands on their own card at one distance, lifted from the painting, and breathes around their feet.
+// Each was painted three times: at rest, noticing you, and answering. One whole painting dissolves into the next, and the result is lit once.
+vec3 person(vec3 col, vec2 b, vec2 pivot){
+  float side = texAt(b, pivot, .19).x < .7 ? -1. : 1.;
+  bool woman = side < 0.;
+  float nearness = woman ? .225 : .158;
+  vec2 feet = woman ? vec2(.472, .572) : vec2(.852, .623);
+  float noticing = woman ? uLook : uTurn;
+  float answering = woman ? uWelcome : uResponse;
+  vec2 t = texAt(b, pivot, nearness);
+  float turn = sin(uTime * (woman ? .55 : .43)) * .007;
+  vec2 arm = (t - feet) * vec2(IMAGE, 1.);
+  t = feet + vec2(arm.x * cos(turn) - arm.y * sin(turn), arm.x * sin(turn) + arm.y * cos(turn)) / vec2(IMAGE, 1.);
+  vec4 seen = poseAt(uFigures, t, side);
+  vec3 relief = reliefAt(uFigures, t);
+  if (noticing > .002) { seen = mix(seen, poseAt(uIdle, t, side), noticing); relief = mix(relief, reliefAt(uIdle, t), noticing); }
+  if (answering > .002) { vec2 a = woman ? t : waveAt(t); seen = mix(seen, poseAt(uAnswer, a, side), answering); relief = mix(relief, reliefAt(uAnswer, a), answering); }
+  if (seen.a < .004) return col;
+  return mix(col, relight(seen.rgb / seen.a, normalize(vec3(0., 0., 1.) + relief), t, nearness), seen.a);
 }
 
 void main(){
@@ -97,8 +113,7 @@ void main(){
   vec2 t = clamp(texAt(b, pivot, hit), 0., 1.);
   float d = depthAt(t);
   vec3 col = relight(texture2D(uMap, t).rgb, normalize(texture2D(uNormal, t).xyz * 2. - 1. + reliefAt(uMap, t)), t, d);
-  col = person(col, b, pivot, .225, vec2(.472, .572), -1., .55, uLook, uWelcome);
-  col = person(col, b, pivot, .158, vec2(.852, .623), 1., .43, uTurn, uResponse);
+  col = person(col, b, pivot);
 
   float motes = 0.;
   float aspect = uRes.x / uRes.y;
@@ -139,9 +154,12 @@ export function LivingCourtyard() {
     renderer.domElement.addEventListener("webglcontextlost", lost);
     renderer.domElement.addEventListener("webglcontextrestored", restored);
 
-    const loader = new TextureLoader();
-    const load = (name: string, mipmaps: boolean) => loader.loadAsync(`/assets/threshold/${name}.webp`).then(texture => {
+    // The paintings are decoded away from the page's own thread, so reading the first screen is never interrupted.
+    const loader = new ImageBitmapLoader().setOptions({ imageOrientation: "none", premultiplyAlpha: "none" });
+    const load = (name: string, mipmaps: boolean) => loader.loadAsync(`/assets/threshold/${name}.webp`).then(bitmap => {
+      const texture = new Texture(bitmap);
       texture.flipY = false;
+      texture.needsUpdate = true;
       texture.generateMipmaps = mipmaps;
       texture.minFilter = mipmaps ? LinearMipmapLinearFilter : LinearFilter;
       texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -158,8 +176,9 @@ export function LivingCourtyard() {
     const scene = new Scene().add(new Mesh(geometry, material));
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
+    let detail = 1, pace = 1 / 60, strained = 0;
     const resize = () => {
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25) * detail);
       renderer.setSize(frame.clientWidth, frame.clientHeight, false);
       uniforms.uRes.value.set(frame.clientWidth, frame.clientHeight);
       host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => origins.delete(layer));
@@ -188,11 +207,16 @@ export function LivingCourtyard() {
     const tick = (time: number) => {
       raf = requestAnimationFrame(tick);
       if (!began) began = time;
-      const dt = Math.min(.05, (time - last) / 1000 || .016); last = time;
+      const elapsed = (time - last) / 1000 || .016;
+      const dt = Math.min(.05, elapsed); last = time;
       const seconds = (time - began) / 1000;
       const stage = frame.getBoundingClientRect();
       const painting = host.querySelector(".threshold-background")?.getBoundingClientRect();
       if (!painting || stage.bottom < 0 || stage.top > innerHeight || renderer.getContext().isContextLost()) return;
+      // If the graphics card cannot keep pace, the painting is drawn a little smaller rather than letting the journey stutter.
+      pace = mix(pace, Math.min(elapsed, .1), .06);
+      strained = pace > .0195 ? strained + 1 : 0;
+      if (strained > 40 && detail > .7) { detail -= .15; strained = 0; pace = 1 / 60; resize(); }
       const follow = still ? 1 : 1 - Math.exp(-dt * 2.6);
       const driftX = still ? 0 : Math.sin(seconds * .33) * (pointer.seen ? .08 : .34), driftY = still ? 0 : Math.cos(seconds * .26) * (pointer.seen ? .06 : .2);
       look.x = mix(look.x, still ? 0 : pointer.x + driftX, follow);
@@ -239,10 +263,14 @@ export function LivingCourtyard() {
       renderer.render(scene, camera);
     };
 
-    Promise.all([load("courtyard-quiet-plate-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)]).then(textures => {
+    Promise.all([load("courtyard-quiet-plate-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)]).then(async textures => {
       if (disposed) { textures.forEach(texture => texture.dispose()); return; }
       [uniforms.uMap.value, uniforms.uDepth.value, uniforms.uNormal.value, uniforms.uFigures.value, uniforms.uIdle.value, uniforms.uAnswer.value] = textures;
       resize();
+      // Each painting is handed to the graphics card on its own frame, and the shader is prepared in the background, so arriving in the courtyard costs nothing.
+      for (const texture of textures) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.initTexture(texture); }
+      await renderer.compileAsync(scene, camera);
+      if (disposed) return;
       host.setAttribute("data-living", "true");
       raf = requestAnimationFrame(tick);
     }).catch(() => { /* Without the living layers the painted courtyard shows exactly as it always has. */ });
@@ -255,7 +283,7 @@ export function LivingCourtyard() {
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       renderer.domElement.removeEventListener("webglcontextrestored", restored);
       release();
-      [uniforms.uMap, uniforms.uDepth, uniforms.uNormal, uniforms.uFigures, uniforms.uIdle, uniforms.uAnswer].forEach(uniform => uniform.value?.dispose());
+      [uniforms.uMap, uniforms.uDepth, uniforms.uNormal, uniforms.uFigures, uniforms.uIdle, uniforms.uAnswer].forEach(uniform => { if (uniform.value?.image instanceof ImageBitmap) uniform.value.image.close(); uniform.value?.dispose(); });
       geometry.dispose(); material.dispose(); renderer.dispose(); renderer.domElement.remove();
     };
   }, []);
