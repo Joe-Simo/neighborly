@@ -247,11 +247,15 @@
    both hands stay in view at its right. ── */
 @media (min-width: 700px) and (max-width: 850px), (min-width: 700px) and (max-width: 1100px) and (orientation: portrait) {
   .entry {
-    --entry-focus: 60% 50%;
+    --entry-focus: 54% 50%;
     padding-top: calc(32px + env(safe-area-inset-top));
     padding-left: max(28px, env(safe-area-inset-left));
   }
-  .entry-sheet { width: clamp(360px, 46vw, 478px); }
+  .entry-sheet { width: clamp(400px, 46vw, 478px); }
+}
+/* From an iPad up, the labels are 16px so the sheet holds its own beside the door. */
+@media (min-width: 700px) {
+  .entry .live-field { font-size: 16px; }
 }
 /* A touch screen scrolls the page under the clock. Once it moves, a strip of the same paper covers
    the status area, so no line of the sheet is ever read behind the time or the island. */
