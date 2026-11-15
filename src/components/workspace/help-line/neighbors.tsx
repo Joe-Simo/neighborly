@@ -100,42 +100,21 @@ function Neighbors() {
   );
 }
 
-export function NeighborListView({
-  list,
-  searching,
+/** How many households show before "Show more". */
+const FIRST = 30;
+
+type Row = NeighborList["rows"][number];
+
+/** One household in the list. On a phone the whole row opens the record. */
+function NeighborRow({
+  neighbor,
   format,
-  bring = false,
-  onAdd,
 }: {
-  list: NeighborList;
-  searching: boolean;
+  neighbor: Row;
   format: Workspace["format"];
-  /** Whether to point to Your files, where records are brought in. */
-  bring?: boolean;
-  onAdd: () => void;
 }) {
-  const add = (
-    <Button variant="outline" onClick={onAdd}>
-      Add a neighbor
-    </Button>
-  );
-  const shown = list.rows.length;
   return (
-    <>
-      <div className="live-section-head">
-        <h2>Neighbors</h2>
-        <span className="live-count help-private">
-            <Lock size={14} aria-hidden="true" />
-            {list.more
-              ? `First ${shown} households`
-              : `${shown} ${shown === 1 ? "household" : "households"}`}{" "}
-            · each opening is logged
-        </span>
-      </div>
-      {shown ? (
-        <div className="live-list">
-          {list.rows.map((neighbor) => (
-            <div className="help-row" key={neighbor.id}>
+            <div className="help-row">
               <span className="help-avatar" aria-hidden="true">
                 {initials(neighbor.name)}
               </span>
@@ -178,8 +157,83 @@ export function NeighborListView({
                 </Button>
               </div>
             </div>
+  );
+}
+
+export function NeighborListView({
+  list,
+  searching,
+  format,
+  bring = false,
+  onAdd,
+}: {
+  list: NeighborList;
+  searching: boolean;
+  format: Workspace["format"];
+  /** Whether to point to Your files, where records are brought in. */
+  bring?: boolean;
+  onAdd: () => void;
+}) {
+  const add = (
+    <Button variant="outline" onClick={onAdd}>
+      Add a neighbor
+    </Button>
+  );
+  const shown = list.rows.length;
+  const [open, setOpen] = useState(FIRST);
+  // By name the list is in order, so it reads under letter heads; search results stay as found.
+  const groups: [string, Row[]][] = [];
+  for (const neighbor of list.rows.slice(0, open)) {
+    const letter = searching
+      ? ""
+      : neighbor.name.trim().charAt(0).toLocaleUpperCase();
+    const last = groups.at(-1);
+    if (last?.[0] === letter) last[1].push(neighbor);
+    else groups.push([letter, [neighbor]]);
+  }
+  return (
+    <>
+      <div className="live-section-head">
+        <h2>Neighbors</h2>
+        <span className="live-count help-private">
+            <Lock size={14} aria-hidden="true" />
+            {list.more
+              ? `First ${shown} households`
+              : `${shown} ${shown === 1 ? "household" : "households"}`}{" "}
+            · each opening is logged
+        </span>
+      </div>
+      {shown ? (
+        <>
+          {groups.map(([letter, rows]) => (
+            <section className="help-letter" key={letter} aria-label={letter || undefined}>
+              {letter && (
+                <h3 className="help-letter-head" aria-hidden="true">
+                  {letter}
+                </h3>
+              )}
+              <div className="live-list">
+                {rows.map((neighbor) => (
+                  <NeighborRow
+                    key={neighbor.id}
+                    neighbor={neighbor}
+                    format={format}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
-        </div>
+          {shown > open && (
+            <p className="help-more">
+              <Button variant="outline" onClick={() => setOpen(open + FIRST)}>
+                Show more
+              </Button>
+              <span>
+                {open} of {shown}
+              </span>
+            </p>
+          )}
+        </>
       ) : searching ? (
         <HelpEmpty title="No one by that name." action={add}>
           Try the start of a name, a phone number or a street. If they are new
