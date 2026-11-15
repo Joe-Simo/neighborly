@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import { OriginalReliefReview } from "@/components/original-relief-review";
 import "./review.css";
 
-export const metadata: Metadata = { title: "Original artwork — Neighborly", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Original artwork — Kind Helps", robots: { index: false, follow: false } };
 
 export default function ReliefReviewPage() {
   return <main className={"monumental-review"}>
-    <header className={"monumental-review-header"}><Link href="/" className={"monumental-review-brand"}>neighborly</Link><span>ORIGINAL ART · REFERENCE</span><Link href="/">Back to Neighborly</Link></header>
+    <header className={"monumental-review-header"}><Link href="/" className={"monumental-review-brand"}>kind helps</Link><span>ORIGINAL ART · REFERENCE</span><Link href="/">Back to Kind Helps</Link></header>
     <section aria-labelledby="relief-heading">
       <div className={"monumental-review-intro"}><p>Good work, together.</p><h1 id="relief-heading">A place for your people.</h1><p>The original artwork and proportions.</p></div>
       <OriginalReliefReview />

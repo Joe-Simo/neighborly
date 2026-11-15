@@ -17,7 +17,7 @@ export const monumentalArtwork: MonumentalArtwork = {
   mobileModel: "/assets/monumental-relief-mobile.glb",
   mobilePoster: "/assets/monumental-relief-mobile.webp",
   poster: "/assets/monumental-relief.webp",
-  description: "Neighborly’s community, sculpted as a warm painted relief.",
+  description: "The Kind Helps community, sculpted as a warm painted relief.",
   margin: 1.08,
   neutralPitchDegrees: 4.2,
   mobileCamera: { target: [0, 1.2, 0], height: 8.2 },

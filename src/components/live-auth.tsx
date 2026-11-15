@@ -113,7 +113,7 @@ export function LiveAuth({
     <div className="live-auth">
       <div className="live-auth-art" aria-hidden="true" />
       <Link href="/" className="live-back">
-        <ArrowLeft size={16} aria-hidden="true" /> Back to Neighborly
+        <ArrowLeft size={16} aria-hidden="true" /> Back to Kind Helps
       </Link>
       <p className="live-kicker">Your team’s place</p>
       <h1>

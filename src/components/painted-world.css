@@ -13,7 +13,7 @@
 .painted-world-header:before{content:"";position:absolute;z-index:-1;inset:-30px -4vw -22px;pointer-events:none;background:linear-gradient(180deg,#10231d55,transparent)}
 .painted-world[data-scene=opening] .painted-world-header{color:#253e31}
 .painted-world[data-scene=opening] .painted-world-header:before{background:linear-gradient(180deg,#f1eadbe8,transparent)}
-.painted-world-brand{font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;text-decoration:none}
+.painted-world-brand{font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none}
 .painted-world-enter{display:flex;gap:11px;align-items:center;min-height:44px;font-size:12px;text-decoration:none;padding:0 2px;border-bottom:1px solid #fff8e94a}
 .painted-world[data-scene=opening] .painted-world-enter{border-color:#253e3140}
 .painted-world-caption{position:absolute;z-index:2;isolation:isolate;left:6%;bottom:16%;max-width:560px;width:40%;pointer-events:none;color:#fff8e9}

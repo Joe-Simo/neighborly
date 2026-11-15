@@ -84,10 +84,10 @@ export function HallTransitionStudy({ embedded = false, onReplay }: { embedded?:
         <Image key={attempt} className="hall-transition-inside" src={`/assets/threshold/hall-interior-v3.webp?v=${attempt}`} onLoad={() => { interiorReady.current = true; setInteriorFailed(false); refresh.current?.(); }} onError={() => { interiorReady.current = false; setInteriorFailed(true); refresh.current?.(); }} alt="Inside the community hall." fill sizes="200vw" unoptimized priority={!embedded} /></>}
         {interiorFailed && <div className="hall-transition-recovery" role="status"><p>The gathering could not load.</p><Button variant="outline" onClick={() => { interiorReady.current = false; setInteriorFailed(false); setAttempt(value => value + 1); refresh.current?.(); }}>Try again</Button><Link href="/app?intent=start">Start a group</Link><Link href="/app?intent=join">Join your people</Link><Link href="/app?intent=signin">Sign in</Link></div>}
         {!embedded && <header><Link href="/depth-candidate">Back to the story</Link><span>Hall transition study</span></header>}
-        {embedded && <section ref={result} className="hall-transition-result" aria-labelledby="hall-result-title"><h2 id="hall-result-title">Good work.<br /><em>Together.</em></h2><nav aria-label="Start with Neighborly"><Link href="/app?intent=start">Start a group</Link><Link href="/app?intent=join">Join your people</Link><Link href="/app?intent=signin">Sign in</Link>{onReplay && <Button variant="ghost" onClick={onReplay}>Replay story</Button>}</nav></section>}
+        {embedded && <section ref={result} className="hall-transition-result" aria-labelledby="hall-result-title"><h2 id="hall-result-title">Good work.<br /><em>Together.</em></h2><nav aria-label="Start with Kind Helps"><Link href="/app?intent=start">Start a group</Link><Link href="/app?intent=join">Join your people</Link><Link href="/app?intent=signin">Sign in</Link>{onReplay && <Button variant="ghost" onClick={onReplay}>Replay story</Button>}</nav></section>}
         <p className="hall-transition-cue">Scroll into the hall <span aria-hidden="true">↓</span></p>
       </div>
     </section>
-    {!embedded && <footer><h1>A place to gather.</h1><Link href="/depth-candidate">Return to Neighborly</Link></footer>}
+    {!embedded && <footer><h1>A place to gather.</h1><Link href="/depth-candidate">Return to Kind Helps</Link></footer>}
   </Root>;
 }

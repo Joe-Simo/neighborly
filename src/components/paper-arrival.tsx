@@ -17,5 +17,5 @@ export function PaperArrival() {
     void lift.finished.then(() => { settle(); delete element.dataset.carrying; lift.cancel(); }, () => {});
     return () => { delete element.dataset.carrying; lift.cancel(); };
   }, []);
-  return <div ref={sheet} className="neighborly-paper-carry" aria-hidden="true"><span>neighborly</span></div>;
+  return <div ref={sheet} className="neighborly-paper-carry" aria-hidden="true"><span>kind helps</span></div>;
 }

@@ -8,7 +8,7 @@ export default function WorkspaceError({
 }) {
   return (
     <main className="live-auth">
-      <p className="live-kicker">Neighborly</p>
+      <p className="live-kicker">Kind Helps</p>
       <h1>We couldn’t open this.</h1>
       <p className="live-deck">
         Your workspace is still there. Try again to reconnect.

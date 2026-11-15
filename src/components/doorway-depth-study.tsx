@@ -328,14 +328,14 @@ export function DoorwayDepthStudy({ embedded = false, architecture = false }: { 
   }, [embedded, nearby, onscreen, architecture]);
 
   return <div className={`doorway-depth-study${embedded ? " doorway-depth-embedded" : ""}`} data-ready={ready && onscreen} data-failed={failed} data-architecture={architecture || !embedded}>
-    {!embedded && <header><Link href="/">Neighborly</Link><p>Doorway depth study</p></header>}
+    {!embedded && <header><Link href="/">Kind Helps</Link><p>Doorway depth study</p></header>}
     <section className="doorway-depth-track" ref={track} tabIndex={-1} aria-label="Scroll through the painted doorway">
       <div className="doorway-depth-stage">
         {(!ready || failed || !onscreen) && <Image className="doorway-depth-fallback" src="/assets/threshold/courtyard-community-v3.webp" fill sizes="100vw" alt="A painted church courtyard with a shared table and people welcoming one another." />}
         <div className="doorway-depth-canvas" ref={host} />
         <div ref={invitation} className="doorway-depth-invitation" style={{ opacity: failed ? 1 : Math.max(0, 1 - opening * 3), visibility: !failed && opening > .34 ? "hidden" : "visible" }}>
           <p>Good things begin with a welcome.</p><h1>There is room<br /><em>for you.</em></h1>
-          <Button disabled={!ready && !failed} onClick={() => enterCourtyard(failed)}>{failed ? "Continue to Neighborly" : ready ? "Open the door" : "Preparing the doorway…"}</Button>
+          <Button disabled={!ready && !failed} onClick={() => enterCourtyard(failed)}>{failed ? "Continue to Kind Helps" : ready ? "Open the door" : "Preparing the doorway…"}</Button>
         </div>
       </div>
     </section>

@@ -58,7 +58,7 @@ export function PaperSurface({ open, onOpenChange, title, children, variant = "w
       }}>
         <div className="paper-reading" inert={!ready}>
           <header className="paper-heading-row">
-            <span className="paper-imprint">neighborly <span>·</span> people helping people</span>
+            <span className="paper-imprint">kind helps <span>·</span> people helping people</span>
             <Primitive.Close asChild><Button variant="ghost" size="icon" aria-label="Close paper"><X size={19} /></Button></Primitive.Close>
           </header>
           <DialogTitle id={`paper-heading-${variant}`} tabIndex={-1} className="paper-heading">{title}</DialogTitle>

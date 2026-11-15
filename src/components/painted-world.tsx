@@ -131,8 +131,8 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
   }, [heroOnly]);
 
   return <main className="painted-world" id="story-start" data-scene={visibleScene} data-hero-only={heroOnly} data-ready={ready} data-failed={failed} tabIndex={-1}>
-    {heroOnly && <h1 className="sr-only">Neighborly — good work, together.</h1>}
-    <a className="painted-world-skip" href={heroOnly ? "#how-neighborly-works" : "#your-community"}>Skip to how Neighborly works</a>
+    {heroOnly && <h1 className="sr-only">Kind Helps — good work, together.</h1>}
+    <a className="painted-world-skip" href={heroOnly ? "#how-neighborly-works" : "#your-community"}>Skip to how Kind Helps works</a>
     <section className="painted-world-track" ref={track} aria-label={heroOnly ? "An open hand" : "A story of care"}>
       <div className="painted-world-viewport" ref={viewport}>
         <div className="painted-world-art" ref={host} aria-hidden="true" />
@@ -143,8 +143,8 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
         </picture>}
         <div className="painted-world-shade" aria-hidden="true" />
         <header className="painted-world-header">
-          <a href="#story-start" className="painted-world-brand" aria-label="Neighborly home">neighborly</a>
-          <Link href="/app" className="painted-world-enter">Enter Neighborly <ArrowUpRight size={15} aria-hidden="true" /></Link>
+          <a href="#story-start" className="painted-world-brand" aria-label="Kind Helps home">kind helps</a>
+          <Link href="/app" className="painted-world-enter">Enter Kind Helps <ArrowUpRight size={15} aria-hidden="true" /></Link>
         </header>
         <div className="painted-world-caption" key={visibleScene}>
           <div aria-live="polite" aria-atomic="true">
@@ -152,11 +152,11 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           <h1 aria-level={heroOnly ? 2 : undefined}>{heroOnly && openingOutcome === "accepted" ? <>A little yes.<br /><em>Something shared.</em></> : heroOnly && openingOutcome === "declined" ? <>There is room<br /><em>for another answer.</em></> : chapter.title}</h1>
           <p className="painted-world-description">{heroOnly && openingOutcome === "accepted" ? "A small promise. One less thing to carry alone." : heroOnly && openingOutcome === "declined" ? "The invitation stays open. Everyone still belongs." : chapter.copy}</p>
           </div>
-          {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Neighborly">
+          {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Kind Helps">
             <a className="painted-world-primary-invitation" href="#neighborly-courtyard" aria-haspopup={onOpenInvitation && openingOutcome !== "accepted" ? "dialog" : undefined} onClick={event => { if (openingOutcome === "accepted" && onSeeTogether) { event.preventDefault(); onSeeTogether(); } else if (onOpenInvitation && openingOutcome !== "accepted") { event.preventDefault(); onOpenInvitation(event.currentTarget); } }}>{openingOutcome === "accepted" ? "See what comes together" : openingOutcome === "declined" ? "Try another answer" : onOpenInvitation ? "Open the invitation" : "Step inside"}<ArrowUpRight size={15} aria-hidden="true" /></a>
             <Link href="/app?intent=start">Start a group <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </nav>}
-          {!heroOnly && scene === "complete" && <nav className="painted-world-scene-actions" aria-label="Start with Neighborly">
+          {!heroOnly && scene === "complete" && <nav className="painted-world-scene-actions" aria-label="Start with Kind Helps">
             <Button asChild className="painted-world-scene-start"><Link href="/app?intent=start">Start a group <ArrowUpRight size={16} aria-hidden="true" /></Link></Button>
             <Link href="/app?intent=join">Join your people <ArrowUpRight size={16} aria-hidden="true" /></Link>
             <Link href="/app?intent=signin">Sign in</Link>

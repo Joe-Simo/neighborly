@@ -229,6 +229,6 @@ export function MonumentalStage({ artwork = monumentalArtwork }: { artwork?: Mon
   return <div className={"monumental-stage"} role="img" aria-label={artwork.description} data-ready={showingLive}>
     {!posterFailed && <picture>{artwork.mobilePoster && <source media="(max-width: 700px)" srcSet={artwork.mobilePoster} />}<Image className={"monumental-poster"} src={artwork.poster} alt="" fill unoptimized sizes="100vw" priority onError={() => setPosterFailed(true)} style={{ opacity: showingLive ? 0 : 1 }} /></picture>}
     <div className={"monumental-canvas"} ref={host} style={{ opacity: showingLive ? 1 : 0 }} />
-    {posterFailed && !showingLive && <p className={"monumental-unavailable"}>{failed ? "The relief could not load. The rest of Neighborly is still available." : "The sculpted relief is being prepared."}</p>}
+    {posterFailed && !showingLive && <p className={"monumental-unavailable"}>{failed ? "The relief could not load. The rest of Kind Helps is still available." : "The sculpted relief is being prepared."}</p>}
   </div>;
 }

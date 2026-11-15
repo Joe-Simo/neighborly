@@ -27,7 +27,7 @@ export function ReliefStudy({ onOpenWorkspace, onStartTeam }: {
         <span>The optional example uses fictional people. No messages are sent.</span>
       </div>
       <footer>
-        <a href="#main">neighborly</a>
+        <a href="#main">kind helps</a>
         <p>Good work, together.</p>
         <Link href="/app">Open your workspace <span aria-hidden="true">↗</span></Link>
       </footer>

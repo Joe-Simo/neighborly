@@ -67,7 +67,7 @@ export function LiveWelcome({
     <main className="live-auth live-welcome">
       <div className="live-auth-art" aria-hidden="true" />
       <Link href="/" className="live-wordmark">
-        neighborly
+        kind helps
       </Link>
       <p className="live-kicker">
         {mode === "create" ? "A small beginning" : "An invitation to belong"}

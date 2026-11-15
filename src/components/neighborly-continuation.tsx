@@ -49,7 +49,7 @@ export function NeighborlyContinuation({ ref, courtyardOnly = false, spatialChai
         {/* A native image keeps the story available without client-side code. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/assets/threshold/courtyard-quiet-study-v1.webp" width="1774" height="887" alt="A sunlit church courtyard, with a woman preparing food at a shared table and two people greeting inside the open hall." />
-        <div><p className="neighborly-eyebrow">Faith, lived out.</p><h2>Good work.<br /><em>Together.</em></h2><p>Bring something to share. Make room for someone. Welcome your people.</p><a href="#how-neighborly-works">How Neighborly works <ArrowUpRight size={16} aria-hidden="true" /></a></div>
+        <div><p className="neighborly-eyebrow">Faith, lived out.</p><h2>Good work.<br /><em>Together.</em></h2><p>Bring something to share. Make room for someone. Welcome your people.</p><a href="#how-neighborly-works">How Kind Helps works <ArrowUpRight size={16} aria-hidden="true" /></a></div>
       </section>
     </noscript>
 
@@ -57,7 +57,7 @@ export function NeighborlyContinuation({ ref, courtyardOnly = false, spatialChai
       <h2 id="together-title" data-reveal>Bring this to<br /><em>your people.</em></h2>
       <div className="neighborly-together-bottom" data-reveal><p>A private place for your community’s<br />teams, plans, and volunteering.</p><div className="neighborly-final-actions"><Button asChild className="neighborly-begin"><Link href="/app?intent=start">Bring your people together<ArrowUpRight aria-hidden="true" /></Link></Button><Link className="neighborly-final-join" href="/app?intent=join">Join your people<ArrowUpRight size={16} aria-hidden="true" /></Link></div></div>
       <Button variant="ghost" className="neighborly-try-plan" onClick={event => { planTrigger.current = event.currentTarget; setPlanOpen(true); }}>Try a shared plan<ArrowUpRight size={16} aria-hidden="true" /></Button>
-      <footer className="neighborly-colophon"><a href="#story-start">neighborly</a><span>Made for the good we can do.</span><Link href="/app?intent=signin">Sign in<ArrowUpRight size={14} aria-hidden="true" /></Link></footer>
+      <footer className="neighborly-colophon"><a href="#story-start">kind helps</a><span>Made for the good we can do.</span><Link href="/app?intent=signin">Sign in<ArrowUpRight size={14} aria-hidden="true" /></Link></footer>
     </section>
     <PaperSurface open={planOpen} onOpenChange={setPlanOpen} title="A place at the table." variant="invitation" onExited={() => onOutcome?.(invitationOutcome)} returnFocusRef={planTrigger}><CareInvitation compact state={invitationOutcome} onOutcome={updateOutcome} /></PaperSurface>
   </div>;

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LiveApp } from "@/components/live-app";
 
 export const metadata: Metadata = {
-  title: "Your workspace — Neighborly",
+  title: "Your workspace — Kind Helps",
   robots: { index: false, follow: false },
 };
 export default async function Page({

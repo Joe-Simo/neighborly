@@ -54,8 +54,8 @@ export function SanctuaryExperience() {
     <div className="sanctuary-painting" aria-hidden="true" />
     <div className="sanctuary-shade" aria-hidden="true" />
     <header className="sanctuary-header">
-      <Link href="/" className="sanctuary-brand" aria-label="Neighborly home">neighborly</Link>
-      <Link href="/app" className="sanctuary-skip">Open Neighborly <ArrowRight size={14} aria-hidden="true" /></Link>
+      <Link href="/" className="sanctuary-brand" aria-label="Kind Helps home">kind helps</Link>
+      <Link href="/app" className="sanctuary-skip">Open Kind Helps <ArrowRight size={14} aria-hidden="true" /></Link>
     </header>
     <div className="sanctuary-caption" aria-hidden="true">For churches &amp; communities</div>
     <section className="sanctuary-story" aria-live="polite" aria-atomic="true">
@@ -69,12 +69,12 @@ export function SanctuaryExperience() {
         {act === "threshold" || act === "invitation" ? <Button variant="ghost" className="sanctuary-action" onClick={advance} disabled={!ready}>
           <span>{failed ? "The scene could not load" : !ready ? "Opening the scene" : act === "threshold" ? "Step inside" : "Offer a little time"}</span><span className="sanctuary-action-arrow"><ArrowRight aria-hidden="true" /></span>
         </Button> : act === "together" ? <><Button asChild variant="ghost" className="sanctuary-action"><Link href="/app?intent=start"><span>Bring your people together</span><span className="sanctuary-action-arrow"><ArrowRight aria-hidden="true" /></span></Link></Button><Link href="/app?intent=join" className="sanctuary-join">Join your people</Link></> : <p className="sanctuary-breath">One offer. Many possibilities.</p>}
-        {failed && <Link href="/app" className="sanctuary-join">Continue to Neighborly</Link>}
+        {failed && <Link href="/app" className="sanctuary-join">Continue to Kind Helps</Link>}
       </div>
     </section>
     <footer className="sanctuary-footer">
       <AmbientSound active />
-      <p>The Neighborly story <span aria-hidden="true">/</span> {act === "threshold" ? "01" : act === "invitation" ? "02" : "03"}</p>
+      <p>The Kind Helps story <span aria-hidden="true">/</span> {act === "threshold" ? "01" : act === "invitation" ? "02" : "03"}</p>
       {act !== "threshold" ? <Button variant="ghost" className="sanctuary-restart" onClick={restart} aria-label="Return to the beginning"><RotateCcw size={15} aria-hidden="true" /><span>Begin again</span></Button> : <span className="sanctuary-footer-note">Move gently. Explore the light.</span>}
     </footer>
   </main>;
