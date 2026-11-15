@@ -90,6 +90,8 @@ footer span:first-child { font: 400 12pt/1 "Newsreader", "Iowan Old Style", Geor
 <p>These files hold your neighbors’ private details. Keep them where only your conference’s officers can reach them, and do not send them by email.</p>
 <h2>Opening them</h2>
 <p>Each file opens in Excel, Numbers or Google Sheets. The column names are the ones Kind Helps reads, so any file can be brought back in from Your files.</p>
+<h2>Lines that read “Record removed”</h2>
+<p>When an owner removes a neighbor’s record, the name and every word written about the household are erased, and the dates and amounts stay under “Record removed” so the year’s totals still add up.</p>
 <footer><span>kind helps</span><span>${sample ? "Sample · " : ""}Gathered ${escaped(day)}</span></footer>
 </body>
 </html>

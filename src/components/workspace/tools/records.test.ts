@@ -24,6 +24,7 @@ describe("the files a conference takes away", () => {
     // A kind with nothing in it is still listed, so the cover matches the folder.
     expect(cover).toContain('<td class="n">None yet</td>');
     expect(cover).not.toMatch(/src=|href=|url\(|<script/);
+    expect(cover).toContain("the dates and amounts stay under “Record removed”");
     expect(recordsCover({ conference: "St. Example Conference", sample: true, day: "November 15, 2026", by: "Marisol Vega", files: [], faces: { serif: "data:font/woff2;base64,AA", sans: "data:font/woff2;base64,BB" } })).toContain('url(data:font/woff2;base64,AA) format("woff2")');
   });
 });

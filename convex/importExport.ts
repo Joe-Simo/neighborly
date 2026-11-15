@@ -97,6 +97,9 @@ export const inviteReady = internalMutation({
  * a person decides what to do with it on the neighbor's own record.
  */
 const neighborRow = v.object({ line: v.number(), name: v.string(), phone: v.string(), email: v.string(), address: v.string(), adults: v.string(), children: v.string(), language: v.string(), notes: v.string() });
+/** The name a removed record keeps (see neighbors.remove). A line with this name is never a household to bring in. */
+const REMOVED = "Record removed";
+const removedKey = nameKey(REMOVED);
 const neighborProblem = v.union(v.literal("no_name"), v.literal("too_long"), v.literal("bad_count"), v.literal("bad_language"), v.literal("repeated"), v.literal("same_phone"), v.literal("same_name"));
 const neighborChecked = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("ready"), neighborProblem) });
 const neighborImported = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("added"), neighborProblem) });
@@ -114,7 +117,7 @@ async function reviewNeighbors(ctx: QueryCtx, churchId: Id<"churches">, rows: In
     const name = row.name.trim(), phone = row.phone.trim(), email = row.email.trim(), address = row.address.trim(), notes = row.notes.trim();
     const keys = { nameKey: nameKey(name), phoneKey: phoneKey(phone) };
     const verdict = (outcome: Infer<typeof neighborChecked>["outcome"], record: { adults: number; children: number; language: Language } | null = null) => ({ line: row.line, name, outcome, record: record && { name, ...keys, phone, email, address, notes, ...record } });
-    if (!name || !keys.nameKey) return verdict("no_name");
+    if (!name || !keys.nameKey || keys.nameKey === removedKey) return verdict("no_name");
     if (name.length > 120 || phone.length > 40 || email.length > 200 || address.length > 300 || notes.length > 2000) return verdict("too_long");
     const adults = count(row.adults, 1, 1), children = count(row.children, 0, 0);
     if (adults === null || children === null) return verdict("bad_count");
@@ -187,7 +190,7 @@ async function reviewRequests(ctx: QueryCtx, churchId: Id<"churches">, rows: Inf
     const name = row.name.trim(), type = row.type.trim(), payee = row.payee.trim(), notes = row.notes.trim();
     const verdict = (outcome: Infer<typeof requestChecked>["outcome"], record: { neighborId: Id<"neighbors">; kind: "rent" | "utility" | "food" | "voucher" | "other"; status: "open" | "closed"; createdAt: number; importedAmount: number } | null = null) =>
       ({ line: row.line, name, outcome, record: record && { ...record, summary: notes || type || "Brought over from an earlier system", payeeName: payee, payeeKind: payeeKinds[record.kind] } });
-    if (!nameKey(name)) { results.push(verdict("no_name")); continue; }
+    if (!nameKey(name) || nameKey(name) === removedKey) { results.push(verdict("no_name")); continue; }
     if (name.length > 120 || type.length > 120 || payee.length > 120 || notes.length > 500) { results.push(verdict("too_long")); continue; }
     const day = ["M/d/yyyy", "M/d/yy", "yyyy-MM-dd"].map((format) => DateTime.fromFormat(row.date.trim(), format, { zone: church.timeZone })).find((date) => date.isValid);
     const createdAt = day?.set({ hour: 12 }).toMillis();
@@ -361,6 +364,7 @@ const historyWords: Record<string, string> = {
   invitation_revoked: "Withdrew an invitation",
   removePerson: "Removed a member",
   "neighbor.opened": "Opened a neighbor’s record",
+  "neighbor.removed": "Removed a neighbor’s record",
   neighbors_imported: "Brought in neighbor records",
   requests_imported: "Brought in past requests",
   payees_imported: "Brought in who you pay",
@@ -405,7 +409,8 @@ export const exportPage = query({
     const names = new Map<string, string>();
     const nameOf = async (table: "neighbors" | "memberships", id: Id<"neighbors"> | Id<"memberships"> | undefined) => {
       if (!id) return "";
-      if (!names.has(id)) names.set(id, (await ctx.db.get(table, id as never) as { name: string } | null)?.name ?? "");
+      // A neighbor whose record was removed is still named on the lines the year's books keep, by the one phrase.
+      if (!names.has(id)) names.set(id, (await ctx.db.get(table, id as never) as { name: string } | null)?.name ?? (table === "neighbors" ? REMOVED : ""));
       return names.get(id) ?? "";
     };
     const finish = (result: { continueCursor: string; isDone: boolean }, rows: string[][]) => ({ columns: [...exportColumns[file]] as string[], rows, cursor: result.continueCursor, done: result.isDone });
@@ -422,7 +427,7 @@ export const exportPage = query({
       return finish(result, await Promise.all(result.page.map(async (row) => {
         const neighbor = await ctx.db.get("neighbors", row.neighborId);
         const given = row.importedAmount ?? (row.status === "paid" ? row.amountApproved : undefined);
-        return [neighbor?.name ?? "", neighbor?.phone ?? "", day(row.createdAt), row.status === "open" ? "Open" : "Completed", title(row.kind), dollars(given), row.payeeName, row.summary, title(row.status),
+        return [neighbor?.name ?? REMOVED, neighbor?.phone ?? "", day(row.createdAt), row.status === "open" ? "Open" : "Completed", title(row.kind), dollars(given), row.payeeName, row.summary, title(row.status),
           dollars(row.amountRequested), dollars(row.amountApproved), row.decisionNote, day(row.decidedAt), [...(row.referrals ?? []), ...(row.referral ? [row.referral] : [])].join("; "),
           row.source === "import" ? "Brought over from earlier records" : row.source === "ai_draft" ? "Drafted by the assistant, approved by a person" : "By a person"];
       })));
@@ -448,7 +453,7 @@ export const exportPage = query({
     if (file === "calls") {
       const result = await ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       const callBack = { none: "Not needed", needed: "Still needed", done: "Returned" } as const;
-      return finish(result, await Promise.all(result.page.map(async (row) => [day(row.takenAt), clock(row.takenAt), row.callerName, row.phone, await nameOf("neighbors", row.neighborId), row.note, callBack[row.callback],
+      return finish(result, await Promise.all(result.page.map(async (row) => [day(row.takenAt), clock(row.takenAt), row.callerName || ((await nameOf("neighbors", row.neighborId)) === REMOVED ? REMOVED : ""), row.phone, await nameOf("neighbors", row.neighborId), row.note, callBack[row.callback],
         await nameOf("memberships", row.takenBy), await nameOf("memberships", row.returnedBy), day(row.returnedAt), row.outcome ?? "", row.urgent ? row.urgent.reasons.map((reason) => urgentWords[reason] ?? plainWords(reason)).join("; ") || "Yes" : ""])));
     }
     if (file === "deposits") {
