@@ -900,3 +900,21 @@
     background-position: 50% 0;
   }
 }
+
+/* Sideways and desktop: the tall painting fills its side from edge to edge.
+   It holds both faces and both hands only while the side is at most 0.61 as
+   wide as it is tall, so the side is 40% of the width or less. The form keeps
+   its width and sits centred in the rest. */
+@media (min-width: 851px) and (orientation: landscape) {
+  .live-auth-art {
+    inset: 0 auto 0 0;
+    width: min(40vw, 61vh);
+    background-image: url("/assets/living-relief-mobile-accepted.webp");
+    background-size: cover;
+    background-position: 50% 0;
+  }
+  .live-auth {
+    margin-right: 0;
+    margin-left: calc(min(40vw, 61vh) + (100vw - min(40vw, 61vh) - min(39vw, 470px)) / 2);
+  }
+}
