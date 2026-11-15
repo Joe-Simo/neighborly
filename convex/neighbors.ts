@@ -67,7 +67,7 @@ function clean(args: Infer<ReturnType<typeof v.object<typeof details>>>) {
 export const list = query({
   args: { churchId: v.id("churches"), search: v.optional(v.string()) },
   returns: v.object({
-    rows: v.array(v.object({ ...neighborRow.fields, openRequest: v.boolean(), visitPlanned: v.boolean(), lastHelpedAt: v.union(v.number(), v.null()) })),
+    rows: v.array(v.object({ ...neighborRow.fields, openRequest: v.union(v.object({ kind: schema.tables.assistanceRequests.validator.fields.kind, amount: v.number() }), v.null()), visitAt: v.union(v.number(), v.null()), lastHelpedAt: v.union(v.number(), v.null()) })),
     more: v.boolean(),
   }),
   handler: async (ctx, { churchId, search = "" }) => {
@@ -85,10 +85,12 @@ export const list = query({
       const requests = await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).order("desc").take(50);
       const visits = await ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).order("desc").take(20);
       const helped = requests.filter((request) => request.status === "paid" || request.status === "approved").map((request) => request.decidedAt ?? request.createdAt);
+      const open = requests.find((request) => request.status === "open" || request.status === "approved");
+      const planned = visits.filter((visit) => visit.status === "scheduled").map((visit) => visit.scheduledAt);
       return {
         ...toRow(neighbor),
-        openRequest: requests.some((request) => request.status === "open" || request.status === "approved"),
-        visitPlanned: visits.some((visit) => visit.status === "scheduled"),
+        openRequest: open ? { kind: open.kind, amount: open.amountApproved ?? open.amountRequested } : null,
+        visitAt: planned.length ? Math.min(...planned) : null,
         lastHelpedAt: helped.length ? Math.max(...helped) : null,
       };
     }));

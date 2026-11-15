@@ -106,7 +106,7 @@ describe("opening a record", () => {
     expect(record.history.map((event) => event.type).sort()).toEqual(["call", "payment", "visit"]);
     expect(record.history).toEqual([...record.history].sort((a, b) => b.at - a.at));
     expect(record.history.find((event) => event.type === "visit")).toMatchObject({ who: ["Marisol Vega", "Thomas Okafor"] });
-    expect((await as(ids.owner).query(api.neighbors.list, { churchId, search: "rosa" })).rows).toMatchObject([{ openRequest: true, visitPlanned: true, lastHelpedAt: now - 5000 }]);
+    expect((await as(ids.owner).query(api.neighbors.list, { churchId, search: "rosa" })).rows).toMatchObject([{ openRequest: { kind: "rent", amount: 45000 }, visitAt: now + 86400000, lastHelpedAt: now - 5000 }]);
   });
 });
 
