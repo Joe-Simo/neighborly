@@ -79,9 +79,11 @@ export function PeopleSection() {
                   }}
                 >
                   {managing.approved ? "Revoke approval" : "Approve"}
+                  <small>{managing.approved ? "They can no longer be asked to cover. Accepted commitments stay." : "They can be asked to cover and to serve on teams."}</small>
                 </Button>
                 <Button
                   variant="outline"
+                  data-danger={managing.active ? "" : undefined}
                   size="sm"
                   disabled={pending}
                   onClick={() =>
@@ -91,7 +93,7 @@ export function PeopleSection() {
                       title: managing.active
                         ? "Remove workspace access?"
                         : "Restore workspace access?",
-                      body: "This changes access to your group workspace. Accepted commitments remain recorded; pending cover requests are withdrawn when access is removed.",
+                      body: "This changes access to your conference. Accepted commitments remain recorded; pending cover requests are withdrawn when access is removed.",
                       command: {
                         type: "setMembership",
                         personId: managing.id,
@@ -105,6 +107,7 @@ export function PeopleSection() {
                   }}
                 >
                   {managing.active ? "Remove access" : "Restore access"}
+                  <small>{managing.active ? "They can no longer sign in to this conference. Their record stays." : "They can sign in to this conference again."}</small>
                 </Button>
           </div>
         </LiveDialog>

@@ -193,7 +193,7 @@ export function LiveCreateForm({
       )}
       {kind === "meeting" && (
         <div className="live-note">
-          All current group members will be invited. Each person chooses whether
+          Everyone in the conference will be invited. Each person chooses whether
           to attend.
         </div>
       )}
@@ -238,19 +238,17 @@ export function LiveCreateForm({
       )}
       {kind === "commitment" && (
         <div className="live-form-grid">
-          <LiveField label="Repeat every (weeks)">
-            <Input
-              type="number"
-              name="intervalWeeks"
-              defaultValue="1"
-              min={1}
-              max={52}
-              required
-            />
+          <LiveField label="Repeats">
+            <NativeSelect name="intervalWeeks" defaultValue="1" required>
+              <option value="1">Every week</option>
+              <option value="2">Every 2 weeks</option>
+              <option value="3">Every 3 weeks</option>
+              <option value="4">Every 4 weeks</option>
+            </NativeSelect>
           </LiveField>
           <LiveField
-            label="Number of dates"
-            help="Choose 1 for a one-off commitment. Up to 52 dates within one year."
+            label="How many times"
+            help="1 is a single date. Up to 52 within one year."
           >
             <Input
               type="number"
