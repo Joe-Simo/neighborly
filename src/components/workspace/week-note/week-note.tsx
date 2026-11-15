@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { api } from "../../../../convex/_generated/api";
 import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspace } from "@/components/workspace/context";
@@ -15,6 +15,20 @@ type Line = { area: LiveArea; parts: { text: string; assistant?: true }[]; brief
 
 const day = 86_400_000;
 const put = "week-note-put-away";
+/** The counts the note last showed, numbers only, so its place can be kept at the right size while this visit's are on their way. */
+const kept = "week-note-last";
+/** A first visit keeps room for a full note, which is what a busy week has. */
+const full: Counts = { callsWaiting: 2, callsFirstByAssistant: 1, callsFirstByPerson: 1, oldestWaitingDays: 2, visitsPlanned: 2, requestsOpen: 2, approvedUnpaid: 2, approvedUnpaidCents: 0, openPlaces: 2, away: 2 };
+function remembered(raw: string | null): Counts {
+  try {
+    const last: unknown = JSON.parse(raw ?? "");
+    if (!last || typeof last !== "object") return full;
+    const numbers = Object.fromEntries(Object.entries(last).filter(([name, value]) => name in full && typeof value === "number"));
+    return Object.keys(numbers).length === Object.keys(full).length ? (numbers as Counts) : full;
+  } catch {
+    return full;
+  }
+}
 const listeners = new Set<() => void>();
 const subscribe = (listener: () => void) => {
   listeners.add(listener);
@@ -66,15 +80,28 @@ export function weekLines(text: Words["monday"], counts: Counts): Line[] {
  * written by the assistant.
  */
 export function WeekNote({ brief = false }: { brief?: boolean }) {
-  const { data, now } = useWorkspace();
+  const { data, now, isOwner } = useWorkspace();
   const churchId = data.church.id;
   const monday = mondayOf(now, data.church.timeZone);
   const week = `${churchId}:${new Intl.DateTimeFormat("en-CA", { timeZone: data.church.timeZone }).format(monday)}`;
   const away = useSyncExternalStore(subscribe, () => stored(put) === week, () => true);
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
   const counts = useQuery(api.drafts.weekNote, allowed && !away ? { churchId } : "skip");
+  const last = useSyncExternalStore(subscribe, () => stored(kept), () => null);
+  useEffect(() => {
+    if (!counts) return;
+    try {
+      window.localStorage.setItem(kept, JSON.stringify(counts));
+    } catch {
+      return;
+    }
+  }, [counts]);
+  if (away || allowed === false) return null;
+  // Counts on their way: for those who lead, the note's place is kept in paper at the size it last had,
+  // so nothing below it moves when it arrives. No remembered number is shown, only its shape.
+  if (!counts) return isOwner || data.canCoordinate ? <WeekNoteView counts={remembered(last)} monday={monday} brief={brief} waiting onDone={() => {}} /> : null;
   // An older backend answers without saying who put a call first; the note waits for the one that does.
-  if (!counts || away || !("callsFirstByAssistant" in counts)) return null;
+  if (!("callsFirstByAssistant" in counts)) return null;
   return (
     <WeekNoteView
       counts={counts}
@@ -93,8 +120,10 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
 }
 
 const quietLink = "min-h-11 inline-flex items-center border-0 bg-transparent p-0 text-[17px] !text-[var(--live-accent)] !underline decoration-[#b9c4b0] underline-offset-4 hover:decoration-current cursor-pointer";
+/** While waiting, the words keep their room unseen and a bar of paper lies where each line will be. */
+const held = "relative [&>*]:invisible before:absolute before:left-0 before:top-[0.3em] before:h-[0.8em] before:w-[min(100%,26rem)] before:rounded-[3px] before:bg-[var(--paper-shade,#ece8dc)] before:content-[''] before:animate-[paper-breathe_1.6s_ease-in-out_infinite] motion-reduce:before:animate-none";
 
-export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts; monday: number; brief: boolean; onDone: () => void }) {
+export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }: { counts: Counts; monday: number; brief: boolean; waiting?: boolean; onDone: () => void }) {
   const { data, words } = useWorkspace();
   const [open, setOpen] = useState(false);
   // "Done reading" puts the sheet away like paper: it lifts, thins and the page closes over where it lay.
@@ -107,9 +136,10 @@ export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts
   const text = words.monday;
   const lines = weekLines(text, counts);
   if (!lines.length) return null;
+  const hold = waiting ? held : "";
   if (brief && !open) {
     return (
-      <p className="paper-rise mb-7 flex flex-wrap items-baseline gap-x-3 text-[17px] leading-snug text-[var(--live-ink)]">
+      <p className={`mb-7 flex flex-wrap items-baseline gap-x-3 text-[17px] leading-snug text-[var(--live-ink)] ${waiting ? held : "paper-rise"}`} aria-hidden={waiting || undefined} inert={waiting}>
         <span>
           <strong className="font-[650]">{text.brief.label}:</strong> {lines.slice(0, 3).map((line) => line.brief).join(", ")}.
         </span>
@@ -120,17 +150,19 @@ export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts
     );
   }
   return (
-    <div className={`grid transition-[grid-template-rows,opacity,translate] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] ${leaving ? "-translate-y-2 grid-rows-[0fr] overflow-hidden opacity-0" : "grid-rows-[1fr]"}`}>
+    <div className={`grid transition-[grid-template-rows,opacity,translate] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] ${leaving ? "-translate-y-2 grid-rows-[0fr] overflow-hidden opacity-0" : "grid-rows-[1fr]"}`} aria-hidden={waiting || undefined} inert={waiting}>
       <div className="min-h-0">
-        <section className="help-sheet after:!hidden" aria-labelledby="week-note">
-          <p className="help-sheet-label !text-[var(--live-muted)]">
+        <section className="help-sheet after:!hidden" aria-labelledby={waiting ? undefined : "week-note"}>
+          <p className={`help-sheet-label !text-[var(--live-muted)] ${waiting ? "invisible" : ""}`}>
             {formatDate(words.locale, monday, { timeZone: data.church.timeZone, weekday: "long", month: "long", day: "numeric" })}
           </p>
-          <h2 id="week-note">{text.title}</h2>
+          <h2 id={waiting ? undefined : "week-note"} className={hold}>
+            <span>{text.title}</span>
+          </h2>
           {/* From 761px each line keeps a 60-character measure and its room sits in one steady column on the right. */}
-          <ul className="paper-rows mt-5 mb-5 grid list-none gap-3 p-0 text-[19px] leading-snug text-[var(--live-ink)] min-[761px]:gap-0">
+          <ul className={`mt-5 mb-5 grid list-none gap-3 p-0 text-[19px] leading-snug text-[var(--live-ink)] min-[761px]:gap-0 ${waiting ? "" : "paper-rows"}`}>
             {lines.map((line) => (
-              <li key={line.area} className="flex flex-wrap items-baseline gap-x-4 min-[761px]:grid min-[761px]:grid-cols-[minmax(0,60ch)_auto] min-[761px]:justify-between min-[761px]:gap-x-10 min-[761px]:border-t min-[761px]:border-[#e6e2d2] min-[761px]:py-3.5 min-[761px]:first:border-t-0 min-[761px]:first:pt-0">
+              <li key={line.area} className={`flex flex-wrap items-baseline gap-x-4 min-[761px]:grid min-[761px]:grid-cols-[minmax(0,60ch)_auto] min-[761px]:justify-between min-[761px]:gap-x-10 min-[761px]:border-t min-[761px]:border-[#e6e2d2] min-[761px]:py-3.5 min-[761px]:first:border-t-0 min-[761px]:first:pt-0 ${waiting ? `${held} min-[761px]:before:top-[calc(0.875rem+0.3em)] min-[761px]:first:before:top-[0.3em]` : ""}`}>
                 <span>
                   {line.parts.map((part, index) => (
                     <span key={part.text} className={part.assistant ? "text-[var(--help-plum)]" : undefined}>
@@ -145,8 +177,8 @@ export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts
               </li>
             ))}
           </ul>
-          <p className="!max-w-none text-[15px]">{text.origin}</p>
-          <button type="button" className={`${quietLink} !text-[15px]`} onClick={putAway}>
+          <p className={`!max-w-none text-[15px] ${waiting ? "invisible" : ""}`}>{text.origin}</p>
+          <button type="button" className={`${quietLink} !text-[15px] ${waiting ? "invisible" : ""}`} onClick={putAway}>
             {text.done}
           </button>
         </section>
