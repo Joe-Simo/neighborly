@@ -30,14 +30,15 @@ a.again {
 a.again:active { background: #294d38; }
 a.again:focus-visible { outline: 3px solid #364acf; outline-offset: 4px; }
 /* Sideways, the tall painting fills its side from edge to edge: both faces,
-   both hands and the card on an iPad; the hands and the card on a phone. */
+   both hands and the card on an iPad. A phone's side is too short for that, so
+   it takes the wide painting cropped to one face, the hands and the card. */
 @media (orientation: landscape) {
   body { display: grid; grid-template-columns: 42% 1fr; min-height: 100svh; }
   .art { height: auto; border-bottom: 0; border-right: 1px solid #d9ddd3; background: #e9e7dc url("painting-tall.webp") 50% 0 / cover no-repeat; }
   main { align-self: center; padding: 36px 0; padding-right: env(safe-area-inset-right); }
 }
 @media (orientation: landscape) and (max-height: 500px) {
-  .art { background-position: 50% 62%; }
+  .art { background-image: url("painting.webp"); background-position: 63% 0; }
 }
 </style>
 </head>
