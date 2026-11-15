@@ -36,7 +36,8 @@ export const actionTitles: Record<ActionKind, string> = {
   meeting: "Plan a meeting",
   announcement: "Share an announcement",
 };
-export const primaryActions: Record<LiveArea, ActionKind> = {
+/** The head button of the volunteer areas. Help rooms have none; each carries its own in the section. */
+export const primaryActions: Partial<Record<LiveArea, ActionKind>> = {
   week: "announcement",
   team: "team",
   people: "invite",
@@ -85,5 +86,23 @@ export const headings: Record<LiveArea, LiveHeading> = {
   tasks: {
     title: "The little things matter.",
     deck: "Shared tasks and meetings, each with a clear next step.",
+  },
+  "help-line": {
+    title: "Every call, returned.",
+    deck: "Messages from the help line, and who is calling back.",
+    room: "help",
+    art: { src: "/assets/living-relief-poster.webp", position: "50% 88%", size: "150% auto" },
+  },
+  neighbors: {
+    title: "Neighbors, by name.",
+    deck: "Each household and the help it has received, kept private.",
+    room: "help",
+    art: { src: "/assets/threshold/courtyard-quiet-plate-v1.webp", position: "78% 62%", size: "auto 150%" },
+  },
+  treasury: {
+    title: "Every gift, cared for.",
+    deck: "What came in, what went out, and what it paid for.",
+    room: "help",
+    art: { src: "/assets/painted-world/meal.webp", position: "88% 70%", size: "auto 190%" },
   },
 };

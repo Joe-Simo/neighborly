@@ -135,6 +135,11 @@ export function LiveWorkspace({
     setDialog(kind);
   }
   const primary = primaryActions[area];
+  // An area with no menu line yet shows the plain menu button on a phone.
+  const menuLabel =
+    area !== "week" && area !== "mine"
+      ? navigation.find((item) => item.id === area)?.label
+      : undefined;
   const Section = sections[area];
   const heading = headingOverride
     ? { ...headings[area], art: undefined, ...headingOverride }
@@ -189,7 +194,7 @@ export function LiveWorkspace({
         <Link href="/app/week" aria-current={area === "week" ? "page" : undefined}><CalendarDays size={17} aria-hidden="true" />This week</Link>
         <Link href="/app/mine" aria-current={area === "mine" ? "page" : undefined}><Check size={17} aria-hidden="true" />My commitments</Link>
         <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <DialogTrigger asChild><Button variant="ghost" className="live-mobile-menu-trigger" aria-label={area !== "week" && area !== "mine" ? `Workspace menu, current section: ${navigation.find(item => item.id === area)?.label}` : "Workspace menu"}><Menu size={17} aria-hidden="true" />{area !== "week" && area !== "mine" ? navigation.find(item => item.id === area)?.label : "Menu"}</Button></DialogTrigger>
+          <DialogTrigger asChild><Button variant="ghost" className="live-mobile-menu-trigger" aria-label={menuLabel ? `Workspace menu, current section: ${menuLabel}` : "Workspace menu"}><Menu size={17} aria-hidden="true" />{menuLabel ?? "Menu"}</Button></DialogTrigger>
           <DialogContent className="live-mobile-menu">
             <DialogHeader><DialogTitle>Your workspace</DialogTitle><DialogDescription>{data.church.name}</DialogDescription></DialogHeader>
             <nav aria-label="All workspace sections">{navigation.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={() => setMobileMenuOpen(false)}><Icon size={19} aria-hidden="true" /><span>{label}</span>{area === id && <span className="live-menu-current">Current</span>}</Link>)}</nav>
@@ -224,7 +229,8 @@ export function LiveWorkspace({
               <h1>{heading.title}</h1>
               <p className="live-deck">{heading.deck}</p>
             </div>
-            {((isOwner && area !== "mine") ||
+            {primary &&
+              ((isOwner && area !== "mine") ||
               (data.canCoordinate && area === "commitments") ||
               area === "time-off") && (
               <Button onClick={() => open(primary)}>

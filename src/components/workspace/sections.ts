@@ -7,6 +7,9 @@ import { CommitmentsSection } from "@/components/workspace/volunteer/commitments
 import { MineSection } from "@/components/workspace/volunteer/mine";
 import { TimeOffSection } from "@/components/workspace/volunteer/time-off";
 import { TasksSection } from "@/components/workspace/volunteer/tasks";
+import { HelpLineSection } from "@/components/workspace/help-line/help-line";
+import { NeighborsSection } from "@/components/workspace/help-line/neighbors";
+import { TreasurySection } from "@/components/workspace/treasury/treasury";
 
 export const sections: Record<LiveArea, ComponentType> = {
   week: WeekSection,
@@ -16,4 +19,7 @@ export const sections: Record<LiveArea, ComponentType> = {
   mine: MineSection,
   "time-off": TimeOffSection,
   tasks: TasksSection,
+  "help-line": HelpLineSection,
+  neighbors: NeighborsSection,
+  treasury: TreasurySection,
 };

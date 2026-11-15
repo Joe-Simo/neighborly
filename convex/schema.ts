@@ -87,7 +87,7 @@ export default defineSchema({
     requestId: v.optional(v.id("assistanceRequests")),
     scheduledAt: v.number(),
     status: v.union(v.literal("scheduled"), v.literal("completed"), v.literal("cancelled")),
-    visitors: v.array(v.object({ memberId: v.id("memberships"), hours: v.number(), miles: v.number() })),
+    visitors: v.array(v.object({ memberId: v.id("memberships"), hours: v.number(), miles: v.number(), response: v.optional(v.union(v.literal("pending"), v.literal("accepted"), v.literal("declined"))) })),
     notes: v.string(),
     completedAt: v.optional(v.number()),
     createdBy: v.id("memberships"),
