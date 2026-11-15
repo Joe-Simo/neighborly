@@ -1,0 +1,376 @@
+"use client";
+
+import "./reports.css";
+import type { CSSProperties } from "react";
+import Link from "next/link";
+import { CircleCheck, Download, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
+import {
+  count,
+  isBlank,
+  kindLabels,
+  longSpanLabel,
+  money,
+  monthLabel,
+  plural,
+  reportLines,
+  spanLabel,
+  type ReportLine,
+  type YearReport,
+} from "@/components/workspace/reports/lines";
+
+const tableArt = "/assets/painted-world/welcome.webp";
+const share = (part: number, of: number): CSSProperties =>
+  ({ "--share": `${of > 0 ? Math.max(0, Math.round((part / of) * 1000) / 10) : 0}%` }) as CSSProperties;
+
+/** Paper-colored blocks in the shape of the page, while the year is added up. */
+export function ReportLoading() {
+  return (
+    <div role="status" aria-label="Adding up the year">
+      <div className="report-skeleton-figures">
+        {[0, 1, 2].map((cell) => (
+          <div key={cell}>
+            <b />
+            <i />
+            <b />
+          </div>
+        ))}
+      </div>
+      <div className="help-skeleton">
+        {[0, 1, 2].map((row) => (
+          <div key={row}>
+            <i />
+            <span>
+              <b />
+              <b />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function YearSwitch({
+  years,
+  current,
+  year,
+  onYear,
+}: {
+  years: number[];
+  current: number;
+  year: number;
+  onYear: (year: number) => void;
+}) {
+  if (years.length < 2) return null;
+  return (
+    <ToggleGroup
+      type="single"
+      className="report-years"
+      aria-label="Fiscal year"
+      value={String(year)}
+      onValueChange={(value) => value && onYear(Number(value))}
+    >
+      {[...years].reverse().map((option) => (
+        <ToggleGroupItem key={option} value={String(option)}>
+          {option}
+          {option === current && <span>so far</span>}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
+}
+
+export function ReportView({
+  report,
+  groupName,
+  thisMonth,
+  years,
+  done,
+  onPrint,
+  onSpreadsheet,
+}: {
+  report: YearReport;
+  groupName: string;
+  /** Today's month as "yyyy-MM" in the group's time zone; later months of a running year are still to come. */
+  thisMonth: string;
+  /** The year switch, when the group has more than one year on record. */
+  years?: React.ReactNode;
+  /** What just happened, said in the green line. */
+  done?: string;
+  onPrint: () => void;
+  onSpreadsheet: () => void;
+}) {
+  const soFar = report.closed ? "" : " so far";
+  const period = (
+    <div className="report-period">
+      <p>
+        <span>Fiscal year {report.year}</span>
+        {longSpanLabel(report)}
+        {soFar && ", so far"}
+      </p>
+      {years}
+    </div>
+  );
+
+  if (isBlank(report))
+    return (
+      <div className="report">
+        {period}
+        <HelpEmpty
+          title="Nothing to add up yet."
+          art={tableArt}
+          action={
+            <Button variant="outline" asChild>
+              <Link href="/app/help-line">Open the help line</Link>
+            </Button>
+          }
+        >
+          As calls, visits and payments are recorded, this year’s counts
+          appear here on their own.
+        </HelpEmpty>
+      </div>
+    );
+
+  const largestKind = Math.max(...report.kinds.map((line) => line.paid));
+  const largestMonth = Math.max(...report.months.map((line) => line.paid));
+  const serving = [
+    { name: "Home visits", detail: `${plural(report.visits, "visit")}, always in pairs`, hours: report.visitHours },
+    ...report.time.teams.map((team) => ({
+      name: team.name,
+      detail: `${plural(team.shifts, "shift")} · ${plural(team.people, "person", "people")}`,
+      hours: team.hours,
+    })),
+  ];
+  const mostHours = Math.max(...serving.map((line) => line.hours));
+  const outcomes = [
+    { is: "paid", label: "Paid", value: report.requests.paid },
+    { is: "approved", label: "Approved, waiting to be paid", value: report.requests.approved },
+    { is: "open", label: "Waiting for a decision", value: report.requests.open },
+    { is: "declined", label: "Declined", value: report.requests.declined },
+    { is: "closed", label: "Closed without help", value: report.requests.closed },
+  ].filter((outcome) => outcome.value > 0);
+  const sections = new Map<string, ReportLine[]>();
+  for (const line of reportLines(report))
+    sections.set(line.section, [...(sections.get(line.section) ?? []), line]);
+
+  return (
+    <div className="report">
+      <header className="report-print-head">
+        <p>{groupName}</p>
+        <h1>The year, added up.</h1>
+        <p>
+          Fiscal year {report.year}: {longSpanLabel(report)}
+          {soFar && ", so far"}
+        </p>
+      </header>
+      {period}
+      {done && <HelpDone>{done}</HelpDone>}
+
+      <dl className="help-figures">
+        <div>
+          <dt>Neighbors helped</dt>
+          <dd>
+            {count(report.households)}
+            <small>
+              Households, {spanLabel(report)}
+              {soFar}. {plural(report.people, "person", "people")} in all.
+            </small>
+          </dd>
+        </div>
+        <div>
+          <dt>Home visits</dt>
+          <dd>
+            {count(report.visits)}
+            <small>Always in pairs</small>
+          </dd>
+        </div>
+        <div>
+          <dt>Help given</dt>
+          <dd>
+            {money(report.helpPaid)}
+            <small>Paid direct, never in cash</small>
+          </dd>
+        </div>
+      </dl>
+
+      <div className="live-section-head">
+        <h2>By kind of help</h2>
+        <div className="live-row-actions report-actions">
+          <Button variant="outline" onClick={onPrint}>
+            <Printer size={17} aria-hidden="true" /> Print this year
+          </Button>
+          <Button variant="outline" onClick={onSpreadsheet}>
+            <Download size={17} aria-hidden="true" /> Spreadsheet
+          </Button>
+        </div>
+      </div>
+      <ol className="help-bars">
+        {report.kinds.map((line) => (
+          <li key={line.kind}>
+            <div>
+              <h3>{kindLabels[line.kind]}</h3>
+              <p>
+                {line.requestsPaid > 0
+                  ? `${plural(line.requestsPaid, "request")} paid · ${plural(line.people, "person", "people")}`
+                  : report.closed
+                    ? "None this year"
+                    : "None yet this year"}
+              </p>
+            </div>
+            <div className="help-bar" aria-hidden="true">
+              <span style={share(line.paid, largestKind)} />
+            </div>
+            <span className="help-amount">{money(line.paid)}</span>
+          </li>
+        ))}
+      </ol>
+
+      <section className="live-section">
+        <div className="live-section-head">
+          <h2>Month by month</h2>
+          <span className="live-count">Help paid, and the visits behind it</span>
+        </div>
+        <ol className="report-months">
+          {report.months.map((line) => {
+            const ahead = line.month > thisMonth;
+            return (
+              <li
+                key={line.month}
+                data-quiet={ahead || (line.paid === 0 && line.visits === 0) ? "" : undefined}
+                data-ahead={ahead ? "" : undefined}
+              >
+                <div className="report-month-bar" aria-hidden="true">
+                  {!ahead && <span style={share(line.paid, largestMonth)} />}
+                </div>
+                <h3>
+                  {monthLabel(line.month, true)}
+                  <span className="report-sr"> {line.month.slice(0, 4)}</span>
+                </h3>
+                {ahead ? (
+                  <p>Still to come</p>
+                ) : (
+                  <>
+                    <p className="help-amount">{money(line.paid)}</p>
+                    <p>{plural(line.visits, "visit")}</p>
+                  </>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
+      {report.requests.received > 0 && (
+        <section className="live-section">
+          <div className="live-section-head">
+            <h2>What became of each request</h2>
+            <span className="live-count">
+              {plural(report.requests.received, "request")} received
+            </span>
+          </div>
+          <div className="report-outcomes" aria-hidden="true">
+            {outcomes.map((outcome) => (
+              <span key={outcome.is} data-is={outcome.is} style={{ flexGrow: outcome.value }} />
+            ))}
+          </div>
+          <ul className="report-legend">
+            {outcomes.map((outcome) => (
+              <li key={outcome.is} data-is={outcome.is}>
+                <strong>{count(outcome.value)}</strong> {outcome.label}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className="live-section">
+        <div className="live-section-head">
+          <h2>Time given</h2>
+          <span className="live-count">
+            {plural(report.time.activeMembers, "active member")}
+          </span>
+        </div>
+        <dl className="help-figures">
+          <div>
+            <dt>Hours</dt>
+            <dd>
+              {count(report.time.hours)}
+              <small>
+                {serving
+                  .filter((line) => line.hours > 0)
+                  .map((line) => `${line.name} ${count(line.hours)}`)
+                  .join(" · ") || "No hours recorded yet"}
+              </small>
+            </dd>
+          </div>
+          <div>
+            <dt>Miles</dt>
+            <dd>
+              {count(report.visitMiles)}
+              <small>Driven to home visits</small>
+            </dd>
+          </div>
+          <div>
+            <dt>Calls returned</dt>
+            <dd>
+              {count(report.calls.returned)}
+              <small>Of {plural(report.calls.taken, "call")} taken</small>
+            </dd>
+          </div>
+        </dl>
+        {report.time.teams.length > 0 && (
+          <ol className="help-bars report-teams">
+            {serving.map((line) => (
+              <li key={line.name}>
+                <div>
+                  <h3>{line.name}</h3>
+                  <p>{line.detail}</p>
+                </div>
+                <div className="help-bar" aria-hidden="true">
+                  <span style={share(line.hours, mostHours)} />
+                </div>
+                <span className="help-amount">{plural(line.hours, "hour")}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+
+      <section className="live-section report-lines">
+        <div className="live-section-head">
+          <h2>Line by line</h2>
+          <span className="live-count">For your council’s yearly report</span>
+        </div>
+        <div className="report-form">
+          {[...sections].map(([name, lines]) => (
+            <table key={name}>
+              <caption>{name}</caption>
+              <tbody>
+                {lines.map((line) => (
+                  <tr key={line.line} data-total={line.total ? "" : undefined}>
+                    <th scope="row">{line.line}</th>
+                    <td>{line.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ))}
+        </div>
+      </section>
+
+      <p className="help-footnote">
+        <CircleCheck size={17} aria-hidden="true" />
+        <span>
+          These counts come from your own records. Nothing is typed in twice,
+          and no neighbor is named. The labels are plain words, not yet the
+          line names of the Society’s official form. Visits to prisons,
+          hospitals and care homes, and goods given in kind, are not recorded
+          here yet.
+        </span>
+      </p>
+    </div>
+  );
+}
