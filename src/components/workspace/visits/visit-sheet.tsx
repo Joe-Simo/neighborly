@@ -1,0 +1,223 @@
+"use client";
+
+import { useEffect, useLayoutEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery } from "convex/react";
+import { ArrowLeft, Lock, Printer } from "lucide-react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
+import { useWorkspace, type Workspace } from "@/components/workspace/context";
+import { HelpDialog } from "@/components/workspace/help-line/forms";
+import {
+  count,
+  languageLabels,
+  shortMoney,
+} from "@/components/workspace/help-line/format";
+import { HelpLoading } from "@/components/workspace/help-line/room";
+import { useSave } from "@/components/workspace/help-line/use-save";
+import { kindLabels, type Sheet } from "@/components/workspace/visits/format";
+
+/**
+ * What the pair carries to the door, made to be printed.
+ * Opening it shows a neighbor's details, so it is written down first, like opening the record.
+ */
+export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
+  const { data, format, setHeading } = useWorkspace();
+  const churchId = data.church.id;
+  // One neighbor's details: a plain head, with no painting.
+  useLayoutEffect(() => {
+    setHeading({
+      title: "For the two at the door.",
+      deck: "The visit sheet, to print and carry. It has room to write and to pray.",
+    });
+    return () => setHeading(null);
+  }, [setHeading]);
+  const router = useRouter();
+  const openSheet = useMutation(api.visits.openSheet);
+  const cancel = useMutation(api.visits.cancel);
+  const [opened, setOpened] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const { pending, error, save } = useSave();
+  useEffect(() => {
+    let current = true;
+    void openSheet({ churchId, visitId }).then(
+      () => current && setOpened(true),
+    );
+    return () => {
+      current = false;
+    };
+  }, [openSheet, churchId, visitId]);
+  const sheet = useQuery(
+    api.visits.sheet,
+    opened ? { churchId, visitId } : "skip",
+  );
+  if (!sheet) return <HelpLoading label="Opening the visit sheet" />;
+  return (
+    <>
+      <VisitSheetView
+        sheet={sheet}
+        format={format}
+        onPrint={() => window.print()}
+        onCallOff={() => setConfirming(true)}
+      />
+      {confirming && (
+        <HelpDialog
+          title="Call off this visit?"
+          description={`${sheet.visitors.join(" and ")} will no longer be going. ${sheet.neighbor.name} goes back to waiting for a pair.`}
+          onClose={() => setConfirming(false)}
+        >
+          {error && (
+            <div className="live-error" role="alert">
+              {error}
+            </div>
+          )}
+          <div className="live-form-actions">
+            <Button variant="outline" onClick={() => setConfirming(false)}>
+              Keep the visit
+            </Button>
+            <Button
+              disabled={pending}
+              onClick={async () => {
+                const outcome = await save(() => cancel({ churchId, visitId }));
+                if (outcome.saved) router.push("/app/visits");
+              }}
+            >
+              Call off the visit
+            </Button>
+          </div>
+        </HelpDialog>
+      )}
+    </>
+  );
+}
+
+const lines = (n: number) =>
+  Array.from({ length: n }, (_, index) => <i key={index} />);
+
+export function VisitSheetView({
+  sheet,
+  format,
+  onPrint,
+  onCallOff,
+}: {
+  sheet: Sheet;
+  format: Workspace["format"];
+  onPrint: () => void;
+  onCallOff: () => void;
+}) {
+  const { neighbor, request } = sheet;
+  const household = [
+    count(neighbor.adults, "adult", "adults"),
+    neighbor.children ? count(neighbor.children, "child", "children") : "",
+  ]
+    .filter(Boolean)
+    .join(", ");
+  return (
+    <>
+      <div className="visits-sheet-bar">
+        <Link className="visits-back" href="/app/visits">
+          <ArrowLeft size={17} aria-hidden="true" /> Home visits
+        </Link>
+        <div className="help-actions">
+          {sheet.status === "scheduled" && (
+            <Button variant="outline" onClick={onCallOff}>
+              Call off the visit
+            </Button>
+          )}
+          <Button onClick={onPrint}>
+            <Printer size={18} aria-hidden="true" /> Print this sheet
+          </Button>
+        </div>
+      </div>
+      <article
+        className="visits-paper"
+        aria-label={`Visit sheet for ${neighbor.name}`}
+      >
+        <header>
+          <p className="visits-paper-label">Home visit · {sheet.group}</p>
+          <h2>{neighbor.name}</h2>
+          <p className="visits-paper-when">
+            {format(sheet.scheduledAt, {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </p>
+        </header>
+        <dl className="visits-paper-facts">
+          <div>
+            <dt>Address</dt>
+            <dd>{neighbor.address}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd>{neighbor.phone || "None on file"}</dd>
+          </div>
+          <div>
+            <dt>Household</dt>
+            <dd>{household}</dd>
+          </div>
+          <div>
+            <dt>Speaks</dt>
+            <dd>{languageLabels[neighbor.language]}</dd>
+          </div>
+          <div>
+            <dt>Going together</dt>
+            <dd>{sheet.visitors.join(" and ")}</dd>
+          </div>
+          {request && (
+            <div>
+              <dt>Asked for</dt>
+              <dd>
+                {kindLabels[request.kind]}, {shortMoney(request.amount)}
+                {request.payeeName ? `, owed to ${request.payeeName}` : ""}
+              </dd>
+            </div>
+          )}
+        </dl>
+        {request?.summary && (
+          <p className="visits-paper-words">
+            <span>In their words</span>
+            {request.summary}
+          </p>
+        )}
+        {neighbor.notes && (
+          <p className="visits-paper-words">
+            <span>Good to know</span>
+            {neighbor.notes}
+          </p>
+        )}
+        <section className="visits-paper-write">
+          <h3>Prayer before the visit</h3>
+          <div className="visits-lines">{lines(3)}</div>
+        </section>
+        <section className="visits-paper-write">
+          <h3>What we found</h3>
+          <div className="visits-lines">{lines(7)}</div>
+        </section>
+        <section className="visits-paper-write">
+          <h3>Prayer after the visit</h3>
+          <div className="visits-lines">{lines(3)}</div>
+        </section>
+        <dl className="visits-paper-blanks">
+          <div>
+            <dt>Hours</dt>
+            <dd />
+          </div>
+          <div>
+            <dt>Miles</dt>
+            <dd />
+          </div>
+        </dl>
+        <footer>
+          <Lock size={15} aria-hidden="true" />
+          Private. After the write-up, hand this sheet back or shred it.
+        </footer>
+      </article>
+    </>
+  );
+}

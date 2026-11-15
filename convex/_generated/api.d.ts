@@ -26,6 +26,7 @@ import type * as reports from "../reports.js";
 import type * as sampleData from "../sampleData.js";
 import type * as treasury from "../treasury.js";
 import type * as users from "../users.js";
+import type * as visits from "../visits.js";
 import type * as workspace from "../workspace.js";
 
 import type {
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   sampleData: typeof sampleData;
   treasury: typeof treasury;
   users: typeof users;
+  visits: typeof visits;
   workspace: typeof workspace;
 }>;
 
