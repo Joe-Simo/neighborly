@@ -204,3 +204,6 @@
 /* The draft card's first line: who called and when. The name is never broken across lines. */
 .help-sheet .help-from { margin: 0 0 8px; font-size: 19px; line-height: 1.4; color: var(--live-ink); }
 .help-sheet .help-from strong { font-weight: 600; white-space: nowrap; }
+/* Closing a conference: the offered first step sits between the terms and the name, quiet, on one line where it fits. */
+.closing-first { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; }
+.closing-first p { margin: 0; font-size: 17px; color: var(--live-ink); }
