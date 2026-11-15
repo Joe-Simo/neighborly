@@ -17,17 +17,19 @@ export function ToolsSection() {
   // The menu shows this room to coordinators and owners only. A member who types the address is told why it is empty.
   if (!isOwner && !data.canCoordinate)
     return (
-      <LiveState
-        kind="private"
-        title="For your coordinators."
-        action={
-          <Button variant="outline" asChild>
-            <Link href="/app/mine">{words.states.privateAction}</Link>
-          </Button>
-        }
-      >
-        Bringing records in and taking them out is theirs to do. Your own commitments are where they always are.
-      </LiveState>
+      <div className="tools-private">
+        <LiveState
+          kind="private"
+          title={words.states.privateTitle}
+          action={
+            <Button variant="outline" asChild>
+              <Link href="/app/mine">{words.states.privateAction}</Link>
+            </Button>
+          }
+        >
+          {words.states.privateDeck}
+        </LiveState>
+      </div>
     );
   return (
     <div className="tools-leaves paper-rows">
