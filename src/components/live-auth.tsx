@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ReliefPicture } from "@/components/workspace/relief";
+import { LiveFailure } from "@/components/workspace/states";
 import { languageNames, languages, type Language } from "@/lib/words";
 import { cn } from "@/lib/utils";
 import { authWords, firstLanguage, keepLanguage, type AuthError } from "./live-auth-words";
@@ -260,11 +261,7 @@ export function LiveAuth({
   const busy = pending || opening || given;
   const messages = (
     <>
-      {error && (
-        <div role="alert" className="live-error paper-rise">
-          {w.errors[error]}
-        </div>
-      )}
+      {error && <LiveFailure message={w.errors[error]} kept="" />}
       {notice && (
         <div role="status" className="live-success paper-rise">
           {w.onItsWay}
@@ -420,15 +417,7 @@ export function LiveAuth({
               {opening ? w.sampleOpening : w.sample}
               {!opening && <ArrowRight size={16} aria-hidden="true" />}
             </Button>
-            {sampleError && (
-              <div
-                role="alert"
-                className="live-error paper-rise"
-                ref={(alert) => alert?.scrollIntoView({ block: "nearest" })}
-              >
-                {w[sampleError]}
-              </div>
-            )}
+            {sampleError && <LiveFailure message={w[sampleError]} kept="" />}
             <small>{w.sampleNote}</small>
           </div>
         )}

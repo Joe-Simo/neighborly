@@ -83,6 +83,8 @@
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+.entry :is(.live-success, .live-error) { animation: paper-rise 320ms var(--paper-ease) backwards; }
+.entry .live-error p { margin: 0; }
 .entry .live-success,
 .entry .live-error {
   margin: 0;
@@ -285,6 +287,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .entry-art > .relief,
+  .entry :is(.live-success, .live-error),
   .live-auth-spin,
   .live-app .entry-sample[data-opening] button { animation: none; }
   .entry-tabs button::after,
