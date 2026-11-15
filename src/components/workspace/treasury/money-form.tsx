@@ -12,17 +12,22 @@ import {
 } from "@/components/workspace/treasury/form-parts";
 import {
   incomeSources,
+  spendingKinds,
   type IncomeSource,
+  type SpendingKind,
 } from "@/components/workspace/treasury/labels";
 
-export type MoneyKind = IncomeSource | "gift";
-export type Money = {
-  kind: MoneyKind;
-  amount: number;
-  date: string;
-  name: string;
-  memo: string;
-};
+export type Money = (
+  | { direction: "in"; kind: IncomeSource }
+  | { direction: "out"; kind: SpendingKind }
+) & { amount: number; date: string; name: string; memo: string };
+/** Every choice in the "What is it?" list, keyed "in:collection", "out:pantry". */
+const choices = [
+  ...incomeSources.map(([kind]) => ({ direction: "in", kind }) as const),
+  ...spendingKinds.map(([kind]) => ({ direction: "out", kind }) as const),
+];
+type Choice = (typeof choices)[number];
+const keyOf = (choice: Choice) => `${choice.direction}:${choice.kind}`;
 
 export function MoneyForm({
   today,
@@ -31,18 +36,19 @@ export function MoneyForm({
   onCancel,
 }: {
   today: string;
-  start: MoneyKind;
+  start: IncomeSource;
   onSubmit: (money: Money) => Promise<Refusal>;
   onCancel: () => void;
 }) {
-  const [kind, setKind] = useState<MoneyKind>(start);
+  const [choice, setChoice] = useState<Choice>({ direction: "in", kind: start });
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today);
   const [name, setName] = useState("");
   const [memo, setMemo] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const out = kind === "gift";
+  const out = choice.direction === "out";
+  const gift = out && choice.kind === "twinning";
   return (
     <form
       className="live-form"
@@ -53,7 +59,7 @@ export function MoneyForm({
           return setError("Enter the amount in dollars and cents, like 640.00.");
         setError("");
         setSaving(true);
-        const refusal = await onSubmit({ kind, amount: cents, date, name, memo });
+        const refusal = await onSubmit({ ...choice, amount: cents, date, name, memo });
         setSaving(false);
         if (refusal) setError(refusal);
       }}
@@ -62,30 +68,34 @@ export function MoneyForm({
         label="What is it?"
         help={
           out
-            ? "A gift to another conference. Payments for a neighbor are recorded from their approved request."
+            ? "Help for a neighbor is not recorded here. It is paid from their approved request, so it stays tied to it."
             : undefined
         }
       >
         <NativeSelect
           className="w-full"
           name="kind"
-          value={kind}
+          value={keyOf(choice)}
           onChange={(event) => {
-            const chosen = [...incomeSources.map(([id]) => id), "gift" as const].find(
-              (id) => id === event.target.value,
+            const chosen = choices.find(
+              (candidate) => keyOf(candidate) === event.target.value,
             );
-            if (chosen) setKind(chosen);
+            if (chosen) setChoice(chosen);
           }}
         >
           <optgroup label="Money in">
-            {incomeSources.map(([id, label]) => (
-              <option key={id} value={id}>
+            {incomeSources.map(([kind, label]) => (
+              <option key={kind} value={`in:${kind}`}>
                 {label}
               </option>
             ))}
           </optgroup>
           <optgroup label="Money out">
-            <option value="gift">Twinning gift to another conference</option>
+            {spendingKinds.map(([kind, label]) => (
+              <option key={kind} value={`out:${kind}`}>
+                {label}
+              </option>
+            ))}
           </optgroup>
         </NativeSelect>
       </LiveField>
@@ -101,7 +111,7 @@ export function MoneyForm({
             required
           />
         </LiveField>
-        <LiveField label={out ? "Day sent" : "Day received"}>
+        <LiveField label={out ? "Day paid" : "Day received"}>
           <Input
             type="date"
             name="date"
@@ -112,7 +122,7 @@ export function MoneyForm({
           />
         </LiveField>
       </div>
-      <LiveField label={out ? "To which conference" : "From"}>
+      <LiveField label={gift ? "To which conference" : out ? "Paid to" : "From"}>
         <Input
           name="name"
           maxLength={120}
@@ -122,7 +132,7 @@ export function MoneyForm({
           required
         />
       </LiveField>
-      <LiveField label="Note (optional)">
+      <LiveField label={out ? "Check number or note (optional)" : "Note (optional)"}>
         <Input
           name="memo"
           maxLength={200}
@@ -132,7 +142,7 @@ export function MoneyForm({
       </LiveField>
       {error && <FormError message={error} />}
       <FormActions saving={saving} onCancel={onCancel}>
-        {out ? "Record gift" : "Record money in"}
+        {gift ? "Record gift" : out ? "Record money out" : "Record money in"}
       </FormActions>
     </form>
   );

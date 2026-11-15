@@ -53,7 +53,7 @@ export function TreasurySection() {
   const payable = useQuery(api.treasury.payable, allowed ? { churchId } : "skip");
   const recordPayment = useMutation(api.treasury.recordPayment);
   const recordIncome = useMutation(api.treasury.recordIncome);
-  const recordTwinningGift = useMutation(api.treasury.recordTwinningGift);
+  const recordSpending = useMutation(api.treasury.recordSpending);
   const reverseEntry = useMutation(api.treasury.reverseEntry);
 
   const [open, setOpen] = useState<Open | null>(null);
@@ -166,28 +166,21 @@ export function TreasurySection() {
               <DialogHeader>
                 <DialogTitle>Record money</DialogTitle>
                 <DialogDescription>
-                  A collection, a gift, or what the conference holds today.
+                  Money in, or money out that is not for a neighbor.
                 </DialogDescription>
               </DialogHeader>
               <MoneyForm
                 today={shown.today}
                 start={empty ? "opening" : "collection"}
                 onCancel={() => setOpen(null)}
-                onSubmit={({ kind, name, ...money }) =>
+                onSubmit={({ name, memo, amount, date, ...what }) =>
                   settle(
                     () =>
-                      kind === "gift"
-                        ? recordTwinningGift({ churchId, to: name, ...money })
-                        : recordIncome({
-                            churchId,
-                            source: kind,
-                            from: name,
-                            ...money,
-                          }),
-                    kind === "gift"
-                      ? `A twinning gift of ${formatCents(money.amount)} to ${name.trim()} is recorded.`
-                      : `${formatCents(money.amount)} from ${name.trim()} is recorded, and the balance is up to date.`,
-                    money.date,
+                      what.direction === "out"
+                        ? recordSpending({ churchId, kind: what.kind, to: name, amount, date, memo })
+                        : recordIncome({ churchId, source: what.kind, from: name, amount, date, memo }),
+                    `${formatCents(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
+                    date,
                   )
                 }
               />

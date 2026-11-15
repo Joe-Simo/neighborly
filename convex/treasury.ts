@@ -27,6 +27,16 @@ export const incomeSources = {
   opening: "Opening balance",
 } as const;
 export const TWINNING_GIFT = "Twinning gift";
+/** What a conference spends on besides a neighbor's request. The label is what the ledger stores and shows. */
+export const spendingKinds = {
+  twinning: TWINNING_GIFT,
+  pantry: "Pantry purchase",
+  supplies: "Supplies",
+  dues: "Council dues",
+  fee: "Bank fee",
+  other: "Other spending",
+} as const;
+const spendingKind = v.union(v.literal("twinning"), v.literal("pantry"), v.literal("supplies"), v.literal("dues"), v.literal("fee"), v.literal("other"));
 const incomeSource = v.union(v.literal("collection"), v.literal("walk"), v.literal("donation"), v.literal("twinning"), v.literal("opening"));
 
 type Ctx = QueryCtx | MutationCtx;
@@ -283,5 +293,63 @@ export const reverseEntry = mutation({
     // Taking back a payment on a request that was paid in full means it is owed again.
     if (entry.kind === "expense" && entry.requestId && (await ctx.db.get("assistanceRequests", entry.requestId))?.status === "paid") await settleRequest(ctx, member, entry.requestId, false);
     return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: entry.kind === "income" ? "expense" : "income", amount: entry.amount, date, category: entry.category, payee: entry.payee, memo: reason, requestId: entry.requestId, neighborId: entry.neighborId, reverses: entry._id, recordedBy: member._id, createdAt: Date.now() });
+  },
+});
+
+/**
+ * Money out that is not for a neighbor: food bought for the pantry, supplies, council dues, a bank
+ * fee, a twinning gift. Help for a neighbor is never recorded here; it goes through recordPayment
+ * so that it stays tied to the request.
+ */
+export const recordSpending = mutation({
+  args: { churchId: v.id("churches"), kind: spendingKind, amount: v.number(), date: v.string(), to: v.string(), memo: v.optional(v.string()) },
+  returns: v.id("ledgerEntries"),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    requireCents(args.amount);
+    const payee = named(args.to, "Say who was paid.");
+    const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
+    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date, category: spendingKinds[args.kind], payee, memo, recordedBy: member._id, createdAt: Date.now() });
+  },
+});
+
+/**
+ * Cash in and cash out by kind between two days, both included, with the balance before and
+ * after. For the reports stream and the treasurer's report at a meeting. A reversal takes away
+ * from the kind it corrects, so nothing is counted on both sides. No neighbor is named.
+ */
+export const cashFlow = query({
+  args: { churchId: v.id("churches"), from: v.string(), to: v.string() },
+  returns: v.object({
+    opening: v.number(),
+    closing: v.number(),
+    moneyIn: v.number(),
+    moneyOut: v.number(),
+    kinds: v.array(v.object({ category: v.string(), direction: v.union(v.literal("in"), v.literal("out")), amount: v.number(), entries: v.number() })),
+  }),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    for (const date of [args.from, args.to]) if (!DateTime.fromFormat(date, "yyyy-MM-dd").isValid) throw new Error("Choose the day.");
+    if (args.to < args.from) throw new Error("The last day must be on or after the first day.");
+    let opening = 0, closing = 0;
+    const kinds = new Map<string, { category: string; direction: "in" | "out"; amount: number; entries: number }>();
+    for (const entry of await ledgerEntries(ctx, args.churchId)) {
+      if (entry.date > args.to) break;
+      closing += signed(entry);
+      if (entry.date < args.from) {
+        opening += signed(entry);
+        continue;
+      }
+      // A reversal belongs to the side of the entry it takes back.
+      const direction = (entry.kind === "income") === !entry.reverses ? "in" : "out";
+      const key = `${direction}:${entry.category}`;
+      const kind = kinds.get(key) ?? { category: entry.category, direction, amount: 0, entries: 0 };
+      kind.amount += entry.reverses ? -entry.amount : entry.amount;
+      kind.entries += entry.reverses ? -1 : 1;
+      kinds.set(key, kind);
+    }
+    const rows = [...kinds.values()].sort((a, b) => a.direction.localeCompare(b.direction) || b.amount - a.amount);
+    const total = (direction: "in" | "out") => rows.reduce((sum, row) => (row.direction === direction ? sum + row.amount : sum), 0);
+    return { opening, closing, moneyIn: total("in"), moneyOut: total("out"), kinds: rows };
   },
 });

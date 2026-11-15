@@ -179,6 +179,74 @@ describe("money in and twinning gifts", () => {
   });
 });
 
+describe("spending that is not for a neighbor", () => {
+  test("each kind is stored under its plain name, lowers the balance and is tied to no request", async () => {
+    const { ids, as, income, entries } = await setup();
+    const owner = as(ids.owner);
+    await income(100000, day(5));
+    const kinds = [["pantry", "Pantry purchase"], ["supplies", "Supplies"], ["dues", "Council dues"], ["fee", "Bank fee"], ["twinning", "Twinning gift"], ["other", "Other spending"]] as const;
+    for (const [kind] of kinds) await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind, amount: 1250, date: day(1), to: " Fixture Family Market ", memo: "Receipt 88" });
+    const spent = (await entries()).filter((entry) => entry.kind === "expense");
+    expect(spent.map((entry) => entry.category)).toEqual(kinds.map(([, label]) => label));
+    expect(spent.every((entry) => entry.payee === "Fixture Family Market" && entry.memo === "Receipt 88" && !entry.requestId && !entry.neighborId && entry.recordedBy === ids.owner.memberId)).toBe(true);
+    const view = await owner.query(api.treasury.ledger, { churchId: ids.church });
+    expect(view).toMatchObject({ balance: 100000 - 6 * 1250, neighborsHelped: 0 });
+  });
+
+  test("it is refused to a member, and needs whole cents, a real day and a payee", async () => {
+    const { ids, as, entries } = await setup();
+    const spend = (person: { userId: string }, fields: { amount?: number; date?: string; to?: string } = {}) => as(person).mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "pantry", amount: 5000, date: day(), to: "Fixture Family Market", ...fields });
+    await expect(spend(ids.member)).rejects.toThrow(refused);
+    await expect(spend(ids.stranger)).rejects.toThrow("Workspace access required.");
+    for (const amount of [12.34, 0, -1]) await expect(spend(ids.owner, { amount })).rejects.toThrow("Enter an amount");
+    await expect(spend(ids.owner, { date: day(-1) })).rejects.toThrow("cannot be dated in the future");
+    await expect(spend(ids.owner, { to: " " })).rejects.toThrow("Say who was paid.");
+    expect(await entries()).toHaveLength(0);
+  });
+});
+
+describe("cash in and cash out by kind", () => {
+  test("a period adds up by kind, joins the balance before to the balance after, and nets reversals", async () => {
+    const { ids, as, request, income } = await setup();
+    const owner = as(ids.owner);
+    await income(300000, day(40), "Opening balance");
+    await income(64000, day(9));
+    await income(36000, day(8));
+    await income(15000, day(7), "Donation");
+    const paymentId = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 20000 }), amount: 20000, date: day(6) });
+    await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 9000 }), amount: 9000, date: day(6) });
+    await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "pantry", amount: 4250, date: day(5), to: "Fixture Family Market" });
+    const doubled = await owner.mutation(api.treasury.recordIncome, { churchId: ids.church, source: "donation", amount: 15000, date: day(4), from: "Anonymous gift" });
+    await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: doubled, reason: "Entered twice" });
+    await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: paymentId, reason: "Check never cashed" });
+
+    const flow = await owner.query(api.treasury.cashFlow, { churchId: ids.church, from: day(10), to: day() });
+    expect(flow).toEqual({
+      opening: 300000,
+      closing: 300000 + 115000 - 13250,
+      moneyIn: 115000,
+      moneyOut: 13250,
+      kinds: [
+        { category: "Parish collection", direction: "in", amount: 100000, entries: 2 },
+        { category: "Donation", direction: "in", amount: 15000, entries: 1 },
+        { category: "utility", direction: "out", amount: 9000, entries: 1 },
+        { category: "Pantry purchase", direction: "out", amount: 4250, entries: 1 },
+      ],
+    });
+    expect(flow.closing).toBe((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance);
+    // Before anything was recorded there is nothing, and a later period opens where the earlier one closed.
+    expect(await owner.query(api.treasury.cashFlow, { churchId: ids.church, from: day(90), to: day(41) })).toEqual({ opening: 0, closing: 0, moneyIn: 0, moneyOut: 0, kinds: [] });
+    expect((await owner.query(api.treasury.cashFlow, { churchId: ids.church, from: day(6), to: day(6) })).opening).toBe(415000);
+  });
+
+  test("it is refused to a member and needs two real days in order", async () => {
+    const { ids, as } = await setup();
+    await expect(as(ids.member).query(api.treasury.cashFlow, { churchId: ids.church, from: day(5), to: day() })).rejects.toThrow(refused);
+    await expect(as(ids.owner).query(api.treasury.cashFlow, { churchId: ids.church, from: day(), to: day(5) })).rejects.toThrow("on or after the first day");
+    await expect(as(ids.owner).query(api.treasury.cashFlow, { churchId: ids.church, from: "soon", to: day() })).rejects.toThrow("Choose the day.");
+  });
+});
+
 describe("taking an entry back", () => {
   test("a reversal is a new entry that restores the balance and leaves the original untouched", async () => {
     const { t, ids, as, request, income, entries } = await setup();

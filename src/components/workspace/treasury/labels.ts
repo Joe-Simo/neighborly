@@ -14,6 +14,15 @@ export const incomeSources = [
   ["opening", "Opening balance"],
 ] as const;
 export type IncomeSource = (typeof incomeSources)[number][0];
+export const spendingKinds = [
+  ["pantry", "Pantry purchase"],
+  ["supplies", "Supplies"],
+  ["dues", "Council dues"],
+  ["fee", "Bank fee"],
+  ["twinning", "Twinning gift to another conference"],
+  ["other", "Other spending"],
+] as const;
+export type SpendingKind = (typeof spendingKinds)[number][0];
 
 const kinds: Record<string, string> = {
   rent: "Rent",
@@ -38,9 +47,10 @@ export function entryLines(entry: LedgerEntry) {
     return { title: entry.summary, detail: `Paid to ${entry.payee}${entry.memo && ` · ${entry.memo}`}` };
   if (entry.category === TWINNING_GIFT)
     return { title: TWINNING_GIFT, detail: `To ${entry.payee}${entry.memo && ` · ${entry.memo}`}` };
+  const who = `${entry.kind === "income" ? "From" : "Paid to"} ${entry.payee}`;
   return entry.memo
-    ? { title: entry.memo, detail: `${entry.category}, ${entry.payee}` }
-    : { title: entry.category, detail: `From ${entry.payee}` };
+    ? { title: entry.memo, detail: `${entry.category} · ${who}` }
+    : { title: entry.category, detail: who };
 }
 
 // Ledger days are calendar days, not moments, so they are formatted at noon UTC and never shift.

@@ -68,10 +68,19 @@ export function LedgerView({
     (entry) =>
       entry.category === TWINNING_GIFT && !entry.reverses && !entry.reversed,
   ).length;
+  const other = ledger.entries.filter(
+    (entry) =>
+      entry.kind === "expense" &&
+      !entry.neighbor &&
+      entry.category !== TWINNING_GIFT &&
+      !entry.reverses &&
+      !entry.reversed,
+  ).length;
   const paidFor = [
     ledger.neighborsHelped > 0 &&
       count(ledger.neighborsHelped, "neighbor", "neighbors"),
     gifts > 0 && count(gifts, "twinning gift", "twinning gifts"),
+    other > 0 && count(other, "other payment", "other payments"),
   ].filter(Boolean);
   const [first, ...waiting] = payable;
   const untouched = isUntouched(ledger) && !payable.length;
@@ -209,7 +218,7 @@ export function LedgerView({
             <ChevronRight aria-hidden="true" />
           </Button>
         </div>
-        <span className="live-count">Every payment is tied to a request</span>
+        <span className="live-count">Every payment for a neighbor is tied to a request</span>
       </div>
       {ledger.entries.length ? (
         <div className="live-table-scroll">
