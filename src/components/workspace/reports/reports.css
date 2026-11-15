@@ -564,6 +564,12 @@
   .report .help-bars li[data-counted] { grid-template-columns: 330px minmax(0, 1fr) max-content; }
 }
 @media (max-width: 850px) {
+  /* On the phone the small line runs the full width under the title and the count, where the bar sits in other rows. */
+  .report .help-bars li[data-counted] { row-gap: 4px; align-items: baseline; }
+  .report .help-bars li[data-counted] > div:first-child { display: contents; }
+  .report .help-bars li[data-counted] h3 { order: 1; margin: 0; }
+  .report .help-bars li[data-counted] .help-amount { order: 2; }
+  .report .help-bars li[data-counted] p { order: 3; grid-column: 1 / -1; }
   .report .help-bars li[data-counted] .help-bar { display: none; }
 }
 @media print {
