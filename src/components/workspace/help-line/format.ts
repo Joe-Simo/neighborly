@@ -67,6 +67,9 @@ export const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
 export const recordHref = (neighborId: string) =>
   `/app/neighbors?neighbor=${neighborId}`;
+/** Opens the neighbor's record with this request on the sheet, ready to be decided. */
+export const requestHref = (neighborId: string, requestId: string) =>
+  `${recordHref(neighborId)}&request=${requestId}`;
 /** "Mother, 41 · Son, 12": the household without anyone's name. */
 export const livesHere = (people: NeighborRecord["household"]) =>
   people

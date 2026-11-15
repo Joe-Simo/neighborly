@@ -15,6 +15,7 @@ import { FormEnd } from "@/components/workspace/help-line/forms";
 import {
   accountKinds,
   cents,
+  householdDetail,
   livesHere,
   shortMoney,
   total,
@@ -63,7 +64,11 @@ export function AtHome({
       <dl className="help-home">
         <div>
           <dt>Lives here</dt>
-          <dd>{household.length ? livesHere(household) : "Not written down yet."}</dd>
+          <dd>
+            {household.length
+              ? livesHere(household)
+              : householdDetail(record.neighbor.adults, record.neighbor.children)}
+          </dd>
           {change("people", !household.length, "Say who lives here")}
         </div>
         <div>
@@ -118,6 +123,11 @@ export function AtHome({
               </Button>
             )}
           </span>
+          {numbers && (
+            <p className="help-noted" role="status">
+              Noted on the record that you looked.
+            </p>
+          )}
         </div>
       </dl>
     </section>
@@ -202,14 +212,19 @@ export function PeopleForm({
       className="live-form help-form"
       onSubmit={async (event) => {
         event.preventDefault();
+        const thisYear = new Date().getFullYear();
         const outcome = await save(() =>
           saveHousehold({
             ...target,
-            household: people.map((person) => ({
-              relationship: person.relationship,
-              child: person.child,
-              birthYear: person.born ? Number(person.born) : undefined,
-            })),
+            household: people.map((person) => {
+              const birthYear = /^\d{4}$/.test(person.born) ? Number(person.born) : undefined;
+              return {
+                relationship: person.relationship,
+                // A birth year says adult or child by itself; the question is only asked without one.
+                child: birthYear === undefined ? person.child : thisYear - birthYear < 18,
+                birthYear,
+              };
+            }),
           }),
         );
         if (outcome.saved) onSaved();
@@ -233,16 +248,6 @@ export function PeopleForm({
                 onChange={(event) => set({ relationship: event.target.value })}
               />
             </LiveField>
-            <LiveField label="Is">
-              <NativeSelect
-                className="w-full"
-                value={person.child ? "child" : "adult"}
-                onChange={(event) => set({ child: event.target.value === "child" })}
-              >
-                <option value="adult">Adult</option>
-                <option value="child">Child</option>
-              </NativeSelect>
-            </LiveField>
             <LiveField label="Born">
               <Input
                 value={person.born}
@@ -252,6 +257,20 @@ export function PeopleForm({
                 onChange={(event) => set({ born: event.target.value })}
               />
             </LiveField>
+            {person.born.trim() ? (
+              <span />
+            ) : (
+              <LiveField label="Adult or child">
+                <NativeSelect
+                  className="w-full"
+                  value={person.child ? "child" : "adult"}
+                  onChange={(event) => set({ child: event.target.value === "child" })}
+                >
+                  <option value="adult">Adult</option>
+                  <option value="child">Child</option>
+                </NativeSelect>
+              </LiveField>
+            )}
           </>
         )}
       </Lines>
@@ -370,27 +389,46 @@ export function MoneyForm({
   );
 }
 
+/**
+ * Opens with numbers covered, like the record: a line keeps the number it has unless a new one is
+ * typed. "Show numbers" is the same audited door as on the record.
+ */
 export function AccountsForm({
   target,
   accounts,
+  numbers,
+  onShowNumbers,
   onSaved,
 }: {
   target: Target;
-  accounts: Accounts;
+  accounts: NeighborRecord["accounts"];
+  numbers: Accounts | null;
+  onShowNumbers: () => void;
   onSaved: () => void;
 }) {
   const saveHousehold = useMutation(api.neighbors.saveHousehold);
   const { pending, error, save } = useSave();
-  const blank: Accounts[number] = { kind: "utility", name: "", accountNumber: "", phone: "" };
-  const [lines, setLines] = useState<Accounts>(
-    accounts.length ? accounts : [{ ...blank, kind: "landlord" }],
+  type Line = { kind: keyof typeof accountKinds; name: string; phone: string; from?: number; typedNumber: string | null };
+  const blank: Line = { kind: "utility", name: "", phone: "", typedNumber: "" };
+  const [lines, setLines] = useState<Line[]>(
+    accounts.length
+      ? accounts.map((account, from) => ({ kind: account.kind, name: account.name, phone: account.phone, from, typedNumber: null }))
+      : [{ ...blank, kind: "landlord" }],
   );
+  const onFile = (line: Line) => (line.from === undefined ? undefined : accounts[line.from]);
   return (
     <form
       className="live-form help-form"
       onSubmit={async (event) => {
         event.preventDefault();
-        const outcome = await save(() => saveHousehold({ ...target, accounts: lines }));
+        const outcome = await save(() =>
+          saveHousehold({
+            ...target,
+            accounts: lines.map(({ from, typedNumber, ...line }) =>
+              typedNumber === null ? { ...line, keep: from } : { ...line, accountNumber: typedNumber },
+            ),
+          }),
+        );
         if (outcome.saved) onSaved();
       }}
     >
@@ -410,7 +448,12 @@ export function AccountsForm({
                 value={account.kind}
                 onChange={(event) =>
                   set({
-                    kind: event.target.value === "landlord" ? "landlord" : event.target.value === "other" ? "other" : "utility",
+                    kind:
+                      event.target.value === "landlord"
+                        ? "landlord"
+                        : event.target.value === "other"
+                          ? "other"
+                          : "utility",
                   })
                 }
               >
@@ -430,9 +473,15 @@ export function AccountsForm({
             </LiveField>
             <LiveField label="Account number">
               <Input
-                value={account.accountNumber}
+                value={
+                  account.typedNumber ??
+                  (account.from === undefined ? "" : (numbers?.[account.from]?.accountNumber ?? ""))
+                }
+                placeholder={
+                  !numbers && onFile(account)?.ending ? `Ending ${onFile(account)?.ending}` : undefined
+                }
                 autoComplete="off"
-                onChange={(event) => set({ accountNumber: event.target.value })}
+                onChange={(event) => set({ typedNumber: event.target.value })}
               />
             </LiveField>
             <LiveField label="Their phone">
@@ -446,10 +495,22 @@ export function AccountsForm({
         )}
       </Lines>
       <p className="help-form-note">
-        The record shows only the last four digits. Looking at a full number is written down, like
-        opening the record.
+        {numbers
+          ? "Noted on the record that you looked."
+          : "Numbers on file stay covered and are kept as they are unless you type a new one."}
       </p>
-      <FormEnd error={error} pending={pending} submit="Save accounts" />
+      <FormEnd error={error} pending={pending} submit="Save accounts">
+        {!numbers && accounts.some((account) => account.ending) && (
+          <Button
+            type="button"
+            variant="link"
+            className="help-text-action"
+            onClick={onShowNumbers}
+          >
+            Show numbers
+          </Button>
+        )}
+      </FormEnd>
     </form>
   );
 }

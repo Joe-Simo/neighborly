@@ -183,11 +183,12 @@ export const saveHousehold = mutation({
     neighborId: v.id("neighbors"),
     household: v.optional(v.array(householdMember)),
     money: v.optional(v.object({ income: v.array(moneyLine), expenses: v.array(moneyLine) })),
-    accounts: v.optional(v.array(account)),
+    /** `keep` is the place of an account already on file whose number stays as it is, for a form that never saw it. */
+    accounts: v.optional(v.array(v.object({ ...accountFields, accountNumber: v.optional(v.string()), keep: v.optional(v.number()) }))),
   },
   returns: v.null(),
   handler: async (ctx, { churchId, neighborId, household, money, accounts }) => {
-    await neighborRecord(ctx, churchId, neighborId);
+    const { neighbor } = await neighborRecord(ctx, churchId, neighborId);
     const thisYear = new Date().getUTCFullYear();
     const lines = (given: Infer<typeof moneyLine>[]) =>
       given.slice(0, 20).map((line) => {
@@ -211,7 +212,8 @@ export const saveHousehold = mutation({
             accounts: accounts.slice(0, 12).map((given) => {
               const name = short(given.name, "A name", 120);
               if (!name) throw new Error("Each account needs the name of who is paid.");
-              return { kind: given.kind, name, accountNumber: short(given.accountNumber, "An account number", 60), phone: short(given.phone, "A phone number", 40) };
+              const kept = given.keep === undefined ? "" : (neighbor.accounts?.[given.keep]?.accountNumber ?? "");
+              return { kind: given.kind, name, accountNumber: given.accountNumber === undefined ? kept : short(given.accountNumber, "An account number", 60), phone: short(given.phone, "A phone number", 40) };
             }),
           }
         : {}),
@@ -249,7 +251,7 @@ export const addNote = mutation({
 
 const historyEvent = v.union(
   v.object({ type: v.literal("call"), at: v.number(), note: v.string(), who: v.string() }),
-  v.object({ type: v.literal("visit"), at: v.number(), who: v.array(v.string()) }),
+  v.object({ type: v.literal("visit"), at: v.number(), who: v.array(v.string()), note: v.optional(v.string()) }),
   v.object({ type: v.literal("payment"), at: v.number(), category: v.string(), payee: v.string(), amount: v.number(), who: v.string() }),
   v.object({ type: v.literal("note"), at: v.number(), note: v.string(), who: v.string() }),
   v.object({ type: v.literal("brought"), at: v.number(), kind: schema.tables.assistanceRequests.validator.fields.kind, payee: v.string(), amount: v.number() }),
@@ -297,7 +299,7 @@ export const record = query({
     const visitsDone = visitDocs.filter((visit) => visit.status === "completed");
     const history: Infer<typeof historyEvent>[] = [
       ...calls.map((call) => ({ type: "call" as const, at: call.takenAt, note: call.note, who: call.takenByName })),
-      ...(await Promise.all(visitsDone.map(async (visit) => ({ type: "visit" as const, at: visit.completedAt ?? visit.scheduledAt, who: await Promise.all(visit.visitors.map((visitor) => found.memberName(visitor.memberId))) })))),
+      ...(await Promise.all(visitsDone.map(async (visit) => ({ type: "visit" as const, at: visit.completedAt ?? visit.scheduledAt, note: visit.notes, who: await Promise.all(visit.visitors.map((visitor) => found.memberName(visitor.memberId))) })))),
       ...(await Promise.all(payments.map(async (entry) => ({ type: "payment" as const, at: DateTime.fromISO(entry.date, { zone: church?.timeZone ?? "UTC" }).toMillis(), category: entry.category, payee: entry.payee, amount: entry.amount, who: await found.memberName(entry.recordedBy) })))),
       ...(await Promise.all(noteDocs.map(async (note) => ({ type: "note" as const, at: note.createdAt, note: note.body, who: await found.memberName(note.authorId) })))),
       ...brought.map((request) => ({ type: "brought" as const, at: request.createdAt, kind: request.kind, payee: request.payeeName, amount: request.importedAmount ?? request.amountRequested })),

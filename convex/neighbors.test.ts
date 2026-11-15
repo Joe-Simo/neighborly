@@ -100,7 +100,7 @@ describe("opening a record", () => {
       const paid = await ctx.db.insert("assistanceRequests", { churchId, neighborId, kind: "utility", summary: "Electric bill.", amountRequested: 31000, amountApproved: 31000, status: "paid", decisionNote: "", decidedBy: ids.owner.memberId, decidedAt: now - 5000, payeeKind: "utility", payeeName: "Example Power", source: "person", createdBy: ids.owner.memberId, createdAt: now - 9000 });
       await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 31000, date: today, category: "utility", payee: "Example Power", memo: "", requestId: paid, neighborId, recordedBy: ids.owner.memberId, createdAt: now });
       await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 9900, date: today, category: "food", payee: "Fixture Family Market", memo: "", neighborId, voidedAt: now, recordedBy: ids.owner.memberId, createdAt: now });
-      await ctx.db.insert("visits", { churchId, neighborId, requestId: paid, scheduledAt: now - 8000, status: "completed", visitors: [{ memberId: ids.owner.memberId, hours: 1, miles: 6 }, { memberId: ids.coordinator.memberId, hours: 1, miles: 6 }], notes: "", completedAt: now - 7000, createdBy: ids.owner.memberId, createdAt: now - 8500 });
+      await ctx.db.insert("visits", { churchId, neighborId, requestId: paid, scheduledAt: now - 8000, status: "completed", visitors: [{ memberId: ids.owner.memberId, hours: 1, miles: 6 }, { memberId: ids.coordinator.memberId, hours: 1, miles: 6 }], notes: "Fridge is empty.", completedAt: now - 7000, createdBy: ids.owner.memberId, createdAt: now - 8500 });
       await ctx.db.insert("visits", { churchId, neighborId, requestId: open, scheduledAt: now + 86400000, status: "scheduled", visitors: [], notes: "", createdBy: ids.owner.memberId, createdAt: now });
     });
     const record = await as(ids.owner).query(api.neighbors.record, { churchId, neighborId });
@@ -108,7 +108,7 @@ describe("opening a record", () => {
     expect(record.open).toMatchObject([{ id: open, status: "open" }]);
     expect(record.history.map((event) => event.type).sort()).toEqual(["call", "payment", "visit"]);
     expect(record.history).toEqual([...record.history].sort((a, b) => b.at - a.at));
-    expect(record.history.find((event) => event.type === "visit")).toMatchObject({ who: ["Marisol Vega", "Thomas Okafor"] });
+    expect(record.history.find((event) => event.type === "visit")).toMatchObject({ who: ["Marisol Vega", "Thomas Okafor"], note: "Fridge is empty." });
     expect((await as(ids.owner).query(api.neighbors.list, { churchId, search: "esperanza" })).rows).toMatchObject([{ openRequest: { kind: "rent", amount: 45000 }, visitAt: now + 86400000, lastHelpedAt: now - 5000 }]);
   });
 });
@@ -133,6 +133,11 @@ describe("the home on a record", () => {
     expect(await openings(t)).toHaveLength(0);
     expect(await as(ids.coordinator).mutation(api.neighbors.showAccounts, target)).toMatchObject([{ accountNumber: "00-4417-9921" }]);
     expect(await openings(t)).toMatchObject([{ action: "neighbor.opened", actorId: ids.coordinator.userId, targetId: ids.rosa }]);
+    // A form that never saw the number can rename the account and keep the number, without an audit line.
+    await as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, accounts: [{ kind: "utility", name: "Example Power and Light", phone: "", keep: 0 }, { kind: "landlord", name: "Sample Street Apartments", phone: "", accountNumber: "" }] });
+    expect(await openings(t)).toHaveLength(1);
+    expect((await as(ids.owner).mutation(api.neighbors.showAccounts, target)).map((account) => account.accountNumber)).toEqual(["00-4417-9921", ""]);
+    await as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, accounts: [{ kind: "utility", name: "Example Power", phone: "", keep: 0 }] });
     // Saving one part leaves the others as they were.
     await as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, money: { income: [], expenses: [] } });
     expect((await as(ids.owner).query(api.neighbors.record, target)).accounts).toHaveLength(1);

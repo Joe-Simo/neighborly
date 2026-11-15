@@ -30,7 +30,8 @@ import {
 } from "@/components/workspace/help-line/room";
 
 export function NeighborsSection() {
-  const neighborId = useSearchParams().get("neighbor");
+  const address = useSearchParams();
+  const neighborId = address.get("neighbor");
   return (
     <HelpRoom loading="Opening neighbor records">
       {neighborId ? (
@@ -38,6 +39,7 @@ export function NeighborsSection() {
         <NeighborRecord
           key={neighborId}
           neighborId={neighborId as Id<"neighbors">}
+          requestId={address.get("request")}
         />
       ) : (
         <Neighbors />

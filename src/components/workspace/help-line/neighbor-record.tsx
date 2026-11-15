@@ -52,7 +52,14 @@ const back = (
 );
 
 /** Opens one record: the opening is written down first, and only then is the record read. */
-export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) {
+export function NeighborRecord({
+  neighborId,
+  requestId,
+}: {
+  neighborId: Id<"neighbors">;
+  /** From a link to one request: that request is the one on the sheet. */
+  requestId?: string | null;
+}) {
   const { data, format, setHeading } = useWorkspace();
   const churchId = data.church.id;
   const open = useMutation(api.neighbors.open);
@@ -78,6 +85,9 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
     household: homeReady ? read.household : [],
     accounts: homeReady ? read.accounts : [],
     money: homeReady ? read.money : null,
+    open: [...read.open].sort(
+      (a, b) => Number(b.id === requestId) - Number(a.id === requestId),
+    ),
   };
   const title = record?.neighbor.name;
   const deck =
@@ -137,10 +147,7 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
         onShowNumbers={() => void reveal()}
         onStep={(next) => {
           setDone("");
-          // Changing accounts needs the full numbers, which is itself written down.
-          if (next.kind === "accounts" && !numbers && record.accounts.length)
-            void reveal().then(() => setStep(next));
-          else setStep(next);
+          setStep(next);
         }}
       />
       {step?.kind === "people" && (
@@ -177,7 +184,9 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
         >
           <AccountsForm
             target={target}
-            accounts={numbers ?? []}
+            accounts={record.accounts}
+            numbers={numbers}
+            onShowNumbers={() => void reveal()}
             onSaved={() => {
               setNumbers(null);
               finish("Accounts saved.");
@@ -270,6 +279,7 @@ function happened(event: Record["history"][number]) {
         kind: "visit",
         what: "Home visit",
         who: event.who.join(" and "),
+        found: event.note,
       };
     case "call":
       return {
@@ -366,7 +376,7 @@ export function NeighborRecordView({
         </div>
       </dl>
 
-      <dl className="help-record-facts">
+      <dl className="help-record-facts" data-few={home ? "" : undefined}>
         <div>
           <dt>Phone</dt>
           <dd>{neighbor.phone || "None on file"}</dd>
@@ -375,14 +385,25 @@ export function NeighborRecordView({
           <dt>Speaks</dt>
           <dd>{languageLabels[neighbor.language]}</dd>
         </div>
-        <div>
-          <dt>Household</dt>
-          <dd>{householdDetail(neighbor.adults, neighbor.children)}</dd>
-        </div>
-        <div>
-          <dt>{landlord ? "Landlord" : "Email"}</dt>
-          <dd>{landlord ?? (neighbor.email || "None on file")}</dd>
-        </div>
+        {home ? (
+          neighbor.email && (
+            <div>
+              <dt>Email</dt>
+              <dd>{neighbor.email}</dd>
+            </div>
+          )
+        ) : (
+          <>
+            <div>
+              <dt>Household</dt>
+              <dd>{householdDetail(neighbor.adults, neighbor.children)}</dd>
+            </div>
+            <div>
+              <dt>{landlord ? "Landlord" : "Email"}</dt>
+              <dd>{landlord ?? (neighbor.email || "None on file")}</dd>
+            </div>
+          </>
+        )}
       </dl>
       <p className="help-note">
         {neighbor.notes && <>{neighbor.notes} </>}
@@ -522,6 +543,9 @@ export function NeighborRecordView({
                         <i aria-hidden="true" />
                         <div>
                           <h3>{line.what}</h3>
+                          {"found" in line && line.found && (
+                            <p className="help-found">{line.found}</p>
+                          )}
                           <p>{line.who}</p>
                         </div>
                         {line.paid && (
