@@ -23,7 +23,8 @@ import {
   HelpLoading,
   HelpRoom,
 } from "@/components/workspace/help-line/room";
-import { useSave } from "@/components/workspace/help-line/use-save";
+import { LiveFailure } from "@/components/workspace/states";
+import { useSave } from "@/components/workspace/use-save";
 import {
   PlanForm,
   ReplaceForm,
@@ -114,12 +115,7 @@ function Visits() {
         </VisitsDone>
       )}
       {error && (
-        <div className="live-error" role="alert">
-          <p>{error}</p>
-          <p className="live-error-recovery">
-            Nothing was changed. Try again, or choose the pair yourself.
-          </p>
-        </div>
+        <LiveFailure message={error} kept="Nothing was changed. Try again, or choose the pair yourself." />
       )}
       <VisitsView
         board={board}

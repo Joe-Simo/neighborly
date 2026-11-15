@@ -17,7 +17,8 @@ import { useWorkspace } from "@/components/workspace/context";
 import { DateField, TimeField } from "@/components/workspace/date-field";
 import { LiveField } from "@/components/workspace/primitives";
 import { count, languageLabels } from "@/components/workspace/help-line/format";
-import { useSave } from "@/components/workspace/help-line/use-save";
+import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
+import { useSave } from "@/components/workspace/use-save";
 import {
   firstName,
   need,
@@ -67,11 +68,8 @@ function FormEnd({
 }) {
   return (
     <>
-      {error && (
-        <div className="live-error" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <LiveFailure message={error} retry />}
+      <LiveWaiting when={pending} />
       <div className="live-form-actions">
         <Button type="submit" disabled={pending}>
           {submit}
