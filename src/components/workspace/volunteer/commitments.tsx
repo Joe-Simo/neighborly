@@ -11,6 +11,7 @@ export function CommitmentsSection() {
   const datedCommitments = upcomingCommitments(data.commitments, now, true);
   return (
     <>
+      <h2 className="sr-only">{words.menu.commitments}</h2>
       <div className="live-filter">
         <NativeSelect
           aria-label={text.filterLabel}

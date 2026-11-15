@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { action, internalAction, internalMutation, internalQuery, query, env } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
-import { draftNotes, draftPayeeKinds, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
+import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { neighborAccess, user } from "./access";
@@ -20,8 +20,6 @@ export const identity = internalQuery({
   handler: async ctx => ((await ctx.auth.getUserIdentity()) ? (await user(ctx)).id : null),
 });
 
-/** How many times a group may ask the model in one month. At Jev's price this is a few cents; it is here so a mistake cannot run up a bill. */
-export const monthlyAllowance = 2000;
 
 /**
  * Counts one request to the model, or says why it may not be made: the person's five a minute, or

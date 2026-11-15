@@ -1,6 +1,6 @@
 "use client";
 
-import { AssistantLimits } from "@/components/workspace/week-note/assistant-limits";
+import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
   useCallback,
   useEffect,
@@ -686,6 +686,7 @@ export function DraftSheet({
           </p>
         </div>
         <div className="help-actions" inert={sealed}>
+          <DraftToDo notes={draft.notes} />
           {complete ? (
             <>
               <Button disabled={pending} onClick={onApprove}>

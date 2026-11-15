@@ -92,6 +92,8 @@ function only<T>(values: T[]): T | null {
   return unique.length === 1 ? unique[0] : null;
 }
 
+/** How many times a group may ask the model in one month. At Jev's price this is a few cents; it is here so a mistake cannot run up a bill. */
+export const monthlyAllowance = 2000;
 /**
  * Every line a draft can carry about a blank field, in English. The screen finds each by its key and says it in
  * the reader's language (words.assistant.notes), so a line added here needs its three translations there.
