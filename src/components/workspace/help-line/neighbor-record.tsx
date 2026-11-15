@@ -154,8 +154,8 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
       )}
       {step?.kind === "decide" && (
         <HelpDialog
-          title={requestTitle(step.request)}
-          description={step.request.summary}
+          title="Approve or decline"
+          description={`${requestTitle(step.request)}. ${step.request.summary}`}
           onClose={close}
         >
           <DecideForm

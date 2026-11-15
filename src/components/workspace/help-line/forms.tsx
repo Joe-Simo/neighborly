@@ -104,7 +104,7 @@ export function CallForm({
   const { pending, error, save } = useSave();
   return (
     <form
-      className="live-form"
+      className="live-form help-form"
       onSubmit={async (event) => {
         const value = fieldsOf(event);
         const outcome = await save(() =>
@@ -164,7 +164,7 @@ export function ReturnForm({
   const { pending, error, save } = useSave();
   return (
     <form
-      className="live-form"
+      className="live-form help-form"
       onSubmit={async (event) => {
         const value = fieldsOf(event);
         const outcome = await save(() =>
@@ -213,7 +213,7 @@ export function RequestForm({
   const [amountError, setAmountError] = useState("");
   return (
     <form
-      className="live-form"
+      className="live-form help-form"
       onSubmit={async (event) => {
         const value = fieldsOf(event);
         const amountRequested = cents(value("amount"));
@@ -250,7 +250,7 @@ export function RequestForm({
             ))}
           </NativeSelect>
         </LiveField>
-        <LiveField label="Amount asked">
+        <LiveField label="Amount asked, in dollars">
           <Input
             name="amount"
             inputMode="decimal"
@@ -295,9 +295,9 @@ export function RequestForm({
           <Input name="payeeName" defaultValue={start?.payeeName} />
         </LiveField>
       </div>
-      <small className="live-count">
+      <p className="help-form-note">
         Payments go to the landlord, utility or store, never to the neighbor.
-      </small>
+      </p>
       <FormEnd
         error={amountError || error}
         pending={pending}
@@ -321,7 +321,7 @@ export function DecideForm({
   const [amountError, setAmountError] = useState("");
   return (
     <form
-      className="live-form"
+      className="live-form help-form"
       onSubmit={async (event) => {
         const declined =
           event.nativeEvent instanceof SubmitEvent &&
@@ -345,8 +345,8 @@ export function DecideForm({
       }}
     >
       <LiveField
-        label="Amount to approve"
-        help={`They asked for ${money(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName}` : ""}.`}
+        label="Amount to approve, in dollars"
+        help={`They asked for ${money(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
       >
         <Input
           name="amount"
@@ -410,7 +410,7 @@ export function NeighborForm({
   const duplicates = checked === typed ? (onFile ?? []) : [];
   return (
     <form
-      className="live-form"
+      className="live-form help-form"
       onSubmit={async (event) => {
         const value = fieldsOf(event);
         const details = {
