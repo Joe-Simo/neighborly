@@ -9,6 +9,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         window = UIWindow(windowScene: windowScene)
+        // The app keeps its paper colours when the device is set to dark:
+        // status bar, keyboard and system sheets included.
+        window?.overrideUserInterfaceStyle = .light
         window?.rootViewController = ShellViewController()
         window?.makeKeyAndVisible()
 
@@ -60,6 +63,17 @@ final class ShellViewController: CAPBridgeViewController {
             forMainFrameOnly: true
         ))
         scripts.add(PrintRequests { [weak self] in self?.printPage() }, name: "kindHelpsPrint")
+        // In the app a long press brings up no web callout, a tap leaves no
+        // grey flash, and a button's words are not selected by accident.
+        scripts.addUserScript(WKUserScript(
+            source: """
+            const appFeel = document.createElement("style");
+            appFeel.textContent = "*{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}a,button,summary,label,nav,[role=button],[role=tab],[role=menuitem]{-webkit-user-select:none;user-select:none}";
+            document.documentElement.appendChild(appFeel);
+            """,
+            injectionTime: .atDocumentEnd,
+            forMainFrameOnly: true
+        ))
     }
 
     private func printPage() {
@@ -77,6 +91,10 @@ final class ShellViewController: CAPBridgeViewController {
         super.viewDidLoad()
         guard let webView else { return }
         clearTopEdge(of: webView)
+        webView.allowsLinkPreview = false
+        // Paper, not white or black, when a page is pulled past its end.
+        webView.underPageBackgroundColor = paper
+        webView.scrollView.backgroundColor = paper
         if let launch = UIStoryboard(name: "LaunchScreen", bundle: nil).instantiateInitialViewController()?.view {
             place(launch)
             cover = launch
