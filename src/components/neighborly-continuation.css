@@ -7,10 +7,11 @@
 
 /* The ending: what Kind Helps is, and the way in. It closes on the name itself, set across the paper. */
 .neighborly-together{position:relative;z-index:1;isolation:isolate;display:flex;flex-direction:column;gap:clamp(28px,3.4vw,52px);padding:clamp(64px,7vw,110px) 7% 0;outline:0}
-.neighborly-together-paper{position:absolute;inset:0;z-index:-1;background:url(/assets/paper-world/continuation.webp) center bottom/cover no-repeat;-webkit-mask-image:linear-gradient(transparent,#000 34%);mask-image:linear-gradient(transparent,#000 34%)}
+.neighborly-together-paper{position:absolute;inset:0;z-index:-1;background:center bottom/cover no-repeat;-webkit-mask-image:linear-gradient(transparent,#000 34%);mask-image:linear-gradient(transparent,#000 34%)}
+.neighborly-together-paper[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
 .neighborly-together h2{margin:0;font:400 clamp(56px,6.6vw,112px)/.94 'Newsreader',Georgia,serif;letter-spacing:-.065em}
 .neighborly-together h2 em{display:block;margin-left:14%;font-weight:400}
-.neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);align-items:start;gap:40px 8%;margin-left:14%}
+.neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,auto) minmax(0,380px);justify-content:start;align-items:start;gap:40px clamp(48px,7vw,130px);margin-left:14%}
 .neighborly-together-bottom p{margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:pretty}
 .neighborly-final-actions{display:flex;flex-direction:column;align-items:flex-start;gap:18px;max-width:380px}
 .neighborly-begin[data-slot=button]{height:auto;min-height:64px;padding:18px 26px;gap:28px;border-radius:0;background:#293f32;color:#f5eedf;font-size:17px;white-space:normal;box-shadow:none}

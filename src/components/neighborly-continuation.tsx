@@ -6,11 +6,13 @@ import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
+import { useSettled } from "@/lib/use-settled";
 import "./neighborly-continuation.css";
 
 /** Everything after the opening: through the doors, the story of the work, and the way in. */
 export function NeighborlyContinuation() {
   const root = useRef<HTMLDivElement>(null);
+  const settled = useSettled();
   useEffect(() => {
     if (!("IntersectionObserver" in window)) return;
     const element = root.current;
@@ -28,13 +30,13 @@ export function NeighborlyContinuation() {
       <section className="neighborly-static-story" aria-label="The courtyard">
         {/* A native image keeps the courtyard available without client-side code. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/assets/threshold/courtyard-quiet-study-v1.webp" width="1774" height="887" alt="A sunlit church courtyard, with a woman preparing food at a shared table." />
+        <img src="/assets/threshold/courtyard-fresco.webp" width="1774" height="887" alt="A sunlit church courtyard, with a woman preparing food at a shared table." />
         <p>Faith, <em>lived out.</em></p>
       </section>
     </noscript>
     <ReliefStory />
     <section id="how-neighborly-works" tabIndex={-1} className="neighborly-together" aria-labelledby="together-title">
-      <div className="neighborly-together-paper" aria-hidden="true" />
+      <div className="neighborly-together-paper" data-settled={settled} aria-hidden="true" />
       <h2 id="together-title" data-reveal>Bring this to<br /><em>your people.</em></h2>
       <div className="neighborly-together-bottom" data-reveal>
         <p>One place to answer every call for help, from the first message to the visit, the bill and the year’s report.</p>

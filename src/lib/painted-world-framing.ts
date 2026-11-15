@@ -3,7 +3,7 @@ export function isPaintedPortrait(width: number, height: number) {
 }
 
 /** The share of a cropped desktop opening that is lost above the faces; the rest is lost below the hands. */
-export const openingKeptAbove = .25;
+export const openingKeptAbove = .28;
 
 /** Keep the opening's original asset breakpoints independent of story-panel aspect ratios. */
 export function getPaintedOpeningFraming(hostWidth: number, hostHeight: number, worldWidth: number, worldHeight: number, cover = false) {

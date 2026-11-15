@@ -1,14 +1,16 @@
 /* The journey after the opening: the doors, the courtyard as a fresco, and the story in four pictures. One material: paper. */
 .fresco-journey{position:relative;height:450svh}
-.fresco-stage{--door:0;--grow:0;position:sticky;top:0;height:100svh;overflow:hidden;isolation:isolate;outline:0;color:#293f32;background:#eee7d7 url(/assets/paper-world/continuation.webp) center/cover no-repeat}
+.fresco-stage{--door:0;--grow:0;position:sticky;top:0;height:100svh;overflow:hidden;isolation:isolate;outline:0;color:#293f32;background:#eee7d7 center/cover no-repeat}
+/* What lies below the first screen is fetched once the first screen is complete. */
+.fresco-stage[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
 .fresco-stage a:focus-visible,.fresco-stage button:focus-visible{outline:2px solid #365c46;outline-offset:2px}
 .fresco-header{position:absolute;z-index:4;top:0;left:0;right:0;height:76px;padding:0 max(20px,4%);display:flex;align-items:center;justify-content:space-between;gap:20px}
 .fresco-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none}
 .fresco-header>a:last-child{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 2px;font-size:15px;text-decoration:none;border-bottom:1px solid #253e3140}
 
-.fresco-invitation{position:absolute;z-index:3;left:7%;top:50%;width:min(27%,400px);translate:0 calc(-50% - var(--door) * 24px);opacity:calc(1 - var(--door) * 1.8)}
+.fresco-invitation{position:absolute;z-index:3;left:7%;top:50%;width:min(30%,520px);translate:0 calc(-50% - var(--door) * 24px);opacity:calc(1 - var(--door) * 1.8)}
 .fresco-stage[data-open=true] .fresco-invitation{visibility:hidden}
-.fresco-invitation h2{margin:0 0 24px;font:400 clamp(52px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.065em}
+.fresco-invitation h2{margin:0 0 24px;font:400 clamp(44px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.065em}
 .fresco-invitation h2 em{font-weight:400}
 .fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
 .fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none}
@@ -26,16 +28,17 @@
 .fresco-view .living-courtyard canvas{display:block;width:100%;height:100%}
 .fresco-stage:not([data-living=true]) .living-courtyard{visibility:hidden}
 .fresco-doors{position:absolute;inset:0;border-radius:inherit;perspective:1500px;opacity:calc(1 - var(--grow) * 3);pointer-events:none}
-.fresco-doors i{position:absolute;top:0;bottom:0;width:50.15%;background-image:url(/assets/threshold/doors.webp);background-size:200% 100%;backface-visibility:hidden;box-shadow:inset 0 0 25px #17271c22}
+.fresco-doors i{position:absolute;top:0;bottom:0;width:50.15%;background-color:#8fa888;background-size:200% 100%;backface-visibility:hidden;box-shadow:inset 0 0 25px #17271c22}
+.fresco-stage[data-settled=true] .fresco-doors i{background-image:url(/assets/threshold/doors-1000.webp)}
 .fresco-doors i:first-child{left:0;transform-origin:left center;border-radius:100% 0 0 0/30% 0 0 0;background-position:left center;transform:rotateY(calc(var(--door) * 88deg))}
 .fresco-doors i:last-child{right:0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;background-position:right center;transform:rotateY(calc(var(--door) * -88deg))}
 .fresco-caption{position:absolute;z-index:2;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;opacity:calc(var(--grow) * 2.5 - 1.5);translate:0 calc((1 - var(--grow)) * 20px)}
 .fresco-caption em{font-weight:400}
-@media(max-width:700px){
+@media(max-width:899px){
   .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .fresco-brand{font-size:30px}
   .fresco-invitation{position:static;width:auto;translate:none}
-  .fresco-invitation h2{position:absolute;z-index:3;left:20px;top:calc(72px + env(safe-area-inset-top));margin:0;font-size:clamp(40px,12vw,52px)}
+  .fresco-invitation h2{position:absolute;z-index:3;left:max(20px,4%);top:calc(72px + env(safe-area-inset-top));margin:0;font-size:clamp(40px,12vw,64px)}
   .fresco-invitation p{display:none}
   /* The button stands on paper under the doors, clear of them. */
   .fresco-open[data-slot=button]{position:absolute;z-index:3;left:50%;top:calc(79svh + 34px);translate:-50% 0;min-height:50px}

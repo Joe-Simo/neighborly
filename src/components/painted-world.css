@@ -194,7 +194,7 @@
 
 /* ── The opening, in the paper world ───────────────────────────────────────── */
 /* The painting fills its box at every size: no pale bands, and never a straight cut through a figure. */
-.painted-world[data-hero-only=true] .painted-world-fallback img{object-fit:cover;object-position:50% 25%}
+.painted-world[data-hero-only=true] .painted-world-fallback img{object-fit:cover;object-position:50% 28%}
 .painted-world-fallback-passed{opacity:var(--pass,0)}
 /* Words a visitor reads or presses are 15 to 16px. */
 .painted-world[data-hero-only=true] .painted-world-description{font-size:16px;max-width:48ch;margin-top:20px}
@@ -217,15 +217,18 @@
 @media(prefers-reduced-motion:reduce){.painted-world-card::before{opacity:.7}}
 
 /* One paper bar holds the name at every size, and the painting begins beneath it. */
-.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:76px}
+/* On a wide, short screen filling the width would cut the eyes or the hands. There the painting keeps its height and its sides fade into the paper. */
+.painted-world[data-hero-only=true]{--mat:min(110px,max(0px,100vw - (100svh - 76px) * 1.715))}
+.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:76px;left:50%;right:auto;width:min(100%,(100svh - 76px) * 1.715);translate:-50% 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--mat),#000 calc(100% - var(--mat)),transparent);mask-image:linear-gradient(90deg,transparent,#000 var(--mat),#000 calc(100% - var(--mat)),transparent)}
 .painted-world[data-hero-only=true] .painted-world-header{top:0;left:0;right:0;height:76px;padding:0 max(20px,4%);background:#eee6d5}
 .painted-world[data-hero-only=true] .painted-world-header:before{display:none}
 /* The words sit on the painting's own paper wave, between the hair above and the hands below, wherever the crop falls. */
-.painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{top:calc(76px + max(71.11vw,100svh - 76px) * .095 + (100svh - 76px) * .25)}
-.painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption h1{font-size:clamp(44px,4.9vw,88px)}
+.painted-world[data-scene=opening][data-hero-only=true]{--art-w:min(100vw,(100svh - 76px) * 1.715);--art-h:max(var(--art-w) / 1.40625,100svh - 76px)}
+.painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{top:calc(76px + var(--art-h) * .3 - (var(--art-h) - (100svh - 76px)) * .28);left:calc((100vw - var(--art-w)) / 2 + var(--art-w) * .06);width:calc(var(--art-w) * .6)}
+.painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption h1{font-size:clamp(40px,var(--art-w) * .052,92px)}
 /* Phones: a paper bar holds the name, and the painting begins beneath it. */
 @media(max-width:700px){
-  .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:calc(56px + env(safe-area-inset-top))}
+  .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:calc(56px + env(safe-area-inset-top));width:100%;-webkit-mask-image:none;mask-image:none}
   .painted-world[data-hero-only=true] .painted-world-fallback img{object-position:50% 0}
   .painted-world[data-hero-only=true] .painted-world-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0;background:#eee6d5}
   .painted-world[data-hero-only=true] .painted-world-header:before{display:none}
@@ -238,8 +241,8 @@
   .painted-world[data-hero-only=true] .painted-world-opening-actions a:not(.painted-world-primary-invitation){background:transparent;padding:0 2px}
   .painted-world[data-hero-only=true] .painted-world-opening-actions .painted-world-primary-invitation{height:48px;padding:0 16px;gap:12px}
 }
-/* On phones the cue sits on its own paper, since the cloth runs beneath it. */
-@media(max-width:700px){.painted-world[data-hero-only=true] .painted-world-scroll-cue{min-height:44px;padding:0 14px;gap:8px;background:#eee7d7e8;border:1px solid #293f3222;border-radius:2px}}
+/* The cue sits on its own paper, since the cloth runs beneath it. */
+.painted-world[data-hero-only=true] .painted-world-scroll-cue{min-height:44px;padding:0 14px;gap:8px;background:#eee7d7e8;border:1px solid #293f3222;border-radius:2px}
 /* While the visitor reads, the sound control steps aside; if music is playing it stays, as its mark alone. */
 .neighborly-connected-world[data-reading=true] .paper-sound-dock:not(:has([aria-pressed=true])){visibility:hidden}
 .neighborly-connected-world[data-reading=true] .paper-sound-dock span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -247,7 +250,7 @@
 @media(max-width:400px){.painted-world-scroll-cue .painted-world-cue-more{display:none}}
 /* Upright tablets: the whole painting across the top, the words on the paper beneath it. */
 @media(min-width:701px) and (max-aspect-ratio:10/11){
-  .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:64px;bottom:auto;height:calc(100vw / 1.40625);-webkit-mask-image:linear-gradient(#000 86%,transparent);mask-image:linear-gradient(#000 86%,transparent)}
+  .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:64px;bottom:auto;width:100%;height:calc(100vw / 1.40625);-webkit-mask-image:linear-gradient(#000 86%,transparent);mask-image:linear-gradient(#000 86%,transparent)}
   .painted-world[data-hero-only=true] .painted-world-header{top:0;left:0;right:0;height:64px;padding:0 4%;background:#eee6d5}
   .painted-world[data-hero-only=true] .painted-world-header:before{display:none}
   .painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{top:calc(64px + 100vw / 1.40625 + 8px);left:7%;width:86%;max-width:none}

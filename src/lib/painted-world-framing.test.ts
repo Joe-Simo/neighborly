@@ -50,3 +50,18 @@ test("wide scenes preserve the complete composition without cropping", () => {
   expect(frame.width).toBeCloseTo(160 / 9);
   expect(frame.height).toBeCloseTo(10);
 });
+
+test("the home opening fills its box, keeps the top on phones, and never uses the narrow painting", () => {
+  const phone = getPaintedOpeningFraming(390, 788, 8.166, 16.5, true);
+  expect(phone.narrow).toBe(false);
+  expect(phone.poster).toBe("/assets/living-relief-mobile.webp");
+  expect(phone.sourceWidth * phone.scale).toBeGreaterThanOrEqual(8.166);
+  expect(phone.sourceHeight * phone.scale).toBeGreaterThanOrEqual(16.5);
+  // Top aligned: the painting moves down by half of what overflows.
+  expect(phone.shiftY).toBeCloseTo(-(phone.sourceHeight * phone.scale - 16.5) / 2);
+
+  const desktop = getPaintedOpeningFraming(1440, 824, 17.476, 10, true);
+  const lost = desktop.sourceHeight * desktop.scale - 10;
+  expect(lost).toBeGreaterThan(0);
+  expect(desktop.shiftY).toBeCloseTo(-(.5 - .28) * lost);
+});

@@ -6,6 +6,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LivingCourtyard } from "./living-courtyard";
 import { useExperienceSound } from "./experience-sound-context";
+import { useSettled } from "@/lib/use-settled";
 import "./relief-journey.css";
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -25,6 +26,7 @@ export function FrescoThreshold() {
   const view = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [near, setNear] = useState(false);
+  const settled = useSettled();
 
   useEffect(() => { sound?.setScene(open ? "welcome" : "opening"); }, [open, sound]);
   useEffect(() => {
@@ -42,7 +44,7 @@ export function FrescoThreshold() {
     const update = () => {
       raf = 0;
       const width = host.clientWidth, height = host.clientHeight;
-      const phone = width <= 700;
+      const phone = width <= 899;
       const travelled = -track.getBoundingClientRect().top / Math.max(1, height);
       const door = media.matches ? Number(travelled > 1.5) : ease(clamp((travelled - doorsOpen[0]) / (doorsOpen[1] - doorsOpen[0])));
       const grow = media.matches ? door : ease(clamp((travelled - wallOpens[0]) / (wallOpens[1] - wallOpens[0])));
@@ -83,7 +85,7 @@ export function FrescoThreshold() {
   };
 
   return <div ref={journey} className="fresco-journey">
-    <section ref={stage} className="fresco-stage" id="your-community" tabIndex={-1} aria-label="The doors and the courtyard" data-open={open} data-destination="1">
+    <section ref={stage} className="fresco-stage" id="your-community" tabIndex={-1} aria-label="The doors and the courtyard" data-open={open} data-settled={settled} data-destination="1">
       <header className="fresco-header">
         <a href="#story-start" className="fresco-brand" aria-label="Kind Helps home">kind helps</a>
         <Link href="/app">Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
@@ -98,8 +100,8 @@ export function FrescoThreshold() {
           <div ref={view} className="fresco-view">
             {/* The courtyard is one painting, seen once. A native image keeps it whole without the living layers. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="fresco-painting" src="/assets/threshold/courtyard-quiet-study-v1.webp" width="1774" height="887" loading="lazy" decoding="async" alt="A sunlit church courtyard painted on the wall: a woman prepares food at a long shared table, under arches hung with wisteria." />
-            {near && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
+            {settled && <img className="fresco-painting" src="/assets/threshold/courtyard-fresco.webp" width="1774" height="887" decoding="async" alt="A sunlit church courtyard painted on the wall: a woman prepares food at a long shared table, under arches hung with wisteria." />}
+            {near && settled && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
           </div>
         </div>
         <div className="fresco-doors" aria-hidden="true"><i /><i /></div>
