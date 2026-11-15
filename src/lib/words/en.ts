@@ -319,6 +319,7 @@ export function en(set: WordSet) {
       change: "Change",
       discard: "Discard",
       saved: "Saved to the record",
+      approved: "Approved",
     },
     welcome: {
       pass: "Pass the card",

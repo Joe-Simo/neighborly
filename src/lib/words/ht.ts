@@ -307,6 +307,7 @@ export function ht(set: WordSet): Words {
       change: "Chanje",
       discard: "Jete",
       saved: "Anrejistre nan dosye a",
+      approved: "Apwouve",
     },
     welcome: {
       pass: "Pase kat la",

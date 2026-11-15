@@ -313,6 +313,7 @@ export function es(set: WordSet): Words {
       change: "Cambiar",
       discard: "Descartar",
       saved: "Guardado en el registro",
+      approved: "Aprobada",
     },
     welcome: {
       pass: "Pasa la tarjeta",
