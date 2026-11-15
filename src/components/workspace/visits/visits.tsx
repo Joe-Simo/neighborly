@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
-import { Check, Printer } from "lucide-react";
+import { Check, CircleCheck, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { count, initials } from "@/components/workspace/help-line/format";
 import {
-  HelpDone,
   HelpEmpty,
   HelpLoading,
   HelpRoom,
@@ -67,6 +66,8 @@ function Visits() {
   const [done, setDone] = useState("");
   // The visit just planned or written up, so its row can show the paper moving into place.
   const [fresh, setFresh] = useState<Fresh | null>(null);
+  // The pair sheet whose yes was just given: it stays a beat with its corner turned green, then leaves.
+  const [asked, setAsked] = useState<Suggestion | null>(null);
   const start = (next: Step) => {
     setDone("");
     clear();
@@ -107,12 +108,11 @@ function Visits() {
   if (!board) return <HelpLoading label="Opening home visits" />;
   return (
     <div className="visits-room">
-      {done &&
-        (fresh?.pair ? (
-          <VisitsAsked pair={fresh.pair}>{done}</VisitsAsked>
-        ) : (
-          <HelpDone>{done}</HelpDone>
-        ))}
+      {done && (
+        <VisitsDone pair={fresh?.pair} onDone={() => setDone("")}>
+          {done}
+        </VisitsDone>
+      )}
       {error && (
         <div className="live-error" role="alert">
           <p>{error}</p>
@@ -127,9 +127,12 @@ function Visits() {
         format={format}
         busy={pending}
         fresh={fresh?.id}
+        asked={asked}
         onPlan={(requestId) => start({ kind: "plan", requestId })}
         onAsk={async (suggested, pair) => {
           setDone("");
+          setAsked(suggested);
+          const beat = new Promise((settle) => setTimeout(settle, FOLD_BEAT));
           const outcome = await save(() =>
             plan({
               churchId,
@@ -139,6 +142,8 @@ function Visits() {
               visitorIds: pair.map((person) => person.memberId),
             }),
           );
+          await beat;
+          setAsked(null);
           if (outcome.saved)
             finish(
               `${firstName(pair[0].name)} and ${firstName(pair[1].name)} have been asked to visit ${suggested.request.neighborName} on ${day(suggested.scheduledAt)} at ${time(suggested.scheduledAt)}.`,
@@ -210,6 +215,8 @@ function Visits() {
 }
 
 type Fresh = { id: Id<"visits">; pair?: string[] };
+/** How long a sheet stays after its yes, so the corner is seen turning green: the fold, and a breath. */
+export const FOLD_BEAT = 650;
 
 /** Two people as one pair. joining plays the two sets of initials sliding together, once. */
 function Pair({
@@ -233,25 +240,34 @@ function Pair({
   );
 }
 
-/** The line after a pair is asked: their initials come together beside the words. */
-export function VisitsAsked({
+/** The line after a step is taken, put away with Done. After a pair is asked, their initials come together beside the words. */
+export function VisitsDone({
   pair,
+  onDone,
   children,
 }: {
-  pair: string[];
+  pair?: string[];
+  onDone: () => void;
   children: string;
 }) {
   const line = useRef<HTMLDivElement>(null);
   useEffect(() => line.current?.focus(), [children]);
   return (
     <div
-      className="live-success help-done visits-asked"
+      className="live-success help-done visits-done paper-rise"
       role="status"
       tabIndex={-1}
       ref={line}
     >
-      <Pair names={pair} joining bare />
+      {pair ? (
+        <Pair names={pair} joining bare />
+      ) : (
+        <CircleCheck size={22} aria-hidden="true" />
+      )}
       <span>{children}</span>
+      <Button variant="outline" onClick={onDone}>
+        Done
+      </Button>
     </div>
   );
 }
@@ -263,6 +279,7 @@ export function VisitsView({
   format,
   busy,
   fresh,
+  asked,
   onPlan,
   onAsk,
   onWriteUp,
@@ -274,12 +291,14 @@ export function VisitsView({
   busy: boolean;
   /** The visit just planned or written up: its pair joins, or its row settles into Written up. */
   fresh?: Id<"visits">;
+  /** The suggestion whose pair was just asked: shown a beat longer with its corner green. */
+  asked?: Suggestion | null;
   onPlan: (requestId?: Id<"assistanceRequests">) => void;
   onAsk: (suggested: Suggestion, pair: NonNullable<Suggestion["pair"]>) => void;
   onWriteUp: (visit: Visit) => void;
   onReplace: (visit: Visit, leaving: Visit["visitors"][number]) => void;
 }) {
-  const { suggested } = board;
+  const suggested = asked ?? board.suggested;
   const coming = board.scheduled.filter((visit) => visit.scheduledAt >= now);
   const toWriteUp = board.scheduled.filter((visit) => visit.scheduledAt < now);
   const thisWeek = coming.filter(
@@ -316,13 +335,17 @@ export function VisitsView({
     <>
       {suggested && (
         <section
-          className="help-sheet"
+          // Each request is its own sheet, so the next one rises as the last one leaves.
+          key={suggested.request.requestId}
+          className={asked ? "help-sheet paper-fold" : "help-sheet"}
           aria-label={`Visit to arrange for ${suggested.request.neighborName}`}
         >
           <p className="help-sheet-label">
-            {suggested.pair
-              ? `A pair for ${weekday(suggested.scheduledAt)}`
-              : "Waiting for a pair"}
+            {asked
+              ? `Asked for ${weekday(suggested.scheduledAt)}`
+              : suggested.pair
+                ? `A pair for ${weekday(suggested.scheduledAt)}`
+                : "Waiting for a pair"}
           </p>
           <div className="help-sheet-body">
             <div>
@@ -339,7 +362,9 @@ export function VisitsView({
               <p>{suggested.reason}</p>
             </div>
             <div className="help-actions">
-              {suggested.pair ? (
+              {asked ? (
+                <span className="live-status">Both asked</span>
+              ) : suggested.pair ? (
                 <>
                   <Button
                     disabled={busy}
