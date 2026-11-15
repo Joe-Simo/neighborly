@@ -97,6 +97,8 @@ export function reportLines(report: YearReport): ReportLine[] {
   requests.count("Referred to other help", report.requests.referred);
   requests.money("Amount asked for", report.requests.amountRequested);
   requests.money("Amount approved", report.requests.amountApproved);
+  requests.money("Paid toward these requests", report.requests.paidTowardThese);
+  requests.money("Paid toward earlier requests", report.requests.paidTowardEarlier);
 
   const paid = section("Help paid");
   for (const line of report.kinds) paid.money(kindLabels[line.kind], line.paid);

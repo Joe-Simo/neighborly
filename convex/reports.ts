@@ -119,7 +119,11 @@ export const yearReport = v.object({
     /** Requests that carry a referral to another place of help. */
     referred: v.number(),
     amountRequested: v.number(),
+    /** Approved amounts of the requests received in the period that stand approved or paid today. */
     amountApproved: v.number(),
+    /** Of the help paid in the period: the part toward requests received in the period, and the part toward earlier ones. Together they are helpPaid. */
+    paidTowardThese: v.number(),
+    paidTowardEarlier: v.number(),
   }),
   calls: v.object({ taken: v.number(), returned: v.number(), waiting: v.number() }),
   time: v.object({
@@ -270,6 +274,10 @@ export const year = query({
 
     for (const call of calls) month(monthOf(call.takenAt)).calls += 1;
 
+    const receivedIds = new Set(requests.map((request) => request._id));
+    let paidTowardThese = 0;
+    for (const [requestId, toward] of paidByRequest) if (receivedIds.has(requestId)) paidTowardThese += toward.paid;
+
     const serving = new Map<Id<"memberships">, { visits: number; shifts: number; hours: number; miles: number }>();
     const served = (memberId: Id<"memberships">) => {
       const line = serving.get(memberId) ?? { visits: 0, shifts: 0, hours: 0, miles: 0 };
@@ -350,7 +358,7 @@ export const year = query({
         const line = kindLineFor(value);
         return { kind: value, requests: line.requests, requestsPaid: line.requestsPaid, households: line.neighbors.size, people: [...line.neighbors].reduce((people, id) => people + size(id), 0), paid: line.paid };
       }),
-      requests: { received: requests.length, ...status, referred, amountRequested, amountApproved },
+      requests: { received: requests.length, ...status, referred, amountRequested, amountApproved, paidTowardThese, paidTowardEarlier: helpPaid - paidTowardThese },
       calls: { taken: calls.length, returned: calls.filter((call) => call.callback === "done").length, waiting: calls.filter((call) => call.callback === "needed").length },
       time: {
         hours: round(visitHours + shiftHours),

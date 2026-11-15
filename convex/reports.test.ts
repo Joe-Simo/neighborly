@@ -113,7 +113,12 @@ describe("the year's counts for the sample conference", () => {
     expect(report.kinds.reduce((paid, line) => paid + line.paid, 0)).toBe(report.helpPaid);
 
     const count = (status: string) => received.filter((request) => request.status === status).length;
+    const theirs = new Set(received.map((request) => request._id));
+    const paidFor = (own: boolean) => data.ledger.filter((entry) => entry.kind === "expense" && entry.requestId && inYearDay(entry.date) && theirs.has(entry.requestId) === own).reduce((sum, entry) => sum + entry.amount, 0);
+    expect(paidFor(true) + paidFor(false)).toBe(hand.helpPaid);
     expect(report.requests).toEqual({
+      paidTowardThese: paidFor(true),
+      paidTowardEarlier: paidFor(false),
       received: received.length,
       open: count("open"), approved: count("approved"), paid: count("paid"), declined: count("declined"), closed: count("closed"),
       referred: 0,
@@ -273,7 +278,9 @@ describe("the parts the sample conference does not exercise", () => {
     expect(report.helpPaid).toBe(20000);
     expect(report.kinds[1]).toEqual({ kind: "utility", requests: 1, requestsPaid: 1, households: 1, people: 5, paid: 20000 });
     expect(report).toMatchObject({ households: 1, people: 5, adults: 2, children: 3, householdsByLanguage: { en: 0, es: 1, ht: 0 }, visits: 0 });
-    expect(report.requests).toMatchObject({ received: 1, approved: 1, referred: 1, amountApproved: 30000 });
+    expect(report.requests).toMatchObject({ received: 1, approved: 1, referred: 1, amountApproved: 30000, paidTowardThese: 20000, paidTowardEarlier: 0 });
+    // Seen from the next year, the same payments would be toward an earlier request; here the year after has none.
+    expect((await as(ids.owner.userId).query(api.reports.year, { churchId: ids.churchId, year: 2027 })).requests).toMatchObject({ received: 0, paidTowardThese: 0, paidTowardEarlier: 0 });
     expect(report.money).toEqual({ beginningBalance: 100000, received: 50000, sources: [{ label: "Parish collection", amount: 50000 }], otherSpending: [{ label: "Twinning gift", amount: 15000 }], spent: 35000, endingBalance: 115000 });
     expect(report.months[4]).toMatchObject({ month: "2026-02", requests: 1, households: 1, paid: 20000 });
     expect(report.months[3]).toMatchObject({ month: "2026-01", moneyIn: 50000 });

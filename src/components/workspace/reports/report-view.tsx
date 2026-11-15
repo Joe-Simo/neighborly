@@ -196,12 +196,17 @@ export function ReportView({
     { is: "declined", label: "Declined", value: report.requests.declined },
     { is: "closed", label: "Closed without help", value: report.requests.closed },
   ].filter((outcome) => outcome.value > 0);
+  const printedOn = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: report.timeZone }).format(printed);
+  // The foot of every printed page, set in the page margin so it never covers a line.
+  const quoted = (text: string) => `"${text.replace(/[\\"]/g, "\\$&").replace(/\s+/g, " ")}"`;
+  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(`${groupName} · ${periodLabel(report)}, ${spanLabel(report)}`)}; font: 9pt "Source Sans 3", sans-serif; color: #000; } @bottom-right { content: ${quoted(`Printed ${printedOn} · page `)} counter(page) " of " counter(pages); font: 9pt "Source Sans 3", sans-serif; color: #000; } } }`;
   const sections = new Map<string, ReportLine[]>();
   for (const line of reportLines(report))
     sections.set(line.section, [...(sections.get(line.section) ?? []), line]);
 
   return (
     <div className="report">
+      <style>{pageFoot}</style>
       <header className="report-print-head">
         <p>{groupName}</p>
         <h1>The year, added up.</h1>
@@ -451,10 +456,7 @@ export function ReportView({
       </p>
       <footer className="report-print-foot">
         <strong>kind helps</strong>
-        <span>
-          Printed{" "}
-          {new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: report.timeZone }).format(printed)}
-        </span>
+        <span>Printed {printedOn}</span>
       </footer>
     </div>
   );

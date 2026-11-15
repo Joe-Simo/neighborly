@@ -76,13 +76,6 @@ function Report() {
       done={done}
       years={
         <div className="report-switches">
-          <QuarterSwitch
-            quarter={quarter}
-            onQuarter={(next) => {
-              setDone("");
-              setQuarter(next);
-            }}
-          />
           <YearSwitch
             years={onRecord.years}
             current={onRecord.current}
@@ -90,6 +83,13 @@ function Report() {
             onYear={(next) => {
               setDone("");
               setChosen(next);
+            }}
+          />
+          <QuarterSwitch
+            quarter={quarter}
+            onQuarter={(next) => {
+              setDone("");
+              setQuarter(next);
             }}
           />
         </div>
