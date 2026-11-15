@@ -787,7 +787,7 @@
 @media (max-width: 850px) {
   .live-header {
     height: calc(74px + env(safe-area-inset-top));
-    padding: env(safe-area-inset-top) max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
+    padding: calc(12px + env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) 12px max(22px, env(safe-area-inset-left));
   }
   .live-nav {
     padding-left: max(20px, env(safe-area-inset-left));
@@ -798,10 +798,14 @@
     padding-right: max(24px, env(safe-area-inset-right));
     padding-bottom: calc(70px + env(safe-area-inset-bottom));
   }
-  .live-auth { padding-bottom: env(safe-area-inset-bottom); }
+  .live-auth { padding-bottom: calc(50px + env(safe-area-inset-bottom)); }
   .live-auth-art { height: calc(140px + env(safe-area-inset-top)); }
 }
 @media (max-width: 560px) {
+  .live-header {
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+  }
   .live-nav {
     padding-left: max(14px, env(safe-area-inset-left));
     padding-right: max(14px, env(safe-area-inset-right));
