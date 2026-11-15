@@ -132,7 +132,22 @@ final class ShellViewController: CAPBridgeViewController {
         }
     }
 
-    private func revealIfLoaded() {
+    /// The page counts as loaded while it still shows its own "checking your
+    /// session" skeleton. The cover stays over that for up to four seconds, so
+    /// the launch goes from the k straight to the first real screen.
+    private func revealIfLoaded(waited: TimeInterval = 0) {
+        guard let webView, !webView.isLoading, !stopped else { return }
+        guard cover == nil || waited >= 4 else {
+            webView.evaluateJavaScript("!!document.querySelector('.paper-loading')") { [weak self] result, _ in
+                guard result as? Bool == true else { self?.reveal(); return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self?.revealIfLoaded(waited: waited + 0.1) }
+            }
+            return
+        }
+        reveal()
+    }
+
+    private func reveal() {
         guard let webView, !webView.isLoading, !stopped else { return }
         slowTimer?.invalidate()
         stopTimer?.invalidate()
