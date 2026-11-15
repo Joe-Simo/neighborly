@@ -6,7 +6,7 @@ import type { FunctionReturnType } from "convex/server";
 import { ChevronDown, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { formatDate, type Words } from "@/lib/words";
+import { formatDate, type Language, type Words } from "@/lib/words";
 import { kindLabels, money } from "@/components/workspace/reports/lines";
 
 export type YearCheckResult = FunctionReturnType<typeof api.drafts.checkYear>;
@@ -53,6 +53,8 @@ export function YearCheck({
   for (const flag of result.flags) groups.set(`${flag.kind}-${flag.source}`, [...(groups.get(`${flag.kind}-${flag.source}`) ?? []), flag]);
   const text = { ...english, ...words.yearCheck };
   const happened: Record<string, string> = text.happened;
+  // The kinds of help in the reader's language, once the shared words carry them.
+  const { kinds = kindLabels }: { locale: Language; kinds?: typeof kindLabels } = words;
   const day = (at: number) => formatDate(words.locale, at, { month: "short", day: "numeric", timeZone });
 
   const line = ({ record }: Flag) => {
@@ -62,7 +64,7 @@ export function YearCheck({
     }
     const request = records?.requests.find((candidate) => candidate.id === record.id);
     return request && {
-      is: `${kindLabels[request.kind]}, ${money(request.amount)}, ${happened[request.status] ?? request.status} ${day(request.at)}`,
+      is: `${kinds[request.kind]}, ${money(request.amount)}, ${happened[request.status] ?? request.status} ${day(request.at)}`,
       href: request.neighborId ? `/app/neighbors?neighbor=${request.neighborId}` : null,
     };
   };
