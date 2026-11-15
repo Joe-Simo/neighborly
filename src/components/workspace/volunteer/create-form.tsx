@@ -33,19 +33,26 @@ export function LiveCreateForm({
   const [draftDescription, setDraftDescription] = useState("");
   const [teamName, setTeamName] = useState("");
   const [draftNote, setDraftNote] = useState("");
+  // What the assistant was given, when it was asked: null until a draft is prepared, "" when nothing was sent.
+  const [sent, setSent] = useState<string | null>(null);
+  const [showSent, setShowSent] = useState(false);
   const [preparing, setPreparing] = useState(false);
   async function prepare() {
     setPreparing(true);
     setDraftNote("");
+    setSent(null);
+    setShowSent(false);
     try {
       const result = await suggest({ description: draftDescription });
       setTeamName(result.teamName);
+      setSent(result.sent);
+      // This dialog has one field to fill, so it speaks only of the name.
       setDraftNote(
-        (result.verification === "checked"
-          ? "Draft checked with AI. "
-          : "Draft prepared from your words. ") +
-          "Review the team name before saving. " +
-          result.notes.join(" "),
+        result.teamName
+          ? `Filled in by the assistant: “${result.teamName}”. Change it if it is not right.`
+          : result.notes.includes("Please confirm the team name.")
+            ? "The assistant was not sure of a name in your words, so it left the name blank. Enter it below."
+            : "Your words do not name the team, so the name is blank. Enter it below.",
       );
     } catch {
       setDraftNote(
@@ -153,6 +160,32 @@ export function LiveCreateForm({
           {draftNote && (
             <div className="live-note" role="status">
               {draftNote}
+              {sent !== null && (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    className="inline-flex min-h-11 cursor-pointer items-center border-0 bg-transparent p-0 -my-2.5 text-inherit underline decoration-[#cfc5dc] underline-offset-4 hover:decoration-current"
+                    aria-expanded={showSent}
+                    aria-controls="team-draft-sent"
+                    onClick={() => setShowSent(!showSent)}
+                  >
+                    {showSent ? "Hide what the assistant saw" : "What the assistant saw"}
+                  </button>
+                  {showSent && (
+                    <span id="team-draft-sent" className="paper-rise mt-3 grid gap-y-2 text-[15px] leading-snug">
+                      {sent ? (
+                        <>
+                          <span className="block border-l-2 border-[#cfc5dc] pl-3 font-serif text-[17px]">{sent}</span>
+                          <span>Your words as they were sent, with names, phones, emails and addresses taken out. The assistant writes nothing: the name is copied from your words by fixed rules, and the assistant only says whether your words support it.</span>
+                        </>
+                      ) : (
+                        <span>Nothing was sent to the assistant. Fixed rules read your words on our own servers, and they copy a name only when a sentence states it plainly.</span>
+                      )}
+                    </span>
+                  )}
+                </>
+              )}
             </div>
           )}
           <LiveField label="Team name">

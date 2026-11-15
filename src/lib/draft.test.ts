@@ -7,7 +7,7 @@ describe("explicit draft preparation", () => {
       "Our welcome team serves every other Sunday. We need two people from 9:30 to 11.",
     );
     expect(draft).toMatchObject({
-      teamName: "welcome team",
+      teamName: "Welcome team",
       recurrence: "Every other Sunday",
       peopleCount: "2",
       time: "9:30 to 11",
@@ -27,6 +27,13 @@ describe("explicit draft preparation", () => {
     expect(
       prepareDraft("Our welcome team serves every Sunday. Our greeting team serves every Sunday.").teamName,
     ).toBe("");
+  });
+  test("reads a team's name from a plain sentence, and nothing from a team that has no name or is only a maybe", () => {
+    expect(prepareDraft("Our food pantry team sorts donations on Tuesday mornings. Ask Jordan Ellis, (239) 555-0142.").teamName).toBe("Food pantry team");
+    expect(prepareDraft("The home visit team calls on neighbors in pairs.").teamName).toBe("Home visit team");
+    expect(prepareDraft("We want a new team for Saturdays.").teamName).toBe("");
+    expect(prepareDraft("We might start a prayer team.").teamName).toBe("");
+    expect(prepareDraft("The pantry team sorts food. The welcome team greets people.").teamName).toBe("");
   });
   test("unrecognized prose leaves fields blank", () => {
     const draft = prepareDraft(
