@@ -78,7 +78,7 @@ export default defineSchema({
     decidedAt: v.optional(v.number()),
     payeeKind: v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"), v.literal("neighbor")),
     payeeName: v.string(),
-    source: v.union(v.literal("person"), v.literal("ai_draft")),
+    source: v.union(v.literal("person"), v.literal("ai_draft"), v.literal("import")),
     referral: v.optional(v.string()),
     createdBy: v.id("memberships"),
     createdAt: v.number(),

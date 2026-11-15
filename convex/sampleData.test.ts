@@ -36,7 +36,7 @@ describe("sample conference", () => {
     const data = await everything(t);
     expect(data.churches).toMatchObject([{ _id: churchId, sample: true }]);
     expect(data.memberships.filter((member) => member.role === "owner")).toHaveLength(1);
-    expect(data.neighbors).toHaveLength(40);
+    expect(data.neighbors).toHaveLength(200);
     // The overview reads at most 200 commitments, so the coming weeks must come first and the total stay under it.
     expect(data.commitments.length).toBeLessThanOrEqual(200);
     const finished = data.commitments.filter((shift) => shift.end < Date.now());
@@ -44,7 +44,20 @@ describe("sample conference", () => {
     expect(finished.every((shift) => shift.assigneeId !== null)).toBe(true);
     expect(data.commitments.findIndex((shift) => shift.end < Date.now())).toBeGreaterThan(0);
     expect(data.teams.map((team) => team.name).sort()).toEqual(["Help line", "Home visitors", "Pantry"]);
-    expect(data.calls.length).toBeGreaterThanOrEqual(60);
+    expect(data.calls.length).toBeGreaterThanOrEqual(400);
+    // Every month of the last year and more has calls, and money both in and out.
+    const monthOf = (time: number) => new Date(time).toISOString().slice(0, 7);
+    const months = Array.from({ length: 12 }, (_, back) => { const day = new Date(); day.setUTCDate(1); day.setUTCMonth(day.getUTCMonth() - back - 1); return day.toISOString().slice(0, 7); });
+    for (const month of months) {
+      expect(data.calls.some((call) => monthOf(call.takenAt) === month), `calls in ${month}`).toBe(true);
+      for (const kind of ["income", "expense"] as const) expect(data.ledgerEntries.some((entry) => entry.kind === kind && entry.date.startsWith(month)), `${kind} in ${month}`).toBe(true);
+    }
+    // The conference gives away most of what it receives, and some approved help is still waiting to be paid.
+    const total = (kind: "income" | "expense") => data.ledgerEntries.filter((entry) => entry.kind === kind && entry.category !== "Opening balance").reduce((sum, entry) => sum + entry.amount, 0);
+    expect(total("expense") / total("income")).toBeGreaterThan(0.75);
+    expect(total("expense")).toBeLessThanOrEqual(total("income"));
+    expect(data.ledgerEntries.filter((entry) => entry.category === "Opening balance")).toHaveLength(1);
+    expect(data.assistanceRequests.filter((request) => request.status === "approved").length).toBeGreaterThanOrEqual(3);
     for (const status of ["open", "approved", "declined", "paid", "closed"] as const)
       expect(data.assistanceRequests.some((request) => request.status === status), status).toBe(true);
     const span = Math.max(...data.calls.map((call) => call.takenAt)) - Math.min(...data.calls.map((call) => call.takenAt));
@@ -52,7 +65,7 @@ describe("sample conference", () => {
     expect(Math.max(...data.calls.map((call) => call.takenAt))).toBeLessThanOrEqual(Date.now());
 
     // Every payment is tied to a paid request, for the approved amount, and every paid request has exactly one payment.
-    const expenses = data.ledgerEntries.filter((entry) => entry.kind === "expense");
+    const expenses = data.ledgerEntries.filter((entry) => entry.kind === "expense" && entry.requestId);
     const paid = data.assistanceRequests.filter((request) => request.status === "paid");
     expect(expenses).toHaveLength(paid.length);
     for (const request of paid) {
@@ -84,11 +97,12 @@ describe("sample conference", () => {
     const data = await everything(t);
     for (const member of data.memberships) expect(member.email).toMatch(/@neighborly\.example$/);
     for (const neighbor of data.neighbors) {
-      expect(neighbor.phone).toMatch(/^\(555\) 01\d\d$/);
+      // Area codes cannot begin with 1, so these numbers cannot belong to anyone.
+      expect(neighbor.phone).toMatch(/^\(10[01]\) 555-01\d\d$/);
       if (neighbor.email) expect(neighbor.email).toMatch(/@neighborly\.example$/);
     }
-    expect(new Set(data.neighbors.map((neighbor) => neighbor.nameKey)).size).toBe(40);
-    expect(new Set(data.neighbors.map((neighbor) => neighbor.phoneKey)).size).toBe(40);
+    expect(new Set(data.neighbors.map((neighbor) => neighbor.nameKey)).size).toBe(200);
+    expect(new Set(data.neighbors.map((neighbor) => neighbor.phoneKey)).size).toBe(200);
   });
 
   test("is the same conference every time", async () => {

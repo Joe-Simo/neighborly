@@ -14,20 +14,25 @@ import type { Id } from "./_generated/dataModel";
 const zone = "America/New_York";
 const emailDomain = "neighborly.example";
 const DAY = 86400000;
-/** The last call of these neighbors is this recent, so the demo always has open work whatever day it is loaded. */
-const recentCalls = new Map([[34, DAY], [35, 2 * DAY], [36, 8 * DAY], [37, 10 * DAY], [38, DAY / 8]]);
+/** The last call of these households is this recent, so the demo always has open work whatever day it is loaded. */
+const recentCalls = new Map([[194, DAY / 8], [195, DAY], [196, 2 * DAY], [197, 7 * DAY], [198, 9 * DAY], [199, 12 * DAY]]);
+const HOUSEHOLDS = 200;
 
 const volunteerNames = ["Marisol Vega", "Thomas Okafor", "Renee Baptiste", "Daniel Whitcombe", "Graciela Fuentes", "Samuel Adeyemi", "Colleen Marsh", "Jean-Luc Pierre", "Hannah Lindqvist", "Victor Salgado", "Priya Raman", "Walter Brzezinski"];
-const firstNames = ["Alma", "Benito", "Celeste", "Darnell", "Esperanza", "Fabrice", "Gloria", "Hector", "Imani", "Josue", "Katia", "Leon", "Mireille", "Nestor", "Odalys", "Pascal", "Quiana", "Rosalind", "Stefan", "Tamika", "Ulises", "Violeta", "Wendell", "Yolande"];
-const lastNames = ["Almonte", "Bellweather", "Castellanos", "Desrosiers", "Eastman", "Figueroa", "Greenhalgh", "Hyppolite", "Ibarra", "Joseph", "Kowalczyk", "Larkspur", "Montoya", "Nwosu", "Orlov", "Pemberton", "Quintanilla", "Rosemond"];
-const streets = ["Sample St", "Example Ave", "Placeholder Rd", "Demo Ct", "Fixture Ln", "Mockingbird Way"];
-const kinds = [
-  { kind: "rent", payeeKind: "landlord", payees: ["Sample Street Apartments", "Example Avenue Rentals", "Placeholder Property Group"], low: 25000, high: 90000, summaries: ["Behind on this month's rent after reduced hours", "Short on rent after a medical bill", "Needs help with a security deposit"] },
-  { kind: "utility", payeeKind: "utility", payees: ["Demo Power & Light", "Example Water Authority", "Sample Gas Company"], low: 8000, high: 35000, summaries: ["Shut-off notice on the electric bill", "Past-due water bill", "Gas bill before the cold weather"] },
-  { kind: "food", payeeKind: "vendor", payees: ["Fixture Family Market"], low: 4000, high: 12000, summaries: ["Groceries until the next paycheck", "Food for the week for a family with children"] },
+// 25 first names and 20 family names; paired so that 200 households are all different.
+const firstNames = ["Alma", "Benito", "Celeste", "Darnell", "Esperanza", "Fabrice", "Gloria", "Hector", "Imani", "Josue", "Katia", "Leon", "Mireille", "Nestor", "Odalys", "Pascal", "Quiana", "Rosalind", "Stefan", "Tamika", "Ulises", "Violeta", "Wendell", "Yolande", "Zenaida"];
+const lastNames = ["Almonte", "Bellweather", "Castellanos", "Desrosiers", "Eastman", "Figueroa", "Greenhalgh", "Hyppolite", "Ibarra", "Joseph", "Kowalczyk", "Larkspur", "Montoya", "Nwosu", "Orlov", "Pemberton", "Quintanilla", "Rosemond", "Sandoval", "Thibodeaux"];
+const streets = ["Orchard St", "Mill Rd", "Chapel Ln", "Harbor Ave", "Cedar Ct", "Larkspur Way", "Garden St", "Bridge Rd"];
+const needs = [
+  { kind: "rent", payeeKind: "landlord", payees: ["Orchard Street Apartments", "Mill Road Rentals", "Chapel Lane Property Group"], low: 25000, high: 90000, summaries: ["Behind on this month's rent after reduced hours", "Short on rent after a medical bill", "Needs help with a security deposit"] },
+  { kind: "utility", payeeKind: "utility", payees: ["City Power & Light", "County Water Authority", "Valley Gas Company"], low: 8000, high: 35000, summaries: ["Shut-off notice on the electric bill", "Past-due water bill", "Gas bill before the cold weather"] },
+  { kind: "food", payeeKind: "vendor", payees: ["Corner Family Market"], low: 4000, high: 12000, summaries: ["Groceries until the next paycheck", "Food for the week for a family with children"] },
   { kind: "voucher", payeeKind: "vendor", payees: ["Conference thrift store"], low: 2500, high: 7500, summaries: ["Furniture voucher after a move", "Winter coats for the children"] },
-  { kind: "other", payeeKind: "vendor", payees: ["Demo Pharmacy", "Example Transit"], low: 2000, high: 15000, summaries: ["Prescription co-pay", "Bus pass to get to a new job"] },
+  { kind: "other", payeeKind: "vendor", payees: ["Main Street Pharmacy", "County Transit"], low: 2000, high: 15000, summaries: ["Prescription co-pay", "Bus pass to get to a new job"] },
 ] as const;
+// Utilities and rent are most of what a conference is asked for.
+const kinds = [needs[0], needs[0], needs[0], needs[1], needs[1], needs[1], needs[1], needs[2], needs[2], needs[2], needs[3], needs[4]];
+const strangers = ["Wrong number.", "Asked for the pantry's hours.", "Asked how to volunteer.", "Calling for a relative in another parish; referred to that conference.", "Hung up before leaving a name."];
 
 /** A small fixed-seed generator, so the sample conference is the same every time it is loaded. */
 function generator(seed: number) {
@@ -96,35 +101,41 @@ export const load = internalMutation({
     await ctx.db.insert("tasks", { churchId, title: "Send thank-you notes for the fall collection", dueAt: null, assigneeId: others[2], complete: true });
     await ctx.db.insert("announcements", { churchId, title: "Winter coat drive starts next week", body: "Bring coats to the parish office. Home visitors, ask each family for sizes.", authorId: owner, createdAt: now - 2 * DAY });
 
-    // The treasury opens a year ago and receives the monthly collection and occasional gifts.
-    const yearAgo = now - 365 * DAY;
-    const entry = (kind: "income" | "expense", time: number, amount: number, category: string, payee: string, memo: string, links: { requestId?: Id<"assistanceRequests">; neighborId?: Id<"neighbors"> } = {}) =>
-      ctx.db.insert("ledgerEntries", { churchId, kind, amount, date: isoDay(time), category, payee, memo, ...links, recordedBy: owner, createdAt: time });
-    await entry("income", yearAgo, 420000, "Opening balance", "St. Example Conference", "Balance carried forward");
-    for (let month = 0; month < 12; month++) {
-      const time = yearAgo + month * 30 * DAY + 6 * DAY;
-      await entry("income", time, random.between(210000, 340000), "Parish collection", "St. Example Parish", "Fifth-Sunday and poor-box collection");
-      if (month % 3 === 1) await entry("income", time + 9 * DAY, random.between(50000, 150000), "Donation", "Anonymous gift", "Designated for rent and utilities");
-    }
+    // From the start of the last full fiscal year (October 1) to today, so that year and every
+    // month since has activity and no earlier year is left with a sliver.
+    const today = DateTime.fromMillis(now, { zone });
+    const thisFiscalYear = (today.month >= 10 ? today : today.minus({ years: 1 })).set({ month: 10, day: 1 }).startOf("day");
+    const firstMonth = thisFiscalYear.minus({ years: 1 });
+    const start = firstMonth.toMillis();
+    const days = Math.floor((now - start) / DAY);
+    const spentByMonth = new Map<string, number>();
+    const entry = (kind: "income" | "expense", time: number, amount: number, category: string, payee: string, memo: string, links: { requestId?: Id<"assistanceRequests">; neighborId?: Id<"neighbors"> } = {}) => {
+      if (kind === "expense") spentByMonth.set(isoDay(time).slice(0, 7), (spentByMonth.get(isoDay(time).slice(0, 7)) ?? 0) + amount);
+      return ctx.db.insert("ledgerEntries", { churchId, kind, amount, date: isoDay(time), category, payee, memo, ...links, recordedBy: owner, createdAt: time });
+    };
+    await entry("income", start, 420000, "Opening balance", "St. Example Conference", "Balance carried forward");
 
-    // Neighbors, and for each a year of calls, requests, visits in pairs and payments.
-    for (let index = 0; index < 40; index++) {
-      const name = `${firstNames[index % firstNames.length]} ${lastNames[(index * 7) % lastNames.length]}`;
-      const phone = `(555) 01${String(index).padStart(2, "0")}`;
-      const firstCall = yearAgo + random.between(5, 330) * DAY;
+    // Households, and for each its calls, requests for help, visits in pairs and payments.
+    for (let index = 0; index < HOUSEHOLDS; index++) {
+      const name = `${firstNames[index % 25]} ${lastNames[((index % 25) * 3 + Math.floor(index / 25)) % 20]}`;
+      const phone = `(10${index < 100 ? 0 : 1}) 555-01${String(index % 100).padStart(2, "0")}`;
+      const firstCall = start + random.between(1, days - 14) * DAY;
       const neighborId = await ctx.db.insert("neighbors", { churchId, name, nameKey: key(name), phone, phoneKey: phone.replace(/\D/g, ""), email: index % 5 === 0 ? `${key(name).replaceAll(" ", ".")}@${emailDomain}` : "", address: `${random.between(10, 980)} ${random.pick(streets)}, Apt ${random.between(1, 24)}`, adults: random.between(1, 3), children: random.between(0, 4), language: index % 4 === 1 ? "es" : index % 9 === 2 ? "ht" : "en", notes: index % 6 === 0 ? "Prefers a call after 5 PM." : "", createdBy: random.pick(staff), createdAt: firstCall });
       const callCount = random.between(1, 4);
       for (let call = 0; call < callCount; call++) {
         const recent = call === callCount - 1 ? recentCalls.get(index) : undefined;
-        const takenAt = recent !== undefined ? now - recent : Math.min(firstCall + call * random.between(25, 80) * DAY + random.between(9, 16) * 3600000, now - random.between(1, 30) * 3600000);
+        const planned = firstCall + call * random.between(25, 80) * DAY + random.between(9, 16) * 3600000;
+        // A household's later calls stop where the calendar does; only the chosen recent cases reach this week.
+        if (recent === undefined && planned > now - 3 * DAY) break;
+        const takenAt = recent !== undefined ? now - recent : planned;
         const age = now - takenAt;
         const need = random.pick(kinds);
         const summary = random.pick(need.summaries);
         const asksForHelp = call === 0 || recent !== undefined || random.next() < 0.7;
-        const callId = await ctx.db.insert("calls", { churchId, neighborId, callerName: name, phone, note: asksForHelp ? `${summary}.` : "Called to say thank you and give an update.", callback: age < 2 * DAY && (recent !== undefined || random.next() < 0.6) ? "needed" : asksForHelp ? "done" : "none", takenBy: random.pick(staff), takenAt });
+        const callId = await ctx.db.insert("calls", { churchId, neighborId, callerName: name, phone, note: asksForHelp ? `${summary}.` : "Called to say thank you and give an update.", callback: recent !== undefined && age < 3 * DAY ? "needed" : asksForHelp ? "done" : "none", takenBy: random.pick(staff), takenAt });
         if (!asksForHelp) continue;
         const amountRequested = Math.round(random.between(need.low, need.high) / 500) * 500;
-        const outcome = age < 6 * DAY ? "open" : age < 14 * DAY ? "approved" : random.pick(["paid", "paid", "paid", "paid", "declined", "closed"] as const);
+        const outcome = age < 6 * DAY ? "open" : age < 13 * DAY ? "approved" : random.pick(["paid", "paid", "paid", "paid", "paid", "paid", "paid", "declined", "closed"] as const);
         const granted = outcome === "approved" || outcome === "paid";
         const amountApproved = granted ? Math.min(amountRequested, Math.round((amountRequested * random.between(60, 100)) / 100 / 500) * 500) : undefined;
         const decidedAt = outcome === "open" ? undefined : takenAt + random.between(3, 5) * DAY;
@@ -141,6 +152,29 @@ export const load = internalMutation({
         if (outcome === "paid" && amountApproved && decidedAt)
           await entry("expense", decidedAt + DAY, amountApproved, need.kind, payeeName, `Paid directly to ${payeeName}`, { requestId, neighborId });
       }
+    }
+
+    // Calls that never became a household: about three a month.
+    for (let call = 0; call < Math.floor(days / 10); call++) {
+      const takenAt = start + call * 10 * DAY + random.between(1, 8) * DAY + random.between(9, 16) * 3600000;
+      if (takenAt > now - DAY) break;
+      await ctx.db.insert("calls", { churchId, callerName: "No name given", phone: "", note: random.pick(strangers), callback: "none", takenBy: random.pick(staff), takenAt });
+    }
+
+    // What the conference spends besides help, then what comes in. Each month's collection is set close
+    // to what that month paid out, so the year reads like a conference that gives away what it receives.
+    const months = Array.from({ length: Math.floor(today.diff(firstMonth, "months").months) + 1 }, (_, index) => firstMonth.plus({ months: index }));
+    const on = (month: DateTime, day: number) => month.set({ day, hour: 12 }).toMillis();
+    for (const month of months) {
+      if (on(month, 20) < now) await entry("expense", on(month, 20), random.between(150, 320) * 100, "Pantry purchase", "Corner Family Market", "Shelf-stable food for the pantry");
+      if (month.month === 10 && on(month, 12) < now) await entry("expense", on(month, 12), 60000, "Council dues", "District Council", "Annual solidarity contribution");
+      if (month.month % 4 === 2 && on(month, 9) < now) await entry("expense", on(month, 9), random.between(40, 110) * 100, "Supplies", "Main Street Office Supply", "Paper, postage and phone line");
+    }
+    for (const month of months) {
+      const spent = spentByMonth.get(month.toFormat("yyyy-MM")) ?? 0;
+      if (on(month, 2) < now) await entry("income", on(month, 2), Math.max(150000, Math.round((spent * random.between(90, 102)) / 100 / 500) * 500), "Parish collection", "St. Example Parish", "Fifth-Sunday and poor-box collection");
+      if (month.month % 3 !== 0 && on(month, 16) < now) await entry("income", on(month, 16), random.between(20, 75) * 1000, "Donation", "Anonymous gift", "Designated for rent and utilities");
+      if (month.month === 9 && on(month, 27) < now) await entry("income", on(month, 27), random.between(380, 520) * 1000, "Friends of the Poor Walk", "Walk pledges", "Pledges collected after the walk");
     }
     return churchId;
   },

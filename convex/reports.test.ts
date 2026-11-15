@@ -132,11 +132,13 @@ describe("the year's counts for the sample conference", () => {
     expect(report.money.beginningBalance).toBe(income(before) - expense(before) + 420000);
     expect(report.money.received).toBe(income(inYearDay));
     expect(report.money.spent).toBe(expense(inYearDay));
-    expect(report.money.spent).toBe(report.helpPaid);
+    // The sample conference also buys for the pantry and pays council dues, so help is most of the spending, not all of it.
+    expect(report.money.spent).toBeGreaterThan(report.helpPaid);
     expect(report.money.endingBalance).toBe(report.money.beginningBalance + report.money.received - report.money.spent);
     expect(report.money.sources.reduce((sum, line) => sum + line.amount, 0)).toBe(report.money.received);
     expect(report.money.sources.map((line) => line.label).sort()).toEqual(expect.arrayContaining(["Donation", "Parish collection"]));
-    expect(report.money.otherSpending).toEqual([]);
+    expect(report.money.otherSpending.map((line) => line.label).sort()).toEqual(["Council dues", "Pantry purchase", "Supplies"]);
+    expect(report.money.otherSpending.reduce((sum, line) => sum + line.amount, 0)).toBe(report.money.spent - report.helpPaid);
 
     // The twelve months add back up to the year.
     expect(report.months.map((line) => line.month)).toEqual(["2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"]);
@@ -172,14 +174,14 @@ describe("the year's counts for the sample conference", () => {
     // The same year written down as plain numbers, so a change to the arithmetic cannot pass unnoticed.
     expect({ households: report.households, people: report.people, visits: report.visits, helpPaid: report.helpPaid, hours: report.visitHours, miles: report.visitMiles, calls: report.calls.taken, requests: report.requests.received }).toMatchInlineSnapshot(`
       {
-        "calls": 78,
-        "helpPaid": 467500,
-        "hours": 177,
-        "households": 35,
-        "miles": 1282,
-        "people": 144,
-        "requests": 62,
-        "visits": 50,
+        "calls": 439,
+        "helpPaid": 5253500,
+        "hours": 1109,
+        "households": 179,
+        "miles": 8456,
+        "people": 753,
+        "requests": 352,
+        "visits": 320,
       }
     `);
   });
