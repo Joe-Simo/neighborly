@@ -139,7 +139,7 @@
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 .live-app .entry .live-field input:focus-visible { border-color: var(--paper-green); }
-.live-app .entry .live-field input[aria-invalid="true"] { border-color: #9f4935; box-shadow: 0 0 0 1px #9f4935; }
+.live-app .entry .live-field input[aria-invalid="true"] { border-color: var(--paper-plum); box-shadow: 0 0 0 1px var(--paper-plum); }
 .live-app .entry .live-password-control input { padding-right: 84px; }
 .live-app .entry .live-password-control button {
   min-width: 0;
@@ -189,6 +189,9 @@
   transition: text-decoration-thickness 160ms ease;
 }
 .live-app .entry .entry-quiet { justify-self: start; margin-block: -6px -10px; font-size: 16px; }
+/* "Forgot your password?" sits on the password's own label line, at its right. */
+.entry-pass { position: relative; }
+.live-app .entry .entry-pass .entry-quiet { position: absolute; top: -12px; right: 0; margin: 0; font-size: 15px; }
 @media (hover: hover) {
   .live-app .entry :is(.entry-quiet, .entry-sample button, .entry-languages button):hover { text-decoration-thickness: 2px; }
 }
@@ -201,7 +204,7 @@
   padding-top: 10px;
   border-top: 1px solid var(--live-line);
 }
-.live-app .entry-sample button { gap: 8px; font-size: 17px; }
+.live-app .entry-sample button { gap: 8px; font-size: 16px; font-weight: 500; }
 .live-app .entry-sample button:disabled { opacity: 1; color: var(--live-muted); }
 .live-app .entry-sample[data-opening] button {
   color: var(--paper-ink);
@@ -261,6 +264,21 @@
     margin: -56px auto 0;
   }
 }
+/* On an iPhone the page scrolls under the clock. Once it moves, a strip of the same paper covers the
+   status area, so no line of the sheet is ever read behind the time or the island. */
+@media (max-width: 850px), (max-width: 1100px) and (orientation: portrait) {
+  .entry::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 2;
+    height: env(safe-area-inset-top);
+    background: var(--paper-shade);
+  }
+  @supports (animation-timeline: scroll()) {
+    .entry::before { animation: paper-show linear both; animation-timeline: scroll(); animation-range: 0 48px; }
+  }
+}
 /* A phone: the band is 132 points, the picture kept whole and anchored to its right. */
 @media (max-width: 699px) {
   .entry { --entry-band: 132px; --entry-pad: 22px; }
@@ -278,11 +296,21 @@
     width: calc(100% - max(24px, env(safe-area-inset-left) + env(safe-area-inset-right)));
     margin-top: -22px;
   }
-  .entry-paper { padding-top: 26px; }
-  .live-app .entry .live-back { margin-bottom: 20px; }
+  .entry-paper { padding-top: 20px; }
+  .live-app .entry .live-back { margin-bottom: 12px; }
+  .entry-sample { margin-top: 16px; padding-top: 6px; }
   .live-app .entry h1 { font-size: clamp(34px, 9.6vw, 40px); letter-spacing: -1px; }
-  .entry-tabs { margin-top: 18px; }
-  .live-app .entry .live-form { margin-top: 20px; }
+  .live-app .entry .live-deck { margin-top: 10px; }
+  .entry-tabs { margin-top: 10px; }
+  .live-app .entry-tabs button { height: 44px; }
+  .live-app .entry .live-form { gap: 14px; margin-top: 18px; }
+  .live-app .entry .live-field input:not(.live-auth-code) { min-height: 48px; }
+}
+
+/* A short phone: a lower band, so the way into the sample conference is on the first screen. */
+@media (max-width: 699px) and (max-height: 720px) {
+  .entry { --entry-band: 108px; }
+  .entry-art > .relief { height: 128px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

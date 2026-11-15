@@ -8,10 +8,9 @@ import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ReliefPicture } from "@/components/workspace/relief";
-import { LiveFailure } from "@/components/workspace/states";
-import { languageNames, languages, type Language } from "@/lib/words";
+import { languageNames, languages } from "@/lib/words";
 import { cn } from "@/lib/utils";
-import { authWords, firstLanguage, keepLanguage, type AuthError } from "./live-auth-words";
+import { authWords, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import "./live-auth.css";
 
 export type LiveEntryIntent = "start" | "join" | "signin";
@@ -55,16 +54,6 @@ function errorKey(error: unknown, flow: Flow): AuthError {
   }
 }
 
-/** Set by the workspace as someone signs out, so the sheet they land on can say so once. */
-export const leftKey = "kind-helps:left";
-function justLeft(): boolean {
-  try {
-    return window.sessionStorage.getItem(leftKey) !== null;
-  } catch {
-    return false;
-  }
-}
-
 export function LiveAuth({
   intent = "signin",
   sampleEntry = false,
@@ -81,20 +70,15 @@ export function LiveAuth({
   const [flow, setFlow] = useState<Flow>(intent === "start" || intent === "join" ? "signUp" : "signIn");
   const [step, setStep] = useState<Step>("details");
   const [email, setEmail] = useState("");
-  const [language, setLanguage] = useState<Language>(firstLanguage);
+  const [language, setLanguage] = useEntryLanguage();
   const w = authWords[language];
   const [error, setError] = useState<AuthError | "">("");
   const [notice, setNotice] = useState(false);
   /** The server has said yes: the sheet's corner turns green while the workspace opens. */
   const [given, setGiven] = useState(false);
-  const [left, setLeft] = useState(justLeft);
-  useEffect(() => {
-    try {
-      window.sessionStorage.removeItem(leftKey);
-    } catch {
-      // Nothing was kept, so nothing to clear.
-    }
-  }, []);
+  const cameFromSignOut = useJustLeft();
+  const [leftRead, setLeftRead] = useState(false);
+  const left = cameFromSignOut && !leftRead;
   const [pending, setPending] = useState(false);
   /** On the way into the sample conference. The form rests, but keeps its own words. */
   const [opening, setOpening] = useState(false);
@@ -112,7 +96,7 @@ export function LiveAuth({
     setStep("details");
     setError("");
     setNotice(false);
-    setLeft(false);
+    setLeftRead(true);
     setSampleError("");
     setShowPassword(false);
   }
@@ -122,7 +106,7 @@ export function LiveAuth({
     setError("");
     setSampleError("");
     setNotice(false);
-    setLeft(false);
+    setLeftRead(true);
     setPending(true);
     try {
       await steps();
@@ -216,7 +200,7 @@ export function LiveAuth({
     setError("");
     setNotice(false);
     setSampleError("");
-    setLeft(false);
+    setLeftRead(true);
     setOpening(true);
     try {
       const response = await fetch("/app/look-around", { method: "POST" });
@@ -259,9 +243,15 @@ export function LiveAuth({
 
   const kind = flow === "signUp" && intent !== "signin" ? intent : flow;
   const busy = pending || opening || given;
+  /** The shared failure notice's look. LiveFailure itself reads the workspace's words, and nobody is in a workspace yet. */
+  const failure = (message: string) => (
+    <div role="alert" className="live-error live-failure" ref={(notice) => notice?.scrollIntoView({ block: "nearest" })}>
+      <p>{message}</p>
+    </div>
+  );
   const messages = (
     <>
-      {error && <LiveFailure message={w.errors[error]} kept="" />}
+      {error && failure(w.errors[error])}
       {notice && (
         <div role="status" className="live-success paper-rise">
           {w.onItsWay}
@@ -399,17 +389,21 @@ export function LiveAuth({
               disabled={busy}
             />
           </label>
-          {flow !== "reset" && passwordField(w.password, flow === "signIn" ? "current-password" : "new-password")}
+          {flow !== "reset" && (
+            <div className="entry-pass">
+              {passwordField(w.password, flow === "signIn" ? "current-password" : "new-password")}
+              {flow === "signIn" && (
+                <Button type="button" variant="link" className="entry-quiet" disabled={busy} onClick={() => choose("reset")}>
+                  {w.forgot}
+                </Button>
+              )}
+            </div>
+          )}
           {messages}
           <Button type="submit" disabled={busy}>
             {submitIcon}
             {pending ? w.wait : flow === "signIn" ? w.signIn : flow === "signUp" ? w.create : w.emailCode}
           </Button>
-          {flow === "signIn" && (
-            <Button type="button" variant="link" className="entry-quiet" disabled={busy} onClick={() => choose("reset")}>
-              {w.forgot}
-            </Button>
-          )}
         </form>
         {sampleEntry && flow !== "reset" && (
           <div className="entry-sample" data-opening={opening || undefined}>
@@ -417,7 +411,7 @@ export function LiveAuth({
               {opening ? w.sampleOpening : w.sample}
               {!opening && <ArrowRight size={16} aria-hidden="true" />}
             </Button>
-            {sampleError && <LiveFailure message={w[sampleError]} kept="" />}
+            {sampleError && failure(w[sampleError])}
             <small>{w.sampleNote}</small>
           </div>
         )}
@@ -442,10 +436,7 @@ export function LiveAuth({
                 variant="link"
                 lang={choice}
                 aria-pressed={choice === language}
-                onClick={() => {
-                  setLanguage(choice);
-                  keepLanguage(choice);
-                }}
+                onClick={() => setLanguage(choice)}
               >
                 {languageNames[choice]}
               </Button>

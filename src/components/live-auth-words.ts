@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { languages, type Language } from "@/lib/words";
 
 /** Every phrase of the sign-in sheet. English is the source; the other two follow its shape. */
@@ -85,7 +86,7 @@ const es: AuthWords = {
   back: "Volver a Kind Helps",
   kicker: "El lugar de tu equipo",
   heading: {
-    signIn: "Qué bueno verte de nuevo.",
+    signIn: "Qué gusto verte.",
     signUp: "El buen trabajo empieza aquí.",
     start: "Reúne a tu gente.",
     join: "Un lugar con tu gente.",
@@ -240,10 +241,10 @@ const ht: AuthWords = {
 export const authWords: Record<Language, AuthWords> = { en, es, ht };
 
 const kept = "kind-helps:language";
+const watchers = new Set<() => void>();
 
 /** Before anyone is signed in there is no saved language: use the one chosen here last, or the device's. */
-export function firstLanguage(): Language {
-  if (typeof window === "undefined") return "en";
+function deviceLanguage(): Language {
   try {
     const chosen = window.localStorage.getItem(kept);
     const match = languages.find((language) => language === chosen);
@@ -257,11 +258,46 @@ export function firstLanguage(): Language {
   }
   return "en";
 }
+let chosenNow: Language | undefined;
 
-export function keepLanguage(language: Language) {
+/** The sheet's language. The server writes English; the device's own answer takes over as the page wakes. */
+export function useEntryLanguage(): [Language, (language: Language) => void] {
+  const language = useSyncExternalStore(
+    (watch) => {
+      watchers.add(watch);
+      return () => void watchers.delete(watch);
+    },
+    () => (chosenNow ??= deviceLanguage()),
+    () => "en" as Language,
+  );
+  return [
+    language,
+    (next) => {
+      chosenNow = next;
+      try {
+        window.localStorage.setItem(kept, next);
+      } catch {
+        // The choice still holds for this visit.
+      }
+      watchers.forEach((watch) => watch());
+    },
+  ];
+}
+
+/** Set by the workspace as someone signs out, so the sheet they land on can say so once. */
+export const leftKey = "kind-helps:left";
+let leftNow: boolean | undefined;
+function readLeft(): boolean {
   try {
-    window.localStorage.setItem(kept, language);
+    const left = window.sessionStorage.getItem(leftKey) !== null;
+    window.sessionStorage.removeItem(leftKey);
+    return left;
   } catch {
-    // The choice still holds for this visit.
+    return false;
   }
+}
+const never = () => () => {};
+/** True on the first sheet after a sign-out, and only there. */
+export function useJustLeft(): boolean {
+  return useSyncExternalStore(never, () => (leftNow ??= readLeft()), () => false);
 }
