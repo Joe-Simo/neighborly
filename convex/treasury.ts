@@ -684,7 +684,8 @@ export const recordVouchers = mutation({
  * For the help line: call this when a voucher is given on a request, changed, or taken back.
  * quantity is how many of the item the request now holds in all (0 when none), so calling it
  * twice with the same number changes nothing. The shelf goes down by the difference, on a line
- * tied to the request. No access check inside; call it after neighborAccess() with that member.
+ * tied to the request. With 0 any payment recorded for the voucher is reversed by a new
+ * entry, so its worth leaves the money paid out. No access check inside; call it after neighborAccess() with that member.
  */
 export async function voucherGiven(ctx: MutationCtx, member: Doc<"memberships">, given: { requestId: Id<"assistanceRequests">; item: string; quantity: number }): Promise<void> {
   if (given.quantity !== 0 && !wholeCount(given.quantity)) throw new Error("Enter how many vouchers, as a whole number.");
@@ -704,6 +705,16 @@ export async function voucherGiven(ctx: MutationCtx, member: Doc<"memberships">,
   for (const [held, { item, count }] of out) if (held !== key && count !== 0) await move(item, count, "Back on the shelf");
   const change = (out.get(key)?.count ?? 0) - given.quantity;
   if (change !== 0) await move(name, change, change < 0 ? "Given on a request" : "Back on the shelf");
+  // A voucher taken back whole takes its worth back too: every payment still standing on the
+  // request gets a reversing entry, so the ledger shows both the payment and why it no longer counts.
+  if (given.quantity === 0) {
+    const entries = await ctx.db.query("ledgerEntries").withIndex("by_request", (q) => q.eq("requestId", given.requestId)).take(REQUEST_ENTRY_LIMIT);
+    const reversed = new Set(entries.flatMap((entry) => entry.reverses ?? []));
+    for (const entry of entries) {
+      if (entry.kind !== "expense" || entry.reverses || reversed.has(entry._id)) continue;
+      await ctx.db.insert("ledgerEntries", { churchId: member.churchId, kind: "income", amount: entry.amount, date, category: entry.category, payee: entry.payee, memo: "Voucher taken back", requestId: entry.requestId, neighborId: entry.neighborId, reverses: entry._id, recordedBy: member._id, createdAt: Date.now() });
+    }
+  }
 }
 
 async function ownKinds(ctx: Ctx, churchId: Id<"churches">) {

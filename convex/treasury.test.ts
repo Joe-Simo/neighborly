@@ -413,6 +413,31 @@ describe("the voucher shelf", () => {
   });
 });
 
+describe("a voucher taken back", () => {
+  test("its worth leaves the money paid out by a reversing entry, once, and the first entry stays", async () => {
+    const { t, ids, as, request, income, entries } = await setup();
+    const owner = as(ids.owner);
+    await income(50000, day(9));
+    const requestId = await request({ payeeKind: "vendor", payeeName: "Conference thrift store", amountApproved: 3000 });
+    const paid = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 3000, date: day(3), memo: "" });
+    const give = (quantity: number) => t.run(async (ctx) => voucherGiven(ctx, (await ctx.db.get("memberships", ids.owner.memberId))!, { requestId, item: "Clothing voucher", quantity }));
+    await give(1);
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(47000);
+
+    await give(0);
+    await give(0);
+    const all = await entries();
+    expect(all).toHaveLength(3);
+    expect(all.find((row) => row._id === paid)).toMatchObject({ kind: "expense", amount: 3000 });
+    expect(all.find((row) => row.reverses === paid)).toMatchObject({ kind: "income", amount: 3000, memo: "Voucher taken back", requestId, date: day(0) });
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(50000);
+    expect(await t.run((ctx) => paidTowardRequest(ctx, requestId))).toBe(0);
+    const flow = await owner.query(api.treasury.cashFlow, { churchId: ids.church, from: day(30), to: day(0) });
+    expect(flow.moneyOut).toBe(0);
+    expect((await owner.query(api.treasury.voucherShelf, { churchId: ids.church })).items).toEqual([{ item: "Clothing voucher", onHand: 0, received: 0, given: 0 }]);
+  });
+});
+
 describe("a conference's own kinds", () => {
   test("a kind is added once, moves money its own way, and stops being offered when retired", async () => {
     const { ids, as } = await setup();
