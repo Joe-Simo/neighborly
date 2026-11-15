@@ -37,7 +37,6 @@ const fieldsOf = (event: FormEvent<HTMLFormElement>) => {
   return (name: string) => String(data.get(name) ?? "").trim();
 };
 
-
 /**
  * What the treasury's voucher shelf holds. Undefined while it loads, and also when the backend is
  * older than the shelf, so a form offers vouchers only once they can be kept.
@@ -641,13 +640,11 @@ export function NeighborForm({
   neighbor,
   call,
   onSaved,
-  aside,
 }: {
   churchId: ChurchId;
   neighbor?: Neighbor;
   call?: Call;
   onSaved: (neighborId: Id<"neighbors">) => void;
-  aside?: ReactNode;
 }) {
   const create = useMutation(api.neighbors.create);
   const update = useMutation(api.neighbors.update);
@@ -828,9 +825,7 @@ export function NeighborForm({
               ? "Save as a new neighbor"
               : "Add neighbor"
         }
-      >
-        {aside}
-      </FormEnd>
+      />
     </form>
   );
 }

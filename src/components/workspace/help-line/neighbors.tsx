@@ -10,9 +10,6 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import "@/components/workspace/tools/tools.css";
-import { NeighborsImport } from "@/components/workspace/tools/neighbors-import";
-import { RequestsImport } from "@/components/workspace/tools/requests-import";
 import { NeighborForm } from "@/components/workspace/help-line/forms";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
@@ -55,7 +52,6 @@ function Neighbors() {
   const churchId = data.church.id;
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
-  const [importing, setImporting] = useState<false | "neighbors" | "requests">(false);
   const add = useCallback(() => setAdding(true), []);
   useLayoutEffect(() => {
     setHeadAction({ label: "Add a neighbor", run: add, plus: true });
@@ -82,29 +78,11 @@ function Neighbors() {
           list={list}
           searching={!!search.trim()}
           format={format}
+          bring={data.canCoordinate}
           onAdd={add}
         />
       ) : (
         <HelpLoading label="Finding neighbors" />
-      )}
-      {importing && (
-        <section className="live-section">
-          <NeighborsImport />
-          {importing === "requests" ? (
-            <RequestsImport />
-          ) : (
-            <p className="help-form-note">
-              <Button
-                type="button"
-                variant="link"
-                className="help-text-action"
-                onClick={() => setImporting("requests")}
-              >
-                then bring in their past requests
-              </Button>
-            </p>
-          )}
-        </section>
       )}
       {adding && (
         <LiveDialog
@@ -115,19 +93,6 @@ function Neighbors() {
           <NeighborForm
             churchId={churchId}
             onSaved={(id) => router.push(recordHref(id))}
-            aside={
-              <Button
-                type="button"
-                variant="link"
-                className="help-text-action"
-                onClick={() => {
-                  setAdding(false);
-                  setImporting("neighbors");
-                }}
-              >
-                or bring in a spreadsheet
-              </Button>
-            }
           />
         </LiveDialog>
       )}
@@ -139,11 +104,14 @@ export function NeighborListView({
   list,
   searching,
   format,
+  bring = false,
   onAdd,
 }: {
   list: NeighborList;
   searching: boolean;
   format: Workspace["format"];
+  /** Whether to point to Your files, where records are brought in. */
+  bring?: boolean;
   onAdd: () => void;
 }) {
   const add = (
@@ -219,6 +187,13 @@ export function NeighborListView({
       {list.more && (
         <p className="help-footnote">
           Showing the first {shown}. Search to find anyone else.
+        </p>
+      )}
+      {bring && (
+        <p className="help-bring">
+          <Button asChild variant="link" className="help-text-action">
+            <Link href="/app/tools">Bring in a file</Link>
+          </Button>
         </p>
       )}
     </>

@@ -21,8 +21,6 @@
 .help-row .help-moved { color: var(--live-ink); }
 .help-first-origin { margin: -6px 0 6px; font-size: 15px; }
 /* In a dialog the form scrolls and its last line, the button, stays in view. */
-.live-dialog .help-form .live-form-actions { align-items: baseline; }
-.live-dialog .help-form .live-form-actions .help-text-action[data-slot="button"] { margin-right: auto; font-size: 16px; }
 /* The home: three quiet facts, each with its own way in. */
 .help-home { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; margin: 0 0 52px; padding-top: 22px; border-top: 1px solid var(--live-line); }
 .help-home dt { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; color: #52644f; margin-bottom: 8px; }
@@ -68,3 +66,4 @@
   .help-timeline .help-sep { display: none; }
   .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-block: 2px 0; }
 }
+.help-bring { margin: 28px 0 0; font-size: 16px; }
