@@ -51,7 +51,7 @@ export const reserve = internalMutation({
  */
 type Question = { type: "noul" | "choice"; instructions: string; criteria?: Record<string, string> };
 /**
- * The version every line in this file was measured on (the 23 made-up notes in src/lib/jev-set.ts).
+ * The version every line in this file was measured on (the made-up notes in src/lib/jev-set.ts).
  * "jev-latest" moves when a release ships and scores move with it, so change this only with a new measuring run.
  */
 const model = "jev-1.14.0";
@@ -136,11 +136,19 @@ const signMeaning = {
  * number words, shows it only when the note gives exactly one, and that needs no second opinion. Asked
  * anyway, the model scored a plain "$450" between 0.86 and 0.97 from one wording to the next.
  */
-function draftQuestions(draft: RequestDraft) {
+function draftQuestions(draft: RequestDraft, payeeShown: boolean) {
   return {
     ...(draft.kind && { kind: `Does note mention ${kindMeaning[draft.kind]}? ${mentioned}` }),
-    ...(draft.payeeKind && { payeeKind: `Does note mention ${payeeMeaning[draft.payeeKind]}? ${mentioned}` }),
+    ...(draft.payeeKind && payeeShown && { payeeKind: `Does note mention ${payeeMeaning[draft.payeeKind]}? ${mentioned}` }),
   };
+}
+/**
+ * Whether the model can see what the payee's kind was read from. A kind read from the payee's own name
+ * ("Paid to County Water Authority") cannot be confirmed, because that name is never sent: asked anyway, the
+ * model scored a plainly named gas company 0.15. Such a kind stands as code read it, like the amount.
+ */
+function payeeIsShown(draft: RequestDraft, note: string, known: Parameters<typeof withoutIdentity>[1] = { names: [], addresses: [] }) {
+  return prepareRequestDraft(withoutIdentity(note, known)).payeeKind === draft.payeeKind;
 }
 function signQuestions(signs: UrgentSign[]) {
   return Object.fromEntries(signs.map(({ reason }) => [reason, `Does note say that ${signMeaning[reason]}? ${plainly}`])) as Record<UrgentReason, string>;
@@ -169,6 +177,12 @@ const signEnds: Record<UrgentReason, { true: string; false: string }> = {
 /** When code and Jev's own pick name the same kind, the pick stands at this easier line. Set from the 23-note run. */
 const agreed = 0.8;
 const kindQuestion: Question = { type: "choice", instructions: "What one kind of help does note ask for?", criteria: kindChoice };
+/**
+ * A wording on trial, asked only by the measuring run. The live wording leaves a plainly stated bill blank
+ * ("Water bill is $72" picked utility at 0.6 to 0.77) because the note never says "help". It replaces the live
+ * wording only after a run shows fewer blanks and nothing wrong on the fresh notes.
+ */
+const trialKindQuestion: Question = { ...kindQuestion, instructions: "What one kind of help does note ask for? A bill or an amount owed that note states as a present fact counts as asking for help with it." };
 /** Jev's pick from the closed list, or null when the answer is not one. */
 function picked(answer: unknown): { kind: RequestKind | "none"; confidence: number } | null {
   if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number") return null;
@@ -280,20 +294,21 @@ export const draftRequest = action({
     if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     // Each question stands on its own in plain words. A bare field name ("proposed.kind") gave the model nothing to judge.
+    const payeeShown = payeeIsShown(draft, note, { names, addresses });
     const answers = await decide(env.TYPESAFE_API_KEY, { note }, {
-      ...Object.fromEntries(Object.entries(draftQuestions(draft)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
+      ...Object.fromEntries(Object.entries(draftQuestions(draft, payeeShown)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
       chosenKind: kindQuestion,
     }, { names, addresses });
     if (!answers) return fallback;
     const sure = { kind: noul(answers.kind), payeeKind: noul(answers.payeeKind) }, pick = picked(answers.chosenKind);
     // A proposed field with no usable answer means the reply cannot be trusted; the person reads the draft as code made it.
-    if ((draft.kind && sure.kind === null && !pick) || (draft.payeeKind && sure.payeeKind === null)) return fallback;
+    if ((draft.kind && sure.kind === null && !pick) || (draft.payeeKind && payeeShown && sure.payeeKind === null)) return fallback;
     // Field names, numbers and a kind from the closed list only, never the note: enough to see why a field came back blank.
     console.log(`jev ${JSON.stringify({ ...sure, chosenKind: pick?.kind, chosenConfidence: pick?.confidence })}`);
     const kind = settleKind(draft.kind, sure.kind, pick);
     if (draft.kind && !kind) draft.notes.push(draftNotes.confirmKind);
     const notes = draft.kind || !kind ? draft.notes : draft.notes.filter(line => line !== kindNotes.missing && line !== kindNotes.several);
-    if (draft.payeeKind && (sure.payeeKind ?? 0) < sureEnough) {
+    if (draft.payeeKind && payeeShown && (sure.payeeKind ?? 0) < sureEnough) {
       draft.payeeKind = null;
       draft.notes.push(draftNotes.confirmPayee);
     }
@@ -481,6 +496,7 @@ function judgeSigns(shown: UrgentReason[], wanted: UrgentReason[]): Outcome {
 const outcome = v.union(v.literal("right"), v.literal("blank"), v.literal("wrong"));
 const marks = v.object({ kind: outcome, amount: outcome, payeeKind: outcome, signs: outcome });
 const tally = v.object({ notesAllRight: v.number(), right: v.number(), blank: v.number(), wrong: v.number() });
+const arms = { mix: tally, confirm: tally, choose: tally, trial: tally };
 
 /**
  * Sends the made-up set in src/lib/jev-set.ts to the live model once and reports how it did. It is run by
@@ -491,31 +507,34 @@ const tally = v.object({ notesAllRight: v.number(), right: v.number(), blank: v.
  * Each note is judged three ways from one request. "mix" is what the screens do: code proposes and Jev
  * confirms, and where code is silent Jev picks the kind and reads the sign itself. "confirm" is code proposing
  * and Jev confirming only; "choose" is Jev alone on kind and signs. The amount is read by code in all three,
- * and who is paid is confirmed the same way in all three, since Jev cannot write either. Those three are
- * counted on the notes the lines were set from. "fresh" is the screens' way counted on the notes added
- * afterwards, which no line was set on: that is the figure to trust. A shown value that the note does not
- * support is "wrong"; a right value left for a person is "blank".
+ * and who is paid is settled the same way in all three, since Jev cannot write either. "trial" is the
+ * screens' way with a wording of the kind question that is not live yet. Each top line counts every note
+ * in its rows. "fresh" holds the same lines counted only on the notes added after the lines were set, which
+ * no line was set on: fresh.mix is the figure to trust and the one the screens quote. A shown value that
+ * the note does not support is "wrong"; a right value left for a person is "blank".
  */
 export const measure = internalAction({
   args: { churchId: v.id("churches") },
   returns: v.object({
     status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")),
-    notes: v.number(), unanswered: v.number(), model: v.string(), mix: tally, confirm: tally, choose: tally, fresh: tally,
-    rows: v.array(v.object({ id: v.string(), mix: v.optional(marks), confirm: v.optional(marks), choose: v.optional(marks), scores: v.record(v.string(), v.union(v.number(), v.string())) })),
+    notes: v.number(), unanswered: v.number(), model: v.string(), ...arms, fresh: v.object(arms),
+    rows: v.array(v.object({ id: v.string(), mix: v.optional(marks), confirm: v.optional(marks), choose: v.optional(marks), trial: v.optional(marks), scores: v.record(v.string(), v.union(v.number(), v.string())) })),
   }),
   handler: async (ctx, { churchId }) => {
     const empty = { notesAllRight: 0, right: 0, blank: 0, wrong: 0 };
-    const none = { notes: jevSet.length, unanswered: 0, model, mix: empty, confirm: empty, choose: empty, fresh: empty, rows: [] };
+    const blank = { mix: empty, confirm: empty, choose: empty, trial: empty };
+    const none = { notes: jevSet.length, unanswered: 0, model, ...blank, fresh: blank, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: jevSet.length })) return { status: "no allowance" as const, ...none };
     const rows = await Promise.all(jevSet.map(async item => {
       const draft = prepareRequestDraft(item.note), found = urgentSigns(item.note);
-      const confirmSigns = signQuestions(found);
+      const confirmSigns = signQuestions(found), payeeShown = payeeIsShown(draft, item.note);
       const answers = await decide(key, { note: item.note }, {
-        ...Object.fromEntries(Object.entries(draftQuestions(draft)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
+        ...Object.fromEntries(Object.entries(draftQuestions(draft, payeeShown)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
         ...Object.fromEntries(found.map(({ reason }) => [`confirm_${reason}`, { type: "noul" as const, instructions: confirmSigns[reason] }])),
         choose_kind: kindQuestion,
+        trial_kind: trialKindQuestion,
         ...Object.fromEntries(urgentReasons.map(reason => [`choose_${reason}`, signQuestion(reason, [])])),
       });
       if (!answers) return { id: item.id, scores: {} };
@@ -525,22 +544,25 @@ export const measure = internalAction({
         if (value !== null) scores[name] = Math.round(value * 100) / 100;
       }
       const yes = (name: string) => typeof scores[name] === "number" && scores[name] >= sureEnough;
-      const choice = picked(answers.choose_kind);
-      if (choice) {
-        scores.choose_kind = choice.kind;
-        scores.choose_kind_confidence = Math.round(choice.confidence * 100) / 100;
+      const choice = picked(answers.choose_kind), trial = picked(answers.trial_kind);
+      for (const [name, pick] of [["choose_kind", choice], ["trial_kind", trial]] as const) {
+        if (!pick) continue;
+        scores[name] = pick.kind;
+        scores[`${name}_confidence`] = Math.round(pick.confidence * 100) / 100;
       }
       const amount = draft.amountRequested;
-      const payeeKind = draft.payeeKind && yes("payeeKind") ? draft.payeeKind : null;
+      const payeeKind = draft.payeeKind && (!payeeShown || yes("payeeKind")) ? draft.payeeKind : null;
       const wanted = item.signs.map(sign => sign.reason);
       const chosenKind = choice && choice.kind !== "none" && choice.confidence >= sureEnough ? choice.kind : null;
       const codeFound = found.map(sign => sign.reason);
+      const screens = (pick: typeof choice) => ({
+        kind: judge(settleKind(draft.kind, noul(answers.kind), pick), item.kind), amount: judge(amount, item.amount), payeeKind: judge(payeeKind, item.payeeKind),
+        signs: judgeSigns(urgentReasons.filter(reason => yes(`${codeFound.includes(reason) ? "confirm" : "choose"}_${reason}`)), wanted),
+      });
       return {
         id: item.id, scores,
-        mix: {
-          kind: judge(settleKind(draft.kind, noul(answers.kind), choice), item.kind), amount: judge(amount, item.amount), payeeKind: judge(payeeKind, item.payeeKind),
-          signs: judgeSigns(urgentReasons.filter(reason => yes(`${codeFound.includes(reason) ? "confirm" : "choose"}_${reason}`)), wanted),
-        },
+        mix: screens(choice),
+        trial: screens(trial),
         confirm: {
           kind: judge(draft.kind && yes("kind") ? draft.kind : null, item.kind), amount: judge(amount, item.amount), payeeKind: judge(payeeKind, item.payeeKind),
           signs: judgeSigns(found.filter(({ reason }) => yes(`confirm_${reason}`)).map(sign => sign.reason), wanted),
@@ -551,12 +573,13 @@ export const measure = internalAction({
         },
       };
     }));
-    // The three arms are counted on the notes the lines were set from; "fresh" is the screens' way on the notes they were not.
-    const count = (arm: "mix" | "confirm" | "choose", fresh = false) => {
-      const all = rows.flatMap((row, index) => (row[arm] && !!jevSet[index].fresh === fresh ? [Object.values(row[arm])] : []));
+    // Every line counts the rows it is printed above: all notes at the top, the fresh notes under "fresh".
+    const count = (arm: keyof typeof arms, freshOnly: boolean) => {
+      const all = rows.flatMap((row, index) => { const marked = row[arm]; return marked && (!freshOnly || jevSet[index].fresh) ? [Object.values(marked)] : []; });
       const of = (mark: Outcome) => all.flat().filter(value => value === mark).length;
       return { notesAllRight: all.filter(row => row.every(value => value === "right")).length, right: of("right"), blank: of("blank"), wrong: of("wrong") };
     };
-    return { status: "done" as const, notes: jevSet.length, unanswered: rows.filter(row => !row.confirm).length, model, mix: count("mix"), fresh: count("mix", true), confirm: count("confirm"), choose: count("choose"), rows };
+    const lines = (freshOnly: boolean) => ({ mix: count("mix", freshOnly), confirm: count("confirm", freshOnly), choose: count("choose", freshOnly), trial: count("trial", freshOnly) });
+    return { status: "done" as const, notes: jevSet.length, unanswered: rows.filter(row => !row.confirm).length, model, ...lines(false), fresh: lines(true), rows };
   },
 });

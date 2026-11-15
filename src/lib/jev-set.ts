@@ -45,6 +45,7 @@ export const jevSet: SetNote[] = [
   { id: "all-denied", tries: "Every urgent sign named and denied", note: "Rent is $525, due to the landlord, Sample Homes. Not elderly, no children, not evicted.", kind: "rent", amount: 52500, payeeKind: "landlord", signs: [] },
   { id: "three-amounts", tries: "Three amounts, one of them the need", note: "Rent is $800 but she can pay $300, so she needs $500.", kind: "rent", amount: 50000, payeeKind: null, signs: [] },
   { id: "car-repair", tries: "Another need with a business that is paid", note: "Car repair so he can keep his job, $380, paid to Sample Auto Shop.", kind: "other", amount: 38000, payeeKind: "vendor", signs: [] },
+  { id: "water-authority", tries: "A plain bill with a due day and a utility named only by its own name (from a live check on 2026-11-15)", note: "Water bill is $72 and due on the 28th. Paid to County Water Authority.", kind: "utility", amount: 7200, payeeKind: "utility", signs: [] },
   { id: "someone-else", tries: "A sign that belongs to another household", note: "Her sister across town has no food, but she herself is fine. Called about her own water bill, $60.", kind: "utility", amount: 6000, payeeKind: null, signs: [] },
   // Fresh notes, added 2026-11-15 after the first run. No line or wording was chosen on these; keep it that way.
   { id: "fresh-rent-words", fresh: true, tries: "An amount in words, a named landlord, a baby", note: "Two months behind on rent. Owes nine hundred dollars to her landlord, Sample Court Apartments. Baby is six months old.", kind: "rent", amount: 90000, payeeKind: "landlord", signs: [sign("child")] },
@@ -63,7 +64,7 @@ export const jevSet: SetNote[] = [
 
 /**
  * The last saved measure run, as "How the assistant works here" quotes it: the screens' way, counted on the fresh
- * notes only. Copy the "fresh" figures from the run's file (/mnt/project-files/measure-run-N.txt) and nothing else;
+ * notes only. Copy the "fresh" figures for "mix" from the run's file (/mnt/project-files/measure-run-N.txt) and nothing else;
  * this is the one place the sheet reads them from.
  */
-export const measured = { run: 3, day: "2026-11-15", notes: 12, right: 42, blank: 6, wrong: 0 };
+export const measured = { run: 4, day: "2026-11-15", notes: 12, right: 43, blank: 5, wrong: 0 };
