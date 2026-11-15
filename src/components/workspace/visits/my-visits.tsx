@@ -6,8 +6,8 @@ import { Check } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import { count } from "@/components/workspace/help-line/format";
 import { useSave } from "@/components/workspace/help-line/use-save";
+import type { Words } from "@/lib/words";
 import type { OwnVisit } from "@/components/workspace/visits/format";
 
 /**
@@ -17,7 +17,7 @@ import type { OwnVisit } from "@/components/workspace/visits/format";
  * visit sheet the coordinator hands them.
  */
 export function MyVisits() {
-  const { data, format } = useWorkspace();
+  const { data, format, words } = useWorkspace();
   const churchId = data.church.id;
   const visits = useQuery(api.visits.mine, { churchId });
   const respond = useMutation(api.visits.respond);
@@ -27,6 +27,7 @@ export function MyVisits() {
     <MyVisitsView
       visits={visits}
       format={format}
+      words={words.visits}
       busy={pending}
       error={error}
       onAnswer={(visit, response) =>
@@ -39,12 +40,14 @@ export function MyVisits() {
 export function MyVisitsView({
   visits,
   format,
+  words,
   busy,
   error,
   onAnswer,
 }: {
   visits: OwnVisit[];
   format: Workspace["format"];
+  words: Words["visits"];
   busy: boolean;
   error: string;
   onAnswer: (visit: OwnVisit, response: "accepted" | "declined") => void;
@@ -54,16 +57,16 @@ export function MyVisitsView({
   return (
     <section className="live-section visits-mine" aria-labelledby="my-visits">
       <div className="live-section-head">
-        <h2 id="my-visits">Home visits</h2>
+        <h2 id="my-visits">{words.title}</h2>
         <span className="live-count">
-          {count(visits.length, "visit", "visits")}, always with a partner
+          {words.count(visits.length)}
         </span>
       </div>
       {error && (
         <div className="live-error" role="alert">
           <p>{error}</p>
           <p className="live-error-recovery">
-            Your answer was not saved. Try again.
+            {words.notSaved}
           </p>
         </div>
       )}
@@ -87,10 +90,8 @@ export function MyVisitsView({
                 <span>{half}</span>
               </div>
               <div>
-                <h3>A visit on {visit.street || "a street nearby"}</h3>
-                <p>
-                  With {visit.partner}. Your coordinator has the visit sheet.
-                </p>
+                <h3>{words.on(visit.street || words.nearby)}</h3>
+                <p>{words.partner(visit.partner)}</p>
               </div>
               <div className="live-row-actions">
                 {visit.response === "pending" ? (
@@ -99,14 +100,14 @@ export function MyVisitsView({
                       disabled={busy}
                       onClick={() => onAnswer(visit, "accepted")}
                     >
-                      <Check size={18} aria-hidden="true" /> I’ll go
+                      <Check size={18} aria-hidden="true" /> {words.go}
                     </Button>
                     <Button
                       variant="outline"
                       disabled={busy}
                       onClick={() => onAnswer(visit, "declined")}
                     >
-                      I can’t go
+                      {words.cannot}
                     </Button>
                   </>
                 ) : (
@@ -118,8 +119,8 @@ export function MyVisitsView({
                       }
                     >
                       {visit.response === "accepted"
-                        ? "You’re going"
-                        : "You can’t go"}
+                        ? words.going
+                        : words.notGoing}
                     </span>
                     <Button
                       variant="outline"
@@ -134,8 +135,8 @@ export function MyVisitsView({
                       }
                     >
                       {visit.response === "accepted"
-                        ? "I can’t go after all"
-                        : "I can go after all"}
+                        ? words.cannotAfterAll
+                        : words.canAfterAll}
                     </Button>
                   </>
                 )}
