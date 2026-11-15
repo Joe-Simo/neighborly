@@ -207,6 +207,7 @@ export function en(set: WordSet) {
     /** Tasks & meetings, as a member sees them. Planning a meeting and reviewing replies are leaders' tools and stay English. */
     tasks: {
       tasks: "Tasks",
+      add: "Add a task",
       markDone: "Mark done",
       done: "Done",
       open: "Open",
@@ -395,6 +396,33 @@ export function en(set: WordSet) {
     },
     /** What a person reads beside anything the assistant drafted. */
     assistant: {
+      /** The foot of a draft: what was read, what was never sent, what a blank means, and who decides. */
+      written: "Written by the assistant from the call note.",
+      unsaved: "Nothing is saved until you approve it.",
+      show: "What the assistant saw",
+      hide: "Hide what the assistant saw",
+      limits: {
+        read: "It read",
+        readDetail: "Only this call note. Names, phones, emails and addresses were taken out before it left.",
+        notSent: "This draft was made by fixed rules alone. The assistant did not check it.",
+        does: "It does",
+        doesDetail: "It answers yes or no and picks from a fixed list. It writes no words: the quote above is the note’s own.",
+        blank: "A blank",
+        blankDetail: "The note did not say it plainly, or the assistant was not sure. It leaves a blank before it guesses.",
+        person: "You decide",
+        personDetail: `A person approves every request. The assistant decides nothing about who is helped.`,
+      },
+      removed: { name: "name", phone: "phone", email: "email", address: "address", date: "date" },
+      notes: {
+        kindSeveral: "The note mentions more than one kind of help. Choose one, or make a request for each.",
+        kindMissing: "The note does not say what kind of help is asked for.",
+        amountSeveral: "The note gives more than one amount. Enter the amount asked for.",
+        amountMissing: "The note does not give an amount.",
+        payee: `Confirm who is paid. Payment goes to the landlord, utility or store, never to the ${t.neighbor}.`,
+        doubtful: "Part of the note is a question or is unsure, so it was left out.",
+        confirmKind: "Please confirm the kind of help.",
+        confirmPayee: "Please confirm who is paid.",
+      },
       title: "Drafted for you",
       waiting: (count: number) => (count === 1 ? "Waiting for your yes" : `${count} waiting for your yes`),
       origin: "Written by the assistant from the call note. Nothing is saved until you approve it.",
