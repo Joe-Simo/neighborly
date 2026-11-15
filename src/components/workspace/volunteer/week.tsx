@@ -3,6 +3,7 @@
 import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-visibility";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
+import { WeekNote } from "@/components/workspace/week-note/week-note";
 import {
   CommitmentRows,
   IncomingRequests,
@@ -16,6 +17,7 @@ export function WeekSection() {
   const incoming = incomingRequests(data);
   return (
     <>
+      <WeekNote />
       <IncomingRequests />
       <section className="live-section">
         <div className="live-section-head">
