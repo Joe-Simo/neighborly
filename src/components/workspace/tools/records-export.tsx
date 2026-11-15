@@ -9,7 +9,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { CountUp } from "@/components/workspace/primitives";
-import { recordFiles, recordsCsv, recordsFileName, recordsZipName, type RecordFileKey } from "@/components/workspace/tools/records";
+import { recordFiles, recordsCover, recordsCoverName, recordsCsv, recordsFileName, recordsZipName, type RecordFileKey } from "@/components/workspace/tools/records";
 
 export type GatheredFile = { key: RecordFileKey; title: string; fileName: string; lines: number; csv: string };
 export type RecordsStep =
@@ -109,7 +109,7 @@ function save(file: Blob, name: string) {
 }
 
 export function RecordsExport() {
-  const { data, isOwner } = useWorkspace();
+  const { data, isOwner, format } = useWorkspace();
   const convex = useConvex();
   const recordExport = useMutation(api.importExport.recordExport);
   const [state, setState] = useState<RecordsStep>({ step: "ready" });
@@ -136,7 +136,17 @@ export function RecordsExport() {
       state={state}
       onReset={() => setState({ step: "ready" })}
       onGather={() => void gather().catch(() => setState({ step: "ready", error: "The connection dropped while gathering. Nothing was lost or changed; try again." }))}
-      onDownloadAll={(files) => save(new Blob([zipSync(Object.fromEntries(files.map((file) => [file.fileName, strToU8(file.csv)])))], { type: "application/zip" }), recordsZipName(data.church.name, data.church.sample, new Date()))}
+      onDownloadAll={(files) => {
+        const cover = recordsCover({
+          conference: data.church.name,
+          sample: data.church.sample,
+          day: format(Date.now(), { year: "numeric", month: "long", day: "numeric" }),
+          by: data.user.name,
+          files: files.map((file) => ({ ...file, holds: recordFiles.find((item) => item.key === file.key)?.holds ?? "" })),
+        });
+        const folder = { [recordsCoverName(data.church.sample)]: strToU8(cover), ...Object.fromEntries(files.map((file) => [file.fileName, strToU8(file.csv)])) };
+        save(new Blob([zipSync(folder)], { type: "application/zip" }), recordsZipName(data.church.name, data.church.sample, new Date()));
+      }}
       onDownload={(file) => save(new Blob([file.csv], { type: "text/csv;charset=utf-8" }), file.fileName)}
     />
   );

@@ -156,6 +156,18 @@ p.tools-quiet { margin: 14px 0 0; }
 .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) :is(.tools-leaf-deck, .tools-small, .tools-sample) { display: none; }
 .live-app .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > h2 { margin: 0; font-size: 22px; }
 .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > .tools-file { margin: 0; }
-/* A corner is plain paper at rest, ochre only while a yes is waited for, green once it is given or the files are gathered. */
 /* The room's headline keeps its two sentences on two lines on a phone. */
 @media (max-width: 700px) { .live-app:has(.tools-leaves) .live-head-words h1 { font-size: 32px; text-wrap: balance; } }
+/* The week as a page for the wall: the week in large serif over a firm rule, each day a serif line, the name in the last column the darkest thing in its row. Black only, so a parish printer keeps every line. */
+@media print {
+  .tools-rota header { display: flex; flex-direction: column; padding-bottom: 4mm; border-bottom: 1.5pt solid #000; }
+  .tools-rota header p { font-size: 8.5pt; letter-spacing: 0.1em; }
+  .tools-rota header h3 { margin: 1.5mm 0 0; text-wrap: balance; font-size: 27pt; line-height: 1.05; letter-spacing: -0.015em; }
+  :is(.live-app, .live-dialog) .tools-rota thead th { padding-top: 3mm; padding-bottom: 1.5mm; border-bottom: 0; font-size: 7.5pt; letter-spacing: 0.1em; }
+  :is(.live-app, .live-dialog) .tools-rota th, :is(.live-app, .live-dialog) .tools-rota td { border-color: #8a8a8a; border-bottom-width: 0.35pt; }
+  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { padding-top: 5mm; padding-bottom: 1.5mm; border-bottom: 0.75pt solid #000; font: 400 14pt/1.2 "Newsreader", Georgia, serif; text-transform: none; letter-spacing: -0.005em; }
+  .tools-rota tr:not(.tools-rota-none) td:last-child { font-weight: 600; }
+  .tools-rota .tools-rota-none td { font-size: 10pt; }
+  .tools-rota-open { min-width: 38mm; height: 5mm; color: transparent !important; border-bottom: 0.5pt solid #000; }
+  .tools-rota-foot { align-items: baseline; }
+}

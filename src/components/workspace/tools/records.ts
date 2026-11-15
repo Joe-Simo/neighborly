@@ -1,12 +1,12 @@
 import Papa from "papaparse";
 
 export const recordFiles = [
-  { key: "neighbors", title: "Neighbors", gathering: "neighbors" },
-  { key: "requests", title: "Requests and their outcomes", gathering: "requests" },
-  { key: "visits", title: "Home visits", gathering: "home visits" },
-  { key: "ledger", title: "The ledger", gathering: "the ledger" },
-  { key: "payees", title: "Who you pay", gathering: "who you pay" },
-  { key: "members", title: "Members", gathering: "members" },
+  { key: "neighbors", holds: "Each household: name, phone, address, who lives there, language and notes.", title: "Neighbors", gathering: "neighbors" },
+  { key: "requests", holds: "Every request for help, what was asked, what was decided and what was given.", title: "Requests and their outcomes", gathering: "requests" },
+  { key: "visits", holds: "Each home visit: when it was, who went and what was written up.", title: "Home visits", gathering: "home visits" },
+  { key: "ledger", holds: "Money in and money out, line by line, in dollars and cents.", title: "The ledger", gathering: "the ledger" },
+  { key: "payees", holds: "The landlords, utilities and stores you pay. Account numbers show their last four digits only.", title: "Who you pay", gathering: "who you pay" },
+  { key: "members", holds: "Your members, their roles and how to reach them.", title: "Members", gathering: "members" },
 ] as const;
 export type RecordFileKey = (typeof recordFiles)[number]["key"];
 
@@ -25,3 +25,60 @@ export function recordsZipName(conference: string, sample: boolean | undefined, 
   const date = [day.getFullYear(), day.getMonth() + 1, day.getDate()].map((part) => String(part).padStart(2, "0")).join("-");
   return `${sample ? "sample-" : ""}${short}-records-${date}.zip`;
 }
+
+const escaped = (text: string) => text.replace(/[&<>"]/g, (mark) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[mark] ?? mark);
+
+/**
+ * The sheet on top of the folder: one page that opens in any browser and prints on Letter or A4,
+ * saying whose records these are, when they were gathered, what each file holds and how to keep them.
+ * It stands alone, so it carries its own type and uses no pictures, scripts or addresses.
+ */
+export function recordsCover({ conference, sample, day, by, files }: { conference: string; sample: boolean | undefined; day: string; by: string; files: { title: string; fileName: string; holds: string; lines: number }[] }) {
+  const rows = files.map((file) => `<tr><td><b>${escaped(file.title)}</b><small>${escaped(file.fileName)}</small></td><td>${escaped(file.holds)}</td><td class="n">${file.lines.toLocaleString("en-US")}</td></tr>`).join("");
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escaped(conference)} records, ${escaped(day)}</title>
+<style>
+@page { margin: 16mm 16mm 18mm; }
+* { box-sizing: border-box; }
+body { margin: 0 auto; padding: 40px 24px; max-width: 720px; color: #000; background: #fff; font: 12pt/1.45 "Source Sans 3", "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+.over { margin: 0; font-size: 8.5pt; letter-spacing: 0.1em; text-transform: uppercase; }
+h1 { margin: 6px 0 0; font: 400 30pt/1.05 "Newsreader", "Iowan Old Style", Georgia, serif; letter-spacing: -0.015em; }
+.when { max-width: none; margin: 8px 0 0; padding-bottom: 16px; border-bottom: 1.5pt solid #000; font-size: 13pt; }
+table { width: 100%; margin-top: 8px; border-collapse: collapse; }
+th { padding: 10px 14px 6px 0; text-align: left; font-size: 7.5pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+td { padding: 9px 14px 9px 0; vertical-align: top; border-top: 0.35pt solid #8a8a8a; }
+tr:first-child td { border-top: 0.75pt solid #000; }
+td:first-child { width: 34%; }
+b { display: block; font: 400 14pt/1.2 "Newsreader", "Iowan Old Style", Georgia, serif; }
+small { display: block; margin-top: 2px; font-size: 9pt; }
+.n { padding-right: 0; text-align: right; white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
+th.n { font-weight: 600; }
+h2 { margin: 28px 0 4px; font: 400 14pt/1.2 "Newsreader", "Iowan Old Style", Georgia, serif; }
+p { margin: 0 0 6px; max-width: 62ch; }
+footer { display: flex; justify-content: space-between; align-items: baseline; margin-top: 36px; padding-top: 10px; border-top: 0.5pt solid #000; font-size: 9pt; }
+footer span:first-child { font: 400 12pt/1 "Newsreader", "Iowan Old Style", Georgia, serif; }
+@media print { body { padding: 0; max-width: none; } tr, h2, p { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<p class="over">${escaped(conference)}${sample ? " · Sample, made-up people" : ""}</p>
+<h1>Your records</h1>
+<p class="when">Gathered ${escaped(day)} by ${escaped(by)}.</p>
+<table>
+<thead><tr><th>File</th><th>What it holds</th><th class="n">Lines</th></tr></thead>
+<tbody>${rows}</tbody>
+</table>
+<h2>Keeping them</h2>
+<p>These files hold your neighbors’ private details. Keep them where only your conference’s officers can reach them, and do not send them by email.</p>
+<h2>Opening them</h2>
+<p>Each file opens in Excel, Numbers or Google Sheets. The column names are the ones Kind Helps reads, so any file can be brought back in from Your files.</p>
+<footer><span>kind helps</span><span>${sample ? "Sample · " : ""}Gathered ${escaped(day)}</span></footer>
+</body>
+</html>
+`;
+}
+export const recordsCoverName = (sample: boolean | undefined) => `${sample ? "sample-" : ""}read-me-first.html`;
