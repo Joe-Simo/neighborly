@@ -20,6 +20,10 @@ const NAME_LIMIT = 120;
 const CHECK_LIMIT = 20;
 const BANK_LIST_LIMIT = 300;
 const CLEAR_BATCH = 500;
+const DEPOSIT_LIMIT = 100;
+const STATEMENT_LIST = 24;
+const SHELF_LIMIT = 5000;
+const KIND_LIMIT = 200;
 
 /** Where money comes from. The label is what the ledger stores and shows. */
 export const incomeSources = {
@@ -137,6 +141,7 @@ async function summaries(ctx: Ctx, entries: Entry[]) {
   const ids = [...new Set(entries.flatMap((entry) => entry.requestId ?? []))];
   return new Map((await Promise.all(ids.map((id) => ctx.db.get("assistanceRequests", id)))).flatMap((request) => (request ? [[request._id, request.summary] as const] : [])));
 }
+const depositRow = v.object({ id: v.id("deposits"), date: v.string(), total: v.number(), memo: v.string(), /** How many gifts went to the bank together. */ count: v.number() });
 const ledgerRow = v.object({ ...entryFields, neighbor: neighborLink, /** The balance after this entry. */ balance: v.number() });
 
 /** One month of the ledger with the balance after every entry, newest first, and the balance today. */
@@ -413,6 +418,8 @@ export const reconciliation = query({
     waiting: v.array(v.object(entryFields)),
     /** The entries cleared most recently, newest first, so a slip can be undone. */
     lately: v.array(v.object(entryFields)),
+    /** Deposits the bank has not shown by that day. Each is one line on a statement, so its entries are left out of waiting. */
+    deposits: v.array(depositRow),
   }),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
@@ -423,6 +430,7 @@ export const reconciliation = query({
     const reversed = new Set(all.flatMap((entry) => entry.reverses ?? []));
     let books = 0, cleared = 0, onItsWayIn = 0, onItsWayOut = 0;
     const waiting: Entry[] = [], done: Entry[] = [];
+    const carried = new Map<Id<"deposits">, number>();
     for (const entry of all) {
       if (entry.date > asOf) break;
       books += signed(entry);
@@ -432,14 +440,19 @@ export const reconciliation = query({
       } else {
         if (entry.kind === "income") onItsWayIn += entry.amount;
         else onItsWayOut += entry.amount;
-        waiting.push(entry);
+        if (entry.depositId) carried.set(entry.depositId, (carried.get(entry.depositId) ?? 0) + 1);
+        else waiting.push(entry);
       }
     }
+    const deposits = (await Promise.all([...carried].map(async ([id, count]) => {
+      const deposit = await ctx.db.get("deposits", id);
+      return deposit ? [{ id, date: deposit.date, total: deposit.total, memo: deposit.memo, count }] : [];
+    }))).flat().sort((a, b) => a.date.localeCompare(b.date));
     const listed = waiting.slice(0, BANK_LIST_LIMIT);
     const lately = done.sort((a, b) => (b.clearedOn ?? "").localeCompare(a.clearedOn ?? "") || b.date.localeCompare(a.date)).slice(0, 8);
     const requests = await summaries(ctx, [...listed, ...lately]);
     const view = (entry: Entry) => entryView(entry, (entry.requestId && requests.get(entry.requestId)) ?? null, reversed.has(entry._id));
-    return { asOf, today: day, books, cleared, onItsWayIn, onItsWayOut, waitingCount: waiting.length, waiting: listed.map(view), lately: lately.map(view) };
+    return { asOf, today: day, books, cleared, onItsWayIn, onItsWayOut, waitingCount: waiting.length + deposits.length, waiting: listed.map(view), lately: lately.map(view), deposits };
   },
 });
 
@@ -486,5 +499,274 @@ export const clearThrough = mutation({
     const batch = waiting.slice(0, CLEAR_BATCH);
     for (const entry of batch) await ctx.db.patch("ledgerEntries", entry._id, { clearedOn: through });
     return { marked: batch.length, more: waiting.length > batch.length };
+  },
+});
+
+/** What had cleared the bank by a day, in whole cents. */
+async function clearedBy(ctx: Ctx, churchId: Id<"churches">, asOf: string) {
+  return (await ledgerEntries(ctx, churchId)).reduce((sum, entry) => (entry.date <= asOf && entry.clearedOn && entry.clearedOn <= asOf ? sum + signed(entry) : sum), 0);
+}
+
+/**
+ * Keeps a statement that has been matched: its last day, its ending balance, who matched it and
+ * when. It is refused unless the balance equals what has cleared by that day, so a kept statement
+ * always agreed with the ledger when it was kept. Matching the same day again replaces the line.
+ */
+export const agreeStatement = mutation({
+  args: { churchId: v.id("churches"), endsOn: v.string(), balance: v.number() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    const endsOn = await statementDay(ctx, args.churchId, args.endsOn);
+    if (!Number.isSafeInteger(args.balance)) throw new Error("Enter the ending balance in dollars and cents.");
+    if (args.balance !== (await clearedBy(ctx, args.churchId, endsOn))) throw new Error("The statement and what has cleared do not agree yet, so it was not kept.");
+    const kept = await ctx.db.query("bankStatements").withIndex("by_church", (q) => q.eq("churchId", args.churchId).eq("endsOn", endsOn)).first();
+    const line = { balance: args.balance, agreedBy: member._id, agreedAt: Date.now() };
+    if (kept) await ctx.db.patch("bankStatements", kept._id, line);
+    else await ctx.db.insert("bankStatements", { churchId: args.churchId, endsOn, ...line });
+    return null;
+  },
+});
+
+/** The statements matched so far, newest first, for the treasurer and for an audit. */
+export const statements = query({
+  args: { churchId: v.id("churches") },
+  returns: v.array(v.object({ id: v.id("bankStatements"), endsOn: v.string(), balance: v.number(), agreedBy: v.string(), agreedAt: v.number() })),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const kept = await ctx.db.query("bankStatements").withIndex("by_church", (q) => q.eq("churchId", args.churchId)).order("desc").take(STATEMENT_LIST);
+    return Promise.all(kept.map(async (row) => ({ id: row._id, endsOn: row.endsOn, balance: row.balance, agreedBy: (await ctx.db.get("memberships", row.agreedBy))?.name ?? "A former member", agreedAt: row.agreedAt })));
+  },
+});
+
+/**
+ * Gifts recorded but not yet carried to the bank: money in that is in no deposit, has not cleared
+ * and was not taken back. The balance a group starts with is not a gift and is left out.
+ */
+export const undeposited = query({
+  args: { churchId: v.id("churches") },
+  returns: v.array(v.object({ id: v.id("ledgerEntries"), date: v.string(), amount: v.number(), category: v.string(), from: v.string(), memo: v.string() })),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const all = await ledgerEntries(ctx, args.churchId);
+    const reversed = new Set(all.flatMap((entry) => entry.reverses ?? []));
+    return all
+      .filter((entry) => entry.kind === "income" && !entry.depositId && !entry.clearedOn && !entry.reverses && !reversed.has(entry._id) && entry.category !== incomeSources.opening)
+      .slice(-DEPOSIT_LIMIT)
+      .map((entry) => ({ id: entry._id, date: entry.date, amount: entry.amount, category: entry.category, from: entry.payee, memo: entry.memo }));
+  },
+});
+
+/**
+ * Several gifts carried to the bank as one deposit, so the statement's single line has one line
+ * here to match. The deposit is a grouping, not money: no entry's amount or day changes and the
+ * balance stays the same.
+ */
+export const recordDeposit = mutation({
+  args: { churchId: v.id("churches"), entryIds: v.array(v.id("ledgerEntries")), date: v.string(), memo: v.optional(v.string()) },
+  returns: v.id("deposits"),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    const ids = [...new Set(args.entryIds)];
+    if (!ids.length) throw new Error("Choose the gifts that went to the bank.");
+    if (ids.length > DEPOSIT_LIMIT) throw new Error(`A deposit holds up to ${DEPOSIT_LIMIT} gifts. Record the rest as a second deposit.`);
+    const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
+    let total = 0;
+    for (const id of ids) {
+      const entry = await ctx.db.get("ledgerEntries", id);
+      if (!entry || entry.churchId !== args.churchId) throw new Error("Entry not found.");
+      if (entry.kind !== "income" || entry.reverses) throw new Error("Only money that came in can be deposited.");
+      if (entry.depositId) throw new Error("One of these gifts is already in a deposit.");
+      if (await ctx.db.query("ledgerEntries").withIndex("by_reverses", (q) => q.eq("reverses", id)).first()) throw new Error("One of these gifts was taken back, so it cannot be deposited.");
+      if (entry.date > date) throw new Error("A gift cannot be deposited before the day it was received.");
+      total += entry.amount;
+    }
+    const depositId = await ctx.db.insert("deposits", { churchId: args.churchId, date, total, memo, recordedBy: member._id, createdAt: Date.now() });
+    for (const id of ids) await ctx.db.patch("ledgerEntries", id, { depositId });
+    return depositId;
+  },
+});
+
+async function depositEntries(ctx: Ctx, churchId: Id<"churches">, depositId: Id<"deposits">) {
+  const deposit = await ctx.db.get("deposits", depositId);
+  if (!deposit || deposit.churchId !== churchId) throw new Error("Deposit not found.");
+  return { deposit, entries: await ctx.db.query("ledgerEntries").withIndex("by_deposit", (q) => q.eq("depositId", depositId)).take(DEPOSIT_LIMIT) };
+}
+
+/** Marks a whole deposit as cleared on a statement day, or takes the mark off with null. */
+export const clearDeposit = mutation({
+  args: { churchId: v.id("churches"), depositId: v.id("deposits"), clearedOn: v.union(v.null(), v.string()) },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const { deposit, entries } = await depositEntries(ctx, args.churchId, args.depositId);
+    const clearedOn = args.clearedOn === null ? undefined : await statementDay(ctx, args.churchId, args.clearedOn);
+    if (clearedOn && clearedOn < deposit.date) throw new Error("A deposit cannot clear the bank before the day it was made.");
+    for (const entry of entries) await ctx.db.patch("ledgerEntries", entry._id, { clearedOn });
+    return null;
+  },
+});
+
+/** Takes a deposit apart, so its gifts wait to be deposited again. Refused once the bank has shown it. */
+export const undoDeposit = mutation({
+  args: { churchId: v.id("churches"), depositId: v.id("deposits") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const { entries } = await depositEntries(ctx, args.churchId, args.depositId);
+    if (entries.some((entry) => entry.clearedOn)) throw new Error("This deposit has cleared the bank. Take the cleared mark back first.");
+    for (const entry of entries) await ctx.db.patch("ledgerEntries", entry._id, { depositId: undefined });
+    await ctx.db.delete("deposits", args.depositId);
+    return null;
+  },
+});
+
+/** Every movement on the voucher shelf, oldest first. */
+async function shelfRows(ctx: Ctx, churchId: Id<"churches">) {
+  const rows = await ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(SHELF_LIMIT + 1);
+  if (rows.length > SHELF_LIMIT) throw new Error("The voucher shelf has too many lines to count in one pass. Tell us, and we will close out the earlier years.");
+  return rows;
+}
+function voucherItem(item: string) {
+  const name = named(item, "Say what the voucher is for.");
+  return { name, key: nameKey(name) };
+}
+const wholeCount = (quantity: number) => Number.isSafeInteger(quantity) && quantity > 0;
+
+/**
+ * The voucher shelf: how many of each voucher are on hand, and the latest movements. A count, not
+ * money, so it never touches the balance. A count below zero means more were given than were ever
+ * recorded as received.
+ */
+export const voucherShelf = query({
+  args: { churchId: v.id("churches") },
+  returns: v.object({
+    items: v.array(v.object({ item: v.string(), onHand: v.number(), received: v.number(), given: v.number() })),
+    lately: v.array(v.object({ id: v.id("voucherStock"), date: v.string(), item: v.string(), change: v.number(), note: v.string(), forRequest: v.boolean() })),
+  }),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const rows = await shelfRows(ctx, args.churchId);
+    const items = new Map<string, { item: string; onHand: number; received: number; given: number }>();
+    for (const row of rows) {
+      const key = nameKey(row.item);
+      const line = items.get(key) ?? { item: row.item, onHand: 0, received: 0, given: 0 };
+      line.onHand += row.change;
+      if (row.requestId) line.given -= row.change;
+      else line.received += row.change;
+      items.set(key, line);
+    }
+    return {
+      items: [...items.values()].sort((a, b) => a.item.localeCompare(b.item)),
+      lately: rows.slice(-12).reverse().map((row) => ({ id: row._id, date: row.date, item: row.item, change: row.change, note: row.note, forRequest: Boolean(row.requestId) })),
+    };
+  },
+});
+
+/**
+ * Vouchers put on the shelf, or a correction after counting them by hand. change is a whole
+ * number: plus for vouchers received, minus to take a miscount off. A correction says why.
+ */
+export const recordVouchers = mutation({
+  args: { churchId: v.id("churches"), item: v.string(), change: v.number(), date: v.string(), note: v.optional(v.string()) },
+  returns: v.id("voucherStock"),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    if (!wholeCount(Math.abs(args.change))) throw new Error("Enter how many vouchers, as a whole number.");
+    const { name } = voucherItem(args.item);
+    const { date, memo } = await dated(ctx, args.churchId, args.date, args.note);
+    if (args.change < 0 && !memo) throw new Error("Say why the count is going down.");
+    return ctx.db.insert("voucherStock", { churchId: args.churchId, date, change: args.change, item: name, note: memo, recordedBy: member._id, createdAt: Date.now() });
+  },
+});
+
+/**
+ * For the help line: call this when a voucher is given on a request, changed, or taken back.
+ * quantity is how many of the item the request now holds in all (0 when none), so calling it
+ * twice with the same number changes nothing. The shelf goes down by the difference, on a line
+ * tied to the request. No access check inside; call it after neighborAccess() with that member.
+ */
+export async function voucherGiven(ctx: MutationCtx, member: Doc<"memberships">, given: { requestId: Id<"assistanceRequests">; item: string; quantity: number }): Promise<void> {
+  if (given.quantity !== 0 && !wholeCount(given.quantity)) throw new Error("Enter how many vouchers, as a whole number.");
+  const { name, key } = voucherItem(given.item);
+  const request = await ctx.db.get("assistanceRequests", given.requestId);
+  if (!request || request.churchId !== member.churchId) throw new Error("Request not found.");
+  const lines = await ctx.db.query("voucherStock").withIndex("by_request", (q) => q.eq("requestId", given.requestId)).take(REQUEST_ENTRY_LIMIT);
+  // What the shelf has already given to this request, item by item. A changed item goes back whole.
+  const out = new Map<string, { item: string; count: number }>();
+  for (const line of lines) {
+    const held = out.get(nameKey(line.item)) ?? { item: line.item, count: 0 };
+    held.count -= line.change;
+    out.set(nameKey(line.item), held);
+  }
+  const date = today((await group(ctx, member.churchId)).timeZone);
+  const move = (item: string, change: number, note: string) => ctx.db.insert("voucherStock", { churchId: member.churchId, date, change, item, note, requestId: given.requestId, recordedBy: member._id, createdAt: Date.now() });
+  for (const [held, { item, count }] of out) if (held !== key && count !== 0) await move(item, count, "Back on the shelf");
+  const change = (out.get(key)?.count ?? 0) - given.quantity;
+  if (change !== 0) await move(name, change, change < 0 ? "Given on a request" : "Back on the shelf");
+}
+
+async function ownKinds(ctx: Ctx, churchId: Id<"churches">) {
+  return ctx.db.query("ledgerKinds").withIndex("by_church_key", (q) => q.eq("churchId", churchId)).take(KIND_LIMIT);
+}
+
+/** A conference's own kinds of money in and money out, beside the ones every conference has. */
+export const kinds = query({
+  args: { churchId: v.id("churches") },
+  returns: v.array(v.object({ id: v.id("ledgerKinds"), direction: v.union(v.literal("income"), v.literal("expense")), name: v.string() })),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    return (await ownKinds(ctx, args.churchId)).filter((kind) => !kind.retiredAt).map((kind) => ({ id: kind._id, direction: kind.direction, name: kind.name }));
+  },
+});
+
+/** Adds a kind. A name already in use, by the conference or built in, is refused; a retired one comes back. */
+export const addKind = mutation({
+  args: { churchId: v.id("churches"), direction: v.union(v.literal("income"), v.literal("expense")), name: v.string() },
+  returns: v.id("ledgerKinds"),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    const name = named(args.name, "Give the kind a name.");
+    const key = nameKey(name);
+    if (!key) throw new Error("Give the kind a name with letters or numbers.");
+    const builtIn = [...Object.values(incomeSources), ...Object.values(spendingKinds), "rent", "utility", "utilities", "food", "voucher", "thrift store voucher", "other", "other help"];
+    if (builtIn.some((label) => nameKey(label) === key)) throw new Error("Every conference already has a kind with this name.");
+    const same = await ctx.db.query("ledgerKinds").withIndex("by_church_key", (q) => q.eq("churchId", args.churchId).eq("nameKey", key)).first();
+    if (same && !same.retiredAt) throw new Error("You already have a kind with this name.");
+    if (same) {
+      await ctx.db.patch("ledgerKinds", same._id, { retiredAt: undefined, direction: args.direction, name });
+      return same._id;
+    }
+    if ((await ownKinds(ctx, args.churchId)).length >= KIND_LIMIT) throw new Error(`A conference can keep up to ${KIND_LIMIT} kinds of its own.`);
+    return ctx.db.insert("ledgerKinds", { churchId: args.churchId, direction: args.direction, name, nameKey: key, recordedBy: member._id, createdAt: Date.now() });
+  },
+});
+
+/** Stops offering a kind. Entries already recorded under it keep its name. */
+export const retireKind = mutation({
+  args: { churchId: v.id("churches"), kindId: v.id("ledgerKinds") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const kind = await ctx.db.get("ledgerKinds", args.kindId);
+    if (!kind || kind.churchId !== args.churchId) throw new Error("Kind not found.");
+    if (!kind.retiredAt) await ctx.db.patch("ledgerKinds", kind._id, { retiredAt: Date.now() });
+    return null;
+  },
+});
+
+/** Money in or out under one of the conference's own kinds. The kind says which way it moves. */
+export const recordOwnKind = mutation({
+  args: { churchId: v.id("churches"), kindId: v.id("ledgerKinds"), amount: v.number(), date: v.string(), name: v.string(), memo: v.optional(v.string()), checkNumber: v.optional(v.string()) },
+  returns: v.id("ledgerEntries"),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    const kind = await ctx.db.get("ledgerKinds", args.kindId);
+    if (!kind || kind.churchId !== args.churchId || kind.retiredAt) throw new Error("This kind is no longer offered. Choose another.");
+    requireCents(args.amount);
+    const out = kind.direction === "expense";
+    const payee = named(args.name, out ? "Say who was paid." : "Say where the money came from.");
+    const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
+    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: kind.direction, amount: args.amount, date, category: kind.name, payee, memo, checkNumber: out ? check(args.checkNumber) : undefined, recordedBy: member._id, createdAt: Date.now() });
   },
 });

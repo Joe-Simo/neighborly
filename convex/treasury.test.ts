@@ -6,6 +6,7 @@ import { v } from "convex/values";
 import { DateTime } from "luxon";
 import schema from "./schema";
 import { api, internal } from "./_generated/api";
+import { voucherGiven } from "./treasury";
 import type { Doc, Id } from "./_generated/dataModel";
 import { paidTowardRequest } from "./treasury";
 
@@ -323,6 +324,121 @@ describe("matching the bank", () => {
     expect((await entries())[0].clearedOn).toBeUndefined();
     await mark(ids.coordinator, day(5));
     expect((await entries())[0].clearedOn).toBe(day(5));
+  });
+});
+
+describe("statements kept", () => {
+  test("a statement is kept only when it agrees with what has cleared, and names who matched it", async () => {
+    const { ids, as, income } = await setup();
+    const owner = as(ids.owner);
+    const gift = await income(64000, day(20));
+    await income(5000, day(2));
+    await owner.mutation(api.treasury.setCleared, { churchId: ids.church, entryId: gift, clearedOn: day(10) });
+    await expect(owner.mutation(api.treasury.agreeStatement, { churchId: ids.church, endsOn: day(10), balance: 69000 })).rejects.toThrow("do not agree");
+    await expect(owner.mutation(api.treasury.agreeStatement, { churchId: ids.church, endsOn: day(-1), balance: 64000 })).rejects.toThrow("future");
+    await expect(as(ids.member).mutation(api.treasury.agreeStatement, { churchId: ids.church, endsOn: day(10), balance: 64000 })).rejects.toThrow(refused);
+    await expect(as(ids.member).query(api.treasury.statements, { churchId: ids.church })).rejects.toThrow(refused);
+    expect(await owner.query(api.treasury.statements, { churchId: ids.church })).toEqual([]);
+
+    await owner.mutation(api.treasury.agreeStatement, { churchId: ids.church, endsOn: day(10), balance: 64000 });
+    await as(ids.coordinator).mutation(api.treasury.agreeStatement, { churchId: ids.church, endsOn: day(10), balance: 64000 });
+    const kept = await owner.query(api.treasury.statements, { churchId: ids.church });
+    expect(kept).toHaveLength(1);
+    expect(kept[0]).toMatchObject({ endsOn: day(10), balance: 64000, agreedBy: "Sample coordinator" });
+    expect(await as(ids.stranger).query(api.treasury.statements, { churchId: ids.other })).toEqual([]);
+  });
+});
+
+describe("deposits", () => {
+  test("gifts go to the bank as one line that clears together, and no money changes", async () => {
+    const { ids, as, income, entries } = await setup();
+    const owner = as(ids.owner);
+    const opening = await owner.mutation(api.treasury.recordIncome, { churchId: ids.church, source: "opening", amount: 100000, date: day(30), from: "Carried over" });
+    const a = await income(64000, day(6)), b = await income(2500, day(5), "Donation"), c = await income(1000, day(1), "Donation");
+    expect((await owner.query(api.treasury.undeposited, { churchId: ids.church })).map((row) => row.id)).toEqual([a, b, c]);
+    const before = (await owner.query(api.treasury.ledger, { churchId: ids.church })).balance;
+
+    await expect(owner.mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [], date: day(4) })).rejects.toThrow("Choose the gifts");
+    await expect(owner.mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [a, c], date: day(4) })).rejects.toThrow("before the day it was received");
+    await expect(as(ids.member).mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [a], date: day(4) })).rejects.toThrow(refused);
+    const depositId = await owner.mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [a, b, a], date: day(4), memo: "Night drop" });
+    await expect(owner.mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [b], date: day(4) })).rejects.toThrow("already in a deposit");
+    expect((await owner.query(api.treasury.undeposited, { churchId: ids.church })).map((row) => row.id)).toEqual([c]);
+
+    const bank = await owner.query(api.treasury.reconciliation, { churchId: ids.church });
+    expect(bank.deposits).toEqual([{ id: depositId, date: day(4), total: 66500, memo: "Night drop", count: 2 }]);
+    expect(bank.waiting.map((row) => row.id)).toEqual([opening, c]);
+    expect(bank).toMatchObject({ waitingCount: 3, onItsWayIn: 167500, books: before });
+
+    await expect(owner.mutation(api.treasury.clearDeposit, { churchId: ids.church, depositId, clearedOn: day(5) })).rejects.toThrow("before the day it was made");
+    await owner.mutation(api.treasury.clearDeposit, { churchId: ids.church, depositId, clearedOn: day(3) });
+    expect(await owner.query(api.treasury.reconciliation, { churchId: ids.church })).toMatchObject({ cleared: 66500, deposits: [], waitingCount: 2, books: before });
+    await expect(owner.mutation(api.treasury.undoDeposit, { churchId: ids.church, depositId })).rejects.toThrow("has cleared the bank");
+    await owner.mutation(api.treasury.clearDeposit, { churchId: ids.church, depositId, clearedOn: null });
+    await expect(as(ids.stranger).mutation(api.treasury.undoDeposit, { churchId: ids.other, depositId })).rejects.toThrow("Deposit not found");
+    await owner.mutation(api.treasury.undoDeposit, { churchId: ids.church, depositId });
+    expect((await owner.query(api.treasury.undeposited, { churchId: ids.church })).map((row) => row.id)).toEqual([a, b, c]);
+    expect(sum(await entries())).toBe(before);
+  });
+});
+
+describe("the voucher shelf", () => {
+  test("the count is what came in less what was given, and giving on a request is counted once", async () => {
+    const { t, ids, as, request } = await setup();
+    const owner = as(ids.owner);
+    const shelf = async () => (await owner.query(api.treasury.voucherShelf, { churchId: ids.church })).items;
+    await owner.mutation(api.treasury.recordVouchers, { churchId: ids.church, item: "Winter coat", change: 10, date: day(3) });
+    await owner.mutation(api.treasury.recordVouchers, { churchId: ids.church, item: "Furniture", change: 4, date: day(3) });
+    await expect(owner.mutation(api.treasury.recordVouchers, { churchId: ids.church, item: "Winter coat", change: 1.5, date: day(3) })).rejects.toThrow("whole number");
+    await expect(owner.mutation(api.treasury.recordVouchers, { churchId: ids.church, item: "Winter coat", change: -1, date: day(3) })).rejects.toThrow("Say why");
+    await expect(as(ids.member).mutation(api.treasury.recordVouchers, { churchId: ids.church, item: "Winter coat", change: 1, date: day(3) })).rejects.toThrow(refused);
+    await expect(as(ids.member).query(api.treasury.voucherShelf, { churchId: ids.church })).rejects.toThrow(refused);
+
+    const requestId = await request({ payeeKind: "vendor", payeeName: "Conference thrift store" });
+    const give = (item: string, quantity: number) => t.run(async (ctx) => voucherGiven(ctx, (await ctx.db.get("memberships", ids.owner.memberId))!, { requestId, item, quantity }));
+    await give("winter coat", 3);
+    await give("Winter Coat", 3);
+    expect(await shelf()).toEqual([{ item: "Furniture", onHand: 4, received: 4, given: 0 }, { item: "Winter coat", onHand: 7, received: 10, given: 3 }]);
+    await give("Winter coat", 2);
+    expect((await shelf())[1]).toMatchObject({ onHand: 8, given: 2 });
+    // The request is changed to furniture: the coats go back whole.
+    await give("Furniture", 1);
+    expect(await shelf()).toEqual([{ item: "Furniture", onHand: 3, received: 4, given: 1 }, { item: "Winter coat", onHand: 10, received: 10, given: 0 }]);
+    await give("Furniture", 0);
+    expect((await shelf())[0]).toMatchObject({ onHand: 4, given: 0 });
+
+    await owner.mutation(api.treasury.recordVouchers, { churchId: ids.church, item: "Winter coat", change: -1, date: day(0), note: "Counted nine by hand" });
+    expect((await shelf())[1]).toMatchObject({ onHand: 9, received: 9 });
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(0);
+  });
+});
+
+describe("a conference's own kinds", () => {
+  test("a kind is added once, moves money its own way, and stops being offered when retired", async () => {
+    const { ids, as } = await setup();
+    const owner = as(ids.owner);
+    const add = (direction: "income" | "expense", name: string) => owner.mutation(api.treasury.addKind, { churchId: ids.church, direction, name });
+    const raffle = await add("income", "Fall raffle");
+    const gas = await add("expense", "Gas cards");
+    await expect(add("income", "  fall RAFFLE ")).rejects.toThrow("already have a kind");
+    await expect(add("income", "Donation")).rejects.toThrow("already has a kind");
+    await expect(add("income", " ")).rejects.toThrow("Give the kind a name");
+    await expect(as(ids.member).mutation(api.treasury.addKind, { churchId: ids.church, direction: "income", name: "Bake sale" })).rejects.toThrow(refused);
+
+    const record = (kindId: typeof raffle, amount: number, name: string) => owner.mutation(api.treasury.recordOwnKind, { churchId: ids.church, kindId, amount, date: day(1), name, checkNumber: "2051" });
+    await record(raffle, 30000, "Raffle tickets");
+    await record(gas, 4000, "Sample Fuel Stop");
+    const view = await owner.query(api.treasury.ledger, { churchId: ids.church });
+    expect(view.balance).toBe(26000);
+    expect(view.entries.map((row) => [row.category, row.kind, row.checkNumber])).toEqual([["Gas cards", "expense", "2051"], ["Fall raffle", "income", null]]);
+    await expect(record(raffle, 12.5, "Raffle tickets")).rejects.toThrow("dollars and cents");
+    await expect(as(ids.stranger).mutation(api.treasury.recordOwnKind, { churchId: ids.other, kindId: raffle, amount: 100, date: day(1), name: "x" })).rejects.toThrow("no longer offered");
+
+    await owner.mutation(api.treasury.retireKind, { churchId: ids.church, kindId: gas });
+    expect(await owner.query(api.treasury.kinds, { churchId: ids.church })).toEqual([{ id: raffle, direction: "income", name: "Fall raffle" }]);
+    await expect(record(gas, 4000, "Sample Fuel Stop")).rejects.toThrow("no longer offered");
+    expect(await add("expense", "Gas cards")).toBe(gas);
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(26000);
   });
 });
 
