@@ -107,9 +107,9 @@ describe("a call note drafted into a request", () => {
     const body = JSON.parse(sent) as { state: Record<string, unknown>; questions: Record<string, { type: string; instructions: string }> };
     // Each question says in plain words what is being asked; a bare field name gave the live model nothing to judge.
     expect(Object.keys(body.state)).toEqual(["note"]);
-    expect(body.questions.kind.instructions).toContain("help with rent, a landlord or keeping a home");
+    expect(body.questions.kind.instructions).toContain("mention rent, a landlord or an eviction");
     expect(body.questions.amountRequested.instructions).toContain("$450.00");
-    expect(body.questions.payeeKind.instructions).toContain("a landlord or whoever the home is rented from");
+    expect(body.questions.payeeKind.instructions).toContain("mention a landlord?");
     expect(Object.values(body.questions).map(question => question.type)).toEqual(["noul", "noul", "noul"]);
   });
 
@@ -220,6 +220,27 @@ describe("a call note drafted into a request", () => {
     expect(note).toEqual({ callsWaiting: 2, callsFirstByAssistant: 1, callsFirstByPerson: 0, oldestWaitingDays: 3, visitsPlanned: 1, requestsOpen: 0, approvedUnpaid: 1, approvedUnpaidCents: 25000, openPlaces: 1, away: 1 });
     expect(fetch).not.toHaveBeenCalled();
     await expect(member.query(api.drafts.weekNote, { churchId: ids.churchId })).rejects.toThrow("coordinators and owners only");
+  });
+
+  test("scores from the live runs: 0.9 stands, 0.89 and below leave the field blank for a person", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const { ids, coordinator } = await helpLine();
+    const args = { churchId: ids.churchId, callId: ids.callId };
+    // Call 1 of the second run: every field at or over the line, payee exactly on it.
+    vi.stubGlobal("fetch", answers({ kind: 0.91, amountRequested: 0.97, payeeKind: 0.9 }));
+    expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: "rent", amountRequested: 45000, payeeKind: "landlord", verification: "checked" });
+    // Call 2: a kind at 0.53 and an amount a hair under the line are both left for a person, and said so.
+    vi.stubGlobal("fetch", answers({ kind: 0.53, amountRequested: 0.89, payeeKind: 0.95 }));
+    const unsure = await coordinator.action(api.drafts.draftRequest, args);
+    expect(unsure).toMatchObject({ kind: null, amountRequested: null, payeeKind: "landlord", verification: "checked" });
+    expect(unsure.notes).toEqual(expect.arrayContaining(["Please confirm the kind of help.", "Please confirm the amount."]));
+    // Call 3: 0.18 is a no.
+    vi.stubGlobal("fetch", answers({ kind: 0.18, amountRequested: 0.99, payeeKind: 0.99 }));
+    expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: null, amountRequested: 45000 });
+    // Urgency from the same runs: both signs of a call well over the line are kept.
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Power bill of $186.40 with a shut-off on the 24th. Two kids at home." }));
+    vi.stubGlobal("fetch", answers({ shutoff: 0.94, child: 0.98 }));
+    expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 24 }, { reason: "child", day: null }], verification: "checked" });
   });
 
   test("a field the model is not sure of comes back blank", async () => {

@@ -84,8 +84,16 @@ async function confidence<Field extends string>(key: string, state: Record<strin
  * ("behind on rent" is about rent); what does not count is a question, a denial or a maybe.
  */
 const plainly = "Answer yes when the note says this in its own words or a plain equivalent. Answer no when it is only asked as a question, denied, or given as something that might happen. Judge only what the note says.";
-const kindMeaning = { rent: "rent, a landlord or keeping a home", utility: "a utility bill such as power, water or gas", food: "food or groceries", voucher: "clothing, furniture or household goods", other: "a need other than rent, utilities, food or household goods" };
-const payeeMeaning = { landlord: "a landlord or whoever the home is rented from", utility: "a utility company", vendor: "a store or other business" };
+/**
+ * How a question about a draft field ends. Code has already left out anything the note doubts or denies,
+ * so the model is asked the one thing it scores steadily on a volunteer's shorthand: is this in the note.
+ * Asked whether the note showed a "need for help", it scored a plain power bill at 0.53.
+ */
+const mentioned = "Answer yes when the note mentions this, in any wording, about the caller's own household. Answer no when the note does not mention it or says it is not so. Judge only what the note says.";
+/** At or above this the model's yes stands; below it the field is left blank for a person. */
+const sureEnough = 0.9;
+const kindMeaning = { rent: "rent, a landlord or an eviction", utility: "a utility or its bill, such as power, electricity, water or gas", food: "food, groceries or a food pantry", voucher: "clothing, furniture or household goods", other: "a need other than rent, utilities, food or household goods" };
+const payeeMeaning = { landlord: "a landlord", utility: "a utility company", vendor: "a store or other business" };
 const signMeaning = {
   shutoff: "a utility has been, is being or will be shut off or disconnected (a shut-off notice or a shut-off date counts)",
   eviction: "the household has an eviction notice or is being evicted (a notice or a date counts)",
@@ -117,7 +125,7 @@ export const suggestTeam = action({
     ])) as Record<(typeof present)[number], string>);
     if (!sure) return fallback;
     for (const field of present) {
-      if (sure[field] < 0.9) {
+      if (sure[field] < sureEnough) {
         draft[field] = "";
         draft.notes.push(`Please confirm ${field === "teamName" ? "the team name" : field === "peopleCount" ? "how many people are needed" : field === "time" ? "the start and end time" : "how often the team meets"}.`);
       }
@@ -176,15 +184,15 @@ export const draftRequest = action({
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     // Each question stands on its own in plain words. A bare field name ("proposed.kind") gave the model nothing to judge.
     const questions = {
-      ...(draft.kind && { kind: `Is note about a need for help with ${kindMeaning[draft.kind]}? ${plainly}` }),
-      ...(proposed.amountRequested && { amountRequested: `Does note give ${proposed.amountRequested} as the amount of money needed or owed? ${plainly}` }),
-      ...(draft.payeeKind && { payeeKind: `Does note name ${payeeMeaning[draft.payeeKind]} as the one who is owed or would be paid? ${plainly}` }),
+      ...(draft.kind && { kind: `Does note mention ${kindMeaning[draft.kind]}? ${mentioned}` }),
+      ...(proposed.amountRequested && { amountRequested: `Does note mention the amount ${proposed.amountRequested}, in figures or in words? ${mentioned}` }),
+      ...(draft.payeeKind && { payeeKind: `Does note mention ${payeeMeaning[draft.payeeKind]}? ${mentioned}` }),
     };
     const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, questions as Record<(typeof present)[number], string>);
     if (!sure) return fallback;
     const asked = { kind: "the kind of help", amountRequested: "the amount", payeeKind: "who is paid" };
     for (const field of present) {
-      if (sure[field] < 0.9) {
+      if (sure[field] < sureEnough) {
         draft[field] = null;
         draft.notes.push(`Please confirm ${asked[field]}.`);
       }
@@ -216,7 +224,7 @@ export const readUrgency = action({
       `Does note say that ${signMeaning[reason]}? ${plainly}`,
     ])) as Record<(typeof signs)[number]["reason"], string>);
     if (!sure) return fallback;
-    return { signs: signs.filter(({ reason }) => sure[reason] >= 0.9), verification: "checked" as const };
+    return { signs: signs.filter(({ reason }) => sure[reason] >= sureEnough), verification: "checked" as const };
   },
 });
 
@@ -296,7 +304,7 @@ export const checkYear = action({
       Object.fromEntries(reading.map((item, index) => [`n${index}`, `Does notes.n${index} say ${asked[item.kind]}? ${plainly}`])),
     );
     if (!sure) return unread;
-    return { flags: [...flags, ...reading.flatMap(({ kind, record }, index) => (sure[`n${index}`] >= 0.9 ? [{ kind, record, source: "assistant" as const }] : []))], verification: "checked" };
+    return { flags: [...flags, ...reading.flatMap(({ kind, record }, index) => (sure[`n${index}`] >= sureEnough ? [{ kind, record, source: "assistant" as const }] : []))], verification: "checked" };
   },
 });
 
