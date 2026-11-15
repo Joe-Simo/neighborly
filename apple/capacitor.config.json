@@ -5,7 +5,11 @@
   "backgroundColor": "#f5f3ec",
   "server": {
     "url": "https://kindhelps.com/app",
-    "allowNavigation": ["kindhelps.com", "*.kindhelps.com"]
+    "allowNavigation": [
+      "kindhelps.com",
+      "*.kindhelps.com"
+    ],
+    "errorPath": "offline.html"
   },
   "ios": {
     "contentInset": "never",
