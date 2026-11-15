@@ -6,21 +6,32 @@ import type { FunctionReturnType } from "convex/server";
 import { ChevronDown, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import type { Words } from "@/lib/words";
-import { count, kindLabels, money, plural } from "@/components/workspace/reports/lines";
+import { formatDate, type Words } from "@/lib/words";
+import { kindLabels, money } from "@/components/workspace/reports/lines";
 
 export type YearCheckResult = FunctionReturnType<typeof api.drafts.checkYear>;
 export type FlaggedRecords = FunctionReturnType<typeof api.reports.flagged>;
 type Flag = YearCheckResult["flags"][number];
 
-const happened: Record<string, string> = { open: "received", approved: "approved", paid: "marked paid", declined: "declined", closed: "closed" };
+/** The sheet's own English words, used until the shared words carry them; the shared ones win when they do. */
+const english = {
+  putAway: "Put this away",
+  checked: "Checked {requests}, {visits} and the ledger, today at {time}.",
+  requests: (count: number) => (count === 1 ? "1 request" : `${count} requests`),
+  visits: (count: number) => (count === 1 ? "1 visit" : `${count} visits`),
+  show: (count: number) => `Show the ${count} records`,
+  hide: (count: number) => `Hide the ${count} records`,
+  openShort: "Open",
+  happened: { open: "received", approved: "approved", paid: "marked paid", declined: "declined", closed: "closed" },
+  visit: "Home visit",
+};
 
 /**
  * What the check before sending found, on the screen's one sheet. Lines the assistant read are in plum;
  * every record is said in a line and opens so a person can settle it. Nothing here changes a record.
  */
 export function YearCheck({
-  text,
+  words,
   result,
   records,
   checked,
@@ -28,7 +39,7 @@ export function YearCheck({
   onClose,
 }: {
   /** The words in the reader's own language. */
-  text: Words["yearCheck"];
+  words: Words;
   result: YearCheckResult;
   /** What each flagged record is. Still loading when left out. */
   records?: FlaggedRecords;
@@ -40,17 +51,18 @@ export function YearCheck({
   const [open, setOpen] = useState<string[]>([]);
   const groups = new Map<string, Flag[]>();
   for (const flag of result.flags) groups.set(`${flag.kind}-${flag.source}`, [...(groups.get(`${flag.kind}-${flag.source}`) ?? []), flag]);
-  const day = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone });
-  const time = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone });
+  const text = { ...english, ...words.yearCheck };
+  const happened: Record<string, string> = text.happened;
+  const day = (at: number) => formatDate(words.locale, at, { month: "short", day: "numeric", timeZone });
 
   const line = ({ record }: Flag) => {
     if (record.table === "visits") {
       const visit = records?.visits.find((candidate) => candidate.id === record.id);
-      return visit && { is: `Home visit, ${day.format(visit.at)}`, href: `/app/visits?sheet=${visit.id}` };
+      return visit && { is: `${text.visit}, ${day(visit.at)}`, href: `/app/visits?sheet=${visit.id}` };
     }
     const request = records?.requests.find((candidate) => candidate.id === record.id);
     return request && {
-      is: `${kindLabels[request.kind]}, ${money(request.amount)}, ${happened[request.status] ?? request.status} ${day.format(request.at)}`,
+      is: `${kindLabels[request.kind]}, ${money(request.amount)}, ${happened[request.status] ?? request.status} ${day(request.at)}`,
       href: request.neighborId ? `/app/neighbors?neighbor=${request.neighborId}` : null,
     };
   };
@@ -62,7 +74,7 @@ export function YearCheck({
         {said.is}
         {said.href && (
           <Link className="live-link" href={said.href} aria-label={`${text.open}: ${said.is}`}>
-            Open
+            {text.openShort}
           </Link>
         )}
       </p>
@@ -76,7 +88,10 @@ export function YearCheck({
         {result.flags.length ? text.count(result.flags.length) : text.clear}
       </h2>
       <p>
-        Checked {plural(checked.requests, "request")}, {plural(checked.visits, "visit")} and the ledger, today at {time.format(checked.at)}.
+        {text.checked
+          .replace("{requests}", text.requests(checked.requests))
+          .replace("{visits}", text.visits(checked.visits))
+          .replace("{time}", formatDate(words.locale, checked.at, { hour: "numeric", minute: "2-digit", timeZone }))}
       </p>
       {groups.size > 0 && (
         <ul>
@@ -102,7 +117,7 @@ export function YearCheck({
                     aria-controls={`year-check-${key}`}
                     onClick={() => setOpen(shown ? open.filter((other) => other !== key) : [...open, key])}
                   >
-                    {shown ? `Hide the ${count(flags.length)} records` : `Show the ${count(flags.length)} records`}
+                    {shown ? text.hide(flags.length) : text.show(flags.length)}
                     <ChevronDown size={17} aria-hidden="true" />
                   </Button>
                 )}
@@ -113,7 +128,7 @@ export function YearCheck({
         </ul>
       )}
       <Button variant="outline" onClick={onClose}>
-        Put this away
+        {text.putAway}
       </Button>
     </section>
   );

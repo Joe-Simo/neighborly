@@ -139,7 +139,7 @@ function Report() {
           found?.result &&
           !quarter && (
             <YearCheck
-              text={words.yearCheck}
+              words={words}
               result={found.result}
               records={records}
               checked={{ requests: shown.requests.received, visits: shown.visits, at: found.at ?? now }}
