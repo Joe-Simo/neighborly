@@ -129,7 +129,15 @@ export default defineSchema({
     reverses: v.optional(v.id("ledgerEntries")),
     checkNumber: v.optional(v.string()),
     clearedOn: v.optional(day),
+    depositId: v.optional(v.id("deposits")),
     recordedBy: v.id("memberships"),
     createdAt: v.number(),
-  }).index("by_church", ["churchId", "date"]).index("by_request", ["requestId"]).index("by_neighbor", ["neighborId"]).index("by_reverses", ["reverses"]),
+  }).index("by_church", ["churchId", "date"]).index("by_request", ["requestId"]).index("by_neighbor", ["neighborId"]).index("by_reverses", ["reverses"]).index("by_deposit", ["depositId"]),
+  // The treasury's own books: bank deposits, the voucher shelf, the group's own kinds of money in and out, and agreed bank statements.
+  deposits: defineTable({ churchId: v.id("churches"), date: day, total: cents, memo: v.string(), recordedBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId", "date"]),
+  // change is a whole number: plus when vouchers are received, minus when given.
+  voucherStock: defineTable({ churchId: v.id("churches"), date: day, change: v.number(), item: v.string(), note: v.string(), requestId: v.optional(v.id("assistanceRequests")), recordedBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId", "date"]).index("by_request", ["requestId"]),
+  ledgerKinds: defineTable({ churchId: v.id("churches"), direction: v.union(v.literal("income"), v.literal("expense")), name: v.string(), nameKey: v.string(), retiredAt: v.optional(v.number()), recordedBy: v.id("memberships"), createdAt: v.number() }).index("by_church_key", ["churchId", "nameKey"]),
+  // balance is in cents and may be zero or negative.
+  bankStatements: defineTable({ churchId: v.id("churches"), endsOn: day, balance: v.number(), agreedBy: v.id("memberships"), agreedAt: v.number() }).index("by_church", ["churchId", "endsOn"]),
 });

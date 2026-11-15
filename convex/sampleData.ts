@@ -109,12 +109,13 @@ export const load = internalMutation({
     const start = firstMonth.toMillis();
     const days = Math.floor((now - start) / DAY);
     const spentByMonth = new Map<string, number>();
-    const entry = (kind: "income" | "expense", time: number, amount: number, category: string, payee: string, memo: string, links: { requestId?: Id<"assistanceRequests">; neighborId?: Id<"neighbors"> } = {}) => {
+    const entry = (kind: "income" | "expense", time: number, amount: number, category: string, payee: string, memo: string, links: { requestId?: Id<"assistanceRequests">; neighborId?: Id<"neighbors">; checkNumber?: string } = {}) => {
       if (kind === "expense") spentByMonth.set(isoDay(time).slice(0, 7), (spentByMonth.get(isoDay(time).slice(0, 7)) ?? 0) + amount);
       return ctx.db.insert("ledgerEntries", { churchId, kind, amount, date: isoDay(time), category, payee, memo, ...links, recordedBy: owner, createdAt: time });
     };
     await entry("income", start, 420000, "Opening balance", "St. Example Conference", "Balance carried forward");
 
+    let checkNumber = 2041;
     // Households, and for each its calls, requests for help, visits in pairs and payments.
     for (let index = 0; index < HOUSEHOLDS; index++) {
       const name = `${firstNames[index % 25]} ${lastNames[((index % 25) * 3 + Math.floor(index / 25)) % 20]}`;
@@ -150,7 +151,7 @@ export const load = internalMutation({
           await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, now + random.between(1, 3) * DAY), status: done ? "completed" : "scheduled", visitors: pair.map((memberId) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0 })), notes: done ? "Visited together. Reviewed the bill and confirmed the amount with the payee." : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
         }
         if (outcome === "paid" && amountApproved && decidedAt)
-          await entry("expense", decidedAt + DAY, amountApproved, need.kind, payeeName, `Paid directly to ${payeeName}`, { requestId, neighborId });
+          await entry("expense", decidedAt + DAY, amountApproved, need.kind, payeeName, "", { requestId, neighborId, ...(need.kind === "food" || need.kind === "voucher" ? {} : { checkNumber: String(checkNumber++) }) });
       }
     }
 
@@ -173,7 +174,7 @@ export const load = internalMutation({
     for (const month of months) {
       const spent = spentByMonth.get(month.toFormat("yyyy-MM")) ?? 0;
       if (on(month, 2) < now) await entry("income", on(month, 2), Math.max(150000, Math.round((spent * random.between(90, 102)) / 100 / 500) * 500), "Parish collection", "St. Example Parish", "Fifth-Sunday and poor-box collection");
-      if (month.month % 3 !== 0 && on(month, 16) < now) await entry("income", on(month, 16), random.between(20, 75) * 1000, "Donation", "Anonymous gift", "Designated for rent and utilities");
+      if (month.month % 3 !== 0 && on(month, 10) < now) await entry("income", on(month, 10), random.between(20, 75) * 1000, "Donation", "Anonymous gift", "Designated for rent and utilities");
       if (month.month === 9 && on(month, 27) < now) await entry("income", on(month, 27), random.between(380, 520) * 1000, "Friends of the Poor Walk", "Walk pledges", "Pledges collected after the walk");
     }
     return churchId;
@@ -195,6 +196,10 @@ export const clear = internalMutation({
       ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("calendarFeeds").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("deposits").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("ledgerKinds").withIndex("by_church_key", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("bankStatements").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("neighborNotes").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("referralAgencies").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("aiUsageByChurch").withIndex("by_church_month", (q) => q.eq("churchId", churchId)).collect(),
