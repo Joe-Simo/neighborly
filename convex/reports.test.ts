@@ -124,7 +124,11 @@ describe("the year's counts for the sample conference", () => {
     expect(report.requests.amountApproved).toBe(report.requests.paidTowardThese + paidLater.amount + received.reduce((sum, request) => sum + (request.status === "approved" ? request.amountApproved ?? 0 : 0), 0));
     expect(paidLater).toEqual({ requests: 4, amount: 54000 });
     const few = received.slice(0, 3);
-    expect(await as(owner.userId).query(api.reports.requestHomes, { churchId, requestIds: few.map((request) => request._id) })).toEqual(few.map((request) => ({ requestId: request._id, neighborId: request.neighborId })));
+    const seen = data.visits.slice(0, 2);
+    expect(await as(owner.userId).query(api.reports.flagged, { churchId, requestIds: few.map((request) => request._id), visitIds: seen.map((visit) => visit._id) })).toEqual({
+      requests: few.map((request) => ({ id: request._id, neighborId: request.neighborId, kind: request.kind, amount: request.amountApproved ?? request.amountRequested, status: request.status, at: request.decidedAt ?? request.createdAt })),
+      visits: seen.map((visit) => ({ id: visit._id, status: visit.status, at: visit.scheduledAt })),
+    });
     expect(report.requests).toEqual({
       paidLater,
       paidTowardThese: paidFor(true),
@@ -240,7 +244,7 @@ describe("the year's counts for the sample conference", () => {
     const { t, as, churchId, member } = await sample();
     await expect(as(member.userId).query(api.reports.year, { churchId, year: 2026 })).rejects.toThrow(refused);
     await expect(as(member.userId).query(api.reports.years, { churchId })).rejects.toThrow(refused);
-    await expect(as(member.userId).query(api.reports.requestHomes, { churchId, requestIds: [] })).rejects.toThrow(refused);
+    await expect(as(member.userId).query(api.reports.flagged, { churchId, requestIds: [], visitIds: [] })).rejects.toThrow(refused);
     await expect(t.query(api.reports.year, { churchId, year: 2026 })).rejects.toThrow("Sign in required.");
     const stranger = await t.run(async (ctx) => {
       const userId = await ctx.db.insert("users", {});

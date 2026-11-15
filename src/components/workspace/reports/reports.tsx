@@ -45,7 +45,7 @@ function Report() {
   const [quarter, setQuarter] = useState<Quarter>();
   const [done, setDone] = useState("");
   const checkYear = useAction(api.drafts.checkYear);
-  const [check, setCheck] = useState<{ year: number; result?: YearCheckResult; failed?: boolean }>();
+  const [check, setCheck] = useState<{ year: number; result?: YearCheckResult; at?: number; failed?: boolean }>();
 
   // The yearly report is written in the fall, so until January the year that just closed opens first.
   const today = DateTime.fromMillis(now, { zone: data.church.timeZone });
@@ -60,28 +60,36 @@ function Report() {
   if (report && report !== shown) setShown(report);
 
   const found = check?.year === year ? check : undefined;
-  const flaggedRequests = found?.result?.flags.flatMap(({ record }) => (record.table === "assistanceRequests" ? [record.id] : [])) ?? [];
-  const homes = useQuery(api.reports.requestHomes, flaggedRequests.length ? { churchId, requestIds: flaggedRequests } : "skip");
-
+  const flags = found?.result?.flags ?? [];
+  const records = useQuery(
+    api.reports.flagged,
+    flags.length
+      ? {
+          churchId,
+          requestIds: flags.flatMap(({ record }) => (record.table === "assistanceRequests" ? [record.id] : [])),
+          visitIds: flags.flatMap(({ record }) => (record.table === "visits" ? [record.id] : [])),
+        }
+      : "skip",
+  );
   const checking = Boolean(found && !found.result && !found.failed);
   const lookOver = useCallback(async () => {
     if (year === undefined) return;
     setDone("");
     setCheck({ year });
     try {
-      setCheck({ year, result: await checkYear({ churchId, year }) });
+      setCheck({ year, result: await checkYear({ churchId, year }), at: Date.now() });
     } catch {
       setCheck({ year, failed: true });
     }
   }, [checkYear, churchId, year]);
   // The check reads a whole year, so it steps aside while a quarter is shown.
-  const canCheck = year !== undefined && !quarter && Boolean(shown);
+  const canCheck = year !== undefined && !quarter && Boolean(shown) && !found?.result;
   useLayoutEffect(() => {
     if (!canCheck) return;
-    // Filled until its sheet is open; then the sheet is the thing to read.
-    setHeadAction({ label: checking ? "Checking" : "Check before you send", run: () => void (checking || lookOver()), quiet: checking || Boolean(found?.result) });
+    // Once the sheet is open the button has done its work, so it leaves the head.
+    setHeadAction({ label: checking ? "Checking" : "Check before you send", run: () => void (checking || lookOver()), quiet: checking });
     return () => setHeadAction(null);
-  }, [canCheck, checking, found?.result, lookOver, setHeadAction]);
+  }, [canCheck, checking, lookOver, setHeadAction]);
 
   if (!onRecord || !shown || year === undefined) return <ReportLoading />;
 
@@ -133,12 +141,15 @@ function Report() {
             <YearCheck
               text={words.yearCheck}
               result={found.result}
-              homes={new Map(homes?.map((home) => [home.requestId, home.neighborId]))}
+              records={records}
+              checked={{ requests: shown.requests.received, visits: shown.visits, at: found.at ?? now }}
+              timeZone={data.church.timeZone}
               onClose={() => setCheck(undefined)}
             />
           )
         )
       }
+      printNext={Boolean(found?.result && !found.result.flags.length && !quarter)}
       onPrint={() => window.print()}
       onSpreadsheet={() => saveSpreadsheet(shown)}
     />
