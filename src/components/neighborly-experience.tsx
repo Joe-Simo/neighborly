@@ -76,8 +76,8 @@ export function NeighborlyExperience() {
       const reduce = media.matches;
       const stage = element.querySelector<HTMLElement>(".painted-world-viewport");
       const progress = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight)));
-      element.style.setProperty("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.min(1, progress / .45)));
-      element.style.setProperty("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (progress - .55) / .45))));
+      element.style.setProperty("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4))));
+      element.style.setProperty("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (progress - .3) / .5))));
       const portrait = element.querySelector<HTMLElement>(".painted-world-track");
       const courtyard = element.querySelector<HTMLElement>(".fresco-stage");
       const entered = progress >= (reduce ? .5 : .6);

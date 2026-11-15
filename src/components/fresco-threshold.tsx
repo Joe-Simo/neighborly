@@ -14,7 +14,8 @@ const ease = (value: number) => value * value * (3 - 2 * value);
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
 // Screens of scrolling, counted from where the opening begins to give way: the doors rest, open, and the wall opens around the fresco.
 const doorsOpen = [1.15, 1.85] as const;
-const wallOpens = [1.75, 2.65] as const;
+// The wall waits until the doors have swung clear, so the two never show at once.
+const wallOpens = [1.9, 2.7] as const;
 const rest = 2.9;
 
 /** The doors open once, onto the courtyard painted on the wall beyond them. */

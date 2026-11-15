@@ -261,7 +261,8 @@
 @media(min-width:901px) and (min-aspect-ratio:10/11){
   .painted-world[data-hero-only=true]{--bar:0px}
   .painted-world[data-hero-only=true] .painted-world-header{background:transparent}
-  .painted-world[data-hero-only=true] .painted-world-enter{padding:0 14px;background:#eee7d7e8;border:1px solid #293f3222;border-radius:2px}
+  .painted-world[data-hero-only=true] :is(.painted-world-enter,.painted-world-brand){padding:0 14px;background:#eee7d7e8;border:1px solid #293f3222;border-radius:2px}
+  .painted-world[data-hero-only=true] .painted-world-brand{min-height:52px;padding-bottom:5px;font-size:38px}
 }
 /* The cue rests at the foot of the page, in the middle, and leaves once the card has crossed. */
 .painted-world[data-hero-only=true] .painted-world-scroll-cue{grid-column:2;justify-self:center}

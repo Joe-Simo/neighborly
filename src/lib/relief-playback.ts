@@ -72,6 +72,12 @@ export function createReliefPlayback(
       action.paused = true;
       mixer.update(0);
     },
+    /** How far the hand-off has gone, from 0 at rest to 1 once the card has arrived. */
+    passed() {
+      return current === "accepted" && action
+        ? action.time / action.getClip().duration
+        : 0;
+    },
     advance(seconds: number) {
       mixer.update(seconds);
     },

@@ -134,10 +134,16 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   let openingPlayback: ReturnType<typeof createReliefPlayback> | undefined;
   // True while the visitor's own hand is leading the card across.
   let handing = false;
+  // The card's bone sits inside two holders, so the finished pass can lay it in the palm, turned to the hand, without touching its authored path.
+  let cardSeat: T.Group | undefined;
+  let cardLie: T.Group | undefined;
   let openingOutcome: ReliefOutcome = "rest";
   const openingRoot = new T.Group();
   scene.add(openingRoot);
   const openingGuidePosition = new T.Vector3();
+  const seatShift = new T.Vector3();
+  // Where the card comes to rest, measured from the end of its authored path: across, up, and its turn.
+  const cardRest = [.8, .02, .2] as const;
   const openingGuideScale = new T.Vector3(1, 1, 1);
   const openingPickTargets: T.Object3D[] = [];
   const openingMaterials = new Map<T.Material, { opacity: number; transparent: boolean; depthWrite: boolean }>();
@@ -622,13 +628,19 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       openingModel.getObjectByName("BackgroundMobile")?.traverse((object) => { object.visible = openingFrame.mobile && !openingFrame.narrow; });
       openingModel.getObjectByName("BackgroundNarrow")?.traverse((object) => { object.visible = openingFrame.mobile && openingFrame.narrow; });
       const rig = openingModel.getObjectByName("ReliefRig");
-      if (rig) { rig.scale.setScalar(openingFrame.mobile ? 0.54 : 1); rig.position.set(0, openingFrame.mobile ? 4 : 0, 0); }
+      if (rig) { rig.scale.setScalar(openingFrame.mobile ? 0.62 : 1); rig.position.set(0, openingFrame.mobile ? 4.6 : 0, 0); }
       if (openingGuide && openingOutcome === "rest" && !handing) {
         const lift = smooth(interaction);
         openingGuide.position.copy(openingGuidePosition);
         openingGuide.position.y += (reduce ? 0 : lift) * .08;
         openingGuide.position.z += (reduce ? 0 : lift) * .03;
         openingGuide.scale.copy(openingGuideScale);
+      }
+      if (cardSeat && cardLie && openingGuide) {
+        const arrived = smooth(Math.max(0, (openingPlayback?.passed() ?? 0) * 2.5 - 1.5));
+        cardSeat.position.copy(openingGuide.position).add(seatShift.set(cardRest[0] * arrived, cardRest[1] * arrived, 0));
+        cardSeat.rotation.z = cardRest[2] * arrived;
+        cardLie.position.copy(openingGuide.position).negate();
       }
       openingModel.updateMatrixWorld(true);
       const fading = openingOpacity > 0 && openingOpacity < 1;
@@ -804,6 +816,13 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     openingPlayback.apply("rest", true, true, true);
     openingGuide = openingModel.getObjectByName("Guide");
     if (openingGuide) { openingGuidePosition.copy(openingGuide.position); openingGuideScale.copy(openingGuide.scale); }
+    if (openingGuide?.parent) {
+      cardSeat = new T.Group();
+      cardLie = new T.Group();
+      cardSeat.add(cardLie);
+      openingGuide.parent.add(cardSeat);
+      cardLie.add(openingGuide);
+    }
     openingPlayback.apply(openingOutcome, true, reduce, true);
     openingPlayback.apply(openingOutcome, false, reduce);
     openingModel.traverse((object) => {
@@ -829,6 +848,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     openingMixer = undefined;
     openingPlayback = undefined;
     openingGuide = undefined;
+    cardSeat = cardLie = undefined;
     openingMaterials.clear();
     openingPickTargets.length = 0;
     openingAsset = "";

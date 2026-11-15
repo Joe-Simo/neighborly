@@ -27,7 +27,7 @@ type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStor
 // Where the card rests in the giving hand and in the open hand, as shares of each opening painting.
 const cardPath = {
   desktop: { size: [1440, 1024], from: [.443, .749], to: [.722, .772] },
-  mobile: { size: [780, 1688], from: [.432, .683], to: [.715, .688] },
+  mobile: { size: [780, 1688], from: [.422, .619], to: [.747, .624] },
 } as const;
 
 /** Native scrolling owns the narrative; the artwork never traps wheel or touch input. */
