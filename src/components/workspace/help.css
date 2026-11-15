@@ -6,7 +6,8 @@
   data-room="help" (set per area in navigation.ts), so the volunteer screens
   keep their approved look.
 */
-.live-app {
+.live-app,
+.live-dialog {
   --help-plum: #6a557f;
   --help-plum-wash: #ece7f0;
   --help-ochre: #b98a2f;

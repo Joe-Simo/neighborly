@@ -627,6 +627,32 @@
   transform: translateY(-180%);
   border-radius: 4px;
 }
+/*
+  Dialogs render outside .live-app, so they carry the workspace palette themselves:
+  the same green ring on fields and the same pressed edge on the primary button.
+*/
+.live-dialog {
+  --live-muted: #656d61;
+  --live-line: #dcded2;
+  --live-ink: #283c32;
+  --live-paper: #f7f4ed;
+  --live-accent: #365c46;
+  --primary: #365c46;
+  --primary-foreground: #fffdf5;
+  --background: #fffdf7;
+  --muted: #eeeee3;
+  --border: #d4dacb;
+  --ring: #526f56;
+}
+.live-dialog :focus-visible { outline: 2px solid #456f46; outline-offset: 3px; }
+.live-dialog [data-slot="button"] { border-radius: 4px; }
+.live-dialog [data-slot="button"][data-variant="default"] {
+  background: var(--live-accent);
+  color: #fffdf5;
+  box-shadow: 0 2px 0 #263e2f;
+}
+.live-dialog [data-slot="button"][data-variant="default"]:hover { background: #294d38; }
+.live-dialog [data-slot="button"][data-variant="outline"] { background: #fffdf7; }
 .live-skip:focus-visible { transform: translateY(0); }
 .live-page-head > [data-slot="button"] { margin-top: 7px; }
 .live-app [data-slot="button"] { border-radius: 4px; }
