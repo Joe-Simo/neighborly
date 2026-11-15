@@ -71,6 +71,13 @@ export function TreasurySection() {
   const kinds = answered<Kind[]>(extra.kinds);
   const payees = answered<{ name: string }[]>(extra.payees);
   const [moneyOut, setMoneyOut] = useState(false);
+  // The request just paid keeps its sheet for a moment, so the folded corner is seen before the next one rises.
+  const [paid, setPaid] = useState<{ request: Payable; amount: number } | null>(null);
+  useEffect(() => {
+    if (!paid) return;
+    const timer = setTimeout(() => setPaid(null), 2400);
+    return () => clearTimeout(timer);
+  }, [paid]);
   const recordDeposit = useMutation(api.treasury.recordDeposit);
   const addKind = useMutation(api.treasury.addKind);
   const retireKind = useMutation(api.treasury.retireKind);
@@ -203,6 +210,7 @@ export function TreasurySection() {
         onPay={(request) => show({ is: "payment", request })}
         onRecord={recordMoney}
         onEntry={(entry) => show({ is: "entry", entry })}
+        paid={paid}
         uncleared={bank?.waitingCount}
         onHand={
           gifts && {
@@ -246,7 +254,12 @@ export function TreasurySection() {
                       requestId: open.request.requestId,
                       ...payment,
                       ...(checkNumber.trim() && { checkNumber }),
-                    }),
+                    }).then(() =>
+                      setPaid({
+                        request: open.request,
+                        amount: payment.amount,
+                      }),
+                    ),
                   `${formatCents(payment.amount)} to ${open.request.payeeName} is recorded, and the balance is up to date.`,
                   payment.date,
                 )

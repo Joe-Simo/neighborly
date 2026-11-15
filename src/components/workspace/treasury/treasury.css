@@ -113,7 +113,7 @@
   margin: 4px 0 6px;
 }
 .treasury-entry-amount[data-in] {
-  color: #3f6a45;
+  color: #365c46;
 }
 .treasury-dialog .live-detail {
   font-size: 17px;
@@ -196,9 +196,6 @@
 .treasury-day {
   display: none;
 }
-.help-sheet[data-agree]::after {
-  background: linear-gradient(225deg, var(--live-paper) 50%, #456f46 50%, #6d8f63 100%);
-}
 .live-app .treasury-statement input:focus-visible {
   outline: 2px solid #456f46;
   outline-offset: 3px;
@@ -228,7 +225,7 @@
   align-items: center;
 }
 .treasury-agree svg {
-  color: #3f6a45;
+  color: #365c46;
   flex-shrink: 0;
 }
 .treasury-starter {
@@ -358,7 +355,7 @@
   background: none;
 }
 .treasury-gifts [data-slot="toggle"]:hover .treasury-gift-mark {
-  border-color: #31533a;
+  border-color: #365c46;
 }
 .treasury-gifts [data-state="off"] {
   color: #8b927f;
@@ -385,8 +382,8 @@
   color: #283c32;
 }
 .treasury-gifts [data-state="on"] .treasury-gift-mark {
-  background: #31533a;
-  border-color: #31533a;
+  background: #365c46;
+  border-color: #365c46;
   color: #fff;
 }
 .treasury-gift-amount {
@@ -466,4 +463,13 @@
 }
 .help-ledger.treasury-shelf td.help-what {
   color: var(--live-ink);
+}
+
+/* Paper relief: a paid sheet says so in green, and nothing in these rooms is set under 13px. */
+.help-sheet-label[data-paid] {
+  color: #365c46;
+}
+.treasury-uncleared .live-date-leaf span,
+.treasury-lately .live-date-leaf span {
+  font-size: 13px;
 }

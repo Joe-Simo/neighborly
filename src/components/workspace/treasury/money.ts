@@ -29,6 +29,17 @@ export function parseCents(text: string) {
   return Number.isSafeInteger(cents) && cents > 0 ? cents : null;
 }
 
+/**
+ * How a large figure writes itself while it rolls to its value: with cents when the value has
+ * them, in whole dollars when it does not, so the width does not jump on the way.
+ */
+export const figureRoll = (value: number) => (amount: number) =>
+  value % 100 === 0
+    ? formatFigure(Math.round(amount / 100) * 100)
+    : formatCents(Math.round(amount));
+/** The balance always shows its cents. */
+export const centsRoll = (amount: number) => formatCents(Math.round(amount));
+
 /** For the large figures: whole dollars drop the ".00", "$2,150". */
 export function formatFigure(cents: number) {
   return cents % 100 === 0 ? formatCents(cents).slice(0, -3) : formatCents(cents);

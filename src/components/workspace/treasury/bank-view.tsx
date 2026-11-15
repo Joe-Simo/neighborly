@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
+import { CountUp } from "@/components/workspace/primitives";
 import {
+  centsRoll,
+  figureRoll,
   formatCents,
-  formatFigure,
   parseCents,
 } from "@/components/workspace/treasury/money";
 import {
@@ -103,7 +105,7 @@ export function BankView({
         <div>
           <dt>Cleared the bank</dt>
           <dd>
-            {formatCents(bank.cleared)}
+            <CountUp value={bank.cleared} format={centsRoll} />
             <small>Your statement should say the same</small>
           </dd>
         </div>
@@ -111,7 +113,7 @@ export function BankView({
           <dt>Still on its way</dt>
           <dd>
             {onItsWay < 0 ? "− " : ""}
-            {formatFigure(Math.abs(onItsWay))}
+            <CountUp value={Math.abs(onItsWay)} format={figureRoll(Math.abs(onItsWay))} />
             <small>
               {bank.waitingCount
                 ? `${formatCents(bank.onItsWayIn)} in, ${formatCents(bank.onItsWayOut)} out`
@@ -122,15 +124,14 @@ export function BankView({
         <div>
           <dt>In the ledger</dt>
           <dd>
-            {formatFigure(bank.books)}
+            <CountUp value={bank.books} format={figureRoll(bank.books)} />
             <small>On {weekDayLabel(bank.asOf)}</small>
           </dd>
         </div>
       </dl>
 
       <section
-        className="help-sheet"
-        data-agree={agrees ? "" : undefined}
+        className={agrees ? "help-sheet paper-fold" : "help-sheet"}
         aria-labelledby="treasury-statement-title"
       >
         <p className="help-sheet-label">Your bank statement</p>

@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CountUp } from "@/components/workspace/primitives";
 import {
+  centsRoll,
+  figureRoll,
   formatCents,
-  formatFigure,
 } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
@@ -57,6 +59,7 @@ export function LedgerView({
   onDeposit,
   shelf,
   onShelf,
+  paid,
 }: {
   ledger: Ledger;
   payable: Payable[];
@@ -73,6 +76,8 @@ export function LedgerView({
   /** Vouchers on hand across every kind; undefined until the backend answers. */
   shelf?: number;
   onShelf: () => void;
+  /** The request a payment was just recorded for. Its sheet stays a moment, corner folded, before the next one rises. */
+  paid?: { request: Payable; amount: number } | null;
 }) {
   const month = monthLabel(ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
@@ -97,7 +102,11 @@ export function LedgerView({
     gifts > 0 && count(gifts, "twinning gift", "twinning gifts"),
     other > 0 && count(other, "other payment", "other payments"),
   ].filter(Boolean);
-  const [first, ...waiting] = payable;
+  const others = paid
+    ? payable.filter((row) => row.requestId !== paid.request.requestId)
+    : payable;
+  const [first, ...waiting] = paid ? [paid.request, ...others] : others;
+  const left = paid ? paid.request.remaining - paid.amount : 0;
   const untouched = isUntouched(ledger) && !payable.length;
 
   if (untouched)
@@ -123,14 +132,14 @@ export function LedgerView({
         <div>
           <dt>Balance today</dt>
           <dd>
-            {formatCents(ledger.balance)}
+            <CountUp value={ledger.balance} format={centsRoll} />
             <small>As of {weekDayLabel(ledger.today)}</small>
           </dd>
         </div>
         <div>
           <dt>In, {month}</dt>
           <dd>
-            {formatFigure(ledger.moneyIn)}
+            <CountUp value={ledger.moneyIn} format={figureRoll(ledger.moneyIn)} />
             <small>
               {ledger.incomeSources.join(", ") || "Nothing received yet"}
             </small>
@@ -139,15 +148,21 @@ export function LedgerView({
         <div>
           <dt>Out, {month}</dt>
           <dd>
-            {formatFigure(ledger.moneyOut)}
+            <CountUp value={ledger.moneyOut} format={figureRoll(ledger.moneyOut)} />
             <small>{paidFor.join(", ") || "Nothing paid yet"}</small>
           </dd>
         </div>
       </dl>
 
       {first && (
-        <section className="help-sheet" aria-labelledby="treasury-waiting-title">
-          <p className="help-sheet-label">Approved, waiting to be paid</p>
+        <section
+          key={first.requestId}
+          className={paid ? "help-sheet paper-fold" : "help-sheet"}
+          aria-labelledby="treasury-waiting-title"
+        >
+          <p className="help-sheet-label" data-paid={paid ? "" : undefined}>
+            {paid ? "Paid" : "Approved, waiting to be paid"}
+          </p>
           <div className="help-sheet-body">
             <div>
               <h2 id="treasury-waiting-title">
@@ -158,16 +173,27 @@ export function LedgerView({
                 For <NeighborLink id={first.neighborId} name={first.neighborName} />
                 . {first.summary}.
               </p>
-              <p>
-                {first.paid > 0
-                  ? `${formatCents(first.paid)} of the ${formatCents(first.amountApproved)} approved is already paid. `
-                  : ""}
-                The payment goes to {first.payeeName}, never to the neighbor.
-              </p>
+              {paid ? (
+                <p>
+                  {formatCents(paid.amount)} is in the ledger.{" "}
+                  {left > 0
+                    ? `${formatCents(left)} of the approved amount is still to pay.`
+                    : "This request is paid in full."}
+                </p>
+              ) : (
+                <p>
+                  {first.paid > 0
+                    ? `${formatCents(first.paid)} of the ${formatCents(first.amountApproved)} approved is already paid. `
+                    : ""}
+                  The payment goes to {first.payeeName}, never to the neighbor.
+                </p>
+              )}
             </div>
-            <div className="help-actions">
-              <Button onClick={() => onPay(first)}>Record payment</Button>
-            </div>
+            {!paid && (
+              <div className="help-actions">
+                <Button onClick={() => onPay(first)}>Record payment</Button>
+              </div>
+            )}
           </div>
         </section>
       )}
