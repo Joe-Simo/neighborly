@@ -217,10 +217,14 @@ export const flagged = query({
       Promise.all(args.requestIds.map((id) => ctx.db.get("assistanceRequests", id))),
       Promise.all(args.visitIds.map((id) => ctx.db.get("visits", id))),
     ]);
+    // A removed record is kept without a name so the year still adds up, and has no page to open: its
+    // neighbor row has an empty name key, which no live record can have. Such a request names no neighbor here.
+    const holders = new Map(await Promise.all([...new Set(requests.flatMap((request) => (request?.neighborId ? [request.neighborId] : [])))].map(async (id) => [id, await ctx.db.get("neighbors", id)] as const)));
+    const opens = (neighborId: Id<"neighbors"> | undefined) => (neighborId && holders.get(neighborId)?.nameKey ? neighborId : null);
     return {
       requests: requests.flatMap((request) =>
         request?.churchId === args.churchId
-          ? [{ id: request._id, neighborId: request.neighborId ?? null, kind: request.kind, amount: request.amountApproved ?? request.amountRequested, status: request.status, at: request.decidedAt ?? request.createdAt }]
+          ? [{ id: request._id, neighborId: opens(request.neighborId), kind: request.kind, amount: request.amountApproved ?? request.amountRequested, status: request.status, at: request.decidedAt ?? request.createdAt }]
           : [],
       ),
       visits: visits.flatMap((visit) => (visit?.churchId === args.churchId ? [{ id: visit._id, status: visit.status, at: visit.scheduledAt }] : [])),
