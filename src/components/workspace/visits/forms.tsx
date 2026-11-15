@@ -324,6 +324,9 @@ export function PlanFormView({
           />
         </LiveField>
       </div>
+      <p className="visits-consequence">
+        Both are asked for their yes. Nothing is sent to the neighbor.
+      </p>
       <FormEnd error={error} pending={pending} submit="Plan this visit" />
     </form>
   );
@@ -539,7 +542,10 @@ export function ReplaceForm({
         if (outcome.saved) onSaved(joining.name);
       }}
     >
-      <LiveField label={`In place of ${firstName(leaving.name)}`}>
+      <LiveField
+        label={`In place of ${firstName(leaving.name)}`}
+        help="The new visitor is asked for a yes. The other visitor’s answer stays as it is."
+      >
         <VisitorSelect name="joining" people={others} />
       </LiveField>
       <FormEnd error={error} pending={pending} submit="Ask this person" />

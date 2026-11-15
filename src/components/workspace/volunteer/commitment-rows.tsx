@@ -32,7 +32,8 @@ export function CommitmentRows({
   const land = (row: HTMLDivElement | null) => {
     if (!row || landed.current === fresh) return;
     landed.current = fresh;
-    row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    row.scrollIntoView({ block: "nearest", behavior: still ? "auto" : "smooth" });
   };
   return items.length ? (
       <div className="live-list">

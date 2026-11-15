@@ -523,7 +523,7 @@
 
 /* ── The date field ──────────────────────────────────────────────────────────
    One field for every room: a paper button that opens a month. See date-field.tsx. */
-.live-date { position: relative; display: flex; align-items: center; width: 100%; height: 44px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; transition: border-color 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
+.live-date { position: relative; display: flex; align-items: center; width: 100%; height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; transition: border-color 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
 .live-date:hover { border-color: #365c46; }
 .live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
 .live-date:has(.live-date-words:focus-visible) { outline: 2px solid #365c46; outline-offset: 2px; }
@@ -531,7 +531,7 @@
 .live-app .live-date .live-date-words, .live-dialog .live-date .live-date-words { flex: 1; min-width: 0; height: 100%; min-height: 0; margin: 0; padding: 0 0 0 12px; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none; color: inherit; font: inherit; font-size: 16px; text-overflow: ellipsis; }
 .live-date-words::placeholder { color: #66705f; opacity: 1; }
 .live-date-words:read-only { cursor: pointer; }
-.live-date-open { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border: 0; border-radius: 5px; background: none; color: #52644f; cursor: pointer; }
+.live-date-open { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 0; border-radius: 5px; background: none; color: #52644f; cursor: pointer; }
 .live-date-open:focus-visible { outline: 2px solid #365c46; outline-offset: -3px; }
 .live-date-open svg { width: 16px; height: 16px; transition: transform 200ms var(--paper-ease); }
 .live-date[data-open] .live-date-open svg { transform: rotate(180deg); }
@@ -631,7 +631,7 @@
 
 /* A day and a time side by side, one moment. */
 .live-when { display: grid; grid-template-columns: minmax(0, 1fr) minmax(118px, auto); gap: 8px; }
-.live-app .live-time select, .live-dialog .live-time select { height: 44px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; font-size: 16px; padding-left: 12px; }
+.live-app .live-time select, .live-dialog .live-time select { height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; font-size: 16px; padding-left: 12px; }
 .live-time select:hover { border-color: #365c46; }
 /* Two moments never share a row: each keeps room to say its day in words. */
 :is(.live-app, .live-dialog) .live-form-grid:has(> .live-field > .live-when) { grid-template-columns: minmax(0, 1fr); }
@@ -654,3 +654,6 @@
 @media (max-width: 699px) {
   .live-app .live-state { grid-template-columns: minmax(0, 1fr); gap: 18px; justify-items: start; }
 }
+
+/* A phone with the keyboard up: the dialog's title gives its place to the boxes. */
+[data-live-short] .live-dialog-fixed [data-slot="dialog-header"] { position: static; }

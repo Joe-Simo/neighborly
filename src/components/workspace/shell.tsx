@@ -382,9 +382,9 @@ export function LiveWorkspace({
                 : dialog === "commitment" || dialog === "meeting"
                   ? `Times are ${zoneName(data.church.timeZone)}.`
                   : dialog === "timeOff"
-                    ? "Your team sees the days you are away."
+                    ? words.timeOffForm.teamSees
                     : dialog === "announcement"
-                      ? "Everyone in the conference sees this on This week."
+                      ? words.actions.announcementSees
                       : undefined
             }
           >
