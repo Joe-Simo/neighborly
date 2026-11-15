@@ -320,7 +320,11 @@ export const payees = query({
  * become files on that device. The column names are the ones the imports above read, so a file taken out
  * here comes back in here. An account number leaves with only its last four digits.
  */
-const exportFile = v.union(v.literal("neighbors"), v.literal("requests"), v.literal("visits"), v.literal("ledger"), v.literal("payees"), v.literal("members"));
+const exportFile = v.union(
+  v.literal("neighbors"), v.literal("notes"), v.literal("calls"), v.literal("requests"), v.literal("visits"),
+  v.literal("ledger"), v.literal("deposits"), v.literal("statements"), v.literal("vouchers"), v.literal("payees"), v.literal("referrals"),
+  v.literal("members"), v.literal("teams"), v.literal("commitments"), v.literal("history"),
+);
 const exportColumns = {
   neighbors: ["Name", "Phone", "Email", "Address", "Adults", "Children", "Language", "Notes", "Alert", "Household", "Monthly income", "Monthly expenses", "Accounts"],
   requests: ["Name", "Phone", "Request Date", "Request Status", "Assistance Type", "Value", "Payee", "Request Notes", "Outcome", "Amount Requested", "Amount Approved", "Decision Note", "Decided On", "Referrals", "Entered"],
@@ -328,6 +332,15 @@ const exportColumns = {
   ledger: ["Date", "Kind", "Amount", "Category", "Payee", "Memo", "Check Number", "Cleared On", "Neighbor", "Reverses an earlier entry", "Voided"],
   payees: ["Name", "Type", "Address", "Phone", "Email", "Notes"],
   members: ["Name", "Email", "Role", "Active", "Approved", "Language"],
+  notes: ["Name", "Date", "Note", "Written By"],
+  calls: ["Date", "Time", "Caller", "Phone", "Neighbor", "What They Said", "Call Back", "Taken By", "Returned By", "Returned On", "Outcome", "Urgent"],
+  deposits: ["Date", "Total", "Memo", "Recorded By"],
+  statements: ["Statement Ends", "Bank Balance", "Agreed By", "Agreed On"],
+  vouchers: ["Date", "Change", "Item", "Note", "Recorded By"],
+  referrals: ["Name", "Phone", "Helps With"],
+  teams: ["Team", "About", "Member", "Team Role", "Status"],
+  commitments: ["Date", "Start", "End", "Title", "Team", "Location", "Who", "Coordinator", "Cancelled"],
+  history: ["Date", "Time", "Who", "What"],
 } as const;
 const languageNames = { en: "English", es: "Spanish", ht: "Creole" } as const;
 const title = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
@@ -403,6 +416,52 @@ export const exportPage = query({
     if (file === "payees") {
       const result = await ctx.db.query("payees").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       return finish(result, result.page.map((row) => [row.name, title(row.kind), row.address, row.phone, row.email, row.notes]));
+    }
+    const clock = (time: number | undefined) => (time === undefined ? "" : DateTime.fromMillis(time, { zone: church.timeZone }).toFormat("h:mm a"));
+    if (file === "notes") {
+      const result = await ctx.db.query("neighborNotes").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => [await nameOf("neighbors", row.neighborId), day(row.createdAt), row.body, await nameOf("memberships", row.authorId)])));
+    }
+    if (file === "calls") {
+      const result = await ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      const callBack = { none: "Not needed", needed: "Still needed", done: "Returned" } as const;
+      return finish(result, await Promise.all(result.page.map(async (row) => [day(row.takenAt), clock(row.takenAt), row.callerName, row.phone, await nameOf("neighbors", row.neighborId), row.note, callBack[row.callback],
+        await nameOf("memberships", row.takenBy), await nameOf("memberships", row.returnedBy), day(row.returnedAt), row.outcome ?? "", row.urgent ? row.urgent.reasons.join("; ") || "Yes" : ""])));
+    }
+    if (file === "deposits") {
+      const result = await ctx.db.query("deposits").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => [row.date, dollars(row.total), row.memo, await nameOf("memberships", row.recordedBy)])));
+    }
+    if (file === "statements") {
+      const result = await ctx.db.query("bankStatements").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => [row.endsOn, dollars(row.balance), await nameOf("memberships", row.agreedBy), day(row.agreedAt)])));
+    }
+    if (file === "vouchers") {
+      const result = await ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => [row.date, String(row.change), row.item, row.note, await nameOf("memberships", row.recordedBy)])));
+    }
+    if (file === "referrals") {
+      const result = await ctx.db.query("referralAgencies").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, result.page.map((row) => [row.name, row.phone, row.helpsWith]));
+    }
+    if (file === "teams") {
+      // One line per person on a team, so the file shows who served where.
+      const result = await ctx.db.query("teamMembers").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => {
+        const team = await ctx.db.get("teams", row.teamId);
+        return [team?.name ?? "", team?.description ?? "", await nameOf("memberships", row.memberId), title(row.teamRole), title(row.status)];
+      })));
+    }
+    if (file === "commitments") {
+      const result = await ctx.db.query("commitments").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => [day(row.start), clock(row.start), clock(row.end), row.title, (await ctx.db.get("teams", row.teamId))?.name ?? "", row.location,
+        await nameOf("memberships", row.assigneeId ?? undefined), await nameOf("memberships", row.coordinatorId), yesNo(Boolean(row.cancelled))])));
+    }
+    if (file === "history") {
+      // Who did what and when, in plain words. It names the action only, never the record it touched.
+      const result = await ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      const people = new Map((await ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1000)).map((member) => [member.userId, member.name]));
+      return finish(result, result.page.map((row) => [day(row.at), clock(row.at), people.get(row.actorId) ?? "", title(row.action.replace(/_/g, " "))]));
     }
     const result = await ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
     return finish(result, result.page.map((row) => [row.name, row.email, title(row.role), yesNo(row.active), yesNo(row.approved), row.language ? languageNames[row.language] : ""]));
