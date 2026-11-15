@@ -78,7 +78,10 @@ function FormEnd({
     <>
       {error && (
         <div className="live-error" role="alert">
-          {error}
+          <p>{error}</p>
+          <p className="live-error-recovery">
+            What you typed is still here. Correct it and save again.
+          </p>
         </div>
       )}
       <div className="live-form-actions">
@@ -307,78 +310,73 @@ export function RequestForm({
   );
 }
 
+/** One decision at a time: approve with an amount, or decline with where they were pointed. */
 export function DecideForm({
   churchId,
   request,
+  decision,
   onSaved,
 }: {
   churchId: ChurchId;
   request: HelpRequest;
+  decision: "approved" | "declined";
   onSaved: () => void;
 }) {
   const decide = useMutation(api.assistance.decide);
   const { pending, error, save } = useSave();
   const [amountError, setAmountError] = useState("");
+  const approving = decision === "approved";
   return (
     <form
       className="live-form help-form"
       onSubmit={async (event) => {
-        const declined =
-          event.nativeEvent instanceof SubmitEvent &&
-          event.nativeEvent.submitter?.getAttribute("value") === "declined";
         const value = fieldsOf(event);
-        const amountApproved = cents(value("amount"));
-        if (!declined && !amountApproved)
+        const amountApproved = approving ? cents(value("amount")) : null;
+        if (approving && !amountApproved)
           return setAmountError("Enter the amount to approve, in dollars.");
         setAmountError("");
         const outcome = await save(() =>
           decide({
             churchId,
             requestId: request.id,
-            decision: declined ? "declined" : "approved",
-            amountApproved: declined ? undefined : (amountApproved ?? undefined),
+            decision,
+            amountApproved: amountApproved ?? undefined,
             note: value("note"),
-            referral: value("referral"),
+            referral: approving ? undefined : value("referral"),
           }),
         );
         if (outcome.saved) onSaved();
       }}
     >
-      <LiveField
-        label="Amount to approve, in dollars"
-        help={`They asked for ${money(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
-      >
-        <Input
-          name="amount"
-          inputMode="decimal"
-          aria-invalid={!!amountError}
-          defaultValue={(request.amountRequested / 100).toString()}
-        />
-      </LiveField>
-      <LiveField label="Note on the decision">
+      {approving && (
+        <LiveField
+          label="Amount to approve, in dollars"
+          help={`They asked for ${money(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
+        >
+          <Input
+            name="amount"
+            inputMode="decimal"
+            aria-invalid={!!amountError}
+            defaultValue={(request.amountRequested / 100).toString()}
+          />
+        </LiveField>
+      )}
+      <LiveField label={approving ? "Note on the decision" : "Why it was declined"}>
         <Textarea name="note" rows={3} />
       </LiveField>
-      <LiveField
-        label="Referred elsewhere"
-        help="Where you pointed them, such as 211 or the county program. Leave empty if nowhere."
-      >
-        <Input name="referral" defaultValue={request.referral} />
-      </LiveField>
+      {!approving && (
+        <LiveField
+          label="Referred elsewhere"
+          help="Where you pointed them, such as 211 or the county program. Leave empty if nowhere."
+        >
+          <Input name="referral" defaultValue={request.referral} />
+        </LiveField>
+      )}
       <FormEnd
         error={amountError || error}
         pending={pending}
-        submit="Approve request"
-      >
-        <Button
-          type="submit"
-          name="decision"
-          value="declined"
-          variant="outline"
-          disabled={pending}
-        >
-          Decline
-        </Button>
-      </FormEnd>
+        submit={approving ? "Approve request" : "Decline request"}
+      />
     </form>
   );
 }
@@ -521,10 +519,14 @@ export function NeighborForm({
         <Textarea name="notes" rows={3} defaultValue={neighbor?.notes} />
       </LiveField>
       {duplicates.length > 0 && (
-        <div className="live-note help-matches" role="status">
+        <div className="live-error help-matches" role="alert">
           <p>
-            Already on file. Open their record, or save again if this is
-            someone else.
+            {duplicates[0].name} is already on file with this{" "}
+            {duplicates[0].same === "phone" ? "phone number" : "name"}.
+          </p>
+          <p className="live-error-recovery">
+            Open the record, or change the {duplicates[0].same === "phone" ? "number" : "name"}. What you typed is
+            still here. If this is someone else, save again.
           </p>
           {duplicates.map((match) => (
             <div className="live-row" key={match.id}>

@@ -9,7 +9,6 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import {
-  CallForm,
   DecideForm,
   HelpDialog,
   NeighborForm,
@@ -34,8 +33,8 @@ import {
 } from "@/components/workspace/help-line/room";
 
 type Step =
-  | { kind: "call" | "request" | "details" }
-  | { kind: "decide" | "change"; request: HelpRequest };
+  | { kind: "request" | "details" }
+  | { kind: "approve" | "decline" | "change"; request: HelpRequest };
 
 const back = (
   <Link className="help-back" href="/app/neighbors">
@@ -112,19 +111,6 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
           setStep(next);
         }}
       />
-      {step?.kind === "call" && (
-        <HelpDialog
-          title="Log a call"
-          description={`A call with ${neighbor.name}, kept on this record.`}
-          onClose={close}
-        >
-          <CallForm
-            churchId={churchId}
-            neighbor={neighbor}
-            onSaved={() => finish("Call saved on this record.")}
-          />
-        </HelpDialog>
-      )}
       {step?.kind === "request" && (
         <HelpDialog
           title="Add a request"
@@ -152,18 +138,19 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
           />
         </HelpDialog>
       )}
-      {step?.kind === "decide" && (
+      {(step?.kind === "approve" || step?.kind === "decline") && (
         <HelpDialog
-          title="Approve or decline"
+          title={step.kind === "approve" ? "Approve request" : "Decline request"}
           description={`${requestTitle(step.request)}. ${step.request.summary}`}
           onClose={close}
         >
           <DecideForm
             churchId={churchId}
             request={step.request}
+            decision={step.kind === "approve" ? "approved" : "declined"}
             onSaved={() =>
               finish(
-                `Decision saved. ${neighbor.name}’s record is up to date.`,
+                `Request ${step.kind === "approve" ? "approved" : "declined"}. ${neighbor.name}’s record is up to date.`,
               )
             }
           />
@@ -237,20 +224,7 @@ export function NeighborRecordView({
   const years = [...new Set(record.history.map((event) => year(event.at)))];
   return (
     <>
-      <div className="help-record-head">
-        {back}
-        <div className="help-actions">
-          <Button variant="outline" onClick={() => onStep({ kind: "call" })}>
-            Log a call
-          </Button>
-          <Button variant="outline" onClick={() => onStep({ kind: "request" })}>
-            Add a request
-          </Button>
-          <Button variant="ghost" onClick={() => onStep({ kind: "details" })}>
-            Change details
-          </Button>
-        </div>
-      </div>
+      <p className="help-record-head">{back}</p>
 
       <dl className="help-figures">
         <div>
@@ -305,7 +279,16 @@ export function NeighborRecordView({
           <dd>{landlord ?? (neighbor.email || "None on file")}</dd>
         </div>
       </dl>
-      {neighbor.notes && <p className="help-note">{neighbor.notes}</p>}
+      <p className="help-note">
+        {neighbor.notes && <>{neighbor.notes} </>}
+        <Button
+          variant="link"
+          className="help-text-action"
+          onClick={() => onStep({ kind: "details" })}
+        >
+          Change details
+        </Button>
+      </p>
 
       {first && (
         <section className="help-sheet" aria-labelledby="open-title">
@@ -324,11 +307,18 @@ export function NeighborRecordView({
             </div>
             {first.status === "open" && (
               <div className="help-actions">
-                <Button onClick={() => onStep({ kind: "decide", request: first })}>
-                  Approve or decline
+                <Button onClick={() => onStep({ kind: "approve", request: first })}>
+                  Approve request
                 </Button>
                 <Button
                   variant="outline"
+                  onClick={() => onStep({ kind: "decline", request: first })}
+                >
+                  Decline
+                </Button>
+                <Button
+                  variant="link"
+                  className="help-text-action"
                   onClick={() => onStep({ kind: "change", request: first })}
                 >
                   Change
@@ -365,9 +355,9 @@ export function NeighborRecordView({
                   {request.status === "open" ? (
                     <Button
                       variant="outline"
-                      onClick={() => onStep({ kind: "decide", request })}
+                      onClick={() => onStep({ kind: "approve", request })}
                     >
-                      Approve or decline
+                      Approve request
                     </Button>
                   ) : (
                     <span className="live-status">Approved, to be paid</span>
@@ -382,10 +372,16 @@ export function NeighborRecordView({
       <section className={first || alsoOpen.length ? "live-section" : undefined}>
         <div className="live-section-head">
           <h2>History</h2>
-          <span className="live-count">
-            Since{" "}
-            {format(record.since, { day: undefined, month: "long", year: "numeric" })}
-          </span>
+          {first ? (
+            <span className="live-count">
+              Since{" "}
+              {format(record.since, { day: undefined, month: "long", year: "numeric" })}
+            </span>
+          ) : (
+            <Button variant="outline" onClick={() => onStep({ kind: "request" })}>
+              Add a request
+            </Button>
+          )}
         </div>
         {record.history.length ? (
           years.map((label) => (

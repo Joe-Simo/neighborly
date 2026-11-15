@@ -1,10 +1,10 @@
 "use client";
 
-import { useDeferredValue, useState } from "react";
+import { useCallback, useDeferredValue, useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { Lock, Plus, Search } from "lucide-react";
+import { Lock, Search } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -44,11 +44,16 @@ export function NeighborsSection() {
 }
 
 function Neighbors() {
-  const { data, format } = useWorkspace();
+  const { data, format, setHeadAction } = useWorkspace();
   const router = useRouter();
   const churchId = data.church.id;
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
+  const add = useCallback(() => setAdding(true), []);
+  useLayoutEffect(() => {
+    setHeadAction({ label: "Add a neighbor", run: add });
+    return () => setHeadAction(null);
+  }, [setHeadAction, add]);
   const list = useQuery(api.neighbors.list, {
     churchId,
     search: useDeferredValue(search).trim() || undefined,
@@ -70,7 +75,7 @@ function Neighbors() {
           list={list}
           searching={!!search.trim()}
           format={format}
-          onAdd={() => setAdding(true)}
+          onAdd={add}
         />
       ) : (
         <HelpLoading label="Finding neighbors" />
@@ -104,7 +109,7 @@ export function NeighborListView({
 }) {
   const add = (
     <Button variant="outline" onClick={onAdd}>
-      <Plus size={18} aria-hidden="true" /> Add a neighbor
+      Add a neighbor
     </Button>
   );
   const shown = list.rows.length;
@@ -112,16 +117,13 @@ export function NeighborListView({
     <>
       <div className="live-section-head">
         <h2>Neighbors</h2>
-        <div className="help-actions">
-          <span className="live-count help-private">
+        <span className="live-count help-private">
             <Lock size={14} aria-hidden="true" />
             {list.more
               ? `First ${shown} households`
               : `${shown} ${shown === 1 ? "household" : "households"}`}{" "}
             · each opening is logged
-          </span>
-          {shown > 0 && add}
-        </div>
+        </span>
       </div>
       {shown ? (
         <div className="live-list">
