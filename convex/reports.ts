@@ -1,4 +1,4 @@
-import { v, type Infer } from "convex/values";
+import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
@@ -22,7 +22,7 @@ const isKind = (value: string): value is Kind => kinds.some((kind) => kind === v
 /** Reads a bounded range in full, and refuses to add up a year it could only see part of. */
 async function whole<T>(rows: { take: (n: number) => Promise<T[]> }, limit = LIMIT) {
   const read = await rows.take(limit + 1);
-  if (read.length > limit) throw new Error("This year holds more records than one report can add up.");
+  if (read.length > limit) throw new ConvexError("This year holds more records than one report can add up.");
   return read;
 }
 
@@ -185,7 +185,7 @@ export const years = query({
   handler: async (ctx, { churchId }) => {
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
-    if (!church) throw new Error("Group not found.");
+    if (!church) throw new ConvexError("Group not found.");
     const current = fiscalYearOf(Date.now(), church.timeZone);
     const [call, request, visit, entry] = await Promise.all([
       ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).first(),
@@ -212,7 +212,7 @@ export const flagged = query({
   }),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    if (args.requestIds.length + args.visitIds.length > 500) throw new Error("Too many records to open at once.");
+    if (args.requestIds.length + args.visitIds.length > 500) throw new ConvexError("Too many records to open at once.");
     const [requests, visits] = await Promise.all([
       Promise.all(args.requestIds.map((id) => ctx.db.get("assistanceRequests", id))),
       Promise.all(args.visitIds.map((id) => ctx.db.get("visits", id))),
@@ -234,8 +234,8 @@ export const year = query({
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
     const church = await ctx.db.get("churches", args.churchId);
-    if (!church) throw new Error("Group not found.");
-    if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new Error("Choose a year.");
+    if (!church) throw new ConvexError("Group not found.");
+    if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new ConvexError("Choose a year.");
     const zone = church.timeZone;
     const span = fiscalYear(args.year, zone, args.quarter);
     const now = Date.now();
