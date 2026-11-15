@@ -99,3 +99,4 @@ p.tools-quiet { margin: 14px 0 0; }
   .live-section-head:has(> .tools-quiet) .live-count { margin-right: 0; }
   .live-app .live-section-head > [data-slot="button"].tools-quiet { flex-basis: 100%; justify-content: flex-start; margin-top: -6px; }
 }
+:is(.live-app, .live-dialog) .tools-address input::selection { background: #dde5d3; color: var(--live-ink); }

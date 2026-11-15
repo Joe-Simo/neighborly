@@ -18,8 +18,8 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
       )}
       <p className="live-deck">For the parish office wall, the sacristy door, or anyone who would rather hold it.</p>
       <div className="tools-week">
-        <Button variant="outline" className="tools-week-step" aria-label="Earlier week" onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
-        <Button variant="outline" className="tools-week-step" aria-label="Later week" onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
+        <Button variant="outline" className="tools-week-step" aria-label="Week before" onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
+        <Button variant="outline" className="tools-week-step" aria-label="Week after" onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
         <Button disabled={!planned} onClick={onPrint}><Printer size={16} aria-hidden="true" /> Print this week</Button>
       </div>
       <div className="tools-rota">
