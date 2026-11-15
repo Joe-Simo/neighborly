@@ -586,7 +586,6 @@
 .live-error .live-error-recovery { margin-top: 4px; font-size: 15px; color: #5d6657; }
 /* Clear of a dialog's pinned buttons when it is brought into view. */
 .live-failure { scroll-margin-block: 24px 104px; }
-.live-failure:focus-visible { outline: 2px solid #6f5f93; outline-offset: 3px; }
 .live-failure [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
 .live-waiting { margin: 0; font-size: 15px; line-height: 1.5; color: #5d6657; }
 .live-connection {
@@ -657,3 +656,11 @@
 
 /* A phone with the keyboard up: the dialog's title gives its place to the boxes. */
 [data-live-short] .live-dialog-fixed [data-slot="dialog-header"] { position: static; }
+
+/* ── Focus the program moves draws no ring ──────────────────────────────────
+   A heading, a notice or a sheet that takes focus when it lands (tabindex -1) is for the
+   screen reader's place, not the eye: no ring. The ring belongs to keyboard focus on real
+   controls, which keep :focus-visible; so do controls that hold tabindex -1 for arrow keys. */
+[tabindex="-1"]:not(a, button, input, select, textarea, summary, [role="button"], [role="gridcell"], [role="tab"], [role="option"], [role="radio"], [role="checkbox"], [role="menuitem"], [role="switch"]):is(:focus, :focus-visible) {
+  outline: none;
+}
