@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../../public/fonts/fonts.css";
+import { SerwistProvider } from "@serwist/turbopack/react";
 import { launchScreens } from "@/lib/launch-screens";
 export const viewport: Viewport = {
   colorScheme: "light",
@@ -31,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <SerwistProvider swUrl="/serwist/sw.js" reloadOnOnline={false}>
+          {children}
+        </SerwistProvider>
       </body>
     </html>
   );

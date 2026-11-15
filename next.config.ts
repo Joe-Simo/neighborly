@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSerwist } from "@serwist/turbopack";
 
 // The backend's own web address. Calendar feeds live there, but people see them on this site's domain.
 const convexSite = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
@@ -23,4 +24,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);

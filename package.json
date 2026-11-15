@@ -15,6 +15,7 @@
   "dependencies": {
     "@convex-dev/auth": "^2.0.0",
     "@convex-dev/resend": "^0.2.10",
+    "@serwist/turbopack": "^9.5.13",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
     "convex": "^1.50.0",
@@ -28,6 +29,7 @@
     "radix-ui": "^1.8.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "serwist": "^9.5.13",
     "shadcn": "^4.23.0",
     "three": "^0.187.0",
     "tw-animate-css": "^1.4.0"
@@ -43,6 +45,7 @@
     "@types/three": "^0.187.0",
     "axe-core": "^4.14.0",
     "convex-test": "^0.0.71",
+    "esbuild": "^0.28.2",
     "eslint": "^10.14.0",
     "eslint-config-next": "16.4.5",
     "sharp": "^0.35.5",
