@@ -54,6 +54,8 @@ export function en(set: WordSet) {
       signOut: "Sign out",
       leaveSample: "Leave the sample",
       sampleMark: "Sample · made-up people",
+      /** After the conference's name in a room's kicker: "St. Example Conference · Sample". */
+      sample: "Sample",
       language: "Language",
       roomInEnglish: "This room is in English.",
       typedStays: "Words people typed stay as they wrote them.",
@@ -108,7 +110,7 @@ export function en(set: WordSet) {
       emptyDetail:
         "New commitments will appear here with their date, person and preparation.",
       placeOpen: "A place is open",
-      status: { accepted: "accepted", open: "open", cancelled: "cancelled" },
+      status: { accepted: "Accepted", open: "Open", cancelled: "Cancelled" },
       viewPreparation: "View preparation",
       viewCommitment: "View commitment",
       details: "Details",

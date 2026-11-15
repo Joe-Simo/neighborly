@@ -55,6 +55,8 @@ export function ht(set: WordSet): Words {
       signOut: "Soti",
       leaveSample: "Kite egzanp lan",
       sampleMark: "Egzanp · moun envante",
+      /** After the conference's name in a room's kicker: "St. Example Conference · Sample". */
+      sample: "Egzanp",
       language: "Lang",
       roomInEnglish: "Sal sa a an anglè toujou.",
       typedStays: "Sa moun yo ekri rete jan yo te ekri l.",
@@ -109,7 +111,7 @@ export function ht(set: WordSet): Words {
       emptyDetail:
         "Nouvo angajman yo ap parèt isit la ak dat, moun ak preparasyon yo.",
       placeOpen: "Gen yon plas ki lib",
-      status: { accepted: "aksepte", open: "lib", cancelled: "anile" },
+      status: { accepted: "Aksepte", open: "Lib", cancelled: "Anile" },
       viewPreparation: "Gade preparasyon an",
       viewCommitment: "Gade angajman an",
       details: "Detay",
