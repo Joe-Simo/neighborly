@@ -72,7 +72,8 @@ export function ZipForm({ zip, data, onZip, onData }: ZipProps) {
           <button
             key={z}
             type="button"
-            className="rounded-full px-2 py-1 font-medium text-accent-ink tabular-nums underline decoration-rule underline-offset-4 hover:decoration-accent"
+            className="rounded-full px-2 py-1 font-medium text-accent-ink tabular-nums underline decoration-rule underline-offset-4 hover:decoration-accent disabled:opacity-50"
+            disabled={loading}
             onClick={() => {
               onZip(z);
               look(z);

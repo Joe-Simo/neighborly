@@ -405,6 +405,12 @@ body {
     letter-spacing: -0.05em;
   }
 
+  /* One line of a heading. The layout holds with or without motion. */
+  .lift,
+  .lift > span {
+    display: block;
+  }
+
   .shimmer {
     background: #f1ede5;
   }
