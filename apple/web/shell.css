@@ -55,4 +55,4 @@ span.ready, a.again.ready, .stopped .trying { display: none; }
   animation: turn 0.9s linear infinite;
 }
 @keyframes turn { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 6s; } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
