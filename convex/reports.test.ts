@@ -147,7 +147,7 @@ describe("the year's counts for the sample conference", () => {
     for (const line of lines) holding.set(line.requestId!, (holding.get(line.requestId!) ?? 0) - line.change);
     const holders = [...holding].filter(([, held]) => held > 0).map(([requestId]) => data.requests.find((request) => request._id === requestId)!.neighborId);
     expect(report.vouchers).toEqual({
-      given: lines.reduce((sum, line) => sum + Math.max(0, -line.change), 0),
+      given: lines.reduce((sum, line) => sum - line.change, 0),
       takenBack: lines.reduce((sum, line) => sum + Math.max(0, line.change), 0),
       requests: holders.length,
       households: new Set(holders).size,
@@ -287,7 +287,7 @@ describe("the parts the sample conference does not exercise", () => {
     return { t, as, ids };
   }
 
-  test("a request closed after part was paid is not closed without help, and a voucher taken back leaves the given count", async () => {
+  test("a request closed after part was paid is not closed without help, and a voucher taken back is no longer given", async () => {
     const { t, as, ids } = await conference();
     await t.run(async (ctx) => {
       await ctx.db.patch("assistanceRequests", ids.requestId, { status: "closed" });
@@ -303,7 +303,7 @@ describe("the parts the sample conference does not exercise", () => {
     const report = await as(ids.owner.userId).query(api.reports.year, { churchId: ids.churchId, year: 2026 });
     expect(report.requests).toMatchObject({ received: 3, closed: 3, closedAfterPart: { requests: 1, paid: 20000, approved: 30000 } });
     expect(report.helpPaid).toBe(20000);
-    expect(report.vouchers).toEqual({ given: 3, takenBack: 1, requests: 1, households: 1 });
+    expect(report.vouchers).toEqual({ given: 2, takenBack: 1, requests: 1, households: 1 });
     // One household by money, one by a voucher it kept.
     expect(report.households).toBe(2);
     expect(report.kinds[3]).toMatchObject({ kind: "voucher", households: 1, paid: 0 });

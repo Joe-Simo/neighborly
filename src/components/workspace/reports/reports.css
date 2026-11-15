@@ -200,7 +200,6 @@
 .report-outcomes [data-is="paid"], .report-legend [data-is="paid"]::before { background: linear-gradient(90deg, #4e7257, #365c46); }
 .report-outcomes [data-is="approved"], .report-legend [data-is="approved"]::before { background: var(--help-ochre); }
 .report-outcomes [data-is="open"], .report-legend [data-is="open"]::before { background: #dfc587; }
-.report-outcomes [data-is="part"], .report-legend [data-is="part"]::before { background: #8fae95; }
 .report-outcomes [data-is="declined"], .report-legend [data-is="declined"]::before { background: #a9ab9c; }
 .report-outcomes [data-is="closed"], .report-legend [data-is="closed"]::before { background: #d3d4c7; }
 .report-legend {
@@ -380,6 +379,7 @@
 }
 @media (max-width: 850px) {
   .report-period { align-items: flex-start; flex-direction: column; }
+  .report-wide { display: none; }
   .report-period p span { display: block; margin: 0 0 4px; }
   .live-app .report-years [data-slot="toggle-group-item"] { height: 44px; }
   .report-actions { width: 100%; }
@@ -492,6 +492,7 @@
   justify-content: space-between;
   gap: 12px 22px;
 }
+.report-own-line { display: block; }
 .report-aside {
   margin: 16px 0 0;
   max-width: 78ch;

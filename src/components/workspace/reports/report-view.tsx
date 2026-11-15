@@ -214,16 +214,17 @@ export function ReportView({
     })),
   ];
   const mostHours = Math.max(...serving.map((line) => line.hours));
+  // A request closed after money went out was paid in part, so it stands with the paid ones.
+  const inPart = report.requests.closedAfterPart.requests;
   const outcomes = [
-    { is: "paid", label: "Paid", value: report.requests.paid },
+    {
+      is: "paid",
+      label: inPart > 0 ? `Paid, ${count(inPart)} of them in part` : "Paid",
+      value: report.requests.paid + inPart,
+    },
     { is: "approved", label: "Approved, waiting to be paid", value: report.requests.approved },
     { is: "open", label: "Waiting for a decision", value: report.requests.open },
     { is: "declined", label: "Declined", value: report.requests.declined },
-    {
-      is: "part",
-      label: `Closed after ${money(report.requests.closedAfterPart.paid)} of ${money(report.requests.closedAfterPart.approved)}`,
-      value: report.requests.closedAfterPart.requests,
-    },
     { is: "closed", label: "Closed without help", value: report.requests.closed - report.requests.closedAfterPart.requests },
   ].filter((outcome) => outcome.value > 0);
   const printedOn = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: report.timeZone }).format(printed);
@@ -274,7 +275,7 @@ export function ReportView({
           <dd>
             {money(report.helpPaid)}
             <small>
-              Paid direct, never in cash
+              {report.vouchers.given > 0 ? "Paid direct or given as vouchers, never in cash" : "Paid direct, never in cash"}
               {moved && `. ${money(report.history.amount)} more is in ServWare history.`}
             </small>
           </dd>
@@ -291,7 +292,7 @@ export function ReportView({
               <h3>{kindLabels[line.kind]}</h3>
               <p>
                 {line.kind === "voucher" && report.vouchers.given > 0
-                  ? `${plural(report.vouchers.given, "voucher")} given${report.vouchers.takenBack > 0 ? ` · ${count(report.vouchers.takenBack)} taken back` : ""} · ${plural(line.people, "person", "people")}`
+                  ? `${plural(report.vouchers.given, "voucher")} given, worth ${money(line.paid)} · ${plural(line.people, "person", "people")}`
                   : line.requestsPaid > 0
                   ? `${plural(line.requestsPaid, "request")} paid · ${plural(line.people, "person", "people")}`
                   : report.closed
@@ -318,7 +319,9 @@ export function ReportView({
       <section className="live-section">
         <div className="live-section-head">
           <h2>Month by month</h2>
-          <span className="live-count">Help paid, and the visits behind it</span>
+          <span className="live-count">
+            Help paid<span className="report-wide">, and the visits behind it</span>
+          </span>
         </div>
         <ol className="report-months" data-months={report.months.length}>
           {report.months.map((line) => {
@@ -414,7 +417,7 @@ export function ReportView({
               {count(report.calls.returned)}
               <small>
                 Of {plural(report.calls.taken, "call")} taken
-                {noCallBack > 0 && ` · ${count(noCallBack)} needed no call back`}
+                {noCallBack > 0 && <span className="report-own-line">{count(noCallBack)} needed no call back</span>}
               </small>
             </dd>
           </div>

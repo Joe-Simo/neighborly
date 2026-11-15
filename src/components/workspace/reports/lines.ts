@@ -89,16 +89,16 @@ export function reportLines(report: YearReport): ReportLine[] {
 
   const requests = section("Requests for help");
   requests.count("Received", report.requests.received);
-  requests.count("Paid", report.requests.paid);
+  requests.count("Paid", report.requests.paid + report.requests.closedAfterPart.requests);
+  if (report.requests.closedAfterPart.requests > 0) {
+    requests.count("Of those, paid in part and then closed", report.requests.closedAfterPart.requests);
+    requests.money("Paid on those before they closed", report.requests.closedAfterPart.paid);
+    requests.money("Approved on those", report.requests.closedAfterPart.approved);
+  }
   requests.count("Approved, waiting to be paid", report.requests.approved);
   requests.count("Waiting for a decision", report.requests.open);
   requests.count("Declined", report.requests.declined);
   requests.count("Closed without help", report.requests.closed - report.requests.closedAfterPart.requests);
-  if (report.requests.closedAfterPart.requests > 0) {
-    requests.count("Closed after part was paid", report.requests.closedAfterPart.requests);
-    requests.money("Paid on those before they closed", report.requests.closedAfterPart.paid);
-    requests.money("Approved on those", report.requests.closedAfterPart.approved);
-  }
   requests.count("Referred to other help", report.requests.referred);
   requests.money("Amount asked for", report.requests.amountRequested);
   requests.money("Amount approved", report.requests.amountApproved);
@@ -128,7 +128,7 @@ export function reportLines(report: YearReport): ReportLine[] {
   if (report.vouchers.given > 0 || report.vouchers.takenBack > 0) {
     const vouchers = section("Vouchers from the shelf");
     vouchers.count("Vouchers given", report.vouchers.given);
-    vouchers.count("Vouchers taken back", report.vouchers.takenBack);
+    vouchers.count("Taken back, not counted as given", report.vouchers.takenBack);
     vouchers.count("Requests given a voucher", report.vouchers.requests);
     vouchers.count("Households given a voucher", report.vouchers.households);
   }

@@ -129,7 +129,7 @@ export const yearReport = v.object({
     closedAfterPart: v.object({ requests: v.number(), paid: v.number(), approved: v.number() }),
     paidTowardEarlier: v.number(),
   }),
-  /** Vouchers from the shelf in the period. Given stays as given when some are taken back; households are those left holding at least one. */
+  /** Vouchers from the shelf in the period. Given is net of those taken back; households are those left holding at least one. */
   vouchers: v.object({ given: v.number(), takenBack: v.number(), requests: v.number(), households: v.number() }),
   calls: v.object({ taken: v.number(), returned: v.number(), waiting: v.number() }),
   /**
@@ -341,8 +341,9 @@ export const year = query({
     const heldByRequest = new Map<Id<"assistanceRequests">, { held: number; month: string }>();
     for (const line of shelf) {
       if (!line.requestId) continue;
-      if (line.change < 0) vouchers.given -= line.change;
-      else vouchers.takenBack += line.change;
+      // Given is what stayed given: a voucher taken back comes off it.
+      vouchers.given -= line.change;
+      if (line.change > 0) vouchers.takenBack += line.change;
       const held = heldByRequest.get(line.requestId) ?? { held: 0, month: line.date.slice(0, 7) };
       held.held -= line.change;
       heldByRequest.set(line.requestId, held);
