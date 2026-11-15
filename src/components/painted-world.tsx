@@ -25,9 +25,9 @@ function fallbackSource(scene: PaintedScene, mobile: boolean, accepted = false) 
 }
 /**
  * When the home page's 3D opening is built. "idle" builds it shortly after the painting has shown.
- * "interaction" waits for the visitor's first move, touch, key or scroll, so a page nobody has touched
- * does no 3D work at all; the still painting and the button carry the opening until then. Switch only on
- * a measurement from a real device.
+ * "interaction" builds it on the first sign of a person (a move, touch, key or scroll) or once the page
+ * has been idle for four seconds, whichever comes first; the still painting and the button carry the
+ * opening until then. Switch only on a measurement from a real device.
  */
 const openingStartsOn = "idle" as "idle" | "interaction";
 type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStoryProgress" | "setOpeningOutcome" | "setHandoff" | "setReducedMotion" | "dispose">;
@@ -105,9 +105,15 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
     // The responsive painting is the initial experience. Upgrade the optional
     // dimensional guide after critical text and imagery have had time to paint.
     const signs = ["pointermove", "pointerdown", "keydown", "touchstart", "wheel", "scroll"] as const;
-    const onSign = () => { signs.forEach(sign => window.removeEventListener(sign, onSign)); enhance(); };
-    if (heroOnly && openingStartsOn === "interaction") signs.forEach(sign => window.addEventListener(sign, onSign, { passive: true }));
-    else if (heroOnly) {
+    let begun = false;
+    const begin = () => { if (begun) return; begun = true; signs.forEach(sign => window.removeEventListener(sign, begin)); clearTimeout(defer); enhance(); };
+    if (heroOnly && openingStartsOn === "interaction") {
+      signs.forEach(sign => window.addEventListener(sign, begin, { passive: true }));
+      defer = setTimeout(() => {
+        if ("requestIdleCallback" in window) idle = window.requestIdleCallback(begin);
+        else begin();
+      }, 4000);
+    } else if (heroOnly) {
       defer = setTimeout(() => {
         if ("requestIdleCallback" in window) idle = window.requestIdleCallback(enhance, { timeout: 2000 });
         else enhance();
@@ -115,7 +121,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
     } else enhance();
     return () => {
       disposed = true;
-      signs.forEach(sign => window.removeEventListener(sign, onSign));
+      signs.forEach(sign => window.removeEventListener(sign, begin));
       clearTimeout(defer);
       if (idle !== undefined) window.cancelIdleCallback(idle);
       active?.dispose(); controller.current = null;
@@ -223,7 +229,10 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
       <div className="painted-world-viewport" ref={viewport}>
         <div className="painted-world-art" ref={host} aria-hidden="true" />
         {(!ready || failed || !canRender) && <picture className="painted-world-fallback">
+          {/* The first picture a visitor sees: the lightest file their screen can use, asked for before anything else. */}
+          {heroOnly && openingOutcome !== "accepted" && <source media="(max-width:700px)" type="image/avif" srcSet="/assets/living-relief-mobile-480.avif 480w, /assets/living-relief-mobile-780.avif 780w" sizes="100vw" />}
           <source media={heroOnly ? "(max-width:700px)" : "(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)"} srcSet={fallbackSource(visibleScene, true, openingOutcome === "accepted")} />
+          {heroOnly && openingOutcome !== "accepted" && <source type="image/avif" srcSet="/assets/living-relief-poster-960.avif 960w, /assets/living-relief-poster-1440.avif 1440w" sizes="100vw" />}
           <img crossOrigin="anonymous" fetchPriority="high" src={fallbackSource(visibleScene, false, openingOutcome === "accepted")} alt="" />
         </picture>}
         {heroOnly && reached && !passed && (!ready || failed || !canRender) && <picture className="painted-world-fallback painted-world-fallback-passed">

@@ -7,8 +7,7 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 export const viewport: Viewport = { colorScheme: "light", themeColor: "#eee6d5", viewportFit: "cover" };
 
 export default function Home() {
-  // The two faces every first screen is set in arrive with the page, not after its styles are read.
+  // The headline's face arrives with the page. The text face is left to the stylesheet, so it does not compete with the first picture.
   preload("/fonts/newsreader-display-regular.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
-  preload("/fonts/source-sans-3-latin-variable.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   return <NeighborlyExperience />;
 }
