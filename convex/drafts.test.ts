@@ -256,11 +256,12 @@ describe("a call note drafted into a request", () => {
       kind: { type: "noul", noul: kind }, payeeKind: { type: "noul", noul: 0.95 },
       chosenKind: { type: "choice", choice, confidence, probabilities: {} },
     } })));
-    // Code says rent and Jev picks rent: 0.87, under the line alone, is enough when both agree (ht-power in the measured run).
+    // Code says rent and Jev picks rent at 0.85: under the line for a pick alone, enough when code proposed the same.
     reply(0.87, "rent", 0.85);
     expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: "rent", verification: "checked" });
-    // Agreement on weak scores is still not enough.
-    reply(0.6, "rent", 0.7);
+    // A note that mentions rent and asks for nothing: sure the word is there (0.99), unsure anything is asked (0.57).
+    // These are the scores of the one wrong mark in the second measured run; the pick has to carry the kind.
+    reply(0.99, "rent", 0.57);
     expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: null });
     // Code says rent, Jev picks something else or "none": left for a person, however sure either is.
     reply(0.97, "utility", 0.94);

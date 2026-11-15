@@ -156,7 +156,7 @@ const signEnds: Record<UrgentReason, { true: string; false: string }> = {
   medical: { true: "Someone in the caller's household has a medical need: oxygen, insulin, dialysis, medication, a wheelchair, a hospital stay", false: "No medical need is mentioned" },
 };
 
-/** When code and Jev's own pick name the same kind, either score at or above this is enough. Set from the 23-note run. */
+/** When code and Jev's own pick name the same kind, the pick stands at this easier line. Set from the 23-note run. */
 const agreed = 0.8;
 const kindQuestion: Question = { type: "choice", instructions: "What one kind of help does note ask for?", criteria: kindChoice };
 /** Jev's pick from the closed list, or null when the answer is not one. */
@@ -168,13 +168,16 @@ function picked(answer: unknown): { kind: RequestKind | "none"; confidence: numb
 }
 /**
  * The kind of help to show, from what code proposed, how sure Jev is of that proposal, and Jev's own pick.
- * Two readings that agree stand on the easier line. Where code is silent (Spanish, Creole, "no food") Jev's
- * pick stands alone only at 0.9. Where the two disagree, or Jev picks "none", the field is left for a person.
+ * Jev's pick is the only reading of whether help is asked for at all: the confirming score says a kind is
+ * mentioned, and a note can mention rent while asking for nothing. So the pick always has to carry the kind.
+ * When code proposed the same kind it stands on the easier line; where code is silent (Spanish, Creole,
+ * "no food") it stands alone only at 0.9. Where the two disagree, or Jev picks "none", the field is left
+ * for a person. The confirming score is used only when the reply holds no pick.
  */
 function settleKind(proposed: RequestKind | null, sure: number | null, pick: ReturnType<typeof picked>): RequestKind | null {
   if (!pick) return proposed && sure !== null && sure >= sureEnough ? proposed : null;
   if (pick.kind === "none") return null;
-  if (proposed) return pick.kind === proposed && Math.max(sure ?? 0, pick.confidence) >= agreed ? proposed : null;
+  if (proposed) return pick.kind === proposed && pick.confidence >= agreed ? proposed : null;
   return pick.confidence >= sureEnough ? pick.kind : null;
 }
 /** One question per sign: a sign code found is confirmed; any other is read by Jev itself, so a note in Spanish or Creole is read too. */
