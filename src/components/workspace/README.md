@@ -109,7 +109,7 @@ One family, in `states.tsx` and `failure.ts`; the look is in `paper.css`. Plum a
   sentence, at most one action. `LiveEmpty` stays the short way to write the empty one.
 - `<LiveConnection />` is the strip above a room while the connection is down, and `RoomBoundary` keeps a fault
   inside one room; the shell places both. Whole-page states (`app/error.tsx`, `not-found.tsx`, `/offline`) use
-  the sign-in layout. Words live in `stateWords` until the language tables take them over.
+  the sign-in layout. Words are `words.states` (en, es, ht); `stateWords` is the English copy for pages outside the workspace.
 
 ## The paper corner rule
 

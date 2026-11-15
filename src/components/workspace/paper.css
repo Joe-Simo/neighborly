@@ -584,13 +584,17 @@
 }
 .live-error > div { flex: 1 1 260px; min-width: 0; }
 .live-error .live-error-recovery { margin-top: 4px; font-size: 15px; color: #5d6657; }
+/* Clear of a dialog's pinned buttons when it is brought into view. */
+.live-failure { scroll-margin-block: 24px 104px; }
+.live-failure:focus-visible { outline: 2px solid #6f5f93; outline-offset: 3px; }
 .live-failure [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
 .live-waiting { margin: 0; font-size: 15px; line-height: 1.5; color: #5d6657; }
 .live-connection {
   margin: 0 0 24px;
-  padding: 12px 16px;
-  background: var(--paper-shade, #ece8dc);
-  border-left: 3px solid var(--paper-ink, #283c32);
+  padding: 14px 18px 14px 16px;
+  background: #fffdf7;
+  border: 1px solid color-mix(in srgb, #6f5f93 26%, #f7f4ed);
+  border-left: 3px solid #6f5f93;
   border-radius: 0 4px 4px 0;
   font-size: 16px;
   line-height: 1.5;
@@ -647,3 +651,6 @@
 .live-dialog .live-manage [data-slot="button"] small { font-size: 14px; font-weight: 400; color: var(--live-muted); }
 .live-dialog .live-manage [data-slot="button"][data-danger] { color: #8a3b2e; border-color: #e3c9c2; }
 .live-dialog .live-manage [data-slot="button"][data-danger]:hover { background: #fbf1ee; }
+@media (max-width: 699px) {
+  .live-app .live-state { grid-template-columns: minmax(0, 1fr); gap: 18px; justify-items: start; }
+}

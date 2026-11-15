@@ -183,6 +183,47 @@ export function en(set: WordSet) {
         "We couldn’t confirm these dates. Your commitments may have changed. Go back to review the current list.",
       saved: "Time off saved. Only the reviewed commitments were released.",
     },
+    /** Tasks & meetings, as a member sees them. Planning a meeting and reviewing replies are leaders' tools and stay English. */
+    tasks: {
+      tasks: "Tasks",
+      markDone: "Mark done",
+      done: "Done",
+      open: "Open",
+      emptyTitle: "A clear list, for now.",
+      emptyDetail: "Shared tasks will appear here with their owner and due date.",
+      meetings: "Meetings",
+      going: "You are going",
+      notGoing: "You can’t make it",
+      waiting: "Waiting for your reply",
+      attend: "Attend",
+      decline: "Decline",
+      noMeetingsTitle: "No meetings planned.",
+      noMeetingsDetail: "Meeting replies are separate from task completion.",
+    },
+    /** People, as a member sees it. Managing access and invitations are the owner's tools and stay English. */
+    people: {
+      roles: { owner: "Owner", coordinator: "Coordinator", member: "Member" },
+      removed: "Access removed",
+      waiting: "Waiting for approval",
+    },
+    /** Teams, as a member sees it. Adding and approving members are leaders' tools and stay English. */
+    teams: {
+      noDescription: "A team with room to contribute.",
+      onTeam: "You’re on this team.",
+      invited: "You’re invited to this team. Joining does not accept a commitment.",
+      join: "Join team",
+      decline: "Decline",
+      members: (count: number) => (count === 1 ? "1 member" : `${count} members`),
+      viewMembers: "View members",
+      hideMembers: "Hide members",
+      coordinator: "Coordinator",
+      member: "Member",
+      invitedWaiting: "Invited, waiting to join",
+      waitingApproval: "Waiting for team approval",
+      loadMore: "Load more members",
+      loading: "Loading members…",
+      emptyTitle: "Start with one team.",
+    },
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {
       notSaved: "That couldn’t be saved. Please try again.",

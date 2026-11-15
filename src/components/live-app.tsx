@@ -12,7 +12,7 @@ import { useClerk } from "@clerk/nextjs";
 import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
+import { LiveAuth, leftKey, type LiveEntryIntent } from "@/components/live-auth";
 import type { LiveArea } from "@/components/workspace/areas";
 import { LiveRoomLoading } from "@/components/workspace/primitives";
 import { LiveWorkspace } from "@/components/workspace/shell";
@@ -38,7 +38,14 @@ export function LiveApp({
   const [entryHandled, setEntryHandled] = useState(false);
   const { isLoading, isAuthenticated, ready } = useAccount();
   const clerk = useClerk();
-  const signOut = () => clerk.signOut({ redirectUrl: "/app" });
+  const signOut = () => {
+    try {
+      window.sessionStorage.setItem(leftKey, "1");
+    } catch {
+      // Without it the sign-in sheet opens as usual, without its "signed out" line.
+    }
+    return clerk.signOut({ redirectUrl: "/app" });
+  };
   const viewer = useQuery(api.workspace.viewer, ready ? {} : "skip");
   const sampleVisitor = useQuery(api.demo.visiting, ready ? {} : "skip");
   // The sample link always opens the sample. Someone already signed in as themselves is signed out

@@ -1,8 +1,8 @@
 import { ConvexError } from "convex/values";
 
 /**
- * The words of every state that is not the room working as usual. One table, so the
- * family speaks with one voice; the language tables take these over room by room.
+ * The family's words in English, for the places that stand outside the workspace and its language
+ * tables (the error page, the not-found page). Inside a room, read `words.states`.
  */
 export const stateWords = {
   notSaved: "That couldn’t be saved. Please try again.",
@@ -30,10 +30,14 @@ const thrown = /Uncaught (?:Convex)?Error:\s*(.+)/;
  * The sentence to show when a save or a load is refused. It is the backend's own plain
  * sentence when there is one, calm words when there is not, and never the raw error.
  */
-export function readFailure(cause: unknown, fallback: string = stateWords.notSaved): string {
+export function readFailure(
+  cause: unknown,
+  fallback: string = stateWords.notSaved,
+  offline: string = stateWords.offlineSave,
+): string {
   if (cause instanceof ConvexError && typeof cause.data === "string") return cause.data;
   const sentence = cause instanceof Error ? thrown.exec(cause.message)?.[1] : undefined;
   if (sentence) return sentence.split("\n")[0].trim();
-  if (typeof navigator !== "undefined" && navigator.onLine === false) return stateWords.offlineSave;
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return offline;
   return fallback;
 }
