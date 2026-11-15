@@ -1,4 +1,4 @@
-import { v, type Infer } from "convex/values";
+import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, query, type QueryCtx } from "./_generated/server";
@@ -20,13 +20,13 @@ const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
 async function reviewMembers(ctx: QueryCtx, churchId: Id<"churches">, rows: Infer<typeof memberRow>[]) {
   const me = await membership(ctx, churchId);
-  if (me.role !== "owner") throw new Error("Owner access required.");
-  if (rows.length > mostRows) throw new Error(`Bring in up to ${mostRows} people at a time.`);
+  if (me.role !== "owner") throw new ConvexError("Owner access required.");
+  if (rows.length > mostRows) throw new ConvexError(`Bring in up to ${mostRows} people at a time.`);
   const [members, invitations] = await Promise.all([
     ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1001),
     ctx.db.query("invitations").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1001),
   ]);
-  if (members.length > 1000 || invitations.length > 1000) throw new Error("This group is too large to check a file against. Invite people one at a time.");
+  if (members.length > 1000 || invitations.length > 1000) throw new ConvexError("This group is too large to check a file against. Invite people one at a time.");
   const now = Date.now();
   const joined = new Set(members.map((member) => normalizeEmail(member.email)));
   const waiting = new Set(invitations.filter((invite) => invite.status === "pending" && invite.expiresAt > now).map((invite) => invite.email));
@@ -63,7 +63,7 @@ export const importMembers = action({
   returns: v.array(imported),
   handler: async (ctx, args): Promise<Infer<typeof imported>[]> => {
     if (!/^[a-zA-Z0-9-]{16,64}$/.test(args.batchId)) throw new Error("Invalid batch identifier.");
-    if (args.rows.length > mostRows) throw new Error(`Bring in up to ${mostRows} people at a time.`);
+    if (args.rows.length > mostRows) throw new ConvexError(`Bring in up to ${mostRows} people at a time.`);
     const hex = (bytes: Uint8Array) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
     const tokens = await Promise.all(args.rows.map(async () => {
       const token = hex(crypto.getRandomValues(new Uint8Array(32)));
@@ -104,7 +104,7 @@ const languages = new Map([["", "en"], ["en", "en"], ["english", "en"], ["es", "
 type Language = "en" | "es" | "ht";
 
 async function reviewNeighbors(ctx: QueryCtx, churchId: Id<"churches">, rows: Infer<typeof neighborRow>[]) {
-  if (rows.length > mostRows) throw new Error(`Bring in up to ${mostRows} neighbors at a time.`);
+  if (rows.length > mostRows) throw new ConvexError(`Bring in up to ${mostRows} neighbors at a time.`);
   const seenPhones = new Set<string>(), seenNames = new Set<string>();
   const count = (value: string, empty: number, least: number) => {
     const number = value.trim() === "" ? empty : Number(value.trim());
@@ -176,9 +176,9 @@ const payeeKinds = { rent: "landlord", utility: "utility", food: "vendor", vouch
 const statuses = new Map([["", "closed"], ["completed", "closed"], ["complete", "closed"], ["closed", "closed"], ["open", "open"], ["call back", "open"], ["callback", "open"], ["pending", "open"]] as const);
 
 async function reviewRequests(ctx: QueryCtx, churchId: Id<"churches">, rows: Infer<typeof requestRow>[]) {
-  if (rows.length > mostRows) throw new Error(`Bring in up to ${mostRows} requests at a time.`);
+  if (rows.length > mostRows) throw new ConvexError(`Bring in up to ${mostRows} requests at a time.`);
   const church = await ctx.db.get("churches", churchId);
-  if (!church) throw new Error("Group not found.");
+  if (!church) throw new ConvexError("Group not found.");
   const now = Date.now();
   const seen = new Set<string>();
   const earlier = new Map<Id<"neighbors">, Set<string>>();
@@ -257,7 +257,7 @@ const payeeImported = v.object({ line: v.number(), name: v.string(), outcome: v.
 const payeeKindOf = (type: string) => (/landlord|rent|housing|apartment|propert|realty|lodging/.test(type) ? "landlord" as const : /utilit|electric|power|water|gas|energy|phone|internet/.test(type) ? "utility" as const : "vendor" as const);
 
 async function reviewPayees(ctx: QueryCtx, churchId: Id<"churches">, rows: Infer<typeof payeeRow>[]) {
-  if (rows.length > mostRows) throw new Error(`Bring in up to ${mostRows} payees at a time.`);
+  if (rows.length > mostRows) throw new ConvexError(`Bring in up to ${mostRows} payees at a time.`);
   const seen = new Set<string>();
   const results = [];
   for (const row of rows) {
@@ -341,9 +341,9 @@ export const maskedAccount = (account: { kind: string; name: string; accountNumb
 
 async function ownerExport(ctx: QueryCtx, churchId: Id<"churches">) {
   const member = await neighborAccess(ctx, churchId);
-  if (member.role !== "owner") throw new Error("Only an owner can take the records out.");
+  if (member.role !== "owner") throw new ConvexError("Only an owner can take the records out.");
   const church = await ctx.db.get("churches", churchId);
-  if (!church) throw new Error("Group not found.");
+  if (!church) throw new ConvexError("Group not found.");
   return { member, church };
 }
 
