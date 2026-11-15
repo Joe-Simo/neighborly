@@ -7,7 +7,6 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { LiveLoading } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 
 /** Each calendar app has its own way to follow an address; these open the right screen with it filled in. */
@@ -34,10 +33,10 @@ export function CalendarAddressView({ address, busy, error, onCreate }: { addres
       {error && <div className="live-error" role="alert"><p>{error}</p></div>}
       {address ? (
         <>
-          <div className="tools-choices">
+          <div className="help-actions tools-after">
             {calendarLinks(address).map((link) => (
               <Button key={link.label} variant="outline" asChild>
-                <a href={link.href} target="_blank" rel="noreferrer"><CalendarPlus size={16} aria-hidden="true" /> {link.label}</a>
+                <a href={link.href} target="_blank" rel="noreferrer"><CalendarPlus size={18} aria-hidden="true" /> {link.label}</a>
               </Button>
             ))}
           </div>
@@ -52,9 +51,11 @@ export function CalendarAddressView({ address, busy, error, onCreate }: { addres
           </div>
           <span className="sr-only" role="status">{copied ? "Address copied." : ""}</span>
           <p className="tools-small">
-            This address is yours alone; anyone who has it can see when and where you serve. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands,{" "}
-            <button type="button" className="live-link" disabled={busy} onClick={() => setReplacing(true)}>make a new address</button>.
+            This address is yours alone; anyone who has it can see when and where you serve. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands, make a new one and the old one stops working.
           </p>
+          <div className="help-actions tools-replace">
+            <Button variant="ghost" disabled={busy} onClick={() => setReplacing(true)}>Make a new address</Button>
+          </div>
           <Dialog open={replacing} onOpenChange={setReplacing}>
             <DialogContent className="live-dialog">
               <DialogHeader>
@@ -85,7 +86,12 @@ export function CalendarAddress() {
   const create = useAction(api.calendar.createAddress);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  if (address === undefined) return <LiveLoading label="Finding your calendar…" />;
+  if (address === undefined)
+    return (
+      <div className="help-skeleton" role="status" aria-label="Finding your calendar">
+        <div><i /><span><b /><b /></span></div>
+      </div>
+    );
   return (
     <CalendarAddressView
       address={address}
@@ -95,7 +101,7 @@ export function CalendarAddress() {
         setBusy(true);
         setError("");
         void create({ churchId: data.church.id })
-          .catch(() => setError("We could not make your calendar address. Please try again."))
+          .catch(() => setError("Your calendar address could not be made. Nothing has changed; check your connection, then try again."))
           .finally(() => setBusy(false));
       }}
     />
