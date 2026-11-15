@@ -79,13 +79,18 @@ the head, the picture and the menu marker itself. Rooms use four classes:
 Set `--paper-order` (0 to 7) on an element to place it in a stagger by hand.
 Rows and links already lift on hover; do not add another hover of your own.
 
-## The date field
+## The date and time fields
 
-`date-field.tsx` is the one date field for every room: `<DateField name="start" required />` inside a `LiveField`.
-It takes and gives the same `"YYYY-MM-DD"` string a date input does, so it replaces `<Input type="date">` in place:
-read it from `FormData` by `name`, or pass `value` and `onChange(value)`. `min` and `max` bound the days.
-It is a 44px paper button that opens a month (shadcn Popover with react-day-picker), in en, es and ht, and never
-uses the system date box, so it holds its width on iPhone. Time off uses it; other rooms can switch when they like.
+`date-field.tsx` holds the one pattern for every room; no browser date box anywhere.
+
+- `<DateField name="start" required />` inside a `LiveField`. It takes and gives the same `"YYYY-MM-DD"` a date
+  input does: read it from `FormData` by `name`, or pass `value` and `onChange(value)`. `min` and `max` bound the days.
+  Closed it reads "Thursday, November 19" with a chevron; open it is a month with 44px days (shadcn Popover with
+  react-day-picker on a desk, a sheet from the bottom under 700px). On a desk a day can be typed (11/19 in English,
+  19/11 in Spanish and Creole, or 2026-11-19).
+- `<TimeField name="time" from="07:00" to="20:30" />` is a list of half hours as `"HH:mm"`, the range set by the room.
+
+Both speak en, es and ht from the word tables.
 
 ## The paper corner rule
 

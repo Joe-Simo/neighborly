@@ -522,14 +522,18 @@
 
 /* ── The date field ──────────────────────────────────────────────────────────
    One field for every room: a paper button that opens a month. See date-field.tsx. */
-.live-date { position: relative; display: block; }
-.live-date-trigger { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; font: inherit; font-size: 16px; text-align: left; cursor: pointer; transition: border-color 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
-.live-date-trigger:hover { border-color: #365c46; }
-.live-date-trigger[data-state="open"] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
-.live-date-trigger:focus-visible { outline: 2px solid #365c46; outline-offset: 2px; }
-.live-date-trigger[data-empty] > span { color: #66705f; }
-.live-date-trigger:disabled { opacity: 0.55; cursor: not-allowed; }
-.live-date-trigger svg { flex: none; width: 18px; height: 18px; color: #365c46; }
+.live-date { position: relative; display: flex; align-items: center; width: 100%; height: 44px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; transition: border-color 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
+.live-date:hover { border-color: #365c46; }
+.live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
+.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date:has(:disabled) { opacity: 0.55; }
+.live-app .live-date .live-date-words, .live-dialog .live-date .live-date-words { flex: 1; min-width: 0; height: 100%; min-height: 0; margin: 0; padding: 0 0 0 12px; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none; color: inherit; font: inherit; font-size: 16px; text-overflow: ellipsis; }
+.live-date-words::placeholder { color: #66705f; opacity: 1; }
+.live-date-words:read-only { cursor: pointer; }
+.live-date-open { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border: 0; border-radius: 5px; background: none; color: #52644f; cursor: pointer; }
+.live-date-open:focus-visible { outline: 2px solid #365c46; outline-offset: -3px; }
+.live-date-open svg { width: 16px; height: 16px; transition: transform 200ms var(--paper-ease); }
+.live-date[data-open] .live-date-open svg { transform: rotate(180deg); }
 .live-date-value { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
 .live-date-sheet { padding: 14px; border: 1px solid #d9ddce; border-radius: 8px; background: #f7f4ed; color: #283c32; font-family: "Source Sans 3", sans-serif; box-shadow: -5px -9px 22px -12px rgb(40 60 50 / 0.22), 0 18px 40px -18px rgb(40 60 50 / 0.4); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
 .live-date-sheet .rdp-months { position: relative; }
@@ -550,5 +554,7 @@
 .live-date-sheet .rdp-selected .rdp-day_button { background: #365c46; color: #f7f4ed; font-weight: 600; }
 .live-date-sheet .rdp-outside .rdp-day_button { color: #8b9384; }
 .live-date-sheet .rdp-disabled .rdp-day_button { color: #b3b9aa; cursor: default; background: none; }
-@media (max-width: 359px) { .live-date-sheet .rdp-day_button, .live-date-sheet .rdp-weekday { width: 40px; } }
-@media (prefers-reduced-motion: reduce) { .live-date-sheet { animation: none; } }
+.live-date-sheet.live-date-bottom { position: fixed; inset: auto 0 0 0; top: auto; left: 0; translate: none; display: grid; justify-content: center; width: 100%; max-width: none; padding: 18px 12px max(18px, env(safe-area-inset-bottom)); border-width: 1px 0 0; border-radius: 14px 14px 0 0; animation: paper-sheet-up 280ms var(--paper-ease) both; }
+@keyframes paper-sheet-up { from { transform: translateY(100%); } }
+@media (max-width: 359px) { .live-date-sheet .rdp-day_button, .live-date-sheet .rdp-weekday { width: 44px; } .live-date-sheet.live-date-bottom { padding-inline: 4px; } }
+@media (prefers-reduced-motion: reduce) { .live-date-sheet, .live-date-sheet.live-date-bottom { animation: none; } }

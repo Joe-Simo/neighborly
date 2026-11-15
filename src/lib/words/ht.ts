@@ -80,7 +80,7 @@ export function ht(set: WordSet): Words {
       timeOff: "Planifye jou konje",
       announcement: "Pataje yon anons",
     },
-    dateField: { choose: "Chwazi yon jou" },
+    dateField: { choose: "Chwazi yon jou", chooseTime: "Chwazi yon lè" },
     week: {
       figures: { calls: "Apèl pou retounen", visits: "Vizit ki planifye", requests: "Demann k ap tann yon wi" },
       comingUp: "Sa k ap vini",

@@ -80,7 +80,7 @@ export function es(set: WordSet): Words {
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
     },
-    dateField: { choose: "Elija un día" },
+    dateField: { choose: "Elija un día", chooseTime: "Elija una hora" },
     week: {
       figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Solicitudes que esperan un sí" },
       comingUp: "Lo que viene",
