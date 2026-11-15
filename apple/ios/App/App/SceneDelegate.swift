@@ -70,12 +70,7 @@ final class ShellViewController: CAPBridgeViewController {
         let printer = UIPrintInteractionController.shared
         printer.printInfo = info
         printer.printFormatter = webView.viewPrintFormatter()
-        if traitCollection.userInterfaceIdiom == .pad {
-            let middle = CGRect(x: webView.bounds.midX, y: webView.bounds.midY, width: 0, height: 0)
-            printer.present(from: middle, in: webView, animated: true)
-        } else {
-            printer.present(animated: true)
-        }
+        printer.present(animated: true)
     }
 
     override func viewDidLoad() {
