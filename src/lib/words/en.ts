@@ -52,6 +52,7 @@ export function en(set: WordSet) {
       current: "Current",
       skip: "Skip to your workspace",
       signOut: "Sign out",
+      leaveSample: "Leave the sample",
       language: "Language",
       roomInEnglish: "This room is in English.",
       typedStays: "Words people typed stay as they wrote them.",

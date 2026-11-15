@@ -37,6 +37,7 @@ export function LiveApp({
   const clerk = useClerk();
   const signOut = () => clerk.signOut({ redirectUrl: "/app" });
   const viewer = useQuery(api.workspace.viewer, ready ? {} : "skip");
+  const sampleVisitor = useQuery(api.demo.visiting, ready ? {} : "skip");
   const churchPage = usePaginatedQuery(
     api.pages.churchesPage,
     ready ? {} : "skip",
@@ -250,6 +251,7 @@ export function LiveApp({
         </>
       }
       signOut={signOut}
+      sampleVisitor={sampleVisitor === true}
       run={async (command) => {
         if (command.type === "invite") {
           const key = `${churchId}:${command.email}:${command.role}`;

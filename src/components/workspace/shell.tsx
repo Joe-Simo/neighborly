@@ -47,6 +47,7 @@ export function LiveWorkspace({
   data,
   run,
   signOut,
+  sampleVisitor = false,
   selectChurch,
   pagination,
   requestCommitments = [],
@@ -58,6 +59,8 @@ export function LiveWorkspace({
     delivery?: "not_sent" | "queued";
   } | null>;
   signOut: () => Promise<void>;
+  /** Someone who came in by the sample link leaves the sample; they have no account to sign out of. */
+  sampleVisitor?: boolean;
   selectChurch?: ReactNode;
   pagination?: ReactNode;
   requestCommitments?: LiveWorkspaceData["commitments"];
@@ -206,7 +209,7 @@ export function LiveWorkspace({
             {data.user.name || data.user.email}
           </span>
           <Button variant="ghost" size="sm" disabled={pending} onClick={() => void signOut()}>
-            <LogOut size={16} aria-hidden="true" /> {words.shell.signOut}
+            <LogOut size={16} aria-hidden="true" /> {sampleVisitor ? words.shell.leaveSample : words.shell.signOut}
           </Button>
         </div>
       </header>

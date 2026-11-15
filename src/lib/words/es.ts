@@ -53,6 +53,7 @@ export function es(set: WordSet): Words {
       current: "Aquí",
       skip: "Ir a tu espacio",
       signOut: "Salir",
+      leaveSample: "Salir de la muestra",
       language: "Idioma",
       roomInEnglish: "Esta sala todavía está en inglés.",
       typedStays: "Lo que escriben las personas queda como lo escribieron.",
