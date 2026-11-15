@@ -98,12 +98,13 @@ describe("who may use the help line and requests", () => {
     expect(await order()).toEqual([rent, power, food]);
     await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: ["shutoff", "elder"], day: 21, by: "assistant" });
     expect(await order()).toEqual([power, rent, food]);
-    expect((await caller.query(api.assistance.calls, { churchId })).waiting[0].urgent).toEqual({ reasons: ["shutoff", "elder"], day: 21, by: "assistant" });
+    expect((await caller.query(api.assistance.calls, { churchId })).waiting[0].urgent).toEqual({ reasons: ["shutoff", "elder"], day: 21, by: "assistant", byName: null });
     // A person moves one up and the other back; the assistant cannot undo either.
     await caller.mutation(api.assistance.setUrgency, { churchId, callId: food, reasons: ["marked"], by: "person" });
     await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: [], by: "person" });
     await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: ["shutoff"], day: 21, by: "assistant" });
     expect(await order()).toEqual([food, rent, power]);
+    expect((await caller.query(api.assistance.calls, { churchId })).waiting.map((call) => call.urgent?.byName ?? null)).toEqual(["Thomas Okafor", null, "Thomas Okafor"]);
     await expect(caller.mutation(api.assistance.setUrgency, { churchId, callId: rent, reasons: ["shutoff"], day: 45, by: "assistant" })).rejects.toThrow("day of the month");
     await expect(as(ids.stranger).mutation(api.assistance.setUrgency, { churchId: ids.other, callId: rent, reasons: [], by: "person" })).rejects.toThrow("Call not found.");
   });

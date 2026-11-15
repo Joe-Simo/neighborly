@@ -289,7 +289,7 @@ export const callRow = v.object({
   outcome: v.string(),
   /** True when the neighbor already has a request waiting, so a second one is not drafted from this call. */
   openRequest: v.boolean(),
-  urgent: v.union(v.object({ reasons: v.array(v.string()), day: v.union(v.number(), v.null()), by: urgentBy }), v.null()),
+  urgent: v.union(v.object({ reasons: v.array(v.string()), day: v.union(v.number(), v.null()), by: urgentBy, byName: v.union(v.string(), v.null()) }), v.null()),
 });
 export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Infer<typeof callRow>> {
   return {
@@ -307,7 +307,7 @@ export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Inf
     returnedByName: call.returnedBy ? await found.memberName(call.returnedBy) : null,
     outcome: call.outcome ?? "",
     openRequest: call.neighborId ? await found.openRequest(call.neighborId) : false,
-    urgent: call.urgent ? { reasons: call.urgent.reasons, day: call.urgent.day ?? null, by: call.urgent.by } : null,
+    urgent: call.urgent ? { reasons: call.urgent.reasons, day: call.urgent.day ?? null, by: call.urgent.by, byName: call.urgent.byMember ? await found.memberName(call.urgent.byMember) : null } : null,
   };
 }
 
@@ -373,11 +373,11 @@ export const setUrgency = mutation({
   args: { churchId: v.id("churches"), callId: v.id("calls"), reasons: v.array(v.union(...urgentReasons.map((reason) => v.literal(reason)), v.literal("marked"))), day: v.optional(v.number()), by: urgentBy },
   returns: v.null(),
   handler: async (ctx, { churchId, callId, reasons, day, by }) => {
-    await neighborAccess(ctx, churchId);
+    const member = await neighborAccess(ctx, churchId);
     const call = await ownCall(ctx, churchId, callId);
     if (by === "assistant" && call.urgent?.by === "person") return null;
     if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new Error("The day should be a day of the month.");
-    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by } });
+    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by, byMember: by === "person" ? member._id : undefined } });
     return null;
   },
 });

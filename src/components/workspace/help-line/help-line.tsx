@@ -79,7 +79,7 @@ function HelpLine() {
     setStep({ kind: "log" });
   }, []);
   useLayoutEffect(() => {
-    setHeadAction({ label: "Log a call", run: log, quiet: sheetOpen });
+    setHeadAction({ label: "Log a call", run: log, quiet: sheetOpen, plus: true });
     return () => setHeadAction(null);
   }, [setHeadAction, log, sheetOpen]);
   const saved = (call: Call) => {
@@ -332,15 +332,18 @@ export function HelpLineView({
                     )}
                   </h3>
                   <p>{call.note}</p>
-                  {isFirst(call) && (
+                  {call.urgent?.by === "assistant" && isFirst(call) && (
                     <p className="help-assistant help-first">
-                      {call.urgent?.by === "assistant" && (
-                        <Sparkles size={15} aria-hidden="true" />
-                      )}
+                      <Sparkles size={15} aria-hidden="true" />
                       <strong>
-                        {(call.urgent && whyFirst(call.urgent).join(" · ")) ||
-                          words().urgent.label}
+                        {whyFirst(call.urgent).join(" · ") || words().urgent.label}
                       </strong>
+                    </p>
+                  )}
+                  {call.urgent?.by === "person" && call.urgent.byName && (
+                    <p className="help-first help-moved">
+                      {isFirst(call) ? "Put first" : "Marked not urgent"} by{" "}
+                      {call.urgent.byName}
                     </p>
                   )}
                   <p className="help-facts help-row-more">

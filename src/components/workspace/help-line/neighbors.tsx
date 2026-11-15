@@ -57,7 +57,7 @@ function Neighbors() {
   const [importing, setImporting] = useState<false | "neighbors" | "requests">(false);
   const add = useCallback(() => setAdding(true), []);
   useLayoutEffect(() => {
-    setHeadAction({ label: "Add a neighbor", run: add });
+    setHeadAction({ label: "Add a neighbor", run: add, plus: true });
     return () => setHeadAction(null);
   }, [setHeadAction, add]);
   const list = useQuery(api.neighbors.list, {
