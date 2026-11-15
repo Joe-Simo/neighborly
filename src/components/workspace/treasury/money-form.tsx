@@ -25,7 +25,13 @@ import {
 export type Money = (
   | { direction: "in"; kind: IncomeSource }
   | { direction: "out"; kind: SpendingKind }
-) & { amount: number; date: string; name: string; memo: string };
+) & {
+  amount: number;
+  date: string;
+  name: string;
+  memo: string;
+  checkNumber: string;
+};
 /** Every choice in the "What is it?" list, keyed "in:collection", "out:pantry". */
 const choices = [
   ...incomeSources.map(([kind]) => ({ direction: "in", kind }) as const),
@@ -50,6 +56,7 @@ export function MoneyForm({
   const [date, setDate] = useState(today);
   const [name, setName] = useState("");
   const [memo, setMemo] = useState("");
+  const [checkNumber, setCheckNumber] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const out = choice.direction === "out";
@@ -73,7 +80,14 @@ export function MoneyForm({
           return setError("Enter the amount in dollars and cents, like 640.00.");
         setError("");
         setSaving(true);
-        const refusal = await onSubmit({ ...choice, amount: cents, date, name, memo });
+        const refusal = await onSubmit({
+          ...choice,
+          amount: cents,
+          date,
+          name,
+          memo,
+          checkNumber: out ? checkNumber : "",
+        });
         setSaving(false);
         if (refusal) setError(refusal);
       }}
@@ -146,7 +160,19 @@ export function MoneyForm({
           required
         />
       </LiveField>
-      <LiveField label={out ? "Check number or note (optional)" : "Note (optional)"}>
+      {out && (
+        <LiveField label="Check number (optional)">
+          <Input
+            name="checkNumber"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={20}
+            value={checkNumber}
+            onChange={(event) => setCheckNumber(event.target.value)}
+          />
+        </LiveField>
+      )}
+      <LiveField label="Note (optional)">
         <Input
           name="memo"
           maxLength={200}

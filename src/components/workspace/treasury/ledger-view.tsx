@@ -51,6 +51,8 @@ export function LedgerView({
   onPay,
   onRecord,
   onEntry,
+  uncleared,
+  onBank,
 }: {
   ledger: Ledger;
   payable: Payable[];
@@ -58,6 +60,9 @@ export function LedgerView({
   onPay: (request: Payable) => void;
   onRecord: () => void;
   onEntry: (entry: LedgerEntry) => void;
+  /** How many entries the bank has not shown yet; undefined while that is loading. */
+  uncleared?: number;
+  onBank: () => void;
 }) {
   const month = monthLabel(ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
@@ -305,6 +310,22 @@ export function LedgerView({
             </p>
           </div>
         </div>
+      )}
+
+      {uncleared !== undefined && (
+        <section className="treasury-bank" aria-labelledby="treasury-bank-title">
+          <div>
+            <h2 id="treasury-bank-title">
+              {uncleared
+                ? `${count(uncleared, "entry has", "entries have")} not cleared the bank yet`
+                : "Everything has cleared the bank"}
+            </h2>
+            <p>Set the ledger beside your bank statement and see that they agree.</p>
+          </div>
+          <Button variant="outline" onClick={onBank}>
+            Match the bank
+          </Button>
+        </section>
       )}
     </>
   );

@@ -15,7 +15,12 @@ import {
 } from "@/components/workspace/treasury/form-parts";
 import type { Payable } from "@/components/workspace/treasury/labels";
 
-export type Payment = { amount: number; date: string; memo: string };
+export type Payment = {
+  amount: number;
+  date: string;
+  memo: string;
+  checkNumber: string;
+};
 
 export function PaymentForm({
   request,
@@ -31,6 +36,7 @@ export function PaymentForm({
   const [amount, setAmount] = useState(centsToInput(request.remaining));
   const [date, setDate] = useState(today);
   const [memo, setMemo] = useState("");
+  const [checkNumber, setCheckNumber] = useState("");
   const [error, setError] = useState("");
   const [amountWrong, setAmountWrong] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -49,7 +55,7 @@ export function PaymentForm({
           );
         setError("");
         setSaving(true);
-        const refusal = await onSubmit({ amount: cents, date, memo });
+        const refusal = await onSubmit({ amount: cents, date, memo, checkNumber });
         setSaving(false);
         if (refusal) setError(refusal);
       }}
@@ -83,8 +89,18 @@ export function PaymentForm({
           />
         </LiveField>
       </div>
+      <LiveField label="Check number (optional)">
+        <Input
+          name="checkNumber"
+          inputMode="numeric"
+          autoComplete="off"
+          maxLength={20}
+          value={checkNumber}
+          onChange={(event) => setCheckNumber(event.target.value)}
+        />
+      </LiveField>
       <LiveField
-        label="Check number or note (optional)"
+        label="Note (optional)"
         help="Leave the neighbor’s name out. The payment is already tied to their request."
       >
         <Input

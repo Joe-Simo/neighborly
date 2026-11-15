@@ -247,6 +247,85 @@ describe("cash in and cash out by kind", () => {
   });
 });
 
+describe("checks", () => {
+  test("a check number is kept as written, and the register lists checks in number order", async () => {
+    const { ids, as, request, income, entries } = await setup();
+    const owner = as(ids.owner);
+    await income(200000, day(20));
+    const first = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 30000 }), amount: 30000, date: day(3), checkNumber: " 1042 " });
+    await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "pantry", amount: 4250, date: day(4), to: "Fixture Family Market", checkNumber: "998" });
+    await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "fee", amount: 500, date: day(2), to: "Sample Savings Bank" });
+    await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 9000 }), amount: 9000, date: day(15), checkNumber: "990" });
+    const reversal = await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: first, reason: "Check was lost in the mail" });
+    expect((await entries()).find((entry) => entry._id === reversal)?.checkNumber).toBeUndefined();
+
+    const register = await owner.query(api.treasury.checkRegister, { churchId: ids.church, from: day(10), to: day() });
+    expect(register.map(({ checkNumber, payee, amount, reversed, clearedOn }) => ({ checkNumber, payee, amount, reversed, clearedOn }))).toEqual([
+      { checkNumber: "998", payee: "Fixture Family Market", amount: 4250, reversed: false, clearedOn: null },
+      { checkNumber: "1042", payee: "Demo Power & Light", amount: 30000, reversed: true, clearedOn: null },
+    ]);
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church, month: day(3).slice(0, 7) })).entries.find((entry) => entry.id === first)).toMatchObject({ checkNumber: "1042", clearedOn: null });
+    await expect(owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "fee", amount: 500, date: day(), to: "Sample Savings Bank", checkNumber: "1".repeat(21) })).rejects.toThrow("Keep the check number");
+    await expect(as(ids.member).query(api.treasury.checkRegister, { churchId: ids.church, from: day(10), to: day() })).rejects.toThrow(refused);
+  });
+});
+
+describe("matching the bank", () => {
+  test("the books are always what has cleared plus what is on its way, and marking changes no money", async () => {
+    const { ids, as, request, income, entries } = await setup();
+    const owner = as(ids.owner);
+    const deposit = await income(100000, day(12));
+    const check = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 30000 }), amount: 30000, date: day(8), checkNumber: "1042" });
+    await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "pantry", amount: 4250, date: day(6), to: "Fixture Family Market" });
+    const late = await income(5000, day(1));
+    const adds = async (asOf?: string) => {
+      const view = await owner.query(api.treasury.reconciliation, { churchId: ids.church, asOf });
+      expect(view.books).toBe(view.cleared + view.onItsWayIn - view.onItsWayOut);
+      expect(view.waitingCount).toBe(view.waiting.length);
+      return view;
+    };
+    expect(await adds()).toMatchObject({ books: 70750, cleared: 0, onItsWayIn: 105000, onItsWayOut: 34250, waitingCount: 4, lately: [] });
+
+    const before = await entries();
+    await owner.mutation(api.treasury.setCleared, { churchId: ids.church, entryId: deposit, clearedOn: day(11) });
+    await owner.mutation(api.treasury.setCleared, { churchId: ids.church, entryId: check, clearedOn: day(5) });
+    const strip = (rows: typeof before) => rows.map((row) => ({ ...row, clearedOn: undefined }));
+    expect(strip(await entries())).toEqual(strip(before));
+    const now = await adds();
+    expect(now).toMatchObject({ books: 70750, cleared: 70000, onItsWayIn: 5000, onItsWayOut: 4250, waitingCount: 2 });
+    expect(now.lately.map((row) => row.id)).toEqual([check, deposit]);
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(70750);
+
+    // As of an earlier statement: the check had been written but had not cleared yet, and the late gift did not exist.
+    expect(await adds(day(7))).toMatchObject({ books: 70000, cleared: 100000, onItsWayIn: 0, onItsWayOut: 30000, waitingCount: 1 });
+    expect(await adds(day(30))).toMatchObject({ books: 0, cleared: 0, waitingCount: 0 });
+
+    await owner.mutation(api.treasury.setCleared, { churchId: ids.church, entryId: check, clearedOn: null });
+    expect(await adds()).toMatchObject({ cleared: 100000, onItsWayOut: 34250, waitingCount: 3 });
+    expect(await owner.mutation(api.treasury.clearThrough, { churchId: ids.church, through: day(2) })).toEqual({ marked: 2, more: false });
+    expect(await adds()).toMatchObject({ books: 70750, cleared: 65750, onItsWayIn: 5000, onItsWayOut: 0, waitingCount: 1 });
+    expect((await entries()).find((entry) => entry._id === late)?.clearedOn).toBeUndefined();
+    expect((await entries()).find((entry) => entry._id === deposit)?.clearedOn).toBe(day(11));
+  });
+
+  test("a statement day is real, not ahead of today and not before the entry; a member is refused", async () => {
+    const { ids, as, income, entries } = await setup();
+    const entryId = await income(40000, day(5));
+    const mark = (person: { userId: string }, clearedOn: string | null, churchId = ids.church) => as(person).mutation(api.treasury.setCleared, { churchId, entryId, clearedOn });
+    await expect(mark(ids.member, day(4))).rejects.toThrow(refused);
+    await expect(mark(ids.stranger, day(4), ids.other)).rejects.toThrow("Entry not found.");
+    await expect(mark(ids.owner, day(6))).rejects.toThrow("before the day it was made");
+    await expect(mark(ids.owner, day(-1))).rejects.toThrow("cannot be dated in the future");
+    await expect(mark(ids.owner, "last week")).rejects.toThrow("Choose the statement day.");
+    await expect(as(ids.member).mutation(api.treasury.clearThrough, { churchId: ids.church, through: day() })).rejects.toThrow(refused);
+    await expect(as(ids.owner).mutation(api.treasury.clearThrough, { churchId: ids.church, through: day(-1) })).rejects.toThrow("cannot be dated in the future");
+    await expect(as(ids.member).query(api.treasury.reconciliation, { churchId: ids.church })).rejects.toThrow(refused);
+    expect((await entries())[0].clearedOn).toBeUndefined();
+    await mark(ids.coordinator, day(5));
+    expect((await entries())[0].clearedOn).toBe(day(5));
+  });
+});
+
 describe("taking an entry back", () => {
   test("a reversal is a new entry that restores the balance and leaves the original untouched", async () => {
     const { t, ids, as, request, income, entries } = await setup();

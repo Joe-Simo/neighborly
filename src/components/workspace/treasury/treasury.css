@@ -137,3 +137,78 @@
   border-color: #9f4935;
   box-shadow: 0 0 0 1px #9f4935;
 }
+/* The way from the ledger to the bank statement, and back. */
+.treasury-bank {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px 40px;
+  flex-wrap: wrap;
+  margin-top: 56px;
+  padding-top: 26px;
+  border-top: 1px solid var(--live-line);
+}
+.treasury-bank h2 {
+  font: 400 27px/1.15 "Newsreader", Georgia, serif;
+  letter-spacing: -0.02em;
+  margin: 0 0 7px;
+}
+.treasury-bank p {
+  margin: 0;
+  color: var(--live-muted);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.live-app .treasury-bank [data-slot="button"],
+.live-app .treasury-starter [data-slot="button"] {
+  min-height: 44px;
+  padding-inline: 18px;
+  font-size: 16px;
+}
+.live-app .treasury-back[data-slot="button"] {
+  min-height: 44px;
+  margin: -14px 0 14px -12px;
+  padding-inline: 12px;
+  font-size: 16px;
+  color: var(--live-muted);
+}
+.live-app .treasury-statement input {
+  width: 168px;
+}
+.help-sheet h2[data-waiting] {
+  color: var(--help-ochre-ink);
+}
+.help-sheet .treasury-agree {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.treasury-agree svg {
+  color: #3f6a45;
+  flex-shrink: 0;
+}
+.treasury-starter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px 40px;
+  flex-wrap: wrap;
+  padding: 0 0 22px;
+}
+.treasury-starter p {
+  margin: 0;
+  color: var(--live-muted);
+  font-size: 17px;
+  line-height: 1.5;
+  max-width: 52ch;
+}
+@media (max-width: 850px) {
+  .treasury-statement label,
+  .live-app .treasury-statement input {
+    width: 100%;
+  }
+  .treasury-bank [data-slot="button"],
+  .treasury-starter [data-slot="button"] {
+    width: 100%;
+  }
+}

@@ -4,6 +4,8 @@ import type { api } from "../../../../convex/_generated/api";
 export type Ledger = FunctionReturnType<typeof api.treasury.ledger>;
 export type LedgerEntry = Ledger["entries"][number];
 export type Payable = FunctionReturnType<typeof api.treasury.payable>[number];
+export type Bank = FunctionReturnType<typeof api.treasury.reconciliation>;
+export type BankEntry = Bank["waiting"][number];
 
 export const TWINNING_GIFT = "Twinning gift";
 export const incomeSources = [
@@ -37,17 +39,21 @@ export const categoryLabel = (category: string) => kinds[category] ?? category;
 const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
 
 /** The two lines a ledger row reads as: what it was, then who was paid or where it came from. */
-export function entryLines(entry: LedgerEntry) {
+export function entryLines(entry: BankEntry) {
+  const note = [entry.checkNumber && `Check ${entry.checkNumber}`, entry.memo]
+    .filter(Boolean)
+    .map((part) => ` · ${part}`)
+    .join("");
   if (entry.reverses)
     return {
       title: `Reversed: ${lowerFirst(entry.summary ?? categoryLabel(entry.category))}, ${lowerFirst(entry.memo)}`,
       detail: `${entry.kind === "income" ? "Back from" : "Taken back from"} ${entry.payee}`,
     };
   if (entry.summary)
-    return { title: entry.summary, detail: `Paid to ${entry.payee}${entry.memo && ` · ${entry.memo}`}` };
+    return { title: entry.summary, detail: `Paid to ${entry.payee}${note}` };
   if (entry.category === TWINNING_GIFT)
-    return { title: TWINNING_GIFT, detail: `To ${entry.payee}${entry.memo && ` · ${entry.memo}`}` };
-  const who = `${entry.kind === "income" ? "From" : "Paid to"} ${entry.payee}`;
+    return { title: TWINNING_GIFT, detail: `To ${entry.payee}${note}` };
+  const who = `${entry.kind === "income" ? "From" : "Paid to"} ${entry.payee}${entry.checkNumber ? ` · Check ${entry.checkNumber}` : ""}`;
   return entry.memo
     ? { title: entry.memo, detail: `${entry.category} · ${who}` }
     : { title: entry.category, detail: who };

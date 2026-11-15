@@ -27,6 +27,7 @@ import {
 import { PaymentForm } from "@/components/workspace/treasury/payment-form";
 import { MoneyForm } from "@/components/workspace/treasury/money-form";
 import { EntryDetail } from "@/components/workspace/treasury/entry-detail";
+import { BankRoom } from "@/components/workspace/treasury/bank-view";
 import { formatCents } from "@/components/workspace/treasury/money";
 import type { Refusal } from "@/components/workspace/treasury/form-parts";
 import {
@@ -51,6 +52,8 @@ export function TreasurySection() {
     allowed ? { churchId, month } : "skip",
   );
   const payable = useQuery(api.treasury.payable, allowed ? { churchId } : "skip");
+  const bank = useQuery(api.treasury.reconciliation, allowed ? { churchId } : "skip");
+  const [atBank, setAtBank] = useState(false);
   const recordPayment = useMutation(api.treasury.recordPayment);
   const recordIncome = useMutation(api.treasury.recordIncome);
   const recordSpending = useMutation(api.treasury.recordSpending);
@@ -71,14 +74,18 @@ export function TreasurySection() {
   if (ledger && ledger !== shown) setShown(ledger);
   // On first use the room offers one step, the opening balance, so the head button waits for it.
   const firstUse = !shown || isUntouched(shown);
+  // A request waiting to be paid holds the one filled button, so the head's goes quiet.
+  const quiet = Boolean(payable?.length);
   useLayoutEffect(() => {
-    if (!allowed || firstUse) return;
-    setHeadAction({ label: "Record money", run: recordMoney });
+    if (!allowed || firstUse || atBank) return;
+    setHeadAction({ label: "Record money", run: recordMoney, quiet });
     return () => setHeadAction(null);
-  }, [allowed, firstUse, recordMoney, setHeadAction]);
+  }, [allowed, firstUse, atBank, quiet, recordMoney, setHeadAction]);
 
   if (allowed === false) return <LedgerPrivate />;
   if (!shown || !payable) return <LedgerLoading />;
+  if (atBank)
+    return <BankRoom churchId={churchId} onBack={() => setAtBank(false)} />;
 
   /** Runs one change; on success closes the dialog and says what changed, on refusal hands the reason back to the form. */
   async function settle(
@@ -124,6 +131,11 @@ export function TreasurySection() {
         onPay={(request) => show({ is: "payment", request })}
         onRecord={recordMoney}
         onEntry={(entry) => show({ is: "entry", entry })}
+        uncleared={bank?.waitingCount}
+        onBank={() => {
+          setDone("");
+          setAtBank(true);
+        }}
       />
       <Dialog
         open={open !== null}
@@ -171,7 +183,7 @@ export function TreasurySection() {
                   settle(
                     () =>
                       what.direction === "out"
-                        ? recordSpending({ churchId, kind: what.kind, to: name, amount, date, memo })
+                        ? recordSpending({ churchId, kind: what.kind, to: name, amount, date, memo, checkNumber: what.checkNumber })
                         : recordIncome({ churchId, source: what.kind, from: name, amount, date, memo }),
                     `${formatCents(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
                     date,
