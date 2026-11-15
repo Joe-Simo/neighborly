@@ -13,4 +13,9 @@ describe("reading a neighbors spreadsheet", () => {
     expect(readNeighborRows("Phone,Address\n(555) 0100,12 Sample St")).toEqual({ error: expect.stringContaining("Name column") });
     expect(readNeighborRows("Name,Phone\n")).toEqual({ error: expect.stringContaining("nobody") });
   });
+  test("reads the columns of a ServWare neighbor file: the address in parts, the first phone the line has", () => {
+    expect(readNeighborRows("First Name,Last Name,Street Address Line 1,Street Address Line 2,City,State Code,Zip Code,Home Phone,Mobile Phone,Neighbor Notes\nGloria,Ibarra,40 Demo Ct,Apt 2,Sampleton,FL,00000,,555-555-0101,Two flights up")).toMatchObject({ rows: [
+      { line: 2, name: "Gloria Ibarra", phone: "555-555-0101", address: "40 Demo Ct Apt 2, Sampleton, FL 00000", notes: "Two flights up" },
+    ] });
+  });
 });
