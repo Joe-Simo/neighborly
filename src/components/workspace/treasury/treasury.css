@@ -473,3 +473,51 @@
 .treasury-lately .live-date-leaf span {
   font-size: 13px;
 }
+/* The paid sheet goes down into its ledger row, and the row holds the mark for a moment. */
+.help-sheet.treasury-leaving {
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  transition:
+    opacity 300ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)),
+    transform 300ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1));
+}
+.help-ledger tbody tr {
+  transition: background-color 400ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1));
+}
+.help-ledger tbody tr[data-landed],
+.help-ledger tbody tr[data-landed]:hover {
+  background-color: color-mix(in srgb, #c8962e 16%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .help-sheet.treasury-leaving,
+  .help-ledger tbody tr {
+    transition: none;
+  }
+}
+.treasury-statement label {
+  font-size: 15px;
+}
+/* From 600px up a button is a button: its own width, at the row's right. */
+@media (min-width: 600px) and (max-width: 850px) {
+  .treasury-waiting .help-row {
+    grid-template-columns: 66px minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  .treasury-waiting .help-row > :nth-child(3) {
+    grid-column: 3;
+  }
+  .treasury-sheet .help-actions {
+    justify-content: flex-end;
+  }
+  .live-app .treasury-sheet .help-actions [data-slot="button"] {
+    flex: none;
+  }
+  .live-app .treasury-foot [data-slot="button"],
+  .live-app .treasury-starter > [data-slot="button"] {
+    width: auto;
+  }
+  .treasury-statement label,
+  .live-app .treasury-statement input {
+    width: 168px;
+  }
+}

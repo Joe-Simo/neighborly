@@ -20,6 +20,7 @@ import {
   type LedgerEntry,
   type Payable,
 } from "@/components/workspace/treasury/labels";
+import type { Paid } from "@/components/workspace/treasury/paid-moment";
 import "./treasury.css";
 
 const neighborHref = (id: string) =>
@@ -60,6 +61,7 @@ export function LedgerView({
   shelf,
   onShelf,
   paid,
+  landed,
 }: {
   ledger: Ledger;
   payable: Payable[];
@@ -77,7 +79,9 @@ export function LedgerView({
   shelf?: number;
   onShelf: () => void;
   /** The request a payment was just recorded for. Its sheet stays a moment, corner folded, before the next one rises. */
-  paid?: { request: Payable; amount: number } | null;
+  paid?: Paid | null;
+  /** The entry a paid sheet has just settled into; its row holds a highlight for a moment. */
+  landed?: string | null;
 }) {
   const month = monthLabel(ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
@@ -157,7 +161,11 @@ export function LedgerView({
       {first && (
         <section
           key={first.requestId}
-          className={paid ? "help-sheet paper-fold" : "help-sheet"}
+          className={
+            paid
+              ? `help-sheet treasury-sheet paper-fold${paid.leaving ? " treasury-leaving" : ""}`
+              : "help-sheet treasury-sheet"
+          }
           aria-labelledby="treasury-waiting-title"
         >
           <p className="help-sheet-label" data-paid={paid ? "" : undefined}>
@@ -282,6 +290,7 @@ export function LedgerView({
                     key={entry.id}
                     data-reversed={entry.reversed ? "" : undefined}
                     data-quiet={entry.reverses ? "" : undefined}
+                    data-landed={entry.id === landed ? "" : undefined}
                   >
                     <td>{dayLabel(entry.date)}</td>
                     <td className="help-what">
