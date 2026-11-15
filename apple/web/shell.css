@@ -1,0 +1,46 @@
+@font-face { font-family: "Newsreader"; font-weight: 400; src: url("fonts/newsreader-display-regular.woff2") format("woff2"); }
+@font-face { font-family: "Source Sans 3"; font-weight: 200 900; src: url("fonts/source-sans-3-latin-variable.woff2") format("woff2"); }
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: #f7f4ed; color: #283c32; font-family: "Source Sans 3", sans-serif; -webkit-text-size-adjust: 100%; }
+.art {
+  height: calc(min(61vw, 44svh) + env(safe-area-inset-top));
+  background: #e9e7dc url("painting.webp") 50% 0 / cover no-repeat;
+  border-bottom: 1px solid #d9ddd3;
+}
+main {
+  width: min(100% - 44px, 520px);
+  margin: 0 auto;
+  padding: 36px 0 calc(50px + env(safe-area-inset-bottom));
+}
+.kicker { margin: 0 0 12px; font-size: 12px; font-weight: 650; letter-spacing: 0.12em; text-transform: uppercase; color: #52644f; }
+h1 { margin: 0; font: 400 clamp(44px, 7vw, 54px)/1.03 "Newsreader", Georgia, serif; letter-spacing: -1.8px; }
+p.deck { margin: 16px 0 0; max-width: 390px; font-size: 18px; line-height: 1.55; color: #656d61; }
+a.again {
+  display: inline-flex; align-items: center; min-height: 44px; margin-top: 28px; padding: 0 22px;
+  border-radius: 4px; background: #365c46; color: #fffdf5; box-shadow: 0 2px 0 #263e2f;
+  font-size: 16px; font-weight: 500; text-decoration: none;
+}
+a.again:active { background: #294d38; }
+a.again:focus-visible { outline: 3px solid #364acf; outline-offset: 4px; }
+/* Sideways, the tall painting fills its side from edge to edge: both faces,
+   both hands and the card on an iPad. A phone's side is too short for that, so
+   it takes the wide painting cropped to one face, the hands and the card. */
+@media (orientation: landscape) {
+  body { display: grid; grid-template-columns: 42% 1fr; min-height: 100svh; }
+  .art { height: auto; border-bottom: 0; border-right: 1px solid #d9ddd3; background: #e9e7dc url("painting-tall.webp") 50% 0 / cover no-repeat; }
+  main { align-self: center; padding: 36px 0; padding-right: env(safe-area-inset-right); }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .art { background-image: url("painting.webp"); background-position: 63% 0; }
+}
+/* Under a notch or an island (a top inset over 20px) on an upright phone, a
+   face would sit behind the hardware, so the band shows the hands and the
+   card with painted paper under the status area, as sign-in does. --island is
+   a huge length when the inset is over 20px and nothing otherwise. */
+@media (max-width: 699px) and (orientation: portrait) {
+  .art {
+    --island: calc(max(0px, env(safe-area-inset-top) - 20px) * 9999);
+    height: max(calc(25vw + env(safe-area-inset-top)), calc(min(61vw, 44svh) + env(safe-area-inset-top) - var(--island)));
+    background-position: 50% max(calc(env(safe-area-inset-top) - 43.7vw), calc(0px - var(--island)));
+  }
+}

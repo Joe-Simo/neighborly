@@ -25,3 +25,19 @@ xcodebuild -project apple/ios/App/App.xcodeproj -scheme App -sdk iphonesimulator
 - **`web/offline.html`** is the page the shell shows when the site cannot be reached (`server.errorPath`). It carries its own copies of two fonts and the painting, because it must work with no network.
 - **`ios/App/App/public/` and the copy of `capacitor.config.json` beside it are generated** by `cap sync` and are not committed.
 - Signing, archives and anything sent to Apple are done by the account owner in Xcode.
+
+## While the first page loads
+
+`ShellViewController` (in `ios/App/App/SceneDelegate.swift`) keeps the launch
+view, paper with the small k, over the web view until the first page has
+loaded, then fades it away. After twelve seconds without the page it shows
+`web/slow.html` ("This is taking a while.") while the same load carries on
+underneath. A load that fails outright ends on `web/offline.html`. Both pages
+share `web/shell.css`.
+
+To see the slow page in a simulator, shorten the wait on the launch command:
+`xcrun simctl launch booted com.kindhelps.app -slowAfter 0.3`.
+
+The simulator draws the launch screen only for a signed app. For a test build,
+pass `CODE_SIGN_IDENTITY=-` ("Sign to Run Locally") on the build command; it
+uses no Apple account and is not a project setting.
