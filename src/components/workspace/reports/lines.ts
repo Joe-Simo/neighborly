@@ -48,7 +48,7 @@ export const periodNoun = (report: Pick<YearReport, "quarter">) => (report.quart
 
 /** True when nothing at all was recorded in the year. */
 export const isBlank = (report: YearReport) =>
-  report.calls.taken + report.requests.received + report.visits + report.households + report.history.requests === 0 &&
+  report.calls.taken + report.requests.received + report.visits + report.households + report.history.requests + report.vouchers.given === 0 &&
   report.money.received === 0 && report.money.spent === 0 && report.money.beginningBalance === 0 &&
   report.time.shiftHours === 0;
 
@@ -93,7 +93,12 @@ export function reportLines(report: YearReport): ReportLine[] {
   requests.count("Approved, waiting to be paid", report.requests.approved);
   requests.count("Waiting for a decision", report.requests.open);
   requests.count("Declined", report.requests.declined);
-  requests.count("Closed without help", report.requests.closed);
+  requests.count("Closed without help", report.requests.closed - report.requests.closedAfterPart.requests);
+  if (report.requests.closedAfterPart.requests > 0) {
+    requests.count("Closed after part was paid", report.requests.closedAfterPart.requests);
+    requests.money("Paid on those before they closed", report.requests.closedAfterPart.paid);
+    requests.money("Approved on those", report.requests.closedAfterPart.approved);
+  }
   requests.count("Referred to other help", report.requests.referred);
   requests.money("Amount asked for", report.requests.amountRequested);
   requests.money("Amount approved", report.requests.amountApproved);
@@ -118,6 +123,14 @@ export function reportLines(report: YearReport): ReportLine[] {
     history.money("All help in the history", report.history.amount);
     history.count("Households helped in all, each counted once", report.history.householdsInAll);
     history.count("People in those households", report.history.peopleInAll);
+  }
+
+  if (report.vouchers.given > 0 || report.vouchers.takenBack > 0) {
+    const vouchers = section("Vouchers from the shelf");
+    vouchers.count("Vouchers given", report.vouchers.given);
+    vouchers.count("Vouchers taken back", report.vouchers.takenBack);
+    vouchers.count("Requests given a voucher", report.vouchers.requests);
+    vouchers.count("Households given a voucher", report.vouchers.households);
   }
 
   const calls = section("Help line");

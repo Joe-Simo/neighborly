@@ -46,6 +46,7 @@ async function sample() {
     requests: await ctx.db.query("assistanceRequests").collect(),
     visits: await ctx.db.query("visits").collect(),
     ledger: await ctx.db.query("ledgerEntries").collect(),
+    shelf: await ctx.db.query("voucherStock").collect(),
   }));
   const person = (role: "owner" | "coordinator" | "member") => {
     const found = data.memberships.find((member) => member.role === role);
@@ -131,6 +132,7 @@ describe("the year's counts for the sample conference", () => {
     });
     expect(report.requests).toEqual({
       paidLater,
+      closedAfterPart: { requests: 0, paid: 0, approved: 0 },
       paidTowardThese: paidFor(true),
       paidTowardEarlier: paidFor(false),
       received: received.length,
@@ -138,6 +140,17 @@ describe("the year's counts for the sample conference", () => {
       referred: 0,
       amountRequested: received.reduce((sum, request) => sum + request.amountRequested, 0),
       amountApproved: received.reduce((sum, request) => sum + (request.status === "paid" || request.status === "approved" ? request.amountApproved ?? 0 : 0), 0),
+    });
+    // Vouchers from the shelf, counted from the shelf's own lines.
+    const lines = data.shelf.filter((line) => line.requestId && inYearDay(line.date));
+    const holding = new Map<string, number>();
+    for (const line of lines) holding.set(line.requestId!, (holding.get(line.requestId!) ?? 0) - line.change);
+    const holders = [...holding].filter(([, held]) => held > 0).map(([requestId]) => data.requests.find((request) => request._id === requestId)!.neighborId);
+    expect(report.vouchers).toEqual({
+      given: lines.reduce((sum, line) => sum + Math.max(0, -line.change), 0),
+      takenBack: lines.reduce((sum, line) => sum + Math.max(0, line.change), 0),
+      requests: holders.length,
+      households: new Set(holders).size,
     });
     const calls = data.calls.filter((call) => inYear(call.takenAt));
     expect(report.calls).toEqual({ taken: calls.length, returned: calls.filter((call) => call.callback === "done").length, waiting: calls.filter((call) => call.callback === "needed").length });
@@ -273,6 +286,28 @@ describe("the parts the sample conference does not exercise", () => {
     });
     return { t, as, ids };
   }
+
+  test("a request closed after part was paid is not closed without help, and a voucher taken back leaves the given count", async () => {
+    const { t, as, ids } = await conference();
+    await t.run(async (ctx) => {
+      await ctx.db.patch("assistanceRequests", ids.requestId, { status: "closed" });
+      await ctx.db.insert("ledgerEntries", { churchId: ids.churchId, kind: "expense", amount: 20000, date: "2026-02-10", category: "utility", payee: "Example", memo: "", requestId: ids.requestId, neighborId: ids.neighborId, recordedBy: ids.owner.memberId, createdAt: 0 });
+      const other = await ctx.db.insert("neighbors", { churchId: ids.churchId, name: "Second Sample", nameKey: "second sample", phone: "", phoneKey: "", email: "", address: "", adults: 1, children: 0, language: "en", notes: "", createdBy: ids.owner.memberId, createdAt: 0 });
+      const ask = (neighborId: Id<"neighbors">) => ctx.db.insert("assistanceRequests", { churchId: ids.churchId, neighborId, kind: "voucher", summary: "Beds", amountRequested: 0, status: "closed", decisionNote: "", payeeKind: "vendor", payeeName: "", source: "person", createdBy: ids.owner.memberId, createdAt: Date.parse("2026-03-03T15:00:00Z") });
+      const shelf = (requestId: Id<"assistanceRequests">, date: string, change: number) => ctx.db.insert("voucherStock", { churchId: ids.churchId, date, change, item: "Bed", note: "", requestId, recordedBy: ids.owner.memberId, createdAt: 0 });
+      const kept = await ask(other), returned = await ask(ids.neighborId);
+      await shelf(kept, "2026-03-04", -2);
+      await shelf(returned, "2026-03-05", -1);
+      await shelf(returned, "2026-03-09", 1);
+    });
+    const report = await as(ids.owner.userId).query(api.reports.year, { churchId: ids.churchId, year: 2026 });
+    expect(report.requests).toMatchObject({ received: 3, closed: 3, closedAfterPart: { requests: 1, paid: 20000, approved: 30000 } });
+    expect(report.helpPaid).toBe(20000);
+    expect(report.vouchers).toEqual({ given: 3, takenBack: 1, requests: 1, households: 1 });
+    // One household by money, one by a voucher it kept.
+    expect(report.households).toBe(2);
+    expect(report.kinds[3]).toMatchObject({ kind: "voucher", households: 1, paid: 0 });
+  });
 
   test("a reversed payment comes back off the help paid, and a twinning gift is spending but not help", async () => {
     const { t, as, ids } = await conference();

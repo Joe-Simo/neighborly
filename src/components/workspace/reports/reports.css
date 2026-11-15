@@ -200,6 +200,7 @@
 .report-outcomes [data-is="paid"], .report-legend [data-is="paid"]::before { background: linear-gradient(90deg, #4e7257, #365c46); }
 .report-outcomes [data-is="approved"], .report-legend [data-is="approved"]::before { background: var(--help-ochre); }
 .report-outcomes [data-is="open"], .report-legend [data-is="open"]::before { background: #dfc587; }
+.report-outcomes [data-is="part"], .report-legend [data-is="part"]::before { background: #8fae95; }
 .report-outcomes [data-is="declined"], .report-legend [data-is="declined"]::before { background: #a9ab9c; }
 .report-outcomes [data-is="closed"], .report-legend [data-is="closed"]::before { background: #d3d4c7; }
 .report-legend {

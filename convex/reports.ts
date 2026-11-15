@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { neighborAccess } from "./access";
-import { incomeSources } from "./treasury";
+import { incomeSources, paidTowardRequest } from "./treasury";
 
 /**
  * The year's counts, read straight from the records. Nothing here writes, and nothing here
@@ -125,8 +125,12 @@ export const yearReport = v.object({
     paidTowardThese: v.number(),
     /** Requests received in the period and marked paid whose payment is dated after the period: how many, and how much of the approved amount. */
     paidLater: v.object({ requests: v.number(), amount: v.number() }),
+    /** Closed after part of the approved amount was paid: how many, what was paid in all, and what had been approved. They are not "closed without help". */
+    closedAfterPart: v.object({ requests: v.number(), paid: v.number(), approved: v.number() }),
     paidTowardEarlier: v.number(),
   }),
+  /** Vouchers from the shelf in the period. Given stays as given when some are taken back; households are those left holding at least one. */
+  vouchers: v.object({ given: v.number(), takenBack: v.number(), requests: v.number(), households: v.number() }),
   calls: v.object({ taken: v.number(), returned: v.number(), waiting: v.number() }),
   /**
    * Help recorded in ServWare before the group moved over, brought in as requests with source "import".
@@ -238,7 +242,7 @@ export const year = query({
     const monthOf = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM");
     const inChurch = { churchId: args.churchId };
 
-    const [calls, everyRequest, plannedVisits, ledger, memberships, teams] = await Promise.all([
+    const [calls, everyRequest, plannedVisits, ledger, memberships, teams, shelf] = await Promise.all([
       whole(ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("takenAt", span.start).lt("takenAt", span.end))),
       whole(ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("createdAt", span.start).lt("createdAt", span.end))),
       whole(ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("scheduledAt", span.start).lt("scheduledAt", span.end))),
@@ -246,6 +250,7 @@ export const year = query({
       whole(ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", args.churchId).lt("date", span.dayAfter)), LEDGER_LIMIT),
       whole(ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", inChurch.churchId))),
       whole(ctx.db.query("teams").withIndex("by_church", (q) => q.eq("churchId", inChurch.churchId)), 200),
+      whole(ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("date", span.firstDay).lt("date", span.dayAfter))),
     ]);
     const visits = plannedVisits.filter((visit) => visit.status === "completed");
     const requests = everyRequest.filter((request) => request.source !== "import");
@@ -318,6 +323,46 @@ export const year = query({
       amountRequested += request.amountRequested;
       if (request.status === "approved" || request.status === "paid") amountApproved += request.amountApproved ?? 0;
     }
+
+    // A request closed after money went out was helped in part; what was paid stays counted as paid.
+    const closedAfterPart = { requests: 0, paid: 0, approved: 0 };
+    await Promise.all(
+      requests.filter((request) => request.status === "closed").map(async (request) => {
+        const paid = await paidTowardRequest(ctx, request._id);
+        if (paid <= 0) return;
+        closedAfterPart.requests += 1;
+        closedAfterPart.paid += paid;
+        closedAfterPart.approved += request.amountApproved ?? 0;
+      }),
+    );
+
+    // Vouchers from the shelf. A line tied to a request goes down when given and up when taken back.
+    const vouchers = { given: 0, takenBack: 0 };
+    const heldByRequest = new Map<Id<"assistanceRequests">, { held: number; month: string }>();
+    for (const line of shelf) {
+      if (!line.requestId) continue;
+      if (line.change < 0) vouchers.given -= line.change;
+      else vouchers.takenBack += line.change;
+      const held = heldByRequest.get(line.requestId) ?? { held: 0, month: line.date.slice(0, 7) };
+      held.held -= line.change;
+      heldByRequest.set(line.requestId, held);
+    }
+    const voucherLine = kindLineFor("voucher");
+    const voucherHouseholds = new Set<Id<"neighbors">>();
+    let voucherRequests = 0;
+    const requestById = new Map(everyRequest.map((request) => [request._id, request]));
+    await Promise.all(
+      [...heldByRequest].map(async ([requestId, { held, month: key }]) => {
+        if (held <= 0) return;
+        const request = requestById.get(requestId) ?? (await ctx.db.get("assistanceRequests", requestId));
+        if (!request || request.churchId !== args.churchId) return;
+        voucherRequests += 1;
+        voucherHouseholds.add(request.neighborId);
+        voucherLine.neighbors.add(request.neighborId);
+        helped.add(request.neighborId);
+        helpedIn(key, request.neighborId);
+      }),
+    );
 
     for (const call of calls) month(monthOf(call.takenAt)).calls += 1;
 
@@ -416,7 +461,7 @@ export const year = query({
         const line = kindLineFor(value);
         return { kind: value, requests: line.requests, requestsPaid: line.requestsPaid, households: line.neighbors.size, people: [...line.neighbors].reduce((people, id) => people + size(id), 0), paid: line.paid };
       }),
-      requests: { received: requests.length, ...status, referred, amountRequested, amountApproved, paidTowardThese, paidLater, paidTowardEarlier: helpPaid - paidTowardThese },
+      requests: { received: requests.length, ...status, referred, amountRequested, amountApproved, paidTowardThese, paidLater, closedAfterPart, paidTowardEarlier: helpPaid - paidTowardThese },
       history: {
         requests: imported.length,
         households: historyHouseholds.length,
@@ -429,6 +474,7 @@ export const year = query({
         householdsInAll: known.size,
         peopleInAll: peopleIn(known.keys()),
       },
+      vouchers: { ...vouchers, requests: voucherRequests, households: voucherHouseholds.size },
       calls: { taken: calls.length, returned: calls.filter((call) => call.callback === "done").length, waiting: calls.filter((call) => call.callback === "needed").length },
       time: {
         hours: round(visitHours + shiftHours),

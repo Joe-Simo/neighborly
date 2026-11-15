@@ -219,7 +219,12 @@ export function ReportView({
     { is: "approved", label: "Approved, waiting to be paid", value: report.requests.approved },
     { is: "open", label: "Waiting for a decision", value: report.requests.open },
     { is: "declined", label: "Declined", value: report.requests.declined },
-    { is: "closed", label: "Closed without help", value: report.requests.closed },
+    {
+      is: "part",
+      label: `Closed after ${money(report.requests.closedAfterPart.paid)} of ${money(report.requests.closedAfterPart.approved)}`,
+      value: report.requests.closedAfterPart.requests,
+    },
+    { is: "closed", label: "Closed without help", value: report.requests.closed - report.requests.closedAfterPart.requests },
   ].filter((outcome) => outcome.value > 0);
   const printedOn = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: report.timeZone }).format(printed);
   // The foot of every printed page, set in the page margin so it never covers a line.
@@ -285,7 +290,9 @@ export function ReportView({
             <div>
               <h3>{kindLabels[line.kind]}</h3>
               <p>
-                {line.requestsPaid > 0
+                {line.kind === "voucher" && report.vouchers.given > 0
+                  ? `${plural(report.vouchers.given, "voucher")} given${report.vouchers.takenBack > 0 ? ` · ${count(report.vouchers.takenBack)} taken back` : ""} · ${plural(line.people, "person", "people")}`
+                  : line.requestsPaid > 0
                   ? `${plural(line.requestsPaid, "request")} paid · ${plural(line.people, "person", "people")}`
                   : report.closed
                     ? `None this ${noun}`
