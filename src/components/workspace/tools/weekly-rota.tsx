@@ -55,7 +55,7 @@ export function WeeklyRotaView({ group, week, days, printed, onEarlier, onLater,
             </div>
           </div>
         )}
-        <footer className="tools-rota-foot"><span>Kind Helps</span><span>Printed {printed}</span></footer>
+        <footer className="tools-rota-foot"><span>kind helps</span><span>Printed {printed}</span></footer>
       </div>
     </section>
   );
