@@ -1,4 +1,4 @@
-import { LiveLoading } from "@/components/live-workspace";
+import { LiveLoading } from "@/components/workspace/primitives";
 export default function Loading() {
   return (
     <main className="live-main">

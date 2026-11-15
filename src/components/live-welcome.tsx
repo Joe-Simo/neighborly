@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { NativeSelect } from "@/components/ui/native-select";
-import { LiveField } from "@/components/live-workspace";
+import { LiveField } from "@/components/workspace/primitives";
 
 export function LiveWelcome({
   createChurch,

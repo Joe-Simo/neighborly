@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { LiveApp } from "@/components/live-app";
-import { liveAreas } from "@/components/live-workspace";
+import { liveAreas } from "@/components/workspace/areas";
 
 export default async function Page({
   params,

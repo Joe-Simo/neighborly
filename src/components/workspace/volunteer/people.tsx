@@ -1,0 +1,136 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { LiveEmpty } from "@/components/workspace/primitives";
+import { useWorkspace } from "@/components/workspace/context";
+
+export function PeopleSection() {
+  const { data, pending, isOwner, confirm: setConfirmation } = useWorkspace();
+  return (
+    <>
+      <div className="live-list">
+        {data.people.map((person) => (
+          <div className="live-row" key={person.id}>
+            <div className="live-person">
+              <span className="live-avatar">
+                {person.name.slice(0, 2).toUpperCase()}
+              </span>
+              <div>
+                <h3>{person.name}</h3>
+                <p>{person.email}</p>
+              </div>
+            </div>
+            <div className="live-meta">
+              <span>
+                {person.active ? person.role : "Access removed"}
+              </span>
+              <span>
+                {person.approved
+                  ? "Approved for service"
+                  : "Approval pending"}
+              </span>
+            </div>
+            {isOwner && person.role !== "owner" && (
+              <div className="live-row-actions">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() =>
+                    setConfirmation({
+                      title: person.approved
+                        ? "Revoke service approval?"
+                        : "Approve for service?",
+                      body: "Team qualifications are managed separately. Revoking approval withdraws pending cover requests; accepted commitments stay intact.",
+                      command: {
+                        type: "setApproval",
+                        personId: person.id,
+                        approved: !person.approved,
+                      },
+                    })
+                  }
+                >
+                  {person.approved ? "Revoke approval" : "Approve"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() =>
+                    setConfirmation({
+                      title: person.active
+                        ? "Remove workspace access?"
+                        : "Restore workspace access?",
+                      body: "This changes access to your group workspace. Accepted commitments remain recorded; pending cover requests are withdrawn when access is removed.",
+                      command: {
+                        type: "setMembership",
+                        personId: person.id,
+                        active: !person.active,
+                        role:
+                          person.role === "coordinator"
+                            ? "coordinator"
+                            : "member",
+                      },
+                    })
+                  }
+                >
+                  {person.active ? "Remove access" : "Restore access"}
+                </Button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {isOwner && (
+        <section className="live-section">
+          <h2>Invitations</h2>
+          <p className="live-deck">
+            An invitation gives someone a way to join. It never accepts
+            work on their behalf.
+          </p>
+          {data.invitations.length ? (
+            <div className="live-list">
+              {data.invitations.map((invite) => (
+                <div className="live-row" key={invite.id}>
+                  <div>
+                    <h3>{invite.email}</h3>
+                    <p>{invite.role}</p>
+                  </div>
+                  <div className="live-row-actions">
+                    <span className="live-status" data-state="pending">
+                      {invite.status}
+                    </span>
+                    {invite.status === "pending" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={pending}
+                        onClick={() =>
+                          setConfirmation({
+                            title: "Revoke this invitation?",
+                            body: "The link will stop working. This does not remove anyone who has already joined.",
+                            command: {
+                              type: "revokeInvitation",
+                              invitationId: invite.id,
+                            },
+                          })
+                        }
+                      >
+                        Revoke
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <LiveEmpty title="No open invitations.">
+              Invite people when you’re ready to bring them into this
+              workspace.
+            </LiveEmpty>
+          )}
+        </section>
+      )}
+    </>
+  );
+}

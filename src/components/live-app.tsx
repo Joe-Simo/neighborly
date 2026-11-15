@@ -14,11 +14,9 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
-import {
-  LiveLoading,
-  LiveWorkspace,
-  type LiveArea,
-} from "@/components/live-workspace";
+import type { LiveArea } from "@/components/workspace/areas";
+import { LiveLoading } from "@/components/workspace/primitives";
+import { LiveWorkspace } from "@/components/workspace/shell";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";

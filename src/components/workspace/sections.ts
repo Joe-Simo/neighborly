@@ -1,0 +1,19 @@
+import type { ComponentType } from "react";
+import type { LiveArea } from "@/components/workspace/areas";
+import { WeekSection } from "@/components/workspace/volunteer/week";
+import { TeamsSection } from "@/components/workspace/volunteer/teams";
+import { PeopleSection } from "@/components/workspace/volunteer/people";
+import { CommitmentsSection } from "@/components/workspace/volunteer/commitments";
+import { MineSection } from "@/components/workspace/volunteer/mine";
+import { TimeOffSection } from "@/components/workspace/volunteer/time-off";
+import { TasksSection } from "@/components/workspace/volunteer/tasks";
+
+export const sections: Record<LiveArea, ComponentType> = {
+  week: WeekSection,
+  team: TeamsSection,
+  people: PeopleSection,
+  commitments: CommitmentsSection,
+  mine: MineSection,
+  "time-off": TimeOffSection,
+  tasks: TasksSection,
+};
