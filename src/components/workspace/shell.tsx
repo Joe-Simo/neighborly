@@ -15,7 +15,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import type { LiveArea } from "@/components/workspace/areas";
-import { WorkspaceProvider, type Workspace } from "@/components/workspace/context";
+import {
+  WorkspaceProvider,
+  type LiveHeadAction,
+  type Workspace,
+} from "@/components/workspace/context";
 import {
   actionTitles,
   headings,
@@ -81,6 +85,7 @@ export function LiveWorkspace({
   const [teamFilter, setTeamFilter] = useState("");
   const [headingOverride, setHeadingOverride] =
     useState<LiveHeadingOverride | null>(null);
+  const [headAction, setHeadAction] = useState<LiveHeadAction | null>(null);
   const ownPerson = data.people.find((person) => person.id === data.user.id);
   const isOwner = ownPerson?.role === "owner";
   const selected = selectedCommitment;
@@ -167,6 +172,7 @@ export function LiveWorkspace({
     },
     confirm: setConfirmation,
     setHeading: setHeadingOverride,
+    setHeadAction,
     focusOutcome: () =>
       requestAnimationFrame(() =>
         outcomeNotice.current?.focus({ preventScroll: true }),
@@ -236,6 +242,12 @@ export function LiveWorkspace({
               <Button onClick={() => open(primary)}>
                 <Plus size={17} aria-hidden="true" />
                 {actionTitles[primary]}
+              </Button>
+            )}
+            {headAction && (
+              <Button onClick={headAction.run}>
+                <Plus size={17} aria-hidden="true" />
+                {headAction.label}
               </Button>
             )}
             {heading.art && (

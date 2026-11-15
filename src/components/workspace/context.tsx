@@ -13,6 +13,9 @@ import type {
   LiveWorkspaceData,
 } from "@/components/workspace/types";
 
+/** The one button a help room puts in the page head, such as "Log a call". */
+export type LiveHeadAction = { label: string; run: () => void };
+
 export type Workspace = {
   area: LiveArea;
   data: LiveWorkspaceData;
@@ -37,6 +40,11 @@ export type Workspace = {
    * Call it in a layout effect and pass null in the cleanup, so the area's heading returns.
    */
   setHeading: (heading: LiveHeadingOverride | null) => void;
+  /**
+   * Puts the section's own primary button in the page head. Call it in a layout effect and
+   * pass null in the cleanup. A view with no primary action, such as one record, sets none.
+   */
+  setHeadAction: (action: LiveHeadAction | null) => void;
 };
 
 const WorkspaceContext = createContext<Workspace | null>(null);
