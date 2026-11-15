@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useConvex, useMutation } from "convex/react";
+import { strToU8, zipSync } from "fflate";
 import { CircleCheck, Download, FolderDown } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { recordFiles, recordsCsv, recordsFileName, type RecordFileKey } from "@/components/workspace/tools/records";
+import { recordFiles, recordsCsv, recordsFileName, recordsZipName, type RecordFileKey } from "@/components/workspace/tools/records";
 
 export type GatheredFile = { key: RecordFileKey; title: string; fileName: string; lines: number; csv: string };
 export type RecordsStep =
@@ -18,7 +19,8 @@ export type RecordsStep =
  * The way out. One yes gathers the conference's own records into six spreadsheets on this device.
  * Nothing is sent anywhere, and each file uses the column names the imports read, so it can come back in.
  */
-export function RecordsExportView({ state, onGather, onDownload, onReset }: { state: RecordsStep; onGather: () => void; onDownload: (file: GatheredFile) => void; onReset: () => void }) {
+export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, onReset }: { state: RecordsStep; onGather: () => void; onDownloadAll: (files: GatheredFile[]) => void; onDownload: (file: GatheredFile) => void; onReset: () => void }) {
+  const filled = state.step === "done" ? state.files.filter((file) => file.lines > 0) : [];
   return (
     <section className="live-section">
       <div className="live-section-head">
@@ -40,9 +42,8 @@ export function RecordsExportView({ state, onGather, onDownload, onReset }: { st
       )}
       {state.step === "working" && (
         <>
-          <div className="help-skeleton" aria-hidden="true">
-            <div><i /><span><b /><b /></span></div>
-            <div><i /><span><b /><b /></span></div>
+          <div className="help-skeleton tools-records" aria-hidden="true">
+            {recordFiles.map((file) => <div key={file.key}><i /><span><b /><b /></span></div>)}
           </div>
           <p role="status" className="tools-progress">{state.progress}</p>
         </>
@@ -53,6 +54,13 @@ export function RecordsExportView({ state, onGather, onDownload, onReset }: { st
             <CircleCheck size={22} aria-hidden="true" />
             <span>Your records are ready on this device. Keep the files somewhere safe: they hold your neighbors’ private details.</span>
           </div>
+          {filled.length > 0 && (
+            <div className="help-actions tools-after">
+              <Button onClick={() => onDownloadAll(filled)}>
+                <Download size={18} aria-hidden="true" /> {filled.length === 1 ? "Download the file" : `Download all ${filled.length} files`}
+              </Button>
+            </div>
+          )}
           <div className="live-list tools-records">
             {state.files.map((file) => (
               <div className="help-row" data-quiet={file.lines ? undefined : ""} key={file.key}>
@@ -65,20 +73,26 @@ export function RecordsExportView({ state, onGather, onDownload, onReset }: { st
                   <p>{file.lines ? file.fileName : "Nothing here yet."}</p>
                 </div>
                 {file.lines > 0 && (
-                  <Button variant="outline" aria-label={`Download ${file.title}`} onClick={() => onDownload(file)}>
-                    <Download size={18} aria-hidden="true" /> Download
+                  <Button variant="link" className="tools-one" aria-label={`Download this file: ${file.title}`} onClick={() => onDownload(file)}>
+                    Download this file
                   </Button>
                 )}
               </div>
             ))}
           </div>
           <div className="help-actions tools-after">
-            <Button variant="ghost" onClick={onReset}>Put these away</Button>
+            <Button variant="outline" onClick={onReset}>Put these away</Button>
           </div>
         </>
       )}
     </section>
   );
+}
+
+function save(file: Blob, name: string) {
+  const url = URL.createObjectURL(file);
+  Object.assign(document.createElement("a"), { href: url, download: name }).click();
+  URL.revokeObjectURL(url);
 }
 
 export function RecordsExport() {
@@ -91,11 +105,11 @@ export function RecordsExport() {
   const gather = async () => {
     await recordExport({ churchId });
     const files: GatheredFile[] = [];
-    for (const file of recordFiles) {
+    for (const [index, file] of recordFiles.entries()) {
       const rows: string[][] = [];
       let columns: string[] = [], cursor: string | null = null, done = false;
       while (!done) {
-        setState({ step: "working", progress: `Gathering ${file.gathering}.${rows.length ? ` ${rows.length.toLocaleString("en-US")} lines so far.` : ""}` });
+        setState({ step: "working", progress: `Gathering ${file.gathering}.${rows.length ? ` ${rows.length.toLocaleString("en-US")} lines so far.` : ""} File ${index + 1} of ${recordFiles.length}.` });
         const page: { columns: string[]; rows: string[][]; cursor: string; done: boolean } = await convex.query(api.importExport.exportPage, { churchId, file: file.key, cursor });
         rows.push(...page.rows);
         ({ columns, cursor, done } = page);
@@ -109,11 +123,8 @@ export function RecordsExport() {
       state={state}
       onReset={() => setState({ step: "ready" })}
       onGather={() => void gather().catch(() => setState({ step: "ready", error: "The connection dropped while gathering. Nothing was lost or changed; try again." }))}
-      onDownload={(file) => {
-        const url = URL.createObjectURL(new Blob([file.csv], { type: "text/csv;charset=utf-8" }));
-        Object.assign(document.createElement("a"), { href: url, download: file.fileName }).click();
-        URL.revokeObjectURL(url);
-      }}
+      onDownloadAll={(files) => save(new Blob([zipSync(Object.fromEntries(files.map((file) => [file.fileName, strToU8(file.csv)])))], { type: "application/zip" }), recordsZipName(data.church.name, data.church.sample, new Date()))}
+      onDownload={(file) => save(new Blob([file.csv], { type: "text/csv;charset=utf-8" }), file.fileName)}
     />
   );
 }
