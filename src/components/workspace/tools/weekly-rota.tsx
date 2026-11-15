@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/workspace/tools/rota";
 
@@ -46,7 +45,13 @@ export function WeeklyRotaView({ group, week, days, onEarlier, onLater, onPrint 
             </table>
           </div>
         ) : (
-          <LiveEmpty title="Nothing planned this week.">Commitments appear here as soon as they are added.</LiveEmpty>
+          <div className="help-empty">
+            <div className="help-empty-art" style={{ backgroundImage: "url(/assets/threshold/courtyard-quiet-plate-v1.webp)" }} aria-hidden="true" />
+            <div>
+              <h3>A quiet week.</h3>
+              <p>Nothing is planned for these days yet. Commitments appear here as soon as they are added.</p>
+            </div>
+          </div>
         )}
       </div>
     </section>

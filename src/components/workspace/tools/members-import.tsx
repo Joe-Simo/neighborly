@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useAction, useConvex } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { Download, UserPlus } from "lucide-react";
+import { CircleCheck, Download, UserPlus } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LiveField, LiveLoading } from "@/components/workspace/primitives";
+import { LiveField } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { invitationLinksCsv, readMemberRows, type MemberRow } from "@/components/workspace/tools/member-rows";
 
@@ -37,14 +37,17 @@ function Problems({ rows }: { rows: { line: number; name: string; email: string;
     <div className="tools-problems">
       <div className="live-section-head">
         <h3>Left out</h3>
-        <span className="live-count">{skipped.length === 1 ? "1 line" : `${skipped.length} lines`}</span>
+        <span className="live-count">{skipped.length === 1 ? "1 line of the file" : `${skipped.length} lines of the file`}</span>
       </div>
       <div className="live-list">
         {skipped.map((row) => (
-          <div className="live-row" key={row.line}>
-            <div className="live-row-main">
-              <div className="live-meta"><span>Line {row.line}</span></div>
-              <h3>{row.name || row.email || "Empty name"}</h3>
+          <div className="help-row" data-quiet key={row.line}>
+            <div className="live-date-leaf">
+              <span>Line</span>
+              <strong>{row.line}</strong>
+            </div>
+            <div>
+              <h3>{row.name || row.email || "No name"}</h3>
               <p>{reasons[row.outcome as keyof typeof reasons]}</p>
             </div>
           </div>
@@ -80,32 +83,45 @@ export function MembersImportView({ state, onFile, onInvite, onDownload, onReset
           </LiveField>
         </div>
       )}
-      {state.step === "working" && <LiveLoading label={state.label} />}
+      {state.step === "working" && (
+        <div className="help-skeleton" role="status" aria-label={state.label}>
+          <div><i /><span><b /><b /></span></div>
+          <div><i /><span><b /><b /></span></div>
+        </div>
+      )}
       {state.step === "review" && (
         <>
-          <div className="live-note" role="status">
-            <p>
-              {ready ? `${people(ready)} in ${state.fileName} can be invited.` : `Nobody in ${state.fileName} can be invited yet.`}
-              {state.checked.length > ready && ` ${state.checked.length - ready === 1 ? "1 line is" : `${state.checked.length - ready} lines are`} left out, listed below.`}
-            </p>
-          </div>
-          <div className="tools-choices">
-            {ready > 0 && <Button onClick={onInvite}><UserPlus size={16} aria-hidden="true" /> Invite {people(ready)}</Button>}
-            <Button variant="outline" onClick={onReset}>Choose another file</Button>
-          </div>
+          <section className="help-sheet tools-sheet" aria-labelledby="import-title">
+            <p className="help-sheet-label">{ready ? "Waiting for your yes" : "Nothing to send"}</p>
+            <div className="help-sheet-body">
+              <div>
+                <h2 id="import-title">{ready ? `Invite ${people(ready)}` : "Nobody in this file can be invited yet"}</h2>
+                <p className="help-why">
+                  From {state.fileName}.
+                  {state.checked.length > ready && ` ${state.checked.length - ready === 1 ? "1 line is" : `${state.checked.length - ready} lines are`} left out, listed below.`}
+                </p>
+                {ready > 0 && <p>Each person gets a private link, good for seven days. Nothing is sent until you say so.</p>}
+              </div>
+              <div className="help-actions">
+                {ready > 0 && <Button onClick={onInvite}><UserPlus size={18} aria-hidden="true" /> Invite {people(ready)}</Button>}
+                <Button variant={ready ? "ghost" : "outline"} onClick={onReset}>Choose another file</Button>
+              </div>
+            </div>
+          </section>
           <Problems rows={state.checked} />
         </>
       )}
       {state.step === "done" && (
         <>
-          <div className="live-success" role="status">
-            <p>
+          <div className="live-success help-done" role="status" tabIndex={-1} ref={(node) => node?.focus()}>
+            <CircleCheck size={22} aria-hidden="true" />
+            <span>
               {invited ? `${people(invited)} invited.` : "Nobody new was invited."}
               {invited > 0 && " Each invitation has a private link, good for seven days. Download the links to pass on yourself."}
-            </p>
+            </span>
           </div>
-          <div className="tools-choices">
-            {invited > 0 && <Button onClick={onDownload}><Download size={16} aria-hidden="true" /> Download the links</Button>}
+          <div className="help-actions tools-after">
+            {invited > 0 && <Button onClick={onDownload}><Download size={18} aria-hidden="true" /> Download the links</Button>}
             <Button variant="outline" onClick={onReset}>Bring in another file</Button>
           </div>
           {invited > 0 && <p className="tools-small">The links are shown this once and are not kept. Download them before you leave this page.</p>}
