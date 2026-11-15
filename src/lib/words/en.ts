@@ -230,6 +230,16 @@ export function en(set: WordSet) {
       byAssistant: "The assistant read the note. Please read it yourself.",
       open: "Open the record",
       putAway: "Put this away",
+      /** What was looked over. The screen puts the two counts and the time of day in the marked places. */
+      checked: "Checked {requests}, {visits} and the ledger, today at {time}.",
+      requests: (count: number) => (count === 1 ? "1 request" : `${count} requests`),
+      visits: (count: number) => (count === 1 ? "1 visit" : `${count} visits`),
+      show: (count: number) => `Show the ${count} records`,
+      hide: (count: number) => `Hide the ${count} records`,
+      openShort: "Open",
+      /** One record said in a line: "Rent, $450, approved Nov 3" or "Home visit, Nov 3". */
+      happened: { open: "received", approved: "approved", paid: "marked paid", declined: "declined", closed: "closed" },
+      visit: set === "vincentian" ? "Home Visit" : "Home visit",
     },
     /** Why the assistant put a call first. A person can always move it. */
     urgent: {
