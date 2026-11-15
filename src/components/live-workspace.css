@@ -812,3 +812,16 @@
     padding-bottom: calc(60px + env(safe-area-inset-bottom));
   }
 }
+
+/* A finger needs 44 points. The look stays; only the area that answers a touch grows. */
+.live-back { position: relative; }
+.live-back::after,
+.live-password-control button::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
+}
