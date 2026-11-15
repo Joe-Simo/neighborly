@@ -937,8 +937,9 @@
 @media (max-width: 699px) and (orientation: portrait) {
   .live-auth-art {
     --island: calc(max(0px, env(safe-area-inset-top) - 20px) * 9999);
-    height: max(calc(24vw + env(safe-area-inset-top)), calc(61vw - var(--island)));
-    background-position: 50% max(calc(env(safe-area-inset-top) - 39.3vw), calc(0px - var(--island)));
+    height: max(calc(25vw + env(safe-area-inset-top)), calc(61vw - var(--island)));
+    background-position: 50% max(calc(env(safe-area-inset-top) - 43.7vw), calc(0px - var(--island)));
+    margin-bottom: max(6px, calc(22px - var(--island)));
   }
 }
 @media (max-width: 699px) and (orientation: portrait) and (max-height: 700px) {
