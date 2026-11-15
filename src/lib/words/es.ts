@@ -308,6 +308,11 @@ export function es(set: WordSet): Words {
       approve: "Aprobar la petición",
       change: "Cambiar",
       discard: "Descartar",
+      saved: "Guardado en el registro",
+    },
+    welcome: {
+      pass: "Pasa la tarjeta",
+      hint: "Pasa la tarjeta para comenzar.",
     },
   };
 }

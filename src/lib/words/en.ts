@@ -314,6 +314,11 @@ export function en(set: WordSet) {
       approve: "Approve request",
       change: "Change",
       discard: "Discard",
+      saved: "Saved to the record",
+    },
+    welcome: {
+      pass: "Pass the card",
+      hint: "Pass the card to begin.",
     },
   };
 }

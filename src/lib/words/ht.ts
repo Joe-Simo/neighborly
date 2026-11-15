@@ -302,6 +302,11 @@ export function ht(set: WordSet): Words {
       approve: "Apwouve demann lan",
       change: "Chanje",
       discard: "Jete",
+      saved: "Anrejistre nan dosye a",
+    },
+    welcome: {
+      pass: "Pase kat la",
+      hint: "Pase kat la pou kòmanse.",
     },
   };
 }
