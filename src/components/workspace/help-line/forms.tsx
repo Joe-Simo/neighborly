@@ -37,8 +37,6 @@ const fieldsOf = (event: FormEvent<HTMLFormElement>) => {
   return (name: string) => String(data.get(name) ?? "").trim();
 };
 
-/** The shared dialog under its old name, for rooms that still ask for it here. */
-export { LiveDialog as HelpDialog } from "@/components/workspace/live-dialog";
 
 /**
  * What the treasury's voucher shelf holds. Undefined while it loads, and also when the backend is
