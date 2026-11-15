@@ -82,6 +82,11 @@ export const load = internalMutation({
       if (start < now) continue;
       await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start, end: start + 3 * 3600000, location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: week === 4 ? null : others[(week * 3 + slot) % others.length], coordinatorId: others[1], version: 1 });
     }
+    // The owner's own part, so "My commitments" and the calendar link have something to show:
+    // a help-line morning and a home visit next week.
+    const mine = monday.plus({ weeks: 1 });
+    await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start: mine.plus({ days: 1, hours: 9 }).toMillis(), end: mine.plus({ days: 1, hours: 12 }).toMillis(), location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: owner, coordinatorId: others[1], version: 1 });
+    await ctx.db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Renee Baptiste", start: mine.plus({ days: 3, hours: 14 }).toMillis(), end: mine.plus({ days: 3, hours: 16 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
     // A year of finished shifts, so hours by team have something to add up: the help line twice a week
     // and the pantry on Saturdays. Kept under the 200 the overview reads, after the coming weeks above.
     const pantry = await ctx.db.insert("teams", { churchId, name: "Pantry", description: "Sorts donations and packs food bags on Saturday mornings." });
