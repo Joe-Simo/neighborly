@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useWorkspace, useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords, wrongControl } from "@/components/workspace/failure";
 import { headings } from "@/components/workspace/navigation";
@@ -65,9 +66,12 @@ export function LiveRoomLoading({
 export function LiveEmpty({
   title,
   children,
+  action,
 }: {
   title: string;
   children: ReactNode;
+  /** The one act that fills this place, named as the act. */
+  action?: { label: string; run: () => void };
 }) {
   const { area } = useWorkspace();
   const { picture, focus } = headings[area].art;
@@ -83,6 +87,11 @@ export function LiveEmpty({
       <div>
         <FollowingHeading>{title}</FollowingHeading>
         <p>{children}</p>
+        {action && (
+          <Button type="button" variant="outline" onClick={action.run}>
+            {action.label}
+          </Button>
+        )}
       </div>
     </div>
   );
