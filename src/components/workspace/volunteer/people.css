@@ -31,6 +31,10 @@
 .people-invitations + .live-empty, .people-deck + .live-empty { margin-top: 22px; }
 .live-app .people-deck { margin-bottom: 0; }
 
+/* Between a phone and a desk the columns give the name room, so an address stays on one line. */
+@media (min-width: 701px) and (max-width: 1000px) {
+  .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 90px; }
+}
 /* The role sits in its own column on a wide screen and beside the name on a phone; never both. */
 .people-role { display: none; }
 @media (max-width: 700px) {
@@ -50,6 +54,10 @@
 .team-faces .live-avatar + .live-avatar { margin-left: -8px; }
 .team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
 .live-app .team-card .live-team-line { gap: 10px 20px; min-height: 44px; }
+/* Two teams side by side need a desk; below it each team has the full width for its members. */
+@media (max-width: 900px) {
+  .live-app .live-teams { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 700px) {
   /* Faces and the count on one line; the two things to do share the next. */
   .team-faces { flex-basis: 100%; }
@@ -74,12 +82,15 @@
 .team-candidates h3 { font-size: 19px; }
 .team-candidates p { margin: 2px 0 0; font-size: 16px; }
 .team-roster { margin-top: 18px; }
-/* A member, then what can be done for them on the line below: the same shape at every width. */
-.team-roster .live-row { flex-direction: column; align-items: stretch; gap: 10px; min-height: 80px; padding-block: 16px; }
+.team-roster .live-row { min-height: 80px; padding-block: 12px; }
 .team-roster h3 { font-size: 19px; }
 .team-roster p { margin: 2px 0 0; font-size: 16px; }
 .team-roster p[data-waits] { color: var(--help-ochre-ink, #88642c); }
-.team-roster .live-row-actions { padding-left: 57px; gap: 8px 10px; }
-.live-app .team-roster select { min-height: 40px; font-size: 15px; }
-@media (pointer: coarse) { .live-app .team-roster select { min-height: 44px; } }
 .team-more { margin-top: 16px; }
+/* The last choice ends a place on the team, so a hairline sets it apart from the two above. */
+.team-apart { width: 100%; height: 1px; margin: 6px 0; border: 0; background: color-mix(in srgb, #283c32 16%, transparent); }
+/* On a phone the button stays on the name's line, at the right, as on People. */
+@media (max-width: 700px) {
+  .live-app .team-roster .live-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; }
+  .live-app .team-roster .live-row-actions { width: auto; margin: 0; padding: 0; justify-self: end; }
+}

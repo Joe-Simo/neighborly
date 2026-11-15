@@ -64,6 +64,7 @@
 .live-app .live-main .visits-quiet-link { min-height: 44px; height: auto; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; font-size: 16px; font-weight: 400; color: var(--live-muted); text-decoration: underline; text-decoration-color: #c5c9bb; text-underline-offset: 4px; }
 .live-app .live-main .visits-quiet-link:hover { color: var(--live-ink); text-decoration-color: currentColor; }
 .visits-paper-foot { display: none; }
+.visits-paper-last { font-style: inherit; }
 .visits-back:hover {
   color: var(--live-ink);
 }
@@ -238,25 +239,30 @@
 
 /* On paper only the sheet is left: black on white, one page. */
 @media print {
-  @page visit-sheet { margin: 12mm 14mm; }
+  @page visit-sheet { margin: 10mm 14mm; }
   html:has(.visits-paper), body:has(.visits-paper), body:has(.visits-paper) .live-app { background: #fff !important; }
   /* Only when a visit sheet is on the page: every room's styles load together, so an unguarded rule here would blank the other rooms' printing. */
   body:has(.visits-paper) :not(:has(.visits-paper)):not(.visits-paper):not(.visits-paper *) { display: none !important; }
   body:has(.visits-paper) .live-layout, body:has(.visits-paper) .live-main { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
   .visits-paper { page: visit-sheet; max-width: none; padding: 0; border: 0; box-shadow: none; background: none; animation: none; }
   .visits-paper * { color: #000 !important; }
-  .visits-paper-label, .visits-paper dt, .visits-paper-words span { font-size: 8pt; }
+  .visits-paper-label, .visits-paper dt, .visits-paper-words span { font-size: 9pt; }
   .visits-paper h2 { font-size: 26pt; margin-bottom: 1mm; }
   .visits-paper-when { font-size: 14pt; }
   .visits-paper-facts { grid-template-columns: 1fr 1fr; gap: 0 10mm; margin-top: 5mm; border-top-color: #000; }
-  .visits-paper-facts > div { padding: 2mm 0; break-inside: avoid; }
-  .visits-paper dd { font-size: 11.5pt; }
+  .visits-paper-facts > div { padding: 2mm 0; break-inside: avoid; border-bottom-color: #555; }
+  .visits-paper dd { font-size: 11pt; }
+  /* The two who go: the names a volunteer looks for first. */
+  .visits-paper .visits-paper-pair { font-size: 12pt; font-weight: 600; }
   .visits-paper-words { font-size: 12pt; margin-top: 3.5mm; }
-  .visits-paper-write { margin-top: 5mm; break-inside: avoid; }
-  .visits-paper-write h3 { font-size: 13pt; }
-  .visits-lines i { height: 6.3mm; border-bottom-color: #777; }
-  .visits-paper-blanks { margin-top: 6mm; }
-  .visits-paper footer { margin-top: 3mm; font-size: 9pt; }
+  /* A long note from last time is cut at four lines on paper, so the sheet stays one page. */
+  .visits-paper-last { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+  .visits-paper-write { margin-top: 4mm; break-inside: avoid; }
+  .visits-paper-write h3 { font-size: 16pt; }
+  .visits-lines i { height: 6.4mm; border-bottom-color: #555; }
+  .visits-paper-blanks { margin-top: 4mm; }
+  .visits-paper footer { margin-top: 3mm; font-size: 10pt; }
+  .visits-paper-blanks dt { font-size: 9pt; }
   .visits-paper-foot { display: flex; justify-content: space-between; margin: 3mm 0 0; padding-top: 2mm; border-top: 0.5pt solid #000; font-size: 9pt; }
   .visits-paper-foot span:first-child { font: 400 12pt/1 "Newsreader", Georgia, serif; }
 }

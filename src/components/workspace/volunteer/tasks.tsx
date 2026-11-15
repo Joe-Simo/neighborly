@@ -3,7 +3,7 @@
 import "./volunteer.css";
 import { useState } from "react";
 import { usePaginatedQuery } from "convex/react";
-import { Check, Plus } from "lucide-react";
+import { Check, CircleCheck, Plus } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -20,15 +20,17 @@ export function TasksSection() {
     when,
     personName,
     openAction: open,
+    words,
   } = useWorkspace();
   // The task just ticked and the meeting just answered: each gets its one move.
   const [ticked, setTicked] = useState<string>();
   const [answered, setAnswered] = useState<string>();
+  const [changing, setChanging] = useState<string>();
   return (
     <>
       <section>
         <div className="live-section-head">
-          <h2>Tasks</h2>
+          <h2>{words.tasks.tasks}</h2>
         </div>
         {data.tasks.length ? (
           <div className="live-list">
@@ -44,7 +46,7 @@ export function TasksSection() {
                     <h3><span>{task.title}</span></h3>
                     <p>
                       {personName(task.assigneeId)}
-                      {task.dueAt ? ` · Due ${format(task.dueAt)}` : ""}
+                      {task.dueAt ? ` · ${words.tasks.due(format(task.dueAt))}` : ""}
                     </p>
                   </div>
                   {mine ? (
@@ -63,15 +65,15 @@ export function TasksSection() {
                     >
                       {task.complete ? (
                         <>
-                          <Check size={16} aria-hidden="true" /> Done
+                          <Check size={16} aria-hidden="true" /> {words.tasks.done}
                         </>
                       ) : (
-                        "Mark done"
+                        words.tasks.markDone
                       )}
                     </Button>
                   ) : (
                     <span className="live-status" data-state={task.complete ? "accepted" : "open"}>
-                      {task.complete ? "Done" : "Open"}
+                      {task.complete ? words.tasks.done : words.tasks.open}
                     </span>
                   )}
                 </div>
@@ -79,14 +81,14 @@ export function TasksSection() {
             })}
           </div>
         ) : (
-          <LiveEmpty title="A clear list, for now.">
-            Shared tasks will appear here with their owner and due date.
+          <LiveEmpty title={words.tasks.emptyTitle}>
+            {words.tasks.emptyDetail}
           </LiveEmpty>
         )}
       </section>
       <section className="live-section">
         <div className="live-section-head">
-          <h2>Meetings</h2>
+          <h2>{words.tasks.meetings}</h2>
           {isOwner && (
             <Button variant="outline" onClick={() => open("meeting")}>
               <Plus size={15} aria-hidden="true" /> Plan meeting
@@ -105,7 +107,9 @@ export function TasksSection() {
                   meetingId: meeting.id,
                   response: answer,
                 });
-                if (saved) setAnswered(answer === "accepted" ? meeting.id : undefined);
+                if (!saved) return;
+                setAnswered(answer === "accepted" ? meeting.id : undefined);
+                setChanging(undefined);
               };
               // The corner: ochre while it waits for a reply, green on a yes, plain on a no.
               const corner =
@@ -114,37 +118,37 @@ export function TasksSection() {
                   : response ? " paper-rest" : "";
               return (
                 <article className={`help-sheet volunteer-meeting${corner}`} key={meeting.id}>
-                  <p className="help-sheet-label">
-                    {response === "accepted"
-                      ? "You are going"
-                      : response
-                        ? "You can’t make it"
-                        : "Waiting for your reply"}
-                  </p>
+                  {!response && <p className="help-sheet-label">{words.tasks.waiting}</p>}
                   <div className="help-sheet-body">
                     <div>
                       <h3>{meeting.title}</h3>
                       <p className="volunteer-choice-when">{when(meeting.start, meeting.end)}</p>
                       {meeting.location && <p>{meeting.location}</p>}
                     </div>
-                    <div className="live-row-actions">
-                      <Button
-                        variant={response ? "outline" : "default"}
-                        aria-pressed={response === "accepted"}
-                        disabled={pending}
-                        onClick={() => void reply("accepted")}
-                      >
-                        {response === "accepted" && <Check size={16} aria-hidden="true" />} Attend
-                      </Button>
-                      <Button
-                        variant="outline"
-                        aria-pressed={response === "declined"}
-                        disabled={pending}
-                        onClick={() => void reply("declined")}
-                      >
-                        {response === "declined" && <Check size={16} aria-hidden="true" />} Decline
-                      </Button>
-                    </div>
+                    {response && changing !== meeting.id ? (
+                      <div className="live-row-actions">
+                        <p className="volunteer-given" data-no={response === "declined" || undefined} role="status">
+                          {response === "accepted" && <CircleCheck size={22} aria-hidden="true" />}
+                          {response === "accepted" ? words.tasks.going : words.tasks.notGoing}
+                        </p>
+                        <Button
+                          variant="link"
+                          className="tools-quiet"
+                          onClick={() => setChanging(meeting.id)}
+                        >
+                          {words.tasks.changeReply}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="live-row-actions">
+                        <Button disabled={pending} onClick={() => void reply("accepted")}>
+                          {words.tasks.attend}
+                        </Button>
+                        <Button variant="outline" disabled={pending} onClick={() => void reply("declined")}>
+                          {words.tasks.decline}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   {(isOwner || meeting.fanoutStatus === "processing") && (
                     <div className="volunteer-meeting-desk">
@@ -184,8 +188,8 @@ export function TasksSection() {
             })}
           </div>
         ) : (
-          <LiveEmpty title="No meetings planned.">
-            Meeting replies are separate from task completion.
+          <LiveEmpty title={words.tasks.noMeetingsTitle}>
+            {words.tasks.noMeetingsDetail}
           </LiveEmpty>
         )}
       </section>

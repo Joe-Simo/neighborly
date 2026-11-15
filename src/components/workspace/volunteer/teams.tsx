@@ -6,7 +6,6 @@ import { Plus } from "lucide-react";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/native-select";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -14,7 +13,8 @@ import { initials } from "@/components/workspace/volunteer/people";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TeamsSection() {
-  const { data, pending, isOwner, perform } = useWorkspace();
+  const { data, pending, isOwner, perform, words } = useWorkspace();
+  const t = words.teams;
   const [addingTo, setAddingTo] = useState<LiveWorkspaceData["teams"][number] | null>(null);
   // Teams joined in this visit: their slip stays, folded green, so the yes is seen to land.
   const [joined, setJoined] = useState<string[]>([]);
@@ -26,18 +26,17 @@ export function TeamsSection() {
           <section className="live-team team-card" key={team.id}>
             <h2>{team.name}</h2>
             <p>
-              {team.description || "A team with room to contribute."}
+              {team.description || t.noDescription}
             </p>
             {joined.includes(team.id) ? (
               <div className="team-asked paper-corner paper-fold" role="status">
-                <p>You’re on this team.</p>
+                <p>{t.onTeam}</p>
               </div>
             ) : (
               team.myInvitation && (
                 <div className="team-asked paper-corner paper-waits paper-settle">
                   <p>
-                    You’re invited to this team. Joining does not accept a
-                    commitment.
+                    {t.invited}
                   </p>
                   <div className="live-row-actions">
                     <Button
@@ -48,7 +47,7 @@ export function TeamsSection() {
                           setJoined((teams) => [...teams, team.id]);
                       }}
                     >
-                      Join team
+                      {t.join}
                     </Button>
                     <Button
                       disabled={pending}
@@ -56,7 +55,7 @@ export function TeamsSection() {
                       variant="ghost"
                       onClick={() => void perform({ type: "respondTeam", teamId: team.id, accept: false })}
                     >
-                      Decline
+                      {t.decline}
                     </Button>
                   </div>
                 </div>
@@ -73,7 +72,7 @@ export function TeamsSection() {
           </section>
         ))
       ) : (
-        <LiveEmpty title="Start with one team.">
+        <LiveEmpty title={t.emptyTitle}>
           Give your first team a name, then add people when they join
           your group workspace.
         </LiveEmpty>
@@ -131,12 +130,20 @@ function LiveTeamRoster({
   pending: boolean;
   add: () => void;
 }) {
+  const t = useWorkspace().words.teams;
   const [open, setOpen] = useState(false);
   const roster = usePaginatedQuery(
     api.pages.teamRosterPage,
     open ? { churchId: data.church.id, teamId: team.id } : "skip",
     { initialNumItems: 20 },
   );
+  const [managingId, setManagingId] = useState<string | null>(null);
+  const managing = roster.results.find((person) => person.personId === managingId);
+  // One choice at a time: the dialog closes as the choice is sent, and the row shows what came of it.
+  const choose = (command: LiveCommand) => {
+    setManagingId(null);
+    void run(command);
+  };
   const faces = team.memberIds.flatMap((id) => data.people.find((person) => person.id === id) ?? []).slice(0, 4);
   return (
     <div>
@@ -148,12 +155,12 @@ function LiveTeamRoster({
             </span>
           ))}
           <span className="live-meta">
-            {team.memberIds.length} {team.memberIds.length === 1 ? "member" : "members"}
+            {t.members(team.memberIds.length)}
           </span>
         </div>
         {!team.myInvitation && (
           <Button variant="link" className="tools-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
-            {open ? "Hide members" : "View members"}
+            {open ? t.hideMembers : t.viewMembers}
           </Button>
         )}
         {team.canCoordinate && (
@@ -162,6 +169,69 @@ function LiveTeamRoster({
           </Button>
         )}
       </div>
+      {managing && (
+        <LiveDialog
+          title={managing.name}
+          description={<>{team.name} · {managing.role === "coordinator" ? "Coordinator" : "Member"}</>}
+          onClose={() => setManagingId(null)}
+        >
+          <div className="live-manage">
+            {managing.status === "active" && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => choose({ type: "setTeamApproval", teamId: team.id, personId: managing.personId, approved: !managing.approved })}
+                >
+                  {managing.approved ? "Revoke approval for this team" : "Approve for this team"}
+                  <small>
+                    {managing.approved
+                      ? "They stay on the team. Their open requests to cover for it are withdrawn."
+                      : "They can take this team’s commitments."}
+                  </small>
+                </Button>
+                {isOwner && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={pending}
+                    onClick={() =>
+                      choose({
+                        type: "setTeamRole",
+                        teamId: team.id,
+                        personId: managing.personId,
+                        role: managing.role === "coordinator" ? "member" : "coordinator",
+                      })
+                    }
+                  >
+                    {managing.role === "coordinator" ? "Make a member of this team" : "Make a coordinator of this team"}
+                    <small>
+                      {managing.role === "coordinator"
+                        ? "They keep their place and no longer manage this team’s members."
+                        : "They can add, approve and remove this team’s members, and become a coordinator of the conference."}
+                    </small>
+                  </Button>
+                )}
+              </>
+            )}
+            {managing.status === "active" && <hr className="team-apart" />}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => choose({ type: "setTeamMember", teamId: team.id, personId: managing.personId, member: false })}
+            >
+              {managing.status === "invited" ? "Withdraw the invitation" : "Remove from this team"}
+              <small>
+                {managing.status === "invited"
+                  ? "They are not added. You can invite them again."
+                  : "Their place on this team ends. Their other teams and their account stay."}
+              </small>
+            </Button>
+          </div>
+        </LiveDialog>
+      )}
       {open && (
         <>
           <div className="live-list team-roster">
@@ -172,71 +242,17 @@ function LiveTeamRoster({
                   <div>
                     <h3>{person.name}</h3>
                     <p data-waits={person.status === "invited" || !person.approved ? "" : undefined}>
-                      {person.role === "coordinator" ? "Coordinator" : "Member"}
+                      {person.role === "coordinator" ? t.coordinator : t.member}
                       {person.status === "invited"
-                        ? " · Invited, waiting to join"
-                        : !person.approved && " · Waiting for team approval"}
+                        ? ` · ${t.invitedWaiting}`
+                        : !person.approved && ` · ${t.waitingApproval}`}
                     </p>
                   </div>
                 </div>
                 {team.canCoordinate && (
                   <div className="live-row-actions">
-                    {person.status === "active" && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={pending}
-                          onClick={() =>
-                            void run({
-                              type: "setTeamApproval",
-                              teamId: team.id,
-                              personId: person.personId,
-                              approved: !person.approved,
-                            })
-                          }
-                        >
-                          {person.approved
-                            ? "Revoke approval"
-                            : "Approve for team"}
-                        </Button>
-                        {isOwner && (
-                          <NativeSelect
-                            aria-label={`Team role for ${person.name}`}
-                            value={person.role}
-                            disabled={pending}
-                            onChange={(event) =>
-                              void run({
-                                type: "setTeamRole",
-                                teamId: team.id,
-                                personId: person.personId,
-                                role:
-                                  event.target.value === "coordinator"
-                                    ? "coordinator"
-                                    : "member",
-                              })
-                            }
-                          >
-                            <option value="member">Member</option>
-                            <option value="coordinator">Coordinator</option>
-                          </NativeSelect>
-                        )}
-                      </>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={pending}
-                      onClick={() =>
-                        void run({
-                          type: "setTeamMember",
-                          teamId: team.id,
-                          personId: person.personId,
-                          member: false,
-                        })
-                      }
-                    >
-                      Remove
+                    <Button variant="outline" size="sm" aria-label={`Manage ${person.name}`} onClick={() => setManagingId(person.personId)}>
+                      Manage
                     </Button>
                   </div>
                 )}
@@ -251,8 +267,8 @@ function LiveTeamRoster({
               onClick={() => roster.loadMore(20)}
             >
               {roster.status === "CanLoadMore"
-                ? "Load more members"
-                : "Loading members…"}
+                ? t.loadMore
+                : t.loading}
             </Button>
           )}
         </>

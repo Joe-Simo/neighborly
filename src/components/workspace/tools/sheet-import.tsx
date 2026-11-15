@@ -1,6 +1,7 @@
 "use client";
 
 import "./tools.css";
+import { LiveFailure } from "@/components/workspace/states";
 import { useRef, type ReactNode } from "react";
 import Papa from "papaparse";
 import { CircleCheck, FileUp } from "lucide-react";
@@ -89,7 +90,7 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
     <section className="tools-leaf" data-open={state.step === "choose" ? undefined : ""} aria-labelledby={`${words.id}-name`}>
       <h2 id={`${words.id}-name`}>{words.title}</h2>
       <p className="tools-leaf-deck">{words.deck}</p>
-      {"error" in state && state.error && <div className="live-error" role="alert"><p>{state.error}</p></div>}
+      {"error" in state && state.error && <LiveFailure message={state.error} kept="" />}
       {state.step === "choose" && (
         <div className="tools-file">
           <input

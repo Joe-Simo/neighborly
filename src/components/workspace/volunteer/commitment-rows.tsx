@@ -1,7 +1,7 @@
 "use client";
 
 import "./volunteer.css";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LiveEmpty } from "@/components/workspace/primitives";
@@ -78,6 +78,30 @@ export function CommitmentRows({
     );
 }
 
+/**
+ * The line that says a reply was taken. It is seen for six seconds, then leaves the
+ * page and stays as a message for screen readers.
+ */
+function Said({ children }: { children: string }) {
+  const [seen, setSeen] = useState(true);
+  const line = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    line.current?.focus();
+    const leave = setTimeout(() => setSeen(false), 6000);
+    return () => clearTimeout(leave);
+  }, []);
+  return (
+    <p
+      ref={line}
+      tabIndex={-1}
+      role="status"
+      className={seen ? "live-success volunteer-said paper-rise" : "sr-only"}
+    >
+      {children}
+    </p>
+  );
+}
+
 /** How long a sheet stays, its corner green, after a yes: long enough to be seen. */
 const FOLD_BEAT = 800;
 
@@ -100,10 +124,10 @@ export function IncomingRequests({
     perform,
     when,
     showCommitment,
-    focusOutcome,
     words,
   } = useWorkspace();
   const [given, setGiven] = useState<CoverRequest>();
+  const [said, setSaid] = useState<{ words: string; of: string }>();
   const incoming = incomingRequests(data);
   // The request just accepted leaves the data at once; the sheet keeps it for the beat.
   const shown =
@@ -114,18 +138,19 @@ export function IncomingRequests({
   const respond = async (request: CoverRequest, accept: boolean) => {
     if (accept) setGiven(request);
     const beat = new Promise((settle) => setTimeout(settle, accept ? FOLD_BEAT : 0));
-    const saved = await perform(
-      { type: "respondCover", requestId: request.id, accept },
-      accept ? words.requests.accepted : words.requests.declined,
-    );
+    setSaid(undefined);
+    const saved = await perform({ type: "respondCover", requestId: request.id, accept });
     if (accept && saved) await beat;
     setGiven(undefined);
     if (!saved) return;
     if (accept) onAccepted?.(request.commitmentId);
-    focusOutcome();
+    setSaid({ words: accept ? words.requests.accepted : words.requests.declined, of: request.id });
   };
+  const line = said && <Said key={said.of}>{said.words}</Said>;
   const waiting = shown.filter((request) => request.id !== given?.id).length;
   return shown.length ? (
+    <>
+      {line}
       <section className={`help-sheet volunteer-choice${given ? " paper-fold" : ""}`} aria-labelledby="live-requests-title">
         <p className="help-sheet-label">{waiting ? words.requests.awaiting(waiting) : statuses.accepted}</p>
         <h2 id="live-requests-title">{words.requests.title}</h2>
@@ -183,5 +208,6 @@ export function IncomingRequests({
           })}
         </div>
       </section>
-    ) : null;
+    </>
+    ) : (line ?? null);
 }

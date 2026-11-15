@@ -6,7 +6,8 @@ import { Check } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import { useSave } from "@/components/workspace/help-line/use-save";
+import { LiveFailure } from "@/components/workspace/states";
+import { useSave } from "@/components/workspace/use-save";
 import type { Words } from "@/lib/words";
 import type { OwnVisit } from "@/components/workspace/visits/format";
 
@@ -63,12 +64,7 @@ export function MyVisitsView({
         </span>
       </div>
       {error && (
-        <div className="live-error" role="alert">
-          <p>{error}</p>
-          <p className="live-error-recovery">
-            {words.notSaved}
-          </p>
-        </div>
+        <LiveFailure message={error} kept={words.notSaved} />
       )}
       <div className="live-list">
         {visits.map((visit) => {

@@ -7,6 +7,8 @@ import { CalendarPlus, Check, Copy } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LiveFailure } from "@/components/workspace/states";
+import { readFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 
@@ -43,7 +45,7 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
       <p className="live-deck">
         {text.deck}
       </p>
-      {error && <div className="live-error" role="alert"><p>{error}</p></div>}
+      {error && <LiveFailure message={error} kept="" />}
       {address ? (
         <div className="paper-rows">
           <div className="help-actions tools-after tools-calendars">
@@ -72,7 +74,6 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
           {replacing && (
             <LiveDialog title={text.makeNewTitle} description={text.makeNewDetail} onClose={() => setReplacing(false)}>
               <div className="live-form-actions">
-                <Button variant="ghost" onClick={() => setReplacing(false)}>{text.keep}</Button>
                 <Button disabled={busy} onClick={() => { setReplacing(false); setCopied(false); onCreate(); }}>{text.makeNew}</Button>
               </div>
             </LiveDialog>
@@ -111,7 +112,7 @@ export function CalendarAddress({ titled = true }: { titled?: boolean }) {
         setBusy(true);
         setError("");
         void create({ churchId: data.church.id })
-          .catch(() => setError(words.calendar.failed))
+          .catch((cause: unknown) => setError(readFailure(cause, words.calendar.failed, words.states.offlineSave)))
           .finally(() => setBusy(false));
       }}
     />

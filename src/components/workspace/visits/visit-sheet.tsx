@@ -13,7 +13,8 @@ import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { count, languageLabels } from "@/components/workspace/help-line/format";
 import { HelpLoading } from "@/components/workspace/help-line/room";
-import { useSave } from "@/components/workspace/help-line/use-save";
+import { LiveFailure } from "@/components/workspace/states";
+import { useSave } from "@/components/workspace/use-save";
 import { TimeForm } from "@/components/workspace/visits/forms";
 import { need, type Sheet } from "@/components/workspace/visits/format";
 
@@ -87,11 +88,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
           description={`${sheet.neighbor.name} goes back to waiting for a pair. ${sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent. Please tell ${sheet.visitors.map((name) => name.split(/\s+/)[0]).join(" and ")} yourself.`}
           onClose={() => setConfirming(false)}
         >
-          {error && (
-            <div className="live-error" role="alert">
-              {error}
-            </div>
-          )}
+          {error && <LiveFailure message={error} kept="" />}
           <div className="live-form-actions">
             <Button variant="outline" onClick={() => setConfirming(false)}>
               Keep the visit
@@ -176,7 +173,7 @@ export function VisitSheetView({
         aria-label={`Visit sheet for ${neighbor.name}`}
       >
         <header>
-          <p className="visits-paper-label">Home visit · {sheet.group}</p>
+          <p className="visits-paper-label">Home visit · {sheet.group}{sample ? " · Sample" : ""}</p>
           <h2>{neighbor.name}</h2>
           <p className="visits-paper-when">
             {format(sheet.scheduledAt, {
@@ -207,7 +204,7 @@ export function VisitSheetView({
           </div>
           <div>
             <dt>Going together</dt>
-            <dd>{sheet.visitors.join(" and ")}</dd>
+            <dd className="visits-paper-pair">{sheet.visitors.join(" and ")}</dd>
           </div>
           {request && (
             <div>
@@ -237,7 +234,7 @@ export function VisitSheetView({
               Last visit, {format(sheet.lastVisit.at)}, by{" "}
               {sheet.lastVisit.visitors.join(" and ")}
             </span>
-            {sheet.lastVisit.notes}
+            <em className="visits-paper-last">{sheet.lastVisit.notes}</em>
           </p>
         )}
         <section className="visits-paper-write">
