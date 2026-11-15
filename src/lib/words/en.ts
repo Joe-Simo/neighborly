@@ -40,6 +40,7 @@ export function en(set: WordSet) {
       treasury: "Treasury",
       reports: "Reports",
       visits: "Home visits",
+      tools: "Your files",
     },
     shell: {
       menu: "Menu",

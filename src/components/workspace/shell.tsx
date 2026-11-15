@@ -148,6 +148,9 @@ export function LiveWorkspace({
     setDialog(kind);
   }
   const primary = primaryActions[area];
+  // A menu line marked for leaders is shown only to coordinators and owners of the group.
+  const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
+  const menuItems = navigation.filter((item) => leads || !("leadersOnly" in item));
   // On a phone the menu button names the current room when the name is short enough to sit
   // beside the two tabs; a longer name, or an area with no menu line yet, shows "Menu".
   const menuLabel =
@@ -218,7 +221,7 @@ export function LiveWorkspace({
             if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
           }}>
             <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}</DialogHeader>
-            <nav aria-label={words.shell.allSections}>{navigation.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={() => setMobileMenuOpen(false)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
+            <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={() => setMobileMenuOpen(false)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
             <LanguageList />
           </DialogContent>
         </Dialog>
@@ -227,7 +230,7 @@ export function LiveWorkspace({
         <nav className="live-nav" aria-label={words.shell.workspace}>
           <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{data.church.name}</p>
           {data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}
-          {navigation.map(({ id, label, icon: Icon }) => (
+          {menuItems.map(({ id, label, icon: Icon }) => (
             <Link
               key={id}
               href={`/app/${id}`}

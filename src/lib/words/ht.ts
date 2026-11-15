@@ -41,6 +41,7 @@ export function ht(set: WordSet): Words {
       treasury: "Trezò",
       reports: "Rapò",
       visits: "Vizit lakay",
+      tools: "Dosye ou yo",
     },
     shell: {
       menu: "Meni",

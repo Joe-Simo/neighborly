@@ -41,6 +41,7 @@ export function es(set: WordSet): Words {
       treasury: "Tesorería",
       reports: "Informes",
       visits: set === "vincentian" ? "Visitas domiciliarias" : "Visitas a casa",
+      tools: "Tus archivos",
     },
     shell: {
       menu: "Menú",

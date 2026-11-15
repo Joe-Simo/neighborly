@@ -11,6 +11,7 @@ import {
   Landmark,
   Footprints,
   ChartNoAxesColumn,
+  Folder,
 } from "lucide-react";
 import type { LiveArea } from "@/components/workspace/areas";
 
@@ -27,6 +28,8 @@ export const navigation = [
   { id: "visits", label: "Home visits", icon: Footprints },
   { id: "treasury", label: "Treasury", icon: Landmark },
   { id: "reports", label: "Reports", icon: ChartNoAxesColumn },
+  // Only for people who lead the group: every part of it needs a coordinator or owner.
+  { id: "tools", label: "Your files", icon: Folder, leadersOnly: true },
 ] as const;
 
 export type ActionKind =
@@ -126,5 +129,10 @@ export const headings: Record<LiveArea, LiveHeading> = {
     deck: "Home visits, the pair who are going, and what they found.",
     room: "help",
     art: { src: "/assets/painted-world/visit.webp", position: "60% 22%", size: "auto 170%" },
+  },
+  tools: {
+    title: "Bring records in. Take them with you.",
+    deck: "From ServWare or a spreadsheet, and back out again whenever you like.",
+    room: "help",
   },
 };
