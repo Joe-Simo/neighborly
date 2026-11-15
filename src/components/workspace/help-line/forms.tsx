@@ -3,11 +3,13 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useAction, useMutation, useQuery } from "convex/react";
+import { Check, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -53,11 +55,29 @@ export function HelpDialog({
 }) {
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="live-dialog">
+      <DialogContent
+        className="live-dialog help-dialog"
+        showCloseButton={false}
+        // Start in the first box to fill in, not on the close button.
+        onOpenAutoFocus={(event) => {
+          const first =
+            event.currentTarget instanceof HTMLElement &&
+            event.currentTarget.querySelector<HTMLElement>("input, textarea, select");
+          if (!first) return;
+          event.preventDefault();
+          first.focus();
+        }}
+      >
+        {/* The title and the way out stay in view while a long form scrolls, as the button does. */}
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogClose asChild>
+            <Button variant="ghost" size="icon" aria-label="Close">
+              <X aria-hidden="true" />
+            </Button>
+          </DialogClose>
         </DialogHeader>
+        <DialogDescription>{description}</DialogDescription>
         {children}
       </DialogContent>
     </Dialog>
@@ -393,7 +413,7 @@ export function DecideForm({
           />
         </LiveField>
       )}
-      <LiveField label={approving ? "Note on the decision" : "Why it was declined"}>
+      <LiveField label={approving ? "Note on the decision (optional)" : "Why it was declined"}>
         <Textarea name="note" rows={3} />
       </LiveField>
       <fieldset className="help-lines">
@@ -409,6 +429,7 @@ export function DecideForm({
           >
             {agencies.map((agency) => (
               <ToggleGroupItem key={agency.id} value={agency.name}>
+                <Check aria-hidden="true" />
                 {agency.name}
               </ToggleGroupItem>
             ))}
@@ -416,7 +437,11 @@ export function DecideForm({
         )}
         <LiveField
           label={agencies?.length ? "Somewhere else" : "Where"}
-          help="Such as 211 or the county rent program. It is offered here next time. Leave empty if nowhere."
+          help={
+            agencies?.length
+              ? "A place not listed. It is offered here next time."
+              : "Such as 211 or the county rent program. It is offered here next time."
+          }
         >
           <Input name="elsewhere" maxLength={120} defaultValue={request.referral} />
         </LiveField>
