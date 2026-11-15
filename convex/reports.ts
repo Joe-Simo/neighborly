@@ -196,21 +196,31 @@ export const years = query({
 });
 
 /**
- * Whose record holds each request, so a flagged request can be opened. Ids only, never a name.
- * A request from another group, or one that is gone, comes back with no neighbor.
+ * What each flagged record is, so the check before sending can say it in a line and open it:
+ * the kind, amount and dates, and the neighbor record that holds a request. Never a name.
+ * A record from another group, or one that is gone, is left out.
  */
-export const requestHomes = query({
-  args: { churchId: v.id("churches"), requestIds: v.array(v.id("assistanceRequests")) },
-  returns: v.array(v.object({ requestId: v.id("assistanceRequests"), neighborId: v.union(v.id("neighbors"), v.null()) })),
+export const flagged = query({
+  args: { churchId: v.id("churches"), requestIds: v.array(v.id("assistanceRequests")), visitIds: v.array(v.id("visits")) },
+  returns: v.object({
+    requests: v.array(v.object({ id: v.id("assistanceRequests"), neighborId: v.union(v.id("neighbors"), v.null()), kind, amount: v.number(), status: v.string(), at: v.number() })),
+    visits: v.array(v.object({ id: v.id("visits"), status: v.string(), at: v.number() })),
+  }),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    if (args.requestIds.length > 500) throw new Error("Too many records to open at once.");
-    return await Promise.all(
-      args.requestIds.map(async (requestId) => {
-        const request = await ctx.db.get("assistanceRequests", requestId);
-        return { requestId, neighborId: request?.churchId === args.churchId ? (request.neighborId ?? null) : null };
-      }),
-    );
+    if (args.requestIds.length + args.visitIds.length > 500) throw new Error("Too many records to open at once.");
+    const [requests, visits] = await Promise.all([
+      Promise.all(args.requestIds.map((id) => ctx.db.get("assistanceRequests", id))),
+      Promise.all(args.visitIds.map((id) => ctx.db.get("visits", id))),
+    ]);
+    return {
+      requests: requests.flatMap((request) =>
+        request?.churchId === args.churchId
+          ? [{ id: request._id, neighborId: request.neighborId ?? null, kind: request.kind, amount: request.amountApproved ?? request.amountRequested, status: request.status, at: request.decidedAt ?? request.createdAt }]
+          : [],
+      ),
+      visits: visits.flatMap((visit) => (visit?.churchId === args.churchId ? [{ id: visit._id, status: visit.status, at: visit.scheduledAt }] : [])),
+    };
   },
 });
 

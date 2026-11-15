@@ -133,6 +133,7 @@ export function ReportView({
   onPrint,
   onSpreadsheet,
   sheet,
+  printNext,
 }: {
   report: YearReport;
   groupName: string;
@@ -148,6 +149,8 @@ export function ReportView({
   onSpreadsheet: () => void;
   /** What the check found: the one sheet on this screen. */
   sheet?: React.ReactNode;
+  /** The check came back clear, so printing is the next step and takes the one filled button. */
+  printNext?: boolean;
 }) {
   const [everyLine, setEveryLine] = useState(false);
   const soFar = report.closed ? "" : " so far";
@@ -165,7 +168,7 @@ export function ReportView({
         {years}
         {!blank && (
           <div className="live-row-actions report-actions">
-            <Button variant="outline" onClick={onPrint}>
+            <Button variant={printNext ? "default" : "outline"} onClick={onPrint}>
               <Printer size={17} aria-hidden="true" /> Print this {noun}
             </Button>
             <Button variant="outline" onClick={onSpreadsheet}>
