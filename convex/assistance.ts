@@ -14,7 +14,8 @@ const requestFields = schema.tables.assistanceRequests.validator.fields;
 const callFields = schema.tables.calls.validator.fields;
 /** A payment never goes to the neighbor, so the form offers only these. */
 const payeeKind = v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"));
-const WEEK = 7 * 24 * 60 * 60 * 1000;
+const DAY = 24 * 60 * 60 * 1000;
+const WEEK = 7 * DAY;
 const MAX_CENTS = 10_000_000;
 
 export const nameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -287,13 +288,26 @@ export const calls = query({
   },
 });
 
-/** Writes down a call or a voicemail. A caller whose phone is on file for exactly one neighbor is matched to that neighbor. */
+/**
+ * Who calls back: whoever holds the help-line team's commitment that is under way, or the next one
+ * to start. The team is the one named "Help line". Nobody, when there is no such team or the
+ * commitment is still open.
+ */
+async function callbackOwner(ctx: QueryCtx, churchId: Id<"churches">, now: number) {
+  const teams = await ctx.db.query("teams").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(100);
+  const helpLine = teams.find((team) => nameKey(team.name) === "help line");
+  if (!helpLine) return undefined;
+  const upcoming = await ctx.db.query("commitments").withIndex("by_team_start", (q) => q.eq("teamId", helpLine._id).gte("start", now - DAY)).take(20);
+  return upcoming.find((commitment) => !commitment.cancelled && commitment.end > now)?.assigneeId ?? undefined;
+}
+
+/** Writes down a call or a voicemail. A call to return goes to whoever holds the help line next, unless `ownerId` names someone. A caller whose phone is on file for exactly one neighbor is matched to that neighbor. */
 export const recordCall = mutation({
   args: { churchId: v.id("churches"), callerName: v.string(), phone: v.string(), note: v.string(), callback: callFields.callback, neighborId: v.optional(v.id("neighbors")), ownerId: v.optional(v.id("memberships")) },
   returns: v.object({ callId: v.id("calls"), neighborId: v.union(v.id("neighbors"), v.null()) }),
   handler: async (ctx, { churchId, callerName, phone, note, callback, neighborId, ownerId }) => {
     const member = neighborId ? (await neighborRecord(ctx, churchId, neighborId)).member : await neighborAccess(ctx, churchId);
-    const key = phoneKey(phone);
+    const key = phoneKey(phone), now = Date.now();
     if (!key && !callerName.trim()) throw new Error("A name or a phone number is needed.");
     if (ownerId && (await ctx.db.get("memberships", ownerId))?.churchId !== churchId) throw new Error("Member not found.");
     let matched = neighborId;
@@ -301,7 +315,7 @@ export const recordCall = mutation({
       const sameNumber = await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", key)).take(2);
       if (sameNumber.length === 1) matched = sameNumber[0]._id;
     }
-    const callId = await ctx.db.insert("calls", { churchId, neighborId: matched, callerName: text(callerName, "The name", 120), phone: text(phone, "The phone number", 40), note: text(note, "The note", 2000), callback, ownerId, takenBy: member._id, takenAt: Date.now() });
+    const callId = await ctx.db.insert("calls", { churchId, neighborId: matched, callerName: text(callerName, "The name", 120), phone: text(phone, "The phone number", 40), note: text(note, "The note", 2000), callback, ownerId: ownerId ?? (callback === "needed" ? await callbackOwner(ctx, churchId, now) : undefined), takenBy: member._id, takenAt: now });
     return { callId, neighborId: matched ?? null };
   },
 });

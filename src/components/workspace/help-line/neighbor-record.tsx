@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, Lock } from "lucide-react";
@@ -45,7 +45,7 @@ const back = (
 
 /** Opens one record: the opening is written down first, and only then is the record read. */
 export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) {
-  const { data, format } = useWorkspace();
+  const { data, format, setHeading } = useWorkspace();
   const churchId = data.church.id;
   const open = useMutation(api.neighbors.open);
   const asked = useRef(false);
@@ -62,6 +62,22 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
     api.neighbors.record,
     opened === "yes" ? { churchId, neighborId } : "skip",
   );
+  const title = record?.neighbor.name;
+  const deck =
+    record &&
+    [
+      record.neighbor.address,
+      household(record.neighbor.adults, record.neighbor.children).toLowerCase(),
+      `on file since ${format(record.since, { day: undefined, month: "long", year: "numeric" })}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  // The record's page head is the neighbor's name, with no painting: private and plain.
+  useLayoutEffect(() => {
+    if (!title || !deck) return;
+    setHeading({ title, deck });
+    return () => setHeading(null);
+  }, [setHeading, title, deck]);
   const [step, setStep] = useState<Step | null>(null);
   const [done, setDone] = useState("");
   const finish = (message: string) => {
@@ -222,19 +238,7 @@ export function NeighborRecordView({
   return (
     <>
       <div className="help-record-head">
-        <div>
-          {back}
-          <h2>{neighbor.name}</h2>
-          <p>
-            {[
-              neighbor.address,
-              household(neighbor.adults, neighbor.children).toLowerCase(),
-              `on file since ${format(record.since, { day: undefined, month: "long", year: "numeric" })}`,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-        </div>
+        {back}
         <div className="help-actions">
           <Button variant="outline" onClick={() => onStep({ kind: "call" })}>
             Log a call

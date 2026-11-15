@@ -94,6 +94,29 @@ describe("the help line", () => {
     await expect(as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "", note: "Silence.", callback: "none" })).rejects.toThrow("A name or a phone number is needed.");
   });
 
+  test("a message goes to whoever holds the help line next, skipping cancelled and finished mornings", async () => {
+    const { t, ids, as } = await setup();
+    const churchId = ids.church, hour = 3600000, now = Date.now();
+    const leave = async () => {
+      const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "Earl Jennings", phone: "", note: "Shut-off notice.", callback: "needed" });
+      return (await as(ids.owner).query(api.assistance.calls, { churchId })).waiting.find((call) => call.id === callId)?.ownerName;
+    };
+    expect(await leave()).toBeNull();
+    await t.run(async (ctx) => {
+      const teamId = await ctx.db.insert("teams", { churchId, name: "Help Line", description: "" });
+      const morning = (start: number, assigneeId: typeof ids.owner.memberId | null, cancelled?: boolean) =>
+        ctx.db.insert("commitments", { churchId, teamId, title: "Help line morning", start, end: start + 2 * hour, location: "", preparation: "", assigneeId, coordinatorId: ids.owner.memberId, version: 1, cancelled });
+      await morning(now - 5 * hour, ids.member.memberId);
+      await morning(now + 10 * hour, ids.member.memberId, true);
+      await morning(now + 34 * hour, ids.coordinator.memberId);
+      await morning(now + 58 * hour, ids.owner.memberId);
+    });
+    expect(await leave()).toBe("Thomas Okafor");
+    // A call that needs nothing more has no one to call back.
+    const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "Earl Jennings", phone: "", note: "Thank you.", callback: "none" });
+    expect((await t.run((ctx) => ctx.db.get("calls", callId)))?.ownerId).toBeUndefined();
+  });
+
   test("marking a call returned keeps who returned it, when, and what came of it", async () => {
     const { ids, as } = await setup();
     const { callId } = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Earl Jennings", phone: "(239) 555-0178", note: "Shut-off notice.", callback: "needed" });

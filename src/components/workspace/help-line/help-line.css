@@ -1,7 +1,5 @@
 /* Only what the help line and neighbor screens add to the shared help-* styles in help.css. */
-.help-record-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px 30px; flex-wrap: wrap; margin-bottom: 34px; }
-.help-record-head h2 { font-size: clamp(38px, 4vw, 52px); margin: 10px 0 8px; }
-.help-record-head p { margin: 0; color: var(--live-muted); font-size: 18px; }
+.help-record-head { display: flex; justify-content: space-between; align-items: center; gap: 12px 30px; flex-wrap: wrap; margin: -14px 0 30px; }
 .help-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 16px; color: var(--live-muted); }
 .help-back:hover { color: var(--live-ink); }
 .help-note { font-size: 18px; line-height: 1.55; color: var(--live-muted); max-width: 62ch; margin: -26px 0 46px; }
