@@ -16,8 +16,8 @@ const terms: Record<WordSet, Terms> = {
     members: "Vincentians",
     neighbor: "neighbor",
     neighbors: "neighbors",
-    visit: "Home Visit",
-    visits: "Home Visits",
+    visit: "home visit",
+    visits: "home visits",
   },
 };
 
@@ -191,12 +191,14 @@ export function en(set: WordSet) {
       canAfterAll: "I can go after all",
     },
     /** The Monday note: fixed sentences chosen from the week's counts. */
+    /** The kinds of help a request can be for, as a record line or a form names them. */
+    kinds: { rent: "Rent", utility: "Utility bill", food: "Food", voucher: "Thrift store voucher", other: "Other help" },
     monday: {
       title: "This week, in short.",
-      origin: "Counted from your records. No one’s name or note was sent anywhere.",
-      quiet: "Nothing is waiting on you this week.",
+      origin: "Counted from your records.",
       calls: (count: number) => (count === 1 ? "1 call is waiting to be returned." : `${count} calls are waiting to be returned.`),
-      urgent: (count: number) => (count === 1 ? "1 of them looks urgent." : `${count} of them look urgent.`),
+      firstByAssistant: (count: number) => (count === 1 ? "1 was put first by the assistant." : `${count} were put first by the assistant.`),
+      firstByPerson: (count: number) => (count === 1 ? "1 was put first by one of you." : `${count} were put first by one of you.`),
       oldest: (days: number) => (days === 1 ? "The oldest has waited 1 day." : `The oldest has waited ${days} days.`),
       visits: (count: number) => (count === 1 ? `1 ${t.visit} is planned.` : `${count} ${t.visits} are planned.`),
       open: (count: number) => (count === 1 ? "1 request is waiting for a decision." : `${count} requests are waiting for a decision.`),
@@ -239,7 +241,7 @@ export function en(set: WordSet) {
       openShort: "Open",
       /** One record said in a line: "Rent, $450, approved Nov 3" or "Home visit, Nov 3". */
       happened: { open: "received", approved: "approved", paid: "marked paid", declined: "declined", closed: "closed" },
-      visit: set === "vincentian" ? "Home Visit" : "Home visit",
+      visit: "Home visit",
     },
     /** Why the assistant put a call first. A person can always move it. */
     urgent: {

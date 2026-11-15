@@ -280,12 +280,13 @@ export const checkYear = action({
 /**
  * The week in plain counts, for the note a president reads on Monday. Everything here is counted by
  * code from the records; the model is not asked anything and no note text or name leaves the function.
- * "Urgent" is the same plain signs readUrgency starts from. The screen turns the counts into sentences.
+ * A call counts as put first only when that mark is saved on it, and the count says who put it there,
+ * because a mark by the assistant means the note was read by it. The screen turns the counts into sentences.
  */
 export const weekNote = query({
   args: { churchId: v.id("churches") },
   returns: v.object({
-    callsWaiting: v.number(), callsUrgent: v.number(), oldestWaitingDays: v.number(),
+    callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
     visitsPlanned: v.number(), requestsOpen: v.number(), approvedUnpaid: v.number(), approvedUnpaidCents: v.number(),
     openPlaces: v.number(), away: v.number(),
   }),
@@ -308,7 +309,8 @@ export const weekNote = query({
     for (const request of approved) approvedUnpaidCents += Math.max(0, (request.amountApproved ?? request.amountRequested) - await paidTowardRequest(ctx, request._id));
     return {
       callsWaiting: waiting.length,
-      callsUrgent: waiting.filter(call => urgentSigns(call.note).length > 0).length,
+      callsFirstByAssistant: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
+      callsFirstByPerson: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "person").length,
       oldestWaitingDays: waiting.length ? Math.floor((now - Math.min(...waiting.map(call => call.takenAt))) / 86_400_000) : 0,
       visitsPlanned: visits.filter(visit => visit.status === "scheduled").length,
       requestsOpen: open.length, approvedUnpaid: approved.length, approvedUnpaidCents,

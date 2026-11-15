@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { words } from "@/lib/words";
 import { mondayOf, weekLines } from "./week-note";
 
-const none = { callsWaiting: 0, callsUrgent: 0, oldestWaitingDays: 0, visitsPlanned: 0, requestsOpen: 0, approvedUnpaid: 0, approvedUnpaidCents: 0, openPlaces: 0, away: 0 };
-const texts = (...args: Parameters<typeof weekLines>) => weekLines(...args).map((line) => line.text);
+const none = { callsWaiting: 0, callsFirstByAssistant: 0, callsFirstByPerson: 0, oldestWaitingDays: 0, visitsPlanned: 0, requestsOpen: 0, approvedUnpaid: 0, approvedUnpaidCents: 0, openPlaces: 0, away: 0 };
+const texts = (...args: Parameters<typeof weekLines>) => weekLines(...args).map((line) => line.parts.map((part) => part.text).join(" "));
 
 describe("the Monday note", () => {
   test("a quiet week has no lines", () => {
@@ -11,10 +11,10 @@ describe("the Monday note", () => {
   });
 
   test("urgency and waiting are said only alongside the calls they describe", () => {
-    expect(weekLines(words("en").monday, { ...none, callsUrgent: 2, oldestWaitingDays: 4 })).toEqual([]);
-    expect(weekLines(words("en").monday, { ...none, callsWaiting: 3, callsUrgent: 1, oldestWaitingDays: 4, away: 2 })).toEqual([
-      { area: "help-line", text: "3 calls are waiting to be returned. 1 of them looks urgent. The oldest has waited 4 days.", brief: "3 calls to return" },
-      { area: "time-off", text: "2 volunteers are away this week.", brief: "2 volunteers away" },
+    expect(weekLines(words("en").monday, { ...none, callsFirstByAssistant: 2, oldestWaitingDays: 4 })).toEqual([]);
+    expect(weekLines(words("en").monday, { ...none, callsWaiting: 3, callsFirstByAssistant: 1, callsFirstByPerson: 2, oldestWaitingDays: 4, away: 2 })).toEqual([
+      { area: "help-line", parts: [{ text: "3 calls are waiting to be returned." }, { text: "1 was put first by the assistant.", assistant: true }, { text: "2 were put first by one of you." }, { text: "The oldest has waited 4 days." }], brief: "3 calls to return" },
+      { area: "time-off", parts: [{ text: "2 volunteers are away this week." }], brief: "2 volunteers away" },
     ]);
   });
 
@@ -24,7 +24,7 @@ describe("the Monday note", () => {
   });
 
   test("the St. Vincent de Paul word set and Spanish carry through", () => {
-    expect(texts(words("en", "vincentian").monday, { ...none, visitsPlanned: 1 })).toEqual(["1 Home Visit is planned."]);
+    expect(texts(words("en", "vincentian").monday, { ...none, visitsPlanned: 1 })).toEqual(["1 home visit is planned."]);
     expect(texts(words("es", "vincentian").monday, { ...none, visitsPlanned: 2 })).toEqual(["Hay 2 visitas domiciliarias planeadas."]);
   });
 

@@ -210,7 +210,7 @@ describe("a call note drafted into a request", () => {
     await t.run(async ctx => {
       const neighbor = (await ctx.db.query("neighbors").first())!;
       await ctx.db.patch("calls", ids.callId, { takenAt: now - 3 * day - 1000 });
-      await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Earl Jennings", phone: "(239) 555-0178", note: "Power shut-off notice for the 21st. Lives alone.", callback: "needed", takenBy: ids.coordinator.memberId, takenAt: now - day });
+      await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Earl Jennings", phone: "(239) 555-0178", note: "Power shut-off notice for the 21st. Lives alone.", callback: "needed", takenBy: ids.coordinator.memberId, takenAt: now - day, urgent: { reasons: ["shutoff"], day: 21, by: "assistant" } });
       await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Mai Tran", phone: "(239) 555-0119", note: "No food today.", callback: "done", takenBy: ids.coordinator.memberId, takenAt: now - day });
       await ctx.db.insert("visits", { churchId: ids.churchId, neighborId: neighbor._id, scheduledAt: now + 2 * day, status: "scheduled", visitors: [], notes: "", createdBy: ids.coordinator.memberId, createdAt: now });
       await ctx.db.insert("visits", { churchId: ids.churchId, neighborId: neighbor._id, scheduledAt: now + 9 * day, status: "scheduled", visitors: [], notes: "", createdBy: ids.coordinator.memberId, createdAt: now });
@@ -223,7 +223,7 @@ describe("a call note drafted into a request", () => {
       await ctx.db.insert("timeOff", { churchId: ids.churchId, memberId: ids.member.memberId, start: iso(now - 2 * day), end: iso(now + 3 * day), note: "" });
     });
     const note = await coordinator.query(api.drafts.weekNote, { churchId: ids.churchId });
-    expect(note).toEqual({ callsWaiting: 2, callsUrgent: 1, oldestWaitingDays: 3, visitsPlanned: 1, requestsOpen: 0, approvedUnpaid: 1, approvedUnpaidCents: 25000, openPlaces: 1, away: 1 });
+    expect(note).toEqual({ callsWaiting: 2, callsFirstByAssistant: 1, callsFirstByPerson: 0, oldestWaitingDays: 3, visitsPlanned: 1, requestsOpen: 0, approvedUnpaid: 1, approvedUnpaidCents: 25000, openPlaces: 1, away: 1 });
     expect(fetch).not.toHaveBeenCalled();
     await expect(member.query(api.drafts.weekNote, { churchId: ids.churchId })).rejects.toThrow("coordinators and owners only");
   });

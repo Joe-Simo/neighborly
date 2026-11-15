@@ -44,7 +44,7 @@ describe("words", () => {
     expect(words("en", "vincentian").week.fromGroup).toBe("From your conference");
     expect(words("en", "general").week.fromGroup).toBe("From your group");
     expect(words("es", "vincentian").week.fromGroup).toBe("De tu conferencia");
-    expect(words("en", "vincentian").terms.visit).toBe("Home Visit");
+    expect(words("en", "vincentian").terms.visit).toBe("home visit");
     expect(words("es", "vincentian").terms.member).toBe("vicentino");
     expect(words("ht", "vincentian").terms.group).toBe("konferans");
   });

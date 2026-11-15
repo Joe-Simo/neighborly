@@ -10,7 +10,8 @@ import { useWorkspace } from "@/components/workspace/context";
 import { formatDate, type Words } from "@/lib/words";
 
 type Counts = FunctionReturnType<typeof api.drafts.weekNote>;
-type Line = { area: LiveArea; text: string; brief: string };
+/** A line is said in parts so the one part that rests on the assistant's reading can be shown in plum. */
+type Line = { area: LiveArea; parts: { text: string; assistant?: true }[]; brief: string };
 
 const day = 86_400_000;
 const put = "week-note-put-away";
@@ -40,27 +41,28 @@ export function mondayOf(now: number, timeZone: string) {
 
 /** At most four lines, the most pressing first, each with the room where it is dealt with. */
 export function weekLines(text: Words["monday"], counts: Counts): Line[] {
-  const calls = [
-    text.calls(counts.callsWaiting),
-    counts.callsUrgent ? text.urgent(counts.callsUrgent) : "",
-    counts.oldestWaitingDays ? text.oldest(counts.oldestWaitingDays) : "",
-  ].filter(Boolean).join(" ");
-  const all: (Line & { count: number })[] = [
-    { count: counts.callsWaiting, area: "help-line", text: calls, brief: text.brief.calls(counts.callsWaiting) },
-    { count: counts.requestsOpen, area: "neighbors", text: text.open(counts.requestsOpen), brief: text.brief.open(counts.requestsOpen) },
-    { count: counts.approvedUnpaid, area: "treasury", text: text.approved(counts.approvedUnpaid), brief: text.brief.approved(counts.approvedUnpaid) },
-    { count: counts.visitsPlanned, area: "visits", text: text.visits(counts.visitsPlanned), brief: text.brief.visits(counts.visitsPlanned) },
-    { count: counts.openPlaces, area: "commitments", text: text.places(counts.openPlaces), brief: text.brief.places(counts.openPlaces) },
-    { count: counts.away, area: "time-off", text: text.away(counts.away), brief: text.brief.away(counts.away) },
+  const calls: Line["parts"] = [
+    { text: text.calls(counts.callsWaiting) },
+    ...(counts.callsFirstByAssistant ? [{ text: text.firstByAssistant(counts.callsFirstByAssistant), assistant: true as const }] : []),
+    ...(counts.callsFirstByPerson ? [{ text: text.firstByPerson(counts.callsFirstByPerson) }] : []),
+    ...(counts.oldestWaitingDays ? [{ text: text.oldest(counts.oldestWaitingDays) }] : []),
   ];
-  return all.filter((line) => line.count > 0).slice(0, 4).map(({ area, text, brief }) => ({ area, text, brief }));
+  const all: (Line & { count: number })[] = [
+    { count: counts.callsWaiting, area: "help-line", parts: calls, brief: text.brief.calls(counts.callsWaiting) },
+    { count: counts.requestsOpen, area: "neighbors", parts: [{ text: text.open(counts.requestsOpen) }], brief: text.brief.open(counts.requestsOpen) },
+    { count: counts.approvedUnpaid, area: "treasury", parts: [{ text: text.approved(counts.approvedUnpaid) }], brief: text.brief.approved(counts.approvedUnpaid) },
+    { count: counts.visitsPlanned, area: "visits", parts: [{ text: text.visits(counts.visitsPlanned) }], brief: text.brief.visits(counts.visitsPlanned) },
+    { count: counts.openPlaces, area: "commitments", parts: [{ text: text.places(counts.openPlaces) }], brief: text.brief.places(counts.openPlaces) },
+    { count: counts.away, area: "time-off", parts: [{ text: text.away(counts.away) }], brief: text.brief.away(counts.away) },
+  ];
+  return all.filter((line) => line.count > 0).slice(0, 4).map(({ area, parts, brief }) => ({ area, parts, brief }));
 }
 
 /**
  * The week in a few plain sentences, for the people who lead the group. It takes one prop:
  * `brief` when something else on the screen already waits for a yes, so the note is one line.
  * It shows nothing to anyone who may not open neighbor records, and nothing once it has been
- * read, until the next Monday. The sentences are fixed words around counts; none of it was
+ * read, until the next Monday, and nothing in a week with nothing waiting. The sentences are fixed words around counts; none of it was
  * written by the assistant.
  */
 export function WeekNote({ brief = false }: { brief?: boolean }) {
@@ -96,8 +98,8 @@ export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts
   const [open, setOpen] = useState(false);
   const text = words.monday;
   const lines = weekLines(text, counts);
+  if (!lines.length) return null;
   if (brief && !open) {
-    if (!lines.length) return null;
     return (
       <p className="mb-7 flex flex-wrap items-baseline gap-x-3 text-[17px] leading-snug text-[var(--live-ink)]">
         <span>
@@ -115,20 +117,23 @@ export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts
         {formatDate(words.locale, monday, { timeZone: data.church.timeZone, weekday: "long", month: "long", day: "numeric" })}
       </p>
       <h2 id="week-note">{text.title}</h2>
-      {lines.length ? (
-        <ul className="mt-5 mb-4 grid list-none gap-3 p-0 text-[19px] leading-snug text-[var(--live-ink)]">
+      <ul className="mt-5 mb-4 grid list-none gap-3 p-0 text-[19px] leading-snug text-[var(--live-ink)]">
           {lines.map((line) => (
             <li key={line.area} className="flex flex-wrap items-baseline gap-x-4">
-              <span>{line.text}</span>
+              <span>
+                {line.parts.map((part, index) => (
+                  <span key={part.text} className={part.assistant ? "text-[var(--help-plum)]" : undefined}>
+                    {index > 0 && " "}
+                    {part.text}
+                  </span>
+                ))}
+              </span>
               <Link href={`/app/${line.area}`} className={`${quietLink} min-[761px]:!min-h-0`}>
                 {words.menu[line.area]}
               </Link>
             </li>
           ))}
-        </ul>
-      ) : (
-        <p className="help-why !text-[19px]">{text.quiet}</p>
-      )}
+      </ul>
       <p className="!max-w-none text-[15px]">{text.origin}</p>
       <button type="button" className={quietLink} onClick={onDone}>
         {text.done}
