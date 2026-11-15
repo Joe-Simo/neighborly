@@ -193,6 +193,8 @@ export function ht(set: WordSet): Words {
       going: "Ou prale",
       notGoing: "Ou pa ka vini",
       waiting: "N ap tann repons ou",
+      changeReply: "Chanje repons",
+      due: (date) => `Pou ${date}`,
       attend: "M ap vini",
       decline: "Mwen pa kapab",
       noMeetingsTitle: "Pa gen reyinyon ki planifye.",

@@ -198,6 +198,8 @@ export function es(set: WordSet): Words {
       going: "Vas a ir",
       notGoing: "No puedes ir",
       waiting: "Esperando tu respuesta",
+      changeReply: "Cambiar respuesta",
+      due: (date) => `Para el ${date}`,
       attend: "Asistir",
       decline: "No puedo",
       noMeetingsTitle: "No hay reuniones planeadas.",

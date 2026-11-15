@@ -6,6 +6,7 @@ import type { FunctionReturnType } from "convex/server";
 import { Download, UserPlus } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { readFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
 import { invitationLinksCsv, readMemberRows, type MemberRow } from "@/components/workspace/tools/member-rows";
 import { readSoFar, SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
@@ -77,7 +78,7 @@ export function MembersImport() {
             setResults(imported);
             setState({ step: "done", done: imported.filter((row) => row.outcome === "invited").length, leftOut: membersLeftOut(imported) });
           })
-          .catch(() => setState({ ...review, error: "The invitations could not be created. Nobody was invited and your file is still here; try again." }));
+          .catch((cause: unknown) => setState({ ...review, error: readFailure(cause, "The invitations could not be created. Nobody was invited and your file is still here; try again.") }));
       }}
       afterDone={
         <Button

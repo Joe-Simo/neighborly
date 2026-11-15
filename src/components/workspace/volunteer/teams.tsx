@@ -185,6 +185,11 @@ function LiveTeamRoster({
                   onClick={() => choose({ type: "setTeamApproval", teamId: team.id, personId: managing.personId, approved: !managing.approved })}
                 >
                   {managing.approved ? "Revoke approval for this team" : "Approve for this team"}
+                  <small>
+                    {managing.approved
+                      ? "They stay on the team. Their open requests to cover for it are withdrawn."
+                      : "They can take this team’s commitments."}
+                  </small>
                 </Button>
                 {isOwner && (
                   <Button
@@ -201,10 +206,16 @@ function LiveTeamRoster({
                     }
                   >
                     {managing.role === "coordinator" ? "Make a member of this team" : "Make a coordinator of this team"}
+                    <small>
+                      {managing.role === "coordinator"
+                        ? "They keep their place and no longer manage this team’s members."
+                        : "They can add, approve and remove this team’s members, and become a coordinator of the conference."}
+                    </small>
                   </Button>
                 )}
               </>
             )}
+            {managing.status === "active" && <hr className="team-apart" />}
             <Button
               variant="outline"
               size="sm"
@@ -212,6 +223,11 @@ function LiveTeamRoster({
               onClick={() => choose({ type: "setTeamMember", teamId: team.id, personId: managing.personId, member: false })}
             >
               {managing.status === "invited" ? "Withdraw the invitation" : "Remove from this team"}
+              <small>
+                {managing.status === "invited"
+                  ? "They are not added. You can invite them again."
+                  : "Their place on this team ends. Their other teams and their account stay."}
+              </small>
             </Button>
           </div>
         </LiveDialog>

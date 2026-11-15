@@ -7,6 +7,8 @@ import { strToU8, zipSync } from "fflate";
 import { CircleCheck, Download, FolderDown } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { LiveFailure } from "@/components/workspace/states";
+import { readFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
 import { CountUp } from "@/components/workspace/primitives";
 import { recordFiles, recordsCover, recordsCoverName, recordsCsv, recordsFileName, recordsZipName, type RecordFileKey } from "@/components/workspace/tools/records";
@@ -56,7 +58,7 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
       <p className="tools-leaf-deck">
         Your conference’s records are yours. Download them as spreadsheets whenever you like: to keep, to print, or to move. They go to this device only; nothing is sent anywhere.
       </p>
-      {"error" in state && state.error && <div className="live-error" role="alert"><p>{state.error}</p></div>}
+      {"error" in state && state.error && <LiveFailure message={state.error} kept="" />}
       {state.step === "ready" && (
         <div className="tools-file">
           <div className="help-actions">
@@ -147,7 +149,7 @@ export function RecordsExport() {
     <RecordsExportView
       state={state}
       onReset={() => setState({ step: "ready" })}
-      onGather={() => void gather().catch(() => setState({ step: "ready", error: "The connection dropped while gathering. Nothing was lost or changed; try again." }))}
+      onGather={() => void gather().catch((cause: unknown) => setState({ step: "ready", error: readFailure(cause, "The connection dropped while gathering. Nothing was lost or changed; try again.") }))}
       onDownloadAll={async (files) => {
         // The cover carries the site's two typefaces inside it. Without them (offline, say) it still reads, in the device's own faces.
         const [serif, sans] = await Promise.all(["newsreader-latin-variable", "source-sans-3-latin-variable"].map(face));
