@@ -13,7 +13,8 @@ import { initials } from "@/components/workspace/volunteer/people";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TeamsSection() {
-  const { data, pending, isOwner, perform } = useWorkspace();
+  const { data, pending, isOwner, perform, words } = useWorkspace();
+  const t = words.teams;
   const [addingTo, setAddingTo] = useState<LiveWorkspaceData["teams"][number] | null>(null);
   // Teams joined in this visit: their slip stays, folded green, so the yes is seen to land.
   const [joined, setJoined] = useState<string[]>([]);
@@ -25,18 +26,17 @@ export function TeamsSection() {
           <section className="live-team team-card" key={team.id}>
             <h2>{team.name}</h2>
             <p>
-              {team.description || "A team with room to contribute."}
+              {team.description || t.noDescription}
             </p>
             {joined.includes(team.id) ? (
               <div className="team-asked paper-corner paper-fold" role="status">
-                <p>You’re on this team.</p>
+                <p>{t.onTeam}</p>
               </div>
             ) : (
               team.myInvitation && (
                 <div className="team-asked paper-corner paper-waits paper-settle">
                   <p>
-                    You’re invited to this team. Joining does not accept a
-                    commitment.
+                    {t.invited}
                   </p>
                   <div className="live-row-actions">
                     <Button
@@ -47,7 +47,7 @@ export function TeamsSection() {
                           setJoined((teams) => [...teams, team.id]);
                       }}
                     >
-                      Join team
+                      {t.join}
                     </Button>
                     <Button
                       disabled={pending}
@@ -55,7 +55,7 @@ export function TeamsSection() {
                       variant="ghost"
                       onClick={() => void perform({ type: "respondTeam", teamId: team.id, accept: false })}
                     >
-                      Decline
+                      {t.decline}
                     </Button>
                   </div>
                 </div>
@@ -72,7 +72,7 @@ export function TeamsSection() {
           </section>
         ))
       ) : (
-        <LiveEmpty title="Start with one team.">
+        <LiveEmpty title={t.emptyTitle}>
           Give your first team a name, then add people when they join
           your group workspace.
         </LiveEmpty>
@@ -130,6 +130,7 @@ function LiveTeamRoster({
   pending: boolean;
   add: () => void;
 }) {
+  const t = useWorkspace().words.teams;
   const [open, setOpen] = useState(false);
   const roster = usePaginatedQuery(
     api.pages.teamRosterPage,
@@ -154,12 +155,12 @@ function LiveTeamRoster({
             </span>
           ))}
           <span className="live-meta">
-            {team.memberIds.length} {team.memberIds.length === 1 ? "member" : "members"}
+            {t.members(team.memberIds.length)}
           </span>
         </div>
         {!team.myInvitation && (
           <Button variant="link" className="tools-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
-            {open ? "Hide members" : "View members"}
+            {open ? t.hideMembers : t.viewMembers}
           </Button>
         )}
         {team.canCoordinate && (
@@ -225,10 +226,10 @@ function LiveTeamRoster({
                   <div>
                     <h3>{person.name}</h3>
                     <p data-waits={person.status === "invited" || !person.approved ? "" : undefined}>
-                      {person.role === "coordinator" ? "Coordinator" : "Member"}
+                      {person.role === "coordinator" ? t.coordinator : t.member}
                       {person.status === "invited"
-                        ? " · Invited, waiting to join"
-                        : !person.approved && " · Waiting for team approval"}
+                        ? ` · ${t.invitedWaiting}`
+                        : !person.approved && ` · ${t.waitingApproval}`}
                     </p>
                   </div>
                 </div>
@@ -250,8 +251,8 @@ function LiveTeamRoster({
               onClick={() => roster.loadMore(20)}
             >
               {roster.status === "CanLoadMore"
-                ? "Load more members"
-                : "Loading members…"}
+                ? t.loadMore
+                : t.loading}
             </Button>
           )}
         </>

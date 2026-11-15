@@ -12,7 +12,6 @@ export const initials = (name: string) => {
   const parts = name.trim().split(/\s+/);
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : (parts[0]?.[1] ?? ""))).toUpperCase();
 };
-const roles: Record<string, string> = { owner: "Owner", coordinator: "Coordinator", member: "Member" };
 /** An address that may break after the name, never in the middle of a word. */
 function Address({ email }: { email: string }) {
   const at = email.lastIndexOf("@");
@@ -20,7 +19,8 @@ function Address({ email }: { email: string }) {
 }
 
 export function PeopleSection() {
-  const { data, pending, isOwner, confirm: setConfirmation } = useWorkspace();
+  const { data, pending, isOwner, confirm: setConfirmation, words } = useWorkspace();
+  const roles: Record<string, string> = words.people.roles;
   const [managingId, setManagingId] = useState<string | null>(null);
   const managing = data.people.find((person) => person.id === managingId);
   return (
@@ -35,15 +35,15 @@ export function PeopleSection() {
               <div>
                 <h3>
                   {person.name}
-                  <span className="people-role">{person.active ? (roles[person.role] ?? person.role) : "Access removed"}</span>
+                  <span className="people-role">{person.active ? (roles[person.role] ?? person.role) : words.people.removed}</span>
                 </h3>
                 <p><Address email={person.email} /></p>
               </div>
             </div>
             <div className="live-meta">
-              <span className="people-role-wide">{person.active ? (roles[person.role] ?? person.role) : "Access removed"}</span>
+              <span className="people-role-wide">{person.active ? (roles[person.role] ?? person.role) : words.people.removed}</span>
               {/* Approved is the rule, so only the exception is said. */}
-              <span data-waits="">{!person.approved && "Waiting for approval"}</span>
+              <span data-waits="">{!person.approved && words.people.waiting}</span>
             </div>
             <div className="live-row-actions">
               {isOwner && person.role !== "owner" && (
