@@ -269,6 +269,7 @@ export const clear = internalMutation({
     const rows = (await Promise.all([
       ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("requestDrafts").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),

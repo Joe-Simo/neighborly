@@ -82,6 +82,21 @@ export default defineSchema({
     outcome: v.optional(v.string()),
     urgent: v.optional(v.object({ reasons: v.array(v.string()), day: v.optional(v.number()), by: v.union(v.literal("assistant"), v.literal("person")), byMember: v.optional(v.id("memberships")) })),
   }).index("by_church", ["churchId", "takenAt"]).index("by_church_callback", ["churchId", "callback"]).index("by_neighbor", ["neighborId"]),
+  // A request the assistant drafted from a call note, waiting for a person's yes. Kept so it survives a reload.
+  // Only what the draft says, the call it came from, who asked and when: no neighbor name, phone or address.
+  requestDrafts: defineTable({
+    churchId: v.id("churches"),
+    callId: v.id("calls"),
+    kind: v.optional(v.union(v.literal("rent"), v.literal("utility"), v.literal("food"), v.literal("voucher"), v.literal("other"))),
+    amountRequested: v.optional(cents),
+    payeeKind: v.optional(v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"))),
+    payeeName: v.string(),
+    quote: v.string(),
+    notes: v.array(v.string()),
+    verification: v.union(v.literal("review"), v.literal("checked")),
+    createdBy: v.id("memberships"),
+    createdAt: v.number(),
+  }).index("by_church", ["churchId", "createdAt"]).index("by_call", ["callId"]),
   assistanceRequests: defineTable({
     churchId: v.id("churches"),
     neighborId: v.id("neighbors"),
