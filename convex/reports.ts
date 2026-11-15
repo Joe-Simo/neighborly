@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { neighborAccess } from "./access";
+import { incomeSources } from "./treasury";
 
 /**
  * The year's counts, read straight from the records. Nothing here writes, and nothing here
@@ -25,16 +26,18 @@ async function whole<T>(rows: { take: (n: number) => Promise<T[]> }, limit = LIM
   return read;
 }
 
-export function fiscalYear(year: number, zone: string) {
-  const start = DateTime.fromObject({ year: year - 1, month: 10, day: 1 }, { zone });
-  const end = start.plus({ years: 1 });
+/** A whole fiscal year, or one of its quarters: 1 is October to December, 4 is July to September. */
+export function fiscalYear(year: number, zone: string, quarter?: number) {
+  const first = DateTime.fromObject({ year: year - 1, month: 10, day: 1 }, { zone });
+  const start = quarter ? first.plus({ months: 3 * (quarter - 1) }) : first;
+  const end = start.plus({ months: quarter ? 3 : 12 });
   return {
     start: start.toMillis(),
     end: end.toMillis(),
     firstDay: start.toFormat("yyyy-MM-dd"),
     lastDay: end.minus({ days: 1 }).toFormat("yyyy-MM-dd"),
     dayAfter: end.toFormat("yyyy-MM-dd"),
-    months: Array.from({ length: 12 }, (_, index) => start.plus({ months: index }).toFormat("yyyy-MM")),
+    months: Array.from({ length: quarter ? 3 : 12 }, (_, index) => start.plus({ months: index }).toFormat("yyyy-MM")),
   };
 }
 /** The fiscal year a moment falls in. */
@@ -67,10 +70,21 @@ const monthLine = v.object({
   moneyIn: v.number(),
 });
 const moneyLine = v.object({ label: v.string(), amount: v.number() });
+const memberLine = v.object({
+  memberId: v.id("memberships"),
+  name: v.string(),
+  visits: v.number(),
+  shifts: v.number(),
+  /** Visit hours plus finished shift hours. */
+  hours: v.number(),
+  miles: v.number(),
+});
 const teamLine = v.object({ teamId: v.id("teams"), name: v.string(), shifts: v.number(), people: v.number(), hours: v.number() });
 
 export const yearReport = v.object({
   year: v.number(),
+  /** 1 to 4 when the report covers one quarter, null for the whole year. */
+  quarter: v.union(v.null(), v.number()),
   firstDay: v.string(),
   lastDay: v.string(),
   timeZone: v.string(),
@@ -82,6 +96,8 @@ export const yearReport = v.object({
   people: v.number(),
   adults: v.number(),
   children: v.number(),
+  /** Households that money went toward for more than one request in the period. */
+  householdsHelpedAgain: v.number(),
   householdsByLanguage: v.object({ en: v.number(), es: v.number(), ht: v.number() }),
   /** Completed home visits whose planned time falls in the year. */
   visits: v.number(),
@@ -115,8 +131,11 @@ export const yearReport = v.object({
     /** Different members who made a visit or served a shift in the year. */
     membersServing: v.number(),
     teams: v.array(teamLine),
+    /** Each member who served, most hours first. Members are volunteers, never neighbors. */
+    members: v.array(memberLine),
   }),
   money: v.object({
+    /** Every ledger entry before the first day, plus any "Opening balance" entered in the period. */
     beginningBalance: v.number(),
     received: v.number(),
     /** Money in by source, largest first. */
@@ -157,7 +176,7 @@ export const years = query({
 });
 
 export const year = query({
-  args: { churchId: v.id("churches"), year: v.number() },
+  args: { churchId: v.id("churches"), year: v.number(), quarter: v.optional(v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4))) },
   returns: yearReport,
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
@@ -165,7 +184,7 @@ export const year = query({
     if (!church) throw new Error("Group not found.");
     if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new Error("Choose a year.");
     const zone = church.timeZone;
-    const span = fiscalYear(args.year, zone);
+    const span = fiscalYear(args.year, zone, args.quarter);
     const now = Date.now();
     const monthOf = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM");
     const inChurch = { churchId: args.churchId };
@@ -196,7 +215,8 @@ export const year = query({
     const paidByRequest = new Map<Id<"assistanceRequests">, { kind: Kind; neighborId: Id<"neighbors"> | undefined; paid: number; month: string }>();
     for (const entry of ledger) {
       const signed = entry.kind === "income" ? entry.amount : -entry.amount;
-      if (entry.date < span.firstDay) { beginningBalance += signed; continue; }
+      // What the group began with is a balance, not money received, even when it was entered inside the period.
+      if (entry.date < span.firstDay || (entry.category === incomeSources.opening && !entry.requestId)) { beginningBalance += signed; continue; }
       const moneyIn = (entry.kind === "income") !== Boolean(entry.reverses);
       if (entry.requestId) {
         // Help toward a request: expenses less income among the entries carrying its id.
@@ -222,6 +242,7 @@ export const year = query({
       return line;
     };
     const helped = new Set<Id<"neighbors">>();
+    const requestsPaidFor = new Map<Id<"neighbors">, number>();
     let helpPaid = 0;
     for (const toward of paidByRequest.values()) {
       const line = kindLineFor(toward.kind);
@@ -231,6 +252,7 @@ export const year = query({
       line.requestsPaid += 1;
       if (!toward.neighborId) continue;
       line.neighbors.add(toward.neighborId);
+      add(requestsPaidFor, toward.neighborId, 1);
       helped.add(toward.neighborId);
       helpedIn(toward.month, toward.neighborId);
     }
@@ -248,7 +270,12 @@ export const year = query({
 
     for (const call of calls) month(monthOf(call.takenAt)).calls += 1;
 
-    const serving = new Set<Id<"memberships">>();
+    const serving = new Map<Id<"memberships">, { visits: number; shifts: number; hours: number; miles: number }>();
+    const served = (memberId: Id<"memberships">) => {
+      const line = serving.get(memberId) ?? { visits: 0, shifts: 0, hours: 0, miles: 0 };
+      serving.set(memberId, line);
+      return line;
+    };
     let visitHours = 0, visitMiles = 0;
     for (const visit of visits) {
       helped.add(visit.neighborId);
@@ -256,7 +283,10 @@ export const year = query({
       month(key).visits += 1;
       helpedIn(key, visit.neighborId);
       for (const visitor of visit.visitors) {
-        serving.add(visitor.memberId);
+        const line = served(visitor.memberId);
+        line.visits += 1;
+        line.hours += visitor.hours;
+        line.miles += visitor.miles;
         visitHours += visitor.hours;
         visitMiles += visitor.miles;
       }
@@ -284,14 +314,23 @@ export const year = query({
     const teamLines = await Promise.all(teams.map(async (team) => {
       const shifts = (await whole(ctx.db.query("commitments").withIndex("by_team_start", (q) => q.eq("teamId", team._id).gte("start", span.start).lt("start", shiftEnd))))
         .filter((shift) => shift.assigneeId && !shift.cancelled && shift.end <= now);
-      const people = new Set(shifts.flatMap((shift) => (shift.assigneeId ? [shift.assigneeId] : [])));
-      for (const person of people) serving.add(person);
+      const people = new Set<Id<"memberships">>();
+      for (const shift of shifts) {
+        if (!shift.assigneeId) continue;
+        people.add(shift.assigneeId);
+        const line = served(shift.assigneeId);
+        line.shifts += 1;
+        line.hours += (shift.end - shift.start) / 3600000;
+      }
       return { teamId: team._id, name: team.name, shifts: shifts.length, people: people.size, hours: round(shifts.reduce((hours, shift) => hours + (shift.end - shift.start) / 3600000, 0)) };
     }));
     const shiftHours = round(teamLines.reduce((hours, team) => hours + team.hours, 0));
 
+    const names = new Map(memberships.map((member) => [member._id, member.name]));
+
     return {
       year: args.year,
+      quarter: args.quarter ?? null,
       firstDay: span.firstDay,
       lastDay: span.lastDay,
       timeZone: zone,
@@ -300,6 +339,7 @@ export const year = query({
       people: adults + children,
       adults,
       children,
+      householdsHelpedAgain: [...requestsPaidFor.values()].filter((paid) => paid > 1).length,
       householdsByLanguage,
       visits: visits.length,
       peopleVisited: visits.reduce((people, visit) => people + size(visit.neighborId), 0),
@@ -318,6 +358,9 @@ export const year = query({
         activeMembers: memberships.filter((member) => member.active).length,
         membersServing: serving.size,
         teams: teamLines.filter((team) => team.shifts > 0).sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
+        members: [...serving]
+          .map(([memberId, line]) => ({ memberId, name: names.get(memberId) ?? "Former member", visits: line.visits, shifts: line.shifts, hours: round(line.hours), miles: round(line.miles) }))
+          .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
       },
       money: { beginningBalance, received, sources: lines(sources), otherSpending: lines(otherSpending), spent, endingBalance: beginningBalance + received - spent },
       months: span.months.map(month),

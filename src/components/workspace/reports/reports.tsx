@@ -10,8 +10,10 @@ import { HelpRoom } from "@/components/workspace/help-line/room";
 import { csvFileName, reportCsv } from "@/components/workspace/reports/lines";
 import {
   ReportLoading,
+  QuarterSwitch,
   ReportView,
   YearSwitch,
+  type Quarter,
 } from "@/components/workspace/reports/report-view";
 
 /** Says what happened and what to do when the year cannot be read, and leaves the rest of the workspace standing. */
@@ -39,6 +41,7 @@ function Report() {
   const churchId = data.church.id;
   const onRecord = useQuery(api.reports.years, { churchId });
   const [chosen, setChosen] = useState<number>();
+  const [quarter, setQuarter] = useState<Quarter>();
   const [done, setDone] = useState("");
 
   // The yearly report is written in the fall, so until January the year that just closed opens first.
@@ -48,7 +51,7 @@ function Report() {
     chosen ??
     (onRecord &&
       (fall && onRecord.years.includes(onRecord.current - 1) ? onRecord.current - 1 : onRecord.current));
-  const report = useQuery(api.reports.year, year === undefined ? "skip" : { churchId, year });
+  const report = useQuery(api.reports.year, year === undefined ? "skip" : { churchId, year, quarter });
   // The year last shown stays on screen while the next one is added up.
   const [shown, setShown] = useState(report);
   if (report && report !== shown) setShown(report);
@@ -69,17 +72,27 @@ function Report() {
       report={shown}
       groupName={data.church.name}
       thisMonth={today.toFormat("yyyy-MM")}
+      printed={now}
       done={done}
       years={
-        <YearSwitch
-          years={onRecord.years}
-          current={onRecord.current}
-          year={year}
-          onYear={(next) => {
-            setDone("");
-            setChosen(next);
-          }}
-        />
+        <div className="report-switches">
+          <QuarterSwitch
+            quarter={quarter}
+            onQuarter={(next) => {
+              setDone("");
+              setQuarter(next);
+            }}
+          />
+          <YearSwitch
+            years={onRecord.years}
+            current={onRecord.current}
+            year={year}
+            onYear={(next) => {
+              setDone("");
+              setChosen(next);
+            }}
+          />
+        </div>
       }
       onPrint={() => window.print()}
       onSpreadsheet={() => saveSpreadsheet(shown)}

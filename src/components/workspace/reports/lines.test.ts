@@ -3,8 +3,8 @@ import Papa from "papaparse";
 import { csvFileName, isBlank, longSpanLabel, money, reportCsv, reportLines, spanLabel, type YearReport } from "./lines";
 
 const report = {
-  year: 2026, firstDay: "2025-10-01", lastDay: "2026-09-30", timeZone: "America/New_York", closed: true,
-  households: 2, people: 7, adults: 3, children: 4, householdsByLanguage: { en: 1, es: 1, ht: 0 },
+  year: 2026, quarter: null, firstDay: "2025-10-01", lastDay: "2026-09-30", timeZone: "America/New_York", closed: true,
+  households: 2, people: 7, adults: 3, children: 4, householdsHelpedAgain: 1, householdsByLanguage: { en: 1, es: 1, ht: 0 },
   visits: 3, peopleVisited: 11, visitHours: 7.5, visitMiles: 64, helpPaid: 45050,
   kinds: [
     { kind: "rent", requests: 1, requestsPaid: 1, households: 1, people: 4, paid: 40000 },
@@ -15,7 +15,7 @@ const report = {
   ],
   requests: { received: 3, open: 0, approved: 0, paid: 2, declined: 1, closed: 0, referred: 1, amountRequested: 70000, amountApproved: 45050 },
   calls: { taken: 5, returned: 4, waiting: 1 },
-  time: { hours: 13.5, shiftHours: 6, activeMembers: 4, membersServing: 3, teams: [{ teamId: "team" as YearReport["time"]["teams"][number]["teamId"], name: "Help line", shifts: 2, people: 2, hours: 6 }] },
+  time: { hours: 13.5, shiftHours: 6, activeMembers: 4, membersServing: 3, teams: [{ teamId: "team" as YearReport["time"]["teams"][number]["teamId"], name: "Help line", shifts: 2, people: 2, hours: 6 }], members: [{ memberId: "member" as YearReport["time"]["members"][number]["memberId"], name: "Sample Helper", visits: 3, shifts: 2, hours: 9.75, miles: 32 }] },
   money: { beginningBalance: 100000, received: 50000, sources: [{ label: "Parish collection", amount: 50000 }], otherSpending: [{ label: "Twinning gift", amount: 15000 }], spent: 60050, endingBalance: 89950 },
   months: Array.from({ length: 12 }, (_, index) => ({ month: index < 3 ? `2025-${10 + index}` : `2026-0${index - 2}`, calls: 0, requests: 0, visits: 0, households: 0, paid: index === 4 ? 45050 : 0, moneyIn: 0 })),
 } satisfies YearReport;
@@ -29,7 +29,7 @@ describe("the year, line by line", () => {
 
   test("every section is there, in order, and the totals close their sections", () => {
     const lines = reportLines(report);
-    expect([...new Set(lines.map((line) => line.section))]).toEqual(["Neighbors helped", "Home visits", "Requests for help", "Help paid", "Help line", "Time given", "Money"]);
+    expect([...new Set(lines.map((line) => line.section))]).toEqual(["Neighbors helped", "Home visits", "Requests for help", "Help paid", "Help line", "Time given", "Cash in and out"]);
     expect(lines.filter((line) => line.total).map((line) => [line.line, line.value])).toEqual([["All help paid", "$450.50"], ["Ending balance", "$899.50"]]);
     expect(lines.find((line) => line.line === "Hours on shifts, Help line")).toMatchObject({ value: "6", number: 6 });
     expect(lines.find((line) => line.line === "Spent: Twinning gift")).toMatchObject({ value: "$150", number: 150 });
@@ -41,9 +41,13 @@ describe("the year, line by line", () => {
     const rows = Papa.parse<string[]>(reportCsv(report, "St. Example Conference")).data;
     expect(rows[0]).toEqual(["St. Example Conference", "Fiscal year 2026", "October 1, 2025 to September 30, 2026"]);
     expect(rows).toContainEqual(["Help paid", "All help paid", "450.5"]);
-    expect(rows).toContainEqual(["Money", "Ending balance", "899.5"]);
-    const months = rows.slice(rows.findIndex((row) => row[0] === "Month"));
+    expect(rows).toContainEqual(["Cash in and out", "Ending balance", "899.5"]);
+    const months = rows.slice(rows.findIndex((row) => row[0] === "Month"), rows.findIndex((row) => row[0] === "Member") - 1);
     expect(months).toHaveLength(13);
+    expect(rows.slice(-2)).toEqual([["Member", "Home visits", "Shifts", "Hours", "Miles"], ["Sample Helper", "3", "2", "9.75", "32"]]);
+    const quarter = { ...report, quarter: 2 as const, firstDay: "2026-01-01", lastDay: "2026-03-31" };
+    expect(Papa.parse<string[]>(reportCsv(quarter, "St. Example Conference")).data[0]).toEqual(["St. Example Conference", "Fiscal year 2026, second quarter", "January 1, 2026 to March 31, 2026"]);
+    expect(csvFileName(quarter, "St. Example")).toBe("st-example-year-2026-quarter-2.csv");
     expect(months[5]).toEqual(["February 2026", "0", "0", "0", "0", "450.5", "0"]);
     expect(csvFileName(report, "St. Example Conference (sample)")).toBe("st-example-conference-sample-year-2026.csv");
   });

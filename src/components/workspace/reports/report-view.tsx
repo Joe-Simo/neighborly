@@ -1,9 +1,9 @@
 "use client";
 
 import "./reports.css";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { CircleCheck, Download, Printer } from "lucide-react";
+import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
@@ -14,6 +14,8 @@ import {
   longSpanLabel,
   money,
   monthLabel,
+  periodLabel,
+  periodNoun,
   plural,
   reportLines,
   spanLabel,
@@ -83,10 +85,48 @@ export function YearSwitch({
   );
 }
 
+const quarters = [
+  { value: "year", label: "All year" },
+  { value: "1", label: "Oct–Dec" },
+  { value: "2", label: "Jan–Mar" },
+  { value: "3", label: "Apr–Jun" },
+  { value: "4", label: "Jul–Sep" },
+] as const;
+export type Quarter = 1 | 2 | 3 | 4;
+
+/** The whole year, or one quarter of it for the council's quarterly report. */
+export function QuarterSwitch({
+  quarter,
+  onQuarter,
+}: {
+  quarter: Quarter | undefined;
+  onQuarter: (quarter: Quarter | undefined) => void;
+}) {
+  return (
+    <ToggleGroup
+      type="single"
+      className="report-years report-quarters"
+      aria-label="Part of the year"
+      value={quarter ? String(quarter) : "year"}
+      onValueChange={(value) => {
+        const chosen = quarters.find((option) => option.value === value);
+        if (chosen) onQuarter(chosen.value === "year" ? undefined : (Number(chosen.value) as Quarter));
+      }}
+    >
+      {quarters.map((option) => (
+        <ToggleGroupItem key={option.value} value={option.value}>
+          {option.label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
+}
+
 export function ReportView({
   report,
   groupName,
   thisMonth,
+  printed,
   years,
   done,
   onPrint,
@@ -96,6 +136,8 @@ export function ReportView({
   groupName: string;
   /** Today's month as "yyyy-MM" in the group's time zone; later months of a running year are still to come. */
   thisMonth: string;
+  /** Today, for the date at the foot of the printed page. */
+  printed: number;
   /** The year switch, when the group has more than one year on record. */
   years?: React.ReactNode;
   /** What just happened, said in the green line. */
@@ -103,11 +145,13 @@ export function ReportView({
   onPrint: () => void;
   onSpreadsheet: () => void;
 }) {
+  const [everyLine, setEveryLine] = useState(false);
   const soFar = report.closed ? "" : " so far";
+  const noun = periodNoun(report);
   const period = (
     <div className="report-period">
       <p>
-        <span>Fiscal year {report.year}</span>
+        <span>{periodLabel(report)}</span>
         {longSpanLabel(report)}
         {soFar && ", so far"}
       </p>
@@ -128,7 +172,7 @@ export function ReportView({
             </Button>
           }
         >
-          As calls, visits and payments are recorded, this year’s counts
+          As calls, visits and payments are recorded, this {noun}’s counts
           appear here on their own.
         </HelpEmpty>
       </div>
@@ -162,7 +206,7 @@ export function ReportView({
         <p>{groupName}</p>
         <h1>The year, added up.</h1>
         <p>
-          Fiscal year {report.year}: {longSpanLabel(report)}
+          {periodLabel(report)}: {longSpanLabel(report)}
           {soFar && ", so far"}
         </p>
       </header>
@@ -200,7 +244,7 @@ export function ReportView({
         <h2>By kind of help</h2>
         <div className="live-row-actions report-actions">
           <Button variant="outline" onClick={onPrint}>
-            <Printer size={17} aria-hidden="true" /> Print this year
+            <Printer size={17} aria-hidden="true" /> Print this {noun}
           </Button>
           <Button variant="outline" onClick={onSpreadsheet}>
             <Download size={17} aria-hidden="true" /> Spreadsheet
@@ -216,8 +260,8 @@ export function ReportView({
                 {line.requestsPaid > 0
                   ? `${plural(line.requestsPaid, "request")} paid · ${plural(line.people, "person", "people")}`
                   : report.closed
-                    ? "None this year"
-                    : "None yet this year"}
+                    ? `None this ${noun}`
+                    : `None yet this ${noun}`}
               </p>
             </div>
             <div className="help-bar" aria-hidden="true">
@@ -233,7 +277,7 @@ export function ReportView({
           <h2>Month by month</h2>
           <span className="live-count">Help paid, and the visits behind it</span>
         </div>
-        <ol className="report-months">
+        <ol className="report-months" data-months={report.months.length}>
           {report.months.map((line) => {
             const ahead = line.month > thisMonth;
             return (
@@ -339,12 +383,22 @@ export function ReportView({
         )}
       </section>
 
-      <section className="live-section report-lines">
+      <section className="live-section report-lines" data-open={everyLine ? "" : undefined}>
+        <Button
+          variant="outline"
+          className="report-every-line"
+          aria-expanded={everyLine}
+          aria-controls="report-every-line"
+          onClick={() => setEveryLine(!everyLine)}
+        >
+          {everyLine ? "Hide the lines" : "Show every line"}
+          <ChevronDown size={17} aria-hidden="true" />
+        </Button>
         <div className="live-section-head">
           <h2>Line by line</h2>
-          <span className="live-count">For your council’s yearly report</span>
+          <span className="live-count">For your council’s {report.quarter ? "quarterly" : "yearly"} report</span>
         </div>
-        <div className="report-form">
+        <div className="report-form" id="report-every-line">
           {[...sections].map(([name, lines]) => (
             <table key={name}>
               <caption>{name}</caption>
@@ -358,6 +412,30 @@ export function ReportView({
               </tbody>
             </table>
           ))}
+          {report.time.members.length > 0 && (
+            <table>
+              <caption>Each member’s time</caption>
+              <tbody>
+                {report.time.members.map((line) => (
+                  <tr key={line.memberId}>
+                    <th scope="row">
+                      {line.name}
+                      <small>
+                        {[
+                          line.visits > 0 && plural(line.visits, "visit"),
+                          line.shifts > 0 && plural(line.shifts, "shift"),
+                          line.miles > 0 && plural(line.miles, "mile"),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </small>
+                    </th>
+                    <td>{plural(line.hours, "hour")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </section>
 
@@ -371,6 +449,13 @@ export function ReportView({
           here yet.
         </span>
       </p>
+      <footer className="report-print-foot">
+        <strong>kind helps</strong>
+        <span>
+          Printed{" "}
+          {new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: report.timeZone }).format(printed)}
+        </span>
+      </footer>
     </div>
   );
 }

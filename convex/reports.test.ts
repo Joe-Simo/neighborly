@@ -40,6 +40,7 @@ async function sample() {
   const data = await t.run(async (ctx) => ({
     memberships: await ctx.db.query("memberships").collect(),
     teams: await ctx.db.query("teams").collect(),
+    commitments: await ctx.db.query("commitments").collect(),
     neighbors: await ctx.db.query("neighbors").collect(),
     calls: await ctx.db.query("calls").collect(),
     requests: await ctx.db.query("assistanceRequests").collect(),
@@ -123,10 +124,12 @@ describe("the year's counts for the sample conference", () => {
     expect(report.calls).toEqual({ taken: calls.length, returned: calls.filter((call) => call.callback === "done").length, waiting: calls.filter((call) => call.callback === "needed").length });
 
     // The treasurer's four lines.
-    const income = (test: (date: string) => boolean) => data.ledger.filter((entry) => entry.kind === "income" && test(entry.date)).reduce((sum, entry) => sum + entry.amount, 0);
+    const income = (test: (date: string) => boolean, opening = false) => data.ledger.filter((entry) => entry.kind === "income" && test(entry.date) && (entry.category === "Opening balance") === opening).reduce((sum, entry) => sum + entry.amount, 0);
     const expense = (test: (date: string) => boolean) => data.ledger.filter((entry) => entry.kind === "expense" && test(entry.date)).reduce((sum, entry) => sum + entry.amount, 0);
     const before = (date: string) => date < "2025-10-01";
-    expect(report.money.beginningBalance).toBe(income(before) - expense(before));
+    // The sample enters its opening balance inside the year; it belongs on the beginning line, not with money received.
+    expect(income(inYearDay, true)).toBe(420000);
+    expect(report.money.beginningBalance).toBe(income(before) - expense(before) + 420000);
     expect(report.money.received).toBe(income(inYearDay));
     expect(report.money.spent).toBe(expense(inYearDay));
     expect(report.money.spent).toBe(report.helpPaid);
@@ -142,12 +145,29 @@ describe("the year's counts for the sample conference", () => {
     const march = data.visits.filter((visit) => visit.status === "completed" && visit.scheduledAt >= Date.parse("2026-03-01T05:00:00Z") && visit.scheduledAt < Date.parse("2026-04-01T04:00:00Z"));
     expect(report.months[5].visits).toBe(march.length);
 
-    // The sample conference now has a year of finished help-line and pantry shifts.
-    expect(report.time).toMatchObject({ activeMembers: 12 });
-    expect(report.time.shiftHours).toBeGreaterThan(0);
-    expect(report.time.hours).toBeCloseTo(report.visitHours + report.time.shiftHours, 5);
-    expect(report.time.teams.map((team) => team.name).sort()).toEqual(["Help line", "Pantry"]);
-    expect(report.time.membersServing).toBeGreaterThanOrEqual(new Set(data.visits.filter((visit) => visit.status === "completed" && inYear(visit.scheduledAt)).flatMap((visit) => visit.visitors.map((visitor) => visitor.memberId))).size);
+    // Time given: every member's visits and finished shifts, counted one member at a time.
+    const visited = data.visits.filter((visit) => visit.status === "completed" && inYear(visit.scheduledAt));
+    const worked = data.commitments.filter((shift) => shift.assigneeId && !shift.cancelled && inYear(shift.start) && shift.end <= Date.now());
+    const byMember = data.memberships.map((member) => {
+      const own = visited.flatMap((visit) => visit.visitors.filter((visitor) => visitor.memberId === member._id));
+      const shifts = worked.filter((shift) => shift.assigneeId === member._id);
+      return { memberId: member._id, name: member.name, visits: own.length, shifts: shifts.length, hours: own.reduce((sum, visitor) => sum + visitor.hours, 0) + shifts.reduce((sum, shift) => sum + (shift.end - shift.start) / HOUR, 0), miles: own.reduce((sum, visitor) => sum + visitor.miles, 0) };
+    }).filter((line) => line.visits + line.shifts > 0).sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name));
+    expect(report.time.members).toEqual(byMember);
+    expect(report.time.membersServing).toBe(byMember.length);
+    const byTeam = data.teams.map((team) => {
+      const shifts = worked.filter((shift) => shift.teamId === team._id);
+      return { teamId: team._id, name: team.name, shifts: shifts.length, people: new Set(shifts.map((shift) => shift.assigneeId)).size, hours: shifts.reduce((sum, shift) => sum + (shift.end - shift.start) / HOUR, 0) };
+    }).filter((team) => team.shifts > 0).sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name));
+    expect(report.time.teams).toEqual(byTeam);
+    expect(byTeam.map((team) => team.name).sort()).toEqual(["Help line", "Pantry"]);
+    const shiftHours = worked.reduce((sum, shift) => sum + (shift.end - shift.start) / HOUR, 0);
+    expect(report.time).toMatchObject({ activeMembers: 12, shiftHours, hours: report.visitHours + shiftHours });
+    expect(byMember.reduce((sum, line) => sum + line.hours, 0)).toBe(report.time.hours);
+    // Households that money went toward for more than one request.
+    const again = data.neighbors.filter((neighbor) => data.ledger.filter((entry) => entry.neighborId === neighbor._id && entry.kind === "expense" && inYearDay(entry.date)).length > 1).length;
+    expect(report.householdsHelpedAgain).toBe(again);
+    expect(again).toBeGreaterThan(0);
 
     // The same year written down as plain numbers, so a change to the arithmetic cannot pass unnoticed.
     expect({ households: report.households, people: report.people, visits: report.visits, helpPaid: report.helpPaid, hours: report.visitHours, miles: report.visitMiles, calls: report.calls.taken, requests: report.requests.received }).toMatchInlineSnapshot(`
@@ -173,6 +193,21 @@ describe("the year's counts for the sample conference", () => {
     // The year that just began starts with what the last one ended with.
     const last = await as(coordinator.userId).query(api.reports.year, { churchId, year: 2026 });
     expect(running.money.beginningBalance).toBe(last.money.endingBalance);
+  });
+
+  test("the cash lines agree with the treasury's own cash flow for the same days", async () => {
+    const { as, churchId, owner } = await sample();
+    for (const quarter of [undefined, 1, 3] as const) {
+      const report = await as(owner.userId).query(api.reports.year, { churchId, year: 2026, quarter });
+      const flow = await as(owner.userId).query(api.treasury.cashFlow, { churchId, from: report.firstDay, to: report.lastDay });
+      // The one difference in wording: an opening balance entered inside the period is cash in to the ledger, and the beginning balance here.
+      const openingEntered = flow.kinds.find((kind) => kind.direction === "in" && kind.category === "Opening balance")?.amount ?? 0;
+      expect(report.money.beginningBalance).toBe(flow.opening + openingEntered);
+      expect(report.money.received).toBe(flow.moneyIn - openingEntered);
+      expect(report.money.spent).toBe(flow.moneyOut);
+      expect(report.money.endingBalance).toBe(flow.closing);
+      expect(report.helpPaid).toBe(flow.kinds.filter((kind) => kind.direction === "out" && ["rent", "utility", "food", "voucher", "other"].includes(kind.category)).reduce((sum, kind) => sum + kind.amount, 0));
+    }
   });
 
   test("a report carries counts and never a neighbor's name, phone or address", async () => {
@@ -266,8 +301,27 @@ describe("the parts the sample conference does not exercise", () => {
     const report = await as(ids.owner.userId).query(api.reports.year, { churchId: ids.churchId, year: 2027 });
     expect(report.time.teams.map(({ name, shifts, people, hours }) => ({ name, shifts, people, hours }))).toEqual([{ name: "Help line", shifts: 2, people: 2, hours: 6 }, { name: "Pantry", shifts: 1, people: 1, hours: 1.5 }]);
     expect(report.time).toMatchObject({ shiftHours: 7.5, hours: 10.5, activeMembers: 2, membersServing: 2 });
+    expect(report.time.members.map(({ name, visits, shifts, hours, miles }) => ({ name, visits, shifts, hours, miles }))).toEqual([{ name: "Sample Helper", visits: 1, shifts: 2, hours: 6, miles: 12 }, { name: "Sample Owner", visits: 1, shifts: 1, hours: 4.5, miles: 12 }]);
     expect(report).toMatchObject({ visits: 1, peopleVisited: 5, visitHours: 3, visitMiles: 24, households: 1, people: 5, helpPaid: 0 });
     expect(report.months[1]).toMatchObject({ month: "2026-11", visits: 1, households: 1 });
+  });
+
+  test("a quarter is three months of the same year, and the four quarters add up to it", async () => {
+    const { as, churchId, owner } = await sample();
+    const read = (quarter?: 1 | 2 | 3 | 4) => as(owner.userId).query(api.reports.year, { churchId, year: 2026, quarter });
+    const [whole, ...quarters] = await Promise.all([read(), read(1), read(2), read(3), read(4)]);
+    expect(quarters.map((quarter) => [quarter.quarter, quarter.firstDay, quarter.lastDay, quarter.months.length])).toEqual([[1, "2025-10-01", "2025-12-31", 3], [2, "2026-01-01", "2026-03-31", 3], [3, "2026-04-01", "2026-06-30", 3], [4, "2026-07-01", "2026-09-30", 3]]);
+    expect(whole.quarter).toBeNull();
+    const sum = (pick: (report: typeof whole) => number) => quarters.reduce((total, quarter) => total + pick(quarter), 0);
+    for (const pick of [(report: typeof whole) => report.visits, (report: typeof whole) => report.helpPaid, (report: typeof whole) => report.calls.taken, (report: typeof whole) => report.requests.received, (report: typeof whole) => report.visitHours, (report: typeof whole) => report.visitMiles, (report: typeof whole) => report.peopleVisited, (report: typeof whole) => report.money.received, (report: typeof whole) => report.money.spent])
+      expect(sum(pick)).toBe(pick(whole));
+    // A household helped in two quarters is one household in the year.
+    expect(sum((report) => report.households)).toBeGreaterThan(whole.households);
+    // Each quarter begins with what the one before ended with.
+    expect(quarters[2].money.beginningBalance).toBe(quarters[1].money.endingBalance);
+    expect(quarters[3].money.endingBalance).toBe(whole.money.endingBalance);
+    expect(quarters[1].months.map((line) => line.month)).toEqual(["2026-01", "2026-02", "2026-03"]);
+    expect(quarters[1].visits).toBe(whole.months.slice(3, 6).reduce((visits, line) => visits + line.visits, 0));
   });
 
   test("a group with no records gets a year of zeros, not an error", async () => {

@@ -39,6 +39,13 @@ const dayLabel = (day: string) => `${monthNames[Number(day.slice(5, 7)) - 1]} ${
 export const longSpanLabel = (report: Pick<YearReport, "firstDay" | "lastDay">) =>
   `${dayLabel(report.firstDay)} to ${dayLabel(report.lastDay)}`;
 
+const quarterNames = ["first", "second", "third", "fourth"];
+/** "Fiscal year 2026" or "Fiscal year 2026, second quarter" */
+export const periodLabel = (report: Pick<YearReport, "year" | "quarter">) =>
+  `Fiscal year ${report.year}${report.quarter ? `, ${quarterNames[report.quarter - 1]} quarter` : ""}`;
+/** What to call the stretch of time in a sentence: "year" or "quarter". */
+export const periodNoun = (report: Pick<YearReport, "quarter">) => (report.quarter ? "quarter" : "year");
+
 /** True when nothing at all was recorded in the year. */
 export const isBlank = (report: YearReport) =>
   report.calls.taken + report.requests.received + report.visits + report.households === 0 &&
@@ -69,6 +76,7 @@ export function reportLines(report: YearReport): ReportLine[] {
   neighbors.count("People in those households", report.people);
   neighbors.count("Adults", report.adults);
   neighbors.count("Children", report.children);
+  neighbors.count("Households helped more than once", report.householdsHelpedAgain);
   for (const language of ["en", "es", "ht"] as const)
     if (report.householdsByLanguage[language])
       neighbors.count(`Households speaking ${languageLabels[language]}`, report.householdsByLanguage[language]);
@@ -107,7 +115,7 @@ export function reportLines(report: YearReport): ReportLine[] {
   time.count("Members who served", report.time.membersServing);
   time.count("Active members today", report.time.activeMembers);
 
-  const funds = section("Money");
+  const funds = section("Cash in and out");
   funds.money("Beginning balance", report.money.beginningBalance);
   for (const source of report.money.sources) funds.money(`Received: ${source.label}`, source.amount);
   funds.money("All money received", report.money.received);
@@ -131,19 +139,32 @@ export function monthLines(report: YearReport) {
   }));
 }
 
-/** The year as one CSV file: every line, then the months. No neighbor is named anywhere in it. */
+/** Each member who served as a spreadsheet row. Members are volunteers; no neighbor appears here. */
+export function memberLines(report: YearReport) {
+  return report.time.members.map((line) => ({
+    Member: line.name,
+    "Home visits": line.visits,
+    Shifts: line.shifts,
+    Hours: line.hours,
+    Miles: line.miles,
+  }));
+}
+
+/** The year as one CSV file: every line, then the months, then the members. No neighbor is named anywhere in it. */
 export function reportCsv(report: YearReport, groupName: string) {
   const lines = reportLines(report).map(({ section, line, number }) => [section, line, number]);
   const months = monthLines(report);
+  const members = memberLines(report);
   return Papa.unparse([
-    [groupName, `Fiscal year ${report.year}`, longSpanLabel(report)],
+    [groupName, periodLabel(report), longSpanLabel(report)],
     [],
     ["Section", "Line", "Value"],
     ...lines,
     [],
     Object.keys(months[0]),
     ...months.map((row) => Object.values(row)),
+    ...(members.length ? [[], Object.keys(members[0]), ...members.map((row) => Object.values(row))] : []),
   ]);
 }
 export const csvFileName = (report: YearReport, groupName: string) =>
-  `${groupName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "report"}-year-${report.year}.csv`;
+  `${groupName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "report"}-year-${report.year}${report.quarter ? `-quarter-${report.quarter}` : ""}.csv`;
