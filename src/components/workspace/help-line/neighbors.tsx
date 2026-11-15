@@ -97,19 +97,20 @@ function Neighbors() {
           <NeighborForm
             churchId={churchId}
             onSaved={(id) => router.push(recordHref(id))}
+            aside={
+              <Button
+                type="button"
+                variant="link"
+                className="help-text-action"
+                onClick={() => {
+                  setAdding(false);
+                  setImporting(true);
+                }}
+              >
+                or bring in a spreadsheet
+              </Button>
+            }
           />
-          <p className="help-form-note">
-            <Button
-              variant="link"
-              className="help-text-action"
-              onClick={() => {
-                setAdding(false);
-                setImporting(true);
-              }}
-            >
-              or bring in a spreadsheet
-            </Button>
-          </p>
         </HelpDialog>
       )}
     </>
