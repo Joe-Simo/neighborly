@@ -1,4 +1,6 @@
 export function isPaintedPortrait(width: number, height: number) {
+  // A short, wide box is a phone on its side: it takes the wide painting, where the faces and the hands share one screen.
+  if (height <= 444 && width > height * 1.15) return false;
   return width <= 700 || (width <= 1000 && width / height < 0.9);
 }
 
