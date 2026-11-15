@@ -126,6 +126,20 @@ export const yearReport = v.object({
     paidTowardEarlier: v.number(),
   }),
   calls: v.object({ taken: v.number(), returned: v.number(), waiting: v.number() }),
+  /**
+   * Help recorded in ServWare before the group moved over, brought in as requests with source "import".
+   * It has no ledger entries, so it is kept apart: none of it is in helpPaid, kinds, requests or money.
+   */
+  history: v.object({
+    requests: v.number(),
+    households: v.number(),
+    people: v.number(),
+    amount: v.number(),
+    kinds: v.array(v.object({ kind, requests: v.number(), amount: v.number() })),
+    /** Households helped here or in the history, each counted once, and the people in them. */
+    householdsInAll: v.number(),
+    peopleInAll: v.number(),
+  }),
   time: v.object({
     /** Visit hours plus the hours of finished, assigned shifts. */
     hours: v.number(),
@@ -193,7 +207,7 @@ export const year = query({
     const monthOf = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM");
     const inChurch = { churchId: args.churchId };
 
-    const [calls, requests, plannedVisits, ledger, memberships, teams] = await Promise.all([
+    const [calls, everyRequest, plannedVisits, ledger, memberships, teams] = await Promise.all([
       whole(ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("takenAt", span.start).lt("takenAt", span.end))),
       whole(ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("createdAt", span.start).lt("createdAt", span.end))),
       whole(ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("scheduledAt", span.start).lt("scheduledAt", span.end))),
@@ -203,6 +217,8 @@ export const year = query({
       whole(ctx.db.query("teams").withIndex("by_church", (q) => q.eq("churchId", inChurch.churchId)), 200),
     ]);
     const visits = plannedVisits.filter((visit) => visit.status === "completed");
+    const requests = everyRequest.filter((request) => request.source !== "import");
+    const imported = everyRequest.filter((request) => request.source === "import");
 
     const months = new Map(span.months.map((month) => [month, { month, calls: 0, requests: 0, visits: 0, households: 0, paid: 0, moneyIn: 0 }]));
     const monthHouseholds = new Map(span.months.map((month) => [month, new Set<Id<"neighbors">>()]));
@@ -301,13 +317,17 @@ export const year = query({
     }
 
     // Household sizes, read once per household and never returned.
-    const households = new Map<Id<"neighbors">, Doc<"neighbors">>();
-    for (const neighbor of await Promise.all([...helped].map((id) => ctx.db.get("neighbors", id))))
-      if (neighbor && neighbor.churchId === args.churchId) households.set(neighbor._id, neighbor);
+    const inHistory = new Set(imported.map((request) => request.neighborId));
+    const known = new Map<Id<"neighbors">, Doc<"neighbors">>();
+    for (const neighbor of await Promise.all([...new Set([...helped, ...inHistory])].map((id) => ctx.db.get("neighbors", id))))
+      if (neighbor && neighbor.churchId === args.churchId) known.set(neighbor._id, neighbor);
     const size = (id: Id<"neighbors">) => {
-      const neighbor = households.get(id);
+      const neighbor = known.get(id);
       return neighbor ? neighbor.adults + neighbor.children : 0;
     };
+    const peopleIn = (ids: Iterable<Id<"neighbors">>) => [...ids].reduce((people, id) => people + size(id), 0);
+    const households = new Map([...known].filter(([id]) => helped.has(id)));
+    const historyHouseholds = [...inHistory].filter((id) => known.has(id));
     const householdsByLanguage = { en: 0, es: 0, ht: 0 };
     let adults = 0, children = 0;
     for (const neighbor of households.values()) {
@@ -359,6 +379,18 @@ export const year = query({
         return { kind: value, requests: line.requests, requestsPaid: line.requestsPaid, households: line.neighbors.size, people: [...line.neighbors].reduce((people, id) => people + size(id), 0), paid: line.paid };
       }),
       requests: { received: requests.length, ...status, referred, amountRequested, amountApproved, paidTowardThese, paidTowardEarlier: helpPaid - paidTowardThese },
+      history: {
+        requests: imported.length,
+        households: historyHouseholds.length,
+        people: peopleIn(historyHouseholds),
+        amount: imported.reduce((amount, request) => amount + (request.importedAmount ?? 0), 0),
+        kinds: kinds.map((value) => {
+          const ofKind = imported.filter((request) => request.kind === value);
+          return { kind: value, requests: ofKind.length, amount: ofKind.reduce((amount, request) => amount + (request.importedAmount ?? 0), 0) };
+        }),
+        householdsInAll: known.size,
+        peopleInAll: peopleIn(known.keys()),
+      },
       calls: { taken: calls.length, returned: calls.filter((call) => call.callback === "done").length, waiting: calls.filter((call) => call.callback === "needed").length },
       time: {
         hours: round(visitHours + shiftHours),

@@ -48,7 +48,7 @@ export const periodNoun = (report: Pick<YearReport, "quarter">) => (report.quart
 
 /** True when nothing at all was recorded in the year. */
 export const isBlank = (report: YearReport) =>
-  report.calls.taken + report.requests.received + report.visits + report.households === 0 &&
+  report.calls.taken + report.requests.received + report.visits + report.households + report.history.requests === 0 &&
   report.money.received === 0 && report.money.spent === 0 && report.money.beginningBalance === 0 &&
   report.time.shiftHours === 0;
 
@@ -103,6 +103,18 @@ export function reportLines(report: YearReport): ReportLine[] {
   const paid = section("Help paid");
   for (const line of report.kinds) paid.money(kindLabels[line.kind], line.paid);
   paid.money("All help paid", report.helpPaid, true);
+
+  // Help brought over from ServWare has no ledger entries, so it stands in a section of its own.
+  if (report.history.requests > 0) {
+    const history = section("From ServWare history");
+    history.count("Requests in the history", report.history.requests);
+    history.count("Households in the history", report.history.households);
+    for (const line of report.history.kinds)
+      if (line.amount) history.money(`${kindLabels[line.kind]}, in the history`, line.amount);
+    history.money("All help in the history", report.history.amount);
+    history.count("Households helped in all, each counted once", report.history.householdsInAll);
+    history.count("People in those households", report.history.peopleInAll);
+  }
 
   const calls = section("Help line");
   calls.count("Calls taken", report.calls.taken);

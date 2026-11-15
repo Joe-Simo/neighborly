@@ -178,6 +178,7 @@ export function ReportView({
       </div>
     );
 
+  const moved = report.history.requests > 0;
   const largestKind = Math.max(...report.kinds.map((line) => line.paid));
   const largestMonth = Math.max(...report.months.map((line) => line.paid));
   const serving = [
@@ -222,10 +223,11 @@ export function ReportView({
         <div>
           <dt>Neighbors helped</dt>
           <dd>
-            {count(report.households)}
+            {count(report.history.householdsInAll)}
             <small>
               Households, {spanLabel(report)}
-              {soFar}. {plural(report.people, "person", "people")} in all.
+              {soFar}. {plural(report.history.peopleInAll, "person", "people")} in all.
+              {moved && ` ${count(report.history.households)} are from ServWare history.`}
             </small>
           </dd>
         </div>
@@ -240,7 +242,10 @@ export function ReportView({
           <dt>Help given</dt>
           <dd>
             {money(report.helpPaid)}
-            <small>Paid direct, never in cash</small>
+            <small>
+              Paid direct, never in cash
+              {moved && `. ${money(report.history.amount)} more is in ServWare history.`}
+            </small>
           </dd>
         </div>
       </dl>
@@ -276,6 +281,14 @@ export function ReportView({
           </li>
         ))}
       </ol>
+      {moved && (
+        <p className="report-history">
+          <span>From ServWare history</span>
+          {plural(report.history.requests, "request")} for{" "}
+          {plural(report.history.households, "household")}, {money(report.history.amount)} in help
+          recorded before you moved here. It is counted apart from the money in your ledger.
+        </p>
+      )}
 
       <section className="live-section">
         <div className="live-section-head">
@@ -456,7 +469,9 @@ export function ReportView({
       </p>
       <footer className="report-print-foot">
         <strong>kind helps</strong>
-        <span>Printed {printedOn}</span>
+        <span>
+          {groupName} · {periodLabel(report)}, {spanLabel(report)} · Printed {printedOn}
+        </span>
       </footer>
     </div>
   );

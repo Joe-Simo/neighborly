@@ -15,6 +15,7 @@ const report = {
   ],
   requests: { received: 3, open: 0, approved: 0, paid: 2, declined: 1, closed: 0, referred: 1, amountRequested: 70000, amountApproved: 45050, paidTowardThese: 45050, paidTowardEarlier: 0 },
   calls: { taken: 5, returned: 4, waiting: 1 },
+  history: { requests: 0, households: 0, people: 0, amount: 0, kinds: [], householdsInAll: 2, peopleInAll: 7 },
   time: { hours: 13.5, shiftHours: 6, activeMembers: 4, membersServing: 3, teams: [{ teamId: "team" as YearReport["time"]["teams"][number]["teamId"], name: "Help line", shifts: 2, people: 2, hours: 6 }], members: [{ memberId: "member" as YearReport["time"]["members"][number]["memberId"], name: "Sample Helper", visits: 3, shifts: 2, hours: 9.75, miles: 32 }] },
   money: { beginningBalance: 100000, received: 50000, sources: [{ label: "Parish collection", amount: 50000 }], otherSpending: [{ label: "Twinning gift", amount: 15000 }], spent: 60050, endingBalance: 89950 },
   months: Array.from({ length: 12 }, (_, index) => ({ month: index < 3 ? `2025-${10 + index}` : `2026-0${index - 2}`, calls: 0, requests: 0, visits: 0, households: 0, paid: index === 4 ? 45050 : 0, moneyIn: 0 })),
@@ -33,6 +34,10 @@ describe("the year, line by line", () => {
     expect(lines.filter((line) => line.total).map((line) => [line.line, line.value])).toEqual([["All help paid", "$450.50"], ["Ending balance", "$899.50"]]);
     expect(lines.find((line) => line.line === "Hours on shifts, Help line")).toMatchObject({ value: "6", number: 6 });
     expect(lines.find((line) => line.line === "Spent: Twinning gift")).toMatchObject({ value: "$150", number: 150 });
+    // Help brought over from ServWare is listed apart, and only when there is some.
+    const moved = reportLines({ ...report, history: { requests: 3, households: 2, people: 6, amount: 61000, kinds: [{ kind: "rent", requests: 2, amount: 61000 }, { kind: "food", requests: 1, amount: 0 }], householdsInAll: 3, peopleInAll: 10 } }).filter((line) => line.section === "From ServWare history");
+    expect(moved.map((line) => [line.line, line.value])).toEqual([["Requests in the history", "3"], ["Households in the history", "2"], ["Rent, in the history", "$610"], ["All help in the history", "$610"], ["Households helped in all, each counted once", "3"], ["People in those households", "10"]]);
+    expect(lines.find((line) => line.line === "All help paid")?.value).toBe("$450.50");
     // A language nobody spoke this year has no line.
     expect(lines.some((line) => line.line.includes("Haitian"))).toBe(false);
   });

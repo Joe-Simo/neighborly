@@ -286,6 +286,36 @@ describe("the parts the sample conference does not exercise", () => {
     expect(report.months[3]).toMatchObject({ month: "2026-01", moneyIn: 50000 });
   });
 
+  test("help brought over from ServWare is counted apart and never as ledger money", async () => {
+    const { t, as, ids } = await conference();
+    await t.run(async (ctx) => {
+      const other = await ctx.db.insert("neighbors", { churchId: ids.churchId, name: "Example Household", nameKey: "example household", phone: "(555) 0101", phoneKey: "5550101", email: "", address: "2 Sample St", adults: 1, children: 2, language: "en", notes: "", createdBy: ids.owner.memberId, createdAt: 0 });
+      const history = (neighborId: typeof other, kind: "rent" | "food", date: string, importedAmount?: number) =>
+        ctx.db.insert("assistanceRequests", { churchId: ids.churchId, neighborId, kind, summary: "From ServWare", amountRequested: importedAmount ?? 0, importedAmount, status: "closed", decisionNote: "", payeeKind: "vendor", payeeName: "Example Payee", source: "import", createdBy: ids.owner.memberId, createdAt: Date.parse(date) });
+      await history(other, "rent", "2025-11-04T15:00:00Z", 45000);
+      await history(other, "food", "2025-12-09T15:00:00Z", 6000);
+      await history(ids.neighborId, "rent", "2026-01-06T15:00:00Z", 30000);
+      await history(ids.neighborId, "food", "2026-01-20T15:00:00Z");
+      await history(other, "rent", "2025-09-02T15:00:00Z", 99900);
+      await ctx.db.insert("ledgerEntries", { churchId: ids.churchId, kind: "expense", amount: 20000, date: "2026-02-13", category: "utility", payee: "Example Water Authority", memo: "", requestId: ids.requestId, neighborId: ids.neighborId, recordedBy: ids.owner.memberId, createdAt: 0 });
+    });
+    const report = await as(ids.owner.userId).query(api.reports.year, { churchId: ids.churchId, year: 2026 });
+    expect(report.history).toEqual({
+      requests: 4, households: 2, people: 8, amount: 81000,
+      kinds: [{ kind: "rent", requests: 2, amount: 75000 }, { kind: "utility", requests: 0, amount: 0 }, { kind: "food", requests: 2, amount: 6000 }, { kind: "voucher", requests: 0, amount: 0 }, { kind: "other", requests: 0, amount: 0 }],
+      // The household helped both here and in the history is one household.
+      householdsInAll: 2, peopleInAll: 8,
+    });
+    // Nothing from the history reaches the counts the ledger and the request list stand behind.
+    expect(report).toMatchObject({ households: 1, people: 5, helpPaid: 20000 });
+    expect(report.requests).toMatchObject({ received: 1, closed: 0, approved: 1, amountRequested: 30000 });
+    expect(report.kinds.map((line) => [line.requests, line.paid])).toEqual([[0, 0], [1, 20000], [0, 0], [0, 0], [0, 0]]);
+    expect(report.money.spent).toBe(20000);
+    expect(report.months.reduce((sum, line) => sum + line.requests, 0)).toBe(1);
+    const first = await as(ids.owner.userId).query(api.reports.year, { churchId: ids.churchId, year: 2026, quarter: 1 });
+    expect(first.history).toMatchObject({ requests: 2, households: 1, amount: 51000, householdsInAll: 1 });
+  });
+
   test("hours come from visits and from finished shifts, by team; open, cancelled and coming shifts do not count", async () => {
     const { t, as, ids } = await conference();
     await t.run(async (ctx) => {

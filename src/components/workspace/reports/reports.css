@@ -79,6 +79,26 @@
   white-space: nowrap;
 }
 
+/* Help recorded before the group moved here: marked, quiet, and apart from the ledger's money. */
+.report-history {
+  margin: 0;
+  padding: 18px 0 20px;
+  border-bottom: 1px solid var(--live-line);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--live-muted);
+  max-width: 78ch;
+}
+.report-history span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #52644f;
+}
+
 /* Twelve months standing side by side, each as tall as the help it paid. */
 .report-months {
   list-style: none;
