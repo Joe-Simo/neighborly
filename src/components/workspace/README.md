@@ -98,3 +98,11 @@ A paper corner is plain paper at rest, ochre only while something waits for a pe
 given or done. Nothing else may colour a corner. In classes: `paper-corner` rests plain; `paper-waits` is ochre;
 `paper-fold` is green. A `help-sheet` is the waiting sheet and is ochre by default, so a `help-sheet` that waits
 for no one (a statement, a finished check) takes `paper-rest` until it earns `paper-fold`.
+
+## Cutting a relief picture
+
+`python3 scripts/level-relief.py <source.png> <name>` writes the six files in `public/assets/relief/` and adds the
+name to nothing: add it to `reliefReady` in `relief.tsx` yourself. The script levels the picture's paper to the page
+(#f7f4ed): it reads the paper colour from the top left 300px, then moves every pixel by the difference, in full where
+the pixel is paper and fading out 70 levels of colour away, so the subject keeps its own colour and no tan cloud shows
+where a head fades into the page. Any page that shows a relief picture on #f7f4ed should use files cut this way.
