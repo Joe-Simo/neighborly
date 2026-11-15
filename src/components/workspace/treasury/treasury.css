@@ -165,12 +165,53 @@
   padding-inline: 18px;
   font-size: 16px;
 }
-.live-app .treasury-back[data-slot="button"] {
+.live-app .treasury-back[data-slot="button"],
+.live-app .treasury-take-back[data-slot="button"] {
   min-height: 44px;
-  margin: -14px 0 14px -12px;
-  padding-inline: 12px;
+  height: auto;
+  padding: 0;
   font-size: 16px;
   color: var(--live-muted);
+  background: none;
+  border: 0;
+  box-shadow: none;
+  text-decoration: underline transparent;
+  text-underline-offset: 5px;
+}
+.live-app .treasury-back[data-slot="button"] {
+  gap: 6px;
+  margin: -14px 0 14px;
+}
+.live-app .treasury-take-back[data-slot="button"] {
+  padding-inline: 8px;
+  text-decoration-color: #a9b697;
+}
+.live-app .treasury-back[data-slot="button"]:hover,
+.live-app .treasury-take-back[data-slot="button"]:hover {
+  color: var(--live-ink);
+}
+.treasury-day {
+  display: none;
+}
+.help-sheet[data-agree]::after {
+  background: linear-gradient(225deg, var(--live-paper) 50%, #456f46 50%, #6d8f63 100%);
+}
+.live-app .treasury-statement input:focus-visible {
+  outline: 2px solid #456f46;
+  outline-offset: 3px;
+  border-color: #456f46;
+  box-shadow: none;
+}
+.live-app .treasury-statement input[aria-invalid="true"] {
+  border-color: #9f4935;
+  box-shadow: 0 0 0 1px #9f4935;
+}
+.treasury-statement small {
+  font-size: 15px;
+  color: #9f4935;
+}
+.treasury-statement {
+  align-items: start;
 }
 .live-app .treasury-statement input {
   width: 168px;
@@ -208,7 +249,34 @@
     width: 100%;
   }
   .treasury-bank [data-slot="button"],
-  .treasury-starter [data-slot="button"] {
+  .treasury-starter > [data-slot="button"] {
     width: 100%;
+  }
+  /* On a phone the day moves into the second line and the button sits at the row's right. */
+  .treasury-uncleared .help-row,
+  .treasury-lately .help-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 14px;
+    align-items: center;
+    padding: 18px 0;
+  }
+  .treasury-uncleared .help-row > .live-date-leaf,
+  .treasury-lately .help-row > .live-date-leaf {
+    display: none;
+  }
+  .treasury-uncleared .help-row > :nth-child(3),
+  .treasury-lately .help-row > :nth-child(3) {
+    grid-column: 2;
+  }
+  .live-app .treasury-uncleared .help-row [data-slot="button"] {
+    padding-inline: 12px;
+    font-size: 15px;
+  }
+  .treasury-uncleared .help-row h3,
+  .treasury-lately .help-row h3 {
+    font-size: 21px;
+  }
+  .treasury-day {
+    display: inline;
   }
 }

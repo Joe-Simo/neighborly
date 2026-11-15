@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { ChevronLeft, CircleCheck } from "lucide-react";
+import { ArrowLeft, CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -74,12 +74,16 @@ export function BankView({
   const says = /^\$?0(\.0{1,2})?$/.test(typed) ? 0 : parseCents(typed);
   const gap = says === null ? null : says - bank.cleared;
   const onItsWay = bank.onItsWayIn - bank.onItsWayOut;
-  const starting = !bank.lately.length && bank.waiting.length >= 6;
+  // The first statement: nothing has been marked yet, so one step marks it all and the exceptions come after.
+  const starting = !bank.lately.length && bank.waitingCount > 1;
+  const [confirming, setConfirming] = useState(false);
+  const [lateDay, setLateDay] = useState(false);
+  const agrees = gap === 0;
 
   return (
     <>
-      <Button variant="ghost" className="treasury-back" onClick={onBack}>
-        <ChevronLeft size={18} aria-hidden="true" /> Ledger
+      <Button variant="link" className="treasury-back" onClick={onBack}>
+        <ArrowLeft size={16} aria-hidden="true" /> Ledger
       </Button>
       <dl className="help-figures">
         <div>
@@ -110,7 +114,11 @@ export function BankView({
         </div>
       </dl>
 
-      <section className="help-sheet" aria-labelledby="treasury-statement-title">
+      <section
+        className="help-sheet"
+        data-agree={agrees ? "" : undefined}
+        aria-labelledby="treasury-statement-title"
+      >
         <p className="help-sheet-label">Your bank statement</p>
         <div className="help-sheet-body">
           <div aria-live="polite">
@@ -134,6 +142,7 @@ export function BankView({
                     ? `${count(bank.waitingCount)} still on the way.`
                     : "Nothing is waiting."}
                 </p>
+                <p>Your marks are saved for the {dayLabel(bank.asOf)} statement.</p>
               </>
             ) : (
               <>
@@ -159,11 +168,21 @@ export function BankView({
                 type="date"
                 name="asOf"
                 max={bank.today}
-                value={bank.asOf}
-                onChange={(event) =>
-                  event.target.value && onAsOf(event.target.value)
-                }
+                defaultValue={bank.asOf}
+                aria-invalid={lateDay || undefined}
+                aria-describedby={lateDay ? "treasury-late-day" : undefined}
+                onChange={(event) => {
+                  const day = event.target.value;
+                  setLateDay(day > bank.today);
+                  setConfirming(false);
+                  if (day && day <= bank.today) onAsOf(day);
+                }}
               />
+              {lateDay && (
+                <small id="treasury-late-day" role="alert">
+                  Choose today or an earlier day.
+                </small>
+              )}
             </label>
             <label>
               Ending balance
@@ -193,7 +212,7 @@ export function BankView({
         </div>
       )}
 
-      <section className="treasury-waiting" aria-labelledby="treasury-uncleared-title">
+      <section className="treasury-waiting treasury-uncleared" aria-labelledby="treasury-uncleared-title">
         <div className="live-section-head">
           <h2 id="treasury-uncleared-title">Not cleared yet</h2>
           <span className="live-count">
@@ -206,19 +225,45 @@ export function BankView({
           <>
             {starting && (
               <div className="treasury-starter">
-                <p>
-                  First time here? If the statement already shows everything
-                  through {dayLabel(bank.asOf)}, mark it all at once.
-                </p>
-                <Button
-                  variant="outline"
-                  disabled={busy !== null}
-                  onClick={onClearAll}
-                >
-                  {busy === "all"
-                    ? "Marking…"
-                    : `Mark all through ${dayLabel(bank.asOf)} cleared`}
-                </Button>
+                {confirming ? (
+                  <>
+                    <p role="status">
+                      Mark {count(bank.waitingCount)} cleared:{" "}
+                      {formatCents(bank.onItsWayIn)} in and{" "}
+                      {formatCents(bank.onItsWayOut)} out, through{" "}
+                      {dayLabel(bank.asOf)}. You can take any of them back
+                      after.
+                    </p>
+                    <div className="help-actions">
+                      <Button
+                        variant="ghost"
+                        disabled={busy !== null}
+                        onClick={() => setConfirming(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button disabled={busy !== null} onClick={onClearAll}>
+                        {busy === "all"
+                          ? "Marking…"
+                          : `Mark ${count(bank.waitingCount)} cleared`}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      Your first statement? Start with everything, then take
+                      back the few the bank has not shown.
+                    </p>
+                    <Button
+                      variant="outline"
+                      disabled={busy !== null}
+                      onClick={() => setConfirming(true)}
+                    >
+                      Everything through {dayLabel(bank.asOf)} has cleared
+                    </Button>
+                  </>
+                )}
               </div>
             )}
             <div className="live-list">
@@ -227,7 +272,10 @@ export function BankView({
                   <DateLeaf day={entry.date} />
                   <div>
                     <h3>{line(entry)}</h3>
-                    <p>{under(entry)}</p>
+                    <p>
+                      <span className="treasury-day">{dayLabel(entry.date)} · </span>
+                      {under(entry)}
+                    </p>
                   </div>
                   <Button
                     variant="outline"
@@ -257,10 +305,10 @@ export function BankView({
       </section>
 
       {bank.lately.length > 0 && (
-        <section aria-labelledby="treasury-lately-title">
+        <section className="treasury-lately" aria-labelledby="treasury-lately-title">
           <div className="live-section-head">
             <h2 id="treasury-lately-title">Cleared lately</h2>
-            <span className="live-count">Marked by mistake? Take it back</span>
+            <span className="live-count">The newest {bank.lately.length}</span>
           </div>
           <div className="live-list">
             {bank.lately.map((entry) => (
@@ -269,18 +317,20 @@ export function BankView({
                 <div>
                   <h3>{line(entry)}</h3>
                   <p>
+                    <span className="treasury-day">{dayLabel(entry.date)} · </span>
                     {under(entry)}
                     {entry.clearedOn &&
                       ` · On the ${dayLabel(entry.clearedOn)} statement`}
                   </p>
                 </div>
                 <Button
-                  variant="ghost"
+                  variant="link"
+                  className="treasury-take-back"
                   disabled={busy !== null}
-                  aria-label={`Not cleared after all: ${line(entry)}`}
+                  aria-label={`Take it back: ${line(entry)}`}
                   onClick={() => onUndo(entry)}
                 >
-                  Not cleared
+                  Take it back
                 </Button>
               </div>
             ))}
