@@ -51,8 +51,6 @@ export function HelpEmpty({
   /** True when this is the first thing under the page head, which already draws a rule. */
   first?: boolean;
   title: string;
-  /** No longer shown: every empty state carries its room's relief picture. */
-  art?: string;
   children: ReactNode;
   action?: ReactNode;
 }) {
