@@ -10,9 +10,17 @@
 .neighborly-together-paper{position:absolute;inset:0;z-index:-1;background:center bottom/cover no-repeat;-webkit-mask-image:linear-gradient(transparent,#000 34%);mask-image:linear-gradient(transparent,#000 34%)}
 .neighborly-together-paper[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
 .neighborly-together h2{margin:0;font:400 clamp(56px,6.6vw,112px)/.94 'Newsreader',Georgia,serif;letter-spacing:-.065em}
-.neighborly-together h2 em{display:block;margin-left:14%;font-weight:400}
-.neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,auto) minmax(0,380px);justify-content:start;align-items:start;gap:40px clamp(48px,7vw,130px);margin-left:14%}
-.neighborly-together-bottom p{margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:pretty}
+.neighborly-together h2 em{font-weight:400}
+.neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);grid-template-rows:auto 1fr;align-items:start;gap:28px clamp(48px,6vw,110px)}
+.neighborly-together-statement{margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:pretty}
+/* What a conference gets, written on one sheet of the workspace's own paper, its corner folded in ochre. */
+.neighborly-gets{grid-row:1 / span 2;position:relative;margin:0;padding:clamp(10px,1.2vw,18px) clamp(24px,3vw,48px);list-style:none;background:#f7f4ed;box-shadow:0 1px 0 #fffdf7 inset,0 30px 60px -34px #51433066,0 2px 8px #5143301a;clip-path:polygon(0 0,calc(100% - 44px) 0,100% 44px,100% 120%,0 120%)}
+.neighborly-gets::after{content:"";position:absolute;top:0;right:0;width:44px;height:44px;background:linear-gradient(225deg,transparent 50%,#c8962e 50%);filter:drop-shadow(-2px 3px 3px #5143303d)}
+.neighborly-gets li{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:baseline;gap:6px 32px;padding:clamp(18px,1.9vw,28px) 0;border-top:1px solid #293f3224}
+.neighborly-gets li:first-child{border-top:0}
+.neighborly-gets h3{margin:0;font:400 clamp(26px,2.3vw,38px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em}
+.neighborly-gets p{margin:0;font-size:17px;line-height:1.5;text-wrap:pretty}
+.neighborly-gets li:last-child h3{font-style:italic;color:#365c46}
 .neighborly-final-actions{display:flex;flex-direction:column;align-items:flex-start;gap:18px;max-width:380px}
 .neighborly-begin[data-slot=button]{height:auto;min-height:64px;padding:18px 26px;gap:28px;border-radius:0;background:#293f32;color:#f5eedf;font-size:17px;white-space:normal;box-shadow:none}
 .neighborly-begin[data-slot=button]:hover{background:#3a5040}
@@ -31,8 +39,11 @@
   .neighborly-together{padding-inline:20px}
   .neighborly-together h2{font-size:clamp(52px,15vw,104px)}
   .neighborly-together h2 em{margin-left:0}
-  .neighborly-together-bottom{grid-template-columns:minmax(0,1fr);margin-left:0}
-  .neighborly-together-bottom p{max-width:22ch;font-size:clamp(24px,6.6vw,34px)}
+  .neighborly-together-bottom{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
+  .neighborly-together-statement{order:-2;max-width:22ch;font-size:clamp(24px,6.6vw,34px)}
+  .neighborly-final-actions{order:-1}
+  .neighborly-gets{grid-row:auto;margin-top:20px;padding:6px 22px}
+  .neighborly-gets li{grid-template-columns:minmax(0,1fr)}
   .neighborly-final-actions{max-width:none}
 }
 @media(max-width:700px){

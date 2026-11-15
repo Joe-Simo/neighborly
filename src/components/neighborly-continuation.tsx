@@ -10,6 +10,15 @@ import { useSettled } from "@/lib/use-settled";
 import "./neighborly-continuation.css";
 
 /** Everything after the opening: through the doors, the story of the work, and the way in. */
+// What a conference has on its first day, in the order the work happens.
+const gets = [
+  ["The help line", "Every call is written down once. The urgent ones rise to the top, and someone is always next to call back."],
+  ["Visits in pairs", "Two members go together. What they saw and what was asked stays with the request."],
+  ["The ledger", "Every bill paid is on one page: to whom, for whom, and how much."],
+  ["The yearly report", "The year adds itself up, ready for you to check and print."],
+  ["Free", "For every conference. There is nothing to buy."],
+] as const;
+
 export function NeighborlyContinuation() {
   const root = useRef<HTMLDivElement>(null);
   const settled = useSettled();
@@ -39,14 +48,17 @@ export function NeighborlyContinuation() {
       <div className="neighborly-together-paper" data-settled={settled} aria-hidden="true" />
       <h2 id="together-title" data-reveal>Bring this to<br /><em>your people.</em></h2>
       <div className="neighborly-together-bottom" data-reveal>
-        <p>One place to answer every call for help, from the first message to the visit, the bill and the year’s report.</p>
+        <ul className="neighborly-gets" aria-label="What your conference gets">
+          {gets.map(([title, line]) => <li key={title}><h3>{title}</h3><p>{line}</p></li>)}
+        </ul>
+        <p className="neighborly-together-statement">One place to answer every call for help, from the first message to the visit, the bill and the year’s report.</p>
         <div className="neighborly-final-actions">
           <Button asChild className="neighborly-begin"><Link href="/app?intent=sample">Look around a sample conference<ArrowUpRight aria-hidden="true" /></Link></Button>
           <nav className="neighborly-final-links" aria-label="Your own conference">
             <Link href="/app?intent=start">Start your conference<ArrowUpRight size={16} aria-hidden="true" /></Link>
             <Link href="/app?intent=signin">Sign in<ArrowUpRight size={16} aria-hidden="true" /></Link>
           </nav>
-          <small>Free for every conference. Every person in the sample is made up.</small>
+          <small>Every person in the sample is made up.</small>
         </div>
       </div>
       <footer className="neighborly-colophon"><a href="#story-start">kind helps</a><span>Made for the good we can do. <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">Give a gift</a></span></footer>
