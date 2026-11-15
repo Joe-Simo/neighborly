@@ -23,6 +23,13 @@ function fallbackSource(scene: PaintedScene, mobile: boolean, accepted = false) 
   if (scene === "opening") return mobile ? "/assets/living-relief-mobile.webp" : "/assets/living-relief-poster.webp";
   return `/assets/painted-world/${scene === "complete" ? "welcome" : scene}${mobile ? "-mobile" : ""}.webp`;
 }
+/**
+ * When the home page's 3D opening is built. "idle" builds it shortly after the painting has shown.
+ * "interaction" waits for the visitor's first move, touch, key or scroll, so a page nobody has touched
+ * does no 3D work at all; the still painting and the button carry the opening until then. Switch only on
+ * a measurement from a real device.
+ */
+const openingStartsOn = "idle" as "idle" | "interaction";
 type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStoryProgress" | "setOpeningOutcome" | "setHandoff" | "setReducedMotion" | "dispose">;
 // Where the card rests in the giving hand and in the open hand, as shares of each opening painting.
 const cardPath = {
@@ -97,7 +104,10 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
     }).catch(enterFallback); };
     // The responsive painting is the initial experience. Upgrade the optional
     // dimensional guide after critical text and imagery have had time to paint.
-    if (heroOnly) {
+    const signs = ["pointermove", "pointerdown", "keydown", "touchstart", "wheel", "scroll"] as const;
+    const onSign = () => { signs.forEach(sign => window.removeEventListener(sign, onSign)); enhance(); };
+    if (heroOnly && openingStartsOn === "interaction") signs.forEach(sign => window.addEventListener(sign, onSign, { passive: true }));
+    else if (heroOnly) {
       defer = setTimeout(() => {
         if ("requestIdleCallback" in window) idle = window.requestIdleCallback(enhance, { timeout: 2000 });
         else enhance();
@@ -105,6 +115,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
     } else enhance();
     return () => {
       disposed = true;
+      signs.forEach(sign => window.removeEventListener(sign, onSign));
       clearTimeout(defer);
       if (idle !== undefined) window.cancelIdleCallback(idle);
       active?.dispose(); controller.current = null;

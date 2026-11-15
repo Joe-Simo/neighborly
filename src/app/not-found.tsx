@@ -1,4 +1,5 @@
 import "@/components/live-workspace.css";
+import "@/components/public-state.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className="live-app">
+    <div className="live-app public-state">
       <main className="live-auth">
         <div className="live-auth-art" aria-hidden="true" />
         <p className="live-kicker">Kind Helps</p>
