@@ -376,7 +376,7 @@ export const record = query({
     const opened = await ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", neighborId)).order("desc").take(20);
     const openers = new Map<string, Promise<string>>();
     const opener = (userId: (typeof opened)[number]["actorId"]) => {
-      const known = openers.get(userId) ?? ctx.db.query("memberships").withIndex("by_church_user", (q) => q.eq("churchId", churchId).eq("userId", userId)).unique().then((member) => member?.name ?? "Former member");
+      const known = openers.get(userId) ?? ctx.db.query("memberships").withIndex("by_church_user", (q) => q.eq("churchId", churchId).eq("userId", userId)).unique().then((member) => member?.name ?? "A former member");
       openers.set(userId, known);
       return known;
     };

@@ -50,7 +50,7 @@ export function lookups(ctx: QueryCtx) {
       return known;
     },
     memberName(id: Id<"memberships">) {
-      const known = members.get(id) ?? ctx.db.get("memberships", id).then((member) => member?.name ?? "Former member");
+      const known = members.get(id) ?? ctx.db.get("memberships", id).then((member) => member?.name ?? "A former member");
       members.set(id, known);
       return known;
     },
