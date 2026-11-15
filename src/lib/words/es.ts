@@ -77,6 +77,7 @@ export function es(set: WordSet): Words {
     },
     actions: {
       timeOff: "Planear días libres",
+      announcement: "Compartir un aviso",
     },
     week: {
       comingUp: "Lo que viene",

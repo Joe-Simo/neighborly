@@ -76,6 +76,7 @@ export function en(set: WordSet) {
     },
     actions: {
       timeOff: "Plan time off",
+      announcement: "Share an announcement",
     },
     week: {
       comingUp: "Coming up",

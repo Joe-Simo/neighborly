@@ -77,6 +77,7 @@ export function ht(set: WordSet): Words {
     },
     actions: {
       timeOff: "Planifye jou konje",
+      announcement: "Pataje yon anons",
     },
     week: {
       comingUp: "Sa k ap vini",
