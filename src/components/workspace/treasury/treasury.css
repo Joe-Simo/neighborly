@@ -168,7 +168,6 @@
   padding-inline: 18px;
   font-size: 16px;
 }
-.live-app .treasury-back[data-slot="button"],
 .live-app .treasury-take-back[data-slot="button"] {
   min-height: 44px;
   height: auto;
@@ -181,39 +180,26 @@
   text-decoration: underline transparent;
   text-underline-offset: 5px;
 }
-.live-app .treasury-back[data-slot="button"] {
-  gap: 6px;
-  margin: -14px 0 14px;
-}
 .live-app .treasury-take-back[data-slot="button"] {
   padding-inline: 8px;
   text-decoration-color: #a9b697;
 }
-.live-app .treasury-back[data-slot="button"]:hover,
 .live-app .treasury-take-back[data-slot="button"]:hover {
   color: var(--live-ink);
 }
 .treasury-day {
   display: none;
 }
-.live-app .treasury-statement input:focus-visible {
+.live-app .treasury-statement input[name="statement"]:focus-visible {
   outline: 2px solid #456f46;
   outline-offset: 3px;
   border-color: #456f46;
   box-shadow: none;
 }
-.live-app .treasury-statement input[aria-invalid="true"] {
-  border-color: #9f4935;
-  box-shadow: 0 0 0 1px #9f4935;
-}
-.treasury-statement small {
-  font-size: 15px;
-  color: #9f4935;
-}
 .treasury-statement {
   align-items: start;
 }
-.live-app .treasury-statement input {
+.live-app .treasury-statement input[name="statement"] {
   width: 168px;
 }
 .help-sheet h2[data-waiting] {
@@ -245,7 +231,7 @@
 }
 @media (max-width: 850px) {
   .treasury-statement label,
-  .live-app .treasury-statement input {
+  .live-app .treasury-statement input[name="statement"] {
     width: 100%;
   }
   .treasury-foot [data-slot="button"],
@@ -279,11 +265,6 @@
   .treasury-day {
     display: inline;
   }
-}
-.live-app .treasury-statement input[aria-invalid="true"]:focus-visible {
-  outline: none;
-  border-color: #9f4935;
-  box-shadow: 0 0 0 1px #9f4935;
 }
 
 /* Quiet one-line lists: statements matched, voucher movements. */
@@ -517,11 +498,15 @@
     width: auto;
   }
   .treasury-statement label,
-  .live-app .treasury-statement input {
+  .live-app .treasury-statement input[name="statement"] {
     width: 168px;
   }
 }
-/* A corner is plain at rest, ochre only while something waits for a yes, green once given. */
-.help-sheet.treasury-rest {
-  --paper-corner: color-mix(in srgb, #283c32 12%, #f7f4ed);
+.treasury-statement .live-field {
+  width: 264px;
+}
+@media (max-width: 599px) {
+  .treasury-statement .live-field {
+    width: 100%;
+  }
 }

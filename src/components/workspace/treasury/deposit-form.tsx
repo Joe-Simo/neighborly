@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { DateField } from "@/components/workspace/date-field";
 import { Toggle } from "@/components/ui/toggle";
 import { LiveField } from "@/components/workspace/primitives";
 import { formatCents, formatFigure } from "@/components/workspace/treasury/money";
@@ -85,14 +86,7 @@ export function DepositForm({
       </p>
       <div className="live-form-grid treasury-form-grid">
         <LiveField label="Day deposited">
-          <Input
-            type="date"
-            name="date"
-            max={today}
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            required
-          />
+          <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
         <LiveField label="Note (optional)">
           <Input

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { DateField } from "@/components/workspace/date-field";
 import { LiveField } from "@/components/workspace/primitives";
 import { centsToInput, parseCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
@@ -75,14 +76,7 @@ export function PaymentForm({
           />
         </LiveField>
         <LiveField label="Day paid">
-          <Input
-            type="date"
-            name="date"
-            max={today}
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            required
-          />
+          <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
       </div>
       <LiveField label="Check number (optional)">
