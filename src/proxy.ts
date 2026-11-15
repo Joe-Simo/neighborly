@@ -1,3 +1,5 @@
 import { convexAuthNextjsProxy } from "@/lib/convexAuth";
 export default convexAuthNextjsProxy(async () => {});
-export const config = { matcher: ["/((?!auth(?:/|$)|calendar/|_next/static|_next/image|favicon.ico).*)"] };
+// Only the signed-in app needs its session refreshed before a page is served. The public pages,
+// paintings, fonts and 3D files are served straight from the cache, with no function in front.
+export const config = { matcher: ["/app", "/app/:path*"] };
