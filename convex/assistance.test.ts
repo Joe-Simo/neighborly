@@ -58,6 +58,7 @@ describe("who may use the help line and requests", () => {
         () => caller.query(api.assistance.calls, { churchId }),
         () => caller.mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Called back.", callback: "none" }),
         () => caller.mutation(api.assistance.linkCall, { churchId, callId, neighborId: ids.earl }),
+        () => caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["shutoff"], day: 21, by: "assistant" }),
         () => caller.mutation(api.assistance.markReturned, { churchId, callId }),
         () => caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...rent }),
         () => caller.mutation(api.assistance.updateRequest, { churchId, requestId, ...rent, amountRequested: 40000 }),
@@ -71,6 +72,25 @@ describe("who may use the help line and requests", () => {
         else await attempt();
       }
     }
+  });
+
+  test("calls to return first lead the list, and a person's word outranks the assistant's", async () => {
+    const { ids, as } = await setup();
+    const churchId = ids.church, caller = as(ids.coordinator);
+    const log = async (note: string) => (await caller.mutation(api.assistance.recordCall, { churchId, callerName: "Caller", phone: "", note, callback: "needed" })).callId;
+    const rent = await log("Behind on rent."), power = await log("Shut-off notice for the 21st."), food = await log("Asked about the pantry.");
+    const order = async () => (await caller.query(api.assistance.calls, { churchId })).waiting.map((call) => call.id);
+    expect(await order()).toEqual([rent, power, food]);
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: ["shutoff", "elder"], day: 21, by: "assistant" });
+    expect(await order()).toEqual([power, rent, food]);
+    expect((await caller.query(api.assistance.calls, { churchId })).waiting[0].urgent).toEqual({ reasons: ["shutoff", "elder"], day: 21, by: "assistant" });
+    // A person moves one up and the other back; the assistant cannot undo either.
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId: food, reasons: ["marked"], by: "person" });
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: [], by: "person" });
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: ["shutoff"], day: 21, by: "assistant" });
+    expect(await order()).toEqual([food, rent, power]);
+    await expect(caller.mutation(api.assistance.setUrgency, { churchId, callId: rent, reasons: ["shutoff"], day: 45, by: "assistant" })).rejects.toThrow("day of the month");
+    await expect(as(ids.stranger).mutation(api.assistance.setUrgency, { churchId: ids.other, callId: rent, reasons: [], by: "person" })).rejects.toThrow("Call not found.");
   });
 
   test("another group's coordinator cannot reach this group's calls or requests", async () => {

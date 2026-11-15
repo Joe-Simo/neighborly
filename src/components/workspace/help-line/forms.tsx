@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -104,12 +104,15 @@ export function CallForm({
   onSaved: (matched: boolean) => void;
 }) {
   const record = useMutation(api.assistance.recordCall);
+  const readUrgency = useAction(api.drafts.readUrgency);
+  const setUrgency = useMutation(api.assistance.setUrgency);
   const { pending, error, save } = useSave();
   return (
     <form
       className="live-form help-form"
       onSubmit={async (event) => {
         const value = fieldsOf(event);
+        const callback = value("callback") === "none" ? "none" : "needed";
         const outcome = await save(() =>
           record({
             churchId,
@@ -117,10 +120,28 @@ export function CallForm({
             callerName: value("callerName"),
             phone: value("phone"),
             note: value("note"),
-            callback: value("callback") === "none" ? "none" : "needed",
+            callback,
           }),
         );
-        if (outcome.saved) onSaved(outcome.result.neighborId !== null);
+        if (!outcome.saved) return;
+        onSaved(outcome.result.neighborId !== null);
+        if (callback === "none") return;
+        // The assistant reads the note for a reason to call first. The call is already saved;
+        // if the assistant is away or finds nothing, the list simply keeps its plain order.
+        const { callId } = outcome.result;
+        void readUrgency({ churchId, callId })
+          .then(({ signs }) =>
+            signs.length
+              ? setUrgency({
+                  churchId,
+                  callId,
+                  reasons: signs.map((sign) => sign.reason),
+                  day: signs.find((sign) => sign.day !== null)?.day ?? undefined,
+                  by: "assistant",
+                })
+              : null,
+          )
+          .catch(() => null);
       }}
     >
       <div className="live-form-grid">

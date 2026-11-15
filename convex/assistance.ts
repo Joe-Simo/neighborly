@@ -2,6 +2,7 @@ import { v, type Infer } from "convex/values";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { neighborAccess, neighborRecord } from "./access";
+import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
 
 /**
@@ -12,6 +13,7 @@ import schema from "./schema";
  */
 const requestFields = schema.tables.assistanceRequests.validator.fields;
 const callFields = schema.tables.calls.validator.fields;
+const urgentBy = v.union(v.literal("assistant"), v.literal("person"));
 /** A payment never goes to the neighbor, so the form offers only these. */
 const payeeKind = v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"));
 const DAY = 24 * 60 * 60 * 1000;
@@ -260,6 +262,7 @@ export const callRow = v.object({
   outcome: v.string(),
   /** True when the neighbor already has a request waiting, so a second one is not drafted from this call. */
   openRequest: v.boolean(),
+  urgent: v.union(v.object({ reasons: v.array(v.string()), day: v.union(v.number(), v.null()), by: urgentBy }), v.null()),
 });
 export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Infer<typeof callRow>> {
   return {
@@ -277,6 +280,7 @@ export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Inf
     returnedByName: call.returnedBy ? await found.memberName(call.returnedBy) : null,
     outcome: call.outcome ?? "",
     openRequest: call.neighborId ? await found.openRequest(call.neighborId) : false,
+    urgent: call.urgent ? { reasons: call.urgent.reasons, day: call.urgent.day ?? null, by: call.urgent.by } : null,
   };
 }
 
@@ -286,7 +290,10 @@ export const calls = query({
   returns: v.object({ waiting: v.array(callRow), returned: v.array(callRow) }),
   handler: async (ctx, { churchId }) => {
     await neighborAccess(ctx, churchId);
-    const waiting = await ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "needed")).take(100);
+    const needed = await ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "needed")).take(100);
+    // Calls to return first lead the list; within each group the one that has waited longest is first.
+    const first = (call: Doc<"calls">) => (call.urgent?.reasons.length ? 0 : 1);
+    const waiting = needed.sort((a, b) => first(a) - first(b) || a.takenAt - b.takenAt);
     const done = await ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "done")).order("desc").take(200);
     const since = Date.now() - WEEK;
     const returned = done.filter((call) => (call.returnedAt ?? call.takenAt) >= since).sort((a, b) => (b.returnedAt ?? b.takenAt) - (a.returnedAt ?? a.takenAt));
@@ -327,6 +334,24 @@ export const recordCall = mutation({
     }
     const callId = await ctx.db.insert("calls", { churchId, neighborId: matched, callerName: text(callerName, "The name", 120), phone: text(phone, "The phone number", 40), note: text(note, "The note", 2000), callback, ownerId: ownerId ?? (callback === "needed" ? await callbackOwner(ctx, churchId, now) : undefined), takenBy: member._id, takenAt: now });
     return { callId, neighborId: matched ?? null };
+  },
+});
+
+/**
+ * Says a call should be returned first, or that it should not. The assistant proposes from the note
+ * and a person can always overrule it: once a person has spoken, the assistant's reading is ignored.
+ * No reasons means "not urgent"; "marked" is a person's own say-so.
+ */
+export const setUrgency = mutation({
+  args: { churchId: v.id("churches"), callId: v.id("calls"), reasons: v.array(v.union(...urgentReasons.map((reason) => v.literal(reason)), v.literal("marked"))), day: v.optional(v.number()), by: urgentBy },
+  returns: v.null(),
+  handler: async (ctx, { churchId, callId, reasons, day, by }) => {
+    await neighborAccess(ctx, churchId);
+    const call = await ownCall(ctx, churchId, callId);
+    if (by === "assistant" && call.urgent?.by === "person") return null;
+    if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new Error("The day should be a day of the month.");
+    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by } });
+    return null;
   },
 });
 

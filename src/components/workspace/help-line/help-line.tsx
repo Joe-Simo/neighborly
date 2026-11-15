@@ -62,6 +62,7 @@ function HelpLine() {
   const calls = useQuery(api.assistance.calls, { churchId });
   const draftRequest = useAction(api.drafts.draftRequest);
   const createRequest = useMutation(api.assistance.createRequest);
+  const setUrgency = useMutation(api.assistance.setUrgency);
   const drafting = useSave();
   const approving = useSave();
   const [drafted, setDrafted] = useState<Drafted | null>(null);
@@ -140,6 +141,20 @@ function HelpLine() {
         format={format}
         busy={drafting.pending}
         draftedCallId={drafted?.call.id}
+        onFirst={
+          // An older backend sends no "urgent" on a call and cannot keep one.
+          [...calls.waiting, ...calls.returned].some((call) => call.urgent !== undefined)
+            ? (call, first) =>
+                void approving.save(() =>
+                  setUrgency({
+                    churchId,
+                    callId: call.id,
+                    reasons: first ? ["marked"] : [],
+                    by: "person",
+                  }),
+                )
+            : undefined
+        }
         onStep={(next) => void onStep(next)}
         sheet={
           drafted && (
@@ -244,6 +259,19 @@ function HelpLine() {
   );
 }
 
+/** Why a call is first, in the reader's language. An unknown reason from a newer backend is left out. */
+function whyFirst(urgent: NonNullable<Call["urgent"]>) {
+  const text = words().urgent;
+  const day = urgent.day ?? 0;
+  return urgent.reasons.flatMap((reason) =>
+    reason === "shutoff" || reason === "eviction"
+      ? [text[reason](day)]
+      : reason === "noFood" || reason === "child" || reason === "elder" || reason === "medical"
+        ? [text[reason]]
+        : [],
+  );
+}
+
 export function HelpLineView({
   calls,
   format,
@@ -251,7 +279,10 @@ export function HelpLineView({
   sheet,
   busy = false,
   draftedCallId,
+  onFirst,
 }: {
+  /** Moves a call to the front or back again. Left out while the backend cannot keep it. */
+  onFirst?: (call: Call, first: boolean) => void;
   /** The call whose draft is on the sheet, which is not offered a second draft. */
   draftedCallId?: Call["id"];
   calls: Calls;
@@ -262,6 +293,7 @@ export function HelpLineView({
   /** The one thing waiting for a yes, when there is one. */
   sheet?: ReactNode;
 }) {
+  const isFirst = (call: Call) => !!call.urgent?.reasons.length;
   const leaf = (at: number) => {
     const part = (options: Intl.DateTimeFormatOptions) =>
       format(at, { month: undefined, day: undefined, ...options });
@@ -284,6 +316,11 @@ export function HelpLineView({
             {count(calls.waiting.length, "message", "messages")}
           </span>
         </div>
+        {calls.waiting.some((call) => isFirst(call) && call.urgent?.by === "assistant") && (
+          <p className="help-assistant help-first-origin">
+            <Sparkles size={15} aria-hidden="true" /> {words().urgent.origin}
+          </p>
+        )}
         {calls.waiting.length ? (
           <div className="live-list">
             {calls.waiting.map((call) => (
@@ -297,6 +334,17 @@ export function HelpLineView({
                     )}
                   </h3>
                   <p>{call.note}</p>
+                  {isFirst(call) && (
+                    <p className="help-assistant help-first">
+                      {call.urgent?.by === "assistant" && (
+                        <Sparkles size={15} aria-hidden="true" />
+                      )}
+                      <strong>
+                        {(call.urgent && whyFirst(call.urgent).join(" · ")) ||
+                          words().urgent.label}
+                      </strong>
+                    </p>
+                  )}
                   <p className="help-facts help-row-more">
                     {call.ownerName && (
                       <span className="help-person">
@@ -329,6 +377,15 @@ export function HelpLineView({
                         onClick={() => onStep({ kind: "neighbor", call })}
                       >
                         Add as a neighbor
+                      </Button>
+                    )}
+                    {onFirst && (
+                      <Button
+                        variant="link"
+                        className="help-text-action"
+                        onClick={() => onFirst(call, !isFirst(call))}
+                      >
+                        {isFirst(call) ? words().urgent.notUrgent : words().urgent.label}
                       </Button>
                     )}
                   </p>
