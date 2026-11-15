@@ -120,6 +120,16 @@ export const load = internalMutation({
     await entry("income", start, 420000, "Opening balance", "St. Example Conference", "Balance carried forward");
 
     let checkNumber = 2041;
+    // The payees the conference already uses, by the same names as on its requests and payments.
+    const payees = [
+      { kind: "landlord", name: "Orchard Street Apartments", address: "200 Orchard St", phone: "(102) 555-0111", notes: "Office open weekdays. Checks to the property manager." },
+      { kind: "landlord", name: "Mill Road Rentals", address: "48 Mill Rd", phone: "(102) 555-0112", notes: "" },
+      { kind: "utility", name: "City Power & Light", address: "1 Harbor Ave", phone: "(102) 555-0113", notes: "Pledges accepted by phone; ask for the assistance desk." },
+      { kind: "utility", name: "County Water Authority", address: "15 Bridge Rd", phone: "(102) 555-0114", notes: "" },
+      { kind: "vendor", name: "Corner Family Market", address: "9 Garden St", phone: "(102) 555-0115", notes: "Pantry purchases and grocery cards." },
+    ] as const;
+    for (const payee of payees) await ctx.db.insert("payees", { churchId, kind: payee.kind, name: payee.name, nameKey: key(payee.name), address: payee.address, phone: payee.phone, email: "", notes: payee.notes, createdBy: owner, createdAt: start });
+
     // Households, and for each its calls, requests for help, visits in pairs and payments.
     for (let index = 0; index < HOUSEHOLDS; index++) {
       const name = `${firstNames[index % 25]} ${lastNames[((index % 25) * 3 + Math.floor(index / 25)) % 20]}`;
@@ -256,6 +266,7 @@ export const clear = internalMutation({
       ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("calendarFeeds").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("payees").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("invitations").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("outbox").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("meetings").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),

@@ -133,6 +133,8 @@ export default defineSchema({
     recordedBy: v.id("memberships"),
     createdAt: v.number(),
   }).index("by_church", ["churchId", "date"]).index("by_request", ["requestId"]).index("by_neighbor", ["neighborId"]).index("by_reverses", ["reverses"]).index("by_deposit", ["depositId"]),
+  // Who the conference pays: landlords, utilities and vendors. No account numbers and no money here.
+  payees: defineTable({ churchId: v.id("churches"), kind: v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor")), name: v.string(), nameKey: v.string(), address: v.string(), phone: v.string(), email: v.string(), notes: v.string(), createdBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId", "name"]).index("by_church_name", ["churchId", "nameKey"]),
   // The treasury's own books: bank deposits, the voucher shelf, the group's own kinds of money in and out, and agreed bank statements.
   deposits: defineTable({ churchId: v.id("churches"), date: day, total: cents, memo: v.string(), recordedBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId", "date"]),
   // change is a whole number: plus when vouchers are received, minus when given.

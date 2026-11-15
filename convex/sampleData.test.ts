@@ -126,6 +126,10 @@ describe("sample conference", () => {
       if (line.change < 0) expect(data.assistanceRequests.find((request) => request._id === line.requestId)?.voucher).toEqual({ item: line.item, quantity: 1 });
     }
     expect(data.voucherStock.some((line) => line.change < 0)).toBe(true);
+    // Every listed payee is one the conference has actually paid.
+    const payees = await t.run((ctx) => ctx.db.query("payees").collect());
+    expect(payees.map((payee) => payee.kind).sort()).toEqual(["landlord", "landlord", "utility", "utility", "vendor"]);
+    for (const payee of payees) expect(data.ledgerEntries.some((entry) => entry.payee === payee.name), payee.name).toBe(true);
     // One kind of its own each way, each with an entry under its name.
     expect(data.ledgerKinds.map((kind) => `${kind.direction}:${kind.name}`).sort()).toEqual(["expense:Bus tokens", "income:Bake sale"]);
     for (const kind of data.ledgerKinds) expect(data.ledgerEntries.some((entry) => entry.category === kind.name && entry.kind === kind.direction)).toBe(true);
