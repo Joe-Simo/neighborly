@@ -1,6 +1,6 @@
 import { user } from "./access";
 import { Resend, vStatus, type EmailId } from "@convex-dev/resend";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { components } from "./_generated/api";
 import { query, type MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
@@ -45,9 +45,9 @@ export const invitationDelivery = query({
   handler: async (ctx, args) => {
     const { id: userId } = await user(ctx);
     const invitation = await ctx.db.get("invitations", args.invitationId);
-    if (!invitation) throw new Error("Invitation not found.");
+    if (!invitation) throw new ConvexError("Invitation not found.");
     const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", invitation.churchId).eq("userId", userId)).unique();
-    if (!member?.active || member.role !== "owner") throw new Error("Church owner access required.");
+    if (!member?.active || member.role !== "owner") throw new ConvexError("Church owner access required.");
     const record = await ctx.db.query("outbox").withIndex("by_invitation", q => q.eq("invitationId", invitation._id)).unique();
     if (!record) throw new Error("Delivery record not found.");
     const status = record.providerId ? await resend.status(ctx, record.providerId as EmailId) : null;

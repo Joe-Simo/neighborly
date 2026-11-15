@@ -1,5 +1,5 @@
 import { user as account } from "./access";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, type MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
@@ -13,7 +13,7 @@ const created = v.object({ invitationId: v.id("invitations"), token: v.union(v.s
 const normalizeEmail = (value: string) => value.trim().toLowerCase();
 async function coordinator(ctx: MutationCtx, churchId: Id<"churches">, userId: Id<"users">) {
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", churchId).eq("userId", userId)).unique();
-  if (!member?.active || member.role !== "owner") throw new Error("Church owner access required.");
+  if (!member?.active || member.role !== "owner") throw new ConvexError("Church owner access required.");
   return member;
 }
 async function digest(token: string) {
@@ -38,9 +38,9 @@ export const createRecord = internalMutation({
   handler: async (ctx, args) => {
     const user = await account(ctx);
     const actor = await coordinator(ctx, args.churchId, user.id);
-    if (await isSampleChurch(ctx, args.churchId)) throw new Error("The sample conference cannot invite anyone. Create your own account to invite your people.");
+    if (await isSampleChurch(ctx, args.churchId)) throw new ConvexError("The sample conference cannot invite anyone. Create your own account to invite your people.");
     const email = normalizeEmail(args.email);
-    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
+    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new ConvexError("Enter a valid email address.");
     if (!/^[a-zA-Z0-9_-]{16,128}$/.test(args.requestId)) throw new Error("Invalid request identifier.");
     const prior = await ctx.db.query("invitations").withIndex("by_church_request", q => q.eq("churchId", args.churchId).eq("requestId", args.requestId)).unique();
     if (prior) {
@@ -53,7 +53,7 @@ export const createRecord = internalMutation({
     await ctx.db.insert("outbox", { churchId: args.churchId, invitationId, kind: "invitation", recipient: email, state: "awaiting_configuration", createdAt: now });
     await ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: user.id, action: "invitation_created", invitationId, at: now });
     const invitation = await ctx.db.get("invitations", invitationId);
-    if (!invitation) throw new Error("Invitation not found.");
+    if (!invitation) throw new ConvexError("Invitation not found.");
     return { invitationId, created: true, delivery: await enqueueInvitation(ctx, invitation, args.token) };
   },
 });
@@ -61,7 +61,7 @@ export const accept = action({
   args: { token: v.string(), displayName: v.string() },
   returns: v.id("churches"),
   handler: async (ctx, args): Promise<Id<"churches">> => {
-    if (!/^[0-9a-f]{64}$/.test(args.token)) throw new Error("Invitation is invalid or expired.");
+    if (!/^[0-9a-f]{64}$/.test(args.token)) throw new ConvexError("Invitation is invalid or expired.");
     return ctx.runMutation(internal.invitations.acceptRecord, { tokenHash: await digest(args.token), displayName: args.displayName });
   },
 });
@@ -69,7 +69,7 @@ export const accept = action({
 export const queueEmail = action({
   args: { invitationId: v.id("invitations"), token: v.string() }, returns: delivery,
   handler: async (ctx, args): Promise<"not_sent" | "queued"> => {
-    if (!/^[0-9a-f]{64}$/.test(args.token)) throw new Error("Invitation is invalid or expired.");
+    if (!/^[0-9a-f]{64}$/.test(args.token)) throw new ConvexError("Invitation is invalid or expired.");
     return ctx.runMutation(internal.invitations.queueRecord, { ...args, tokenHash: await digest(args.token) });
   },
 });
@@ -78,9 +78,9 @@ export const queueRecord = internalMutation({
   handler: async (ctx, args) => {
     const user = await account(ctx);
     const invite = await ctx.db.get("invitations", args.invitationId);
-    if (!invite) throw new Error("Invitation not found.");
+    if (!invite) throw new ConvexError("Invitation not found.");
     await coordinator(ctx, invite.churchId, user.id);
-    if (invite.tokenHash !== args.tokenHash || invite.status !== "pending" || invite.expiresAt <= Date.now()) throw new Error("Invitation is invalid or expired.");
+    if (invite.tokenHash !== args.tokenHash || invite.status !== "pending" || invite.expiresAt <= Date.now()) throw new ConvexError("Invitation is invalid or expired.");
     return enqueueInvitation(ctx, invite, args.token);
   },
 });
@@ -89,16 +89,16 @@ export const acceptRecord = internalMutation({
   handler: async (ctx, args) => {
     const user = await account(ctx);
     const invite = await ctx.db.query("invitations").withIndex("by_token", q => q.eq("tokenHash", args.tokenHash)).unique();
-    if (!invite || invite.email !== user.email || invite.status === "revoked") throw new Error("Invitation is invalid or expired.");
+    if (!invite || invite.email !== user.email || invite.status === "revoked") throw new ConvexError("Invitation is invalid or expired.");
     if (invite.status === "accepted") {
       if (invite.acceptedBy === user.id) return invite.churchId;
-      throw new Error("Invitation is invalid or expired.");
+      throw new ConvexError("Invitation is invalid or expired.");
     }
-    if (invite.expiresAt <= Date.now()) throw new Error("Invitation is invalid or expired.");
+    if (invite.expiresAt <= Date.now()) throw new ConvexError("Invitation is invalid or expired.");
     const name = args.displayName.trim();
-    if (!name || name.length > 200) throw new Error("Enter a valid name.");
+    if (!name || name.length > 200) throw new ConvexError("Enter a valid name.");
     const existing = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", invite.churchId).eq("userId", user.id)).unique();
-    if (existing && !existing.active) throw new Error("Contact the church coordinator to restore access.");
+    if (existing && !existing.active) throw new ConvexError("Contact the church coordinator to restore access.");
     if (!existing) await ctx.db.insert("memberships", { churchId: invite.churchId, userId: user.id, name, email: user.email, role: invite.role, active: true, approved: false, coverOptIn: false });
     await ctx.db.patch("invitations", invite._id, { status: "accepted", acceptedBy: user.id });
     await ctx.db.insert("auditEvents", { churchId: invite.churchId, actorId: user.id, action: "invitation_accepted", invitationId: invite._id, at: Date.now() });
@@ -110,9 +110,9 @@ export const revoke = mutation({
   handler: async (ctx, args) => {
     const user = await account(ctx);
     const invite = await ctx.db.get("invitations", args.invitationId);
-    if (!invite) throw new Error("Invitation not found.");
+    if (!invite) throw new ConvexError("Invitation not found.");
     await coordinator(ctx, invite.churchId, user.id);
-    if (invite.status === "accepted") throw new Error("An accepted invitation cannot be revoked.");
+    if (invite.status === "accepted") throw new ConvexError("An accepted invitation cannot be revoked.");
     if (invite.status === "revoked") return null;
     const outbox = await ctx.db.query("outbox").withIndex("by_invitation", q => q.eq("invitationId", invite._id)).unique();
     if (outbox?.providerId) {

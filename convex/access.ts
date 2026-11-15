@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query, type QueryCtx, type MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 
@@ -8,22 +8,22 @@ import type { Doc, Id } from "./_generated/dataModel";
  */
 export async function verifiedIdentity(ctx: QueryCtx | MutationCtx) {
   const identity = await ctx.auth.getUserIdentity();
-  if (!identity) throw new Error("Sign in required.");
-  if (!identity.email || identity.emailVerified !== true) throw new Error("A verified email is required.");
+  if (!identity) throw new ConvexError("Sign in required.");
+  if (!identity.email || identity.emailVerified !== true) throw new ConvexError("A verified email is required.");
   return { clerkId: identity.subject, email: identity.email.trim().toLowerCase() };
 }
 /** The signed-in account. Every workspace function starts here. */
 export async function user(ctx: QueryCtx | MutationCtx) {
   const { clerkId, email } = await verifiedIdentity(ctx);
   const account = await ctx.db.query("users").withIndex("by_clerk", q => q.eq("clerkId", clerkId)).unique();
-  if (!account) throw new Error("Sign in required.");
+  if (!account) throw new ConvexError("Sign in required.");
   return { id: account._id, email };
 }
 /** The caller's active membership in this group, or an error. */
 export async function membership(ctx: QueryCtx | MutationCtx, church: Id<"churches">) {
   const account = await user(ctx);
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", church).eq("userId", account.id)).unique();
-  if (!member?.active) throw new Error("Workspace access required.");
+  if (!member?.active) throw new ConvexError("Workspace access required.");
   return member;
 }
 
@@ -37,14 +37,14 @@ export function mayOpenNeighborRecords(member: Pick<Doc<"memberships">, "active"
 }
 export async function neighborAccess(ctx: QueryCtx | MutationCtx, church: Id<"churches">) {
   const member = await membership(ctx, church);
-  if (!mayOpenNeighborRecords(member)) throw new Error("Neighbor records are open to coordinators and owners only.");
+  if (!mayOpenNeighborRecords(member)) throw new ConvexError("Neighbor records are open to coordinators and owners only.");
   return member;
 }
 /** One neighbor's record, only for a caller allowed to open it and only inside their own group. */
 export async function neighborRecord(ctx: QueryCtx | MutationCtx, church: Id<"churches">, neighborId: Id<"neighbors">) {
   const member = await neighborAccess(ctx, church);
   const neighbor = await ctx.db.get("neighbors", neighborId);
-  if (!neighbor || neighbor.churchId !== church) throw new Error("Record not found.");
+  if (!neighbor || neighbor.churchId !== church) throw new ConvexError("Record not found.");
   return { member, neighbor };
 }
 /** Writes the audit line for opening a record. Queries cannot write, so the screen calls a mutation that calls this. */
