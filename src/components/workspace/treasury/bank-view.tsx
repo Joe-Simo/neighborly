@@ -132,7 +132,7 @@ export function BankView({
       </dl>
 
       <section
-        className={agrees ? "help-sheet paper-fold" : "help-sheet"}
+        className={agrees ? "help-sheet paper-fold" : "help-sheet treasury-rest"}
         aria-labelledby="treasury-statement-title"
       >
         <p className="help-sheet-label">Your bank statement</p>

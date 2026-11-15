@@ -521,3 +521,7 @@
     width: 168px;
   }
 }
+/* A corner is plain at rest, ochre only while something waits for a yes, green once given. */
+.help-sheet.treasury-rest {
+  --paper-corner: color-mix(in srgb, #283c32 12%, #f7f4ed);
+}
