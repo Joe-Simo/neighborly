@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
@@ -61,10 +61,13 @@ const headings: Record<Flow, string> = {
 export function LiveAuth({
   intent = "signin",
   sampleEntry = false,
+  enterSample = false,
 }: {
   intent?: LiveEntryIntent;
   /** Shows the way into the sample conference. Off unless the deployment has a visitor account. */
   sampleEntry?: boolean;
+  /** Arrived by the home page's sample door: the sample opens once, without a second press. */
+  enterSample?: boolean;
 }) {
   const { signIn } = useSignIn();
   const { signUp } = useSignUp();
@@ -197,6 +200,14 @@ export function LiveAuth({
       setOpening(false);
     }
   }
+
+  const openSample = useEffectEvent(() => void lookAround());
+  const sampleAsked = useRef(false);
+  useEffect(() => {
+    if (!enterSample || !sampleEntry || sampleAsked.current) return;
+    sampleAsked.current = true;
+    openSample();
+  }, [enterSample, sampleEntry]);
 
   function sendAgain() {
     void run(async () => {

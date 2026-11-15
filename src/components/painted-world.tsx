@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PaintedScoreControl } from "@/components/painted-score-control";
 import { getPaintedScrollState } from "@/lib/painted-world-scroll";
+import { isPaintedPortrait, openingKeptAbove } from "@/lib/painted-world-framing";
 import type { PaintedScene, PaintedWorldOptions, createPaintedWorldController } from "@/lib/painted-world-controller";
 import "./painted-world.css";
 import { useExperienceSound } from "./experience-sound-context";
@@ -17,15 +18,21 @@ const chapters = {
   welcome: { number: "04", name: "A welcome offered", title: <>A place<br /><em>for everyone.</em></>, copy: "Small acts of care become a community." },
   complete: { number: "04", name: "Good work, together", title: <>Good work,<br /><em>together.</em></>, copy: "Organize the next act of care with your church or community." },
 } as const;
-function fallbackSource(scene: PaintedScene, mobile: boolean, narrow = false, accepted = false) {
-  if (scene === "opening" && accepted) return narrow ? "/assets/living-relief-narrow-accepted.webp" : mobile ? "/assets/living-relief-mobile-accepted.webp" : "/assets/living-relief-accepted.webp";
-  if (scene === "opening") return mobile ? narrow ? "/assets/living-relief-narrow.webp" : "/assets/living-relief-mobile.webp" : "/assets/living-relief-poster.webp";
+function fallbackSource(scene: PaintedScene, mobile: boolean, accepted = false) {
+  if (scene === "opening" && accepted) return mobile ? "/assets/living-relief-mobile-accepted.webp" : "/assets/living-relief-accepted.webp";
+  if (scene === "opening") return mobile ? "/assets/living-relief-mobile.webp" : "/assets/living-relief-poster.webp";
   return `/assets/painted-world/${scene === "complete" ? "welcome" : scene}${mobile ? "-mobile" : ""}.webp`;
 }
-type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStoryProgress" | "setOpeningOutcome" | "setReducedMotion" | "dispose">;
+type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStoryProgress" | "setOpeningOutcome" | "setHandoff" | "setReducedMotion" | "dispose">;
+// Where the card rests in the giving hand and in the open hand, as shares of each opening painting.
+const cardPath = {
+  desktop: { size: [1440, 1024], from: [.443, .749], to: [.722, .772] },
+  mobile: { size: [780, 1688], from: [.432, .683], to: [.715, .688] },
+} as const;
 
 /** Native scrolling owns the narrative; the artwork never traps wheel or touch input. */
-export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = false, openingOutcome = "rest", onOpenInvitation, onSeeTogether, children }: { scenes?: PaintedWorldOptions["scenes"]; heroOnly?: boolean; suspendOffscreen?: boolean; openingOutcome?: "rest" | "pending" | "accepted" | "declined"; onOpenInvitation?: (trigger: HTMLElement) => void; onSeeTogether?: () => void; children?: ReactNode }) {
+export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = false, passed = false, onPass, onContinue, children }: { scenes?: PaintedWorldOptions["scenes"]; heroOnly?: boolean; suspendOffscreen?: boolean; passed?: boolean; onPass?: () => void; onContinue?: () => void; children?: ReactNode }) {
+  const openingOutcome: "rest" | "accepted" = passed ? "accepted" : "rest";
   const sound = useExperienceSound();
   const outcomeRef = useRef(openingOutcome);
   useEffect(() => { outcomeRef.current = openingOutcome; controller.current?.setOpeningOutcome(openingOutcome); }, [openingOutcome]);
@@ -130,17 +137,85 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
     return () => { cancelAnimationFrame(frame); observer.disconnect(); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
   }, [heroOnly]);
 
-  return <main className="painted-world" id="story-start" data-scene={visibleScene} data-hero-only={heroOnly} data-ready={ready} data-failed={failed} tabIndex={-1}>
+  // Passing the card: the visitor's hand leads it from the giving hand to the open one.
+  const hand = useRef<{ id: number; x: number; y: number; moved: boolean } | null>(null);
+  const handed = useRef(0);
+  const settle = useRef(0);
+  const [reached, setReached] = useState(false);
+  const lead = (value: number) => {
+    handed.current = value;
+    viewport.current?.style.setProperty("--pass", String(value));
+    controller.current?.setHandoff(value);
+  };
+  useEffect(() => {
+    if (!heroOnly || !viewport.current) return;
+    const element = viewport.current;
+    const place = () => {
+      const art = host.current?.getBoundingClientRect(), frame = element.getBoundingClientRect();
+      if (!art) return;
+      // The painting fills its box exactly as the picture and the scene do, so the card is found where it is drawn.
+      const mobile = isPaintedPortrait(art.width, art.height);
+      const path = cardPath[mobile ? "mobile" : "desktop"];
+      const scale = Math.max(art.width / path.size[0], art.height / path.size[1]);
+      const paintingWidth = path.size[0] * scale, paintingHeight = path.size[1] * scale;
+      const left = art.left - frame.left + (art.width - paintingWidth) / 2, top = art.top - frame.top - (paintingHeight - art.height) * (mobile ? 0 : openingKeptAbove);
+      const at = (point: readonly [number, number]) => [left + point[0] * paintingWidth, top + point[1] * paintingHeight];
+      const [fromX, fromY] = at(path.from), [toX, toY] = at(path.to);
+      element.style.setProperty("--card-x", `${fromX}px`); element.style.setProperty("--card-y", `${fromY}px`);
+      element.style.setProperty("--card-dx", `${toX - fromX}px`); element.style.setProperty("--card-dy", `${toY - fromY}px`);
+      element.style.setProperty("--card-size", `${Math.max(56, paintingWidth * .115)}px`);
+    };
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(element);
+    return () => { observer.disconnect(); cancelAnimationFrame(settle.current); };
+  }, [heroOnly]);
+  const takeCard = (event: PointerEvent<HTMLDivElement>) => {
+    if (!event.isPrimary || event.button !== 0 || passed) return;
+    cancelAnimationFrame(settle.current);
+    hand.current = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setReached(true);
+  };
+  const carryCard = (event: PointerEvent<HTMLDivElement>) => {
+    const held = hand.current, element = viewport.current;
+    if (!held || held.id !== event.pointerId || !element) return;
+    const dx = parseFloat(element.style.getPropertyValue("--card-dx")), dy = parseFloat(element.style.getPropertyValue("--card-dy"));
+    const moveX = event.clientX - held.x, moveY = event.clientY - held.y;
+    if (Math.hypot(moveX, moveY) > 6) held.moved = true;
+    lead(Math.max(0, Math.min(1, (moveX * dx + moveY * dy) / (dx * dx + dy * dy))));
+  };
+  const releaseCard = (event: PointerEvent<HTMLDivElement>, cancelled = false) => {
+    const held = hand.current;
+    if (!held || held.id !== event.pointerId) return;
+    hand.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    // Past halfway, or a plain tap, the card finishes its own way across. Short of it, the card goes back.
+    if (!cancelled && (handed.current >= .5 || !held.moved)) { onPass?.(); return; }
+    const back = () => {
+      const next = handed.current - Math.max(.02, handed.current * .2);
+      if (next <= 0 || matchMedia("(prefers-reduced-motion: reduce)").matches) { handed.current = 0; viewport.current?.style.setProperty("--pass", "0"); controller.current?.setHandoff(null); return; }
+      lead(next);
+      settle.current = requestAnimationFrame(back);
+    };
+    back();
+  };
+
+  return <main className="painted-world" id="story-start" data-scene={visibleScene} data-hero-only={heroOnly} data-passed={passed} data-ready={ready} data-failed={failed} tabIndex={-1}>
     {heroOnly && <h1 className="sr-only">Kind Helps — good work, together.</h1>}
     <a className="painted-world-skip" href={heroOnly ? "#how-neighborly-works" : "#your-community"}>Skip to how Kind Helps works</a>
     <section className="painted-world-track" ref={track} aria-label={heroOnly ? "An open hand" : "A story of care"}>
       <div className="painted-world-viewport" ref={viewport}>
         <div className="painted-world-art" ref={host} aria-hidden="true" />
         {(!ready || failed || !canRender) && <picture className="painted-world-fallback">
-          <source media="(max-width:420px)" srcSet={fallbackSource(visibleScene, true, true, openingOutcome === "accepted")} />
-          <source media="(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)" srcSet={fallbackSource(visibleScene, true, false, openingOutcome === "accepted")} />
-          <img crossOrigin="anonymous" fetchPriority="high" src={fallbackSource(visibleScene, false, false, openingOutcome === "accepted")} alt="" />
+          <source media={heroOnly ? "(max-width:700px)" : "(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)"} srcSet={fallbackSource(visibleScene, true, openingOutcome === "accepted")} />
+          <img crossOrigin="anonymous" fetchPriority="high" src={fallbackSource(visibleScene, false, openingOutcome === "accepted")} alt="" />
         </picture>}
+        {heroOnly && reached && !passed && (!ready || failed || !canRender) && <picture className="painted-world-fallback painted-world-fallback-passed">
+          <source media="(max-width:700px)" srcSet={fallbackSource("opening", true, true)} />
+          <img src={fallbackSource("opening", false, true)} alt="" />
+        </picture>}
+        {heroOnly && onPass && !passed && <div className="painted-world-card" aria-hidden="true" onPointerDown={takeCard} onPointerMove={carryCard} onPointerUp={event => releaseCard(event)} onPointerCancel={event => releaseCard(event, true)} />}
         <div className="painted-world-shade" aria-hidden="true" />
         <header className="painted-world-header">
           <a href="#story-start" className="painted-world-brand" aria-label="Kind Helps home">kind helps</a>
@@ -149,11 +224,11 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
         <div className="painted-world-caption" key={visibleScene}>
           <div aria-live="polite" aria-atomic="true">
           <p className="painted-world-kicker" aria-hidden={heroOnly || undefined}>{chapter.name}</p>
-          <h1 aria-level={heroOnly ? 2 : undefined}>{heroOnly && openingOutcome === "accepted" ? <>A little yes.<br /><em>Something shared.</em></> : heroOnly && openingOutcome === "declined" ? <>There is room<br /><em>for another answer.</em></> : chapter.title}</h1>
-          <p className="painted-world-description">{heroOnly && openingOutcome === "accepted" ? "A small promise. One less thing to carry alone." : heroOnly && openingOutcome === "declined" ? "The invitation stays open. Everyone still belongs." : chapter.copy}</p>
+          <h1 aria-level={heroOnly ? 2 : undefined}>{chapter.title}</h1>
+          <p className="painted-world-description">{chapter.copy}{heroOnly && onPass && !passed && " Pass the card to begin."}</p>
           </div>
           {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Kind Helps">
-            <a className="painted-world-primary-invitation" href="#neighborly-courtyard" aria-haspopup={onOpenInvitation && openingOutcome !== "accepted" ? "dialog" : undefined} onClick={event => { if (openingOutcome === "accepted" && onSeeTogether) { event.preventDefault(); onSeeTogether(); } else if (onOpenInvitation && openingOutcome !== "accepted") { event.preventDefault(); onOpenInvitation(event.currentTarget); } }}>{openingOutcome === "accepted" ? "See what comes together" : openingOutcome === "declined" ? "Try another answer" : onOpenInvitation ? "Open the invitation" : "Step inside"}<ArrowUpRight size={15} aria-hidden="true" /></a>
+            <a className="painted-world-primary-invitation" href="#neighborly-courtyard" onClick={event => { if (passed && onContinue) { event.preventDefault(); onContinue(); } else if (!passed && onPass) { event.preventDefault(); onPass(); } }}>{passed || !onPass ? "Go through the doors" : "Pass the card"}<ArrowUpRight size={15} aria-hidden="true" /></a>
             <Link href="/app?intent=start">Start a group <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </nav>}
           {!heroOnly && scene === "complete" && <nav className="painted-world-scene-actions" aria-label="Start with Kind Helps">
@@ -165,7 +240,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
         </div>
         <footer className="painted-world-tools">
           {!heroOnly && <PaintedScoreControl scene={visibleScene} className="painted-world-sound" />}
-          <div className="painted-world-scroll-cue" aria-hidden="true"><span>{loading ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : "Scroll to continue"}</span><ArrowDown size={15} /></div>
+          <div className="painted-world-scroll-cue" aria-hidden="true"><span>{loading ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
           {!heroOnly && <div className="painted-world-progress" aria-hidden="true"><span>{chapter.number}</span><div><i /></div><span>04</span></div>}
         </footer>
       </div>

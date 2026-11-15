@@ -27,6 +27,7 @@ export default async function Page({
       invitationToken={token}
       intent={entryIntent}
       sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}
+      enterSample={intent === "sample"}
     />
   );
 }

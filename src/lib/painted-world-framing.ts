@@ -2,21 +2,29 @@ export function isPaintedPortrait(width: number, height: number) {
   return width <= 700 || (width <= 1000 && width / height < 0.9);
 }
 
+/** The share of a cropped desktop opening that is lost above the faces; the rest is lost below the hands. */
+export const openingKeptAbove = .25;
+
 /** Keep the opening's original asset breakpoints independent of story-panel aspect ratios. */
-export function getPaintedOpeningFraming(hostWidth: number, hostHeight: number, worldWidth: number, worldHeight: number) {
+export function getPaintedOpeningFraming(hostWidth: number, hostHeight: number, worldWidth: number, worldHeight: number, cover = false) {
   const mobile = isPaintedPortrait(hostWidth, hostHeight);
-  const narrow = hostWidth <= 420;
+  // The home page fills its box with one phone painting; the narrow one left the faces and hands small and apart.
+  const narrow = !cover && hostWidth <= 420;
   const sourceWidth = mobile ? 7.8 : 14.4;
   const sourceHeight = mobile ? 16.88 : 10.24;
   // Portrait surfaces must show the whole authored opening, rather than a centre
   // slice of the tall painting with both faces outside the camera frustum.
-  const fit = Math.min;
+  const fit = cover ? Math.max : Math.min;
+  const scale = fit(worldWidth / sourceWidth, worldHeight / sourceHeight);
+  // A filled box crops what does not fit. Phones keep the top, where the faces are; wider boxes keep a quarter of the loss above.
+  const keptAbove = mobile ? 0 : openingKeptAbove;
   return {
+    shiftY: cover ? -(.5 - keptAbove) * Math.max(0, sourceHeight * scale - worldHeight) : 0,
     mobile,
     narrow,
     sourceWidth,
     sourceHeight,
-    scale: fit(worldWidth / sourceWidth, worldHeight / sourceHeight),
+    scale,
     poster: mobile
       ? narrow ? "/assets/living-relief-narrow.webp" : "/assets/living-relief-mobile.webp"
       : "/assets/living-relief-poster.webp",

@@ -51,6 +51,8 @@ export function createReliefPlayback(
       }
 
       mixer.timeScale = paused || reducedMotion ? 0 : 1;
+      // A hand-off left part-way by the visitor's own drag carries on from where they let go.
+      if (!changed && !paused && !reducedMotion && action?.paused && action.time < action.getClip().duration) action.paused = false;
       if (
         action &&
         (reducedMotion ||
@@ -60,6 +62,14 @@ export function createReliefPlayback(
         action.time = action.getClip().duration;
         action.paused = true;
       }
+      mixer.update(0);
+    },
+    /** Holds an outcome's movement at a point along its length, so a hand can lead it. */
+    scrub(outcome: ReliefOutcome, progress: number) {
+      this.apply(outcome, true, false);
+      if (!action) return;
+      action.time = Math.max(0, Math.min(1, progress)) * action.getClip().duration;
+      action.paused = true;
       mixer.update(0);
     },
     advance(seconds: number) {

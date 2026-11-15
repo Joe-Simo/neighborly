@@ -1,0 +1,83 @@
+/* The journey after the opening: the doors, the courtyard as a fresco, and the story in four pictures. One material: paper. */
+.fresco-journey{position:relative;height:450svh}
+.fresco-stage{--door:0;--grow:0;position:sticky;top:0;height:100svh;overflow:hidden;isolation:isolate;outline:0;color:#293f32;background:#eee7d7 url(/assets/paper-world/continuation.webp) center/cover no-repeat}
+.fresco-stage a:focus-visible,.fresco-stage button:focus-visible{outline:2px solid #365c46;outline-offset:2px}
+.fresco-header{position:absolute;z-index:4;top:0;left:0;right:0;height:76px;padding:0 max(20px,4%);display:flex;align-items:center;justify-content:space-between;gap:20px}
+.fresco-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none}
+.fresco-header>a:last-child{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 2px;font-size:15px;text-decoration:none;border-bottom:1px solid #253e3140}
+
+.fresco-invitation{position:absolute;z-index:3;left:7%;top:50%;width:min(27%,400px);translate:0 calc(-50% - var(--door) * 24px);opacity:calc(1 - var(--door) * 1.8)}
+.fresco-stage[data-open=true] .fresco-invitation{visibility:hidden}
+.fresco-invitation h2{margin:0 0 24px;font:400 clamp(52px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.065em}
+.fresco-invitation h2 em{font-weight:400}
+.fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
+.fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none}
+.fresco-open[data-slot=button]:hover{background:#3a5040}
+
+/* One opening in the wall. It is the doorway first, then the frame of the fresco. */
+.fresco-frame{position:absolute;z-index:1;box-shadow:0 0 0 calc(var(--grow) * 12px) #f5f0e3,0 0 0 calc(var(--grow) * 13px) #cdbf9f,0 28px 70px #51433040}
+.fresco-frame::before{content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;box-shadow:0 0 0 6px #9c8660,0 0 0 13px #e0d2b8,0 0 0 16px #ad9670;opacity:calc(1 - var(--grow) * 2.2);pointer-events:none}
+.fresco-wall{position:absolute;inset:0;overflow:hidden;border-radius:inherit;background:#b6ac82}
+/* The painting lies a little behind the wall's face. */
+.fresco-wall::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 18px 44px #1b2a1f99,inset 0 0 0 1px #2c392c4d,inset 0 -8px 26px #1b2a1f40;pointer-events:none}
+.fresco-view{position:absolute;left:50%;top:50%;translate:-50% -50%}
+.fresco-painting{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.fresco-view .living-courtyard{position:absolute;inset:0;pointer-events:none}
+.fresco-view .living-courtyard canvas{display:block;width:100%;height:100%}
+.fresco-stage:not([data-living=true]) .living-courtyard{visibility:hidden}
+.fresco-doors{position:absolute;inset:0;border-radius:inherit;perspective:1500px;opacity:calc(1 - var(--grow) * 3);pointer-events:none}
+.fresco-doors i{position:absolute;top:0;bottom:0;width:50.15%;background-image:url(/assets/threshold/doors.webp);background-size:200% 100%;backface-visibility:hidden;box-shadow:inset 0 0 25px #17271c22}
+.fresco-doors i:first-child{left:0;transform-origin:left center;border-radius:100% 0 0 0/30% 0 0 0;background-position:left center;transform:rotateY(calc(var(--door) * 88deg))}
+.fresco-doors i:last-child{right:0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;background-position:right center;transform:rotateY(calc(var(--door) * -88deg))}
+.fresco-caption{position:absolute;z-index:2;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;opacity:calc(var(--grow) * 2.5 - 1.5);translate:0 calc((1 - var(--grow)) * 20px)}
+.fresco-caption em{font-weight:400}
+@media(max-width:700px){
+  .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
+  .fresco-brand{font-size:30px}
+  .fresco-invitation{position:static;width:auto;translate:none}
+  .fresco-invitation h2{position:absolute;z-index:3;left:20px;top:calc(72px + env(safe-area-inset-top));margin:0;font-size:clamp(40px,12vw,52px)}
+  .fresco-invitation p{display:none}
+  /* The button stands on paper under the doors, clear of them. */
+  .fresco-open[data-slot=button]{position:absolute;z-index:3;left:50%;top:calc(79svh + 34px);translate:-50% 0;min-height:50px}
+  .fresco-caption{top:calc(var(--caption-top,70%) + 34px);font-size:clamp(32px,9.5vw,44px)}
+}
+@media(prefers-reduced-motion:reduce){.fresco-journey{height:360svh}}
+
+/* ── The story, in four pictures ───────────────────────────────────────────── */
+.relief-story{position:relative;z-index:1;isolation:isolate;margin-top:-5vw;padding:4svh 0 6svh;background:#eee7d7;color:#293f32}
+/* The story is a fresh sheet laid over the wall: its top edge is one slow wave. */
+.relief-story::before,.relief-story::after{content:"";position:absolute;left:0;right:0;bottom:calc(100% - 1px);height:6vw;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10V5C18 -1 34 9 54 5S84 0 100 4V10Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10V5C18 -1 34 9 54 5S84 0 100 4V10Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.relief-story::before{background:#cfc2a4;translate:0 -3px;filter:blur(1px);opacity:.8}
+.relief-story::after{background:#eee7d7}
+.relief-thread{position:absolute;inset:0;z-index:-1;width:100%;height:100%;overflow:visible;pointer-events:none}
+.relief-thread path{fill:none;stroke:#c8962e;stroke-width:1.5px;stroke-linecap:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:calc(1 - var(--thread,0))}
+.relief-thread-phone{display:none}
+.relief-panel{--e:0;position:relative;min-height:100svh;display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);align-items:center;gap:0 6%;padding:8svh 0 8svh 7%}
+.relief-panel[data-side=left]{grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr);padding:8svh 7% 8svh 0}
+.relief-panel[data-side=left] .relief-picture{order:-1}
+.relief-words{opacity:calc(1 - var(--e) * 1.5);translate:0 calc(var(--e) * 36px)}
+.relief-words h2{margin:0;font:400 clamp(56px,7vw,120px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.065em}
+.relief-words p{margin:clamp(20px,2.4vw,36px) 0 0;max-width:27ch;font-size:clamp(18px,1.45vw,22px);line-height:1.5;text-wrap:pretty}
+/* A picture is a block of paper, 3 by 2, running off the page's edge. */
+.relief-picture{position:relative;aspect-ratio:3/2;max-height:78svh;justify-self:end;width:100%;overflow:hidden;background:#f7f4ed;box-shadow:0 1px 0 #fffdf7 inset,0 34px 70px -34px #51433059,0 2px 8px #5143301a;translate:0 calc(var(--e) * 48px)}
+.relief-panel[data-side=left] .relief-picture{justify-self:start}
+.relief-picture>*{position:absolute;inset:0 -12%;width:124%;height:100%;display:block}
+.relief-picture svg{overflow:visible;filter:drop-shadow(0 3px 5px #3b2f1f38)}
+.relief-layer-far{translate:calc(var(--e) * var(--from,1) * 70px) 0}
+.relief-layer-near{translate:calc(var(--e) * var(--from,1) * 130px) 0}
+.relief-panel[data-side=left]{--from:-1}
+@media(max-width:820px){
+  .relief-story{margin-top:-9vw;padding-top:2svh}
+  .relief-story::before,.relief-story::after{height:10vw}
+  .relief-thread-desk{display:none}.relief-thread-phone{display:block}
+  .relief-panel,.relief-panel[data-side=left]{min-height:0;grid-template-columns:minmax(0,1fr);gap:28px;padding:7svh 0 7svh 20px}
+  .relief-panel[data-side=left]{padding:7svh 20px 7svh 0}
+  .relief-picture{order:-1;max-height:none}
+  .relief-words{padding-right:20px}
+  .relief-panel[data-side=left] .relief-words{padding:0 0 0 20px}
+  .relief-words h2{font-size:clamp(56px,17vw,88px)}
+  .relief-words p{font-size:18px;max-width:30ch}
+  .relief-layer-far{translate:calc(var(--e) * var(--from,1) * 30px) 0}
+  .relief-layer-near{translate:calc(var(--e) * var(--from,1) * 56px) 0}
+}
+@media(prefers-reduced-motion:reduce){.relief-panel{--e:0!important}.relief-thread path{stroke-dashoffset:0}}

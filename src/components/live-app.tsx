@@ -25,11 +25,14 @@ export function LiveApp({
   invitationToken = "",
   intent = "signin",
   sampleEntry = false,
+  enterSample = false,
 }: {
   area?: LiveArea;
   invitationToken?: string;
   intent?: LiveEntryIntent;
   sampleEntry?: boolean;
+  /** Arrived by the home page's sample door: the sample opens without a second press. */
+  enterSample?: boolean;
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
@@ -134,7 +137,7 @@ export function LiveApp({
     );
   if (!isAuthenticated)
     return (
-      <LiveAuth key={intent} intent={intent} sampleEntry={sampleEntry} />
+      <LiveAuth key={intent} intent={intent} sampleEntry={sampleEntry} enterSample={enterSample} />
     );
   if (!viewer)
     return (

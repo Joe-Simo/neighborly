@@ -135,12 +135,13 @@ const FOCUS = .24;
 const placed = [[".threshold-table-chair", .25], [".threshold-table-settings", .16], [".threshold-garden-basket", .4], [".threshold-garden-plants", .4], [".threshold-hall-chairs", .12], [".threshold-hall-flowers", .11], [".threshold-lamps", .1], [".threshold-foreground", .78]] as const;
 const placedLayers = placed.map(([selector]) => selector).join(",");
 
-export function LivingCourtyard() {
+/** `within` is the stage that carries the scene's state; `painting` is the still picture this is laid over. */
+export function LivingCourtyard({ within = ".threshold-experience", painting: paintingSelector = ".threshold-background" }: { within?: string; painting?: string }) {
   const holder = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const frame = holder.current;
-    const host = frame?.closest<HTMLElement>(".threshold-experience");
+    const host = frame?.closest<HTMLElement>(within);
     if (!frame || !host) return;
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let renderer: WebGLRenderer;
@@ -211,7 +212,7 @@ export function LivingCourtyard() {
       const dt = Math.min(.05, elapsed); last = time;
       const seconds = (time - began) / 1000;
       const stage = frame.getBoundingClientRect();
-      const painting = host.querySelector(".threshold-background")?.getBoundingClientRect();
+      const painting = host.querySelector(paintingSelector)?.getBoundingClientRect();
       if (!painting || stage.bottom < 0 || stage.top > innerHeight || renderer.getContext().isContextLost()) return;
       // If the graphics card cannot keep pace, the painting is drawn a little smaller rather than letting the journey stutter.
       pace = mix(pace, Math.min(elapsed, .1), .06);
@@ -225,7 +226,9 @@ export function LivingCourtyard() {
       look.x = mix(look.x, still ? 0 : pointer.x + driftX, follow);
       look.y = mix(look.y, still ? 0 : pointer.y + driftY, follow);
       const evening = host.dataset.evening === "true";
-      uniforms.uRect.value.set(painting.left - stage.left, painting.top - stage.top, painting.width, painting.height);
+      // Measured in the canvas's own units, so the scene stays in register when its holder is scaled on the page.
+      const unit = stage.width / Math.max(1, frame.clientWidth) || 1;
+      uniforms.uRect.value.set((painting.left - stage.left) / unit, (painting.top - stage.top) / unit, painting.width / unit, painting.height / unit);
       uniforms.uView.value.set(-look.x * .03, -look.y * .022);
       uniforms.uSun.value.set(-.45 + look.x * 1.5, -.55 + look.y * .9);
       // Walking in: the near world grows faster than the far one as the doors are passed, and eases back for the last wide view.
@@ -291,7 +294,7 @@ export function LivingCourtyard() {
       [uniforms.uMap, uniforms.uDepth, uniforms.uNormal, uniforms.uFigures, uniforms.uIdle, uniforms.uAnswer].forEach(uniform => { if (uniform.value?.image instanceof ImageBitmap) uniform.value.image.close(); uniform.value?.dispose(); });
       geometry.dispose(); material.dispose(); renderer.dispose(); renderer.domElement.remove();
     };
-  }, []);
+  }, [within, paintingSelector]);
 
   return <div ref={holder} className="living-courtyard" aria-hidden="true" />;
 }
