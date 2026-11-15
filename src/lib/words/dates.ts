@@ -1,39 +1,93 @@
 import type { Language } from "./sets";
 
-/** Browsers carry no Creole calendar words, so the app carries its own. */
-const creole = {
-  weekday: {
-    long: ["dimanch", "lendi", "madi", "mèkredi", "jedi", "vandredi", "samdi"],
-    short: ["dim", "len", "mad", "mèk", "jed", "van", "sam"],
+type Names = { long: string[]; short: string[] };
+/**
+ * Spanish and Creole calendar words are carried here, not taken from the machine.
+ * Machines disagree on Spanish order, and none knows Creole; a date must read the
+ * same on the server, in every browser and on every phone.
+ */
+const calendars: Record<Exclude<Language, "en">, { weekday: Names; month: Names; of: string; am: string; pm: string }> = {
+  es: {
+    weekday: {
+      long: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      short: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+    },
+    month: {
+      long: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      short: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"],
+    },
+    of: " de ",
+    am: "a.m.",
+    pm: "p.m.",
   },
-  month: {
-    long: ["janvye", "fevriye", "mas", "avril", "me", "jen", "jiyè", "out", "septanm", "oktòb", "novanm", "desanm"],
-    short: ["jan", "fev", "mas", "avr", "me", "jen", "jiy", "out", "sep", "okt", "nov", "des"],
+  ht: {
+    weekday: {
+      long: ["dimanch", "lendi", "madi", "mèkredi", "jedi", "vandredi", "samdi"],
+      short: ["dim", "len", "mad", "mèk", "jed", "van", "sam"],
+    },
+    month: {
+      long: ["janvye", "fevriye", "mas", "avril", "me", "jen", "jiyè", "out", "septanm", "oktòb", "novanm", "desanm"],
+      short: ["jan", "fev", "mas", "avr", "me", "jen", "jiy", "out", "sep", "okt", "nov", "des"],
+    },
+    of: " ",
+    am: "AM",
+    pm: "PM",
   },
 };
-const locales: Record<Language, string> = { en: "en-US", es: "es-US", ht: "fr-HT" };
+
+/** The plain numbers of a moment in a time zone. Only digits and English day codes are read, which every machine writes alike. */
+function numbers(time: number, timeZone: string | undefined) {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit", hourCycle: "h23" }).formatToParts(time);
+  const read = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
+  return {
+    weekday: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(read("weekday")),
+    year: Number(read("year")), month: Number(read("month")) - 1, day: Number(read("day")),
+    hour: Number(read("hour")) % 24, minute: read("minute").padStart(2, "0"),
+  };
+}
+
+/** dateStyle and timeStyle, said as the single fields they stand for. */
+function fields(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatOptions {
+  const date: Intl.DateTimeFormatOptions =
+    options.dateStyle === "full" ? { weekday: "long", month: "long", day: "numeric", year: "numeric" }
+    : options.dateStyle === "long" ? { month: "long", day: "numeric", year: "numeric" }
+    : options.dateStyle === "medium" ? { month: "short", day: "numeric", year: "numeric" }
+    : options.dateStyle === "short" ? { month: "numeric", day: "numeric", year: "numeric" }
+    : {};
+  return { ...options, ...date, ...(options.timeStyle ? { hour: "numeric", minute: "2-digit" } : {}) };
+}
 
 /**
- * A date or time written as a reader of this language expects. Creole takes
- * its order from the French of Haiti and its day and month names from the table above.
+ * A date or time written as a reader of this language expects. English is the
+ * machine's own en-US, which is the same everywhere and is what the screens have
+ * always shown. Spanish and Creole are put together here: day before month,
+ * a twelve-hour clock, and the words from the tables above.
  */
 export function formatDate(language: Language, time: number, options: Intl.DateTimeFormatOptions): string {
-  const format = new Intl.DateTimeFormat(locales[language], language === "ht" && options.hour ? { hour12: true, ...options } : options);
-  if (language !== "ht") return format.format(time);
-  const numbers = new Intl.DateTimeFormat("en-US", { timeZone: options.timeZone, weekday: "short", month: "numeric" }).formatToParts(time);
-  const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(numbers.find((part) => part.type === "weekday")?.value ?? "");
-  const month = Number(numbers.find((part) => part.type === "month")?.value) - 1;
-  const width = (value: Intl.DateTimeFormatOptions["weekday"] | Intl.DateTimeFormatOptions["month"]) => (value === "long" ? "long" : "short");
-  return format
-    .formatToParts(time)
-    .map((part) =>
-      part.type === "weekday" ? creole.weekday[width(options.weekday)][weekday]
-      : part.type === "month" && options.month !== "numeric" && options.month !== "2-digit" ? creole.month[width(options.month)][month]
-      : part.value,
-    )
-    .join("")
-    // Servers and browsers disagree on which space sits before AM; a plain one is the same everywhere.
-    .replace(/[\u202f\u00a0]/g, " ");
+  if (language === "en") return new Intl.DateTimeFormat("en-US", options).format(time);
+  const calendar = calendars[language];
+  const wanted = fields(options);
+  const at = numbers(time, options.timeZone);
+  const written = wanted.month === "long" || wanted.month === "short" || wanted.month === "narrow";
+  const width = (value: string | undefined) => (value === "long" ? "long" : "short");
+  let date = "";
+  if (wanted.month && !written) {
+    date = [wanted.day && at.day, at.month + 1, wanted.year && at.year].filter(Boolean).join("/");
+  } else {
+    const of = wanted.month === "long" ? calendar.of : " ";
+    date = [wanted.day && String(at.day), wanted.month && calendar.month[width(wanted.month)][at.month]].filter(Boolean).join(of);
+    if (wanted.year) date = date ? `${date}${wanted.month ? of : " "}${at.year}` : String(at.year);
+  }
+  if (wanted.weekday) {
+    const weekday = calendar.weekday[width(wanted.weekday)][at.weekday];
+    date = date ? `${weekday}${language === "es" ? "," : ""} ${date}` : weekday;
+  }
+  let clock = "";
+  if (wanted.hour) {
+    const hour = at.hour % 12 || 12;
+    clock = `${hour}${wanted.minute ? `:${at.minute}` : ""} ${at.hour < 12 ? calendar.am : calendar.pm}`;
+  }
+  return [date, clock].filter(Boolean).join(", ");
 }
 
 /** A calendar day stored as "yyyy-MM-dd", written out: "Dec 20, 2026". The day is the same in every time zone. */

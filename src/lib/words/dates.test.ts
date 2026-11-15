@@ -2,7 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { formatDate, formatDay, formatDays } from "./dates";
 
 const tuesday = Date.parse("2026-11-17T14:00:00Z");
-const shape = { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" } as const;
+const zone = "America/New_York";
+const shape = { timeZone: zone, weekday: "short", month: "short", day: "numeric" } as const;
+const clock = { timeZone: zone, hour: "numeric", minute: "2-digit" } as const;
 
 describe("dates in each language", () => {
   test("English reads as it always has", () => {
@@ -10,24 +12,39 @@ describe("dates in each language", () => {
     expect(formatDate("en", tuesday, shape)).toBe("Tue, Nov 17");
   });
 
-  test("Spanish uses its own words and a twelve-hour clock", () => {
-    expect(formatDate("es", tuesday, shape)).toMatch(/^mar, 17 (de )?nov$/);
-    expect(formatDate("es", tuesday, { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" })).toMatch(/^9:00\s?a\.\s?m\.$/);
+  test("Spanish is written from the app's own words, day before month, on any machine", () => {
+    expect(formatDate("es", tuesday, shape)).toBe("mar, 17 nov");
+    expect(formatDate("es", tuesday, { timeZone: zone, weekday: "long", month: "long", day: "numeric", year: "numeric" })).toBe("martes, 17 de noviembre de 2026");
+    expect(formatDate("es", tuesday, clock)).toBe("9:00 a.m.");
+    expect(formatDate("es", Date.parse("2026-11-17T17:05:00Z"), clock)).toBe("12:05 p.m.");
+    expect(formatDate("es", Date.parse("2026-11-17T05:30:00Z"), clock)).toBe("12:30 a.m.");
   });
 
   test("Creole uses Creole day and month names, never French or English", () => {
     expect(formatDate("ht", tuesday, shape)).toBe("mad 17 nov");
-    expect(formatDate("ht", tuesday, { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric" })).toBe("madi 17 novanm");
-    expect(formatDate("ht", Date.parse("2026-08-02T16:00:00Z"), { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric" })).toBe("dimanch 2 out");
+    expect(formatDate("ht", tuesday, { timeZone: zone, weekday: "long", month: "long", day: "numeric" })).toBe("madi 17 novanm");
+    expect(formatDate("ht", Date.parse("2026-08-02T16:00:00Z"), { timeZone: zone, weekday: "long", month: "long", day: "numeric" })).toBe("dimanch 2 out");
+    expect(formatDate("ht", tuesday, clock)).toBe("9:00 AM");
     // The day belongs to the group's time zone, not to the server's.
     expect(formatDate("ht", Date.parse("2026-11-18T03:30:00Z"), shape)).toBe("mad 17 nov");
   });
 
+  test("the single pieces a row is built from", () => {
+    expect(formatDate("es", tuesday, { timeZone: zone, month: "short" })).toBe("nov");
+    expect(formatDate("es", tuesday, { timeZone: zone, day: "numeric" })).toBe("17");
+    expect(formatDate("es", tuesday, { timeZone: zone, weekday: "short" })).toBe("mar");
+    expect(formatDate("ht", tuesday, { timeZone: zone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })).toBe("mad 17 nov, 9:00 AM");
+    expect(formatDate("es", tuesday, { timeZone: zone, dateStyle: "medium" })).toBe("17 nov 2026");
+    expect(formatDate("es", tuesday, { timeZone: zone, dateStyle: "short" })).toBe("17/11/2026");
+    expect(formatDate("es", tuesday, { timeZone: zone, month: "long", year: "numeric" })).toBe("noviembre de 2026");
+  });
+
   test("a stored day is written out the same in every time zone", () => {
     expect(formatDay("en", "2026-12-20")).toBe("Dec 20, 2026");
-    expect(formatDay("es", "2026-12-20")).toMatch(/^20 (de )?dic (de )?2026$/);
+    expect(formatDay("es", "2026-12-20")).toBe("20 dic 2026");
     expect(formatDay("ht", "2027-01-04")).toBe("4 jan 2027");
     expect(formatDays("en", "2026-12-20", "2027-01-04")).toBe("Dec 20, 2026 – Jan 4, 2027");
+    expect(formatDays("es", "2026-12-20", "2027-01-04")).toBe("20 dic 2026 – 4 ene 2027");
     expect(formatDays("en", "2026-12-20", "2026-12-20")).toBe("Dec 20, 2026");
     expect(formatDay("en", "not a day")).toBe("not a day");
   });
