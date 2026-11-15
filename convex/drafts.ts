@@ -465,19 +465,21 @@ const tally = v.object({ notesAllRight: v.number(), right: v.number(), blank: v.
  * Each note is judged three ways from one request. "mix" is what the screens do: code proposes and Jev
  * confirms, and where code is silent Jev picks the kind and reads the sign itself. "confirm" is code proposing
  * and Jev confirming only; "choose" is Jev alone on kind and signs. The amount is read by code in all three,
- * and who is paid is confirmed the same way in all three, since Jev cannot write either. A shown value that the note does not
+ * and who is paid is confirmed the same way in all three, since Jev cannot write either. Those three are
+ * counted on the notes the lines were set from. "fresh" is the screens' way counted on the notes added
+ * afterwards, which no line was set on: that is the figure to trust. A shown value that the note does not
  * support is "wrong"; a right value left for a person is "blank".
  */
 export const measure = internalAction({
   args: { churchId: v.id("churches") },
   returns: v.object({
     status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")),
-    notes: v.number(), unanswered: v.number(), model: v.string(), mix: tally, confirm: tally, choose: tally,
+    notes: v.number(), unanswered: v.number(), model: v.string(), mix: tally, confirm: tally, choose: tally, fresh: tally,
     rows: v.array(v.object({ id: v.string(), mix: v.optional(marks), confirm: v.optional(marks), choose: v.optional(marks), scores: v.record(v.string(), v.union(v.number(), v.string())) })),
   }),
   handler: async (ctx, { churchId }) => {
     const empty = { notesAllRight: 0, right: 0, blank: 0, wrong: 0 };
-    const none = { notes: jevSet.length, unanswered: 0, model, mix: empty, confirm: empty, choose: empty, rows: [] };
+    const none = { notes: jevSet.length, unanswered: 0, model, mix: empty, confirm: empty, choose: empty, fresh: empty, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: jevSet.length })) return { status: "no allowance" as const, ...none };
@@ -523,11 +525,12 @@ export const measure = internalAction({
         },
       };
     }));
-    const count = (arm: "mix" | "confirm" | "choose") => {
-      const all = rows.flatMap(row => (row[arm] ? [Object.values(row[arm])] : []));
+    // The three arms are counted on the notes the lines were set from; "fresh" is the screens' way on the notes they were not.
+    const count = (arm: "mix" | "confirm" | "choose", fresh = false) => {
+      const all = rows.flatMap((row, index) => (row[arm] && !!jevSet[index].fresh === fresh ? [Object.values(row[arm])] : []));
       const of = (mark: Outcome) => all.flat().filter(value => value === mark).length;
       return { notesAllRight: all.filter(row => row.every(value => value === "right")).length, right: of("right"), blank: of("blank"), wrong: of("wrong") };
     };
-    return { status: "done" as const, notes: jevSet.length, unanswered: rows.filter(row => !row.confirm).length, model, mix: count("mix"), confirm: count("confirm"), choose: count("choose"), rows };
+    return { status: "done" as const, notes: jevSet.length, unanswered: rows.filter(row => !row.confirm).length, model, mix: count("mix"), fresh: count("mix", true), confirm: count("confirm"), choose: count("choose"), rows };
   },
 });

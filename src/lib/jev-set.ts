@@ -16,6 +16,8 @@ export interface SetNote {
   amount: number | null;
   payeeKind: DraftPayeeKind | null;
   signs: UrgentSign[];
+  /** Written after the lines were set from the first run and never used to set one, so its marks are the honest figure. */
+  fresh?: true;
 }
 
 const sign = (reason: UrgentSign["reason"], day: number | null = null): UrgentSign => ({ reason, day });
@@ -44,4 +46,17 @@ export const jevSet: SetNote[] = [
   { id: "three-amounts", tries: "Three amounts, one of them the need", note: "Rent is $800 but she can pay $300, so she needs $500.", kind: "rent", amount: 50000, payeeKind: null, signs: [] },
   { id: "car-repair", tries: "Another need with a business that is paid", note: "Car repair so he can keep his job, $380, paid to Sample Auto Shop.", kind: "other", amount: 38000, payeeKind: "vendor", signs: [] },
   { id: "someone-else", tries: "A sign that belongs to another household", note: "Her sister across town has no food, but she herself is fine. Called about her own water bill, $60.", kind: "utility", amount: 6000, payeeKind: null, signs: [] },
+  // Fresh notes, added 2026-11-15 after the first run. No line or wording was chosen on these; keep it that way.
+  { id: "fresh-rent-words", fresh: true, tries: "An amount in words, a named landlord, a baby", note: "Two months behind on rent. Owes nine hundred dollars to her landlord, Sample Court Apartments. Baby is six months old.", kind: "rent", amount: 90000, payeeKind: "landlord", signs: [sign("child")] },
+  { id: "fresh-es-power", fresh: true, tries: "Spanish: a dated shut-off, an amount, an elder in the home", note: "Le van a cortar la luz el 26. Debe $145 de electricidad. Su mamá de 82 años vive con ella.", kind: "utility", amount: 14500, payeeKind: null, signs: [sign("shutoff", 26), sign("elder")] },
+  { id: "fresh-ht-rent", fresh: true, tries: "Creole: rent in figures, being put out on a date", note: "Li dwe lwaye a, $600. Y ap mete l deyò nan kay la 30 la.", kind: "rent", amount: 60000, payeeKind: null, signs: [sign("eviction", 30)] },
+  { id: "fresh-voicemail", fresh: true, tries: "Nothing to find, with a time that is not an amount", note: "Left a voicemail asking us to call back after 3 pm. No details.", kind: null, amount: null, payeeKind: null, signs: [] },
+  { id: "fresh-hours", fresh: true, tries: "Nothing to find: a question about hours", note: "Wanted the thrift store's hours. Told her 9 to 4.", kind: null, amount: null, payeeKind: null, signs: [] },
+  { id: "fresh-es-nothing", fresh: true, tries: "Spanish: a bill already paid, nothing needed", note: "Llamó para avisar que ya pagó la luz y que no necesita nada.", kind: null, amount: null, payeeKind: null, signs: [] },
+  { id: "fresh-insulin", fresh: true, tries: "A medical need that is the request itself, a store that is paid, living alone", note: "Needs help paying for insulin this month, $75 at Sample Pharmacy. Lives alone.", kind: "other", amount: 7500, payeeKind: "vendor", signs: [sign("alone"), sign("medical")] },
+  { id: "fresh-clothes", fresh: true, tries: "Goods for children, no amount", note: "Three kids need school clothes and shoes. No amount given.", kind: "voucher", amount: null, payeeKind: null, signs: [sign("child")] },
+  { id: "fresh-gas-off", fresh: true, tries: "One need denied and another already shut off", note: "Rent is paid up. Gas was shut off yesterday, she owes $210.", kind: "utility", amount: 21000, payeeKind: null, signs: [sign("shutoff")] },
+  { id: "fresh-ht-thanks", fresh: true, tries: "Creole: thanks for food already given, nothing asked", note: "Li rele pou di mèsi pou manje a semèn pase.", kind: null, amount: null, payeeKind: null, signs: [] },
+  { id: "fresh-elder-hungry", fresh: true, tries: "An age, living alone in other words, not eaten", note: "He is 91, lives by himself and has not eaten in two days. Asked for groceries.", kind: "food", amount: null, payeeKind: null, signs: [sign("hungry"), sign("elder"), sign("alone")] },
+  { id: "fresh-maybe-evict", fresh: true, tries: "An eviction that is only a maybe, and nothing asked", note: "Landlord said he might evict if rent is late again. Rent is current. Just wanted to know what we do.", kind: null, amount: null, payeeKind: null, signs: [] },
 ];

@@ -332,8 +332,11 @@ describe("a call note drafted into a request", () => {
     const { t, ids } = await helpLine();
     const before = await t.run(ctx => ctx.db.query("calls").collect());
     const report = await t.action(internal.drafts.measure, { churchId: ids.churchId });
-    expect(report).toMatchObject({ status: "done", notes: 23, unanswered: 0, model: "jev-1.14.0" });
-    expect(report.rows).toHaveLength(23);
+    expect(report).toMatchObject({ status: "done", notes: 35, unanswered: 0, model: "jev-1.14.0" });
+    // The arms are counted on the 23 notes the lines were set from, and the 12 fresh ones apart.
+    expect(report.mix.right + report.mix.blank + report.mix.wrong).toBe(92);
+    expect(report.fresh.right + report.fresh.blank + report.fresh.wrong).toBe(48);
+    expect(report.rows).toHaveLength(35);
     // The first note is the one the live runs passed: code proposes every field and each is confirmed.
     expect(report.rows[0]).toMatchObject({ id: "rent-eviction", confirm: { kind: "right", amount: "right", payeeKind: "right", signs: "right" }, choose: { kind: "wrong", signs: "blank" } });
     // The way the screens work: code says rent, this fake Jev picks food, so the kind is left blank instead of shown wrong.
@@ -342,7 +345,7 @@ describe("a call note drafted into a request", () => {
     expect(report.rows[0].scores).toMatchObject({ kind: 0.95, confirm_eviction: 0.95, choose_kind: "food", choose_kind_confidence: 0.95 });
     expect(JSON.stringify(report)).not.toMatch(/marisol|jennings|example lane|555|behind on/i);
     for (const [, init] of fetch.mock.calls) expect(init.body).not.toMatch(/marisol|vega|jennings|555-01|14 example/i);
-    expect(await t.run(ctx => ctx.db.query("aiUsageByChurch").collect())).toMatchObject([{ churchId: ids.churchId, count: 23 }]);
+    expect(await t.run(ctx => ctx.db.query("aiUsageByChurch").collect())).toMatchObject([{ churchId: ids.churchId, count: 35 }]);
     expect(await t.run(ctx => ctx.db.query("calls").collect())).toEqual(before);
     expect(await t.run(ctx => ctx.db.query("assistanceRequests").collect())).toEqual([]);
   });
