@@ -205,6 +205,8 @@ export const createRequest = mutation({
       if (call.neighborId && call.neighborId !== neighborId) throw new Error("That call belongs to another neighbor.");
       if (!call.neighborId) await ctx.db.patch("calls", callId, { neighborId });
     }
+    // The request takes the place of any draft the assistant left waiting on this call.
+    if (callId) await dropDrafts(ctx, callId);
     return ctx.db.insert("assistanceRequests", { churchId, neighborId, callId, ...cleanDetails(details), status: "open", decisionNote: "", source: source ?? "person", createdBy: member._id, createdAt: Date.now() });
   },
 });
@@ -434,6 +436,78 @@ export const linkCall = mutation({
     await neighborRecord(ctx, churchId, neighborId);
     await ownCall(ctx, churchId, callId);
     await ctx.db.patch("calls", callId, { neighborId });
+    return null;
+  },
+});
+
+/**
+ * Drafts the assistant proposed from a call note and nobody has answered yet. They belong to the
+ * group, so everyone working the help line sees the same ones. A draft holds only what the
+ * assistant returned from the note; the caller is read through the call.
+ */
+const draftFields = schema.tables.requestDrafts.validator.fields;
+const keptDraft = v.object({
+  kind: v.union(requestFields.kind, v.null()),
+  amountRequested: v.union(v.number(), v.null()),
+  payeeKind: v.union(payeeKind, v.null()),
+  payeeName: v.string(),
+  quote: v.string(),
+  notes: v.array(v.string()),
+  verification: draftFields.verification,
+});
+async function dropDrafts(ctx: MutationCtx, callId: Id<"calls">) {
+  const kept = await ctx.db.query("requestDrafts").withIndex("by_call", (q) => q.eq("callId", callId)).take(10);
+  for (const draft of kept) await ctx.db.delete("requestDrafts", draft._id);
+}
+
+/** Drafts waiting for a yes, newest first, each with its call. */
+export const drafts = query({
+  args: { churchId: v.id("churches") },
+  returns: v.array(v.object({ call: callRow, draft: keptDraft })),
+  handler: async (ctx, { churchId }) => {
+    await neighborAccess(ctx, churchId);
+    const kept = await ctx.db.query("requestDrafts").withIndex("by_church", (q) => q.eq("churchId", churchId)).order("desc").take(50);
+    const found = lookups(ctx);
+    const rows = await Promise.all(kept.map(async (draft) => {
+      const call = await ctx.db.get("calls", draft.callId);
+      if (!call) return null;
+      return { call: await toCallRow(found, call), draft: { kind: draft.kind ?? null, amountRequested: draft.amountRequested ?? null, payeeKind: draft.payeeKind ?? null, payeeName: draft.payeeName, quote: draft.quote, notes: draft.notes, verification: draft.verification } };
+    }));
+    return rows.filter((row) => row !== null);
+  },
+});
+
+/** Keeps what the assistant drafted for a call until a person approves or discards it. One draft per call: a new one takes the old one's place. */
+export const keepDraft = mutation({
+  args: { churchId: v.id("churches"), callId: v.id("calls"), draft: keptDraft },
+  returns: v.null(),
+  handler: async (ctx, { churchId, callId, draft }) => {
+    const member = await neighborAccess(ctx, churchId);
+    await ownCall(ctx, churchId, callId);
+    await dropDrafts(ctx, callId);
+    await ctx.db.insert("requestDrafts", {
+      churchId, callId,
+      kind: draft.kind ?? undefined,
+      amountRequested: draft.amountRequested === null ? undefined : wholeCents(draft.amountRequested, "The amount"),
+      payeeKind: draft.payeeKind ?? undefined,
+      payeeName: text(draft.payeeName, "Who is paid", 120),
+      quote: text(draft.quote, "The quote", 2000),
+      notes: draft.notes.slice(0, 8).map((note) => text(note, "A note", 200)),
+      verification: draft.verification,
+      createdBy: member._id, createdAt: Date.now(),
+    });
+    return null;
+  },
+});
+
+/** Throws a waiting draft away. Nothing else changes. */
+export const discardDraft = mutation({
+  args: { churchId: v.id("churches"), callId: v.id("calls") },
+  returns: v.null(),
+  handler: async (ctx, { churchId, callId }) => {
+    await neighborAccess(ctx, churchId);
+    await ownCall(ctx, churchId, callId);
+    await dropDrafts(ctx, callId);
     return null;
   },
 });

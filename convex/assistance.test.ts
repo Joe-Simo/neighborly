@@ -61,6 +61,9 @@ describe("who may use the help line and requests", () => {
         () => caller.mutation(api.assistance.updateRequest, { churchId, requestId, ...rent, amountRequested: 40000 }),
         () => caller.mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 40000, note: "" }),
         () => caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "Resolved." }),
+        () => caller.query(api.assistance.drafts, { churchId }),
+        () => caller.mutation(api.assistance.keepDraft, { churchId, callId, draft: { kind: null, amountRequested: null, payeeKind: null, payeeName: "", quote: "", notes: [], verification: "review" } }),
+        () => caller.mutation(api.assistance.discardDraft, { churchId, callId }),
       ];
       // Every public function in the file is tried, so a new one cannot be added without its gate.
       expect(attempts).toHaveLength(Object.values(functions).filter((value) => typeof value === "function" && "isPublic" in value).length);
@@ -253,6 +256,27 @@ describe("a request for help", () => {
     expect(history).toContainEqual(expect.objectContaining({ type: "decision", status: "closed", approved: 45000, paid: 20000, who: "Marisol Vega", approvedBy: "Thomas Okafor", note: "Moved in with family." }));
     expect(history).toContainEqual(expect.objectContaining({ type: "payment", amount: 20000 }));
     expect(await as(ids.owner).query(api.assistance.request, { churchId, requestId })).toMatchObject({ status: "closed", decidedByName: "Thomas Okafor", closedByName: "Marisol Vega" });
+  });
+
+  test("a draft is kept for its call until it is approved or discarded", async () => {
+    const { ids, as } = await setup();
+    const churchId = ids.church, caller = as(ids.owner);
+    const draft = { kind: "rent", amountRequested: 45000, payeeKind: "landlord", payeeName: "Sample Property Co.", quote: "Behind on November rent.", notes: [] as string[], verification: "checked" } as const;
+    const log = async (phone: string) => (await caller.mutation(api.assistance.recordCall, { churchId, callerName: "", phone, note: "Behind on November rent.", callback: "needed" })).callId;
+    const first = await log("(100) 555-0119"), second = await log("(100) 555-0120");
+    await caller.mutation(api.assistance.keepDraft, { churchId, callId: first, draft });
+    await caller.mutation(api.assistance.keepDraft, { churchId, callId: second, draft: { ...draft, kind: null, amountRequested: null } });
+    await caller.mutation(api.assistance.keepDraft, { churchId, callId: first, draft: { ...draft, amountRequested: 40000 } });
+    const waiting = async () => (await as(ids.coordinator).query(api.assistance.drafts, { churchId })).map((row) => [row.call.id, row.draft.kind, row.draft.amountRequested]);
+    expect(await waiting()).toEqual([[first, "rent", 40000], [second, null, null]]);
+    await expect(as(ids.member).query(api.assistance.drafts, { churchId })).rejects.toThrow(refused);
+    await expect(as(ids.member).mutation(api.assistance.keepDraft, { churchId, callId: first, draft })).rejects.toThrow(refused);
+    await expect(as(ids.stranger).mutation(api.assistance.discardDraft, { churchId: ids.other, callId: first })).rejects.toThrow("Call not found.");
+
+    await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, callId: first, ...rent });
+    expect(await waiting()).toEqual([[second, null, null]]);
+    await caller.mutation(api.assistance.discardDraft, { churchId, callId: second });
+    expect(await waiting()).toEqual([]);
   });
 
   test("treasury settles an approved request, and a reversal brings it back", async () => {

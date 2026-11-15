@@ -640,6 +640,7 @@ export function NeighborForm({
   neighbor,
   call,
   submit,
+  submitNew,
   useLabel,
   onSaved,
 }: {
@@ -648,6 +649,8 @@ export function NeighborForm({
   call?: Call;
   /** What the save button says when adding a neighbor leads on to something else. */
   submit?: string;
+  /** The same, once someone on file matches and this one is saved as new. */
+  submitNew?: string;
   /** When given, someone already on file can be chosen instead, under this label. */
   useLabel?: string;
   onSaved: (neighborId: Id<"neighbors">) => void;
@@ -804,7 +807,7 @@ export function NeighborForm({
           <p className="live-error-recovery">
             {useLabel ? "Use that record" : "Open the record"}, or change the{" "}
             {duplicates[0].same === "phone" ? "number" : "name"}. What you typed
-            is still here. If this is someone else, save again.
+            is still here. If this is someone else, save as a new neighbor.
           </p>
           {duplicates.map((match) => (
             <div className="live-row" key={match.id}>
@@ -839,7 +842,7 @@ export function NeighborForm({
           neighbor
             ? "Save changes"
             : duplicates.length
-              ? "Save as a new neighbor"
+              ? (submitNew ?? "Save as a new neighbor")
               : (submit ?? "Add neighbor")
         }
       />

@@ -5,9 +5,10 @@ import {
   useLayoutEffect,
   useState,
   type ReactNode,
+  useMemo,
 } from "react";
 import Link from "next/link";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQueries, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { Check, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -15,7 +16,12 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { words } from "@/lib/words";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import { CallForm, NeighborForm, RequestForm, ReturnForm } from "@/components/workspace/help-line/forms";
+import {
+  CallForm,
+  NeighborForm,
+  RequestForm,
+  ReturnForm,
+} from "@/components/workspace/help-line/forms";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
   count,
@@ -38,7 +44,12 @@ type Draft = FunctionReturnType<typeof api.drafts.draftRequest>;
 type Drafted = { call: Call; draft: Draft };
 type Step =
   | { kind: "log" }
-  | { kind: "return" | "request" | "neighbor" | "draft"; call: Call }
+  | {
+      kind: "return" | "request" | "neighbor" | "draft";
+      call: Call;
+      /** The assistant was asked for a draft and could not give one. */
+      undrafted?: boolean;
+    }
   | { kind: "change"; drafted: Drafted; neighborId?: Id<"neighbors"> }
   // The caller is not on file yet: the neighbor is added first, then the draft goes on.
   | { kind: "join"; drafted: Drafted; then: "approve" | "change" };
@@ -64,7 +75,22 @@ function HelpLine() {
   const drafting = useSave();
   const approving = useSave();
   // Every draft waits for its own yes; asking for another never drops one. The newest is on the sheet.
-  const [drafts, setDrafts] = useState<Drafted[]>([]);
+  // The group keeps them, so they are still here after leaving the page. Until the backend can
+  // keep them they stay on this page only.
+  const asked = useMemo(() => {
+    const kept: Parameters<typeof useQueries>[0] = {
+      kept: { query: api.assistance.drafts, args: { churchId } },
+    };
+    return kept;
+  }, [churchId]);
+  const answer:
+    FunctionReturnType<typeof api.assistance.drafts> | Error | undefined =
+    useQueries(asked).kept;
+  const kept = answer instanceof Error ? undefined : answer;
+  const keepDraft = useMutation(api.assistance.keepDraft);
+  const discardDraft = useMutation(api.assistance.discardDraft);
+  const [here, setDrafts] = useState<Drafted[]>([]);
+  const drafts = kept ?? here;
   const newest = drafts.at(0) ?? null;
   // The call as it stands now, so a draft knows once its caller is on file.
   const drafted = newest && {
@@ -87,7 +113,12 @@ function HelpLine() {
     setStep({ kind: "log" });
   }, []);
   useLayoutEffect(() => {
-    setHeadAction({ label: "Log a call", run: log, quiet: sheetOpen, plus: true });
+    setHeadAction({
+      label: "Log a call",
+      run: log,
+      quiet: sheetOpen,
+      plus: true,
+    });
     return () => setHeadAction(null);
   }, [setHeadAction, log, sheetOpen]);
   const saved = (call: Call) => {
@@ -100,9 +131,11 @@ function HelpLine() {
     setDone("");
     approving.clear();
     if (next.kind !== "draft") return setStep(next);
-    const outcome = await drafting.save(() =>
-      draftRequest({ churchId, callId: next.call.id }),
-    );
+    const outcome = await drafting.save(async () => {
+      const draft = await draftRequest({ churchId, callId: next.call.id });
+      if (kept) await keepDraft({ churchId, callId: next.call.id, draft });
+      return draft;
+    });
     // If the assistant cannot help, the person writes the request themselves.
     if (outcome.saved)
       setDrafts((all) => [
@@ -113,12 +146,10 @@ function HelpLine() {
       setStep({
         kind: next.call.neighborId ? "request" : "neighbor",
         call: next.call,
+        undrafted: true,
       });
   }
-  async function approve(
-    asked: Drafted,
-    neighborId = asked.call.neighborId,
-  ) {
+  async function approve(asked: Drafted, neighborId = asked.call.neighborId) {
     const { call, draft } = asked;
     const { kind, amountRequested, payeeKind, payeeName } = draft;
     if (!kind || amountRequested === null || !payeeKind || !payeeName) return;
@@ -168,7 +199,9 @@ function HelpLine() {
         draftedCallIds={drafts.map((one) => one.call.id)}
         onFirst={
           // An older backend sends no "urgent" on a call and cannot keep one.
-          [...calls.waiting, ...calls.returned].some((call) => call.urgent !== undefined)
+          [...calls.waiting, ...calls.returned].some(
+            (call) => call.urgent !== undefined,
+          )
             ? (call, first) =>
                 void approving.save(() =>
                   setUrgency({
@@ -198,6 +231,10 @@ function HelpLine() {
               }
               onDiscard={() => {
                 settle(drafted.call);
+                if (kept)
+                  void approving.save(() =>
+                    discardDraft({ churchId, callId: drafted.call.id }),
+                  );
                 setDone("Draft discarded. Nothing was saved.");
               }}
             />
@@ -217,6 +254,11 @@ function HelpLine() {
               step.then === "approve"
                 ? "Save neighbor and request"
                 : "Save neighbor and continue"
+            }
+            submitNew={
+              step.then === "approve"
+                ? "Save as new neighbor and request"
+                : "Save as new neighbor and continue"
             }
             useLabel={
               step.then === "approve"
@@ -279,7 +321,9 @@ function HelpLine() {
             churchId={churchId}
             call={step.call}
             onSaved={() =>
-              finish(`Marked returned. ${caller(step.call)} has been called back.`)
+              finish(
+                `Marked returned. ${caller(step.call)} has been called back.`,
+              )
             }
           />
         </LiveDialog>
@@ -302,7 +346,11 @@ function HelpLine() {
       {step?.kind === "neighbor" && (
         <LiveDialog
           title="Add a neighbor"
-          description="This call will be kept on their record."
+          description={
+            step.undrafted
+              ? "The assistant could not draft from this note. Add the neighbor, then write the request yourself."
+              : "This call will be kept on their record."
+          }
           onClose={close}
         >
           <NeighborForm
@@ -322,9 +370,13 @@ function HelpLine() {
 function whyFirst(urgent: NonNullable<Call["urgent"]>) {
   const text = words().urgent;
   const day = urgent.day ?? 0;
-  const known = new Map<string, string | ((day: number) => string)>(Object.entries(text));
+  const known = new Map<string, string | ((day: number) => string)>(
+    Object.entries(text),
+  );
   return urgent.reasons.flatMap((reason) => {
-    const say = ["label", "origin", "notUrgent"].includes(reason) ? undefined : known.get(reason);
+    const say = ["label", "origin", "notUrgent"].includes(reason)
+      ? undefined
+      : known.get(reason);
     return say === undefined ? [] : [typeof say === "string" ? say : say(day)];
   });
 }
@@ -354,7 +406,10 @@ export function HelpLineView({
   const leaf = (at: number) => {
     const part = (options: Intl.DateTimeFormatOptions) =>
       format(at, { month: undefined, day: undefined, ...options });
-    const [time, half = ""] = part({ hour: "numeric", minute: "2-digit" }).split(/\s/);
+    const [time, half = ""] = part({
+      hour: "numeric",
+      minute: "2-digit",
+    }).split(/\s/);
     return (
       <div className="live-date-leaf">
         <span>{part({ weekday: "short" })}</span>
@@ -373,7 +428,9 @@ export function HelpLineView({
             {count(calls.waiting.length, "message", "messages")}
           </span>
         </div>
-        {calls.waiting.some((call) => isFirst(call) && call.urgent?.by === "assistant") && (
+        {calls.waiting.some(
+          (call) => isFirst(call) && call.urgent?.by === "assistant",
+        ) && (
           <p className="help-assistant help-first-origin">
             <Sparkles size={15} aria-hidden="true" /> {words().urgent.origin}
           </p>
@@ -395,7 +452,8 @@ export function HelpLineView({
                     <p className="help-assistant help-first">
                       <Sparkles size={15} aria-hidden="true" />
                       <strong>
-                        {whyFirst(call.urgent).join(" · ") || words().urgent.label}
+                        {whyFirst(call.urgent).join(" · ") ||
+                          words().urgent.label}
                       </strong>
                     </p>
                   )}
@@ -415,7 +473,10 @@ export function HelpLineView({
                       </span>
                     )}
                     {call.neighborId && (
-                      <Link className="live-link" href={recordHref(call.neighborId)}>
+                      <Link
+                        className="live-link"
+                        href={recordHref(call.neighborId)}
+                      >
                         Open record
                       </Link>
                     )}
@@ -444,7 +505,9 @@ export function HelpLineView({
                         className="help-text-action"
                         onClick={() => onFirst(call, !isFirst(call))}
                       >
-                        {isFirst(call) ? words().urgent.notUrgent : words().urgent.label}
+                        {isFirst(call)
+                          ? words().urgent.notUrgent
+                          : words().urgent.label}
                       </Button>
                     )}
                   </p>
