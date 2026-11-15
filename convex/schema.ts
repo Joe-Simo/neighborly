@@ -1,11 +1,16 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 const role = v.union(v.literal("owner"), v.literal("coordinator"), v.literal("member"));
+const language = v.union(v.literal("en"), v.literal("es"), v.literal("ht"));
+/** Money is stored as whole cents, always positive; the entry kind says which way it moves. */
+const cents = v.number();
+/** Calendar days are "yyyy-MM-dd" in the group's time zone, as in timeOff and availability. */
+const day = v.string();
 export default defineSchema({
   users: defineTable({}),
   aiUsage: defineTable({userId:v.id("users"),windowStart:v.number(),count:v.number()}).index("by_user",["userId"]),
-  churches: defineTable({ name: v.string(), timeZone: v.string() }),
-  memberships: defineTable({ churchId: v.id("churches"), userId: v.id("users"), name: v.string(), email: v.string(), role, active: v.boolean(), approved: v.boolean(), coverOptIn: v.boolean() }).index("by_user", ["userId"]).index("by_church_user", ["churchId", "userId"]).index("by_church", ["churchId"]),
+  churches: defineTable({ name: v.string(), timeZone: v.string(), sample: v.optional(v.boolean()) }),
+  memberships: defineTable({ churchId: v.id("churches"), userId: v.id("users"), name: v.string(), email: v.string(), role, active: v.boolean(), approved: v.boolean(), coverOptIn: v.boolean(), language: v.optional(language) }).index("by_user", ["userId"]).index("by_church_user", ["churchId", "userId"]).index("by_church", ["churchId"]),
   teams: defineTable({ churchId: v.id("churches"), name: v.string(), description: v.string() }).index("by_church", ["churchId"]),
   teamMembers: defineTable({ churchId: v.id("churches"), teamId: v.id("teams"), memberId: v.id("memberships"), teamRole: v.union(v.literal("coordinator"),v.literal("member")), approved:v.boolean(), status: v.union(v.literal("invited"), v.literal("active")) }).index("by_church", ["churchId"]).index("by_team_member", ["teamId", "memberId"]).index("by_member", ["memberId"]),
   series: defineTable({ churchId: v.id("churches"), teamId: v.id("teams"), intervalWeeks:v.number(), count:v.number() }).index("by_church", ["churchId"]),
@@ -22,4 +27,76 @@ export default defineSchema({
   invitations: defineTable({ churchId: v.id("churches"), email: v.string(), role: v.union(v.literal("coordinator"),v.literal("member")), tokenHash: v.string(), expiresAt: v.number(), status: v.union(v.literal("pending"),v.literal("accepted"),v.literal("revoked")), createdBy: v.id("memberships"), acceptedBy: v.optional(v.id("users")), createdAt: v.number(), requestId: v.string() }).index("by_church", ["churchId"]).index("by_token", ["tokenHash"]).index("by_church_request", ["churchId", "requestId"]),
   outbox: defineTable({ churchId: v.id("churches"), invitationId: v.optional(v.id("invitations")), requestId: v.optional(v.id("requests")), meetingId: v.optional(v.id("meetings")), memberId: v.optional(v.id("memberships")), eventKey: v.optional(v.string()), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerId: v.optional(v.string()), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_invitation", ["invitationId"]).index("by_church_event", ["churchId", "eventKey"]).index("by_church_state", ["churchId", "state"]).index("by_church_kind_state", ["churchId", "kind", "state"]),
   auditEvents: defineTable({ churchId: v.id("churches"), actorId: v.id("users"), action: v.string(), invitationId: v.optional(v.id("invitations")), commitmentId: v.optional(v.id("commitments")), targetId: v.optional(v.string()), at: v.number() }).index("by_church", ["churchId"]),
+  // Help line, neighbor records, assistance, home visits and treasury.
+  // Cover requests already own the name "requests"; requests for help are "assistanceRequests".
+  // Reading any of these goes through neighborAccess() in access.ts.
+  neighbors: defineTable({
+    churchId: v.id("churches"),
+    name: v.string(),
+    nameKey: v.string(),
+    phone: v.string(),
+    phoneKey: v.string(),
+    email: v.string(),
+    address: v.string(),
+    adults: v.number(),
+    children: v.number(),
+    language,
+    notes: v.string(),
+    createdBy: v.id("memberships"),
+    createdAt: v.number(),
+  }).index("by_church", ["churchId"]).index("by_church_name", ["churchId", "nameKey"]).index("by_church_phone", ["churchId", "phoneKey"]),
+  calls: defineTable({
+    churchId: v.id("churches"),
+    neighborId: v.optional(v.id("neighbors")),
+    callerName: v.string(),
+    phone: v.string(),
+    note: v.string(),
+    callback: v.union(v.literal("none"), v.literal("needed"), v.literal("done")),
+    takenBy: v.id("memberships"),
+    takenAt: v.number(),
+  }).index("by_church", ["churchId", "takenAt"]).index("by_church_callback", ["churchId", "callback"]).index("by_neighbor", ["neighborId"]),
+  assistanceRequests: defineTable({
+    churchId: v.id("churches"),
+    neighborId: v.id("neighbors"),
+    callId: v.optional(v.id("calls")),
+    kind: v.union(v.literal("rent"), v.literal("utility"), v.literal("food"), v.literal("voucher"), v.literal("other")),
+    summary: v.string(),
+    amountRequested: cents,
+    amountApproved: v.optional(cents),
+    status: v.union(v.literal("open"), v.literal("approved"), v.literal("declined"), v.literal("paid"), v.literal("closed")),
+    decisionNote: v.string(),
+    decidedBy: v.optional(v.id("memberships")),
+    decidedAt: v.optional(v.number()),
+    payeeKind: v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"), v.literal("neighbor")),
+    payeeName: v.string(),
+    source: v.union(v.literal("person"), v.literal("ai_draft")),
+    createdBy: v.id("memberships"),
+    createdAt: v.number(),
+  }).index("by_church", ["churchId", "createdAt"]).index("by_church_status", ["churchId", "status"]).index("by_neighbor", ["neighborId"]),
+  visits: defineTable({
+    churchId: v.id("churches"),
+    neighborId: v.id("neighbors"),
+    requestId: v.optional(v.id("assistanceRequests")),
+    scheduledAt: v.number(),
+    status: v.union(v.literal("scheduled"), v.literal("completed"), v.literal("cancelled")),
+    visitors: v.array(v.object({ memberId: v.id("memberships"), hours: v.number(), miles: v.number() })),
+    notes: v.string(),
+    completedAt: v.optional(v.number()),
+    createdBy: v.id("memberships"),
+    createdAt: v.number(),
+  }).index("by_church", ["churchId", "scheduledAt"]).index("by_neighbor", ["neighborId"]).index("by_request", ["requestId"]),
+  ledgerEntries: defineTable({
+    churchId: v.id("churches"),
+    kind: v.union(v.literal("income"), v.literal("expense")),
+    amount: cents,
+    date: day,
+    category: v.string(),
+    payee: v.string(),
+    memo: v.string(),
+    requestId: v.optional(v.id("assistanceRequests")),
+    neighborId: v.optional(v.id("neighbors")),
+    voidedAt: v.optional(v.number()),
+    recordedBy: v.id("memberships"),
+    createdAt: v.number(),
+  }).index("by_church", ["churchId", "date"]).index("by_request", ["requestId"]).index("by_neighbor", ["neighborId"]),
 });
