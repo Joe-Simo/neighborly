@@ -9,11 +9,13 @@
  */
 
 import type * as access from "../access.js";
+import type * as assistance from "../assistance.js";
 import type * as auth from "../auth.js";
 import type * as drafts from "../drafts.js";
 import type * as http from "../http.js";
 import type * as invitations from "../invitations.js";
 import type * as meetingFanout from "../meetingFanout.js";
+import type * as neighbors from "../neighbors.js";
 import type * as notificationEvents from "../notificationEvents.js";
 import type * as notifications from "../notifications.js";
 import type * as pages from "../pages.js";
@@ -29,11 +31,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  assistance: typeof assistance;
   auth: typeof auth;
   drafts: typeof drafts;
   http: typeof http;
   invitations: typeof invitations;
   meetingFanout: typeof meetingFanout;
+  neighbors: typeof neighbors;
   notificationEvents: typeof notificationEvents;
   notifications: typeof notifications;
   pages: typeof pages;
