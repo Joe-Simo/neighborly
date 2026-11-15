@@ -424,6 +424,14 @@ export function RequestForm({
           />
         </LiveField>
       )}
+      <LiveField label="What they need">
+        <Textarea
+          name="summary"
+          rows={3}
+          required
+          defaultValue={start?.summary}
+        />
+      </LiveField>
       {fromShelf ? (
         <p className="help-form-note">
           Vouchers come off the shelf when the request is approved. Nobody is
@@ -481,7 +489,13 @@ export function RequestForm({
       <FormEnd
         error={amountError || error}
         pending={pending}
-        submit={request ? "Save changes" : "Save request"}
+        submit={
+          request
+            ? "Save changes"
+            : start?.source === "ai_draft"
+              ? "Save this request"
+              : "Save request"
+        }
       />
     </form>
   );
