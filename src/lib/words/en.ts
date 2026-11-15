@@ -249,6 +249,7 @@ export function en(set: WordSet) {
     },
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {
+      opening: "Opening…",
       notSaved: "That couldn’t be saved. Please try again.",
       offlineSave: "There is no connection right now, so this was not saved.",
       kept: "Nothing was saved, and what you typed is still here.",

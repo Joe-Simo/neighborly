@@ -250,6 +250,7 @@ export function es(set: WordSet): Words {
     },
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {
+      opening: "Abriendo…",
       notSaved: "No se pudo guardar. Inténtalo de nuevo.",
       offlineSave: "Ahora no hay conexión, así que esto no se guardó.",
       kept: "No se guardó nada, y lo que escribiste sigue aquí.",

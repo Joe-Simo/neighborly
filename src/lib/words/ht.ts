@@ -245,6 +245,7 @@ export function ht(set: WordSet): Words {
     },
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {
+      opening: "N ap louvri…",
       notSaved: "Sa pa t anrejistre. Tanpri eseye ankò.",
       offlineSave: "Pa gen koneksyon kounye a, kidonk sa pa t anrejistre.",
       kept: "Anyen pa t anrejistre, e sa ou te ekri a la toujou.",
