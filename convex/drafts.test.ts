@@ -104,8 +104,12 @@ describe("a call note drafted into a request", () => {
     const sent = fetch.mock.calls[0][1].body;
     expect(sent).not.toMatch(/rosa|delgado|555|0142|14 sample|apt 2|property co/i);
     expect(sent).toContain("four hundred fifty");
-    const body = JSON.parse(sent) as { state: { proposed: Record<string, string> }; questions: Record<string, { type: string }> };
-    expect(body.state.proposed).toEqual({ kind: "rent", amountRequested: "$450.00", payeeKind: "landlord" });
+    const body = JSON.parse(sent) as { state: Record<string, unknown>; questions: Record<string, { type: string; instructions: string }> };
+    // Each question says in plain words what is being asked; a bare field name gave the live model nothing to judge.
+    expect(Object.keys(body.state)).toEqual(["note"]);
+    expect(body.questions.kind.instructions).toContain("help with rent, a landlord or keeping a home");
+    expect(body.questions.amountRequested.instructions).toContain("$450.00");
+    expect(body.questions.payeeKind.instructions).toContain("a landlord or whoever the home is rented from");
     expect(Object.values(body.questions).map(question => question.type)).toEqual(["noul", "noul", "noul"]);
   });
 

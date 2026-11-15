@@ -72,11 +72,30 @@ async function confidence<Field extends string>(key: string, state: Record<strin
       if (!answer || typeof answer !== "object" || !("type" in answer) || answer.type !== "noul" || !("noul" in answer) || typeof answer.noul !== "number" || !Number.isFinite(answer.noul) || answer.noul < 0 || answer.noul > 1) return null;
       sure[field] = answer.noul;
     }
+    // Field names and numbers only, never the note: enough to see why a field came back blank.
+    console.log(`jev ${JSON.stringify(sure)}`);
     return sure;
   } catch {
     return null;
   }
 }
+/**
+ * How a question about a note ends. The note is a volunteer's own shorthand, so its plain words count
+ * ("behind on rent" is about rent); what does not count is a question, a denial or a maybe.
+ */
+const plainly = "Answer yes when the note says this in its own words or a plain equivalent. Answer no when it is only asked as a question, denied, or given as something that might happen. Judge only what the note says.";
+const kindMeaning = { rent: "rent, a landlord or keeping a home", utility: "a utility bill such as power, water or gas", food: "food or groceries", voucher: "clothing, furniture or household goods", other: "a need other than rent, utilities, food or household goods" };
+const payeeMeaning = { landlord: "a landlord or whoever the home is rented from", utility: "a utility company", vendor: "a store or other business" };
+const signMeaning = {
+  shutoff: "a utility has been, is being or will be shut off or disconnected (a shut-off notice or a shut-off date counts)",
+  eviction: "the household has an eviction notice or is being evicted (a notice or a date counts)",
+  noFood: "the household has no food",
+  hungry: "someone is hungry or has not eaten",
+  child: "there is a child, children, kids or a baby in the household",
+  elder: "someone is elderly or is aged 80 or more",
+  alone: "someone lives alone",
+  medical: "there is a medical need, such as oxygen, insulin, dialysis, medication, a wheelchair or a hospital stay",
+};
 const stated = "Answer yes only if the value is stated as an affirmative fact, not a question, negation, wish, conditional, or conflicting alternative. A normalized equivalent of explicit wording is supported.";
 
 /** AI checks proposed facts; it never creates a team, names people or assigns work. */
@@ -155,9 +174,13 @@ export const draftRequest = action({
     const present = Object.keys(proposed) as (keyof typeof proposed)[];
     if (!present.length) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-    const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }), proposed }, Object.fromEntries(present.map(field => [field,
-      `Does note explicitly and unambiguously support proposed.${field}? ${stated} Never infer need, eligibility, a decision, or a new fact.`,
-    ])) as Record<(typeof present)[number], string>);
+    // Each question stands on its own in plain words. A bare field name ("proposed.kind") gave the model nothing to judge.
+    const questions = {
+      ...(draft.kind && { kind: `Is note about a need for help with ${kindMeaning[draft.kind]}? ${plainly}` }),
+      ...(proposed.amountRequested && { amountRequested: `Does note give ${proposed.amountRequested} as the amount of money needed or owed? ${plainly}` }),
+      ...(draft.payeeKind && { payeeKind: `Does note name ${payeeMeaning[draft.payeeKind]} as the one who is owed or would be paid? ${plainly}` }),
+    };
+    const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, questions as Record<(typeof present)[number], string>);
     if (!sure) return fallback;
     const asked = { kind: "the kind of help", amountRequested: "the amount", payeeKind: "who is paid" };
     for (const field of present) {
@@ -189,9 +212,8 @@ export const readUrgency = action({
     const fallback = { signs, verification: "review" as const };
     if (!env.TYPESAFE_API_KEY || note.length > 2000 || !signs.length) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-    const meaning = { shutoff: "a utility is being or about to be shut off", eviction: "the household faces eviction", noFood: "the household has no food", hungry: "someone is hungry or has not eaten", child: "there is a child", elder: "someone is elderly", alone: "someone lives alone", medical: "there is a medical need" };
     const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, Object.fromEntries(signs.map(({ reason }) => [reason,
-      `Does note explicitly state that ${meaning[reason]}? ${stated} Never infer need, eligibility, a decision, or a new fact.`,
+      `Does note say that ${signMeaning[reason]}? ${plainly}`,
     ])) as Record<(typeof signs)[number]["reason"], string>);
     if (!sure) return fallback;
     return { signs: signs.filter(({ reason }) => sure[reason] >= 0.9), verification: "checked" as const };
@@ -271,7 +293,7 @@ export const checkYear = action({
     const asked = { noteSaysPaid: "that money was already paid or a check already sent for this request", visitNotMarked: "that the home visit already took place" };
     const sure = await confidence(env.TYPESAFE_API_KEY,
       { notes: Object.fromEntries(reading.map((item, index) => [`n${index}`, withoutIdentity(item.note.slice(0, 1000), item)])) },
-      Object.fromEntries(reading.map((item, index) => [`n${index}`, `Does notes.n${index} explicitly state ${asked[item.kind]}? ${stated} Never infer a new fact.`])),
+      Object.fromEntries(reading.map((item, index) => [`n${index}`, `Does notes.n${index} say ${asked[item.kind]}? ${plainly}`])),
     );
     if (!sure) return unread;
     return { flags: [...flags, ...reading.flatMap(({ kind, record }, index) => (sure[`n${index}`] >= 0.9 ? [{ kind, record, source: "assistant" as const }] : []))], verification: "checked" };
