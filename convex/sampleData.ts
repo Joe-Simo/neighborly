@@ -109,9 +109,13 @@ export const load = internalMutation({
     const start = firstMonth.toMillis();
     const days = Math.floor((now - start) / DAY);
     const spentByMonth = new Map<string, number>();
-    const entry = (kind: "income" | "expense", time: number, amount: number, category: string, payee: string, memo: string, links: { requestId?: Id<"assistanceRequests">; neighborId?: Id<"neighbors">; checkNumber?: string } = {}) => {
+    const book: { id: Id<"ledgerEntries">; kind: "income" | "expense"; amount: number; date: string; category: string }[] = [];
+    const vouchersGiven: { requestId: Id<"assistanceRequests">; time: number; item: string }[] = [];
+    const entry = async (kind: "income" | "expense", time: number, amount: number, category: string, payee: string, memo: string, links: { requestId?: Id<"assistanceRequests">; neighborId?: Id<"neighbors">; checkNumber?: string } = {}) => {
       if (kind === "expense") spentByMonth.set(isoDay(time).slice(0, 7), (spentByMonth.get(isoDay(time).slice(0, 7)) ?? 0) + amount);
-      return ctx.db.insert("ledgerEntries", { churchId, kind, amount, date: isoDay(time), category, payee, memo, ...links, recordedBy: owner, createdAt: time });
+      const id = await ctx.db.insert("ledgerEntries", { churchId, kind, amount, date: isoDay(time), category, payee, memo, ...links, recordedBy: owner, createdAt: time });
+      book.push({ id, kind, amount, date: isoDay(time), category });
+      return id;
     };
     await entry("income", start, 420000, "Opening balance", "St. Example Conference", "Balance carried forward");
 
@@ -142,6 +146,11 @@ export const load = internalMutation({
         const decidedAt = outcome === "open" ? undefined : takenAt + random.between(3, 5) * DAY;
         const payeeName = random.pick(need.payees);
         const requestId = await ctx.db.insert("assistanceRequests", { churchId, neighborId, callId, kind: need.kind, summary, amountRequested, amountApproved, status: outcome, decisionNote: outcome === "declined" ? "Referred to the county program, which covers this in full." : outcome === "closed" ? "Neighbor resolved it before the visit." : granted ? "Approved after the home visit." : "", decidedBy: decidedAt ? owner : undefined, decidedAt, payeeKind: need.payeeKind, payeeName, source: index % 8 === 3 ? "ai_draft" : "person", createdBy: random.pick(staff), createdAt: takenAt });
+        if (need.kind === "voucher" && granted && vouchersGiven.length < 24) {
+          const item = summary.startsWith("Furniture") ? "Furniture voucher" : "Clothing voucher";
+          await ctx.db.patch("assistanceRequests", requestId, { voucher: { item, quantity: 1 } });
+          vouchersGiven.push({ requestId, time: (decidedAt ?? takenAt) + DAY, item });
+        }
         if (outcome !== "closed") {
           const first = random.between(0, visitors.length - 1);
           const pair = [visitors[first], visitors[(first + random.between(1, visitors.length - 1)) % visitors.length]];
@@ -182,12 +191,52 @@ export const load = internalMutation({
       if (month.month === 10 && on(month, 12) < now) await entry("expense", on(month, 12), 60000, "Council dues", "District Council", "Annual solidarity contribution");
       if (month.month % 4 === 2 && on(month, 9) < now) await entry("expense", on(month, 9), random.between(40, 110) * 100, "Supplies", "Main Street Office Supply", "Paper, postage and phone line");
     }
+    // The conference's own kinds: one in, one out, each used once.
+    await ctx.db.insert("ledgerKinds", { churchId, direction: "income", name: "Bake sale", nameKey: "bake sale", recordedBy: owner, createdAt: on(months[5], 3) });
+    await ctx.db.insert("ledgerKinds", { churchId, direction: "expense", name: "Bus tokens", nameKey: "bus tokens", recordedBy: owner, createdAt: on(months[5], 3) });
+    await entry("income", on(months[6], 14), 38600, "Bake sale", "Parish hall table", "Spring bake sale after the 10 o'clock Mass");
+    await entry("expense", on(months[7], 8), 12000, "Bus tokens", "County Transit", "Forty tokens for the help line to hand out", { checkNumber: String(checkNumber++) });
     for (const month of months) {
       const spent = spentByMonth.get(month.toFormat("yyyy-MM")) ?? 0;
       if (on(month, 2) < now) await entry("income", on(month, 2), Math.max(150000, Math.round((spent * random.between(90, 102)) / 100 / 500) * 500), "Parish collection", "St. Example Parish", "Fifth-Sunday and poor-box collection");
       if (month.month % 3 !== 0 && on(month, 10) < now) await entry("income", on(month, 10), random.between(20, 75) * 1000, "Donation", "Anonymous gift", "Designated for rent and utilities");
       if (month.month === 9 && on(month, 27) < now) await entry("income", on(month, 27), random.between(380, 520) * 1000, "Friends of the Poor Walk", "Walk pledges", "Pledges collected after the walk");
     }
+    // A small gift this month, so a few gifts are waiting to go to the bank.
+    if (now - 2 * DAY > today.startOf("month").toMillis()) await entry("income", now - 2 * DAY, 7500, "Donation", "Parish family", "Left at the parish office");
+
+    // The bank side. Everything before last month has cleared, month by month, and the last six
+    // of those months have a kept statement that agrees with the ledger. Last month and this month
+    // are still to be matched.
+    const lastMonth = today.startOf("month").minus({ months: 1 });
+    const monthEnd = (date: string) => DateTime.fromISO(date, { zone }).endOf("month").toFormat("yyyy-MM-dd");
+    const cutoff = lastMonth.toFormat("yyyy-MM-dd");
+    for (const line of book) if (line.date < cutoff) await ctx.db.patch("ledgerEntries", line.id, { clearedOn: monthEnd(line.date) });
+    const signed = (line: (typeof book)[number]) => (line.kind === "income" ? line.amount : -line.amount);
+    for (const month of months.filter((month) => month < lastMonth).slice(-6)) {
+      const endsOn = month.endOf("month").toFormat("yyyy-MM-dd");
+      const balance = book.reduce((sum, line) => (line.date <= endsOn ? sum + signed(line) : sum), 0);
+      await ctx.db.insert("bankStatements", { churchId, endsOn, balance, agreedBy: owner, agreedAt: month.endOf("month").plus({ days: 5 }).toMillis() });
+    }
+
+    // Two deposits: the month before last (cleared with its statement) and last month (not yet matched).
+    // This month's gifts stay undeposited.
+    const gifts = (month: DateTime) => book.filter((line) => line.kind === "income" && line.category !== "Opening balance" && line.date.startsWith(month.toFormat("yyyy-MM")));
+    for (const month of [lastMonth.minus({ months: 1 }), lastMonth]) {
+      const carried = gifts(month);
+      if (!carried.length) continue;
+      const date = carried.reduce((latest, line) => (line.date > latest ? line.date : latest), carried[0].date);
+      const depositId = await ctx.db.insert("deposits", { churchId, date, total: carried.reduce((sum, line) => sum + line.amount, 0), memo: "Carried to the bank after the collection was counted", recordedBy: owner, createdAt: DateTime.fromISO(date, { zone }).toMillis() });
+      for (const line of carried) await ctx.db.patch("ledgerEntries", line.id, { depositId });
+    }
+
+    // The voucher shelf: two lots received from the thrift store, one given on each granted voucher request.
+    const shelf = (time: number, change: number, item: string, note: string, requestId?: Id<"assistanceRequests">) =>
+      ctx.db.insert("voucherStock", { churchId, date: isoDay(time), change, item, note, ...(requestId ? { requestId } : {}), recordedBy: owner, createdAt: time });
+    await shelf(start + DAY, 20, "Furniture voucher", "From the conference thrift store");
+    await shelf(start + DAY, 30, "Clothing voucher", "From the conference thrift store");
+    for (const given of vouchersGiven) await shelf(Math.min(given.time, now), -1, given.item, "Given on a request", given.requestId);
+
     return churchId;
   },
 });

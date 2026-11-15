@@ -142,7 +142,7 @@ describe("the year's counts for the sample conference", () => {
     expect(report.money.endingBalance).toBe(report.money.beginningBalance + report.money.received - report.money.spent);
     expect(report.money.sources.reduce((sum, line) => sum + line.amount, 0)).toBe(report.money.received);
     expect(report.money.sources.map((line) => line.label).sort()).toEqual(expect.arrayContaining(["Donation", "Parish collection"]));
-    expect(report.money.otherSpending.map((line) => line.label).sort()).toEqual(["Council dues", "Pantry purchase", "Supplies"]);
+    expect(report.money.otherSpending.map((line) => line.label).sort()).toEqual(["Bus tokens", "Council dues", "Pantry purchase", "Supplies"]);
     expect(report.money.otherSpending.reduce((sum, line) => sum + line.amount, 0)).toBe(report.money.spent - report.helpPaid);
 
     // The twelve months add back up to the year.

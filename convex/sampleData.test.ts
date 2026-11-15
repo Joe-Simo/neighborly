@@ -5,7 +5,7 @@ import schema from "./schema";
 import { internal } from "./_generated/api";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
-const tables = ["churches", "users", "memberships", "teams", "teamMembers", "commitments", "availability", "timeOff", "tasks", "announcements", "neighbors", "calls", "assistanceRequests", "visits", "ledgerEntries"] as const;
+const tables = ["churches", "users", "memberships", "teams", "teamMembers", "commitments", "availability", "timeOff", "tasks", "announcements", "neighbors", "calls", "assistanceRequests", "visits", "ledgerEntries", "deposits", "voucherStock", "ledgerKinds", "bankStatements"] as const;
 
 const start = () => convexTest(schema, modules);
 
@@ -26,6 +26,10 @@ async function everything(t: ReturnType<typeof start>) {
     assistanceRequests: await ctx.db.query("assistanceRequests").collect(),
     visits: await ctx.db.query("visits").collect(),
     ledgerEntries: await ctx.db.query("ledgerEntries").collect(),
+    deposits: await ctx.db.query("deposits").collect(),
+    voucherStock: await ctx.db.query("voucherStock").collect(),
+    ledgerKinds: await ctx.db.query("ledgerKinds").collect(),
+    bankStatements: await ctx.db.query("bankStatements").collect(),
   }));
 }
 
@@ -89,6 +93,42 @@ describe("sample conference", () => {
       expect(logged).toBe(visit.status === "completed");
       if (visit.status === "scheduled") expect(visit.scheduledAt).toBeGreaterThan(Date.now());
     }
+  });
+
+  test("the bank side agrees with the ledger", async () => {
+    const t = start();
+    await t.mutation(internal.sampleData.load, {});
+    const data = await everything(t);
+    const signed = (entry: (typeof data.ledgerEntries)[number]) => (entry.kind === "income" ? entry.amount : -entry.amount);
+    // A kept statement's balance is exactly what had cleared by its last day: the treasury's own rule.
+    expect(data.bankStatements.length).toBeGreaterThanOrEqual(3);
+    for (const statement of data.bankStatements) {
+      const cleared = data.ledgerEntries.reduce((sum, entry) => (entry.date <= statement.endsOn && entry.clearedOn && entry.clearedOn <= statement.endsOn ? sum + signed(entry) : sum), 0);
+      expect(statement.balance, statement.endsOn).toBe(cleared);
+    }
+    // A deposit's total is the gifts it carries, none dated after it, and only money in.
+    expect(data.deposits).toHaveLength(2);
+    for (const deposit of data.deposits) {
+      const carried = data.ledgerEntries.filter((entry) => entry.depositId === deposit._id);
+      expect(carried.length).toBeGreaterThan(0);
+      expect(carried.every((entry) => entry.kind === "income" && entry.date <= deposit.date)).toBe(true);
+      expect(deposit.total).toBe(carried.reduce((sum, entry) => sum + entry.amount, 0));
+    }
+    // Some gifts are still waiting to go to the bank, and some entries are still to be matched.
+    const waiting = data.ledgerEntries.filter((entry) => entry.kind === "income" && !entry.depositId && !entry.clearedOn && entry.category !== "Opening balance");
+    expect(waiting.length).toBeGreaterThanOrEqual(1);
+    expect(data.ledgerEntries.some((entry) => !entry.clearedOn)).toBe(true);
+    // The shelf never goes below zero, and each voucher given is tied to a request that says so.
+    const shelf = new Map<string, number>();
+    for (const line of [...data.voucherStock].sort((a, b) => a.date.localeCompare(b.date) || b.change - a.change)) {
+      shelf.set(line.item, (shelf.get(line.item) ?? 0) + line.change);
+      expect(shelf.get(line.item), `${line.item} on ${line.date}`).toBeGreaterThanOrEqual(0);
+      if (line.change < 0) expect(data.assistanceRequests.find((request) => request._id === line.requestId)?.voucher).toEqual({ item: line.item, quantity: 1 });
+    }
+    expect(data.voucherStock.some((line) => line.change < 0)).toBe(true);
+    // One kind of its own each way, each with an entry under its name.
+    expect(data.ledgerKinds.map((kind) => `${kind.direction}:${kind.name}`).sort()).toEqual(["expense:Bus tokens", "income:Bake sale"]);
+    for (const kind of data.ledgerKinds) expect(data.ledgerEntries.some((entry) => entry.category === kind.name && entry.kind === kind.direction)).toBe(true);
   });
 
   test("uses only invented contact details", async () => {
