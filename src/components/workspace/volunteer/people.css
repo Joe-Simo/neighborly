@@ -31,8 +31,13 @@
 .people-invitations + .live-empty, .people-deck + .live-empty { margin-top: 22px; }
 .live-app .people-deck { margin-bottom: 0; }
 
+/* The role sits in its own column on a wide screen and beside the name on a phone; never both. */
+.people-role { display: none; }
 @media (max-width: 700px) {
-  .live-app .people-row { align-items: start; row-gap: 2px; padding-block: 18px; }
+  .live-app .people-row { align-items: center; row-gap: 0; padding-block: 14px; }
+  .people-row h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; }
+  .people-role { display: inline; font: 400 15px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0; color: var(--live-muted); }
+  .people-row .live-meta > .people-role-wide, .people-row .live-meta > span:empty { display: none; }
   .people-row .live-meta > span { padding-left: 59px; font-size: 15px; }
   .people-invitations { grid-template-columns: 1fr; gap: 16px; }
 }
@@ -45,6 +50,11 @@
 .team-faces .live-avatar + .live-avatar { margin-left: -8px; }
 .team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
 .live-app .team-card .live-team-line { gap: 10px 20px; min-height: 44px; }
+@media (max-width: 700px) {
+  /* Faces and the count on one line; the two things to do share the next. */
+  .team-faces { flex-basis: 100%; }
+  .live-app .team-card .live-team-line { justify-content: space-between; }
+}
 
 /* An invitation to a team waits on you: an ochre corner until you answer, green when you join. */
 .team-asked {

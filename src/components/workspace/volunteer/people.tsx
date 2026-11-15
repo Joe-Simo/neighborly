@@ -33,15 +33,17 @@ export function PeopleSection() {
                 {initials(person.name)}
               </span>
               <div>
-                <h3>{person.name}</h3>
+                <h3>
+                  {person.name}
+                  <span className="people-role">{person.active ? (roles[person.role] ?? person.role) : "Access removed"}</span>
+                </h3>
                 <p><Address email={person.email} /></p>
               </div>
             </div>
             <div className="live-meta">
-              <span>{person.active ? (roles[person.role] ?? person.role) : "Access removed"}</span>
-              <span data-waits={person.approved ? undefined : ""}>
-                {person.approved ? "Approved for service" : "Waiting for approval"}
-              </span>
+              <span className="people-role-wide">{person.active ? (roles[person.role] ?? person.role) : "Access removed"}</span>
+              {/* Approved is the rule, so only the exception is said. */}
+              <span data-waits="">{!person.approved && "Waiting for approval"}</span>
             </div>
             <div className="live-row-actions">
               {isOwner && person.role !== "owner" && (

@@ -510,7 +510,9 @@ export function ReportView({
               </tbody>
             </table>
           ))}
-          {report.time.members.length > 0 && (
+        </div>
+        {report.time.members.length > 0 && (
+          <div className="report-form report-members">
             <table>
               <caption>Each member’s time</caption>
               <tbody>
@@ -533,8 +535,8 @@ export function ReportView({
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       <p className="help-footnote">

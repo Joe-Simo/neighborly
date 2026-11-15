@@ -287,6 +287,10 @@
   border-top: 2px solid #596e51;
   padding-top: 8px;
 }
+/* Each member's time: its own block under the lines, across both columns. */
+.report-members { border-top: 0; padding-top: 0; }
+.live-app .report-members table { break-inside: auto; }
+.report-members tr { break-inside: avoid; }
 .live-app .report-form table {
   width: 100%;
   margin: 0 0 30px;
@@ -460,11 +464,12 @@
   .report .report-teams li { grid-template-columns: 150pt minmax(0, 1fr) 80pt; }
   .report .help-figures:has(+ .report-teams) { margin-bottom: 0; border-bottom: 0; }
   .report .live-section-head, .report .report-form { border-color: #000 !important; }
-  /* Names at 12pt semibold; the members' table may run on into the second column. */
-  .report .report-form table:last-child { break-inside: auto; }
-  .report .report-form table:last-child tr { break-inside: avoid; }
-  .report .report-form table:last-child th { font-weight: 600; font-size: 12pt; }
-  .report .report-form table:last-child th small { font-weight: 400; font-size: 10pt; }
+  /* Each member's time opens its own page and runs across both columns, so no page ends with a few stray names. */
+  .report .report-lines > .report-members { break-before: page; }
+  .report .report-members table { break-inside: auto; }
+  .report .report-members tr { break-inside: avoid; }
+  .report .report-members th { font-weight: 600; font-size: 12pt; }
+  .report .report-members th small { font-weight: 400; font-size: 10pt; }
   .report .report-months, .report .report-months[data-months="3"] { grid-template-columns: repeat(12, minmax(0, 1fr)); break-inside: avoid; }
   .report .report-months[data-months="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .report .report-months { border-color: var(--print-line); }
