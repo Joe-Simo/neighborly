@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { languages, words, wordSets } from "./index";
 
-type Leaf = string | ((count: number) => string);
+type Leaf = string | ((count: number) => string) | ((section: string) => string);
 type Book = { [key: string]: Leaf | Book };
 
 /** Every phrase in a book, with counted phrases written out for 0, 1 and 4. */
@@ -10,7 +10,7 @@ function phrases(book: Book, path = ""): [string, string][] {
     const at = path ? `${path}.${key}` : key;
     if (typeof value === "string") return [[at, value] as [string, string]];
     if (typeof value === "function")
-      return [0, 1, 4].map((count) => [`${at}(${count})`, value(count)] as [string, string]);
+      return [0, 1, 4].map((count) => [`${at}(${count})`, (value as (count: number) => string)(count)] as [string, string]);
     return phrases(value, at);
   });
 }

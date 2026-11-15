@@ -33,30 +33,62 @@ export function en(set: WordSet) {
       people: "People",
       commitments: "Commitments",
       mine: "My commitments",
-      timeOff: "Time off",
+      "time-off": "Time off",
       tasks: "Tasks & meetings",
-      open: "Menu",
-      title: "Your workspace",
+    },
+    shell: {
+      menu: "Menu",
+      menuTitle: "Your workspace",
+      menuLabel: "Workspace menu",
+      menuCurrent: (section: string) => `Workspace menu, current section: ${section}`,
+      allSections: "All workspace sections",
+      workspace: "Workspace",
       current: "Current",
       skip: "Skip to your workspace",
+      signOut: "Sign out",
+      language: "Language",
+      member: "Member",
+      team: "Team",
+      limited: "Some overview lists show a limited set of records. Use Load more in the matching section to see additional records.",
     },
     headings: {
       week: {
         title: "Good work, this week.",
         deck: "Your commitments, shared plans and the things to know.",
       },
+      team: {
+        title: "A place on the team.",
+        deck: "People belong here, even when their plans change.",
+      },
+      people: {
+        title: "People, together.",
+        deck: "Your community and the teams they make possible.",
+      },
+      commitments: {
+        title: "Clear commitments.",
+        deck: "See what’s covered, what’s open and what’s awaiting a reply.",
+      },
       mine: {
         title: "Your part in it.",
         deck: "What you’ve accepted, with the preparation to feel ready.",
       },
-      timeOff: {
+      "time-off": {
         title: "Room for life.",
         deck: "Keep your team informed while you take time away.",
       },
+      tasks: {
+        title: "The little things matter.",
+        deck: "Shared tasks and meetings, each with a clear next step.",
+      },
     },
     actions: {
-      announcement: "Share an announcement",
+      team: "Create a team",
+      invite: "Invite someone",
+      commitment: "Add a commitment",
       timeOff: "Plan time off",
+      task: "Add a task",
+      meeting: "Plan a meeting",
+      announcement: "Share an announcement",
     },
     week: {
       comingUp: "Coming up",
@@ -106,6 +138,7 @@ export function en(set: WordSet) {
       person: "Person",
       coordinator: "Coordinator",
       unassigned: "Unassigned",
+      fallbackTitle: "Commitment",
       readyTitle: "Ready to take part",
       noPreparation:
         "No preparation has been added yet. Ask your coordinator for what you need.",

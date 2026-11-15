@@ -34,30 +34,62 @@ export function es(set: WordSet): Words {
       people: "Personas",
       commitments: "Compromisos",
       mine: "Mis compromisos",
-      timeOff: "Días libres",
+      "time-off": "Días libres",
       tasks: "Tareas y reuniones",
-      open: "Menú",
-      title: "Tu espacio",
+    },
+    shell: {
+      menu: "Menú",
+      menuTitle: "Tu espacio",
+      menuLabel: "Menú de tu espacio",
+      menuCurrent: (section) => `Menú de tu espacio, estás en: ${section}`,
+      allSections: "Todas las secciones",
+      workspace: "Tu espacio",
       current: "Aquí",
       skip: "Ir a tu espacio",
+      signOut: "Salir",
+      language: "Idioma",
+      member: "Miembro",
+      team: "Equipo",
+      limited: "Algunas listas muestran solo una parte. Usa Cargar más en la sección correspondiente para ver el resto.",
     },
     headings: {
       week: {
         title: "Buen trabajo, esta semana.",
         deck: "Tus compromisos, los planes de todos y lo que hay que saber.",
       },
+      team: {
+        title: "Un lugar en el equipo.",
+        deck: "Aquí hay lugar para cada persona, aunque cambien sus planes.",
+      },
+      people: {
+        title: "Personas, juntas.",
+        deck: "Tu comunidad y los equipos que hace posibles.",
+      },
+      commitments: {
+        title: "Compromisos claros.",
+        deck: "Mira qué está cubierto, qué está libre y qué espera respuesta.",
+      },
       mine: {
         title: "Tu parte.",
         deck: "Lo que has aceptado, con lo necesario para llegar con calma.",
       },
-      timeOff: {
+      "time-off": {
         title: "Tiempo para la vida.",
         deck: "Avisa a tu equipo cuando vayas a estar fuera.",
       },
+      tasks: {
+        title: "Lo pequeño importa.",
+        deck: "Tareas y reuniones de todos, cada una con su próximo paso.",
+      },
     },
     actions: {
-      announcement: "Compartir un aviso",
+      team: "Crear un equipo",
+      invite: "Invitar a alguien",
+      commitment: "Agregar un compromiso",
       timeOff: "Planear días libres",
+      task: "Agregar una tarea",
+      meeting: "Planear una reunión",
+      announcement: "Compartir un aviso",
     },
     week: {
       comingUp: "Lo que viene",
@@ -108,6 +140,7 @@ export function es(set: WordSet): Words {
       person: "Persona",
       coordinator: "Coordinador",
       unassigned: "Sin asignar",
+      fallbackTitle: "Compromiso",
       readyTitle: "Para llegar con calma",
       noPreparation:
         "Todavía no hay preparación. Pregunta a tu coordinador qué necesitas.",

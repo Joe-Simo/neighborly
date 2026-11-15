@@ -34,30 +34,62 @@ export function ht(set: WordSet): Words {
       people: "Moun",
       commitments: "Angajman",
       mine: "Angajman mwen",
-      timeOff: "Jou konje",
+      "time-off": "Jou konje",
       tasks: "Travay ak reyinyon",
-      open: "Meni",
-      title: "Espas ou",
+    },
+    shell: {
+      menu: "Meni",
+      menuTitle: "Espas ou",
+      menuLabel: "Meni espas ou",
+      menuCurrent: (section) => `Meni espas ou, ou nan: ${section}`,
+      allSections: "Tout seksyon yo",
+      workspace: "Espas ou",
       current: "Isit la",
       skip: "Ale nan espas ou",
+      signOut: "Soti",
+      language: "Lang",
+      member: "Manm",
+      team: "Ekip",
+      limited: "Kèk lis montre sèlman yon pati. Sèvi ak Chaje plis nan seksyon an pou wè rès la.",
     },
     headings: {
       week: {
         title: "Bon travay, semèn sa a.",
         deck: "Angajman ou, plan tout moun ak sa pou ou konnen.",
       },
+      team: {
+        title: "Yon plas nan ekip la.",
+        deck: "Gen plas pou chak moun isit la, menm lè plan yo chanje.",
+      },
+      people: {
+        title: "Moun, ansanm.",
+        deck: "Kominote ou ak ekip li rann posib yo.",
+      },
+      commitments: {
+        title: "Angajman ki klè.",
+        deck: "Gade sa ki kouvri, sa ki lib ak sa k ap tann repons.",
+      },
       mine: {
         title: "Pati pa ou.",
         deck: "Sa ou aksepte, ak sa ou bezwen pou ou pare.",
       },
-      timeOff: {
+      "time-off": {
         title: "Tan pou lavi.",
         deck: "Fè ekip ou konnen lè ou pa la.",
       },
+      tasks: {
+        title: "Ti bagay yo konte.",
+        deck: "Travay ak reyinyon tout moun, chak ak pwochen etap li.",
+      },
     },
     actions: {
-      announcement: "Pataje yon anons",
+      team: "Kreye yon ekip",
+      invite: "Envite yon moun",
+      commitment: "Ajoute yon angajman",
       timeOff: "Planifye jou konje",
+      task: "Ajoute yon travay",
+      meeting: "Planifye yon reyinyon",
+      announcement: "Pataje yon anons",
     },
     week: {
       comingUp: "Sa k ap vini",
@@ -107,6 +139,7 @@ export function ht(set: WordSet): Words {
       person: "Moun",
       coordinator: "Kowòdonatè",
       unassigned: "Pèsonn poko",
+      fallbackTitle: "Angajman",
       readyTitle: "Pou ou pare",
       noPreparation:
         "Poko gen preparasyon. Mande kowòdonatè ou sa ou bezwen.",

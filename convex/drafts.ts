@@ -132,7 +132,8 @@ export const draftRequest = action({
     const draft = prepareRequestDraft(note);
     // The payee's name is copied by code and never shown to the model, so a person always confirms it.
     const fallback = { ...draft, verification: "review" as const };
-    if (!env.TYPESAFE_API_KEY) return fallback;
+    // A note too long to be one call's message is not sent anywhere; the person reads it.
+    if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
     const proposed = {
       ...(draft.kind && { kind: draft.kind }),
       ...(draft.amountRequested !== null && { amountRequested: `$${(draft.amountRequested / 100).toFixed(2)}` }),

@@ -121,6 +121,17 @@ describe("a call note drafted into a request", () => {
     expect(Object.values(body.questions).map(question => question.type)).toEqual(["noul", "noul", "noul"]);
   });
 
+  test("a very long note is not sent anywhere", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids, coordinator } = await helpLine();
+    await t.run(ctx => ctx.db.patch("calls", ids.callId, { note: `Behind on rent, $450. ${"She said more. ".repeat(140)}` }));
+    const draft = await coordinator.action(api.drafts.draftRequest, { churchId: ids.churchId, callId: ids.callId });
+    expect(draft).toMatchObject({ amountRequested: 45000, verification: "review" });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   test("a field the model is not sure of comes back blank", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     vi.stubGlobal("fetch", answers({ kind: 0.99, amountRequested: 0.4, payeeKind: 0.99 }));
