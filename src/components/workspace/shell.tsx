@@ -216,7 +216,7 @@ export function LiveWorkspace({
             event.preventDefault();
             if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
           }}>
-            <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription></DialogHeader>
+            <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}</DialogHeader>
             <nav aria-label={words.shell.allSections}>{navigation.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={() => setMobileMenuOpen(false)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
             <LanguageList />
           </DialogContent>
@@ -224,7 +224,8 @@ export function LiveWorkspace({
       </nav>
       <div className="live-layout">
         <nav className="live-nav" aria-label={words.shell.workspace}>
-          <p className="live-church-name">{data.church.name}</p>
+          <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{data.church.name}</p>
+          {data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}
           {navigation.map(({ id, label, icon: Icon }) => (
             <Link
               key={id}
@@ -246,7 +247,7 @@ export function LiveWorkspace({
             <div>
               <p className="live-kicker">
                 {data.church.name}
-                {heading.room === "help" ? "" : ` · ${data.church.timeZone}`}
+                {data.church.sample ? " · Sample" : ""}
               </p>
               <h1>{heading.title}</h1>
               <p className="live-deck">{heading.deck}</p>

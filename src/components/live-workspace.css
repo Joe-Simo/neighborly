@@ -76,6 +76,18 @@
   overflow-wrap: anywhere;
   margin: 0 0 25px 12px;
 }
+/* A sample group says so under its name, in every menu. It is fixed: renaming the group does not remove it. */
+.live-church-name[data-sample] { margin-bottom: 6px; }
+.live-sample-mark {
+  margin: 0 0 25px 12px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--live-muted, #656d61);
+}
+.live-mobile-menu .live-sample-mark { margin: 4px 0 0; }
 .live-nav a {
   display: flex;
   padding: 12px;

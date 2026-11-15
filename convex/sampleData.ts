@@ -56,7 +56,7 @@ export const load = internalMutation({
   handler: async (ctx, args) => {
     const random = generator(1833);
     const now = Date.now();
-    const churchId = await ctx.db.insert("churches", { name: "St. Example Conference (sample)", timeZone: zone, sample: true });
+    const churchId = await ctx.db.insert("churches", { name: "St. Example Conference", timeZone: zone, sample: true });
 
     // People. Without a real owner account, the first volunteer owns the group.
     const members: Id<"memberships">[] = [];
