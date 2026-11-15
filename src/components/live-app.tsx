@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   useAction,
@@ -144,6 +144,14 @@ export function LiveApp({
         <LiveLoading />
       </main>
     );
+  // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
+  if (sampleVisitor === undefined)
+    return (
+      <main className="live-main">
+        <LiveLoading />
+      </main>
+    );
+  if (sampleVisitor && !churchId) return <SampleResetting leave={signOut} />;
   if (
     !churchId ||
     (invitationToken && !invitationConsumed) ||
@@ -340,5 +348,26 @@ function PageMore({
           : `Loading ${label}…`}
       </Button>
     </div>
+  );
+}
+
+/** Shown to the sample visitor in the moment between the old sample being cleared and the new one arriving. */
+function SampleResetting({ leave }: { leave: () => void }) {
+  const [waitedLong, setWaitedLong] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setWaitedLong(true), 20000);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <main className="live-main">
+      <LiveLoading label="The sample is being reset. One moment." />
+      {waitedLong ? (
+        <p className="mt-2 px-7">
+          <Button variant="outline" onClick={leave}>
+            Leave the sample
+          </Button>
+        </p>
+      ) : null}
+    </main>
   );
 }
