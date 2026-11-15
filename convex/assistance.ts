@@ -36,7 +36,13 @@ function wholeCents(amount: number, label: string, min = 0) {
 export function lookups(ctx: QueryCtx) {
   const members = new Map<Id<"memberships">, Promise<string>>();
   const neighbors = new Map<Id<"neighbors">, Promise<Doc<"neighbors"> | null>>();
+  const waiting = new Map<Id<"neighbors">, Promise<boolean>>();
   return {
+    openRequest(id: Id<"neighbors">) {
+      const known = waiting.get(id) ?? ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", id)).order("desc").take(50).then((rows) => rows.some((row) => row.status === "open" || row.status === "approved"));
+      waiting.set(id, known);
+      return known;
+    },
     memberName(id: Id<"memberships">) {
       const known = members.get(id) ?? ctx.db.get("memberships", id).then((member) => member?.name ?? "Former member");
       members.set(id, known);
@@ -251,6 +257,8 @@ export const callRow = v.object({
   returnedAt: v.union(v.number(), v.null()),
   returnedByName: v.union(v.string(), v.null()),
   outcome: v.string(),
+  /** True when the neighbor already has a request waiting, so a second one is not drafted from this call. */
+  openRequest: v.boolean(),
 });
 export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Infer<typeof callRow>> {
   return {
@@ -267,6 +275,7 @@ export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Inf
     returnedAt: call.returnedAt ?? null,
     returnedByName: call.returnedBy ? await found.memberName(call.returnedBy) : null,
     outcome: call.outcome ?? "",
+    openRequest: call.neighborId ? await found.openRequest(call.neighborId) : false,
   };
 }
 

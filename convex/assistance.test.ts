@@ -90,7 +90,7 @@ describe("the help line", () => {
     expect(known.neighborId).toBe(ids.rosa);
     expect(unknown.neighborId).toBeNull();
     const { waiting } = await as(ids.owner).query(api.assistance.calls, { churchId: ids.church });
-    expect(waiting).toMatchObject([{ neighborName: "Rosa Delgado", takenByName: "Thomas Okafor", ownerName: "Marisol Vega" }, { neighborName: null, ownerName: null }]);
+    expect(waiting).toMatchObject([{ neighborName: "Rosa Delgado", takenByName: "Thomas Okafor", ownerName: "Marisol Vega", openRequest: false }, { neighborName: null, ownerName: null }]);
     await expect(as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "", note: "Silence.", callback: "none" })).rejects.toThrow("A name or a phone number is needed.");
   });
 
@@ -139,7 +139,7 @@ describe("a request for help", () => {
       status: "open", payeeKind: "landlord", payeeName: "Sample Property Co.", source: "person", createdByName: "Thomas Okafor", decidedByName: null, referral: "",
     });
     // The call from an unknown number now belongs to the neighbor it was about.
-    expect((await as(ids.owner).query(api.assistance.calls, { churchId: ids.church })).waiting[0].neighborId).toBe(ids.rosa);
+    expect((await as(ids.owner).query(api.assistance.calls, { churchId: ids.church })).waiting[0]).toMatchObject({ neighborId: ids.rosa, openRequest: true });
     await expect(as(ids.owner).mutation(api.assistance.createRequest, { churchId: ids.church, neighborId: ids.earl, callId, ...rent })).rejects.toThrow("another neighbor");
   });
 

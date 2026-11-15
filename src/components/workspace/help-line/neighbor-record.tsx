@@ -87,6 +87,7 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
   if (opened === "missing")
     return (
       <HelpEmpty
+        first
         title="We couldn’t find that record."
         action={
           <Button variant="outline" asChild>

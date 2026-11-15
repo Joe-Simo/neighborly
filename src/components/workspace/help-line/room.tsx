@@ -31,14 +31,17 @@ export function HelpEmpty({
   art = "/assets/threshold/courtyard-quiet-plate-v1.webp",
   children,
   action,
+  first,
 }: {
+  /** True when this is the first thing under the page head, which already draws a rule. */
+  first?: boolean;
   title: string;
   art?: string;
   children: ReactNode;
   action?: ReactNode;
 }) {
   return (
-    <div className="help-empty">
+    <div className="help-empty" data-first={first ? "" : undefined}>
       <div
         className="help-empty-art"
         style={{ backgroundImage: `url(${art})` }}
@@ -56,7 +59,7 @@ export function HelpEmpty({
 /** The door: what a member sees instead of a neighbor screen. */
 export function KeptPrivate() {
   return (
-    <div className="help-empty">
+    <div className="help-empty" data-first="">
       <div
         className="help-empty-art"
         style={{

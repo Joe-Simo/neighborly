@@ -138,6 +138,7 @@ function HelpLine() {
         calls={calls}
         format={format}
         busy={drafting.pending}
+        draftedCallId={drafted?.call.id}
         onStep={(next) => void onStep(next)}
         sheet={
           drafted && (
@@ -248,7 +249,10 @@ export function HelpLineView({
   onStep,
   sheet,
   busy = false,
+  draftedCallId,
 }: {
+  /** The call whose draft is on the sheet, which is not offered a second draft. */
+  draftedCallId?: Call["id"];
   calls: Calls;
   format: Workspace["format"];
   onStep: (step: Step) => void;
@@ -306,14 +310,16 @@ export function HelpLineView({
                         <Link className="live-link" href={recordHref(call.neighborId)}>
                           Open record
                         </Link>
-                        <Button
-                          variant="link"
-                          className="help-text-action"
-                          disabled={busy}
-                          onClick={() => onStep({ kind: "draft", call })}
-                        >
-                          {busy ? "Drafting…" : "Draft a request"}
-                        </Button>
+                        {!call.openRequest && call.id !== draftedCallId && (
+                          <Button
+                            variant="link"
+                            className="help-text-action"
+                            disabled={busy}
+                            onClick={() => onStep({ kind: "draft", call })}
+                          >
+                            {busy ? "Drafting…" : "Draft a request"}
+                          </Button>
+                        )}
                       </>
                     ) : (
                       <Button
@@ -429,14 +435,6 @@ export function DraftSheet({
             })}
             .
           </p>
-          <p className="help-assistant">
-            <Sparkles size={16} aria-hidden="true" />
-            {text.origin}
-          </p>
-          <p>
-            {draft.verification === "checked" ? text.checked : text.review}{" "}
-            {!complete && text.blank} {draft.notes.join(" ")}
-          </p>
         </div>
         <div className="help-actions">
           {complete ? (
@@ -451,11 +449,27 @@ export function DraftSheet({
           ) : (
             <Button onClick={onChange}>Fill in what is missing</Button>
           )}
-          <Button variant="ghost" disabled={pending} onClick={onDiscard}>
+          <Button
+            variant="link"
+            className="help-text-action"
+            disabled={pending}
+            onClick={onDiscard}
+          >
             {text.discard}
           </Button>
         </div>
       </div>
+      <p className="help-assistant help-assistant-line">
+        <Sparkles size={16} aria-hidden="true" />
+        <span>
+          {draft.verification === "checked"
+            ? "Written by the assistant from the call note and checked against it."
+            : "Written by the assistant from the call note. It could not be checked, so please read each detail against the note."}{" "}
+          {!complete && `${text.blank} `}
+          {draft.notes.length > 0 && `${draft.notes.join(" ")} `}
+          Nothing is saved until you approve it.
+        </span>
+      </p>
     </section>
   );
 }

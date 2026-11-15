@@ -13,3 +13,6 @@
 .help-row .help-row-more { margin-top: 10px; font-size: 16px; }
 .live-app .help-text-action[data-slot="button"] { min-height: 44px; height: auto; padding: 0; border: 0; background: none; font-size: inherit; font-weight: 400; color: #35553c; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; flex: 0 0 auto; }
 .help-matches .live-row { border-bottom: 0; border-top: 1px solid #e4cfc6; margin-top: 10px; }
+.help-sheet .help-assistant-line { display: flex; align-items: baseline; max-width: none; margin: 18px 0 0; padding-top: 16px; border-top: 1px solid #e6e0ee; font-size: 16px; }
+.help-assistant-line svg { position: relative; top: 2px; }
+.help-empty[data-first] { border-top: 0; padding-top: 6px; }
