@@ -111,15 +111,17 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
         </div>
       )}
       {state.step === "working" && (
-        <div className="help-skeleton" role="status" aria-label={state.label}>
-          <div><i /><span><b /><b /></span></div>
-          <div><i /><span><b /><b /></span></div>
-          {state.progress && <p className="tools-progress">{state.label}. {state.progress}.</p>}
-        </div>
+        <>
+          <div className="help-skeleton" aria-hidden="true">
+            <div><i /><span><b /><b /></span></div>
+            <div><i /><span><b /><b /></span></div>
+          </div>
+          <p role="status" className={state.progress ? "tools-progress" : "sr-only"}>{state.label}{state.progress && `. ${state.progress}.`}</p>
+        </>
       )}
       {state.step === "review" && (
         <>
-          <section className="help-sheet tools-sheet" aria-labelledby={`${words.id}-title`}>
+          <section className="help-sheet tools-sheet tools-done" aria-labelledby={`${words.id}-title`} tabIndex={-1} ref={(node) => node?.focus()}>
             <p className="help-sheet-label">{state.ready ? "Waiting for your yes" : "Nothing to bring in"}</p>
             <div className="help-sheet-body">
               <div>

@@ -19,10 +19,10 @@ export function WeeklyRotaView({ group, week, days, printed, sample, onEarlier, 
         <Button variant="outline" className="tools-week-step" aria-label="Later week" onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
         <Button disabled={!planned} onClick={onPrint}><Printer size={16} aria-hidden="true" /> Print this week</Button>
       </div>
-      <div className="tools-rota" aria-live="polite">
+      <div className="tools-rota">
         <header>
           <p>{group}</p>
-          <h3>{week}</h3>
+          <h3 aria-live="polite">{week}</h3>
         </header>
         {planned ? (
           <div className="live-table-scroll">

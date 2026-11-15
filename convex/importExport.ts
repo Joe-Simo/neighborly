@@ -244,3 +244,72 @@ export const importRequests = mutation({
     return results;
   },
 });
+
+/**
+ * Bringing over the list of who a conference pays: landlords, utilities and stores, such as ServWare's
+ * vendor list. A name already on the list, or twice in the file, is left out. No money and no account
+ * numbers come with it: an account belongs to one neighbor and stays on that neighbor's record.
+ */
+const payeeRow = v.object({ line: v.number(), name: v.string(), type: v.string(), address: v.string(), phone: v.string(), email: v.string(), notes: v.string() });
+const payeeProblem = v.union(v.literal("no_name"), v.literal("too_long"), v.literal("repeated"), v.literal("already_here"));
+const payeeChecked = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("ready"), payeeProblem) });
+const payeeImported = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("added"), payeeProblem) });
+const payeeKindOf = (type: string) => (/landlord|rent|housing|apartment|propert|realty|lodging/.test(type) ? "landlord" as const : /utilit|electric|power|water|gas|energy|phone|internet/.test(type) ? "utility" as const : "vendor" as const);
+
+async function reviewPayees(ctx: QueryCtx, churchId: Id<"churches">, rows: Infer<typeof payeeRow>[]) {
+  if (rows.length > mostRows) throw new Error(`Bring in up to ${mostRows} payees at a time.`);
+  const seen = new Set<string>();
+  const results = [];
+  for (const row of rows) {
+    const name = row.name.trim(), address = row.address.trim(), phone = row.phone.trim(), email = row.email.trim(), notes = row.notes.trim();
+    const key = nameKey(name);
+    const verdict = (outcome: Infer<typeof payeeChecked>["outcome"]) => ({ line: row.line, name, outcome, record: outcome === "ready" ? { name, nameKey: key, kind: payeeKindOf(`${row.type} ${name}`.toLowerCase()), address, phone, email, notes } : null });
+    if (!key) results.push(verdict("no_name"));
+    else if (name.length > 120 || address.length > 300 || phone.length > 40 || email.length > 200 || notes.length > 2000) results.push(verdict("too_long"));
+    else if (seen.has(key)) results.push(verdict("repeated"));
+    else {
+      seen.add(key);
+      results.push(verdict((await ctx.db.query("payees").withIndex("by_church_name", (q) => q.eq("churchId", churchId).eq("nameKey", key)).first()) ? "already_here" : "ready"));
+    }
+  }
+  return results;
+}
+
+/** What would happen to each line, without changing anything. */
+export const checkPayees = query({
+  args: { churchId: v.id("churches"), rows: v.array(payeeRow) },
+  returns: v.array(payeeChecked),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    return (await reviewPayees(ctx, args.churchId, args.rows)).map(({ line, name, outcome }) => ({ line, name, outcome }));
+  },
+});
+
+/** Checks again, then adds every ready line. One entry in the record of who did what says how many came in. */
+export const importPayees = mutation({
+  args: { churchId: v.id("churches"), rows: v.array(payeeRow) },
+  returns: v.array(payeeImported),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    const now = Date.now();
+    const results: Infer<typeof payeeImported>[] = [];
+    for (const row of await reviewPayees(ctx, args.churchId, args.rows)) {
+      if (row.record) await ctx.db.insert("payees", { churchId: args.churchId, ...row.record, createdBy: member._id, createdAt: now });
+      results.push({ line: row.line, name: row.name, outcome: row.outcome === "ready" ? "added" : row.outcome });
+    }
+    const added = results.filter((row) => row.outcome === "added").length;
+    if (added) await ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: member.userId, action: "payees_imported", targetId: String(added), at: now });
+    return results;
+  },
+});
+
+/** The conference's payees by name, for offering where a payee is typed. Coordinators and owners only. */
+export const payees = query({
+  args: { churchId: v.id("churches") },
+  returns: v.array(v.object({ id: v.id("payees"), name: v.string(), kind: v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor")), phone: v.string() })),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const rows = await ctx.db.query("payees").withIndex("by_church", (q) => q.eq("churchId", args.churchId)).take(500);
+    return rows.map((row) => ({ id: row._id, name: row.name, kind: row.kind, phone: row.phone }));
+  },
+});

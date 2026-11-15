@@ -195,3 +195,34 @@ describe("bringing past requests over from another system", () => {
     expect(await requests()).toHaveLength(0);
   });
 });
+
+describe("bringing over the list of payees", () => {
+  const blank = { type: "", address: "", phone: "", email: "", notes: "" };
+  const list = [
+    { line: 2, ...blank, name: "Sample Street Apartments", type: "Landlord", phone: "(100) 555-0150" },
+    { line: 3, ...blank, name: "Demo Power & Light" },
+    { line: 4, ...blank, name: "sample street  apartments" },
+    { line: 5, ...blank, name: " " },
+    { line: 6, ...blank, name: "Conference thrift store", type: "Store" },
+  ];
+  test("each payee comes in once, with its kind read from the file, and the list can be offered where a payee is typed", async () => {
+    const { t, ids, as } = await setup();
+    expect((await as(ids.coordinator).query(api.importExport.checkPayees, { churchId: ids.church, rows: list })).map((row) => row.outcome)).toEqual(["ready", "ready", "repeated", "no_name", "ready"]);
+    expect(await as(ids.coordinator).query(api.importExport.payees, { churchId: ids.church })).toEqual([]);
+    await as(ids.coordinator).mutation(api.importExport.importPayees, { churchId: ids.church, rows: list });
+    const again = await as(ids.coordinator).mutation(api.importExport.importPayees, { churchId: ids.church, rows: list });
+    expect(again.map((row) => row.outcome)).toEqual(["already_here", "already_here", "repeated", "no_name", "already_here"]);
+    expect(await as(ids.owner).query(api.importExport.payees, { churchId: ids.church })).toMatchObject([
+      { name: "Conference thrift store", kind: "vendor" },
+      { name: "Demo Power & Light", kind: "utility" },
+      { name: "Sample Street Apartments", kind: "landlord", phone: "(100) 555-0150" },
+    ]);
+    expect(await t.run((ctx) => ctx.db.query("ledgerEntries").collect())).toEqual([]);
+  });
+  test("a member is refused", async () => {
+    const { ids, as } = await setup();
+    const refused = "Neighbor records are open to coordinators and owners only.";
+    await expect(as(ids.member).query(api.importExport.payees, { churchId: ids.church })).rejects.toThrow(refused);
+    await expect(as(ids.member).mutation(api.importExport.importPayees, { churchId: ids.church, rows: list })).rejects.toThrow(refused);
+  });
+});
