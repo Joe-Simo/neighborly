@@ -79,6 +79,7 @@ describe("who may see and plan home visits", () => {
         () => caller.mutation(api.visits.openSheet, { churchId, visitId: first }),
         () => caller.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, at: morning(5).at, visitorIds: pair }),
         () => caller.mutation(api.visits.writeUp, { churchId, visitId: first, notes: "Reviewed the bill together.", hours: 1.5, miles: 12 }),
+        () => caller.mutation(api.visits.reschedule, { churchId, visitId: second, at: morning(6).at }),
         () => caller.mutation(api.visits.replaceVisitor, { churchId, visitId: second, leavingId: ids.colleen.memberId, joiningId: ids.graciela.memberId }),
         () => caller.mutation(api.visits.cancel, { churchId, visitId: second }),
       ];
@@ -198,6 +199,24 @@ describe("each visitor accepts or declines", () => {
     await replace(ids.coordinator.memberId);
     expect(await answers()).toEqual([["Daniel Whitcombe", "accepted"], ["Thomas Okafor", "pending"]]);
     expect(await as(ids.coordinator).query(api.visits.mine, { churchId })).toHaveLength(1);
+  });
+});
+
+describe("changing the time of a planned visit", () => {
+  test("both visitors are asked again, and no one is moved onto a day they are away", async () => {
+    const { ids, as, away, now } = await setup();
+    const churchId = ids.church, owner = as(ids.owner);
+    const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
+    await as(ids.daniel).mutation(api.visits.respond, { churchId, visitId, response: "accepted" });
+    await away(ids.graciela, now + 7 * DAY, now + 9 * DAY);
+    await expect(owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(8).at })).rejects.toThrow("Graciela Fuentes is away that day.");
+    await expect(owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(-1).at })).rejects.toThrow("Choose a time that is still to come.");
+    await owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(5).at });
+    const [visit] = (await owner.query(api.visits.board, { churchId })).scheduled;
+    expect(visit.scheduledAt).toBe(morning(5).start);
+    expect(visit.visitors.map((visitor) => visitor.response)).toEqual(["pending", "pending"]);
+    await owner.mutation(api.visits.writeUp, { churchId, visitId, notes: "Reviewed the bill.", hours: 1, miles: 3 });
+    await expect(owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(6).at })).rejects.toThrow("Only a planned visit can change its time.");
   });
 });
 

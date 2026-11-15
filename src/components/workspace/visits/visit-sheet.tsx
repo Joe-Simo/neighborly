@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { DateTime } from "luxon";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, Lock, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -10,21 +11,18 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { HelpDialog } from "@/components/workspace/help-line/forms";
-import {
-  count,
-  languageLabels,
-  shortMoney,
-} from "@/components/workspace/help-line/format";
+import { count, languageLabels } from "@/components/workspace/help-line/format";
 import { HelpLoading } from "@/components/workspace/help-line/room";
 import { useSave } from "@/components/workspace/help-line/use-save";
-import { kindLabels, type Sheet } from "@/components/workspace/visits/format";
+import { TimeForm } from "@/components/workspace/visits/forms";
+import { need, type Sheet } from "@/components/workspace/visits/format";
 
 /**
  * What the pair carries to the door, made to be printed.
  * Opening it shows a neighbor's details, so it is written down first, like opening the record.
  */
 export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
-  const { data, format, setHeading } = useWorkspace();
+  const { data, format, now, setHeading } = useWorkspace();
   const churchId = data.church.id;
   // One neighbor's details: a plain head, with no painting.
   useLayoutEffect(() => {
@@ -38,7 +36,9 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   const openSheet = useMutation(api.visits.openSheet);
   const cancel = useMutation(api.visits.cancel);
   const [opened, setOpened] = useState(false);
-  const [confirming, setConfirming] = useState(false);
+  const [step, setStep] = useState<"callOff" | "time" | null>(null);
+  const confirming = step === "callOff";
+  const setConfirming = (open: boolean) => setStep(open ? "callOff" : null);
   const { pending, error, save } = useSave();
   useEffect(() => {
     let current = true;
@@ -59,13 +59,31 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       <VisitSheetView
         sheet={sheet}
         format={format}
+        printed={format(now, { dateStyle: "long" })}
         onPrint={() => window.print()}
-        onCallOff={() => setConfirming(true)}
+        onCallOff={() => setStep("callOff")}
+        onChangeTime={() => setStep("time")}
       />
+      {step === "time" && (
+        <HelpDialog
+          title="Change the time"
+          description={`${sheet.visitors.join(" and ")} will be asked again, since their yes was for the old time.`}
+          onClose={() => setStep(null)}
+        >
+          <TimeForm
+            churchId={churchId}
+            visitId={visitId}
+            at={DateTime.fromMillis(sheet.scheduledAt, {
+              zone: data.church.timeZone,
+            }).toFormat("yyyy-MM-dd'T'HH:mm")}
+            onSaved={() => setStep(null)}
+          />
+        </HelpDialog>
+      )}
       {confirming && (
         <HelpDialog
           title="Call off this visit?"
-          description={`${sheet.visitors.join(" and ")} will no longer be going. ${sheet.neighbor.name} goes back to waiting for a pair.`}
+          description={`${sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent, so please tell them yourself. ${sheet.neighbor.name} goes back to waiting for a pair.`}
           onClose={() => setConfirming(false)}
         >
           {error && (
@@ -99,13 +117,18 @@ const lines = (n: number) =>
 export function VisitSheetView({
   sheet,
   format,
+  printed,
   onPrint,
   onCallOff,
+  onChangeTime,
 }: {
   sheet: Sheet;
   format: Workspace["format"];
   onPrint: () => void;
+  /** Today's date, for the foot of the printed page. */
+  printed: string;
   onCallOff: () => void;
+  onChangeTime: () => void;
 }) {
   const { neighbor, request } = sheet;
   const household = [
@@ -117,19 +140,32 @@ export function VisitSheetView({
   return (
     <>
       <div className="visits-sheet-bar">
-        <Link className="visits-back" href="/app/visits">
-          <ArrowLeft size={17} aria-hidden="true" /> Home visits
-        </Link>
-        <div className="help-actions">
+        <div className="visits-sheet-links">
+          <Link className="visits-back" href="/app/visits">
+            <ArrowLeft size={17} aria-hidden="true" /> Home visits
+          </Link>
           {sheet.status === "scheduled" && (
-            <Button variant="outline" onClick={onCallOff}>
-              Call off the visit
-            </Button>
+            <>
+              <Button
+                variant="link"
+                className="visits-quiet-link"
+                onClick={onChangeTime}
+              >
+                Change the time
+              </Button>
+              <Button
+                variant="link"
+                className="visits-quiet-link"
+                onClick={onCallOff}
+              >
+                Call off the visit
+              </Button>
+            </>
           )}
-          <Button onClick={onPrint}>
-            <Printer size={18} aria-hidden="true" /> Print this sheet
-          </Button>
         </div>
+        <Button onClick={onPrint}>
+          <Printer size={18} aria-hidden="true" /> Print this sheet
+        </Button>
       </div>
       <article
         className="visits-paper"
@@ -173,7 +209,7 @@ export function VisitSheetView({
             <div>
               <dt>Asked for</dt>
               <dd>
-                {kindLabels[request.kind]}, {shortMoney(request.amount)}
+                {need(request.kind, request.amount)}
                 {request.payeeName ? `, owed to ${request.payeeName}` : ""}
               </dd>
             </div>
@@ -217,6 +253,10 @@ export function VisitSheetView({
           <Lock size={15} aria-hidden="true" />
           Private. After the write-up, hand this sheet back or shred it.
         </footer>
+        <p className="visits-paper-foot">
+          <span>Kind Helps</span>
+          <span>Printed {printed}</span>
+        </p>
       </article>
     </>
   );

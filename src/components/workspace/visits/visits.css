@@ -1,4 +1,5 @@
 /* Only what home visits add to the shared help-* styles in help.css. */
+.visits-room > .help-done, .visits-room > .live-error { margin: 0 0 36px; }
 .visits-pair {
   margin-top: 14px !important;
 }
@@ -26,15 +27,12 @@
 .visits-given::before {
   display: none;
 }
-.visits-problem {
-  flex-basis: 100%;
-  margin: 0;
-  font-size: 15px;
-  color: #71372b;
-}
 .help-row .live-row-actions {
   gap: 14px;
 }
+
+.help-row[data-quiet] { align-items: start; }
+.help-row[data-quiet] .visits-given { align-self: center; }
 
 /* ── The visit sheet: paper on screen, then paper ─────────────────────── */
 .visits-sheet-bar {
@@ -53,6 +51,10 @@
   font-size: 16px;
   color: var(--live-muted);
 }
+.visits-sheet-links { display: flex; align-items: center; gap: 6px 26px; flex-wrap: wrap; }
+.live-app .visits-quiet-link { min-height: 44px; padding: 0; font-size: 16px; font-weight: 400; color: var(--live-muted); text-decoration: underline; text-decoration-color: #c5c9bb; text-underline-offset: 4px; }
+.live-app .visits-quiet-link:hover { color: var(--live-ink); text-decoration-color: currentColor; }
+.visits-paper-foot { display: none; }
 .visits-back:hover {
   color: var(--live-ink);
 }
@@ -214,7 +216,9 @@
   .visits-paper-words { font-size: 12pt; margin-top: 3.5mm; }
   .visits-paper-write { margin-top: 5mm; break-inside: avoid; }
   .visits-paper-write h3 { font-size: 13pt; }
-  .visits-lines i { height: 6.8mm; border-bottom-color: #777; }
+  .visits-lines i { height: 6.3mm; border-bottom-color: #777; }
   .visits-paper-blanks { margin-top: 6mm; }
-  .visits-paper footer { margin-top: 4mm; font-size: 9pt; }
+  .visits-paper footer { margin-top: 3mm; font-size: 9pt; }
+  .visits-paper-foot { display: flex; justify-content: space-between; margin: 3mm 0 0; padding-top: 2mm; border-top: 0.5pt solid #000; font-size: 9pt; }
+  .visits-paper-foot span:first-child { font: 400 12pt/1 "Newsreader", Georgia, serif; }
 }

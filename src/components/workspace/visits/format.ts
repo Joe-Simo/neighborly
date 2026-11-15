@@ -1,6 +1,9 @@
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../../convex/_generated/api";
-import { shortMoney } from "@/components/workspace/help-line/format";
+import {
+  kindLabels,
+  shortMoney,
+} from "@/components/workspace/help-line/format";
 
 export type Board = FunctionReturnType<typeof api.visits.board>;
 export type Visit = Board["scheduled"][number];
@@ -10,22 +13,10 @@ export type Visitors = FunctionReturnType<typeof api.visits.visitors>;
 export type Sheet = FunctionReturnType<typeof api.visits.sheet>;
 export type OwnVisit = FunctionReturnType<typeof api.visits.mine>[number];
 
-export const kindLabels: Record<Waiting["kind"], string> = {
-  rent: "rent",
-  utility: "utility bill",
-  food: "food",
-  voucher: "thrift store voucher",
-  other: "other help",
-};
-/** "rent, $450": what the visit is about, in the words of the request. */
+/** "Rent, $450": what the visit is about, in the words of the request. */
 export const need = (kind: Waiting["kind"], cents: number) =>
   `${kindLabels[kind]}, ${shortMoney(cents)}`;
 export const firstName = (name: string) => name.split(/\s+/)[0];
-/** What a person typed for hours or miles, as a number; null when it is not one. */
-export function amount(typed: string) {
-  const cleaned = typed.trim().replace(",", ".");
-  return /^\d+(\.\d+)?$/.test(cleaned) ? Number(cleaned) : null;
-}
 export const sheetHref = (visitId: string) => `/app/visits?sheet=${visitId}`;
 /** Where the pair stands: both said yes, someone cannot go, or someone has yet to answer. */
 export function standing(visit: Visit) {

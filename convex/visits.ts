@@ -348,6 +348,25 @@ export const plan = mutation({
   },
 });
 
+/** Move a planned visit to another time. Both visitors are asked again, since their yes was for the old time. */
+export const reschedule = mutation({
+  args: { churchId: v.id("churches"), visitId: v.id("visits"), at: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const visit = await ownVisit(ctx, args.churchId, args.visitId);
+    const church = await ctx.db.get("churches", args.churchId);
+    if (!church) throw new Error("Group not found.");
+    if (visit.status !== "scheduled") throw new Error("Only a planned visit can change its time.");
+    const scheduledAt = parseScheduledTime(args.at, church.timeZone);
+    if (scheduledAt <= Date.now()) throw new Error("Choose a time that is still to come.");
+    if (scheduledAt === visit.scheduledAt) return null;
+    const pair = await checkedPair(ctx, church, visit.visitors.map((visitor) => visitor.memberId), scheduledAt);
+    await ctx.db.patch("visits", visit._id, { scheduledAt, visitors: pair });
+    return null;
+  },
+});
+
 /** One of the pair cannot go: someone else is asked in their place, and the one staying keeps their answer. */
 export const replaceVisitor = mutation({
   args: { churchId: v.id("churches"), visitId: v.id("visits"), leavingId: v.id("memberships"), joiningId: v.id("memberships") },

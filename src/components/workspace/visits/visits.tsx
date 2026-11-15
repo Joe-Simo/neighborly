@@ -1,7 +1,7 @@
 "use client";
 
 import "./visits.css";
-import { useCallback, useLayoutEffect, useState, type ReactNode } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
@@ -9,7 +9,6 @@ import { Check, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { HelpDialog } from "@/components/workspace/help-line/forms";
 import { count, initials } from "@/components/workspace/help-line/format";
@@ -26,7 +25,6 @@ import {
   WriteUpForm,
 } from "@/components/workspace/visits/forms";
 import {
-  amount,
   firstName,
   need,
   sheetHref,
@@ -40,7 +38,7 @@ import { VisitSheet } from "@/components/workspace/visits/visit-sheet";
 const WEEK = 7 * 24 * 3600000;
 type Step =
   | { kind: "plan"; requestId?: Id<"assistanceRequests"> }
-  | { kind: "writeUp"; visit: Visit; hours: number; miles: number }
+  | { kind: "writeUp"; visit: Visit }
   | { kind: "replace"; visit: Visit; leaving: Visit["visitors"][number] };
 
 export function VisitsSection() {
@@ -69,11 +67,17 @@ function Visits() {
     setDone("");
     setStep({ kind: "plan" });
   }, []);
+  const waitingOnYes = Boolean(board?.suggested);
   useLayoutEffect(() => {
     if (sheetId) return;
-    setHeadAction({ label: "Plan a visit", run: planVisit });
+    // The pair sheet has the screen's one filled button, so the head button goes quiet beside it.
+    setHeadAction({
+      label: "Plan a visit",
+      run: planVisit,
+      quiet: waitingOnYes,
+    });
     return () => setHeadAction(null);
-  }, [sheetId, setHeadAction, planVisit]);
+  }, [sheetId, setHeadAction, planVisit, waitingOnYes]);
   const finish = (message: string) => {
     setStep(null);
     setDone(message);
@@ -91,7 +95,7 @@ function Visits() {
   if (sheetId) return <VisitSheet visitId={sheetId as Id<"visits">} />;
   if (!board) return <HelpLoading label="Opening home visits" />;
   return (
-    <>
+    <div className="visits-room">
       {done && <HelpDone>{done}</HelpDone>}
       {error && (
         <div className="live-error" role="alert">
@@ -123,9 +127,7 @@ function Visits() {
               `${firstName(pair[0].name)} and ${firstName(pair[1].name)} have been asked to visit ${suggested.request.neighborName} on ${day(suggested.scheduledAt)} at ${time(suggested.scheduledAt)}.`,
             );
         }}
-        onWriteUp={(visit, hours, miles) =>
-          start({ kind: "writeUp", visit, hours, miles })
-        }
+        onWriteUp={(visit) => start({ kind: "writeUp", visit })}
         onReplace={(visit, leaving) =>
           start({ kind: "replace", visit, leaving })
         }
@@ -175,8 +177,6 @@ function Visits() {
           <WriteUpForm
             churchId={churchId}
             visit={step.visit}
-            hours={step.hours}
-            miles={step.miles}
             onSaved={() =>
               finish(
                 `Written up. The visit to ${step.visit.neighborName} now counts toward the year’s hours and miles.`,
@@ -185,7 +185,7 @@ function Visits() {
           />
         </HelpDialog>
       )}
-    </>
+    </div>
   );
 }
 
@@ -219,7 +219,7 @@ export function VisitsView({
   busy: boolean;
   onPlan: (requestId?: Id<"assistanceRequests">) => void;
   onAsk: (suggested: Suggestion, pair: NonNullable<Suggestion["pair"]>) => void;
-  onWriteUp: (visit: Visit, hours: number, miles: number) => void;
+  onWriteUp: (visit: Visit) => void;
   onReplace: (visit: Visit, leaving: Visit["visitors"][number]) => void;
 }) {
   const { suggested } = board;
@@ -393,12 +393,22 @@ export function VisitsView({
           </div>
           <div className="live-list">
             {toWriteUp.map((visit) => (
-              <WriteUpRow
-                key={visit.id}
-                visit={visit}
-                leaf={leaf(visit.scheduledAt)}
-                onWriteUp={onWriteUp}
-              />
+              <div className="help-row" key={visit.id}>
+                {leaf(visit.scheduledAt)}
+                <div>
+                  <h3>{visit.neighborName}</h3>
+                  <p>
+                    <Pair
+                      names={visit.visitors.map((visitor) => visitor.name)}
+                    />
+                  </p>
+                </div>
+                <div className="live-row-actions">
+                  <Button variant="outline" onClick={() => onWriteUp(visit)}>
+                    Write up
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -433,72 +443,5 @@ export function VisitsView({
         </section>
       )}
     </>
-  );
-}
-
-/** A visit that has happened: the hours and miles go in on the row, the words in the dialog that follows. */
-function WriteUpRow({
-  visit,
-  leaf,
-  onWriteUp,
-}: {
-  visit: Visit;
-  leaf: ReactNode;
-  onWriteUp: (visit: Visit, hours: number, miles: number) => void;
-}) {
-  const [problem, setProblem] = useState("");
-  return (
-    <div className="help-row">
-      {leaf}
-      <div>
-        <h3>{visit.neighborName}</h3>
-        <p>
-          <Pair names={visit.visitors.map((visitor) => visitor.name)} />
-        </p>
-      </div>
-      <form
-        className="help-inline"
-        noValidate
-        onSubmit={(event) => {
-          event.preventDefault();
-          const data = new FormData(event.currentTarget);
-          const hours = amount(String(data.get("hours") ?? ""));
-          const miles = amount(String(data.get("miles") ?? ""));
-          if (hours === null || hours <= 0 || hours > 24)
-            return setProblem("Enter the hours the visit took, such as 1.5.");
-          if (miles === null || miles > 1000)
-            return setProblem("Enter the miles driven, or 0.");
-          setProblem("");
-          onWriteUp(visit, hours, miles);
-        }}
-      >
-        <label>
-          Hours
-          <Input
-            name="hours"
-            inputMode="decimal"
-            autoComplete="off"
-            aria-invalid={problem.includes("hours") || undefined}
-          />
-        </label>
-        <label>
-          Miles
-          <Input
-            name="miles"
-            inputMode="decimal"
-            autoComplete="off"
-            aria-invalid={problem.includes("miles") || undefined}
-          />
-        </label>
-        <Button variant="outline" type="submit">
-          Write up
-        </Button>
-        {problem && (
-          <p className="visits-problem" role="alert">
-            {problem}
-          </p>
-        )}
-      </form>
-    </div>
   );
 }

@@ -21,6 +21,7 @@ import {
   type Board,
   type Visit,
   type Visitors,
+  type Waiting,
 } from "@/components/workspace/visits/format";
 
 function FormEnd({
@@ -60,9 +61,7 @@ function VisitorSelect({
   const option = (person: Visitors[number]) => (
     <NativeSelectOption key={person.memberId} value={person.memberId}>
       {person.name}
-      {person.language === "en"
-        ? ""
-        : ` · speaks ${languageLabels[person.language]}`}
+      {person.language === "en" ? "" : ` · ${languageLabels[person.language]}`}
     </NativeSelectOption>
   );
   const team = people.filter((person) => person.homeVisitor);
@@ -108,6 +107,54 @@ export function PlanForm({
   const people = useQuery(api.visits.visitors, { churchId });
   const plan = useMutation(api.visits.plan);
   const { pending, error, save } = useSave();
+  return (
+    <PlanFormView
+      board={board}
+      requestId={requestId}
+      people={people}
+      pending={pending}
+      error={error}
+      onPlan={async (request, at, first, second) => {
+        const outcome = await save(() =>
+          plan({
+            churchId,
+            neighborId: request.neighborId,
+            requestId: request.requestId,
+            at,
+            visitorIds: [first.memberId, second.memberId],
+          }),
+        );
+        if (outcome.saved)
+          onSaved({
+            neighborName: request.neighborName,
+            pair: [first.name, second.name],
+          });
+      }}
+    />
+  );
+}
+
+/** The plan form itself, given the people who may go: no fetching here. */
+export function PlanFormView({
+  board,
+  requestId,
+  people,
+  pending,
+  error,
+  onPlan,
+}: {
+  board: Board;
+  requestId?: Id<"assistanceRequests">;
+  people: Visitors | undefined;
+  pending: boolean;
+  error: string;
+  onPlan: (
+    request: Waiting,
+    at: string,
+    first: Visitors[number],
+    second: Visitors[number],
+  ) => void;
+}) {
   const waiting = [
     ...(board.suggested ? [board.suggested.request] : []),
     ...board.toArrange,
@@ -133,7 +180,7 @@ export function PlanForm({
   return (
     <form
       className="live-form"
-      onSubmit={async (event) => {
+      onSubmit={(event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         const request = waiting.find(
@@ -144,20 +191,7 @@ export function PlanForm({
         );
         const [first, second] = pair;
         if (!request || !first || !second) return;
-        const outcome = await save(() =>
-          plan({
-            churchId,
-            neighborId: request.neighborId,
-            requestId: request.requestId,
-            at: String(data.get("at") ?? ""),
-            visitorIds: [first.memberId, second.memberId],
-          }),
-        );
-        if (outcome.saved)
-          onSaved({
-            neighborName: request.neighborName,
-            pair: [first.name, second.name],
-          });
+        onPlan(request, String(data.get("at") ?? ""), first, second);
       }}
     >
       <LiveField
@@ -213,51 +247,132 @@ export function PlanForm({
   );
 }
 
-/** What the pair found. The hours and miles were entered on the row. */
+/** What a person typed for hours or miles, as a number; null when it is not one. */
+function typedNumber(typed: FormDataEntryValue | null) {
+  const cleaned = String(typed ?? "")
+    .trim()
+    .replace(",", ".");
+  return /^\d+(\.\d+)?$/.test(cleaned) ? Number(cleaned) : null;
+}
+
+/** After the visit: what the pair found, and the hours and miles each of them gave. */
 export function WriteUpForm({
   churchId,
   visit,
-  hours,
-  miles,
   onSaved,
 }: {
   churchId: Id<"churches">;
   visit: Visit;
-  hours: number;
-  miles: number;
   onSaved: () => void;
 }) {
   const writeUp = useMutation(api.visits.writeUp);
   const { pending, error, save } = useSave();
-  const [notes, setNotes] = useState("");
+  const [problem, setProblem] = useState<"hours" | "miles" | null>(null);
   return (
     <form
       className="live-form"
+      noValidate
       onSubmit={async (event) => {
         event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const hours = typedNumber(data.get("hours"));
+        const miles = typedNumber(data.get("miles"));
+        if (hours === null || hours <= 0 || hours > 24)
+          return setProblem("hours");
+        if (miles === null || miles > 1000) return setProblem("miles");
+        setProblem(null);
         const outcome = await save(() =>
-          writeUp({ churchId, visitId: visit.id, notes, hours, miles }),
+          writeUp({
+            churchId,
+            visitId: visit.id,
+            notes: String(data.get("notes") ?? ""),
+            hours,
+            miles,
+          }),
         );
         if (outcome.saved) onSaved();
       }}
     >
       <LiveField
-        label="What you found"
+        label="What we found"
         help="A few plain sentences: who was home, what the need is, what you agreed."
       >
-        <Textarea
-          name="notes"
-          rows={5}
+        <Textarea name="notes" rows={5} />
+      </LiveField>
+      <div className="live-form-grid">
+        <LiveField
+          label="Hours"
+          help={`For each of you, ${firstName(visit.visitors[0]?.name ?? "")} and ${firstName(visit.visitors[1]?.name ?? "")}.`}
+        >
+          <Input
+            name="hours"
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="1.5"
+            aria-invalid={problem === "hours" || undefined}
+          />
+        </LiveField>
+        <LiveField label="Miles" help="Driven there and back, or 0.">
+          <Input
+            name="miles"
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="12"
+            aria-invalid={problem === "miles" || undefined}
+          />
+        </LiveField>
+      </div>
+      <FormEnd
+        error={
+          problem === "hours"
+            ? "Enter the hours the visit took, such as 1.5."
+            : problem === "miles"
+              ? "Enter the miles driven, or 0."
+              : error
+        }
+        pending={pending}
+        submit="Save the write-up"
+      />
+    </form>
+  );
+}
+
+/** Move a planned visit. The time is the group's own wall clock. */
+export function TimeForm({
+  churchId,
+  visitId,
+  at,
+  onSaved,
+}: {
+  churchId: Id<"churches">;
+  visitId: Id<"visits">;
+  at: string;
+  onSaved: () => void;
+}) {
+  const reschedule = useMutation(api.visits.reschedule);
+  const { pending, error, save } = useSave();
+  return (
+    <form
+      className="live-form"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const next = String(new FormData(event.currentTarget).get("at") ?? "");
+        const outcome = await save(() =>
+          reschedule({ churchId, visitId, at: next }),
+        );
+        if (outcome.saved) onSaved();
+      }}
+    >
+      <LiveField label="Day and time">
+        <Input
+          name="at"
+          type="datetime-local"
           required
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
+          step={900}
+          defaultValue={at}
         />
       </LiveField>
-      <p className="visits-quiet">
-        {count(hours, "hour", "hours")} and {count(miles, "mile", "miles")} will
-        be recorded for each of them.
-      </p>
-      <FormEnd error={error} pending={pending} submit="Save the write-up" />
+      <FormEnd error={error} pending={pending} submit="Change the time" />
     </form>
   );
 }
