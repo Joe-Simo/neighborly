@@ -76,6 +76,7 @@ function Visits() {
       label: "Plan a visit",
       run: planVisit,
       quiet: waitingOnYes,
+      plus: true,
     });
     return () => setHeadAction(null);
   }, [sheetId, setHeadAction, planVisit, waitingOnYes]);
