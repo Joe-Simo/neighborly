@@ -85,14 +85,14 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       {confirming && (
         <LiveDialog
           title="Call off this visit?"
-          description={`${sheet.neighbor.name} goes back to waiting for a pair. ${sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent. Please tell ${sheet.visitors.map((name) => name.split(/\s+/)[0]).join(" and ")} yourself.`}
+          description={`${sheet.neighbor.name} goes back to waiting for a pair.`}
           onClose={() => setConfirming(false)}
         >
+          <p className="visits-consequence">
+            {sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent, so please tell {sheet.visitors.map((name) => name.split(/\s+/)[0]).join(" and ")} yourself.
+          </p>
           {error && <LiveFailure message={error} kept="" />}
           <div className="live-form-actions">
-            <Button variant="outline" onClick={() => setConfirming(false)}>
-              Keep the visit
-            </Button>
             <Button
               disabled={pending}
               onClick={async () => {
