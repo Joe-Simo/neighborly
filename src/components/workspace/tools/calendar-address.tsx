@@ -46,7 +46,7 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
       {error && <div className="live-error" role="alert"><p>{error}</p></div>}
       {address ? (
         <div className="paper-rows">
-          <div className="help-actions tools-after">
+          <div className="help-actions tools-after tools-calendars">
             {calendarLinks(address, device).map((link, index) => (
               <Button key={link.app} variant="outline" className={index === 0 ? "tools-first" : undefined} asChild>
                 <a href={link.href} target="_blank" rel="noreferrer"><CalendarPlus size={18} aria-hidden="true" /> {text[link.app]}</a>

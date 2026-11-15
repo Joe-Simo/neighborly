@@ -10,7 +10,9 @@
 .tools-sheet { margin-top: 28px; }
 .tools-after { margin-top: 22px; }
 .tools-replace { margin-top: 16px; }
-.live-app .help-actions .tools-first { border-color: var(--live-ink); font-weight: 600; }
+:is(.live-app, .live-dialog) .help-actions .tools-first { border-color: var(--live-ink); font-weight: 600; }
+:is(.live-app, .live-dialog) .help-actions.tools-calendars { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 640px; }
+:is(.live-app, .live-dialog) .tools-calendars [data-slot="button"] { width: 100%; min-height: 44px; margin: 0; }
 .tools-rota th:first-child, .tools-rota td:first-child { padding-left: 0; }
 :is(.live-app, .live-dialog) .tools-address [data-slot="button"], :is(.live-app, .live-dialog) .tools-week [data-slot="button"] { min-height: 44px; }
 :is(.live-app, .live-dialog) .tools-address input { height: 44px; font-size: 17px; }
