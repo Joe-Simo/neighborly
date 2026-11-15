@@ -362,7 +362,7 @@ function SampleResetting({ leave }: { leave: () => void }) {
     <main className="live-main">
       <LiveLoading label="The sample is being reset. One moment." />
       {waitedLong ? (
-        <p className="mt-2 px-7">
+        <p className="mt-4">
           <Button variant="outline" onClick={leave}>
             Leave the sample
           </Button>

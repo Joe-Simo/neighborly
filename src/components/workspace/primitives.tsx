@@ -11,7 +11,7 @@ export function LiveLoading({
   return (
     <div className="live-loading" role="status">
       <LoaderCircle size={20} aria-hidden="true" />
-      {label}
+      <span className="text-balance">{label}</span>
     </div>
   );
 }
