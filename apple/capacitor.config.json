@@ -1,0 +1,15 @@
+{
+  "appId": "com.kindhelps.app",
+  "appName": "Kind Helps",
+  "webDir": "web",
+  "backgroundColor": "#f5f3ec",
+  "server": {
+    "url": "https://kindhelps.com/app",
+    "allowNavigation": ["kindhelps.com", "*.kindhelps.com"]
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#f5f3ec",
+    "preferredContentMode": "mobile"
+  }
+}
