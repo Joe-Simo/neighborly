@@ -18,7 +18,6 @@ import {
   cents,
   kindLabels,
   languageLabels,
-  money,
   payeeLabels,
   shortMoney,
   recordHref,
@@ -512,7 +511,7 @@ export function DecideForm({
       {approving && !voucher && (
         <LiveField
           label="Amount to approve, in dollars"
-          help={`They asked for ${money(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
+          help={`They asked for ${shortMoney(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
         >
           <Input
             name="amount"
