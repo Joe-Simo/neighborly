@@ -65,6 +65,22 @@ export function ht(set: WordSet): Words {
       limited: "Kèk lis montre sèlman yon pati. Sèvi ak Chaje plis nan seksyon an pou wè rès la.",
     },
     headings: {
+      team: {
+        title: "Yon plas nan ekip la.",
+        deck: "Tout moun gen plas yo isit la, menm lè plan yo chanje.",
+      },
+      people: {
+        title: "Moun yo, ansanm.",
+        deck: "Kominote ou ak ekip li fè posib yo.",
+      },
+      commitments: {
+        title: "Angajman ki klè.",
+        deck: "Gade sa ki kouvri, sa ki lib ak sa k ap tann yon repons.",
+      },
+      tasks: {
+        title: "Ti bagay yo konte.",
+        deck: "Travay ak reyinyon nou pataje, chak ak pwochen etap li.",
+      },
       week: {
         title: "Bon travay, semèn sa a.",
         deck: "Angajman ou, plan tout moun ak sa pou ou konnen.",

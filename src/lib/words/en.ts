@@ -64,6 +64,22 @@ export function en(set: WordSet) {
       limited: "Some overview lists show a limited set of records. Use Load more in the matching section to see additional records.",
     },
     headings: {
+      team: {
+        title: "A place on the team.",
+        deck: "People belong here, even when their plans change.",
+      },
+      people: {
+        title: "People, together.",
+        deck: "Your community and the teams they make possible.",
+      },
+      commitments: {
+        title: "Clear commitments.",
+        deck: "See what’s covered, what’s open and what’s awaiting a reply.",
+      },
+      tasks: {
+        title: "The little things matter.",
+        deck: "Shared tasks and meetings, each with a clear next step.",
+      },
       week: {
         title: "Good work, this week.",
         deck: "Your commitments, shared plans and the things to know.",

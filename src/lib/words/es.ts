@@ -65,6 +65,22 @@ export function es(set: WordSet): Words {
       limited: "Algunas listas muestran solo una parte. Usa Cargar más en la sección correspondiente para ver el resto.",
     },
     headings: {
+      team: {
+        title: "Un lugar en el equipo.",
+        deck: "Aquí cada persona tiene su lugar, aunque sus planes cambien.",
+      },
+      people: {
+        title: "Personas, juntas.",
+        deck: "Tu comunidad y los equipos que hace posibles.",
+      },
+      commitments: {
+        title: "Compromisos claros.",
+        deck: "Mira lo que está cubierto, lo que está libre y lo que espera respuesta.",
+      },
+      tasks: {
+        title: "Lo pequeño importa.",
+        deck: "Tareas y reuniones compartidas, cada una con su siguiente paso.",
+      },
       week: {
         title: "Buen trabajo, esta semana.",
         deck: "Tus compromisos, los planes de todos y lo que hay que saber.",
