@@ -47,9 +47,24 @@ export default defineSchema({
     children: v.number(),
     language,
     notes: v.string(),
+    alert: v.optional(v.string()),
+    // No names and a birth year, not a birth date, on purpose.
+    household: v.optional(v.array(v.object({ relationship: v.string(), child: v.boolean(), birthYear: v.optional(v.number()) }))),
+    // Monthly amounts.
+    money: v.optional(v.object({
+      income: v.array(v.object({ label: v.string(), amount: cents })),
+      expenses: v.array(v.object({ label: v.string(), amount: cents })),
+      updatedAt: v.number(),
+    })),
+    accounts: v.optional(v.array(v.object({
+      kind: v.union(v.literal("landlord"), v.literal("utility"), v.literal("other")),
+      name: v.string(), accountNumber: v.string(), phone: v.string(),
+    }))),
     createdBy: v.id("memberships"),
     createdAt: v.number(),
   }).index("by_church", ["churchId"]).index("by_church_name", ["churchId", "nameKey"]).index("by_church_phone", ["churchId", "phoneKey"]).searchIndex("search_address", { searchField: "address", filterFields: ["churchId"] }),
+  neighborNotes: defineTable({ churchId: v.id("churches"), neighborId: v.id("neighbors"), body: v.string(), authorId: v.id("memberships"), createdAt: v.number() }).index("by_neighbor", ["neighborId", "createdAt"]).index("by_church", ["churchId"]),
+  referralAgencies: defineTable({ churchId: v.id("churches"), name: v.string(), phone: v.string(), helpsWith: v.string() }).index("by_church", ["churchId", "name"]),
   calls: defineTable({
     churchId: v.id("churches"),
     neighborId: v.optional(v.id("neighbors")),
@@ -80,6 +95,10 @@ export default defineSchema({
     payeeName: v.string(),
     source: v.union(v.literal("person"), v.literal("ai_draft"), v.literal("import")),
     referral: v.optional(v.string()),
+    referrals: v.optional(v.array(v.string())),
+    voucher: v.optional(v.object({ item: v.string(), quantity: v.number() })),
+    // What the earlier system recorded as help provided, on a request brought over from it.
+    importedAmount: v.optional(cents),
     createdBy: v.id("memberships"),
     createdAt: v.number(),
   }).index("by_church", ["churchId", "createdAt"]).index("by_church_status", ["churchId", "status"]).index("by_neighbor", ["neighborId"]),
