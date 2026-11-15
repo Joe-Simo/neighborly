@@ -1,0 +1,421 @@
+/*
+  The paper frame every signed-in room stands in: the page head with its relief
+  picture, the one way things move, the empty and loading states, the phone's
+  single top bar and the measure on wide screens. Loaded once by the workspace
+  layout, after live-workspace.css and help.css.
+
+  For the rooms, four shared classes:
+    paper-rise    a thing arrives: up 12px and in, 320ms. On a list's parent,
+                  paper-rows does the same for its first eight children, 30ms apart.
+    paper-settle  a sheet is laid down: up, a hair of turn, then flat. 420ms.
+    paper-fold    on a sheet with a folded corner (help-sheet or paper-corner):
+                  the corner turns from ochre to green and presses flat. 400ms.
+    count-up      a figure that rolls to its value; use <CountUp> from primitives.
+  All of them are still for anyone who asks for less motion.
+*/
+@property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #c8962e; }
+.live-app,
+.live-dialog,
+.live-mobile-menu {
+  --paper-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --paper: #f7f4ed;
+  --paper-green: #365c46;
+  --paper-plum: #6f5f93;
+  --paper-ochre: #c8962e;
+  --paper-ink: #283c32;
+  --paper-shade: #ece8dc;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────── */
+@keyframes paper-rise { from { opacity: 0; transform: translateY(12px); } }
+@keyframes paper-settle { from { opacity: 0; transform: translateY(14px) rotate(-0.4deg); } }
+@keyframes paper-unveil { from { opacity: 0; transform: translateX(24px); } }
+@keyframes paper-show { from { opacity: 0; } }
+@keyframes paper-press { 40% { transform: scale(1.22); } }
+@keyframes paper-breathe { 50% { opacity: 0.55; } }
+
+.paper-rise,
+.paper-rows > *,
+.live-list > *,
+.help-row,
+.help-timeline li,
+.help-ledger tbody tr {
+  animation: paper-rise 320ms var(--paper-ease) backwards;
+  animation-delay: calc(var(--paper-wait, 0ms) + 90ms + var(--paper-order, 8) * 30ms);
+}
+:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(1), .help-row:nth-child(1) { --paper-order: 0; }
+:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(2), .help-row:nth-child(2) { --paper-order: 1; }
+:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(3), .help-row:nth-child(3) { --paper-order: 2; }
+:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(4), .help-row:nth-child(4) { --paper-order: 3; }
+:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(5), .help-row:nth-child(5) { --paper-order: 4; }
+:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(6), .help-row:nth-child(6) { --paper-order: 5; }
+:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(7), .help-row:nth-child(7) { --paper-order: 6; }
+:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(8), .help-row:nth-child(8) { --paper-order: 7; }
+.paper-rise { --paper-order: 0; }
+
+.paper-settle,
+.help-sheet {
+  animation: paper-settle 420ms var(--paper-ease) backwards;
+  animation-delay: var(--paper-wait, 0ms);
+}
+
+/* A folded corner for any sheet that is waiting for a yes. help-sheet already draws one. */
+.paper-corner { position: relative; }
+.paper-corner::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 38px;
+  height: 38px;
+  border-bottom-left-radius: 3px;
+  box-shadow: -3px 3px 6px -4px #3b3a2466;
+}
+.paper-corner::after,
+.help-sheet::after {
+  background: linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%);
+  transform-origin: 100% 0;
+  transition: --paper-corner 400ms var(--paper-ease);
+}
+.paper-fold { --paper-corner: #365c46; }
+.paper-fold::after { animation: paper-press 400ms var(--paper-ease); }
+
+.count-up { font-variant-numeric: lining-nums tabular-nums; }
+
+/* Rows and links answer a pointer the same way everywhere: the paper lifts a little, the line under a link thickens. */
+:is(.live-row, .help-row, .live-team) {
+  transition: transform 200ms var(--paper-ease), box-shadow 200ms var(--paper-ease), background-color 200ms ease;
+}
+@media (hover: hover) {
+  :is(.live-row, .help-row):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 18px -18px #283c3266;
+  }
+}
+.live-app .live-link,
+.live-dialog .live-link { text-decoration-thickness: 1px; transition: text-decoration-thickness 160ms ease; }
+.live-app .live-link:is(:hover, :active),
+.live-dialog .live-link:is(:hover, :active) { text-decoration-thickness: 2px; }
+
+/* ── A room arrives ───────────────────────────────────────────────────── */
+.live-head-words > * {
+  animation: paper-rise 320ms var(--paper-ease) backwards;
+  animation-delay: var(--paper-wait, 0ms);
+}
+.live-head-words > :nth-child(2) { animation-delay: calc(var(--paper-wait, 0ms) + 40ms); }
+.live-head-words > :nth-child(n + 3),
+.live-head-actions { animation: paper-rise 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
+/* The picture slides inside its own frame, so nothing ever pushes the page sideways. */
+.live-head-art > .relief { animation: paper-unveil 420ms var(--paper-ease) backwards; animation-delay: var(--paper-wait, 0ms); }
+.live-room { animation: paper-show 240ms ease backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
+/* The room being left steps back while the next one is fetched. */
+.live-main[data-leaving] > * { opacity: 0; transition: opacity 120ms ease; }
+
+/* Once a session, after sign-in or the sample link: three sheets sweep up and the last one settles as the page. */
+.paper-wave { position: fixed; inset: 0; z-index: 80; display: none; overflow: hidden; pointer-events: none; }
+.paper-wave[data-playing] { display: block; animation: paper-wave-out 140ms linear 560ms forwards; }
+.paper-wave svg { position: absolute; left: 0; top: -14vh; width: 100%; height: 116vh; transform: translateY(101%); }
+.paper-wave[data-playing] svg { animation: paper-wave-up 440ms var(--paper-ease) forwards; }
+.paper-wave[data-playing] svg:nth-child(2) { animation-delay: 60ms; }
+.paper-wave[data-playing] svg:nth-child(3) { animation-delay: 120ms; }
+@keyframes paper-wave-up { to { transform: none; } }
+@keyframes paper-wave-out { to { opacity: 0; } }
+.live-app[data-arriving] { --paper-wait: 520ms; }
+
+/* ── The frame ────────────────────────────────────────────────────────── */
+.live-app .live-layout { max-width: none; }
+.live-app:has(.live-header) { overflow-x: clip; }
+.live-app .live-main {
+  --live-pad: clamp(24px, 5vw, 78px);
+  --live-top: 48px;
+  padding: var(--live-top) max(var(--live-pad), env(safe-area-inset-right)) calc(100px + env(safe-area-inset-bottom)) var(--live-pad);
+}
+.live-app .live-header {
+  padding-left: max(34px, env(safe-area-inset-left));
+  padding-right: max(var(--live-pad, clamp(24px, 5vw, 78px)), env(safe-area-inset-right));
+}
+.live-header-sample { display: none; }
+.live-app .live-menu-trigger { display: none; }
+.live-header-actions .live-account { font-size: 15px; }
+
+/* The menu down the side stays put while a long room scrolls, and its marker slides to the room in view. */
+.live-nav { position: relative; }
+.live-nav-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--marker-w, 0);
+  height: var(--marker-h, 0);
+  transform: translate(var(--marker-x, 0), var(--marker-y, 0));
+  border-radius: 4px;
+  background: #dde5d3;
+  box-shadow: inset 3px 0 #55714c;
+  pointer-events: none;
+}
+.live-nav-marker[data-sliding] { transition: transform 320ms var(--paper-ease), width 320ms var(--paper-ease), height 320ms var(--paper-ease); }
+.live-nav a { position: relative; }
+.live-app .live-nav a[aria-current="page"] { background: none; box-shadow: none; }
+@media (min-width: 900px) {
+  .live-nav {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100svh;
+    min-height: 0;
+    overflow-y: auto;
+    padding-top: 36px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+  .live-nav a { margin: 2px 0; }
+}
+.live-app .live-sample-mark,
+.live-mobile-menu .live-sample-mark { font-size: 13px; letter-spacing: 0.05em; }
+
+/* ── The page head: words on the left, the room's picture on the right ── */
+.live-app .live-page-head {
+  position: relative;
+  display: block;
+  margin-bottom: 36px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--live-line);
+}
+.live-app .live-kicker { font-size: 13px; letter-spacing: 0.11em; margin-bottom: 14px; }
+.live-app .live-page-head h1 {
+  font: 400 clamp(40px, 5vw, 76px) / 0.98 "Newsreader", Georgia, serif;
+  letter-spacing: -0.032em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+.live-app .live-page-head .live-deck { margin-top: 18px; text-wrap: pretty; }
+.live-head-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.live-head-actions:empty { display: none; }
+.relief { display: block; width: 100%; height: 100%; }
+.relief img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.live-head-art { pointer-events: none; overflow: hidden; }
+/* Up to 899px: a band across the top, above the words. */
+.live-head-art {
+  width: auto;
+  height: 150px;
+  margin: calc(-1 * var(--live-top)) calc(-1 * max(var(--live-pad), env(safe-area-inset-right))) 22px calc(-1 * var(--live-pad));
+  -webkit-mask-image: linear-gradient(0deg, transparent, #000 36%);
+  mask-image: linear-gradient(0deg, transparent, #000 36%);
+}
+.live-head-art .relief { width: 100%; }
+@media (min-width: 900px) {
+  .live-app .live-page-head {
+    --head-wide: calc(100% + 2 * var(--live-pad));
+    min-height: clamp(250px, 21vw, 336px);
+  }
+  .live-head-art {
+    position: absolute;
+    top: calc(-1 * var(--live-top));
+    right: calc(-1 * var(--live-pad));
+    bottom: 0;
+    width: calc(var(--head-wide) * 0.46);
+    height: auto;
+    margin: 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 36%);
+    mask-image: linear-gradient(90deg, transparent, #000 36%);
+  }
+  .live-head-words,
+  .live-head-actions {
+    position: relative;
+    max-width: min(660px, calc(var(--head-wide) * 0.58 - var(--live-pad)));
+  }
+}
+
+/* ── Measure: from 1280 up the reading column stops at 1040px; only the picture runs to the edge ── */
+@media (min-width: 1280px) {
+  .live-main > :not(.live-page-head) { max-width: 1040px; }
+}
+
+/* ── Up to 899px there is no side menu ────────────────────────────────── */
+@media (max-width: 899px) {
+  .live-app .live-layout { display: block; }
+  .live-app .live-main { --live-pad: 24px; --live-top: 36px; padding-bottom: calc(70px + env(safe-area-inset-bottom)); padding-left: max(24px, env(safe-area-inset-left)); }
+  .live-app .live-header {
+    height: auto;
+    min-height: calc(60px + env(safe-area-inset-top));
+    padding: calc(8px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(24px, env(safe-area-inset-left));
+  }
+  .live-app .live-wordmark { font-size: 28px; letter-spacing: -0.045em; }
+  .live-app .live-account { display: none; }
+  /* An upright iPad keeps the rooms as a row that scrolls sideways under the bar. */
+  .live-app .live-nav {
+    display: flex;
+    gap: 2px;
+    min-height: 0;
+    padding: 8px max(20px, env(safe-area-inset-right)) 8px max(20px, env(safe-area-inset-left));
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: #efefe3;
+    border-right: 0;
+    border-bottom: 1px solid var(--live-line);
+  }
+  .live-app .live-nav a { flex: none; min-height: 44px; margin: 0; padding: 10px 14px; font-size: 15px; white-space: nowrap; }
+  .live-app .live-nav a[aria-current="page"] { color: #294c39; }
+  .live-nav .live-church-name,
+  .live-nav .live-sample-mark { display: none; }
+  .live-nav-marker { background: none; box-shadow: inset 0 -2px #55714c; border-radius: 0; }
+  .live-header-sample.live-sample-mark { display: block; margin: 6px auto 0 6px; }
+  @supports (animation-timeline: scroll()) {
+    .live-app .live-nav {
+      mask-image: linear-gradient(to right, transparent, #000 var(--live-fade-start), #000 calc(100% - var(--live-fade-end)), transparent);
+      animation: live-nav-fade linear both;
+      animation-timeline: scroll(self inline);
+    }
+  }
+}
+/* ── Phones, and any narrow window with a mouse: one bar. The wordmark on the left, Menu on the right ── */
+@media (max-width: 899px) {
+  @media (max-width: 760px), (pointer: fine) {
+    .live-app .live-nav,
+    .live-header-desk,
+    .live-header-sample.live-sample-mark { display: none; }
+    .live-app .live-menu-trigger {
+      display: inline-flex;
+      height: 44px;
+      gap: 9px;
+      padding: 0 12px;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--live-ink);
+      border-radius: 4px;
+    }
+    .live-menu-trigger svg { width: 20px; height: 20px; }
+  }
+}
+@media (max-width: 560px) {
+  .live-app .live-header { padding-left: max(20px, env(safe-area-inset-left)); }
+}
+@media (max-width: 560px) {
+  .live-app .live-main { --live-pad: 20px; --live-top: 30px; padding-bottom: calc(60px + env(safe-area-inset-bottom)); padding-left: max(20px, env(safe-area-inset-left)); }
+  .live-app .live-page-head { margin-bottom: 28px; padding-bottom: 26px; }
+  .live-app .live-page-head h1 { font-size: clamp(40px, 11.4vw, 48px); letter-spacing: -0.03em; }
+  .live-app .live-page-head .live-deck { font-size: 17px; margin-top: 14px; }
+  .live-head-actions { margin-top: 22px; }
+}
+
+/* The menu sheet: every room, then the language, then the way out. */
+.live-mobile-menu { animation: paper-settle 320ms var(--paper-ease) backwards; }
+.live-mobile-menu nav a { font-size: 17px; }
+.live-mobile-menu .live-menu-current { font-size: 13px; }
+.live-menu-foot { display: grid; gap: 14px; margin-top: 22px; }
+.live-menu-foot [data-slot="native-select-wrapper"],
+.live-menu-foot select { width: 100%; }
+.live-menu-foot .live-row-actions { display: grid; gap: 10px; }
+.live-menu-account { margin: 0; padding: 0 10px; font-size: 15px; color: #68715f; overflow-wrap: anywhere; }
+.live-mobile-menu .live-menu-leave[data-slot="button"] { width: 100%; height: 48px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
+
+/* ── Empty: a serif line, the action, and a small piece of the room's picture ── */
+.live-app .live-empty {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  max-width: 660px;
+  padding: 28px 0;
+  background: none;
+  border-top: 1px solid var(--live-line);
+  border-radius: 0;
+}
+.paper-vignette { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--paper-shade); }
+.live-app .live-empty h3 { font: 400 26px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0; }
+.live-app .live-empty p { margin: 8px 0 0; font-size: 17px; line-height: 1.5; }
+.live-app .live-empty p:empty { display: none; }
+.live-app .live-empty [data-slot="button"] { margin-top: 14px; }
+/* The help rooms' own empty state takes the same vignette; a storybook picture given inline is not shown. */
+.live-app .help-empty { grid-template-columns: 96px minmax(0, 1fr); gap: 28px; }
+.live-app .help-empty-art {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #f7f4ed url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath fill='%236f5f93' d='M110 8C74 14 64 40 44 50 26 59 12 62 4 110h106z'/%3E%3Cpath fill='%23365c46' d='M110 42C86 44 76 60 58 67 42 73 30 76 26 110h84z'/%3E%3Cpath fill='%23f7f4ed' d='M110 72C92 72 84 82 70 86 58 89 52 94 50 110h60z'/%3E%3C/svg%3E") center / cover no-repeat !important;
+  box-shadow: inset 0 0 0 1px #283c3214;
+}
+
+/* ── Loading: the room's own shape in paper, breathing. The spinner line only after two seconds ── */
+.paper-loading-frame { display: grid; grid-template-columns: 230px minmax(0, 1fr); }
+.paper-loading-frame > .live-nav { display: block; }
+.paper-loading b,
+.paper-loading i,
+.paper-loading-frame .live-nav b,
+.help-skeleton i,
+.help-skeleton b {
+  display: block;
+  border-radius: 3px;
+  background: var(--paper-shade, #ece8dc);
+  animation: paper-breathe 1.6s ease-in-out infinite;
+}
+.paper-loading-frame .live-nav b { height: 18px; width: 62%; margin: 15px 12px 27px; }
+.paper-loading-frame .live-nav b:nth-child(odd) { width: 48%; }
+.paper-loading-head { position: relative; padding-bottom: 30px; margin-bottom: 36px; border-bottom: 1px solid var(--live-line); }
+.paper-loading-head b:nth-child(1) { height: 13px; width: 190px; margin-bottom: 18px; }
+.paper-loading-head b:nth-child(2) { height: clamp(40px, 5vw, 72px); width: min(520px, 78%); }
+.paper-loading-head b:nth-child(3) { height: 18px; width: min(380px, 62%); margin-top: 22px; animation-delay: 200ms; }
+.paper-loading-rows > div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 24px; padding: 24px 0; border-bottom: 1px solid var(--live-line); }
+.paper-loading-rows i { height: 72px; }
+.paper-loading-rows b { height: 22px; width: 44%; margin: 8px 0 14px; }
+.paper-loading-rows b + b { height: 14px; width: 66%; margin: 0; animation-delay: 200ms; }
+.paper-loading-label {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 22px 0 0;
+  font-size: 17px;
+  color: var(--live-muted);
+  animation: paper-show 300ms ease 2s backwards;
+}
+.paper-loading-label svg { animation: live-spin 1s linear infinite; flex: none; }
+/* A short wait inside a form or a dialog: just the line. */
+.live-app .live-loading,
+.live-dialog .live-loading { background: none; border-top: 1px solid var(--live-line); padding: 24px 0; min-height: 0; font-size: 17px; }
+@media (max-width: 899px) {
+  .paper-loading-frame { display: block; }
+  .paper-loading-frame > .live-nav { display: none; }
+}
+
+/* ── Buttons a finger can find: 44px on touch screens, 40px with a mouse, 15px words ── */
+:is(.live-main, .live-dialog, .live-header-desk) [data-slot="button"]:not([data-size^="icon"]) { min-height: 40px; font-size: 15px; }
+@media (pointer: coarse) {
+  :is(.live-main, .live-dialog) [data-slot="button"]:not([data-size^="icon"]) { min-height: 44px; }
+}
+.live-app .live-head-actions [data-slot="button"] { min-height: 44px; font-size: 16px; }
+
+/* ── Type floor: nothing under 13px ───────────────────────────────────── */
+.live-app .live-meta,
+.live-app .live-count { font-size: 15px; }
+.live-app .live-status { font-size: 15px; }
+.live-app th { font-size: 13px; }
+:is(.live-app, .live-dialog) .live-detail dt { font-size: 13px; }
+.live-app .live-date-leaf span { font-size: 13px; letter-spacing: 0.08em; }
+.live-app .live-commitment-row .live-meta { font-size: 15px; }
+.live-app .live-password-control button { font-size: 14px; }
+.live-app .help-initials { width: 30px; height: 30px; font-size: 13px; }
+.live-app .help-initials + .help-initials { margin-left: -14px; padding-left: 8px; width: 38px; }
+/* A commitment row reads title first; where and when sit under it. */
+.live-commitment-row .live-row-main { display: flex; flex-direction: column; }
+.live-commitment-row .live-row-main > .live-meta { order: 1; margin: 2px 0 4px; }
+.live-commitment-row .live-row-main > h3 { order: 0; }
+.live-commitment-row .live-row-main > :not(.live-meta, h3) { order: 2; }
+@media (max-width: 560px) {
+  .live-app .live-commitment-row { grid-template-columns: 56px minmax(0, 1fr); }
+  .live-app .live-commitment-row .live-meta { display: flex; font-size: 14px; gap: 2px 10px; }
+}
+
+/* ── Stillness for those who ask for it ───────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .paper-rise, .paper-rows > *, .live-list > *, .help-row, .help-timeline li, .help-ledger tbody tr,
+  .paper-settle, .help-sheet, .paper-fold::after, .live-head-words > *, .live-head-actions, .live-head-art > .relief,
+  .live-room, .live-mobile-menu, .paper-loading b, .paper-loading i, .paper-loading-frame .live-nav b,
+  .help-skeleton i, .help-skeleton b, .paper-loading-label svg { animation: none; }
+  .paper-loading-label { animation-duration: 1ms; }
+  .paper-wave { display: none !important; }
+  .live-app[data-arriving] { --paper-wait: 0ms; }
+  .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
+  .live-main[data-leaving] > *, .live-app .live-link, .live-dialog .live-link { transition: none; }
+  :is(.live-row, .help-row):hover { transform: none; }
+}
+@media print {
+  .paper-wave { display: none !important; }
+}

@@ -13,7 +13,9 @@ change to a file marked closed.
 | `shell.tsx` | Header, menus, notices, the shared dialogs. |
 | `context.tsx` | `useWorkspace()`: the group, the signed-in person, date helpers, `perform`, `confirm`. |
 | `help.css` | Every `help-*` class from the design reference. The layout loads it once; sections do not import it or keep a copy. |
-| `types.ts`, `primitives.tsx` | Shared types; `LiveLoading`, `LiveEmpty`, `LiveField`. |
+| `types.ts`, `primitives.tsx` | Shared types; `LiveLoading`, `LiveRoomLoading`, `LiveEmpty`, `LiveField`, `CountUp`. |
+| `paper.css` | The paper frame: page head, motion, empty and loading states, phone bar, measure. |
+| `relief.tsx` | `ReliefPicture`: a room's relief picture, or its drawn placeholder until the files arrive (`reliefReady`). |
 | `convex/schema.ts` | Every table, including `neighbors`, `calls`, `assistanceRequests`, `visits` and `ledgerEntries`. Money is whole cents. |
 | `convex/access.ts` | `user()` and `membership()`: the gate every backend function starts with. `neighborAccess()` and `neighborRecord()`: the gate for anything about a neighbor. |
 | `convex/sampleData.ts` | The made-up conference: `bunx convex run sampleData:load`. |
@@ -50,5 +52,21 @@ every other room's printing.
 
 To appear in the menu a section needs one line each in `areas.ts`,
 `navigation.ts` (entry, heading, primary action) and `sections.ts`.
-A help-side room's heading carries `room: "help"` and, except for a single
-neighbor's record, `art` (a crop of an approved painting for the page head).
+A help-side room's heading carries `room: "help"`. Every heading carries `art`,
+the name of the room's relief picture.
+
+## Motion, shared by every room
+
+One way of moving, in `paper.css`: paper lifts, slides and settles, with
+`var(--paper-ease)`, under 500ms, and still under Reduce Motion. The shell moves
+the head, the picture and the menu marker itself. Rooms use four classes:
+
+| Class | Does |
+| --- | --- |
+| `paper-rise` | A thing arrives: up 12px and in, 320ms. `paper-rows` on a parent does it for the first eight children, 30ms apart. `live-list`, `help-row`, `help-timeline` and `help-ledger` rows already have it. |
+| `paper-settle` | A sheet is laid down, 420ms. `help-sheet` already has it. |
+| `paper-fold` | Add to a `help-sheet` (or any `paper-corner`) when its yes is given: the corner turns from ochre to green and presses flat, 400ms. |
+| `count-up` | A figure rolling to its value in 400ms: render `<CountUp value={n} format={...} />` from `primitives.tsx`. |
+
+Set `--paper-order` (0 to 7) on an element to place it in a stagger by hand.
+Rows and links already lift on hover; do not add another hover of your own.

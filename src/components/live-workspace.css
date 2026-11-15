@@ -783,7 +783,6 @@
 @media(min-width:851px){.live-page-head{padding-bottom:27px;margin-bottom:34px}.live-main{padding-top:48px}.live-main h1{font-size:clamp(42px,4vw,57px)}}
 @media(max-width:560px){.live-commitment-row{grid-template-columns:48px minmax(0,1fr);column-gap:18px;row-gap:16px}.live-date-leaf{min-height:78px}.live-date-leaf strong{font-size:31px}.live-commitment-row h3{font-size:25px}.live-commitment-row .live-row-actions{grid-column:2;width:auto;margin:0;justify-content:space-between;gap:12px}.live-commitment-row .live-meta{display:grid;gap:3px;font-size:11px}}
 
-.live-mobile-nav{display:none}
 .live-mobile-menu{background:#f7f4ed;color:#283c32;border:1px solid #d9ddce;padding:28px;border-radius:6px;font-family:"Source Sans 3",sans-serif}
 .live-mobile-menu [data-slot=dialog-title]{font:400 34px/1.1 "Newsreader",Georgia,serif;letter-spacing:-.025em}
 .live-mobile-menu [data-slot=dialog-description]{color:#68715f;font-size:15px}
@@ -791,17 +790,6 @@
 .live-mobile-menu nav a{display:flex;align-items:center;gap:14px;min-height:54px;padding:13px 10px;border-bottom:1px solid #d9ddce;color:inherit;text-decoration:none;font-size:16px}
 .live-mobile-menu nav a[aria-current=page]{background:#e5eadc;color:#31533a}
 .live-menu-current{margin-left:auto;font-size:11px;color:#617357}
-@media(max-width:760px){
- .live-nav{display:none}
- .live-mobile-nav{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:5px;padding:9px 14px;border-bottom:1px solid var(--live-line);background:#efefe3}
- .live-mobile-nav>a,.live-mobile-menu-trigger[data-slot=button]{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:10px 9px;font-size:12px;line-height:1.25;color:#5d6a56;white-space:normal;text-align:center;border-radius:4px}
- .live-mobile-nav>a[aria-current=page]{background:#dde5d3;color:#294c39;box-shadow:inset 0 -2px #55714c}
- .live-mobile-nav svg{flex-shrink:0}
- /* The two tabs stay on one line; a long room name in the menu button shortens instead. */
- .live-mobile-nav>a{white-space:nowrap}
- .live-mobile-menu-trigger[data-slot=button]{min-width:0;white-space:nowrap}
- .live-mobile-menu-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
-}
 .live-menu-current{color:#4b5f42}
 
 /* Keep clear of the notch, the rounded corners and the home bar on iPhone and iPad. */
@@ -988,13 +976,4 @@
   5% { --live-fade-start: 32px; --live-fade-end: 32px; }
   95% { --live-fade-start: 32px; --live-fade-end: 32px; }
   100% { --live-fade-start: 32px; --live-fade-end: 0px; }
-}
-@media (min-width: 761px) and (max-width: 850px) {
-  @supports (animation-timeline: scroll()) {
-    .live-nav {
-      mask-image: linear-gradient(to right, transparent, #000 var(--live-fade-start), #000 calc(100% - var(--live-fade-end)), transparent);
-      animation: live-nav-fade linear both;
-      animation-timeline: scroll(self inline);
-    }
-  }
 }

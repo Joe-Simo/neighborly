@@ -1,8 +1,4 @@
-import { LiveLoading } from "@/components/workspace/primitives";
+import { LiveRoomLoading } from "@/components/workspace/primitives";
 export default function Loading() {
-  return (
-    <main className="live-main">
-      <LiveLoading />
-    </main>
-  );
+  return <LiveRoomLoading />;
 }

@@ -14,7 +14,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
 import type { LiveArea } from "@/components/workspace/areas";
-import { LiveLoading } from "@/components/workspace/primitives";
+import { LiveRoomLoading } from "@/components/workspace/primitives";
 import { LiveWorkspace } from "@/components/workspace/shell";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
@@ -130,9 +130,7 @@ export function LiveApp({
   );
   if (isLoading)
     return (
-      <main className="live-main">
-        <LiveLoading label="Checking your session…" />
-      </main>
+      <LiveRoomLoading label="Checking your session…" />
     );
   if (!isAuthenticated)
     return (
@@ -140,16 +138,12 @@ export function LiveApp({
     );
   if (!viewer)
     return (
-      <main className="live-main">
-        <LiveLoading />
-      </main>
+      <LiveRoomLoading />
     );
   // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
   if (sampleVisitor === undefined)
     return (
-      <main className="live-main">
-        <LiveLoading />
-      </main>
+      <LiveRoomLoading />
     );
   if (sampleVisitor && !churchId) return <SampleResetting leave={signOut} />;
   if (
@@ -177,9 +171,7 @@ export function LiveApp({
     );
   if (!dashboard)
     return (
-      <main className="live-main">
-        <LiveLoading />
-      </main>
+      <LiveRoomLoading />
     );
   return (
     <LiveWorkspace
@@ -359,8 +351,7 @@ function SampleResetting({ leave }: { leave: () => void }) {
     return () => clearTimeout(timer);
   }, []);
   return (
-    <main className="live-main">
-      <LiveLoading label="The sample is being reset. One moment." />
+    <LiveRoomLoading label="The sample is being reset. One moment.">
       {waitedLong ? (
         <p className="mt-4">
           <Button variant="outline" onClick={leave}>
@@ -368,6 +359,6 @@ function SampleResetting({ leave }: { leave: () => void }) {
           </Button>
         </p>
       ) : null}
-    </main>
+    </LiveRoomLoading>
   );
 }

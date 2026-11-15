@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type ReactNode } from "react";
-import { CalendarDays, Check, LogOut, Menu, Plus } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { LogOut, Menu, Plus } from "lucide-react";
 import { PaperSurface } from "@/components/paper-surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser, LanguageList } from "@/components/workspace/language-chooser";
+import { ReliefPicture } from "@/components/workspace/relief";
 import { sections } from "@/components/workspace/sections";
 import type {
   LiveCommand,
@@ -154,15 +155,25 @@ export function LiveWorkspace({
   // A menu line marked for leaders is shown only to coordinators and owners of the group.
   const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
   const menuItems = navigation.filter((item) => leads || !("leadersOnly" in item));
-  // On a phone the menu button names the current room when the name is short enough to sit
-  // beside the two tabs; a longer name, or an area with no menu line yet, shows "Menu".
-  const menuLabel =
-    area !== "week" && area !== "mine"
-      ? (menu[area] ?? navigation.find((item) => item.id === area)?.label)
-      : undefined;
+  // On a phone the menu button says "Menu" and tells a screen reader which room this is.
+  const menuLabel = menu[area] ?? navigation.find((item) => item.id === area)?.label;
+  const navRef = useNavMarker(area);
+  const mainRef = useRef<HTMLElement | null>(null);
+  const waveRef = useArrival();
+  useSystemTextSize();
+  // The room being left steps back at once; the next one rises in when it arrives.
+  const leave = (event: MouseEvent<HTMLAnchorElement>, id: LiveArea) => {
+    setMobileMenuOpen(false);
+    if (id === area || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const main = mainRef.current;
+    if (!main) return;
+    main.dataset.leaving = "";
+    window.setTimeout(() => delete main.dataset.leaving, 1500);
+  };
+  const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const Section = sections[area];
   const heading = headingOverride
-    ? { ...headings[area], ...translatedHeadings[area], art: undefined, ...headingOverride }
+    ? { ...headings[area], ...translatedHeadings[area], ...headingOverride }
     : { ...headings[area], ...translatedHeadings[area] };
   const workspace: Workspace = {
     area,
@@ -202,35 +213,42 @@ export function LiveWorkspace({
         <Link href="/" className="live-wordmark">
           kind helps
         </Link>
+        {data.church.sample && <p className="live-sample-mark live-header-sample">Sample · made-up people</p>}
         <div className="live-header-actions">
-          {selectChurch}
-          <span className="max-[760px]:hidden"><LanguageChooser /></span>
-          <span className="live-account">
-            {data.user.name || data.user.email}
-          </span>
-          <Button variant="ghost" size="sm" disabled={pending} onClick={() => void signOut()}>
-            <LogOut size={16} aria-hidden="true" /> {sampleVisitor ? words.shell.leaveSample : words.shell.signOut}
-          </Button>
+          <div className="live-header-desk contents">
+            {selectChurch}
+            <LanguageChooser />
+            <span className="live-account">
+              {data.user.name || data.user.email}
+            </span>
+            <Button variant="ghost" size="sm" disabled={pending} onClick={() => void signOut()}>
+              <LogOut size={16} aria-hidden="true" /> {leaveLabel}
+            </Button>
+          </div>
+          <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <DialogTrigger asChild><Button variant="ghost" className="live-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu aria-hidden="true" />{words.shell.menu}</Button></DialogTrigger>
+            <DialogContent className="live-mobile-menu max-h-[calc(100svh-2rem)] overflow-y-auto" onOpenAutoFocus={(event) => {
+              // Opening the menu must not land on the language choice, where an arrow key would change it.
+              event.preventDefault();
+              if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
+            }}>
+              <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}</DialogHeader>
+              <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={(event) => leave(event, id)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
+              <LanguageList />
+              <div className="live-menu-foot">
+                {selectChurch}
+                <p className="live-menu-account">{data.user.name || data.user.email}</p>
+                <Button variant="outline" className="live-menu-leave" disabled={pending} onClick={() => void signOut()}>
+                  <LogOut size={17} aria-hidden="true" /> {leaveLabel}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </header>
-      <nav className="live-mobile-nav [&>a]:!whitespace-nowrap" aria-label={words.shell.workspace}>
-        <Link href="/app/week" aria-current={area === "week" ? "page" : undefined}><CalendarDays size={17} aria-hidden="true" />{words.menu.week}</Link>
-        <Link href="/app/mine" aria-current={area === "mine" ? "page" : undefined}><Check size={17} aria-hidden="true" />{words.menu.mine}</Link>
-        <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <DialogTrigger asChild><Button variant="ghost" className="live-mobile-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu size={17} aria-hidden="true" /><span className="live-mobile-menu-label">{words.shell.menu}</span></Button></DialogTrigger>
-          <DialogContent className="live-mobile-menu max-h-[calc(100svh-2rem)] overflow-y-auto" onOpenAutoFocus={(event) => {
-            // Opening the menu must not land on the language choice, where an arrow key would change it.
-            event.preventDefault();
-            if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
-          }}>
-            <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}</DialogHeader>
-            <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={() => setMobileMenuOpen(false)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
-            <LanguageList />
-          </DialogContent>
-        </Dialog>
-      </nav>
       <div className="live-layout">
-        <nav className="live-nav" aria-label={words.shell.workspace}>
+        <nav className="live-nav" aria-label={words.shell.workspace} ref={navRef}>
+          <span className="live-nav-marker" aria-hidden="true" />
           <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{data.church.name}</p>
           {data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}
           {menuItems.map(({ id, label, icon: Icon }) => (
@@ -238,6 +256,7 @@ export function LiveWorkspace({
               key={id}
               href={`/app/${id}`}
               aria-current={area === id ? "page" : undefined}
+              onClick={(event) => leave(event, id)}
             >
               <Icon aria-hidden="true" />
               {menu[id] ?? label}
@@ -249,9 +268,15 @@ export function LiveWorkspace({
           id="workspace-content"
           tabIndex={-1}
           data-room={heading.room}
+          ref={mainRef}
         >
-          <div className="live-page-head" data-art={heading.art ? "" : undefined}>
-            <div>
+          <div className="live-page-head" key={`head-${area}`}>
+            {heading.art && (
+              <div className="live-head-art">
+                <ReliefPicture name={heading.art.picture} focus={heading.art.focus} />
+              </div>
+            )}
+            <div className="live-head-words">
               <p className="live-kicker">
                 {data.church.name}
                 {data.church.sample ? " · Sample" : ""}
@@ -262,35 +287,26 @@ export function LiveWorkspace({
                 <p className="!mt-4 text-[15px] text-[#68715f]">{words.shell.roomInEnglish}</p>
               )}
             </div>
-            {primary &&
-              ((isOwner && area !== "mine") ||
-              (data.canCoordinate && area === "commitments") ||
-              area === "time-off") && (
-              <Button onClick={() => open(primary)}>
-                <Plus size={17} aria-hidden="true" />
-                {actions[primary] ?? actionTitles[primary]}
-              </Button>
-            )}
-            {headAction && (
-              <Button
-                variant={headAction.quiet ? "outline" : "default"}
-                onClick={headAction.run}
-              >
-                {headAction.plus && <Plus size={17} aria-hidden="true" />}
-                {headAction.label}
-              </Button>
-            )}
-            {heading.art && (
-              <div
-                className="live-head-art"
-                aria-hidden="true"
-                style={{
-                  backgroundImage: `url(${heading.art.src})`,
-                  backgroundPosition: heading.art.position,
-                  backgroundSize: heading.art.size ?? "cover",
-                }}
-              />
-            )}
+            <div className="live-head-actions">
+              {primary &&
+                ((isOwner && area !== "mine") ||
+                (data.canCoordinate && area === "commitments") ||
+                area === "time-off") && (
+                <Button onClick={() => open(primary)}>
+                  <Plus size={17} aria-hidden="true" />
+                  {actions[primary] ?? actionTitles[primary]}
+                </Button>
+              )}
+              {headAction && (
+                <Button
+                  variant={headAction.quiet ? "outline" : "default"}
+                  onClick={headAction.run}
+                >
+                  {headAction.plus && <Plus size={17} aria-hidden="true" />}
+                  {headAction.label}
+                </Button>
+              )}
+            </div>
           </div>
           {data.truncated.length > 0 && (
             <div className="live-note">
@@ -330,10 +346,19 @@ export function LiveWorkspace({
               {notice}
             </div>
           )}
-          <Section />
-              {pagination}
-            </main>
+          <div className="live-room" key={area}>
+            <Section />
+            {pagination}
           </div>
+        </main>
+      </div>
+      <div className="paper-wave" aria-hidden="true" ref={waveRef}>
+        {["#365c46", "#6f5f93", "#f7f4ed"].map((fill, sheet) => (
+          <svg key={fill} viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path fill={fill} d={["M0 9C18 1 34 13 53 7S84 0 100 8V100H0Z", "M0 5C22 12 40 0 60 6S88 12 100 4V100H0Z", "M0 10C16 3 38 9 56 4S86 11 100 6V100H0Z"][sheet]} />
+          </svg>
+        ))}
+      </div>
           <LiveDialog
             open={dialog !== null}
             onClose={() => {
@@ -507,4 +532,103 @@ export function LiveWorkspace({
       </div>
     </WorkspaceProvider>
   );
+}
+
+/** Where the menu's marker last sat, so it can slide from the room just left even though the page is new. */
+let lastMarker: Record<string, string> | null = null;
+
+/** Lays the marker under the current room's line and slides it there from where it was. */
+function useNavMarker(area: LiveArea) {
+  const nav = useRef<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    const element = nav.current;
+    const marker = element?.querySelector<HTMLElement>(".live-nav-marker");
+    if (!element || !marker) return;
+    const place = (slide: boolean) => {
+      const current = element.querySelector<HTMLElement>('a[aria-current="page"]');
+      if (!current) return;
+      const next = {
+        "--marker-x": `${current.offsetLeft}px`,
+        "--marker-y": `${current.offsetTop}px`,
+        "--marker-w": `${current.offsetWidth}px`,
+        "--marker-h": `${current.offsetHeight}px`,
+      };
+      if (slide && lastMarker) {
+        delete marker.dataset.sliding;
+        for (const [name, value] of Object.entries(lastMarker)) marker.style.setProperty(name, value);
+        void marker.offsetWidth;
+        marker.dataset.sliding = "";
+      }
+      for (const [name, value] of Object.entries(next)) marker.style.setProperty(name, value);
+      lastMarker = next;
+      // In the sideways row of an upright tablet, bring the current room into view.
+      if (element.scrollWidth > element.clientWidth)
+        element.scrollLeft = current.offsetLeft - (element.clientWidth - current.offsetWidth) / 2;
+    };
+    place(true);
+    const resized = new ResizeObserver(() => {
+      delete marker.dataset.sliding;
+      place(false);
+    });
+    resized.observe(element);
+    return () => resized.disconnect();
+  }, [area]);
+  return nav;
+}
+
+/** Once a session, on the first room after sign-in or the sample link, the paper sweeps up and settles as the page. */
+function useArrival() {
+  const wave = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const element = wave.current;
+    const app = element?.closest<HTMLElement>(".live-app");
+    if (!element || !app) return;
+    try {
+      // The sheet carried over from the home page is its own arrival.
+      if (sessionStorage.getItem("kind-helps-arrived") || sessionStorage.getItem("neighborly-paper")) return;
+      sessionStorage.setItem("kind-helps-arrived", "1");
+    } catch {
+      return;
+    }
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    element.dataset.playing = "";
+    app.dataset.arriving = "";
+    const done = window.setTimeout(() => {
+      delete element.dataset.playing;
+      delete app.dataset.arriving;
+    }, 1200);
+    return () => {
+      window.clearTimeout(done);
+      delete element.dataset.playing;
+      delete app.dataset.arriving;
+    };
+  }, []);
+  return wave;
+}
+
+/**
+ * On iPhone and iPad the app follows the system's text size (Settings, Larger Text), up to 130%.
+ * The system's body size is read from a probe set in `-apple-system-body`, which is 17px at the
+ * standard setting, and every size in the app is scaled by the same share. Elsewhere nothing changes.
+ */
+function useSystemTextSize() {
+  useEffect(() => {
+    if (!CSS.supports("font", "-apple-system-body")) return;
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;visibility:hidden;font:-apple-system-body;-webkit-text-size-adjust:100%";
+    document.body.append(probe);
+    const root = document.documentElement.style;
+    const fit = () => {
+      const share = Math.min(1.3, Math.max(1, parseFloat(getComputedStyle(probe).fontSize) / 17));
+      root.setProperty("-webkit-text-size-adjust", `${Math.round(share * 100)}%`);
+    };
+    fit();
+    // The setting can change while the app is in the background.
+    document.addEventListener("visibilitychange", fit);
+    return () => {
+      document.removeEventListener("visibilitychange", fit);
+      root.removeProperty("-webkit-text-size-adjust");
+      probe.remove();
+    };
+  }, []);
 }
