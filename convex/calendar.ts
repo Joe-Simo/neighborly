@@ -18,10 +18,23 @@ const tokenPattern = /^[0-9a-f]{64}$/;
 /** How far back a feed reaches, so last week's shift does not vanish from a phone. */
 const lookBack = 30 * DAY;
 const mostEvents = 300;
+const mostVisitsRead = 4000;
 
-/** "412 Sample St, Apt 7" becomes "Sample St": enough to plan the drive, not enough to find the door. */
+/**
+ * "412 Sample St, Apt 7" becomes "Sample St": enough to plan the drive, not enough to find the door.
+ * Every house, unit and lot number goes, wherever it sits; only a numbered street ("22nd Ave") or highway ("US 41") keeps its number.
+ */
 export function streetOnly(address: string) {
-  return address.split(",")[0].trim().replace(/^(?:\d+[A-Za-z]?[\s-]+)+/, "").trim();
+  const words = address.split(",")[0].replace(/#\s*\S+/g, " ").trim().split(/\s+/);
+  const kept: string[] = [];
+  for (const [index, word] of words.entries()) {
+    const before = words[index - 1] ?? "";
+    if (/^(apt|apartment|unit|suite|ste|lot|trailer|bldg|building|room|rm|no)\.?$/i.test(word)) continue;
+    if (/^(apt|apartment|unit|suite|ste|lot|trailer|bldg|building|room|rm|no)\.?$/i.test(before) && word.length <= 4) continue;
+    if (/\d/.test(word) && !/^\d+(st|nd|rd|th)$/i.test(word) && !(/^(us|sr|cr|hwy|highway|route|rte|i)$/i.test(before) && /^\d{1,3}$/.test(word))) continue;
+    kept.push(word);
+  }
+  return kept.join(" ");
 }
 function feedAddress(token: string) {
   const site = process.env.CONVEX_SITE_URL;
@@ -86,9 +99,12 @@ export const feedText = internalQuery({
     }
     // The narrow path past neighborAccess(): a calendar app cannot sign in, so the token stands for one member.
     // It reaches only visits still planned on which that member is a visitor, and only the street leaves the record.
-    const visits = await ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", church._id).gte("scheduledAt", from)).take(mostEvents);
-    for (const visit of visits) {
+    // Read past other people's and finished visits until this member's are found, so a busy group never crowds them out.
+    let read = 0, found = 0;
+    for await (const visit of ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", church._id).gte("scheduledAt", from))) {
+      if (++read > mostVisitsRead || found >= mostEvents) break;
       if (visit.status !== "scheduled" || !visit.visitors.some((visitor) => visitor.memberId === member._id)) continue;
+      found++;
       const neighbor = await ctx.db.get("neighbors", visit.neighborId);
       calendar.createEvent({ id: `${visit._id}@kindhelps.com`, stamp: new Date(now), start: new Date(visit.scheduledAt), end: new Date(visit.scheduledAt + HOUR), summary: "Home visit", location: (neighbor && streetOnly(neighbor.address)) || undefined, description: "Open the app for the details. You visit as a pair." });
     }

@@ -27,8 +27,8 @@ export const neighborWords: SheetWords = {
   id: "neighbors-import",
   title: "Bring in your neighbor records",
   deck: "Moving over from paper or another system? Save your list as a CSV file and choose it here. Anyone already on file is left out, so no household is entered twice.",
-  fileLabel: "Neighbors file",
   fileHelp: "It needs a Name column. Phone, Email, Address, Adults, Children, Language and Notes are taken when they are there.",
+  sample: { fileName: "neighbors-sample.csv", text: "Name,Phone,Email,Address,Adults,Children,Language,Notes\nAlma Bellweather,555-0141,,\"18 Sample St, Apt 2\",2,3,English,Prefers a call after 3 PM\nBenito Castellanos,555-0142,benito.castellanos@sample.example,240 Example Ave,1,0,Spanish,\nMireille Desrosiers,555-0143,,7 Demo Ct,2,1,Creole,\n" },
   yes: (count) => `Add ${neighbors(count)}`,
   nothingReady: "Nobody in this file can be added yet",
   promise: "Each becomes a private record, open to coordinators only. Nothing is saved until you say so.",
@@ -36,8 +36,10 @@ export const neighborWords: SheetWords = {
   nothingDone: "Nobody new was added.",
   another: "Bring in another file",
 };
-export function neighborsLeftOut(rows: (Checked[number] | Imported[number])[]): LeftOut[] {
-  return rows.flatMap((row) => (row.outcome === "ready" || row.outcome === "added" ? [] : [{ line: row.line, name: row.name, reason: reasons[row.outcome] }]));
+/** A line with no name is known by the first thing it does have, read from the file on this device. */
+export function neighborsLeftOut(rows: (Checked[number] | Imported[number])[], sheet: NeighborRow[]): LeftOut[] {
+  const lines = new Map(sheet.map((row) => [row.line, row]));
+  return rows.flatMap((row) => (row.outcome === "ready" || row.outcome === "added" ? [] : [{ line: row.line, name: row.name || lines.get(row.line)?.phone || lines.get(row.line)?.address || "", reason: reasons[row.outcome] }]));
 }
 
 /** For the neighbors room. Renders nothing for anyone who may not open neighbor records; the backend refuses them too. */
@@ -61,19 +63,19 @@ export function NeighborsImport() {
         void file.text()
           .then(async (text) => {
             const sheet = readNeighborRows(text);
-            if ("error" in sheet) return setState({ step: "choose", error: sheet.error });
+            if ("error" in sheet) return setState({ step: "choose", error: sheet.error, fileName: file.name });
             const checked = await convex.query(api.importExport.checkNeighbors, { churchId, rows: sheet.rows });
             setRows(sheet.rows);
-            setState({ step: "review", fileName: file.name, ready: checked.filter((row) => row.outcome === "ready").length, leftOut: neighborsLeftOut(checked) });
+            setState({ step: "review", fileName: file.name, ready: checked.filter((row) => row.outcome === "ready").length, leftOut: neighborsLeftOut(checked, sheet.rows) });
           })
-          .catch(() => setState({ step: "choose", error: "That file could not be read. Nothing has changed; save the spreadsheet as CSV and choose it again." }));
+          .catch(() => setState({ step: "choose", fileName: file.name, error: "That file could not be read. Nothing has changed; save the spreadsheet as CSV and choose it again." }));
       }}
       onYes={() => {
         if (state.step !== "review") return;
         const review = state;
         setState({ step: "working", label: "Adding the records" });
         void importNeighbors({ churchId, rows })
-          .then((imported) => setState({ step: "done", done: imported.filter((row) => row.outcome === "added").length, leftOut: neighborsLeftOut(imported) }))
+          .then((imported) => setState({ step: "done", done: imported.filter((row) => row.outcome === "added").length, leftOut: neighborsLeftOut(imported, rows) }))
           .catch(() => setState({ ...review, error: "The records could not be added. Nothing was saved and your file is still here; try again." }));
       }}
     />

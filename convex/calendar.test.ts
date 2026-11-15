@@ -107,6 +107,13 @@ describe("a member's calendar feed", () => {
     expect(streetOnly("412 Placeholder Rd, Apt 7")).toBe("Placeholder Rd");
     expect(streetOnly("12B Sample St")).toBe("Sample St");
     expect(streetOnly("Mockingbird Way")).toBe("Mockingbird Way");
+    expect(streetOnly("412/7 Placeholder Rd")).toBe("Placeholder Rd");
+    expect(streetOnly("Placeholder Rd 412")).toBe("Placeholder Rd");
+    expect(streetOnly("412 Placeholder Rd Apt 7")).toBe("Placeholder Rd");
+    expect(streetOnly("9 Sample Ct #3B")).toBe("Sample Ct");
+    expect(streetOnly("1200 SW 22nd Ave Lot 14")).toBe("SW 22nd Ave");
+    expect(streetOnly("5150 US 41")).toBe("US 41");
+    expect(streetOnly("412")).toBe("");
   });
 
   test("one address opens one member's calendar: a visitor on no visit sees no street at all", async () => {

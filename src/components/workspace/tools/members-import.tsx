@@ -27,8 +27,8 @@ export const memberWords: SheetWords = {
   id: "members-import",
   title: "Bring in your members",
   deck: "Already keep your members in a spreadsheet? Save it as a CSV file and choose it here. Each person gets an invitation; nobody joins without their own yes.",
-  fileLabel: "Members file",
   fileHelp: "It needs a Name column and an Email column. A Role column is welcome: Member or Coordinator.",
+  sample: { fileName: "members-sample.csv", text: "Name,Email,Role\nMarisol Vega,marisol.vega@sample.example,Coordinator\nThomas Okafor,thomas.okafor@sample.example,Member\nRenee Baptiste,renee.baptiste@sample.example,\n" },
   yes: (count) => `Invite ${people(count)}`,
   nothingReady: "Nobody in this file can be invited yet",
   promise: "Each person gets a private link, good for seven days. Nothing is sent until you say so.",
@@ -60,12 +60,12 @@ export function MembersImport() {
         void file.text()
           .then(async (text) => {
             const sheet = readMemberRows(text);
-            if ("error" in sheet) return setState({ step: "choose", error: sheet.error });
+            if ("error" in sheet) return setState({ step: "choose", error: sheet.error, fileName: file.name });
             const checked = await convex.query(api.importExport.checkMembers, { churchId, rows: sheet.rows });
             setRows(sheet.rows);
             setState({ step: "review", fileName: file.name, ready: checked.filter((row) => row.outcome === "ready").length, leftOut: membersLeftOut(checked) });
           })
-          .catch(() => setState({ step: "choose", error: "That file could not be read. Nothing has changed; save the spreadsheet as CSV and choose it again." }));
+          .catch(() => setState({ step: "choose", fileName: file.name, error: "That file could not be read. Nothing has changed; save the spreadsheet as CSV and choose it again." }));
       }}
       onYes={() => {
         if (state.step !== "review") return;
