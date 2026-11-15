@@ -1,0 +1,129 @@
+/// <reference types="vite/client" />
+import { beforeEach, describe, expect, test, vi } from "vitest";
+import { convexTest } from "convex-test";
+import { defineSchema, httpRouter, queryGeneric } from "convex/server";
+import { v } from "convex/values";
+import schema from "./schema";
+import { api } from "./_generated/api";
+import { feed, streetOnly } from "./calendar";
+
+// The route lives in the shared http.ts; the test mounts the same line itself so it does not depend on that file.
+const router = httpRouter();
+router.route({ pathPrefix: "/calendar/", method: "GET", handler: feed });
+const modules = { ...import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]), "./http.ts": async () => ({ default: router }) };
+const HOUR = 3600000, DAY = 24 * HOUR;
+const site = "https://sample-deployment.convex.site";
+beforeEach(() => { vi.stubEnv("CONVEX_SITE_URL", site); });
+
+async function setup() {
+  const t = convexTest(schema, modules);
+  const emails = new Map<string, string>();
+  const empty = defineSchema({});
+  t.registerComponent("auth", empty, { "./_generated/server.js": async () => ({}), "./public.ts": async () => ({ getSession: queryGeneric({ args: { sessionId: v.string() }, handler: async (_, { sessionId }) => (emails.has(sessionId) ? { userId: sessionId } : null) }) }) });
+  t.registerComponent("authEmail", empty, { "./_generated/server.js": async () => ({}), "./verifiedEmails.ts": async () => ({ getPrimaryEmail: queryGeneric({ args: { userId: v.string() }, handler: async (_, { userId }) => emails.get(userId) ?? null }) }) });
+  const now = Date.now();
+  const ids = await t.run(async (ctx) => {
+    const church = await ctx.db.insert("churches", { name: "St. Example Conference", timeZone: "America/New_York" });
+    const join = async (name: string) => {
+      const userId = await ctx.db.insert("users", {});
+      const memberId = await ctx.db.insert("memberships", { churchId: church, userId, name, email: `${name.toLowerCase()}@neighborly.example`, role: "member", active: true, approved: true, coverOptIn: false });
+      return { userId, memberId };
+    };
+    const marisol = await join("Marisol"), thomas = await join("Thomas"), renee = await join("Renee");
+    const team = await ctx.db.insert("teams", { churchId: church, name: "Help line", description: "" });
+    const shift = (assigneeId: typeof marisol.memberId, start: number, extra: { cancelled?: boolean } = {}) => ctx.db.insert("commitments", { churchId: church, teamId: team, title: "Help line morning", start, end: start + 3 * HOUR, location: "Parish office", preparation: "Check the callback list first; record every call, even a wrong number.", assigneeId, coordinatorId: thomas.memberId, version: 1, ...extra });
+    await shift(marisol.memberId, now + 2 * DAY);
+    await shift(marisol.memberId, now + 9 * DAY, { cancelled: true });
+    await shift(marisol.memberId, now - 90 * DAY);
+    await shift(thomas.memberId, now + 3 * DAY);
+    const neighbor = await ctx.db.insert("neighbors", { churchId: church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(555) 0142", phoneKey: "5550142", email: "celeste.hyppolite@neighborly.example", address: "412 Placeholder Rd, Apt 7", adults: 1, children: 2, language: "ht", notes: "Prefers afternoon visits.", createdBy: thomas.memberId, createdAt: now });
+    const request = await ctx.db.insert("assistanceRequests", { churchId: church, neighborId: neighbor, kind: "utility", summary: "Shut-off notice on the electric bill", amountRequested: 18000, status: "open", decisionNote: "", payeeKind: "utility", payeeName: "Demo Power & Light", source: "person", createdBy: thomas.memberId, createdAt: now });
+    const visit = (visitors: (typeof marisol.memberId)[], status: "scheduled" | "cancelled" = "scheduled") => ctx.db.insert("visits", { churchId: church, neighborId: neighbor, requestId: request, scheduledAt: now + 4 * DAY, status, visitors: visitors.map((memberId) => ({ memberId, hours: 0, miles: 0 })), notes: "Bring the utility pledge form.", createdBy: thomas.memberId, createdAt: now });
+    await visit([marisol.memberId, renee.memberId]);
+    await visit([thomas.memberId, renee.memberId]);
+    await visit([marisol.memberId, thomas.memberId], "cancelled");
+    return { church, marisol, thomas, renee };
+  });
+  for (const person of [ids.marisol, ids.thomas, ids.renee]) emails.set(person.userId, `${person.userId}@neighborly.example`);
+  return { t, ids, as: (person: { userId: string }) => t.withIdentity({ subject: person.userId }) };
+}
+const path = (address: string) => address.slice(site.length);
+/** Folded lines joined back together, as a calendar app reads them. */
+const unfolded = (text: string) => text.replace(/\r\n[ \t]/g, "");
+
+describe("a member's calendar feed", () => {
+  test("is valid iCalendar holding their own shifts and visits, and nobody else's", async () => {
+    const { t, ids, as } = await setup();
+    const address = await as(ids.marisol).action(api.calendar.createAddress, { churchId: ids.church });
+    expect(address).toMatch(/^https:\/\/sample-deployment\.convex\.site\/calendar\/[0-9a-f]{64}\.ics$/);
+    expect(await as(ids.marisol).query(api.calendar.address, { churchId: ids.church })).toBe(address);
+
+    const response = await t.fetch(path(address));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("text/calendar; charset=utf-8");
+    const text = await response.text();
+
+    // RFC 5545: CRLF line ends, no line over 75 octets, one calendar wrapping whole events.
+    const lines = text.split("\r\n");
+    expect(text.replaceAll("\r\n", "")).not.toMatch(/[\r\n]/);
+    for (const line of lines) expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
+    expect(lines[0]).toBe("BEGIN:VCALENDAR");
+    expect(lines.filter(Boolean).at(-1)).toBe("END:VCALENDAR");
+    const body = unfolded(text);
+    expect(body).toMatch(/\r\nVERSION:2\.0\r\n/);
+    expect(body).toMatch(/\r\nPRODID:.+\r\n/);
+    const events = body.split("BEGIN:VEVENT").slice(1).map((event) => event.split("END:VEVENT")[0]);
+    expect(body.match(/END:VEVENT/g)).toHaveLength(events.length);
+    for (const event of events) for (const property of ["UID", "DTSTAMP", "DTSTART", "DTEND", "SUMMARY"]) expect(event).toMatch(new RegExp(`\\r\\n${property}[:;]`));
+    for (const event of events) expect(event).toMatch(/\r\nDTSTART:\d{8}T\d{6}Z\r\n/);
+    expect(new Set(events.map((event) => event.match(/\r\nUID:(.+)\r\n/)?.[1])).size).toBe(events.length);
+
+    // Her coming shift and her visit. Not the cancelled ones, not the one from three months ago, not Thomas's.
+    expect(events.map((event) => event.match(/\r\nSUMMARY:(.+)\r\n/)?.[1]).sort()).toEqual(["Help line morning", "Home visit"]);
+    expect(body).toContain("LOCATION:Parish office");
+    expect(body).toContain(String.raw`DESCRIPTION:Check the callback list first\; record every call\, even a wrong number.`);
+    expect(body).toContain("REFRESH-INTERVAL;VALUE=DURATION:PT1H");
+  });
+
+  test("a visit shows the time and the street, never who or why", async () => {
+    const { t, ids, as } = await setup();
+    const text = unfolded(await (await t.fetch(path(await as(ids.marisol).action(api.calendar.createAddress, { churchId: ids.church })))).text());
+    expect(text).toContain("LOCATION:Placeholder Rd\r\n");
+    for (const secret of ["Celeste", "Hyppolite", "412", "Apt", "0142", "celeste.hyppolite", "electric", "Shut-off", "utility", "Demo Power", "pledge", "afternoon", "Renee"]) expect(text).not.toContain(secret);
+    expect(streetOnly("412 Placeholder Rd, Apt 7")).toBe("Placeholder Rd");
+    expect(streetOnly("12B Sample St")).toBe("Sample St");
+    expect(streetOnly("Mockingbird Way")).toBe("Mockingbird Way");
+  });
+
+  test("a wrong address gets nothing", async () => {
+    const { t, ids, as } = await setup();
+    const address = await as(ids.marisol).action(api.calendar.createAddress, { churchId: ids.church });
+    const token = address.match(/[0-9a-f]{64}/)![0];
+    const flipped = token.replace(/.$/, (last) => (last === "0" ? "1" : "0"));
+    for (const wrong of [`/calendar/${flipped}.ics`, `/calendar/${token}`, `/calendar/${token.toUpperCase()}.ics`, `/calendar/${token.slice(0, 32)}.ics`, "/calendar/.ics", `/calendar/${token}.ics/extra`]) {
+      const response = await t.fetch(wrong);
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe("");
+    }
+  });
+
+  test("a new address switches the old one off, and a member who has left loses theirs", async () => {
+    const { t, ids, as } = await setup();
+    const first = await as(ids.marisol).action(api.calendar.createAddress, { churchId: ids.church });
+    const second = await as(ids.marisol).action(api.calendar.createAddress, { churchId: ids.church });
+    expect(second).not.toBe(first);
+    expect((await t.fetch(path(first))).status).toBe(404);
+    expect((await t.fetch(path(second))).status).toBe(200);
+    await t.run((ctx) => ctx.db.patch("memberships", ids.marisol.memberId, { active: false }));
+    expect((await t.fetch(path(second))).status).toBe(404);
+  });
+
+  test("only a signed-in member of the group can make or read an address", async () => {
+    const { t, ids, as } = await setup();
+    await expect(t.action(api.calendar.createAddress, { churchId: ids.church })).rejects.toThrow("Sign in required.");
+    await expect(t.query(api.calendar.address, { churchId: ids.church })).rejects.toThrow("Sign in required.");
+    expect(await as(ids.thomas).query(api.calendar.address, { churchId: ids.church })).toBeNull();
+    await as(ids.marisol).action(api.calendar.createAddress, { churchId: ids.church });
+    expect(await as(ids.thomas).query(api.calendar.address, { churchId: ids.church })).toBeNull();
+  });
+});

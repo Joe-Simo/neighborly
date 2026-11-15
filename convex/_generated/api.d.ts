@@ -10,8 +10,10 @@
 
 import type * as access from "../access.js";
 import type * as auth from "../auth.js";
+import type * as calendar from "../calendar.js";
 import type * as drafts from "../drafts.js";
 import type * as http from "../http.js";
+import type * as importExport from "../importExport.js";
 import type * as invitations from "../invitations.js";
 import type * as meetingFanout from "../meetingFanout.js";
 import type * as notificationEvents from "../notificationEvents.js";
@@ -30,8 +32,10 @@ import type {
 declare const fullApi: ApiFromModules<{
   access: typeof access;
   auth: typeof auth;
+  calendar: typeof calendar;
   drafts: typeof drafts;
   http: typeof http;
+  importExport: typeof importExport;
   invitations: typeof invitations;
   meetingFanout: typeof meetingFanout;
   notificationEvents: typeof notificationEvents;
