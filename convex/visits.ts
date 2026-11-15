@@ -281,6 +281,8 @@ export const sheet = query({
     visitors: v.array(v.string()),
     neighbor: v.object({ name: v.string(), phone: v.string(), address: v.string(), adults: v.number(), children: v.number(), language, notes: v.string() }),
     request: v.union(v.object({ kind, summary: v.string(), amount: v.number(), payeeName: v.string() }), v.null()),
+    /** What the pair before them found, so nobody asks the neighbor to tell it all again. */
+    lastVisit: v.union(v.object({ at: v.number(), visitors: v.array(v.string()), notes: v.string() }), v.null()),
   }),
   handler: async (ctx, { churchId, visitId }) => {
     await neighborAccess(ctx, churchId);
@@ -292,6 +294,10 @@ export const sheet = query({
       names(ctx, [visit]),
     ]);
     if (!church || !neighbor) throw new Error("Visit not found.");
+    const earlier = await ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", visit.neighborId)).order("desc").take(50);
+    const last = earlier
+      .filter((other) => other.status === "completed" && other._id !== visit._id && (other.completedAt ?? other.scheduledAt) < visit.scheduledAt)
+      .sort((a, b) => (b.completedAt ?? b.scheduledAt) - (a.completedAt ?? a.scheduledAt))[0];
     return {
       group: church.name,
       scheduledAt: visit.scheduledAt,
@@ -299,6 +305,7 @@ export const sheet = query({
       visitors: toVisitRow(found, visit).visitors.map((visitor) => visitor.name),
       neighbor: { name: neighbor.name, phone: neighbor.phone, address: neighbor.address, adults: neighbor.adults, children: neighbor.children, language: neighbor.language, notes: neighbor.notes },
       request: request ? { kind: request.kind, summary: request.summary, amount: request.amountRequested, payeeName: request.payeeName } : null,
+      lastVisit: last ? { at: last.completedAt ?? last.scheduledAt, visitors: toVisitRow(await names(ctx, [last]), last).visitors.map((visitor) => visitor.name), notes: last.notes } : null,
     };
   },
 });
@@ -418,9 +425,13 @@ export const respond = mutation({
   },
 });
 
-/** After the visit: what the pair found, and the hours and miles each of them gave. */
+/**
+ * After the visit: what the pair found, the hours each of them gave, and the miles driven.
+ * Miles go to the one who drove, so a pair in one car is not counted twice in the yearly totals.
+ * With no driver named, each drove their own car and each is given the miles.
+ */
 export const writeUp = mutation({
-  args: { churchId: v.id("churches"), visitId: v.id("visits"), notes: v.string(), hours: v.number(), miles: v.number() },
+  args: { churchId: v.id("churches"), visitId: v.id("visits"), notes: v.string(), hours: v.number(), miles: v.number(), driverId: v.optional(v.id("memberships")) },
   returns: v.null(),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
@@ -430,7 +441,8 @@ export const writeUp = mutation({
     if (!notes) throw new Error("Write a few words about what you found.");
     if (!Number.isFinite(args.hours) || args.hours <= 0 || args.hours > 24) throw new Error("Enter the hours the visit took, such as 1.5.");
     if (!Number.isFinite(args.miles) || args.miles < 0 || args.miles > 1000) throw new Error("Enter the miles driven, or 0.");
-    await ctx.db.patch("visits", visit._id, { status: "completed", notes, completedAt: Date.now(), visitors: visit.visitors.map((visitor) => ({ ...visitor, hours: args.hours, miles: args.miles })) });
+    if (args.driverId && !visit.visitors.some((visitor) => visitor.memberId === args.driverId)) throw new Error("The driver must be one of the two visitors.");
+    await ctx.db.patch("visits", visit._id, { status: "completed", notes, completedAt: Date.now(), visitors: visit.visitors.map((visitor) => ({ ...visitor, hours: args.hours, miles: !args.driverId || visitor.memberId === args.driverId ? args.miles : 0 })) });
     return null;
   },
 });

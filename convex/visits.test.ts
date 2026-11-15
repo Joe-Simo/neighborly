@@ -141,6 +141,15 @@ describe("planning a visit by hand", () => {
     expect(board.writtenUp[0]).toMatchObject({ status: "completed", notes: "Reviewed the bill together. The amount is right." });
     expect(board.writtenUp[0].visitors.map(({ hours, miles }) => ({ hours, miles }))).toEqual([{ hours: 1.5, miles: 12 }, { hours: 1.5, miles: 12 }]);
     await expect(owner.mutation(api.visits.writeUp, { churchId, visitId, notes: "Again.", hours: 1, miles: 1 })).rejects.toThrow("already written up");
+
+    // One car: the miles belong to the driver alone, and the next pair's sheet carries what was found.
+    const next = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, at: morning(4).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
+    expect((await owner.query(api.visits.sheet, { churchId, visitId: next })).lastVisit).toMatchObject({ visitors: ["Daniel Whitcombe", "Graciela Fuentes"], notes: "Reviewed the bill together. The amount is right." });
+    expect((await owner.query(api.visits.sheet, { churchId, visitId })).lastVisit).toBeNull();
+    await expect(owner.mutation(api.visits.writeUp, { churchId, visitId: next, notes: "Follow-up.", hours: 1, miles: 8, driverId: ids.colleen.memberId })).rejects.toThrow("The driver must be one of the two visitors.");
+    await owner.mutation(api.visits.writeUp, { churchId, visitId: next, notes: "Follow-up.", hours: 1, miles: 8, driverId: ids.graciela.memberId });
+    const after = await owner.query(api.visits.board, { churchId });
+    expect(after.writtenUp.find((row) => row.id === next)?.visitors.map(({ name, miles }) => ({ name, miles }))).toEqual([{ name: "Daniel Whitcombe", miles: 0 }, { name: "Graciela Fuentes", miles: 8 }]);
     await expect(owner.mutation(api.visits.cancel, { churchId, visitId })).rejects.toThrow("Only a planned visit can be called off.");
   });
 

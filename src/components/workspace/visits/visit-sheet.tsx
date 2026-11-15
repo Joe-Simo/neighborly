@@ -227,13 +227,22 @@ export function VisitSheetView({
             {neighbor.notes}
           </p>
         )}
+        {sheet.lastVisit && (
+          <p className="visits-paper-words">
+            <span>
+              Last visit, {format(sheet.lastVisit.at)}, by{" "}
+              {sheet.lastVisit.visitors.join(" and ")}
+            </span>
+            {sheet.lastVisit.notes}
+          </p>
+        )}
         <section className="visits-paper-write">
           <h3>Prayer before the visit</h3>
           <div className="visits-lines">{lines(3)}</div>
         </section>
         <section className="visits-paper-write">
           <h3>What we found</h3>
-          <div className="visits-lines">{lines(7)}</div>
+          <div className="visits-lines">{lines(sheet.lastVisit ? 4 : 7)}</div>
         </section>
         <section className="visits-paper-write">
           <h3>Prayer after the visit</h3>

@@ -321,7 +321,9 @@ export function WriteUpForm({
 }) {
   const writeUp = useMutation(api.visits.writeUp);
   const { pending, error, save } = useSave();
-  const [problem, setProblem] = useState<"hours" | "miles" | null>(null);
+  const [problem, setProblem] = useState<"hours" | "miles" | "driver" | null>(
+    null,
+  );
   return (
     <form
       className="live-form"
@@ -334,16 +336,30 @@ export function WriteUpForm({
         if (hours === null || hours <= 0 || hours > 24)
           return setProblem("hours");
         if (miles === null || miles > 1000) return setProblem("miles");
+        const drove = String(data.get("drove") ?? "");
+        if (miles > 0 && !drove) return setProblem("driver");
         setProblem(null);
-        const outcome = await save(() =>
-          writeUp({
-            churchId,
-            visitId: visit.id,
-            notes: String(data.get("notes") ?? ""),
-            hours,
-            miles,
-          }),
+        const driver = visit.visitors.find(
+          (visitor) => visitor.memberId === drove,
         );
+        const written = {
+          churchId,
+          visitId: visit.id,
+          notes: String(data.get("notes") ?? ""),
+          hours,
+          miles,
+        };
+        const outcome = await save(async () => {
+          if (!driver || miles === 0) return writeUp(written);
+          try {
+            return await writeUp({ ...written, driverId: driver.memberId });
+          } catch (cause) {
+            // A backend one step behind the website does not know the driver yet; it still saves the visit.
+            if (cause instanceof Error && cause.message.includes("driverId"))
+              return writeUp(written);
+            throw cause;
+          }
+        });
         if (outcome.saved) onSaved();
       }}
     >
@@ -376,13 +392,38 @@ export function WriteUpForm({
           />
         </LiveField>
       </div>
+      <LiveField
+        label="Who drove"
+        help="The miles go to the driver, so one car is counted once."
+      >
+        <NativeSelect
+          name="drove"
+          defaultValue=""
+          className="w-full"
+          aria-invalid={problem === "driver" || undefined}
+        >
+          <NativeSelectOption value="" disabled>
+            Choose who drove
+          </NativeSelectOption>
+          {visit.visitors.map((visitor) => (
+            <NativeSelectOption key={visitor.memberId} value={visitor.memberId}>
+              {visitor.name}
+            </NativeSelectOption>
+          ))}
+          <NativeSelectOption value="each">
+            Each drove their own car
+          </NativeSelectOption>
+        </NativeSelect>
+      </LiveField>
       <FormEnd
         error={
           problem === "hours"
             ? "Enter the hours the visit took, such as 1.5."
             : problem === "miles"
               ? "Enter the miles driven, or 0."
-              : error
+              : problem === "driver"
+                ? "Choose who drove, so the miles go to the right person."
+                : error
         }
         pending={pending}
         submit="Save the write-up"
