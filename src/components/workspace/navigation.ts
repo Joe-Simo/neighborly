@@ -80,17 +80,17 @@ export const headings: Record<LiveArea, LiveHeading> = {
   week: {
     title: "Good work, this week.",
     deck: "Your commitments, shared plans and the things to know.",
-    art: { picture: "week" },
+    art: { picture: "week", band: 0.8 },
   },
   team: {
     title: "A place on the team.",
     deck: "People belong here, even when their plans change.",
-    art: { picture: "people", focus: "38% 50%" },
+    art: { picture: "teams" },
   },
   people: {
     title: "People, together.",
     deck: "Your community and the teams they make possible.",
-    art: { picture: "people", focus: "82% 50%" },
+    art: { picture: "people" },
   },
   commitments: {
     title: "Clear commitments.",
@@ -100,7 +100,7 @@ export const headings: Record<LiveArea, LiveHeading> = {
   mine: {
     title: "Your part in it.",
     deck: "What you’ve accepted, with the preparation to feel ready.",
-    art: { picture: "commitment", focus: "62% 40%" },
+    art: { picture: "mine" },
   },
   "time-off": {
     title: "Room for life.",
@@ -133,13 +133,13 @@ export const headings: Record<LiveArea, LiveHeading> = {
   reports: {
     title: "The year, added up.",
     deck: "Counts for your council's yearly report, ready to print.",
-    art: { picture: "year" },
+    art: { picture: "year", band: 0.85 },
     room: "help",
   },
   visits: {
     title: "Two by two.",
     deck: "Home visits, the pair who are going, and what they found.",
-    art: { picture: "visit" },
+    art: { picture: "visit", band: 0.6 },
     room: "help",
   },
   tools: {

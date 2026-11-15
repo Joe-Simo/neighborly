@@ -4,7 +4,7 @@ import { useState, useSyncExternalStore } from "react";
 import { ChevronDown } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import { es, ht } from "react-day-picker/locale";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { useWorkspace } from "@/components/workspace/context";
@@ -70,6 +70,7 @@ export function DateField({
   const [open, setOpen] = useState(false);
   const [own, setOwn] = useState(defaultValue);
   const [typed, setTyped] = useState<string>();
+  const [label, setLabel] = useState("");
   const chosen = value ?? own;
   const allowed = (day: string) => (!min || day >= min) && (!max || day <= max);
   const choose = (day: string) => {
@@ -120,6 +121,7 @@ export function DateField({
             value={typed ?? said}
             onChange={(event) => setTyped(event.target.value)}
             onBlur={keep}
+            ref={(input) => setLabel(input?.labels?.[0]?.querySelector("span")?.textContent ?? "")}
             onClick={() => sheet && setOpen(true)}
             onKeyDown={(event) => {
               if (event.key === "ArrowDown" || (sheet && (event.key === "Enter" || event.key === " "))) {
@@ -158,7 +160,10 @@ export function DateField({
       </PopoverContent>
       <Dialog open={open && sheet} onOpenChange={setOpen}>
         <DialogContent className="live-date-sheet live-date-bottom" showCloseButton={false}>
-          <DialogTitle className="sr-only">{words.dateField.choose}</DialogTitle>
+          <div className="live-date-bar">
+            <DialogTitle>{label || words.dateField.choose}</DialogTitle>
+            <DialogClose className="live-date-done">{words.dateField.done}</DialogClose>
+          </div>
           {month}
         </DialogContent>
       </Dialog>

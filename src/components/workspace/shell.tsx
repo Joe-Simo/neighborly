@@ -269,6 +269,7 @@ export function LiveWorkspace({
           id="workspace-content"
           tabIndex={-1}
           data-room={heading.room}
+          style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
           ref={mainRef}
         >
           <div className="live-page-head" key={`head-${area}`}>
