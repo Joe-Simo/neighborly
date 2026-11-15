@@ -851,3 +851,45 @@
   height: 44px;
   transform: translateY(-50%);
 }
+
+/* An upright iPad uses the phone arrangement, scaled up: the painting as a
+   band across the top with both people and both hands, the form beneath. */
+@media (min-width: 700px) and (max-width: 1100px) and (orientation: portrait) {
+  .live-auth {
+    width: min(100% - 44px, 520px);
+    margin: 0 auto;
+    padding-top: 0;
+    padding-bottom: calc(50px + env(safe-area-inset-bottom));
+    min-height: 100svh;
+  }
+  .live-auth-art {
+    position: relative;
+    inset: auto;
+    left: 50%;
+    width: 100vw;
+    height: calc(min(44svh, 62vw) + env(safe-area-inset-top));
+    margin: 0 0 44px -50vw;
+    background-size: cover;
+    background-position: 50% 0;
+    border: 0;
+    border-bottom: 1px solid #d9ddd3;
+  }
+}
+/* The painting needs 86% of its height to hold both faces and both hands, so
+   a band that fills edge to edge is 0.61 of its width tall. On the smaller
+   iPad the space under the band tightens so Sign in stays whole on the first
+   screen. */
+@media (min-width: 700px) and (max-width: 1100px) and (orientation: portrait) and (max-height: 1100px) {
+  .live-auth-art {
+    height: calc(61vw + env(safe-area-inset-top));
+    margin-bottom: 16px;
+  }
+  .live-auth .live-back { margin-bottom: 16px; }
+}
+@media (max-width: 699px) and (orientation: portrait) {
+  .live-auth-art {
+    height: calc(61vw + env(safe-area-inset-top));
+    background-size: cover;
+    background-position: 50% 0;
+  }
+}
