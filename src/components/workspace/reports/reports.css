@@ -513,12 +513,14 @@
 .report-check li .help-assistant { font-size: 17px; }
 .live-app .report-check .report-check-more {
   min-height: 44px;
-  margin: 6px 0 0 -12px;
-  padding-inline: 12px;
+  margin: 6px 0 0;
+  padding-inline: 0;
+  background: none;
   font-size: 17px;
   color: var(--live-accent);
   gap: 8px;
 }
+.live-app .report-check .report-check-more:hover { background: none; text-decoration: underline; text-underline-offset: 4px; }
 .report-check-more svg { transition: transform 220ms var(--help-ease); }
 .report-check-more[aria-expanded="true"] svg { transform: rotate(180deg); }
 .report-check .report-check-record {
