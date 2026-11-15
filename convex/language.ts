@@ -12,3 +12,17 @@ export const choose = mutation({
     return null;
   },
 });
+
+/**
+ * Carries the language of the entry sheet into the workspace for a person who has never chosen one, so someone
+ * who read the door in Spanish does not walk into English rooms. It never replaces a language already chosen.
+ */
+export const adopt = mutation({
+  args: { churchId: v.id("churches"), language: v.union(v.literal("en"), v.literal("es"), v.literal("ht")) },
+  returns: v.null(),
+  handler: async (ctx, { churchId, language }) => {
+    const member = await membership(ctx, churchId);
+    if (member.language === undefined) await ctx.db.patch("memberships", member._id, { language });
+    return null;
+  },
+});

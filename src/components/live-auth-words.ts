@@ -241,6 +241,8 @@ const ht: AuthWords = {
 export const authWords: Record<Language, AuthWords> = { en, es, ht };
 
 const kept = "kind-helps:language";
+/** A language pressed on the entry sheet in this visit, waiting to be carried into the workspace. */
+const pressed = "kind-helps:language-pressed";
 const watchers = new Set<() => void>();
 
 /** Before anyone is signed in there is no saved language: use the one chosen here last, or the device's. */
@@ -279,9 +281,31 @@ export function useEntryLanguage(): [Language, (language: Language) => void] {
       } catch {
         // The choice still holds for this visit.
       }
+      try {
+        window.sessionStorage.setItem(pressed, next);
+      } catch {
+        // Without it the workspace still takes this language when the person has none saved.
+      }
       watchers.forEach((watch) => watch());
     },
   ];
+}
+
+/**
+ * What the entry sheet spoke, for the workspace to carry on in. `pressed` is true when the person chose it there
+ * in this visit, and reading it once clears that: a choice made at the door outranks an older saved one, while the
+ * device's own language only fills in for a person who has never chosen.
+ */
+export function takeEntryLanguage(): { language: Language; pressed: boolean } {
+  let chose: Language | undefined;
+  try {
+    const value = window.sessionStorage.getItem(pressed);
+    chose = languages.find((language) => language === value);
+    window.sessionStorage.removeItem(pressed);
+  } catch {
+    // Closed storage: the device's language still answers below.
+  }
+  return { language: chose ?? (chosenNow ??= deviceLanguage()), pressed: chose !== undefined };
 }
 
 /** Set by the workspace as someone signs out, so the sheet they land on can say so once. */
