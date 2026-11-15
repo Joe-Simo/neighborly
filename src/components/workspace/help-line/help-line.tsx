@@ -60,7 +60,11 @@ function HelpLine() {
   const setUrgency = useMutation(api.assistance.setUrgency);
   const drafting = useSave();
   const approving = useSave();
-  const [drafted, setDrafted] = useState<Drafted | null>(null);
+  // Every draft waits for its own yes; asking for another never drops one. The newest is on the sheet.
+  const [drafts, setDrafts] = useState<Drafted[]>([]);
+  const drafted = drafts.at(0) ?? null;
+  const settle = (call: Call) =>
+    setDrafts((all) => all.filter((one) => one.call.id !== call.id));
   const [step, setStep] = useState<Step | null>(null);
   const [done, setDone] = useState("");
   const finish = (message: string) => {
@@ -78,7 +82,7 @@ function HelpLine() {
     return () => setHeadAction(null);
   }, [setHeadAction, log, sheetOpen]);
   const saved = (call: Call) => {
-    setDrafted(null);
+    settle(call);
     finish(
       `Request saved. It is waiting for a decision on ${caller(call)}’s record.`,
     );
@@ -91,7 +95,11 @@ function HelpLine() {
       draftRequest({ churchId, callId: next.call.id }),
     );
     // If the assistant cannot help, the person writes the request themselves.
-    if (outcome.saved) setDrafted({ call: next.call, draft: outcome.result });
+    if (outcome.saved)
+      setDrafts((all) => [
+        { call: next.call, draft: outcome.result },
+        ...all.filter((one) => one.call.id !== next.call.id),
+      ]);
     else setStep({ kind: "request", call: next.call });
   }
   async function approve({ call, draft }: Drafted) {
@@ -135,7 +143,7 @@ function HelpLine() {
         calls={calls}
         format={format}
         busy={drafting.pending}
-        draftedCallId={drafted?.call.id}
+        draftedCallIds={drafts.map((one) => one.call.id)}
         onFirst={
           // An older backend sends no "urgent" on a call and cannot keep one.
           [...calls.waiting, ...calls.returned].some((call) => call.urgent !== undefined)
@@ -155,12 +163,13 @@ function HelpLine() {
           drafted && (
             <DraftSheet
               drafted={drafted}
+              waiting={drafts.length}
               format={format}
               pending={approving.pending}
               onApprove={() => void approve(drafted)}
               onChange={() => setStep({ kind: "change", drafted })}
               onDiscard={() => {
-                setDrafted(null);
+                settle(drafted.call);
                 setDone("Draft discarded. Nothing was saved.");
               }}
             />
@@ -271,13 +280,13 @@ export function HelpLineView({
   onStep,
   sheet,
   busy = false,
-  draftedCallId,
+  draftedCallIds = [],
   onFirst,
 }: {
   /** Moves a call to the front or back again. Left out while the backend cannot keep it. */
   onFirst?: (call: Call, first: boolean) => void;
-  /** The call whose draft is on the sheet, which is not offered a second draft. */
-  draftedCallId?: Call["id"];
+  /** Calls with a draft waiting for a yes, which are not offered a second draft. */
+  draftedCallIds?: Call["id"][];
   calls: Calls;
   format: Workspace["format"];
   onStep: (step: Step) => void;
@@ -355,7 +364,7 @@ export function HelpLineView({
                         <Link className="live-link" href={recordHref(call.neighborId)}>
                           Open record
                         </Link>
-                        {!call.openRequest && call.id !== draftedCallId && (
+                        {!call.openRequest && !draftedCallIds.includes(call.id) && (
                           <Button
                             variant="link"
                             className="help-text-action"
@@ -443,6 +452,7 @@ export function HelpLineView({
 /** The one thing waiting for a yes: what the assistant drafted from a call note. Plum marks its words. */
 export function DraftSheet({
   drafted: { call, draft },
+  waiting = 1,
   format,
   pending,
   onApprove,
@@ -450,6 +460,8 @@ export function DraftSheet({
   onDiscard,
 }: {
   drafted: Drafted;
+  /** How many drafts wait for a yes, this one included. */
+  waiting?: number;
   format: Workspace["format"];
   pending: boolean;
   onApprove: () => void;
@@ -470,7 +482,7 @@ export function DraftSheet({
   ].join(", ");
   return (
     <section className="help-sheet" aria-labelledby="draft-title">
-      <p className="help-sheet-label">{text.waiting(1)}</p>
+      <p className="help-sheet-label">{text.waiting(waiting)}</p>
       <div className="help-sheet-body">
         <div>
           <h2 id="draft-title">
