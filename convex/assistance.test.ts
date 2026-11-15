@@ -32,9 +32,9 @@ async function setup() {
       ctx.db.insert("neighbors", { churchId: group, name, nameKey: name.toLowerCase(), phone, phoneKey: phone.replace(/\D/g, ""), email: "", address, adults: 2, children: 2, language: "es", notes: "", createdBy, createdAt: 0 });
     return {
       church, other, owner, coordinator, member, stranger,
-      rosa: await record(church, "Rosa Delgado", "(239) 555-0142", "14 Sample St, Apt 2", owner.memberId),
-      earl: await record(church, "Earl Jennings", "(239) 555-0178", "8 Example Ave", owner.memberId),
-      elsewhere: await record(other, "Mai Tran", "(239) 555-0150", "31 Demo Ct", stranger.memberId),
+      rosa: await record(church, "Esperanza Montoya", "(100) 555-0104", "14 Sample St, Apt 2", owner.memberId),
+      earl: await record(church, "Darnell Joseph", "(100) 555-0103", "8 Example Ave", owner.memberId),
+      elsewhere: await record(other, "Celeste Greenhalgh", "(100) 555-0102", "31 Demo Ct", stranger.memberId),
     };
   });
   for (const person of [ids.owner, ids.coordinator, ids.member, ids.stranger]) emails.set(person.userId, `${person.userId}@neighborly.example`);
@@ -47,7 +47,7 @@ describe("who may use the help line and requests", () => {
   test("a member is refused on every function and a coordinator passes", async () => {
     const { ids, as } = await setup();
     const churchId = ids.church;
-    const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "New caller", phone: "(239) 555-0119", note: "Asked about food.", callback: "needed" });
+    const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "New caller", phone: "(100) 555-0119", note: "Asked about food.", callback: "needed" });
     const requestId = await as(ids.owner).mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...rent });
     for (const person of [ids.member, ids.coordinator]) {
       const caller = as(person);
@@ -56,7 +56,7 @@ describe("who may use the help line and requests", () => {
         () => caller.query(api.assistance.requestsForNeighbor, { churchId, neighborId: ids.rosa }),
         () => caller.query(api.assistance.request, { churchId, requestId }),
         () => caller.query(api.assistance.calls, { churchId }),
-        () => caller.mutation(api.assistance.recordCall, { churchId, callerName: "Earl Jennings", phone: "", note: "Called back.", callback: "none" }),
+        () => caller.mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Called back.", callback: "none" }),
         () => caller.mutation(api.assistance.linkCall, { churchId, callId, neighborId: ids.earl }),
         () => caller.mutation(api.assistance.markReturned, { churchId, callId }),
         () => caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...rent }),
@@ -85,12 +85,12 @@ describe("who may use the help line and requests", () => {
 describe("the help line", () => {
   test("a call from a phone on file is matched to that neighbor; an unknown number is not", async () => {
     const { ids, as } = await setup();
-    const known = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Rosa", phone: "239.555.0142", note: "Behind on rent.", callback: "needed", ownerId: ids.owner.memberId });
-    const unknown = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "(239) 555-0119", note: "Food for five.", callback: "needed" });
+    const known = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Esperanza", phone: "100.555.0104", note: "Behind on rent.", callback: "needed", ownerId: ids.owner.memberId });
+    const unknown = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "(100) 555-0119", note: "Food for five.", callback: "needed" });
     expect(known.neighborId).toBe(ids.rosa);
     expect(unknown.neighborId).toBeNull();
     const { waiting } = await as(ids.owner).query(api.assistance.calls, { churchId: ids.church });
-    expect(waiting).toMatchObject([{ neighborName: "Rosa Delgado", takenByName: "Thomas Okafor", ownerName: "Marisol Vega", openRequest: false }, { neighborName: null, ownerName: null }]);
+    expect(waiting).toMatchObject([{ neighborName: "Esperanza Montoya", takenByName: "Thomas Okafor", ownerName: "Marisol Vega", openRequest: false }, { neighborName: null, ownerName: null }]);
     await expect(as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "", note: "Silence.", callback: "none" })).rejects.toThrow("A name or a phone number is needed.");
   });
 
@@ -98,7 +98,7 @@ describe("the help line", () => {
     const { t, ids, as } = await setup();
     const churchId = ids.church, hour = 3600000, now = Date.now();
     const leave = async () => {
-      const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "Earl Jennings", phone: "", note: "Shut-off notice.", callback: "needed" });
+      const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Shut-off notice.", callback: "needed" });
       return (await as(ids.owner).query(api.assistance.calls, { churchId })).waiting.find((call) => call.id === callId)?.ownerName;
     };
     expect(await leave()).toBeNull();
@@ -113,13 +113,13 @@ describe("the help line", () => {
     });
     expect(await leave()).toBe("Thomas Okafor");
     // A call that needs nothing more has no one to call back.
-    const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "Earl Jennings", phone: "", note: "Thank you.", callback: "none" });
+    const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Thank you.", callback: "none" });
     expect((await t.run((ctx) => ctx.db.get("calls", callId)))?.ownerId).toBeUndefined();
   });
 
   test("marking a call returned keeps who returned it, when, and what came of it", async () => {
     const { ids, as } = await setup();
-    const { callId } = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Earl Jennings", phone: "(239) 555-0178", note: "Shut-off notice.", callback: "needed" });
+    const { callId } = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Darnell Joseph", phone: "(100) 555-0103", note: "Shut-off notice.", callback: "needed" });
     await as(ids.owner).mutation(api.assistance.markReturned, { churchId: ids.church, callId, outcome: "Home visit planned for Thursday." });
     const { waiting, returned } = await as(ids.owner).query(api.assistance.calls, { churchId: ids.church });
     expect(waiting).toEqual([]);
@@ -132,10 +132,10 @@ describe("the help line", () => {
 describe("a request for help", () => {
   test("is recorded open, tied to its call, and read back with the neighbor's household", async () => {
     const { ids, as } = await setup();
-    const { callId } = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Someone", phone: "(239) 555-0119", note: "Rent.", callback: "needed" });
+    const { callId } = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Someone", phone: "(100) 555-0119", note: "Rent.", callback: "needed" });
     const requestId = await as(ids.coordinator).mutation(api.assistance.createRequest, { churchId: ids.church, neighborId: ids.rosa, callId, ...rent });
     expect(await as(ids.owner).query(api.assistance.request, { churchId: ids.church, requestId })).toMatchObject({
-      neighborName: "Rosa Delgado", neighborAddress: "14 Sample St, Apt 2", neighborLanguage: "es", householdSize: 4, callId, kind: "rent", amountRequested: 45000, amountApproved: null,
+      neighborName: "Esperanza Montoya", neighborAddress: "14 Sample St, Apt 2", neighborLanguage: "es", householdSize: 4, callId, kind: "rent", amountRequested: 45000, amountApproved: null,
       status: "open", payeeKind: "landlord", payeeName: "Sample Property Co.", source: "person", createdByName: "Thomas Okafor", decidedByName: null, referral: "",
     });
     // The call from an unknown number now belongs to the neighbor it was about.

@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, TriangleAlert } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,15 @@ import {
   NeighborForm,
   RequestForm,
 } from "@/components/workspace/help-line/forms";
+import {
+  AccountsForm,
+  AtHome,
+  MoneyForm,
+  NoteForm,
+  PeopleForm,
+  type Accounts,
+  type HomeStep,
+} from "@/components/workspace/help-line/household";
 import {
   count,
   household,
@@ -33,7 +42,7 @@ import {
 } from "@/components/workspace/help-line/room";
 
 type Step =
-  | { kind: "request" | "details" }
+  | { kind: "request" | "details" | "note" | HomeStep }
   | { kind: "approve" | "decline" | "change"; request: HelpRequest };
 
 const back = (
@@ -84,6 +93,13 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
     setDone(message);
   };
   const close = () => setStep(null);
+  const showAccounts = useMutation(api.neighbors.showAccounts);
+  const [numbers, setNumbers] = useState<Accounts | null>(null);
+  const reveal = () =>
+    showAccounts({ churchId, neighborId }).then(setNumbers, () =>
+      setDone("The account numbers couldn’t be shown. Please try again."),
+    );
+  const target = { churchId, neighborId };
   if (opened === "missing")
     return (
       <HelpEmpty
@@ -107,11 +123,67 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
       <NeighborRecordView
         record={record}
         format={format}
+        numbers={numbers}
+        onShowNumbers={() => void reveal()}
         onStep={(next) => {
           setDone("");
-          setStep(next);
+          // Changing accounts needs the full numbers, which is itself written down.
+          if (next.kind === "accounts" && !numbers && record.accounts.length)
+            void reveal().then(() => setStep(next));
+          else setStep(next);
         }}
       />
+      {step?.kind === "people" && (
+        <HelpDialog
+          title="Who lives here"
+          description={`${neighbor.name}’s household, as they told us.`}
+          onClose={close}
+        >
+          <PeopleForm
+            target={target}
+            household={record.household}
+            onSaved={() => finish("Household saved.")}
+          />
+        </HelpDialog>
+      )}
+      {step?.kind === "money" && (
+        <HelpDialog
+          title="Money each month"
+          description="What comes in and what goes out, in round numbers."
+          onClose={close}
+        >
+          <MoneyForm
+            target={target}
+            money={record.money}
+            onSaved={() => finish("The month is saved.")}
+          />
+        </HelpDialog>
+      )}
+      {step?.kind === "accounts" && (
+        <HelpDialog
+          title="Accounts"
+          description="Where a bill is paid, so the treasurer does not have to ask twice."
+          onClose={close}
+        >
+          <AccountsForm
+            target={target}
+            accounts={numbers ?? []}
+            onSaved={() => {
+              setNumbers(null);
+              finish("Accounts saved.");
+            }}
+          />
+        </HelpDialog>
+      )}
+      {step?.kind === "note" && (
+        <HelpDialog
+          title="Add a note"
+          description={`On ${neighbor.name}’s record, for whoever helps next.`}
+          onClose={close}
+        >
+          <NoteForm target={target} onSaved={() => finish("Note added.")} />
+        </HelpDialog>
+      )}
       {step?.kind === "request" && (
         <HelpDialog
           title="Add a request"
@@ -195,6 +267,15 @@ function happened(event: Record["history"][number]) {
         what: event.note || "Called the help line",
         who: `Call taken by ${event.who}`,
       };
+    case "note":
+      return { kind: "note", what: event.note, who: `Note by ${event.who}` };
+    case "brought":
+      return {
+        kind: "money",
+        what: `${kindLabels[event.kind]}${event.payee ? ` paid to ${event.payee}` : ""}`,
+        who: "Brought over from earlier records",
+        paid: event.amount ? shortMoney(event.amount) : undefined,
+      };
     case "decision":
       return {
         kind: "call",
@@ -207,10 +288,14 @@ function happened(event: Record["history"][number]) {
 export function NeighborRecordView({
   record,
   format,
+  numbers = null,
+  onShowNumbers = () => {},
   onStep,
 }: {
   record: Record;
   format: Workspace["format"];
+  numbers?: Accounts | null;
+  onShowNumbers?: () => void;
   onStep: (step: Step) => void;
 }) {
   const { neighbor, open } = record;
@@ -221,11 +306,18 @@ export function NeighborRecordView({
     (request) => request.payeeKind === "landlord" && request.payeeName,
   )?.payeeName;
   const asked = (request: HelpRequest) =>
-    `Asked ${format(request.createdAt, { weekday: "long", month: "long", day: "numeric" })}. Taken by ${request.createdByName}.`;
+    request.source === "import"
+      ? `Brought over from earlier records, asked on ${format(request.createdAt, { weekday: undefined, year: "numeric" })}.`
+      : `Asked ${format(request.createdAt, { weekday: "long", month: "long", day: "numeric" })}. Taken by ${request.createdByName}.`;
   const years = [...new Set(record.history.map((event) => year(event.at)))];
   return (
     <>
       <p className="help-record-head">{back}</p>
+      {neighbor.alert && (
+        <p className="help-alert" role="note">
+          <TriangleAlert size={18} aria-hidden="true" /> {neighbor.alert}
+        </p>
+      )}
 
       <dl className="help-figures">
         <div>
@@ -291,6 +383,14 @@ export function NeighborRecordView({
         </Button>
       </p>
 
+      <AtHome
+        record={record}
+        format={format}
+        numbers={numbers}
+        onShowNumbers={onShowNumbers}
+        onStep={(kind) => onStep({ kind })}
+      />
+
       {first && (
         <section className="help-sheet" aria-labelledby="open-title">
           <p className="help-sheet-label">
@@ -350,7 +450,10 @@ export function NeighborRecordView({
                 </div>
                 <div>
                   <h3>{requestTitle(request)}</h3>
-                  <p>{request.summary}</p>
+                  <p>
+                    {request.summary}
+                    {request.source === "import" && " Brought over from earlier records."}
+                  </p>
                 </div>
                 <div className="live-row-actions">
                   {request.status === "open" ? (
@@ -373,16 +476,20 @@ export function NeighborRecordView({
       <section className={first || alsoOpen.length ? "live-section" : undefined}>
         <div className="live-section-head">
           <h2>History</h2>
-          {first ? (
-            <span className="live-count">
-              Since{" "}
-              {format(record.since, { day: undefined, month: "long", year: "numeric" })}
-            </span>
-          ) : (
-            <Button variant="outline" onClick={() => onStep({ kind: "request" })}>
-              Add a request
+          <span className="help-head-actions">
+            <Button
+              variant="link"
+              className="help-text-action"
+              onClick={() => onStep({ kind: "note" })}
+            >
+              Add a note
             </Button>
-          )}
+            {!first && (
+              <Button variant="outline" onClick={() => onStep({ kind: "request" })}>
+                Add a request
+              </Button>
+            )}
+          </span>
         </div>
         {record.history.length ? (
           years.map((label) => (

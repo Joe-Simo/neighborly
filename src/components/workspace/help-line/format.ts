@@ -67,3 +67,17 @@ export const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
 export const recordHref = (neighborId: string) =>
   `/app/neighbors?neighbor=${neighborId}`;
+/** "Mother, 41 · Son, 12": the household without anyone's name. */
+export const livesHere = (people: NeighborRecord["household"]) =>
+  people
+    .map((person) =>
+      person.age === null ? person.relationship : `${person.relationship}, ${person.age}`,
+    )
+    .join(" · ");
+export const total = (lines: { amount: number }[]) =>
+  lines.reduce((sum, line) => sum + line.amount, 0);
+export const accountKinds = {
+  landlord: "Landlord",
+  utility: "Utility",
+  other: "Other",
+} as const;
