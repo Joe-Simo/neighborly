@@ -269,7 +269,7 @@ export function VisitSheetView({
         <p className="visits-paper-foot">
           <span>kind helps</span>
           <span>
-            {sample ? "Sample · made-up people · " : ""}Printed {printed}
+            {sample ? "Sample · " : ""}Printed {printed}
           </span>
         </p>
       </article>
