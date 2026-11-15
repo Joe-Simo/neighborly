@@ -78,6 +78,7 @@ export default defineSchema({
     returnedBy: v.optional(v.id("memberships")),
     returnedAt: v.optional(v.number()),
     outcome: v.optional(v.string()),
+    urgent: v.optional(v.object({ reasons: v.array(v.string()), day: v.optional(v.number()), by: v.union(v.literal("assistant"), v.literal("person")) })),
   }).index("by_church", ["churchId", "takenAt"]).index("by_church_callback", ["churchId", "callback"]).index("by_neighbor", ["neighborId"]),
   assistanceRequests: defineTable({
     churchId: v.id("churches"),
