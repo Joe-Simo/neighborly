@@ -139,3 +139,59 @@ describe("bringing neighbors in from a spreadsheet", () => {
     expect(await events()).toMatchObject([{ actorId: ids.owner.userId, targetId: "2" }]);
   });
 });
+
+describe("bringing past requests over from another system", () => {
+  const blank = { phone: "", status: "Completed", type: "Rent", amount: "$1,250.00", payee: "Sample Street Apartments", notes: "Behind after reduced hours" };
+  const history = [
+    { line: 2, name: "Celeste Hyppolite", date: "03/14/2026", ...blank },
+    { line: 3, name: "Someone Else", date: "03/14/2026", ...blank, phone: "(555) 0142", type: "Electric bill", amount: "86.5", status: "Call Back", notes: "" },
+    { line: 4, name: "Nestor Orlov", date: "03/14/2026", ...blank },
+    { line: 5, name: "Celeste Hyppolite", date: "14 March", ...blank },
+    { line: 6, name: "Celeste Hyppolite", date: "03/15/2026", ...blank, amount: "a lot" },
+    { line: 7, name: "Celeste Hyppolite", date: "03/15/2026", ...blank, status: "Maybe" },
+    { line: 8, name: "Celeste Hyppolite", date: "2026-03-14", ...blank },
+    { line: 9, name: "", date: "03/14/2026", ...blank },
+  ];
+  const recent = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
+  async function withNeighbor() {
+    const world = await setup();
+    const neighborId = await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(555) 0142", phoneKey: "5550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "ht", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
+    const requests = () => world.t.run((ctx) => ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect());
+    return { ...world, requests };
+  }
+
+  test("history comes in as history: dated, never approved or paid, no ledger entry, and never twice", async () => {
+    const { t, ids, as, requests } = await withNeighbor();
+    const preview = await as(ids.coordinator).query(api.importExport.checkRequests, { churchId: ids.church, rows: history });
+    expect(preview.map((row) => [row.line, row.outcome])).toEqual([[2, "ready"], [3, "ready"], [4, "no_neighbor"], [5, "bad_date"], [6, "bad_amount"], [7, "bad_status"], [8, "repeated"], [9, "no_name"]]);
+    for (const row of preview) expect(Object.keys(row).sort()).toEqual(["line", "name", "outcome"]);
+    expect(await requests()).toHaveLength(0);
+
+    await as(ids.coordinator).mutation(api.importExport.importRequests, { churchId: ids.church, rows: history });
+    const added = await requests();
+    expect(added).toMatchObject([
+      { source: "import", status: "closed", kind: "rent", payeeKind: "landlord", payeeName: "Sample Street Apartments", importedAmount: 125000, amountRequested: 125000, summary: "Behind after reduced hours", createdBy: ids.coordinator.memberId },
+      { source: "import", status: "closed", kind: "utility", payeeKind: "utility", importedAmount: 8650, summary: "Electric bill" },
+    ]);
+    // Left open in the other system months ago, it is history; only a recent one is still waiting.
+    await as(ids.coordinator).mutation(api.importExport.importRequests, { churchId: ids.church, rows: [{ line: 2, name: "Celeste Hyppolite", date: recent, ...blank, status: "Open", type: "Food", amount: "" }] });
+    expect((await requests()).at(-1)).toMatchObject({ status: "open", kind: "food", importedAmount: 0 });
+    expect(new Date(added[0].createdAt).toISOString()).toBe("2026-03-14T16:00:00.000Z");
+    for (const request of added) expect(request.amountApproved).toBeUndefined();
+    expect(await t.run((ctx) => ctx.db.query("ledgerEntries").collect())).toEqual([]);
+
+    const again = await as(ids.coordinator).mutation(api.importExport.importRequests, { churchId: ids.church, rows: history });
+    expect(again.slice(0, 2).map((row) => row.outcome)).toEqual(["already_here", "already_here"]);
+    expect(await requests()).toHaveLength(3);
+    const events = (await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect())).filter((event) => event.action === "requests_imported");
+    expect(events).toMatchObject([{ actorId: ids.coordinator.userId, targetId: "2" }, { targetId: "1" }]);
+  });
+
+  test("a member is refused", async () => {
+    const { ids, as, requests } = await withNeighbor();
+    const refused = "Neighbor records are open to coordinators and owners only.";
+    await expect(as(ids.member).query(api.importExport.checkRequests, { churchId: ids.church, rows: history })).rejects.toThrow(refused);
+    await expect(as(ids.member).mutation(api.importExport.importRequests, { churchId: ids.church, rows: history })).rejects.toThrow(refused);
+    expect(await requests()).toHaveLength(0);
+  });
+});

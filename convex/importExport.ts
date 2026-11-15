@@ -1,4 +1,5 @@
 import { v, type Infer } from "convex/values";
+import { DateTime } from "luxon";
 import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, query, type QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
@@ -153,6 +154,93 @@ export const importNeighbors = mutation({
     }
     const added = results.filter((row) => row.outcome === "added").length;
     if (added) await ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: member.userId, action: "neighbors_imported", targetId: String(added), at: now });
+    return results;
+  },
+});
+
+/**
+ * Bringing a conference's past requests over from another system, such as ServWare's request export.
+ * History only: each line becomes a request marked source "import" with the day it was made, never approved
+ * or paid here, and with no ledger entry, so the treasury is untouched. The help ServWare recorded is kept in
+ * importedAmount, apart from anything the ledger sums. A line whose neighbor is not on file is left out, and
+ * so is one already brought in: the same neighbor, day, kind and amount. Running a file twice adds nothing.
+ * A request still open in the other system stays open here only when it is under 60 days old.
+ */
+const requestRow = v.object({ line: v.number(), name: v.string(), phone: v.string(), date: v.string(), status: v.string(), type: v.string(), amount: v.string(), payee: v.string(), notes: v.string() });
+const requestProblem = v.union(v.literal("no_name"), v.literal("no_neighbor"), v.literal("bad_date"), v.literal("bad_amount"), v.literal("bad_status"), v.literal("too_long"), v.literal("repeated"), v.literal("already_here"));
+const requestChecked = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("ready"), requestProblem) });
+const requestImported = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("added"), requestProblem) });
+const kinds = [["rent", /rent|housing|mortgage|deposit|lodging|shelter/], ["utility", /utilit|electric|power|water|gas|heat|energy|phone|internet/], ["food", /food|grocer|pantry|meal/], ["voucher", /voucher|thrift|furniture|clothing|cloth|store/]] as const;
+const stillOpenDays = 60;
+const payeeKinds = { rent: "landlord", utility: "utility", food: "vendor", voucher: "vendor", other: "vendor" } as const;
+const statuses = new Map([["", "closed"], ["completed", "closed"], ["complete", "closed"], ["closed", "closed"], ["open", "open"], ["call back", "open"], ["callback", "open"], ["pending", "open"]] as const);
+
+async function reviewRequests(ctx: QueryCtx, churchId: Id<"churches">, rows: Infer<typeof requestRow>[]) {
+  if (rows.length > mostRows) throw new Error(`Bring in up to ${mostRows} requests at a time.`);
+  const church = await ctx.db.get("churches", churchId);
+  if (!church) throw new Error("Group not found.");
+  const now = Date.now();
+  const seen = new Set<string>();
+  const earlier = new Map<Id<"neighbors">, Set<string>>();
+  const results = [];
+  for (const row of rows) {
+    const name = row.name.trim(), type = row.type.trim(), payee = row.payee.trim(), notes = row.notes.trim();
+    const verdict = (outcome: Infer<typeof requestChecked>["outcome"], record: { neighborId: Id<"neighbors">; kind: "rent" | "utility" | "food" | "voucher" | "other"; status: "open" | "closed"; createdAt: number; importedAmount: number } | null = null) =>
+      ({ line: row.line, name, outcome, record: record && { ...record, summary: notes || type || "Brought over from an earlier system", payeeName: payee, payeeKind: payeeKinds[record.kind] } });
+    if (!nameKey(name)) { results.push(verdict("no_name")); continue; }
+    if (name.length > 120 || type.length > 120 || payee.length > 120 || notes.length > 500) { results.push(verdict("too_long")); continue; }
+    const day = ["M/d/yyyy", "M/d/yy", "yyyy-MM-dd"].map((format) => DateTime.fromFormat(row.date.trim(), format, { zone: church.timeZone })).find((date) => date.isValid);
+    const createdAt = day?.set({ hour: 12 }).toMillis();
+    if (!createdAt || createdAt > now || createdAt < now - 40 * 365 * 86400000) { results.push(verdict("bad_date")); continue; }
+    const money = row.amount.trim() === "" ? 0 : Number(row.amount.replace(/[$,\s]/g, ""));
+    const importedAmount = Math.round(money * 100);
+    if (!Number.isFinite(money) || money < 0 || importedAmount > 100_000_00) { results.push(verdict("bad_amount")); continue; }
+    const stated = statuses.get(row.status.trim().toLowerCase() as never) as "open" | "closed" | undefined;
+    if (!stated) { results.push(verdict("bad_status")); continue; }
+    // Only what is truly still waiting stays open: an old request left open in the other system comes in as history.
+    const status = stated === "open" && createdAt >= now - stillOpenDays * 86400000 ? "open" : "closed";
+    // The neighbor is found the way a person would look: by the phone number when the line has one, else by the name.
+    const phone = phoneKey(row.phone);
+    const neighbor = (phone && (await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", phone)).first()))
+      || (await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).eq("nameKey", nameKey(name))).first());
+    if (!neighbor) { results.push(verdict("no_neighbor")); continue; }
+    const kind = kinds.find(([, pattern]) => pattern.test(type.toLowerCase()))?.[0] ?? "other";
+    const mark = `${createdAt}|${kind}|${importedAmount}`;
+    if (seen.has(`${neighbor._id}|${mark}`)) { results.push(verdict("repeated")); continue; }
+    seen.add(`${neighbor._id}|${mark}`);
+    if (!earlier.has(neighbor._id)) {
+      const before = await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).take(500);
+      earlier.set(neighbor._id, new Set(before.filter((request) => request.source === "import").map((request) => `${request.createdAt}|${request.kind}|${request.importedAmount ?? 0}`)));
+    }
+    if (earlier.get(neighbor._id)?.has(mark)) { results.push(verdict("already_here")); continue; }
+    results.push(verdict("ready", { neighborId: neighbor._id, kind, status, createdAt, importedAmount }));
+  }
+  return results;
+}
+
+/** What would happen to each line, without changing anything. Only the name comes back. */
+export const checkRequests = query({
+  args: { churchId: v.id("churches"), rows: v.array(requestRow) },
+  returns: v.array(requestChecked),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    return (await reviewRequests(ctx, args.churchId, args.rows)).map(({ line, name, outcome }) => ({ line, name, outcome }));
+  },
+});
+
+/** Checks again, then adds every ready line as history. One entry in the record of who did what says how many came in. */
+export const importRequests = mutation({
+  args: { churchId: v.id("churches"), rows: v.array(requestRow) },
+  returns: v.array(requestImported),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    const results: Infer<typeof requestImported>[] = [];
+    for (const row of await reviewRequests(ctx, args.churchId, args.rows)) {
+      if (row.record) await ctx.db.insert("assistanceRequests", { churchId: args.churchId, ...row.record, amountRequested: row.record.importedAmount, decisionNote: "", source: "import", createdBy: member._id });
+      results.push({ line: row.line, name: row.name, outcome: row.outcome === "ready" ? "added" : row.outcome });
+    }
+    const added = results.filter((row) => row.outcome === "added").length;
+    if (added) await ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: member.userId, action: "requests_imported", targetId: String(added), at: Date.now() });
     return results;
   },
 });
