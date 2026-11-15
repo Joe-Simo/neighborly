@@ -82,7 +82,9 @@ export function FrescoThreshold() {
   const walkIn = () => {
     const track = journey.current, host = stage.current;
     if (!track || !host) return;
-    window.scrollTo({ top: track.getBoundingClientRect().top + scrollY + host.clientHeight * rest, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    // With Reduce Motion the journey is shorter, so the resting place stays inside the part that holds still.
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: track.getBoundingClientRect().top + scrollY + host.clientHeight * (reduce ? 2.4 : rest), behavior: reduce ? "instant" : "smooth" });
   };
 
   return <div ref={journey} className="fresco-journey">

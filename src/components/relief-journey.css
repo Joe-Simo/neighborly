@@ -10,6 +10,8 @@
 
 .fresco-invitation{position:absolute;z-index:3;left:7%;top:50%;width:min(30%,520px);translate:0 calc(-50% - var(--door) * 24px);opacity:calc(1 - var(--door) * 1.8)}
 .fresco-stage[data-open=true] .fresco-invitation{visibility:hidden}
+/* A button that can still take the keyboard is never invisible. */
+.fresco-invitation:focus-within{opacity:1}
 .fresco-invitation h2{margin:0 0 24px;font:400 clamp(44px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.065em}
 .fresco-invitation h2 em{font-weight:400}
 .fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
