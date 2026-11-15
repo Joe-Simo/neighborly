@@ -83,7 +83,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       {confirming && (
         <HelpDialog
           title="Call off this visit?"
-          description={`${sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent, so please tell them yourself. ${sheet.neighbor.name} goes back to waiting for a pair.`}
+          description={`${sheet.neighbor.name} goes back to waiting for a pair. ${sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent. Please tell ${sheet.visitors.map((name) => name.split(/\s+/)[0]).join(" and ")} yourself.`}
           onClose={() => setConfirming(false)}
         >
           {error && (

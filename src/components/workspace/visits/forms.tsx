@@ -21,7 +21,6 @@ import {
   type Board,
   type Visit,
   type Visitors,
-  type Waiting,
 } from "@/components/workspace/visits/format";
 
 function FormEnd({
@@ -104,7 +103,9 @@ export function PlanForm({
   requestId?: Id<"assistanceRequests">;
   onSaved: (planned: { neighborName: string; pair: [string, string] }) => void;
 }) {
+  const [search, setSearch] = useState("");
   const people = useQuery(api.visits.visitors, { churchId });
+  const neighbors = useQuery(api.neighbors.list, { churchId, search });
   const plan = useMutation(api.visits.plan);
   const { pending, error, save } = useSave();
   return (
@@ -112,21 +113,23 @@ export function PlanForm({
       board={board}
       requestId={requestId}
       people={people}
+      neighbors={neighbors?.rows}
+      onSearch={setSearch}
       pending={pending}
       error={error}
-      onPlan={async (request, at, first, second) => {
+      onPlan={async (who, at, first, second) => {
         const outcome = await save(() =>
           plan({
             churchId,
-            neighborId: request.neighborId,
-            requestId: request.requestId,
+            neighborId: who.neighborId,
+            requestId: who.requestId,
             at,
             visitorIds: [first.memberId, second.memberId],
           }),
         );
         if (outcome.saved)
           onSaved({
-            neighborName: request.neighborName,
+            neighborName: who.neighborName,
             pair: [first.name, second.name],
           });
       }}
@@ -134,11 +137,21 @@ export function PlanForm({
   );
 }
 
-/** The plan form itself, given the people who may go: no fetching here. */
+/** Who a visit is for: a request waiting on one, or a neighbor visited with no request, as a friend. */
+type Visited = {
+  neighborId: Id<"neighbors">;
+  neighborName: string;
+  requestId?: Id<"assistanceRequests">;
+};
+const withoutRequest = "none";
+
+/** The plan form itself, given the people who may go and the neighbors found: no fetching here. */
 export function PlanFormView({
   board,
   requestId,
   people,
+  neighbors,
+  onSearch,
   pending,
   error,
   onPlan,
@@ -146,10 +159,14 @@ export function PlanFormView({
   board: Board;
   requestId?: Id<"assistanceRequests">;
   people: Visitors | undefined;
+  /** Neighbors matching the search, for a visit with no request. */
+  neighbors:
+    { id: Id<"neighbors">; name: string; address: string }[] | undefined;
+  onSearch: (text: string) => void;
   pending: boolean;
   error: string;
   onPlan: (
-    request: Waiting,
+    who: Visited,
     at: string,
     first: Visitors[number],
     second: Visitors[number],
@@ -159,18 +176,12 @@ export function PlanFormView({
     ...(board.suggested ? [board.suggested.request] : []),
     ...board.toArrange,
   ];
+  const [chosen, setChosen] = useState<string>(
+    requestId ?? waiting[0]?.requestId ?? withoutRequest,
+  );
   const suggested =
-    board.suggested?.request.requestId === (requestId ?? waiting[0]?.requestId)
-      ? board.suggested
-      : null;
+    board.suggested?.request.requestId === chosen ? board.suggested : null;
 
-  if (!waiting.length)
-    return (
-      <p className="visits-quiet">
-        No request for help is waiting on a visit. Record the request on the
-        help line first, and it will appear here.
-      </p>
-    );
   if (!people)
     return (
       <p className="visits-quiet" role="status">
@@ -184,49 +195,92 @@ export function PlanFormView({
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         const request = waiting.find(
-          (candidate) => candidate.requestId === data.get("request"),
+          (candidate) => candidate.requestId === chosen,
         );
-        const pair = [data.get("first"), data.get("second")].map((id) =>
-          people.find((person) => person.memberId === id),
+        const neighbor = neighbors?.find(
+          (candidate) => candidate.id === data.get("neighbor"),
         );
-        const [first, second] = pair;
-        if (!request || !first || !second) return;
-        onPlan(request, String(data.get("at") ?? ""), first, second);
+        const who: Visited | undefined =
+          request ??
+          (neighbor && {
+            neighborId: neighbor.id,
+            neighborName: neighbor.name,
+          });
+        const [first, second] = [data.get("first"), data.get("second")].map(
+          (id) => people.find((person) => person.memberId === id),
+        );
+        if (!who || !first || !second) return;
+        onPlan(who, String(data.get("at") ?? ""), first, second);
       }}
     >
-      <LiveField
-        label="Neighbor"
-        help={
-          waiting.length > 1
-            ? `${count(waiting.length, "request is", "requests are")} waiting on a visit.`
-            : undefined
-        }
-      >
-        <NativeSelect
-          name="request"
-          defaultValue={requestId ?? waiting[0].requestId}
-          className="w-full"
-        >
-          {waiting.map((request) => (
-            <NativeSelectOption
-              key={request.requestId}
-              value={request.requestId}
+      {waiting.length > 0 && (
+        <LiveField label="Visit for">
+          <NativeSelect
+            value={chosen}
+            onChange={(event) => setChosen(event.target.value)}
+            className="w-full"
+          >
+            <NativeSelectOptGroup
+              label={`${count(waiting.length, "request", "requests")} waiting on a visit`}
             >
-              {request.neighborName} · {need(request.kind, request.amount)}
+              {waiting.map((request) => (
+                <NativeSelectOption
+                  key={request.requestId}
+                  value={request.requestId}
+                >
+                  {request.neighborName} · {need(request.kind, request.amount)}
+                </NativeSelectOption>
+              ))}
+            </NativeSelectOptGroup>
+            <NativeSelectOption value={withoutRequest}>
+              A neighbor with no request, as a follow-up
             </NativeSelectOption>
-          ))}
-        </NativeSelect>
-      </LiveField>
+          </NativeSelect>
+        </LiveField>
+      )}
+      {chosen === withoutRequest && (
+        <div className="live-form-grid">
+          <LiveField label="Find the neighbor">
+            <Input
+              type="search"
+              autoComplete="off"
+              placeholder="Name, phone or street"
+              onChange={(event) => onSearch(event.target.value)}
+            />
+          </LiveField>
+          <LiveField label="Neighbor">
+            <NativeSelect
+              name="neighbor"
+              required
+              className="w-full"
+              key={neighbors?.[0]?.id ?? "none"}
+              defaultValue={neighbors?.[0]?.id ?? ""}
+            >
+              {neighbors?.length ? (
+                neighbors.map((neighbor) => (
+                  <NativeSelectOption key={neighbor.id} value={neighbor.id}>
+                    {neighbor.name} · {neighbor.address}
+                  </NativeSelectOption>
+                ))
+              ) : (
+                <NativeSelectOption value="" disabled>
+                  {neighbors ? "No one by that name" : "Looking…"}
+                </NativeSelectOption>
+              )}
+            </NativeSelect>
+          </LiveField>
+        </div>
+      )}
       <LiveField label="Day and time">
         <Input
           name="at"
           type="datetime-local"
           required
           step={900}
-          defaultValue={(board.suggested ?? undefined)?.at}
+          defaultValue={board.suggested?.at}
         />
       </LiveField>
-      <div className="live-form-grid">
+      <div className="live-form-grid" key={chosen}>
         <LiveField label="First visitor">
           <VisitorSelect
             name="first"

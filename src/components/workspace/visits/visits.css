@@ -208,12 +208,12 @@
 }
 /* On paper only the sheet is left: black on white, one page. */
 @media print {
-  @page { margin: 12mm 14mm; }
-  html, body, .live-app { background: #fff !important; }
-  /* Only when this sheet is on the page: every room's styles load together, so an unscoped rule here blanks the other rooms' printing. */
+  @page visit-sheet { margin: 12mm 14mm; }
+  html:has(.visits-paper), body:has(.visits-paper), body:has(.visits-paper) .live-app { background: #fff !important; }
+  /* Only when a visit sheet is on the page: every room's styles load together, so an unguarded rule here would blank the other rooms' printing. */
   body:has(.visits-paper) :not(:has(.visits-paper)):not(.visits-paper):not(.visits-paper *) { display: none !important; }
-  .live-layout, .live-main { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
-  .visits-paper { max-width: none; padding: 0; border: 0; box-shadow: none; background: none; animation: none; }
+  body:has(.visits-paper) .live-layout, body:has(.visits-paper) .live-main { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
+  .visits-paper { page: visit-sheet; max-width: none; padding: 0; border: 0; box-shadow: none; background: none; animation: none; }
   .visits-paper * { color: #000 !important; }
   .visits-paper-label, .visits-paper dt, .visits-paper-words span { font-size: 8pt; }
   .visits-paper h2 { font-size: 26pt; margin-bottom: 1mm; }
