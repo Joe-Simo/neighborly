@@ -100,11 +100,14 @@ describe("paying an approved request", () => {
     await expect(pay(60001)).rejects.toThrow("more than what is left");
     await pay(25000);
     expect(await owed()).toEqual([{ paid: 25000, remaining: 35000 }]);
+    expect((await t.run((ctx) => ctx.db.get("assistanceRequests", requestId)))?.status).toBe("approved");
     await expect(pay(35001)).rejects.toThrow("more than what is left");
     await pay(35000);
     expect(await owed()).toEqual([]);
-    await expect(pay(1)).rejects.toThrow("already paid in full");
+    // The last payment marks the request paid; a part payment leaves it approved.
+    await expect(pay(1)).rejects.toThrow("Only an approved request can be paid.");
     expect(await t.run((ctx) => paidTowardRequest(ctx, requestId))).toBe(60000);
+    expect((await t.run((ctx) => ctx.db.get("assistanceRequests", requestId)))?.status).toBe("paid");
   });
 
   test("only an approved request can be paid", async () => {
@@ -178,14 +181,16 @@ describe("money in and twinning gifts", () => {
 
 describe("taking an entry back", () => {
   test("a reversal is a new entry that restores the balance and leaves the original untouched", async () => {
-    const { ids, as, request, income, entries } = await setup();
+    const { t, ids, as, request, income, entries } = await setup();
     const owner = as(ids.owner);
+    const status = async () => (await t.run((ctx) => ctx.db.get("assistanceRequests", requestId)))?.status;
     await income(100000, day(9));
     const requestId = await request({ amountApproved: 30000 });
     const paymentId = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 30000, date: day(3) });
     const before = await entries();
     expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(70000);
     expect(await owner.query(api.treasury.payable, { churchId: ids.church })).toEqual([]);
+    expect(await status()).toBe("paid");
 
     const reversalId = await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: paymentId, reason: " Check was lost in the mail " });
     const after = await entries();
@@ -194,9 +199,11 @@ describe("taking an entry back", () => {
     expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(100000);
 
     // The request is owed again in full and can be paid again.
+    expect(await status()).toBe("approved");
     expect(await owner.query(api.treasury.payable, { churchId: ids.church })).toMatchObject([{ requestId, paid: 0, remaining: 30000 }]);
     await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 30000, date: day() });
     expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(70000);
+    expect(await status()).toBe("paid");
   });
 
   test("the month counts a payment taken back as less paid out, not as money in", async () => {

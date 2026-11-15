@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { neighborAccess } from "./access";
+import { settleRequest } from "./assistance";
 
 /**
  * The treasury: one ledger per group. Money is whole cents, always positive; the entry kind says
@@ -228,7 +229,10 @@ export const recordPayment = mutation({
     const remaining = request.amountApproved - (await paidTowardRequest(ctx, request._id));
     if (args.amount > remaining) throw new Error(remaining > 0 ? "This is more than what is left of the approved amount." : "This request is already paid in full.");
 
-    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date, category: request.kind, payee, memo, requestId: request._id, neighborId: request.neighborId, recordedBy: member._id, createdAt: Date.now() });
+    const entryId = await ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date, category: request.kind, payee, memo, requestId: request._id, neighborId: request.neighborId, recordedBy: member._id, createdAt: Date.now() });
+    // The last payment closes the request, through the one function the help line exposes for it.
+    if (args.amount === remaining) await settleRequest(ctx, member, request._id, true);
+    return entryId;
   },
 });
 
@@ -276,6 +280,8 @@ export const reverseEntry = mutation({
     if (!reason) throw new Error("Say why this entry is being reversed.");
     if (reason.length > MEMO_LIMIT) throw new Error(`Keep the reason under ${MEMO_LIMIT} characters.`);
     const date = today((await group(ctx, args.churchId)).timeZone);
+    // Taking back a payment on a request that was paid in full means it is owed again.
+    if (entry.kind === "expense" && entry.requestId && (await ctx.db.get("assistanceRequests", entry.requestId))?.status === "paid") await settleRequest(ctx, member, entry.requestId, false);
     return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: entry.kind === "income" ? "expense" : "income", amount: entry.amount, date, category: entry.category, payee: entry.payee, memo: `Reversal: ${reason}`, requestId: entry.requestId, neighborId: entry.neighborId, reverses: entry._id, recordedBy: member._id, createdAt: Date.now() });
   },
 });
