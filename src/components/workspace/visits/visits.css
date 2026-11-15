@@ -210,7 +210,8 @@
 @media print {
   @page { margin: 12mm 14mm; }
   html, body, .live-app { background: #fff !important; }
-  body :not(:has(.visits-paper)):not(.visits-paper):not(.visits-paper *) { display: none !important; }
+  /* Only when this sheet is on the page: every room's styles load together, so an unscoped rule here blanks the other rooms' printing. */
+  body:has(.visits-paper) :not(:has(.visits-paper)):not(.visits-paper):not(.visits-paper *) { display: none !important; }
   .live-layout, .live-main { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
   .visits-paper { max-width: none; padding: 0; border: 0; box-shadow: none; background: none; animation: none; }
   .visits-paper * { color: #000 !important; }

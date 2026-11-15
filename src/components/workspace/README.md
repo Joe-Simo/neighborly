@@ -43,6 +43,11 @@ visits or the ledger starts with `neighborAccess(ctx, churchId)`, never
 record goes through a mutation that calls `logNeighborOpening()`. Styles go in a CSS
 file imported by the section, using the existing `live-*` classes first.
 
+Every room's CSS loads on every workspace page, so a rule is never private to
+its room. Prefix class names with the room's name, and start any print rule
+that hides the rest of the page from `body:has(.your-sheet)`, or it blanks
+every other room's printing.
+
 To appear in the menu a section needs one line each in `areas.ts`,
 `navigation.ts` (entry, heading, primary action) and `sections.ts`.
 A help-side room's heading carries `room: "help"` and, except for a single

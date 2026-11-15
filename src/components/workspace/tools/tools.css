@@ -47,7 +47,8 @@
 @media print {
   @page { margin: 14mm; }
   html, body, .live-app { background: #fff !important; }
-  body :not(:has(.tools-rota)):not(.tools-rota):not(.tools-rota *) { display: none !important; }
+  /* Only when this sheet is on the page: every room's styles load together, so an unscoped rule here blanks the other rooms' printing. */
+  body:has(.tools-rota) :not(:has(.tools-rota)):not(.tools-rota):not(.tools-rota *) { display: none !important; }
   .live-layout, .live-main { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
   html, body, .live-app, .live-layout, .live-main { min-height: 0 !important; height: auto !important; }
   .tools-rota { margin: 0; }

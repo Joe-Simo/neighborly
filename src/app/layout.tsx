@@ -7,13 +7,13 @@ export const viewport: Viewport = {
 };
 export const metadata: Metadata = {
   metadataBase: new URL("https://kindhelps.com"),
-  title: "Neighborly — Good work, together.",
+  title: "Kind Helps — Good work, together.",
   description:
     "A place for churches and communities to organize volunteering, bring people together, and help in their own way.",
   openGraph: {
-    title: "Neighborly — Good work, together.",
+    title: "Kind Helps — Good work, together.",
     description: "Your people. Your way to help. Volunteering for churches and communities.",
-    images: [{ url: "/assets/living-relief-poster.webp", width: 1440, height: 1024, alt: "Neighborly’s painted community and welcome guide" }],
+    images: [{ url: "/assets/living-relief-poster.webp", width: 1440, height: 1024, alt: "The painted community and welcome guide of Kind Helps" }],
   },
   twitter: { card: "summary_large_image" },
 };
