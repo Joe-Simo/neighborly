@@ -125,5 +125,8 @@
   .live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr); column-gap: 16px; row-gap: 2px; padding-block: 12px; }
   .live-app .help-neighbor > :nth-child(3) { grid-column: 2; }
   .live-app .help-neighbor h3 { font-size: 21px; }
-  .live-app .help-neighbor p { font-size: 15px; }
+  /* On a phone the line keeps where they live and when they were last helped, and may wrap so neither is cut. */
+  .live-app .help-neighbor p { font-size: 15px; white-space: normal; }
+  .help-household { display: none; }
+  .help-last { white-space: nowrap; }
 }

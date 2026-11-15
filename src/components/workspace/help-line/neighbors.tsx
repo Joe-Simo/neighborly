@@ -113,6 +113,7 @@ function NeighborRow({
   neighbor: Row;
   format: Workspace["format"];
 }) {
+  const dot = neighbor.address || neighbor.phone ? " · " : "";
   return (
             <div className="help-row help-neighbor">
               <span className="help-avatar" aria-hidden="true">
@@ -125,15 +126,17 @@ function NeighborRow({
                   </Link>
                 </h3>
                 <p>
-                  {[
-                    neighbor.address || neighbor.phone,
-                    household(neighbor.adults, neighbor.children),
-                    neighbor.lastHelpedAt
+                  {neighbor.address || neighbor.phone}
+                  <span className="help-household">
+                    {dot}
+                    {household(neighbor.adults, neighbor.children)}
+                  </span>{" "}
+                  <span className="help-last">
+                    {dot}
+                    {neighbor.lastHelpedAt
                       ? `last helped ${format(neighbor.lastHelpedAt, { day: undefined, year: "numeric" })}`
-                      : "not helped yet",
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
+                      : "not helped yet"}
+                  </span>
                 </p>
               </div>
               <div className="live-row-actions">
