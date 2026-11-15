@@ -99,16 +99,17 @@ export function HelpDone({ children }: { children: string }) {
 
 /** Every neighbor screen opens through here: members see the door, never an error. */
 export function HelpRoom({
-  loading,
   children,
 }: {
-  loading: string;
+  /** No longer read: until the room knows who is asking, the wait is said in the person's own language. */
+  loading?: string;
   children: ReactNode;
 }) {
-  const { data } = useWorkspace();
+  const { data, words } = useWorkspace();
   const allowed = useQuery(api.access.canOpenNeighborRecords, {
     churchId: data.church.id,
   });
-  if (allowed === undefined) return <HelpLoading label={loading} />;
+  if (allowed === undefined)
+    return <HelpLoading label={words.states.opening} />;
   return allowed ? children : <KeptPrivate />;
 }

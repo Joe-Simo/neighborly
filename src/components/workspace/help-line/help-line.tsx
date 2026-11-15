@@ -66,7 +66,7 @@ const caller = (call: Call) =>
 
 export function HelpLineSection() {
   return (
-    <HelpRoom loading="Opening the help line">
+    <HelpRoom>
       <HelpLine />
     </HelpRoom>
   );

@@ -31,7 +31,7 @@ export function NeighborsSection() {
   const address = useSearchParams();
   const neighborId = address.get("neighbor");
   return (
-    <HelpRoom loading="Opening neighbor records">
+    <HelpRoom>
       {neighborId ? (
         // The id comes from the address bar; the backend refuses anything that is not a record in this group.
         <NeighborRecord
