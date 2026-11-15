@@ -100,6 +100,11 @@ export function DateField({
       selected={chosen ? toDay(chosen) : undefined}
       defaultMonth={chosen ? toDay(chosen) : min ? toDay(min) : undefined}
       disabled={[...(min ? [{ before: toDay(min) }] : []), ...(max ? [{ after: toDay(max) }] : [])]}
+      // A day's name starts with the number it shows, then says the rest: "1, Sunday, November 2026".
+      labels={{
+        labelDayButton: (day) =>
+          `${day.getDate()}, ${formatDate(words.locale, day.getTime(), { weekday: "long" })}, ${formatDate(words.locale, day.getTime(), { month: "long", year: "numeric" })}`,
+      }}
       onSelect={(day) => {
         if (!day) return;
         choose(toValue(day));
@@ -168,7 +173,7 @@ export function DateField({
           />
         </span>
       </PopoverAnchor>
-      <PopoverContent className="live-date-sheet" collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
+      <PopoverContent className="live-date-sheet" aria-label={label || words.dateField.choose} collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
         {month}
       </PopoverContent>
       <Dialog open={open && sheet} onOpenChange={setOpen}>
