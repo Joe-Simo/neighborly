@@ -83,8 +83,8 @@ export function LedgerView({
             Record the balance your conference holds today. Every gift and
             every payment after it will add up from there.
           </p>
-          <Button onClick={onRecord}>
-            <Plus size={18} aria-hidden="true" /> Record money
+          <Button variant="outline" onClick={onRecord}>
+            <Plus size={18} aria-hidden="true" /> Record the opening balance
           </Button>
         </div>
       </div>
@@ -206,12 +206,7 @@ export function LedgerView({
             <ChevronRight aria-hidden="true" />
           </Button>
         </div>
-        <div className="treasury-tools">
-          <span className="live-count">Every payment is tied to a request</span>
-          <Button variant={first ? "outline" : "default"} onClick={onRecord}>
-            <Plus size={18} aria-hidden="true" /> Record money
-          </Button>
-        </div>
+        <span className="live-count">Every payment is tied to a request</span>
       </div>
       {ledger.entries.length ? (
         <div className="live-table-scroll">
@@ -233,6 +228,7 @@ export function LedgerView({
                   <tr
                     key={entry.id}
                     data-reversed={entry.reversed ? "" : undefined}
+                    data-quiet={entry.reverses ? "" : undefined}
                   >
                     <td>{dayLabel(entry.date)}</td>
                     <td className="help-what">
@@ -278,7 +274,8 @@ export function LedgerView({
                   + {formatCents(ledger.moneyIn)}
                 </td>
                 <td className="help-money">{formatCents(ledger.moneyOut)}</td>
-                <td className="help-money">
+                <td className="help-money" data-total>
+                  <span>Balance </span>
                   {formatCents(ledger.opening + ledger.moneyIn - ledger.moneyOut)}
                 </td>
               </tr>

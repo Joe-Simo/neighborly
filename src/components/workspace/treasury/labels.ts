@@ -25,10 +25,15 @@ const kinds: Record<string, string> = {
 /** Payments carry the request's kind as their category; money in carries its source as written. */
 export const categoryLabel = (category: string) => kinds[category] ?? category;
 
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+
 /** The two lines a ledger row reads as: what it was, then who was paid or where it came from. */
 export function entryLines(entry: LedgerEntry) {
   if (entry.reverses)
-    return { title: entry.memo, detail: `${categoryLabel(entry.category)}, ${entry.payee}` };
+    return {
+      title: `Reversed: ${lowerFirst(entry.summary ?? categoryLabel(entry.category))}, ${lowerFirst(entry.memo)}`,
+      detail: `${entry.kind === "income" ? "Back from" : "Taken back from"} ${entry.payee}`,
+    };
   if (entry.summary)
     return { title: entry.summary, detail: `Paid to ${entry.payee}${entry.memo && ` · ${entry.memo}`}` };
   if (entry.category === TWINNING_GIFT)

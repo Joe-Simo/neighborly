@@ -195,7 +195,7 @@ describe("taking an entry back", () => {
     const reversalId = await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: paymentId, reason: " Check was lost in the mail " });
     const after = await entries();
     expect(after.slice(0, before.length)).toEqual(before);
-    expect(after.at(-1)).toMatchObject({ _id: reversalId, kind: "income", amount: 30000, date: day(), category: "utility", payee: "Demo Power & Light", memo: "Reversal: Check was lost in the mail", requestId, neighborId: ids.neighbor, reverses: paymentId });
+    expect(after.at(-1)).toMatchObject({ _id: reversalId, kind: "income", amount: 30000, date: day(), category: "utility", payee: "Demo Power & Light", memo: "Check was lost in the mail", requestId, neighborId: ids.neighbor, reverses: paymentId });
     expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(100000);
 
     // The request is owed again in full and can be paid again.

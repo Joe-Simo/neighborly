@@ -282,6 +282,6 @@ export const reverseEntry = mutation({
     const date = today((await group(ctx, args.churchId)).timeZone);
     // Taking back a payment on a request that was paid in full means it is owed again.
     if (entry.kind === "expense" && entry.requestId && (await ctx.db.get("assistanceRequests", entry.requestId))?.status === "paid") await settleRequest(ctx, member, entry.requestId, false);
-    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: entry.kind === "income" ? "expense" : "income", amount: entry.amount, date, category: entry.category, payee: entry.payee, memo: `Reversal: ${reason}`, requestId: entry.requestId, neighborId: entry.neighborId, reverses: entry._id, recordedBy: member._id, createdAt: Date.now() });
+    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: entry.kind === "income" ? "expense" : "income", amount: entry.amount, date, category: entry.category, payee: entry.payee, memo: reason, requestId: entry.requestId, neighborId: entry.neighborId, reverses: entry._id, recordedBy: member._id, createdAt: Date.now() });
   },
 });

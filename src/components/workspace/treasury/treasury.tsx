@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useMutation, useQuery } from "convex/react";
 import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -35,7 +41,7 @@ type Open =
   | { is: "entry"; entry: LedgerEntry };
 
 export function TreasurySection() {
-  const { data } = useWorkspace();
+  const { data, setHeadAction } = useWorkspace();
   const churchId = data.church.id;
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
   const [month, setMonth] = useState<string>();
@@ -55,6 +61,15 @@ export function TreasurySection() {
   useEffect(() => {
     if (done) notice.current?.focus({ preventScroll: true });
   }, [done]);
+  const recordMoney = useCallback(() => {
+    setDone("");
+    setOpen({ is: "money" });
+  }, []);
+  useLayoutEffect(() => {
+    if (!allowed) return;
+    setHeadAction({ label: "Record money", run: recordMoney });
+    return () => setHeadAction(null);
+  }, [allowed, recordMoney, setHeadAction]);
   // The month last shown stays on screen while the next one loads.
   const [shown, setShown] = useState(ledger);
   if (ledger && ledger !== shown) setShown(ledger);
@@ -104,7 +119,7 @@ export function TreasurySection() {
         payable={payable}
         onMonth={setMonth}
         onPay={(request) => show({ is: "payment", request })}
-        onRecord={() => show({ is: "money" })}
+        onRecord={recordMoney}
         onEntry={(entry) => show({ is: "entry", entry })}
       />
       <Dialog
