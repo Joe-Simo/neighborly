@@ -34,7 +34,7 @@ export function monthLabel(month: string, short = false) {
 /** "Oct 2025 to Sep 2026" */
 export const spanLabel = (report: Pick<YearReport, "firstDay" | "lastDay">) =>
   `${monthLabel(report.firstDay, true)} ${report.firstDay.slice(0, 4)} to ${monthLabel(report.lastDay, true)} ${report.lastDay.slice(0, 4)}`;
-const dayLabel = (day: string) => `${monthNames[Number(day.slice(5, 7)) - 1]} ${Number(day.slice(8))}, ${day.slice(0, 4)}`;
+export const dayLabel = (day: string) => `${monthNames[Number(day.slice(5, 7)) - 1]} ${Number(day.slice(8))}, ${day.slice(0, 4)}`;
 /** "October 1, 2025 to September 30, 2026" */
 export const longSpanLabel = (report: Pick<YearReport, "firstDay" | "lastDay">) =>
   `${dayLabel(report.firstDay)} to ${dayLabel(report.lastDay)}`;
@@ -98,6 +98,10 @@ export function reportLines(report: YearReport): ReportLine[] {
   requests.money("Amount asked for", report.requests.amountRequested);
   requests.money("Amount approved", report.requests.amountApproved);
   requests.money("Paid toward these requests", report.requests.paidTowardThese);
+  if (report.requests.paidLater.requests > 0 || report.requests.paidLater.amount > 0) {
+    requests.count("Paid after the period ended", report.requests.paidLater.requests);
+    requests.money("Amount paid after the period ended", report.requests.paidLater.amount);
+  }
   requests.money("Paid toward earlier requests", report.requests.paidTowardEarlier);
 
   const paid = section("Help paid");
@@ -120,6 +124,7 @@ export function reportLines(report: YearReport): ReportLine[] {
   calls.count("Calls taken", report.calls.taken);
   calls.count("Calls returned", report.calls.returned);
   calls.count("Waiting for a call back", report.calls.waiting);
+  calls.count("No call back needed", report.calls.taken - report.calls.returned - report.calls.waiting);
 
   const time = section("Time given");
   time.count("Hours on home visits", report.visitHours);

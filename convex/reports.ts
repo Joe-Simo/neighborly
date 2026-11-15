@@ -123,6 +123,8 @@ export const yearReport = v.object({
     amountApproved: v.number(),
     /** Of the help paid in the period: the part toward requests received in the period, and the part toward earlier ones. Together they are helpPaid. */
     paidTowardThese: v.number(),
+    /** Requests received in the period and marked paid whose payment is dated after the period: how many, and how much of the approved amount. */
+    paidLater: v.object({ requests: v.number(), amount: v.number() }),
     paidTowardEarlier: v.number(),
   }),
   calls: v.object({ taken: v.number(), returned: v.number(), waiting: v.number() }),
@@ -190,6 +192,25 @@ export const years = query({
     const starts = [call?.takenAt, request?.createdAt, visit?.scheduledAt, entry && DateTime.fromISO(entry.date, { zone: church.timeZone }).toMillis()].flatMap((time) => (time === undefined || time === null ? [] : [time]));
     const first = Math.min(current, ...starts.map((time) => fiscalYearOf(time, church.timeZone)));
     return { current, years: Array.from({ length: current - first + 1 }, (_, index) => current - index) };
+  },
+});
+
+/**
+ * Whose record holds each request, so a flagged request can be opened. Ids only, never a name.
+ * A request from another group, or one that is gone, comes back with no neighbor.
+ */
+export const requestHomes = query({
+  args: { churchId: v.id("churches"), requestIds: v.array(v.id("assistanceRequests")) },
+  returns: v.array(v.object({ requestId: v.id("assistanceRequests"), neighborId: v.union(v.id("neighbors"), v.null()) })),
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    if (args.requestIds.length > 500) throw new Error("Too many records to open at once.");
+    return await Promise.all(
+      args.requestIds.map(async (requestId) => {
+        const request = await ctx.db.get("assistanceRequests", requestId);
+        return { requestId, neighborId: request?.churchId === args.churchId ? (request.neighborId ?? null) : null };
+      }),
+    );
   },
 });
 
@@ -293,6 +314,13 @@ export const year = query({
     const receivedIds = new Set(requests.map((request) => request._id));
     let paidTowardThese = 0;
     for (const [requestId, toward] of paidByRequest) if (receivedIds.has(requestId)) paidTowardThese += toward.paid;
+    const paidLater = { requests: 0, amount: 0 };
+    for (const request of requests) {
+      if (request.status !== "paid") continue;
+      const paid = paidByRequest.get(request._id)?.paid ?? 0;
+      if (paid <= 0) paidLater.requests += 1;
+      paidLater.amount += Math.max(0, (request.amountApproved ?? 0) - paid);
+    }
 
     const serving = new Map<Id<"memberships">, { visits: number; shifts: number; hours: number; miles: number }>();
     const served = (memberId: Id<"memberships">) => {
@@ -378,7 +406,7 @@ export const year = query({
         const line = kindLineFor(value);
         return { kind: value, requests: line.requests, requestsPaid: line.requestsPaid, households: line.neighbors.size, people: [...line.neighbors].reduce((people, id) => people + size(id), 0), paid: line.paid };
       }),
-      requests: { received: requests.length, ...status, referred, amountRequested, amountApproved, paidTowardThese, paidTowardEarlier: helpPaid - paidTowardThese },
+      requests: { received: requests.length, ...status, referred, amountRequested, amountApproved, paidTowardThese, paidLater, paidTowardEarlier: helpPaid - paidTowardThese },
       history: {
         requests: imported.length,
         households: historyHouseholds.length,

@@ -13,7 +13,7 @@ const report = {
     { kind: "voucher", requests: 0, requestsPaid: 0, households: 0, people: 0, paid: 0 },
     { kind: "other", requests: 0, requestsPaid: 0, households: 0, people: 0, paid: 0 },
   ],
-  requests: { received: 3, open: 0, approved: 0, paid: 2, declined: 1, closed: 0, referred: 1, amountRequested: 70000, amountApproved: 45050, paidTowardThese: 45050, paidTowardEarlier: 0 },
+  requests: { received: 3, open: 0, approved: 0, paid: 2, declined: 1, closed: 0, referred: 1, amountRequested: 70000, amountApproved: 45050, paidTowardThese: 45050, paidLater: { requests: 0, amount: 0 }, paidTowardEarlier: 0 },
   calls: { taken: 5, returned: 4, waiting: 1 },
   history: { requests: 0, households: 0, people: 0, amount: 0, kinds: [], householdsInAll: 2, peopleInAll: 7 },
   time: { hours: 13.5, shiftHours: 6, activeMembers: 4, membersServing: 3, teams: [{ teamId: "team" as YearReport["time"]["teams"][number]["teamId"], name: "Help line", shifts: 2, people: 2, hours: 6 }], members: [{ memberId: "member" as YearReport["time"]["members"][number]["memberId"], name: "Sample Helper", visits: 3, shifts: 2, hours: 9.75, miles: 32 }] },

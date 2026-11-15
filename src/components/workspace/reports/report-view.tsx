@@ -9,6 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
 import {
   count,
+  dayLabel,
   isBlank,
   kindLabels,
   longSpanLabel,
@@ -131,6 +132,7 @@ export function ReportView({
   done,
   onPrint,
   onSpreadsheet,
+  sheet,
 }: {
   report: YearReport;
   groupName: string;
@@ -144,10 +146,14 @@ export function ReportView({
   done?: string;
   onPrint: () => void;
   onSpreadsheet: () => void;
+  /** What the check found: the one sheet on this screen. */
+  sheet?: React.ReactNode;
 }) {
   const [everyLine, setEveryLine] = useState(false);
   const soFar = report.closed ? "" : " so far";
   const noun = periodNoun(report);
+  const blank = isBlank(report);
+  const noCallBack = report.calls.taken - report.calls.returned - report.calls.waiting;
   const period = (
     <div className="report-period">
       <p>
@@ -155,11 +161,23 @@ export function ReportView({
         {longSpanLabel(report)}
         {soFar && ", so far"}
       </p>
-      {years}
+      <div className="report-controls">
+        {years}
+        {!blank && (
+          <div className="live-row-actions report-actions">
+            <Button variant="outline" onClick={onPrint}>
+              <Printer size={17} aria-hidden="true" /> Print this {noun}
+            </Button>
+            <Button variant="outline" onClick={onSpreadsheet}>
+              <Download size={17} aria-hidden="true" /> Spreadsheet
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 
-  if (isBlank(report))
+  if (blank)
     return (
       <div className="report">
         {period}
@@ -217,6 +235,7 @@ export function ReportView({
         </p>
       </header>
       {period}
+      {sheet}
       {done && <HelpDone>{done}</HelpDone>}
 
       <dl className="help-figures">
@@ -252,14 +271,6 @@ export function ReportView({
 
       <div className="live-section-head">
         <h2>By kind of help</h2>
-        <div className="live-row-actions report-actions">
-          <Button variant="outline" onClick={onPrint}>
-            <Printer size={17} aria-hidden="true" /> Print this {noun}
-          </Button>
-          <Button variant="outline" onClick={onSpreadsheet}>
-            <Download size={17} aria-hidden="true" /> Spreadsheet
-          </Button>
-        </div>
       </div>
       <ol className="help-bars">
         {report.kinds.map((line) => (
@@ -345,6 +356,14 @@ export function ReportView({
               </li>
             ))}
           </ul>
+          {report.requests.paidLater.amount > 0 && (
+            <p className="report-aside">
+              {report.requests.paidLater.requests > 0
+                ? `${plural(report.requests.paidLater.requests, "paid request")} of these, ${money(report.requests.paidLater.amount)} in all, ${report.requests.paidLater.requests === 1 ? "was" : "were"} paid after ${dayLabel(report.lastDay)}.`
+                : `${money(report.requests.paidLater.amount)} of what was approved was paid after ${dayLabel(report.lastDay)}.`}{" "}
+              That money counts in the period it was paid, so it is not in help paid here.
+            </p>
+          )}
         </section>
       )}
 
@@ -379,7 +398,10 @@ export function ReportView({
             <dt>Calls returned</dt>
             <dd>
               {count(report.calls.returned)}
-              <small>Of {plural(report.calls.taken, "call")} taken</small>
+              <small>
+                Of {plural(report.calls.taken, "call")} taken
+                {noCallBack > 0 && ` · ${count(noCallBack)} needed no call back`}
+              </small>
             </dd>
           </div>
         </dl>
