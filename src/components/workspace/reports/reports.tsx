@@ -38,7 +38,7 @@ class ReportBoundary extends Component<{ children: ReactNode }, { failed: boolea
 }
 
 function Report() {
-  const { data, now, setHeadAction } = useWorkspace();
+  const { data, now, setHeadAction, words } = useWorkspace();
   const churchId = data.church.id;
   const onRecord = useQuery(api.reports.years, { churchId });
   const [chosen, setChosen] = useState<number>();
@@ -131,6 +131,7 @@ function Report() {
           found?.result &&
           !quarter && (
             <YearCheck
+              text={words.yearCheck}
               result={found.result}
               homes={new Map(homes?.map((home) => [home.requestId, home.neighborId]))}
               onClose={() => setCheck(undefined)}

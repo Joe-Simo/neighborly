@@ -6,7 +6,7 @@ import { Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { words } from "@/lib/words";
+import type { Words } from "@/lib/words";
 
 export type YearCheckResult = FunctionReturnType<typeof api.drafts.checkYear>;
 type Flag = YearCheckResult["flags"][number];
@@ -16,16 +16,18 @@ type Flag = YearCheckResult["flags"][number];
  * every line opens the record so a person can settle it. Nothing here changes a record.
  */
 export function YearCheck({
+  text,
   result,
   homes,
   onClose,
 }: {
+  /** The words in the reader's own language. */
+  text: Words["yearCheck"];
   result: YearCheckResult;
   /** The neighbor record that holds each flagged request. */
   homes: ReadonlyMap<Id<"assistanceRequests">, Id<"neighbors"> | null>;
   onClose: () => void;
 }) {
-  const text = words().yearCheck;
   const groups = new Map<string, Flag[]>();
   for (const flag of result.flags) groups.set(`${flag.kind} ${flag.source}`, [...(groups.get(`${flag.kind} ${flag.source}`) ?? []), flag]);
   const address = ({ record }: Flag) => {
