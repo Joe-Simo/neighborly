@@ -221,7 +221,6 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
   };
 
   return <main className="painted-world" id="story-start" data-scene={visibleScene} data-hero-only={heroOnly} data-passed={passed} data-ready={ready} data-failed={failed} tabIndex={-1}>
-    {heroOnly && <h1 className="sr-only">Kind Helps — good work, together.</h1>}
     <a className="painted-world-skip" href={heroOnly ? "#how-neighborly-works" : "#your-community"}>Skip to how Kind Helps works</a>
     {/* Fixed to the screen, and early in the page so a keyboard reaches it before the journey. */}
     {heroOnly && <div className="paper-sound-dock"><PaintedScoreControl scene={sound?.scene ?? visibleScene} className="painted-world-sound" /></div>}
@@ -248,7 +247,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
         <div className="painted-world-caption" key={visibleScene}>
           <div aria-live="polite" aria-atomic="true">
           <p className="painted-world-kicker" aria-hidden={heroOnly || undefined}>{chapter.name}</p>
-          <h1 aria-level={heroOnly ? 2 : undefined}>{chapter.title}</h1>
+          <h1>{chapter.title}</h1>
           <p className="painted-world-description">{chapter.copy}{heroOnly && onPass && !passed && " Pass the card to begin."}</p>
           </div>
           {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Kind Helps">
