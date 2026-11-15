@@ -10,7 +10,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import { HelpDialog } from "@/components/workspace/help-line/forms";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import { count, initials } from "@/components/workspace/help-line/format";
 import {
   HelpDone,
@@ -135,7 +135,7 @@ function Visits() {
         }
       />
       {step?.kind === "plan" && (
-        <HelpDialog
+        <LiveDialog
           title="Plan a visit"
           description="Two people go together, always."
           onClose={() => setStep(null)}
@@ -150,10 +150,10 @@ function Visits() {
               )
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "replace" && (
-        <HelpDialog
+        <LiveDialog
           title={`${firstName(step.leaving.name)} can’t go`}
           description={`Choose who goes to ${step.visit.neighborName} with ${step.visit.visitors.find((visitor) => visitor.memberId !== step.leaving.memberId)?.name ?? "the other visitor"}.`}
           onClose={() => setStep(null)}
@@ -168,10 +168,10 @@ function Visits() {
               )
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "writeUp" && (
-        <HelpDialog
+        <LiveDialog
           title={`The visit to ${step.visit.neighborName}`}
           description={`${day(step.visit.scheduledAt)} at ${time(step.visit.scheduledAt)}, ${step.visit.visitors.map((visitor) => visitor.name).join(" and ")}.`}
           onClose={() => setStep(null)}
@@ -185,7 +185,7 @@ function Visits() {
               )
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
     </div>
   );

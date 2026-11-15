@@ -10,7 +10,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import { HelpDialog } from "@/components/workspace/help-line/forms";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import { count, languageLabels } from "@/components/workspace/help-line/format";
 import { HelpLoading } from "@/components/workspace/help-line/room";
 import { useSave } from "@/components/workspace/help-line/use-save";
@@ -66,7 +66,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
         onChangeTime={() => setStep("time")}
       />
       {step === "time" && (
-        <HelpDialog
+        <LiveDialog
           title="Change the time"
           description={`${sheet.visitors.join(" and ")} will be asked again, since their yes was for the old time.`}
           onClose={() => setStep(null)}
@@ -79,10 +79,10 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
             }).toFormat("yyyy-MM-dd'T'HH:mm")}
             onSaved={() => setStep(null)}
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {confirming && (
-        <HelpDialog
+        <LiveDialog
           title="Call off this visit?"
           description={`${sheet.neighbor.name} goes back to waiting for a pair. ${sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent. Please tell ${sheet.visitors.map((name) => name.split(/\s+/)[0]).join(" and ")} yourself.`}
           onClose={() => setConfirming(false)}
@@ -106,7 +106,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
               Call off the visit
             </Button>
           </div>
-        </HelpDialog>
+        </LiveDialog>
       )}
     </>
   );
