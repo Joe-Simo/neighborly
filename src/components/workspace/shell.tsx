@@ -287,7 +287,7 @@ export function LiveWorkspace({
               )}
               <p className="live-kicker">
                 {churchName}
-                {data.church.sample ? " · Sample" : ""}
+                {data.church.sample ? ` · ${words.shell.sample}` : ""}
               </p>
               <h1>{heading.title}</h1>
               <p className="live-deck">{heading.deck}</p>
