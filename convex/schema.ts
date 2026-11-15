@@ -92,6 +92,9 @@ export default defineSchema({
     decisionNote: v.string(),
     decidedBy: v.optional(v.id("memberships")),
     decidedAt: v.optional(v.number()),
+    // Closing a request is recorded apart from the decision, so who approved the money is never overwritten.
+    closedBy: v.optional(v.id("memberships")),
+    closedAt: v.optional(v.number()),
     payeeKind: v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"), v.literal("neighbor")),
     payeeName: v.string(),
     source: v.union(v.literal("person"), v.literal("ai_draft"), v.literal("import")),
