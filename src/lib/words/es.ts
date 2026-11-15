@@ -281,6 +281,7 @@ export function es(set: WordSet): Words {
       notSaved: "No se guardó tu respuesta. Inténtalo de nuevo.",
       on: (street) => `Una visita en ${street}`,
       nearby: "una calle cercana",
+      partnerOpen: "Tu coordinador está buscando a un segundo visitador.",
       partner: (name) => `Con ${name}. Tu coordinador tiene la hoja de la visita.`,
       go: "Voy",
       cannot: "No puedo ir",

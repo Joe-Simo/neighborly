@@ -276,6 +276,7 @@ export function ht(set: WordSet): Words {
       notSaved: "Repons ou pa anrejistre. Eseye ankò.",
       on: (street) => `Yon vizit nan ${street}`,
       nearby: "yon ri ki pre",
+      partnerOpen: "Kowòdonatè ou ap chèche yon dezyèm vizitè.",
       partner: (name) => `Avèk ${name}. Kowòdonatè ou gen fèy vizit la.`,
       go: "M ap ale",
       cannot: "Mwen pa ka ale",
