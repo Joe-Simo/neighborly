@@ -234,6 +234,8 @@ export const yearRecords = internalQuery({
     };
     for (const request of requests) {
       if (request.status !== "approved" && request.status !== "paid" && request.status !== "open") continue;
+      // A voucher comes off the shelf and nobody is paid, so a missing payment is not a fault.
+      if (request.kind === "voucher" || request.amountApproved === 0) continue;
       const record = { table: "assistanceRequests" as const, id: request._id };
       const payment = await ctx.db.query("ledgerEntries").withIndex("by_request", q => q.eq("requestId", request._id)).first();
       if (payment) continue;

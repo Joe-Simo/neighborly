@@ -221,6 +221,11 @@ describe("the year's counts for the sample conference", () => {
     `);
   });
 
+  test("the check before sending finds nothing wrong in a fresh sample, vouchers included", async () => {
+    const { as, churchId, owner } = await sample();
+    for (const year of [2026, 2027]) expect((await as(owner.userId).action(api.drafts.checkYear, { churchId, year })).flags, String(year)).toEqual([]);
+  });
+
   test("the years on offer run from the first record to today's", async () => {
     const { as, churchId, coordinator } = await sample();
     expect(await as(coordinator.userId).query(api.reports.years, { churchId })).toEqual({ current: 2027, years: [2027, 2026] });

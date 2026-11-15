@@ -159,6 +159,8 @@ describe("a call note drafted into a request", () => {
       const neighbor = (await ctx.db.query("neighbors").first())!;
       const request = (status: "open" | "approved" | "paid", decisionNote: string, decidedAt?: number) => ctx.db.insert("assistanceRequests", { churchId: ids.churchId, neighborId: neighbor._id, kind: "rent", summary: "", amountRequested: 45000, status, decisionNote, decidedAt, payeeKind: "landlord", payeeName: "Sample Property Co", source: "person", createdBy: ids.coordinator.memberId, createdAt: now - 40 * day });
       const visit = (status: "scheduled" | "completed", notes: string, hours: number) => ctx.db.insert("visits", { churchId: ids.churchId, neighborId: neighbor._id, scheduledAt: now - 5 * day, status, visitors: [{ memberId: ids.coordinator.memberId, hours, miles: 0 }], notes, createdBy: ids.coordinator.memberId, createdAt: now - 6 * day });
+      // A voucher given from the shelf is marked paid with no money owed: never a missing payment.
+      await ctx.db.insert("assistanceRequests", { churchId: ids.churchId, neighborId: neighbor._id, kind: "voucher", summary: "A bed", amountRequested: 0, amountApproved: 0, status: "paid", decisionNote: "", payeeKind: "vendor", payeeName: "", voucher: { item: "Bed", quantity: 1 }, source: "person", createdBy: ids.coordinator.memberId, createdAt: now - 40 * day });
       const settled = await request("paid", "");
       await ctx.db.insert("ledgerEntries", { churchId: ids.churchId, kind: "expense", amount: 45000, date: "2026-11-01", category: "rent", payee: "Sample Property Co", memo: "", requestId: settled, recordedBy: ids.coordinator.memberId, createdAt: now });
       return {
