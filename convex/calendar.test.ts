@@ -42,14 +42,25 @@ async function setup() {
     await visit([marisol.memberId, renee.memberId]);
     await visit([thomas.memberId, renee.memberId]);
     await visit([marisol.memberId, thomas.memberId], "cancelled");
+    // A visit already made, to someone on another street: once it is done it leaves the feed.
+    const earlier = await ctx.db.insert("neighbors", { churchId: church, name: "Wendell Orlov", nameKey: "wendell orlov", phone: "(555) 0177", phoneKey: "5550177", email: "", address: "88 Fixture Ln", adults: 2, children: 0, language: "en", notes: "", createdBy: thomas.memberId, createdAt: now });
+    await ctx.db.insert("visits", { churchId: church, neighborId: earlier, scheduledAt: now - 3 * DAY, status: "completed", visitors: [marisol.memberId, renee.memberId].map((memberId) => ({ memberId, hours: 1.5, miles: 8 })), notes: "Reviewed the lease together.", completedAt: now - 3 * DAY, createdBy: thomas.memberId, createdAt: now });
+    // Another group entirely, with its own neighbor and visit.
+    const elsewhere = await ctx.db.insert("churches", { name: "St. Sample Conference", timeZone: "America/New_York" });
+    const strangerUser = await ctx.db.insert("users", {});
+    const stranger = await ctx.db.insert("memberships", { churchId: elsewhere, userId: strangerUser, name: "Walter", email: "walter@neighborly.example", role: "owner", active: true, approved: true, coverOptIn: false });
+    const far = await ctx.db.insert("neighbors", { churchId: elsewhere, name: "Odalys Montoya", nameKey: "odalys montoya", phone: "(555) 0188", phoneKey: "5550188", email: "", address: "7 Mockingbird Way", adults: 1, children: 1, language: "es", notes: "", createdBy: stranger, createdAt: now });
+    await ctx.db.insert("visits", { churchId: elsewhere, neighborId: far, scheduledAt: now + 4 * DAY, status: "scheduled", visitors: [{ memberId: stranger, hours: 0, miles: 0 }, { memberId: marisol.memberId, hours: 0, miles: 0 }], notes: "", createdBy: stranger, createdAt: now });
     return { church, marisol, thomas, renee };
   });
   for (const person of [ids.marisol, ids.thomas, ids.renee]) emails.set(person.userId, `${person.userId}@neighborly.example`);
-  return { t, ids, as: (person: { userId: string }) => t.withIdentity({ subject: person.userId }) };
+  return { t, ids, as: (person: { userId: string }) => { emails.set(person.userId, `${person.userId}@neighborly.example`); return t.withIdentity({ subject: person.userId }); } };
 }
 const path = (address: string) => address.slice(site.length);
 /** Folded lines joined back together, as a calendar app reads them. */
 const unfolded = (text: string) => text.replace(/\r\n[ \t]/g, "");
+/** Everything a person could read in the feed: the clock times and record ids are digits that prove nothing. */
+const readable = (text: string) => unfolded(text).split("\r\n").filter((line) => !/^(?:UID|DTSTAMP|DTSTART|DTEND):/.test(line)).join("\r\n");
 
 describe("a member's calendar feed", () => {
   test("is valid iCalendar holding their own shifts and visits, and nobody else's", async () => {
@@ -89,10 +100,30 @@ describe("a member's calendar feed", () => {
     const { t, ids, as } = await setup();
     const text = unfolded(await (await t.fetch(path(await as(ids.marisol).action(api.calendar.createAddress, { churchId: ids.church })))).text());
     expect(text).toContain("LOCATION:Placeholder Rd\r\n");
-    for (const secret of ["Celeste", "Hyppolite", "412", "Apt", "0142", "celeste.hyppolite", "electric", "Shut-off", "utility", "Demo Power", "pledge", "afternoon", "Renee"]) expect(text).not.toContain(secret);
+    for (const secret of ["Celeste", "Hyppolite", "412", "Apt", "0142", "celeste.hyppolite", "electric", "Shut-off", "utility", "Demo Power", "pledge", "afternoon", "Renee"]) expect(readable(text)).not.toContain(secret);
+    // Done visits and other groups' visits are not there at all, even with her name on them.
+    for (const absent of ["Fixture", "Wendell", "Orlov", "lease", "Mockingbird", "Odalys", "Montoya", "St. Sample"]) expect(text).not.toContain(absent);
+    expect(text.match(/SUMMARY:Home visit/g)).toHaveLength(1);
     expect(streetOnly("412 Placeholder Rd, Apt 7")).toBe("Placeholder Rd");
     expect(streetOnly("12B Sample St")).toBe("Sample St");
     expect(streetOnly("Mockingbird Way")).toBe("Mockingbird Way");
+  });
+
+  test("one address opens one member's calendar: a visitor on no visit sees no street at all", async () => {
+    const { t, ids, as } = await setup();
+    const none = await t.run(async (ctx) => {
+      const userId = await ctx.db.insert("users", {});
+      return { userId, memberId: await ctx.db.insert("memberships", { churchId: ids.church, userId, name: "Daniel", email: "daniel@neighborly.example", role: "coordinator", active: true, approved: true, coverOptIn: false }) };
+    });
+    const text = unfolded(await (await t.fetch(path(await as(none).action(api.calendar.createAddress, { churchId: ids.church })))).text());
+    expect(text).not.toContain("BEGIN:VEVENT");
+    expect(text).not.toContain("LOCATION");
+    // Renee is on two planned visits and no shift: she gets exactly those two, and still only the street.
+    const hers = unfolded(await (await t.fetch(path(await as(ids.renee).action(api.calendar.createAddress, { churchId: ids.church })))).text());
+    expect(hers.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+    expect(hers.match(/LOCATION:Placeholder Rd\r\n/g)).toHaveLength(2);
+    expect(hers).not.toContain("Help line morning");
+    expect(hers).not.toContain("Celeste");
   });
 
   test("a wrong address gets nothing", async () => {
