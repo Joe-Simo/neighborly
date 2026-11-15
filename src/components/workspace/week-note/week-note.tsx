@@ -201,7 +201,7 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
               {also.map((line) => (
                 <li key={line.area} className={`flex flex-wrap items-baseline gap-x-3 min-[761px]:block ${waiting ? held : ""}`}>
                   <span>{line.parts.map((part) => part.text).join(" ")}</span>
-                  <Link href={`/app/${line.area}`} className={`${quietLink} min-[761px]:!min-h-0 min-[761px]:mt-1.5 min-[761px]:!flex`}>
+                  <Link href={`/app/${line.area}`} className={`${quietLink} min-[761px]:!min-h-10 min-[761px]:-mt-0.5 min-[761px]:-mb-2 min-[761px]:!flex min-[761px]:w-fit`}>
                     {words.menu[line.area]}
                   </Link>
                 </li>
