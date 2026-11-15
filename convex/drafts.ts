@@ -1,12 +1,13 @@
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { action, internalMutation, internalQuery, env } from "./_generated/server";
+import { action, internalMutation, internalQuery, query, env } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftPayeeKinds, prepareRequestDraft, requestKinds, withoutIdentity } from "../src/lib/request-draft";
 import { urgentReasons, urgentSigns, type UrgentSign } from "../src/lib/urgency";
 import { neighborAccess } from "./access";
 import { fiscalYear } from "./reports";
+import { paidTowardRequest } from "./treasury";
 
 const draftResult = v.object({
   teamName: v.string(), recurrence: v.string(), peopleCount: v.string(),
@@ -273,5 +274,46 @@ export const checkYear = action({
     );
     if (!sure) return unread;
     return { flags: [...flags, ...reading.flatMap(({ kind, record }, index) => (sure[`n${index}`] >= 0.9 ? [{ kind, record, source: "assistant" as const }] : []))], verification: "checked" };
+  },
+});
+
+/**
+ * The week in plain counts, for the note a president reads on Monday. Everything here is counted by
+ * code from the records; the model is not asked anything and no note text or name leaves the function.
+ * "Urgent" is the same plain signs readUrgency starts from. The screen turns the counts into sentences.
+ */
+export const weekNote = query({
+  args: { churchId: v.id("churches") },
+  returns: v.object({
+    callsWaiting: v.number(), callsUrgent: v.number(), oldestWaitingDays: v.number(),
+    visitsPlanned: v.number(), requestsOpen: v.number(), approvedUnpaid: v.number(), approvedUnpaidCents: v.number(),
+    openPlaces: v.number(), away: v.number(),
+  }),
+  handler: async (ctx, { churchId }) => {
+    await neighborAccess(ctx, churchId);
+    const church = await ctx.db.get("churches", churchId);
+    if (!church) throw new Error("Group not found.");
+    const now = Date.now(), weekEnd = now + 7 * 86_400_000;
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: church.timeZone }).format(now);
+    const lastDay = new Intl.DateTimeFormat("en-CA", { timeZone: church.timeZone }).format(weekEnd);
+    const [waiting, visits, open, approved, commitments, timeOff] = await Promise.all([
+      ctx.db.query("calls").withIndex("by_church_callback", q => q.eq("churchId", churchId).eq("callback", "needed")).take(200),
+      ctx.db.query("visits").withIndex("by_church", q => q.eq("churchId", churchId).gte("scheduledAt", now).lt("scheduledAt", weekEnd)).take(200),
+      ctx.db.query("assistanceRequests").withIndex("by_church_status", q => q.eq("churchId", churchId).eq("status", "open")).take(200),
+      ctx.db.query("assistanceRequests").withIndex("by_church_status", q => q.eq("churchId", churchId).eq("status", "approved")).take(200),
+      ctx.db.query("commitments").withIndex("by_church", q => q.eq("churchId", churchId)).take(1000),
+      ctx.db.query("timeOff").withIndex("by_church", q => q.eq("churchId", churchId)).take(500),
+    ]);
+    let approvedUnpaidCents = 0;
+    for (const request of approved) approvedUnpaidCents += Math.max(0, (request.amountApproved ?? request.amountRequested) - await paidTowardRequest(ctx, request._id));
+    return {
+      callsWaiting: waiting.length,
+      callsUrgent: waiting.filter(call => urgentSigns(call.note).length > 0).length,
+      oldestWaitingDays: waiting.length ? Math.floor((now - Math.min(...waiting.map(call => call.takenAt))) / 86_400_000) : 0,
+      visitsPlanned: visits.filter(visit => visit.status === "scheduled").length,
+      requestsOpen: open.length, approvedUnpaid: approved.length, approvedUnpaidCents,
+      openPlaces: commitments.filter(item => !item.cancelled && !item.assigneeId && item.start >= now && item.start < weekEnd).length,
+      away: new Set(timeOff.filter(item => item.start <= lastDay && item.end >= today).map(item => item.memberId)).size,
+    };
   },
 });

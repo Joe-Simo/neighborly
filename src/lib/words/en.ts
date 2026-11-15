@@ -189,6 +189,20 @@ export function en(set: WordSet) {
       cannotAfterAll: "I can’t go after all",
       canAfterAll: "I can go after all",
     },
+    /** The Monday note: fixed sentences chosen from the week's counts. */
+    monday: {
+      title: "This week, in short",
+      origin: "Counted from your records. No one’s name or note was sent anywhere.",
+      quiet: "Nothing is waiting on you this week.",
+      calls: (count: number) => (count === 1 ? "1 call is waiting to be returned." : `${count} calls are waiting to be returned.`),
+      urgent: (count: number) => (count === 1 ? "1 of them looks urgent." : `${count} of them look urgent.`),
+      oldest: (days: number) => (days === 1 ? "The oldest has waited 1 day." : `The oldest has waited ${days} days.`),
+      visits: (count: number) => (count === 1 ? `1 ${t.visit} is planned.` : `${count} ${t.visits} are planned.`),
+      open: (count: number) => (count === 1 ? "1 request is waiting for a decision." : `${count} requests are waiting for a decision.`),
+      approved: (count: number) => (count === 1 ? "1 approved request is not yet paid." : `${count} approved requests are not yet paid.`),
+      places: (count: number) => (count === 1 ? "1 place is open in the next seven days." : `${count} places are open in the next seven days.`),
+      away: (count: number) => (count === 1 ? `1 ${t.member} is away this week.` : `${count} ${t.members} are away this week.`),
+    },
     /** The check before the yearly report. Each line points a person to one record; nothing is changed for them. */
     yearCheck: {
       title: "Before you send it",
