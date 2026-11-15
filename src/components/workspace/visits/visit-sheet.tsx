@@ -60,6 +60,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
         sheet={sheet}
         format={format}
         printed={format(now, { dateStyle: "long" })}
+        sample={data.church.sample}
         onPrint={() => window.print()}
         onCallOff={() => setStep("callOff")}
         onChangeTime={() => setStep("time")}
@@ -118,6 +119,7 @@ export function VisitSheetView({
   sheet,
   format,
   printed,
+  sample,
   onPrint,
   onCallOff,
   onChangeTime,
@@ -127,6 +129,8 @@ export function VisitSheetView({
   onPrint: () => void;
   /** Today's date, for the foot of the printed page. */
   printed: string;
+  /** The sample conference's sheets say so on paper, so a made-up household is never taken for a real one. */
+  sample?: boolean;
   onCallOff: () => void;
   onChangeTime: () => void;
 }) {
@@ -264,7 +268,9 @@ export function VisitSheetView({
         </footer>
         <p className="visits-paper-foot">
           <span>kind helps</span>
-          <span>Printed {printed}</span>
+          <span>
+            {sample ? "Sample · made-up people · " : ""}Printed {printed}
+          </span>
         </p>
       </article>
     </>
