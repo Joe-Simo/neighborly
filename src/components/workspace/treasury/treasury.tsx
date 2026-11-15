@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQueries, useQuery } from "convex/react";
 import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import {
@@ -52,7 +52,14 @@ export function TreasurySection() {
     allowed ? { churchId, month } : "skip",
   );
   const payable = useQuery(api.treasury.payable, allowed ? { churchId } : "skip");
-  const bank = useQuery(api.treasury.reconciliation, allowed ? { churchId } : "skip");
+  // Asked for in a way that cannot fail the room: until the backend answers, the way to the bank stays hidden.
+  const { bank } = useQueries(
+    allowed
+      ? { bank: { query: api.treasury.reconciliation, args: { churchId } } }
+      : {},
+  );
+  const uncleared =
+    bank && !(bank instanceof Error) ? bank.waitingCount : undefined;
   const [atBank, setAtBank] = useState(false);
   const recordPayment = useMutation(api.treasury.recordPayment);
   const recordIncome = useMutation(api.treasury.recordIncome);
@@ -131,7 +138,7 @@ export function TreasurySection() {
         onPay={(request) => show({ is: "payment", request })}
         onRecord={recordMoney}
         onEntry={(entry) => show({ is: "entry", entry })}
-        uncleared={bank?.waitingCount}
+        uncleared={uncleared}
         onBank={() => {
           setDone("");
           setAtBank(true);
@@ -158,13 +165,14 @@ export function TreasurySection() {
                 request={open.request}
                 today={shown.today}
                 onCancel={() => setOpen(null)}
-                onSubmit={(payment) =>
+                onSubmit={({ checkNumber, ...payment }) =>
                   settle(
                     () =>
                       recordPayment({
                         churchId,
                         requestId: open.request.requestId,
                         ...payment,
+                        ...(checkNumber.trim() && { checkNumber }),
                       }),
                     `${formatCents(payment.amount)} to ${open.request.payeeName} is recorded, and the balance is up to date.`,
                     payment.date,
@@ -183,7 +191,7 @@ export function TreasurySection() {
                   settle(
                     () =>
                       what.direction === "out"
-                        ? recordSpending({ churchId, kind: what.kind, to: name, amount, date, memo, checkNumber: what.checkNumber })
+                        ? recordSpending({ churchId, kind: what.kind, to: name, amount, date, memo, ...(what.checkNumber.trim() && { checkNumber: what.checkNumber }) })
                         : recordIncome({ churchId, source: what.kind, from: name, amount, date, memo }),
                     `${formatCents(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
                     date,
