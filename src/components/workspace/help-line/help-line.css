@@ -115,3 +115,15 @@
 .help-letter + .help-letter { margin-top: 18px; }
 .help-more { display: flex; align-items: center; gap: 16px; margin: 28px 0 0; font-size: 16px; color: var(--live-muted); }
 .live-app .help-more [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
+/* A household reads in one calm line or two, so fifty of them are a list and not a scroll. */
+.live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 20px; padding-block: 14px; align-items: center; min-height: 72px; }
+.live-app .help-neighbor .help-avatar { width: 44px; height: 44px; font-size: 16px; }
+.live-app .help-neighbor h3 { font-size: 22px; margin-bottom: 2px; }
+.live-app .help-neighbor p { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.live-app .help-neighbor > :nth-child(3) { grid-column: auto; }
+@media (max-width: 700px) {
+  .live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr); column-gap: 16px; row-gap: 2px; padding-block: 12px; }
+  .live-app .help-neighbor > :nth-child(3) { grid-column: 2; }
+  .live-app .help-neighbor h3 { font-size: 21px; }
+  .live-app .help-neighbor p { font-size: 15px; }
+}

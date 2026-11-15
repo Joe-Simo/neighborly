@@ -114,7 +114,7 @@ function NeighborRow({
   format: Workspace["format"];
 }) {
   return (
-            <div className="help-row">
+            <div className="help-row help-neighbor">
               <span className="help-avatar" aria-hidden="true">
                 {initials(neighbor.name)}
               </span>
