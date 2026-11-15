@@ -1,10 +1,9 @@
 "use client";
 
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { useConvexConnectionState } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { stateWords } from "@/components/workspace/failure";
 import { headings } from "@/components/workspace/navigation";
 import { ReliefPicture } from "@/components/workspace/relief";
 
@@ -53,7 +52,7 @@ export function LiveState({
  */
 export function LiveFailure({
   message,
-  kept = stateWords.kept,
+  kept,
   retry = false,
 }: {
   message: string;
@@ -62,20 +61,28 @@ export function LiveFailure({
   /** Adds "Try again", which submits the form the notice sits in. */
   retry?: boolean;
 }) {
+  const { words } = useWorkspace();
+  const second = kept ?? words.states.kept;
+  // On arrival, and when the sentence changes, the notice takes focus and comes into view, clear of a form's pinned buttons.
+  const notice = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    notice.current?.focus({ preventScroll: true });
+    notice.current?.scrollIntoView({ block: "nearest" });
+  }, [message]);
   return (
     <div
       className="live-error live-failure"
       role="alert"
-      // In a long form on a phone the notice can land below the fold; bring it into view once.
-      ref={(notice) => notice?.scrollIntoView({ block: "nearest" })}
+      tabIndex={-1}
+      ref={notice}
     >
       <div>
         <p>{message}</p>
-        {kept && <p className="live-error-recovery">{kept}</p>}
+        {second && <p className="live-error-recovery">{second}</p>}
       </div>
       {retry && (
         <Button type="submit" variant="outline">
-          {stateWords.tryAgain}
+          {words.states.tryAgain}
         </Button>
       )}
     </div>
@@ -99,23 +106,42 @@ function useConnectionLost() {
  * is kept and will go by itself. Convex holds the save and sends it on return.
  */
 export function LiveWaiting({ when }: { when: boolean }) {
+  const { words } = useWorkspace();
   const lost = useConnectionLost();
   if (!when || !lost) return null;
   return (
     <p className="live-waiting" role="status">
-      {stateWords.waiting}
+      {words.states.waiting}
     </p>
   );
 }
 
 /** The strip above a room while the connection is down; it leaves by itself. */
 export function LiveConnection() {
+  const { words } = useWorkspace();
   const lost = useConnectionLost();
   if (!lost) return null;
   return (
     <div className="live-connection paper-rise" role="status">
-      <strong>{stateWords.offlineTitle}</strong> {stateWords.offlineDeck}
+      <strong>{words.states.offlineTitle}</strong> {words.states.offlineDeck}
     </div>
+  );
+}
+
+function RoomFault({ onRetry }: { onRetry: () => void }) {
+  const { words } = useWorkspace();
+  return (
+    <LiveState
+      kind="error"
+      title={words.states.errorTitle}
+      action={
+        <Button variant="outline" onClick={onRetry}>
+          {words.states.tryAgain}
+        </Button>
+      }
+    >
+      {words.states.errorDeck}
+    </LiveState>
   );
 }
 
@@ -131,18 +157,6 @@ export class RoomBoundary extends Component<{ children: ReactNode }, { failed: b
   }
   render() {
     if (!this.state.failed) return this.props.children;
-    return (
-      <LiveState
-        kind="error"
-        title={stateWords.errorTitle}
-        action={
-          <Button variant="outline" onClick={() => this.setState({ failed: false })}>
-            {stateWords.tryAgain}
-          </Button>
-        }
-      >
-        {stateWords.errorDeck}
-      </LiveState>
-    );
+    return <RoomFault onRetry={() => this.setState({ failed: false })} />;
   }
 }

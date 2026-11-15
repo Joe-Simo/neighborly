@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { stateWords } from "@/components/workspace/failure";
+import { useWorkspace } from "@/components/workspace/context";
 import { CountUp } from "@/components/workspace/primitives";
 import { LiveState } from "@/components/workspace/states";
 import { figureRoll, formatCents, formatFigure } from "@/components/workspace/treasury/money";
@@ -430,18 +430,18 @@ export function LedgerLoading() {
 }
 
 export function LedgerPrivate() {
+  const { words } = useWorkspace();
   return (
     <LiveState
       kind="private"
-      title={stateWords.privateTitle}
+      title={words.states.privateTitle}
       action={
         <Button variant="outline" asChild>
-          <Link href="/app/mine">{stateWords.privateAction}</Link>
+          <Link href="/app/mine">{words.states.privateAction}</Link>
         </Button>
       }
     >
-      The ledger names the neighbors it helped, so it is open to coordinators only. Your commitments and your
-      team are where they always are.
+      {words.states.privateDeck}
     </LiveState>
   );
 }
