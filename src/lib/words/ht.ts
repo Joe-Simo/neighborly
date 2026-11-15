@@ -53,6 +53,7 @@ export function ht(set: WordSet): Words {
       skip: "Ale nan espas ou",
       signOut: "Soti",
       language: "Lang",
+      roomInEnglish: "Sal sa a an anglè toujou.",
       typedStays: "Sa moun yo ekri rete jan yo te ekri l.",
       member: "Manm",
       team: "Ekip",
