@@ -24,6 +24,8 @@
   padding: 0;
   border: 0;
 }
+/* What pressing the button will do, said just above it. */
+:is(.live-app, .live-dialog) .visits-consequence { margin: 0; color: var(--live-muted); font-size: 16px; line-height: 1.5; max-width: 52ch; }
 .visits-found {
   color: #4b564d !important;
   max-width: 62ch;

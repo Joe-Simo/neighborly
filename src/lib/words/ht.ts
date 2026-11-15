@@ -98,6 +98,7 @@ export function ht(set: WordSet): Words {
       timeOff: "Planifye jou konje",
       announcement: "Pataje yon anons",
       announcementSees: `Tout moun nan ${t.group} lan wè sa nan Semèn sa a.`,
+      announcementForm: { title: "Tit", message: "Mesaj", save: "Anrejistre", saving: "N ap anrejistre…" },
     },
     dateField: { choose: "Chwazi yon jou", done: "Fini", chooseTime: "Chwazi yon lè" },
     week: {
@@ -123,6 +124,10 @@ export function ht(set: WordSet): Words {
         "Angajman ou aksepte yo ap parèt isit la ak tout sa ou bezwen pou ou pare.",
     },
     commitments: {
+      filterLabel: "Chwazi yon ekip",
+      allTeams: "Tout ekip yo",
+      noneForTeamTitle: "Ekip sa a pa gen dat k ap vini.",
+      noneForTeamDetail: "Chwazi yon lòt ekip oswa gade tout ekip yo pou wè rès angajman yo.",
       emptyTitle: "Pa gen angajman k ap vini.",
       emptyDetail:
         "Nouvo angajman yo ap parèt isit la ak dat, moun ak preparasyon yo.",
@@ -240,6 +245,7 @@ export function ht(set: WordSet): Words {
     },
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {
+      opening: "N ap louvri…",
       notSaved: "Sa pa t anrejistre. Tanpri eseye ankò.",
       offlineSave: "Pa gen koneksyon kounye a, kidonk sa pa t anrejistre.",
       kept: "Anyen pa t anrejistre, e sa ou te ekri a la toujou.",
@@ -290,7 +296,6 @@ export function ht(set: WordSet): Words {
       makeNew: "Fè yon nouvo adrès",
       makeNewTitle: "Fè yon nouvo adrès?",
       makeNewDetail: "Ansyen adrès la sispann mache touswit. W ap bezwen mete nouvo a nan kalandriye ou ankò.",
-      keep: "Kenbe adrès sa a",
       get: "Jwenn adrès kalandriye mwen",
       finding: "N ap chèche kalandriye ou",
       failed: "Nou pa t kapab fè adrès kalandriye ou. Anyen pa chanje; tcheke koneksyon ou, epi eseye ankò.",

@@ -59,6 +59,14 @@
   .help-lines[data-shape="three"] .live-field input, .help-lines[data-shape="three"] .live-field select { padding-inline: 8px; }
 }
 .help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 14px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
+@media (max-width: 700px) {
+  /* An account on a phone: each field takes the full width, and the way to remove it sits on the account's first line. */
+  .help-lines[data-shape="four"] .help-line-row { grid-template-columns: minmax(0, 1fr); padding-right: 0; }
+  .help-lines[data-shape="four"] .help-line-row > :first-child { margin-right: 56px; }
+  .help-lines[data-shape="four"] .help-line-row > [data-slot="button"] { bottom: auto; top: var(--help-remove-top, 30px); }
+  /* What a line is called gets the room; the amount needs less. */
+  .help-lines[data-shape="pair"] .help-line-row { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+}
 @media (max-width: 850px) { .help-home { grid-template-columns: 1fr; gap: 26px; } }
 /* The link keeps its 44px reach without making its line taller than the other rows. */
 .help-timeline p .help-text-action[data-slot="button"] { margin-block: -13px; }

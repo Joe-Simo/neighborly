@@ -325,7 +325,7 @@ export function MoneyForm({
           onChange={(event) => set({ label: event.target.value })}
         />
       </LiveField>
-      <LiveField label="Dollars a month">
+      <LiveField label="Dollars">
         <Input
           value={line.amount}
           inputMode="decimal"

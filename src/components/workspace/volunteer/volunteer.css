@@ -61,6 +61,8 @@
   -webkit-box-decoration-break: clone;
 }
 .live-app .volunteer-task p { margin: 0; font-size: 17px; }
+/* The due date stays whole when the line has to break. */
+.volunteer-due { white-space: nowrap; }
 .volunteer-task > [data-slot="button"], .volunteer-task > .live-status { flex: none; }
 .volunteer-task[data-done] h3 { color: var(--live-muted); }
 .volunteer-task[data-done] h3 span { background-size: 100% 1.5px; }

@@ -6,17 +6,18 @@ import { useWorkspace } from "@/components/workspace/context";
 import { CommitmentRows } from "@/components/workspace/volunteer/commitment-rows";
 
 export function CommitmentsSection() {
-  const { data, now, teamFilter, setTeamFilter } = useWorkspace();
+  const { data, now, teamFilter, setTeamFilter, words } = useWorkspace();
+  const text = words.commitments;
   const datedCommitments = upcomingCommitments(data.commitments, now, true);
   return (
     <>
       <div className="live-filter">
         <NativeSelect
-          aria-label="Filter by team"
+          aria-label={text.filterLabel}
           value={teamFilter}
           onChange={(event) => setTeamFilter(event.target.value)}
         >
-          <option value="">All teams</option>
+          <option value="">{text.allTeams}</option>
           {data.teams.map((team) => (
             <option key={team.id} value={team.id}>
               {team.name}
@@ -30,7 +31,7 @@ export function CommitmentsSection() {
         )}
         empty={
           teamFilter
-          ? { title: "No upcoming dates for this team.", detail: "Choose another team or view all teams to see the rest of your group’s commitments." }
+          ? { title: text.noneForTeamTitle, detail: text.noneForTeamDetail }
           : undefined
         }
       />

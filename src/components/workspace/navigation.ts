@@ -24,12 +24,13 @@ export const navigation = [
   { id: "mine", label: "My commitments", icon: Check },
   { id: "time-off", label: "Time off", icon: Umbrella },
   { id: "tasks", label: "Tasks & meetings", icon: ClipboardList },
-  { id: "help-line", label: "Help line", icon: Phone },
-  { id: "neighbors", label: "Neighbors", icon: House },
-  { id: "visits", label: "Home visits", icon: Footprints },
-  { id: "treasury", label: "Treasury", icon: Landmark },
-  { id: "reports", label: "Reports", icon: ChartNoAxesColumn },
-  // Only for people who lead the group: every part of it needs a coordinator or owner.
+  // Only for people who lead the group: every function behind these rooms needs a coordinator or owner
+  // (convex/access.ts, neighborAccess). A member's own visits are in My commitments.
+  { id: "help-line", label: "Help line", icon: Phone, leadersOnly: true },
+  { id: "neighbors", label: "Neighbors", icon: House, leadersOnly: true },
+  { id: "visits", label: "Home visits", icon: Footprints, leadersOnly: true },
+  { id: "treasury", label: "Treasury", icon: Landmark, leadersOnly: true },
+  { id: "reports", label: "Reports", icon: ChartNoAxesColumn, leadersOnly: true },
   { id: "tools", label: "Your files", icon: Folder, leadersOnly: true },
 ] as const;
 

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { headings } from "@/components/workspace/navigation";
 import { ReliefPicture } from "@/components/workspace/relief";
+import { LiveState } from "@/components/workspace/states";
 
 /** Paper-colored blocks in the shape of the rows, while the records arrive. */
 export function HelpLoading({ label }: { label: string }) {
@@ -68,20 +69,19 @@ export function HelpEmpty({
 
 /** The door: what a member sees instead of a neighbor screen. */
 export function KeptPrivate() {
+  const { words } = useWorkspace();
   return (
-    <div className="help-empty" data-first="">
-      <Vignette />
-      <div>
-        <h3>Kept private.</h3>
-        <p>
-          Neighbors’ records are open to coordinators only. Your commitments
-          and your team are where they always are.
-        </p>
+    <LiveState
+      kind="private"
+      title={words.states.privateTitle}
+      action={
         <Button variant="outline" asChild>
-          <Link href="/app/mine">My commitments</Link>
+          <Link href="/app/mine">{words.states.privateAction}</Link>
         </Button>
-      </div>
-    </div>
+      }
+    >
+      {words.states.privateDeck}
+    </LiveState>
   );
 }
 

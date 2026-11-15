@@ -12,10 +12,15 @@ export const initials = (name: string) => {
   const parts = name.trim().split(/\s+/);
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : (parts[0]?.[1] ?? ""))).toUpperCase();
 };
-/** An address that may break after the name, never in the middle of a word. */
+/** An address in two whole pieces: it may break before the at sign and nowhere else. A piece too long for the line is cut short, with the full address one press or hover away. */
 function Address({ email }: { email: string }) {
   const at = email.lastIndexOf("@");
-  return at < 0 ? email : <>{email.slice(0, at)}<wbr />{email.slice(at)}</>;
+  return (
+    <span className="people-address" title={email}>
+      <span>{at < 0 ? email : email.slice(0, at)}</span>
+      {at >= 0 && <span>{email.slice(at)}</span>}
+    </span>
+  );
 }
 
 export function PeopleSection() {
@@ -37,7 +42,8 @@ export function PeopleSection() {
                   {person.name}
                   <span className="people-role">{person.active ? (roles[person.role] ?? person.role) : words.people.removed}</span>
                 </h3>
-                <p><Address email={person.email} /></p>
+                {/* Members are sent names and roles only, so the line is there only for those who are sent an address. */}
+                {person.email && <p><Address email={person.email} /></p>}
               </div>
             </div>
             <div className="live-meta">
@@ -56,7 +62,7 @@ export function PeopleSection() {
         ))}
       </div>
       {managing && (
-        <LiveDialog title={managing.name} description={<>{managing.active ? (roles[managing.role] ?? managing.role) : "Access removed"} · {managing.approved ? "Approved for service" : "Waiting for approval"}</>} onClose={() => setManagingId(null)}>
+        <LiveDialog title={managing.name} description={<><span className="people-address-full">{managing.email.slice(0, managing.email.lastIndexOf("@"))}<wbr />{managing.email.slice(managing.email.lastIndexOf("@"))}</span>{managing.active ? (roles[managing.role] ?? managing.role) : "Access removed"} · {managing.approved ? "Approved for service" : "Waiting for approval"}</>} onClose={() => setManagingId(null)}>
           <div className="live-manage">
                 <Button
                   variant="outline"

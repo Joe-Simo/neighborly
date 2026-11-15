@@ -13,11 +13,11 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LiveField } from "@/components/workspace/primitives";
+import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import {
   cents,
   kindLabels,
   languageLabels,
-  money,
   payeeLabels,
   shortMoney,
   recordHref,
@@ -89,15 +89,9 @@ export function FormEnd({
 }) {
   return (
     <>
-      {error && (
-        <div className="live-error" role="alert">
-          <p>{error}</p>
-          <p className="live-error-recovery">
-            What you typed is still here. Correct it and save again.
-          </p>
-        </div>
-      )}
+      {error && <LiveFailure message={error} />}
       <div className="live-form-actions">
+        <LiveWaiting when={pending} />
         {children}
         <Button type="submit" disabled={pending}>
           {submit}
@@ -517,7 +511,7 @@ export function DecideForm({
       {approving && !voucher && (
         <LiveField
           label="Amount to approve, in dollars"
-          help={`They asked for ${money(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
+          help={`They asked for ${shortMoney(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
         >
           <Input
             name="amount"
