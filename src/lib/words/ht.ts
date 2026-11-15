@@ -293,7 +293,7 @@ export function ht(set: WordSet): Words {
     },
     assistant: {
       title: "Bouyon pou ou",
-      waiting: (count) => `${count} ap tann wi pa ou`,
+      waiting: (count) => (count === 1 ? "Ap tann wi pa ou" : `${count} ap tann wi pa ou`),
       origin:
         "Asistan an ekri sa apati nòt apèl la. Anyen pa anrejistre toutotan ou pa apwouve li.",
       checked: "Asistan an konpare chak detay ak nòt la.",

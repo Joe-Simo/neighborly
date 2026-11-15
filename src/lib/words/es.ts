@@ -299,7 +299,7 @@ export function es(set: WordSet): Words {
     assistant: {
       title: "Borrador para ti",
       waiting: (count) =>
-        count === 1 ? "1 espera tu sí" : `${count} esperan tu sí`,
+        count === 1 ? "Espera tu sí" : `${count} esperan tu sí`,
       origin:
         "Escrito por el asistente a partir de la nota de la llamada. No se guarda nada hasta que lo apruebes.",
       checked: "El asistente comparó cada dato con la nota.",

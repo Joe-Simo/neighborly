@@ -306,7 +306,7 @@ export function en(set: WordSet) {
     /** What a person reads beside anything the assistant drafted. */
     assistant: {
       title: "Drafted for you",
-      waiting: (count: number) => `${count} waiting for your yes`,
+      waiting: (count: number) => (count === 1 ? "Waiting for your yes" : `${count} waiting for your yes`),
       origin: "Written by the assistant from the call note. Nothing is saved until you approve it.",
       checked: "The assistant checked each detail against the note.",
       review: "The assistant could not check this. Please read each detail against the note.",
