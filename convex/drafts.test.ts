@@ -94,7 +94,7 @@ describe("a call note drafted into a request", () => {
     await expect(coordinator.action(api.drafts.draftRequest, { churchId: ids.otherChurch, callId: ids.callId })).rejects.toThrow("Workspace access required.");
   });
 
-  test("the name, phone and address are taken out before the note leaves, and the model is asked yes or no only", async () => {
+  test("the name, phone and address are taken out before the note leaves, and the model writes nothing", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const fetch = answers({ kind: 0.99, amountRequested: 0.99, payeeKind: 0.99 });
     vi.stubGlobal("fetch", fetch);
@@ -109,10 +109,12 @@ describe("a call note drafted into a request", () => {
     expect(Object.keys(body.state)).toEqual(["note"]);
     expect(body.questions.kind.instructions).toContain("mention rent, a landlord or an eviction");
     // The amount is read by code from the note's own words and is not asked about.
-    expect(Object.keys(body.questions)).toEqual(["kind", "payeeKind"]);
+    expect(Object.keys(body.questions)).toEqual(["kind", "payeeKind", "chosenKind"]);
+    expect(JSON.parse(sent)).toMatchObject({ model: "jev-1.14.0" });
     expect(draft.amountRequested).toBe(45000);
     expect(body.questions.payeeKind.instructions).toContain("mention a landlord?");
-    expect(Object.values(body.questions).map(question => question.type)).toEqual(["noul", "noul"]);
+    // Two yes-or-no questions and one pick from a closed list; no question asks for text.
+    expect(Object.values(body.questions).map(question => question.type)).toEqual(["noul", "noul", "choice"]);
   });
 
   test("a very long note is not sent anywhere", async () => {
@@ -246,6 +248,59 @@ describe("a call note drafted into a request", () => {
     expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 24 }, { reason: "child", day: null }], verification: "checked" });
   });
 
+  test("the kind of help: two readings that agree stand, a disagreement is left blank, and Jev reads what code cannot", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const { ids, coordinator } = await helpLine();
+    const args = { churchId: ids.churchId, callId: ids.callId };
+    const reply = (kind: number, choice: string, confidence: number) => vi.stubGlobal("fetch", vi.fn(async () => Response.json({ answers: {
+      kind: { type: "noul", noul: kind }, payeeKind: { type: "noul", noul: 0.95 },
+      chosenKind: { type: "choice", choice, confidence, probabilities: {} },
+    } })));
+    // Code says rent and Jev picks rent: 0.87, under the line alone, is enough when both agree (ht-power in the measured run).
+    reply(0.87, "rent", 0.85);
+    expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: "rent", verification: "checked" });
+    // Agreement on weak scores is still not enough.
+    reply(0.6, "rent", 0.7);
+    expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: null });
+    // Code says rent, Jev picks something else or "none": left for a person, however sure either is.
+    reply(0.97, "utility", 0.94);
+    const split = await coordinator.action(api.drafts.draftRequest, args);
+    expect(split).toMatchObject({ kind: null, payeeKind: "landlord" });
+    expect(split.notes).toContain("Please confirm the kind of help.");
+    reply(0.97, "none", 0.94);
+    expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: null });
+  });
+
+  test("a note code cannot read: Jev's pick of the kind stands at 0.9, not under it, and never a kind outside the list", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const { ids, coordinator } = await helpLine();
+    const args = { churchId: ids.churchId, callId: ids.callId };
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "No tiene comida en casa para los niños." }));
+    const reply = (choice: string, confidence: number) => vi.stubGlobal("fetch", vi.fn(async () => Response.json({ answers: { chosenKind: { type: "choice", choice, confidence, probabilities: {} } } })));
+    const missing = "The note does not say what kind of help is asked for.";
+    reply("food", 0.93);
+    const read = await coordinator.action(api.drafts.draftRequest, args);
+    expect(read).toMatchObject({ kind: "food", amountRequested: null, payeeKind: null, verification: "checked" });
+    expect(read.notes).not.toContain(missing);
+    reply("food", 0.89);
+    expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: null, verification: "checked", notes: expect.arrayContaining([missing]) });
+    reply("housing", 0.99);
+    expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: null, verification: "checked" });
+  });
+
+  test("a sign code cannot read is shown when Jev is sure of it, without a day, and never under the line", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const { ids, coordinator } = await helpLine();
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Pa gen manje lakay la. Kouran an ap koupe 21." }));
+    // Scores from the measured run: hungry at 0.82 was not true of the note, so under 0.9 nothing is shown.
+    const fetch = answers({ shutoff: 0.95, noFood: 0.92, hungry: 0.82, child: 0.02 });
+    vi.stubGlobal("fetch", fetch);
+    expect(await coordinator.action(api.drafts.readUrgency, { churchId: ids.churchId, callId: ids.callId })).toEqual({ signs: [{ reason: "shutoff", day: null }, { reason: "noFood", day: null }], verification: "checked" });
+    const { questions } = JSON.parse(fetch.mock.calls[0][1].body) as { questions: Record<string, { type: string; criteria?: Record<string, string> }> };
+    expect(Object.keys(questions)).toHaveLength(8);
+    expect(Object.values(questions).every(question => question.type === "noul" && question.criteria)).toBe(true);
+  });
+
   test("a field the model is not sure of comes back blank", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     vi.stubGlobal("fetch", answers({ kind: 0.99, payeeKind: 0.4 }));
@@ -277,10 +332,13 @@ describe("a call note drafted into a request", () => {
     const { t, ids } = await helpLine();
     const before = await t.run(ctx => ctx.db.query("calls").collect());
     const report = await t.action(internal.drafts.measure, { churchId: ids.churchId });
-    expect(report).toMatchObject({ status: "done", notes: 23, unanswered: 0 });
+    expect(report).toMatchObject({ status: "done", notes: 23, unanswered: 0, model: "jev-1.14.0" });
     expect(report.rows).toHaveLength(23);
     // The first note is the one the live runs passed: code proposes every field and each is confirmed.
     expect(report.rows[0]).toMatchObject({ id: "rent-eviction", confirm: { kind: "right", amount: "right", payeeKind: "right", signs: "right" }, choose: { kind: "wrong", signs: "blank" } });
+    // The way the screens work: code says rent, this fake Jev picks food, so the kind is left blank instead of shown wrong.
+    expect(report.rows[0].mix).toEqual({ kind: "blank", amount: "right", payeeKind: "right", signs: "right" });
+    expect(report.mix.wrong).toBeLessThan(report.choose.wrong);
     expect(report.rows[0].scores).toMatchObject({ kind: 0.95, confirm_eviction: 0.95, choose_kind: "food", choose_kind_confidence: 0.95 });
     expect(JSON.stringify(report)).not.toMatch(/marisol|jennings|example lane|555|behind on/i);
     for (const [, init] of fetch.mock.calls) expect(init.body).not.toMatch(/marisol|vega|jennings|555-01|14 example/i);

@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { action, internalAction, internalMutation, internalQuery, query, env } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
-import { draftPayeeKinds, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
+import { draftPayeeKinds, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { neighborAccess, user } from "./access";
@@ -52,6 +52,11 @@ export const reserve = internalMutation({
  * The model writes no text: no summary, no advice, no prayer. Null means no usable answer, for any reason.
  */
 type Question = { type: "noul" | "choice"; instructions: string; criteria?: Record<string, string> };
+/**
+ * The version every line in this file was measured on (the 23 made-up notes in src/lib/jev-set.ts).
+ * "jev-latest" moves when a release ships and scores move with it, so change this only with a new measuring run.
+ */
+const model = "jev-1.14.0";
 
 /** One request to Jev: a state and named questions, all answered at once. Null means no usable reply, for any reason. */
 async function decide(key: string, state: Record<string, unknown>, questions: Record<string, Question>): Promise<Record<string, unknown> | null> {
@@ -59,7 +64,7 @@ async function decide(key: string, state: Record<string, unknown>, questions: Re
     const response = await fetch("https://api.typesafe.ai/v1/systemone", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "jev-latest", state, questions }),
+      body: JSON.stringify({ model, state, questions }),
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) return null;
@@ -130,6 +135,53 @@ function draftQuestions(draft: RequestDraft) {
 function signQuestions(signs: UrgentSign[]) {
   return Object.fromEntries(signs.map(({ reason }) => [reason, `Does note say that ${signMeaning[reason]}? ${plainly}`])) as Record<UrgentReason, string>;
 }
+/** What Jev may pick for the kind of help when it chooses for itself. "none" is there so it never has to force a kind. */
+const kindChoice: Record<RequestKind | "none", string> = {
+  rent: "The caller needs help with rent, a landlord, a lease or an eviction",
+  utility: "The caller needs help with a utility or its bill: power, electricity, water, gas",
+  food: "The caller needs food, groceries or a food pantry",
+  voucher: "The caller needs clothing, furniture or household goods",
+  other: "The caller needs some other single thing, such as transport or a repair",
+  none: "Nothing is asked for, the note denies a need, the need is only a maybe, or the note names two or more different needs",
+};
+/** The two ends of each sign, for when Jev reads every sign itself instead of confirming the ones code found. */
+const signEnds: Record<UrgentReason, { true: string; false: string }> = {
+  shutoff: { true: "A utility has been, is being or will be shut off or disconnected for the caller's household; a notice or a date counts", false: "No shut-off is mentioned, it is denied, it is only a possibility, or it is someone else's household" },
+  eviction: { true: "The caller's household has an eviction notice or is being evicted; a notice or a date counts", false: "No eviction is mentioned, it is denied, it is only a possibility, or it is someone else's household" },
+  noFood: { true: "The caller's household has no food", false: "Food is not mentioned, food is only asked about, or the household without food is someone else's" },
+  hungry: { true: "Someone in the caller's household is hungry or has not eaten", false: "Hunger is not mentioned, or it is someone else's household" },
+  child: { true: "A child, children, kids or a baby live in the caller's household", false: "No child is mentioned, or the note says there are none" },
+  elder: { true: "Someone in the caller's household is elderly or aged 80 or more", false: "No old age is mentioned, or the note says the person is not elderly" },
+  alone: { true: "The caller lives alone", false: "Living alone is not mentioned" },
+  medical: { true: "Someone in the caller's household has a medical need: oxygen, insulin, dialysis, medication, a wheelchair, a hospital stay", false: "No medical need is mentioned" },
+};
+
+/** When code and Jev's own pick name the same kind, either score at or above this is enough. Set from the 23-note run. */
+const agreed = 0.8;
+const kindQuestion: Question = { type: "choice", instructions: "What one kind of help does note ask for?", criteria: kindChoice };
+/** Jev's pick from the closed list, or null when the answer is not one. */
+function picked(answer: unknown): { kind: RequestKind | "none"; confidence: number } | null {
+  if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number") return null;
+  const { choice, confidence } = answer;
+  const kind = choice === "none" ? "none" : requestKinds.find(option => option === choice);
+  return kind ? { kind, confidence } : null;
+}
+/**
+ * The kind of help to show, from what code proposed, how sure Jev is of that proposal, and Jev's own pick.
+ * Two readings that agree stand on the easier line. Where code is silent (Spanish, Creole, "no food") Jev's
+ * pick stands alone only at 0.9. Where the two disagree, or Jev picks "none", the field is left for a person.
+ */
+function settleKind(proposed: RequestKind | null, sure: number | null, pick: ReturnType<typeof picked>): RequestKind | null {
+  if (!pick) return proposed && sure !== null && sure >= sureEnough ? proposed : null;
+  if (pick.kind === "none") return null;
+  if (proposed) return pick.kind === proposed && Math.max(sure ?? 0, pick.confidence) >= agreed ? proposed : null;
+  return pick.confidence >= sureEnough ? pick.kind : null;
+}
+/** One question per sign: a sign code found is confirmed; any other is read by Jev itself, so a note in Spanish or Creole is read too. */
+function signQuestion(reason: UrgentReason, found: UrgentSign[]): Question {
+  if (found.some(sign => sign.reason === reason)) return { type: "noul", instructions: signQuestions(found)[reason] };
+  return { type: "noul", instructions: `Does note say this about the caller's own household: ${signMeaning[reason]}?`, criteria: signEnds[reason] };
+}
 const stated = "Answer yes only if the value is stated as an affirmative fact, not a question, negation, wish, conditional, or conflicting alternative. A normalized equivalent of explicit wording is supported.";
 
 /** AI checks proposed facts; it never creates a team, names people or assigns work. */
@@ -188,8 +240,9 @@ export const callNote = internalQuery({
 /**
  * Turns a call note into a proposed request for help. It saves nothing: the screen shows the
  * draft, and the request exists only after a person approves it through assistance.
- * Code proposes each field; the model only says whether the note states it. The model is sent
- * the note with names, phones, emails and addresses taken out, and it writes no text at all.
+ * Code proposes each field and the model says whether the note mentions it. For the kind of help the
+ * model also picks from the closed list, so a note code cannot read still gets a kind; see settleKind.
+ * The model is sent the note with names, phones, emails and addresses taken out, and it writes no text at all.
  */
 export const draftRequest = action({
   args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: requestDraft,
@@ -200,25 +253,26 @@ export const draftRequest = action({
     const fallback = { ...draft, verification: "review" as const };
     // A note too long to be one call's message is not sent anywhere; the person reads it.
     if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
-    const proposed = {
-      ...(draft.kind && { kind: draft.kind }),
-      ...(draft.payeeKind && { payeeKind: draft.payeeKind }),
-    };
-    const present = Object.keys(proposed) as (keyof typeof proposed)[];
-    if (!present.length) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     // Each question stands on its own in plain words. A bare field name ("proposed.kind") gave the model nothing to judge.
-    const questions = draftQuestions(draft);
-    const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, questions as Record<(typeof present)[number], string>);
-    if (!sure) return fallback;
-    const asked = { kind: "the kind of help", payeeKind: "who is paid" };
-    for (const field of present) {
-      if (sure[field] < sureEnough) {
-        draft[field] = null;
-        draft.notes.push(`Please confirm ${asked[field]}.`);
-      }
+    const answers = await decide(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, {
+      ...Object.fromEntries(Object.entries(draftQuestions(draft)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
+      chosenKind: kindQuestion,
+    });
+    if (!answers) return fallback;
+    const sure = { kind: noul(answers.kind), payeeKind: noul(answers.payeeKind) }, pick = picked(answers.chosenKind);
+    // A proposed field with no usable answer means the reply cannot be trusted; the person reads the draft as code made it.
+    if ((draft.kind && sure.kind === null && !pick) || (draft.payeeKind && sure.payeeKind === null)) return fallback;
+    // Field names, numbers and a kind from the closed list only, never the note: enough to see why a field came back blank.
+    console.log(`jev ${JSON.stringify({ ...sure, chosenKind: pick?.kind, chosenConfidence: pick?.confidence })}`);
+    const kind = settleKind(draft.kind, sure.kind, pick);
+    if (draft.kind && !kind) draft.notes.push("Please confirm the kind of help.");
+    const notes = draft.kind || !kind ? draft.notes : draft.notes.filter(line => line !== kindNotes.missing && line !== kindNotes.several);
+    if (draft.payeeKind && (sure.payeeKind ?? 0) < sureEnough) {
+      draft.payeeKind = null;
+      draft.notes.push("Please confirm who is paid.");
     }
-    return { ...draft, verification: "checked" as const };
+    return { ...draft, kind, notes, verification: "checked" as const };
   },
 });
 
@@ -229,8 +283,9 @@ const urgency = v.object({
 
 /**
  * Reads one call's note for signs that it should be returned first: a shut-off or eviction, no food,
- * a child, an elder, a medical need. Code finds the signs; the model only says whether the note states
- * each one, and a sign under 0.9 is dropped. It saves nothing and decides nothing about who is helped:
+ * a child, an elder, a medical need. A sign code finds is confirmed by the model; any other sign the model
+ * reads for itself, so a note in Spanish or Creole is read too. A sign under 0.9 is not shown, and only code
+ * gives a sign its day. It saves nothing and decides nothing about who is helped:
  * the screen shows the reason, and a person can always move the call.
  */
 export const readUrgency = action({
@@ -239,11 +294,17 @@ export const readUrgency = action({
     const { userId, note, names, addresses } = await ctx.runQuery(internal.drafts.callNote, args);
     const signs = urgentSigns(note);
     const fallback = { signs, verification: "review" as const };
-    if (!env.TYPESAFE_API_KEY || note.length > 2000 || !signs.length) return fallback;
+    if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-    const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, signQuestions(signs));
-    if (!sure) return fallback;
-    return { signs: signs.filter(({ reason }) => sure[reason] >= sureEnough), verification: "checked" as const };
+    const answers = await decide(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])));
+    if (!answers) return fallback;
+    const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
+    if (signs.some(({ reason }) => sure[reason] === null)) return fallback;
+    console.log(`jev ${JSON.stringify(sure)}`);
+    return {
+      signs: urgentReasons.flatMap(reason => ((sure[reason] ?? 0) >= sureEnough ? [signs.find(sign => sign.reason === reason) ?? { reason, day: null }] : [])),
+      verification: "checked" as const,
+    };
   },
 });
 
@@ -384,27 +445,6 @@ export const reserveMany = internalMutation({
   },
 });
 
-/** What Jev may pick for the kind of help when it chooses for itself. "none" is there so it never has to force a kind. */
-const kindChoice: Record<RequestKind | "none", string> = {
-  rent: "The caller needs help with rent, a landlord, a lease or an eviction",
-  utility: "The caller needs help with a utility or its bill: power, electricity, water, gas",
-  food: "The caller needs food, groceries or a food pantry",
-  voucher: "The caller needs clothing, furniture or household goods",
-  other: "The caller needs some other single thing, such as transport or a repair",
-  none: "Nothing is asked for, the note denies a need, the need is only a maybe, or the note names two or more different needs",
-};
-/** The two ends of each sign, for when Jev reads every sign itself instead of confirming the ones code found. */
-const signEnds: Record<UrgentReason, { true: string; false: string }> = {
-  shutoff: { true: "A utility has been, is being or will be shut off or disconnected for the caller's household; a notice or a date counts", false: "No shut-off is mentioned, it is denied, it is only a possibility, or it is someone else's household" },
-  eviction: { true: "The caller's household has an eviction notice or is being evicted; a notice or a date counts", false: "No eviction is mentioned, it is denied, it is only a possibility, or it is someone else's household" },
-  noFood: { true: "The caller's household has no food", false: "Food is not mentioned, food is only asked about, or the household without food is someone else's" },
-  hungry: { true: "Someone in the caller's household is hungry or has not eaten", false: "Hunger is not mentioned, or it is someone else's household" },
-  child: { true: "A child, children, kids or a baby live in the caller's household", false: "No child is mentioned, or the note says there are none" },
-  elder: { true: "Someone in the caller's household is elderly or aged 80 or more", false: "No old age is mentioned, or the note says the person is not elderly" },
-  alone: { true: "The caller lives alone", false: "Living alone is not mentioned" },
-  medical: { true: "Someone in the caller's household has a medical need: oxygen, insulin, dialysis, medication, a wheelchair, a hospital stay", false: "No medical need is mentioned" },
-};
-
 type Outcome = "right" | "blank" | "wrong";
 const judge = <Value>(shown: Value | null, wanted: Value | null): Outcome => (shown === wanted ? "right" : shown === null ? "blank" : "wrong");
 /** Signs are right when the same reasons are shown; one that should not be there is wrong; one missing is blank. */
@@ -422,21 +462,22 @@ const tally = v.object({ notesAllRight: v.number(), right: v.number(), blank: v.
  * are the made-up ones in the code, and the one thing written is the count against the group's month.
  * What comes back is field names, scores and right, blank or wrong; never a note.
  *
- * Each note is judged two ways from one request. "confirm" is what the screens do today: code proposes,
- * Jev confirms. "choose" lets Jev pick the kind from the closed list and read every sign itself; the amount
- * and who is paid are the same in both, since Jev cannot write them. A shown value that the note does not
+ * Each note is judged three ways from one request. "mix" is what the screens do: code proposes and Jev
+ * confirms, and where code is silent Jev picks the kind and reads the sign itself. "confirm" is code proposing
+ * and Jev confirming only; "choose" is Jev alone on kind and signs. The amount is read by code in all three,
+ * and who is paid is confirmed the same way in all three, since Jev cannot write either. A shown value that the note does not
  * support is "wrong"; a right value left for a person is "blank".
  */
 export const measure = internalAction({
   args: { churchId: v.id("churches") },
   returns: v.object({
     status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")),
-    notes: v.number(), unanswered: v.number(), confirm: tally, choose: tally,
-    rows: v.array(v.object({ id: v.string(), confirm: v.optional(marks), choose: v.optional(marks), scores: v.record(v.string(), v.union(v.number(), v.string())) })),
+    notes: v.number(), unanswered: v.number(), model: v.string(), mix: tally, confirm: tally, choose: tally,
+    rows: v.array(v.object({ id: v.string(), mix: v.optional(marks), confirm: v.optional(marks), choose: v.optional(marks), scores: v.record(v.string(), v.union(v.number(), v.string())) })),
   }),
   handler: async (ctx, { churchId }) => {
     const empty = { notesAllRight: 0, right: 0, blank: 0, wrong: 0 };
-    const none = { notes: jevSet.length, unanswered: 0, confirm: empty, choose: empty, rows: [] };
+    const none = { notes: jevSet.length, unanswered: 0, model, mix: empty, confirm: empty, choose: empty, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: jevSet.length })) return { status: "no allowance" as const, ...none };
@@ -446,8 +487,8 @@ export const measure = internalAction({
       const answers = await decide(key, { note: withoutIdentity(item.note, { names: [], addresses: [] }) }, {
         ...Object.fromEntries(Object.entries(draftQuestions(draft)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
         ...Object.fromEntries(found.map(({ reason }) => [`confirm_${reason}`, { type: "noul" as const, instructions: confirmSigns[reason] }])),
-        choose_kind: { type: "choice" as const, instructions: "What one kind of help does note ask for?", criteria: kindChoice },
-        ...Object.fromEntries(urgentReasons.map(reason => [`choose_${reason}`, { type: "noul" as const, instructions: `Does note say this about the caller's own household: ${signMeaning[reason]}?`, criteria: signEnds[reason] }])),
+        choose_kind: kindQuestion,
+        ...Object.fromEntries(urgentReasons.map(reason => [`choose_${reason}`, signQuestion(reason, [])])),
       });
       if (!answers) return { id: item.id, scores: {} };
       const scores: Record<string, number | string> = {};
@@ -456,8 +497,7 @@ export const measure = internalAction({
         if (value !== null) scores[name] = Math.round(value * 100) / 100;
       }
       const yes = (name: string) => typeof scores[name] === "number" && scores[name] >= sureEnough;
-      const picked = answers.choose_kind;
-      const choice = picked && typeof picked === "object" && "choice" in picked && typeof picked.choice === "string" && "confidence" in picked && typeof picked.confidence === "number" ? { kind: picked.choice, confidence: picked.confidence } : null;
+      const choice = picked(answers.choose_kind);
       if (choice) {
         scores.choose_kind = choice.kind;
         scores.choose_kind_confidence = Math.round(choice.confidence * 100) / 100;
@@ -465,9 +505,14 @@ export const measure = internalAction({
       const amount = draft.amountRequested;
       const payeeKind = draft.payeeKind && yes("payeeKind") ? draft.payeeKind : null;
       const wanted = item.signs.map(sign => sign.reason);
-      const chosenKind = choice && choice.confidence >= sureEnough ? requestKinds.find(kind => kind === choice.kind) ?? null : null;
+      const chosenKind = choice && choice.kind !== "none" && choice.confidence >= sureEnough ? choice.kind : null;
+      const codeFound = found.map(sign => sign.reason);
       return {
         id: item.id, scores,
+        mix: {
+          kind: judge(settleKind(draft.kind, noul(answers.kind), choice), item.kind), amount: judge(amount, item.amount), payeeKind: judge(payeeKind, item.payeeKind),
+          signs: judgeSigns(urgentReasons.filter(reason => yes(`${codeFound.includes(reason) ? "confirm" : "choose"}_${reason}`)), wanted),
+        },
         confirm: {
           kind: judge(draft.kind && yes("kind") ? draft.kind : null, item.kind), amount: judge(amount, item.amount), payeeKind: judge(payeeKind, item.payeeKind),
           signs: judgeSigns(found.filter(({ reason }) => yes(`confirm_${reason}`)).map(sign => sign.reason), wanted),
@@ -478,11 +523,11 @@ export const measure = internalAction({
         },
       };
     }));
-    const count = (arm: "confirm" | "choose") => {
+    const count = (arm: "mix" | "confirm" | "choose") => {
       const all = rows.flatMap(row => (row[arm] ? [Object.values(row[arm])] : []));
       const of = (mark: Outcome) => all.flat().filter(value => value === mark).length;
       return { notesAllRight: all.filter(row => row.every(value => value === "right")).length, right: of("right"), blank: of("blank"), wrong: of("wrong") };
     };
-    return { status: "done" as const, notes: jevSet.length, unanswered: rows.filter(row => !row.confirm).length, confirm: count("confirm"), choose: count("choose"), rows };
+    return { status: "done" as const, notes: jevSet.length, unanswered: rows.filter(row => !row.confirm).length, model, mix: count("mix"), confirm: count("confirm"), choose: count("choose"), rows };
   },
 });

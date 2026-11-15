@@ -92,6 +92,11 @@ function only<T>(values: T[]): T | null {
   return unique.length === 1 ? unique[0] : null;
 }
 
+/** What a draft says when code proposes no kind of help. Taken back off when the model reads a kind the code could not. */
+export const kindNotes = {
+  several: "The note mentions more than one kind of help. Choose one, or make a request for each.",
+  missing: "The note does not say what kind of help is asked for.",
+};
 /**
  * Copies what a call note states plainly into the shape of a request for help.
  * It proposes; it does not infer need, eligibility or a decision, and it saves nothing.
@@ -129,7 +134,7 @@ export function prepareRequestDraft(note: string): RequestDraft {
     quote: amountQuote || quote,
     notes: [],
   };
-  if (draft.kind === null) draft.notes.push(new Set(kinds).size > 1 ? "The note mentions more than one kind of help. Choose one, or make a request for each." : "The note does not say what kind of help is asked for.");
+  if (draft.kind === null) draft.notes.push(new Set(kinds).size > 1 ? kindNotes.several : kindNotes.missing);
   if (draft.amountRequested === null) draft.notes.push(new Set(sums).size > 1 ? "The note gives more than one amount. Enter the amount asked for." : "The note does not give an amount.");
   if (draft.payeeKind === null || !draft.payeeName) draft.notes.push("Confirm who is paid. Payment goes to the landlord, utility or store, never to the neighbor.");
   if (doubtful) draft.notes.push("Part of the note is a question or is unsure, so it was left out.");
