@@ -920,3 +920,17 @@
     margin-left: calc(min(40vw, 61vh) + (100vw - min(40vw, 61vh) - min(39vw, 470px)) / 2);
   }
 }
+
+/* On a phone the painting already starts at the very top of the screen, under
+   the status bar, so the band does not grow by the inset as well. That keeps
+   Sign in whole and clear of the home bar. A short phone takes a low band
+   with the hands and the card. */
+@media (max-width: 699px) and (orientation: portrait) {
+  .live-auth-art { height: max(61vw, calc(140px + env(safe-area-inset-top))); }
+}
+@media (max-width: 699px) and (orientation: portrait) and (max-height: 700px) {
+  .live-auth-art {
+    height: calc(84px + env(safe-area-inset-top));
+    background-position: 50% 76%;
+  }
+}
