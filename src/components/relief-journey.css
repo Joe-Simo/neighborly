@@ -36,7 +36,7 @@
 .fresco-doors i:last-child{right:0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;background-position:right center;transform:rotateY(calc(var(--door) * -88deg))}
 .fresco-caption{position:absolute;z-index:2;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;opacity:calc(var(--grow) * 2.5 - 1.5);translate:0 calc((1 - var(--grow)) * 20px)}
 .fresco-caption em{font-weight:400}
-@media(max-width:899px){
+@media(max-width:899px) and (min-height:501px){
   .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .fresco-brand{font-size:30px}
   .fresco-invitation{position:static;width:auto;translate:none}
@@ -59,9 +59,11 @@
 .relief-panel[data-side=left] .relief-picture{order:-1;justify-self:start}
 .relief-words{opacity:calc(1 - var(--e) * 1.5);translate:0 calc(var(--e) * 36px)}
 .relief-words h2{margin:0;font:400 clamp(56px,6.4vw,112px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.065em}
-.relief-words p{margin:clamp(20px,2.2vw,32px) 0 0;max-width:340px;font-size:19px;line-height:1.5;text-wrap:pretty}
+.relief-words p{margin:clamp(20px,2.2vw,32px) 0 0;max-width:34ch;font-size:17px;line-height:1.5;text-wrap:pretty}
 /* Each picture is cut from the page's own paper and runs off the nearest edge of the screen. Its waves are its only border. */
-.relief-picture{position:relative;aspect-ratio:3/2;width:min(100%,118svh);justify-self:end;overflow:hidden;translate:0 calc(var(--e) * 56px);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S15 100 0 96Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S15 100 0 96Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.relief-picture{position:relative;aspect-ratio:3/2;width:min(100%,118svh);justify-self:end;overflow:hidden;translate:0 calc(var(--e) * 56px);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+/* The inner corner closes in a curve, so no shape ends on a straight cut. */
+.relief-panel[data-side=left] .relief-picture{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V82C91 99 85 100 58 97S20 100 0 96Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V82C91 99 85 100 58 97S20 100 0 96Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
 .relief-picture img{display:block;width:100%;height:100%;object-fit:cover;scale:calc(1 + var(--e) * .06);transform-origin:100% 50%}
 .relief-panel[data-side=left] .relief-picture img{transform-origin:0 50%}
 @media(max-width:820px){
@@ -73,3 +75,13 @@
   .relief-words h2{font-size:clamp(52px,15vw,84px)}
 }
 @media(prefers-reduced-motion:reduce){.relief-panel{--e:0!important}}
+
+/* A phone on its side: the wide layout, set smaller, with room for the caption under a lower fresco. */
+@media(max-height:500px) and (min-aspect-ratio:10/11){
+  .fresco-header{height:56px;padding:0 20px}
+  .fresco-brand{font-size:30px}
+  .fresco-invitation{left:max(20px,4%);width:30%}
+  .fresco-invitation h2{margin-bottom:18px;font-size:clamp(30px,4.4vw,40px)}
+  .fresco-invitation p{display:none}
+  .fresco-caption{top:calc(var(--caption-top,70%) + 12px);font-size:28px}
+}

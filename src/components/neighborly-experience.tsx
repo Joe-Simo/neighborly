@@ -6,6 +6,9 @@ import { PaintedWorld } from "./painted-world";
 import { NeighborlyContinuation } from "./neighborly-continuation";
 import { ExperienceSoundProvider } from "./experience-sound-context";
 
+/** A short, wide screen: the opening cannot be pinned there, so the page simply scrolls. Keep in step with the same query in painted-world.css. */
+const sidewaysPhone = "(max-height:500px) and (min-aspect-ratio:10/11)";
+
 export function NeighborlyExperience() {
   const [passed, setPassed] = useState(false);
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -62,18 +65,26 @@ export function NeighborlyExperience() {
   // The doors stand one screen below the top of the journey, once the opening has given way.
   const goToDoors = () => {
     const doors = root.current?.querySelector<HTMLElement>(".fresco-journey");
-    if (doors) window.scrollTo({ top: doors.getBoundingClientRect().top + scrollY + innerHeight * 1.02, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    if (doors) window.scrollTo({ top: doors.getBoundingClientRect().top + scrollY + innerHeight * (matchMedia(sidewaysPhone).matches ? 0 : 1.02), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   };
   useEffect(() => {
     const element = root.current;
     if (!element) return;
     const media = matchMedia("(prefers-reduced-motion: reduce)");
+    const sideways = matchMedia(sidewaysPhone);
     element.classList.add("is-connected");
     let frame = 0;
     let entryRequested = false;
     const update = () => {
       frame = 0;
       const reduce = media.matches;
+      // A phone on its side reads as a plain page: nothing is pinned, nothing gives way, and everything stays reachable.
+      if (sideways.matches) {
+        element.style.setProperty("--entry-portrait", "1");
+        element.style.setProperty("--entry-door", "1");
+        for (const part of element.querySelectorAll<HTMLElement>(".painted-world-track,.fresco-stage")) { part.inert = false; part.setAttribute("aria-hidden", "false"); }
+        return;
+      }
       const stage = element.querySelector<HTMLElement>(".painted-world-viewport");
       const progress = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight)));
       element.style.setProperty("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4))));
@@ -104,6 +115,7 @@ export function NeighborlyExperience() {
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("resize", request);
     media.addEventListener("change", request);
+    sideways.addEventListener("change", request);
     const enter = (event: MouseEvent) => {
       if (!(event.target instanceof Element) || !event.target.closest('a[href="#neighborly-courtyard"]')) return;
       entryRequested = true;
