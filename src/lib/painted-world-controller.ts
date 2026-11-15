@@ -142,8 +142,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   scene.add(openingRoot);
   const openingGuidePosition = new T.Vector3();
   const seatShift = new T.Vector3();
-  // Where the card comes to rest, measured from the end of its authored path: across, up, and its turn.
-  const cardRest = [.8, .02, .2] as const;
+  // Where the card comes to rest, measured from the end of its authored path: across, up, its turn, and how far it lies back onto the palm.
+  const cardRest = [.8, -.06, .2, -.85] as const;
   const openingGuideScale = new T.Vector3(1, 1, 1);
   const openingPickTargets: T.Object3D[] = [];
   const openingMaterials = new Map<T.Material, { opacity: number; transparent: boolean; depthWrite: boolean }>();
@@ -640,6 +640,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
         const arrived = smooth(Math.max(0, (openingPlayback?.passed() ?? 0) * 2.5 - 1.5));
         cardSeat.position.copy(openingGuide.position).add(seatShift.set(cardRest[0] * arrived, cardRest[1] * arrived, 0));
         cardSeat.rotation.z = cardRest[2] * arrived;
+        cardSeat.rotation.x = cardRest[3] * arrived;
         cardLie.position.copy(openingGuide.position).negate();
       }
       openingModel.updateMatrixWorld(true);
