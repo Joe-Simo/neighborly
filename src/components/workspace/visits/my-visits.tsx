@@ -87,7 +87,7 @@ export function MyVisitsView({
               </div>
               <div>
                 <h3>{words.on(visit.street || words.nearby)}</h3>
-                <p>{words.partner(visit.partner)}</p>
+                {visit.partner && <p>{words.partner(visit.partner)}</p>}
               </div>
               <div className="live-row-actions">
                 {visit.response === "pending" ? (

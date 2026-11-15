@@ -543,7 +543,7 @@ export function ReplaceForm({
       }}
     >
       <LiveField
-        label={`In place of ${firstName(leaving.name)}`}
+        label={leaving.removed ? "Second visitor" : `In place of ${firstName(leaving.name)}`}
         help="The new visitor is asked for a yes. The other visitor’s answer stays as it is."
       >
         <VisitorSelect name="joining" people={others} />

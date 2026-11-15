@@ -23,8 +23,16 @@ export const firstName = (name: string) => name.split(/\s+/)[0];
 export const requestHref = (neighborId: string, requestId: string) =>
   `/app/neighbors?neighbor=${neighborId}&request=${requestId}`;
 export const sheetHref = (visitId: string) => `/app/visits?sheet=${visitId}`;
-/** Where the pair stands: both said yes, someone cannot go, or someone has yet to answer. */
+/** Where the pair stands: a seat is empty, both said yes, someone cannot go, or someone has yet to answer. */
 export function standing(visit: Visit) {
+  // The owner removed one of the two for good: the visit is one visitor short.
+  const gone = visit.visitors.find((visitor) => visitor.removed);
+  if (gone)
+    return {
+      state: "short" as const,
+      who: gone,
+      text: "Needs a second visitor",
+    };
   const declined = visit.visitors.find(
     (visitor) => visitor.response === "declined",
   );

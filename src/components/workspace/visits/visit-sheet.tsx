@@ -205,7 +205,7 @@ export function VisitSheetView({
           </div>
           <div>
             <dt>Going together</dt>
-            <dd className="visits-paper-pair">{sheet.visitors.join(" and ")}</dd>
+            <dd className="visits-paper-pair">{sheet.visitors.join(" and ")}{sheet.status === "scheduled" && sheet.visitors.length < 2 && ", and a second visitor still to be asked"}</dd>
           </div>
           {request && (
             <div>

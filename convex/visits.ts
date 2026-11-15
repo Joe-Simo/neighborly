@@ -4,6 +4,7 @@ import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/s
 import type { Doc, Id } from "./_generated/dataModel";
 import { logNeighborOpening, membership, neighborAccess, neighborRecord } from "./access";
 import { streetOnly } from "./calendar";
+import { formerMember } from "./people";
 import { overlapsTimeOff, parseCalendarDate, parseScheduledTime } from "../src/lib/scheduling";
 
 /**
@@ -36,7 +37,8 @@ const visitRow = v.object({
   amount: v.union(v.number(), v.null()),
   scheduledAt: v.number(),
   status: v.union(v.literal("scheduled"), v.literal("completed"), v.literal("cancelled")),
-  visitors: v.array(v.object({ memberId: v.id("memberships"), name: v.string(), hours: v.number(), miles: v.number(), response })),
+  /** removed: the owner removed this person for good, so on a visit still planned their seat is empty. */
+  visitors: v.array(v.object({ memberId: v.id("memberships"), name: v.string(), hours: v.number(), miles: v.number(), response, removed: v.boolean() })),
   notes: v.string(),
   completedAt: v.union(v.number(), v.null()),
 });
@@ -129,7 +131,7 @@ async function visitorPool(ctx: Ctx, churchId: Id<"churches">) {
     ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(200),
     ctx.db.query("teams").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(100),
   ]);
-  const approved = members.filter((member) => member.active && member.approved);
+  const approved = members.filter((member) => member.active && member.approved && !member.removedAt);
   const team = teams.find((candidate) => /^home visit/i.test(candidate.name.trim()));
   if (!team) return { approved, team: new Set(approved.map((member) => member._id)) };
   const onTeam = await ctx.db.query("teamMembers").withIndex("by_team_member", (q) => q.eq("teamId", team._id)).take(200);
@@ -147,7 +149,7 @@ async function names(ctx: Ctx, visits: Doc<"visits">[], requests: Doc<"assistanc
   ]);
   return {
     neighbor: new Map(neighbors.flatMap((row) => (row ? [[row._id, row] as const] : []))),
-    member: new Map(members.flatMap((row) => (row ? [[row._id, row.name] as const] : []))),
+    member: new Map(members.flatMap((row) => (row && !row.removedAt ? [[row._id, row.name] as const] : []))),
     request: new Map([...linked, ...requests].flatMap((row) => (row ? [[row._id, row] as const] : []))),
   };
 }
@@ -166,7 +168,7 @@ function toVisitRow(found: Awaited<ReturnType<typeof names>>, visit: Doc<"visits
     scheduledAt: visit.scheduledAt,
     status: visit.status,
     // Visits recorded before people were asked carry no answer: they went, so they count as accepted.
-    visitors: visit.visitors.map((visitor) => ({ ...visitor, response: visitor.response ?? "accepted", name: found.member.get(visitor.memberId) ?? "Former member" })),
+    visitors: visit.visitors.map((visitor) => ({ ...visitor, response: visitor.response ?? "accepted", name: found.member.get(visitor.memberId) ?? formerMember, removed: !found.member.has(visitor.memberId) })),
     notes: visit.notes,
     completedAt: visit.completedAt ?? null,
   };
@@ -302,7 +304,8 @@ export const sheet = query({
       group: church.name,
       scheduledAt: visit.scheduledAt,
       status: visit.status,
-      visitors: toVisitRow(found, visit).visitors.map((visitor) => visitor.name),
+      // On a visit still planned, a removed member is not going: only the one who is, is named.
+      visitors: toVisitRow(found, visit).visitors.filter((visitor) => visit.status !== "scheduled" || !visitor.removed).map((visitor) => visitor.name),
       neighbor: { name: neighbor.name, phone: neighbor.phone, address: neighbor.address, adults: neighbor.adults, children: neighbor.children, language: neighbor.language, notes: neighbor.notes },
       request: request ? { kind: request.kind, summary: request.summary, amount: request.amountRequested, payeeName: request.payeeName } : null,
       lastVisit: last ? { at: last.completedAt ?? last.scheduledAt, visitors: toVisitRow(await names(ctx, [last]), last).visitors.map((visitor) => visitor.name), notes: last.notes } : null,
@@ -326,6 +329,7 @@ async function checkedPair(ctx: Ctx, church: Doc<"churches">, visitorIds: Id<"me
   for (const memberId of visitorIds) {
     const member = await ctx.db.get("memberships", memberId);
     if (!member || member.churchId !== church._id) throw new ConvexError("Choose people from this group.");
+    if (member.removedAt) throw new ConvexError("One of the two is no longer in the conference. Ask a second visitor first.");
     if (!member.active || !member.approved) throw new ConvexError(`${member.name} is not an approved member yet.`);
     const away = await ctx.db.query("timeOff").withIndex("by_member_end", (q) => q.eq("memberId", memberId).gte("end", day)).take(50);
     if (away.some((range) => overlapsTimeOff(start, start + VISIT_LENGTH, range.start, range.end, church.timeZone)))
@@ -406,7 +410,8 @@ export const mine = query({
     return await Promise.all(own.map(async (visit) => {
       const partnerId = visit.visitors.find((visitor) => visitor.memberId !== me._id)?.memberId;
       const [neighbor, partner] = await Promise.all([ctx.db.get("neighbors", visit.neighborId), partnerId ? ctx.db.get("memberships", partnerId) : null]);
-      return { id: visit._id, scheduledAt: visit.scheduledAt, street: streetOnly(neighbor?.address ?? ""), partner: partner?.name ?? "", response: visit.visitors.find((visitor) => visitor.memberId === me._id)?.response ?? "accepted" };
+      // A partner removed for good leaves the seat empty until the coordinator asks someone else.
+      return { id: visit._id, scheduledAt: visit.scheduledAt, street: streetOnly(neighbor?.address ?? ""), partner: partner && !partner.removedAt ? partner.name : "", response: visit.visitors.find((visitor) => visitor.memberId === me._id)?.response ?? "accepted" };
     }));
   },
 });

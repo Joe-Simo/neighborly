@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
 import { DateTime } from "luxon";
 import schema from "./schema";
@@ -204,6 +204,49 @@ describe("each visitor accepts or declines", () => {
     await replace(ids.coordinator.memberId);
     expect(await answers()).toEqual([["Daniel Whitcombe", "accepted"], ["Thomas Okafor", "pending"]]);
     expect(await as(ids.coordinator).query(api.visits.mine, { churchId })).toHaveLength(1);
+  });
+});
+
+describe("a visitor removed from the conference for good", () => {
+  test("leaves a planned visit one visitor short, is never offered, and the seat is filled by replacing them", async () => {
+    vi.useFakeTimers({ toFake: ["Date", "setTimeout"] });
+    try {
+      const { t, ids, as } = await setup();
+      const churchId = ids.church, owner = as(ids.owner);
+      const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
+      await as(ids.daniel).mutation(api.visits.respond, { churchId, visitId, response: "accepted" });
+      await owner.mutation(api.people.remove, { churchId, personId: ids.graciela.memberId, typedName: "Graciela Fuentes" });
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+
+      const seats = async () => (await owner.query(api.visits.board, { churchId })).scheduled[0].visitors.map((visitor) => [visitor.name, visitor.removed, visitor.response]);
+      expect(await seats()).toEqual([["Daniel Whitcombe", false, "accepted"], ["A former member", true, "pending"]]);
+      expect((await owner.query(api.visits.sheet, { churchId, visitId })).visitors).toEqual(["Daniel Whitcombe"]);
+      expect((await as(ids.daniel).query(api.visits.mine, { churchId }))[0].partner).toBe("");
+      expect((await owner.query(api.visits.visitors, { churchId })).map((person) => person.name)).not.toContain("A former member");
+
+      await expect(owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(4).at })).rejects.toThrow("no longer in the conference");
+      await expect(owner.mutation(api.visits.replaceVisitor, { churchId, visitId, leavingId: ids.daniel.memberId, joiningId: ids.colleen.memberId })).rejects.toThrow("no longer in the conference");
+      await owner.mutation(api.visits.replaceVisitor, { churchId, visitId, leavingId: ids.graciela.memberId, joiningId: ids.colleen.memberId });
+      expect(await seats()).toEqual([["Daniel Whitcombe", false, "accepted"], ["Colleen Marsh", false, "pending"]]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test("is never in a suggested pair, and keeps the visits they made under the one name", async () => {
+    vi.useFakeTimers({ toFake: ["Date", "setTimeout"] });
+    try {
+      const { t, ids, as } = await setup();
+      const churchId = ids.church, owner = as(ids.owner);
+      const done = await t.run((ctx) => ctx.db.insert("visits", { churchId, neighborId: ids.rosa, scheduledAt: Date.now() - 5 * DAY, status: "completed", visitors: [{ memberId: ids.daniel.memberId, hours: 1, miles: 4, response: "accepted" }, { memberId: ids.colleen.memberId, hours: 1, miles: 0, response: "accepted" }], notes: "Rent is one month behind.", completedAt: Date.now() - 5 * DAY, createdBy: ids.owner.memberId, createdAt: Date.now() - 6 * DAY }));
+      await owner.mutation(api.people.remove, { churchId, personId: ids.daniel.memberId, typedName: "Daniel Whitcombe" });
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      const board = await owner.query(api.visits.board, { churchId });
+      expect(board.suggested?.pair?.map((person) => person.name)).toEqual(["Colleen Marsh", "Graciela Fuentes"]);
+      expect(board.writtenUp.find((visit) => visit.id === done)?.visitors.map((visitor) => [visitor.name, visitor.hours])).toEqual([["A former member", 1], ["Colleen Marsh", 1]]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
