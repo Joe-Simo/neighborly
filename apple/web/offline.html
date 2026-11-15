@@ -29,10 +29,15 @@ a.again {
 }
 a.again:active { background: #294d38; }
 a.again:focus-visible { outline: 3px solid #364acf; outline-offset: 4px; }
+/* Sideways, the tall painting fills its side from edge to edge: both faces,
+   both hands and the card on an iPad; the hands and the card on a phone. */
 @media (orientation: landscape) {
-  body { display: grid; grid-template-columns: 49% 1fr; min-height: 100svh; }
-  .art { height: auto; border-bottom: 0; border-right: 1px solid #d9ddd3; background-size: auto 90%; background-position: 61% 100%; }
-  main { align-self: center; padding: 36px 0; }
+  body { display: grid; grid-template-columns: 42% 1fr; min-height: 100svh; }
+  .art { height: auto; border-bottom: 0; border-right: 1px solid #d9ddd3; background: #e9e7dc url("painting-tall.webp") 50% 0 / cover no-repeat; }
+  main { align-self: center; padding: 36px 0; padding-right: env(safe-area-inset-right); }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .art { background-position: 50% 62%; }
 }
 </style>
 </head>
@@ -40,7 +45,7 @@ a.again:focus-visible { outline: 3px solid #364acf; outline-offset: 4px; }
 <div class="art" aria-hidden="true"></div>
 <main>
   <p class="kicker">Kind Helps</p>
-  <h1>No connection right now.</h1>
+  <h1>No connection<br>right now.</h1>
   <p class="deck">Nothing is lost. Your team’s week will be here as soon as this device is back online.</p>
   <a class="again" href="https://kindhelps.com/app">Try again</a>
 </main>
