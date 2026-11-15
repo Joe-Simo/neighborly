@@ -255,6 +255,7 @@ const historyEvent = v.union(
   v.object({ type: v.literal("payment"), at: v.number(), category: v.string(), payee: v.string(), amount: v.number(), who: v.string() }),
   v.object({ type: v.literal("note"), at: v.number(), note: v.string(), who: v.string() }),
   v.object({ type: v.literal("brought"), at: v.number(), kind: schema.tables.assistanceRequests.validator.fields.kind, payee: v.string(), amount: v.number() }),
+  v.object({ type: v.literal("voucher"), at: v.number(), item: v.string(), quantity: v.number(), who: v.string() }),
   v.object({ type: v.literal("decision"), at: v.number(), kind: schema.tables.assistanceRequests.validator.fields.kind, status: v.union(v.literal("declined"), v.literal("closed")), note: v.string(), who: v.string() }),
 );
 
@@ -303,6 +304,7 @@ export const record = query({
       ...(await Promise.all(payments.map(async (entry) => ({ type: "payment" as const, at: DateTime.fromISO(entry.date, { zone: church?.timeZone ?? "UTC" }).toMillis(), category: entry.category, payee: entry.payee, amount: entry.amount, who: await found.memberName(entry.recordedBy) })))),
       ...(await Promise.all(noteDocs.map(async (note) => ({ type: "note" as const, at: note.createdAt, note: note.body, who: await found.memberName(note.authorId) })))),
       ...brought.map((request) => ({ type: "brought" as const, at: request.createdAt, kind: request.kind, payee: request.payeeName, amount: request.importedAmount ?? request.amountRequested })),
+      ...requests.flatMap((request) => (request.status === "paid" && request.voucher ? [{ type: "voucher" as const, at: request.decidedAt ?? request.createdAt, item: request.voucher.item, quantity: request.voucher.quantity, who: request.decidedByName ?? request.createdByName }] : [])),
       ...requests.flatMap((request) => (request.source !== "import" && (request.status === "declined" || request.status === "closed") ? [{ type: "decision" as const, at: request.decidedAt ?? request.createdAt, kind: request.kind, status: request.status, note: [request.decisionNote, [...request.referrals, request.referral].filter(Boolean).length ? `Referred to ${[...request.referrals, request.referral].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" "), who: request.decidedByName ?? request.createdByName }] : [])),
     ].sort((a, b) => b.at - a.at);
     const opened = await ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", neighborId)).order("desc").take(20);

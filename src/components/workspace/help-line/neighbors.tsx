@@ -187,8 +187,9 @@ export function NeighborListView({
               <div className="live-row-actions">
                 {neighbor.openRequest && (
                   <span className="live-status" data-state="waiting">
-                    {kindLabels[neighbor.openRequest.kind]},{" "}
-                    {shortMoney(neighbor.openRequest.amount)}
+                    {kindLabels[neighbor.openRequest.kind]}
+                    {neighbor.openRequest.amount > 0 &&
+                      `, ${shortMoney(neighbor.openRequest.amount)}`}
                   </span>
                 )}
                 {neighbor.visitAt && (

@@ -31,6 +31,7 @@ import {
   languageLabels,
   money,
   requestTitle,
+  vouchers,
   shortMoney,
   type HelpRequest,
   type NeighborRecord as Record,
@@ -206,7 +207,7 @@ export function NeighborRecord({
       {step?.kind === "request" && (
         <HelpDialog
           title="Add a request"
-          description={`For ${neighbor.name}. Nothing is paid until it is approved.`}
+          description={`For ${neighbor.name}. Nothing is paid or given until it is approved.`}
           onClose={close}
         >
           <RequestForm
@@ -295,6 +296,12 @@ function happened(event: Record["history"][number]) {
         what: `${kindLabels[event.kind]}${event.payee ? ` paid to ${event.payee}` : ""}`,
         who: "Brought over from earlier records",
         paid: event.amount ? shortMoney(event.amount) : undefined,
+      };
+    case "voucher":
+      return {
+        kind: "money",
+        what: `${vouchers(event)} given`,
+        who: `Approved by ${event.who}`,
       };
     case "decision":
       return {
@@ -548,7 +555,7 @@ export function NeighborRecordView({
                           )}
                           <p>{line.who}</p>
                         </div>
-                        {line.paid && (
+                        {"paid" in line && line.paid && (
                           <span className="help-amount">{line.paid}</span>
                         )}
                       </li>

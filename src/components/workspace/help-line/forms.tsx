@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQueries, useQuery } from "convex/react";
 import { Check, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -29,6 +30,7 @@ import {
   recordHref,
   type Call,
   type HelpRequest,
+  vouchers,
   type Neighbor,
 } from "@/components/workspace/help-line/format";
 import { useSave } from "@/components/workspace/help-line/use-save";
@@ -62,7 +64,9 @@ export function HelpDialog({
         onOpenAutoFocus={(event) => {
           const first =
             event.currentTarget instanceof HTMLElement &&
-            event.currentTarget.querySelector<HTMLElement>("input, textarea, select");
+            event.currentTarget.querySelector<HTMLElement>(
+              "input, textarea, select",
+            );
           if (!first) return;
           event.preventDefault();
           first.focus();
@@ -83,6 +87,32 @@ export function HelpDialog({
     </Dialog>
   );
 }
+
+/**
+ * What the treasury's voucher shelf holds. Undefined while it loads, and also when the backend is
+ * older than the shelf, so a form offers vouchers only once they can be kept.
+ */
+function useShelf(churchId: ChurchId, wanted: boolean) {
+  const asked = useMemo(() => {
+    const shelf: Parameters<typeof useQueries>[0] = {
+      shelf: { query: api.treasury.voucherShelf, args: { churchId } },
+    };
+    return wanted ? shelf : {};
+  }, [churchId, wanted]);
+  const answer:
+    FunctionReturnType<typeof api.treasury.voucherShelf> | Error | undefined =
+    useQueries(asked).shelf;
+  return answer instanceof Error ? undefined : answer?.items;
+}
+type Shelf = NonNullable<ReturnType<typeof useShelf>>;
+const onShelf = (shelf: Shelf, item: string) =>
+  shelf.find((line) => line.item.toLowerCase() === item.trim().toLowerCase());
+const onHand = (line: Shelf[number] | undefined) =>
+  !line
+    ? "Not on the shelf yet."
+    : line.onHand > 0
+      ? `${line.onHand} on hand.`
+      : "None on hand. The treasurer adds vouchers as they arrive.";
 
 export function FormEnd({
   error,
@@ -157,7 +187,8 @@ export function CallForm({
                   churchId,
                   callId,
                   reasons: signs.map((sign) => sign.reason),
-                  day: signs.find((sign) => sign.day !== null)?.day ?? undefined,
+                  day:
+                    signs.find((sign) => sign.day !== null)?.day ?? undefined,
                   by: "assistant",
                 })
               : null,
@@ -213,7 +244,11 @@ export function ReturnForm({
       onSubmit={async (event) => {
         const value = fieldsOf(event);
         const outcome = await save(() =>
-          markReturned({ churchId, callId: call.id, outcome: value("outcome") }),
+          markReturned({
+            churchId,
+            callId: call.id,
+            outcome: value("outcome"),
+          }),
         );
         if (outcome.saved) onSaved();
       }}
@@ -230,7 +265,7 @@ export function ReturnForm({
 }
 
 export type RequestStart = Partial<
-  Pick<HelpRequest, "kind" | "summary" | "payeeName" | "source"> & {
+  Pick<HelpRequest, "kind" | "summary" | "payeeName" | "source" | "voucher"> & {
     amountRequested: number | null;
     payeeKind: HelpRequest["payeeKind"] | null;
   }
@@ -256,22 +291,32 @@ export function RequestForm({
   const update = useMutation(api.assistance.updateRequest);
   const { pending, error, save } = useSave();
   const [amountError, setAmountError] = useState("");
+  const [kind, setKind] = useState(start?.kind ?? "rent");
+  const [item, setItem] = useState(start?.voucher?.item ?? "");
+  const shelf = useShelf(churchId, true);
+  const fromShelf = kind === "voucher" && shelf;
   return (
     <form
       className="live-form help-form"
       onSubmit={async (event) => {
         const value = fieldsOf(event);
-        const amountRequested = cents(value("amount"));
+        const amountRequested = fromShelf ? 0 : cents(value("amount"));
         if (amountRequested === null)
           return setAmountError("Enter the amount in dollars, such as 450.");
         setAmountError("");
         const details = {
           churchId,
-          kind: pick(kindLabels, value("kind")) ?? "other",
+          kind,
           summary: value("summary"),
           amountRequested,
           payeeKind: pick(payeeLabels, value("payeeKind")) ?? "vendor",
           payeeName: value("payeeName"),
+          ...(fromShelf && {
+            voucher: {
+              item: onShelf(fromShelf, item)?.item ?? item.trim(),
+              quantity: Number(value("quantity")),
+            },
+          }),
         };
         const outcome = await save(() =>
           request
@@ -286,7 +331,10 @@ export function RequestForm({
           <NativeSelect
             name="kind"
             className="w-full"
-            defaultValue={start?.kind ?? "rent"}
+            value={kind}
+            onChange={(event) =>
+              setKind(pick(kindLabels, event.target.value) ?? "other")
+            }
           >
             {Object.entries(kindLabels).map(([kind, label]) => (
               <option key={kind} value={kind}>
@@ -295,21 +343,56 @@ export function RequestForm({
             ))}
           </NativeSelect>
         </LiveField>
-        <LiveField label="Amount asked, in dollars">
-          <Input
-            name="amount"
-            inputMode="decimal"
-            placeholder="450"
-            required
-            aria-invalid={!!amountError}
-            defaultValue={
-              typeof start?.amountRequested === "number"
-                ? (start.amountRequested / 100).toString()
-                : ""
-            }
-          />
-        </LiveField>
+        {fromShelf ? (
+          <LiveField label="How many">
+            <Input
+              name="quantity"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={20}
+              required
+              defaultValue={start?.voucher?.quantity ?? 1}
+            />
+          </LiveField>
+        ) : (
+          <LiveField label="Amount asked, in dollars">
+            <Input
+              name="amount"
+              inputMode="decimal"
+              placeholder="450"
+              required
+              aria-invalid={!!amountError}
+              defaultValue={
+                typeof start?.amountRequested === "number"
+                  ? (start.amountRequested / 100).toString()
+                  : ""
+              }
+            />
+          </LiveField>
+        )}
       </div>
+      {fromShelf && (
+        <LiveField
+          label="Voucher for"
+          help={item.trim() ? onHand(onShelf(fromShelf, item)) : undefined}
+        >
+          <Input
+            name="item"
+            list="help-shelf"
+            maxLength={80}
+            required
+            autoComplete="off"
+            value={item}
+            onChange={(event) => setItem(event.target.value)}
+          />
+          <datalist id="help-shelf">
+            {fromShelf.map((line) => (
+              <option key={line.item} value={line.item} />
+            ))}
+          </datalist>
+        </LiveField>
+      )}
       <LiveField label="What they need">
         <Textarea
           name="summary"
@@ -318,31 +401,41 @@ export function RequestForm({
           defaultValue={start?.summary}
         />
       </LiveField>
-      <div className="live-form-grid">
-        <LiveField label="Who is paid">
-          <NativeSelect
-            name="payeeKind"
-            className="w-full"
-            defaultValue={
-              start?.payeeKind && start.payeeKind in payeeLabels
-                ? start.payeeKind
-                : "landlord"
-            }
-          >
-            {Object.entries(payeeLabels).map(([kind, label]) => (
-              <option key={kind} value={kind}>
-                {label}
-              </option>
-            ))}
-          </NativeSelect>
-        </LiveField>
-        <LiveField label="Their name">
-          <Input name="payeeName" defaultValue={start?.payeeName} />
-        </LiveField>
-      </div>
-      <p className="help-form-note">
-        Payments go to the landlord, utility or store, never to the neighbor.
-      </p>
+      {fromShelf ? (
+        <p className="help-form-note">
+          Vouchers come off the shelf when the request is approved. Nobody is
+          paid.
+        </p>
+      ) : (
+        <>
+          <div className="live-form-grid">
+            <LiveField label="Who is paid">
+              <NativeSelect
+                name="payeeKind"
+                className="w-full"
+                defaultValue={
+                  start?.payeeKind && start.payeeKind in payeeLabels
+                    ? start.payeeKind
+                    : "landlord"
+                }
+              >
+                {Object.entries(payeeLabels).map(([kind, label]) => (
+                  <option key={kind} value={kind}>
+                    {label}
+                  </option>
+                ))}
+              </NativeSelect>
+            </LiveField>
+            <LiveField label="Their name">
+              <Input name="payeeName" defaultValue={start?.payeeName} />
+            </LiveField>
+          </div>
+          <p className="help-form-note">
+            Payments go to the landlord, utility or store, never to the
+            neighbor.
+          </p>
+        </>
+      )}
       <FormEnd
         error={amountError || error}
         pending={pending}
@@ -368,19 +461,25 @@ export function DecideForm({
   onSaved: () => void;
 }) {
   const decide = useMutation(api.assistance.decide);
-  const listed = useQuery(api.assistance.agencies, known ? "skip" : { churchId });
+  const listed = useQuery(
+    api.assistance.agencies,
+    known ? "skip" : { churchId },
+  );
   const agencies = known ?? listed;
   const [referred, setReferred] = useState<string[]>(request.referrals ?? []);
   const { pending, error, save } = useSave();
   const [amountError, setAmountError] = useState("");
   const approving = decision === "approved";
+  const voucher = approving ? request.voucher : null;
+  const shelf = useShelf(churchId, !!voucher);
   return (
     <form
       className="live-form help-form"
       onSubmit={async (event) => {
         const value = fieldsOf(event);
-        const amountApproved = approving ? cents(value("amount")) : null;
-        if (approving && !amountApproved)
+        const amountApproved =
+          approving && !voucher ? cents(value("amount")) : null;
+        if (approving && !voucher && !amountApproved)
           return setAmountError("Enter the amount to approve, in dollars.");
         const places = [...referred, value("elsewhere")].filter(Boolean);
         if (places.length > 4)
@@ -392,15 +491,34 @@ export function DecideForm({
             requestId: request.id,
             decision,
             amountApproved: amountApproved ?? undefined,
+            ...(voucher && { quantity: Number(value("quantity")) }),
             note: value("note"),
             // An older backend does not know the list of places yet; it keeps the single line.
-            ...(agencies ? { referrals: places } : { referral: places.join(", ") }),
+            ...(agencies
+              ? { referrals: places }
+              : { referral: places.join(", ") }),
           }),
         );
         if (outcome.saved) onSaved();
       }}
     >
-      {approving && (
+      {voucher && (
+        <LiveField
+          label="How many to give"
+          help={`They asked for ${vouchers(voucher)}.${shelf ? ` ${onHand(onShelf(shelf, voucher.item))}` : ""}`}
+        >
+          <Input
+            name="quantity"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={20}
+            required
+            defaultValue={voucher.quantity}
+          />
+        </LiveField>
+      )}
+      {approving && !voucher && (
         <LiveField
           label="Amount to approve, in dollars"
           help={`They asked for ${money(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
@@ -413,7 +531,11 @@ export function DecideForm({
           />
         </LiveField>
       )}
-      <LiveField label={approving ? "Note on the decision (optional)" : "Why it was declined"}>
+      <LiveField
+        label={
+          approving ? "Note on the decision (optional)" : "Why it was declined"
+        }
+      >
         <Textarea name="note" rows={3} />
       </LiveField>
       <fieldset className="help-lines">
@@ -443,7 +565,11 @@ export function DecideForm({
               : "Such as 211 or the county rent program. It is offered here next time."
           }
         >
-          <Input name="elsewhere" maxLength={120} defaultValue={request.referral} />
+          <Input
+            name="elsewhere"
+            maxLength={120}
+            defaultValue={request.referral}
+          />
         </LiveField>
       </fieldset>
       <FormEnd
@@ -547,7 +673,11 @@ export function NeighborForm({
         </LiveField>
       </div>
       <LiveField label="Address">
-        <Input name="address" defaultValue={neighbor?.address} autoComplete="off" />
+        <Input
+          name="address"
+          defaultValue={neighbor?.address}
+          autoComplete="off"
+        />
       </LiveField>
       <div className="live-form-grid">
         <LiveField label="Adults at home">
@@ -615,8 +745,9 @@ export function NeighborForm({
             {duplicates[0].same === "phone" ? "phone number" : "name"}.
           </p>
           <p className="live-error-recovery">
-            Open the record, or change the {duplicates[0].same === "phone" ? "number" : "name"}. What you typed is
-            still here. If this is someone else, save again.
+            Open the record, or change the{" "}
+            {duplicates[0].same === "phone" ? "number" : "name"}. What you typed
+            is still here. If this is someone else, save again.
           </p>
           {duplicates.map((match) => (
             <div className="live-row" key={match.id}>

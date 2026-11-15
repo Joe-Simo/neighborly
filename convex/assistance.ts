@@ -2,6 +2,7 @@ import { v, type Infer } from "convex/values";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { neighborAccess, neighborRecord } from "./access";
+import { voucherGiven } from "./treasury";
 import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
 
@@ -19,6 +20,7 @@ const payeeKind = v.union(v.literal("landlord"), v.literal("utility"), v.literal
 const DAY = 24 * 60 * 60 * 1000;
 const WEEK = 7 * DAY;
 const MAX_CENTS = 10_000_000;
+const MAX_VOUCHERS = 20;
 
 export const nameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 export const phoneKey = (phone: string) => phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
@@ -80,6 +82,8 @@ export const requestRow = v.object({
   decidedAt: v.union(v.number(), v.null()),
   payeeKind: requestFields.payeeKind,
   payeeName: v.string(),
+  /** What was asked for from the shelf, on a voucher request. No money is owed on one. */
+  voucher: v.union(v.object({ item: v.string(), quantity: v.number() }), v.null()),
   source: requestFields.source,
   createdByName: v.string(),
   createdAt: v.number(),
@@ -108,6 +112,7 @@ export async function toRequestRow(found: Lookups, request: Doc<"assistanceReque
     decidedAt: request.decidedAt ?? null,
     payeeKind: request.payeeKind,
     payeeName: request.payeeName,
+    voucher: request.voucher ?? null,
     source: request.source,
     createdByName: await found.memberName(request.createdBy),
     createdAt: request.createdAt,
@@ -167,27 +172,33 @@ const requestDetails = {
   amountRequested: v.number(),
   payeeKind,
   payeeName: v.string(),
+  /** Only with kind "voucher": what is asked for from the shelf, and how many. */
+  voucher: v.optional(v.object({ item: v.string(), quantity: v.number() })),
 };
-function cleanDetails(args: { summary: string; amountRequested: number; payeeName: string }) {
-  return {
-    summary: text(args.summary, "What they need", 500, true),
-    amountRequested: wholeCents(args.amountRequested, "The amount"),
-    payeeName: text(args.payeeName, "Who is paid", 120),
-  };
+function howMany(quantity: number) {
+  if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_VOUCHERS) throw new Error(`Enter how many vouchers, from 1 to ${MAX_VOUCHERS}.`);
+  return quantity;
+}
+/** A voucher request names what comes off the shelf; nobody is paid, so it carries no amount and no payee. */
+function cleanDetails(args: { kind: Doc<"assistanceRequests">["kind"]; summary: string; amountRequested: number; payeeKind: Infer<typeof payeeKind>; payeeName: string; voucher?: { item: string; quantity: number } }) {
+  const summary = text(args.summary, "What they need", 500, true);
+  if (args.voucher && args.kind !== "voucher") throw new Error("Only a voucher request names a voucher.");
+  if (args.voucher) return { kind: args.kind, summary, amountRequested: 0, payeeKind: "vendor" as const, payeeName: "", voucher: { item: text(args.voucher.item, "The voucher", 80, true), quantity: howMany(args.voucher.quantity) } };
+  return { kind: args.kind, summary, amountRequested: wholeCents(args.amountRequested, "The amount"), payeeKind: args.payeeKind, payeeName: text(args.payeeName, "Who is paid", 120), voucher: undefined };
 }
 
 /** Records a request for help. `source` is "ai_draft" only when a person approved a draft the assistant wrote. */
 export const createRequest = mutation({
   args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), callId: v.optional(v.id("calls")), source: v.optional(requestFields.source), ...requestDetails },
   returns: v.id("assistanceRequests"),
-  handler: async (ctx, { churchId, neighborId, callId, source, kind, payeeKind, ...details }) => {
+  handler: async (ctx, { churchId, neighborId, callId, source, ...details }) => {
     const { member } = await neighborRecord(ctx, churchId, neighborId);
     if (callId) {
       const call = await ownCall(ctx, churchId, callId);
       if (call.neighborId && call.neighborId !== neighborId) throw new Error("That call belongs to another neighbor.");
       if (!call.neighborId) await ctx.db.patch("calls", callId, { neighborId });
     }
-    return ctx.db.insert("assistanceRequests", { churchId, neighborId, callId, kind, payeeKind, ...cleanDetails(details), status: "open", decisionNote: "", source: source ?? "person", createdBy: member._id, createdAt: Date.now() });
+    return ctx.db.insert("assistanceRequests", { churchId, neighborId, callId, ...cleanDetails(details), status: "open", decisionNote: "", source: source ?? "person", createdBy: member._id, createdAt: Date.now() });
   },
 });
 
@@ -195,11 +206,11 @@ export const createRequest = mutation({
 export const updateRequest = mutation({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), ...requestDetails },
   returns: v.null(),
-  handler: async (ctx, { churchId, requestId, kind, payeeKind, ...details }) => {
+  handler: async (ctx, { churchId, requestId, ...details }) => {
     await neighborAccess(ctx, churchId);
     const existing = await ownRequest(ctx, churchId, requestId);
     if (existing.status !== "open") throw new Error("This request has already been decided.");
-    await ctx.db.patch("assistanceRequests", requestId, { kind, payeeKind, ...cleanDetails(details) });
+    await ctx.db.patch("assistanceRequests", requestId, cleanDetails(details));
     return null;
   },
 });
@@ -227,11 +238,15 @@ async function referredTo(ctx: MutationCtx, churchId: Id<"churches">, names: str
   }));
 }
 
-/** Approves or declines an open request, and keeps who decided and when. `referral` says where else the neighbor was pointed, such as 211. */
+/**
+ * Approves or declines an open request, and keeps who decided and when. `referral` says where else the
+ * neighbor was pointed, such as 211. Approving a voucher request takes the vouchers off the treasury's
+ * shelf and finishes the request, since nothing is left to pay; `quantity` changes how many are given.
+ */
 export const decide = mutation({
-  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), decision: v.union(v.literal("approved"), v.literal("declined")), amountApproved: v.optional(v.number()), note: v.string(), referral: v.optional(v.string()), referrals: v.optional(v.array(v.string())) },
+  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), decision: v.union(v.literal("approved"), v.literal("declined")), amountApproved: v.optional(v.number()), quantity: v.optional(v.number()), note: v.string(), referral: v.optional(v.string()), referrals: v.optional(v.array(v.string())) },
   returns: v.null(),
-  handler: async (ctx, { churchId, requestId, decision, amountApproved, note, referral, referrals }) => {
+  handler: async (ctx, { churchId, requestId, decision, amountApproved, quantity, note, referral, referrals }) => {
     const member = await neighborAccess(ctx, churchId);
     const existing = await ownRequest(ctx, churchId, requestId);
     if (existing.status !== "open") throw new Error("This request has already been decided.");
@@ -241,6 +256,12 @@ export const decide = mutation({
       await ctx.db.patch("assistanceRequests", requestId, { status: "declined", ...decided });
       return null;
     }
+    if (existing.voucher) {
+      const voucher = { item: existing.voucher.item, quantity: howMany(quantity ?? existing.voucher.quantity) };
+      await voucherGiven(ctx, member, { requestId, ...voucher });
+      await ctx.db.patch("assistanceRequests", requestId, { status: "paid", amountApproved: 0, voucher, ...decided });
+      return null;
+    }
     if (existing.payeeKind === "neighbor" || !existing.payeeName) throw new Error("Add who is paid before approving. Payments go to the landlord, utility or store.");
     if (amountApproved === undefined) throw new Error("The approved amount is needed.");
     await ctx.db.patch("assistanceRequests", requestId, { status: "approved", amountApproved: wholeCents(amountApproved, "The approved amount", 1), ...decided });
@@ -248,14 +269,16 @@ export const decide = mutation({
   },
 });
 
-/** Closes a request that will go no further, such as when the neighbor resolved it. */
+/** Closes a request that will go no further, such as when the neighbor resolved it. Closing a voucher request after it was given puts the vouchers back on the shelf. */
 export const closeRequest = mutation({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), note: v.string() },
   returns: v.null(),
   handler: async (ctx, { churchId, requestId, note }) => {
     const member = await neighborAccess(ctx, churchId);
     const existing = await ownRequest(ctx, churchId, requestId);
-    if (existing.status !== "open" && existing.status !== "approved") throw new Error("This request is already finished.");
+    const given = existing.status === "paid" && existing.voucher;
+    if (existing.status !== "open" && existing.status !== "approved" && !given) throw new Error("This request is already finished.");
+    if (given) await voucherGiven(ctx, member, { requestId, item: given.item, quantity: 0 });
     await ctx.db.patch("assistanceRequests", requestId, { status: "closed", decisionNote: text(note, "The note", 500), decidedBy: existing.decidedBy ?? member._id, decidedAt: existing.decidedAt ?? Date.now() });
     return null;
   },
