@@ -68,5 +68,6 @@
 .live-app .tools-done:focus, .live-app .tools-done:focus-visible { outline: none; }
 .live-app .tools-progress { margin: 18px 0 0; font-size: 17px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
 .tools-records { margin-top: 22px; }
-.live-app .help-row .tools-one { padding-inline: 0; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
+.live-app .help-row .tools-one { padding-inline: 0; border: 0; background: none; box-shadow: none; border-radius: 2px; width: auto; justify-self: start; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
 .live-app .help-row .tools-one:hover { text-decoration-color: currentColor; }
+@media (min-width: 701px) { .live-app .help-row .tools-one { justify-self: end; } }
