@@ -49,10 +49,10 @@ async function setup() {
     const samuel = await join(church, "Samuel Adeyemi", "member", { visitor: true, approved: false });
     const stranger = await join(other, "Victor Salgado", "owner");
     const record = (group: typeof church, name: string, address: string, createdBy: typeof owner.memberId) =>
-      ctx.db.insert("neighbors", { churchId: group, name, nameKey: name.toLowerCase(), phone: "(555) 0142", phoneKey: "5550142", email: "", address, adults: 2, children: 2, language: "es", notes: "", createdBy, createdAt: 0 });
-    const rosa = await record(church, "Rosa Delgado", "14 Sample St, Apt 2", owner.memberId);
-    const elsewhere = await record(other, "Mai Tran", "31 Demo Ct", stranger.memberId);
-    const request = await ctx.db.insert("assistanceRequests", { churchId: church, neighborId: rosa, kind: "rent", summary: "Behind on November rent.", amountRequested: 45000, status: "open", decisionNote: "", payeeKind: "landlord", payeeName: "Sample Property Co.", source: "person", createdBy: owner.memberId, createdAt: now - DAY });
+      ctx.db.insert("neighbors", { churchId: group, name, nameKey: name.toLowerCase(), phone: "(100) 555-0101", phoneKey: "1005550101", email: "", address, adults: 2, children: 2, language: "es", notes: "", createdBy, createdAt: 0 });
+    const rosa = await record(church, "Benito Desrosiers", "214 Orchard St, Apt 2", owner.memberId);
+    const elsewhere = await record(other, "Alma Almonte", "31 Mill Rd, Apt 4", stranger.memberId);
+    const request = await ctx.db.insert("assistanceRequests", { churchId: church, neighborId: rosa, kind: "rent", summary: "Behind on this month's rent after reduced hours.", amountRequested: 45000, status: "open", decisionNote: "", payeeKind: "landlord", payeeName: "Orchard Street Apartments", source: "person", createdBy: owner.memberId, createdAt: now - DAY });
     return { church, other, owner, coordinator, daniel, graciela, colleen, samuel, stranger, rosa, elsewhere, request };
   });
   for (const person of [ids.owner, ids.coordinator, ids.daniel, ids.stranger]) emails.set(person.userId, `${person.userId}@neighborly.example`);
@@ -124,7 +124,7 @@ describe("planning a visit by hand", () => {
     const board = await owner.query(api.visits.board, { churchId: ids.church });
     expect(board.suggested).toBeNull();
     expect(board.scheduled).toHaveLength(1);
-    expect(board.scheduled[0]).toMatchObject({ neighborName: "Rosa Delgado", address: "14 Sample St, Apt 2", kind: "rent", amount: 45000, scheduledAt: morning(3).start });
+    expect(board.scheduled[0]).toMatchObject({ neighborName: "Benito Desrosiers", address: "214 Orchard St, Apt 2", kind: "rent", amount: 45000, scheduledAt: morning(3).start });
     expect(board.scheduled[0].visitors.map((visitor) => visitor.name)).toEqual(["Daniel Whitcombe", "Graciela Fuentes"]);
   });
 
@@ -160,7 +160,7 @@ describe("planning a visit by hand", () => {
     const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
     await owner.mutation(api.visits.openSheet, { churchId, visitId });
     const sheet = await owner.query(api.visits.sheet, { churchId, visitId });
-    expect(sheet).toMatchObject({ group: "Sample Conference", visitors: ["Daniel Whitcombe", "Graciela Fuentes"], neighbor: { name: "Rosa Delgado", address: "14 Sample St, Apt 2" }, request: { kind: "rent", amount: 45000, payeeName: "Sample Property Co." } });
+    expect(sheet).toMatchObject({ group: "Sample Conference", visitors: ["Daniel Whitcombe", "Graciela Fuentes"], neighbor: { name: "Benito Desrosiers", address: "214 Orchard St, Apt 2" }, request: { kind: "rent", amount: 45000, payeeName: "Orchard Street Apartments" } });
     const lines = await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", ids.rosa)).collect());
     expect(lines).toHaveLength(1);
     expect(lines[0].actorId).toBe(ids.owner.userId);
@@ -173,8 +173,8 @@ describe("each visitor accepts or declines", () => {
     const churchId = ids.church;
     const visitId = await as(ids.owner).mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
     const own = await as(ids.daniel).query(api.visits.mine, { churchId });
-    expect(own).toEqual([{ id: visitId, scheduledAt: morning(3).start, street: "Sample St", partner: "Graciela Fuentes", response: "pending" }]);
-    expect(JSON.stringify(own)).not.toMatch(/Rosa|Delgado|rent|14 Sample/);
+    expect(own).toEqual([{ id: visitId, scheduledAt: morning(3).start, street: "Orchard St", partner: "Graciela Fuentes", response: "pending" }]);
+    expect(JSON.stringify(own)).not.toMatch(/Benito|Desrosiers|rent|214/);
     // Someone not on the visit sees nothing of it and cannot answer for it.
     expect(await as(ids.coordinator).query(api.visits.mine, { churchId })).toEqual([]);
     await expect(as(ids.coordinator).mutation(api.visits.respond, { churchId, visitId, response: "accepted" })).rejects.toThrow("Visit not found.");
@@ -267,7 +267,7 @@ describe("the suggested pair", () => {
     const owner = as(ids.owner), churchId = ids.church;
     const first = await owner.query(api.visits.board, { churchId });
     // Samuel is on the team but not approved; the owner and coordinator are not home visitors.
-    expect(first.suggested?.request).toMatchObject({ neighborName: "Rosa Delgado", kind: "rent", amount: 45000 });
+    expect(first.suggested?.request).toMatchObject({ neighborName: "Benito Desrosiers", kind: "rent", amount: 45000 });
     expect(first.suggested?.pair?.map((person) => person.name)).toEqual(["Colleen Marsh", "Graciela Fuentes"]);
     expect(first.suggested?.reason).toContain("Graciela speaks Spanish.");
     expect(DateTime.fromMillis(first.suggested?.scheduledAt ?? 0, { zone }).hour).toBe(10);
