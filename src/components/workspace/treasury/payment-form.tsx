@@ -32,6 +32,7 @@ export function PaymentForm({
   const [date, setDate] = useState(today);
   const [memo, setMemo] = useState("");
   const [error, setError] = useState("");
+  const [amountWrong, setAmountWrong] = useState(false);
   const [saving, setSaving] = useState(false);
   return (
     <form
@@ -39,11 +40,12 @@ export function PaymentForm({
       onSubmit={async (event) => {
         event.preventDefault();
         const cents = parseCents(amount);
+        setAmountWrong(cents === null || cents > request.remaining);
         if (cents === null)
           return setError("Enter the amount in dollars and cents, like 214.60.");
         if (cents > request.remaining)
           return setError(
-            `Only ${formatCents(request.remaining)} is left of the approved amount.`,
+            `Enter ${formatCents(request.remaining)} or less. That is what is left of the approved amount.`,
           );
         setError("");
         setSaving(true);
@@ -62,7 +64,11 @@ export function PaymentForm({
             inputMode="decimal"
             autoComplete="off"
             value={amount}
-            onChange={(event) => setAmount(event.target.value)}
+            aria-invalid={amountWrong || undefined}
+            onChange={(event) => {
+              setAmount(event.target.value);
+              setAmountWrong(false);
+            }}
             required
           />
         </LiveField>

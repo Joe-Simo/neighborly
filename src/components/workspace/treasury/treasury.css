@@ -12,7 +12,7 @@
   height: 44px;
 }
 .live-app .help-empty [data-slot="button"],
-.live-app .treasury-dialog [data-slot="button"] {
+.treasury-dialog .live-form-actions [data-slot="button"] {
   min-height: 44px;
   padding-inline: 18px;
   font-size: 16px;
@@ -127,4 +127,13 @@
   .live-app .help-what [data-slot="button"] {
     transition: none;
   }
+}
+/* An empty block that opens the room needs no rule of its own under the head's. */
+.help-empty[data-first] {
+  border-top: 0;
+  padding-top: 8px;
+}
+.treasury-dialog .live-field input[aria-invalid="true"] {
+  border-color: #9f4935;
+  box-shadow: 0 0 0 1px #9f4935;
 }

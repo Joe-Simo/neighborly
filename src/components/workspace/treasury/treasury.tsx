@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useWorkspace } from "@/components/workspace/context";
 import {
+  isUntouched,
   LedgerLoading,
   LedgerPrivate,
   LedgerView,
@@ -65,14 +66,16 @@ export function TreasurySection() {
     setDone("");
     setOpen({ is: "money" });
   }, []);
-  useLayoutEffect(() => {
-    if (!allowed) return;
-    setHeadAction({ label: "Record money", run: recordMoney });
-    return () => setHeadAction(null);
-  }, [allowed, recordMoney, setHeadAction]);
   // The month last shown stays on screen while the next one loads.
   const [shown, setShown] = useState(ledger);
   if (ledger && ledger !== shown) setShown(ledger);
+  // On first use the room offers one step, the opening balance, so the head button waits for it.
+  const firstUse = !shown || isUntouched(shown);
+  useLayoutEffect(() => {
+    if (!allowed || firstUse) return;
+    setHeadAction({ label: "Record money", run: recordMoney });
+    return () => setHeadAction(null);
+  }, [allowed, firstUse, recordMoney, setHeadAction]);
 
   if (allowed === false) return <LedgerPrivate />;
   if (!shown || !payable) return <LedgerLoading />;
@@ -99,7 +102,7 @@ export function TreasurySection() {
     setDone("");
     setOpen(next);
   };
-  const empty = !shown.entries.length && shown.months.length === 1;
+  const empty = isUntouched(shown);
 
   return (
     <>

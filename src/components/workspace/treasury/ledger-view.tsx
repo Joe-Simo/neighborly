@@ -40,6 +40,10 @@ function NeighborLink({ id, name }: { id: string; name: string }) {
   );
 }
 
+/** A ledger nobody has written in yet. */
+export const isUntouched = (ledger: Ledger) =>
+  ledger.months.length === 1 && !ledger.entries.length;
+
 export function LedgerView({
   ledger,
   payable,
@@ -70,12 +74,11 @@ export function LedgerView({
     gifts > 0 && count(gifts, "twinning gift", "twinning gifts"),
   ].filter(Boolean);
   const [first, ...waiting] = payable;
-  const untouched =
-    ledger.months.length === 1 && !ledger.entries.length && !payable.length;
+  const untouched = isUntouched(ledger) && !payable.length;
 
   if (untouched)
     return (
-      <div className="help-empty">
+      <div className="help-empty" data-first>
         <div className="help-empty-art" style={art} aria-hidden="true" />
         <div>
           <h3>Start with what you have.</h3>
@@ -83,7 +86,7 @@ export function LedgerView({
             Record the balance your conference holds today. Every gift and
             every payment after it will add up from there.
           </p>
-          <Button variant="outline" onClick={onRecord}>
+          <Button onClick={onRecord}>
             <Plus size={18} aria-hidden="true" /> Record the opening balance
           </Button>
         </div>
@@ -313,7 +316,7 @@ export function LedgerLoading() {
 
 export function LedgerPrivate() {
   return (
-    <div className="help-empty">
+    <div className="help-empty" data-first>
       <div
         className="help-empty-art"
         style={{
