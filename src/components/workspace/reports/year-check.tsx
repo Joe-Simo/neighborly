@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { FunctionReturnType } from "convex/server";
 import { ChevronDown, Sparkles } from "lucide-react";
@@ -83,8 +83,21 @@ export function YearCheck({
     );
   };
 
+  // Nothing found is the yes: once the sheet has been laid down, its corner turns green and presses flat.
+  const clear = result.flags.length === 0;
+  const [folded, setFolded] = useState(false);
+  useEffect(() => {
+    if (!clear) return;
+    const wait = setTimeout(() => setFolded(true), 420);
+    return () => clearTimeout(wait);
+  }, [clear]);
+
   return (
-    <section className="help-sheet report-check" aria-labelledby="year-check-title" data-clear={result.flags.length === 0}>
+    <section
+      className={folded ? "help-sheet report-check paper-fold" : "help-sheet report-check"}
+      aria-labelledby="year-check-title"
+      data-clear={clear}
+    >
       <p className="help-sheet-label">{text.title}</p>
       <h2 id="year-check-title" tabIndex={-1}>
         {result.flags.length ? text.count(result.flags.length) : text.clear}
@@ -96,7 +109,7 @@ export function YearCheck({
           .replace("{time}", formatDate(words.locale, checked.at, { hour: "numeric", minute: "2-digit", timeZone }))}
       </p>
       {groups.size > 0 && (
-        <ul>
+        <ul className="paper-rows">
           {[...groups].map(([key, flags]) => {
             const [{ kind, source }] = flags;
             const shown = flags.length === 1 || open.includes(key);

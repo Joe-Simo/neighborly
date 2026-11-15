@@ -38,7 +38,7 @@
   font-variant-numeric: lining-nums;
   color: var(--live-muted);
   gap: 7px;
-  transition: background 220ms var(--help-ease), color 220ms var(--help-ease);
+  transition: background 220ms var(--paper-ease), color 220ms var(--paper-ease);
 }
 .report-switches {
   display: flex;
@@ -120,13 +120,9 @@
   flex-direction: column;
   padding: 22px 10px 18px;
   text-align: center;
-  transition: background 320ms var(--help-ease);
 }
 .report-months li + li {
   border-left: 1px solid var(--live-line);
-}
-.report-months li:hover {
-  background: #f1efe3;
 }
 .report-month-bar {
   display: flex;
@@ -143,24 +139,21 @@
   border-radius: 1px 1px 0 0;
   background: linear-gradient(0deg, #365c46, #5d8064);
   transform-origin: bottom;
-  animation: report-rise 900ms var(--help-ease) both;
+  animation: report-rise 420ms var(--paper-ease) backwards;
+  animation-delay: calc(var(--paper-wait, 0ms) + 90ms + var(--paper-order, 0) * 30ms);
 }
-.report-months li:nth-child(1) .report-month-bar span { animation-delay: 80ms; }
-.report-months li:nth-child(2) .report-month-bar span { animation-delay: 120ms; }
-.report-months li:nth-child(3) .report-month-bar span { animation-delay: 160ms; }
-.report-months li:nth-child(4) .report-month-bar span { animation-delay: 200ms; }
-.report-months li:nth-child(5) .report-month-bar span { animation-delay: 240ms; }
-.report-months li:nth-child(6) .report-month-bar span { animation-delay: 280ms; }
-.report-months li:nth-child(7) .report-month-bar span { animation-delay: 320ms; }
-.report-months li:nth-child(8) .report-month-bar span { animation-delay: 360ms; }
-.report-months li:nth-child(9) .report-month-bar span { animation-delay: 400ms; }
-.report-months li:nth-child(10) .report-month-bar span { animation-delay: 440ms; }
-.report-months li:nth-child(11) .report-month-bar span { animation-delay: 480ms; }
-.report-months li:nth-child(12) .report-month-bar span { animation-delay: 520ms; }
-@keyframes report-rise {
-  from { transform: scaleY(0); }
-  to { transform: none; }
-}
+.report-months li:nth-child(2) { --paper-order: 1; }
+.report-months li:nth-child(3) { --paper-order: 2; }
+.report-months li:nth-child(4) { --paper-order: 3; }
+.report-months li:nth-child(5) { --paper-order: 4; }
+.report-months li:nth-child(6) { --paper-order: 5; }
+.report-months li:nth-child(7) { --paper-order: 6; }
+.report-months li:nth-child(8) { --paper-order: 7; }
+.report-months li:nth-child(9) { --paper-order: 8; }
+.report-months li:nth-child(10) { --paper-order: 9; }
+.report-months li:nth-child(11) { --paper-order: 10; }
+.report-months li:nth-child(12) { --paper-order: 11; }
+@keyframes report-rise { from { transform: scaleY(0); } }
 .report-months h3 {
   margin: 0 0 6px;
   font-size: 13px;
@@ -190,8 +183,8 @@
   gap: 3px;
   height: 14px;
   transform-origin: left;
-  animation: help-grow 900ms var(--help-ease) both;
-  animation-delay: 160ms;
+  animation: help-grow 420ms var(--paper-ease) backwards;
+  animation-delay: calc(var(--paper-wait, 0ms) + 90ms);
 }
 .report-outcomes span {
   min-width: 4px;
@@ -199,9 +192,9 @@
 }
 .report-outcomes [data-is="paid"], .report-legend [data-is="paid"]::before { background: linear-gradient(90deg, #4e7257, #365c46); }
 .report-outcomes [data-is="approved"], .report-legend [data-is="approved"]::before { background: var(--help-ochre); }
-.report-outcomes [data-is="open"], .report-legend [data-is="open"]::before { background: #dfc587; }
-.report-outcomes [data-is="declined"], .report-legend [data-is="declined"]::before { background: #a9ab9c; }
-.report-outcomes [data-is="closed"], .report-legend [data-is="closed"]::before { background: #d3d4c7; }
+.report-outcomes [data-is="open"], .report-legend [data-is="open"]::before { background: color-mix(in srgb, #c8962e 48%, #f7f4ed); }
+.report-outcomes [data-is="declined"], .report-legend [data-is="declined"]::before { background: color-mix(in srgb, #283c32 38%, #f7f4ed); }
+.report-outcomes [data-is="closed"], .report-legend [data-is="closed"]::before { background: color-mix(in srgb, #283c32 18%, #f7f4ed); }
 .report-legend {
   list-style: none;
   margin: 18px 0 0;
@@ -252,7 +245,7 @@
   font-size: 16px;
 }
 .report-every-line svg {
-  transition: transform 320ms var(--help-ease);
+  transition: transform 320ms var(--paper-ease);
 }
 .report-lines[data-open] .report-every-line svg {
   transform: rotate(180deg);
@@ -267,12 +260,21 @@
 }
 .report-lines[data-open] > .report-form {
   display: block;
-  animation: report-open 520ms var(--help-ease) both;
+  animation: paper-rise 320ms var(--paper-ease) backwards;
 }
-@keyframes report-open {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: none; }
+/* The bars are paper strips laid down in turn: each inside half a second, like every motion in the frame. */
+.report .help-bar span {
+  animation-duration: 420ms;
+  animation-timing-function: var(--paper-ease);
+  animation-fill-mode: backwards;
+  animation-delay: calc(var(--paper-wait, 0ms) + 90ms + var(--paper-order, 0) * 30ms);
 }
+.report .help-bars li:nth-child(2) { --paper-order: 1; }
+.report .help-bars li:nth-child(3) { --paper-order: 2; }
+.report .help-bars li:nth-child(4) { --paper-order: 3; }
+.report .help-bars li:nth-child(5) { --paper-order: 4; }
+.report .help-bars li:nth-child(4) .help-bar span { background: color-mix(in srgb, #365c46 55%, #f7f4ed); }
+.report .help-bars li:nth-child(5) .help-bar span { background: color-mix(in srgb, #283c32 38%, #f7f4ed); }
 .report-form th small {
   display: block;
   margin-top: 2px;
@@ -408,8 +410,8 @@
   .report-skeleton-figures > div:nth-child(2) { padding-left: 0; border-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .report-month-bar span, .report-outcomes, .report-skeleton-figures b, .report-skeleton-figures i { animation: none; }
-  .report-months li, .live-app .report-years [data-slot="toggle-group-item"], .report-every-line svg { transition: none; }
+  .report-month-bar span, .report-outcomes, .report .help-bar span, .report-skeleton-figures b, .report-skeleton-figures i { animation: none; }
+  .live-app .report-years [data-slot="toggle-group-item"], .report-every-line svg { transition: none; }
   .report-lines[data-open] > .report-form { animation: none; }
 }
 
@@ -503,10 +505,11 @@
 
 /* What the check before sending found: the one sheet. */
 .report-check { margin: 32px 0 44px; }
-.report-check[data-clear="true"]::after { background: linear-gradient(225deg, var(--live-paper) 50%, #7f9c84 50%, #5d7f66 100%); }
 .report-check[data-clear="true"] .help-sheet-label { color: var(--live-accent); }
 .report-check p { font-size: 17px; }
 .report-check > p:not(.help-sheet-label) { margin-bottom: 22px; }
+/* The findings rise one by one, once the sheet has been laid down. */
+.report-check ul { --paper-wait: 240ms; }
 .report-check ul { list-style: none; margin: 0 0 26px; padding: 0; border-top: 1px solid var(--live-line); }
 .report-check li { padding: 18px 0 16px; border-bottom: 1px solid var(--live-line); }
 .report-check li[data-source="assistant"] { border-left: 2px solid var(--help-plum); padding-left: 18px; }
@@ -526,7 +529,7 @@
   gap: 8px;
 }
 .live-app .report-check .report-check-more:hover { background: none; text-decoration: underline; text-underline-offset: 4px; }
-.report-check-more svg { transition: transform 220ms var(--help-ease); }
+.report-check-more svg { transition: transform 220ms var(--paper-ease); }
 .report-check-more[aria-expanded="true"] svg { transform: rotate(180deg); }
 .report-check .report-check-record {
   display: flex;

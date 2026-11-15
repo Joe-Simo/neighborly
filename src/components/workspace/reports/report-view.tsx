@@ -1,12 +1,13 @@
 "use client";
 
 import "./reports.css";
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
+import { CountUp } from "@/components/workspace/primitives";
 import {
   count,
   dayLabel,
@@ -27,6 +28,16 @@ import {
 const tableArt = "/assets/painted-world/welcome.webp";
 const share = (part: number, of: number): CSSProperties =>
   ({ "--share": `${of > 0 ? Math.max(0, Math.round((part / of) * 1000) / 10) : 0}%` }) as CSSProperties;
+
+/** One of the year's figures. On arrival they count up once, 60ms apart; a change of year rolls on from there. */
+function Figure({ value, order, format = count }: { value: number; order: number; format?: (amount: number) => string }) {
+  const [arrived, setArrived] = useState(false);
+  useEffect(() => {
+    const wait = setTimeout(() => setArrived(true), order * 60);
+    return () => clearTimeout(wait);
+  }, [order]);
+  return <CountUp value={arrived ? value : 0} format={(amount) => format(Math.round(amount))} />;
+}
 
 /** Paper-colored blocks in the shape of the page, while the year is added up. */
 export function ReportLoading() {
@@ -256,7 +267,7 @@ export function ReportView({
         <div>
           <dt>Neighbors helped</dt>
           <dd>
-            {count(report.history.householdsInAll)}
+            <Figure value={report.history.householdsInAll} order={0} />
             <small>
               Households, {spanLabel(report)}
               {soFar}. {plural(report.history.peopleInAll, "person", "people")} in all.
@@ -267,14 +278,14 @@ export function ReportView({
         <div>
           <dt>Home visits</dt>
           <dd>
-            {count(report.visits)}
+            <Figure value={report.visits} order={1} />
             <small>Always in pairs</small>
           </dd>
         </div>
         <div>
           <dt>Help given</dt>
           <dd>
-            {money(report.helpPaid)}
+            <Figure value={report.helpPaid} order={2} format={money} />
             <small>
               {voucherMoney ? "Paid direct or given as vouchers, never in cash" : "Paid direct, never in cash"}
               {moved && `. ${money(report.history.amount)} more is in ServWare history.`}
@@ -403,7 +414,7 @@ export function ReportView({
           <div>
             <dt>Hours</dt>
             <dd>
-              {count(report.time.hours)}
+              <Figure value={report.time.hours} order={3} />
               <small>
                 {serving
                   .filter((line) => line.hours > 0)
@@ -415,14 +426,14 @@ export function ReportView({
           <div>
             <dt>Miles</dt>
             <dd>
-              {count(report.visitMiles)}
+              <Figure value={report.visitMiles} order={4} />
               <small>Driven to home visits</small>
             </dd>
           </div>
           <div>
             <dt>Calls returned</dt>
             <dd>
-              {count(report.calls.returned)}
+              <Figure value={report.calls.returned} order={5} />
               <small>
                 Of {plural(report.calls.taken, "call")} taken
                 {noCallBack > 0 && <span className="report-own-line">{count(noCallBack)} needed no call back</span>}
