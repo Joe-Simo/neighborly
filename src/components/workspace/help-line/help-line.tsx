@@ -771,6 +771,7 @@ export function DraftSheet({
     <section
       className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
       aria-labelledby="draft-title"
+      data-blank={complete ? undefined : ""}
     >
       <p className="help-sheet-label">
         {sealed
@@ -807,9 +808,10 @@ export function DraftSheet({
             })}
             .
           </p>
+          {/* What to do about a blank reads with the text, at its measure, never beside the buttons. */}
+          <DraftToDo notes={draft.notes} />
         </div>
         <div className="help-actions" inert={sealed}>
-          <DraftToDo notes={draft.notes} />
           {complete ? (
             <>
               <Button disabled={pending} onClick={onApprove}>
