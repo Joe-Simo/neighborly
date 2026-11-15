@@ -53,6 +53,7 @@ export function en(set: WordSet) {
       skip: "Skip to your workspace",
       signOut: "Sign out",
       leaveSample: "Leave the sample",
+      sampleMark: "Sample · made-up people",
       language: "Language",
       roomInEnglish: "This room is in English.",
       typedStays: "Words people typed stay as they wrote them.",

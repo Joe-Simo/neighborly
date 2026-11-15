@@ -54,6 +54,7 @@ export function ht(set: WordSet): Words {
       skip: "Ale nan espas ou",
       signOut: "Soti",
       leaveSample: "Kite egzanp lan",
+      sampleMark: "Egzanp · moun envante",
       language: "Lang",
       roomInEnglish: "Sal sa a an anglè toujou.",
       typedStays: "Sa moun yo ekri rete jan yo te ekri l.",

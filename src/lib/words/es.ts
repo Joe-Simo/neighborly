@@ -54,6 +54,7 @@ export function es(set: WordSet): Words {
       skip: "Ir a tu espacio",
       signOut: "Salir",
       leaveSample: "Salir de la muestra",
+      sampleMark: "Muestra · personas inventadas",
       language: "Idioma",
       roomInEnglish: "Esta sala todavía está en inglés.",
       typedStays: "Lo que escriben las personas queda como lo escribieron.",
