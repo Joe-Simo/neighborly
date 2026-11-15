@@ -190,7 +190,7 @@ export const readUrgency = action({
     const fallback = { signs, verification: "review" as const };
     if (!env.TYPESAFE_API_KEY || note.length > 2000 || !signs.length) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-    const meaning = { shutoff: "a utility is being or about to be shut off", eviction: "the household faces eviction", noFood: "the household has no food now", child: "a child lives in the household", elder: "an elderly person or a person living alone is involved", medical: "there is a medical need" };
+    const meaning = { shutoff: "a utility is being or about to be shut off", eviction: "the household faces eviction", noFood: "the household has no food", hungry: "someone is hungry or has not eaten", child: "there is a child", elder: "someone is elderly", alone: "someone lives alone", medical: "there is a medical need" };
     const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, Object.fromEntries(signs.map(({ reason }) => [reason,
       `Does note explicitly state that ${meaning[reason]}? ${stated} Never infer need, eligibility, a decision, or a new fact.`,
     ])) as Record<(typeof signs)[number]["reason"], string>);

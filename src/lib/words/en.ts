@@ -192,7 +192,7 @@ export function en(set: WordSet) {
     },
     /** The Monday note: fixed sentences chosen from the week's counts. */
     monday: {
-      title: "This week, in short",
+      title: "This week, in short.",
       origin: "Counted from your records. No one’s name or note was sent anywhere.",
       quiet: "Nothing is waiting on you this week.",
       calls: (count: number) => (count === 1 ? "1 call is waiting to be returned." : `${count} calls are waiting to be returned.`),
@@ -203,6 +203,18 @@ export function en(set: WordSet) {
       approved: (count: number) => (count === 1 ? "1 approved request is not yet paid." : `${count} approved requests are not yet paid.`),
       places: (count: number) => (count === 1 ? "1 place is open in the next seven days." : `${count} places are open in the next seven days.`),
       away: (count: number) => (count === 1 ? `1 ${t.member} is away this week.` : `${count} ${t.members} are away this week.`),
+      done: "Done reading",
+      read: "Read",
+      /** The note as one line, when something else already holds the sheet's place. */
+      brief: {
+        label: "Monday note",
+        calls: (count: number) => (count === 1 ? "1 call to return" : `${count} calls to return`),
+        open: (count: number) => (count === 1 ? "1 request to decide" : `${count} requests to decide`),
+        approved: (count: number) => (count === 1 ? "1 approved request to pay" : `${count} approved requests to pay`),
+        visits: (count: number) => (count === 1 ? `1 ${t.visit} planned` : `${count} ${t.visits} planned`),
+        places: (count: number) => (count === 1 ? "1 place open" : `${count} places open`),
+        away: (count: number) => (count === 1 ? `1 ${t.member} away` : `${count} ${t.members} away`),
+      },
     },
     /** The check before the yearly report. Each line points a person to one record; nothing is changed for them. */
     yearCheck: {
@@ -217,16 +229,19 @@ export function en(set: WordSet) {
       byRule: "Found by counting.",
       byAssistant: "The assistant read the note. Please read it yourself.",
       open: "Open the record",
+      putAway: "Put this away",
     },
     /** Why the assistant put a call first. A person can always move it. */
     urgent: {
       label: "Call first",
       origin: "Put first by the assistant from the note. You can move it.",
-      shutoff: (day: number) => (day ? `Shut-off on the ${day}${["th", "st", "nd", "rd"][day % 100 > 10 && day % 100 < 14 ? 0 : Math.min(day % 10, 4) % 4]}` : "Shut-off notice"),
-      eviction: (day: number) => (day ? `Eviction on the ${day}${["th", "st", "nd", "rd"][day % 100 > 10 && day % 100 < 14 ? 0 : Math.min(day % 10, 4) % 4]}` : "Eviction notice"),
-      noFood: "No food today",
-      child: "Children at home",
-      elder: "Elderly or living alone",
+      shutoff: (day: number) => (day ? `Shut-off on the ${day}${["th", "st", "nd", "rd"][day % 100 > 10 && day % 100 < 14 ? 0 : Math.min(day % 10, 4) % 4]}` : "Shut-off"),
+      eviction: (day: number) => (day ? `Eviction on the ${day}${["th", "st", "nd", "rd"][day % 100 > 10 && day % 100 < 14 ? 0 : Math.min(day % 10, 4) % 4]}` : "Eviction"),
+      noFood: "No food",
+      hungry: "Has not eaten",
+      child: "A child",
+      elder: "Elderly",
+      alone: "Lives alone",
       medical: "A medical need",
       notUrgent: "Not urgent",
     },

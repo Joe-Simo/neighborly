@@ -5,8 +5,17 @@ describe("signs that a call should be returned first", () => {
   test("a shut-off with its day, and living alone", () => {
     expect(urgentSigns("Power shut-off notice for the 21st. Lives alone.")).toEqual([
       { reason: "shutoff", day: 21 },
-      { reason: "elder", day: null },
+      { reason: "alone", day: null },
     ]);
+  });
+
+  test("each sign says one thing: alone is not elderly, hungry is not out of food", () => {
+    const reasons = (note: string) => urgentSigns(note).map((sign) => sign.reason);
+    expect(reasons("She lives alone.")).toEqual(["alone"]);
+    expect(reasons("He is elderly, 84 years old.")).toEqual(["elder"]);
+    expect(reasons("The kids are hungry.")).toEqual(["hungry", "child"]);
+    expect(reasons("She hasn't eaten since Sunday.")).toEqual(["hungry"]);
+    expect(reasons("There is no food in the house.")).toEqual(["noFood"]);
   });
 
   test("no food and children at home", () => {

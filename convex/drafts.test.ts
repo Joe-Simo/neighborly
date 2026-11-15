@@ -134,7 +134,7 @@ describe("a call note drafted into a request", () => {
 
   test("urgent signs are read from the note, a doubtful one is dropped, and nothing is written", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
-    const fetch = answers({ shutoff: 0.97, elder: 0.3 });
+    const fetch = answers({ shutoff: 0.97, alone: 0.3 });
     vi.stubGlobal("fetch", fetch);
     const { t, ids, coordinator, member } = await helpLine();
     await t.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Rosa Delgado has a power shut-off notice for the 21st. Lives alone." }));
@@ -143,7 +143,7 @@ describe("a call note drafted into a request", () => {
     expect(fetch.mock.calls[0][1].body).not.toMatch(/rosa|delgado/i);
     await expect(member.action(api.drafts.readUrgency, args)).rejects.toThrow("coordinators and owners only");
     vi.stubEnv("TYPESAFE_API_KEY", "");
-    expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 21 }, { reason: "elder", day: null }], verification: "review" });
+    expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 21 }, { reason: "alone", day: null }], verification: "review" });
     expect(await t.run(ctx => ctx.db.query("auditEvents").collect())).toEqual([]);
   });
 
