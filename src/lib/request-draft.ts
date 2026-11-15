@@ -28,9 +28,15 @@ const payeeWords: Record<DraftPayeeKind, RegExp> = {
 };
 /** Local utilities a volunteer writes by their initials. */
 const utilityNames = /\b(FPL|LCEC|TECO)\b/;
-const payeeIntroPattern = /\b(?:landlord|property manager|leasing office|electric company|power company|water company)\s+is\s+/i;
+const payeeIntroPattern = /\b(?:(?:landlord|property manager|leasing office|electric company|power company|water company)\s+is|(?:paid|owed|payable|due)\s+to)\s+/i;
+/** What a payee's own name says it is: "County Water Authority" is a utility. A name that says nothing gives nothing. */
+const nameKinds: Record<DraftPayeeKind, RegExp> = {
+  landlord: /\b(?:apartments?|properties|property|realty|rentals|homes)\b/i,
+  utility: /\b(?:water|electric|power|gas|light|energy)\b.*\b(?:authority|utility|utilities|company|co|co-?op|cooperative|department|district|works|services?)\b|\butilit(?:y|ies)\b/i,
+  vendor: /\b(?:pharmacy|shop|store|market|grocery|garage)\b/i,
+};
 const properNamePattern = /^(?:\p{Lu}[\p{L}\p{N}&'.]*)(?:\s+(?:\p{Lu}[\p{L}\p{N}&'.]*|of|and|&))*/u;
-/** "The landlord is Sample Property Co." gives the name; anything less plain gives nothing. */
+/** "The landlord is Sample Property Co." or "Paid to County Water Authority" gives the name; anything less plain gives nothing. */
 function statedPayee(clause: string): string | undefined {
   const intro = payeeIntroPattern.exec(clause);
   return intro ? properNamePattern.exec(clause.slice(intro.index + intro[0].length))?.[0] : undefined;
@@ -133,7 +139,9 @@ export function prepareRequestDraft(note: string): RequestDraft {
     kinds.push(...mentioned);
     sums.push(...stated);
     payees.push(...draftPayeeKinds.filter((payee) => payeeWords[payee].test(clause)));
-    const name = statedPayee(clause) ?? utilityNames.exec(clause)?.[1];
+    const payee = statedPayee(clause);
+    if (payee) payees.push(...draftPayeeKinds.filter((kind) => nameKinds[kind].test(payee)));
+    const name = payee ?? utilityNames.exec(clause)?.[1];
     if (name) names.push(name.replace(/[.,]$/, ""));
     // The sentence with the amount is the one a person most needs to read; a sentence naming the kind is second best.
     if (stated.length && !amountQuote) amountQuote = clause;
@@ -155,7 +163,7 @@ export function prepareRequestDraft(note: string): RequestDraft {
 }
 
 const streetWords = "st|street|ave|avenue|blvd|boulevard|rd|road|dr|drive|ln|lane|ct|court|cir|circle|way|pkwy|parkway|ter|terrace|pl|place|trl|trail|hwy|highway|calle|avenida";
-const addressPattern = new RegExp(`\\b\\d{1,6}\\s+(?:[\\p{L}\\p{N}.']+\\s+){0,4}(?:${streetWords})\\b\\.?(?:,?\\s*(?:apt|apartment|unit|lot|suite|ste|#)\\.?\\s*[\\p{L}\\p{N}-]+)?`, "giu");
+const addressPattern = new RegExp(`\\b\\d{1,6}\\s+(?:[\\p{L}\\p{N}.']+\\s+){0,4}(?:${streetWords})\\b(?:\\.?,?\\s*(?:apt|apartment|unit|lot|suite|ste|#)\\.?\\s*[\\p{L}\\p{N}-]+)?`, "giu");
 const safeCapitals = new Set([
   "i", "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",
   "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "fpl", "lcec", "teco",

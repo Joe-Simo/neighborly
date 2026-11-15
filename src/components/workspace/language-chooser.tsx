@@ -57,7 +57,7 @@ export function LanguageChooser() {
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator className="bg-[#d9ddce]" />
         <DropdownMenuLabel className="text-[15px] leading-snug font-normal text-[#5d6a56]">
-          {failed ? <span role="alert" className="text-[#8c2f24]">{words.notices.failed}</span> : words.shell.typedStays}
+          {failed ? <span role="alert" className="text-[#6f5f93]">{words.notices.failed}</span> : words.shell.typedStays}
         </DropdownMenuLabel>
       </DropdownMenuContent>
     </DropdownMenu>

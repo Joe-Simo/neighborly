@@ -20,6 +20,13 @@ describe("a call note becomes a proposed request", () => {
     expect(draft.payeeName).toBe("FPL");
   });
 
+  test("reads who is paid from the payee's own name, and nothing from a name that does not say", () => {
+    expect(prepareRequestDraft("Water bill is $72 and due on the 28th. Paid to County Water Authority.")).toMatchObject({ kind: "utility", amountRequested: 7200, payeeKind: "utility", payeeName: "County Water Authority", notes: [] });
+    expect(prepareRequestDraft("Car repair, $380, paid to Sample Auto Shop.")).toMatchObject({ payeeKind: "vendor", payeeName: "Sample Auto Shop" });
+    expect(prepareRequestDraft("Owes $90, paid to Jordan Ellis.")).toMatchObject({ payeeKind: null, payeeName: "Jordan Ellis" });
+    expect(prepareRequestDraft("Rent of $500 might be paid to Sample Court Apartments.").payeeKind).toBeNull();
+    expect(prepareRequestDraft("Missed work due to illness. Rent is $500.").payeeName).toBe("");
+  });
   test("copies a payee's name only from a plain statement", () => {
     expect(prepareRequestDraft("Rent is late, 600 dollars. The landlord is Sample Property Co.").payeeName).toBe("Sample Property Co");
     expect(prepareRequestDraft("Rent is late, 600 dollars. She thinks the landlord might be Sample Property Co.").payeeName).toBe("");
@@ -74,6 +81,11 @@ describe("what the model may see", () => {
     const sent = withoutIdentity("Her mother Lucia Marquez lives with her. Mrs. Okafor called. This is earl jennings. Landlord is Sample Property Co. Tomas Rivera will be home Friday.", known);
     expect(sent).not.toMatch(/lucia|marquez|okafor|earl|jennings|property|tomas|rivera/i);
     expect(sent).toContain("Friday");
+  });
+
+  test("a sentence after an address keeps its full stop and its first word", () => {
+    expect(withoutIdentity("Lives at 14 Example Lane. Email marisol@kindhelps.example.", known)).toBe("Lives at [address]. Email [email].");
+    expect(withoutIdentity("Moved to 8 Sample St. Apt 4 last week. Owes $60.", known)).toBe("Moved to [address] last week. Owes $60.");
   });
 
   test("what the check needs stays", () => {

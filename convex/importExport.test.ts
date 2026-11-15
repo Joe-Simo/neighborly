@@ -237,7 +237,7 @@ describe("taking the records out", () => {
       // What a conference would also want to keep if it closed for good.
       const at = Date.UTC(2026, 2, 13, 14, 5);
       await ctx.db.insert("neighborNotes", { churchId: ids.church, neighborId, body: "Prefers a call after five", authorId: ids.coordinator.memberId, createdAt: at });
-      await ctx.db.insert("calls", { churchId: ids.church, neighborId, callerName: "Celeste Hyppolite", phone: "(100) 555-0142", note: "Shut-off notice for Friday", callback: "done", takenBy: ids.member.memberId, takenAt: at, returnedBy: ids.coordinator.memberId, returnedAt: at + 3_600_000, outcome: "Visit planned", urgent: { reasons: ["shut-off"], by: "person" } });
+      await ctx.db.insert("calls", { churchId: ids.church, neighborId, callerName: "Celeste Hyppolite", phone: "(100) 555-0142", note: "Shut-off notice for Friday", callback: "done", takenBy: ids.member.memberId, takenAt: at, returnedBy: ids.coordinator.memberId, returnedAt: at + 3_600_000, outcome: "Visit planned", urgent: { reasons: ["shutoff", "noFood"], by: "person" } });
       await ctx.db.insert("deposits", { churchId: ids.church, date: "2026-03-15", total: 22500, memo: "Poor box", recordedBy: ids.owner.memberId, createdAt: at });
       await ctx.db.insert("bankStatements", { churchId: ids.church, endsOn: "2026-03-31", balance: 104250, agreedBy: ids.owner.memberId, agreedAt: Date.UTC(2026, 3, 2, 15) });
       await ctx.db.insert("voucherStock", { churchId: ids.church, date: "2026-03-10", change: 20, item: "Grocery voucher", note: "From the district", recordedBy: ids.owner.memberId, createdAt: at });
@@ -245,7 +245,7 @@ describe("taking the records out", () => {
       const teamId = await ctx.db.insert("teams", { churchId: ids.church, name: "Help line", description: "Answers the phone" });
       await ctx.db.insert("teamMembers", { churchId: ids.church, teamId, memberId: ids.member.memberId, teamRole: "member", approved: true, status: "active" });
       await ctx.db.insert("commitments", { churchId: ids.church, teamId, title: "Help line morning", start: Date.UTC(2026, 2, 16, 13), end: Date.UTC(2026, 2, 16, 16), location: "Parish office", preparation: "", assigneeId: ids.member.memberId, coordinatorId: ids.coordinator.memberId, version: 1 });
-      await ctx.db.insert("auditEvents", { churchId: ids.church, actorId: ids.owner.userId, action: "member_invited", targetId: "kept-inside", at });
+      await ctx.db.insert("auditEvents", { churchId: ids.church, actorId: ids.owner.userId, action: "removePerson", targetId: "kept-inside", at });
     });
     return world;
   }
@@ -259,18 +259,18 @@ describe("taking the records out", () => {
     expect(JSON.stringify(pages)).not.toContain("7654");
     expect(pages.requests.rows[0].slice(0, 9)).toEqual(["Celeste Hyppolite", "(100) 555-0142", "03/14/2026", "Completed", "Utility", "80.00", "Demo Power & Light", "Shut-off notice", "Paid"]);
     expect(pages.visits.rows).toEqual([["Celeste Hyppolite", "03/16/2026", "10:00 AM", "Completed", "Thomas; Renee", "3", "6", "Kind welcome", ""]]);
-    expect(pages.ledger.rows).toEqual([["2026-03-17", "Money out", "80.00", "utility", "Demo Power & Light", "", "1042", "", "Celeste Hyppolite", "No", "No"]]);
+    expect(pages.ledger.rows).toEqual([["03/17/2026", "Money out", "80.00", "Utility", "Demo Power & Light", "", "1042", "", "Celeste Hyppolite", "No", "No"]]);
     expect(pages.members.rows.map((row) => row[2])).toEqual(["Owner", "Coordinator", "Member"]);
     expect(pages.notes.rows).toEqual([["Celeste Hyppolite", "03/13/2026", "Prefers a call after five", "Thomas"]]);
-    expect(pages.calls.rows).toEqual([["03/13/2026", "10:05 AM", "Celeste Hyppolite", "(100) 555-0142", "Celeste Hyppolite", "Shut-off notice for Friday", "Returned", "Renee", "Thomas", "03/13/2026", "Visit planned", "shut-off"]]);
-    expect(pages.deposits.rows).toEqual([["2026-03-15", "225.00", "Poor box", "Marisol"]]);
-    expect(pages.statements.rows).toEqual([["2026-03-31", "1042.50", "Marisol", "04/02/2026"]]);
-    expect(pages.vouchers.rows).toEqual([["2026-03-10", "20", "Grocery voucher", "From the district", "Marisol"]]);
+    expect(pages.calls.rows).toEqual([["03/13/2026", "10:05 AM", "Celeste Hyppolite", "(100) 555-0142", "Celeste Hyppolite", "Shut-off notice for Friday", "Returned", "Renee", "Thomas", "03/13/2026", "Visit planned", "Shut-off notice; No food in the house"]]);
+    expect(pages.deposits.rows).toEqual([["03/15/2026", "225.00", "Poor box", "Marisol"]]);
+    expect(pages.statements.rows).toEqual([["03/31/2026", "1042.50", "Marisol", "04/02/2026"]]);
+    expect(pages.vouchers.rows).toEqual([["03/10/2026", "20", "", "Grocery voucher", "From the district", "Marisol"]]);
     expect(pages.referrals.rows).toEqual([["Example Food Pantry", "(100) 555-0100", "Food"]]);
     expect(pages.teams.rows).toEqual([["Help line", "Answers the phone", "Renee", "Member", "Active"]]);
     expect(pages.commitments.rows).toEqual([["03/16/2026", "9:00 AM", "12:00 PM", "Help line morning", "Help line", "Parish office", "Renee", "Thomas", "No"]]);
     // The history says who and what, never which record.
-    expect(pages.history.rows).toEqual([["03/13/2026", "10:05 AM", "Marisol", "Member invited"]]);
+    expect(pages.history.rows).toEqual([["03/13/2026", "10:05 AM", "Marisol", "Removed a member"]]);
     expect(JSON.stringify(pages.history)).not.toContain("kept-inside");
 
     // What went out comes back in: the same column names, read into another conference, are all ready.

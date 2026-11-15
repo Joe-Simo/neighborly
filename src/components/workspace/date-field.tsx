@@ -2,6 +2,7 @@
 
 import { useId, useState, useSyncExternalStore } from "react";
 import { ChevronDown } from "lucide-react";
+import { wrongControl } from "@/components/workspace/failure";
 import { DayPicker } from "react-day-picker";
 import { es, ht } from "react-day-picker/locale";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -174,7 +175,7 @@ export function DateField({
               event.preventDefault();
               setMissing(true);
               const hidden = event.currentTarget;
-              if (hidden.form?.querySelector(":invalid") === hidden)
+              if (hidden.form?.querySelector(wrongControl) === hidden)
                 hidden.parentElement?.querySelector<HTMLInputElement>(".live-date-words")?.focus();
             }}
             onChange={(event) => setOwn(event.target.value)}

@@ -339,6 +339,19 @@ describe("a call note drafted into a request", () => {
     expect(draft.notes).toContain("Please confirm who is paid.");
   });
 
+  test("who is paid, read from the payee's own name, is not asked of a model that never sees the name", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = answers({ kind: 0.99 });
+    vi.stubGlobal("fetch", fetch);
+    const { ids, coordinator } = await helpLine();
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Water bill is $72 and due on the 28th. Paid to County Water Authority." }));
+    const draft = await coordinator.action(api.drafts.draftRequest, { churchId: ids.churchId, callId: ids.callId });
+    const body = JSON.parse(fetch.mock.calls[0][1].body) as { state: { note: string }; questions: Record<string, unknown> };
+    expect(body.state.note).not.toContain("County");
+    expect(Object.keys(body.questions)).toEqual(["kind", "chosenKind"]);
+    expect(draft).toMatchObject({ kind: "utility", amountRequested: 7200, payeeKind: "utility", payeeName: "County Water Authority", verification: "checked" });
+  });
+
   test("drafting writes no request, and a failed check falls back to review", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     vi.stubGlobal("fetch", vi.fn(async () => new Response("unavailable", { status: 503 })));
@@ -361,11 +374,15 @@ describe("a call note drafted into a request", () => {
     const { t, ids } = await helpLine();
     const before = await t.run(ctx => ctx.db.query("calls").collect());
     const report = await t.action(internal.drafts.measure, { churchId: ids.churchId });
-    expect(report).toMatchObject({ status: "done", notes: 35, unanswered: 0, model: "jev-1.14.0" });
-    // The arms are counted on the 23 notes the lines were set from, and the 12 fresh ones apart.
-    expect(report.mix.right + report.mix.blank + report.mix.wrong).toBe(92);
-    expect(report.fresh.right + report.fresh.blank + report.fresh.wrong).toBe(48);
-    expect(report.rows).toHaveLength(35);
+    expect(report).toMatchObject({ status: "done", notes: 36, unanswered: 0, model: "jev-1.14.0" });
+    // Every top line counts all 36 notes, and every line under "fresh" the 12 fresh ones: no line leaves out a row it shows.
+    for (const arm of ["mix", "confirm", "choose", "trial"] as const) {
+      const marks = report.rows.flatMap(row => Object.values(row[arm] ?? {}));
+      for (const mark of ["right", "blank", "wrong"] as const) expect(report[arm][mark]).toBe(marks.filter(value => value === mark).length);
+      expect(report[arm].right + report[arm].blank + report[arm].wrong).toBe(144);
+      expect(report.fresh[arm].right + report.fresh[arm].blank + report.fresh[arm].wrong).toBe(48);
+    }
+    expect(report.rows).toHaveLength(36);
     // The first note is the one the live runs passed: code proposes every field and each is confirmed.
     expect(report.rows[0]).toMatchObject({ id: "rent-eviction", confirm: { kind: "right", amount: "right", payeeKind: "right", signs: "right" }, choose: { kind: "wrong", signs: "blank" } });
     // The way the screens work: code says rent, this fake Jev picks food, so the kind is left blank instead of shown wrong.
@@ -374,7 +391,7 @@ describe("a call note drafted into a request", () => {
     expect(report.rows[0].scores).toMatchObject({ kind: 0.95, confirm_eviction: 0.95, choose_kind: "food", choose_kind_confidence: 0.95 });
     expect(JSON.stringify(report)).not.toMatch(/marisol|jennings|example lane|555|behind on/i);
     for (const [, init] of fetch.mock.calls) expect(init.body).not.toMatch(/marisol|vega|jennings|555-01|14 example/i);
-    expect(await t.run(ctx => ctx.db.query("aiUsageByChurch").collect())).toMatchObject([{ churchId: ids.churchId, count: 35 }]);
+    expect(await t.run(ctx => ctx.db.query("aiUsageByChurch").collect())).toMatchObject([{ churchId: ids.churchId, count: 36 }]);
     expect(await t.run(ctx => ctx.db.query("calls").collect())).toEqual(before);
     expect(await t.run(ctx => ctx.db.query("assistanceRequests").collect())).toEqual([]);
   });
