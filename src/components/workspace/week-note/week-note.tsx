@@ -97,12 +97,19 @@ const quietLink = "min-h-11 inline-flex items-center border-0 bg-transparent p-0
 export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts; monday: number; brief: boolean; onDone: () => void }) {
   const { data, words } = useWorkspace();
   const [open, setOpen] = useState(false);
+  // "Done reading" puts the sheet away like paper: it lifts, thins and the page closes over where it lay.
+  const [leaving, setLeaving] = useState(false);
+  const putAway = () => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return onDone();
+    setLeaving(true);
+    window.setTimeout(onDone, 320);
+  };
   const text = words.monday;
   const lines = weekLines(text, counts);
   if (!lines.length) return null;
   if (brief && !open) {
     return (
-      <p className="mb-7 flex flex-wrap items-baseline gap-x-3 text-[17px] leading-snug text-[var(--live-ink)]">
+      <p className="paper-rise mb-7 flex flex-wrap items-baseline gap-x-3 text-[17px] leading-snug text-[var(--live-ink)]">
         <span>
           <strong className="font-[650]">{text.brief.label}:</strong> {lines.slice(0, 3).map((line) => line.brief).join(", ")}.
         </span>
@@ -113,32 +120,37 @@ export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts
     );
   }
   return (
-    <section className="help-sheet after:!hidden" aria-labelledby="week-note">
-      <p className="help-sheet-label !text-[var(--live-muted)]">
-        {formatDate(words.locale, monday, { timeZone: data.church.timeZone, weekday: "long", month: "long", day: "numeric" })}
-      </p>
-      <h2 id="week-note">{text.title}</h2>
-      <ul className="mt-5 mb-4 grid list-none gap-3 p-0 text-[19px] leading-snug text-[var(--live-ink)]">
-          {lines.map((line) => (
-            <li key={line.area} className="flex flex-wrap items-baseline gap-x-4">
-              <span>
-                {line.parts.map((part, index) => (
-                  <span key={part.text} className={part.assistant ? "text-[var(--help-plum)]" : undefined}>
-                    {index > 0 && " "}
-                    {part.text}
-                  </span>
-                ))}
-              </span>
-              <Link href={`/app/${line.area}`} className={`${quietLink} min-[761px]:!min-h-0`}>
-                {words.menu[line.area]}
-              </Link>
-            </li>
-          ))}
-      </ul>
-      <p className="!max-w-none text-[15px]">{text.origin}</p>
-      <button type="button" className={quietLink} onClick={onDone}>
-        {text.done}
-      </button>
-    </section>
+    <div className={`grid transition-[grid-template-rows,opacity,translate] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] ${leaving ? "-translate-y-2 grid-rows-[0fr] overflow-hidden opacity-0" : "grid-rows-[1fr]"}`}>
+      <div className="min-h-0">
+        <section className="help-sheet after:!hidden" aria-labelledby="week-note">
+          <p className="help-sheet-label !text-[var(--live-muted)]">
+            {formatDate(words.locale, monday, { timeZone: data.church.timeZone, weekday: "long", month: "long", day: "numeric" })}
+          </p>
+          <h2 id="week-note">{text.title}</h2>
+          {/* From 761px each line keeps a 60-character measure and its room sits in one steady column on the right. */}
+          <ul className="paper-rows mt-5 mb-5 grid list-none gap-3 p-0 text-[19px] leading-snug text-[var(--live-ink)] min-[761px]:gap-0">
+            {lines.map((line) => (
+              <li key={line.area} className="flex flex-wrap items-baseline gap-x-4 min-[761px]:grid min-[761px]:grid-cols-[minmax(0,60ch)_auto] min-[761px]:justify-between min-[761px]:gap-x-10 min-[761px]:border-t min-[761px]:border-[#e6e2d2] min-[761px]:py-3.5 min-[761px]:first:border-t-0 min-[761px]:first:pt-0">
+                <span>
+                  {line.parts.map((part, index) => (
+                    <span key={part.text} className={part.assistant ? "text-[var(--help-plum)]" : undefined}>
+                      {index > 0 && " "}
+                      {part.text}
+                    </span>
+                  ))}
+                </span>
+                <Link href={`/app/${line.area}`} className={`${quietLink} min-[761px]:!min-h-0`}>
+                  {words.menu[line.area]}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="!max-w-none text-[15px]">{text.origin}</p>
+          <button type="button" className={quietLink} onClick={putAway}>
+            {text.done}
+          </button>
+        </section>
+      </div>
+    </div>
   );
 }
