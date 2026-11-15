@@ -1,4 +1,4 @@
-import { v, type Infer } from "convex/values";
+import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
@@ -195,7 +195,7 @@ export const board = query({
   handler: async (ctx, { churchId }) => {
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
-    if (!church) throw new Error("Group not found.");
+    if (!church) throw new ConvexError("Group not found.");
     const now = Date.now();
     const [recent, open] = await Promise.all([
       ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", now - 90 * DAY)).take(400),
@@ -293,7 +293,7 @@ export const sheet = query({
       visit.requestId ? ctx.db.get("assistanceRequests", visit.requestId) : null,
       names(ctx, [visit]),
     ]);
-    if (!church || !neighbor) throw new Error("Visit not found.");
+    if (!church || !neighbor) throw new ConvexError("Visit not found.");
     const earlier = await ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", visit.neighborId)).order("desc").take(50);
     const last = earlier
       .filter((other) => other.status === "completed" && other._id !== visit._id && (other.completedAt ?? other.scheduledAt) < visit.scheduledAt)
@@ -314,22 +314,22 @@ export const sheet = query({
 
 async function ownVisit(ctx: Ctx, churchId: Id<"churches">, visitId: Id<"visits">) {
   const visit = await ctx.db.get("visits", visitId);
-  if (!visit || visit.churchId !== churchId) throw new Error("Visit not found.");
+  if (!visit || visit.churchId !== churchId) throw new ConvexError("Visit not found.");
   return visit;
 }
 
 /** A visit is made by two different approved members of this group, neither of them away. */
 async function checkedPair(ctx: Ctx, church: Doc<"churches">, visitorIds: Id<"memberships">[], start: number) {
-  if (visitorIds.length !== 2) throw new Error("A home visit needs two people.");
-  if (visitorIds[0] === visitorIds[1]) throw new Error("Choose two different people.");
+  if (visitorIds.length !== 2) throw new ConvexError("A home visit needs two people.");
+  if (visitorIds[0] === visitorIds[1]) throw new ConvexError("Choose two different people.");
   const day = DateTime.fromMillis(start, { zone: church.timeZone }).toISODate() ?? "";
   for (const memberId of visitorIds) {
     const member = await ctx.db.get("memberships", memberId);
-    if (!member || member.churchId !== church._id) throw new Error("Choose people from this group.");
-    if (!member.active || !member.approved) throw new Error(`${member.name} is not an approved member yet.`);
+    if (!member || member.churchId !== church._id) throw new ConvexError("Choose people from this group.");
+    if (!member.active || !member.approved) throw new ConvexError(`${member.name} is not an approved member yet.`);
     const away = await ctx.db.query("timeOff").withIndex("by_member_end", (q) => q.eq("memberId", memberId).gte("end", day)).take(50);
     if (away.some((range) => overlapsTimeOff(start, start + VISIT_LENGTH, range.start, range.end, church.timeZone)))
-      throw new Error(`${member.name} is away that day.`);
+      throw new ConvexError(`${member.name} is away that day.`);
   }
   return visitorIds.map((memberId) => ({ memberId, hours: 0, miles: 0, response: "pending" as const }));
 }
@@ -341,14 +341,14 @@ export const plan = mutation({
   handler: async (ctx, args) => {
     const { member, neighbor } = await neighborRecord(ctx, args.churchId, args.neighborId);
     const church = await ctx.db.get("churches", args.churchId);
-    if (!church) throw new Error("Group not found.");
+    if (!church) throw new ConvexError("Group not found.");
     const scheduledAt = parseScheduledTime(args.at, church.timeZone);
-    if (scheduledAt <= Date.now()) throw new Error("Choose a time that is still to come.");
+    if (scheduledAt <= Date.now()) throw new ConvexError("Choose a time that is still to come.");
     if (args.requestId) {
       const request = await ctx.db.get("assistanceRequests", args.requestId);
-      if (!request || request.churchId !== args.churchId || request.neighborId !== neighbor._id) throw new Error("Request not found.");
+      if (!request || request.churchId !== args.churchId || request.neighborId !== neighbor._id) throw new ConvexError("Request not found.");
       const planned = await ctx.db.query("visits").withIndex("by_request", (q) => q.eq("requestId", request._id)).take(20);
-      if (planned.some((visit) => visit.status === "scheduled")) throw new Error("A visit for this request is already planned.");
+      if (planned.some((visit) => visit.status === "scheduled")) throw new ConvexError("A visit for this request is already planned.");
     }
     const pair = await checkedPair(ctx, church, args.visitorIds, scheduledAt);
     return await ctx.db.insert("visits", { churchId: args.churchId, neighborId: neighbor._id, requestId: args.requestId, scheduledAt, status: "scheduled", visitors: pair, notes: "", createdBy: member._id, createdAt: Date.now() });
@@ -363,10 +363,10 @@ export const reschedule = mutation({
     await neighborAccess(ctx, args.churchId);
     const visit = await ownVisit(ctx, args.churchId, args.visitId);
     const church = await ctx.db.get("churches", args.churchId);
-    if (!church) throw new Error("Group not found.");
-    if (visit.status !== "scheduled") throw new Error("Only a planned visit can change its time.");
+    if (!church) throw new ConvexError("Group not found.");
+    if (visit.status !== "scheduled") throw new ConvexError("Only a planned visit can change its time.");
     const scheduledAt = parseScheduledTime(args.at, church.timeZone);
-    if (scheduledAt <= Date.now()) throw new Error("Choose a time that is still to come.");
+    if (scheduledAt <= Date.now()) throw new ConvexError("Choose a time that is still to come.");
     if (scheduledAt === visit.scheduledAt) return null;
     const pair = await checkedPair(ctx, church, visit.visitors.map((visitor) => visitor.memberId), scheduledAt);
     await ctx.db.patch("visits", visit._id, { scheduledAt, visitors: pair });
@@ -382,10 +382,10 @@ export const replaceVisitor = mutation({
     await neighborAccess(ctx, args.churchId);
     const visit = await ownVisit(ctx, args.churchId, args.visitId);
     const church = await ctx.db.get("churches", args.churchId);
-    if (!church) throw new Error("Group not found.");
-    if (visit.status !== "scheduled") throw new Error("Only a planned visit can change its pair.");
+    if (!church) throw new ConvexError("Group not found.");
+    if (visit.status !== "scheduled") throw new ConvexError("Only a planned visit can change its pair.");
     const staying = visit.visitors.filter((visitor) => visitor.memberId !== args.leavingId);
-    if (staying.length !== 1) throw new Error("Choose which of the two is being replaced.");
+    if (staying.length !== 1) throw new ConvexError("Choose which of the two is being replaced.");
     const [, joining] = await checkedPair(ctx, church, [staying[0].memberId, args.joiningId], visit.scheduledAt);
     await ctx.db.patch("visits", visit._id, { visitors: [staying[0], joining] });
     return null;
@@ -418,8 +418,8 @@ export const respond = mutation({
   handler: async (ctx, args) => {
     const me = await membership(ctx, args.churchId);
     const visit = await ownVisit(ctx, args.churchId, args.visitId);
-    if (!visit.visitors.some((visitor) => visitor.memberId === me._id)) throw new Error("Visit not found.");
-    if (visit.status !== "scheduled") throw new Error("This visit is no longer planned.");
+    if (!visit.visitors.some((visitor) => visitor.memberId === me._id)) throw new ConvexError("Visit not found.");
+    if (visit.status !== "scheduled") throw new ConvexError("This visit is no longer planned.");
     await ctx.db.patch("visits", visit._id, { visitors: visit.visitors.map((visitor) => (visitor.memberId === me._id ? { ...visitor, response: args.response } : visitor)) });
     return null;
   },
@@ -436,12 +436,12 @@ export const writeUp = mutation({
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
     const visit = await ownVisit(ctx, args.churchId, args.visitId);
-    if (visit.status !== "scheduled") throw new Error("This visit is already written up or was cancelled.");
+    if (visit.status !== "scheduled") throw new ConvexError("This visit is already written up or was cancelled.");
     const notes = args.notes.trim();
-    if (!notes) throw new Error("Write a few words about what you found.");
-    if (!Number.isFinite(args.hours) || args.hours <= 0 || args.hours > 24) throw new Error("Enter the hours the visit took, such as 1.5.");
-    if (!Number.isFinite(args.miles) || args.miles < 0 || args.miles > 1000) throw new Error("Enter the miles driven, or 0.");
-    if (args.driverId && !visit.visitors.some((visitor) => visitor.memberId === args.driverId)) throw new Error("The driver must be one of the two visitors.");
+    if (!notes) throw new ConvexError("Write a few words about what you found.");
+    if (!Number.isFinite(args.hours) || args.hours <= 0 || args.hours > 24) throw new ConvexError("Enter the hours the visit took, such as 1.5.");
+    if (!Number.isFinite(args.miles) || args.miles < 0 || args.miles > 1000) throw new ConvexError("Enter the miles driven, or 0.");
+    if (args.driverId && !visit.visitors.some((visitor) => visitor.memberId === args.driverId)) throw new ConvexError("The driver must be one of the two visitors.");
     await ctx.db.patch("visits", visit._id, { status: "completed", notes, completedAt: Date.now(), visitors: visit.visitors.map((visitor) => ({ ...visitor, hours: args.hours, miles: !args.driverId || visitor.memberId === args.driverId ? args.miles : 0 })) });
     return null;
   },
@@ -454,7 +454,7 @@ export const cancel = mutation({
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
     const visit = await ownVisit(ctx, args.churchId, args.visitId);
-    if (visit.status !== "scheduled") throw new Error("Only a planned visit can be called off.");
+    if (visit.status !== "scheduled") throw new ConvexError("Only a planned visit can be called off.");
     await ctx.db.patch("visits", visit._id, { status: "cancelled" });
     return null;
   },
