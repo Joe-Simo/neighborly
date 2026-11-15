@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../../public/fonts/fonts.css";
+import { launchScreens } from "@/lib/launch-screens";
 export const viewport: Viewport = {
   colorScheme: "light",
   themeColor: "#f5f3ec",
@@ -17,6 +18,12 @@ export const metadata: Metadata = {
     images: [{ url: "/assets/living-relief-poster.webp", width: 1440, height: 1024, alt: "The painted community and welcome guide of Kind Helps" }],
   },
   twitter: { card: "summary_large_image" },
+  appleWebApp: {
+    capable: true,
+    title: "Kind Helps",
+    statusBarStyle: "default",
+    startupImage: launchScreens,
+  },
 };
 export default function RootLayout({
   children,
