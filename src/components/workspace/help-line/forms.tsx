@@ -958,15 +958,15 @@ export function RemoveForm({
         <div>
           <dt>What goes</dt>
           <dd>
-            The record, its calls, notes, addresses and phones, and with them
-            its requests and home visits. This household leaves the year’s
-            count of households helped.
+            The name, address, phones, household, money, accounts and notes,
+            and every word of its calls, requests and home visits.
           </dd>
         </div>
         <div>
           <dt>What stays</dt>
           <dd>
-            The money given stays in the year’s totals, with no name.
+            The money, the dates and the counts, so the year’s totals do not
+            change. Nothing left says who they were.
           </dd>
         </div>
       </dl>
