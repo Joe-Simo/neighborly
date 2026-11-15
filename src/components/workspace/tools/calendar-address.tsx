@@ -1,5 +1,6 @@
 "use client";
 
+import "./tools.css";
 import { useState, useSyncExternalStore } from "react";
 import { useAction, useQuery } from "convex/react";
 import { CalendarPlus, Check, Copy } from "lucide-react";

@@ -1,5 +1,6 @@
 "use client";
 
+import "./tools.css";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,6 @@
 "use client";
 
+import "./tools.css";
 import { useState } from "react";
 import { useConvex, useMutation } from "convex/react";
 import { strToU8, zipSync } from "fflate";

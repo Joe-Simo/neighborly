@@ -1,5 +1,6 @@
 "use client";
 
+import "./tools.css";
 import { useRef, type ReactNode } from "react";
 import Papa from "papaparse";
 import { CircleCheck, FileUp } from "lucide-react";

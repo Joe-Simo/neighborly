@@ -71,3 +71,8 @@
 .live-app .help-row .tools-one { padding-inline: 0; border: 0; background: none; box-shadow: none; border-radius: 2px; width: auto; justify-self: start; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
 .live-app .help-row .tools-one:hover { text-decoration-color: currentColor; }
 @media (min-width: 701px) { .live-app .help-row .tools-one { justify-self: end; } }
+@media (max-width: 700px) {
+  .tools-records .help-row { row-gap: 0; }
+  .tools-records .help-row .live-date-leaf { grid-row: span 2; }
+  .live-app .tools-records .help-row .tools-one { margin-top: 5px; }
+}
