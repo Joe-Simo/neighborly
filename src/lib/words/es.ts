@@ -98,6 +98,7 @@ export function es(set: WordSet): Words {
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
       announcementSees: `Todos en ${t.group === "grupo" ? "el grupo" : "la conferencia"} lo ven en Esta semana.`,
+      announcementForm: { title: "Título", message: "Mensaje", save: "Guardar", saving: "Guardando…" },
     },
     dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora" },
     week: {
@@ -123,6 +124,10 @@ export function es(set: WordSet): Words {
         "Los compromisos que aceptes aparecerán aquí con todo lo necesario para prepararte.",
     },
     commitments: {
+      filterLabel: "Filtrar por equipo",
+      allTeams: "Todos los equipos",
+      noneForTeamTitle: "Este equipo no tiene fechas próximas.",
+      noneForTeamDetail: "Elige otro equipo o mira todos los equipos para ver los demás compromisos.",
       emptyTitle: "No hay compromisos próximos.",
       emptyDetail:
         "Los compromisos nuevos aparecerán aquí con su fecha, persona y preparación.",
@@ -295,7 +300,6 @@ export function es(set: WordSet): Words {
       makeNew: "Crear una dirección nueva",
       makeNewTitle: "¿Crear una dirección nueva?",
       makeNewDetail: "La dirección anterior deja de funcionar de inmediato. Tendrás que añadir la nueva a tu calendario otra vez.",
-      keep: "Conservar esta dirección",
       get: "Obtener mi dirección de calendario",
       finding: "Buscando tu calendario",
       failed: "No se pudo crear tu dirección de calendario. No ha cambiado nada; revisa tu conexión e inténtalo de nuevo.",
