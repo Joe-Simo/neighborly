@@ -66,10 +66,19 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
       () => setOpened("missing"),
     );
   }, [open, churchId, neighborId]);
-  const record = useQuery(
+  const read = useQuery(
     api.neighbors.record,
     opened === "yes" ? { churchId, neighborId } : "skip",
   );
+  // The website goes live before the backend does. Until the backend knows about the home,
+  // the record shows without it instead of failing.
+  const homeReady = Array.isArray(read?.household);
+  const record = read && {
+    ...read,
+    household: homeReady ? read.household : [],
+    accounts: homeReady ? read.accounts : [],
+    money: homeReady ? read.money : null,
+  };
   const title = record?.neighbor.name;
   const deck =
     record &&
@@ -123,6 +132,7 @@ export function NeighborRecord({ neighborId }: { neighborId: Id<"neighbors"> }) 
       <NeighborRecordView
         record={record}
         format={format}
+        home={homeReady}
         numbers={numbers}
         onShowNumbers={() => void reveal()}
         onStep={(next) => {
@@ -288,12 +298,14 @@ function happened(event: Record["history"][number]) {
 export function NeighborRecordView({
   record,
   format,
+  home = true,
   numbers = null,
   onShowNumbers = () => {},
   onStep,
 }: {
   record: Record;
   format: Workspace["format"];
+  home?: boolean;
   numbers?: Accounts | null;
   onShowNumbers?: () => void;
   onStep: (step: Step) => void;
@@ -383,13 +395,15 @@ export function NeighborRecordView({
         </Button>
       </p>
 
-      <AtHome
-        record={record}
-        format={format}
-        numbers={numbers}
-        onShowNumbers={onShowNumbers}
-        onStep={(kind) => onStep({ kind })}
-      />
+      {home && (
+        <AtHome
+          record={record}
+          format={format}
+          numbers={numbers}
+          onShowNumbers={onShowNumbers}
+          onStep={(kind) => onStep({ kind })}
+        />
+      )}
 
       {first && (
         <section className="help-sheet" aria-labelledby="open-title">
@@ -477,13 +491,15 @@ export function NeighborRecordView({
         <div className="live-section-head">
           <h2>History</h2>
           <span className="help-head-actions">
-            <Button
-              variant="link"
-              className="help-text-action"
-              onClick={() => onStep({ kind: "note" })}
-            >
-              Add a note
-            </Button>
+            {home && (
+              <Button
+                variant="link"
+                className="help-text-action"
+                onClick={() => onStep({ kind: "note" })}
+              >
+                Add a note
+              </Button>
+            )}
             {!first && (
               <Button variant="outline" onClick={() => onStep({ kind: "request" })}>
                 Add a request

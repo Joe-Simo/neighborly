@@ -403,6 +403,8 @@ export function NeighborForm({
     phone: neighbor?.phone ?? call?.phone ?? "",
   });
   const [checked, setChecked] = useState<typeof typed | null>(null);
+  // An older backend does not send or accept the alert yet.
+  const hasAlert = typeof neighbor?.alert === "string";
   const onFile = useQuery(
     api.neighbors.matches,
     !neighbor && checked ? { churchId, ...checked } : "skip",
@@ -426,7 +428,11 @@ export function NeighborForm({
         };
         if (neighbor) {
           const outcome = await save(() =>
-            update({ ...details, alert: value("alert"), neighborId: neighbor.id }),
+            update({
+              ...details,
+              ...(hasAlert ? { alert: value("alert") } : {}),
+              neighborId: neighbor.id,
+            }),
           );
           if (outcome.saved) onSaved(neighbor.id);
           return;
@@ -520,7 +526,7 @@ export function NeighborForm({
       >
         <Textarea name="notes" rows={3} defaultValue={neighbor?.notes} />
       </LiveField>
-      {neighbor && (
+      {neighbor && hasAlert && (
         <LiveField
           label="Alert"
           help="One line shown at the top of the record, such as “Call before visiting.” Leave empty for none."
