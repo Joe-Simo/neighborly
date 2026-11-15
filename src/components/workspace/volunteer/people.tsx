@@ -1,10 +1,23 @@
 "use client";
 
+import "./people.css";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
+
+/** "Ana Lucía Prieto" as "AP": the first and last name, so two people with one first name still differ. */
+export const initials = (name: string) => {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : (parts[0]?.[1] ?? ""))).toUpperCase();
+};
+const roles: Record<string, string> = { owner: "Owner", coordinator: "Coordinator", member: "Member" };
+/** An address that may break after the name, never in the middle of a word. */
+function Address({ email }: { email: string }) {
+  const at = email.lastIndexOf("@");
+  return at < 0 ? email : <>{email.slice(0, at)}<wbr />{email.slice(at)}</>;
+}
 
 export function PeopleSection() {
   const { data, pending, isOwner, confirm: setConfirmation } = useWorkspace();
@@ -14,24 +27,20 @@ export function PeopleSection() {
     <>
       <div className="live-list">
         {data.people.map((person) => (
-          <div className="live-row live-person-row" key={person.id}>
+          <div className="live-row live-person-row people-row" key={person.id} data-away={person.active ? undefined : ""}>
             <div className="live-person">
-              <span className="live-avatar">
-                {person.name.slice(0, 2).toUpperCase()}
+              <span className="live-avatar" aria-hidden="true">
+                {initials(person.name)}
               </span>
               <div>
                 <h3>{person.name}</h3>
-                <p>{person.email}</p>
+                <p><Address email={person.email} /></p>
               </div>
             </div>
             <div className="live-meta">
-              <span>
-                {person.active ? person.role : "Access removed"}
-              </span>
-              <span>
-                {person.approved
-                  ? "Approved for service"
-                  : "Approval pending"}
+              <span>{person.active ? (roles[person.role] ?? person.role) : "Access removed"}</span>
+              <span data-waits={person.approved ? undefined : ""}>
+                {person.approved ? "Approved for service" : "Waiting for approval"}
               </span>
             </div>
             <div className="live-row-actions">
@@ -45,7 +54,7 @@ export function PeopleSection() {
         ))}
       </div>
       {managing && (
-        <LiveDialog title={managing.name} description={<>{managing.active ? managing.role : "Access removed"} · {managing.approved ? "Approved for service" : "Approval pending"}</>} onClose={() => setManagingId(null)}>
+        <LiveDialog title={managing.name} description={<>{managing.active ? (roles[managing.role] ?? managing.role) : "Access removed"} · {managing.approved ? "Approved for service" : "Waiting for approval"}</>} onClose={() => setManagingId(null)}>
           <div className="live-manage">
                 <Button
                   variant="outline"
@@ -101,44 +110,50 @@ export function PeopleSection() {
       {isOwner && (
         <section className="live-section">
           <h2>Invitations</h2>
-          <p className="live-deck">
+          <p className="live-deck people-deck">
             An invitation gives someone a way to join. It never accepts
             work on their behalf.
           </p>
           {data.invitations.length ? (
-            <div className="live-list">
-              {data.invitations.map((invite) => (
-                <div className="live-row" key={invite.id}>
-                  <div>
-                    <h3>{invite.email}</h3>
-                    <p>{invite.role}</p>
-                  </div>
-                  <div className="live-row-actions">
-                    <span className="live-status" data-state="pending">
-                      {invite.status}
-                    </span>
-                    {invite.status === "pending" && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={pending}
-                        onClick={() =>
-                          setConfirmation({
-                            title: "Revoke this invitation?",
-                            body: "The link will stop working. This does not remove anyone who has already joined.",
-                            command: {
-                              type: "revokeInvitation",
-                              invitationId: invite.id,
-                            },
-                          })
-                        }
-                      >
-                        Revoke
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="people-invitations">
+              {data.invitations.map((invite) => {
+                const waits = invite.status === "pending";
+                const joined = invite.status === "accepted";
+                return (
+                  <article
+                    key={invite.id}
+                    className={`people-invitation paper-corner paper-settle ${waits ? "paper-waits" : joined ? "paper-fold" : ""}`}
+                  >
+                    <h3><Address email={invite.email} /></h3>
+                    <p>Invited as {(roles[invite.role] ?? invite.role).toLowerCase()}</p>
+                    <div className="live-row-actions">
+                      <span className="live-status" data-state={invite.status}>
+                        {waits ? "Waiting for them to join" : joined ? "Joined" : invite.status}
+                      </span>
+                      {waits && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={pending}
+                          aria-label={`Revoke the invitation to ${invite.email}`}
+                          onClick={() =>
+                            setConfirmation({
+                              title: "Revoke this invitation?",
+                              body: "The link will stop working. This does not remove anyone who has already joined.",
+                              command: {
+                                type: "revokeInvitation",
+                                invitationId: invite.id,
+                              },
+                            })
+                          }
+                        >
+                          Revoke
+                        </Button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <LiveEmpty title="No open invitations.">
