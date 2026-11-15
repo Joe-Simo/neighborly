@@ -3,7 +3,8 @@
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { useConvexConnectionState } from "convex/react";
 import { Button } from "@/components/ui/button";
-import { useWorkspace } from "@/components/workspace/context";
+import { useWorkspaceIfAny } from "@/components/workspace/context";
+import { stateWords } from "@/components/workspace/failure";
 import { headings } from "@/components/workspace/navigation";
 import { ReliefPicture } from "@/components/workspace/relief";
 
@@ -12,6 +13,15 @@ import { ReliefPicture } from "@/components/workspace/relief";
  * not yours to open, not found, did not open, no connection. Each is the room's own
  * round mark, one line in the serif, one plain sentence and at most one action.
  */
+/** The family's words in the person's language inside the shell, in English outside it. Never throws. */
+function useStateWords() {
+  return useWorkspaceIfAny()?.words.states ?? stateWords;
+}
+function useAreaArt() {
+  const workspace = useWorkspaceIfAny();
+  return workspace ? headings[workspace.area].art : null;
+}
+
 export type LiveStateKind = "empty" | "private" | "missing" | "error" | "offline";
 
 export function LiveState({
@@ -26,16 +36,16 @@ export function LiveState({
   /** The one thing to do about it: a Button, or a link drawn as one. */
   action?: ReactNode;
 }) {
-  const { area } = useWorkspace();
-  const { picture, focus } = headings[area].art;
+  // Outside the shell there is no room, so no round mark: the words stand alone.
+  const art = useAreaArt();
   return (
     <div
       className="live-empty live-state"
       data-kind={kind}
-      data-lead=""
+      data-lead={art ? "" : undefined}
       role={kind === "error" || kind === "offline" ? "alert" : undefined}
     >
-      <ReliefPicture name={picture} focus={focus} vignette className="paper-vignette" />
+      {art && <ReliefPicture name={art.picture} focus={art.focus} vignette className="paper-vignette" />}
       <div>
         <h3>{title}</h3>
         <p>{children}</p>
@@ -61,8 +71,8 @@ export function LiveFailure({
   /** Adds "Try again", which submits the form the notice sits in. */
   retry?: boolean;
 }) {
-  const { words } = useWorkspace();
-  const second = kept ?? words.states.kept;
+  const words = useStateWords();
+  const second = kept ?? words.kept;
   // On arrival, and when the sentence changes, the notice takes focus and comes into view, clear of a form's pinned buttons.
   const notice = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -82,7 +92,7 @@ export function LiveFailure({
       </div>
       {retry && (
         <Button type="submit" variant="outline">
-          {words.states.tryAgain}
+          {words.tryAgain}
         </Button>
       )}
     </div>
@@ -106,41 +116,41 @@ function useConnectionLost() {
  * is kept and will go by itself. Convex holds the save and sends it on return.
  */
 export function LiveWaiting({ when }: { when: boolean }) {
-  const { words } = useWorkspace();
+  const words = useStateWords();
   const lost = useConnectionLost();
   if (!when || !lost) return null;
   return (
     <p className="live-waiting" role="status">
-      {words.states.waiting}
+      {words.waiting}
     </p>
   );
 }
 
 /** The strip above a room while the connection is down; it leaves by itself. */
 export function LiveConnection() {
-  const { words } = useWorkspace();
+  const words = useStateWords();
   const lost = useConnectionLost();
   if (!lost) return null;
   return (
     <div className="live-connection paper-rise" role="status">
-      <strong>{words.states.offlineTitle}</strong> {words.states.offlineDeck}
+      <strong>{words.offlineTitle}</strong> {words.offlineDeck}
     </div>
   );
 }
 
 function RoomFault({ onRetry }: { onRetry: () => void }) {
-  const { words } = useWorkspace();
+  const words = useStateWords();
   return (
     <LiveState
       kind="error"
-      title={words.states.errorTitle}
+      title={words.errorTitle}
       action={
         <Button variant="outline" onClick={onRetry}>
-          {words.states.tryAgain}
+          {words.tryAgain}
         </Button>
       }
     >
-      {words.states.errorDeck}
+      {words.errorDeck}
     </LiveState>
   );
 }

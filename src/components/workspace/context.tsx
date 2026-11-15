@@ -64,3 +64,8 @@ export function useWorkspace() {
     throw new Error("useWorkspace must be used inside the workspace shell.");
   return workspace;
 }
+
+/** The workspace where there is one, null outside the shell (sign-in, welcome, a page of its own). */
+export function useWorkspaceIfAny() {
+  return useContext(WorkspaceContext);
+}
