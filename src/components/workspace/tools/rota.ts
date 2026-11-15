@@ -16,7 +16,8 @@ export function weekLabel(start: DateTime, language: Language = "en", joins: Joi
   const end = start.plus({ days: 6 });
   if (language !== "en") {
     const day = (at: DateTime, year: boolean) => formatDate(language, at.toMillis(), { timeZone: start.zoneName ?? undefined, month: "long", day: "numeric", year: year ? "numeric" : undefined });
-    return `${day(start, false)} ${joins.through} ${day(end, true)}`;
+    // Within one month the month is written once: "15 al 21 de noviembre de 2026".
+    return `${end.month === start.month ? start.day : day(start, false)} ${joins.through} ${day(end, true)}`;
   }
   return `${start.toFormat("MMMM d")} to ${end.toFormat(end.month === start.month ? "d, yyyy" : "MMMM d, yyyy")}`;
 }

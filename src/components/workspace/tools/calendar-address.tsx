@@ -6,9 +6,9 @@ import { useAction, useQuery } from "convex/react";
 import { CalendarPlus, Check, Copy } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 
 type CalendarApp = "apple" | "google" | "outlook";
 /** The calendar most likely already on this device: Apple's on an iPhone, iPad or Mac, Outlook on Windows, Google elsewhere. */
@@ -69,20 +69,14 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
           <div className="help-actions tools-replace">
             <Button variant="outline" disabled={busy} onClick={() => setReplacing(true)}>{text.makeNew}</Button>
           </div>
-          <Dialog open={replacing} onOpenChange={setReplacing}>
-            <DialogContent className="live-dialog">
-              <DialogHeader>
-                <DialogTitle>{text.makeNewTitle}</DialogTitle>
-                <DialogDescription>
-                  {text.makeNewDetail}
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
+          {replacing && (
+            <LiveDialog title={text.makeNewTitle} description={text.makeNewDetail} onClose={() => setReplacing(false)}>
+              <div className="live-form-actions">
                 <Button variant="ghost" onClick={() => setReplacing(false)}>{text.keep}</Button>
                 <Button disabled={busy} onClick={() => { setReplacing(false); setCopied(false); onCreate(); }}>{text.makeNew}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </div>
+            </LiveDialog>
+          )}
         </div>
       ) : (
         <Button style={{ marginTop: 22 }} disabled={busy} onClick={onCreate}>

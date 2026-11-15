@@ -22,5 +22,6 @@ describe("the files a conference takes away", () => {
     expect(cover).toContain("Sample, made-up people");
     expect(cover).toContain('<td class="n">1,200</td>');
     expect(cover).not.toMatch(/src=|href=|url\(|<script/);
+    expect(recordsCover({ conference: "St. Example Conference", sample: true, day: "November 15, 2026", by: "Marisol Vega", files: [], faces: { serif: "data:font/woff2;base64,AA", sans: "data:font/woff2;base64,BB" } })).toContain('url(data:font/woff2;base64,AA) format("woff2")');
   });
 });

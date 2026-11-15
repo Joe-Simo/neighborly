@@ -31,9 +31,10 @@ const escaped = (text: string) => text.replace(/[&<>"]/g, (mark) => ({ "&": "&am
 /**
  * The sheet on top of the folder: one page that opens in any browser and prints on Letter or A4,
  * saying whose records these are, when they were gathered, what each file holds and how to keep them.
- * It stands alone, so it carries its own type and uses no pictures, scripts or addresses.
+ * It stands alone: no pictures, scripts or addresses, and the two typefaces travel inside it (as data, in `faces`)
+ * so it prints the same on a computer that has never seen the site.
  */
-export function recordsCover({ conference, sample, day, by, files }: { conference: string; sample: boolean | undefined; day: string; by: string; files: { title: string; fileName: string; holds: string; lines: number }[] }) {
+export function recordsCover({ conference, sample, day, by, files, faces }: { conference: string; sample: boolean | undefined; day: string; by: string; files: { title: string; fileName: string; holds: string; lines: number }[]; faces?: { serif: string; sans: string } }) {
   const rows = files.map((file) => `<tr><td><b>${escaped(file.title)}</b><small>${escaped(file.fileName)}</small></td><td>${escaped(file.holds)}</td><td class="n">${file.lines.toLocaleString("en-US")}</td></tr>`).join("");
   return `<!doctype html>
 <html lang="en">
@@ -42,7 +43,9 @@ export function recordsCover({ conference, sample, day, by, files }: { conferenc
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escaped(conference)} records, ${escaped(day)}</title>
 <style>
-@page { margin: 16mm 16mm 18mm; }
+${faces ? `@font-face { font-family: "Newsreader"; font-weight: 200 800; src: url(${faces.serif}) format("woff2"); }
+@font-face { font-family: "Source Sans 3"; font-weight: 200 900; src: url(${faces.sans}) format("woff2"); }
+` : ""}@page { margin: 16mm 16mm 18mm; }
 * { box-sizing: border-box; }
 body { margin: 0 auto; padding: 40px 24px; max-width: 720px; color: #000; background: #fff; font: 12pt/1.45 "Source Sans 3", "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
 .over { margin: 0; font-size: 8.5pt; letter-spacing: 0.1em; text-transform: uppercase; }

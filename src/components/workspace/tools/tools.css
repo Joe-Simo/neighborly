@@ -171,3 +171,16 @@ p.tools-quiet { margin: 14px 0 0; }
   .tools-rota-open { min-width: 38mm; height: 5mm; color: transparent !important; border-bottom: 0.5pt solid #000; }
   .tools-rota-foot { align-items: baseline; }
 }
+/* Sized for a wall and older eyes: the sheet fills its page, with the foot at the bottom edge. */
+@media print {
+  .tools-rota { display: flex; flex-direction: column; min-height: 240mm; }
+  .tools-rota > .live-table-scroll { flex: 1; display: flex; }
+  :is(.live-app, .live-dialog) .tools-rota table { height: 100%; font-size: 12pt; }
+  :is(.live-app, .live-dialog) .tools-rota thead th { height: 1%; font-size: 8.5pt; }
+  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { height: 1%; padding-top: 4.5mm; font-size: 16pt; }
+  :is(.live-app, .live-dialog) .tools-rota td { padding-top: 5.5pt; padding-bottom: 5.5pt; }
+  .tools-rota td small { font-size: 10pt; }
+  .tools-rota tr:not(.tools-rota-none) td:last-child { font-size: 13pt; }
+  .tools-rota .tools-rota-none td { font-size: 11pt; }
+  .tools-rota-foot { margin-top: 6mm; font-size: 10pt; }
+}

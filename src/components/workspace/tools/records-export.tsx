@@ -108,6 +108,18 @@ function save(file: Blob, name: string) {
   URL.revokeObjectURL(url);
 }
 
+/** One of the site's own typefaces as a data address, so a page can carry it. */
+const face = (name: string) =>
+  fetch(`/fonts/${name}.woff2`)
+    .then((reply) => (reply.ok ? reply.blob() : Promise.reject(new Error("No typeface."))))
+    .then((file) => new Promise<string>((done, failed) => {
+      const reader = new FileReader();
+      reader.onload = () => done(String(reader.result));
+      reader.onerror = failed;
+      reader.readAsDataURL(file);
+    }))
+    .catch(() => undefined);
+
 export function RecordsExport() {
   const { data, isOwner, format } = useWorkspace();
   const convex = useConvex();
@@ -136,8 +148,11 @@ export function RecordsExport() {
       state={state}
       onReset={() => setState({ step: "ready" })}
       onGather={() => void gather().catch(() => setState({ step: "ready", error: "The connection dropped while gathering. Nothing was lost or changed; try again." }))}
-      onDownloadAll={(files) => {
+      onDownloadAll={async (files) => {
+        // The cover carries the site's two typefaces inside it. Without them (offline, say) it still reads, in the device's own faces.
+        const [serif, sans] = await Promise.all(["newsreader-latin-variable", "source-sans-3-latin-variable"].map(face));
         const cover = recordsCover({
+          faces: serif && sans ? { serif, sans } : undefined,
           conference: data.church.name,
           sample: data.church.sample,
           day: format(Date.now(), { year: "numeric", month: "long", day: "numeric" }),
