@@ -26,6 +26,8 @@ export function en(set: WordSet) {
   const t = terms[set];
   return {
     locale: "en",
+    /** The locale dates and times are written in. */
+    dates: "en-US",
     terms: t,
     menu: {
       week: "This week",

@@ -27,6 +27,7 @@ export function es(set: WordSet): Words {
   const t = terms[set];
   return {
     locale: "es",
+    dates: "es-US",
     terms: t,
     menu: {
       week: "Esta semana",

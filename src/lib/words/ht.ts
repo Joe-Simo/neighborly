@@ -27,6 +27,8 @@ export function ht(set: WordSet): Words {
   const t = terms[set];
   return {
     locale: "ht",
+    // Browsers have no Creole calendar words. French ones are the closest a reader will know.
+    dates: "fr-HT",
     terms: t,
     menu: {
       week: "Semèn sa a",
