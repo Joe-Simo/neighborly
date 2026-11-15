@@ -28,6 +28,8 @@ type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStor
 const cardPath = {
   desktop: { size: [1440, 1024], from: [.443, .749], to: [.722, .772] },
   mobile: { size: [780, 1688], from: [.422, .619], to: [.747, .624] },
+  // Until the scene is drawn, phones show the painted picture, where the hands sit lower and closer.
+  mobilePicture: { size: [780, 1688], from: [.432, .683], to: [.715, .688] },
 } as const;
 
 /** Native scrolling owns the narrative; the artwork never traps wheel or touch input. */
@@ -155,7 +157,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
       if (!art) return;
       // The painting fills its box exactly as the picture and the scene do, so the card is found where it is drawn.
       const mobile = isPaintedPortrait(art.width, art.height);
-      const path = cardPath[mobile ? "mobile" : "desktop"];
+      const path = cardPath[mobile ? ready && !failed ? "mobile" : "mobilePicture" : "desktop"];
       const scale = Math.max(art.width / path.size[0], art.height / path.size[1]);
       const paintingWidth = path.size[0] * scale, paintingHeight = path.size[1] * scale;
       const left = art.left - frame.left + (art.width - paintingWidth) / 2, top = art.top - frame.top - (paintingHeight - art.height) * (mobile ? 0 : openingKeptAbove);
@@ -169,7 +171,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
     const observer = new ResizeObserver(place);
     observer.observe(element);
     return () => { observer.disconnect(); cancelAnimationFrame(settle.current); };
-  }, [heroOnly]);
+  }, [heroOnly, ready, failed]);
   const takeCard = (event: PointerEvent<HTMLDivElement>) => {
     if (!event.isPrimary || event.button !== 0 || passed) return;
     cancelAnimationFrame(settle.current);

@@ -59,7 +59,7 @@
 .relief-panel[data-side=left] .relief-picture{order:-1;justify-self:start}
 .relief-words{opacity:calc(1 - var(--e) * 1.5);translate:0 calc(var(--e) * 36px)}
 .relief-words h2{margin:0;font:400 clamp(56px,6.4vw,112px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.065em}
-.relief-words p{margin:clamp(20px,2.2vw,32px) 0 0;max-width:340px;font-size:19px;line-height:1.5;text-wrap:pretty}
+.relief-words p{margin:clamp(20px,2.2vw,32px) 0 0;max-width:34ch;font-size:17px;line-height:1.5;text-wrap:pretty}
 /* Each picture is cut from the page's own paper and runs off the nearest edge of the screen. Its waves are its only border. */
 .relief-picture{position:relative;aspect-ratio:3/2;width:min(100%,118svh);justify-self:end;overflow:hidden;translate:0 calc(var(--e) * 56px);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S15 100 0 96Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S15 100 0 96Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
 .relief-picture img{display:block;width:100%;height:100%;object-fit:cover;scale:calc(1 + var(--e) * .06);transform-origin:100% 50%}
