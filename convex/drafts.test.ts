@@ -108,9 +108,11 @@ describe("a call note drafted into a request", () => {
     // Each question says in plain words what is being asked; a bare field name gave the live model nothing to judge.
     expect(Object.keys(body.state)).toEqual(["note"]);
     expect(body.questions.kind.instructions).toContain("mention rent, a landlord or an eviction");
-    expect(body.questions.amountRequested.instructions).toContain("$450.00");
+    // The amount is read by code from the note's own words and is not asked about.
+    expect(Object.keys(body.questions)).toEqual(["kind", "payeeKind"]);
+    expect(draft.amountRequested).toBe(45000);
     expect(body.questions.payeeKind.instructions).toContain("mention a landlord?");
-    expect(Object.values(body.questions).map(question => question.type)).toEqual(["noul", "noul", "noul"]);
+    expect(Object.values(body.questions).map(question => question.type)).toEqual(["noul", "noul"]);
   });
 
   test("a very long note is not sent anywhere", async () => {
@@ -229,11 +231,12 @@ describe("a call note drafted into a request", () => {
     // Call 1 of the second run: every field at or over the line, payee exactly on it.
     vi.stubGlobal("fetch", answers({ kind: 0.91, amountRequested: 0.97, payeeKind: 0.9 }));
     expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: "rent", amountRequested: 45000, payeeKind: "landlord", verification: "checked" });
-    // Call 2: a kind at 0.53 and an amount a hair under the line are both left for a person, and said so.
-    vi.stubGlobal("fetch", answers({ kind: 0.53, amountRequested: 0.89, payeeKind: 0.95 }));
+    // Call 2: a kind at 0.53 and a payee a hair under the line are both left for a person, and said so.
+    // The amount no longer depends on a score: the note gives one amount, so code shows it.
+    vi.stubGlobal("fetch", answers({ kind: 0.53, payeeKind: 0.89 }));
     const unsure = await coordinator.action(api.drafts.draftRequest, args);
-    expect(unsure).toMatchObject({ kind: null, amountRequested: null, payeeKind: "landlord", verification: "checked" });
-    expect(unsure.notes).toEqual(expect.arrayContaining(["Please confirm the kind of help.", "Please confirm the amount."]));
+    expect(unsure).toMatchObject({ kind: null, amountRequested: 45000, payeeKind: null, verification: "checked" });
+    expect(unsure.notes).toEqual(expect.arrayContaining(["Please confirm the kind of help.", "Please confirm who is paid."]));
     // Call 3: 0.18 is a no.
     vi.stubGlobal("fetch", answers({ kind: 0.18, amountRequested: 0.99, payeeKind: 0.99 }));
     expect(await coordinator.action(api.drafts.draftRequest, args)).toMatchObject({ kind: null, amountRequested: 45000 });
@@ -245,11 +248,11 @@ describe("a call note drafted into a request", () => {
 
   test("a field the model is not sure of comes back blank", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
-    vi.stubGlobal("fetch", answers({ kind: 0.99, amountRequested: 0.4, payeeKind: 0.99 }));
+    vi.stubGlobal("fetch", answers({ kind: 0.99, payeeKind: 0.4 }));
     const { ids, coordinator } = await helpLine();
     const draft = await coordinator.action(api.drafts.draftRequest, { churchId: ids.churchId, callId: ids.callId });
-    expect(draft).toMatchObject({ kind: "rent", amountRequested: null, payeeKind: "landlord", verification: "checked" });
-    expect(draft.notes).toContain("Please confirm the amount.");
+    expect(draft).toMatchObject({ kind: "rent", amountRequested: 45000, payeeKind: null, verification: "checked" });
+    expect(draft.notes).toContain("Please confirm who is paid.");
   });
 
   test("drafting writes no request, and a failed check falls back to review", async () => {

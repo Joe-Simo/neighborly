@@ -115,11 +115,15 @@ const signMeaning = {
   alone: "someone lives alone",
   medical: "there is a medical need, such as oxygen, insulin, dialysis, medication, a wheelchair or a hospital stay",
 };
-/** The questions that confirm a draft's fields, one per field the code proposed. Shared with the measuring run so both ask the same thing. */
+/**
+ * The questions that confirm a draft's fields, one per field the code proposed. Shared with the measuring run
+ * so both ask the same thing. The amount is not asked about: code reads it from the note's own figures or
+ * number words, shows it only when the note gives exactly one, and that needs no second opinion. Asked
+ * anyway, the model scored a plain "$450" between 0.86 and 0.97 from one wording to the next.
+ */
 function draftQuestions(draft: RequestDraft) {
   return {
     ...(draft.kind && { kind: `Does note mention ${kindMeaning[draft.kind]}? ${mentioned}` }),
-    ...(draft.amountRequested !== null && { amountRequested: `Does note mention the amount $${(draft.amountRequested / 100).toFixed(2)}, in figures or in words? ${mentioned}` }),
     ...(draft.payeeKind && { payeeKind: `Does note mention ${payeeMeaning[draft.payeeKind]}? ${mentioned}` }),
   };
 }
@@ -198,7 +202,6 @@ export const draftRequest = action({
     if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
     const proposed = {
       ...(draft.kind && { kind: draft.kind }),
-      ...(draft.amountRequested !== null && { amountRequested: `$${(draft.amountRequested / 100).toFixed(2)}` }),
       ...(draft.payeeKind && { payeeKind: draft.payeeKind }),
     };
     const present = Object.keys(proposed) as (keyof typeof proposed)[];
@@ -208,7 +211,7 @@ export const draftRequest = action({
     const questions = draftQuestions(draft);
     const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, questions as Record<(typeof present)[number], string>);
     if (!sure) return fallback;
-    const asked = { kind: "the kind of help", amountRequested: "the amount", payeeKind: "who is paid" };
+    const asked = { kind: "the kind of help", payeeKind: "who is paid" };
     for (const field of present) {
       if (sure[field] < sureEnough) {
         draft[field] = null;
@@ -459,7 +462,7 @@ export const measure = internalAction({
         scores.choose_kind = choice.kind;
         scores.choose_kind_confidence = Math.round(choice.confidence * 100) / 100;
       }
-      const amount = draft.amountRequested !== null && yes("amountRequested") ? draft.amountRequested : null;
+      const amount = draft.amountRequested;
       const payeeKind = draft.payeeKind && yes("payeeKind") ? draft.payeeKind : null;
       const wanted = item.signs.map(sign => sign.reason);
       const chosenKind = choice && choice.confidence >= sureEnough ? requestKinds.find(kind => kind === choice.kind) ?? null : null;
