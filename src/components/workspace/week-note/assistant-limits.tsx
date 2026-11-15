@@ -7,7 +7,8 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { draftNotes, monthlyAllowance } from "@/lib/request-draft";
-import { words as book } from "@/lib/words";
+import { measured } from "@/lib/jev-set";
+import { formatDay, words as book } from "@/lib/words";
 
 const noteKeys = Object.keys(draftNotes) as (keyof typeof draftNotes)[];
 const quiet = "inline-flex min-h-11 cursor-pointer items-center border-0 bg-transparent p-0 underline underline-offset-4 hover:decoration-current";
@@ -110,7 +111,7 @@ export function AssistantGuide() {
               [text.never, text.neverDetail],
               [text.person, text.personDetail],
               [text.limit, text.limitDetail(monthlyAllowance)],
-              [text.measured, text.measuredDetail],
+              [text.measured, text.measuredDetail(formatDay(words.locale, measured.day))],
             ].map(([label, detail]) => (
               <div key={label} className="grid gap-x-6 gap-y-1 min-[700px]:grid-cols-[10.5rem_minmax(0,1fr)]">
                 <dt className="text-[17px] font-[650] text-[var(--live-ink)]">{label}</dt>
@@ -118,6 +119,8 @@ export function AssistantGuide() {
               </div>
             ))}
           </dl>
+          {/* The sheet scrolls: a soft edge at its foot shows there is more, and stands clear of the last line at the end. */}
+          <div aria-hidden="true" className="pointer-events-none sticky bottom-[calc(-1*var(--live-dialog-pad))] -mx-[var(--live-dialog-pad)] h-[calc(var(--live-dialog-pad)+2.5rem)] -mb-[var(--live-dialog-pad)] bg-gradient-to-t from-[#f5f3ec] from-40% to-transparent" />
         </LiveDialog>
       )}
     </>

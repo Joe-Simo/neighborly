@@ -1,3 +1,4 @@
+import { measured as m } from "../jev-set";
 import type { Words } from "./en";
 import type { Terms, WordSet } from "./sets";
 
@@ -401,7 +402,8 @@ export function es(set: WordSet): Words {
         limit: "Sus límites",
         limitDetail: (checks) => `${checks.toLocaleString("es-US")} consultas al mes por cada ${t.group} y cinco por minuto por persona. Pasado ese límite, o si no se puede llegar al asistente, las pantallas trabajan con reglas fijas y lo dicen.`,
         measured: "Cómo se midió",
-        measuredDetail: "Con doce notas de llamadas inventadas, apartadas de las que se usaron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco para una persona y se equivocó en 0 (15 de noviembre de 2026). En una prueba anterior se equivocó en uno; corregimos la regla que lo causó, así que esas doce notas ya han influido en una regla. Doce notas es una prueba pequeña, y las notas en español y en criollo son una parte pequeña de ella.",
+        measuredDetail: (date) =>
+          `Con ${m.notes} notas de llamadas inventadas, apartadas de las que se usaron para ajustarlo, llenó bien ${m.right} de ${m.right + m.blank + m.wrong} campos, dejó ${m.blank} en blanco para una persona y se equivocó en ${m.wrong} (medido el ${date}). En una prueba anterior se equivocó en uno; corregimos la regla que lo causó, así que esas notas ya han influido en una regla. Es una prueba pequeña, y las notas en español y en criollo son una parte pequeña de ella.`,
       },
       made: { checked: "Llenado por el asistente a partir de la nota de la llamada y comparado con ella.", review: "Llenado a partir de la nota de la llamada con reglas fijas. El asistente no pudo revisarlo, así que compara cada dato con la nota." },
       unsaved: "No se guarda nada hasta que tú lo digas.",

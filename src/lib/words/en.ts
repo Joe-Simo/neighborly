@@ -1,3 +1,4 @@
+import { measured as m } from "../jev-set";
 import type { Language, Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
@@ -412,7 +413,8 @@ export function en(set: WordSet) {
         limit: "Its limits",
         limitDetail: (checks: number) => `${checks.toLocaleString("en-US")} checks a month for each ${t.group}, and five a minute for each person. Past that, or when it cannot be reached, the screens work by fixed rules and say so.`,
         measured: "How it was measured",
-        measuredDetail: "On twelve made-up call notes kept apart from the ones it was adjusted on, it filled 42 of 48 fields correctly, left 6 blank for a person and got 0 wrong (November 15, 2026). An earlier run got one wrong; we fixed the rule behind it, so those twelve notes have now shaped one rule. Twelve notes is a small test, and Spanish and Creole notes are a small part of it.",
+        measuredDetail: (date: string) =>
+          `On ${m.notes} made-up call notes kept apart from the ones it was adjusted on, it filled ${m.right} of ${m.right + m.blank + m.wrong} fields correctly, left ${m.blank} blank for a person and got ${m.wrong} wrong (measured ${date}). An earlier run got one wrong; we fixed the rule behind it, so those notes have now shaped one rule. This is a small test, and Spanish and Creole notes are a small part of it.`,
       },
       /** The foot of a draft: what was read, what was never sent, what a blank means, and who decides. */
       made: { checked: "Filled in by the assistant from the call note and checked against it.", review: "Filled in from the call note by fixed rules. The assistant could not check it, so please read each detail against the note." },

@@ -60,3 +60,10 @@ export const jevSet: SetNote[] = [
   { id: "fresh-elder-hungry", fresh: true, tries: "An age, living alone in other words, not eaten", note: "He is 91, lives by himself and has not eaten in two days. Asked for groceries.", kind: "food", amount: null, payeeKind: null, signs: [sign("hungry"), sign("elder"), sign("alone")] },
   { id: "fresh-maybe-evict", fresh: true, tries: "An eviction that is only a maybe, and nothing asked", note: "Landlord said he might evict if rent is late again. Rent is current. Just wanted to know what we do.", kind: null, amount: null, payeeKind: null, signs: [] },
 ];
+
+/**
+ * The last saved measure run, as "How the assistant works here" quotes it: the screens' way, counted on the fresh
+ * notes only. Copy the "fresh" figures from the run's file (/mnt/project-files/measure-run-N.txt) and nothing else;
+ * this is the one place the sheet reads them from.
+ */
+export const measured = { run: 3, day: "2026-11-15", notes: 12, right: 42, blank: 6, wrong: 0 };
