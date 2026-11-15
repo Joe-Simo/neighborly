@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LivingCourtyard } from "./living-courtyard";
+import dynamic from "next/dynamic";
 import { useExperienceSound } from "./experience-sound-context";
 import { useSettled } from "@/lib/use-settled";
 import "./relief-journey.css";
@@ -19,6 +19,9 @@ const wallOpens = [1.9, 2.7] as const;
 const rest = 2.9;
 
 /** The doors open once, onto the courtyard painted on the wall beyond them. */
+// The courtyard's light is drawn with the 3D library, which is fetched only when the doors are near, not with the page.
+const LivingCourtyard = dynamic(() => import("./living-courtyard").then(module => module.LivingCourtyard), { ssr: false });
+
 export function FrescoThreshold() {
   const sound = useExperienceSound();
   const journey = useRef<HTMLDivElement>(null);

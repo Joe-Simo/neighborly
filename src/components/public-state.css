@@ -1,19 +1,14 @@
-/* Whole-page states outside the workspace (not found, no connection, a page that did not open).
-   On wide screens the picture is the opening's own frame, faces and hands together, and it
-   fades into the page's paper instead of ending on a straight cut. */
+/* Whole-page states outside the workspace's rooms (not found, no connection, a page that did not open).
+   On wide screens the tall painting runs the full height at the left edge, anchored to its top so both
+   heads are whole and the hands stay in view, and only its right side fades into the page's paper. */
 @media (min-width: 1280px) {
   .public-state .live-auth-art {
-    inset: 50% auto auto 0;
-    width: min(52vw, 128svh);
-    height: auto;
-    aspect-ratio: 1440 / 1024;
-    translate: 0 -50%;
+    inset: 0 auto 0 0;
+    width: 61svh;
     border: 0;
-    background: url("/assets/living-relief-poster.webp") center / cover no-repeat;
-    -webkit-mask-image: linear-gradient(90deg, #000 70%, transparent), linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
-    mask-image: linear-gradient(90deg, #000 70%, transparent), linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
-    -webkit-mask-composite: source-in;
-    mask-composite: intersect;
+    background: url("/assets/living-relief-mobile.webp") 50% 0 / cover no-repeat;
+    -webkit-mask-image: linear-gradient(90deg, #000 90%, transparent);
+    mask-image: linear-gradient(90deg, #000 90%, transparent);
   }
   .public-state .live-auth-art:after { content: none; }
   .public-state .live-auth {
@@ -24,6 +19,6 @@
     min-height: 100svh;
     width: auto;
     max-width: 470px;
-    margin: 0 4vw 0 56vw;
+    margin: 0 4vw 0 calc(61svh + 7vw);
   }
 }
