@@ -206,8 +206,13 @@ export const remove = mutation({
       shelf: await ctx.db.query("voucherStock").withIndex("by_request", (q) => q.eq("requestId", request._id)).collect(),
     })));
 
-    const entryIds = new Set([...entries, ...byRequest.flatMap((found) => found.entries)].map((entry) => entry._id));
-    for (const id of entryIds) await ctx.db.patch("ledgerEntries", id, { memo: REMOVED });
+    // Who was paid stays when it is a landlord, a utility or a store. A payee that carries any part of the
+    // neighbor's name would say who the household was, so it goes; better one store too many than one name left.
+    const named = new Set(neighbor.nameKey.split(" ").filter((word) => word.length > 2));
+    const namesThem = (payee: string) => nameKey(payee).split(" ").some((word) => named.has(word));
+    const lines = new Map([...entries, ...byRequest.flatMap((found) => found.entries)].map((entry) => [entry._id, entry]));
+    for (const entry of lines.values())
+      await ctx.db.patch("ledgerEntries", entry._id, { memo: REMOVED, ...(namesThem(entry.payee) && { payee: REMOVED }) });
     for (const line of byRequest.flatMap((found) => found.shelf)) await ctx.db.patch("voucherStock", line._id, { note: REMOVED });
 
     for (const draft of drafts) await ctx.db.delete("requestDrafts", draft._id);
