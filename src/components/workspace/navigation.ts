@@ -9,6 +9,8 @@ import {
   Phone,
   House,
   Landmark,
+  Footprints,
+  ChartNoAxesColumn,
 } from "lucide-react";
 import type { LiveArea } from "@/components/workspace/areas";
 
@@ -22,7 +24,9 @@ export const navigation = [
   { id: "tasks", label: "Tasks & meetings", icon: ClipboardList },
   { id: "help-line", label: "Help line", icon: Phone },
   { id: "neighbors", label: "Neighbors", icon: House },
+  { id: "visits", label: "Home visits", icon: Footprints },
   { id: "treasury", label: "Treasury", icon: Landmark },
+  { id: "reports", label: "Reports", icon: ChartNoAxesColumn },
 ] as const;
 
 export type ActionKind =

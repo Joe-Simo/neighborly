@@ -245,7 +245,8 @@ export function LiveWorkspace({
           <div className="live-page-head" data-art={heading.art ? "" : undefined}>
             <div>
               <p className="live-kicker">
-                {data.church.name} · {data.church.timeZone}
+                {data.church.name}
+                {heading.room === "help" ? "" : ` · ${data.church.timeZone}`}
               </p>
               <h1>{heading.title}</h1>
               <p className="live-deck">{heading.deck}</p>
