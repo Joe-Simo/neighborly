@@ -157,7 +157,5 @@ p.tools-quiet { margin: 14px 0 0; }
 .live-app .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > h2 { margin: 0; font-size: 22px; }
 .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > .tools-file { margin: 0; }
 /* A corner is plain paper at rest, ochre only while a yes is waited for, green once it is given or the files are gathered. */
-.tools-leaf-wide.paper-corner { --paper-corner: #e7e2d3; }
-.tools-leaf-wide.paper-corner.paper-fold { --paper-corner: #365c46; }
 /* The room's headline keeps its two sentences on two lines on a phone. */
 @media (max-width: 700px) { .live-app:has(.tools-leaves) .live-head-words h1 { font-size: 32px; text-wrap: balance; } }
