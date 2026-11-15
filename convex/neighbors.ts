@@ -1,4 +1,4 @@
-import { v, type Infer } from "convex/values";
+import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
@@ -39,15 +39,15 @@ const toRow = (neighbor: Doc<"neighbors">): Infer<typeof neighborRow> => ({
 
 const short = (value: string, label: string, max: number) => {
   const trimmed = value.trim();
-  if (trimmed.length > max) throw new Error(`${label} is too long.`);
+  if (trimmed.length > max) throw new ConvexError(`${label} is too long.`);
   return trimmed;
 };
 
 function clean(args: Infer<ReturnType<typeof v.object<typeof details>>>) {
   const name = args.name.trim();
-  if (!name || !nameKey(name)) throw new Error("A name is needed.");
+  if (!name || !nameKey(name)) throw new ConvexError("A name is needed.");
   const count = (value: number, label: string, min: number) => {
-    if (!Number.isInteger(value) || value < min || value > 30) throw new Error(`${label} must be a whole number.`);
+    if (!Number.isInteger(value) || value < min || value > 30) throw new ConvexError(`${label} must be a whole number.`);
     return value;
   };
   return {
@@ -136,12 +136,12 @@ export const create = mutation({
     if (!confirmedNew) {
       const samePhone = record.phoneKey ? await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", record.phoneKey)).first() : null;
       const existing = samePhone ?? (await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).eq("nameKey", record.nameKey)).first());
-      if (existing) throw new Error(`${existing.name} is already on file with this ${samePhone ? "phone number" : "name"}.`);
+      if (existing) throw new ConvexError(`${existing.name} is already on file with this ${samePhone ? "phone number" : "name"}.`);
     }
     const neighborId = await ctx.db.insert("neighbors", { churchId, ...record, createdBy: member._id, createdAt: Date.now() });
     if (callId) {
       const call = await ctx.db.get("calls", callId);
-      if (!call || call.churchId !== churchId) throw new Error("Call not found.");
+      if (!call || call.churchId !== churchId) throw new ConvexError("Call not found.");
       if (!call.neighborId) await ctx.db.patch("calls", callId, { neighborId });
     }
     return neighborId;
@@ -193,18 +193,18 @@ export const saveHousehold = mutation({
     const thisYear = new Date().getUTCFullYear();
     const lines = (given: Infer<typeof moneyLine>[]) =>
       given.slice(0, 20).map((line) => {
-        if (!Number.isInteger(line.amount) || line.amount < 0) throw new Error("An amount must be zero or more.");
+        if (!Number.isInteger(line.amount) || line.amount < 0) throw new ConvexError("An amount must be zero or more.");
         const label = short(line.label, "A label", 60);
-        if (!label) throw new Error("Each line needs a name.");
+        if (!label) throw new ConvexError("Each line needs a name.");
         return { label, amount: line.amount };
       });
     const people = household?.slice(0, 30).map((person) => {
-      if (person.birthYear !== undefined && (!Number.isInteger(person.birthYear) || person.birthYear < 1900 || person.birthYear > thisYear)) throw new Error("A birth year looks wrong.");
+      if (person.birthYear !== undefined && (!Number.isInteger(person.birthYear) || person.birthYear < 1900 || person.birthYear > thisYear)) throw new ConvexError("A birth year looks wrong.");
       const relationship = short(person.relationship, "A relationship", 60);
-      if (!relationship) throw new Error("Each person needs a relationship, such as mother or son.");
+      if (!relationship) throw new ConvexError("Each person needs a relationship, such as mother or son.");
       return { relationship, child: person.child, birthYear: person.birthYear };
     });
-    if (people?.length && !people.some((person) => !person.child)) throw new Error("A household needs at least one adult.");
+    if (people?.length && !people.some((person) => !person.child)) throw new ConvexError("A household needs at least one adult.");
     await ctx.db.patch("neighbors", neighborId, {
       ...(people ? { household: people, ...(people.length ? { adults: people.filter((person) => !person.child).length, children: people.filter((person) => person.child).length } : {}) } : {}),
       ...(money ? { money: { income: lines(money.income), expenses: lines(money.expenses), updatedAt: Date.now() } } : {}),
@@ -212,7 +212,7 @@ export const saveHousehold = mutation({
         ? {
             accounts: accounts.slice(0, 12).map((given) => {
               const name = short(given.name, "A name", 120);
-              if (!name) throw new Error("Each account needs the name of who is paid.");
+              if (!name) throw new ConvexError("Each account needs the name of who is paid.");
               const kept = given.keep === undefined ? "" : (neighbor.accounts?.[given.keep]?.accountNumber ?? "");
               return { kind: given.kind, name, accountNumber: given.accountNumber === undefined ? kept : short(given.accountNumber, "An account number", 60), phone: short(given.phone, "A phone number", 40) };
             }),
@@ -244,7 +244,7 @@ export const addNote = mutation({
   handler: async (ctx, { churchId, neighborId, body }) => {
     const { member } = await neighborRecord(ctx, churchId, neighborId);
     const text = short(body, "The note", 4000);
-    if (!text) throw new Error("Write the note first.");
+    if (!text) throw new ConvexError("Write the note first.");
     await ctx.db.insert("neighborNotes", { churchId, neighborId, body: text, authorId: member._id, createdAt: Date.now() });
     return null;
   },
