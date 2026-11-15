@@ -83,7 +83,7 @@ export function MembersImport() {
           onClick={() => {
             const links = results.flatMap((row) => (row.token ? [{ name: row.name, email: row.email, token: row.token }] : []));
             const url = URL.createObjectURL(new Blob([invitationLinksCsv(links, window.location.origin)], { type: "text/csv;charset=utf-8" }));
-            Object.assign(document.createElement("a"), { href: url, download: "invitation-links.csv" }).click();
+            Object.assign(document.createElement("a"), { href: url, download: data.church.sample ? "sample-invitation-links.csv" : "invitation-links.csv" }).click();
             URL.revokeObjectURL(url);
           }}
         >

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/workspace/tools/rota";
 
-export function WeeklyRotaView({ group, week, days, printed, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
+export function WeeklyRotaView({ group, week, days, printed, sample, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
   const planned = days.some((day) => day.shifts.length > 0);
   return (
     <section className="live-section">
@@ -55,7 +55,7 @@ export function WeeklyRotaView({ group, week, days, printed, onEarlier, onLater,
             </div>
           </div>
         )}
-        <footer className="tools-rota-foot"><span>kind helps</span><span>Printed {printed}</span></footer>
+        <footer className="tools-rota-foot"><span>kind helps</span><span>{sample && "Sample · "}Printed {printed}</span></footer>
       </div>
     </section>
   );
@@ -74,6 +74,7 @@ export function WeeklyRota() {
       week={weekLabel(start)}
       days={weekRota(shifts, start)}
       printed={format(now, { dateStyle: "long" })}
+      sample={data.church.sample}
       onEarlier={() => setWeeksAhead((value) => value - 1)}
       onLater={() => setWeeksAhead((value) => value + 1)}
       onPrint={() => window.print()}
