@@ -17,6 +17,9 @@ export type OwnVisit = FunctionReturnType<typeof api.visits.mine>[number];
 export const need = (kind: Waiting["kind"], cents: number) =>
   `${kindLabels[kind]}, ${shortMoney(cents)}`;
 export const firstName = (name: string) => name.split(/\s+/)[0];
+/** The neighbor's record with one request open, where it is approved or declined. Stream 1's address. */
+export const requestHref = (neighborId: string, requestId: string) =>
+  `/app/neighbors?neighbor=${neighborId}&request=${requestId}`;
 export const sheetHref = (visitId: string) => `/app/visits?sheet=${visitId}`;
 /** Where the pair stands: both said yes, someone cannot go, or someone has yet to answer. */
 export function standing(visit: Visit) {

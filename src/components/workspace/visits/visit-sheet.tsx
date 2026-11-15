@@ -263,7 +263,7 @@ export function VisitSheetView({
           Private. After the write-up, hand this sheet back or shred it.
         </footer>
         <p className="visits-paper-foot">
-          <span>Kind Helps</span>
+          <span>kind helps</span>
           <span>Printed {printed}</span>
         </p>
       </article>

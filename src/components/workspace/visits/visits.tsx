@@ -27,6 +27,7 @@ import {
 import {
   firstName,
   need,
+  requestHref,
   sheetHref,
   standing,
   type Board,
@@ -433,10 +434,27 @@ export function VisitsView({
                     />
                   </p>
                 </div>
-                <span className="live-status visits-given">
-                  {count(visit.visitors[0]?.hours ?? 0, "hour", "hours")} ·{" "}
-                  {count(visit.visitors[0]?.miles ?? 0, "mile", "miles")}
-                </span>
+                <div className="live-row-actions">
+                  <span className="live-status visits-given">
+                    {count(visit.visitors[0]?.hours ?? 0, "hour", "hours")} ·{" "}
+                    {count(
+                      Math.max(
+                        ...visit.visitors.map((visitor) => visitor.miles),
+                      ),
+                      "mile",
+                      "miles",
+                    )}
+                  </span>
+                  {visit.requestId && (
+                    <Button variant="outline" asChild>
+                      <Link
+                        href={requestHref(visit.neighborId, visit.requestId)}
+                      >
+                        Open the request
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
