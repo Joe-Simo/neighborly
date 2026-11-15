@@ -210,7 +210,7 @@ export function LiveWorkspace({
         <Link href="/app/week" aria-current={area === "week" ? "page" : undefined}><CalendarDays size={17} aria-hidden="true" />{words.menu.week}</Link>
         <Link href="/app/mine" aria-current={area === "mine" ? "page" : undefined}><Check size={17} aria-hidden="true" />{words.menu.mine}</Link>
         <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <DialogTrigger asChild><Button variant="ghost" className="live-mobile-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu size={17} aria-hidden="true" /><span className="live-mobile-menu-label">{menuLabel && menuLabel.length <= 9 ? menuLabel : words.shell.menu}</span></Button></DialogTrigger>
+          <DialogTrigger asChild><Button variant="ghost" className="live-mobile-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu size={17} aria-hidden="true" /><span className="live-mobile-menu-label">{words.shell.menu}</span></Button></DialogTrigger>
           <DialogContent className="live-mobile-menu max-h-[calc(100svh-2rem)] overflow-y-auto" onOpenAutoFocus={(event) => {
             // Opening the menu must not land on the language choice, where an arrow key would change it.
             event.preventDefault();
@@ -251,6 +251,9 @@ export function LiveWorkspace({
               </p>
               <h1>{heading.title}</h1>
               <p className="live-deck">{heading.deck}</p>
+              {words.locale !== "en" && !translatedHeadings[area] && (
+                <p className="!mt-4 text-[15px] text-[#68715f]">{words.shell.roomInEnglish}</p>
+              )}
             </div>
             {primary &&
               ((isOwner && area !== "mine") ||
