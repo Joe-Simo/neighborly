@@ -128,7 +128,21 @@ describe("sample conference", () => {
     expect(loaded.memberships.filter((member) => member.churchId === sample && member.role === "owner")).toMatchObject([{ userId: kept.userId }]);
 
     await expect(t.mutation(internal.sampleData.clear, { churchId: kept.churchId })).rejects.toThrow("Only a sample group can be cleared.");
+    // What a visitor might add during the day goes too, including rows reached only through a parent.
+    await t.run(async (ctx) => {
+      const member = (await ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", sample)).first())!;
+      const commitment = (await ctx.db.query("commitments").withIndex("by_church", (q) => q.eq("churchId", sample)).first())!;
+      const meeting = await ctx.db.insert("meetings", { churchId: sample, fanoutStatus: "complete", cutoff: 0, title: "Visitor's meeting", start: 0, end: 1, location: "" });
+      await ctx.db.insert("meetingInvitees", { churchId: sample, meetingId: meeting, memberId: member._id });
+      await ctx.db.insert("meetingResponses", { churchId: sample, meetingId: meeting, memberId: member._id, response: "accepted" });
+      await ctx.db.insert("commitmentHistory", { churchId: sample, commitmentId: commitment._id, actorId: member.userId, action: "revised", version: 2, title: "x", start: 0, end: 1, location: "", preparation: "", assigneeId: null, at: 0 });
+      await ctx.db.insert("series", { churchId: sample, teamId: commitment.teamId, intervalWeeks: 1, count: 2 });
+      await ctx.db.insert("invitations", { churchId: sample, email: "visitor@kindhelps.example", role: "member", tokenHash: "x", expiresAt: 0, status: "pending", createdBy: member._id, createdAt: 0, requestId: "x" });
+      await ctx.db.insert("outbox", { churchId: sample, kind: "invitation", recipient: "visitor@kindhelps.example", state: "awaiting_configuration", createdAt: 0 });
+    });
     await t.mutation(internal.sampleData.clear, { churchId: sample });
+    const leftovers = await t.run(async (ctx) => ({ meetings: await ctx.db.query("meetings").collect(), invitees: await ctx.db.query("meetingInvitees").collect(), responses: await ctx.db.query("meetingResponses").collect(), history: await ctx.db.query("commitmentHistory").collect(), series: await ctx.db.query("series").collect(), invitations: await ctx.db.query("invitations").collect(), outbox: await ctx.db.query("outbox").collect() }));
+    for (const [table, rows] of Object.entries(leftovers)) expect(rows, table).toHaveLength(0);
     const after = await everything(t);
     expect(after.churches.map((church) => church._id)).toEqual([kept.churchId]);
     expect(after.users.map((user) => user._id)).toEqual([kept.userId]);

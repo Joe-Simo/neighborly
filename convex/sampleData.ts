@@ -162,6 +162,17 @@ export const load = internalMutation({
       await ctx.db.insert("calls", { churchId, callerName: "No name given", phone: "", note: random.pick(strangers), callback: "none", takenBy: random.pick(staff), takenAt });
     }
 
+    // This week's returned calls from people who are not a household here, so the help line shows how a call ends.
+    const returned = [
+      { callerName: "Stefan Orlov", phone: "(102) 555-0101", note: "Asked for help with rent. Lives across the county line.", outcome: "Outside our area, referred to 211.", daysAgo: 4 },
+      { callerName: "Imani Nwosu", phone: "(102) 555-0102", note: "Asked when the pantry is open.", outcome: "Saturdays, 10 to noon. No request needed.", daysAgo: 3 },
+      { callerName: "Leon Pemberton", phone: "(102) 555-0103", note: "Called to thank the two visitors who came in October.", outcome: "Passed his thanks on to the pair.", daysAgo: 2 },
+    ];
+    for (const [index, call] of returned.entries()) {
+      const takenAt = now - call.daysAgo * DAY - 5 * 3600000;
+      await ctx.db.insert("calls", { churchId, callerName: call.callerName, phone: call.phone, note: call.note, callback: "done", takenBy: staff[index % staff.length], takenAt, ownerId: staff[(index + 1) % staff.length], returnedBy: staff[(index + 1) % staff.length], returnedAt: takenAt + 18 * 3600000, outcome: call.outcome });
+    }
+
     // What the conference spends besides help, then what comes in. Each month's collection is set close
     // to what that month paid out, so the year reads like a conference that gives away what it receives.
     const months = Array.from({ length: Math.floor(today.diff(firstMonth, "months").months) + 1 }, (_, index) => firstMonth.plus({ months: index }));
@@ -196,6 +207,11 @@ export const clear = internalMutation({
       ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("calendarFeeds").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("invitations").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("outbox").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("meetings").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("meetingResponses").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("series").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("deposits").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("ledgerKinds").withIndex("by_church_key", (q) => q.eq("churchId", churchId)).collect(),
@@ -212,6 +228,11 @@ export const clear = internalMutation({
       ctx.db.query("teamMembers").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("teams").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
     ])).flat();
+    // Two tables are reached only through their parent: a meeting's invitees and a commitment's history.
+    for (const meeting of await ctx.db.query("meetings").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect())
+      for (const invitee of await ctx.db.query("meetingInvitees").withIndex("by_meeting_member", (q) => q.eq("meetingId", meeting._id)).collect()) await ctx.db.delete(invitee._id);
+    for (const commitment of await ctx.db.query("commitments").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect())
+      for (const change of await ctx.db.query("commitmentHistory").withIndex("by_commitment", (q) => q.eq("commitmentId", commitment._id)).collect()) await ctx.db.delete(change._id);
     for (const row of rows) await ctx.db.delete(row._id);
     for (const member of memberships) {
       // Invented volunteers have a placeholder account that exists only for this group. A real owner's account stays.
