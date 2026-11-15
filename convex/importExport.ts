@@ -326,17 +326,17 @@ const exportFile = v.union(
   v.literal("members"), v.literal("teams"), v.literal("commitments"), v.literal("history"),
 );
 const exportColumns = {
-  neighbors: ["Name", "Phone", "Email", "Address", "Adults", "Children", "Language", "Notes", "Alert", "Household", "Monthly income", "Monthly expenses", "Accounts"],
-  requests: ["Name", "Phone", "Request Date", "Request Status", "Assistance Type", "Value", "Payee", "Request Notes", "Outcome", "Amount Requested", "Amount Approved", "Decision Note", "Decided On", "Referrals", "Entered"],
+  neighbors: ["Name", "Phone", "Email", "Address", "Adults", "Children", "Language", "Notes", "Alert", "Household", "Monthly Income", "Monthly Expenses", "Accounts"],
+  requests: ["Name", "Phone", "Request Date", "Request Status", "Assistance Type", "Value", "Payee", "Request Notes", "Outcome", "Amount Requested", "Amount Approved", "Decision Note", "Decided On", "Referrals", "How It Was Entered"],
   visits: ["Name", "Date", "Time", "Status", "Visitors", "Hours", "Miles", "Notes", "Completed On"],
-  ledger: ["Date", "Kind", "Amount", "Category", "Payee", "Memo", "Check Number", "Cleared On", "Neighbor", "Reverses an earlier entry", "Voided"],
+  ledger: ["Date", "In or Out", "Amount", "Category", "Payee", "Memo", "Check Number", "Cleared On", "Neighbor", "Reversal", "Voided"],
   payees: ["Name", "Type", "Address", "Phone", "Email", "Notes"],
   members: ["Name", "Email", "Role", "Active", "Approved", "Language"],
   notes: ["Name", "Date", "Note", "Written By"],
   calls: ["Date", "Time", "Caller", "Phone", "Neighbor", "What They Said", "Call Back", "Taken By", "Returned By", "Returned On", "Outcome", "Urgent"],
   deposits: ["Date", "Total", "Memo", "Recorded By"],
   statements: ["Statement Ends", "Bank Balance", "Agreed By", "Agreed On"],
-  vouchers: ["Date", "Change", "Item", "Note", "Recorded By"],
+  vouchers: ["Date", "Received", "Given", "Item", "Note", "Recorded By"],
   referrals: ["Name", "Phone", "Helps With"],
   teams: ["Team", "About", "Member", "Team Role", "Status"],
   commitments: ["Date", "Start", "End", "Title", "Team", "Location", "Who", "Coordinator", "Cancelled"],
@@ -346,6 +346,29 @@ const languageNames = { en: "English", es: "Spanish", ht: "Creole" } as const;
 const title = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 const dollars = (cents: number | undefined) => (cents === undefined ? "" : (cents / 100).toFixed(2));
 const yesNo = (value: boolean) => (value ? "Yes" : "No");
+/** A stored day, 2026-03-17, the way the other dates in these files read: 03/17/2026. */
+const plainDay = (stored: string | undefined) => stored?.replace(/^(\d{4})-(\d{2})-(\d{2})$/, "$2/$3/$1") ?? "";
+/** A word the software keeps for itself, such as shut_off or removePerson, as a person would write it. */
+const plainWords = (code: string) => title(code.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_.]+/g, " ").toLowerCase());
+const urgentWords: Record<string, string> = {
+  shutoff: "Shut-off notice", eviction: "Eviction notice", noFood: "No food in the house", hungry: "Someone is hungry",
+  child: "A child at home", elder: "An older person at home", alone: "Lives alone", medical: "A medical need", marked: "Marked urgent by a person",
+};
+const historyWords: Record<string, string> = {
+  church_created: "Started the conference",
+  invitation_created: "Invited someone",
+  invitation_accepted: "Accepted an invitation",
+  invitation_revoked: "Withdrew an invitation",
+  removePerson: "Removed a member",
+  "neighbor.opened": "Opened a neighbor’s record",
+  neighbors_imported: "Brought in neighbor records",
+  requests_imported: "Brought in past requests",
+  payees_imported: "Brought in who you pay",
+  records_exported: "Took the records out",
+  calendar_address_created: "Made a calendar address",
+  calendar_address_replaced: "Replaced a calendar address",
+  time_off_confirmed: "Confirmed time off",
+};
 /** "Sample Power, account ending 4821": enough to recognise the account, never enough to use it. */
 export const maskedAccount = (account: { kind: string; name: string; accountNumber: string }) => {
   const digits = account.accountNumber.replace(/\s/g, "");
@@ -411,7 +434,7 @@ export const exportPage = query({
     }
     if (file === "ledger") {
       const result = await ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [row.date, row.kind === "income" ? "Money in" : "Money out", dollars(row.amount), row.category, row.payee, row.memo, row.checkNumber ?? "", row.clearedOn ?? "", await nameOf("neighbors", row.neighborId), yesNo(Boolean(row.reverses)), yesNo(Boolean(row.voidedAt))])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), row.kind === "income" ? "Money in" : "Money out", dollars(row.amount), title(row.category), row.payee, row.memo, row.checkNumber ?? "", plainDay(row.clearedOn), await nameOf("neighbors", row.neighborId), yesNo(Boolean(row.reverses)), yesNo(Boolean(row.voidedAt))])));
     }
     if (file === "payees") {
       const result = await ctx.db.query("payees").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
@@ -426,19 +449,19 @@ export const exportPage = query({
       const result = await ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       const callBack = { none: "Not needed", needed: "Still needed", done: "Returned" } as const;
       return finish(result, await Promise.all(result.page.map(async (row) => [day(row.takenAt), clock(row.takenAt), row.callerName, row.phone, await nameOf("neighbors", row.neighborId), row.note, callBack[row.callback],
-        await nameOf("memberships", row.takenBy), await nameOf("memberships", row.returnedBy), day(row.returnedAt), row.outcome ?? "", row.urgent ? row.urgent.reasons.join("; ") || "Yes" : ""])));
+        await nameOf("memberships", row.takenBy), await nameOf("memberships", row.returnedBy), day(row.returnedAt), row.outcome ?? "", row.urgent ? row.urgent.reasons.map((reason) => urgentWords[reason] ?? plainWords(reason)).join("; ") || "Yes" : ""])));
     }
     if (file === "deposits") {
       const result = await ctx.db.query("deposits").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [row.date, dollars(row.total), row.memo, await nameOf("memberships", row.recordedBy)])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), dollars(row.total), row.memo, await nameOf("memberships", row.recordedBy)])));
     }
     if (file === "statements") {
       const result = await ctx.db.query("bankStatements").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [row.endsOn, dollars(row.balance), await nameOf("memberships", row.agreedBy), day(row.agreedAt)])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.endsOn), dollars(row.balance), await nameOf("memberships", row.agreedBy), day(row.agreedAt)])));
     }
     if (file === "vouchers") {
       const result = await ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [row.date, String(row.change), row.item, row.note, await nameOf("memberships", row.recordedBy)])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), row.change > 0 ? String(row.change) : "", row.change < 0 ? String(-row.change) : "", row.item, row.note, await nameOf("memberships", row.recordedBy)])));
     }
     if (file === "referrals") {
       const result = await ctx.db.query("referralAgencies").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
@@ -455,13 +478,13 @@ export const exportPage = query({
     if (file === "commitments") {
       const result = await ctx.db.query("commitments").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       return finish(result, await Promise.all(result.page.map(async (row) => [day(row.start), clock(row.start), clock(row.end), row.title, (await ctx.db.get("teams", row.teamId))?.name ?? "", row.location,
-        await nameOf("memberships", row.assigneeId ?? undefined), await nameOf("memberships", row.coordinatorId), yesNo(Boolean(row.cancelled))])));
+        row.assigneeId ? await nameOf("memberships", row.assigneeId) : "Open", await nameOf("memberships", row.coordinatorId), yesNo(Boolean(row.cancelled))])));
     }
     if (file === "history") {
       // Who did what and when, in plain words. It names the action only, never the record it touched.
       const result = await ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       const people = new Map((await ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1000)).map((member) => [member.userId, member.name]));
-      return finish(result, result.page.map((row) => [day(row.at), clock(row.at), people.get(row.actorId) ?? "", title(row.action.replace(/_/g, " "))]));
+      return finish(result, result.page.map((row) => [day(row.at), clock(row.at), people.get(row.actorId) ?? "", historyWords[row.action] ?? plainWords(row.action)]));
     }
     const result = await ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
     return finish(result, result.page.map((row) => [row.name, row.email, title(row.role), yesNo(row.active), yesNo(row.approved), row.language ? languageNames[row.language] : ""]));
