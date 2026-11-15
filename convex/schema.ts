@@ -104,7 +104,8 @@ export default defineSchema({
     requestId: v.optional(v.id("assistanceRequests")),
     neighborId: v.optional(v.id("neighbors")),
     voidedAt: v.optional(v.number()),
+    reverses: v.optional(v.id("ledgerEntries")),
     recordedBy: v.id("memberships"),
     createdAt: v.number(),
-  }).index("by_church", ["churchId", "date"]).index("by_request", ["requestId"]).index("by_neighbor", ["neighborId"]),
+  }).index("by_church", ["churchId", "date"]).index("by_request", ["requestId"]).index("by_neighbor", ["neighborId"]).index("by_reverses", ["reverses"]),
 });
