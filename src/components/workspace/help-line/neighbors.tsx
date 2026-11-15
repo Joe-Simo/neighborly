@@ -140,7 +140,11 @@ export function NeighborListView({
                 {initials(neighbor.name)}
               </span>
               <div>
-                <h3>{neighbor.name}</h3>
+                <h3>
+                  <Link className="help-row-open" href={recordHref(neighbor.id)}>
+                    {neighbor.name}
+                  </Link>
+                </h3>
                 <p>
                   {[
                     neighbor.address || neighbor.phone,
@@ -167,8 +171,10 @@ export function NeighborListView({
                     {format(neighbor.visitAt, { weekday: "short" })}
                   </span>
                 )}
-                <Button variant="outline" asChild>
-                  <Link href={recordHref(neighbor.id)}>Open record</Link>
+                <Button variant="outline" asChild className="help-row-button">
+                  <Link href={recordHref(neighbor.id)} tabIndex={-1} aria-hidden="true">
+                    Open record
+                  </Link>
                 </Button>
               </div>
             </div>
