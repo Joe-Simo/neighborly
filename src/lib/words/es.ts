@@ -79,6 +79,7 @@ export function es(set: WordSet): Words {
     actions: {
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
+      announcementSees: `Todos en ${t.group === "grupo" ? "el grupo" : "la conferencia"} lo ven en Esta semana.`,
     },
     dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora" },
     week: {
@@ -161,6 +162,7 @@ export function es(set: WordSet): Words {
       addAvailable: "Agregar fechas disponibles",
     },
     timeOffForm: {
+      teamSees: "Tu equipo ve los días que estás fuera.",
       firstDay: "Primer día",
       lastDay: "Último día",
       noteLabel: "Nota (opcional)",
@@ -182,6 +184,24 @@ export function es(set: WordSet): Words {
       failed:
         "No pudimos confirmar estas fechas. Puede que tus compromisos hayan cambiado. Vuelve para revisar la lista actual.",
       saved: "Días libres guardados. Solo se liberaron los compromisos revisados.",
+    },
+    /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
+    states: {
+      notSaved: "No se pudo guardar. Inténtalo de nuevo.",
+      offlineSave: "Ahora no hay conexión, así que esto no se guardó.",
+      kept: "No se guardó nada, y lo que escribiste sigue aquí.",
+      tryAgain: "Intentar de nuevo",
+      waiting: "Esperando la conexión. Lo que escribiste está guardado aquí y se enviará cuando vuelva.",
+      offlineTitle: "Ahora no hay conexión.",
+      offlineDeck: "Lo que ves en pantalla se conserva. Los cambios se enviarán cuando este dispositivo vuelva a tener conexión.",
+      errorTitle: "Esta sala no se abrió.",
+      errorDeck: "No se perdió nada. Inténtalo de nuevo; si sigue sin abrirse, el resto de tu espacio está en el menú.",
+      privateTitle: "Se mantiene en privado.",
+      privateDeck: `Esta sala nombra a los ${t.neighbors} que ayudamos, así que solo la abren los coordinadores. Tus compromisos y tu equipo están donde siempre.`,
+      privateAction: "Mis compromisos",
+      missingTitle: "Esta página no está aquí.",
+      missingDeck: "Puede que la dirección sea antigua o esté mal escrita. Tu espacio está como lo dejaste.",
+      missingAction: "Ir a tu espacio",
     },
     notices: {
       saved: "Guardado.",

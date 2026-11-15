@@ -78,6 +78,7 @@ export function en(set: WordSet) {
     actions: {
       timeOff: "Plan time off",
       announcement: "Share an announcement",
+      announcementSees: `Everyone in the ${t.group} sees this on This week.`,
     },
     dateField: { choose: "Choose a day", done: "Done", chooseTime: "Choose a time" },
     week: {
@@ -159,6 +160,7 @@ export function en(set: WordSet) {
       addAvailable: "Add available dates",
     },
     timeOffForm: {
+      teamSees: "Your team sees the days you are away.",
       firstDay: "First day",
       lastDay: "Last day",
       noteLabel: "Note (optional)",
@@ -178,6 +180,24 @@ export function en(set: WordSet) {
       failed:
         "We couldn’t confirm these dates. Your commitments may have changed. Go back to review the current list.",
       saved: "Time off saved. Only the reviewed commitments were released.",
+    },
+    /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
+    states: {
+      notSaved: "That couldn’t be saved. Please try again.",
+      offlineSave: "There is no connection right now, so this was not saved.",
+      kept: "Nothing was saved, and what you typed is still here.",
+      tryAgain: "Try again",
+      waiting: "Waiting for the connection. What you typed is kept and will be sent when it returns.",
+      offlineTitle: "No connection right now.",
+      offlineDeck: "What is on screen is kept. Changes will be sent when this device is back online.",
+      errorTitle: "This room didn’t open.",
+      errorDeck: "Nothing is lost. Try again; if it still won’t open, the rest of your workspace is in the menu.",
+      privateTitle: "Kept private.",
+      privateDeck: `This room names the ${t.neighbors} we help, so it is open to coordinators only. Your commitments and your team are where they always are.`,
+      privateAction: "My commitments",
+      missingTitle: "This page isn’t here.",
+      missingDeck: "The address may be old or mistyped. Your workspace is where you left it.",
+      missingAction: "Go to your workspace",
     },
     notices: {
       saved: "Saved.",
