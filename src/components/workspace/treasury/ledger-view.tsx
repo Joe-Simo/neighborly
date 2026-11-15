@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { stateWords } from "@/components/workspace/failure";
 import { CountUp } from "@/components/workspace/primitives";
+import { LiveState } from "@/components/workspace/states";
 import { figureRoll, formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
@@ -429,29 +431,17 @@ export function LedgerLoading() {
 
 export function LedgerPrivate() {
   return (
-    <div className="help-empty" data-first>
-      <div
-        className="help-empty-art"
-        style={{
-          backgroundImage: "url(/assets/painted-world/door.webp)",
-          backgroundColor: "#eeece0",
-          backgroundSize: "auto 120%",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "50% 20%",
-        }}
-        aria-hidden="true"
-      />
-      <div>
-        <h3>Kept private.</h3>
-        <p>
-          The ledger names the neighbors it helped, so it is open to
-          coordinators only. Your commitments and your team are where they
-          always are.
-        </p>
+    <LiveState
+      kind="private"
+      title={stateWords.privateTitle}
+      action={
         <Button variant="outline" asChild>
-          <Link href="/app/mine">My commitments</Link>
+          <Link href="/app/mine">{stateWords.privateAction}</Link>
         </Button>
-      </div>
-    </div>
+      }
+    >
+      The ledger names the neighbors it helped, so it is open to coordinators only. Your commitments and your
+      team are where they always are.
+    </LiveState>
   );
 }

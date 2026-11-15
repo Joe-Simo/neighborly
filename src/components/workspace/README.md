@@ -92,6 +92,25 @@ Rows and links already lift on hover; do not add another hover of your own.
 
 Both speak en, es and ht from the word tables.
 
+## When something is not as usual
+
+One family, in `states.tsx` and `failure.ts`; the look is in `paper.css`. Plum asks for attention; nothing is red.
+
+- A refused save: `readFailure(cause)` gives the sentence to show. It is the backend's own sentence when the
+  backend threw a `ConvexError("plain sentence")`, calm words otherwise, and never the raw error. Backend refusals
+  meant for the person must be `ConvexError`; production strips a plain `Error` down to "Server Error".
+  `useSave()` (`use-save.ts`) already reads through it.
+- `<LiveFailure message={sentence} />` inside the form, above its buttons: what happened, then that what was typed
+  is kept. The form's own button sends it again. `retry` adds a "Try again" that submits, for a form with no button
+  of its own. A bare `<div className="live-error" role="alert">` has the same look.
+- `<LiveWaiting when={saving} />` beside a form's buttons: if the connection drops while the form is being sent, it
+  says the entry is kept and will go by itself (Convex holds the save and sends it on return).
+- `<LiveState kind="private|missing|error|offline|empty" title action>`: the room's round mark, one serif line, one
+  sentence, at most one action. `LiveEmpty` stays the short way to write the empty one.
+- `<LiveConnection />` is the strip above a room while the connection is down, and `RoomBoundary` keeps a fault
+  inside one room; the shell places both. Whole-page states (`app/error.tsx`, `not-found.tsx`, `/offline`) use
+  the sign-in layout. Words live in `stateWords` until the language tables take them over.
+
 ## The paper corner rule
 
 A paper corner is plain paper at rest, ochre only while something waits for a person's yes, and green once it is

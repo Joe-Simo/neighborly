@@ -563,3 +563,43 @@
 @keyframes paper-sheet-up { from { transform: translateY(100%); } }
 @media (max-width: 359px) { .live-date-sheet .rdp-day_button, .live-date-sheet .rdp-weekday { width: 44px; } .live-date-sheet.live-date-bottom { padding-inline: 4px; } }
 @media (prefers-reduced-motion: reduce) { .live-date-sheet, .live-date-sheet.live-date-bottom { animation: none; } }
+
+/* ── States: one family for a refused save, a lost connection, a room that did not open,
+   a page that is not there and a room that is not yours. Plum asks for attention; nothing is red. ── */
+.live-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 14px 18px 14px 16px;
+  background: #fffdf7;
+  border: 1px solid color-mix(in srgb, #6f5f93 26%, #f7f4ed);
+  border-left: 3px solid #6f5f93;
+  border-radius: 0 4px 4px 0;
+  color: var(--paper-ink, #283c32);
+  font-size: 16px;
+  line-height: 1.5;
+  animation: paper-rise 320ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards;
+}
+.live-error > div { flex: 1 1 260px; min-width: 0; }
+.live-error .live-error-recovery { margin-top: 4px; font-size: 15px; color: #5d6657; }
+.live-failure [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
+.live-waiting { margin: 0; font-size: 15px; line-height: 1.5; color: #5d6657; }
+.live-connection {
+  margin: 0 0 24px;
+  padding: 12px 16px;
+  background: var(--paper-shade, #ece8dc);
+  border-left: 3px solid var(--paper-ink, #283c32);
+  border-radius: 0 4px 4px 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--paper-ink, #283c32);
+}
+.live-connection strong { font-weight: 600; }
+.live-app .live-state { border-top: 0; padding-top: 8px; }
+.live-state:not([data-kind="empty"]) > .paper-vignette { box-shadow: 0 0 0 3px #f7f4ed, 0 0 0 4px #6f5f93; }
+.live-app .live-state [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .live-error { animation: none; }
+}

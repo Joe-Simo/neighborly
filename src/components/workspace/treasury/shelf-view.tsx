@@ -8,6 +8,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { Input } from "@/components/ui/input";
+import { readFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
 import { LiveField } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -298,11 +299,7 @@ export function ShelfRoom({
             try {
               await recordVouchers({ churchId, ...vouchers });
             } catch (cause) {
-              return cause instanceof Error
-                ? cause.message
-                    .replace(/^.*?Uncaught Error:\s*/, "")
-                    .split("\n")[0]
-                : "That couldn’t be recorded. Please try again.";
+              return readFailure(cause, "That couldn’t be recorded. Please try again.");
             }
             setAdding(false);
             setDone(

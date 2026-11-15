@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
+import { readFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
 import { CountUp, LiveField } from "@/components/workspace/primitives";
 import { figureRoll, parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
@@ -394,10 +395,6 @@ export function BankView({
   );
 }
 
-const reason = (cause: unknown) =>
-  cause instanceof Error
-    ? cause.message.replace(/^.*?Uncaught Error:\s*/, "").split("\n")[0]
-    : "That couldn’t be saved. Please try again.";
 
 /** Fetches the bank view and carries its three changes. */
 export function BankRoom({
@@ -447,7 +444,7 @@ export function BankRoom({
     try {
       setDone(await run());
     } catch (cause) {
-      setError(reason(cause));
+      setError(readFailure(cause));
     }
     setBusy(null);
   }
