@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import "./volunteer.css";
+import { useRef, useState } from "react";
+import { ArrowRight, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -16,17 +18,31 @@ export function incomingRequests(data: LiveWorkspaceData) {
 export function CommitmentRows({
   items,
   empty,
+  fresh,
 }: {
   items: LiveWorkspaceData["commitments"];
   empty?: { title: string; detail: string };
+  /** The commitment just accepted: its row is laid in. */
+  fresh?: string;
 }) {
   const { data, format, when, personName, teamName, showCommitment, words } =
     useWorkspace();
   const statuses: Partial<Record<string, string>> = words.commitments.status;
+  const landed = useRef<string>(undefined);
+  const land = (row: HTMLDivElement | null) => {
+    if (!row || landed.current === fresh) return;
+    landed.current = fresh;
+    row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  };
   return items.length ? (
       <div className="live-list">
         {items.map((item) => (
-          <div className="live-row live-commitment-row" key={item.id}>
+          <div
+            className={`live-row live-commitment-row${item.id === fresh ? " volunteer-filed" : ""}`}
+            // Show where the accepted commitment landed, if it is off the screen.
+            ref={item.id === fresh ? land : undefined}
+            key={item.id}
+          >
             <div className="live-date-leaf" aria-hidden="true"><span>{format(item.start, { day: undefined, month: "short" })}</span><strong>{format(item.start, { month: undefined, day: "numeric" })}</strong><span>{format(item.start, { month: undefined, day: undefined, weekday: "short" })}</span></div>
             <div className="live-row-main">
               <div className="live-meta">
@@ -47,7 +63,6 @@ export function CommitmentRows({
               </span>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={(event) => showCommitment(item, event.currentTarget)}
               >
                 {item.assigneeId === data.user.id && item.status === "accepted"
@@ -63,7 +78,21 @@ export function CommitmentRows({
     );
 }
 
-export function IncomingRequests() {
+/** How long a sheet stays, its corner green, after a yes: long enough to be seen. */
+const FOLD_BEAT = 800;
+
+type CoverRequest = LiveWorkspaceData["requests"][number];
+
+/**
+ * The sheet of what waits for this person's yes. Its corner is ochre while it waits.
+ * On Accept the corner folds green and the line reads accepted for a beat; then the
+ * sheet leaves and `onAccepted` names the commitment, so the list below can lay it in.
+ */
+export function IncomingRequests({
+  onAccepted,
+}: {
+  onAccepted?: (commitmentId: string) => void;
+}) {
   const {
     data,
     requestCommitments,
@@ -74,79 +103,81 @@ export function IncomingRequests() {
     focusOutcome,
     words,
   } = useWorkspace();
+  const [given, setGiven] = useState<CoverRequest>();
   const incoming = incomingRequests(data);
-  return incoming.length ? (
-      <section className="live-section live-request-section paper-settle" aria-labelledby="live-requests-title">
-        <div className="live-section-head">
-          <h2 id="live-requests-title">{words.requests.title}</h2>
-          <span className="live-count">
-            {words.requests.awaiting(incoming.length)}
-          </span>
-        </div>
-        <div className="live-list">
-          {incoming.map((request) => {
+  // The request just accepted leaves the data at once; the sheet keeps it for the beat.
+  const shown =
+    given && !incoming.some((request) => request.id === given.id)
+      ? [given, ...incoming]
+      : incoming;
+  const statuses: Partial<Record<string, string>> = words.commitments.status;
+  const respond = async (request: CoverRequest, accept: boolean) => {
+    if (accept) setGiven(request);
+    const beat = new Promise((settle) => setTimeout(settle, accept ? FOLD_BEAT : 0));
+    const saved = await perform(
+      { type: "respondCover", requestId: request.id, accept },
+      accept ? words.requests.accepted : words.requests.declined,
+    );
+    if (accept && saved) await beat;
+    setGiven(undefined);
+    if (!saved) return;
+    if (accept) onAccepted?.(request.commitmentId);
+    focusOutcome();
+  };
+  const waiting = shown.filter((request) => request.id !== given?.id).length;
+  return shown.length ? (
+      <section className={`help-sheet volunteer-choice${given ? " paper-fold" : ""}`} aria-labelledby="live-requests-title">
+        <p className="help-sheet-label">{waiting ? words.requests.awaiting(waiting) : statuses.accepted}</p>
+        <h2 id="live-requests-title">{words.requests.title}</h2>
+        <div className="volunteer-choice-rows">
+          {shown.map((request) => {
             const item = requestCommitments.find(
               (commitment) => commitment.id === request.commitmentId,
             ) ?? data.commitments.find(
               (commitment) => commitment.id === request.commitmentId,
             );
             return (
-              <div className="live-row" key={request.id}>
+              <div className="volunteer-choice-row" key={request.id}>
                 <div>
                   <h3>{item?.title ?? words.requests.fallbackTitle}</h3>
-                  <p>
+                  <p className="volunteer-choice-when">
                     {item
                       ? when(item.start, item.end)
                       : words.requests.unavailable}
                   </p>
-                  {item?.location && <p className="live-request-location">{item.location}</p>}
+                  {item?.location && <p>{item.location}</p>}
                 </div>
-                <div className="live-row-actions">
-                  <Button
-                    disabled={pending || !item}
-                    size="sm"
-                    onClick={async () => {
-                      const saved = await perform(
-                        {
-                          type: "respondCover",
-                          requestId: request.id,
-                          accept: true,
-                        },
-                        words.requests.accepted,
-                      );
-                      if (saved) focusOutcome();
-                    }}
-                  >
-                    {words.requests.accept}
-                  </Button>
-                  <Button
-                    disabled={pending}
-                    size="sm"
-                    variant="outline"
-                    onClick={async () => {
-                      const saved = await perform(
-                        {
-                          type: "respondCover",
-                          requestId: request.id,
-                          accept: false,
-                        },
-                        words.requests.declined,
-                      );
-                      if (saved) focusOutcome();
-                    }}
-                  >
-                    {words.requests.decline}
-                  </Button>
-                  {item && (
+                {request.id === given?.id ? (
+                  <p className="volunteer-given" role="status">
+                    <CircleCheck size={22} aria-hidden="true" />
+                    {statuses.accepted}
+                  </p>
+                ) : (
+                  <div className="live-row-actions">
                     <Button
-                      variant="link"
-                      className="tools-quiet"
-                      onClick={(event) => showCommitment(item, event.currentTarget)}
+                      disabled={pending || !item}
+                      onClick={() => void respond(request, true)}
                     >
-                      {words.commitments.details}
+                      {words.requests.accept}
                     </Button>
-                  )}
-                </div>
+                    <Button
+                      disabled={pending}
+                      variant="outline"
+                      onClick={() => void respond(request, false)}
+                    >
+                      {words.requests.decline}
+                    </Button>
+                    {item && (
+                      <Button
+                        variant="link"
+                        className="tools-quiet"
+                        onClick={(event) => showCommitment(item, event.currentTarget)}
+                      >
+                        {words.commitments.details}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

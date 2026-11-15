@@ -1,5 +1,6 @@
 "use client";
 
+import "./volunteer.css";
 import { useState } from "react";
 import { usePaginatedQuery } from "convex/react";
 import { Check, Plus } from "lucide-react";
@@ -20,93 +21,142 @@ export function TasksSection() {
     personName,
     openAction: open,
   } = useWorkspace();
-  const taskRows = (
-    <div className="live-list">
-      {data.tasks.length ? (
-        data.tasks.map((task) => (
-          <div className="live-row" key={task.id}>
-            <div>
-              <h3>{task.title}</h3>
-              <p>
-                {personName(task.assigneeId)}
-                {task.dueAt ? ` · Due ${format(task.dueAt)}` : ""}
-              </p>
-            </div>
-            <Button
-              variant={task.complete ? "secondary" : "outline"}
-              size="sm"
-              disabled={
-                pending || (!isOwner && task.assigneeId !== data.user.id)
-              }
-              onClick={() =>
-                void perform({
-                  type: "setTaskComplete",
-                  taskId: task.id,
-                  complete: !task.complete,
-                })
-              }
-            >
-              {task.complete ? (
-                <>
-                  <Check size={16} /> Complete
-                </>
-              ) : (
-                "Mark complete"
-              )}
-            </Button>
-          </div>
-        ))
-      ) : (
-        <LiveEmpty title="A clear list, for now.">
-          Shared tasks will appear here with their owner and due date.
-        </LiveEmpty>
-      )}
-    </div>
-  );
+  // The task just ticked and the meeting just answered: each gets its one move.
+  const [ticked, setTicked] = useState<string>();
+  const [answered, setAnswered] = useState<string>();
   return (
     <>
       <section>
         <div className="live-section-head">
           <h2>Tasks</h2>
         </div>
-        {taskRows}
+        {data.tasks.length ? (
+          <div className="live-list">
+            {data.tasks.map((task) => {
+              const mine = isOwner || task.assigneeId === data.user.id;
+              return (
+                <div
+                  className={`live-row volunteer-task${task.id === ticked ? " volunteer-ticked" : ""}`}
+                  data-done={task.complete || undefined}
+                  key={task.id}
+                >
+                  <div>
+                    <h3><span>{task.title}</span></h3>
+                    <p>
+                      {personName(task.assigneeId)}
+                      {task.dueAt ? ` · Due ${format(task.dueAt)}` : ""}
+                    </p>
+                  </div>
+                  {mine ? (
+                    <Button
+                      variant="outline"
+                      aria-pressed={task.complete}
+                      disabled={pending}
+                      onClick={async () => {
+                        const saved = await perform({
+                          type: "setTaskComplete",
+                          taskId: task.id,
+                          complete: !task.complete,
+                        });
+                        if (saved) setTicked(task.complete ? undefined : task.id);
+                      }}
+                    >
+                      {task.complete ? (
+                        <>
+                          <Check size={16} aria-hidden="true" /> Done
+                        </>
+                      ) : (
+                        "Mark done"
+                      )}
+                    </Button>
+                  ) : (
+                    <span className="live-status" data-state={task.complete ? "accepted" : "open"}>
+                      {task.complete ? "Done" : "Open"}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <LiveEmpty title="A clear list, for now.">
+            Shared tasks will appear here with their owner and due date.
+          </LiveEmpty>
+        )}
       </section>
       <section className="live-section">
         <div className="live-section-head">
           <h2>Meetings</h2>
           {isOwner && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => open("meeting")}
-            >
-              <Plus size={15} /> Plan meeting
+            <Button variant="outline" onClick={() => open("meeting")}>
+              <Plus size={15} aria-hidden="true" /> Plan meeting
             </Button>
           )}
         </div>
         {data.meetings.length ? (
-          <div className="live-list">
+          <div className="volunteer-meetings">
             {data.meetings.map((meeting) => {
               const response = meeting.responses.find(
                 (item) => item.personId === data.user.id,
               )?.response;
+              const reply = async (answer: "accepted" | "declined") => {
+                const saved = await perform({
+                  type: "respondMeeting",
+                  meetingId: meeting.id,
+                  response: answer,
+                });
+                if (saved) setAnswered(answer === "accepted" ? meeting.id : undefined);
+              };
+              // The corner: ochre while it waits for a reply, green on a yes, plain on a no.
+              const corner =
+                response === "accepted"
+                  ? meeting.id === answered ? " paper-fold" : " volunteer-yes"
+                  : response ? " paper-rest" : "";
               return (
-                <div className="live-row" key={meeting.id}>
-                  <div>
-                    <h3>{meeting.title}</h3>
-                    {meeting.fanoutStatus === "processing" && (
-                      <span
-                        className="live-status"
-                        data-state="pending"
+                <article className={`help-sheet volunteer-meeting${corner}`} key={meeting.id}>
+                  <p className="help-sheet-label">
+                    {response === "accepted"
+                      ? "You are going"
+                      : response
+                        ? "You can’t make it"
+                        : "Waiting for your reply"}
+                  </p>
+                  <div className="help-sheet-body">
+                    <div>
+                      <h3>{meeting.title}</h3>
+                      <p className="volunteer-choice-when">{when(meeting.start, meeting.end)}</p>
+                      {meeting.location && <p>{meeting.location}</p>}
+                    </div>
+                    <div className="live-row-actions">
+                      <Button
+                        variant={response ? "outline" : "default"}
+                        aria-pressed={response === "accepted"}
+                        disabled={pending}
+                        onClick={() => void reply("accepted")}
                       >
-                        Preparing invitations
-                      </span>
-                    )}
-                    {isOwner &&
-                      meeting.fanoutStatus === "processing" && (
+                        {response === "accepted" && <Check size={16} aria-hidden="true" />} Attend
+                      </Button>
+                      <Button
+                        variant="outline"
+                        aria-pressed={response === "declined"}
+                        disabled={pending}
+                        onClick={() => void reply("declined")}
+                      >
+                        {response === "declined" && <Check size={16} aria-hidden="true" />} Decline
+                      </Button>
+                    </div>
+                  </div>
+                  {(isOwner || meeting.fanoutStatus === "processing") && (
+                    <div className="volunteer-meeting-desk">
+                      {meeting.fanoutStatus === "processing" && (
+                        <span className="live-status" data-state="pending">
+                          Preparing invitations
+                        </span>
+                      )}
+                      {isOwner && meeting.fanoutStatus === "processing" && (
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant="link"
+                          className="tools-quiet"
                           disabled={pending}
                           onClick={() =>
                             void perform(
@@ -121,56 +171,15 @@ export function TasksSection() {
                           Retry preparation
                         </Button>
                       )}
-                    <p>
-                      {when(meeting.start, meeting.end)}
-                      {meeting.location ? ` · ${meeting.location}` : ""}
-                    </p>
-                    {response && (
-                      <span
-                        className="live-status"
-                        data-state={response}
-                      >
-                        Your reply: {response}
-                      </span>
-                    )}
-                    {isOwner && (
-                      <LiveMeetingResponses
-                        churchId={data.church.id}
-                        meetingId={meeting.id}
-                      />
-                    )}
-                  </div>
-                  <div className="live-row-actions">
-                    <Button
-                      size="sm"
-                      variant={response === "accepted" ? "secondary" : "default"}
-                      disabled={pending}
-                      onClick={() =>
-                        void perform({
-                          type: "respondMeeting",
-                          meetingId: meeting.id,
-                          response: "accepted",
-                        })
-                      }
-                    >
-                      Attend
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={pending}
-                      onClick={() =>
-                        void perform({
-                          type: "respondMeeting",
-                          meetingId: meeting.id,
-                          response: "declined",
-                        })
-                      }
-                    >
-                      Decline
-                    </Button>
-                  </div>
-                </div>
+                      {isOwner && (
+                        <LiveMeetingResponses
+                          churchId={data.church.id}
+                          meetingId={meeting.id}
+                        />
+                      )}
+                    </div>
+                  )}
+                </article>
               );
             })}
           </div>
@@ -198,8 +207,8 @@ function LiveMeetingResponses({
     { initialNumItems: 20 },
   );
   return (
-    <div style={{ marginTop: 12 }}>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(!open)}>
+    <div className="volunteer-replies">
+      <Button variant="link" className="tools-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
         {open ? "Hide replies" : "Review member replies"}
       </Button>
       {open && (
@@ -220,7 +229,6 @@ function LiveMeetingResponses({
           {responses.status !== "Exhausted" && (
             <Button
               variant="outline"
-              size="sm"
               disabled={responses.status !== "CanLoadMore"}
               onClick={() => responses.loadMore(20)}
             >

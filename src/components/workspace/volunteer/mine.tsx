@@ -15,16 +15,17 @@ import { MyVisits } from "@/components/workspace/visits/my-visits";
 export function MineSection() {
   const { data, now, words } = useWorkspace();
   const [calendar, setCalendar] = useState(false);
+  const [fresh, setFresh] = useState<string>();
   const mine = upcomingCommitments(data.commitments, now).filter(
     (item) => item.assigneeId === data.user.id,
   );
   return (
     <>
-      <IncomingRequests />
+      <IncomingRequests onAccepted={setFresh} />
       <MyVisits />
       <section className="live-section">
         <h2>{words.mine.accepted}</h2>
-        <CommitmentRows items={mine} empty={{ title: words.mine.emptyTitle, detail: words.mine.emptyDetail }} />
+        <CommitmentRows items={mine} fresh={fresh} empty={{ title: words.mine.emptyTitle, detail: words.mine.emptyDetail }} />
         <p className="tools-quiet">
           <Button variant="link" onClick={() => setCalendar(true)}>{words.mine.addToCalendar}</Button>
         </p>
