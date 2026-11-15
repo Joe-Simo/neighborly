@@ -73,7 +73,8 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   const away = useSyncExternalStore(subscribe, () => stored(put) === week, () => true);
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
   const counts = useQuery(api.drafts.weekNote, allowed && !away ? { churchId } : "skip");
-  if (!counts || away) return null;
+  // An older backend answers without saying who put a call first; the note waits for the one that does.
+  if (!counts || away || !("callsFirstByAssistant" in counts)) return null;
   return (
     <WeekNoteView
       counts={counts}
