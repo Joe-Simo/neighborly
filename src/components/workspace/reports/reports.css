@@ -515,6 +515,9 @@
   min-height: 44px;
   margin: 6px 0 0;
   padding-inline: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   background: none;
   font-size: 17px;
   color: var(--live-accent);

@@ -170,12 +170,13 @@ export function memberLines(report: YearReport) {
 }
 
 /** The year as one CSV file: every line, then the months, then the members. No neighbor is named anywhere in it. */
-export function reportCsv(report: YearReport, groupName: string) {
+export function reportCsv(report: YearReport, groupName: string, sample = false) {
   const lines = reportLines(report).map(({ section, line, number }) => [section, line, number]);
   const months = monthLines(report);
   const members = memberLines(report);
   return Papa.unparse([
     [groupName, periodLabel(report), longSpanLabel(report)],
+    ...(sample ? [["Sample", "Made-up people, not a real conference"]] : []),
     [],
     ["Section", "Line", "Value"],
     ...lines,

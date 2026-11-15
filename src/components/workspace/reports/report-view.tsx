@@ -126,6 +126,7 @@ export function QuarterSwitch({
 export function ReportView({
   report,
   groupName,
+  sample,
   thisMonth,
   printed,
   years,
@@ -137,6 +138,8 @@ export function ReportView({
 }: {
   report: YearReport;
   groupName: string;
+  /** A sample conference of made-up people: printed pages say so. */
+  sample?: boolean;
   /** Today's month as "yyyy-MM" in the group's time zone; later months of a running year are still to come. */
   thisMonth: string;
   /** Today, for the date at the foot of the printed page. */
@@ -221,7 +224,8 @@ export function ReportView({
   const printedOn = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: report.timeZone }).format(printed);
   // The foot of every printed page, set in the page margin so it never covers a line.
   const quoted = (text: string) => `"${text.replace(/[\\"]/g, "\\$&").replace(/\s+/g, " ")}"`;
-  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(`${groupName} · ${periodLabel(report)}, ${spanLabel(report)}`)}; font: 9pt "Source Sans 3", sans-serif; color: #000; } @bottom-right { content: ${quoted(`Printed ${printedOn} · page `)} counter(page) " of " counter(pages); font: 9pt "Source Sans 3", sans-serif; color: #000; } } }`;
+  const named = sample ? `${groupName} · Sample, made-up people` : groupName;
+  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(`${named} · ${periodLabel(report)}, ${spanLabel(report)}`)}; font: 9pt "Source Sans 3", sans-serif; color: #000; } @bottom-right { content: ${quoted(`Printed ${printedOn} · page `)} counter(page) " of " counter(pages); font: 9pt "Source Sans 3", sans-serif; color: #000; } } }`;
   const sections = new Map<string, ReportLine[]>();
   for (const line of reportLines(report))
     sections.set(line.section, [...(sections.get(line.section) ?? []), line]);
@@ -495,7 +499,7 @@ export function ReportView({
       <footer className="report-print-foot">
         <strong>kind helps</strong>
         <span>
-          {groupName} · {periodLabel(report)}, {spanLabel(report)} · Printed {printedOn}
+          {named} · {periodLabel(report)}, {spanLabel(report)} · Printed {printedOn}
         </span>
       </footer>
     </div>

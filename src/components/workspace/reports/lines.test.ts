@@ -54,6 +54,7 @@ describe("the year, line by line", () => {
     expect(Papa.parse<string[]>(reportCsv(quarter, "St. Example Conference")).data[0]).toEqual(["St. Example Conference", "Fiscal year 2026, second quarter", "January 1, 2026 to March 31, 2026"]);
     expect(csvFileName(quarter, "St. Example")).toBe("st-example-year-2026-quarter-2.csv");
     expect(months[5]).toEqual(["February 2026", "0", "0", "0", "0", "450.5", "0"]);
+    expect(Papa.parse<string[]>(reportCsv(report, "St. Example Conference", true)).data[1]).toEqual(["Sample", "Made-up people, not a real conference"]);
     expect(csvFileName(report, "St. Example Conference (sample)")).toBe("st-example-conference-sample-year-2026.csv");
   });
 
