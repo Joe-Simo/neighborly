@@ -137,3 +137,6 @@
 /* The journey closes on the name itself, set across the paper. */
 .neighborly-colophon{flex-wrap:wrap;background:transparent;border-top:0;padding-top:48px}
 .neighborly-colophon>a:first-child{order:3;flex-basis:100%;font-size:19.5vw;line-height:.8;margin:24px 0 -.08em;color:#293f32}
+/* One quiet way to give; it never competes with the invitation above it. */
+.neighborly-give{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#343e3366;transition:text-decoration-color .3s ease}
+.neighborly-give:hover{text-decoration-color:currentColor}
