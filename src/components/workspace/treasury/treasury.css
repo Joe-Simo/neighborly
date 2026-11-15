@@ -322,8 +322,11 @@
 .help-ledger.treasury-shelf td[data-total] {
   color: var(--live-ink);
 }
-.help-ledger.treasury-shelf td[data-short] {
-  color: var(--help-ochre-ink);
+.help-ledger.treasury-shelf td[data-total] small {
+  margin-right: 10px;
+  font: 400 15px/1 "Source Sans 3", sans-serif;
+  letter-spacing: 0;
+  color: var(--live-muted);
 }
 /* Gifts in a deposit: each one a row that is in or out. */
 .treasury-gifts {
@@ -350,7 +353,13 @@
   color: #68715f;
 }
 .treasury-gifts [data-slot="toggle"]:hover {
-  background: #f1efe2;
+  background: none;
+}
+.treasury-gifts [data-slot="toggle"]:hover .treasury-gift-mark {
+  border-color: #31533a;
+}
+.treasury-gifts [data-state="off"] {
+  color: #8b927f;
 }
 .treasury-gifts strong {
   display: block;
@@ -381,10 +390,6 @@
 .treasury-gift-amount {
   font: 400 21px/1 "Newsreader", Georgia, serif;
   font-variant-numeric: lining-nums tabular-nums;
-}
-.treasury-gifts [data-state="off"] .treasury-gift-amount {
-  text-decoration: line-through;
-  text-decoration-thickness: 1px;
 }
 .treasury-gift-total {
   display: flex;

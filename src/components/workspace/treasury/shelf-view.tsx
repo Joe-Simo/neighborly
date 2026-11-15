@@ -182,8 +182,8 @@ export function ShelfView({
                       className="help-money"
                       data-label="On hand"
                       data-total
-                      data-short={row.onHand <= 0 ? "" : undefined}
                     >
+                      {row.onHand === 0 && <small>none left</small>}
                       {row.onHand}
                     </td>
                   </tr>
