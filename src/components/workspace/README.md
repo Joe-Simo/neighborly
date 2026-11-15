@@ -55,6 +55,12 @@ To appear in the menu a section needs one line each in `areas.ts`,
 A help-side room's heading carries `room: "help"`. Every heading carries `art`,
 the name of the room's relief picture.
 
+## The way back from an inner view
+
+`setHeading({ title, deck, back: { label: "Ledger", run } })` draws a quiet link
+above the eyebrow in the page head, with a 44px touch area. Use it for every
+inner view (one record, one tool); do not draw a back link of your own in the room.
+
 ## Motion, shared by every room
 
 One way of moving, in `paper.css`: paper lifts, slides and settles, with
@@ -70,3 +76,11 @@ the head, the picture and the menu marker itself. Rooms use four classes:
 
 Set `--paper-order` (0 to 7) on an element to place it in a stagger by hand.
 Rows and links already lift on hover; do not add another hover of your own.
+
+## The date field
+
+`date-field.tsx` is the one date field for every room: `<DateField name="start" required />` inside a `LiveField`.
+It takes and gives the same `"YYYY-MM-DD"` string a date input does, so it replaces `<Input type="date">` in place:
+read it from `FormData` by `name`, or pass `value` and `onChange(value)`. `min` and `max` bound the days.
+It is a 44px paper button that opens a month (shadcn Popover with react-day-picker), in en, es and ht, and never
+uses the system date box, so it holds its width on iPhone. Time off uses it; other rooms can switch when they like.

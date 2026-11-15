@@ -79,6 +79,7 @@ export function en(set: WordSet) {
       timeOff: "Plan time off",
       announcement: "Share an announcement",
     },
+    dateField: { choose: "Choose a day" },
     week: {
       figures: { calls: "Calls waiting", visits: "Visits planned", requests: "Requests awaiting a yes" },
       comingUp: "Coming up",

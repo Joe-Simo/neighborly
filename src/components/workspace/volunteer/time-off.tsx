@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { LiveEmpty, LiveField } from "@/components/workspace/primitives";
+import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDays } from "@/lib/words";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
@@ -129,10 +129,10 @@ function LiveAvailability({
       >
         <div className="live-form-grid">
           <LiveField label={words.timeOff.firstAvailable}>
-            <Input type="date" name="start" required />
+            <DateField name="start" required />
           </LiveField>
           <LiveField label={words.timeOff.lastAvailable}>
-            <Input type="date" name="end" required />
+            <DateField name="end" required />
           </LiveField>
         </div>
         <div>

@@ -30,6 +30,7 @@
     "papaparse": "^5.7.1",
     "radix-ui": "^1.8.1",
     "react": "19.3.0",
+    "react-day-picker": "^10.0.2",
     "react-dom": "19.3.0",
     "serwist": "^9.5.13",
     "shadcn": "^4.23.0",

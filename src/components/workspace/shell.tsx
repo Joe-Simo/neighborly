@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { LogOut, Menu, Plus } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
 import { PaperSurface } from "@/components/paper-surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -173,7 +173,7 @@ export function LiveWorkspace({
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const Section = sections[area];
   const heading = headingOverride
-    ? { ...headings[area], ...translatedHeadings[area], ...headingOverride }
+    ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
     : { ...headings[area], ...translatedHeadings[area] };
   const workspace: Workspace = {
     area,
@@ -273,11 +273,17 @@ export function LiveWorkspace({
         >
           <div className="live-page-head" key={`head-${area}`}>
             {heading.art && (
-              <div className="live-head-art">
+              <div className="live-head-art" style={heading.art.band === undefined ? undefined : ({ "--relief-y": heading.art.band } as CSSProperties)}>
                 <ReliefPicture name={heading.art.picture} focus={heading.art.focus} />
               </div>
             )}
             <div className="live-head-words">
+              {headingOverride?.back && (
+                <button type="button" className="live-back live-head-back" onClick={headingOverride.back.run}>
+                  <ArrowLeft size={16} aria-hidden="true" />
+                  {headingOverride.back.label}
+                </button>
+              )}
               <p className="live-kicker">
                 {data.church.name}
                 {data.church.sample ? " · Sample" : ""}
