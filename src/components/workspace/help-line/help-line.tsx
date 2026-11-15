@@ -45,6 +45,8 @@ import {
 
 type Draft = FunctionReturnType<typeof api.drafts.draftRequest>;
 type Drafted = { call: Call; draft: Draft };
+/** The line that says what changed, and where it leads: a neighbor's record, or a draft of the call just saved. */
+type Done = { message: string; record?: Id<"neighbors">; draft?: Call["id"] };
 type Step =
   | { kind: "log" }
   | {
@@ -66,7 +68,7 @@ const caller = (call: Call) =>
 
 export function HelpLineSection() {
   return (
-    <HelpRoom loading="Opening the help line">
+    <HelpRoom>
       <HelpLine />
     </HelpRoom>
   );
@@ -108,28 +110,38 @@ function HelpLine() {
   const settle = (call: Call) =>
     setDrafts((all) => all.filter((one) => one.call.id !== call.id));
   const [step, setStep] = useState<Step | null>(null);
-  const [done, setDone] = useState("");
-  const finish = (message: string) => {
+  const [done, setDone] = useState<Done | null>(null);
+  const finish = (message: string, more: Omit<Done, "message"> = {}) => {
     setStep(null);
-    setDone(message);
+    setDone({ message, ...more });
   };
+  // The calls as they stand now, for work that finishes after the list has moved on.
+  const latest = useRef(calls);
+  useEffect(() => {
+    latest.current = calls;
+  }, [calls]);
+  // The call whose note the assistant is reading.
+  const [reading, setReading] = useState<Call["id"] | null>(null);
   const close = () => setStep(null);
   // The approved draft stays a moment with its corner folded, then the next one rises.
-  const [sealed, setSealed] = useState<Drafted | null>(null);
+  const [sealed, setSealed] = useState<
+    (Drafted & { neighborId: Id<"neighbors"> }) | null
+  >(null);
   useEffect(() => {
     if (!sealed) return;
     const after = setTimeout(() => {
       setSealed(null);
-      setDone(
-        `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
-      );
+      setDone({
+        message: `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
+        record: sealed.neighborId,
+      });
     }, SEAL_MS);
     return () => clearTimeout(after);
   }, [sealed]);
   const onSheet = sealed ?? drafted;
   const sheetOpen = onSheet !== null;
   const log = useCallback(() => {
-    setDone("");
+    setDone(null);
     setStep({ kind: "log" });
   }, []);
   useLayoutEffect(() => {
@@ -147,25 +159,36 @@ function HelpLine() {
       `Request saved. It is waiting for a decision on ${caller(call)}’s record.`,
     );
   };
-  async function onStep(next: Step) {
-    setDone("");
+  function onStep(next: Step) {
+    setDone(null);
     approving.clear();
-    if (next.kind !== "draft") return setStep(next);
+    if (next.kind === "draft") void draftFor(next.call.id);
+    else setStep(next);
+  }
+  /** Asks the assistant to draft a request from one call's note. The sheet shows it reading meanwhile. */
+  async function draftFor(callId: Call["id"]) {
+    setDone(null);
+    approving.clear();
+    setStep(null);
+    setReading(callId);
     const outcome = await drafting.save(async () => {
-      const draft = await draftRequest({ churchId, callId: next.call.id });
-      if (kept) await keepDraft({ churchId, callId: next.call.id, draft });
+      const draft = await draftRequest({ churchId, callId });
+      if (kept) await keepDraft({ churchId, callId, draft });
       return draft;
     });
+    setReading(null);
+    const call = latest.current?.waiting.find((one) => one.id === callId);
+    if (!call) return;
     // If the assistant cannot help, the person writes the request themselves.
     if (outcome.saved)
       setDrafts((all) => [
-        { call: next.call, draft: outcome.result },
-        ...all.filter((one) => one.call.id !== next.call.id),
+        { call, draft: outcome.result },
+        ...all.filter((one) => one.call.id !== callId),
       ]);
     else
       setStep({
-        kind: next.call.neighborId ? "request" : "neighbor",
-        call: next.call,
+        kind: call.neighborId ? "request" : "neighbor",
+        call,
         undrafted: true,
       });
   }
@@ -191,16 +214,45 @@ function HelpLine() {
     );
     if (!outcome.saved) return;
     settle(call);
-    setSealed(asked);
+    setSealed({ ...asked, neighborId });
   }
   const changeFor =
     step?.kind === "change"
       ? (step.neighborId ?? step.drafted.call.neighborId)
       : null;
   if (!calls) return <HelpLoading label="Opening the help line" />;
+  const read = calls.waiting.find((call) => call.id === reading);
+  // A call just saved can go straight on to its draft.
+  const offer = calls.waiting.find(
+    (call) =>
+      call.id === done?.draft &&
+      !call.openRequest &&
+      !drafts.some((one) => one.call.id === call.id),
+  );
   return (
     <>
-      {done && <HelpDone>{done}</HelpDone>}
+      {done && (
+        <HelpDone
+          action={
+            done.record ? (
+              <Link className="live-link" href={recordHref(done.record)}>
+                Open the record
+              </Link>
+            ) : offer ? (
+              <Button
+                variant="link"
+                className="help-text-action"
+                disabled={drafting.pending}
+                onClick={() => void draftFor(offer.id)}
+              >
+                <Sparkles size={15} aria-hidden="true" /> Draft a request
+              </Button>
+            ) : undefined
+          }
+        >
+          {done.message}
+        </HelpDone>
+      )}
       {(approving.error || drafting.error) && (
         <div className="live-error" role="alert">
           <p>
@@ -218,6 +270,7 @@ function HelpLine() {
         calls={calls}
         format={format}
         busy={drafting.pending}
+        reading={reading}
         draftedCallIds={drafts.map((one) => one.call.id)}
         onFirst={
           // An older backend sends no "urgent" on a call and cannot keep one.
@@ -235,9 +288,12 @@ function HelpLine() {
                 )
             : undefined
         }
-        onStep={(next) => void onStep(next)}
+        onStep={onStep}
         sheet={
-          onSheet && (
+          drafting.pending && !sealed ? (
+            <ReadingSheet note={read?.note} />
+          ) : (
+            onSheet && (
             <DraftSheet
               key={onSheet.call.id}
               drafted={onSheet}
@@ -259,9 +315,10 @@ function HelpLine() {
                   void approving.save(() =>
                     discardDraft({ churchId, callId: onSheet.call.id }),
                   );
-                setDone("Draft discarded. Nothing was saved.");
+                setDone({ message: "Draft discarded. Nothing was saved." });
               }}
             />
+            )
           )
         }
       />
@@ -325,12 +382,16 @@ function HelpLine() {
         >
           <CallForm
             churchId={churchId}
-            onSaved={(matched) =>
-              finish(
-                matched
-                  ? "Call saved, and added to the neighbor’s record."
-                  : "Call saved. It is waiting below until someone calls back.",
-              )
+            draftable
+            onSaved={(matched, callId, draft) =>
+              draft
+                ? void draftFor(callId)
+                : finish(
+                    matched
+                      ? "Call saved, and added to the neighbor’s record."
+                      : "Call saved. It is waiting below until someone calls back.",
+                    { draft: callId },
+                  )
             }
           />
         </LiveDialog>
@@ -411,6 +472,7 @@ export function HelpLineView({
   onStep,
   sheet,
   busy = false,
+  reading = null,
   draftedCallIds = [],
   onFirst,
 }: {
@@ -423,6 +485,8 @@ export function HelpLineView({
   onStep: (step: Step) => void;
   /** True while the assistant is drafting, so a second draft cannot start. */
   busy?: boolean;
+  /** The call the assistant is reading now. */
+  reading?: Call["id"] | null;
   /** The one thing waiting for a yes, when there is one. */
   sheet?: ReactNode;
 }) {
@@ -539,7 +603,7 @@ export function HelpLineView({
                         disabled={busy}
                         onClick={() => onStep({ kind: "draft", call })}
                       >
-                        {busy ? "Drafting…" : "Draft a request"}
+                        {reading === call.id ? "Drafting…" : "Draft a request"}
                       </Button>
                     )}
                     {!call.neighborId && (
@@ -623,6 +687,41 @@ export function HelpLineView({
   );
 }
 
+/** While the assistant reads: the sheet is already laid down with the caller's words on it, and the rest arrives. */
+function ReadingSheet({ note }: { note?: string }) {
+  const sheet = useRef<HTMLElement>(null);
+  useEffect(() => {
+    sheet.current?.scrollIntoView({
+      block: "nearest",
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
+  }, []);
+  return (
+    <section
+      className="help-sheet paper-rest help-reading"
+      role="status"
+      ref={sheet}
+    >
+      <p className="help-sheet-label">The assistant is reading the note</p>
+      <div className="help-sheet-body">
+        <div>
+          <div className="help-reading-title" aria-hidden="true" />
+          {note && <p className="help-quote">“{note}”</p>}
+        </div>
+      </div>
+      <p className="help-assistant help-assistant-line">
+        <Sparkles size={16} aria-hidden="true" />
+        <span>
+          It writes down only what the note says, and leaves blank what it
+          does not. Nothing is saved until you approve it.
+        </span>
+      </p>
+    </section>
+  );
+}
+
 /** The one thing waiting for a yes: what the assistant drafted from a call note. Plum marks its words. */
 export function DraftSheet({
   drafted: { call, draft },
@@ -651,19 +750,33 @@ export function DraftSheet({
     draft.amountRequested !== null &&
     !!draft.payeeKind &&
     !!draft.payeeName;
-  const title = [
-    draft.kind ? kindLabels[draft.kind] : "Kind of help not stated",
-    draft.amountRequested !== null
-      ? shortMoney(draft.amountRequested)
-      : "amount not stated",
-  ].join(", ");
+  // What the note did not say stays blank, and the sheet says so in plain words.
+  const missing = [
+    !draft.kind && "the kind of help",
+    draft.amountRequested === null && "the amount",
+    (!draft.payeeKind || !draft.payeeName) && "who is paid",
+  ].filter((part) => part !== false);
+  const empty =
+    !draft.kind && draft.amountRequested === null && !draft.payeeName;
+  const title = empty
+    ? "Nothing to draft from this note yet"
+    : [
+        draft.kind ? kindLabels[draft.kind] : "A request",
+        draft.amountRequested !== null && shortMoney(draft.amountRequested),
+      ]
+        .filter((part) => part !== false)
+        .join(", ");
   return (
     <section
       className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
       aria-labelledby="draft-title"
     >
       <p className="help-sheet-label">
-        {sealed ? text.approved : text.waiting(waiting)}
+        {sealed
+          ? text.approved
+          : complete
+            ? text.waiting(waiting)
+            : "A draft with blanks"}
       </p>
       <div className="help-sheet-body">
         <div>
@@ -671,6 +784,15 @@ export function DraftSheet({
             {title}
             {draft.payeeName && ` to ${draft.payeeName}`}
           </h2>
+          {!complete && (
+            <p className="help-assistant help-blank">
+              The note does not say{" "}
+              {missing.length > 1
+                ? `${missing.slice(0, -1).join(", ")} or ${missing.at(-1)}`
+                : missing[0]}
+              . That is yours to add.
+            </p>
+          )}
           <p className="help-quote">“{draft.quote || call.note}”</p>
           <p className="help-why">
             For {call.neighborId ? caller(call) : "a new caller"}, from the
@@ -698,7 +820,9 @@ export function DraftSheet({
               </Button>
             </>
           ) : (
-            <Button onClick={onChange}>Fill in what is missing</Button>
+            <Button onClick={onChange}>
+              {empty ? "Write the request" : "Fill in what is missing"}
+            </Button>
           )}
           <Button
             variant="link"

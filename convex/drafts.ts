@@ -56,13 +56,25 @@ type Question = { type: "noul" | "choice"; instructions: string; criteria?: Reco
  */
 const model = "jev-1.14.0";
 
-/** One request to Jev: a state and named questions, all answered at once. Null means no usable reply, for any reason. */
-async function decide(key: string, state: Record<string, unknown>, questions: Record<string, Question>): Promise<Record<string, unknown> | null> {
+type Known = { names: string[]; addresses: string[] };
+/** Every piece of text in a state, at any depth, with identity taken out. */
+function scrubbed(value: unknown, known: Known): unknown {
+  if (typeof value === "string") return withoutIdentity(value, known);
+  if (Array.isArray(value)) return value.map(item => scrubbed(item, known));
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([name, item]) => [name, scrubbed(item, known)]));
+  return value;
+}
+/**
+ * One request to Jev: a state and named questions, all answered at once. Null means no usable reply, for any reason.
+ * This is the only door to the model, and it takes names, phones, emails and addresses out of every text in the
+ * state itself, so no caller can send a note as it was typed. `known` adds the names and addresses the records hold.
+ */
+async function decide(key: string, state: Record<string, unknown>, questions: Record<string, Question>, known: Known = { names: [], addresses: [] }): Promise<Record<string, unknown> | null> {
   try {
     const response = await fetch("https://api.typesafe.ai/v1/systemone", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, state, questions }),
+      body: JSON.stringify({ model, state: scrubbed(state, known), questions }),
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) return null;
@@ -79,9 +91,9 @@ function noul(answer: unknown): number | null {
   return answer.noul;
 }
 
-async function confidence<Field extends string>(key: string, state: Record<string, unknown>, questions: Record<Field, string>): Promise<Record<Field, number> | null> {
+async function confidence<Field extends string>(key: string, state: Record<string, unknown>, questions: Record<Field, string>, known?: Known): Promise<Record<Field, number> | null> {
   const fields = Object.keys(questions) as Field[];
-  const answers = await decide(key, state, Object.fromEntries(fields.map(field => [field, { type: "noul" as const, instructions: questions[field] }])));
+  const answers = await decide(key, state, Object.fromEntries(fields.map(field => [field, { type: "noul" as const, instructions: questions[field] }])), known);
   if (!answers) return null;
   const sure = {} as Record<Field, number>;
   for (const field of fields) {
@@ -268,10 +280,10 @@ export const draftRequest = action({
     if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     // Each question stands on its own in plain words. A bare field name ("proposed.kind") gave the model nothing to judge.
-    const answers = await decide(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, {
+    const answers = await decide(env.TYPESAFE_API_KEY, { note }, {
       ...Object.fromEntries(Object.entries(draftQuestions(draft)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
       chosenKind: kindQuestion,
-    });
+    }, { names, addresses });
     if (!answers) return fallback;
     const sure = { kind: noul(answers.kind), payeeKind: noul(answers.payeeKind) }, pick = picked(answers.chosenKind);
     // A proposed field with no usable answer means the reply cannot be trusted; the person reads the draft as code made it.
@@ -309,7 +321,7 @@ export const readUrgency = action({
     const fallback = { signs, verification: "review" as const };
     if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-    const answers = await decide(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])));
+    const answers = await decide(env.TYPESAFE_API_KEY, { note }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])), { names, addresses });
     if (!answers) return fallback;
     const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
     if (signs.some(({ reason }) => sure[reason] === null)) return fallback;
@@ -393,8 +405,9 @@ export const checkYear = action({
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return unread;
     const asked = { noteSaysPaid: "that money was already paid or a check already sent for this request", visitNotMarked: "that the home visit already took place" };
     const sure = await confidence(env.TYPESAFE_API_KEY,
-      { notes: Object.fromEntries(reading.map((item, index) => [`n${index}`, withoutIdentity(item.note.slice(0, 1000), item)])) },
+      { notes: Object.fromEntries(reading.map((item, index) => [`n${index}`, item.note.slice(0, 1000)])) },
       Object.fromEntries(reading.map((item, index) => [`n${index}`, `Does notes.n${index} say ${asked[item.kind]}? ${plainly}`])),
+      { names: reading.flatMap(item => item.names), addresses: reading.flatMap(item => item.addresses) },
     );
     if (!sure) return unread;
     return { flags: [...flags, ...reading.flatMap(({ kind, record }, index) => (sure[`n${index}`] >= sureEnough ? [{ kind, record, source: "assistant" as const }] : []))], verification: "checked" };
@@ -499,7 +512,7 @@ export const measure = internalAction({
     const rows = await Promise.all(jevSet.map(async item => {
       const draft = prepareRequestDraft(item.note), found = urgentSigns(item.note);
       const confirmSigns = signQuestions(found);
-      const answers = await decide(key, { note: withoutIdentity(item.note, { names: [], addresses: [] }) }, {
+      const answers = await decide(key, { note: item.note }, {
         ...Object.fromEntries(Object.entries(draftQuestions(draft)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
         ...Object.fromEntries(found.map(({ reason }) => [`confirm_${reason}`, { type: "noul" as const, instructions: confirmSigns[reason] }])),
         choose_kind: kindQuestion,

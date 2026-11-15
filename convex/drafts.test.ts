@@ -16,6 +16,25 @@ async function setup() {
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe("reviewable team drafting", () => {
+  test("a team description leaves without the names, phones and addresses typed into it", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = vi.fn<(url: string, init: { body: string }) => Promise<Response>>(async () => Response.json({ answers: {} }));
+    vi.stubGlobal("fetch", fetch);
+    const { signed } = await setup();
+    await signed.action(api.drafts.suggestTeam, { description: "Our Welcome team serves every Sunday from 9am to 10am. We need two people. Ask Rosa Delgado, (239) 555-0142, rosa@sample.example, 14 Sample Street." });
+    const sent = fetch.mock.calls[0][1].body;
+    expect(sent).toContain("every");
+    expect(sent).not.toMatch(/Rosa|Delgado|555-0142|rosa@|14 Sample/);
+  });
+
+  test("there is one door to the model, and it takes identity out of everything it is handed", async () => {
+    // Every path to Jev goes through decide(); a second fetch in this file would be a way around the scrubbing.
+    const source = (await import("./drafts.ts?raw")).default as string;
+    expect(source.match(/\bfetch\(/g)).toHaveLength(1);
+    expect(source).toContain("state: scrubbed(state, known)");
+    expect(source.match(/api\.typesafe\.ai/g)).toHaveLength(1);
+  });
+
   test("requires authentication and works without an AI provider", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "");
     const { t, signed } = await setup();

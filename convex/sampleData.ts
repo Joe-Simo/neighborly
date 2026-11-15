@@ -77,6 +77,9 @@ export const load = internalMutation({
     };
     const callSlots = [[9, 5], [9, 20], [9, 40], [10, 0], [10, 15], [10, 35], [10, 50], [11, 10], [11, 30], [11, 45], [9, 30], [10, 25], [13, 15], [14, 40], [15, 20]] as const;
     const visitSlots = [[9, 30], [10, 0], [10, 0], [10, 30], [10, 30], [11, 0], [11, 0], [14, 0], [16, 30], [17, 30]] as const;
+    // The planned visits tell the whole story of a pair: both said yes, nobody has answered, one answer in.
+    const pairAnswers = [["accepted", "accepted"], ["pending", "pending"], ["accepted", "pending"], ["accepted", "accepted"]] as const;
+    let plannedVisits = 0;
     const familyNames = Array.from({ length: HOUSEHOLDS }, (_, index) => lastNames[index % lastNames.length]);
     for (let index = familyNames.length - 1; index > 0; index--) { const other = look.between(0, index); [familyNames[index], familyNames[other]] = [familyNames[other], familyNames[index]]; }
     const now = Date.now();
@@ -203,8 +206,10 @@ export const load = internalMutation({
           const pair = [visitors[first], visitors[(first + random.between(1, visitors.length - 1)) % visitors.length]];
           const scheduledAt = clock(takenAt + random.between(1, 2) * DAY, visitSlots);
           const done = scheduledAt < now && outcome !== "open";
+          // Counted after this visit is written, so the first planned visit takes the first pair of answers.
+          const planned = done ? 0 : plannedVisits++;
           const hours = random.between(2, 5) / 2, miles = random.between(4, 22);
-          await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, clock(now + random.between(1, 3) * DAY, visitSlots)), status: done ? "completed" : "scheduled", visitors: pair.map((memberId) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0 })), notes: done ? look.pick(visitNotes) : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
+          await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, clock(now + random.between(1, 3) * DAY, visitSlots)), status: done ? "completed" : "scheduled", visitors: pair.map((memberId, seat) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0, ...(done ? {} : { response: pairAnswers[Math.min(planned, pairAnswers.length - 1)][seat] }) })), notes: done ? look.pick(visitNotes) : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
         }
         if (outcome === "paid" && amountApproved && decidedAt && !voucher)
           await entry("expense", decidedAt + DAY, amountApproved, need.kind, payeeName, "", { requestId, neighborId, ...(need.kind === "food" || need.kind === "voucher" ? {} : { checkNumber: String(checkNumber++) }) });
@@ -217,6 +222,9 @@ export const load = internalMutation({
       if (takenAt > now - DAY) break;
       await ctx.db.insert("calls", { churchId, callerName: "No name given", phone: "", note: random.pick(strangers), callback: "none", takenBy: random.pick(staff), takenAt });
     }
+
+    // A call waiting to be returned whose note names two amounts, so a draft from it leaves the amount for a person.
+    await ctx.db.insert("calls", { churchId, callerName: "Denise Walker", phone: "(102) 555-0163", note: "Light bill is $145, and $60 is past due from last month.", callback: "needed", takenBy: staff[2], takenAt: clock(now - DAY, callSlots) });
 
     // This week's returned calls from people who are not a household here, so the help line shows how a call ends.
     const returned = [

@@ -85,30 +85,38 @@ export function KeptPrivate() {
   );
 }
 
-/** The green line that says what changed. It takes focus so a screen reader hears it. */
-export function HelpDone({ children }: { children: string }) {
+/** The green line that says what changed, and the one way on from it. It takes focus so a screen reader hears it. */
+export function HelpDone({
+  children,
+  action,
+}: {
+  children: string;
+  action?: ReactNode;
+}) {
   const line = useRef<HTMLDivElement>(null);
   useEffect(() => line.current?.focus(), [children]);
   return (
     <div className="live-success help-done" role="status" tabIndex={-1} ref={line}>
       <CircleCheck size={22} aria-hidden="true" />
       <span>{children}</span>
+      {action}
     </div>
   );
 }
 
 /** Every neighbor screen opens through here: members see the door, never an error. */
 export function HelpRoom({
-  loading,
   children,
 }: {
-  loading: string;
+  /** No longer read: until the room knows who is asking, the wait is said in the person's own language. */
+  loading?: string;
   children: ReactNode;
 }) {
-  const { data } = useWorkspace();
+  const { data, words } = useWorkspace();
   const allowed = useQuery(api.access.canOpenNeighborRecords, {
     churchId: data.church.id,
   });
-  if (allowed === undefined) return <HelpLoading label={loading} />;
+  if (allowed === undefined)
+    return <HelpLoading label={words.states.opening} />;
   return allowed ? children : <KeptPrivate />;
 }
