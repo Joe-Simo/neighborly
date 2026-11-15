@@ -106,6 +106,19 @@ function useShelf(churchId: ChurchId, wanted: boolean) {
   return answer instanceof Error ? undefined : answer?.items;
 }
 type Shelf = NonNullable<ReturnType<typeof useShelf>>;
+/** The conference's own payees, to suggest as a name is typed. Undefined when the backend has no list yet. */
+function usePayees(churchId: ChurchId) {
+  const asked = useMemo(() => {
+    const payees: Parameters<typeof useQueries>[0] = {
+      payees: { query: api.importExport.payees, args: { churchId } },
+    };
+    return payees;
+  }, [churchId]);
+  const answer:
+    FunctionReturnType<typeof api.importExport.payees> | Error | undefined =
+    useQueries(asked).payees;
+  return answer instanceof Error ? undefined : answer;
+}
 const onShelf = (shelf: Shelf, item: string) =>
   shelf.find((line) => line.item.toLowerCase() === item.trim().toLowerCase());
 const onHand = (line: Shelf[number] | undefined) =>
@@ -296,6 +309,14 @@ export function RequestForm({
   // The shelf's kind that is chosen; null means a kind the shelf does not hold yet, named by hand.
   const [choice, setChoice] = useState<string | null>();
   const shelf = useShelf(churchId, true);
+  const payees = usePayees(churchId);
+  const [payeeKind, setPayeeKind] = useState<keyof typeof payeeLabels>(
+    start?.payeeKind &&
+      start.payeeKind in payeeLabels &&
+      start.payeeKind !== "neighbor"
+      ? start.payeeKind
+      : "landlord",
+  );
   const fromShelf = kind === "voucher" && shelf;
   const asked = start?.voucher?.item ?? "";
   const chosen =
@@ -317,7 +338,7 @@ export function RequestForm({
           kind,
           summary: value("summary"),
           amountRequested,
-          payeeKind: pick(payeeLabels, value("payeeKind")) ?? "vendor",
+          payeeKind,
           payeeName: value("payeeName"),
           ...(fromShelf && {
             voucher: {
@@ -421,10 +442,11 @@ export function RequestForm({
               <NativeSelect
                 name="payeeKind"
                 className="w-full"
-                defaultValue={
-                  start?.payeeKind && start.payeeKind in payeeLabels
-                    ? start.payeeKind
-                    : "landlord"
+                value={payeeKind}
+                onChange={(event) =>
+                  setPayeeKind(
+                    pick(payeeLabels, event.target.value) ?? "vendor",
+                  )
                 }
               >
                 {Object.entries(payeeLabels).map(([kind, label]) => (
@@ -435,7 +457,25 @@ export function RequestForm({
               </NativeSelect>
             </LiveField>
             <LiveField label="Their name">
-              <Input name="payeeName" defaultValue={start?.payeeName} />
+              <Input
+                name="payeeName"
+                list="help-payees"
+                autoComplete="off"
+                defaultValue={start?.payeeName}
+                onChange={(event) => {
+                  // A name from the conference's list brings its kind with it.
+                  const typed = event.target.value.trim().toLowerCase();
+                  const listed = payees?.find(
+                    (payee) => payee.name.toLowerCase() === typed,
+                  );
+                  if (listed) setPayeeKind(listed.kind);
+                }}
+              />
+              <datalist id="help-payees">
+                {payees?.map((payee) => (
+                  <option key={payee.id} value={payee.name} />
+                ))}
+              </datalist>
             </LiveField>
           </div>
           <p className="help-form-note">
