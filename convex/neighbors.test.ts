@@ -55,7 +55,9 @@ describe("who may use neighbor records", () => {
         () => caller.mutation(api.neighbors.showAccounts, { churchId, neighborId: ids.rosa }),
         () => caller.mutation(api.neighbors.addNote, { churchId, neighborId: ids.rosa, body: "Prefers a call after five." }),
       ];
-      expect(attempts).toHaveLength(Object.values(functions).filter((value) => typeof value === "function" && "isPublic" in value).length);
+      // Removing a record is the owner's alone: a member meets the same door, a coordinator a plain no.
+      await expect(caller.mutation(api.neighbors.remove, { churchId, neighborId: ids.earl, typedName: "Darnell Joseph" })).rejects.toThrow(person === ids.member ? refused : "Only an owner can remove a neighbor’s record.");
+      expect(attempts.length + 1).toBe(Object.values(functions).filter((value) => typeof value === "function" && "isPublic" in value).length);
       for (const attempt of attempts) {
         if (person === ids.member) await expect(attempt()).rejects.toThrow(refused);
         else await attempt();
@@ -106,6 +108,84 @@ describe("opening a record", () => {
     expect(record.history).toEqual([...record.history].sort((a, b) => b.at - a.at));
     expect(record.history.find((event) => event.type === "visit")).toMatchObject({ who: ["Marisol Vega", "Thomas Okafor"], note: "Fridge is empty." });
     expect((await as(ids.owner).query(api.neighbors.list, { churchId, search: "esperanza" })).rows).toMatchObject([{ openRequest: { kind: "rent", amount: 45000 }, visitAt: now + 86400000, lastHelpedAt: now - 5000 }]);
+  });
+});
+
+describe("removing a record", () => {
+  test("nothing personal is left in any table, and the money stays in the books with no name", async () => {
+    const { t, ids, as } = await setup();
+    const churchId = ids.church, neighborId = ids.rosa, owner = as(ids.owner);
+    const now = Date.now(), today = new Date(now).toISOString().slice(0, 10);
+    const by = { createdBy: ids.owner.memberId, createdAt: now };
+    await owner.mutation(api.neighbors.saveHousehold, { churchId, neighborId, accounts: [{ kind: "utility", name: "Example Power", accountNumber: "5550100042", phone: "(101) 555-0140" }] });
+    await owner.mutation(api.neighbors.addNote, { churchId, neighborId, body: "Esperanza works nights." });
+    const { callId: tied } = await owner.mutation(api.assistance.recordCall, { churchId, neighborId, callerName: "Esperanza Montoya", phone: "(100) 555-0104", note: "Esperanza is behind on the electric bill.", callback: "needed" });
+    await t.run(async (ctx) => {
+      // A call from the same phone that nobody tied to the record, a nameless one, and someone else's.
+      await ctx.db.insert("calls", { churchId, callerName: "E. Montoya", phone: "1 (100) 555-0104", note: "Called again about the bill.", callback: "none", takenBy: ids.owner.memberId, takenAt: now });
+      await ctx.db.insert("calls", { churchId, callerName: "esperanza montoya", phone: "", note: "Left a message.", callback: "none", takenBy: ids.owner.memberId, takenAt: now });
+      await ctx.db.insert("calls", { churchId, neighborId: ids.earl, callerName: "Darnell Joseph", phone: "(100) 555-0103", note: "Asked about food.", callback: "none", takenBy: ids.owner.memberId, takenAt: now });
+      await ctx.db.insert("requestDrafts", { churchId, callId: tied, kind: "utility", amountRequested: 18600, payeeName: "Example Power", quote: "behind on the electric bill", notes: [], verification: "checked", ...by });
+      const paid = await ctx.db.insert("assistanceRequests", { churchId, neighborId, kind: "utility", summary: "Esperanza’s electric bill.", amountRequested: 18600, amountApproved: 18600, status: "paid", decisionNote: "", payeeKind: "utility", payeeName: "Example Power", source: "person", ...by });
+      const voucher = await ctx.db.insert("assistanceRequests", { churchId, neighborId, kind: "voucher", summary: "A bed for the youngest.", amountRequested: 0, amountApproved: 0, status: "paid", decisionNote: "", payeeKind: "vendor", payeeName: "Sample Thrift Store", source: "person", voucher: { item: "Furniture voucher", quantity: 1 }, ...by });
+      await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 18600, date: today, category: "utility", payee: "Example Power", memo: "For Esperanza Montoya, account ending 0042", checkNumber: "1042", requestId: paid, neighborId, recordedBy: ids.owner.memberId, createdAt: now });
+      await ctx.db.insert("voucherStock", { churchId, date: today, change: -1, item: "Furniture voucher", note: "Given to Esperanza", requestId: voucher, recordedBy: ids.owner.memberId, createdAt: now });
+      await ctx.db.insert("visits", { churchId, neighborId, requestId: paid, scheduledAt: now - 8000, status: "completed", visitors: [{ memberId: ids.owner.memberId, hours: 1, miles: 6 }], notes: "Esperanza showed us the notice.", completedAt: now - 7000, ...by });
+    });
+    await owner.mutation(api.neighbors.open, { churchId, neighborId });
+
+    await expect(owner.mutation(api.neighbors.remove, { churchId, neighborId, typedName: "Esperanza" })).rejects.toThrow("Type the neighbor’s name as it is written on the record.");
+    await owner.mutation(api.neighbors.remove, { churchId, neighborId, typedName: " esperanza  montoya " });
+
+    const left = await t.run(async (ctx) => ({
+      neighbors: await ctx.db.query("neighbors").collect(),
+      neighborNotes: await ctx.db.query("neighborNotes").collect(),
+      calls: await ctx.db.query("calls").collect(),
+      requestDrafts: await ctx.db.query("requestDrafts").collect(),
+      assistanceRequests: await ctx.db.query("assistanceRequests").collect(),
+      visits: await ctx.db.query("visits").collect(),
+      ledgerEntries: await ctx.db.query("ledgerEntries").collect(),
+      voucherStock: await ctx.db.query("voucherStock").collect(),
+      auditEvents: await ctx.db.query("auditEvents").collect(),
+    }));
+    // The other household in the group, and the other group's, are untouched.
+    expect(left.neighbors.map((neighbor) => neighbor.name).sort()).toEqual(["Celeste Greenhalgh", "Darnell Joseph"]);
+    expect(left.calls).toMatchObject([{ callerName: "Darnell Joseph" }]);
+    for (const table of ["neighborNotes", "requestDrafts", "assistanceRequests", "visits"] as const) expect(left[table]).toEqual([]);
+    // No row anywhere still says who she was, where she lives, her phone, her account or what she told us.
+    const everything = JSON.stringify(left).toLowerCase();
+    for (const trace of ["esperanza", "montoya", "5550104", "555-0104", "14 sample st", "0042", "5550100042", "nights", "notice", "behind", neighborId]) {
+      if (trace === neighborId) expect(everything.split(neighborId).length - 1).toBe(left.auditEvents.length);
+      else expect(everything).not.toContain(trace);
+    }
+    // The money and the shelf keep their sums.
+    expect(left.ledgerEntries).toMatchObject([{ amount: 18600, date: today, category: "utility", payee: "Example Power", checkNumber: "1042", memo: "Record removed" }]);
+    expect(left.ledgerEntries[0]).not.toHaveProperty("neighborId");
+    expect(left.ledgerEntries[0]).not.toHaveProperty("requestId");
+    expect(left.voucherStock).toMatchObject([{ change: -1, item: "Furniture voucher", note: "Record removed" }]);
+    expect(left.voucherStock[0]).not.toHaveProperty("requestId");
+    expect(left.auditEvents.map((event) => event.action)).toEqual(["neighbor.opened", "neighbor.removed"]);
+
+    expect((await owner.query(api.neighbors.list, { churchId })).rows.map((row) => row.name)).toEqual(["Darnell Joseph"]);
+    await expect(owner.query(api.neighbors.record, { churchId, neighborId })).rejects.toThrow("Record not found.");
+  });
+
+  test("it waits while a request is undecided or a visit is planned, and never reaches into another group", async () => {
+    const { t, ids, as } = await setup();
+    const churchId = ids.church, neighborId = ids.rosa, owner = as(ids.owner);
+    const args = { churchId, neighborId, typedName: "Esperanza Montoya" };
+    const request = await owner.mutation(api.assistance.createRequest, { churchId, neighborId, kind: "rent", summary: "November rent.", amountRequested: 45000, payeeKind: "landlord", payeeName: "Sample Property Co." });
+    await expect(owner.mutation(api.neighbors.remove, args)).rejects.toThrow("A request for this neighbor is still open. Decide it or close it first.");
+    const visit = await t.run(async (ctx) => {
+      await ctx.db.patch("assistanceRequests", request, { status: "declined" });
+      return ctx.db.insert("visits", { churchId, neighborId, scheduledAt: Date.now() + 86400000, status: "scheduled", visitors: [], notes: "", createdBy: ids.owner.memberId, createdAt: Date.now() });
+    });
+    await expect(owner.mutation(api.neighbors.remove, args)).rejects.toThrow("A home visit to this neighbor is still planned. Cancel it first.");
+    await expect(owner.mutation(api.neighbors.remove, { churchId, neighborId: ids.elsewhere, typedName: "Celeste Greenhalgh" })).rejects.toThrow("Record not found.");
+    await t.run((ctx) => ctx.db.patch("visits", visit, { status: "cancelled" }));
+    await owner.mutation(api.neighbors.remove, args);
+    expect((await owner.query(api.neighbors.record, { churchId, neighborId: ids.earl })).mayRemove).toBe(true);
+    expect((await as(ids.coordinator).query(api.neighbors.record, { churchId, neighborId: ids.earl })).mayRemove).toBe(false);
   });
 });
 

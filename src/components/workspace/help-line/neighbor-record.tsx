@@ -13,6 +13,7 @@ import {
   takingBack,
   DecideForm,
   NeighborForm,
+  RemoveForm,
   RequestForm,
 } from "@/components/workspace/help-line/forms";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -46,7 +47,7 @@ import {
 } from "@/components/workspace/help-line/room";
 
 type Step =
-  | { kind: "request" | "details" | "note" | HomeStep }
+  | { kind: "request" | "details" | "note" | "remove" | HomeStep }
   | { kind: "approve" | "decline" | "change" | "close"; request: HelpRequest };
 
 const back = (
@@ -79,10 +80,15 @@ export function NeighborRecord({
       () => setOpened("missing"),
     );
   }, [open, churchId, neighborId]);
-  const read = useQuery(
+  // While a removal is on its way the record is held as it was and no longer read,
+  // so the screen never asks for a record that has just gone.
+  const [held, setHeld] = useState<Record | null>(null);
+  const [removed, setRemoved] = useState(false);
+  const live = useQuery(
     api.neighbors.record,
-    opened === "yes" ? { churchId, neighborId } : "skip",
+    opened === "yes" && !held && !removed ? { churchId, neighborId } : "skip",
   );
+  const read = removed ? undefined : (held ?? live);
   // The website goes live before the backend does. Until the backend knows about the home,
   // the record shows without it instead of failing.
   const homeReady = Array.isArray(read?.household);
@@ -138,6 +144,21 @@ export function NeighborRecord({
       >
         It may belong to another group, or the link may be incomplete. Nothing
         was opened.
+      </HelpEmpty>
+    );
+  if (removed)
+    return (
+      <HelpEmpty
+        first
+        title="The record is removed."
+        action={
+          <Button variant="outline" asChild>
+            <Link href="/app/neighbors">All neighbors</Link>
+          </Button>
+        }
+      >
+        The money given stays in the year’s totals, with no name. Everything
+        else about this household is gone.
       </HelpEmpty>
     );
   if (!record) return <HelpLoading label="Opening the record" />;
@@ -274,6 +295,24 @@ export function NeighborRecord({
                 `${takingBack(step.request) ? "Voucher taken back" : "Request closed"}. ${neighbor.name}’s record is up to date.`,
               )
             }
+          />
+        </LiveDialog>
+      )}
+      {step?.kind === "remove" && (
+        <LiveDialog
+          title="Remove this record"
+          description={`Everything we keep about ${neighbor.name}, for good.`}
+          onClose={close}
+        >
+          <RemoveForm
+            churchId={churchId}
+            neighbor={neighbor}
+            onBegin={() => setHeld(read ?? null)}
+            onRefused={() => setHeld(null)}
+            onRemoved={() => {
+              setStep(null);
+              setRemoved(true);
+            }}
           />
         </LiveDialog>
       )}
@@ -681,6 +720,18 @@ export function NeighborRecordView({
           ))}
         </div>
       </section>
+
+      {record.mayRemove && (
+        <p className="help-remove">
+          <Button
+            variant="ghost"
+            className="help-remove-open"
+            onClick={() => onStep({ kind: "remove" })}
+          >
+            Remove this record
+          </Button>
+        </p>
+      )}
     </>
   );
 }

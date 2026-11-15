@@ -10,6 +10,8 @@ import schema from "./schema";
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
 const PAGE = 50;
+/** What a ledger or shelf line says in place of its memo once the neighbor it was for is removed. */
+const REMOVED = "Record removed";
 
 const details = {
   name: v.string(),
@@ -158,6 +160,64 @@ export const update = mutation({
   },
 });
 
+/**
+ * Removes a neighbor's record for good. An owner only, and only after typing the neighbor's name.
+ * What goes: the record with its household, money and accounts, its notes, its calls (and calls from the
+ * same phone that were never tied to it), drafts made from those calls, its requests and its home visits.
+ * What stays: the ledger's payments and the voucher shelf's lines, with the neighbor, the request and the
+ * memo taken off, so the year's totals hold and nothing in them says who was helped.
+ * The audit trail keeps who removed a record and when, by the record's id alone.
+ */
+export const remove = mutation({
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), typedName: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { churchId, neighborId, typedName }) => {
+    const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    if (member.role !== "owner") throw new ConvexError("Only an owner can remove a neighbor’s record.");
+    if (nameKey(typedName) !== neighbor.nameKey) throw new ConvexError("Type the neighbor’s name as it is written on the record.");
+
+    const [requests, visits, notes, tied, entries, everyCall] = await Promise.all([
+      ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
+      ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
+      ctx.db.query("neighborNotes").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
+      ctx.db.query("calls").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
+      ctx.db.query("ledgerEntries").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
+      ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+    ]);
+    if (requests.some((request) => request.status === "open" || request.status === "approved"))
+      throw new ConvexError("A request for this neighbor is still open. Decide it or close it first.");
+    if (visits.some((visit) => visit.status === "scheduled"))
+      throw new ConvexError("A home visit to this neighbor is still planned. Cancel it first.");
+
+    // A call that was never tied to the record but is plainly theirs: the same phone, or the same name with no phone.
+    const loose = everyCall.filter((call) => {
+      if (call.neighborId) return false;
+      const phone = phoneKey(call.phone);
+      return phone ? phone === neighbor.phoneKey : nameKey(call.callerName) === neighbor.nameKey;
+    });
+    const calls = [...tied, ...loose];
+    const drafts = (await Promise.all(calls.map((call) => ctx.db.query("requestDrafts").withIndex("by_call", (q) => q.eq("callId", call._id)).collect()))).flat();
+    const byRequest = await Promise.all(requests.map(async (request) => ({
+      entries: await ctx.db.query("ledgerEntries").withIndex("by_request", (q) => q.eq("requestId", request._id)).collect(),
+      shelf: await ctx.db.query("voucherStock").withIndex("by_request", (q) => q.eq("requestId", request._id)).collect(),
+    })));
+
+    const kept = { requestId: undefined, neighborId: undefined, memo: REMOVED };
+    const entryIds = new Set([...entries, ...byRequest.flatMap((found) => found.entries)].map((entry) => entry._id));
+    for (const id of entryIds) await ctx.db.patch("ledgerEntries", id, kept);
+    for (const line of byRequest.flatMap((found) => found.shelf)) await ctx.db.patch("voucherStock", line._id, { requestId: undefined, note: REMOVED });
+
+    for (const draft of drafts) await ctx.db.delete("requestDrafts", draft._id);
+    for (const call of calls) await ctx.db.delete("calls", call._id);
+    for (const note of notes) await ctx.db.delete("neighborNotes", note._id);
+    for (const visit of visits) await ctx.db.delete("visits", visit._id);
+    for (const request of requests) await ctx.db.delete("assistanceRequests", request._id);
+    await ctx.db.delete("neighbors", neighborId);
+    await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.removed", targetId: neighborId, at: Date.now() });
+    return null;
+  },
+});
+
 /** Opening a record is written to the audit trail. The screen calls this, then reads `record`. */
 export const open = mutation({
   args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
@@ -282,9 +342,11 @@ export const record = query({
     calls: v.array(callRow),
     history: v.array(historyEvent),
     openings: v.array(v.object({ who: v.string(), at: v.number() })),
+    /** Only an owner may remove the record; the mutation checks again. */
+    mayRemove: v.boolean(),
   }),
   handler: async (ctx, { churchId, neighborId }) => {
-    const { neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
     const church = await ctx.db.get("churches", churchId);
     const yearStart = DateTime.now().setZone(church?.timeZone ?? "UTC").startOf("year");
     const found = lookups(ctx);
@@ -319,6 +381,7 @@ export const record = query({
       return known;
     };
     return {
+      mayRemove: member.role === "owner",
       openings: await Promise.all(opened.map(async (event) => ({ who: await opener(event.actorId), at: event.at }))),
       neighbor: toRow(neighbor),
       household: (neighbor.household ?? []).map((person) => ({ ...person, age: person.birthYear === undefined ? null : yearStart.year - person.birthYear })),

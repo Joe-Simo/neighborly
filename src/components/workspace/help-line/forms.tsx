@@ -895,3 +895,88 @@ export function NeighborForm({
     </form>
   );
 }
+
+/** The same reading of a name the backend makes, so the button wakes only when the names agree. */
+const nameKey = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+/**
+ * Removes a neighbor's record for good: says what goes and what stays, and asks for the
+ * neighbor's name before the button will work. `onBegin` lets the screen stop reading the
+ * record before it is gone; `onRefused` lets it read again.
+ */
+export function RemoveForm({
+  churchId,
+  neighbor,
+  onBegin,
+  onRefused,
+  onRemoved,
+}: {
+  churchId: ChurchId;
+  neighbor: Pick<Neighbor, "id" | "name">;
+  onBegin: () => void;
+  onRefused: () => void;
+  onRemoved: () => void;
+}) {
+  const remove = useMutation(api.neighbors.remove);
+  const { pending, error, save } = useSave();
+  const [typed, setTyped] = useState("");
+  const agrees = nameKey(typed) === nameKey(neighbor.name);
+  return (
+    <form
+      className="live-form help-form"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        if (!agrees) return;
+        onBegin();
+        const outcome = await save(() =>
+          remove({ churchId, neighborId: neighbor.id, typedName: typed }),
+        );
+        if (outcome.saved) onRemoved();
+        else onRefused();
+      }}
+    >
+      <dl className="help-remove-terms">
+        <div>
+          <dt>What goes</dt>
+          <dd>
+            The record, its calls, notes, addresses and phones, and with them
+            its requests and home visits. This household leaves the year’s
+            count of households helped.
+          </dd>
+        </div>
+        <div>
+          <dt>What stays</dt>
+          <dd>
+            The money given stays in the year’s totals, with no name.
+          </dd>
+        </div>
+      </dl>
+      <LiveField label={`Type ${neighbor.name} to remove the record`}>
+        <Input
+          value={typed}
+          onChange={(event) => setTyped(event.target.value)}
+          autoComplete="off"
+          autoCapitalize="words"
+          spellCheck={false}
+          required
+        />
+      </LiveField>
+      <p className="help-form-note">This cannot be undone.</p>
+      {error && <LiveFailure message={error} />}
+      <div className="live-form-actions">
+        <LiveWaiting when={pending} />
+        <Button
+          type="submit"
+          className="help-remove-confirm"
+          disabled={pending || !agrees}
+        >
+          Remove this record
+        </Button>
+      </div>
+    </form>
+  );
+}
