@@ -176,7 +176,7 @@ export function LivingCourtyard() {
     const scene = new Scene().add(new Mesh(geometry, material));
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    let detail = 1, pace = 1 / 60, strained = 0;
+    let detail = 1, pace = 1 / 60, strained = 0, calm = 0, recoveries = 0;
     const resize = () => {
       renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25) * detail);
       renderer.setSize(frame.clientWidth, frame.clientHeight, false);
@@ -216,7 +216,10 @@ export function LivingCourtyard() {
       // If the graphics card cannot keep pace, the painting is drawn a little smaller rather than letting the journey stutter.
       pace = mix(pace, Math.min(elapsed, .1), .06);
       strained = pace > .0195 ? strained + 1 : 0;
-      if (strained > 40 && detail > .7) { detail -= .15; strained = 0; pace = 1 / 60; resize(); }
+      if (strained > 40 && detail > .7) { detail -= .15; strained = 0; calm = 0; pace = 1 / 60; resize(); }
+      // A busy moment, such as the first load, should not cost sharpness for the whole visit: after a long calm spell the detail is tried again, twice at most.
+      calm = pace < .0175 ? calm + 1 : 0;
+      if (calm > 360 && detail < 1 && recoveries < 2) { detail = Math.min(1, detail + .15); recoveries += 1; calm = 0; resize(); }
       const follow = still ? 1 : 1 - Math.exp(-dt * 2.6);
       const driftX = still ? 0 : Math.sin(seconds * .33) * (pointer.seen ? .08 : .34), driftY = still ? 0 : Math.cos(seconds * .26) * (pointer.seen ? .06 : .2);
       look.x = mix(look.x, still ? 0 : pointer.x + driftX, follow);
@@ -263,7 +266,9 @@ export function LivingCourtyard() {
       renderer.render(scene, camera);
     };
 
-    Promise.all([load("courtyard-quiet-plate-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)]).then(async textures => {
+    // The opening picture comes first: on a slow connection the courtyard waits until the first screen has everything it needs.
+    const opened = new Promise<void>(resolve => { if (document.readyState === "complete") resolve(); else addEventListener("load", () => resolve(), { once: true }); });
+    opened.then(() => Promise.all([load("courtyard-quiet-plate-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)])).then(async textures => {
       if (disposed) { textures.forEach(texture => texture.dispose()); return; }
       [uniforms.uMap.value, uniforms.uDepth.value, uniforms.uNormal.value, uniforms.uFigures.value, uniforms.uIdle.value, uniforms.uAnswer.value] = textures;
       resize();
