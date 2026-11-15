@@ -14,6 +14,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import type { LiveArea } from "@/components/workspace/areas";
+import { readFailure } from "@/components/workspace/failure";
+import { LiveConnection, RoomBoundary } from "@/components/workspace/states";
 import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
@@ -139,11 +141,7 @@ export function LiveWorkspace({
       else if (success) setNotice(success);
       return true;
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message.replace(/^.*?Uncaught Error:\s*/, "").split("\n")[0]
-          : words.notices.failed,
-      );
+      setError(readFailure(cause, words.notices.failed));
       return false;
     } finally {
       setPending(false);
@@ -356,9 +354,12 @@ export function LiveWorkspace({
               {notice}
             </div>
           )}
+          <LiveConnection />
           <div className="live-room" key={area}>
-            <Section />
-            {pagination}
+            <RoomBoundary key={area}>
+              <Section />
+              {pagination}
+            </RoomBoundary>
           </div>
         </main>
       </div>
