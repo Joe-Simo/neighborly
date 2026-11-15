@@ -46,7 +46,7 @@ export function TasksSection() {
                     <h3><span>{task.title}</span></h3>
                     <p>
                       {personName(task.assigneeId)}
-                      {task.dueAt ? ` · Due ${format(task.dueAt)}` : ""}
+                      {task.dueAt ? ` · ${words.tasks.due(format(task.dueAt))}` : ""}
                     </p>
                   </div>
                   {mine ? (
@@ -136,7 +136,7 @@ export function TasksSection() {
                           className="tools-quiet"
                           onClick={() => setChanging(meeting.id)}
                         >
-                          Change reply
+                          {words.tasks.changeReply}
                         </Button>
                       </div>
                     ) : (
