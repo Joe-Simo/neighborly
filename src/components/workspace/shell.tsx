@@ -213,7 +213,7 @@ export function LiveWorkspace({
         <Link href="/" className="live-wordmark">
           kind helps
         </Link>
-        {data.church.sample && <p className="live-sample-mark live-header-sample">Sample · made-up people</p>}
+        {data.church.sample && <p className="live-sample-mark live-header-sample">{words.shell.sampleMark}</p>}
         <div className="live-header-actions">
           <div className="live-header-desk contents">
             {selectChurch}
@@ -232,7 +232,7 @@ export function LiveWorkspace({
               event.preventDefault();
               if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
             }}>
-              <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}</DialogHeader>
+              <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}</DialogHeader>
               <div className="live-menu-rooms">
                 <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={(event) => leave(event, id)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
                 {selectChurch}
@@ -251,7 +251,7 @@ export function LiveWorkspace({
         <nav className="live-nav" aria-label={words.shell.workspace} ref={navRef}>
           <span className="live-nav-marker" aria-hidden="true" />
           <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{data.church.name}</p>
-          {data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}
+          {data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}
           {menuItems.map(({ id, label, icon: Icon }) => (
             <Link
               key={id}
