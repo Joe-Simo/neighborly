@@ -6,7 +6,7 @@ import { languageByCode } from "@/lib/languages";
 import { SAMPLES, toBlocks } from "@/lib/samples";
 import { englishLabel, referencesIn, SCRIPTURE_SOURCES } from "@/lib/scripture";
 import { quotesScripture } from "@/lib/scripture-ref";
-import { Notice, Step } from "./ui";
+import { Notice, type Staging, Step } from "./ui";
 
 type Props = {
   sampleId: string | null;
@@ -17,11 +17,12 @@ type Props = {
   onSample: (id: string) => void;
   onText: (title: string, body: string) => void;
   onGlossary: (g: GlossaryEntry[]) => void;
+  stage: Staging;
 };
 
 const KIND_LABEL: Record<string, string> = { verse: "Bible verse", time: "Time", date: "Date", money: "Money", phone: "Phone", email: "Email", url: "Link", address: "Address", number: "Number" };
 
-export function ComposeStep({ sampleId, title, body, glossary, selected, onSample, onText, onGlossary }: Props) {
+export function ComposeStep({ sampleId, title, body, glossary, selected, onSample, onText, onGlossary, stage }: Props) {
   const blocks = useMemo(() => toBlocks(title, body), [title, body]);
   const facts = useMemo(() => blocks.flatMap((b) => extractFacts(b)), [blocks]);
   const chars = blocks.join("").length;
@@ -35,11 +36,12 @@ export function ComposeStep({ sampleId, title, body, glossary, selected, onSampl
     <Step
       n={2}
       id="announcement"
+      {...stage}
       title="Write the announcement"
       lead="Start from a sample for the fictional Grace Fellowship, or paste your own. Each paragraph becomes a block that gets translated, checked and approved on its own."
     >
       <fieldset>
-        <legend className="text-sm font-semibold">Sample announcements</legend>
+        <legend className="label">Start from a sample</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {SAMPLES.map((s) => (
             <button
@@ -55,30 +57,30 @@ export function ComposeStep({ sampleId, title, body, glossary, selected, onSampl
         </div>
       </fieldset>
 
-      <div className="mt-5 grid grid-cols-1 gap-4">
+      <div className="mt-6 grid grid-cols-1 gap-5">
         <div>
-          <label htmlFor="title" className="mb-1.5 block text-sm font-semibold">
+          <label htmlFor="title" className="label mb-2 block">
             Title
           </label>
-          <input id="title" className="field font-display text-lg" value={title} maxLength={140} onChange={(e) => onText(e.target.value, body)} />
+          <input id="title" className="field font-display rounded-2xl px-4 py-3 text-2xl font-medium tracking-tight sm:text-3xl" value={title} maxLength={140} onChange={(e) => onText(e.target.value, body)} />
         </div>
         <div>
-          <label htmlFor="body" className="mb-1.5 block text-sm font-semibold">
+          <label htmlFor="body" className="label mb-2 block">
             Announcement
           </label>
-          <textarea id="body" className="field min-h-56" value={body} onChange={(e) => onText(title, e.target.value)} aria-describedby="body-help" />
+          <textarea id="body" className="field min-h-64 rounded-2xl px-4 py-3 text-lg leading-relaxed" value={body} onChange={(e) => onText(title, e.target.value)} aria-describedby="body-help" />
           <p id="body-help" className={`mt-1 text-xs ${chars > 4000 ? "font-semibold text-bad" : "text-mute"}`}>
             {blocks.length} blocks, {chars.toLocaleString("en-US")} of 4,000 characters. Leave a blank line between paragraphs. The line &ldquo;{blocks[blocks.length - 1]}&rdquo; is added at the end and translated too.
           </p>
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-line bg-paper p-4">
-        <h3 className="text-sm font-semibold">Facts the code will check in every translation</h3>
+      <div className="mt-6 border-t border-rule pt-5">
+        <h3 className="label text-warn">Facts the code will check in every translation</h3>
         {facts.length ? (
-          <ul className="mt-2 flex flex-wrap gap-2" aria-label="Facts found">
+          <ul className="mt-3 flex flex-wrap gap-2" aria-label="Facts found">
             {facts.map((f, i) => (
-              <li key={i} className="chip border-gold/30 bg-gold-soft text-ink">
+              <li key={i} className="chip rise border-gold/40 bg-gold-soft px-3 py-1 text-sm text-ink" style={{ "--i": i } as React.CSSProperties}>
                 <span className="text-xs font-semibold uppercase tracking-wide text-warn">{KIND_LABEL[f.kind]}</span>
                 {f.raw.replace(/[.,]$/, "")}
               </li>

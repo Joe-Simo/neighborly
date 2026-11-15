@@ -6,10 +6,12 @@
   --ink: #1c2530;
   --mute: #5d6672;
   --line: #e6e0d4;
+  --rule: #d8d0c0;
   --accent: #0e6b66;
   --accent-ink: #0a4f4b;
   --accent-soft: #e3f1ef;
   --gold: #b7791f;
+  --gold-bright: #e0a83e;
   --gold-soft: #fbf0dc;
   --ok: #1d7347;
   --ok-soft: #e3f3e9;
@@ -17,6 +19,10 @@
   --warn-soft: #fdf1da;
   --bad: #a3282b;
   --bad-soft: #fbe6e4;
+  --tint: var(--accent-soft);
+  --tint-ink: var(--accent-ink);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .11 0 0 0 0 .14 0 0 0 0 .18 0 0 0 .075 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @theme inline {
@@ -25,10 +31,12 @@
   --color-ink: var(--ink);
   --color-mute: var(--mute);
   --color-line: var(--line);
+  --color-rule: var(--rule);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
   --color-gold-soft: var(--gold-soft);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
@@ -36,16 +44,31 @@
   --color-warn-soft: var(--warn-soft);
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
+  --color-tint: var(--tint);
+  --color-tint-ink: var(--tint-ink);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans SC", "Noto Sans KR", "Noto Sans Arabic", sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
+html {
+  scroll-behavior: auto;
+}
+
 html,
 body {
-  background: var(--paper);
+  background-color: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-image: var(--grain);
+}
+
+::selection {
+  background: var(--gold-bright);
+  color: var(--ink);
 }
 
 :focus-visible {
@@ -60,6 +83,39 @@ body {
     font-optical-sizing: auto;
   }
 
+  /* Small instrument labels: sources, counters, step numbers. */
+  .label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: clamp(2.7rem, 7.4vw, 7rem);
+    line-height: 0.96;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .hero-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  .stage-title {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: clamp(2rem, 4.6vw, 3.75rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
   .card {
     background: var(--card);
     border: 1px solid var(--line);
@@ -68,6 +124,7 @@ body {
   }
 
   .btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -77,23 +134,30 @@ body {
     border-radius: 999px;
     font-weight: 600;
     font-size: 0.95rem;
-    transition: background-color 150ms, color 150ms, border-color 150ms, transform 150ms;
+    transition: background-color 150ms, color 150ms, border-color 150ms, transform 150ms, box-shadow 300ms var(--ease-out);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
   }
   .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
+  /* The gold edge is the light in the window: it grows when you reach for the button. */
   .btn-primary {
     background: var(--accent);
     color: #fff;
+    box-shadow: inset 0 0 0 0 var(--gold-bright);
   }
-  .btn-primary:hover:not(:disabled) {
+  .btn-primary:hover:not(:disabled),
+  .btn-primary:focus-visible:not(:disabled) {
     background: var(--accent-ink);
+    box-shadow: inset 6px 0 0 0 var(--gold-bright);
   }
   .btn-ghost {
     background: transparent;
     color: var(--ink);
-    border: 1px solid var(--line);
+    border: 1px solid var(--rule);
   }
   .btn-ghost:hover:not(:disabled) {
     border-color: var(--accent);
@@ -107,6 +171,17 @@ body {
     min-height: 36px;
     padding: 0.35rem 0.85rem;
     font-size: 0.85rem;
+  }
+  .btn-lg {
+    min-height: 56px;
+    padding: 0.8rem 1.6rem;
+    font-size: 1.05rem;
+  }
+  .btn .arrow {
+    transition: transform 300ms var(--ease-out);
+  }
+  .btn:hover:not(:disabled) .arrow {
+    transform: translateX(4px);
   }
 
   .field {
@@ -176,14 +251,173 @@ body {
     text-underline-offset: 4px;
   }
 
+  /* Hero: the neighbors' own word for welcome, sized by how many of them there are. */
+  .chorus {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1em 0.9rem;
+    line-height: 1.12;
+  }
+  .chorus-word {
+    display: inline-block;
+    overflow: hidden;
+    padding-block: 0.08em;
+    font-size: calc(var(--s) * clamp(0.62rem, 0.45rem + 0.95vw, 1.3rem));
+    letter-spacing: -0.02em;
+    color: color-mix(in srgb, var(--ink) 34%, transparent);
+  }
+  .chorus-word > span {
+    display: inline-block;
+  }
+  .chorus-word[data-tone="ink"] {
+    color: var(--ink);
+  }
+  .chorus-word[data-tone="accent"] {
+    color: var(--accent);
+  }
+  .chorus-word[data-tone="gold"] {
+    color: var(--gold);
+  }
+
+  /* Neighborhood figure: one dot stands for the same number of neighbors everywhere on the page. */
+  .dotfield {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9px, 1fr));
+    gap: 5px;
+  }
+  .dot {
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 16%, transparent);
+  }
+  .dot[data-layer="other"] {
+    background: var(--accent);
+  }
+  .dot[data-layer="limited"] {
+    background: var(--gold-bright);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold-bright) 28%, transparent);
+  }
+  .dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .dots > i {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+  .dots > i[data-layer="limited"] {
+    background: var(--gold-bright);
+  }
+  .dots > i[data-layer="moe"] {
+    background: transparent;
+    border: 1.5px dotted color-mix(in srgb, var(--ink) 38%, transparent);
+  }
+
+  /* Language worlds */
+  .world {
+    background: var(--card);
+    border: 1px solid color-mix(in srgb, var(--tint-ink) 22%, var(--line));
+    border-radius: 22px;
+    overflow: hidden;
+  }
+  .world-head {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background-color: var(--tint);
+    background-image: var(--grain);
+    color: var(--tint-ink);
+  }
+  .world-mark {
+    position: absolute;
+    z-index: -1;
+    inset-inline-end: -0.04em;
+    bottom: -0.3em;
+    font-size: clamp(6rem, 17vw, 13rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+    color: color-mix(in srgb, var(--tint-ink) 11%, transparent);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .signature {
+    position: relative;
+    display: inline-block;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: var(--ok);
+    padding-bottom: 0.35rem;
+  }
+  .signature svg {
+    position: absolute;
+    left: -4px;
+    right: -10px;
+    bottom: -2px;
+    width: calc(100% + 14px);
+    height: 10px;
+    overflow: visible;
+  }
+  .signature path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+
+  /* Paper sheets for the finished pieces. */
+  .sheet {
+    background-color: #fffdf8;
+    background-image: var(--grain);
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(28, 37, 48, 0.08), 0 18px 40px -22px rgba(28, 37, 48, 0.45);
+    transition: transform 500ms var(--ease-out), box-shadow 500ms var(--ease-out);
+  }
+  .sheet:nth-child(odd) {
+    transform: rotate(-0.7deg);
+  }
+  .sheet:nth-child(even) {
+    transform: rotate(0.6deg);
+  }
+  .sheet:hover,
+  .sheet:focus-within {
+    transform: rotate(0deg) translateY(-4px);
+    box-shadow: 0 1px 1px rgba(28, 37, 48, 0.08), 0 28px 50px -24px rgba(28, 37, 48, 0.5);
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: 18.5cqw;
+    white-space: nowrap;
+    line-height: 0.8;
+    letter-spacing: -0.05em;
+  }
+
+  .shimmer {
+    background: #f1ede5;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     .rise {
-      animation: rise 260ms ease-out both;
+      animation: rise 500ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 70ms);
     }
     @keyframes rise {
       from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(14px);
       }
     }
     .shimmer {
@@ -198,6 +432,114 @@ body {
     }
     .bar {
       transition: width 500ms ease-out;
+    }
+
+    /* Lines that rise out of their own baseline. */
+    .lift {
+      display: block;
+      overflow: hidden;
+      padding-bottom: 0.12em;
+      margin-bottom: -0.12em;
+    }
+    .lift > span {
+      display: block;
+      animation: lift 900ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 110ms);
+    }
+    .chorus-word > span {
+      animation: lift 800ms var(--ease-out) both;
+      animation-delay: calc(240ms + var(--i, 0) * 55ms);
+    }
+    @keyframes lift {
+      from {
+        transform: translateY(115%);
+      }
+    }
+
+    .dot,
+    .dots > i {
+      transition: background-color 500ms ease, box-shadow 500ms ease, opacity 400ms ease, transform 500ms var(--ease-out);
+      transition-delay: calc(var(--d, 0) * 1ms);
+    }
+    .dotfield[data-phase="0"] .dot {
+      opacity: 0;
+      transform: scale(0.2);
+    }
+    .caption {
+      transition: opacity 600ms ease, transform 700ms var(--ease-out);
+    }
+    .caption[data-on="false"] {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    /* The review arriving: translation wipes in, facts lock one by one, the back-translation follows. */
+    .play .wipe {
+      animation: wipe 800ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 260ms);
+    }
+    @keyframes wipe {
+      from {
+        clip-path: inset(0 100% 0 0);
+        background-color: var(--tint);
+      }
+      60% {
+        background-color: var(--tint);
+      }
+      to {
+        clip-path: inset(0 0 0 0);
+        background-color: transparent;
+      }
+    }
+    .play .follow {
+      animation: rise 600ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 260ms + 450ms);
+    }
+    .play .lock {
+      animation: lock 480ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 260ms + 700ms + var(--k, 0) * 90ms);
+    }
+    @keyframes lock {
+      from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.9);
+      }
+      70% {
+        transform: translateY(1px) scale(1.04);
+      }
+    }
+    .sweep {
+      background: linear-gradient(100deg, transparent 0%, transparent 38%, var(--tint) 50%, transparent 62%, transparent 100%);
+      background-size: 250% 100%;
+      animation: sweep 2.2s linear infinite;
+    }
+    @keyframes sweep {
+      from {
+        background-position: 120% 0;
+      }
+      to {
+        background-position: -130% 0;
+      }
+    }
+    .signature path {
+      animation: sign 700ms var(--ease-out) 150ms both;
+    }
+    @keyframes sign {
+      from {
+        stroke-dashoffset: 1;
+      }
+    }
+    .signature {
+      animation: rise 400ms var(--ease-out) both;
+    }
+    .street .window {
+      animation: glow 900ms ease both;
+      animation-delay: calc(900ms + var(--i, 0) * 130ms);
+    }
+    @keyframes glow {
+      from {
+        fill: transparent;
+      }
     }
   }
 }

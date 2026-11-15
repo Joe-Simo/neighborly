@@ -2,15 +2,16 @@
 import { useState } from "react";
 import type { Gate } from "@/lib/approval";
 import type { PublishedLanguage } from "@/lib/publish";
+import { languageTint } from "@/lib/language-style";
 import { attribution } from "@/lib/scripture";
-import { Step } from "./ui";
+import { type Staging, Step } from "./ui";
 
-type Props = { gate: Gate; blockedReason: string | null; snippet: string | null; email: string | null; preview: PublishedLanguage[] };
+type Props = { gate: Gate; blockedReason: string | null; snippet: string | null; email: string | null; preview: PublishedLanguage[]; stage: Staging; onReview: (code: string) => void };
 type Tab = "preview" | "flyer" | "web" | "email";
 
 const STATE_TEXT = { pending: "waiting for approval", stale: "edited after approval", "needs-flag-check": "flags not confirmed" } as const;
 
-export function PublishStep({ gate, blockedReason, snippet, email, preview }: Props) {
+export function PublishStep({ gate, blockedReason, snippet, email, preview, stage, onReview }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
   const [copied, setCopied] = useState<string | null>(null);
   const ready = gate.ready && !blockedReason && snippet && email;
@@ -37,7 +38,8 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
     <Step
       n={4}
       id="publish"
-      title="Publish"
+      {...stage}
+      title={ready ? "Ready for your neighbors" : "Publish"}
       lead="Export opens only when a named reviewer has approved every block in every language, for the exact wording on screen."
       aside={
         <span className={`chip ${ready ? "chip-ok" : "chip-neutral"} text-sm tabular-nums`}>
@@ -46,7 +48,7 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
       }
     >
       {!ready ? (
-        <div className="rounded-2xl border border-dashed border-line bg-paper p-5">
+        <div className="rounded-2xl border border-dashed border-rule p-6">
           <p className="font-semibold">
             <span aria-hidden="true">🔒 </span>Export is locked.
           </p>
@@ -57,9 +59,9 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
               <ul className="mt-2 grid gap-1 text-sm sm:grid-cols-2">
                 {gate.waiting.slice(0, 12).map((w) => (
                   <li key={`${w.code}-${w.block}`}>
-                    <a className="underline decoration-line underline-offset-2 hover:decoration-accent" href={`#lang-${w.code}`}>
+                    <button type="button" className="rounded underline decoration-rule underline-offset-4 hover:decoration-accent" onClick={() => onReview(w.code)}>
                       {w.name}, block {w.block + 1}
-                    </a>{" "}
+                    </button>{" "}
                     <span className="text-mute">({STATE_TEXT[w.state]})</span>
                   </li>
                 ))}
@@ -96,11 +98,12 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
           </div>
           <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} className="mt-4">
             {tab === "preview" ? (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-8 px-1 py-4 md:grid-cols-2 lg:gap-10">
                 {preview.map((p) => (
-                  <section key={p.code} lang={p.code} dir={p.dir} className="rounded-2xl border border-line bg-white p-5">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-mute">{p.native}</p>
-                    <h3 className="font-display mt-1 text-xl font-semibold">{p.title}</h3>
+                  <section key={p.code} lang={p.code} dir={p.dir} className="sheet p-7 sm:p-9" style={languageTint(p.code)}>
+                    <div className="h-1.5 w-16 rounded-full bg-tint-ink" aria-hidden="true" />
+                    <p className="label mt-5 text-tint-ink">{p.native}</p>
+                    <h3 className="font-display mt-2 text-3xl leading-tight font-medium tracking-tight">{p.title}</h3>
                     {p.paragraphs.map((b, i) => (
                       <p key={i} className="mt-2 leading-relaxed">
                         {b}
@@ -128,7 +131,7 @@ export function PublishStep({ gate, blockedReason, snippet, email, preview }: Pr
                         href={`/flyer?lang=${encodeURIComponent(p.code)}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex min-h-14 items-center justify-between gap-3 rounded-2xl border border-line bg-white px-4 py-3 font-semibold hover:border-accent"
+                        className="sheet flex min-h-24 items-end justify-between gap-3 px-5 py-4 font-semibold"
                       >
                         <span>
                           {p.name}{" "}

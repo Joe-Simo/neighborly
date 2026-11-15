@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { blockState } from "@/lib/approval";
 import type { GlossaryEntry } from "@/lib/glossary";
+import { isLatin, languageTint } from "@/lib/language-style";
 import { languageByCode } from "@/lib/languages";
 import { attribution, passagesFor } from "@/lib/scripture";
 import { type LangDraft, sameBlocks, viewBlock } from "@/lib/workspace";
@@ -37,6 +38,13 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
   const approved = states.filter((s) => s === "approved").length;
   const needsBack = draft.blocks.some((b, i) => !views[i].backCurrent && b.text.trim());
   const headingId = `lang-${draft.code}`;
+  // Play the arrival once, when a translation lands while you watch. A saved one just sits there.
+  const was = useRef(draft.status);
+  const [play, setPlay] = useState(false);
+  useEffect(() => {
+    if (was.current === "loading" && draft.status === "ready") setPlay(true);
+    was.current = draft.status;
+  }, [draft.status]);
 
   async function recheck() {
     setRechecking(true);
@@ -51,34 +59,46 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
   }
 
   return (
-    <article aria-labelledby={headingId} className="rise overflow-hidden rounded-2xl border border-line bg-white">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-paper px-4 py-3 sm:px-5">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h3 id={headingId} className="font-display text-xl font-semibold">
-            {lang.name}{" "}
-            <span lang={lang.code} dir={lang.dir} className="font-sans text-base font-medium text-mute">
-              {lang.native}
-            </span>
-          </h3>
-          {draft.status === "ready" ? <OriginBadge draft={draft} /> : null}
+    <article aria-labelledby={headingId} className="world rise scroll-mt-32" style={languageTint(draft.code)}>
+      <header className="world-head px-5 pt-5 pb-6 sm:px-8 sm:pt-7 sm:pb-8">
+        <span aria-hidden="true" lang={lang.code} className="world-mark">
+          {lang.native}
+        </span>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <p className="label">{lang.name}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            {draft.status === "ready" ? (
+              <span className={`chip tabular-nums ${approved === draft.blocks.length ? "chip-ok" : "bg-white/70 text-tint-ink"}`}>
+                {approved} of {draft.blocks.length} signed
+              </span>
+            ) : null}
+            <button type="button" className="btn btn-sm border border-tint-ink/30 text-tint-ink hover:bg-white/60" onClick={onRemove} aria-label={`Remove ${lang.name}`}>
+              Remove
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {draft.status === "ready" ? (
-            <span className={`chip ${approved === draft.blocks.length ? "chip-ok" : "chip-neutral"} tabular-nums`}>
-              {approved} of {draft.blocks.length} approved
-            </span>
-          ) : null}
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onRemove} aria-label={`Remove ${lang.name}`}>
-            Remove
-          </button>
-        </div>
+        <h3 id={headingId} className="mt-6">
+          <span className="sr-only">{lang.name}: </span>
+          <span lang={lang.code} dir={lang.dir} className={`block text-5xl leading-[1.05] tracking-tight sm:text-7xl ${isLatin(lang.native) ? "font-display font-medium" : "font-bold"}`}>
+            {lang.native}
+          </span>
+        </h3>
+        <p lang={lang.code} dir={lang.dir} className={`mt-3 text-xl ${isLatin(lang.welcome) ? "font-display italic" : ""}`}>
+          {lang.welcome}
+        </p>
+        {draft.status === "ready" ? (
+          <div className="mt-4">
+            <OriginBadge draft={draft} />
+          </div>
+        ) : null}
       </header>
 
-      <div className="p-4 sm:p-5">
+      <div className="p-5 sm:p-8">
         {draft.status === "idle" || draft.status === "error" ? (
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" className="btn btn-primary" onClick={onTranslate} disabled={translateDisabled}>
               Translate into {lang.name}
+              <span aria-hidden="true" className="arrow">→</span>
             </button>
             {draft.status === "error" ? (
               <div className="w-full" aria-live="polite">
@@ -91,7 +111,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
         ) : null}
 
         {draft.status === "loading" ? (
-          <Progress draft={draft} name={lang.name} />
+          <Progress draft={draft} name={lang.name} source={source} />
         ) : null}
 
         {draft.status === "ready" ? (
@@ -117,7 +137,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
 
             <div className="mb-5 flex flex-wrap items-end gap-3">
               <div className="w-full sm:w-auto">
-                <label htmlFor={`reviewer-${draft.code}`} className="mb-1.5 block text-sm font-semibold">
+                <label htmlFor={`reviewer-${draft.code}`} className="label mb-2 block">
                   Reviewer fluent in {lang.name}
                 </label>
                 <input
@@ -139,23 +159,23 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
               </div>
             </div>
 
-            <div className="hidden grid-cols-3 gap-4 px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-mute lg:grid">
+            <div className="label hidden grid-cols-3 gap-6 border-b border-rule pb-3 text-mute lg:grid">
               <span>English</span>
               <span>{lang.name}</span>
               <span>Back into English, by a separate AI call</span>
             </div>
-            <ol className="grid grid-cols-1 gap-4">
+            <ol className={`grid grid-cols-1 ${play ? "play" : ""}`}>
               {draft.blocks.map((b, i) => {
                 const v = views[i];
                 const state = states[i];
                 const isEditing = editing === i;
                 return (
-                  <li key={i} className={`rounded-xl border p-3.5 sm:p-4 ${state === "approved" ? "border-ok/40 bg-ok-soft/40" : state === "stale" || state === "needs-flag-check" ? "border-warn/40" : "border-line"}`}>
+                  <li key={i} className={`border-b border-rule py-6 transition-colors duration-500 ${state === "approved" ? "bg-ok-soft/30" : ""} -mx-5 px-5 sm:-mx-8 sm:px-8`} style={{ "--i": i } as React.CSSProperties}>
                     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-mute">{BLOCK_LABEL(i, draft.blocks.length)}</span>
+                      <span className="label text-mute">{BLOCK_LABEL(i, draft.blocks.length)}</span>
                       <StateTag state={state} />
                     </div>
-                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-4">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
                       <div>
                         <span className="text-xs font-semibold text-mute lg:hidden">English</span>
                         <p className="leading-relaxed">
@@ -175,7 +195,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
                             autoFocus
                           />
                         ) : (
-                          <p lang={lang.code} dir={lang.dir} className="text-lg leading-relaxed">
+                          <p lang={lang.code} dir={lang.dir} className={`wipe leading-relaxed ${i === 0 ? "font-display text-2xl font-medium tracking-tight" : "text-lg"}`}>
                             {b.text}
                           </p>
                         )}
@@ -184,16 +204,16 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
                       <div>
                         <span className="text-xs font-semibold text-mute lg:hidden">Back into English</span>
                         {v.backCurrent ? (
-                          <p className="leading-relaxed text-mute italic">{b.back}</p>
+                          <p className="follow leading-relaxed text-mute italic">{b.back}</p>
                         ) : (
                           <p className="text-sm text-warn">No back-translation for this wording yet. Use &ldquo;Back-translate my edits&rdquo;, or read it closely.</p>
                         )}
                       </div>
                     </div>
 
-                    <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Checks">
+                    <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Checks">
                       {v.flags.facts.map((c, k) => (
-                        <li key={`f${k}`}>
+                        <li key={`f${k}`} className="lock" style={{ "--k": k } as React.CSSProperties}>
                           <StatusChip status={c.status} title={c.note}>
                             {c.fact.raw.replace(/[.,]$/, "")}
                             {c.status !== "ok" ? `: ${c.note}` : ""}
@@ -233,14 +253,20 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
                       ) : null}
                     </ul>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+                    <div className="mt-5 flex flex-wrap items-center gap-2">
                       {state === "approved" ? (
                         <>
-                          <span className="text-sm text-ok">
-                            <span aria-hidden="true">✓ </span>Approved by {b.review.reviewer}
+                          <span className="mr-2 inline-flex flex-wrap items-baseline gap-x-3">
+                            <span className="label text-ok">Signed by</span>
+                            <span className="signature">
+                              {b.review.reviewer}
+                              <svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
+                                <path pathLength={1} d="M1 7C18 2 30 9 47 5S78 1 99 6" />
+                              </svg>
+                            </span>
                           </span>
                           <button type="button" className="btn btn-ghost btn-sm" onClick={() => onUnapprove(i)}>
-                            Undo approval
+                            Undo
                           </button>
                         </>
                       ) : (
@@ -261,7 +287,7 @@ export function LanguageCard({ draft, source, glossary, onReviewer, onEdit, onFl
                               if (!err) setEditing(null);
                             }}
                           >
-                            Approve this block
+                            Sign this block
                           </button>
                         </>
                       )}
@@ -291,7 +317,7 @@ function OriginBadge({ draft }: { draft: LangDraft }) {
 }
 
 function StateTag({ state }: { state: string }) {
-  if (state === "approved") return <StatusChip status="ok">Approved</StatusChip>;
+  if (state === "approved") return <StatusChip status="ok">Signed</StatusChip>;
   if (state === "stale") return <StatusChip status="check">Edited after approval</StatusChip>;
   if (state === "needs-flag-check") return <StatusChip status="check">Flags not confirmed</StatusChip>;
   return <StatusChip status="neutral">Waiting for review</StatusChip>;
@@ -304,7 +330,7 @@ const PHASES = [
 ] as const;
 
 /** Free models often take 20 to 60 seconds. Show the real step from the server, the time so far, and an honest estimate. */
-function Progress({ draft, name }: { draft: LangDraft; name: string }) {
+function Progress({ draft, name, source }: { draft: LangDraft; name: string; source: string[] }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -318,7 +344,7 @@ function Progress({ draft, name }: { draft: LangDraft; name: string }) {
   return (
     <div role="status" aria-live="polite" className="grid grid-cols-1 gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="font-semibold">
+        <p className="font-display text-2xl font-medium tracking-tight">
           {phase === "queued" ? `${name} is waiting for the language ahead of it to finish.` : `${PHASES[step].label} into ${name}...`}
         </p>
         {phase !== "queued" ? <span className="text-sm text-mute tabular-nums">{secs} s so far</span> : null}
@@ -337,11 +363,18 @@ function Progress({ draft, name }: { draft: LangDraft; name: string }) {
           <span aria-hidden="true">3</span> Code checks run in your browser
         </li>
       </ol>
-      <div className="h-2 overflow-hidden rounded-full bg-line" aria-hidden="true">
-        <div className="bar h-full rounded-full bg-accent" style={{ width: `${est}%` }} />
+      <div className="h-1.5 overflow-hidden rounded-full bg-line" aria-hidden="true">
+        <div className="bar h-full rounded-full bg-tint-ink" style={{ width: `${est}%` }} />
       </div>
       <p className="text-xs text-mute">The bar is an estimate. Free AI models usually take 20 to 60 seconds for both calls. You can keep working on other languages.</p>
-      <div className="shimmer h-16 rounded-xl" aria-hidden="true" />
+      {/* The English waits here; the light passing over it is the work being done. */}
+      <div aria-hidden="true" className="mt-2 grid gap-3 border-t border-rule pt-4">
+        {source.slice(0, 4).map((t, i) => (
+          <p key={i} className={`sweep rounded px-1 text-mute ${i === 0 ? "font-display text-xl" : "line-clamp-2"}`} style={{ animationDelay: `${i * 180}ms` }}>
+            {t}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }

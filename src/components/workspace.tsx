@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { approve, unapprove } from "@/lib/approval";
 import type { GlossaryEntry } from "@/lib/glossary";
 import { textHash } from "@/lib/hash";
@@ -10,9 +10,11 @@ import { quotesScripture } from "@/lib/scripture-ref";
 import { type BlockDraft, initialWorkspace, type LangDraft, loadWorkspace, publishState, sameBlocks, saveWorkspace, viewBlock, type Workspace as WS } from "@/lib/workspace";
 import { ComposeStep } from "./compose-step";
 import { LanguageCard } from "./language-card";
-import { NeighborhoodStep } from "./neighborhood-step";
+import { Hero } from "./hero";
+import { NeighborhoodStep, ZipForm } from "./neighborhood-step";
 import { PublishStep } from "./publish-step";
-import { Step } from "./ui";
+import { fmt, Rail, type StageId, Step } from "./ui";
+import { extractFacts } from "@/lib/checks";
 
 type Status = { live: boolean; enabled: boolean; resting: boolean; callsToday: number; cap: number; store?: "global" | "instance" };
 
@@ -50,6 +52,27 @@ export function Workspace() {
   const [w, setW] = useState<WS>(loadWorkspace);
   const [status, setStatus] = useState<Status | null>(null);
   const queue = useRef<Promise<void>>(Promise.resolve());
+  // One step on stage at a time. A link such as /#publish, or saved work, decides where you come back in.
+  const [stage, setStage] = useState<StageId>(() => {
+    const fromHash = STAGE_IDS.indexOf(typeof window === "undefined" ? "" : window.location.hash.slice(1)) + 1;
+    if (fromHash) return fromHash as StageId;
+    if (!w.neighborhood && !w.selected.length) return 1;
+    return Object.values(w.langs).some((l) => l.status === "ready") ? 3 : w.neighborhood && !w.selected.length ? 1 : 2;
+  });
+  const [seen, setSeen] = useState<StageId>(stage);
+  const target = useRef<string | null>(typeof window !== "undefined" && window.location.hash ? STAGE_IDS[stage - 1] : null);
+  const go = useCallback((n: StageId, anchor?: string) => {
+    target.current = anchor ?? STAGE_IDS[n - 1];
+    setStage(n);
+    setSeen((s) => (n > s ? n : s));
+  }, []);
+  useEffect(() => {
+    const id = target.current;
+    if (!id) return;
+    target.current = null;
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" }));
+  });
 
   useEffect(() => saveWorkspace(w), [w]);
   useEffect(() => {
@@ -148,36 +171,55 @@ export function Workspace() {
     preview = published(source, reviews);
   }
   const otherLangs = TARGET_LANGUAGES.filter((l) => !w.selected.includes(l.code));
+  const names = w.selected.map((c) => languageByCode(c)?.name ?? c);
+  const facts = source.reduce((n, b) => n + extractFacts(b).length, 0);
+  const done: Record<StageId, boolean> = {
+    1: w.selected.length > 0,
+    2: seen > 2 && source.length > 1,
+    3: gate.ready && !blockedReason,
+    4: false,
+  };
+  const staging = (n: StageId) => ({ open: stage === n, done: done[n], onOpen: () => go(n) });
+  const onward = (n: StageId, label: string, note?: string) => (
+    <>
+      <button type="button" className="btn btn-primary btn-lg" onClick={() => go(n)}>
+        {label}
+        <span aria-hidden="true" className="arrow">→</span>
+      </button>
+      {note ? <span className="text-sm text-mute">{note}</span> : null}
+    </>
+  );
 
   return (
-    <div className="grid grid-cols-1 gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <StatusPill status={status} />
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={() => {
-            if (window.confirm("Start over? This clears the languages, translations and approvals saved in this browser.")) setW(initialWorkspace());
+    <div>
+      <Hero data={w.neighborhood} selected={w.selected}>
+        <ZipForm
+          zip={w.zip}
+          data={w.neighborhood}
+          onZip={(zip) => setW((s) => ({ ...s, zip }))}
+          onData={(d, suggested) => {
+            setW((s) => {
+              let next: WS = { ...s, neighborhood: d, selected: suggested };
+              for (const c of suggested) next = ensureLang(next, c);
+              return next;
+            });
+            go(1);
           }}
-        >
-          Start over
-        </button>
-      </div>
+        />
+      </Hero>
 
-      <NeighborhoodStep
-        zip={w.zip}
-        data={w.neighborhood}
-        selected={w.selected}
-        onZip={(zip) => setW((s) => ({ ...s, zip }))}
-        onData={(d, suggested) =>
-          setW((s) => {
-            let next: WS = { ...s, neighborhood: d, selected: suggested };
-            for (const c of suggested) next = ensureLang(next, c);
-            return next;
-          })
-        }
-        onToggle={toggle}
-      />
+      <Rail stage={stage} done={done} onGo={go} />
+
+      <Step
+        n={1}
+        id="neighbors"
+        title="Who are your neighbors?"
+        {...staging(1)}
+        summary={w.neighborhood ? `${w.neighborhood.zip} · ${names.length ? names.join(", ") : "no languages chosen yet"}` : names.length ? names.join(", ") : "Start with a ZIP code"}
+        next={w.selected.length ? onward(2, "Write the announcement", `${names.length} ${names.length === 1 ? "language" : "languages"} chosen`) : undefined}
+      >
+        <NeighborhoodStep data={w.neighborhood} selected={w.selected} onToggle={toggle} />
+      </Step>
 
       <ComposeStep
         sampleId={w.sampleId}
@@ -191,16 +233,24 @@ export function Workspace() {
         }}
         onText={(title, body) => setW((s) => ({ ...s, title, body, sampleId: SAMPLES.find((x) => x.title === title && x.body === body)?.id ?? null }))}
         onGlossary={(glossary) => setW((s) => ({ ...s, glossary }))}
+        stage={{
+          ...staging(2),
+          summary: `${w.title || "Untitled"} · ${source.length} blocks, ${facts} ${facts === 1 ? "fact" : "facts"} to check`,
+          next: onward(3, "Translate and review"),
+        }}
       />
 
       <Step
         n={3}
         id="review"
+        {...staging(3)}
+        summary={active.length ? `${fmt(gate.approved)} of ${fmt(gate.total)} blocks signed in ${active.length} ${active.length === 1 ? "language" : "languages"}` : "No languages yet"}
+        next={done[3] ? onward(4, "Publish", "Every block is signed.") : undefined}
         title="Translate and review"
         lead="The AI translates each block using your glossary. A second, separate call turns it back into English without seeing the original, and code checks every time, date, number, phone and address. A fluent volunteer approves each block."
       >
         {active.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-line bg-paper p-5 text-center">
+          <div className="rounded-2xl border border-dashed border-rule p-6 text-center">
             <p className="font-semibold">No languages yet</p>
             <p className="mt-1 text-sm text-mute">Look up a ZIP code in step 1 to get suggestions, or add a language below.</p>
           </div>
@@ -221,7 +271,7 @@ export function Workspace() {
           </div>
         )}
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <label htmlFor="add-lang" className="text-sm font-semibold">
+          <label htmlFor="add-lang" className="label">
             Add a language
           </label>
           <select
@@ -240,7 +290,7 @@ export function Workspace() {
             ))}
           </select>
         </div>
-        <div className="mt-6 grid grid-cols-1 gap-6">
+        <div className="mt-8 grid grid-cols-1 gap-10">
           {active.map((l) => (
             <LanguageCard
               key={l.code}
@@ -261,10 +311,28 @@ export function Workspace() {
         </div>
       </Step>
 
-      <PublishStep gate={gate} blockedReason={blockedReason} snippet={snippet} email={email} preview={preview} />
+      <PublishStep gate={gate} blockedReason={blockedReason} snippet={snippet} email={email} preview={preview} stage={staging(4)} onReview={(code) => go(3, `lang-${code}`)} />
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule pt-5">
+        <StatusPill status={status} />
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => {
+            if (window.confirm("Start over? This clears the languages, translations and approvals saved in this browser.")) {
+              setW(initialWorkspace());
+              go(1, "main");
+            }
+          }}
+        >
+          Start over
+        </button>
+      </div>
     </div>
   );
 }
+
+const STAGE_IDS = ["neighbors", "announcement", "review", "publish"];
 
 function StatusPill({ status }: { status: Status | null }) {
   if (!status) return <span className="chip chip-neutral">Checking the AI service...</span>;

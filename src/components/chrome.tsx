@@ -13,14 +13,16 @@ export function Logo() {
 export function SiteHeader() {
   return (
     <header className="border-b border-line bg-paper/90 backdrop-blur supports-[backdrop-filter]:bg-paper/75 sticky top-0 z-30">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5 rounded-lg">
           <Logo />
-          <span className="font-display text-xl font-semibold tracking-tight">Neighborly</span>
+          <span className="font-display text-xl font-semibold tracking-tight max-[380px]:sr-only">Neighborly</span>
         </Link>
         <nav aria-label="Site" className="flex items-center gap-1 text-sm font-medium">
           <Link href="/" className="rounded-full px-3 py-2 hover:bg-accent-soft">Workspace</Link>
-          <Link href="/limits" className="rounded-full px-3 py-2 hover:bg-accent-soft">Limits and safeguards</Link>
+          <Link href="/limits" className="rounded-full px-3 py-2 hover:bg-accent-soft">
+            Safeguards<span className="sr-only"> and limits</span>
+          </Link>
           <a href="https://github.com/Joe-Simo/neighborly" className="hidden rounded-full px-3 py-2 hover:bg-accent-soft sm:inline">Code</a>
         </nav>
       </div>
@@ -30,16 +32,24 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-line">
-      <div className="mx-auto grid max-w-6xl gap-4 px-4 py-8 text-sm text-mute sm:grid-cols-3 sm:px-6">
+    <footer className="mt-24 overflow-hidden border-t border-rule">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 pt-12 text-sm leading-relaxed text-mute sm:grid-cols-3 sm:px-8">
         <p>
-          <strong className="text-ink">AI use:</strong> translations and back-translations come from free open models on OpenRouter. A fluent person approves every block before anything can be exported.
+          <span className="label mb-2 block text-ink">AI use</span>
+          Translations and back-translations come from free open models on OpenRouter. A fluent person approves every block before anything can be exported.
         </p>
         <p>
-          <strong className="text-ink">Data:</strong> language counts are US Census ACS 2024 5-year estimates (table C16001). Your text stays in your browser, except when it is sent to be translated.
+          <span className="label mb-2 block text-ink">Data</span>
+          Language counts are US Census ACS 2024 5-year estimates (table C16001). Your text stays in your browser, except when it is sent to be translated.
         </p>
         <p>
-          <strong className="text-ink">Sample data:</strong> Grace Fellowship, its address, phone and email are fictional. No real church member data is used. Built for the AI for Church Hackathon 2026. MIT license.
+          <span className="label mb-2 block text-ink">Sample data</span>
+          Grace Fellowship, its address, phone and email are fictional. No real church member data is used. Built for the AI for Church Hackathon 2026. MIT license.
+        </p>
+      </div>
+      <div aria-hidden="true" className="mx-auto mt-14 max-w-7xl px-4 sm:px-8">
+        <p className="@container text-accent select-none">
+          <span className="wordmark block">Neighborly</span>
         </p>
       </div>
     </footer>

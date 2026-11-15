@@ -17,26 +17,28 @@ export type TargetLanguage = {
   code: string;
   name: string;
   native: string;
+  /** "Welcome" as a church would write it on its door. */
+  welcome: string;
   dir: "ltr" | "rtl";
   group: CensusGroupId;
 };
 
 export const TARGET_LANGUAGES: TargetLanguage[] = [
-  { code: "es", name: "Spanish", native: "Español", dir: "ltr", group: "spanish" },
-  { code: "ht", name: "Haitian Creole", native: "Kreyòl ayisyen", dir: "ltr", group: "french-haitian-cajun" },
-  { code: "fr", name: "French", native: "Français", dir: "ltr", group: "french-haitian-cajun" },
-  { code: "de", name: "German", native: "Deutsch", dir: "ltr", group: "german-west-germanic" },
-  { code: "ru", name: "Russian", native: "Русский", dir: "ltr", group: "slavic" },
-  { code: "uk", name: "Ukrainian", native: "Українська", dir: "ltr", group: "slavic" },
-  { code: "pl", name: "Polish", native: "Polski", dir: "ltr", group: "slavic" },
-  { code: "pt", name: "Portuguese", native: "Português", dir: "ltr", group: "other-indo-european" },
-  { code: "hi", name: "Hindi", native: "हिन्दी", dir: "ltr", group: "other-indo-european" },
-  { code: "ko", name: "Korean", native: "한국어", dir: "ltr", group: "korean" },
-  { code: "zh-Hans", name: "Chinese (Simplified)", native: "简体中文", dir: "ltr", group: "chinese" },
-  { code: "zh-Hant", name: "Chinese (Traditional)", native: "繁體中文", dir: "ltr", group: "chinese" },
-  { code: "vi", name: "Vietnamese", native: "Tiếng Việt", dir: "ltr", group: "vietnamese" },
-  { code: "tl", name: "Tagalog", native: "Tagalog", dir: "ltr", group: "tagalog" },
-  { code: "ar", name: "Arabic", native: "العربية", dir: "rtl", group: "arabic" },
+  { code: "es", welcome: "Bienvenidos", name: "Spanish", native: "Español", dir: "ltr", group: "spanish" },
+  { code: "ht", welcome: "Byenveni", name: "Haitian Creole", native: "Kreyòl ayisyen", dir: "ltr", group: "french-haitian-cajun" },
+  { code: "fr", welcome: "Bienvenue", name: "French", native: "Français", dir: "ltr", group: "french-haitian-cajun" },
+  { code: "de", welcome: "Willkommen", name: "German", native: "Deutsch", dir: "ltr", group: "german-west-germanic" },
+  { code: "ru", welcome: "Добро пожаловать", name: "Russian", native: "Русский", dir: "ltr", group: "slavic" },
+  { code: "uk", welcome: "Ласкаво просимо", name: "Ukrainian", native: "Українська", dir: "ltr", group: "slavic" },
+  { code: "pl", welcome: "Witamy", name: "Polish", native: "Polski", dir: "ltr", group: "slavic" },
+  { code: "pt", welcome: "Bem-vindos", name: "Portuguese", native: "Português", dir: "ltr", group: "other-indo-european" },
+  { code: "hi", welcome: "स्वागत है", name: "Hindi", native: "हिन्दी", dir: "ltr", group: "other-indo-european" },
+  { code: "ko", welcome: "환영합니다", name: "Korean", native: "한국어", dir: "ltr", group: "korean" },
+  { code: "zh-Hans", welcome: "欢迎", name: "Chinese (Simplified)", native: "简体中文", dir: "ltr", group: "chinese" },
+  { code: "zh-Hant", welcome: "歡迎", name: "Chinese (Traditional)", native: "繁體中文", dir: "ltr", group: "chinese" },
+  { code: "vi", welcome: "Chào mừng", name: "Vietnamese", native: "Tiếng Việt", dir: "ltr", group: "vietnamese" },
+  { code: "tl", welcome: "Maligayang pagdating", name: "Tagalog", native: "Tagalog", dir: "ltr", group: "tagalog" },
+  { code: "ar", welcome: "أهلاً وسهلاً", name: "Arabic", native: "العربية", dir: "rtl", group: "arabic" },
 ];
 
 export const LANGUAGE_CODES = TARGET_LANGUAGES.map((l) => l.code) as [string, ...string[]];
