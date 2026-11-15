@@ -9,7 +9,7 @@ import { membership } from "./access";
  * The calendar app cannot sign in, so the address itself is the key: one long random token per member.
  * Making a new address switches the old one off.
  *
- * Privacy: a visit is written as "Home visit" with the time and the street. The feed never holds a
+ * Privacy: a planned visit is written as "Home visit" with the time and the street. The feed never holds a
  * neighbor's name, house number, phone or the reason for the visit.
  */
 const HOUR = 3600000;
@@ -84,10 +84,11 @@ export const feedText = internalQuery({
       if (shift.cancelled || shift.churchId !== church._id) continue;
       calendar.createEvent({ id: `${shift._id}@neighborly`, sequence: shift.version, stamp: new Date(now), start: new Date(shift.start), end: new Date(shift.end), summary: shift.title, location: shift.location, description: shift.preparation || undefined });
     }
-    // The member is one of the two visitors, so the visit is theirs to see; only the street leaves the record.
+    // The narrow path past neighborAccess(): a calendar app cannot sign in, so the token stands for one member.
+    // It reaches only visits still planned on which that member is a visitor, and only the street leaves the record.
     const visits = await ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", church._id).gte("scheduledAt", from)).take(mostEvents);
     for (const visit of visits) {
-      if (visit.status === "cancelled" || !visit.visitors.some((visitor) => visitor.memberId === member._id)) continue;
+      if (visit.status !== "scheduled" || !visit.visitors.some((visitor) => visitor.memberId === member._id)) continue;
       const neighbor = await ctx.db.get("neighbors", visit.neighborId);
       calendar.createEvent({ id: `${visit._id}@neighborly`, stamp: new Date(now), start: new Date(visit.scheduledAt), end: new Date(visit.scheduledAt + HOUR), summary: "Home visit", location: (neighbor && streetOnly(neighbor.address)) || undefined, description: "Open Neighborly for the details. You visit as a pair." });
     }

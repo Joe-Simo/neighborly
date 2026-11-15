@@ -1,0 +1,34 @@
+import { describe, expect, test } from "bun:test";
+import { DateTime } from "luxon";
+import { weekLabel, weekRota, weekStart } from "./rota";
+
+const zone = "America/New_York";
+const at = (iso: string) => DateTime.fromISO(iso, { zone }).toMillis();
+const shift = (id: string, start: string, who: string | null) => ({ id, title: "Help line morning", start: at(start), end: at(start) + 3 * 3600000, location: "Parish office", team: "Help line", who });
+
+describe("the weekly rota", () => {
+  test("a week runs Sunday to Saturday in the group's time zone, whatever the reader's clock says", () => {
+    // 11:30 PM Saturday in New York is already Sunday in UTC; it still belongs to the week that is ending.
+    const start = weekStart(at("2026-11-21T23:30"), zone);
+    expect(start.toISO()).toBe("2026-11-15T00:00:00.000-05:00");
+    expect(weekLabel(start)).toBe("November 15 to 21, 2026");
+    expect(weekLabel(weekStart(at("2026-11-21T23:30"), zone, 2))).toBe("November 29 to December 5, 2026");
+  });
+  test("lists each day's shifts in time order and leaves out other weeks and empty days", () => {
+    const days = weekRota([
+      shift("c", "2026-11-18T09:00", null),
+      shift("b", "2026-11-16T13:00", "Thomas Okafor"),
+      shift("a", "2026-11-16T09:00", "Marisol Vega"),
+      shift("late", "2026-11-22T00:00", "Renee Baptiste"),
+      shift("early", "2026-11-14T21:00", "Renee Baptiste"),
+    ], weekStart(at("2026-11-17T12:00"), zone));
+    expect(days.map((day) => [day.label, day.shifts.map((item) => `${item.time} ${item.who ?? "open"}`)])).toEqual([
+      ["Monday, November 16", ["9:00 AM to 12:00 PM Marisol Vega", "1:00 PM to 4:00 PM Thomas Okafor"]],
+      ["Wednesday, November 18", ["9:00 AM to 12:00 PM open"]],
+    ]);
+  });
+  test("the week the clocks change is still seven days", () => {
+    const start = weekStart(at("2026-11-01T12:00"), zone);
+    expect(weekRota([shift("x", "2026-11-07T23:00", null), shift("y", "2026-11-08T00:00", null)], start).flatMap((day) => day.shifts.map((item) => item.id))).toEqual(["x"]);
+  });
+});
