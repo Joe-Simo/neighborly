@@ -32,6 +32,8 @@
   justify-self: stretch;
   margin: 4px 0 12px;
 }
+/* One size and colour for every line of small print on the sign-in screens. */
+.live-auth .live-field small,
 .live-auth-sample small {
   color: var(--live-muted, #5d665e);
   font-size: 14px;
