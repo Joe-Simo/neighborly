@@ -55,6 +55,8 @@ export type LiveHeading = {
   room?: "help";
   art?: { src: string; position: string; size?: string };
 };
+/** What a section may put in the page head in place of its area's heading. No art unless it gives one. */
+export type LiveHeadingOverride = Pick<LiveHeading, "title" | "deck" | "art">;
 export const headings: Record<LiveArea, LiveHeading> = {
   week: {
     title: "Good work, this week.",

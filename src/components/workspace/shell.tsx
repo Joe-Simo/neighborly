@@ -22,6 +22,7 @@ import {
   navigation,
   primaryActions,
   type ActionKind,
+  type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { sections } from "@/components/workspace/sections";
 import type {
@@ -78,6 +79,8 @@ export function LiveWorkspace({
     "not_sent" | "queued"
   >("not_sent");
   const [teamFilter, setTeamFilter] = useState("");
+  const [headingOverride, setHeadingOverride] =
+    useState<LiveHeadingOverride | null>(null);
   const ownPerson = data.people.find((person) => person.id === data.user.id);
   const isOwner = ownPerson?.role === "owner";
   const selected = selectedCommitment;
@@ -133,7 +136,9 @@ export function LiveWorkspace({
   }
   const primary = primaryActions[area];
   const Section = sections[area];
-  const heading = headings[area];
+  const heading = headingOverride
+    ? { ...headings[area], art: undefined, ...headingOverride }
+    : headings[area];
   const workspace: Workspace = {
     area,
     data,
@@ -156,6 +161,7 @@ export function LiveWorkspace({
       setSelectedCommitment(item);
     },
     confirm: setConfirmation,
+    setHeading: setHeadingOverride,
     focusOutcome: () =>
       requestAnimationFrame(() =>
         outcomeNotice.current?.focus({ preventScroll: true }),
