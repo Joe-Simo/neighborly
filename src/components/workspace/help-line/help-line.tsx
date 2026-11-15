@@ -2,10 +2,12 @@
 
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
+  useMemo,
+  useRef,
   useState,
   type ReactNode,
-  useMemo,
 } from "react";
 import Link from "next/link";
 import { useAction, useMutation, useQueries, useQuery } from "convex/react";
@@ -53,6 +55,10 @@ type Step =
   | { kind: "change"; drafted: Drafted; neighborId?: Id<"neighbors"> }
   // The caller is not on file yet: the neighbor is added first, then the draft goes on.
   | { kind: "join"; drafted: Drafted; then: "approve" | "change" };
+
+/** How long an approved draft stays on the page, folded, before the next one rises. */
+const SEAL_MS = 1400;
+const PAPER_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
 
 const caller = (call: Call) =>
   call.neighborName ?? (call.callerName || "New caller");
@@ -107,7 +113,20 @@ function HelpLine() {
     setDone(message);
   };
   const close = () => setStep(null);
-  const sheetOpen = drafted !== null;
+  // The approved draft stays a moment with its corner folded, then the next one rises.
+  const [sealed, setSealed] = useState<Drafted | null>(null);
+  useEffect(() => {
+    if (!sealed) return;
+    const after = setTimeout(() => {
+      setSealed(null);
+      setDone(
+        `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
+      );
+    }, SEAL_MS);
+    return () => clearTimeout(after);
+  }, [sealed]);
+  const onSheet = sealed ?? drafted;
+  const sheetOpen = onSheet !== null;
   const log = useCallback(() => {
     setDone("");
     setStep({ kind: "log" });
@@ -169,7 +188,9 @@ function HelpLine() {
         source: "ai_draft",
       }),
     );
-    if (outcome.saved) saved(call);
+    if (!outcome.saved) return;
+    settle(call);
+    setSealed(asked);
   }
   const changeFor =
     step?.kind === "change"
@@ -215,25 +236,27 @@ function HelpLine() {
         }
         onStep={(next) => void onStep(next)}
         sheet={
-          drafted && (
+          onSheet && (
             <DraftSheet
-              drafted={drafted}
-              waiting={drafts.length}
+              key={onSheet.call.id}
+              drafted={onSheet}
+              sealed={onSheet === sealed}
+              waiting={drafts.length + (sealed ? 1 : 0)}
               format={format}
               pending={approving.pending}
-              onApprove={() => void approve(drafted)}
+              onApprove={() => void approve(onSheet)}
               onChange={() =>
                 setStep(
-                  drafted.call.neighborId
-                    ? { kind: "change", drafted }
-                    : { kind: "join", drafted, then: "change" },
+                  onSheet.call.neighborId
+                    ? { kind: "change", drafted: onSheet }
+                    : { kind: "join", drafted: onSheet, then: "change" },
                 )
               }
               onDiscard={() => {
-                settle(drafted.call);
+                settle(onSheet.call);
                 if (kept)
                   void approving.save(() =>
-                    discardDraft({ churchId, callId: drafted.call.id }),
+                    discardDraft({ churchId, callId: onSheet.call.id }),
                   );
                 setDone("Draft discarded. Nothing was saved.");
               }}
@@ -403,6 +426,34 @@ export function HelpLineView({
   sheet?: ReactNode;
 }) {
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
+  // A call marked returned travels down from where it waited into "Returned this week".
+  const lists = useRef<HTMLDivElement>(null);
+  const before = useRef(new Map<string, { top: number; waiting: boolean }>());
+  useLayoutEffect(() => {
+    const now = new Map<string, { top: number; waiting: boolean }>();
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    lists.current
+      ?.querySelectorAll<HTMLElement>("[data-call]")
+      .forEach((row) => {
+        const id = row.dataset.call ?? "";
+        const waiting = !("quiet" in row.dataset);
+        const top = row.getBoundingClientRect().top + window.scrollY;
+        now.set(id, { top, waiting });
+        const was = before.current.get(id);
+        if (!was?.waiting || waiting) return;
+        row.dataset.arrived = "";
+        if (still) return;
+        row.style.animation = "none";
+        row.animate(
+          [
+            { transform: `translateY(${was.top - top}px)` },
+            { transform: "none" },
+          ],
+          { duration: 480, easing: PAPER_EASE },
+        );
+      });
+    before.current = now;
+  });
   const leaf = (at: number) => {
     const part = (options: Intl.DateTimeFormatOptions) =>
       format(at, { month: undefined, day: undefined, ...options });
@@ -419,7 +470,7 @@ export function HelpLineView({
     );
   };
   return (
-    <>
+    <div className="help-lists" ref={lists}>
       {sheet}
       <section>
         <div className="live-section-head">
@@ -438,7 +489,7 @@ export function HelpLineView({
         {calls.waiting.length ? (
           <div className="live-list">
             {calls.waiting.map((call) => (
-              <div className="help-row" key={call.id}>
+              <div className="help-row" data-call={call.id} key={call.id}>
                 {leaf(call.takenAt)}
                 <div>
                   <h3>
@@ -449,7 +500,7 @@ export function HelpLineView({
                   </h3>
                   <p>{call.note}</p>
                   {call.urgent?.by === "assistant" && isFirst(call) && (
-                    <p className="help-assistant help-first">
+                    <p className="help-assistant help-first paper-rise">
                       <Sparkles size={15} aria-hidden="true" />
                       <strong>
                         {whyFirst(call.urgent).join(" · ") ||
@@ -458,7 +509,7 @@ export function HelpLineView({
                     </p>
                   )}
                   {call.urgent?.by === "person" && call.urgent.byName && (
-                    <p className="help-first help-moved">
+                    <p className="help-first help-moved paper-rise">
                       {isFirst(call) ? "Put first" : "Marked not urgent"} by{" "}
                       {call.urgent.byName}
                     </p>
@@ -547,7 +598,12 @@ export function HelpLineView({
           </div>
           <div className="live-list">
             {calls.returned.map((call) => (
-              <div className="help-row" data-quiet key={call.id}>
+              <div
+                className="help-row"
+                data-quiet
+                data-call={call.id}
+                key={call.id}
+              >
                 {leaf(call.returnedAt ?? call.takenAt)}
                 <div>
                   <h3>{caller(call)}</h3>
@@ -562,7 +618,7 @@ export function HelpLineView({
           </div>
         </section>
       )}
-    </>
+    </div>
   );
 }
 
@@ -570,6 +626,7 @@ export function HelpLineView({
 export function DraftSheet({
   drafted: { call, draft },
   waiting = 1,
+  sealed = false,
   format,
   pending,
   onApprove,
@@ -579,6 +636,8 @@ export function DraftSheet({
   drafted: Drafted;
   /** How many drafts wait for a yes, this one included. */
   waiting?: number;
+  /** The yes was given and the request is on the record: the corner folds to green. */
+  sealed?: boolean;
   format: Workspace["format"];
   pending: boolean;
   onApprove: () => void;
@@ -598,8 +657,13 @@ export function DraftSheet({
       : "amount not stated",
   ].join(", ");
   return (
-    <section className="help-sheet" aria-labelledby="draft-title">
-      <p className="help-sheet-label">{text.waiting(waiting)}</p>
+    <section
+      className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
+      aria-labelledby="draft-title"
+    >
+      <p className="help-sheet-label">
+        {sealed ? "Approved" : text.waiting(waiting)}
+      </p>
       <div className="help-sheet-body">
         <div>
           <h2 id="draft-title">
@@ -620,7 +684,7 @@ export function DraftSheet({
             .
           </p>
         </div>
-        <div className="help-actions">
+        <div className="help-actions" inert={sealed}>
           {complete ? (
             <>
               <Button disabled={pending} onClick={onApprove}>
@@ -643,6 +707,14 @@ export function DraftSheet({
             {text.discard}
           </Button>
         </div>
+        {sealed && (
+          <p className="help-seal" role="status">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4.5 12.5l5 5L19.5 7" pathLength={1} />
+            </svg>
+            Saved to the record
+          </p>
+        )}
       </div>
       <p className="help-assistant help-assistant-line">
         <Sparkles size={16} aria-hidden="true" />
@@ -652,7 +724,7 @@ export function DraftSheet({
             : "Written by the assistant from the call note. It could not be checked, so please read each detail against the note."}{" "}
           {!complete && `${text.blank} `}
           {draft.notes.length > 0 && `${draft.notes.join(" ")} `}
-          Nothing is saved until you approve it.
+          {!sealed && "Nothing is saved until you approve it."}
         </span>
       </p>
     </section>

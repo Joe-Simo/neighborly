@@ -8,6 +8,8 @@ import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
+import { headings } from "@/components/workspace/navigation";
+import { ReliefPicture } from "@/components/workspace/relief";
 
 /** Paper-colored blocks in the shape of the rows, while the records arrive. */
 export function HelpLoading({ label }: { label: string }) {
@@ -26,9 +28,22 @@ export function HelpLoading({ label }: { label: string }) {
   );
 }
 
+/** The room's own relief picture, small and round, beside an empty state. */
+function Vignette() {
+  const { area } = useWorkspace();
+  const { picture, focus } = headings[area].art;
+  return (
+    <ReliefPicture
+      name={picture}
+      focus={focus}
+      vignette
+      className="paper-vignette"
+    />
+  );
+}
+
 export function HelpEmpty({
   title,
-  art = "/assets/threshold/courtyard-quiet-plate-v1.webp",
   children,
   action,
   first,
@@ -36,17 +51,14 @@ export function HelpEmpty({
   /** True when this is the first thing under the page head, which already draws a rule. */
   first?: boolean;
   title: string;
+  /** No longer shown: every empty state carries its room's relief picture. */
   art?: string;
   children: ReactNode;
   action?: ReactNode;
 }) {
   return (
     <div className="help-empty" data-first={first ? "" : undefined}>
-      <div
-        className="help-empty-art"
-        style={{ backgroundImage: `url(${art})` }}
-        aria-hidden="true"
-      />
+      <Vignette />
       <div>
         <h3>{title}</h3>
         <p>{children}</p>
@@ -60,17 +72,7 @@ export function HelpEmpty({
 export function KeptPrivate() {
   return (
     <div className="help-empty" data-first="">
-      <div
-        className="help-empty-art"
-        style={{
-          backgroundImage: "url(/assets/painted-world/door.webp)",
-          backgroundColor: "#eeece0",
-          backgroundSize: "auto 120%",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "50% 20%",
-        }}
-        aria-hidden="true"
-      />
+      <Vignette />
       <div>
         <h3>Kept private.</h3>
         <p>

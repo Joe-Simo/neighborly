@@ -16,6 +16,7 @@ import {
   RequestForm,
 } from "@/components/workspace/help-line/forms";
 import { LiveDialog } from "@/components/workspace/live-dialog";
+import { CountUp } from "@/components/workspace/primitives";
 import {
   AccountsForm,
   AtHome,
@@ -400,7 +401,10 @@ export function NeighborRecordView({
         <div>
           <dt>Help this year</dt>
           <dd>
-            {shortMoney(record.paidThisYear)}
+            <CountUp
+              value={record.paidThisYear}
+              format={(cents) => shortMoney(Math.round(cents / 100) * 100)}
+            />
             <small>
               {count(record.requestsThisYear, "request", "requests")}, paid
               direct
