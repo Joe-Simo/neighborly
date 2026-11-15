@@ -14,6 +14,8 @@ export const reliefNames = [
   "rest",
   "tasks",
   "files",
+  "mine",
+  "teams",
 ] as const;
 export type ReliefName = (typeof reliefNames)[number];
 
@@ -22,7 +24,7 @@ export type ReliefName = (typeof reliefNames)[number];
  * Add a name here when its six files are in `public/assets/relief/`; until then
  * every place that asks for it draws the paper placeholder at the same size.
  */
-export const reliefReady: readonly ReliefName[] = [];
+export const reliefReady: readonly ReliefName[] = ["call", "help", "year", "week", "visit", "people", "commitment", "tasks", "files", "rest", "neighbors", "mine", "teams"];
 
 const widths = [640, 1024, 1536] as const;
 const sources = (name: ReliefName, type: "avif" | "webp") =>

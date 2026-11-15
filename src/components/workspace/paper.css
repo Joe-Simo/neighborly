@@ -13,7 +13,7 @@
     count-up      a figure that rolls to its value; use <CountUp> from primitives.
   All of them are still for anyone who asks for less motion.
 */
-@property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #c8962e; }
+@property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
 .live-app,
 .live-dialog,
 .live-mobile-menu {
@@ -59,7 +59,10 @@
   animation-delay: var(--paper-wait, 0ms);
 }
 
-/* A folded corner for any sheet that is waiting for a yes. help-sheet already draws one. */
+/* A folded corner. One rule for every room: plain paper at rest, ochre only while
+   something waits for a person's yes, green once it is given or done.
+   paper-corner rests plain; help-sheet is the waiting sheet, so it is ochre unless
+   it says paper-rest; paper-waits and paper-fold name the other two states. */
 .paper-corner { position: relative; }
 .paper-corner::after {
   content: "";
@@ -77,6 +80,8 @@
   transform-origin: 100% 0;
   transition: --paper-corner 400ms var(--paper-ease);
 }
+.help-sheet, .paper-waits { --paper-corner: #c8962e; }
+.paper-rest { --paper-corner: #e6e1d2; }
 .paper-fold { --paper-corner: #365c46; }
 .paper-fold::after { animation: paper-press 400ms var(--paper-ease); }
 
@@ -137,6 +142,7 @@
 .live-header-sample { display: none; }
 .live-app .live-menu-trigger { display: none; }
 .live-header-actions .live-account { font-size: 15px; }
+.live-app .live-nav a { font-size: 15px; }
 
 /* The menu down the side stays put while a long room scrolls, and its marker slides to the room in view. */
 .live-nav { position: relative; }
@@ -156,6 +162,13 @@
 .live-nav a { position: relative; }
 .live-app .live-nav a[aria-current="page"] { background: none; box-shadow: none; }
 @media (min-width: 900px) {
+  /* The menu is as wide as its longest label in any language, so no label wraps; the group's name wraps inside that width. */
+  .live-app .live-layout,
+  .paper-loading-frame { grid-template-columns: minmax(230px, max-content) minmax(0, 1fr); }
+  .live-nav a { white-space: nowrap; }
+  .live-nav svg { flex: none; }
+  .live-nav .live-church-name,
+  .live-nav .live-sample-mark { width: 0; min-width: calc(100% - 12px); white-space: normal; }
   .live-nav {
     position: sticky;
     top: 0;
@@ -179,7 +192,8 @@
   padding-bottom: 30px;
   border-bottom: 1px solid var(--live-line);
 }
-.live-app .live-kicker { font-size: 13px; letter-spacing: 0.11em; margin-bottom: 14px; }
+.live-app .live-kicker,
+.live-app .live-main .live-page-head .live-kicker { font-size: 13px; letter-spacing: 0.11em; margin-bottom: 14px; }
 .live-app .live-page-head h1 {
   font: 400 clamp(40px, 5vw, 76px) / 0.98 "Newsreader", Georgia, serif;
   letter-spacing: -0.032em;
@@ -187,21 +201,35 @@
   overflow-wrap: break-word;
 }
 .live-app .live-page-head .live-deck { margin-top: 18px; text-wrap: pretty; }
+/* The way back from an inner view sits above the eyebrow. */
+.live-app .live-head-back { display: flex; width: fit-content; min-height: 44px; margin: -14px 0 4px; padding: 0; border: 0; background: none; cursor: pointer; }
+.live-app .live-head-back:hover { text-decoration: underline; text-underline-offset: 4px; }
 .live-head-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
 .live-head-actions:empty { display: none; }
 .relief { display: block; width: 100%; height: 100%; }
 .relief img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .live-head-art { pointer-events: none; overflow: hidden; }
-/* Up to 899px: a band across the top, above the words. */
+/*
+  Up to 699px: a band across the top that is the desktop head in miniature. The picture
+  is anchored right and sized so the middle 62% of its height fills the band; the rest
+  of the band is paper, under the same fade. --relief-y moves an off-centre subject.
+*/
 .live-head-art {
-  width: auto;
-  height: 150px;
-  margin: calc(-1 * var(--live-top)) calc(-1 * max(var(--live-pad), env(safe-area-inset-right))) 22px calc(-1 * var(--live-pad));
-  -webkit-mask-image: linear-gradient(0deg, transparent, #000 36%);
-  mask-image: linear-gradient(0deg, transparent, #000 36%);
+  position: relative;
+  height: 132px;
+  margin: calc(-1 * var(--live-top)) calc(-1 * max(var(--live-pad), env(safe-area-inset-right))) 16px calc(-1 * var(--live-pad));
 }
-.live-head-art .relief { width: 100%; }
-@media (min-width: 900px) {
+.live-head-art > .relief {
+  position: absolute;
+  right: 0;
+  top: calc(-61.3% * var(--relief-y, 0.5));
+  width: auto;
+  height: 161.3%;
+  aspect-ratio: 3 / 2;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 36%);
+  mask-image: linear-gradient(90deg, transparent, #000 36%);
+}
+@media (min-width: 700px) {
   .live-app .live-page-head {
     --head-wide: calc(100% + 2 * var(--live-pad));
     min-height: clamp(250px, 21vw, 336px);
@@ -214,9 +242,8 @@
     width: calc(var(--head-wide) * 0.46);
     height: auto;
     margin: 0;
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 36%);
-    mask-image: linear-gradient(90deg, transparent, #000 36%);
   }
+  .live-head-art > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
   .live-head-words,
   .live-head-actions {
     position: relative;
@@ -290,22 +317,43 @@
 }
 @media (max-width: 560px) {
   .live-app .live-main { --live-pad: 20px; --live-top: 30px; padding-bottom: calc(60px + env(safe-area-inset-bottom)); padding-left: max(20px, env(safe-area-inset-left)); }
-  .live-app .live-page-head { margin-bottom: 28px; padding-bottom: 26px; }
+  .live-app .live-page-head { margin-bottom: 24px; padding-bottom: 22px; }
+  .live-app .live-kicker { margin-bottom: 10px; }
   .live-app .live-page-head h1 { font-size: clamp(40px, 11.4vw, 48px); letter-spacing: -0.03em; }
   .live-app .live-page-head .live-deck { font-size: 17px; margin-top: 14px; }
-  .live-head-actions { margin-top: 22px; }
+  .live-head-actions { margin-top: 18px; }
 }
 
-/* The menu sheet: every room, then the language, then the way out. */
-.live-mobile-menu { animation: paper-settle 320ms var(--paper-ease) backwards; }
+
+/* The menu sheet fills the screen between the insets: its title, every room in a list that scrolls, and a foot that stays. */
+.live-mobile-menu[data-slot="dialog-content"] {
+  inset: env(safe-area-inset-top) 0 0 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: 100% !important;
+  max-height: none !important;
+  padding: 0;
+  translate: none;
+  border: 0;
+  border-radius: 0;
+  animation: paper-show 200ms ease backwards;
+}
+.live-mobile-menu [data-slot="dialog-header"] { display: flex; flex-flow: row wrap; align-items: baseline; gap: 2px 12px; padding: 14px 64px 12px 24px; text-align: left; }
+.live-mobile-menu [data-slot="dialog-title"] { flex-basis: 100%; font-size: 28px; }
+.live-mobile-menu .live-sample-mark { margin: 0; }
+.live-mobile-menu .live-menu-rooms nav a { min-height: 48px; padding-block: 10px; }
+.live-mobile-menu [data-slot="dialog-close"] { top: 8px; right: 10px; width: 44px; height: 44px; }
+/* The list fades out at the foot while there is more of it below. */
+.live-menu-rooms { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px 24px; border-top: 1px solid #d9ddce; scrollbar-width: thin; -webkit-mask-image: linear-gradient(#000 calc(100% - 24px), transparent); mask-image: linear-gradient(#000 calc(100% - 24px), transparent); }
+.live-mobile-menu .live-menu-rooms nav { margin-top: 0; border-top: 0; }
 .live-mobile-menu nav a { font-size: 17px; }
 .live-mobile-menu .live-menu-current { font-size: 13px; }
-.live-menu-foot { display: grid; gap: 14px; margin-top: 22px; }
-.live-menu-foot [data-slot="native-select-wrapper"],
-.live-menu-foot select { width: 100%; }
-.live-menu-foot .live-row-actions { display: grid; gap: 10px; }
-.live-menu-account { margin: 0; padding: 0 10px; font-size: 15px; color: #68715f; overflow-wrap: anywhere; }
-.live-mobile-menu .live-menu-leave[data-slot="button"] { width: 100%; height: 48px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
+.live-menu-rooms .live-row-actions { display: grid; gap: 10px; margin-top: 18px; }
+.live-menu-rooms select { width: 100%; }
+.live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
+.live-mobile-menu .live-menu-leave[data-slot="button"] { height: 44px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
 
 /* ── Empty: a serif line, the action, and a small piece of the room's picture ── */
 .live-app .live-empty {
@@ -319,6 +367,8 @@
   border-top: 1px solid var(--live-line);
   border-radius: 0;
 }
+.live-app .live-empty:not([data-lead]) { grid-template-columns: minmax(0, 1fr); }
+.live-empty:not([data-lead]) > .paper-vignette { display: none; }
 .paper-vignette { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--paper-shade); }
 .live-app .live-empty h3 { font: 400 26px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0; }
 .live-app .live-empty p { margin: 8px 0 0; font-size: 17px; line-height: 1.5; }
@@ -330,7 +380,8 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: #f7f4ed url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath fill='%236f5f93' d='M110 8C74 14 64 40 44 50 26 59 12 62 4 110h106z'/%3E%3Cpath fill='%23365c46' d='M110 42C86 44 76 60 58 67 42 73 30 76 26 110h84z'/%3E%3Cpath fill='%23f7f4ed' d='M110 72C92 72 84 82 70 86 58 89 52 94 50 110h60z'/%3E%3C/svg%3E") center / cover no-repeat !important;
+  /* Cut from the room's own picture, which the shell names on the main column. */
+  background: #f7f4ed var(--room-relief, none) 78% 50% / auto 150% no-repeat !important;
   box-shadow: inset 0 0 0 1px #283c3214;
 }
 
@@ -378,6 +429,15 @@
 /* ── The volunteer rooms ──────────────────────────────────────────────── */
 /* A note is a slip of paper with a green edge, not a grey box. */
 .live-app .live-note { background: #fffdf7; border: 1px solid #e0dccb; border-left: 3px solid #8a986e; border-radius: 0 3px 3px 0; font-size: 17px; }
+/* This week: three large figures, each a way into its room. One row at every width. */
+.week-figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 40px; border-top: 2px solid #596e51; border-bottom: 1px solid var(--live-line); }
+.week-figures a { display: grid; gap: 8px; align-content: start; padding: 22px 20px 22px 0; color: var(--live-ink); transition: transform 200ms var(--paper-ease); }
+.week-figures a + a { padding-left: clamp(12px, 2.4vw, 28px); border-left: 1px solid var(--live-line); }
+.week-figures .count-up { font: 400 clamp(44px, 5vw, 72px) / 0.98 "Newsreader", Georgia, serif; letter-spacing: -0.03em; }
+.week-figures a > span:last-child { font-size: 15px; line-height: 1.3; color: var(--live-muted); text-decoration: underline; text-decoration-color: #b9c4b0; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.week-figures a:is(:hover, :active) > span:last-child { text-decoration-thickness: 2px; text-decoration-color: currentColor; }
+@media (hover: hover) { .week-figures a:hover { transform: translateY(-1px); } }
+@media (max-width: 560px) { .week-figures a { padding: 16px 8px 16px 0; } .week-figures a > span:last-child { font-size: 14px; } }
 /* Your choice: the answer is the filled button; Details is a quiet link after it. */
 .live-request-section .live-row-actions { gap: 10px 14px; }
 .live-request-section .live-row-actions .tools-quiet { margin-left: 6px; }
@@ -454,9 +514,52 @@
   .paper-wave { display: none !important; }
   .live-app[data-arriving] { --paper-wait: 0ms; }
   .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
-  .live-main[data-leaving] > *, .live-app .live-link, .live-dialog .live-link { transition: none; }
+  .live-main[data-leaving] > *, .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }
   :is(.live-row, .help-row):hover { transform: none; }
 }
 @media print {
   .paper-wave { display: none !important; }
 }
+
+/* ── The date field ──────────────────────────────────────────────────────────
+   One field for every room: a paper button that opens a month. See date-field.tsx. */
+.live-date { position: relative; display: flex; align-items: center; width: 100%; height: 44px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; transition: border-color 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
+.live-date:hover { border-color: #365c46; }
+.live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
+.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date:has(:disabled) { opacity: 0.55; }
+.live-app .live-date .live-date-words, .live-dialog .live-date .live-date-words { flex: 1; min-width: 0; height: 100%; min-height: 0; margin: 0; padding: 0 0 0 12px; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none; color: inherit; font: inherit; font-size: 16px; text-overflow: ellipsis; }
+.live-date-words::placeholder { color: #66705f; opacity: 1; }
+.live-date-words:read-only { cursor: pointer; }
+.live-date-open { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border: 0; border-radius: 5px; background: none; color: #52644f; cursor: pointer; }
+.live-date-open:focus-visible { outline: 2px solid #365c46; outline-offset: -3px; }
+.live-date-open svg { width: 16px; height: 16px; transition: transform 200ms var(--paper-ease); }
+.live-date[data-open] .live-date-open svg { transform: rotate(180deg); }
+.live-date-value { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.live-date-sheet { padding: 14px; border: 1px solid #d9ddce; border-radius: 8px; background: #f7f4ed; color: #283c32; font-family: "Source Sans 3", sans-serif; box-shadow: -5px -9px 22px -12px rgb(40 60 50 / 0.22), 0 18px 40px -18px rgb(40 60 50 / 0.4); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
+.live-date-sheet .rdp-months { position: relative; }
+.live-date-sheet .rdp-month_caption { display: flex; align-items: center; height: 44px; padding-left: 8px; font-family: "Newsreader", Georgia, serif; font-size: 21px; }
+.live-date-sheet .rdp-nav { position: absolute; top: 0; right: 0; display: flex; }
+.live-date-sheet .rdp-nav button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 6px; background: none; color: #365c46; cursor: pointer; }
+.live-date-sheet .rdp-nav button:hover { background: #e7ecdc; }
+.live-date-sheet .rdp-nav button[aria-disabled="true"] { opacity: 0.35; cursor: default; }
+.live-date-sheet .rdp-chevron { width: 18px; height: 18px; fill: currentColor; }
+.live-date-sheet .rdp-month_grid { border-collapse: collapse; }
+.live-date-sheet .rdp-weekday { width: 44px; height: 32px; color: #66705f; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.live-date-sheet .rdp-day { padding: 0; text-align: center; }
+.live-date-sheet .rdp-day_button { width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; color: inherit; font: inherit; font-size: 16px; cursor: pointer; transition: background-color 120ms var(--paper-ease); }
+.live-date-sheet .rdp-day_button:hover { background: #e7ecdc; }
+.live-date-sheet .rdp-day_button:focus-visible,
+.live-date-sheet .rdp-nav button:focus-visible { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date-sheet .rdp-today .rdp-day_button { box-shadow: inset 0 0 0 1px #6f5f93; }
+.live-date-sheet .rdp-selected .rdp-day_button { background: #365c46; color: #f7f4ed; font-weight: 600; }
+.live-date-sheet .rdp-outside .rdp-day_button { color: #8b9384; }
+.live-date-sheet .rdp-disabled .rdp-day_button { color: #b3b9aa; cursor: default; background: none; }
+.live-date-sheet.live-date-bottom { position: fixed; inset: auto 0 0 0; top: auto; left: 0; translate: none; display: grid; justify-content: center; width: 100%; max-width: none; padding: 18px 12px max(18px, env(safe-area-inset-bottom)); border-width: 1px 0 0; border-radius: 14px 14px 0 0; animation: paper-sheet-up 280ms var(--paper-ease) both; }
+.live-date-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 308px; padding-left: 8px; }
+.live-date-bar h2 { margin: 0; font-family: "Source Sans 3", sans-serif; font-size: 16px; font-weight: 600; color: #283c32; }
+.live-date-done { min-width: 44px; min-height: 44px; padding: 0 8px; border: 0; border-radius: 6px; background: none; color: #365c46; font: inherit; font-size: 16px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.live-date-done:focus-visible { outline: 2px solid #365c46; outline-offset: 2px; }
+@keyframes paper-sheet-up { from { transform: translateY(100%); } }
+@media (max-width: 359px) { .live-date-sheet .rdp-day_button, .live-date-sheet .rdp-weekday { width: 44px; } .live-date-sheet.live-date-bottom { padding-inline: 4px; } }
+@media (prefers-reduced-motion: reduce) { .live-date-sheet, .live-date-sheet.live-date-bottom { animation: none; } }

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { LogOut, Menu, Plus } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
 import { PaperSurface } from "@/components/paper-surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,7 @@ import {
   type ActionKind,
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
-import { LanguageChooser, LanguageList } from "@/components/workspace/language-chooser";
+import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { ReliefPicture } from "@/components/workspace/relief";
 import { sections } from "@/components/workspace/sections";
 import type {
@@ -115,7 +115,7 @@ export function LiveWorkspace({
     (id ? words.shell.member : words.detail.unassigned);
   const teamName = (id: string) =>
     data.teams.find((team) => team.id === id)?.name ?? words.shell.team;
-  const [now] = useState(() => Date.now());
+  const now = useSyncExternalStore(noChange, openedAt, () => 0);
   async function perform(command: LiveCommand, success?: string) {
     setPending(true);
     setError("");
@@ -173,7 +173,7 @@ export function LiveWorkspace({
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const Section = sections[area];
   const heading = headingOverride
-    ? { ...headings[area], ...translatedHeadings[area], ...headingOverride }
+    ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
     : { ...headings[area], ...translatedHeadings[area] };
   const workspace: Workspace = {
     area,
@@ -213,7 +213,7 @@ export function LiveWorkspace({
         <Link href="/" className="live-wordmark">
           kind helps
         </Link>
-        {data.church.sample && <p className="live-sample-mark live-header-sample">Sample · made-up people</p>}
+        {data.church.sample && <p className="live-sample-mark live-header-sample">{words.shell.sampleMark}</p>}
         <div className="live-header-actions">
           <div className="live-header-desk contents">
             {selectChurch}
@@ -227,17 +227,18 @@ export function LiveWorkspace({
           </div>
           <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <DialogTrigger asChild><Button variant="ghost" className="live-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu aria-hidden="true" />{words.shell.menu}</Button></DialogTrigger>
-            <DialogContent className="live-mobile-menu max-h-[calc(100svh-2rem)] overflow-y-auto" onOpenAutoFocus={(event) => {
-              // Opening the menu must not land on the language choice, where an arrow key would change it.
+            <DialogContent className="live-mobile-menu" onOpenAutoFocus={(event) => {
+              // Opening the menu lands on the sheet itself, not on its first control.
               event.preventDefault();
               if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
             }}>
-              <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}</DialogHeader>
-              <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={(event) => leave(event, id)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
-              <LanguageList />
-              <div className="live-menu-foot">
+              <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}</DialogHeader>
+              <div className="live-menu-rooms">
+                <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={(event) => leave(event, id)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
                 {selectChurch}
-                <p className="live-menu-account">{data.user.name || data.user.email}</p>
+              </div>
+              <div className="live-menu-foot">
+                <LanguageChooser />
                 <Button variant="outline" className="live-menu-leave" disabled={pending} onClick={() => void signOut()}>
                   <LogOut size={17} aria-hidden="true" /> {leaveLabel}
                 </Button>
@@ -250,7 +251,7 @@ export function LiveWorkspace({
         <nav className="live-nav" aria-label={words.shell.workspace} ref={navRef}>
           <span className="live-nav-marker" aria-hidden="true" />
           <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{data.church.name}</p>
-          {data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}
+          {data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}
           {menuItems.map(({ id, label, icon: Icon }) => (
             <Link
               key={id}
@@ -268,15 +269,22 @@ export function LiveWorkspace({
           id="workspace-content"
           tabIndex={-1}
           data-room={heading.room}
+          style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
           ref={mainRef}
         >
           <div className="live-page-head" key={`head-${area}`}>
             {heading.art && (
-              <div className="live-head-art">
+              <div className="live-head-art" style={heading.art.band === undefined ? undefined : ({ "--relief-y": heading.art.band } as CSSProperties)}>
                 <ReliefPicture name={heading.art.picture} focus={heading.art.focus} />
               </div>
             )}
             <div className="live-head-words">
+              {headingOverride?.back && (
+                <button type="button" className="live-back live-head-back" onClick={headingOverride.back.run}>
+                  <ArrowLeft size={16} aria-hidden="true" />
+                  {headingOverride.back.label}
+                </button>
+              )}
               <p className="live-kicker">
                 {data.church.name}
                 {data.church.sample ? " · Sample" : ""}
@@ -632,3 +640,11 @@ function useSystemTextSize() {
     };
   }, []);
 }
+
+/**
+ * The moment this workspace opened in the browser, read once and kept. A server
+ * render has no such moment and says 0, so no route reads the clock while prerendering.
+ */
+let opened: number | undefined;
+const openedAt = () => (opened ??= Date.now());
+const noChange = () => () => {};

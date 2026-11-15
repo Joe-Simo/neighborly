@@ -17,6 +17,10 @@ export default function LiveAppLayout({
 }) {
   return (
     <div className="live-app">
+      {/* The menu's words are set in these faces from the first frame, so no label wraps and then jumps. */}
+      {["source-sans-3-latin-variable", "newsreader-display-regular"].map((face) => (
+        <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
+      ))}
       <Suspense fallback={<Loading />}>
         <ClerkProvider signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
           <LiveProviders>{children}</LiveProviders>

@@ -8,6 +8,7 @@ import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-v
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { WeekNote } from "@/components/workspace/week-note/week-note";
+import { WeekFigures } from "@/components/workspace/volunteer/week-figures";
 import {
   CommitmentRows,
   IncomingRequests,
@@ -23,6 +24,7 @@ export function WeekSection() {
   return (
     <>
       <WeekNote brief={incoming.length > 0} />
+      <WeekFigures />
       <IncomingRequests />
       <section className="live-section">
         <div className="live-section-head">

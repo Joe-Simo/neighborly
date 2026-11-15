@@ -71,7 +71,13 @@ export function LiveEmpty({
   const { area } = useWorkspace();
   const { picture, focus } = headings[area].art;
   return (
-    <div className="live-empty">
+    <div
+      className="live-empty"
+      // Only the first empty state of a room carries the picture; a second one beside it is words alone.
+      ref={(element) => {
+        if (element && element.closest(".live-room")?.querySelector(".live-empty") === element) element.dataset.lead = "";
+      }}
+    >
       <ReliefPicture name={picture} focus={focus} vignette className="paper-vignette" />
       <div>
         <h3>{title}</h3>

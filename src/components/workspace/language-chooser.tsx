@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import { Check, Languages } from "lucide-react";
+import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -42,7 +42,7 @@ export function LanguageChooser() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" aria-label={`${words.shell.language}: ${languageNames[current]}`} className="h-11 gap-2 border-0 bg-transparent px-2 !text-[14px] font-normal text-[#5d6a56] shadow-none hover:text-[#243b2c]">
+        <Button variant="ghost" size="sm" aria-label={`${words.shell.language}: ${languageNames[current]}`} className="h-11 gap-2 border-0 bg-transparent px-2 !text-[15px] font-normal text-[#5d6a56] shadow-none hover:text-[#243b2c]">
           <Languages size={16} aria-hidden="true" />
           <span lang={current}>{languageNames[current]}</span>
         </Button>
@@ -61,37 +61,5 @@ export function LanguageChooser() {
         </DropdownMenuLabel>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-/** At the foot of the phone menu: the same three languages as rows, with a check on the one in use. */
-export function LanguageList() {
-  const { words, current, failed, choose } = useLanguage();
-  return (
-    <section className="mt-6" aria-labelledby="live-language">
-      <h3 id="live-language" className="flex items-center gap-2 px-[10px] text-[13px] font-[650] tracking-[0.1em] text-[#5d6a56] uppercase">
-        <Languages size={16} aria-hidden="true" />
-        {words.shell.language}
-      </h3>
-      <div role="radiogroup" aria-labelledby="live-language" className="mt-2 grid border-t border-[#d9ddce]">
-        {languages.map((language) => (
-          <Button
-            key={language}
-            variant="ghost"
-            role="radio"
-            aria-checked={language === current}
-            lang={language}
-            onClick={() => choose(language)}
-            className="h-auto min-h-[54px] justify-between rounded-none !border-x-0 !border-t-0 border-b !border-[#d9ddce] bg-transparent px-[10px] !text-[16px] font-normal text-[#243b2c] !shadow-none aria-checked:bg-[#e5eadc] aria-checked:text-[#31533a]"
-          >
-            {languageNames[language]}
-            {language === current && <Check size={18} aria-hidden="true" />}
-          </Button>
-        ))}
-      </div>
-      <p className="mt-3 px-[10px] text-[15px] leading-snug text-[#68715f]" role={failed ? "alert" : undefined}>
-        {failed ? words.notices.failed : words.shell.typedStays}
-      </p>
-    </section>
   );
 }

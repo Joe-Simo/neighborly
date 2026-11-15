@@ -55,6 +55,12 @@ To appear in the menu a section needs one line each in `areas.ts`,
 A help-side room's heading carries `room: "help"`. Every heading carries `art`,
 the name of the room's relief picture.
 
+## The way back from an inner view
+
+`setHeading({ title, deck, back: { label: "Ledger", run } })` draws a quiet link
+above the eyebrow in the page head, with a 44px touch area. Use it for every
+inner view (one record, one tool); do not draw a back link of your own in the room.
+
 ## Motion, shared by every room
 
 One way of moving, in `paper.css`: paper lifts, slides and settles, with
@@ -66,7 +72,37 @@ the head, the picture and the menu marker itself. Rooms use four classes:
 | `paper-rise` | A thing arrives: up 12px and in, 320ms. `paper-rows` on a parent does it for the first eight children, 30ms apart. `live-list`, `help-row`, `help-timeline` and `help-ledger` rows already have it. |
 | `paper-settle` | A sheet is laid down, 420ms. `help-sheet` already has it. |
 | `paper-fold` | Add to a `help-sheet` (or any `paper-corner`) when its yes is given: the corner turns from ochre to green and presses flat, 400ms. |
+| `paper-waits` | The corner is ochre: something here waits for a person's yes. `help-sheet` has it already. |
+| `paper-rest` | The corner is plain paper: add to a `help-sheet` that waits for nothing. `paper-corner` alone rests plain. |
 | `count-up` | A figure rolling to its value in 400ms: render `<CountUp value={n} format={...} />` from `primitives.tsx`. |
 
 Set `--paper-order` (0 to 7) on an element to place it in a stagger by hand.
 Rows and links already lift on hover; do not add another hover of your own.
+
+## The date and time fields
+
+`date-field.tsx` holds the one pattern for every room; no browser date box anywhere.
+
+- `<DateField name="start" required />` inside a `LiveField`. It takes and gives the same `"YYYY-MM-DD"` a date
+  input does: read it from `FormData` by `name`, or pass `value` and `onChange(value)`. `min` and `max` bound the days.
+  Closed it reads "Thursday, November 19" with a chevron; open it is a month with 44px days (shadcn Popover with
+  react-day-picker on a desk, a sheet from the bottom under 700px). On a desk a day can be typed (11/19 in English,
+  19/11 in Spanish and Creole, or 2026-11-19).
+- `<TimeField name="time" from="07:00" to="20:30" />` is a list of half hours as `"HH:mm"`, the range set by the room.
+
+Both speak en, es and ht from the word tables.
+
+## The paper corner rule
+
+A paper corner is plain paper at rest, ochre only while something waits for a person's yes, and green once it is
+given or done. Nothing else may colour a corner. In classes: `paper-corner` rests plain; `paper-waits` is ochre;
+`paper-fold` is green. A `help-sheet` is the waiting sheet and is ochre by default, so a `help-sheet` that waits
+for no one (a statement, a finished check) takes `paper-rest` until it earns `paper-fold`.
+
+## Cutting a relief picture
+
+`python3 scripts/level-relief.py <source.png> <name>` writes the six files in `public/assets/relief/` and adds the
+name to nothing: add it to `reliefReady` in `relief.tsx` yourself. The script levels the picture's paper to the page
+(#f7f4ed): it reads the paper colour from the top left 300px, then moves every pixel by the difference, in full where
+the pixel is paper and fading out 70 levels of colour away, so the subject keeps its own colour and no tan cloud shows
+where a head fades into the page. Any page that shows a relief picture on #f7f4ed should use files cut this way.

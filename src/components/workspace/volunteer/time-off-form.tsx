@@ -5,8 +5,8 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate, formatDays } from "@/lib/words";
 import { LiveField, LiveLoading } from "@/components/workspace/primitives";
@@ -58,10 +58,10 @@ export function LiveTimeOffForm({
     >
       <div className="live-form-grid">
         <LiveField label={words.timeOffForm.firstDay}>
-          <Input type="date" name="start" value={draft.start} onChange={(event) => setDraft({ ...draft, start: event.target.value })} required />
+          <DateField name="start" value={draft.start} onChange={(start) => setDraft({ ...draft, start })} required />
         </LiveField>
         <LiveField label={words.timeOffForm.lastDay}>
-          <Input type="date" name="end" value={draft.end} onChange={(event) => setDraft({ ...draft, end: event.target.value })} required />
+          <DateField name="end" value={draft.end} min={draft.start || undefined} onChange={(end) => setDraft({ ...draft, end })} required />
         </LiveField>
       </div>
       <LiveField
