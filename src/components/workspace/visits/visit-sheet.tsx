@@ -207,7 +207,7 @@ export function VisitSheetView({
           </div>
           <div>
             <dt>Going together</dt>
-            <dd>{sheet.visitors.join(" and ")}</dd>
+            <dd className="visits-paper-pair">{sheet.visitors.join(" and ")}</dd>
           </div>
           {request && (
             <div>
@@ -237,7 +237,7 @@ export function VisitSheetView({
               Last visit, {format(sheet.lastVisit.at)}, by{" "}
               {sheet.lastVisit.visitors.join(" and ")}
             </span>
-            {sheet.lastVisit.notes}
+            <em className="visits-paper-last">{sheet.lastVisit.notes}</em>
           </p>
         )}
         <section className="visits-paper-write">
