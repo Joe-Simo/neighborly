@@ -6,18 +6,20 @@ import {
   CommitmentRows,
   IncomingRequests,
 } from "@/components/workspace/volunteer/commitment-rows";
+import { MyVisits } from "@/components/workspace/visits/my-visits";
 
 export function MineSection() {
-  const { data, now } = useWorkspace();
+  const { data, now, words } = useWorkspace();
   const mine = upcomingCommitments(data.commitments, now).filter(
     (item) => item.assigneeId === data.user.id,
   );
   return (
     <>
       <IncomingRequests />
+      <MyVisits />
       <section className="live-section">
-        <h2>Accepted commitments</h2>
-        <CommitmentRows items={mine} empty={{ title: "Nothing on your calendar yet.", detail: "Commitments you accept will appear here with everything you need to prepare." }} />
+        <h2>{words.mine.accepted}</h2>
+        <CommitmentRows items={mine} empty={{ title: words.mine.emptyTitle, detail: words.mine.emptyDetail }} />
       </section>
     </>
   );

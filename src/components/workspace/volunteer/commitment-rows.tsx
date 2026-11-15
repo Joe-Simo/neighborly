@@ -15,16 +15,14 @@ export function incomingRequests(data: LiveWorkspaceData) {
 
 export function CommitmentRows({
   items,
-  empty = {
-    title: "No upcoming commitments.",
-    detail: "New commitments will appear here with their date, person and preparation.",
-  },
+  empty,
 }: {
   items: LiveWorkspaceData["commitments"];
   empty?: { title: string; detail: string };
 }) {
-  const { data, format, when, personName, teamName, showCommitment } =
+  const { data, format, when, personName, teamName, showCommitment, words } =
     useWorkspace();
+  const statuses: Partial<Record<string, string>> = words.commitments.status;
   return items.length ? (
       <div className="live-list">
         {items.map((item) => (
@@ -39,13 +37,13 @@ export function CommitmentRows({
               <p>
                 {item.assigneeId
                   ? personName(item.assigneeId)
-                  : "A place is open"}
+                  : words.commitments.placeOpen}
                 {item.location ? ` · ${item.location}` : ""}
               </p>
             </div>
             <div className="live-row-actions">
               <span className="live-status" data-state={item.status}>
-                {item.status.replaceAll("_", " ")}
+                {statuses[item.status] ?? item.status.replaceAll("_", " ")}
               </span>
               <Button
                 variant="outline"
@@ -53,15 +51,15 @@ export function CommitmentRows({
                 onClick={(event) => showCommitment(item, event.currentTarget)}
               >
                 {item.assigneeId === data.user.id && item.status === "accepted"
-                  ? item.preparation.trim() ? "View preparation" : "View commitment"
-                  : "Details"} <ArrowRight size={15} aria-hidden="true" />
+                  ? item.preparation.trim() ? words.commitments.viewPreparation : words.commitments.viewCommitment
+                  : words.commitments.details} <ArrowRight size={15} aria-hidden="true" />
               </Button>
             </div>
           </div>
         ))}
       </div>
     ) : (
-      <LiveEmpty title={empty.title}>{empty.detail}</LiveEmpty>
+      <LiveEmpty title={empty?.title ?? words.commitments.emptyTitle}>{empty?.detail ?? words.commitments.emptyDetail}</LiveEmpty>
     );
 }
 
@@ -74,14 +72,15 @@ export function IncomingRequests() {
     when,
     showCommitment,
     focusOutcome,
+    words,
   } = useWorkspace();
   const incoming = incomingRequests(data);
   return incoming.length ? (
       <section className="live-section live-request-section" aria-labelledby="live-requests-title">
         <div className="live-section-head">
-          <h2 id="live-requests-title">Your choice</h2>
+          <h2 id="live-requests-title">{words.requests.title}</h2>
           <span className="live-count">
-            {incoming.length} awaiting your reply
+            {words.requests.awaiting(incoming.length)}
           </span>
         </div>
         <div className="live-list">
@@ -94,11 +93,11 @@ export function IncomingRequests() {
             return (
               <div className="live-row" key={request.id}>
                 <div>
-                  <h3>{item?.title ?? "Cover request"}</h3>
+                  <h3>{item?.title ?? words.requests.fallbackTitle}</h3>
                   <p>
                     {item
                       ? when(item.start, item.end)
-                      : "Commitment details unavailable"}
+                      : words.requests.unavailable}
                   </p>
                   {item?.location && <p className="live-request-location">{item.location}</p>}
                 </div>
@@ -109,7 +108,7 @@ export function IncomingRequests() {
                       size="sm"
                       onClick={(event) => showCommitment(item, event.currentTarget)}
                     >
-                      Details
+                      {words.commitments.details}
                     </Button>
                   )}
                   <Button
@@ -122,12 +121,12 @@ export function IncomingRequests() {
                           requestId: request.id,
                           accept: true,
                         },
-                        "Commitment accepted. Your plan is updated.",
+                        words.requests.accepted,
                       );
                       if (saved) focusOutcome();
                     }}
                   >
-                    Accept
+                    {words.requests.accept}
                   </Button>
                   <Button
                     disabled={pending}
@@ -140,12 +139,12 @@ export function IncomingRequests() {
                           requestId: request.id,
                           accept: false,
                         },
-                        "Request declined. No commitment has been assigned.",
+                        words.requests.declined,
                       );
                       if (saved) focusOutcome();
                     }}
                   >
-                    Decline
+                    {words.requests.decline}
                   </Button>
                 </div>
               </div>

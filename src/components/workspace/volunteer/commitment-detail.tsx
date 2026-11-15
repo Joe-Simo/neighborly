@@ -27,7 +27,7 @@ export function CommitmentDetail({
   onRelease: (item: LiveCommitment) => void;
   onClose: () => void;
 }) {
-  const { data, pending, perform, when, personName, teamName, confirm } =
+  const { data, pending, perform, when, personName, teamName, confirm, words } =
     useWorkspace();
   return (
     <>
@@ -36,8 +36,7 @@ export function CommitmentDetail({
         <>
           {selected.status === "cancelled" && (
             <div className="live-note">
-              This commitment is cancelled. Its history is retained, and no
-              one is expected to serve.
+              {words.detail.cancelled}
             </div>
           )}
           {selected.status !== "cancelled" &&
@@ -73,7 +72,7 @@ export function CommitmentDetail({
             )}
           <dl className="live-detail">
             <div>
-              <dt>When</dt>
+              <dt>{words.detail.when}</dt>
               <dd>
                 {when(selected.start, selected.end)}
                 <br />
@@ -81,31 +80,31 @@ export function CommitmentDetail({
               </dd>
             </div>
             <div>
-              <dt>Where</dt>
-              <dd>{selected.location || "Location to be confirmed"}</dd>
+              <dt>{words.detail.where}</dt>
+              <dd>{selected.location || words.detail.whereUnknown}</dd>
             </div>
             <div>
-              <dt>Person</dt>
+              <dt>{words.detail.person}</dt>
               <dd>{personName(selected.assigneeId)}</dd>
             </div>
             <div>
-              <dt>Coordinator</dt>
+              <dt>{words.detail.coordinator}</dt>
               <dd>{selected.coordinatorName}</dd>
             </div>
           </dl>
           {selected.status !== "cancelled" &&
             selected.assigneeId === data.user.id && (
               <section>
-                <h3>Ready to take part</h3>
+                <h3>{words.detail.readyTitle}</h3>
                 <p className="live-prep">
                   {selected.preparation ||
-                    "No preparation has been added yet. Ask your coordinator for what you need."}
+                    words.detail.noPreparation}
                 </p>
                 <Button
                   variant="outline"
                   onClick={() => onRelease(selected)}
                 >
-                  Change this commitment
+                  {words.detail.change}
                 </Button>
               </section>
             )}

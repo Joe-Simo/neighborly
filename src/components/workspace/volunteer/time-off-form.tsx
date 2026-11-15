@@ -7,6 +7,8 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useWorkspace } from "@/components/workspace/context";
+import { formatDate, formatDays } from "@/lib/words";
 import { LiveField, LiveLoading } from "@/components/workspace/primitives";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -17,6 +19,7 @@ export function LiveTimeOffForm({
   data: LiveWorkspaceData;
   onSaved: () => void;
 }) {
+  const { words } = useWorkspace();
   const [draft, setDraft] = useState({ start: "", end: "", note: "" });
   const [review, setReview] = useState<typeof draft | null>(null);
   const [error, setError] = useState("");
@@ -28,7 +31,7 @@ export function LiveTimeOffForm({
   );
   if (review)
     return affected === undefined ? (
-      <LiveLoading label="Checking your commitments…" />
+      <LiveLoading label={words.timeOffForm.checking} />
     ) : (
       <TimeOffConfirmation
         key={`${review.start}:${review.end}`}
@@ -46,7 +49,7 @@ export function LiveTimeOffForm({
         event.preventDefault();
         const { start, end } = draft;
         if (end < start) {
-          setError("The last day must be on or after the first day.");
+          setError(words.timeOffForm.orderError);
           return;
         }
         setError("");
@@ -54,16 +57,16 @@ export function LiveTimeOffForm({
       }}
     >
       <div className="live-form-grid">
-        <LiveField label="First day">
+        <LiveField label={words.timeOffForm.firstDay}>
           <Input type="date" name="start" value={draft.start} onChange={(event) => setDraft({ ...draft, start: event.target.value })} required />
         </LiveField>
-        <LiveField label="Last day">
+        <LiveField label={words.timeOffForm.lastDay}>
           <Input type="date" name="end" value={draft.end} onChange={(event) => setDraft({ ...draft, end: event.target.value })} required />
         </LiveField>
       </div>
       <LiveField
-        label="Note (optional)"
-        help="Only include what your coordinators need to know."
+        label={words.timeOffForm.noteLabel}
+        help={words.timeOffForm.noteHelp}
       >
         <Textarea name="note" value={draft.note} onChange={(event) => setDraft({ ...draft, note: event.target.value })} maxLength={1000} />
       </LiveField>
@@ -72,7 +75,7 @@ export function LiveTimeOffForm({
           {error}
         </div>
       )}
-      <Button type="submit">Review affected commitments</Button>
+      <Button type="submit">{words.timeOffForm.review}</Button>
     </form>
   );
 }
@@ -90,6 +93,7 @@ function TimeOffConfirmation({
   onBack: () => void;
   onSaved: () => void;
 }) {
+  const { words } = useWorkspace();
   const [snapshot] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -97,25 +101,19 @@ function TimeOffConfirmation({
   return (
     <div className="live-form">
       <p>
-        {review.start} — {review.end}
+        {formatDays(words.locale, review.start, review.end)}
       </p>
       <h3>
-        {snapshot.length
-          ? `${snapshot.length} ${snapshot.length === 1 ? "commitment" : "commitments"} affected`
-          : "No commitments affected"}
+        {words.timeOffForm.affected(snapshot.length)}
       </h3>
       {snapshot.map((item) => (
         <div className="live-note" key={item.id}>
           {item.title} ·{" "}
-          {new Intl.DateTimeFormat("en", {
-            timeZone: data.church.timeZone,
-            dateStyle: "medium",
-          }).format(item.start)}
+          {formatDate(words.locale, item.start, { timeZone: data.church.timeZone, dateStyle: "medium" })}
         </div>
       ))}
       <p>
-        Confirming will release only these commitments and record your time off.
-        Team memberships and other dates stay the same.
+        {words.timeOffForm.explain}
       </p>
       {error && (
         <div className="live-error" role="alert">
@@ -124,7 +122,7 @@ function TimeOffConfirmation({
       )}
       <div className="live-form-actions">
         <Button variant="outline" disabled={saving} onClick={onBack}>
-          Back
+          {words.timeOffForm.back}
         </Button>
         <Button
           disabled={saving}
@@ -140,14 +138,14 @@ function TimeOffConfirmation({
               onSaved();
             } catch {
               setError(
-                "We couldn’t confirm these dates. Your commitments may have changed. Go back to review the current list.",
+                words.timeOffForm.failed,
               );
             } finally {
               setSaving(false);
             }
           }}
         >
-          {saving ? "Saving…" : "Confirm time off"}
+          {saving ? words.timeOffForm.saving : words.timeOffForm.confirm}
         </Button>
       </div>
     </div>

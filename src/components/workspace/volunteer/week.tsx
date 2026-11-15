@@ -10,7 +10,7 @@ import {
 } from "@/components/workspace/volunteer/commitment-rows";
 
 export function WeekSection() {
-  const { data, now, format } = useWorkspace();
+  const { data, now, format, words } = useWorkspace();
   const weekEnd = now + 7 * 86400000;
   const upcoming = upcomingCommitments(data.commitments, now);
   const incoming = incomingRequests(data);
@@ -19,16 +19,16 @@ export function WeekSection() {
       <IncomingRequests />
       <section className="live-section">
         <div className="live-section-head">
-          <h2>Coming up</h2>
-          <span className="live-count">Next 7 days</span>
+          <h2>{words.week.comingUp}</h2>
+          <span className="live-count">{words.week.nextSevenDays}</span>
         </div>
         <CommitmentRows
           items={withoutIncomingRequests(upcoming.filter((item) => item.start <= weekEnd), incoming)}
-          empty={{ title: incoming.length ? "Your next choice is above." : "A little breathing room.", detail: incoming.length ? "Reply to your invitation when you’re ready. Other upcoming commitments will appear here." : "No commitments are scheduled in the next seven days. Later dates are in Commitments." }}
+          empty={{ title: incoming.length ? words.week.choiceAboveTitle : words.week.quietTitle, detail: incoming.length ? words.week.choiceAboveDetail : words.week.quietDetail }}
         />
       </section>
       <section className="live-section">
-        <h2>From your group</h2>
+        <h2>{words.week.fromGroup}</h2>
         {data.announcements.length ? (
           <div className="live-list">
             {data.announcements.map((item) => (
@@ -44,8 +44,8 @@ export function WeekSection() {
             ))}
           </div>
         ) : (
-          <LiveEmpty title="No announcements yet.">
-            Updates from your coordinators will be kept here.
+          <LiveEmpty title={words.week.noAnnouncementsTitle}>
+            {words.week.noAnnouncementsDetail}
           </LiveEmpty>
         )}
       </section>
