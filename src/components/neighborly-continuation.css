@@ -22,6 +22,8 @@
 .neighborly-final-actions small{font-size:14px;line-height:1.5;color:#3d4f43}
 .neighborly-colophon{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px;padding:12px 0 calc(82px + env(safe-area-inset-bottom));font-size:15px}
 .neighborly-colophon>a:first-child{order:3;flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 19.5vw/.8 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:#293f32;text-decoration:none}
+/* The name stays on paper: beneath it the cloth is seen as through a thin sheet. */
+.neighborly-together::after{content:"";position:absolute;left:0;right:0;bottom:0;z-index:-1;height:calc(19.5vw + 150px);background:linear-gradient(#eee7d700,#eee7d7d9 38%,#eee7d7e6);pointer-events:none}
 /* One quiet way to give; it never competes with the invitation above it. */
 .neighborly-give{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#343e3366;transition:text-decoration-color .3s ease}
 .neighborly-give:hover{text-decoration-color:currentColor}
