@@ -45,7 +45,7 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
       </p>
       {error && <div className="live-error" role="alert"><p>{error}</p></div>}
       {address ? (
-        <>
+        <div className="paper-rows">
           <div className="help-actions tools-after">
             {calendarLinks(address, device).map((link, index) => (
               <Button key={link.app} variant="outline" className={index === 0 ? "tools-first" : undefined} asChild>
@@ -53,7 +53,7 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
               </Button>
             ))}
           </div>
-          <div className="tools-address">
+          <div className="tools-address paper-settle" key={address}>
             <Input readOnly aria-label={text.addressLabel} value={address} onFocus={(event) => event.currentTarget.select()} />
             <Button
               variant="outline"
@@ -83,7 +83,7 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </>
+        </div>
       ) : (
         <Button style={{ marginTop: 22 }} disabled={busy} onClick={onCreate}>
           <CalendarPlus size={16} aria-hidden="true" /> {text.get}

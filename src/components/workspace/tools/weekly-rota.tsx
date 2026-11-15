@@ -23,14 +23,14 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
         <Button variant="outline" className="tools-week-step" aria-label={text.after} onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
         <Button disabled={!planned} onClick={onPrint}><Printer size={16} aria-hidden="true" /> {text.print}</Button>
       </div>
-      <div className="tools-rota">
+      <div className="tools-rota paper-settle" key={week}>
         <header>
           <p>{group}</p>
           <h3 aria-live="polite">{week}</h3>
         </header>
         {planned ? (
           <div className="live-table-scroll">
-            <table>
+            <table className="paper-rows">
               <thead>
                 <tr><th scope="col">{text.time}</th><th scope="col">{text.what}</th><th scope="col">{text.where}</th><th scope="col">{text.who}</th></tr>
               </thead>

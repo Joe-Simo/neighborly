@@ -116,8 +116,7 @@ p.tools-quiet { margin: 14px 0 0; }
   .tools-leaves { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .tools-leaf { grid-column: span 3; }
   .tools-leaf[data-open], .tools-leaf-wide { grid-column: 1 / -1; }
-  /* While one file is open across the page, the other three sit side by side under it, so no gap is left. */
-  .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) { grid-column: span 2; }
+  .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) { grid-column: 1 / -1; }
 }
 @media (max-width: 700px) {
   .tools-leaves { gap: 16px; margin-top: 26px; }
@@ -145,3 +144,18 @@ p.tools-quiet { margin: 14px 0 0; }
 .live-app .tools-records .live-date-leaf strong span { font-size: inherit; line-height: inherit; letter-spacing: inherit; text-transform: none; }
 .tools-leaf.paper-corner::after { background: linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%); }
 .tools-leaf.paper-corner > h2 { padding-right: 34px; }
+/* The week on paper is a sheet of paper on the screen too: laid down when it opens, and again for each week turned to. */
+.tools-rota { padding: 26px 28px 12px; background: #fffdf7; border: 1px solid #e0dccb; border-radius: 3px; box-shadow: 0 1px 0 #fff inset, 0 16px 30px -26px #3b3a2466, 0 2px 5px -3px #3b3a2433; }
+.tools-rota .help-empty { margin-bottom: 14px; }
+@media (max-width: 700px) { .tools-rota { padding: 20px 18px 6px; } }
+@media print { .tools-rota { padding: 0; border: 0; border-radius: 0; box-shadow: none; background: none; animation: none; } .tools-rota * { animation: none !important; } }
+/* While one file is open, the other three fold down to a line each: the title and its one button. */
+.tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; padding-block: 14px; }
+.tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) :is(.tools-leaf-deck, .tools-small, .tools-sample) { display: none; }
+.live-app .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > h2 { margin: 0; font-size: 22px; }
+.tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > .tools-file { margin: 0; }
+/* A corner is plain paper at rest, ochre only while a yes is waited for, green once it is given or the files are gathered. */
+.tools-leaf-wide.paper-corner { --paper-corner: #e7e2d3; }
+.tools-leaf-wide.paper-corner.paper-fold { --paper-corner: #365c46; }
+/* The room's headline keeps its two sentences on two lines on a phone. */
+@media (max-width: 700px) { .live-app:has(.tools-leaves) .live-head-words h1 { font-size: 32px; text-wrap: balance; } }

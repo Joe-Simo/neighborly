@@ -63,7 +63,7 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
             <Button onClick={onGather}><FolderDown size={18} aria-hidden="true" /> Gather my records</Button>
           </div>
           <p className="tools-small">
-            Six files: neighbors, requests and their outcomes, home visits, the ledger, who you pay, and members. Account numbers show their last four digits only. Each time, it is written down who took the records out.
+            One file each for neighbors, requests and their outcomes, home visits, the ledger, who you pay, and members. Account numbers show their last four digits only. Each time, it is written down who took the records out.
           </p>
         </div>
       )}
