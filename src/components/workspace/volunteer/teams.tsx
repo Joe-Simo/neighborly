@@ -1,5 +1,6 @@
 "use client";
 
+import "./people.css";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { usePaginatedQuery } from "convex/react";
@@ -9,57 +10,57 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
+import { initials } from "@/components/workspace/volunteer/people";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TeamsSection() {
   const { data, pending, isOwner, perform } = useWorkspace();
   const [addingTo, setAddingTo] = useState<LiveWorkspaceData["teams"][number] | null>(null);
-  const candidates = addingTo ? data.people.filter((person) => !addingTo.memberIds.includes(person.id)) : [];
+  // Teams joined in this visit: their slip stays, folded green, so the yes is seen to land.
+  const [joined, setJoined] = useState<string[]>([]);
+  const candidates = addingTo ? data.people.filter((person) => person.active && !addingTo.memberIds.includes(person.id)) : [];
   return (
     <div className="live-grid live-teams paper-rows">
       {data.teams.length ? (
         data.teams.map((team) => (
-          <section className="live-team" key={team.id}>
+          <section className="live-team team-card" key={team.id}>
             <h2>{team.name}</h2>
             <p>
               {team.description || "A team with room to contribute."}
             </p>
-            {team.myInvitation && (
-              <div className="live-note">
-                <p>
-                  You’re invited to this team. Joining does not accept a
-                  commitment.
-                </p>
-                <div className="live-row-actions">
-                  <Button
-                    disabled={pending}
-                    size="sm"
-                    onClick={() =>
-                      void perform({
-                        type: "respondTeam",
-                        teamId: team.id,
-                        accept: true,
-                      })
-                    }
-                  >
-                    Join team
-                  </Button>
-                  <Button
-                    disabled={pending}
-                    size="sm"
-                    variant="ghost"
-                    onClick={() =>
-                      void perform({
-                        type: "respondTeam",
-                        teamId: team.id,
-                        accept: false,
-                      })
-                    }
-                  >
-                    Decline
-                  </Button>
-                </div>
+            {joined.includes(team.id) ? (
+              <div className="team-asked paper-corner paper-fold" role="status">
+                <p>You’re on this team.</p>
               </div>
+            ) : (
+              team.myInvitation && (
+                <div className="team-asked paper-corner paper-waits paper-settle">
+                  <p>
+                    You’re invited to this team. Joining does not accept a
+                    commitment.
+                  </p>
+                  <div className="live-row-actions">
+                    <Button
+                      disabled={pending}
+                      size="sm"
+                      onClick={async () => {
+                        if (await perform({ type: "respondTeam", teamId: team.id, accept: true }))
+                          setJoined((teams) => [...teams, team.id]);
+                      }}
+                    >
+                      Join team
+                    </Button>
+                    <Button
+                      disabled={pending}
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => void perform({ type: "respondTeam", teamId: team.id, accept: false })}
+                    >
+                      Decline
+                    </Button>
+                  </div>
+                </div>
+              )
             )}
             <LiveTeamRoster
               data={data}
@@ -84,10 +85,13 @@ export function TeamsSection() {
           onClose={() => setAddingTo(null)}
         >
           {candidates.length ? (
-            <div className="live-list">
+            <div className="live-list team-candidates">
               {candidates.map((person) => (
                 <div className="live-row" key={person.id}>
-                  <h3>{person.name}</h3>
+                  <div className="live-person">
+                    <span className="live-avatar" aria-hidden="true">{initials(person.name)}</span>
+                    <h3>{person.name}</h3>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
@@ -133,12 +137,20 @@ function LiveTeamRoster({
     open ? { churchId: data.church.id, teamId: team.id } : "skip",
     { initialNumItems: 20 },
   );
+  const faces = team.memberIds.flatMap((id) => data.people.find((person) => person.id === id) ?? []).slice(0, 4);
   return (
     <div>
       <div className="live-team-line">
-        <span className="live-meta">
-          {team.memberIds.length} {team.memberIds.length === 1 ? "member" : "members"}
-        </span>
+        <div className="team-faces">
+          {faces.map((person) => (
+            <span className="live-avatar" key={person.id} aria-hidden="true">
+              {initials(person.name)}
+            </span>
+          ))}
+          <span className="live-meta">
+            {team.memberIds.length} {team.memberIds.length === 1 ? "member" : "members"}
+          </span>
+        </div>
         {!team.myInvitation && (
           <Button variant="link" className="tools-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
             {open ? "Hide members" : "View members"}
@@ -152,19 +164,20 @@ function LiveTeamRoster({
       </div>
       {open && (
         <>
-          <div className="live-list" style={{ marginTop: 18 }}>
+          <div className="live-list team-roster">
             {roster.results.map((person) => (
               <div className="live-row" key={person.personId}>
-                <div>
-                  <h3>{person.name}</h3>
-                  <p>
-                    {person.status === "invited"
-                      ? "Invitation pending"
-                      : person.approved
-                        ? "Approved for this team"
-                        : "Team approval pending"}{" "}
-                    · {person.role}
-                  </p>
+                <div className="live-person">
+                  <span className="live-avatar" aria-hidden="true">{initials(person.name)}</span>
+                  <div>
+                    <h3>{person.name}</h3>
+                    <p data-waits={person.status === "invited" || !person.approved ? "" : undefined}>
+                      {person.role === "coordinator" ? "Coordinator" : "Member"}
+                      {person.status === "invited"
+                        ? " · Invited, waiting to join"
+                        : !person.approved && " · Waiting for team approval"}
+                    </p>
+                  </div>
                 </div>
                 {team.canCoordinate && (
                   <div className="live-row-actions">
@@ -232,7 +245,7 @@ function LiveTeamRoster({
           </div>
           {roster.status !== "Exhausted" && (
             <Button
-              style={{ marginTop: 16 }}
+              className="team-more"
               variant="outline"
               disabled={roster.status !== "CanLoadMore"}
               onClick={() => roster.loadMore(20)}

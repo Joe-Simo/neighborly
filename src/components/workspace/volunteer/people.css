@@ -1,0 +1,85 @@
+/* People and Teams in paper relief. A sheet's corner follows the frame's rule:
+   plain at rest, ochre while it waits for someone's yes, green once the yes is given. */
+
+/* ── People ───────────────────────────────────────────────────────────── */
+.live-app .people-row { min-height: 80px; padding-block: 12px; }
+.people-row h3 { font-size: 19px; }
+.people-row .live-person p { margin: 2px 0 0; font-size: 16px; overflow-wrap: normal; }
+.people-row .live-avatar { width: 44px; height: 44px; letter-spacing: 0.02em; }
+.people-row .live-meta > span { font-size: 16px; }
+.people-row .live-meta > span[data-waits] { color: var(--help-ochre-ink, #88642c); }
+.people-row[data-away] .live-person,
+.people-row[data-away] .live-meta > span { opacity: 0.62; }
+
+/* Each open invitation is a slip that waits for the person's yes. */
+.people-invitations { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; margin-top: 22px; }
+.people-invitation {
+  display: grid;
+  gap: 4px;
+  min-height: 80px;
+  padding: 22px 26px 18px;
+  border: 1px solid #e0dccb;
+  border-radius: 3px;
+  background: #fffdf7;
+  box-shadow: 0 1px 0 #fff inset, 0 14px 26px -24px #3b3a2466, 0 2px 5px -3px #3b3a2440;
+}
+.people-invitation h3 { margin: 0; padding-right: 26px; font-size: 19px; overflow-wrap: anywhere; }
+.people-invitation p { margin: 0; font-size: 16px; color: var(--live-muted); }
+.people-invitation .live-row-actions { justify-content: space-between; margin-top: 10px; }
+.live-app .people-invitation .live-status { font-size: 16px; }
+.live-app .people-invitation .live-status[data-state="accepted"] { color: var(--paper-green); }
+.people-invitations + .live-empty, .people-deck + .live-empty { margin-top: 22px; }
+.live-app .people-deck { margin-bottom: 0; }
+
+/* The role sits in its own column on a wide screen and beside the name on a phone; never both. */
+.people-role { display: none; }
+@media (max-width: 700px) {
+  .live-app .people-row { align-items: center; row-gap: 0; padding-block: 14px; }
+  .people-row h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; }
+  .people-role { display: inline; font: 400 15px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0; color: var(--live-muted); }
+  .people-row .live-meta > .people-role-wide, .people-row .live-meta > span:empty { display: none; }
+  .people-row .live-meta > span { padding-left: 59px; font-size: 15px; }
+  .people-invitations { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* ── Teams ────────────────────────────────────────────────────────────── */
+.team-card h2 { margin-bottom: 0; }
+.live-app .team-card > p { font-size: 17px; }
+.team-faces { display: flex; align-items: center; margin-right: auto; }
+.team-faces .live-avatar { width: 36px; height: 36px; font-size: 13px; box-shadow: 0 0 0 2px var(--paper, #f7f4ed); }
+.team-faces .live-avatar + .live-avatar { margin-left: -8px; }
+.team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
+.live-app .team-card .live-team-line { gap: 10px 20px; min-height: 44px; }
+@media (max-width: 700px) {
+  /* Faces and the count on one line; the two things to do share the next. */
+  .team-faces { flex-basis: 100%; }
+  .live-app .team-card .live-team-line { justify-content: space-between; }
+}
+
+/* An invitation to a team waits on you: an ochre corner until you answer, green when you join. */
+.team-asked {
+  margin: 4px 0 20px;
+  padding: 22px 26px 20px;
+  border: 1px solid #e0dccb;
+  border-radius: 3px;
+  background: #fffdf7;
+  box-shadow: 0 1px 0 #fff inset, 0 14px 26px -24px #3b3a2466, 0 2px 5px -3px #3b3a2440;
+}
+.live-app .team-asked p { margin: 0; padding-right: 26px; font-size: 17px; color: var(--live-ink); }
+.team-asked .live-row-actions { margin-top: 16px; }
+.live-app .team-asked.paper-fold p { color: var(--paper-green); }
+
+/* Adding someone: a face, a name, one button a finger can find. */
+.team-candidates .live-row { min-height: 80px; padding-block: 14px; }
+.team-candidates h3 { font-size: 19px; }
+.team-candidates p { margin: 2px 0 0; font-size: 16px; }
+.team-roster { margin-top: 18px; }
+/* A member, then what can be done for them on the line below: the same shape at every width. */
+.team-roster .live-row { flex-direction: column; align-items: stretch; gap: 10px; min-height: 80px; padding-block: 16px; }
+.team-roster h3 { font-size: 19px; }
+.team-roster p { margin: 2px 0 0; font-size: 16px; }
+.team-roster p[data-waits] { color: var(--help-ochre-ink, #88642c); }
+.team-roster .live-row-actions { padding-left: 57px; gap: 8px 10px; }
+.live-app .team-roster select { min-height: 40px; font-size: 15px; }
+@media (pointer: coarse) { .live-app .team-roster select { min-height: 44px; } }
+.team-more { margin-top: 16px; }

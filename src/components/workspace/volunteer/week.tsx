@@ -8,7 +8,6 @@ import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-v
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { WeekNote } from "@/components/workspace/week-note/week-note";
-import { WeekFigures } from "@/components/workspace/volunteer/week-figures";
 import {
   CommitmentRows,
   IncomingRequests,
@@ -24,8 +23,9 @@ export function WeekSection() {
   return (
     <>
       <WeekNote brief={incoming.length > 0} />
-      <WeekFigures />
       <IncomingRequests />
+      {/* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */}
+      <div className="min-[1100px]:grid min-[1100px]:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)] min-[1100px]:items-start min-[1100px]:gap-x-14">
       <section className="live-section">
         <div className="live-section-head">
           <h2>{words.week.comingUp}</h2>
@@ -40,7 +40,9 @@ export function WeekSection() {
         />
       </section>
       <section className="live-section">
-        <h2>{words.week.fromGroup}</h2>
+        <div className="live-section-head">
+          <h2>{words.week.fromGroup}</h2>
+        </div>
         {data.announcements.length ? (
           <div className="live-list">
             {data.announcements.map((item) => (
@@ -61,6 +63,7 @@ export function WeekSection() {
           </LiveEmpty>
         )}
       </section>
+      </div>
       {printing && (
         <LiveDialog title={words.week.printWeek} className="tools-rota-dialog" onClose={() => setPrinting(false)}>
           <WeeklyRota titled={false} />

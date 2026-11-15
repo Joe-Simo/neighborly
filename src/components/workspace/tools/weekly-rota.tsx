@@ -78,7 +78,7 @@ export function WeeklyRota({ titled = true }: { titled?: boolean }) {
       group={data.church.name}
       week={weekLabel(start, words.locale, words.rota)}
       days={weekRota(shifts, start, words.locale, words.rota)}
-      printed={format(now, { year: "numeric", month: "long" })}
+      printed={format(now, { year: "numeric", month: "long", day: undefined })}
       sample={data.church.sample}
       titled={titled}
       onEarlier={() => setWeeksAhead((value) => value - 1)}

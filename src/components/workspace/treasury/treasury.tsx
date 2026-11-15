@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueries, useQuery } from "convex/react";
 import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
+import { readFailure } from "@/components/workspace/failure";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { useWorkspace } from "@/components/workspace/context";
 import {
@@ -143,9 +144,7 @@ export function TreasurySection() {
     try {
       await change();
     } catch (cause) {
-      return cause instanceof Error
-        ? cause.message.replace(/^.*?Uncaught Error:\s*/, "").split("\n")[0]
-        : "That couldn’t be recorded. Please try again.";
+      return readFailure(cause, "That couldn’t be recorded. Please try again.");
     }
     if (date) setMonth(date.slice(0, 7));
     setOpen(null);

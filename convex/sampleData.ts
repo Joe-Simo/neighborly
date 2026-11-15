@@ -110,7 +110,7 @@ export const load = internalMutation({
     // a help-line morning and a home visit next week.
     const mine = monday.plus({ weeks: 1 });
     await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start: mine.plus({ days: 1, hours: 9 }).toMillis(), end: mine.plus({ days: 1, hours: 12 }).toMillis(), location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: owner, coordinatorId: others[1], version: 1 });
-    await ctx.db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Renee Baptiste", start: mine.plus({ days: 3, hours: 14 }).toMillis(), end: mine.plus({ days: 3, hours: 16 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
+    await ctx.db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Renee Baptiste", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
     // A year of finished shifts, so hours by team have something to add up: the help line twice a week
     // and the pantry on Saturdays. Kept under the 200 the overview reads, after the coming weeks above.
     const pantry = await ctx.db.insert("teams", { churchId, name: "Pantry", description: "Sorts donations and packs food bags on Saturday mornings." });
@@ -125,6 +125,9 @@ export const load = internalMutation({
       const saturday = monday.minus({ weeks: week }).plus({ days: 5, hours: 10 }).toMillis();
       await ctx.db.insert("commitments", { churchId, teamId: pantry, title: "Pantry morning", start: saturday, end: saturday + 2 * 3600000, location: "Parish hall", preparation: "", assigneeId: pantryCrew[week % pantryCrew.length], coordinatorId: pantryCrew[0], version: 1 });
     }
+    // One shift nobody has taken yet, on the next Saturday still ahead, so the week has a place waiting for a name.
+    const openSaturday = [0, 1].map((week) => monday.plus({ weeks: week, days: 5, hours: 10 })).find((day) => day.toMillis() > now)!;
+    await ctx.db.insert("commitments", { churchId, teamId: pantry, title: "Pantry morning", start: openSaturday.toMillis(), end: openSaturday.plus({ hours: 2 }).toMillis(), location: "Parish hall", preparation: "Sort the week's donations and pack food bags.", assigneeId: null, coordinatorId: pantryCrew[0], version: 1 });
     await ctx.db.insert("timeOff", { churchId, memberId: others[5], start: isoDay(now + 9 * DAY), end: isoDay(now + 16 * DAY), note: "Visiting family." });
     await ctx.db.insert("tasks", { churchId, title: "Restock the food pantry shelf", dueAt: now + 4 * DAY, assigneeId: others[4], complete: false });
     await ctx.db.insert("tasks", { churchId, title: "Send thank-you notes for the fall collection", dueAt: null, assigneeId: others[2], complete: true });

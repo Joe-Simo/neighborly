@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { action, internalAction, internalMutation, internalQuery, query, env } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
@@ -192,15 +192,15 @@ export const suggestTeam = action({
   args: { description: v.string() }, returns: draftResult,
   handler: async (ctx, { description }) => {
     const userId = await ctx.runQuery(internal.drafts.identity, {});
-    if (!userId) throw new Error("Sign in to prepare a team draft.");
-    if (!description.trim() || description.length > 2000) throw new Error("Describe your team in up to 2,000 characters.");
+    if (!userId) throw new ConvexError("Sign in to prepare a team draft.");
+    if (!description.trim() || description.length > 2000) throw new ConvexError("Describe your team in up to 2,000 characters.");
     const draft = prepareDraft(description);
     const fallback = { ...draft, verification: "review" as const };
     if (!env.TYPESAFE_API_KEY) return fallback;
     const fields = ["teamName", "recurrence", "peopleCount", "time"] as const;
     const present = fields.filter(field => draft[field]);
     if (!present.length) return fallback;
-    if (await ctx.runMutation(internal.drafts.reserve, { userId }) !== "ok") throw new Error("Please wait a minute before preparing another draft.");
+    if (await ctx.runMutation(internal.drafts.reserve, { userId }) !== "ok") throw new ConvexError("Please wait a minute before preparing another draft.");
     const sure = await confidence(env.TYPESAFE_API_KEY, { description, proposed: draft }, Object.fromEntries(present.map(field => [field,
       `Does description explicitly and unambiguously support proposed.${field}? ${stated} Never infer availability, consent, qualifications, membership, or a new fact.`,
     ])) as Record<(typeof present)[number], string>);
@@ -230,7 +230,7 @@ export const callNote = internalQuery({
   handler: async (ctx, { churchId, callId }) => {
     const member = await neighborAccess(ctx, churchId);
     const call = await ctx.db.get("calls", callId);
-    if (!call || call.churchId !== churchId) throw new Error("Call not found.");
+    if (!call || call.churchId !== churchId) throw new ConvexError("Call not found.");
     const neighbor = call.neighborId ? await ctx.db.get("neighbors", call.neighborId) : null;
     return {
       userId: member.userId, note: call.note,
@@ -332,7 +332,7 @@ export const yearRecords = internalQuery({
   handler: async (ctx, { churchId, year }) => {
     const member = await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
-    if (!church || !Number.isInteger(year) || year < 2000 || year > 2100) throw new Error("Year not found.");
+    if (!church || !Number.isInteger(year) || year < 2000 || year > 2100) throw new ConvexError("Year not found.");
     const { start, end } = fiscalYear(year, church.timeZone);
     const now = Date.now();
     const [requests, visits] = await Promise.all([
@@ -407,7 +407,7 @@ export const weekNote = query({
   handler: async (ctx, { churchId }) => {
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
-    if (!church) throw new Error("Group not found.");
+    if (!church) throw new ConvexError("Group not found.");
     const now = Date.now(), weekEnd = now + 7 * 86_400_000;
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: church.timeZone }).format(now);
     const lastDay = new Intl.DateTimeFormat("en-CA", { timeZone: church.timeZone }).format(weekEnd);

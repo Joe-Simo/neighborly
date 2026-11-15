@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { readFailure } from "@/components/workspace/failure";
 import Link from "next/link";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,9 +56,7 @@ export function LiveWelcome({
         });
     } catch (cause) {
       setError(
-        cause instanceof Error
-          ? cause.message.split("\n")[0]
-          : "We couldn’t save that. Please try again.",
+        readFailure(cause, "We couldn’t save that. Please try again."),
       );
     } finally {
       setPending(false);

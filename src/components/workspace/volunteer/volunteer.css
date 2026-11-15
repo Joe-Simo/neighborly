@@ -1,0 +1,97 @@
+/* What the volunteer's own rooms add to the shared paper: the sheet of what waits
+   for a yes, a task ticked off, a meeting answered. Every room's CSS loads on every
+   page, so each name starts with volunteer-. */
+
+/* ── The sheet of requests: ochre corner while it waits, green on the yes ── */
+.volunteer-choice { margin-bottom: 44px; }
+.volunteer-choice-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px 40px;
+  align-items: center;
+  min-height: 80px;
+  padding: 20px 0;
+  border-top: 1px solid var(--live-line);
+}
+.volunteer-choice-rows { margin-top: 18px; }
+.volunteer-choice-row:last-child { padding-bottom: 0; }
+:is(.volunteer-choice, .volunteer-meeting) h3 {
+  margin: 0 0 6px;
+  font: 400 26px/1.15 "Newsreader", Georgia, serif;
+  letter-spacing: -0.02em;
+}
+:is(.volunteer-choice, .volunteer-meeting) p:not(.help-sheet-label) { font-size: 17px; margin: 0; }
+:is(.volunteer-choice, .volunteer-meeting) .help-sheet-label { margin-bottom: 16px; }
+.live-app .volunteer-choice-when { color: var(--live-ink, #283c32); }
+.volunteer-choice .live-row-actions { gap: 10px 14px; }
+.volunteer-choice .live-row-actions .tools-quiet { margin-left: 6px; }
+.live-app .volunteer-given {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: #365c46;
+  font-weight: 600;
+  animation: paper-rise 320ms var(--paper-ease) backwards;
+}
+.volunteer-given { text-transform: capitalize; }
+
+/* The commitment just accepted is laid into the list like a sheet into a folder. */
+@keyframes volunteer-filed { from { background-color: var(--help-sheet, #fdfcf8); box-shadow: 0 10px 24px rgb(40 60 50 / 0.1); } }
+.live-row.volunteer-filed { scroll-margin-block: 24px; animation: paper-settle 420ms var(--paper-ease) backwards, volunteer-filed 900ms ease-out 420ms backwards; }
+
+/* Names at body size; a status reads as a word, not a code. */
+.live-app .live-commitment-row .live-row-main p { font-size: 17px; }
+.live-app .live-commitment-row .live-status { text-transform: capitalize; }
+
+/* ── A task: a pencil line through it once it is done ── */
+.live-row.volunteer-task { min-height: 80px; padding: 16px 0; }
+.volunteer-task h3 {
+  margin: 0 0 4px;
+  font: 400 24px/1.2 "Newsreader", Georgia, serif;
+  letter-spacing: -0.015em;
+}
+.volunteer-task h3 span {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / 0 1.5px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.live-app .volunteer-task p { margin: 0; font-size: 17px; }
+.volunteer-task > [data-slot="button"], .volunteer-task > .live-status { flex: none; }
+.volunteer-task[data-done] h3 { color: var(--live-muted); }
+.volunteer-task[data-done] h3 span { background-size: 100% 1.5px; }
+.live-app :is(.volunteer-task, .volunteer-meeting) [data-slot="button"][aria-pressed="true"] { border-color: #365c46; color: #365c46; }
+@keyframes volunteer-strike { from { background-size: 0 1.5px; color: var(--live-ink, #283c32); } }
+@keyframes volunteer-tick { from { transform: scale(0.4) rotate(-20deg); opacity: 0; } }
+.volunteer-ticked h3 span { animation: volunteer-strike 420ms var(--paper-ease) backwards; }
+.volunteer-ticked [data-slot="button"] svg { animation: volunteer-tick 320ms var(--paper-ease) 200ms backwards; }
+
+/* ── A meeting: a small sheet whose corner tells where the reply stands ── */
+.volunteer-meetings { display: grid; gap: 22px; }
+.volunteer-meetings .help-sheet { margin: 0; padding: 26px 30px; }
+.volunteer-yes { --paper-corner: #365c46; }
+:is(.volunteer-choice.paper-fold, .volunteer-meeting:is(.volunteer-yes, .paper-fold)) .help-sheet-label { color: #365c46; }
+.volunteer-meeting.paper-rest .help-sheet-label { color: var(--live-muted); }
+.volunteer-meeting .help-sheet-body { align-items: center; }
+.volunteer-meeting-desk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 24px;
+  margin-top: 18px;
+  padding-top: 10px;
+  border-top: 1px solid var(--live-line);
+}
+.volunteer-replies { flex: 1 1 100%; }
+.volunteer-replies .live-row { min-height: 56px; padding: 12px 0; font-size: 17px; }
+.volunteer-replies .live-status { text-transform: capitalize; }
+
+@media (max-width: 699px) {
+  .volunteer-choice-row, .volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); }
+  .volunteer-meetings .help-sheet { padding: 22px 20px; }
+  :is(.volunteer-choice, .volunteer-meeting) h3 { font-size: 24px; padding-right: 26px; }
+  .live-row.volunteer-task { align-items: flex-start; flex-direction: column; gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .volunteer-given, .live-row.volunteer-filed, .volunteer-ticked h3 span, .volunteer-ticked [data-slot="button"] svg { animation: none; }
+}

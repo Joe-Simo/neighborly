@@ -10,7 +10,9 @@
 .tools-sheet { margin-top: 28px; }
 .tools-after { margin-top: 22px; }
 .tools-replace { margin-top: 16px; }
-.live-app .help-actions .tools-first { border-color: var(--live-ink); font-weight: 600; }
+:is(.live-app, .live-dialog) .help-actions .tools-first { border-color: var(--live-ink); font-weight: 600; }
+:is(.live-app, .live-dialog) .help-actions.tools-calendars { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 640px; }
+:is(.live-app, .live-dialog) .tools-calendars [data-slot="button"] { width: 100%; min-height: 44px; margin: 0; }
 .tools-rota th:first-child, .tools-rota td:first-child { padding-left: 0; }
 :is(.live-app, .live-dialog) .tools-address [data-slot="button"], :is(.live-app, .live-dialog) .tools-week [data-slot="button"] { min-height: 44px; }
 :is(.live-app, .live-dialog) .tools-address input { height: 44px; font-size: 17px; }
@@ -154,8 +156,31 @@ p.tools-quiet { margin: 14px 0 0; }
 .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) :is(.tools-leaf-deck, .tools-small, .tools-sample) { display: none; }
 .live-app .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > h2 { margin: 0; font-size: 22px; }
 .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > .tools-file { margin: 0; }
-/* A corner is plain paper at rest, ochre only while a yes is waited for, green once it is given or the files are gathered. */
-.tools-leaf-wide.paper-corner { --paper-corner: #e7e2d3; }
-.tools-leaf-wide.paper-corner.paper-fold { --paper-corner: #365c46; }
 /* The room's headline keeps its two sentences on two lines on a phone. */
 @media (max-width: 700px) { .live-app:has(.tools-leaves) .live-head-words h1 { font-size: 32px; text-wrap: balance; } }
+/* The week as a page for the wall: the week in large serif over a firm rule, each day a serif line, the name in the last column the darkest thing in its row. Black only, so a parish printer keeps every line. */
+@media print {
+  .tools-rota header { display: flex; flex-direction: column; padding-bottom: 4mm; border-bottom: 1.5pt solid #000; }
+  .tools-rota header p { font-size: 8.5pt; letter-spacing: 0.1em; }
+  .tools-rota header h3 { margin: 1.5mm 0 0; text-wrap: balance; font-size: 27pt; line-height: 1.05; letter-spacing: -0.015em; }
+  :is(.live-app, .live-dialog) .tools-rota thead th { padding-top: 3mm; padding-bottom: 1.5mm; border-bottom: 0; font-size: 7.5pt; letter-spacing: 0.1em; }
+  :is(.live-app, .live-dialog) .tools-rota th, :is(.live-app, .live-dialog) .tools-rota td { border-color: #8a8a8a; border-bottom-width: 0.35pt; }
+  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { padding-top: 5mm; padding-bottom: 1.5mm; border-bottom: 0.75pt solid #000; font: 400 14pt/1.2 "Newsreader", Georgia, serif; text-transform: none; letter-spacing: -0.005em; }
+  .tools-rota tr:not(.tools-rota-none) td:last-child { font-weight: 600; }
+  .tools-rota .tools-rota-none td { font-size: 10pt; }
+  .tools-rota-open { min-width: 38mm; height: 5mm; color: transparent !important; border-bottom: 0.5pt solid #000; }
+  .tools-rota-foot { align-items: baseline; }
+}
+/* Sized for a wall and older eyes: the sheet fills its page, with the foot at the bottom edge. */
+@media print {
+  .tools-rota { display: flex; flex-direction: column; min-height: 240mm; }
+  .tools-rota > .live-table-scroll { flex: 1; display: flex; }
+  :is(.live-app, .live-dialog) .tools-rota table { height: 100%; font-size: 12pt; }
+  :is(.live-app, .live-dialog) .tools-rota thead th { height: 1%; font-size: 8.5pt; }
+  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { height: 1%; padding-top: 4.5mm; font-size: 16pt; }
+  :is(.live-app, .live-dialog) .tools-rota td { padding-top: 5.5pt; padding-bottom: 5.5pt; }
+  .tools-rota td small { font-size: 10pt; }
+  .tools-rota tr:not(.tools-rota-none) td:last-child { font-size: 13pt; }
+  .tools-rota .tools-rota-none td { font-size: 11pt; }
+  .tools-rota-foot { margin-top: 6mm; font-size: 10pt; }
+}

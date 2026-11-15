@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMutation, useQueries, useQuery } from "convex/react";
-import { ArrowLeft, CircleCheck } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
-import { CountUp } from "@/components/workspace/primitives";
+import { readFailure } from "@/components/workspace/failure";
+import { DateField } from "@/components/workspace/date-field";
+import { CountUp, LiveField } from "@/components/workspace/primitives";
 import { figureRoll, parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
@@ -55,7 +57,6 @@ export function BankView({
   onClear,
   onUndo,
   onClearAll,
-  onBack,
   statements,
   onKeep,
   onClearDeposit,
@@ -73,7 +74,6 @@ export function BankView({
   onClear: (entry: BankEntry) => void;
   onUndo: (entry: BankEntry) => void;
   onClearAll: () => void;
-  onBack: () => void;
 }) {
   const [statement, setStatement] = useState("");
   // The balance is judged after a pause in typing or on leaving the field, never mid-number.
@@ -90,7 +90,6 @@ export function BankView({
   // The first statement: nothing has been marked yet, so one step marks it all and the exceptions come after.
   const starting = !bank.lately.length && bank.waitingCount > 1;
   const [confirming, setConfirming] = useState(false);
-  const [lateDay, setLateDay] = useState(false);
   const agrees = gap === 0;
   const deposits = bank.deposits ?? [];
   const kept = statements?.some(
@@ -99,9 +98,6 @@ export function BankView({
 
   return (
     <>
-      <Button variant="link" className="treasury-back" onClick={onBack}>
-        <ArrowLeft size={16} aria-hidden="true" /> Ledger
-      </Button>
       <dl className="help-figures treasury-figures">
         <div>
           <dt>Cleared the bank</dt>
@@ -132,7 +128,7 @@ export function BankView({
       </dl>
 
       <section
-        className={agrees ? "help-sheet paper-fold" : "help-sheet treasury-rest"}
+        className={agrees ? "help-sheet paper-fold" : "help-sheet paper-rest"}
         aria-labelledby="treasury-statement-title"
       >
         <p className="help-sheet-label">Your bank statement</p>
@@ -188,28 +184,17 @@ export function BankView({
             )}
           </div>
           <div className="help-inline treasury-statement">
-            <label>
-              Statement ends
-              <Input
-                type="date"
+            <LiveField label="Statement ends">
+              <DateField
                 name="asOf"
                 max={bank.today}
                 defaultValue={bank.asOf}
-                aria-invalid={lateDay || undefined}
-                aria-describedby={lateDay ? "treasury-late-day" : undefined}
-                onChange={(event) => {
-                  const day = event.target.value;
-                  setLateDay(day > bank.today);
+                onChange={(day) => {
                   setConfirming(false);
-                  if (day && day <= bank.today) onAsOf(day);
+                  onAsOf(day);
                 }}
               />
-              {lateDay && (
-                <small id="treasury-late-day" role="alert">
-                  Choose today or an earlier day.
-                </small>
-              )}
-            </label>
+            </LiveField>
             <label>
               Ending balance
               <Input
@@ -410,10 +395,6 @@ export function BankView({
   );
 }
 
-const reason = (cause: unknown) =>
-  cause instanceof Error
-    ? cause.message.replace(/^.*?Uncaught Error:\s*/, "").split("\n")[0]
-    : "That couldn’t be saved. Please try again.";
 
 /** Fetches the bank view and carries its three changes. */
 export function BankRoom({
@@ -424,6 +405,11 @@ export function BankRoom({
   onBack: () => void;
 }) {
   const { setHeading } = useWorkspace();
+  // The head's way back always runs the newest onBack without redrawing the head.
+  const back = useRef(onBack);
+  useEffect(() => {
+    back.current = onBack;
+  });
   const [asOf, setAsOf] = useState<string>();
   const bank = useQuery(api.treasury.reconciliation, { churchId, asOf });
   // Asked for in a way that cannot fail the screen if the backend does not have it yet.
@@ -444,6 +430,7 @@ export function BankRoom({
     setHeading({
       title: "Match the bank",
       deck: "Mark each entry your statement shows. What is left is still on its way.",
+      back: { label: "Ledger", run: () => back.current() },
     });
     return () => setHeading(null);
   }, [setHeading]);
@@ -457,7 +444,7 @@ export function BankRoom({
     try {
       setDone(await run());
     } catch (cause) {
-      setError(reason(cause));
+      setError(readFailure(cause));
     }
     setBusy(null);
   }
@@ -468,7 +455,6 @@ export function BankRoom({
       busy={busy}
       done={done}
       error={error}
-      onBack={onBack}
       onAsOf={setAsOf}
       statements={kept instanceof Error ? undefined : kept}
       onKeep={(balance) =>

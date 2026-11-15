@@ -1,13 +1,15 @@
 "use client";
 
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, CircleCheck } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { Input } from "@/components/ui/input";
+import { readFailure } from "@/components/workspace/failure";
+import { DateField } from "@/components/workspace/date-field";
 import { LiveField } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
@@ -96,14 +98,7 @@ function VoucherForm({
           />
         </LiveField>
         <LiveField label="Day">
-          <Input
-            type="date"
-            name="date"
-            max={today}
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            required
-          />
+          <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
       </div>
       <LiveField
@@ -134,18 +129,13 @@ export function ShelfView({
   shelf,
   done,
   onAdd,
-  onBack,
 }: {
   shelf: Shelf;
   done: string;
   onAdd: () => void;
-  onBack: () => void;
 }) {
   return (
     <>
-      <Button variant="link" className="treasury-back" onClick={onBack}>
-        <ArrowLeft size={16} aria-hidden="true" /> Ledger
-      </Button>
       {done && (
         <div className="live-success help-done treasury-notice" role="status">
           <CircleCheck size={22} aria-hidden="true" />
@@ -258,6 +248,11 @@ export function ShelfRoom({
   onBack: () => void;
 }) {
   const { setHeading, setHeadAction } = useWorkspace();
+  // The head's way back always runs the newest onBack without redrawing the head.
+  const back = useRef(onBack);
+  useEffect(() => {
+    back.current = onBack;
+  });
   const shelf = useQuery(api.treasury.voucherShelf, { churchId });
   const recordVouchers = useMutation(api.treasury.recordVouchers);
   const [adding, setAdding] = useState(false);
@@ -267,6 +262,7 @@ export function ShelfRoom({
     setHeading({
       title: "The voucher shelf",
       deck: "Thrift store vouchers on hand. A count, kept apart from the money.",
+      back: { label: "Ledger", run: () => back.current() },
     });
     return () => setHeading(null);
   }, [setHeading]);
@@ -286,7 +282,6 @@ export function ShelfRoom({
       <ShelfView
         shelf={shelf}
         done={done}
-        onBack={onBack}
         onAdd={() => setAdding(true)}
       />
       <LiveDialog
@@ -304,11 +299,7 @@ export function ShelfRoom({
             try {
               await recordVouchers({ churchId, ...vouchers });
             } catch (cause) {
-              return cause instanceof Error
-                ? cause.message
-                    .replace(/^.*?Uncaught Error:\s*/, "")
-                    .split("\n")[0]
-                : "That couldn’t be recorded. Please try again.";
+              return readFailure(cause, "That couldn’t be recorded. Please try again.");
             }
             setAdding(false);
             setDone(

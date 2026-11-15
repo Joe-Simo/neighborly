@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateField } from "@/components/workspace/date-field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { LiveField } from "@/components/workspace/primitives";
 import { parseCents } from "@/components/workspace/treasury/money";
@@ -206,14 +207,7 @@ export function MoneyForm({
           />
         </LiveField>
         <LiveField label={out ? "Day paid" : "Day received"}>
-          <Input
-            type="date"
-            name="date"
-            max={today}
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            required
-          />
+          <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
       </div>
       <LiveField

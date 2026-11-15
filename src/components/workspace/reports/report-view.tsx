@@ -271,12 +271,15 @@ export function ReportView({
     <div className="report">
       <style>{pageFoot}</style>
       <header className="report-print-head">
-        <p>{groupName}</p>
-        <h1>The year, added up.</h1>
-        <p>
-          {periodLabel(report)}: {longSpanLabel(report)}
-          {soFar && ", so far"}
-        </p>
+        <div>
+          <p>{groupName}</p>
+          <h1>The year, added up.</h1>
+          <p>
+            {periodLabel(report)}: {longSpanLabel(report)}
+            {soFar && ", so far"}
+          </p>
+        </div>
+        <strong>kind helps</strong>
       </header>
       {period}
       {sheet}
@@ -507,7 +510,9 @@ export function ReportView({
               </tbody>
             </table>
           ))}
-          {report.time.members.length > 0 && (
+        </div>
+        {report.time.members.length > 0 && (
+          <div className="report-form report-members">
             <table>
               <caption>Each member’s time</caption>
               <tbody>
@@ -530,8 +535,8 @@ export function ReportView({
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       <p className="help-footnote">

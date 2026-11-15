@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { DateTime } from "luxon";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
@@ -55,30 +55,30 @@ const nameKey = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " 
 
 async function group(ctx: Ctx, churchId: Id<"churches">) {
   const church = await ctx.db.get("churches", churchId);
-  if (!church) throw new Error("Group not found.");
+  if (!church) throw new ConvexError("Group not found.");
   return church;
 }
 function requireCents(amount: number) {
-  if (!isCents(amount)) throw new Error("Enter an amount in dollars and cents, more than zero.");
+  if (!isCents(amount)) throw new ConvexError("Enter an amount in dollars and cents, more than zero.");
 }
 /** The day and note every new entry carries: a real calendar day, not ahead of today in the group's time zone. */
 async function dated(ctx: Ctx, churchId: Id<"churches">, date: string, note: string | undefined) {
-  if (!DateTime.fromFormat(date, "yyyy-MM-dd").isValid) throw new Error("Choose the day.");
-  if (date > today((await group(ctx, churchId)).timeZone)) throw new Error("An entry cannot be dated in the future.");
+  if (!DateTime.fromFormat(date, "yyyy-MM-dd").isValid) throw new ConvexError("Choose the day.");
+  if (date > today((await group(ctx, churchId)).timeZone)) throw new ConvexError("An entry cannot be dated in the future.");
   const memo = (note ?? "").trim();
-  if (memo.length > MEMO_LIMIT) throw new Error(`Keep the note under ${MEMO_LIMIT} characters.`);
+  if (memo.length > MEMO_LIMIT) throw new ConvexError(`Keep the note under ${MEMO_LIMIT} characters.`);
   return { date, memo };
 }
 /** A check number as written on the check: short, with no spaces around it. Empty means none. */
 function check(number: string | undefined) {
   const trimmed = (number ?? "").trim();
-  if (trimmed.length > CHECK_LIMIT) throw new Error(`Keep the check number under ${CHECK_LIMIT} characters.`);
+  if (trimmed.length > CHECK_LIMIT) throw new ConvexError(`Keep the check number under ${CHECK_LIMIT} characters.`);
   return trimmed || undefined;
 }
 function named(name: string, missing: string) {
   const trimmed = name.trim();
-  if (!trimmed) throw new Error(missing);
-  if (trimmed.length > NAME_LIMIT) throw new Error(`Keep the name under ${NAME_LIMIT} characters.`);
+  if (!trimmed) throw new ConvexError(missing);
+  if (trimmed.length > NAME_LIMIT) throw new ConvexError(`Keep the name under ${NAME_LIMIT} characters.`);
   return trimmed;
 }
 const today = (timeZone: string) => DateTime.now().setZone(timeZone).toFormat("yyyy-MM-dd");
@@ -86,7 +86,7 @@ const today = (timeZone: string) => DateTime.now().setZone(timeZone).toFormat("y
 /** Every entry of the group, oldest day first, and within a day in the order recorded. */
 async function ledgerEntries(ctx: Ctx, churchId: Id<"churches">) {
   const entries = await ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(LEDGER_LIMIT + 1);
-  if (entries.length > LEDGER_LIMIT) throw new Error("This ledger is too long to add up in one pass. Tell us, and we will close out the earlier years.");
+  if (entries.length > LEDGER_LIMIT) throw new ConvexError("This ledger is too long to add up in one pass. Tell us, and we will close out the earlier years.");
   return entries;
 }
 
@@ -96,7 +96,7 @@ async function ledgerEntries(ctx: Ctx, churchId: Id<"churches">) {
  */
 export async function paidTowardRequest(ctx: Ctx, requestId: Id<"assistanceRequests">) {
   const entries = await ctx.db.query("ledgerEntries").withIndex("by_request", (q) => q.eq("requestId", requestId)).take(REQUEST_ENTRY_LIMIT + 1);
-  if (entries.length > REQUEST_ENTRY_LIMIT) throw new Error("This request has too many ledger entries to add up.");
+  if (entries.length > REQUEST_ENTRY_LIMIT) throw new ConvexError("This request has too many ledger entries to add up.");
   return entries.reduce((paid, entry) => paid - signed(entry), 0);
 }
 
@@ -164,7 +164,7 @@ export const ledger = query({
     await neighborAccess(ctx, args.churchId);
     const day = today((await group(ctx, args.churchId)).timeZone);
     const month = args.month ?? day.slice(0, 7);
-    if (!DateTime.fromFormat(month, "yyyy-MM").isValid) throw new Error("Choose a month.");
+    if (!DateTime.fromFormat(month, "yyyy-MM").isValid) throw new ConvexError("Choose a month.");
     const all = await ledgerEntries(ctx, args.churchId);
 
     let balance = 0, opening = 0, moneyIn = 0, moneyOut = 0;
@@ -248,20 +248,20 @@ export const recordPayment = mutation({
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
     const request = await ctx.db.get("assistanceRequests", args.requestId);
-    if (!request || request.churchId !== args.churchId) throw new Error("Request not found.");
-    if (request.status !== "approved" || request.amountApproved === undefined) throw new Error("Only an approved request can be paid.");
+    if (!request || request.churchId !== args.churchId) throw new ConvexError("Request not found.");
+    if (request.status !== "approved" || request.amountApproved === undefined) throw new ConvexError("Only an approved request can be paid.");
     requireCents(args.amount);
 
     const neighbor = await ctx.db.get("neighbors", request.neighborId);
     const payee = request.payeeName.trim();
-    if (!payee) throw new Error("Add who is to be paid to the request first.");
+    if (!payee) throw new ConvexError("Add who is to be paid to the request first.");
     if (request.payeeKind === "neighbor" || (neighbor && nameKey(payee) === neighbor.nameKey))
-      throw new Error("Payments go to the landlord, utility or store, never to the neighbor. Change who is paid on the request first.");
+      throw new ConvexError("Payments go to the landlord, utility or store, never to the neighbor. Change who is paid on the request first.");
 
     const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
 
     const remaining = request.amountApproved - (await paidTowardRequest(ctx, request._id));
-    if (args.amount > remaining) throw new Error(remaining > 0 ? "This is more than what is left of the approved amount." : "This request is already paid in full.");
+    if (args.amount > remaining) throw new ConvexError(remaining > 0 ? "This is more than what is left of the approved amount." : "This request is already paid in full.");
 
     const entryId = await ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date, category: request.kind, payee, memo, checkNumber: check(args.checkNumber), requestId: request._id, neighborId: request.neighborId, recordedBy: member._id, createdAt: Date.now() });
     // The last payment closes the request, through the one function the help line exposes for it.
@@ -306,13 +306,13 @@ export const reverseEntry = mutation({
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
     const entry = await ctx.db.get("ledgerEntries", args.entryId);
-    if (!entry || entry.churchId !== args.churchId) throw new Error("Entry not found.");
-    if (entry.reverses) throw new Error("A reversal cannot be reversed. Record the entry again instead.");
+    if (!entry || entry.churchId !== args.churchId) throw new ConvexError("Entry not found.");
+    if (entry.reverses) throw new ConvexError("A reversal cannot be reversed. Record the entry again instead.");
     const already = await ctx.db.query("ledgerEntries").withIndex("by_reverses", (q) => q.eq("reverses", entry._id)).first();
-    if (already) throw new Error("This entry has already been reversed.");
+    if (already) throw new ConvexError("This entry has already been reversed.");
     const reason = args.reason.trim();
-    if (!reason) throw new Error("Say why this entry is being reversed.");
-    if (reason.length > MEMO_LIMIT) throw new Error(`Keep the reason under ${MEMO_LIMIT} characters.`);
+    if (!reason) throw new ConvexError("Say why this entry is being reversed.");
+    if (reason.length > MEMO_LIMIT) throw new ConvexError(`Keep the reason under ${MEMO_LIMIT} characters.`);
     const date = today((await group(ctx, args.churchId)).timeZone);
     // Taking back a payment on a request that was paid in full means it is owed again.
     if (entry.kind === "expense" && entry.requestId && (await ctx.db.get("assistanceRequests", entry.requestId))?.status === "paid") await settleRequest(ctx, member, entry.requestId, false);
@@ -353,8 +353,8 @@ export const cashFlow = query({
   }),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    for (const date of [args.from, args.to]) if (!DateTime.fromFormat(date, "yyyy-MM-dd").isValid) throw new Error("Choose the day.");
-    if (args.to < args.from) throw new Error("The last day must be on or after the first day.");
+    for (const date of [args.from, args.to]) if (!DateTime.fromFormat(date, "yyyy-MM-dd").isValid) throw new ConvexError("Choose the day.");
+    if (args.to < args.from) throw new ConvexError("The last day must be on or after the first day.");
     let opening = 0, closing = 0;
     const kinds = new Map<string, { category: string; direction: "in" | "out"; amount: number; entries: number }>();
     for (const entry of await ledgerEntries(ctx, args.churchId)) {
@@ -387,8 +387,8 @@ export const checkRegister = query({
   returns: v.array(v.object({ id: v.id("ledgerEntries"), checkNumber: v.string(), date: v.string(), payee: v.string(), category: v.string(), amount: v.number(), reversed: v.boolean(), clearedOn: v.union(v.null(), v.string()) })),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    for (const date of [args.from, args.to]) if (!DateTime.fromFormat(date, "yyyy-MM-dd").isValid) throw new Error("Choose the day.");
-    if (args.to < args.from) throw new Error("The last day must be on or after the first day.");
+    for (const date of [args.from, args.to]) if (!DateTime.fromFormat(date, "yyyy-MM-dd").isValid) throw new ConvexError("Choose the day.");
+    if (args.to < args.from) throw new ConvexError("The last day must be on or after the first day.");
     const all = await ledgerEntries(ctx, args.churchId);
     const reversed = new Set(all.flatMap((entry) => entry.reverses ?? []));
     return all
@@ -425,7 +425,7 @@ export const reconciliation = query({
     await neighborAccess(ctx, args.churchId);
     const day = today((await group(ctx, args.churchId)).timeZone);
     const asOf = args.asOf ?? day;
-    if (!DateTime.fromFormat(asOf, "yyyy-MM-dd").isValid) throw new Error("Choose the day.");
+    if (!DateTime.fromFormat(asOf, "yyyy-MM-dd").isValid) throw new ConvexError("Choose the day.");
     const all = await ledgerEntries(ctx, args.churchId);
     const reversed = new Set(all.flatMap((entry) => entry.reverses ?? []));
     let books = 0, cleared = 0, onItsWayIn = 0, onItsWayOut = 0;
@@ -458,8 +458,8 @@ export const reconciliation = query({
 
 /** A statement day an entry can have cleared on: a real day, not before the entry and not ahead of today. */
 async function statementDay(ctx: Ctx, churchId: Id<"churches">, clearedOn: string) {
-  if (!DateTime.fromFormat(clearedOn, "yyyy-MM-dd").isValid) throw new Error("Choose the statement day.");
-  if (clearedOn > today((await group(ctx, churchId)).timeZone)) throw new Error("A statement cannot be dated in the future.");
+  if (!DateTime.fromFormat(clearedOn, "yyyy-MM-dd").isValid) throw new ConvexError("Choose the statement day.");
+  if (clearedOn > today((await group(ctx, churchId)).timeZone)) throw new ConvexError("A statement cannot be dated in the future.");
   return clearedOn;
 }
 
@@ -473,13 +473,13 @@ export const setCleared = mutation({
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
     const entry = await ctx.db.get("ledgerEntries", args.entryId);
-    if (!entry || entry.churchId !== args.churchId) throw new Error("Entry not found.");
+    if (!entry || entry.churchId !== args.churchId) throw new ConvexError("Entry not found.");
     if (args.clearedOn === null) {
       await ctx.db.patch("ledgerEntries", entry._id, { clearedOn: undefined });
       return null;
     }
     const clearedOn = await statementDay(ctx, args.churchId, args.clearedOn);
-    if (clearedOn < entry.date) throw new Error("An entry cannot clear the bank before the day it was made.");
+    if (clearedOn < entry.date) throw new ConvexError("An entry cannot clear the bank before the day it was made.");
     await ctx.db.patch("ledgerEntries", entry._id, { clearedOn });
     return null;
   },
@@ -518,8 +518,8 @@ export const agreeStatement = mutation({
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
     const endsOn = await statementDay(ctx, args.churchId, args.endsOn);
-    if (!Number.isSafeInteger(args.balance)) throw new Error("Enter the ending balance in dollars and cents.");
-    if (args.balance !== (await clearedBy(ctx, args.churchId, endsOn))) throw new Error("The statement and what has cleared do not agree yet, so it was not kept.");
+    if (!Number.isSafeInteger(args.balance)) throw new ConvexError("Enter the ending balance in dollars and cents.");
+    if (args.balance !== (await clearedBy(ctx, args.churchId, endsOn))) throw new ConvexError("The statement and what has cleared do not agree yet, so it was not kept.");
     const kept = await ctx.db.query("bankStatements").withIndex("by_church", (q) => q.eq("churchId", args.churchId).eq("endsOn", endsOn)).first();
     const line = { balance: args.balance, agreedBy: member._id, agreedAt: Date.now() };
     if (kept) await ctx.db.patch("bankStatements", kept._id, line);
@@ -568,17 +568,17 @@ export const recordDeposit = mutation({
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
     const ids = [...new Set(args.entryIds)];
-    if (!ids.length) throw new Error("Choose the gifts that went to the bank.");
-    if (ids.length > DEPOSIT_LIMIT) throw new Error(`A deposit holds up to ${DEPOSIT_LIMIT} gifts. Record the rest as a second deposit.`);
+    if (!ids.length) throw new ConvexError("Choose the gifts that went to the bank.");
+    if (ids.length > DEPOSIT_LIMIT) throw new ConvexError(`A deposit holds up to ${DEPOSIT_LIMIT} gifts. Record the rest as a second deposit.`);
     const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
     let total = 0;
     for (const id of ids) {
       const entry = await ctx.db.get("ledgerEntries", id);
-      if (!entry || entry.churchId !== args.churchId) throw new Error("Entry not found.");
-      if (entry.kind !== "income" || entry.reverses) throw new Error("Only money that came in can be deposited.");
-      if (entry.depositId) throw new Error("One of these gifts is already in a deposit.");
-      if (await ctx.db.query("ledgerEntries").withIndex("by_reverses", (q) => q.eq("reverses", id)).first()) throw new Error("One of these gifts was taken back, so it cannot be deposited.");
-      if (entry.date > date) throw new Error("A gift cannot be deposited before the day it was received.");
+      if (!entry || entry.churchId !== args.churchId) throw new ConvexError("Entry not found.");
+      if (entry.kind !== "income" || entry.reverses) throw new ConvexError("Only money that came in can be deposited.");
+      if (entry.depositId) throw new ConvexError("One of these gifts is already in a deposit.");
+      if (await ctx.db.query("ledgerEntries").withIndex("by_reverses", (q) => q.eq("reverses", id)).first()) throw new ConvexError("One of these gifts was taken back, so it cannot be deposited.");
+      if (entry.date > date) throw new ConvexError("A gift cannot be deposited before the day it was received.");
       total += entry.amount;
     }
     const depositId = await ctx.db.insert("deposits", { churchId: args.churchId, date, total, memo, recordedBy: member._id, createdAt: Date.now() });
@@ -589,7 +589,7 @@ export const recordDeposit = mutation({
 
 async function depositEntries(ctx: Ctx, churchId: Id<"churches">, depositId: Id<"deposits">) {
   const deposit = await ctx.db.get("deposits", depositId);
-  if (!deposit || deposit.churchId !== churchId) throw new Error("Deposit not found.");
+  if (!deposit || deposit.churchId !== churchId) throw new ConvexError("Deposit not found.");
   return { deposit, entries: await ctx.db.query("ledgerEntries").withIndex("by_deposit", (q) => q.eq("depositId", depositId)).take(DEPOSIT_LIMIT) };
 }
 
@@ -601,7 +601,7 @@ export const clearDeposit = mutation({
     await neighborAccess(ctx, args.churchId);
     const { deposit, entries } = await depositEntries(ctx, args.churchId, args.depositId);
     const clearedOn = args.clearedOn === null ? undefined : await statementDay(ctx, args.churchId, args.clearedOn);
-    if (clearedOn && clearedOn < deposit.date) throw new Error("A deposit cannot clear the bank before the day it was made.");
+    if (clearedOn && clearedOn < deposit.date) throw new ConvexError("A deposit cannot clear the bank before the day it was made.");
     for (const entry of entries) await ctx.db.patch("ledgerEntries", entry._id, { clearedOn });
     return null;
   },
@@ -614,7 +614,7 @@ export const undoDeposit = mutation({
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
     const { entries } = await depositEntries(ctx, args.churchId, args.depositId);
-    if (entries.some((entry) => entry.clearedOn)) throw new Error("This deposit has cleared the bank. Take the cleared mark back first.");
+    if (entries.some((entry) => entry.clearedOn)) throw new ConvexError("This deposit has cleared the bank. Take the cleared mark back first.");
     for (const entry of entries) await ctx.db.patch("ledgerEntries", entry._id, { depositId: undefined });
     await ctx.db.delete("deposits", args.depositId);
     return null;
@@ -624,7 +624,7 @@ export const undoDeposit = mutation({
 /** Every movement on the voucher shelf, oldest first. */
 async function shelfRows(ctx: Ctx, churchId: Id<"churches">) {
   const rows = await ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(SHELF_LIMIT + 1);
-  if (rows.length > SHELF_LIMIT) throw new Error("The voucher shelf has too many lines to count in one pass. Tell us, and we will close out the earlier years.");
+  if (rows.length > SHELF_LIMIT) throw new ConvexError("The voucher shelf has too many lines to count in one pass. Tell us, and we will close out the earlier years.");
   return rows;
 }
 function voucherItem(item: string) {
@@ -672,10 +672,10 @@ export const recordVouchers = mutation({
   returns: v.id("voucherStock"),
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
-    if (!wholeCount(Math.abs(args.change))) throw new Error("Enter how many vouchers, as a whole number.");
+    if (!wholeCount(Math.abs(args.change))) throw new ConvexError("Enter how many vouchers, as a whole number.");
     const { name } = voucherItem(args.item);
     const { date, memo } = await dated(ctx, args.churchId, args.date, args.note);
-    if (args.change < 0 && !memo) throw new Error("Say why the count is going down.");
+    if (args.change < 0 && !memo) throw new ConvexError("Say why the count is going down.");
     return ctx.db.insert("voucherStock", { churchId: args.churchId, date, change: args.change, item: name, note: memo, recordedBy: member._id, createdAt: Date.now() });
   },
 });
@@ -688,10 +688,10 @@ export const recordVouchers = mutation({
  * entry, so its worth leaves the money paid out. No access check inside; call it after neighborAccess() with that member.
  */
 export async function voucherGiven(ctx: MutationCtx, member: Doc<"memberships">, given: { requestId: Id<"assistanceRequests">; item: string; quantity: number }): Promise<void> {
-  if (given.quantity !== 0 && !wholeCount(given.quantity)) throw new Error("Enter how many vouchers, as a whole number.");
+  if (given.quantity !== 0 && !wholeCount(given.quantity)) throw new ConvexError("Enter how many vouchers, as a whole number.");
   const { name, key } = voucherItem(given.item);
   const request = await ctx.db.get("assistanceRequests", given.requestId);
-  if (!request || request.churchId !== member.churchId) throw new Error("Request not found.");
+  if (!request || request.churchId !== member.churchId) throw new ConvexError("Request not found.");
   const lines = await ctx.db.query("voucherStock").withIndex("by_request", (q) => q.eq("requestId", given.requestId)).take(REQUEST_ENTRY_LIMIT);
   // What the shelf has already given to this request, item by item. A changed item goes back whole.
   const out = new Map<string, { item: string; count: number }>();
@@ -739,16 +739,16 @@ export const addKind = mutation({
     const member = await neighborAccess(ctx, args.churchId);
     const name = named(args.name, "Give the kind a name.");
     const key = nameKey(name);
-    if (!key) throw new Error("Give the kind a name with letters or numbers.");
+    if (!key) throw new ConvexError("Give the kind a name with letters or numbers.");
     const builtIn = [...Object.values(incomeSources), ...Object.values(spendingKinds), "rent", "utility", "utilities", "food", "voucher", "thrift store voucher", "other", "other help"];
-    if (builtIn.some((label) => nameKey(label) === key)) throw new Error("Every conference already has a kind with this name.");
+    if (builtIn.some((label) => nameKey(label) === key)) throw new ConvexError("Every conference already has a kind with this name.");
     const same = await ctx.db.query("ledgerKinds").withIndex("by_church_key", (q) => q.eq("churchId", args.churchId).eq("nameKey", key)).first();
-    if (same && !same.retiredAt) throw new Error("You already have a kind with this name.");
+    if (same && !same.retiredAt) throw new ConvexError("You already have a kind with this name.");
     if (same) {
       await ctx.db.patch("ledgerKinds", same._id, { retiredAt: undefined, direction: args.direction, name });
       return same._id;
     }
-    if ((await ownKinds(ctx, args.churchId)).length >= KIND_LIMIT) throw new Error(`A conference can keep up to ${KIND_LIMIT} kinds of its own.`);
+    if ((await ownKinds(ctx, args.churchId)).length >= KIND_LIMIT) throw new ConvexError(`A conference can keep up to ${KIND_LIMIT} kinds of its own.`);
     return ctx.db.insert("ledgerKinds", { churchId: args.churchId, direction: args.direction, name, nameKey: key, recordedBy: member._id, createdAt: Date.now() });
   },
 });
@@ -760,7 +760,7 @@ export const retireKind = mutation({
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
     const kind = await ctx.db.get("ledgerKinds", args.kindId);
-    if (!kind || kind.churchId !== args.churchId) throw new Error("Kind not found.");
+    if (!kind || kind.churchId !== args.churchId) throw new ConvexError("Kind not found.");
     if (!kind.retiredAt) await ctx.db.patch("ledgerKinds", kind._id, { retiredAt: Date.now() });
     return null;
   },
@@ -773,7 +773,7 @@ export const recordOwnKind = mutation({
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
     const kind = await ctx.db.get("ledgerKinds", args.kindId);
-    if (!kind || kind.churchId !== args.churchId || kind.retiredAt) throw new Error("This kind is no longer offered. Choose another.");
+    if (!kind || kind.churchId !== args.churchId || kind.retiredAt) throw new ConvexError("This kind is no longer offered. Choose another.");
     requireCents(args.amount);
     const out = kind.direction === "expense";
     const payee = named(args.name, out ? "Say who was paid." : "Say where the money came from.");

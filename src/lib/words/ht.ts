@@ -79,6 +79,7 @@ export function ht(set: WordSet): Words {
     actions: {
       timeOff: "Planifye jou konje",
       announcement: "Pataje yon anons",
+      announcementSees: `Tout moun nan ${t.group} lan wè sa nan Semèn sa a.`,
     },
     dateField: { choose: "Chwazi yon jou", done: "Fini", chooseTime: "Chwazi yon lè" },
     week: {
@@ -160,6 +161,7 @@ export function ht(set: WordSet): Words {
       addAvailable: "Ajoute dat disponib",
     },
     timeOffForm: {
+      teamSees: "Ekip ou wè jou ou pa la yo.",
       firstDay: "Premye jou",
       lastDay: "Dènye jou",
       noteLabel: "Nòt (si ou vle)",
@@ -177,6 +179,24 @@ export function ht(set: WordSet): Words {
       failed:
         "Nou pa t kapab konfime dat sa yo. Angajman ou yo ka chanje. Tounen pou gade lis la jan li ye kounye a.",
       saved: "Jou konje anrejistre. Se sèlman angajman ou te gade yo ki lage.",
+    },
+    /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
+    states: {
+      notSaved: "Sa pa t anrejistre. Tanpri eseye ankò.",
+      offlineSave: "Pa gen koneksyon kounye a, kidonk sa pa t anrejistre.",
+      kept: "Anyen pa t anrejistre, e sa ou te ekri a la toujou.",
+      tryAgain: "Eseye ankò",
+      waiting: "N ap tann koneksyon an. Sa ou te ekri a rete la e l ap voye lè koneksyon an tounen.",
+      offlineTitle: "Pa gen koneksyon kounye a.",
+      offlineDeck: "Sa ki sou ekran an rete la. Chanjman yo ap voye lè aparèy sa a gen koneksyon ankò.",
+      errorTitle: "Sal sa a pa t louvri.",
+      errorDeck: "Anyen pa pèdi. Eseye ankò; si li toujou pa louvri, rès espas ou a nan meni an.",
+      privateTitle: "Sa rete prive.",
+      privateDeck: `Sal sa a gen non ${t.neighbors} nou ede yo, kidonk se kowòdonatè yo sèlman ki ka louvri l. Angajman ou ak ekip ou kote yo toujou ye a.`,
+      privateAction: "Angajman mwen",
+      missingTitle: "Paj sa a pa la.",
+      missingDeck: "Adrès la ka ansyen oswa mal ekri. Espas ou a jan ou te kite l la.",
+      missingAction: "Ale nan espas ou",
     },
     notices: {
       saved: "Anrejistre.",
@@ -307,6 +327,7 @@ export function ht(set: WordSet): Words {
       change: "Chanje",
       discard: "Jete",
       saved: "Anrejistre nan dosye a",
+      approved: "Apwouve",
     },
     welcome: {
       pass: "Pase kat la",
