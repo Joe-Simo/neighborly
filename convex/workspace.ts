@@ -1,10 +1,10 @@
 import { v } from "convex/values";
 import { parseScheduledTime, parseCalendarDate, overlapsTimeOff, expandWeeklySchedule } from "../src/lib/scheduling";
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { components, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { accountEmailConfiguration } from "./notifications";
 import { queueCoverRequest, cancelPendingNotification } from "./notificationEvents";
 import { query, mutation, type QueryCtx, type MutationCtx } from "./_generated/server";
+import { user, membership } from "./access";
 import type { Id } from "./_generated/dataModel";
 
 const churchId = v.id("churches");
@@ -37,19 +37,6 @@ const command = v.union(
   v.object({ type: v.literal("setTeamRole"), teamId:v.id("teams"), personId:v.id("memberships"), role:v.union(v.literal("coordinator"),v.literal("member")) }),
   v.object({ type: v.literal("setTeamMember"), teamId: v.id("teams"), personId: v.id("memberships"), member: v.boolean() }),
 );
-async function user(ctx: QueryCtx | MutationCtx) {
-  const id = await getAuthUserId(ctx);
-  if (!id) throw new Error("Sign in required.");
-  const email = await ctx.runQuery(components.authEmail.verifiedEmails.getPrimaryEmail, { userId: id });
-  if (!email) throw new Error("A verified email is required.");
-  return { id, email };
-}
-async function membership(ctx: QueryCtx | MutationCtx, church: Id<"churches">) {
-  const account = await user(ctx);
-  const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", church).eq("userId", account.id)).unique();
-  if (!member?.active) throw new Error("Workspace access required.");
-  return member;
-}
 function required(value: string, max = 200) {
   const result = value.trim();
   if (!result || result.length > max) throw new Error("Enter a valid value.");
