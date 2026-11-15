@@ -93,7 +93,7 @@ export function en(set: WordSet) {
     mine: {
       accepted: "Accepted commitments",
       addToCalendar: "Add these to your phone’s calendar",
-      emptyTitle: "Nothing on your calendar yet.",
+      emptyTitle: "No accepted commitments yet.",
       emptyDetail:
         "Commitments you accept will appear here with everything you need to prepare.",
     },
@@ -196,6 +196,48 @@ export function en(set: WordSet) {
     /** The Monday note: fixed sentences chosen from the week's counts. */
     /** The kinds of help a request can be for, as a record line or a form names them. */
     kinds: { rent: "Rent", utility: "Utility bill", food: "Food", voucher: "Thrift store voucher", other: "Other help" },
+    /** The private address that puts a person's shifts and visits on their own phone's calendar. */
+    calendar: {
+      title: "On your own calendar",
+      deck: "Your shifts and home visits can appear in the calendar already on your phone. Set it up once and it stays up to date by itself.",
+      apple: "Add to Apple Calendar",
+      google: "Add to Google Calendar",
+      outlook: "Add to Outlook",
+      addressLabel: "Your private calendar address",
+      copy: "Copy address",
+      copied: "Copied",
+      copiedStatus: "Address copied.",
+      privacy: "This address is yours alone; anyone who has it can see when and where you serve. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands, make a new one and the old one stops working.",
+      makeNew: "Make a new address",
+      makeNewTitle: "Make a new address?",
+      makeNewDetail: "The old address stops working straight away. You will need to add the new one to your calendar again.",
+      keep: "Keep this address",
+      get: "Get my calendar address",
+      finding: "Finding your calendar",
+      failed: "Your calendar address could not be made. Nothing has changed; check your connection, then try again.",
+    },
+    /** The week as a sheet of paper for a wall or a door. */
+    rota: {
+      title: "The week on paper",
+      deck: "For the parish office wall, the sacristy door, or anyone who would rather hold it.",
+      before: "Week before",
+      after: "Week after",
+      print: "Print this week",
+      time: "Time",
+      what: "What",
+      where: "Where",
+      who: "Who",
+      none: "Nothing planned",
+      open: "Open",
+      quietTitle: "A quiet week.",
+      quietDetail: "Nothing is planned for these days yet. Commitments appear here as soon as they are added.",
+      sample: "Sample",
+      /** Followed by the month and year: "Printed November 2026". */
+      printed: "Printed",
+      /** Between two times of day, and between the first and last day of the week. */
+      to: "to",
+      through: "to",
+    },
     monday: {
       title: "This week, in short.",
       origin: "Counted from your records.",

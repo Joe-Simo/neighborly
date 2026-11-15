@@ -9,18 +9,19 @@ import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/works
 
 export function WeeklyRotaView({ group, week, days, printed, sample, titled = true, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; titled?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
   const planned = days.some((day) => day.shifts.length > 0);
+  const text = useWorkspace().words.rota;
   return (
     <section className={titled ? "live-section" : undefined}>
       {titled && (
         <div className="live-section-head">
-          <h2>The week on paper</h2>
+          <h2>{text.title}</h2>
         </div>
       )}
-      <p className="live-deck">For the parish office wall, the sacristy door, or anyone who would rather hold it.</p>
+      <p className="live-deck">{text.deck}</p>
       <div className="tools-week">
-        <Button variant="outline" className="tools-week-step" aria-label="Week before" onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
-        <Button variant="outline" className="tools-week-step" aria-label="Week after" onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
-        <Button disabled={!planned} onClick={onPrint}><Printer size={16} aria-hidden="true" /> Print this week</Button>
+        <Button variant="outline" className="tools-week-step" aria-label={text.before} onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
+        <Button variant="outline" className="tools-week-step" aria-label={text.after} onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
+        <Button disabled={!planned} onClick={onPrint}><Printer size={16} aria-hidden="true" /> {text.print}</Button>
       </div>
       <div className="tools-rota">
         <header>
@@ -31,18 +32,18 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
           <div className="live-table-scroll">
             <table>
               <thead>
-                <tr><th scope="col">Time</th><th scope="col">What</th><th scope="col">Where</th><th scope="col">Who</th></tr>
+                <tr><th scope="col">{text.time}</th><th scope="col">{text.what}</th><th scope="col">{text.where}</th><th scope="col">{text.who}</th></tr>
               </thead>
               {days.map((day) => (
                 <tbody key={day.key}>
                   <tr className="tools-rota-day"><th scope="rowgroup" colSpan={4}>{day.label}</th></tr>
-                  {!day.shifts.length && <tr className="tools-rota-none"><td colSpan={4}>Nothing planned</td></tr>}
+                  {!day.shifts.length && <tr className="tools-rota-none"><td colSpan={4}>{text.none}</td></tr>}
                   {day.shifts.map((shift) => (
                     <tr key={shift.id}>
                       <td>{shift.time}</td>
                       <td>{shift.title}<small>{shift.team}</small></td>
                       <td>{shift.location}</td>
-                      <td>{shift.who ?? <span className="tools-rota-open">Open</span>}</td>
+                      <td>{shift.who ?? <span className="tools-rota-open">{text.open}</span>}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -53,12 +54,12 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
           <div className="help-empty">
             <div className="help-empty-art" style={{ backgroundImage: "url(/assets/threshold/courtyard-quiet-plate-v1.webp)" }} aria-hidden="true" />
             <div>
-              <h3>A quiet week.</h3>
-              <p>Nothing is planned for these days yet. Commitments appear here as soon as they are added.</p>
+              <h3>{text.quietTitle}</h3>
+              <p>{text.quietDetail}</p>
             </div>
           </div>
         )}
-        <footer className="tools-rota-foot"><span>kind helps</span><span>{sample && "Sample · "}Printed {printed}</span></footer>
+        <footer className="tools-rota-foot"><span>kind helps</span><span>{sample && `${text.sample} · `}{text.printed} {printed}</span></footer>
       </div>
     </section>
   );
@@ -66,7 +67,7 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
 
 /** titled is false inside a dialog, where the dialog carries the heading. */
 export function WeeklyRota({ titled = true }: { titled?: boolean }) {
-  const { data, now, format, personName, teamName } = useWorkspace();
+  const { data, now, format, personName, teamName, words } = useWorkspace();
   const [weeksAhead, setWeeksAhead] = useState(0);
   const start = weekStart(now, data.church.timeZone, weeksAhead);
   const shifts = data.commitments
@@ -75,8 +76,8 @@ export function WeeklyRota({ titled = true }: { titled?: boolean }) {
   return (
     <WeeklyRotaView
       group={data.church.name}
-      week={weekLabel(start)}
-      days={weekRota(shifts, start)}
+      week={weekLabel(start, words.locale, words.rota)}
+      days={weekRota(shifts, start, words.locale, words.rota)}
       printed={format(now, { year: "numeric", month: "long" })}
       sample={data.church.sample}
       titled={titled}

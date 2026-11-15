@@ -20,9 +20,9 @@ export function likelyCalendar(userAgent: string): CalendarApp {
 export function calendarLinks(address: string, first: CalendarApp) {
   const webcal = address.replace(/^https?:/, "webcal:");
   const links = [
-    { app: "apple" as const, label: "Add to Apple Calendar", href: webcal },
-    { app: "google" as const, label: "Add to Google Calendar", href: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}` },
-    { app: "outlook" as const, label: "Add to Outlook", href: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(address)}` },
+    { app: "apple" as const, href: webcal },
+    { app: "google" as const, href: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}` },
+    { app: "outlook" as const, href: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(address)}` },
   ];
   return [...links.filter((link) => link.app === first), ...links.filter((link) => link.app !== first)];
 }
@@ -31,16 +31,17 @@ const noChange = () => () => {};
 export function CalendarAddressView({ address, busy, error, onCreate, titled = true }: { address: string | null; busy: boolean; error: string; onCreate: () => void; titled?: boolean }) {
   const [copied, setCopied] = useState(false);
   const [replacing, setReplacing] = useState(false);
+  const text = useWorkspace().words.calendar;
   const device = useSyncExternalStore(noChange, () => likelyCalendar(navigator.userAgent), () => "google" as const);
   return (
     <section>
       {titled && (
         <div className="live-section-head">
-          <h2>On your own calendar</h2>
+          <h2>{text.title}</h2>
         </div>
       )}
       <p className="live-deck">
-        Your shifts and home visits can appear in the calendar already on your phone. Set it up once and it stays up to date by itself.
+        {text.deck}
       </p>
       {error && <div className="live-error" role="alert"><p>{error}</p></div>}
       {address ? (
@@ -48,44 +49,44 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
           <div className="help-actions tools-after">
             {calendarLinks(address, device).map((link, index) => (
               <Button key={link.app} variant="outline" className={index === 0 ? "tools-first" : undefined} asChild>
-                <a href={link.href} target="_blank" rel="noreferrer"><CalendarPlus size={18} aria-hidden="true" /> {link.label}</a>
+                <a href={link.href} target="_blank" rel="noreferrer"><CalendarPlus size={18} aria-hidden="true" /> {text[link.app]}</a>
               </Button>
             ))}
           </div>
           <div className="tools-address">
-            <Input readOnly aria-label="Your private calendar address" value={address} onFocus={(event) => event.currentTarget.select()} />
+            <Input readOnly aria-label={text.addressLabel} value={address} onFocus={(event) => event.currentTarget.select()} />
             <Button
               variant="outline"
               onClick={() => void navigator.clipboard.writeText(address).then(() => setCopied(true))}
             >
-              {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />} {copied ? "Copied" : "Copy address"}
+              {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />} {copied ? text.copied : text.copy}
             </Button>
           </div>
-          <span className="sr-only" role="status">{copied ? "Address copied." : ""}</span>
+          <span className="sr-only" role="status">{copied ? text.copiedStatus : ""}</span>
           <p className="tools-small">
-            This address is yours alone; anyone who has it can see when and where you serve. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands, make a new one and the old one stops working.
+            {text.privacy}
           </p>
           <div className="help-actions tools-replace">
-            <Button variant="outline" disabled={busy} onClick={() => setReplacing(true)}>Make a new address</Button>
+            <Button variant="outline" disabled={busy} onClick={() => setReplacing(true)}>{text.makeNew}</Button>
           </div>
           <Dialog open={replacing} onOpenChange={setReplacing}>
             <DialogContent className="live-dialog">
               <DialogHeader>
-                <DialogTitle>Make a new address?</DialogTitle>
+                <DialogTitle>{text.makeNewTitle}</DialogTitle>
                 <DialogDescription>
-                  The old address stops working straight away. You will need to add the new one to your calendar again.
+                  {text.makeNewDetail}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="ghost" onClick={() => setReplacing(false)}>Keep this address</Button>
-                <Button disabled={busy} onClick={() => { setReplacing(false); setCopied(false); onCreate(); }}>Make a new address</Button>
+                <Button variant="ghost" onClick={() => setReplacing(false)}>{text.keep}</Button>
+                <Button disabled={busy} onClick={() => { setReplacing(false); setCopied(false); onCreate(); }}>{text.makeNew}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </>
       ) : (
         <Button style={{ marginTop: 22 }} disabled={busy} onClick={onCreate}>
-          <CalendarPlus size={16} aria-hidden="true" /> Get my calendar address
+          <CalendarPlus size={16} aria-hidden="true" /> {text.get}
         </Button>
       )}
     </section>
@@ -94,14 +95,14 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
 
 /** titled is false inside a dialog, where the dialog carries the heading. */
 export function CalendarAddress({ titled = true }: { titled?: boolean }) {
-  const { data } = useWorkspace();
+  const { data, words } = useWorkspace();
   const address = useQuery(api.calendar.address, { churchId: data.church.id });
   const create = useAction(api.calendar.createAddress);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   if (address === undefined)
     return (
-      <div className="help-skeleton" role="status" aria-label="Finding your calendar">
+      <div className="help-skeleton" role="status" aria-label={words.calendar.finding}>
         <div><i /><span><b /><b /></span></div>
       </div>
     );
@@ -116,7 +117,7 @@ export function CalendarAddress({ titled = true }: { titled?: boolean }) {
         setBusy(true);
         setError("");
         void create({ churchId: data.church.id })
-          .catch(() => setError("Your calendar address could not be made. Nothing has changed; check your connection, then try again."))
+          .catch(() => setError(words.calendar.failed))
           .finally(() => setBusy(false));
       }}
     />
