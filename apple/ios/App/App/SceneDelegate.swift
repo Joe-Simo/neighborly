@@ -49,6 +49,35 @@ final class ShellViewController: CAPBridgeViewController {
         return asked > 0 ? asked : 12
     }
 
+    /// A web view ignores the page's own print command, so the shell answers
+    /// it: `window.print()` asks here, and iOS shows its print sheet for the page.
+    override func capacitorDidLoad() {
+        super.capacitorDidLoad()
+        guard let scripts = webView?.configuration.userContentController else { return }
+        scripts.addUserScript(WKUserScript(
+            source: "window.print = () => window.webkit.messageHandlers.kindHelpsPrint.postMessage(null);",
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
+        scripts.add(PrintRequests { [weak self] in self?.printPage() }, name: "kindHelpsPrint")
+    }
+
+    private func printPage() {
+        guard let webView else { return }
+        let info = UIPrintInfo.printInfo()
+        info.outputType = .general
+        info.jobName = webView.title ?? "Kind Helps"
+        let printer = UIPrintInteractionController.shared
+        printer.printInfo = info
+        printer.printFormatter = webView.viewPrintFormatter()
+        if traitCollection.userInterfaceIdiom == .pad {
+            let middle = CGRect(x: webView.bounds.midX, y: webView.bounds.midY, width: 0, height: 0)
+            printer.present(from: middle, in: webView, animated: true)
+        } else {
+            printer.present(animated: true)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         guard let webView else { return }
@@ -179,5 +208,18 @@ private final class SlowPageEvents: NSObject, WKNavigationDelegate {
         guard navigationAction.navigationType == .linkActivated else { return decisionHandler(.allow) }
         decisionHandler(.cancel)
         tryAgain()
+    }
+}
+
+/// Passes the page's print request to the shell.
+private final class PrintRequests: NSObject, WKScriptMessageHandler {
+    private let asked: () -> Void
+
+    init(asked: @escaping () -> Void) {
+        self.asked = asked
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        asked()
     }
 }
