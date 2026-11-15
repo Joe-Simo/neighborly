@@ -146,6 +146,7 @@ export const clear = internalMutation({
       ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("calendarFeeds").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("announcements").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("tasks").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
       ctx.db.query("timeOff").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),

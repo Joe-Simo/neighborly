@@ -26,7 +26,10 @@ export default defineSchema({
   announcements: defineTable({ churchId: v.id("churches"), title: v.string(), body: v.string(), authorId: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId"]),
   invitations: defineTable({ churchId: v.id("churches"), email: v.string(), role: v.union(v.literal("coordinator"),v.literal("member")), tokenHash: v.string(), expiresAt: v.number(), status: v.union(v.literal("pending"),v.literal("accepted"),v.literal("revoked")), createdBy: v.id("memberships"), acceptedBy: v.optional(v.id("users")), createdAt: v.number(), requestId: v.string() }).index("by_church", ["churchId"]).index("by_token", ["tokenHash"]).index("by_church_request", ["churchId", "requestId"]),
   outbox: defineTable({ churchId: v.id("churches"), invitationId: v.optional(v.id("invitations")), requestId: v.optional(v.id("requests")), meetingId: v.optional(v.id("meetings")), memberId: v.optional(v.id("memberships")), eventKey: v.optional(v.string()), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerId: v.optional(v.string()), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_invitation", ["invitationId"]).index("by_church_event", ["churchId", "eventKey"]).index("by_church_state", ["churchId", "state"]).index("by_church_kind_state", ["churchId", "kind", "state"]),
-  auditEvents: defineTable({ churchId: v.id("churches"), actorId: v.id("users"), action: v.string(), invitationId: v.optional(v.id("invitations")), commitmentId: v.optional(v.id("commitments")), targetId: v.optional(v.string()), at: v.number() }).index("by_church", ["churchId"]),
+  auditEvents: defineTable({ churchId: v.id("churches"), actorId: v.id("users"), action: v.string(), invitationId: v.optional(v.id("invitations")), commitmentId: v.optional(v.id("commitments")), targetId: v.optional(v.string()), at: v.number() }).index("by_church", ["churchId"]).index("by_church_action_target", ["churchId", "action", "targetId"]),
+  // One row per member: the private address of their calendar feed.
+  calendarFeeds: defineTable({ churchId: v.id("churches"), memberId: v.id("memberships"), token: v.string(), createdAt: v.number() }).index("by_token", ["token"]).index("by_member", ["memberId"]).index("by_church", ["churchId"]),
+
   // Help line, neighbor records, assistance, home visits and treasury.
   // Cover requests already own the name "requests"; requests for help are "assistanceRequests".
   // Reading any of these goes through neighborAccess() in access.ts.
@@ -44,7 +47,7 @@ export default defineSchema({
     notes: v.string(),
     createdBy: v.id("memberships"),
     createdAt: v.number(),
-  }).index("by_church", ["churchId"]).index("by_church_name", ["churchId", "nameKey"]).index("by_church_phone", ["churchId", "phoneKey"]),
+  }).index("by_church", ["churchId"]).index("by_church_name", ["churchId", "nameKey"]).index("by_church_phone", ["churchId", "phoneKey"]).searchIndex("search_address", { searchField: "address", filterFields: ["churchId"] }),
   calls: defineTable({
     churchId: v.id("churches"),
     neighborId: v.optional(v.id("neighbors")),
@@ -54,6 +57,10 @@ export default defineSchema({
     callback: v.union(v.literal("none"), v.literal("needed"), v.literal("done")),
     takenBy: v.id("memberships"),
     takenAt: v.number(),
+    ownerId: v.optional(v.id("memberships")),
+    returnedBy: v.optional(v.id("memberships")),
+    returnedAt: v.optional(v.number()),
+    outcome: v.optional(v.string()),
   }).index("by_church", ["churchId", "takenAt"]).index("by_church_callback", ["churchId", "callback"]).index("by_neighbor", ["neighborId"]),
   assistanceRequests: defineTable({
     churchId: v.id("churches"),
@@ -70,6 +77,7 @@ export default defineSchema({
     payeeKind: v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"), v.literal("neighbor")),
     payeeName: v.string(),
     source: v.union(v.literal("person"), v.literal("ai_draft")),
+    referral: v.optional(v.string()),
     createdBy: v.id("memberships"),
     createdAt: v.number(),
   }).index("by_church", ["churchId", "createdAt"]).index("by_church_status", ["churchId", "status"]).index("by_neighbor", ["neighborId"]),
