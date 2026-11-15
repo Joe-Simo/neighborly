@@ -130,7 +130,8 @@ export const requests = query({
       ? await ctx.db.query("assistanceRequests").withIndex("by_church_status", (q) => q.eq("churchId", churchId).eq("status", status)).order("desc").take(200)
       : await ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", churchId)).order("desc").take(200);
     const found = lookups(ctx);
-    return Promise.all(rows.map((row) => toRequestRow(found, row)));
+    // Newest first by the day it was asked: a request brought over from older records keeps its own date.
+    return Promise.all(rows.sort((a, b) => b.createdAt - a.createdAt).map((row) => toRequestRow(found, row)));
   },
 });
 

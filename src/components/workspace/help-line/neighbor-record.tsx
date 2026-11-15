@@ -221,7 +221,7 @@ export function NeighborRecordView({
     (request) => request.payeeKind === "landlord" && request.payeeName,
   )?.payeeName;
   const asked = (request: HelpRequest) =>
-    `Asked ${format(request.createdAt, { weekday: "long" })}. Taken by ${request.createdByName}.`;
+    `Asked ${format(request.createdAt, { weekday: "long", month: "long", day: "numeric" })}. Taken by ${request.createdByName}.`;
   const years = [...new Set(record.history.map((event) => year(event.at)))];
   return (
     <>
