@@ -149,18 +149,21 @@ export const load = internalMutation({
         const asksForHelp = call === 0 || recent !== undefined || random.next() < 0.7;
         const callId = await ctx.db.insert("calls", { churchId, neighborId, callerName: name, phone, note: asksForHelp ? `${summary}.` : "Called to say thank you and give an update.", callback: recent !== undefined && age < 3 * DAY ? "needed" : asksForHelp ? "done" : "none", takenBy: random.pick(staff), takenAt });
         if (!asksForHelp) continue;
-        const amountRequested = Math.round(random.between(need.low, need.high) / 500) * 500;
-        const outcome = age < 6 * DAY ? "open" : age < 13 * DAY ? "approved" : random.pick(["paid", "paid", "paid", "paid", "paid", "paid", "paid", "declined", "closed"] as const);
+        // A voucher request names what comes off the shelf; nobody is paid, so it carries no amount and no payee.
+        const voucher = need.kind === "voucher" ? { item: summary.startsWith("Furniture") ? "Furniture voucher" : "Clothing voucher", quantity: 1 } : undefined;
+        // The same numbers are drawn for every kind, so changing one kind's rules leaves the rest of the year as it was.
+        const asked = Math.round(random.between(need.low, need.high) / 500) * 500;
+        const amountRequested = voucher ? 0 : asked;
+        const drawn = age < 6 * DAY ? "open" : age < 13 * DAY ? "approved" : random.pick(["paid", "paid", "paid", "paid", "paid", "paid", "paid", "declined", "closed"] as const);
+        const outcome = voucher && drawn === "approved" ? "paid" : drawn;
         const granted = outcome === "approved" || outcome === "paid";
-        const amountApproved = granted ? Math.min(amountRequested, Math.round((amountRequested * random.between(60, 100)) / 100 / 500) * 500) : undefined;
+        const share = granted ? Math.min(asked, Math.round((asked * random.between(60, 100)) / 100 / 500) * 500) : undefined;
+        const amountApproved = voucher && granted ? 0 : share;
         const decidedAt = outcome === "open" ? undefined : takenAt + random.between(3, 5) * DAY;
-        const payeeName = random.pick(need.payees);
-        const requestId = await ctx.db.insert("assistanceRequests", { churchId, neighborId, callId, kind: need.kind, summary, amountRequested, amountApproved, status: outcome, decisionNote: outcome === "declined" ? "Referred to the county program, which covers this in full." : outcome === "closed" ? "Neighbor resolved it before the visit." : granted ? "Approved after the home visit." : "", decidedBy: decidedAt ? owner : undefined, decidedAt, payeeKind: need.payeeKind, payeeName, source: index % 8 === 3 ? "ai_draft" : "person", createdBy: random.pick(staff), createdAt: takenAt });
-        if (need.kind === "voucher" && granted && vouchersGiven.length < 24) {
-          const item = summary.startsWith("Furniture") ? "Furniture voucher" : "Clothing voucher";
-          await ctx.db.patch("assistanceRequests", requestId, { voucher: { item, quantity: 1 } });
-          vouchersGiven.push({ requestId, time: (decidedAt ?? takenAt) + DAY, item });
-        }
+        const paidTo = random.pick(need.payees);
+        const payeeName = voucher ? "" : paidTo;
+        const requestId = await ctx.db.insert("assistanceRequests", { churchId, neighborId, callId, kind: need.kind, summary, amountRequested, amountApproved, ...(voucher ? { voucher } : {}), status: outcome, decisionNote: outcome === "declined" ? "Referred to the county program, which covers this in full." : outcome === "closed" ? "Neighbor resolved it before the visit." : granted ? "Approved after the home visit." : "", decidedBy: decidedAt ? owner : undefined, decidedAt, payeeKind: need.payeeKind, payeeName, source: index % 8 === 3 ? "ai_draft" : "person", createdBy: random.pick(staff), createdAt: takenAt });
+        if (voucher && outcome === "paid") vouchersGiven.push({ requestId, time: decidedAt ?? takenAt, item: voucher.item });
         if (outcome !== "closed") {
           const first = random.between(0, visitors.length - 1);
           const pair = [visitors[first], visitors[(first + random.between(1, visitors.length - 1)) % visitors.length]];
@@ -169,7 +172,7 @@ export const load = internalMutation({
           const hours = random.between(2, 5) / 2, miles = random.between(4, 22);
           await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, now + random.between(1, 3) * DAY), status: done ? "completed" : "scheduled", visitors: pair.map((memberId) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0 })), notes: done ? "Visited together. Reviewed the bill and confirmed the amount with the payee." : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
         }
-        if (outcome === "paid" && amountApproved && decidedAt)
+        if (outcome === "paid" && amountApproved && decidedAt && !voucher)
           await entry("expense", decidedAt + DAY, amountApproved, need.kind, payeeName, "", { requestId, neighborId, ...(need.kind === "food" || need.kind === "voucher" ? {} : { checkNumber: String(checkNumber++) }) });
       }
     }
@@ -243,8 +246,8 @@ export const load = internalMutation({
     // The voucher shelf: two lots received from the thrift store, one given on each granted voucher request.
     const shelf = (time: number, change: number, item: string, note: string, requestId?: Id<"assistanceRequests">) =>
       ctx.db.insert("voucherStock", { churchId, date: isoDay(time), change, item, note, ...(requestId ? { requestId } : {}), recordedBy: owner, createdAt: time });
-    await shelf(start + DAY, 20, "Furniture voucher", "From the conference thrift store");
-    await shelf(start + DAY, 30, "Clothing voucher", "From the conference thrift store");
+    await shelf(start + DAY, 40, "Furniture voucher", "From the conference thrift store");
+    await shelf(start + DAY, 40, "Clothing voucher", "From the conference thrift store");
     for (const given of vouchersGiven) await shelf(Math.min(given.time, now), -1, given.item, "Given on a request", given.requestId);
 
     return churchId;

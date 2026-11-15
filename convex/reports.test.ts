@@ -95,7 +95,14 @@ describe("the year's counts for the sample conference", () => {
         byKind[kind].requestsPaid += ofKind.length;
         for (const entry of ofKind) { byKind[kind].paid += entry.amount; hand.helpPaid += entry.amount; }
       }
-      if (!visited.length && !payments.length) continue;
+      // A voucher is given from the shelf, not paid: the household counts by the vouchers it kept.
+      const kept = data.requests.filter((request) => request.neighborId === neighbor._id && request.kind === "voucher")
+        .filter((request) => data.shelf.filter((line) => line.requestId === request._id && inYearDay(line.date)).reduce((sum, line) => sum - line.change, 0) > 0);
+      if (kept.length) {
+        byKind.voucher.households += 1;
+        byKind.voucher.people += size;
+      }
+      if (!visited.length && !payments.length && !kept.length) continue;
       hand.households += 1;
       hand.people += size;
       hand.adults += neighbor.adults;
@@ -121,9 +128,9 @@ describe("the year's counts for the sample conference", () => {
     const paidInYear = (requestId: string) => data.ledger.filter((entry) => entry.kind === "expense" && entry.requestId === requestId && inYearDay(entry.date)).reduce((sum, entry) => sum + entry.amount, 0);
     const later = received.filter((request) => request.status === "paid" && paidInYear(request._id) < (request.amountApproved ?? 0));
     const paidLater = { requests: later.filter((request) => paidInYear(request._id) === 0).length, amount: later.reduce((sum, request) => sum + (request.amountApproved ?? 0) - paidInYear(request._id), 0) };
-    expect(report.kinds.reduce((paid, line) => paid + line.requestsPaid, 0)).toBe(count("paid") - paidLater.requests + data.ledger.filter((entry) => entry.kind === "expense" && entry.requestId && inYearDay(entry.date) && !theirs.has(entry.requestId)).length);
+    expect(report.kinds.reduce((paid, line) => paid + line.requestsPaid, 0)).toBe(received.filter((request) => request.status === "paid" && request.kind !== "voucher").length - paidLater.requests + data.ledger.filter((entry) => entry.kind === "expense" && entry.requestId && inYearDay(entry.date) && !theirs.has(entry.requestId)).length);
     expect(report.requests.amountApproved).toBe(report.requests.paidTowardThese + paidLater.amount + received.reduce((sum, request) => sum + (request.status === "approved" ? request.amountApproved ?? 0 : 0), 0));
-    expect(paidLater).toEqual({ requests: 4, amount: 54000 });
+    expect(paidLater).toEqual({ requests: 3, amount: 52000 });
     const few = received.slice(0, 3);
     const seen = data.visits.slice(0, 2);
     expect(await as(owner.userId).query(api.reports.flagged, { churchId, requestIds: few.map((request) => request._id), visitIds: seen.map((visit) => visit._id) })).toEqual({
@@ -207,7 +214,7 @@ describe("the year's counts for the sample conference", () => {
     expect({ households: report.households, people: report.people, visits: report.visits, helpPaid: report.helpPaid, hours: report.visitHours, miles: report.visitMiles, calls: report.calls.taken, requests: report.requests.received }).toMatchInlineSnapshot(`
       {
         "calls": 439,
-        "helpPaid": 5253500,
+        "helpPaid": 5172500,
         "hours": 1109,
         "households": 179,
         "miles": 8456,

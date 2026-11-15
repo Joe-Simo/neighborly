@@ -70,7 +70,16 @@ describe("sample conference", () => {
 
     // Every payment is tied to a paid request, for the approved amount, and every paid request has exactly one payment.
     const expenses = data.ledgerEntries.filter((entry) => entry.kind === "expense" && entry.requestId);
-    const paid = data.assistanceRequests.filter((request) => request.status === "paid");
+    // A voucher that was given is "paid" from the shelf: no amount, no payee and no ledger entry.
+    const vouchers = data.assistanceRequests.filter((request) => request.kind === "voucher");
+    expect(vouchers.length).toBeGreaterThan(5);
+    for (const request of vouchers) {
+      expect(request).toMatchObject({ amountRequested: 0, payeeName: "", voucher: { quantity: 1 } });
+      expect(request.status).not.toBe("approved");
+      expect(data.ledgerEntries.some((entry) => entry.requestId === request._id)).toBe(false);
+      expect(data.voucherStock.filter((line) => line.requestId === request._id).length).toBe(request.status === "paid" ? 1 : 0);
+    }
+    const paid = data.assistanceRequests.filter((request) => request.status === "paid" && request.kind !== "voucher");
     expect(expenses).toHaveLength(paid.length);
     for (const request of paid) {
       const payments = expenses.filter((entry) => entry.requestId === request._id);
