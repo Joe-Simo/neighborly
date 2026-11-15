@@ -55,3 +55,7 @@ New Folder/
 public/assets/monumental-*
 public/assets/painted-world/*.glb
 public/assets/painted-world/rooms/
+
+# keys and notes dropped into the folder by mistake
+*.rtf
+*.key
