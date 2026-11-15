@@ -25,18 +25,38 @@ import {
   type YearReport,
 } from "@/components/workspace/reports/lines";
 
-const tableArt = "/assets/painted-world/welcome.webp";
 const share = (part: number, of: number): CSSProperties =>
   ({ "--share": `${of > 0 ? Math.max(0, Math.round((part / of) * 1000) / 10) : 0}%` }) as CSSProperties;
 
-/** One of the year's figures. On arrival they count up once, 60ms apart; a change of year rolls on from there. */
-function Figure({ value, order, format = count }: { value: number; order: number; format?: (amount: number) => string }) {
-  const [arrived, setArrived] = useState(false);
+/**
+ * One of the year's figures. On arrival they count up once, 60ms apart; a change of year rolls on from there.
+ * `step` is the smallest amount shown on the way (100 for money, which is kept in cents). Still under Reduce Motion.
+ */
+function Figure({
+  value,
+  order,
+  step = 1,
+  format = count,
+}: {
+  value: number;
+  order: number;
+  step?: number;
+  format?: (amount: number) => string;
+}) {
+  const [arrived, setArrived] = useState(() => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
   useEffect(() => {
-    const wait = setTimeout(() => setArrived(true), order * 60);
+    // The same wave as the bars: after the frame's own arrival, if it is still sweeping in.
+    const frame = document.querySelector(".live-app");
+    const sweep = frame ? parseFloat(getComputedStyle(frame).getPropertyValue("--paper-wait")) || 0 : 0;
+    const wait = setTimeout(() => setArrived(true), sweep + 90 + order * 60);
     return () => clearTimeout(wait);
   }, [order]);
-  return <CountUp value={arrived ? value : 0} format={(amount) => format(Math.round(amount))} />;
+  return (
+    <CountUp
+      value={arrived ? value : 0}
+      format={(amount) => format(amount === value ? value : Math.max(0, Math.round(amount / step) * step))}
+    />
+  );
 }
 
 /** Paper-colored blocks in the shape of the page, while the year is added up. */
@@ -200,7 +220,6 @@ export function ReportView({
         {period}
         <HelpEmpty
           title="Nothing to add up yet."
-          art={tableArt}
           action={
             <Button variant="outline" asChild>
               <Link href="/app/help-line">Open the help line</Link>
@@ -285,7 +304,7 @@ export function ReportView({
         <div>
           <dt>Help given</dt>
           <dd>
-            <Figure value={report.helpPaid} order={2} format={money} />
+            <Figure value={report.helpPaid} order={2} step={100} format={money} />
             <small>
               {voucherMoney ? "Paid direct or given as vouchers, never in cash" : "Paid direct, never in cash"}
               {moved && `. ${money(report.history.amount)} more is in ServWare history.`}
