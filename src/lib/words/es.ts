@@ -80,6 +80,7 @@ export function es(set: WordSet): Words {
     week: {
       comingUp: "Lo que viene",
       nextSevenDays: "Próximos 7 días",
+      printWeek: "Imprimir la semana",
       choiceAboveTitle: "Tu próxima decisión está arriba.",
       choiceAboveDetail:
         "Responde a tu invitación cuando quieras. Tus otros compromisos aparecerán aquí.",
@@ -92,6 +93,7 @@ export function es(set: WordSet): Words {
     },
     mine: {
       accepted: "Compromisos aceptados",
+      addToCalendar: "Añádelos al calendario de tu teléfono",
       emptyTitle: "Todavía no hay nada en tu calendario.",
       emptyDetail:
         "Los compromisos que aceptes aparecerán aquí con todo lo necesario para prepararte.",

@@ -4,17 +4,17 @@
 .tools-file { max-width: 560px; margin-top: 22px; }
 .tools-file .tools-small { margin-top: 14px; }
 .tools-file-name { font-size: 17px; color: var(--live-muted); overflow-wrap: anywhere; }
-.live-app .tools-sample { display: inline-block; margin-top: 10px; padding: 11px 0; font-size: 16px; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
-.live-app .tools-sample:hover { text-decoration-color: currentColor; }
+:is(.live-app, .live-dialog) .tools-sample { display: inline-block; margin-top: 10px; padding: 11px 0; font-size: 16px; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
+:is(.live-app, .live-dialog) .tools-sample:hover { text-decoration-color: currentColor; }
 .tools-problems { margin-top: 26px; }
 .tools-sheet { margin-top: 28px; }
 .tools-after { margin-top: 22px; }
 .tools-replace { margin-top: 16px; }
 .live-app .help-actions .tools-first { border-color: var(--live-ink); font-weight: 600; }
 .tools-rota th:first-child, .tools-rota td:first-child { padding-left: 0; }
-.live-app .tools-address [data-slot="button"], .live-app .tools-week [data-slot="button"] { min-height: 44px; }
-.live-app .tools-address input { height: 44px; font-size: 17px; }
-.live-app .tools-rota table { font-size: 17px; }
+:is(.live-app, .live-dialog) .tools-address [data-slot="button"], :is(.live-app, .live-dialog) .tools-week [data-slot="button"] { min-height: 44px; }
+:is(.live-app, .live-dialog) .tools-address input { height: 44px; font-size: 17px; }
+:is(.live-app, .live-dialog) .tools-rota table { font-size: 17px; }
 @media (max-width: 700px) {
   .tools-address { flex-direction: column; align-items: stretch; }
 }
@@ -54,9 +54,9 @@
   html:has(.tools-rota), body:has(.tools-rota), body:has(.tools-rota) .live-app, body:has(.tools-rota) .live-layout, body:has(.tools-rota) .live-main { min-height: 0 !important; height: auto !important; }
   .tools-rota { margin: 0; }
   .tools-rota * { color: #000 !important; background: none !important; }
-  .live-app .tools-rota table { font-size: 11pt; }
-  .live-app .tools-rota th, .live-app .tools-rota td { padding-top: 5pt; padding-bottom: 5pt; }
-  .live-app .tools-rota .tools-rota-day th { padding-top: 11pt; }
+  :is(.live-app, .live-dialog) .tools-rota table { font-size: 11pt; }
+  :is(.live-app, .live-dialog) .tools-rota th, :is(.live-app, .live-dialog) .tools-rota td { padding-top: 5pt; padding-bottom: 5pt; }
+  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { padding-top: 11pt; }
   .tools-rota td small { font-size: 9pt; }
   .tools-rota tbody { break-inside: avoid; }
   .tools-rota .live-table-scroll { overflow: visible; }
@@ -65,8 +65,8 @@
   .tools-rota-foot span:first-child { font: 400 12pt/1 "Newsreader", Georgia, serif; }
 }
 
-.live-app .tools-done:focus, .live-app .tools-done:focus-visible { outline: none; }
-.live-app .tools-progress { margin: 18px 0 0; font-size: 17px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
+:is(.live-app, .live-dialog) .tools-done:focus, :is(.live-app, .live-dialog) .tools-done:focus-visible { outline: none; }
+:is(.live-app, .live-dialog) .tools-progress { margin: 18px 0 0; font-size: 17px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
 .tools-records { margin-top: 22px; }
 .live-app .help-row .tools-one { padding-inline: 0; border: 0; background: none; box-shadow: none; border-radius: 2px; width: auto; justify-self: start; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
 .live-app .help-row .tools-one:hover { text-decoration-color: currentColor; }
@@ -74,5 +74,28 @@
 @media (max-width: 700px) {
   .tools-records .help-row { row-gap: 0; }
   .tools-records .help-row .live-date-leaf { grid-row: span 2; }
-  .live-app .tools-records .help-row .tools-one { margin-top: 5px; }
+  :is(.live-app, .live-dialog) .tools-records .help-row .tools-one { margin-top: 5px; }
+}
+:is(.live-app, .live-dialog) .tools-quiet [data-slot="button"], :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet { min-height: 44px; padding-inline: 0; font-size: 16px; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
+:is(.live-app, .live-dialog) .tools-quiet [data-slot="button"]:hover, :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet:hover { text-decoration-color: currentColor; }
+p.tools-quiet { margin: 14px 0 0; }
+.live-dialog.tools-rota-dialog { max-width: min(880px, calc(100vw - 32px)) !important; width: 100%; }
+/* In the dialog the rota is outside the app frame, so it brings the frame's table rules with it. */
+.live-dialog .tools-rota table { width: 100%; border-collapse: collapse; font-size: 17px; }
+.live-dialog .tools-rota th { text-align: left; color: var(--live-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; padding: 14px 10px; border-bottom: 1px solid var(--live-line); }
+.live-dialog .tools-rota td { padding: 20px 10px; border-bottom: 1px solid var(--live-line); }
+.live-dialog .tools-rota th:first-child, .live-dialog .tools-rota td:first-child { padding-left: 0; }
+@media print {
+  .live-dialog:has(.tools-rota) { position: static !important; inset: auto !important; translate: 0 0 !important; transition: none !important; animation: none !important; display: block !important; max-width: none !important; max-height: none !important; width: auto !important; overflow: visible !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: #fff !important; }
+  .live-dialog .tools-rota table { font-size: 11pt; }
+  .live-dialog .tools-rota th, .live-dialog .tools-rota td { padding-top: 5pt; padding-bottom: 5pt; }
+  .live-dialog .tools-rota .tools-rota-day th { padding-top: 11pt; }
+}
+
+:is(.live-app, .live-dialog) .tools-quiet [data-slot="button"], :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet { border: 0; background: none; box-shadow: none; border-radius: 2px; }
+.live-section-head:has(> .tools-quiet) .live-count { margin-left: auto; margin-right: 22px; }
+@media (max-width: 700px) {
+  .live-section-head:has(> .tools-quiet) { flex-wrap: wrap; }
+  .live-section-head:has(> .tools-quiet) .live-count { margin-right: 0; }
+  .live-app .live-section-head > [data-slot="button"].tools-quiet { flex-basis: 100%; justify-content: flex-start; margin-top: -6px; }
 }

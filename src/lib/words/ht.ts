@@ -80,6 +80,7 @@ export function ht(set: WordSet): Words {
     week: {
       comingUp: "Sa k ap vini",
       nextSevenDays: "7 jou k ap vini yo",
+      printWeek: "Enprime semèn nan",
       choiceAboveTitle: "Pwochen chwa ou anlè a.",
       choiceAboveDetail:
         "Reponn envitasyon ou lè ou pare. Lòt angajman ou yo ap parèt isit la.",
@@ -92,6 +93,7 @@ export function ht(set: WordSet): Words {
     },
     mine: {
       accepted: "Angajman ou aksepte",
+      addToCalendar: "Mete yo nan kalandriye telefòn ou",
       emptyTitle: "Poko gen anyen nan kalandriye ou.",
       emptyDetail:
         "Angajman ou aksepte yo ap parèt isit la ak tout sa ou bezwen pou ou pare.",

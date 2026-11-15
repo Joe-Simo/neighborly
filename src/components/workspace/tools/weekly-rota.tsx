@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/workspace/tools/rota";
 
-export function WeeklyRotaView({ group, week, days, printed, sample, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
+export function WeeklyRotaView({ group, week, days, printed, sample, titled = true, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; titled?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
   const planned = days.some((day) => day.shifts.length > 0);
   return (
-    <section className="live-section">
-      <div className="live-section-head">
-        <h2>The week on paper</h2>
-      </div>
+    <section className={titled ? "live-section" : undefined}>
+      {titled && (
+        <div className="live-section-head">
+          <h2>The week on paper</h2>
+        </div>
+      )}
       <p className="live-deck">For the parish office wall, the sacristy door, or anyone who would rather hold it.</p>
       <div className="tools-week">
         <Button variant="outline" className="tools-week-step" aria-label="Earlier week" onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
@@ -62,7 +64,8 @@ export function WeeklyRotaView({ group, week, days, printed, sample, onEarlier, 
   );
 }
 
-export function WeeklyRota() {
+/** titled is false inside a dialog, where the dialog carries the heading. */
+export function WeeklyRota({ titled = true }: { titled?: boolean }) {
   const { data, now, format, personName, teamName } = useWorkspace();
   const [weeksAhead, setWeeksAhead] = useState(0);
   const start = weekStart(now, data.church.timeZone, weeksAhead);
@@ -74,8 +77,9 @@ export function WeeklyRota() {
       group={data.church.name}
       week={weekLabel(start)}
       days={weekRota(shifts, start)}
-      printed={format(now, { dateStyle: "long" })}
+      printed={format(now, { year: "numeric", month: "long" })}
       sample={data.church.sample}
+      titled={titled}
       onEarlier={() => setWeeksAhead((value) => value - 1)}
       onLater={() => setWeeksAhead((value) => value + 1)}
       onPrint={() => window.print()}

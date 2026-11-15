@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { LiveDialog } from "@/components/workspace/live-dialog";
+import { WeeklyRota } from "@/components/workspace/tools/weekly-rota";
 import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-visibility";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -11,7 +15,8 @@ import {
 } from "@/components/workspace/volunteer/commitment-rows";
 
 export function WeekSection() {
-  const { data, now, format, words } = useWorkspace();
+  const { data, now, format, words, isOwner } = useWorkspace();
+  const [printing, setPrinting] = useState(false);
   const weekEnd = now + 7 * 86400000;
   const upcoming = upcomingCommitments(data.commitments, now);
   const incoming = incomingRequests(data);
@@ -23,6 +28,9 @@ export function WeekSection() {
         <div className="live-section-head">
           <h2>{words.week.comingUp}</h2>
           <span className="live-count">{words.week.nextSevenDays}</span>
+          {(isOwner || data.canCoordinate) && (
+            <Button variant="link" className="tools-quiet" onClick={() => setPrinting(true)}>{words.week.printWeek}</Button>
+          )}
         </div>
         <CommitmentRows
           items={withoutIncomingRequests(upcoming.filter((item) => item.start <= weekEnd), incoming)}
@@ -51,6 +59,11 @@ export function WeekSection() {
           </LiveEmpty>
         )}
       </section>
+      {printing && (
+        <LiveDialog title={words.week.printWeek} className="tools-rota-dialog" onClose={() => setPrinting(false)}>
+          <WeeklyRota titled={false} />
+        </LiveDialog>
+      )}
     </>
   );
 }

@@ -28,15 +28,17 @@ export function calendarLinks(address: string, first: CalendarApp) {
 }
 const noChange = () => () => {};
 
-export function CalendarAddressView({ address, busy, error, onCreate }: { address: string | null; busy: boolean; error: string; onCreate: () => void }) {
+export function CalendarAddressView({ address, busy, error, onCreate, titled = true }: { address: string | null; busy: boolean; error: string; onCreate: () => void; titled?: boolean }) {
   const [copied, setCopied] = useState(false);
   const [replacing, setReplacing] = useState(false);
   const device = useSyncExternalStore(noChange, () => likelyCalendar(navigator.userAgent), () => "google" as const);
   return (
     <section>
-      <div className="live-section-head">
-        <h2>On your own calendar</h2>
-      </div>
+      {titled && (
+        <div className="live-section-head">
+          <h2>On your own calendar</h2>
+        </div>
+      )}
       <p className="live-deck">
         Your shifts and home visits can appear in the calendar already on your phone. Set it up once and it stays up to date by itself.
       </p>
@@ -90,7 +92,8 @@ export function CalendarAddressView({ address, busy, error, onCreate }: { addres
   );
 }
 
-export function CalendarAddress() {
+/** titled is false inside a dialog, where the dialog carries the heading. */
+export function CalendarAddress({ titled = true }: { titled?: boolean }) {
   const { data } = useWorkspace();
   const address = useQuery(api.calendar.address, { churchId: data.church.id });
   const create = useAction(api.calendar.createAddress);
@@ -106,6 +109,7 @@ export function CalendarAddress() {
     <CalendarAddressView
       // The site passes /calendar/ through to the feed, so the address a person sees and keeps is the site's own.
       address={address && `${window.location.origin}${new URL(address).pathname}`}
+      titled={titled}
       busy={busy}
       error={error}
       onCreate={() => {

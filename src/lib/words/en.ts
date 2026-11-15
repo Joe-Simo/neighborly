@@ -79,6 +79,7 @@ export function en(set: WordSet) {
     week: {
       comingUp: "Coming up",
       nextSevenDays: "Next 7 days",
+      printWeek: "Print the week",
       choiceAboveTitle: "Your next choice is above.",
       choiceAboveDetail:
         "Reply to your invitation when you’re ready. Other upcoming commitments will appear here.",
@@ -91,6 +92,7 @@ export function en(set: WordSet) {
     },
     mine: {
       accepted: "Accepted commitments",
+      addToCalendar: "Add these to your phone’s calendar",
       emptyTitle: "Nothing on your calendar yet.",
       emptyDetail:
         "Commitments you accept will appear here with everything you need to prepare.",
