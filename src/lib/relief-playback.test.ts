@@ -64,3 +64,23 @@ test("handoff preserves palm shape while the guide moves", () => {
   expect(guide.position.x).toBeCloseTo(2);
   expect(clip.tracks).toHaveLength(2);
 });
+
+test("a hand can lead the card part-way, and letting go past halfway finishes the pass from there", () => {
+  const guide = new Object3D();
+  const clip = (name: string, from: number, to: number) =>
+    new AnimationClip(name, 1, [new NumberKeyframeTrack(".position[x]", [0, 1], [from, to])]);
+  const playback = createReliefPlayback(new AnimationMixer(guide), [clip("rest", 0, 0), clip("accepted", 0, 10)]);
+
+  playback.apply("rest", true, true, true);
+  playback.scrub("accepted", 0.3);
+  expect(guide.position.x).toBeCloseTo(3);
+  playback.scrub("accepted", 0.6);
+  expect(guide.position.x).toBeCloseTo(6);
+  expect(playback.isRunning()).toBe(false);
+
+  playback.apply("accepted", false, false);
+  playback.advance(0.2);
+  expect(guide.position.x).toBeCloseTo(8);
+  playback.advance(1);
+  expect(guide.position.x).toBeCloseTo(10);
+});

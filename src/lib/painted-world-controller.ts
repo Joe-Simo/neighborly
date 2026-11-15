@@ -132,6 +132,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   let openingLoadRevision = 0;
   let openingMixer: T.AnimationMixer | undefined;
   let openingPlayback: ReturnType<typeof createReliefPlayback> | undefined;
+  // True while the visitor's own hand is leading the card across.
+  let handing = false;
   let openingOutcome: ReliefOutcome = "rest";
   const openingRoot = new T.Group();
   scene.add(openingRoot);
@@ -307,7 +309,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   function fitArtwork(value: Artwork) {
     const source = value.base.material.map?.image as { width?: number; height?: number } | undefined;
     const ratio = (source?.width ?? (portrait ? 900 : 1600)) / (source?.height ?? (portrait ? 1600 : 1000));
-    const openingFrame = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight);
+    const openingFrame = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly);
     const fitted = getPaintedArtworkFrame(worldWidth, worldHeight, ratio);
     value.contained = value.scene !== "opening" && fitted.contained;
     const width = value.scene === "opening"
@@ -315,7 +317,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       : fitted.width;
     value.base.scale.set(width, value.scene === "opening" ? openingFrame.sourceHeight * openingFrame.scale : width / ratio, 1);
     const portraitTabletOffset = portrait && host.clientWidth > 700 && value.scene !== "opening" && !value.contained ? -worldHeight * 0.045 : 0;
-    value.base.position.y = portraitTabletOffset;
+    value.base.position.y = value.scene === "opening" ? openingFrame.shiftY : portraitTabletOffset;
     value.completed?.scale.copy(value.base.scale);
     if (value.completed) value.completed.position.y = portraitTabletOffset;
     for (const layer of value.layers) {
@@ -355,7 +357,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     const requestedPortrait = portrait;
     const definition = definitionFor(id);
     const src = id === "opening"
-      ? getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight).poster
+      ? getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly).poster
       : (requestedPortrait ? definition?.mobileSrc : definition?.src) ?? imagePath(id, requestedPortrait);
     const completedSrc = scrollMode ? undefined : requestedPortrait ? definition?.mobileCompletedSrc : definition?.completedSrc;
     const layerDefinitions = (requestedPortrait ? definition?.mobileLayers : definition?.layers) ?? options.layers?.[id] ?? [];
@@ -611,16 +613,17 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     }
     if (openingModel) {
       openingRoot.visible = openingOpacity > 0;
-      const openingFrame = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight);
+      const openingFrame = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly);
       const { sourceHeight, scale } = openingFrame;
       openingRoot.scale.setScalar(scale);
+      openingRoot.position.y = openingFrame.shiftY;
       openingModel.position.y = -sourceHeight / 2;
       openingModel.getObjectByName("BackgroundDesktop")?.traverse((object) => { object.visible = !openingFrame.mobile; });
       openingModel.getObjectByName("BackgroundMobile")?.traverse((object) => { object.visible = openingFrame.mobile && !openingFrame.narrow; });
       openingModel.getObjectByName("BackgroundNarrow")?.traverse((object) => { object.visible = openingFrame.mobile && openingFrame.narrow; });
       const rig = openingModel.getObjectByName("ReliefRig");
       if (rig) { rig.scale.setScalar(openingFrame.mobile ? 0.54 : 1); rig.position.set(0, openingFrame.mobile ? 4 : 0, 0); }
-      if (openingGuide && openingOutcome === "rest") {
+      if (openingGuide && openingOutcome === "rest" && !handing) {
         const lift = smooth(interaction);
         openingGuide.position.copy(openingGuidePosition);
         openingGuide.position.y += (reduce ? 0 : lift) * .08;
@@ -785,7 +788,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   media.addEventListener("change", onReduce);
   resize();
   function loadOpening() {
-    const framing = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight);
+    const framing = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly);
     const asset = `/assets/living-relief-opening-${framing.mobile ? framing.narrow ? "narrow" : "mobile" : "desktop"}.glb`;
     if (asset === openingAsset) return;
     openingAsset = asset;
@@ -839,7 +842,16 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     setOpeningOutcome(value: ReliefOutcome) {
       if (disposed || openingOutcome === value) return;
       openingOutcome = value;
+      handing = false;
       openingPlayback?.apply(value, false, reduce);
+      wake();
+    },
+    /** The visitor leads the card from one hand to the other; `null` lets go and returns it to rest. */
+    setHandoff(value: number | null) {
+      if (disposed || openingOutcome !== "rest") return;
+      handing = value !== null;
+      if (value === null) openingPlayback?.apply("rest", false, reduce);
+      else openingPlayback?.scrub("accepted", value);
       wake();
     },
     setStoryProgress(value: number) {
