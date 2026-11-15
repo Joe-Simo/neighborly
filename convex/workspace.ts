@@ -5,6 +5,7 @@ import { accountEmailConfiguration } from "./notifications";
 import { queueCoverRequest, cancelPendingNotification } from "./notificationEvents";
 import { query, mutation, type QueryCtx, type MutationCtx } from "./_generated/server";
 import { user, membership } from "./access";
+import { isSampleVisitor } from "./demo";
 import type { Id } from "./_generated/dataModel";
 
 const churchId = v.id("churches");
@@ -53,7 +54,9 @@ export const viewer = query({ args: {}, returns: viewerReturn, handler: async (c
   return { churches: churches.filter(c => c !== null).map(c => ({ id: c._id, name: c.name })), truncated: memberships.length>100 };
 } });
 export const createChurch = mutation({ args: { name: text, timeZone: text, displayName: text }, returns: churchId, handler: async (ctx, args) => {
-  const account = await user(ctx); const name = required(args.name); const displayName = required(args.displayName); const zone = required(args.timeZone);
+  const account = await user(ctx);
+  if (isSampleVisitor((await ctx.auth.getUserIdentity())?.subject)) throw new Error("The sample account can only look around the sample conference. Create your own account to start a conference.");
+  const name = required(args.name); const displayName = required(args.displayName); const zone = required(args.timeZone);
   try { new Intl.DateTimeFormat("en", { timeZone: zone }).format(0); } catch { throw new Error("Enter a valid time zone."); }
   const id = await ctx.db.insert("churches", { name, timeZone: zone });
   await ctx.db.insert("memberships", { churchId:id,userId:account.id,name:displayName,email:account.email,role:"owner",active:true,approved:true,coverOptIn:false });

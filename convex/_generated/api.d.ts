@@ -11,6 +11,8 @@
 import type * as access from "../access.js";
 import type * as assistance from "../assistance.js";
 import type * as calendar from "../calendar.js";
+import type * as crons from "../crons.js";
+import type * as demo from "../demo.js";
 import type * as drafts from "../drafts.js";
 import type * as http from "../http.js";
 import type * as importExport from "../importExport.js";
@@ -38,6 +40,8 @@ declare const fullApi: ApiFromModules<{
   access: typeof access;
   assistance: typeof assistance;
   calendar: typeof calendar;
+  crons: typeof crons;
+  demo: typeof demo;
   drafts: typeof drafts;
   http: typeof http;
   importExport: typeof importExport;
@@ -87,4 +91,5 @@ export declare const components: {
   authPassword: import("@convex-dev/auth/components/password/_generated/component.js").ComponentApi<"authPassword">;
   authEmail: import("@convex-dev/auth/components/email/_generated/component.js").ComponentApi<"authEmail">;
   resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
 };

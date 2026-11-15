@@ -58,7 +58,14 @@ const headings: Record<Flow, string> = {
   reset: "Find your way back.",
 };
 
-export function LiveAuth({ intent = "signin" }: { intent?: LiveEntryIntent }) {
+export function LiveAuth({
+  intent = "signin",
+  sampleEntry = false,
+}: {
+  intent?: LiveEntryIntent;
+  /** Shows the way into the sample conference. Off unless the deployment has a visitor account. */
+  sampleEntry?: boolean;
+}) {
   const { signIn } = useSignIn();
   const { signUp } = useSignUp();
   const [flow, setFlow] = useState<Flow>(intent === "start" || intent === "join" ? "signUp" : "signIn");
@@ -67,6 +74,10 @@ export function LiveAuth({ intent = "signin" }: { intent?: LiveEntryIntent }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [pending, setPending] = useState(false);
+  /** On the way into the sample conference. The form rests, but keeps its own words. */
+  const [opening, setOpening] = useState(false);
+  /** Shown under the sample link, where the person pressed, not in the form's own error place. */
+  const [sampleError, setSampleError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   /** After a new code goes out, the button rests for a while so nobody sends five by pressing it again. */
   const [resent, setResent] = useState(false);
@@ -79,12 +90,14 @@ export function LiveAuth({ intent = "signin" }: { intent?: LiveEntryIntent }) {
     setStep("details");
     setError("");
     setNotice("");
+    setSampleError("");
     setShowPassword(false);
   }
 
   /** Each step of Clerk's flow reports its own error; the first one stops the run and is shown. */
   async function run(steps: () => Promise<void>) {
     setError("");
+    setSampleError("");
     setNotice("");
     setPending(true);
     try {
@@ -164,6 +177,27 @@ export function LiveAuth({ intent = "signin" }: { intent?: LiveEntryIntent }) {
     });
   }
 
+  /** The server hands over a one-minute ticket for the made-up visitor account; Clerk trades it for a session. */
+  async function lookAround() {
+    setError("");
+    setNotice("");
+    setSampleError("");
+    setOpening(true);
+    try {
+      const response = await fetch("/app/look-around", { method: "POST" });
+      if (response.status === 429) return setSampleError("The sample conference is busy. Try again in a minute.");
+      if (!response.ok) throw new Error("No ticket.");
+      const { ticket }: { ticket: string } = await response.json();
+      await done(signIn.ticket({ ticket }));
+      if (signIn.status !== "complete") throw new Error("Not complete.");
+      await done(signIn.finalize());
+    } catch {
+      setSampleError("The sample conference did not open. Try again.");
+    } finally {
+      setOpening(false);
+    }
+  }
+
   function sendAgain() {
     void run(async () => {
       await done(
@@ -211,14 +245,14 @@ export function LiveAuth({ intent = "signin" }: { intent?: LiveEntryIntent }) {
           required
           minLength={8}
           maxLength={72}
-          disabled={pending}
+          disabled={pending || opening}
         />
         <Button
           type="button"
           variant="ghost"
           aria-label={showPassword ? "Hide password" : "Show password"}
           aria-pressed={showPassword}
-          disabled={pending}
+          disabled={pending || opening}
           onClick={() => setShowPassword((value) => !value)}
         >
           {showPassword ? "Hide" : "Show"}
@@ -342,13 +376,13 @@ export function LiveAuth({ intent = "signin" }: { intent?: LiveEntryIntent }) {
             defaultValue={email}
             required
             maxLength={254}
-            disabled={pending}
+            disabled={pending || opening}
           />
         </label>
         {flow !== "reset" &&
           passwordField("Password", flow === "signIn" ? "current-password" : "new-password")}
         {messages}
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending || opening}>
           {submitIcon}
           {pending
             ? "Please wait…"
@@ -359,11 +393,24 @@ export function LiveAuth({ intent = "signin" }: { intent?: LiveEntryIntent }) {
                 : "Email me a code"}
         </Button>
         {flow === "signIn" && (
-          <Button type="button" variant="link" onClick={() => choose("reset")}>
+          <Button type="button" variant="link" disabled={opening} onClick={() => choose("reset")}>
             Forgot your password?
           </Button>
         )}
       </form>
+      {sampleEntry && (
+        <div className="live-auth-sample">
+          <Button type="button" variant="link" disabled={pending || opening} onClick={() => void lookAround()}>
+            {opening ? "Opening the sample conference…" : "Look around a sample conference"}
+          </Button>
+          {sampleError && (
+            <div role="alert" className="live-error" ref={(alert) => alert?.scrollIntoView({ block: "nearest" })}>
+              {sampleError}
+            </div>
+          )}
+          <small>Made-up people. Whatever you change is cleared each night.</small>
+        </div>
+      )}
       <p className="live-auth-foot">
         Your workspace is private. Joining a team does not accept any commitment
         on your behalf.

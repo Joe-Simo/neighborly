@@ -15,6 +15,7 @@
   "dependencies": {
     "@clerk/nextjs": "^7.10.0",
     "@convex-dev/auth": "^2.0.0",
+    "@convex-dev/rate-limiter": "^0.4.3",
     "@convex-dev/resend": "^0.2.10",
     "@serwist/turbopack": "^9.5.13",
     "class-variance-authority": "^0.7.1",

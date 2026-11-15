@@ -24,10 +24,12 @@ export function LiveApp({
   area = "week",
   invitationToken = "",
   intent = "signin",
+  sampleEntry = false,
 }: {
   area?: LiveArea;
   invitationToken?: string;
   intent?: LiveEntryIntent;
+  sampleEntry?: boolean;
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
@@ -133,7 +135,7 @@ export function LiveApp({
     );
   if (!isAuthenticated)
     return (
-      <LiveAuth key={intent} intent={intent} />
+      <LiveAuth key={intent} intent={intent} sampleEntry={sampleEntry} />
     );
   if (!viewer)
     return (

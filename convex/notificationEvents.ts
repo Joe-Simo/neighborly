@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { deliveryConfiguration, resend } from "./notifications";
+import { isSampleChurch } from "./demo";
 import { overlapsTimeOff, parseCalendarDate } from "../src/lib/scheduling";
 
 async function deliver(ctx: MutationCtx, row: Doc<"outbox">) {
@@ -47,7 +48,7 @@ async function deliver(ctx: MutationCtx, row: Doc<"outbox">) {
     }
   } else return;
   const config = deliveryConfiguration();
-  if (!config) return;
+  if (!config || (await isSampleChurch(ctx, row.churchId))) return;
   const subject = row.kind === "cover_request" ? "A cover request on Kind Helps" : "A meeting invitation on Kind Helps";
   const link = new URL("/app", config.site).toString();
   const text = row.kind === "cover_request" ? `A coordinator has asked if you can cover a commitment. Sign in to review and choose whether to accept:\n\n${link}` : `You have a meeting invitation. Sign in to review the details and respond:\n\n${link}`;

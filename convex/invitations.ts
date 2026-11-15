@@ -4,6 +4,7 @@ import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, type MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { enqueueInvitation, resend } from "./notifications";
+import { isSampleChurch } from "./demo";
 import type { EmailId } from "@convex-dev/resend";
 
 const role = v.union(v.literal("member"), v.literal("coordinator"));
@@ -37,6 +38,7 @@ export const createRecord = internalMutation({
   handler: async (ctx, args) => {
     const user = await account(ctx);
     const actor = await coordinator(ctx, args.churchId, user.id);
+    if (await isSampleChurch(ctx, args.churchId)) throw new Error("The sample conference cannot invite anyone. Create your own account to invite your people.");
     const email = normalizeEmail(args.email);
     if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
     if (!/^[a-zA-Z0-9_-]{16,128}$/.test(args.requestId)) throw new Error("Invalid request identifier.");

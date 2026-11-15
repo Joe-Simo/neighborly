@@ -22,6 +22,34 @@
   font-weight: 400;
   text-decoration: none;
 }
+/* The way into the sample conference is a line of text under the form, never a third button. */
+.live-auth-sample {
+  display: grid;
+  justify-items: start;
+  margin-top: 14px;
+}
+.live-auth-sample .live-error {
+  justify-self: stretch;
+  margin: 4px 0 12px;
+}
+.live-auth-sample small {
+  color: var(--live-muted, #5d665e);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.live-app .live-auth .live-auth-sample button {
+  width: auto;
+  height: auto;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-weight: 400;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
 .live-auth-spin {
   animation: live-spin 1s linear infinite;
 }

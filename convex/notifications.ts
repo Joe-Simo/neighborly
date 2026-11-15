@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { components } from "./_generated/api";
 import { query, type MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
+import { isSampleChurch } from "./demo";
 
 // Real delivery requires an explicit deployment switch and verified sender configuration.
 export const resend = new Resend(components.resend, { testMode: false });
@@ -30,7 +31,7 @@ export async function enqueueInvitation(ctx: MutationCtx, invitation: Doc<"invit
   if (!outbox) throw new Error("Delivery record not found.");
   if (outbox.providerId) return "queued" as const;
   const config = deliveryConfiguration();
-  if (!config) return "not_sent" as const;
+  if (!config || (await isSampleChurch(ctx, invitation.churchId))) return "not_sent" as const;
   const link = new URL("/app", config.site);
   link.searchParams.set("invite", token);
   const emailId = await resend.sendEmail(ctx, { from: config.sender, to: invitation.email, subject: "You have been invited to Kind Helps", text: `You have been invited to join a church on Kind Helps. Open this private link to review and accept the invitation:\n\n${link.toString()}\n\nThis invitation expires after seven days.`, idempotencyKey: `invitation:${invitation._id}` });
