@@ -74,7 +74,6 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
           {replacing && (
             <LiveDialog title={text.makeNewTitle} description={text.makeNewDetail} onClose={() => setReplacing(false)}>
               <div className="live-form-actions">
-                <Button variant="ghost" onClick={() => setReplacing(false)}>{text.keep}</Button>
                 <Button disabled={busy} onClick={() => { setReplacing(false); setCopied(false); onCreate(); }}>{text.makeNew}</Button>
               </div>
             </LiveDialog>
