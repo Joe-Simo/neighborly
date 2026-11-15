@@ -192,6 +192,17 @@ export function ht(set: WordSet): Words {
       updated: "Mete ajou.",
       failed: "Chanjman an pa t anrejistre. Tanpri eseye ankò.",
     },
+    urgent: {
+      label: "Rele an premye",
+      origin: "Asistan an mete l an premye apati nòt la. Ou ka deplase l.",
+      shutoff: (day) => (day ? `Y ap koupe sèvis la jou ${day}` : "Avi koupe sèvis"),
+      eviction: (day) => (day ? `Mete deyò jou ${day}` : "Avi pou mete deyò"),
+      noFood: "Pa gen manje jodi a",
+      child: "Timoun nan kay la",
+      elder: "Granmoun oswa moun k ap viv poukont li",
+      medical: "Yon bezwen medikal",
+      notUrgent: "Pa ijan",
+    },
     assistant: {
       title: "Bouyon pou ou",
       waiting: (count) => `${count} ap tann wi pa ou`,

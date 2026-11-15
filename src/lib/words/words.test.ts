@@ -61,6 +61,9 @@ describe("words", () => {
     expect(words("es").requests.awaiting(1)).toBe("1 espera tu respuesta");
     expect(words("es").requests.awaiting(3)).toBe("3 esperan tu respuesta");
     expect(words("en").timeOffForm.affected(1)).toBe("1 commitment affected");
+    expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 31].map((day) => words("en").urgent.shutoff(day).split(" ").pop())).toEqual(["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "23rd", "31st"]);
+    expect(words("en").urgent.eviction(0)).toBe("Eviction notice");
+    expect(words("es").urgent.shutoff(21)).toBe("Corte de servicio el día 21");
     expect(words("es").timeOffForm.affected(0)).toBe("Ningún compromiso afectado");
   });
 

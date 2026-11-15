@@ -4,6 +4,7 @@ import { action, internalMutation, internalQuery, env } from "./_generated/serve
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftPayeeKinds, prepareRequestDraft, requestKinds, withoutIdentity } from "../src/lib/request-draft";
+import { urgentReasons, urgentSigns, type UrgentSign } from "../src/lib/urgency";
 import { neighborAccess } from "./access";
 
 const draftResult = v.object({
@@ -154,5 +155,33 @@ export const draftRequest = action({
       }
     }
     return { ...draft, verification: "checked" as const };
+  },
+});
+
+const urgency = v.object({
+  signs: v.array(v.object({ reason: v.union(...urgentReasons.map(reason => v.literal(reason))), day: v.union(v.number(), v.null()) })),
+  verification: v.union(v.literal("review"), v.literal("checked")),
+});
+
+/**
+ * Reads one call's note for signs that it should be returned first: a shut-off or eviction, no food,
+ * a child, an elder, a medical need. Code finds the signs; the model only says whether the note states
+ * each one, and a sign under 0.9 is dropped. It saves nothing and decides nothing about who is helped:
+ * the screen shows the reason, and a person can always move the call.
+ */
+export const readUrgency = action({
+  args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: urgency,
+  handler: async (ctx, args): Promise<{ signs: UrgentSign[]; verification: "review" | "checked" }> => {
+    const { userId, note, names, addresses } = await ctx.runQuery(internal.drafts.callNote, args);
+    const signs = urgentSigns(note);
+    const fallback = { signs, verification: "review" as const };
+    if (!env.TYPESAFE_API_KEY || note.length > 2000 || !signs.length) return fallback;
+    await ctx.runMutation(internal.drafts.reserve, { userId });
+    const meaning = { shutoff: "a utility is being or about to be shut off", eviction: "the household faces eviction", noFood: "the household has no food now", child: "a child lives in the household", elder: "an elderly person or a person living alone is involved", medical: "there is a medical need" };
+    const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, Object.fromEntries(signs.map(({ reason }) => [reason,
+      `Does note explicitly state that ${meaning[reason]}? ${stated} Never infer need, eligibility, a decision, or a new fact.`,
+    ])) as Record<(typeof signs)[number]["reason"], string>);
+    if (!sure) return fallback;
+    return { signs: signs.filter(({ reason }) => sure[reason] >= 0.9), verification: "checked" as const };
   },
 });

@@ -193,6 +193,18 @@ export function en(set: WordSet) {
       updated: "Updated.",
       failed: "That change couldn’t be saved. Please try again.",
     },
+    /** Why the assistant put a call first. A person can always move it. */
+    urgent: {
+      label: "Call first",
+      origin: "Put first by the assistant from the note. You can move it.",
+      shutoff: (day: number) => (day ? `Shut-off on the ${day}${["th", "st", "nd", "rd"][day % 100 > 10 && day % 100 < 14 ? 0 : Math.min(day % 10, 4) % 4]}` : "Shut-off notice"),
+      eviction: (day: number) => (day ? `Eviction on the ${day}${["th", "st", "nd", "rd"][day % 100 > 10 && day % 100 < 14 ? 0 : Math.min(day % 10, 4) % 4]}` : "Eviction notice"),
+      noFood: "No food today",
+      child: "Children at home",
+      elder: "Elderly or living alone",
+      medical: "A medical need",
+      notUrgent: "Not urgent",
+    },
     /** What a person reads beside anything the assistant drafted. */
     assistant: {
       title: "Drafted for you",

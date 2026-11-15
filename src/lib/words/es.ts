@@ -196,6 +196,17 @@ export function es(set: WordSet): Words {
       updated: "Actualizado.",
       failed: "No se pudo guardar el cambio. Inténtalo de nuevo.",
     },
+    urgent: {
+      label: "Llamar primero",
+      origin: "El asistente la puso primero por la nota. Puedes moverla.",
+      shutoff: (day) => (day ? `Corte de servicio el día ${day}` : "Aviso de corte de servicio"),
+      eviction: (day) => (day ? `Desalojo el día ${day}` : "Aviso de desalojo"),
+      noFood: "Sin comida hoy",
+      child: "Niños en casa",
+      elder: "Persona mayor o que vive sola",
+      medical: "Una necesidad médica",
+      notUrgent: "No es urgente",
+    },
     assistant: {
       title: "Borrador para ti",
       waiting: (count) =>
