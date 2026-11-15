@@ -78,11 +78,11 @@ export const feedText = internalQuery({
 
     const now = Date.now();
     const from = now - lookBack;
-    const calendar = ical({ name: church.name, prodId: { company: "Neighborly", product: "Calendar", language: "EN" }, ttl: HOUR / 1000 });
+    const calendar = ical({ name: church.name, prodId: { company: "Kind Helps", product: "Calendar", language: "EN" }, ttl: HOUR / 1000 });
     const shifts = await ctx.db.query("commitments").withIndex("by_assignee_end", (q) => q.eq("assigneeId", member._id).gt("end", from)).take(mostEvents);
     for (const shift of shifts) {
       if (shift.cancelled || shift.churchId !== church._id) continue;
-      calendar.createEvent({ id: `${shift._id}@neighborly`, sequence: shift.version, stamp: new Date(now), start: new Date(shift.start), end: new Date(shift.end), summary: shift.title, location: shift.location, description: shift.preparation || undefined });
+      calendar.createEvent({ id: `${shift._id}@kindhelps.com`, sequence: shift.version, stamp: new Date(now), start: new Date(shift.start), end: new Date(shift.end), summary: shift.title, location: shift.location, description: shift.preparation || undefined });
     }
     // The narrow path past neighborAccess(): a calendar app cannot sign in, so the token stands for one member.
     // It reaches only visits still planned on which that member is a visitor, and only the street leaves the record.
@@ -90,7 +90,7 @@ export const feedText = internalQuery({
     for (const visit of visits) {
       if (visit.status !== "scheduled" || !visit.visitors.some((visitor) => visitor.memberId === member._id)) continue;
       const neighbor = await ctx.db.get("neighbors", visit.neighborId);
-      calendar.createEvent({ id: `${visit._id}@neighborly`, stamp: new Date(now), start: new Date(visit.scheduledAt), end: new Date(visit.scheduledAt + HOUR), summary: "Home visit", location: (neighbor && streetOnly(neighbor.address)) || undefined, description: "Open Neighborly for the details. You visit as a pair." });
+      calendar.createEvent({ id: `${visit._id}@kindhelps.com`, stamp: new Date(now), start: new Date(visit.scheduledAt), end: new Date(visit.scheduledAt + HOUR), summary: "Home visit", location: (neighbor && streetOnly(neighbor.address)) || undefined, description: "Open the app for the details. You visit as a pair." });
     }
     return calendar.toString();
   },
