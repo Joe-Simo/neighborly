@@ -80,6 +80,7 @@ export function en(set: WordSet) {
       announcement: "Share an announcement",
     },
     week: {
+      figures: { calls: "Calls waiting", visits: "Visits planned", requests: "Requests awaiting a yes" },
       comingUp: "Coming up",
       nextSevenDays: "Next 7 days",
       printWeek: "Print the week",

@@ -81,6 +81,7 @@ export function es(set: WordSet): Words {
       announcement: "Compartir un aviso",
     },
     week: {
+      figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Solicitudes que esperan un sí" },
       comingUp: "Lo que viene",
       nextSevenDays: "Próximos 7 días",
       printWeek: "Imprimir la semana",

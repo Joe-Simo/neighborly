@@ -81,6 +81,7 @@ export function ht(set: WordSet): Words {
       announcement: "Pataje yon anons",
     },
     week: {
+      figures: { calls: "Apèl pou retounen", visits: "Vizit ki planifye", requests: "Demann k ap tann yon wi" },
       comingUp: "Sa k ap vini",
       nextSevenDays: "7 jou k ap vini yo",
       printWeek: "Enprime semèn nan",
