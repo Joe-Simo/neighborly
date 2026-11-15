@@ -948,3 +948,53 @@
     background-position: 50% 76%;
   }
 }
+
+/* Signed in, inside the app on an iPhone or iPad: an opaque paper band the
+   height of the top inset, so scrolled text never passes behind the clock and
+   the battery. It sits above dialogs too, so the menu and every dialog start
+   below it. Without an inset it has no height. Sign-in has no header, so the
+   painting keeps running to the top edge there. */
+.live-app:has(.live-header)::before {
+  content: "";
+  position: fixed;
+  z-index: 60;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top);
+  background: #f7f4ed;
+}
+/* The menu and dialogs sit between the insets, and above the keyboard once it
+   is up (LiveDialog reports the visible height on touch screens). */
+.live-mobile-menu,
+.live-dialog {
+  top: calc(var(--live-view-top, 0px) + (var(--live-view-height, 100svh) + env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2) !important;
+}
+.live-mobile-menu {
+  max-height: calc(100svh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+}
+.live-dialog {
+  max-height: min(90svh, calc(var(--live-view-height, 100svh) - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
+}
+/* On a touch screen a dialog opens on its title; the title shows no ring. */
+.live-dialog [data-slot="dialog-title"]:focus-visible { outline: 0; }
+/* iOS gives a date field a width of its own; let it fit its column. */
+:is(.live-app, .live-dialog) input[type="date"] { min-width: 0; max-width: 100%; }
+/* The row of rooms on an upright iPad scrolls sideways. Where there is more
+   to scroll it fades to paper over the last 32px instead of cutting a name
+   in half; at either end the fade is gone. */
+@property --live-fade-start { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --live-fade-end { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@keyframes live-nav-fade {
+  0% { --live-fade-start: 0px; --live-fade-end: 32px; }
+  5% { --live-fade-start: 32px; --live-fade-end: 32px; }
+  95% { --live-fade-start: 32px; --live-fade-end: 32px; }
+  100% { --live-fade-start: 32px; --live-fade-end: 0px; }
+}
+@media (min-width: 761px) and (max-width: 850px) {
+  @supports (animation-timeline: scroll()) {
+    .live-nav {
+      mask-image: linear-gradient(to right, transparent, #000 var(--live-fade-start), #000 calc(100% - var(--live-fade-end)), transparent);
+      animation: live-nav-fade linear both;
+      animation-timeline: scroll(self inline);
+    }
+  }
+}
