@@ -28,6 +28,7 @@ import {
   type ActionKind,
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
+import { LanguageChooser, LanguageList } from "@/components/workspace/language-chooser";
 import { sections } from "@/components/workspace/sections";
 import type {
   LiveCommand,
@@ -38,6 +39,7 @@ import { CommitmentDetail } from "@/components/workspace/volunteer/commitment-de
 import { LiveCommitmentEditor } from "@/components/workspace/volunteer/commitment-editor";
 import { LiveCreateForm } from "@/components/workspace/volunteer/create-form";
 import { LiveTimeOffForm } from "@/components/workspace/volunteer/time-off-form";
+import { formatDate, words as wordsFor } from "@/lib/words";
 
 export function LiveWorkspace({
   area,
@@ -86,23 +88,28 @@ export function LiveWorkspace({
   const [headingOverride, setHeadingOverride] =
     useState<LiveHeadingOverride | null>(null);
   const [headAction, setHeadAction] = useState<LiveHeadAction | null>(null);
+  const words = wordsFor(data.user.language, data.church.wordSet);
+  // Areas the words do not cover yet keep their English line.
+  const menu: Partial<Record<LiveArea, string>> = words.menu;
+  const actions: Partial<Record<ActionKind, string>> = words.actions;
+  const translatedHeadings: Partial<Record<LiveArea, { title: string; deck: string }>> = words.headings;
   const ownPerson = data.people.find((person) => person.id === data.user.id);
   const isOwner = ownPerson?.role === "owner";
   const selected = selectedCommitment;
   const format = (time: number, options?: Intl.DateTimeFormatOptions) =>
-    new Intl.DateTimeFormat("en", {
+    formatDate(words.locale, time, {
       timeZone: data.church.timeZone,
       month: "short",
       day: "numeric",
       ...options,
-    }).format(time);
+    });
   const when = (start: number, end: number) =>
     `${format(start, { weekday: "short" })} · ${format(start, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}–${format(end, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}`;
   const personName = (id: string | null) =>
     data.people.find((person) => person.id === id)?.name ??
-    (id ? "Member" : "Unassigned");
+    (id ? words.shell.member : words.detail.unassigned);
   const teamName = (id: string) =>
-    data.teams.find((team) => team.id === id)?.name ?? "Team";
+    data.teams.find((team) => team.id === id)?.name ?? words.shell.team;
   const [now] = useState(() => Date.now());
   async function perform(command: LiveCommand, success?: string) {
     setPending(true);
@@ -128,7 +135,7 @@ export function LiveWorkspace({
       setError(
         cause instanceof Error
           ? cause.message.replace(/^.*?Uncaught Error:\s*/, "").split("\n")[0]
-          : "That change couldn’t be saved. Please try again.",
+          : words.notices.failed,
       );
       return false;
     } finally {
@@ -144,12 +151,12 @@ export function LiveWorkspace({
   // beside the two tabs; a longer name, or an area with no menu line yet, shows "Menu".
   const menuLabel =
     area !== "week" && area !== "mine"
-      ? navigation.find((item) => item.id === area)?.label
+      ? (menu[area] ?? navigation.find((item) => item.id === area)?.label)
       : undefined;
   const Section = sections[area];
   const heading = headingOverride
-    ? { ...headings[area], art: undefined, ...headingOverride }
-    : headings[area];
+    ? { ...headings[area], ...translatedHeadings[area], art: undefined, ...headingOverride }
+    : { ...headings[area], ...translatedHeadings[area] };
   const workspace: Workspace = {
     area,
     data,
@@ -173,6 +180,7 @@ export function LiveWorkspace({
     },
     confirm: setConfirmation,
     setHeading: setHeadingOverride,
+    words,
     setHeadAction,
     focusOutcome: () =>
       requestAnimationFrame(() =>
@@ -181,35 +189,41 @@ export function LiveWorkspace({
   };
   return (
     <WorkspaceProvider value={workspace}>
-    <div className="live-app">
-      <a className="live-skip" href="#workspace-content">Skip to your workspace</a>
+    <div className="live-app" lang={words.locale}>
+      <a className="live-skip" href="#workspace-content">{words.shell.skip}</a>
       <header className="live-header">
         <Link href="/" className="live-wordmark">
           kind helps
         </Link>
         <div className="live-header-actions">
           {selectChurch}
+          <span className="max-[760px]:hidden"><LanguageChooser /></span>
           <span className="live-account">
             {data.user.name || data.user.email}
           </span>
           <Button variant="ghost" size="sm" disabled={pending} onClick={() => void signOut()}>
-            <LogOut size={16} aria-hidden="true" /> Sign out
+            <LogOut size={16} aria-hidden="true" /> {words.shell.signOut}
           </Button>
         </div>
       </header>
-      <nav className="live-mobile-nav" aria-label="Workspace">
-        <Link href="/app/week" aria-current={area === "week" ? "page" : undefined}><CalendarDays size={17} aria-hidden="true" />This week</Link>
-        <Link href="/app/mine" aria-current={area === "mine" ? "page" : undefined}><Check size={17} aria-hidden="true" />My commitments</Link>
+      <nav className="live-mobile-nav [&>a]:!whitespace-nowrap" aria-label={words.shell.workspace}>
+        <Link href="/app/week" aria-current={area === "week" ? "page" : undefined}><CalendarDays size={17} aria-hidden="true" />{words.menu.week}</Link>
+        <Link href="/app/mine" aria-current={area === "mine" ? "page" : undefined}><Check size={17} aria-hidden="true" />{words.menu.mine}</Link>
         <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <DialogTrigger asChild><Button variant="ghost" className="live-mobile-menu-trigger" aria-label={menuLabel ? `Workspace menu, current section: ${menuLabel}` : "Workspace menu"}><Menu size={17} aria-hidden="true" /><span className="live-mobile-menu-label">{menuLabel && menuLabel.length <= 9 ? menuLabel : "Menu"}</span></Button></DialogTrigger>
-          <DialogContent className="live-mobile-menu">
-            <DialogHeader><DialogTitle>Your workspace</DialogTitle><DialogDescription>{data.church.name}</DialogDescription></DialogHeader>
-            <nav aria-label="All workspace sections">{navigation.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={() => setMobileMenuOpen(false)}><Icon size={19} aria-hidden="true" /><span>{label}</span>{area === id && <span className="live-menu-current">Current</span>}</Link>)}</nav>
+          <DialogTrigger asChild><Button variant="ghost" className="live-mobile-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu size={17} aria-hidden="true" /><span className="live-mobile-menu-label">{menuLabel && menuLabel.length <= 9 ? menuLabel : words.shell.menu}</span></Button></DialogTrigger>
+          <DialogContent className="live-mobile-menu max-h-[calc(100svh-2rem)] overflow-y-auto" onOpenAutoFocus={(event) => {
+            // Opening the menu must not land on the language choice, where an arrow key would change it.
+            event.preventDefault();
+            if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
+          }}>
+            <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription></DialogHeader>
+            <nav aria-label={words.shell.allSections}>{navigation.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={() => setMobileMenuOpen(false)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
+            <LanguageList />
           </DialogContent>
         </Dialog>
       </nav>
       <div className="live-layout">
-        <nav className="live-nav" aria-label="Workspace">
+        <nav className="live-nav" aria-label={words.shell.workspace}>
           <p className="live-church-name">{data.church.name}</p>
           {navigation.map(({ id, label, icon: Icon }) => (
             <Link
@@ -218,7 +232,7 @@ export function LiveWorkspace({
               aria-current={area === id ? "page" : undefined}
             >
               <Icon aria-hidden="true" />
-              {label}
+              {menu[id] ?? label}
             </Link>
           ))}
         </nav>
@@ -242,7 +256,7 @@ export function LiveWorkspace({
               area === "time-off") && (
               <Button onClick={() => open(primary)}>
                 <Plus size={17} aria-hidden="true" />
-                {actionTitles[primary]}
+                {actions[primary] ?? actionTitles[primary]}
               </Button>
             )}
             {headAction && (
@@ -268,8 +282,7 @@ export function LiveWorkspace({
           </div>
           {data.truncated.length > 0 && (
             <div className="live-note">
-              Some overview lists show a limited set of records. Use Load more
-              in the matching section to see additional records.
+              {words.shell.limited}
             </div>
           )}
           {error && (
@@ -317,7 +330,7 @@ export function LiveWorkspace({
           >
             <DialogContent className="live-dialog">
               <DialogHeader>
-                <DialogTitle>{dialog && actionTitles[dialog]}</DialogTitle>
+                <DialogTitle>{dialog && (actions[dialog] ?? actionTitles[dialog])}</DialogTitle>
                 <DialogDescription>
                   {dialog === "invite"
                     ? "They’ll choose to join your private group workspace."
@@ -332,7 +345,7 @@ export function LiveWorkspace({
                   onSaved={() => {
                     setDialog(null);
                     setNotice(
-                      "Time off saved. Only the reviewed commitments were released.",
+                      words.timeOffForm.saved,
                     );
                   }}
                 />
@@ -352,7 +365,7 @@ export function LiveWorkspace({
             </DialogContent>
           </Dialog>
           <PaperSurface
-            title={selected?.title ?? "Commitment"}
+            title={selected?.title ?? words.detail.fallbackTitle}
             variant="workspace"
             returnFocusRef={commitmentTrigger}
             open={!!selected}
@@ -456,7 +469,7 @@ export function LiveWorkspace({
         >
           <DialogContent className="live-dialog">
             <DialogHeader>
-              <DialogTitle>Change one commitment</DialogTitle>
+              <DialogTitle>{words.detail.changeTitle}</DialogTitle>
               <DialogDescription>
                 {release &&
                   `${release.title} · ${when(release.start, release.end)}`}
@@ -490,7 +503,7 @@ export function LiveWorkspace({
                         commitmentId: release.id,
                         expectedVersion: release.version,
                       },
-                      "Commitment released. Your other dates are unchanged.",
+                      words.detail.released,
                     ))
                   )
                     setRelease(null);

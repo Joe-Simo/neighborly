@@ -12,6 +12,7 @@ import type {
   LiveConfirmation,
   LiveWorkspaceData,
 } from "@/components/workspace/types";
+import type { Words } from "@/lib/words";
 
 /** The one button a help room puts in the page head, such as "Log a call". */
 /**
@@ -39,6 +40,8 @@ export type Workspace = {
   showCommitment: (item: LiveCommitment, trigger: HTMLButtonElement) => void;
   confirm: (confirmation: LiveConfirmation) => void;
   focusOutcome: () => void;
+  /** Every phrase the screens show, in this person's language and this group's word set. */
+  words: Words;
   /**
    * Replaces the page head while a section shows one record, such as a neighbor by name.
    * Call it in a layout effect and pass null in the cleanup, so the area's heading returns.
