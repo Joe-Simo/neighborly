@@ -18,7 +18,7 @@ afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 describe("reviewable team drafting", () => {
   test("a team description leaves without the names, phones and addresses typed into it", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
-    const fetch = vi.fn(async (_url: string, _init: { body: string }) => Response.json({ answers: {} }));
+    const fetch = vi.fn<(url: string, init: { body: string }) => Promise<Response>>(async () => Response.json({ answers: {} }));
     vi.stubGlobal("fetch", fetch);
     const { signed } = await setup();
     await signed.action(api.drafts.suggestTeam, { description: "Our Welcome team serves every Sunday from 9am to 10am. We need two people. Ask Rosa Delgado, (239) 555-0142, rosa@sample.example, 14 Sample Street." });
