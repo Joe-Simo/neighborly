@@ -77,6 +77,7 @@ describe("removing a person for good", () => {
     const owner = signedIn(t, ownerUser);
     const before = await owner.query(api.reports.year, { churchId, year: 2026 });
 
+    const visited = await t.run(async (ctx) => (await ctx.db.query("visits").collect()).find((visit) => visit.status === "completed" && visit.visitors.some((visitor) => visitor.memberId === person._id && visitor.hours > 0))!);
     await owner.mutation(api.people.remove, { churchId, personId: person._id, typedName: `  ${person.name.toUpperCase()} ` });
     await t.finishAllScheduledFunctions(vi.runAllTimers);
 
@@ -110,6 +111,13 @@ describe("removing a person for good", () => {
     expect(after.time.hours).toBe(before.time.hours);
     expect(JSON.stringify(after)).not.toContain(person.name);
     expect(JSON.stringify(after)).toContain(formerMember);
+
+    // A visit they made still opens, and its sheet and the printed members table say the plain name.
+    const sheet = await owner.query(api.visits.sheet, { churchId, visitId: visited._id });
+    expect(sheet.visitors).toContain(formerMember);
+    expect(sheet.visitors).not.toContain(person.name);
+    expect(after.time.members.filter((line) => line.name === formerMember)).toHaveLength(1);
+    expect(after.time.members.find((line) => line.name === formerMember)?.hours).toBe(before.time.members.find((line) => line.name === person.name)?.hours);
 
     // They are gone from the list, and their sign-in no longer opens this conference.
     const people = (await owner.query(api.workspace.dashboard, { churchId })).people;
