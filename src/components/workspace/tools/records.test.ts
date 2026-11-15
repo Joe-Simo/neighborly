@@ -17,10 +17,12 @@ describe("the files a conference takes away", () => {
     expect(recordsZipName("St. Example Conference", true, new Date(2026, 0, 5))).toBe("sample-st-example-records-2026-01-05.zip");
   });
   test("the cover sheet stands alone and writes a conference's own words as text", () => {
-    const cover = recordsCover({ conference: "St. <Example> & Friends", sample: true, day: "November 15, 2026", by: "Marisol Vega", files: [{ title: "Neighbors", fileName: "sample-neighbors.csv", holds: "Each household.", lines: 1200 }] });
+    const cover = recordsCover({ conference: "St. <Example> & Friends", sample: true, day: "November 15, 2026", by: "Marisol Vega", files: [{ title: "Neighbors", fileName: "sample-neighbors.csv", holds: "Each household.", lines: 1200 }, { title: "Where you refer", fileName: "sample-where-you-refer.csv", holds: "The places you send people on to.", lines: 0 }] });
     expect(cover).toContain("St. &lt;Example&gt; &amp; Friends");
     expect(cover).toContain("Sample, made-up people");
     expect(cover).toContain('<td class="n">1,200</td>');
+    // A kind with nothing in it is still listed, so the cover matches the folder.
+    expect(cover).toContain('<td class="n">None yet</td>');
     expect(cover).not.toMatch(/src=|href=|url\(|<script/);
     expect(recordsCover({ conference: "St. Example Conference", sample: true, day: "November 15, 2026", by: "Marisol Vega", files: [], faces: { serif: "data:font/woff2;base64,AA", sans: "data:font/woff2;base64,BB" } })).toContain('url(data:font/woff2;base64,AA) format("woff2")');
   });

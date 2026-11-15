@@ -46,7 +46,7 @@ const escaped = (text: string) => text.replace(/[&<>"]/g, (mark) => ({ "&": "&am
  * so it prints the same on a computer that has never seen the site.
  */
 export function recordsCover({ conference, sample, day, by, files, faces }: { conference: string; sample: boolean | undefined; day: string; by: string; files: { title: string; fileName: string; holds: string; lines: number }[]; faces?: { serif: string; sans: string } }) {
-  const rows = files.map((file) => `<tr><td><b>${escaped(file.title)}</b><small>${escaped(file.fileName)}</small></td><td>${escaped(file.holds)}</td><td class="n">${file.lines.toLocaleString("en-US")}</td></tr>`).join("");
+  const rows = files.map((file) => `<tr><td><b>${escaped(file.title)}</b><small>${escaped(file.fileName)}</small></td><td>${escaped(file.holds)}</td><td class="n">${file.lines ? file.lines.toLocaleString("en-US") : "None yet"}</td></tr>`).join("");
   return `<!doctype html>
 <html lang="en">
 <head>

@@ -50,6 +50,7 @@ function FileRows({ files, onDownload }: { files: GatheredFile[]; onDownload?: (
  * Nothing is sent anywhere, and each file uses the column names the imports read, so it can come back in.
  */
 export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, onReset }: { state: RecordsStep; onGather: () => void; onDownloadAll: (files: GatheredFile[]) => void; onDownload: (file: GatheredFile) => void; onReset: () => void }) {
+  // The one download always holds the whole set: a kind with nothing in it yet goes along with its headings only, so the folder, the cover and this list agree.
   const filled = state.step === "done" ? state.files.filter((file) => file.lines > 0) : [];
   const [lifted, setLifted] = useState(0);
   return (
@@ -82,13 +83,13 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
         <>
           <div className="live-success help-done tools-done" role="status" tabIndex={-1} ref={(node) => node?.focus()}>
             <CircleCheck size={22} aria-hidden="true" />
-            <span>Your records are ready on this device. Keep the files somewhere safe: they hold your neighbors’ private details.</span>
+            <span>Your records are ready on this device. Keep the files somewhere safe: they hold your neighbors’ private details. The download adds a cover sheet that lists every file.</span>
           </div>
           {filled.length > 0 && (
             <div className="help-actions tools-after tools-bundle-line">
               <span className="tools-bundle" key={lifted} data-lifted={lifted ? "" : undefined} aria-hidden="true"><i /><i /><i /></span>
-              <Button onClick={() => { setLifted((times) => times + 1); onDownloadAll(filled); }}>
-                <Download size={18} aria-hidden="true" /> {filled.length === 1 ? "Download the file" : `Download all ${filled.length} files`}
+              <Button onClick={() => { setLifted((times) => times + 1); onDownloadAll(state.files); }}>
+                <Download size={18} aria-hidden="true" /> Download all {state.files.length} files
               </Button>
             </div>
           )}
