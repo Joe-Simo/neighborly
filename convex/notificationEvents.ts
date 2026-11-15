@@ -48,7 +48,7 @@ async function deliver(ctx: MutationCtx, row: Doc<"outbox">) {
   } else return;
   const config = deliveryConfiguration();
   if (!config) return;
-  const subject = row.kind === "cover_request" ? "A cover request on Neighborly" : "A meeting invitation on Neighborly";
+  const subject = row.kind === "cover_request" ? "A cover request on Kind Helps" : "A meeting invitation on Kind Helps";
   const link = new URL("/app", config.site).toString();
   const text = row.kind === "cover_request" ? `A coordinator has asked if you can cover a commitment. Sign in to review and choose whether to accept:\n\n${link}` : `You have a meeting invitation. Sign in to review the details and respond:\n\n${link}`;
   const emailId = await resend.sendEmail(ctx, { from: config.sender, to: row.recipient, subject, text, idempotencyKey: `notification:${row.eventKey}` });

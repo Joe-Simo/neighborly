@@ -43,7 +43,7 @@ describe("church invitations", () => {
   test("account email readiness does not enable group notification delivery", async () => {
     vi.stubEnv("EMAIL_DELIVERY_ENABLED", "false");
     vi.stubEnv("RESEND_API_KEY", "re_test_key");
-    vi.stubEnv("SENDER_EMAIL", "Neighborly <test@example.org>");
+    vi.stubEnv("SENDER_EMAIL", "Kind Helps <test@example.org>");
     vi.stubEnv("SITE_URL", "https://example.org");
     try {
       const { t, ids, as } = await setup();
@@ -62,7 +62,7 @@ describe("church invitations", () => {
       vi.stubEnv("SITE_URL", "https://example.org");
       vi.stubEnv("SENDER_EMAIL", "");
       expect(await t.query(api.workspace.emailConfiguration, {})).toBe(false);
-      vi.stubEnv("SENDER_EMAIL", "Neighborly <test@example.org>");
+      vi.stubEnv("SENDER_EMAIL", "Kind Helps <test@example.org>");
       vi.stubEnv("RESEND_API_KEY", "");
       expect(await t.query(api.workspace.emailConfiguration, {})).toBe(false);
     } finally {
@@ -73,7 +73,7 @@ describe("church invitations", () => {
     vi.useFakeTimers();
     process.env.EMAIL_DELIVERY_ENABLED = "true";
     process.env.RESEND_API_KEY = "re_test_key";
-    process.env.SENDER_EMAIL = "Neighborly <test@example.org>";
+    process.env.SENDER_EMAIL = "Kind Helps <test@example.org>";
     process.env.SITE_URL = "https://example.org";
     try {
       const { t, ids, as } = await setup();

@@ -33,7 +33,7 @@ export async function enqueueInvitation(ctx: MutationCtx, invitation: Doc<"invit
   if (!config) return "not_sent" as const;
   const link = new URL("/app", config.site);
   link.searchParams.set("invite", token);
-  const emailId = await resend.sendEmail(ctx, { from: config.sender, to: invitation.email, subject: "You have been invited to Neighborly", text: `You have been invited to join a church on Neighborly. Open this private link to review and accept the invitation:\n\n${link.toString()}\n\nThis invitation expires after seven days.`, idempotencyKey: `invitation:${invitation._id}` });
+  const emailId = await resend.sendEmail(ctx, { from: config.sender, to: invitation.email, subject: "You have been invited to Kind Helps", text: `You have been invited to join a church on Kind Helps. Open this private link to review and accept the invitation:\n\n${link.toString()}\n\nThis invitation expires after seven days.`, idempotencyKey: `invitation:${invitation._id}` });
   await ctx.db.patch("outbox", outbox._id, { state: "queued", providerId: emailId });
   return "queued" as const;
 }

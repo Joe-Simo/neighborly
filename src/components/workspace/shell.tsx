@@ -184,7 +184,7 @@ export function LiveWorkspace({
       <a className="live-skip" href="#workspace-content">Skip to your workspace</a>
       <header className="live-header">
         <Link href="/" className="live-wordmark">
-          neighborly
+          kind helps
         </Link>
         <div className="live-header-actions">
           {selectChurch}
