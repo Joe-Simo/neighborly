@@ -6,6 +6,7 @@ import { prepareDraft } from "../src/lib/draft";
 import { draftPayeeKinds, prepareRequestDraft, requestKinds, withoutIdentity } from "../src/lib/request-draft";
 import { urgentReasons, urgentSigns, type UrgentSign } from "../src/lib/urgency";
 import { neighborAccess } from "./access";
+import { fiscalYear } from "./reports";
 
 const draftResult = v.object({
   teamName: v.string(), recurrence: v.string(), peopleCount: v.string(),
@@ -194,5 +195,83 @@ export const readUrgency = action({
     ])) as Record<(typeof signs)[number]["reason"], string>);
     if (!sure) return fallback;
     return { signs: signs.filter(({ reason }) => sure[reason] >= 0.9), verification: "checked" as const };
+  },
+});
+
+const yearFlagKinds = ["approvedNotPaid", "paidNoPayment", "visitNoHours", "noteSaysPaid", "visitNotMarked"] as const;
+const yearFlag = v.object({
+  kind: v.union(...yearFlagKinds.map(kind => v.literal(kind))),
+  record: v.union(v.object({ table: v.literal("assistanceRequests"), id: v.id("assistanceRequests") }), v.object({ table: v.literal("visits"), id: v.id("visits") })),
+  /** "rule" was found by counting alone; "assistant" means the model read a note. */
+  source: v.union(v.literal("rule"), v.literal("assistant")),
+});
+const toRead = v.object({ kind: v.union(v.literal("noteSaysPaid"), v.literal("visitNotMarked")), record: yearFlag.fields.record, note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()) });
+const paidWords = /\b(?:paid|sent (?:a |the )?check|check (?:was )?(?:sent|mailed)|covered the|pagad[oa]|pagamos)\b/i;
+const visitedWords = /\b(?:visited|we met|met with|went to see|stopped by|visitamos)\b/i;
+
+/**
+ * The year's records that do not add up, found by rules alone, and the notes worth a second reading.
+ * No names leave this function except inside toRead, which never leaves the server.
+ */
+export const yearRecords = internalQuery({
+  args: { churchId: v.id("churches"), year: v.number() },
+  returns: v.object({ userId: v.id("users"), flags: v.array(yearFlag), toRead: v.array(toRead) }),
+  handler: async (ctx, { churchId, year }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const church = await ctx.db.get("churches", churchId);
+    if (!church || !Number.isInteger(year) || year < 2000 || year > 2100) throw new Error("Year not found.");
+    const { start, end } = fiscalYear(year, church.timeZone);
+    const now = Date.now();
+    const [requests, visits] = await Promise.all([
+      ctx.db.query("assistanceRequests").withIndex("by_church", q => q.eq("churchId", churchId).gte("createdAt", start).lt("createdAt", end)).take(1000),
+      ctx.db.query("visits").withIndex("by_church", q => q.eq("churchId", churchId).gte("scheduledAt", start).lt("scheduledAt", end)).take(1000),
+    ]);
+    const flags: (typeof yearFlag.type)[] = [];
+    const reading: (typeof toRead.type)[] = [];
+    const identity = async (neighborId: (typeof requests)[number]["neighborId"]) => {
+      const neighbor = await ctx.db.get("neighbors", neighborId);
+      return { names: neighbor ? [neighbor.name] : [], addresses: neighbor?.address ? [neighbor.address] : [] };
+    };
+    for (const request of requests) {
+      if (request.status !== "approved" && request.status !== "paid" && request.status !== "open") continue;
+      const record = { table: "assistanceRequests" as const, id: request._id };
+      const payment = await ctx.db.query("ledgerEntries").withIndex("by_request", q => q.eq("requestId", request._id)).first();
+      if (payment) continue;
+      if (request.status === "paid") flags.push({ kind: "paidNoPayment", record, source: "rule" });
+      else if (paidWords.test(request.decisionNote) && reading.length < 20) reading.push({ kind: "noteSaysPaid", record, note: request.decisionNote, ...(await identity(request.neighborId)) });
+      else if (request.status === "approved" && (request.decidedAt ?? request.createdAt) < now - 30 * 86_400_000) flags.push({ kind: "approvedNotPaid", record, source: "rule" });
+    }
+    for (const visit of visits) {
+      const record = { table: "visits" as const, id: visit._id };
+      if (visit.status === "completed" && visit.visitors.every(visitor => visitor.hours === 0)) flags.push({ kind: "visitNoHours", record, source: "rule" });
+      else if (visit.status === "scheduled" && visit.scheduledAt < now && visitedWords.test(visit.notes) && reading.length < 20) reading.push({ kind: "visitNotMarked", record, note: visit.notes, ...(await identity(visit.neighborId)) });
+    }
+    return { userId: member.userId, flags, toRead: reading };
+  },
+});
+
+/**
+ * Before the yearly report is sent: the records that do not add up. Counts come from code. The model
+ * reads only the notes code picked out, with names and addresses removed, and answers yes or no on
+ * whether each says what code suspects (a bill already paid with no payment recorded; a visit made
+ * but never marked done). It changes nothing; each flag points a person to one record to look at.
+ */
+export const checkYear = action({
+  args: { churchId: v.id("churches"), year: v.number() },
+  returns: v.object({ flags: v.array(yearFlag), verification: v.union(v.literal("review"), v.literal("checked")) }),
+  handler: async (ctx, args): Promise<{ flags: (typeof yearFlag.type)[]; verification: "review" | "checked" }> => {
+    const { userId, flags, toRead: reading } = await ctx.runQuery(internal.drafts.yearRecords, args);
+    // With no model, a person reads the notes code picked out; they are flagged as a rule's finding.
+    const unread = { flags: [...flags, ...reading.map(({ kind, record }) => ({ kind, record, source: "rule" as const }))], verification: "review" as const };
+    if (!reading.length) return { flags, verification: "checked" };
+    if (!env.TYPESAFE_API_KEY) return unread;
+    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return unread;
+    const asked = { noteSaysPaid: "that money was already paid or a check already sent for this request", visitNotMarked: "that the home visit already took place" };
+    const sure = await confidence(env.TYPESAFE_API_KEY,
+      { notes: Object.fromEntries(reading.map((item, index) => [`n${index}`, withoutIdentity(item.note.slice(0, 1000), item)])) },
+      Object.fromEntries(reading.map((item, index) => [`n${index}`, `Does notes.n${index} explicitly state ${asked[item.kind]}? ${stated} Never infer a new fact.`])),
+    );
+    if (!sure) return unread;
+    return { flags: [...flags, ...reading.flatMap(({ kind, record }, index) => (sure[`n${index}`] >= 0.9 ? [{ kind, record, source: "assistant" as const }] : []))], verification: "checked" };
   },
 });

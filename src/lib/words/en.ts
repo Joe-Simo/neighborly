@@ -189,6 +189,20 @@ export function en(set: WordSet) {
       cannotAfterAll: "I can’t go after all",
       canAfterAll: "I can go after all",
     },
+    /** The check before the yearly report. Each line points a person to one record; nothing is changed for them. */
+    yearCheck: {
+      title: "Before you send it",
+      count: (count: number) => `${count} ${count === 1 ? "record" : "records"} to look at`,
+      clear: "Everything adds up.",
+      approvedNotPaid: "Approved more than a month ago, and no payment is recorded.",
+      paidNoPayment: "Marked paid, and no payment is in the ledger.",
+      visitNoHours: "A finished visit with no hours written down.",
+      noteSaysPaid: "The note says this was paid, and no payment is recorded.",
+      visitNotMarked: "The note says this visit happened, and it is not marked done.",
+      byRule: "Found by counting.",
+      byAssistant: "The assistant read the note. Please read it yourself.",
+      open: "Open the record",
+    },
     /** Why the assistant put a call first. A person can always move it. */
     urgent: {
       label: "Call first",

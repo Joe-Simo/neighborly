@@ -161,6 +161,46 @@ describe("a call note drafted into a request", () => {
     expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(2000);
   });
 
+  test("before the yearly report: rules find what does not add up, the model reads only picked notes, nothing changes", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = answers({ n0: 0.98, n1: 0.2 });
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids, coordinator, member } = await helpLine();
+    const day = 86_400_000, now = Date.now(), year = new Date(now).getUTCMonth() >= 9 ? new Date(now).getUTCFullYear() + 1 : new Date(now).getUTCFullYear();
+    const made = await t.run(async ctx => {
+      const neighbor = (await ctx.db.query("neighbors").first())!;
+      const request = (status: "open" | "approved" | "paid", decisionNote: string, decidedAt?: number) => ctx.db.insert("assistanceRequests", { churchId: ids.churchId, neighborId: neighbor._id, kind: "rent", summary: "", amountRequested: 45000, status, decisionNote, decidedAt, payeeKind: "landlord", payeeName: "Sample Property Co", source: "person", createdBy: ids.coordinator.memberId, createdAt: now - 40 * day });
+      const visit = (status: "scheduled" | "completed", notes: string, hours: number) => ctx.db.insert("visits", { churchId: ids.churchId, neighborId: neighbor._id, scheduledAt: now - 5 * day, status, visitors: [{ memberId: ids.coordinator.memberId, hours, miles: 0 }], notes, createdBy: ids.coordinator.memberId, createdAt: now - 6 * day });
+      const settled = await request("paid", "");
+      await ctx.db.insert("ledgerEntries", { churchId: ids.churchId, kind: "expense", amount: 45000, date: "2026-11-01", category: "rent", payee: "Sample Property Co", memo: "", requestId: settled, recordedBy: ids.coordinator.memberId, createdAt: now });
+      return {
+        paidNoPayment: await request("paid", ""), approvedNotPaid: await request("approved", "Approved at the meeting.", now - 35 * day),
+        fresh: await request("approved", "Approved.", now - 2 * day),
+        noteSaysPaid: await request("approved", "Rosa Delgado's landlord was paid by check on Friday.", now - 3 * day),
+        doubtful: await request("open", "Ask whether the rent was paid."),
+        visitNoHours: await visit("completed", "", 0), fine: await visit("completed", "", 1.5),
+      };
+    });
+    const args = { churchId: ids.churchId, year };
+    const result = await coordinator.action(api.drafts.checkYear, args);
+    expect(result.verification).toBe("checked");
+    expect(result.flags).toEqual([
+      { kind: "paidNoPayment", record: { table: "assistanceRequests", id: made.paidNoPayment }, source: "rule" },
+      { kind: "approvedNotPaid", record: { table: "assistanceRequests", id: made.approvedNotPaid }, source: "rule" },
+      { kind: "visitNoHours", record: { table: "visits", id: made.visitNoHours }, source: "rule" },
+      { kind: "noteSaysPaid", record: { table: "assistanceRequests", id: made.noteSaysPaid }, source: "assistant" },
+    ]);
+    expect(fetch.mock.calls[0][1].body).not.toMatch(/rosa|delgado/i);
+    expect(JSON.stringify(result)).not.toMatch(/rosa|delgado/i);
+    await expect(member.action(api.drafts.checkYear, args)).rejects.toThrow("coordinators and owners only");
+    // With no key a person reads the picked notes themselves; it is never an error.
+    vi.stubEnv("TYPESAFE_API_KEY", "");
+    const calm = await coordinator.action(api.drafts.checkYear, args);
+    expect(calm.verification).toBe("review");
+    expect(calm.flags.filter(flag => flag.kind === "noteSaysPaid").map(flag => flag.source)).toEqual(["rule", "rule"]);
+    expect((await t.run(ctx => ctx.db.get("assistanceRequests", made.noteSaysPaid)))?.status).toBe("approved");
+  });
+
   test("a field the model is not sure of comes back blank", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     vi.stubGlobal("fetch", answers({ kind: 0.99, amountRequested: 0.4, payeeKind: 0.99 }));
