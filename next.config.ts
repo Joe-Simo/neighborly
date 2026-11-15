@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+// The backend's own web address. Calendar feeds live there, but people see them on this site's domain.
+const convexSite = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+
 const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
@@ -12,6 +15,11 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  async rewrites() {
+    return convexSite
+      ? [{ source: "/calendar/:path*", destination: `${convexSite}/calendar/:path*` }]
+      : [];
   },
 };
 
