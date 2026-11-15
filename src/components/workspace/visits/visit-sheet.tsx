@@ -70,7 +70,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       {step === "time" && (
         <LiveDialog
           title="Change the time"
-          description={`${sheet.visitors.join(" and ")} will be asked again, since their yes was for the old time.`}
+          description={sheet.visitors.length ? `${sheet.visitors.join(" and ")} will be asked again, since the yes was for the old time.` : "Choose the new time."}
           onClose={() => setStep(null)}
         >
           <TimeForm
@@ -90,7 +90,9 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
           onClose={() => setConfirming(false)}
         >
           <p className="visits-consequence">
-            {sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent, so please tell {sheet.visitors.map((name) => name.split(/\s+/)[0]).join(" and ")} yourself.
+            {sheet.visitors.length
+              ? `${sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent, so please tell ${sheet.visitors.map((name) => name.split(/\s+/)[0]).join(" and ")} yourself.`
+              : "No visitor is on this visit now, so no one needs to be told."}
           </p>
           {error && <LiveFailure message={error} kept="" />}
           <div className="live-form-actions">
@@ -205,7 +207,11 @@ export function VisitSheetView({
           </div>
           <div>
             <dt>Going together</dt>
-            <dd className="visits-paper-pair">{sheet.visitors.join(" and ")}</dd>
+            <dd className="visits-paper-pair">{sheet.status !== "scheduled" || sheet.visitors.length === 2
+              ? sheet.visitors.join(" and ")
+              : sheet.visitors.length
+                ? `${sheet.visitors[0]}, and a second visitor still to be asked`
+                : "Two visitors still to be asked"}</dd>
           </div>
           {request && (
             <div>

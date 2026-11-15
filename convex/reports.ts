@@ -485,7 +485,7 @@ export const year = query({
         membersServing: serving.size,
         teams: teamLines.filter((team) => team.shifts > 0).sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
         members: [...serving]
-          .map(([memberId, line]) => ({ memberId, name: names.get(memberId) ?? "Former member", visits: line.visits, shifts: line.shifts, hours: round(line.hours), miles: round(line.miles) }))
+          .map(([memberId, line]) => ({ memberId, name: names.get(memberId) ?? "A former member", visits: line.visits, shifts: line.shifts, hours: round(line.hours), miles: round(line.miles) }))
           .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
       },
       money: { beginningBalance, received, sources: lines(sources), otherSpending: lines(otherSpending), spent, endingBalance: beginningBalance + received - spent },

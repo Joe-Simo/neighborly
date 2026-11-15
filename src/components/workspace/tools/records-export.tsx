@@ -20,7 +20,7 @@ export type RecordsStep =
   | { step: "done"; files: GatheredFile[] };
 
 /**
- * The way out. One yes gathers the conference's own records into six spreadsheets on this device.
+ * The way out. One yes gathers the conference's own records into spreadsheets on this device, one for each kind of record.
  * Nothing is sent anywhere, and each file uses the column names the imports read, so it can come back in.
  */
 const count = (amount: number) => Math.round(amount).toLocaleString("en-US");
@@ -46,7 +46,7 @@ function FileRows({ files, onDownload }: { files: GatheredFile[]; onDownload?: (
 }
 
 /**
- * The way out. One yes gathers the conference's own records into six spreadsheets on this device.
+ * The way out. One yes gathers the conference's own records into spreadsheets on this device, one for each kind of record.
  * Nothing is sent anywhere, and each file uses the column names the imports read, so it can come back in.
  */
 export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, onReset }: { state: RecordsStep; onGather: () => void; onDownloadAll: (files: GatheredFile[]) => void; onDownload: (file: GatheredFile) => void; onReset: () => void }) {
@@ -65,7 +65,7 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
             <Button onClick={onGather}><FolderDown size={18} aria-hidden="true" /> Gather my records</Button>
           </div>
           <p className="tools-small">
-            One file each for neighbors, requests and their outcomes, home visits, the ledger, who you pay, and members. Account numbers show their last four digits only. Each time, it is written down who took the records out.
+            Everything your conference has written here, one file for each kind of record: the neighbors and their notes, calls, requests and visits; the ledger, deposits and vouchers; your members, teams and commitments. Account numbers show their last four digits only. Each time, it is written down who took the records out.
           </p>
         </div>
       )}

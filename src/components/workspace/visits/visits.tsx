@@ -174,7 +174,7 @@ function Visits() {
       )}
       {step?.kind === "replace" && (
         <LiveDialog
-          title={`${firstName(step.leaving.name)} can’t go`}
+          title={step.leaving.removed ? "A second visitor" : `${firstName(step.leaving.name)} can’t go`}
           description={`Choose who goes to ${step.visit.neighborName} with ${step.visit.visitors.find((visitor) => visitor.memberId !== step.leaving.memberId)?.name ?? "the other visitor"}.`}
           onClose={() => setStep(null)}
         >
@@ -184,7 +184,9 @@ function Visits() {
             leaving={step.leaving}
             onSaved={(joining) =>
               finish(
-                `${firstName(joining)} has been asked to visit ${step.visit.neighborName} in place of ${firstName(step.leaving.name)}.`,
+                step.leaving.removed
+                  ? `${firstName(joining)} has been asked to visit ${step.visit.neighborName}.`
+                  : `${firstName(joining)} has been asked to visit ${step.visit.neighborName} in place of ${firstName(step.leaving.name)}.`,
               )
             }
           />
@@ -303,6 +305,9 @@ export function VisitsView({
   const suggested = asked ?? board.suggested;
   const coming = board.scheduled.filter((visit) => visit.scheduledAt >= now);
   const toWriteUp = board.scheduled.filter((visit) => visit.scheduledAt < now);
+  const short = coming.filter((visit) =>
+    visit.visitors.some((visitor) => visitor.removed),
+  ).length;
   const thisWeek = coming.filter(
     (visit) => visit.scheduledAt < now + WEEK,
   ).length;
@@ -405,6 +410,7 @@ export function VisitsView({
             <span className="live-count">
               {[
                 coming.length ? `${thisWeek} this week` : "",
+                short ? `${count(short, "is", "are")} short of a visitor` : "",
                 board.toArrange.length
                   ? `${count(board.toArrange.length, "more needs", "more need")} a pair`
                   : "",
@@ -423,7 +429,7 @@ export function VisitsView({
                     <div>
                       <p className="visits-who">
                         <Pair
-                          names={visit.visitors.map((visitor) => visitor.name)}
+                          names={visit.visitors.filter((visitor) => !visitor.removed).map((visitor) => visitor.name)}
                           joining={visit.id === fresh}
                         />
                       </p>
@@ -441,6 +447,11 @@ export function VisitsView({
                       >
                         {pair.text}
                       </span>
+                      {pair.state === "short" && (
+                        <Button onClick={() => onReplace(visit, pair.who)}>
+                          Ask a second visitor
+                        </Button>
+                      )}
                       {pair.state === "declined" && (
                         <Button
                           variant="outline"

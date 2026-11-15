@@ -528,6 +528,10 @@
 .live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
 .live-date:has(.live-date-words:focus-visible) { outline: 2px solid #365c46; outline-offset: 2px; }
 .live-date:has(:disabled) { opacity: 0.55; }
+.live-date[data-missing] { border-color: #6f5f93; box-shadow: 0 0 0 1px #6f5f93; }
+/* The frame around the field carries the plum; the words inside never draw a second one. */
+:is(.live-app, .live-dialog) .live-field .live-date .live-date-words[aria-invalid="true"] { border: 0; box-shadow: none; }
+:is(.live-app, .live-dialog) .live-field small.live-date-missing { font-size: 15px; line-height: 1.4; color: #6f5f93; }
 .live-app .live-date .live-date-words, .live-dialog .live-date .live-date-words { flex: 1; min-width: 0; height: 100%; min-height: 0; margin: 0; padding: 0 0 0 12px; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none; color: inherit; font: inherit; font-size: 16px; text-overflow: ellipsis; }
 .live-date-words::placeholder { color: #66705f; opacity: 1; }
 .live-date-words:read-only { cursor: pointer; }

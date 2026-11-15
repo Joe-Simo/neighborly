@@ -280,6 +280,7 @@ export function en(set: WordSet) {
       notSaved: "Your answer was not saved. Try again.",
       on: (street: string) => `A visit on ${street}`,
       nearby: "a street nearby",
+      partnerOpen: "Your coordinator is asking a second visitor.",
       partner: (name: string) => `With ${name}. Your coordinator has the visit sheet.`,
       go: "I’ll go",
       cannot: "I can’t go",

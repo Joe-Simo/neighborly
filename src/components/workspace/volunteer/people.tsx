@@ -2,9 +2,17 @@
 
 import "./people.css";
 import { useState } from "react";
+import { useMutation } from "convex/react";
+import { Lock } from "lucide-react";
+import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { readFailure } from "@/components/workspace/failure";
 import { LiveEmpty } from "@/components/workspace/primitives";
+import { LiveFailure } from "@/components/workspace/states";
+import type { LiveWorkspaceData } from "@/components/workspace/types";
 import { useWorkspace } from "@/components/workspace/context";
 
 /** "Ana Lucía Prieto" as "AP": the first and last name, so two people with one first name still differ. */
@@ -23,11 +31,57 @@ function Address({ email }: { email: string }) {
   );
 }
 
+/** The second step of removing someone for good: what goes, what stays, and their name typed before the button wakes. */
+function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceData["people"][number]; churchId: LiveWorkspaceData["church"]["id"]; onClose: () => void }) {
+  const remove = useMutation(api.people.remove);
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState("");
+  const matches = typed.trim().toLowerCase() === person.name.trim().toLowerCase();
+  return (
+    <LiveDialog title="Remove this person" description={`Everything we keep about ${person.name} in this conference, for good.`} onClose={onClose}>
+      <form
+        className="people-remove"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (!matches || busy) return;
+          setBusy(true);
+          setFailed("");
+          try {
+            await remove({ churchId, personId: person.id, typedName: typed });
+            onClose();
+          } catch (cause) {
+            setFailed(readFailure(cause, "They could not be removed just now."));
+            setBusy(false);
+          }
+        }}
+      >
+        <dl>
+          <dt>What goes</dt>
+          <dd>Their name and email address, their places on teams, their time off, and their sign-in to this conference. What they had promised to do from now on is open again. Planned visits they were part of will need a new second visitor.</dd>
+          <dt>What stays</dt>
+          <dd>The visits and hours they logged stay in the year’s counts as “a former member”.</dd>
+        </dl>
+        <Label htmlFor="people-remove-name">Type {person.name} to remove them</Label>
+        <Input id="people-remove-name" value={typed} onChange={(event) => setTyped(event.target.value)} autoComplete="off" autoCapitalize="words" spellCheck={false} />
+        <p className="people-remove-last">This cannot be undone.</p>
+        {failed && <LiveFailure message={failed} kept="Nothing was removed." />}
+        <div className="live-form-actions">
+          <Button type="submit" disabled={!matches || busy}>
+            {busy ? "Removing" : "Remove this person"}
+          </Button>
+        </div>
+      </form>
+    </LiveDialog>
+  );
+}
+
 export function PeopleSection() {
   const { data, pending, isOwner, confirm: setConfirmation, words } = useWorkspace();
   const roles: Record<string, string> = words.people.roles;
   const [managingId, setManagingId] = useState<string | null>(null);
   const managing = data.people.find((person) => person.id === managingId);
+  const [removing, setRemoving] = useState(false);
   return (
     <>
       {/* The rows are titled h3, so the list carries the h2 a screen reader steps by. */}
@@ -64,6 +118,9 @@ export function PeopleSection() {
         ))}
       </div>
       {managing && (
+        removing ? (
+          <RemoveForGood person={managing} churchId={data.church.id} onClose={() => { setRemoving(false); setManagingId(null); }} />
+        ) : (
         <LiveDialog title={managing.name} description={<><span className="people-address-full">{managing.email.slice(0, managing.email.lastIndexOf("@"))}<wbr />{managing.email.slice(managing.email.lastIndexOf("@"))}</span>{managing.active ? (roles[managing.role] ?? managing.role) : "Access removed"} · {managing.approved ? "Approved for service" : "Waiting for approval"}</>} onClose={() => setManagingId(null)}>
           <div className="live-manage">
                 <Button
@@ -91,7 +148,6 @@ export function PeopleSection() {
                 </Button>
                 <Button
                   variant="outline"
-                  data-danger={managing.active ? "" : undefined}
                   size="sm"
                   disabled={pending}
                   onClick={() =>
@@ -118,7 +174,17 @@ export function PeopleSection() {
                   <small>{managing.active ? "They can no longer sign in to this conference. Their record stays." : "They can sign in to this conference again."}</small>
                 </Button>
           </div>
+          {/* The one act here that cannot be undone: a quiet link under a hairline, as on a neighbor's record. */}
+          <div className="people-for-good">
+            <button type="button" className="live-link" disabled={pending} onClick={() => setRemoving(true)}>
+              Remove this person for good
+            </button>
+            <span className="people-owners">
+              <Lock size={14} aria-hidden="true" /> Owners only
+            </span>
+          </div>
         </LiveDialog>
+        )
       )}
       {isOwner && (
         <section className="live-section">

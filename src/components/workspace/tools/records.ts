@@ -1,12 +1,22 @@
 import Papa from "papaparse";
 
+/** Every record a conference keeps here, in the order a person would look for them: the people helped, the money, then the conference itself. */
 export const recordFiles = [
   { key: "neighbors", holds: "Each household: name, phone, address, who lives there, language and notes.", title: "Neighbors", gathering: "neighbors" },
+  { key: "notes", holds: "Every note written on a neighbor’s record, with who wrote it and when.", title: "Notes on neighbors", gathering: "notes on neighbors" },
+  { key: "calls", holds: "The help line’s log: who called, what they said, and when the call was returned.", title: "Help line calls", gathering: "help line calls" },
   { key: "requests", holds: "Every request for help, what was asked, what was decided and what was given.", title: "Requests and their outcomes", gathering: "requests" },
   { key: "visits", holds: "Each home visit: when it was, who went and what was written up.", title: "Home visits", gathering: "home visits" },
   { key: "ledger", holds: "Money in and money out, line by line, in dollars and cents.", title: "The ledger", gathering: "the ledger" },
+  { key: "deposits", holds: "Each deposit taken to the bank.", title: "Deposits", gathering: "deposits" },
+  { key: "statements", holds: "Each bank statement the treasurer agreed with the books.", title: "Bank statements", gathering: "bank statements" },
+  { key: "vouchers", holds: "Vouchers received and given, line by line.", title: "Vouchers", gathering: "vouchers" },
   { key: "payees", holds: "The landlords, utilities and stores you pay. Account numbers show their last four digits only.", title: "Who you pay", gathering: "who you pay" },
+  { key: "referrals", holds: "The places you send people on to, and what each helps with.", title: "Where you refer", gathering: "where you refer" },
   { key: "members", holds: "Your members, their roles and how to reach them.", title: "Members", gathering: "members" },
+  { key: "teams", holds: "Each team and who serves on it.", title: "Teams", gathering: "teams" },
+  { key: "commitments", holds: "Every shift and commitment: when, where and who served.", title: "Commitments", gathering: "commitments" },
+  { key: "history", holds: "Who did what and when: approvals, invitations and each time records were taken out.", title: "History", gathering: "the history" },
 ] as const;
 export type RecordFileKey = (typeof recordFiles)[number]["key"];
 
@@ -17,7 +27,8 @@ const plain = (cell: string) => (/^[=+\-@\t\r]/.test(cell) ? `'${cell}` : cell);
 export function recordsCsv(columns: string[], rows: string[][]) {
   return `﻿${Papa.unparse({ fields: columns, data: rows.map((row) => row.map(plain)) })}`;
 }
-export const recordsFileName = (key: RecordFileKey, sample: boolean | undefined) => `${sample ? "sample-" : ""}${key === "payees" ? "who-you-pay" : key}.csv`;
+const fileNames: Partial<Record<RecordFileKey, string>> = { payees: "who-you-pay", notes: "neighbor-notes", calls: "help-line-calls", statements: "bank-statements", referrals: "where-you-refer" };
+export const recordsFileName = (key: RecordFileKey, sample: boolean | undefined) => `${sample ? "sample-" : ""}${fileNames[key] ?? key}.csv`;
 
 /** The one download: the conference's short name and the day on this device, as in st-example-records-2026-11-15.zip. */
 export function recordsZipName(conference: string, sample: boolean | undefined, day: Date) {
