@@ -3,6 +3,7 @@
 import "./people.css";
 import { useState } from "react";
 import { useMutation } from "convex/react";
+import { Lock } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -38,7 +39,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
   const [failed, setFailed] = useState("");
   const matches = typed.trim().toLowerCase() === person.name.trim().toLowerCase();
   return (
-    <LiveDialog title={`Remove ${person.name} for good?`} description="This cannot be undone." onClose={onClose}>
+    <LiveDialog title="Remove this person" description={`Everything we keep about ${person.name} in this conference, for good.`} onClose={onClose}>
       <form
         className="people-remove"
         onSubmit={async (event) => {
@@ -57,16 +58,19 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
       >
         <dl>
           <dt>What goes</dt>
-          <dd>Their name, their email address, their places on teams, their time off and their sign-in to this conference.</dd>
+          <dd>Their name and email address, their places on teams, their time off, and their sign-in to this conference. What they had promised to do from now on is open again.</dd>
           <dt>What stays</dt>
-          <dd>The visits, hours and decisions they logged. They stay in the year’s counts under “a former member”.</dd>
+          <dd>The visits and hours they logged stay in the year’s counts as “a former member”.</dd>
         </dl>
-        <Label htmlFor="people-remove-name">Type {person.name} to confirm</Label>
+        <Label htmlFor="people-remove-name">Type {person.name} to remove them</Label>
         <Input id="people-remove-name" value={typed} onChange={(event) => setTyped(event.target.value)} autoComplete="off" autoCapitalize="words" spellCheck={false} />
+        <p className="people-remove-last">This cannot be undone.</p>
         {failed && <LiveFailure message={failed} kept="Nothing was removed." />}
-        <Button type="submit" disabled={!matches || busy}>
-          {busy ? "Removing" : "Remove for good"}
-        </Button>
+        <div className="live-form-actions">
+          <Button type="submit" disabled={!matches || busy}>
+            {busy ? "Removing" : "Remove this person"}
+          </Button>
+        </div>
       </form>
     </LiveDialog>
   );
@@ -169,11 +173,15 @@ export function PeopleSection() {
                   {managing.active ? "Remove access" : "Restore access"}
                   <small>{managing.active ? "They can no longer sign in to this conference. Their record stays." : "They can sign in to this conference again."}</small>
                 </Button>
-                <hr className="team-apart" />
-                <Button variant="outline" size="sm" disabled={pending} onClick={() => setRemoving(true)}>
-                  Remove this person for good
-                  <small>Their name, address and sign-in to this conference go. Visits and hours they logged stay in the year’s counts as “a former member”.</small>
-                </Button>
+          </div>
+          {/* The one act here that cannot be undone: a quiet link under a hairline, as on a neighbor's record. */}
+          <div className="people-for-good">
+            <button type="button" className="live-link" disabled={pending} onClick={() => setRemoving(true)}>
+              Remove this person for good
+            </button>
+            <span className="people-owners">
+              <Lock size={14} aria-hidden="true" /> Owners only
+            </span>
           </div>
         </LiveDialog>
         )
