@@ -39,7 +39,7 @@
 .help-alert svg { flex: none; position: relative; top: 3px; }
 .help-head-actions { display: inline-flex; align-items: center; gap: 22px; }
 .help-head-actions .help-text-action[data-slot="button"] { font-size: 16px; }
-.help-timeline li[data-kind="note"] i { background: var(--live-paper); box-shadow: inset 0 0 0 2px #859472, 0 0 0 5px var(--live-paper); }
+.help-timeline li[data-kind="note"] i, .help-timeline li[data-kind="closed"] i { background: var(--live-paper); box-shadow: inset 0 0 0 2px #859472, 0 0 0 5px var(--live-paper); }
 .help-timeline li[data-kind="note"] h3 { font-family: inherit; font-size: 17px; line-height: 1.55; letter-spacing: 0; white-space: pre-line; max-width: 68ch; }
 .help-timeline .help-found { color: var(--live-ink); font-size: 17px; line-height: 1.55; margin: 2px 0 4px; max-width: 68ch; white-space: pre-line; }
 .help-home .help-noted { margin: 6px 0 0; font-size: 15px; color: var(--live-muted); }
@@ -67,3 +67,7 @@
 }
 .help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 14px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
 @media (max-width: 850px) { .help-home { grid-template-columns: 1fr; gap: 26px; } }
+@media (max-width: 640px) {
+  .help-timeline .help-sep { display: none; }
+  .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-top: 2px; }
+}

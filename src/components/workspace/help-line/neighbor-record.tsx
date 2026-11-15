@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import {
   CloseForm,
+  takingBack,
   DecideForm,
   HelpDialog,
   NeighborForm,
@@ -258,7 +259,9 @@ export function NeighborRecord({
       )}
       {step?.kind === "close" && (
         <HelpDialog
-          title="Close request"
+          title={
+            takingBack(step.request) ? "Take back voucher" : "Close request"
+          }
           description={`${requestTitle(step.request)}. ${step.request.summary}`}
           onClose={close}
         >
@@ -266,7 +269,9 @@ export function NeighborRecord({
             churchId={churchId}
             request={step.request}
             onSaved={() =>
-              finish(`Request closed. ${neighbor.name}’s record is up to date.`)
+              finish(
+                `${takingBack(step.request) ? "Voucher taken back" : "Request closed"}. ${neighbor.name}’s record is up to date.`,
+              )
             }
           />
         </HelpDialog>
@@ -321,15 +326,25 @@ function happened(event: Record["history"][number]) {
       };
     case "voucher":
       return {
-        kind: "money",
-        what: `${vouchers(event)} given`,
-        who: `Approved by ${event.who}`,
-        requestId: event.requestId,
+        kind: event.takenBack ? "closed" : "money",
+        what: `${vouchers(event)} ${event.takenBack ? "taken back" : "given"}`,
+        who: `${event.takenBack ? "Taken back" : "Approved"} by ${event.who}`,
+        found: event.note,
+        // An older backend does not say; then the link stays away.
+        takeBack: event.canTakeBack ? event.requestId : undefined,
       };
     case "decision":
+      if (event.status === "closed")
+        return {
+          kind: "closed",
+          // Never "without help" once money went out; each payment keeps its own line.
+          what: `${kindLabels[event.kind]} request closed ${event.paid ? `after ${shortMoney(event.paid)} of ${shortMoney(event.approved)}` : "without help"}`,
+          who: `Closed by ${event.who}`,
+          found: event.note,
+        };
       return {
         kind: "call",
-        what: `${kindLabels[event.kind]} request ${event.status === "closed" ? "closed without help" : event.status}`,
+        what: `${kindLabels[event.kind]} request declined`,
         who: [event.note, `Decided by ${event.who}`].filter(Boolean).join(" "),
       };
   }
@@ -585,9 +600,9 @@ export function NeighborRecordView({
                   .map((event, index) => {
                     const line = happened(event);
                     const given =
-                      "requestId" in line &&
+                      "takeBack" in line &&
                       record.requests.find(
-                        (request) => request.id === line.requestId,
+                        (request) => request.id === line.takeBack,
                       );
                     return (
                       <li key={`${event.at}-${index}`} data-kind={line.kind}>
@@ -602,7 +617,7 @@ export function NeighborRecordView({
                             {line.who}
                             {given && (
                               <>
-                                {" · "}
+                                <span className="help-sep"> · </span>
                                 <Button
                                   variant="link"
                                   className="help-text-action"
@@ -610,7 +625,7 @@ export function NeighborRecordView({
                                     onStep({ kind: "close", request: given })
                                   }
                                 >
-                                  Close this request
+                                  Take it back
                                 </Button>
                               </>
                             )}

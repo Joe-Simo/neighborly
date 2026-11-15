@@ -3,7 +3,8 @@ import { DateTime } from "luxon";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { logNeighborOpening, neighborAccess, neighborRecord } from "./access";
-import { callRow, lookups, nameKey, phoneKey, requestRow, toCallRow, toRequestRow } from "./assistance";
+import { TAKE_BACK_DAYS, callRow, lookups, nameKey, phoneKey, requestRow, toCallRow, toRequestRow } from "./assistance";
+import { paidTowardRequest } from "./treasury";
 import schema from "./schema";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
@@ -255,8 +256,9 @@ const historyEvent = v.union(
   v.object({ type: v.literal("payment"), at: v.number(), category: v.string(), payee: v.string(), amount: v.number(), who: v.string() }),
   v.object({ type: v.literal("note"), at: v.number(), note: v.string(), who: v.string() }),
   v.object({ type: v.literal("brought"), at: v.number(), kind: schema.tables.assistanceRequests.validator.fields.kind, payee: v.string(), amount: v.number() }),
-  v.object({ type: v.literal("voucher"), at: v.number(), requestId: v.id("assistanceRequests"), item: v.string(), quantity: v.number(), who: v.string() }),
-  v.object({ type: v.literal("decision"), at: v.number(), kind: schema.tables.assistanceRequests.validator.fields.kind, status: v.union(v.literal("declined"), v.literal("closed")), note: v.string(), who: v.string() }),
+  /** A voucher given from the shelf. Once taken back, `who` and `note` say who took it back and why. */
+  v.object({ type: v.literal("voucher"), at: v.number(), requestId: v.id("assistanceRequests"), item: v.string(), quantity: v.number(), who: v.string(), takenBack: v.boolean(), canTakeBack: v.boolean(), note: v.string() }),
+  v.object({ type: v.literal("decision"), at: v.number(), kind: schema.tables.assistanceRequests.validator.fields.kind, status: v.union(v.literal("declined"), v.literal("closed")), note: v.string(), who: v.string(), approved: v.number(), paid: v.number() }),
 );
 
 /**
@@ -298,14 +300,16 @@ export const record = query({
     const calls = await Promise.all(callDocs.map((call) => toCallRow(found, call)));
     const payments = entries.filter((entry) => entry.kind === "expense" && !entry.voidedAt);
     const visitsDone = visitDocs.filter((visit) => visit.status === "completed");
+    // A voucher that left the shelf: approved (so no money was ever owed) and then either kept or taken back.
+    const given = (request: (typeof requests)[number]) => !!request.voucher && request.amountApproved === 0 && (request.status === "paid" || request.status === "closed");
     const history: Infer<typeof historyEvent>[] = [
       ...calls.map((call) => ({ type: "call" as const, at: call.takenAt, note: call.note, who: call.takenByName })),
       ...(await Promise.all(visitsDone.map(async (visit) => ({ type: "visit" as const, at: visit.completedAt ?? visit.scheduledAt, note: visit.notes, who: await Promise.all(visit.visitors.map((visitor) => found.memberName(visitor.memberId))) })))),
       ...(await Promise.all(payments.map(async (entry) => ({ type: "payment" as const, at: DateTime.fromISO(entry.date, { zone: church?.timeZone ?? "UTC" }).toMillis(), category: entry.category, payee: entry.payee, amount: entry.amount, who: await found.memberName(entry.recordedBy) })))),
       ...(await Promise.all(noteDocs.map(async (note) => ({ type: "note" as const, at: note.createdAt, note: note.body, who: await found.memberName(note.authorId) })))),
       ...brought.map((request) => ({ type: "brought" as const, at: request.createdAt, kind: request.kind, payee: request.payeeName, amount: request.importedAmount ?? request.amountRequested })),
-      ...requests.flatMap((request) => (request.status === "paid" && request.voucher ? [{ type: "voucher" as const, at: request.decidedAt ?? request.createdAt, requestId: request.id, item: request.voucher.item, quantity: request.voucher.quantity, who: request.decidedByName ?? request.createdByName }] : [])),
-      ...requests.flatMap((request) => (request.source !== "import" && (request.status === "declined" || request.status === "closed") ? [{ type: "decision" as const, at: request.decidedAt ?? request.createdAt, kind: request.kind, status: request.status, note: [request.decisionNote, [...request.referrals, request.referral].filter(Boolean).length ? `Referred to ${[...request.referrals, request.referral].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" "), who: request.decidedByName ?? request.createdByName }] : [])),
+      ...requests.filter(given).map((request) => ({ type: "voucher" as const, at: request.decidedAt ?? request.createdAt, requestId: request.id, item: request.voucher?.item ?? "", quantity: request.voucher?.quantity ?? 0, who: request.decidedByName ?? request.createdByName, takenBack: request.status === "closed", canTakeBack: request.status === "paid" && Date.now() - (request.decidedAt ?? 0) <= TAKE_BACK_DAYS * 24 * 60 * 60 * 1000, note: request.status === "closed" ? request.decisionNote : "" })),
+      ...(await Promise.all(requests.filter((request) => request.source !== "import" && !given(request) && (request.status === "declined" || request.status === "closed")).map(async (request) => ({ type: "decision" as const, at: request.decidedAt ?? request.createdAt, kind: request.kind, status: request.status === "closed" ? ("closed" as const) : ("declined" as const), note: [request.decisionNote, [...request.referrals, request.referral].filter(Boolean).length ? `Referred to ${[...request.referrals, request.referral].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" "), who: request.decidedByName ?? request.createdByName , approved: request.amountApproved ?? 0, paid: request.status === "closed" && request.amountApproved ? await paidTowardRequest(ctx, request.id) : 0 })))),
     ].sort((a, b) => b.at - a.at);
     const opened = await ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", neighborId)).order("desc").take(20);
     const openers = new Map<string, Promise<string>>();

@@ -589,6 +589,10 @@ export function DecideForm({
   );
 }
 
+/** A voucher that was given is finished, so ending it is taking the voucher back. */
+export const takingBack = (request: HelpRequest) =>
+  !!request.voucher && request.status === "paid";
+
 /** Ends a request that will go no further, and says plainly what happens to what was given or paid. */
 export function CloseForm({
   churchId,
@@ -606,6 +610,7 @@ export function CloseForm({
   );
   const { pending, error, save } = useSave();
   const paid = payable?.find((row) => row.requestId === request.id)?.paid ?? 0;
+  const back = takingBack(request);
   const effect = request.voucher
     ? request.status === "paid"
       ? `${vouchers(request.voucher)} ${request.voucher.quantity === 1 ? "goes" : "go"} back on the shelf. No money has moved.`
@@ -626,11 +631,17 @@ export function CloseForm({
         if (outcome.saved) onSaved();
       }}
     >
-      <LiveField label="Why it is being closed">
+      <LiveField
+        label={back ? "Why it is being taken back" : "Why it is being closed"}
+      >
         <Textarea name="note" rows={3} required maxLength={500} />
       </LiveField>
       <p className="help-form-note">{effect}</p>
-      <FormEnd error={error} pending={pending} submit="Close request" />
+      <FormEnd
+        error={error}
+        pending={pending}
+        submit={back ? "Take back voucher" : "Close request"}
+      />
     </form>
   );
 }

@@ -211,7 +211,7 @@ describe("a request for help", () => {
   });
 
   test("a voucher request takes from the shelf when approved and gives back when closed", async () => {
-    const { ids, as } = await setup();
+    const { t, ids, as } = await setup();
     const churchId = ids.church, caller = as(ids.owner);
     const coats = { kind: "voucher", summary: "Two children need winter coats.", amountRequested: 0, payeeKind: "vendor", payeeName: "", voucher: { item: "Winter coat", quantity: 2 } } as const;
     const onHand = async () => (await caller.query(api.treasury.voucherShelf, { churchId })).items.map((line) => [line.item, line.onHand]);
@@ -232,11 +232,30 @@ describe("a request for help", () => {
     await caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "Coats came from a relative instead." });
     expect(await onHand()).toEqual([["Winter coat", 10]]);
     await expect(caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "" })).rejects.toThrow("already finished");
-    expect((await history()).map((event) => event.type)).toEqual(["decision"]);
+    expect(await history()).toEqual([expect.objectContaining({ type: "voucher", takenBack: true, canTakeBack: false, who: "Marisol Vega", note: "Coats came from a relative instead." })]);
+
+    const old = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...coats });
+    await caller.mutation(api.assistance.decide, { churchId, requestId: old, decision: "approved", note: "" });
+    await t.run((ctx) => ctx.db.patch("assistanceRequests", old, { decidedAt: Date.now() - 31 * 24 * 60 * 60 * 1000 }));
+    await expect(caller.mutation(api.assistance.closeRequest, { churchId, requestId: old, note: "Too late." })).rejects.toThrow("30 days");
+    await caller.mutation(api.treasury.recordVouchers, { churchId, item: "Winter coat", change: 2, date: "2026-11-03" });
 
     const declined = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...coats });
     await caller.mutation(api.assistance.decide, { churchId, requestId: declined, decision: "declined", note: "Outside our area." });
     expect(await onHand()).toEqual([["Winter coat", 10]]);
+  });
+
+  test("closing a part-paid request keeps what was paid and who closed it", async () => {
+    const { ids, as } = await setup();
+    const churchId = ids.church;
+    const requestId = await as(ids.coordinator).mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...rent });
+    await as(ids.coordinator).mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 45000, note: "" });
+    await as(ids.owner).mutation(api.treasury.recordPayment, { churchId, requestId, amount: 20000, date: "2026-11-10" });
+    await as(ids.owner).mutation(api.assistance.closeRequest, { churchId, requestId, note: "Moved in with family." });
+    await as(ids.owner).mutation(api.neighbors.open, { churchId, neighborId: ids.rosa });
+    const { history } = await as(ids.owner).query(api.neighbors.record, { churchId, neighborId: ids.rosa });
+    expect(history).toContainEqual(expect.objectContaining({ type: "decision", status: "closed", approved: 45000, paid: 20000, who: "Marisol Vega", note: "Moved in with family." }));
+    expect(history).toContainEqual(expect.objectContaining({ type: "payment", amount: 20000 }));
   });
 
   test("treasury settles an approved request, and a reversal brings it back", async () => {

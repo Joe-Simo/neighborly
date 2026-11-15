@@ -21,6 +21,8 @@ const DAY = 24 * 60 * 60 * 1000;
 const WEEK = 7 * DAY;
 const MAX_CENTS = 10_000_000;
 const MAX_VOUCHERS = 20;
+/** How long after a voucher is given it can still be taken back. */
+export const TAKE_BACK_DAYS = 30;
 
 export const nameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 export const phoneKey = (phone: string) => phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
@@ -269,7 +271,7 @@ export const decide = mutation({
   },
 });
 
-/** Closes a request that will go no further, such as when the neighbor resolved it. Closing a voucher request after it was given puts the vouchers back on the shelf. */
+/** Closes a request that will go no further, such as when the neighbor resolved it, and keeps who closed it and when. Closing a voucher request after it was given takes the vouchers back onto the shelf. */
 export const closeRequest = mutation({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), note: v.string() },
   returns: v.null(),
@@ -278,8 +280,9 @@ export const closeRequest = mutation({
     const existing = await ownRequest(ctx, churchId, requestId);
     const given = existing.status === "paid" && existing.voucher;
     if (existing.status !== "open" && existing.status !== "approved" && !given) throw new Error("This request is already finished.");
+    if (given && Date.now() - (existing.decidedAt ?? 0) > TAKE_BACK_DAYS * DAY) throw new Error(`A voucher can be taken back for ${TAKE_BACK_DAYS} days after it was given.`);
     if (given) await voucherGiven(ctx, member, { requestId, item: given.item, quantity: 0 });
-    await ctx.db.patch("assistanceRequests", requestId, { status: "closed", decisionNote: text(note, "The note", 500), decidedBy: existing.decidedBy ?? member._id, decidedAt: existing.decidedAt ?? Date.now() });
+    await ctx.db.patch("assistanceRequests", requestId, { status: "closed", decisionNote: text(note, "The note", 500), decidedBy: member._id, decidedAt: Date.now() });
     return null;
   },
 });
