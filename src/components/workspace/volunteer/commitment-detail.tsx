@@ -7,6 +7,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import { LiveField } from "@/components/workspace/primitives";
+import { zoneName } from "@/components/workspace/zone";
 import { useWorkspace } from "@/components/workspace/context";
 import type {
   LiveCommand,
@@ -76,7 +77,7 @@ export function CommitmentDetail({
               <dd>
                 {when(selected.start, selected.end)}
                 <br />
-                <small>{data.church.timeZone}</small>
+                <small>{zoneName(data.church.timeZone).replace(/^./, (first) => first.toUpperCase())}</small>
               </dd>
             </div>
             <div>

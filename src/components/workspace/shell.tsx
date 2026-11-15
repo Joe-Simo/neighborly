@@ -14,6 +14,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import type { LiveArea } from "@/components/workspace/areas";
+import { readFailure } from "@/components/workspace/failure";
+import { LiveConnection, RoomBoundary } from "@/components/workspace/states";
+import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
   WorkspaceProvider,
@@ -115,6 +118,8 @@ export function LiveWorkspace({
   const teamName = (id: string) =>
     data.teams.find((team) => team.id === id)?.name ?? words.shell.team;
   const now = useSyncExternalStore(noChange, openedAt, () => 0);
+  // The sample says so once, in its mark, not also in its name.
+  const churchName = data.church.sample ? data.church.name.replace(/\s*\(sample\)\s*$/i, "") : data.church.name;
   async function perform(command: LiveCommand, success?: string) {
     setPending(true);
     setError("");
@@ -136,11 +141,7 @@ export function LiveWorkspace({
       else if (success) setNotice(success);
       return true;
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message.replace(/^.*?Uncaught Error:\s*/, "").split("\n")[0]
-          : words.notices.failed,
-      );
+      setError(readFailure(cause, words.notices.failed));
       return false;
     } finally {
       setPending(false);
@@ -231,7 +232,7 @@ export function LiveWorkspace({
               event.preventDefault();
               if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
             }}>
-              <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}</DialogHeader>
+              <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{churchName}</DialogDescription>{data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}</DialogHeader>
               <div className="live-menu-rooms">
                 <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={(event) => leave(event, id)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
                 {selectChurch}
@@ -249,7 +250,7 @@ export function LiveWorkspace({
       <div className="live-layout">
         <nav className="live-nav" aria-label={words.shell.workspace} ref={navRef}>
           <span className="live-nav-marker" aria-hidden="true" />
-          <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{data.church.name}</p>
+          <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{churchName}</p>
           {data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}
           {menuItems.map(({ id, label, icon: Icon }) => (
             <Link
@@ -285,7 +286,7 @@ export function LiveWorkspace({
                 </button>
               )}
               <p className="live-kicker">
-                {data.church.name}
+                {churchName}
                 {data.church.sample ? " · Sample" : ""}
               </p>
               <h1>{heading.title}</h1>
@@ -353,9 +354,12 @@ export function LiveWorkspace({
               {notice}
             </div>
           )}
+          <LiveConnection />
           <div className="live-room" key={area}>
-            <Section />
-            {pagination}
+            <RoomBoundary key={area}>
+              <Section />
+              {pagination}
+            </RoomBoundary>
           </div>
         </main>
       </div>
@@ -372,11 +376,17 @@ export function LiveWorkspace({
               if (!pending) setDialog(null);
             }}
             title={dialog && (actions[dialog] ?? actionTitles[dialog])}
-            description={<>{dialog === "invite"
-                    ? "They’ll choose to join your private group workspace."
-                    : dialog === "commitment" || dialog === "meeting"
-                      ? `Times are in ${data.church.timeZone}.`
-                      : "Make the next step clear for your team."}</>}
+            description={
+              dialog === "invite"
+                ? "They’ll choose to join your conference."
+                : dialog === "commitment" || dialog === "meeting"
+                  ? `Times are ${zoneName(data.church.timeZone)}.`
+                  : dialog === "timeOff"
+                    ? "Your team sees the days you are away."
+                    : dialog === "announcement"
+                      ? "Everyone in the conference sees this on This week."
+                      : undefined
+            }
           >
               {dialog === "timeOff" ? (
                 <LiveTimeOffForm
@@ -431,7 +441,7 @@ export function LiveWorkspace({
             if (!pending) setEditingCommitment(null);
           }}
           title={<>Edit commitment</>}
-          description={<>Times use {data.church.timeZone}. You’ll review the changes before
+          description={<>Times are {zoneName(data.church.timeZone)}. You’ll review the changes before
                 saving.</>}
         >
             {editingCommitment && (
