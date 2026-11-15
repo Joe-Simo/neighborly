@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle } from "lucide-react";
-import { useWorkspace } from "@/components/workspace/context";
+import { useWorkspace, useWorkspaceIfAny } from "@/components/workspace/context";
+import { stateWords, wrongControl } from "@/components/workspace/failure";
 import { headings } from "@/components/workspace/navigation";
 import { ReliefPicture } from "@/components/workspace/relief";
 
@@ -154,10 +155,67 @@ export function LiveField({
   children: ReactNode;
   help?: string;
 }) {
+  const field = useRef<HTMLLabelElement>(null);
+  const noteId = useId();
+  const [note, setNote] = useState("");
+  const workspace = useWorkspaceIfAny();
+  // A needed answer left empty, or one the browser will not take: said under the field in our own
+  // words, with the first such field in focus. The browser's own bubble never shows.
+  useEffect(() => {
+    const label = field.current;
+    if (!label) return;
+    const said = workspace?.words.states ?? stateWords;
+    const refuse = (event: Event) => {
+      const control = event.target;
+      if (!(control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement)) return;
+      // The date field answers for its own hidden value.
+      if (control.classList.contains("live-date-value")) return;
+      event.preventDefault();
+      // What the form itself had said about this control is put back once the person answers.
+      if (control.getAttribute("aria-invalid") !== "true") control.dataset.needed = control.getAttribute("aria-invalid") ?? "";
+      control.setAttribute("aria-invalid", "true");
+      control.setAttribute("aria-describedby", noteId);
+      if (control.form?.querySelector(wrongControl) === control) control.focus();
+      const time = control.classList.contains("live-time") && workspace?.words.dateField.chooseTime;
+      setNote(
+        !control.validity.valueMissing
+          ? ("neededCheck" in said ? said.neededCheck : stateWords.neededCheck)
+          : time
+            ? `${time}.`
+            : control instanceof HTMLSelectElement
+              ? ("neededChoice" in said ? said.neededChoice : stateWords.neededChoice)
+              : ("needed" in said ? said.needed : stateWords.needed),
+      );
+    };
+    const settle = () => {
+      for (const control of label.querySelectorAll<HTMLElement>(`[aria-describedby="${noteId}"]`)) {
+        control.removeAttribute("aria-describedby");
+        const before = control.dataset.needed;
+        if (before === undefined) continue;
+        if (before) control.setAttribute("aria-invalid", before);
+        else control.removeAttribute("aria-invalid");
+        delete control.dataset.needed;
+      }
+      setNote("");
+    };
+    label.addEventListener("invalid", refuse, true);
+    label.addEventListener("input", settle);
+    label.addEventListener("change", settle);
+    return () => {
+      label.removeEventListener("invalid", refuse, true);
+      label.removeEventListener("input", settle);
+      label.removeEventListener("change", settle);
+    };
+  }, [noteId, workspace]);
   return (
-    <label className="live-field">
+    <label className="live-field" ref={field}>
       <span>{label}</span>
       {children}
+      {note && (
+        <small id={noteId} className="live-field-needed" role="alert">
+          {note}
+        </small>
+      )}
       {help && <small>{help}</small>}
     </label>
   );

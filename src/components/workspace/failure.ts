@@ -21,7 +21,13 @@ export const stateWords = {
   missingTitle: "This page isn’t here.",
   missingDeck: "The address may be old or mistyped. Your workspace is where you left it.",
   missingAction: "Go to your workspace",
+  needed: "Fill this in.",
+  neededChoice: "Choose one.",
+  neededCheck: "Check this one.",
 } as const;
+
+/** The form controls a browser's own check can refuse (a fieldset can be `:invalid` too, and is not one). */
+export const wrongControl = "input:invalid, select:invalid, textarea:invalid";
 
 // A development server sends the thrown sentence after these words; production sends it only inside a ConvexError.
 const thrown = /Uncaught (?:Convex)?Error:\s*(.+)/;

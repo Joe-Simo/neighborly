@@ -531,7 +531,10 @@
 .live-date[data-missing] { border-color: #6f5f93; box-shadow: 0 0 0 1px #6f5f93; }
 /* The frame around the field carries the plum; the words inside never draw a second one. */
 :is(.live-app, .live-dialog) .live-field .live-date .live-date-words[aria-invalid="true"] { border: 0; box-shadow: none; }
-:is(.live-app, .live-dialog) .live-field small.live-date-missing { font-size: 15px; line-height: 1.4; color: #6f5f93; }
+/* A needed answer left empty: the plum frame and one sentence, the same for a day, a text box, a list or an amount. */
+:is(.live-app, .live-dialog) .live-field small:is(.live-date-missing, .live-field-needed) { font-size: 15px; line-height: 1.4; color: #6f5f93; }
+:is(.live-app, .live-dialog) .live-field :is(input, textarea, select)[aria-invalid="true"]:not(.live-date-words) { border-color: #6f5f93; box-shadow: 0 0 0 1px #6f5f93; }
+.live-field:has(.live-date-missing) > .live-field-needed { display: none; }
 .live-app .live-date .live-date-words, .live-dialog .live-date .live-date-words { flex: 1; min-width: 0; height: 100%; min-height: 0; margin: 0; padding: 0 0 0 12px; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none; color: inherit; font: inherit; font-size: 16px; text-overflow: ellipsis; }
 .live-date-words::placeholder { color: #66705f; opacity: 1; }
 .live-date-words:read-only { cursor: pointer; }
@@ -652,8 +655,8 @@
 .live-dialog .live-field > [data-slot="native-select-wrapper"] { width: 100%; }
 .live-dialog .live-manage [data-slot="button"] { height: auto; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 16px; white-space: normal; text-align: left; }
 .live-dialog .live-manage [data-slot="button"] small { font-size: 14px; font-weight: 400; color: var(--live-muted); }
-.live-dialog .live-manage [data-slot="button"][data-danger] { color: #8a3b2e; border-color: #e3c9c2; }
-.live-dialog .live-manage [data-slot="button"][data-danger]:hover { background: #fbf1ee; }
+.live-dialog .live-manage [data-slot="button"][data-danger] { color: #6f5f93; border-color: rgb(111 95 147 / 0.35); }
+.live-dialog .live-manage [data-slot="button"][data-danger]:hover { background: rgb(111 95 147 / 0.07); }
 @media (max-width: 699px) {
   .live-app .live-state { grid-template-columns: minmax(0, 1fr); gap: 18px; justify-items: start; }
 }
