@@ -6,6 +6,10 @@ export type LedgerEntry = Ledger["entries"][number];
 export type Payable = FunctionReturnType<typeof api.treasury.payable>[number];
 export type Bank = FunctionReturnType<typeof api.treasury.reconciliation>;
 export type BankEntry = Bank["waiting"][number];
+export type Statement = FunctionReturnType<typeof api.treasury.statements>[number];
+export type Gift = FunctionReturnType<typeof api.treasury.undeposited>[number];
+export type Kind = FunctionReturnType<typeof api.treasury.kinds>[number];
+export type Shelf = FunctionReturnType<typeof api.treasury.voucherShelf>;
 
 export const TWINNING_GIFT = "Twinning gift";
 export const incomeSources = [

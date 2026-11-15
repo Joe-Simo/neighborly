@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQueries, useQuery } from "convex/react";
 import { ArrowLeft, CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -20,6 +20,7 @@ import {
   weekDayLabel,
   type Bank,
   type BankEntry,
+  type Statement,
 } from "@/components/workspace/treasury/labels";
 
 const count = (n: number) => `${n} ${n === 1 ? "entry" : "entries"}`;
@@ -34,6 +35,8 @@ const under = (entry: BankEntry) =>
   ]
     .filter(Boolean)
     .join(" · ");
+
+const stamp = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
 
 function DateLeaf({ day }: { day: string }) {
   const [month, date] = dayLabel(day).split(" ");
@@ -56,7 +59,14 @@ export function BankView({
   onUndo,
   onClearAll,
   onBack,
+  statements,
+  onKeep,
+  onClearDeposit,
 }: {
+  /** Statements kept so far; undefined until the backend offers them, and then none can be kept. */
+  statements?: Statement[];
+  onKeep: (balance: number) => void;
+  onClearDeposit: (deposit: Bank["deposits"][number]) => void;
   bank: Bank;
   /** The entry being changed, or "all". */
   busy: string | null;
@@ -79,13 +89,17 @@ export function BankView({
   const [confirming, setConfirming] = useState(false);
   const [lateDay, setLateDay] = useState(false);
   const agrees = gap === 0;
+  const deposits = bank.deposits ?? [];
+  const kept = statements?.some(
+    (row) => row.endsOn === bank.asOf && row.balance === says,
+  );
 
   return (
     <>
       <Button variant="link" className="treasury-back" onClick={onBack}>
         <ArrowLeft size={16} aria-hidden="true" /> Ledger
       </Button>
-      <dl className="help-figures">
+      <dl className="help-figures treasury-figures">
         <div>
           <dt>Cleared the bank</dt>
           <dd>
@@ -142,7 +156,17 @@ export function BankView({
                     ? `${count(bank.waitingCount)} still on the way.`
                     : "Nothing is waiting."}
                 </p>
-                <p>Your marks are saved for the {dayLabel(bank.asOf)} statement.</p>
+                {kept ? (
+                  <p>Saved for the {dayLabel(bank.asOf)} statement.</p>
+                ) : statements && says !== null ? (
+                  <div className="help-actions treasury-keep">
+                    <Button disabled={busy !== null} onClick={() => onKeep(says)}>
+                      {busy === "keep" ? "Keeping…" : "Keep this statement"}
+                    </Button>
+                  </div>
+                ) : (
+                  <p>Your marks are saved for the {dayLabel(bank.asOf)} statement.</p>
+                )}
               </>
             ) : (
               <>
@@ -216,12 +240,12 @@ export function BankView({
         <div className="live-section-head">
           <h2 id="treasury-uncleared-title">Not cleared yet</h2>
           <span className="live-count">
-            {bank.waitingCount > bank.waiting.length
-              ? `The oldest ${bank.waiting.length} of ${bank.waitingCount}`
+            {bank.waitingCount > bank.waiting.length + deposits.length
+              ? `The oldest ${bank.waiting.length + deposits.length} of ${bank.waitingCount}`
               : count(bank.waitingCount)}
           </span>
         </div>
-        {bank.waiting.length ? (
+        {bank.waiting.length || deposits.length ? (
           <>
             {starting && (
               <div className="treasury-starter">
@@ -267,6 +291,28 @@ export function BankView({
               </div>
             )}
             <div className="live-list">
+              {deposits.map((deposit) => (
+                <div className="help-row" key={deposit.id}>
+                  <DateLeaf day={deposit.date} />
+                  <div>
+                    <h3>{formatCents(deposit.total)} deposit</h3>
+                    <p>
+                      <span className="treasury-day">{dayLabel(deposit.date)} · </span>
+                      {deposit.count} {deposit.count === 1 ? "gift" : "gifts"} carried
+                      to the bank together
+                      {deposit.memo && ` · ${deposit.memo}`}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    disabled={busy !== null}
+                    aria-label={`Mark cleared: ${formatCents(deposit.total)} deposit`}
+                    onClick={() => onClearDeposit(deposit)}
+                  >
+                    {busy === deposit.id ? "Marking…" : "Mark cleared"}
+                  </Button>
+                </div>
+              ))}
               {bank.waiting.map((entry) => (
                 <div className="help-row" key={entry.id}>
                   <DateLeaf day={entry.date} />
@@ -337,6 +383,26 @@ export function BankView({
           </div>
         </section>
       )}
+
+      {statements && statements.length > 0 && (
+        <section className="treasury-moves" aria-labelledby="treasury-statements-title">
+          <div className="live-section-head">
+            <h2 id="treasury-statements-title">Statements matched</h2>
+            <span className="live-count">The newest {statements.length}</span>
+          </div>
+          <ul className="treasury-lines">
+            {statements.map((row) => (
+              <li key={row.id}>
+                <span>{dayLabel(row.endsOn)}</span>
+                <span>{formatCents(row.balance)}</span>
+                <span>
+                  Matched by {row.agreedBy} on {stamp.format(row.agreedAt)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </>
   );
 }
@@ -357,6 +423,12 @@ export function BankRoom({
   const { setHeading } = useWorkspace();
   const [asOf, setAsOf] = useState<string>();
   const bank = useQuery(api.treasury.reconciliation, { churchId, asOf });
+  // Asked for in a way that cannot fail the screen if the backend does not have it yet.
+  const { kept } = useQueries({
+    kept: { query: api.treasury.statements, args: { churchId } },
+  });
+  const agreeStatement = useMutation(api.treasury.agreeStatement);
+  const clearDeposit = useMutation(api.treasury.clearDeposit);
   const setCleared = useMutation(api.treasury.setCleared);
   const clearThrough = useMutation(api.treasury.clearThrough);
   const [busy, setBusy] = useState<string | null>(null);
@@ -395,6 +467,23 @@ export function BankRoom({
       error={error}
       onBack={onBack}
       onAsOf={setAsOf}
+      statements={kept instanceof Error ? undefined : kept}
+      onKeep={(balance) =>
+        change("keep", async () => {
+          await agreeStatement({ churchId, endsOn: shown.asOf, balance });
+          return `The ${dayLabel(shown.asOf)} statement is kept at ${formatCents(balance)}.`;
+        })
+      }
+      onClearDeposit={(deposit) =>
+        change(deposit.id, async () => {
+          await clearDeposit({
+            churchId,
+            depositId: deposit.id,
+            clearedOn: shown.asOf,
+          });
+          return `The ${formatCents(deposit.total)} deposit is marked cleared.`;
+        })
+      }
       onClear={(entry) =>
         change(entry.id, async () => {
           await setCleared({ churchId, entryId: entry.id, clearedOn: shown.asOf });

@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { LiveField } from "@/components/workspace/primitives";
@@ -22,9 +23,13 @@ import {
   type SpendingKind,
 } from "@/components/workspace/treasury/labels";
 
+/** One of the conference's own kinds, or a new one being named in this form. */
+export type OwnKind = { id: string; direction: "in" | "out"; name: string };
 export type Money = (
   | { direction: "in"; kind: IncomeSource }
   | { direction: "out"; kind: SpendingKind }
+  | { direction: "in" | "out"; kind: "own"; id: string }
+  | { direction: "in" | "out"; kind: "new"; kindName: string }
 ) & {
   amount: number;
   date: string;
@@ -37,17 +42,28 @@ const choices = [
   ...incomeSources.map(([kind]) => ({ direction: "in", kind }) as const),
   ...spendingKinds.map(([kind]) => ({ direction: "out", kind }) as const),
 ];
-type Choice = (typeof choices)[number];
-const keyOf = (choice: Choice) => `${choice.direction}:${choice.kind}`;
+type Choice =
+  | (typeof choices)[number]
+  | { direction: "in" | "out"; kind: "own"; id: string }
+  | { direction: "in" | "out"; kind: "new" };
+const keyOf = (choice: Choice) =>
+  choice.kind === "own"
+    ? `own:${choice.id}`
+    : `${choice.direction}:${choice.kind}`;
 
 export function MoneyForm({
   today,
   start,
+  own,
+  onRetire,
   onSubmit,
   onCancel,
 }: {
   today: string;
   start: IncomeSource;
+  /** The conference's own kinds; undefined until the backend offers them, and then none can be added. */
+  own?: OwnKind[];
+  onRetire: (id: string) => void;
   onSubmit: (money: Money) => Promise<Refusal>;
   onCancel: () => void;
 }) {
@@ -56,6 +72,7 @@ export function MoneyForm({
   const [date, setDate] = useState(today);
   const [name, setName] = useState("");
   const [memo, setMemo] = useState("");
+  const [kindName, setKindName] = useState("");
   const [checkNumber, setCheckNumber] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -81,7 +98,7 @@ export function MoneyForm({
         setError("");
         setSaving(true);
         const refusal = await onSubmit({
-          ...choice,
+          ...(choice.kind === "new" ? { ...choice, kindName } : choice),
           amount: cents,
           date,
           name,
@@ -105,9 +122,13 @@ export function MoneyForm({
           name="kind"
           value={keyOf(choice)}
           onChange={(event) => {
-            const chosen = choices.find(
-              (candidate) => keyOf(candidate) === event.target.value,
-            );
+            const key = event.target.value;
+            const mine = own?.find((kind) => `own:${kind.id}` === key);
+            const chosen: Choice | undefined = mine
+              ? { direction: mine.direction, kind: "own", id: mine.id }
+              : key === "in:new" || key === "out:new"
+                ? { direction: key === "in:new" ? "in" : "out", kind: "new" }
+                : choices.find((candidate) => keyOf(candidate) === key);
             if (chosen) setChoice(chosen);
           }}
         >
@@ -117,6 +138,14 @@ export function MoneyForm({
                 {label}
               </option>
             ))}
+            {own
+              ?.filter((kind) => kind.direction === "in")
+              .map((kind) => (
+                <option key={kind.id} value={`own:${kind.id}`}>
+                  {kind.name}
+                </option>
+              ))}
+            {own && <option value="in:new">Another kind of money in…</option>}
           </optgroup>
           <optgroup label="Money out">
             {spendingKinds.map(([kind, label]) => (
@@ -124,9 +153,45 @@ export function MoneyForm({
                 {label}
               </option>
             ))}
+            {own
+              ?.filter((kind) => kind.direction === "out")
+              .map((kind) => (
+                <option key={kind.id} value={`own:${kind.id}`}>
+                  {kind.name}
+                </option>
+              ))}
+            {own && <option value="out:new">Another kind of money out…</option>}
           </optgroup>
         </NativeSelect>
       </LiveField>
+      {choice.kind === "new" && (
+        <LiveField
+          label="Name this kind"
+          help="It joins the list for next time, for everyone who keeps the ledger."
+        >
+          <Input
+            name="kindName"
+            maxLength={120}
+            placeholder={out ? "Gas cards" : "Fall raffle"}
+            value={kindName}
+            onChange={(event) => setKindName(event.target.value)}
+            required
+          />
+        </LiveField>
+      )}
+      {choice.kind === "own" && (
+        <Button
+          type="button"
+          variant="link"
+          className="treasury-take-back treasury-retire"
+          onClick={() => {
+            onRetire(choice.id);
+            setChoice({ direction: "in", kind: start });
+          }}
+        >
+          Stop offering this kind
+        </Button>
+      )}
       <div className="live-form-grid treasury-form-grid">
         <LiveField label="Amount">
           <Input

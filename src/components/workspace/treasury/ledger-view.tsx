@@ -53,6 +53,10 @@ export function LedgerView({
   onEntry,
   uncleared,
   onBank,
+  onHand,
+  onDeposit,
+  shelf,
+  onShelf,
 }: {
   ledger: Ledger;
   payable: Payable[];
@@ -63,6 +67,12 @@ export function LedgerView({
   /** How many entries the bank has not shown yet; undefined while that is loading. */
   uncleared?: number;
   onBank: () => void;
+  /** Gifts on hand that are in no deposit yet; undefined until the backend answers. */
+  onHand?: { count: number; total: number };
+  onDeposit: () => void;
+  /** Vouchers on hand across every kind; undefined until the backend answers. */
+  shelf?: number;
+  onShelf: () => void;
 }) {
   const month = monthLabel(ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
@@ -109,7 +119,7 @@ export function LedgerView({
 
   return (
     <>
-      <dl className="help-figures">
+      <dl className="help-figures treasury-figures">
         <div>
           <dt>Balance today</dt>
           <dd>
@@ -312,19 +322,61 @@ export function LedgerView({
         </div>
       )}
 
-      {uncleared !== undefined && (
-        <section className="treasury-bank" aria-labelledby="treasury-bank-title">
-          <div>
-            <h2 id="treasury-bank-title">
-              {uncleared
-                ? `${count(uncleared, "entry has", "entries have")} not cleared the bank yet`
-                : "Everything has cleared the bank"}
-            </h2>
-            <p>Set the ledger beside your bank statement and see that they agree.</p>
-          </div>
-          <Button variant="outline" onClick={onBank}>
-            Match the bank
-          </Button>
+      {(uncleared !== undefined || onHand || shelf !== undefined) && (
+        <section className="treasury-foot" aria-label="More of the treasury">
+          {onHand && onHand.count > 0 && (
+            <div>
+              <div>
+                <h2>
+                  {count(onHand.count, "gift is", "gifts are")} not deposited
+                  yet
+                </h2>
+                <p>
+                  {formatCents(onHand.total)} on hand. Record the trip to the
+                  bank as one deposit, the way the statement will show it.
+                </p>
+              </div>
+              <Button variant="outline" onClick={onDeposit}>
+                Record a deposit
+              </Button>
+            </div>
+          )}
+          {uncleared !== undefined && (
+            <div>
+              <div>
+                <h2>
+                  {uncleared
+                    ? `${count(uncleared, "entry has", "entries have")} not cleared the bank yet`
+                    : "Everything has cleared the bank"}
+                </h2>
+                <p>
+                  Set the ledger beside your bank statement and see that they
+                  agree.
+                </p>
+              </div>
+              <Button variant="outline" onClick={onBank}>
+                Match the bank
+              </Button>
+            </div>
+          )}
+          {shelf !== undefined && (
+            <div>
+              <div>
+                <h2>
+                  {shelf
+                    ? `${count(shelf, "voucher", "vouchers")} on the shelf`
+                    : "The voucher shelf"}
+                </h2>
+                <p>
+                  Thrift store vouchers on hand. A count, kept apart from the
+                  money.
+                </p>
+              </div>
+              <Button variant="outline" onClick={onShelf}>
+                Open the shelf
+              </Button>
+            </div>
+          )}
         </section>
       )}
     </>

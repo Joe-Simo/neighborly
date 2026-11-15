@@ -138,28 +138,31 @@
   box-shadow: 0 0 0 1px #9f4935;
 }
 /* The way from the ledger to the bank statement, and back. */
-.treasury-bank {
+.treasury-foot {
+  margin-top: 56px;
+  border-top: 1px solid var(--live-line);
+}
+.treasury-foot > div {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px 40px;
   flex-wrap: wrap;
-  margin-top: 56px;
-  padding-top: 26px;
-  border-top: 1px solid var(--live-line);
+  padding: 26px 0;
+  border-bottom: 1px solid var(--live-line);
 }
-.treasury-bank h2 {
+.treasury-foot h2 {
   font: 400 27px/1.15 "Newsreader", Georgia, serif;
   letter-spacing: -0.02em;
   margin: 0 0 7px;
 }
-.treasury-bank p {
+.treasury-foot p {
   margin: 0;
   color: var(--live-muted);
   font-size: 17px;
   line-height: 1.5;
 }
-.live-app .treasury-bank [data-slot="button"],
+.live-app .treasury-foot [data-slot="button"],
 .live-app .treasury-starter [data-slot="button"] {
   min-height: 44px;
   padding-inline: 18px;
@@ -248,7 +251,7 @@
   .live-app .treasury-statement input {
     width: 100%;
   }
-  .treasury-bank [data-slot="button"],
+  .treasury-foot [data-slot="button"],
   .treasury-starter > [data-slot="button"] {
     width: 100%;
   }
@@ -284,4 +287,176 @@
   outline: none;
   border-color: #9f4935;
   box-shadow: 0 0 0 1px #9f4935;
+}
+
+/* Quiet one-line lists: statements matched, voucher movements. */
+.treasury-moves {
+  margin-top: 52px;
+}
+.treasury-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--live-line);
+}
+.treasury-lines li {
+  display: grid;
+  grid-template-columns: 96px minmax(140px, 0.6fr) minmax(0, 1fr);
+  gap: 6px 30px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--live-line);
+  font-size: 17px;
+  color: var(--live-muted);
+}
+.treasury-lines li > :nth-child(2) {
+  color: var(--live-ink);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.help-sheet .treasury-keep {
+  margin-top: 16px;
+}
+.help-ledger.treasury-shelf td.help-what {
+  font: 400 24px/1.2 "Newsreader", Georgia, serif;
+  letter-spacing: -0.02em;
+}
+.help-ledger.treasury-shelf td[data-total] {
+  color: var(--live-ink);
+}
+.help-ledger.treasury-shelf td[data-short] {
+  color: var(--help-ochre-ink);
+}
+/* Gifts in a deposit: each one a row that is in or out. */
+.treasury-gifts {
+  display: grid;
+  max-height: 40vh;
+  overflow-y: auto;
+  border-top: 1px solid #d9ddce;
+}
+.treasury-gifts [data-slot="toggle"] {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  height: auto;
+  min-height: 60px;
+  padding: 10px 6px;
+  border-radius: 0;
+  border-bottom: 1px solid #d9ddce;
+  background: none;
+  text-align: left;
+  white-space: normal;
+  font-size: 17px;
+  font-weight: 400;
+  color: #68715f;
+}
+.treasury-gifts [data-slot="toggle"]:hover {
+  background: #f1efe2;
+}
+.treasury-gifts strong {
+  display: block;
+  font-weight: 500;
+  color: inherit;
+}
+.treasury-gifts small {
+  display: block;
+  font-size: 15px;
+}
+.treasury-gift-mark {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #a9b697;
+  border-radius: 3px;
+  color: transparent;
+}
+.treasury-gifts [data-state="on"] {
+  color: #283c32;
+}
+.treasury-gifts [data-state="on"] .treasury-gift-mark {
+  background: #31533a;
+  border-color: #31533a;
+  color: #fff;
+}
+.treasury-gift-amount {
+  font: 400 21px/1 "Newsreader", Georgia, serif;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.treasury-gifts [data-state="off"] .treasury-gift-amount {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.treasury-gift-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0;
+  font-size: 16px;
+  color: #68715f;
+}
+.treasury-gift-total strong {
+  font: 400 30px/1 "Newsreader", Georgia, serif;
+  letter-spacing: -0.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: #283c32;
+}
+.treasury-dialog .treasury-retire[data-slot="button"] {
+  justify-self: start;
+  min-height: 44px;
+  height: auto;
+  margin-top: -10px;
+  padding: 0;
+  font-size: 16px;
+  color: #68715f;
+  text-decoration: underline #a9b697;
+  text-underline-offset: 5px;
+}
+@media (max-width: 850px) {
+  .treasury-lines li {
+    grid-template-columns: 64px minmax(0, 1fr);
+    column-gap: 16px;
+  }
+  .treasury-lines li > :nth-child(3) {
+    grid-column: 2;
+    font-size: 16px;
+  }
+  .live-app table.help-ledger.treasury-shelf tbody tr {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .live-app table.help-ledger.treasury-shelf tbody td.help-what {
+    grid-column: 1 / -1;
+  }
+  .live-app table.help-ledger.treasury-shelf tbody td.help-money {
+    display: block !important;
+    grid-column: auto;
+    grid-row: auto;
+    min-width: 0;
+    text-align: left;
+  }
+  .help-ledger.treasury-shelf td.help-money::before {
+    content: attr(data-label);
+    display: block;
+    font: 400 13px/1.4 "Source Sans 3", sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--live-muted);
+  }
+}
+/* Figures with cents must still fit two to a row on a phone. */
+@media (max-width: 850px) {
+  .help-figures.treasury-figures {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .help-figures.treasury-figures > div {
+    padding-right: 14px;
+  }
+  .help-figures.treasury-figures > div + div + div {
+    padding-left: 18px;
+  }
+  .help-figures.treasury-figures > div:not(:first-child) dd {
+    font-size: clamp(26px, 8vw, 34px);
+  }
+}
+.help-ledger.treasury-shelf td.help-what {
+  color: var(--live-ink);
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -28,19 +28,29 @@ import { PaymentForm } from "@/components/workspace/treasury/payment-form";
 import { MoneyForm } from "@/components/workspace/treasury/money-form";
 import { EntryDetail } from "@/components/workspace/treasury/entry-detail";
 import { BankRoom } from "@/components/workspace/treasury/bank-view";
+import { ShelfRoom } from "@/components/workspace/treasury/shelf-view";
+import { DepositForm } from "@/components/workspace/treasury/deposit-form";
 import { formatCents } from "@/components/workspace/treasury/money";
 import type { Refusal } from "@/components/workspace/treasury/form-parts";
 import {
   dayLabel,
   entryLines,
+  type Bank,
+  type Gift,
+  type Kind,
   type LedgerEntry,
   type Payable,
+  type Shelf,
 } from "@/components/workspace/treasury/labels";
 
 type Open =
   | { is: "payment"; request: Payable }
   | { is: "money" }
+  | { is: "deposit" }
   | { is: "entry"; entry: LedgerEntry };
+
+const answered = <T,>(value: T | Error | undefined) =>
+  value instanceof Error ? undefined : value;
 
 export function TreasurySection() {
   const { data, setHeadAction } = useWorkspace();
@@ -52,14 +62,26 @@ export function TreasurySection() {
     allowed ? { churchId, month } : "skip",
   );
   const payable = useQuery(api.treasury.payable, allowed ? { churchId } : "skip");
-  // Asked for in a way that cannot fail the room: until the backend answers, the way to the bank stays hidden.
-  const { bank } = useQueries(
-    allowed
-      ? { bank: { query: api.treasury.reconciliation, args: { churchId } } }
-      : {},
-  );
-  const uncleared =
-    bank && !(bank instanceof Error) ? bank.waitingCount : undefined;
+  // Asked for in a way that cannot fail the room: whatever the backend does not answer yet stays hidden.
+  const asked = useMemo(() => {
+    const all: Parameters<typeof useQueries>[0] = {
+      bank: { query: api.treasury.reconciliation, args: { churchId } },
+      gifts: { query: api.treasury.undeposited, args: { churchId } },
+      shelf: { query: api.treasury.voucherShelf, args: { churchId } },
+      kinds: { query: api.treasury.kinds, args: { churchId } },
+    };
+    return allowed ? all : {};
+  }, [allowed, churchId]);
+  const extra = useQueries(asked);
+  const bank = answered<Bank>(extra.bank);
+  const gifts = answered<Gift[]>(extra.gifts);
+  const shelf = answered<Shelf>(extra.shelf);
+  const kinds = answered<Kind[]>(extra.kinds);
+  const recordDeposit = useMutation(api.treasury.recordDeposit);
+  const addKind = useMutation(api.treasury.addKind);
+  const retireKind = useMutation(api.treasury.retireKind);
+  const recordOwnKind = useMutation(api.treasury.recordOwnKind);
+  const [atShelf, setAtShelf] = useState(false);
   const [atBank, setAtBank] = useState(false);
   const recordPayment = useMutation(api.treasury.recordPayment);
   const recordIncome = useMutation(api.treasury.recordIncome);
@@ -72,10 +94,10 @@ export function TreasurySection() {
   useEffect(() => {
     if (done) notice.current?.focus({ preventScroll: true });
   }, [done]);
-  const recordMoney = useCallback(() => {
+  const recordMoney = () => {
     setDone("");
     setOpen({ is: "money" });
-  }, []);
+  };
   // The month last shown stays on screen while the next one loads.
   const [shown, setShown] = useState(ledger);
   if (ledger && ledger !== shown) setShown(ledger);
@@ -84,15 +106,31 @@ export function TreasurySection() {
   // A request waiting to be paid holds the one filled button, so the head's goes quiet.
   const quiet = Boolean(payable?.length);
   useLayoutEffect(() => {
-    if (!allowed || firstUse || atBank) return;
-    setHeadAction({ label: "Record money", run: recordMoney, quiet });
+    if (!allowed || firstUse || atBank || atShelf) return;
+    setHeadAction({
+      label: "Record money",
+      plus: true,
+      run: () => {
+        setDone("");
+        setOpen({ is: "money" });
+      },
+      quiet,
+    });
     return () => setHeadAction(null);
-  }, [allowed, firstUse, atBank, quiet, recordMoney, setHeadAction]);
+  }, [allowed, firstUse, atBank, atShelf, quiet, setHeadAction]);
 
   if (allowed === false) return <LedgerPrivate />;
   if (!shown || !payable) return <LedgerLoading />;
   if (atBank)
     return <BankRoom churchId={churchId} onBack={() => setAtBank(false)} />;
+  if (atShelf)
+    return (
+      <ShelfRoom
+        churchId={churchId}
+        today={shown.today}
+        onBack={() => setAtShelf(false)}
+      />
+    );
 
   /** Runs one change; on success closes the dialog and says what changed, on refusal hands the reason back to the form. */
   async function settle(
@@ -138,7 +176,19 @@ export function TreasurySection() {
         onPay={(request) => show({ is: "payment", request })}
         onRecord={recordMoney}
         onEntry={(entry) => show({ is: "entry", entry })}
-        uncleared={uncleared}
+        uncleared={bank?.waitingCount}
+        onHand={
+          gifts && {
+            count: gifts.length,
+            total: gifts.reduce((sum, gift) => sum + gift.amount, 0),
+          }
+        }
+        onDeposit={() => show({ is: "deposit" })}
+        shelf={shelf?.items.reduce((sum, row) => sum + Math.max(row.onHand, 0), 0)}
+        onShelf={() => {
+          setDone("");
+          setAtShelf(true);
+        }}
         onBank={() => {
           setDone("");
           setAtBank(true);
@@ -187,14 +237,59 @@ export function TreasurySection() {
                 today={shown.today}
                 start={empty ? "opening" : "collection"}
                 onCancel={() => setOpen(null)}
-                onSubmit={({ name, memo, amount, date, ...what }) =>
+                own={kinds?.map((kind) => ({
+                  id: kind.id,
+                  name: kind.name,
+                  direction: kind.direction === "income" ? "in" : "out",
+                }))}
+                onRetire={(id) => {
+                  const kind = kinds?.find((row) => row.id === id);
+                  if (kind) void retireKind({ churchId, kindId: kind.id });
+                }}
+                onSubmit={({ name, memo, amount, date, checkNumber, ...what }) =>
                   settle(
-                    () =>
-                      what.direction === "out"
-                        ? recordSpending({ churchId, kind: what.kind, to: name, amount, date, memo, ...(what.checkNumber.trim() && { checkNumber: what.checkNumber }) })
-                        : recordIncome({ churchId, source: what.kind, from: name, amount, date, memo }),
+                    async () => {
+                      const sent = checkNumber.trim() && { checkNumber };
+                      if (what.kind === "own" || what.kind === "new") {
+                        const kindId =
+                          what.kind === "new"
+                            ? await addKind({
+                                churchId,
+                                direction: what.direction === "in" ? "income" : "expense",
+                                name: what.kindName,
+                              })
+                            : kinds?.find((row) => row.id === what.id)?.id;
+                        if (!kindId) throw new Error("This kind is no longer offered. Choose another.");
+                        return recordOwnKind({ churchId, kindId, name, amount, date, memo, ...sent });
+                      }
+                      return what.direction === "out"
+                        ? recordSpending({ churchId, kind: what.kind, to: name, amount, date, memo, ...sent })
+                        : recordIncome({ churchId, source: what.kind, from: name, amount, date, memo });
+                    },
                     `${formatCents(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
                     date,
+                  )
+                }
+              />
+            </>
+          )}
+          {open?.is === "deposit" && gifts && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Record a deposit</DialogTitle>
+                <DialogDescription>
+                  The gifts you carried to the bank together. Nothing about
+                  them changes; they become one line to match.
+                </DialogDescription>
+              </DialogHeader>
+              <DepositForm
+                gifts={gifts}
+                today={shown.today}
+                onCancel={() => setOpen(null)}
+                onSubmit={(deposit, total) =>
+                  settle(
+                    () => recordDeposit({ churchId, ...deposit }),
+                    `A deposit of ${formatCents(total)} is recorded. It will wait in Match the bank until the statement shows it.`,
                   )
                 }
               />
