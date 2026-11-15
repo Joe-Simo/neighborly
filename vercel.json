@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "next": false,
       "claude/*": false
     }
   },
