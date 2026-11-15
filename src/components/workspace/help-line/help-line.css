@@ -67,7 +67,9 @@
 }
 .help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 14px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
 @media (max-width: 850px) { .help-home { grid-template-columns: 1fr; gap: 26px; } }
+/* The link keeps its 44px reach without making its line taller than the other rows. */
+.help-timeline p .help-text-action[data-slot="button"] { margin-block: -13px; }
 @media (max-width: 640px) {
   .help-timeline .help-sep { display: none; }
-  .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-top: 2px; }
+  .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-block: 2px 0; }
 }

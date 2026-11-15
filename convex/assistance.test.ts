@@ -232,7 +232,7 @@ describe("a request for help", () => {
     await caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "Coats came from a relative instead." });
     expect(await onHand()).toEqual([["Winter coat", 10]]);
     await expect(caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "" })).rejects.toThrow("already finished");
-    expect(await history()).toEqual([expect.objectContaining({ type: "voucher", takenBack: true, canTakeBack: false, who: "Marisol Vega", note: "Coats came from a relative instead." })]);
+    expect(await history()).toEqual([expect.objectContaining({ type: "voucher", takenBack: true, canTakeBack: false, who: "Marisol Vega", closedBy: "", note: "Coats came from a relative instead." })]);
 
     const old = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...coats });
     await caller.mutation(api.assistance.decide, { churchId, requestId: old, decision: "approved", note: "" });
@@ -254,8 +254,9 @@ describe("a request for help", () => {
     await as(ids.owner).mutation(api.assistance.closeRequest, { churchId, requestId, note: "Moved in with family." });
     await as(ids.owner).mutation(api.neighbors.open, { churchId, neighborId: ids.rosa });
     const { history } = await as(ids.owner).query(api.neighbors.record, { churchId, neighborId: ids.rosa });
-    expect(history).toContainEqual(expect.objectContaining({ type: "decision", status: "closed", approved: 45000, paid: 20000, who: "Marisol Vega", note: "Moved in with family." }));
+    expect(history).toContainEqual(expect.objectContaining({ type: "decision", status: "closed", approved: 45000, paid: 20000, who: "", approvedBy: "Thomas Okafor", note: "Moved in with family." }));
     expect(history).toContainEqual(expect.objectContaining({ type: "payment", amount: 20000 }));
+    expect(await as(ids.owner).query(api.assistance.request, { churchId, requestId })).toMatchObject({ status: "closed", decidedByName: "Thomas Okafor" });
   });
 
   test("treasury settles an approved request, and a reversal brings it back", async () => {

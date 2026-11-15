@@ -328,7 +328,12 @@ function happened(event: Record["history"][number]) {
       return {
         kind: event.takenBack ? "closed" : "money",
         what: `${vouchers(event)} ${event.takenBack ? "taken back" : "given"}`,
-        who: `${event.takenBack ? "Taken back" : "Approved"} by ${event.who}`,
+        who: [
+          event.closedBy && `Taken back by ${event.closedBy}`,
+          `Approved by ${event.who}`,
+        ]
+          .filter(Boolean)
+          .join(" · "),
         found: event.note,
         // An older backend does not say; then the link stays away.
         takeBack: event.canTakeBack ? event.requestId : undefined,
@@ -339,7 +344,12 @@ function happened(event: Record["history"][number]) {
           kind: "closed",
           // Never "without help" once money went out; each payment keeps its own line.
           what: `${kindLabels[event.kind]} request closed ${event.paid ? `after ${shortMoney(event.paid)} of ${shortMoney(event.approved)}` : "without help"}`,
-          who: `Closed by ${event.who}`,
+          who: [
+            event.who && `Closed by ${event.who}`,
+            event.approvedBy && `Approved by ${event.approvedBy}`,
+          ]
+            .filter(Boolean)
+            .join(" · "),
           found: event.note,
         };
       return {
