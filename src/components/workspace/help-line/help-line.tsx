@@ -72,14 +72,15 @@ function HelpLine() {
     setDone(message);
   };
   const close = () => setStep(null);
+  const sheetOpen = drafted !== null;
   const log = useCallback(() => {
     setDone("");
     setStep({ kind: "log" });
   }, []);
   useLayoutEffect(() => {
-    setHeadAction({ label: "Log a call", run: log });
+    setHeadAction({ label: "Log a call", run: log, quiet: sheetOpen });
     return () => setHeadAction(null);
-  }, [setHeadAction, log]);
+  }, [setHeadAction, log, sheetOpen]);
   const saved = (call: Call) => {
     setDrafted(null);
     finish(
