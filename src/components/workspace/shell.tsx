@@ -29,7 +29,7 @@ import {
   type ActionKind,
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
-import { LanguageChooser, LanguageList } from "@/components/workspace/language-chooser";
+import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { ReliefPicture } from "@/components/workspace/relief";
 import { sections } from "@/components/workspace/sections";
 import type {
@@ -227,17 +227,18 @@ export function LiveWorkspace({
           </div>
           <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <DialogTrigger asChild><Button variant="ghost" className="live-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu aria-hidden="true" />{words.shell.menu}</Button></DialogTrigger>
-            <DialogContent className="live-mobile-menu max-h-[calc(100svh-2rem)] overflow-y-auto" onOpenAutoFocus={(event) => {
-              // Opening the menu must not land on the language choice, where an arrow key would change it.
+            <DialogContent className="live-mobile-menu" onOpenAutoFocus={(event) => {
+              // Opening the menu lands on the sheet itself, not on its first control.
               event.preventDefault();
               if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
             }}>
               <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{data.church.name}</DialogDescription>{data.church.sample && <p className="live-sample-mark">Sample · made-up people</p>}</DialogHeader>
-              <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={(event) => leave(event, id)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
-              <LanguageList />
-              <div className="live-menu-foot">
+              <div className="live-menu-rooms">
+                <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={(event) => leave(event, id)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
                 {selectChurch}
-                <p className="live-menu-account">{data.user.name || data.user.email}</p>
+              </div>
+              <div className="live-menu-foot">
+                <LanguageChooser />
                 <Button variant="outline" className="live-menu-leave" disabled={pending} onClick={() => void signOut()}>
                   <LogOut size={17} aria-hidden="true" /> {leaveLabel}
                 </Button>

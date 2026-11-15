@@ -137,6 +137,7 @@
 .live-header-sample { display: none; }
 .live-app .live-menu-trigger { display: none; }
 .live-header-actions .live-account { font-size: 15px; }
+.live-app .live-nav a { font-size: 15px; }
 
 /* The menu down the side stays put while a long room scrolls, and its marker slides to the room in view. */
 .live-nav { position: relative; }
@@ -290,22 +291,42 @@
 }
 @media (max-width: 560px) {
   .live-app .live-main { --live-pad: 20px; --live-top: 30px; padding-bottom: calc(60px + env(safe-area-inset-bottom)); padding-left: max(20px, env(safe-area-inset-left)); }
-  .live-app .live-page-head { margin-bottom: 28px; padding-bottom: 26px; }
+  .live-app .live-page-head { margin-bottom: 24px; padding-bottom: 22px; }
+  .live-app .live-kicker { margin-bottom: 10px; }
   .live-app .live-page-head h1 { font-size: clamp(40px, 11.4vw, 48px); letter-spacing: -0.03em; }
   .live-app .live-page-head .live-deck { font-size: 17px; margin-top: 14px; }
-  .live-head-actions { margin-top: 22px; }
+  .live-head-actions { margin-top: 18px; }
+}
+@media (max-width: 430px) {
+  .live-head-art { height: 112px; margin-bottom: 14px; }
 }
 
-/* The menu sheet: every room, then the language, then the way out. */
-.live-mobile-menu { animation: paper-settle 320ms var(--paper-ease) backwards; }
+/* The menu sheet fills the screen between the insets: its title, every room in a list that scrolls, and a foot that stays. */
+.live-mobile-menu[data-slot="dialog-content"] {
+  inset: env(safe-area-inset-top) 0 0 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: 100% !important;
+  max-height: none !important;
+  padding: 0;
+  translate: none;
+  border: 0;
+  border-radius: 0;
+  animation: paper-show 200ms ease backwards;
+}
+.live-mobile-menu [data-slot="dialog-header"] { padding: 22px 64px 14px 24px; text-align: left; gap: 4px; }
+.live-mobile-menu [data-slot="dialog-close"] { top: 14px; right: 12px; width: 44px; height: 44px; }
+/* The list fades out at the foot while there is more of it below. */
+.live-menu-rooms { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px 36px; border-top: 1px solid #d9ddce; -webkit-mask-image: linear-gradient(#000 calc(100% - 36px), transparent); mask-image: linear-gradient(#000 calc(100% - 36px), transparent); }
+.live-mobile-menu .live-menu-rooms nav { margin-top: 0; border-top: 0; }
 .live-mobile-menu nav a { font-size: 17px; }
 .live-mobile-menu .live-menu-current { font-size: 13px; }
-.live-menu-foot { display: grid; gap: 14px; margin-top: 22px; }
-.live-menu-foot [data-slot="native-select-wrapper"],
-.live-menu-foot select { width: 100%; }
-.live-menu-foot .live-row-actions { display: grid; gap: 10px; }
-.live-menu-account { margin: 0; padding: 0 10px; font-size: 15px; color: #68715f; overflow-wrap: anywhere; }
-.live-mobile-menu .live-menu-leave[data-slot="button"] { width: 100%; height: 48px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
+.live-menu-rooms .live-row-actions { display: grid; gap: 10px; margin-top: 18px; }
+.live-menu-rooms select { width: 100%; }
+.live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
+.live-mobile-menu .live-menu-leave[data-slot="button"] { height: 44px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
 
 /* ── Empty: a serif line, the action, and a small piece of the room's picture ── */
 .live-app .live-empty {
@@ -319,6 +340,8 @@
   border-top: 1px solid var(--live-line);
   border-radius: 0;
 }
+.live-app .live-empty:not([data-lead]) { grid-template-columns: minmax(0, 1fr); }
+.live-empty:not([data-lead]) > .paper-vignette { display: none; }
 .paper-vignette { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--paper-shade); }
 .live-app .live-empty h3 { font: 400 26px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0; }
 .live-app .live-empty p { margin: 8px 0 0; font-size: 17px; line-height: 1.5; }

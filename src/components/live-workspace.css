@@ -952,12 +952,8 @@
 }
 /* The menu and dialogs sit between the insets, and above the keyboard once it
    is up (LiveDialog reports the visible height on touch screens). */
-.live-mobile-menu,
 .live-dialog {
   top: calc(var(--live-view-top, 0px) + (var(--live-view-height, 100svh) + env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2) !important;
-}
-.live-mobile-menu {
-  max-height: calc(100svh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
 }
 .live-dialog {
   max-height: min(90svh, calc(var(--live-view-height, 100svh) - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
