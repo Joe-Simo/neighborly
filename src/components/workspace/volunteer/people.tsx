@@ -1,16 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 
 export function PeopleSection() {
   const { data, pending, isOwner, confirm: setConfirmation } = useWorkspace();
+  const [managingId, setManagingId] = useState<string | null>(null);
+  const managing = data.people.find((person) => person.id === managingId);
   return (
     <>
       <div className="live-list">
         {data.people.map((person) => (
-          <div className="live-row" key={person.id}>
+          <div className="live-row live-person-row" key={person.id}>
             <div className="live-person">
               <span className="live-avatar">
                 {person.name.slice(0, 2).toUpperCase()}
@@ -30,57 +34,70 @@ export function PeopleSection() {
                   : "Approval pending"}
               </span>
             </div>
-            {isOwner && person.role !== "owner" && (
-              <div className="live-row-actions">
+            <div className="live-row-actions">
+              {isOwner && person.role !== "owner" && (
+                <Button variant="outline" size="sm" aria-label={`Manage ${person.name}`} onClick={() => setManagingId(person.id)}>
+                  Manage
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      {managing && (
+        <LiveDialog title={managing.name} description={<>{managing.active ? managing.role : "Access removed"} · {managing.approved ? "Approved for service" : "Approval pending"}</>} onClose={() => setManagingId(null)}>
+          <div className="live-manage">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={pending}
                   onClick={() =>
+                    {
+                    setManagingId(null);
                     setConfirmation({
-                      title: person.approved
+                      title: managing.approved
                         ? "Revoke service approval?"
                         : "Approve for service?",
                       body: "Team qualifications are managed separately. Revoking approval withdraws pending cover requests; accepted commitments stay intact.",
                       command: {
                         type: "setApproval",
-                        personId: person.id,
-                        approved: !person.approved,
+                        personId: managing.id,
+                        approved: !managing.approved,
                       },
-                    })
-                  }
+                    });
+                  }}
                 >
-                  {person.approved ? "Revoke approval" : "Approve"}
+                  {managing.approved ? "Revoke approval" : "Approve"}
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   disabled={pending}
                   onClick={() =>
+                    {
+                    setManagingId(null);
                     setConfirmation({
-                      title: person.active
+                      title: managing.active
                         ? "Remove workspace access?"
                         : "Restore workspace access?",
                       body: "This changes access to your group workspace. Accepted commitments remain recorded; pending cover requests are withdrawn when access is removed.",
                       command: {
                         type: "setMembership",
-                        personId: person.id,
-                        active: !person.active,
+                        personId: managing.id,
+                        active: !managing.active,
                         role:
-                          person.role === "coordinator"
+                          managing.role === "coordinator"
                             ? "coordinator"
                             : "member",
                       },
-                    })
-                  }
+                    });
+                  }}
                 >
-                  {person.active ? "Remove access" : "Restore access"}
+                  {managing.active ? "Remove access" : "Restore access"}
                 </Button>
-              </div>
-            )}
           </div>
-        ))}
-      </div>
+        </LiveDialog>
+      )}
       {isOwner && (
         <section className="live-section">
           <h2>Invitations</h2>

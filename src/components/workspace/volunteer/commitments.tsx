@@ -10,7 +10,7 @@ export function CommitmentsSection() {
   const datedCommitments = upcomingCommitments(data.commitments, now, true);
   return (
     <>
-      <div style={{ marginBottom: 22 }}>
+      <div className="live-filter">
         <NativeSelect
           aria-label="Filter by team"
           value={teamFilter}

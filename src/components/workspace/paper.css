@@ -375,6 +375,47 @@
   .paper-loading-frame > .live-nav { display: none; }
 }
 
+/* ── The volunteer rooms ──────────────────────────────────────────────── */
+/* A note is a slip of paper with a green edge, not a grey box. */
+.live-app .live-note { background: #fffdf7; border: 1px solid #e0dccb; border-left: 3px solid #8a986e; border-radius: 0 3px 3px 0; font-size: 17px; }
+/* Your choice: the answer is the filled button; Details is a quiet link after it. */
+.live-request-section .live-row-actions { gap: 10px 14px; }
+.live-request-section .live-row-actions .tools-quiet { margin-left: 6px; }
+/* Teams: one line under each team, and a third column on wide screens. */
+.live-team-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; }
+.live-team-line .live-meta { margin-right: auto; }
+.live-app .live-team p { margin-bottom: 14px; }
+@media (min-width: 1500px) {
+  .live-main > .live-room:has(> .live-teams) { max-width: 1400px; }
+  .live-teams { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+/* People: name, role, approval and the one button each start at the same place on every row. */
+.live-person-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px 190px 100px; }
+.live-person-row .live-meta { display: contents; }
+.live-person-row .live-row-actions { justify-content: flex-end; }
+.live-person-row .live-person p { overflow-wrap: anywhere; }
+.live-manage { display: grid; gap: 12px; }
+.live-dialog .live-manage [data-slot="button"] { min-height: 48px; font-size: 16px; justify-content: flex-start; }
+/* Commitments: the team filter, the size of its words. */
+.live-filter { display: flex; margin: -8px 0 18px; }
+.live-filter select { min-height: 44px; font-size: 16px; }
+/* Time off: fields and their button share the left edge; the button is a button's width. */
+.live-app .live-inline-form { max-width: 560px; }
+.live-app .live-inline-form input { min-height: 46px; font-size: 16px; }
+@media (max-width: 700px) {
+  .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
+  .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
+  .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
+  .live-person-row .live-person { grid-row: 1; }
+}
+@media (max-width: 560px) {
+  /* "Print the week" stays on the heading's line; the count drops under it. */
+  .live-app .live-section-head:has(> .tools-quiet) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0 12px; }
+  .live-app .live-section-head:has(> .tools-quiet) > .live-count { grid-row: 2; margin: 0; }
+  .live-app .live-section-head > [data-slot="button"].tools-quiet { grid-column: 2; grid-row: 1; flex-basis: auto; margin: 0; }
+}
+
 /* ── Buttons a finger can find: 44px on touch screens, 40px with a mouse, 15px words ── */
 :is(.live-main, .live-dialog, .live-header-desk) [data-slot="button"]:not([data-size^="icon"]) { min-height: 40px; font-size: 15px; }
 @media (pointer: coarse) {

@@ -1,18 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TeamsSection() {
   const { data, pending, isOwner, perform } = useWorkspace();
+  const [addingTo, setAddingTo] = useState<LiveWorkspaceData["teams"][number] | null>(null);
+  const candidates = addingTo ? data.people.filter((person) => !addingTo.memberIds.includes(person.id)) : [];
   return (
-    <div className="live-grid">
+    <div className="live-grid live-teams paper-rows">
       {data.teams.length ? (
         data.teams.map((team) => (
           <section className="live-team" key={team.id}>
@@ -57,49 +61,14 @@ export function TeamsSection() {
                 </div>
               </div>
             )}
-            <div className="live-meta">
-              {team.memberIds.length}{" "}
-              {team.memberIds.length === 1 ? "member" : "members"}
-            </div>
-            {!team.myInvitation && (
-              <LiveTeamRoster
-                data={data}
-                team={team}
-                isOwner={isOwner}
-                run={perform}
-                pending={pending}
-              />
-            )}
-            {team.canCoordinate && (
-              <NativeSelect
-                aria-label={`Add a member to ${team.name}`}
-                value=""
-                disabled={pending}
-                onChange={(event) => {
-                  const person = data.people.find(
-                    (item) => item.id === event.target.value,
-                  );
-                  if (person)
-                    void perform({
-                      type: "setTeamMember",
-                      teamId: team.id,
-                      personId: person.id,
-                      member: true,
-                    });
-                }}
-              >
-                <option value="">Add a member…</option>
-                {data.people
-                  .filter(
-                    (person) => !team.memberIds.includes(person.id),
-                  )
-                  .map((person) => (
-                    <option key={person.id} value={person.id}>
-                      {person.name}
-                    </option>
-                  ))}
-              </NativeSelect>
-            )}
+            <LiveTeamRoster
+              data={data}
+              team={team}
+              isOwner={isOwner}
+              run={perform}
+              pending={pending}
+              add={() => setAddingTo(team)}
+            />
           </section>
         ))
       ) : (
@@ -107,6 +76,37 @@ export function TeamsSection() {
           Give your first team a name, then add people when they join
           your group workspace.
         </LiveEmpty>
+      )}
+      {addingTo && (
+        <LiveDialog
+          title={`Add a member to ${addingTo.name}`}
+          description="They get an invitation to the team. Joining never accepts a commitment for them."
+          onClose={() => setAddingTo(null)}
+        >
+          {candidates.length ? (
+            <div className="live-list">
+              {candidates.map((person) => (
+                <div className="live-row" key={person.id}>
+                  <h3>{person.name}</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={pending}
+                    aria-label={`Add ${person.name}`}
+                    onClick={async () => {
+                      if (await perform({ type: "setTeamMember", teamId: addingTo.id, personId: person.id, member: true }))
+                        setAddingTo(null);
+                    }}
+                  >
+                    Add
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>Everyone in your group is already on this team.</p>
+          )}
+        </LiveDialog>
       )}
     </div>
   );
@@ -118,12 +118,14 @@ function LiveTeamRoster({
   isOwner,
   run,
   pending,
+  add,
 }: {
   data: LiveWorkspaceData;
   team: LiveWorkspaceData["teams"][number];
   isOwner: boolean;
   run: (command: LiveCommand) => Promise<boolean>;
   pending: boolean;
+  add: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const roster = usePaginatedQuery(
@@ -132,10 +134,22 @@ function LiveTeamRoster({
     { initialNumItems: 20 },
   );
   return (
-    <div style={{ marginTop: 20 }}>
-      <Button variant="outline" size="sm" onClick={() => setOpen(!open)}>
-        {open ? "Hide members" : "View members"}
-      </Button>
+    <div>
+      <div className="live-team-line">
+        <span className="live-meta">
+          {team.memberIds.length} {team.memberIds.length === 1 ? "member" : "members"}
+        </span>
+        {!team.myInvitation && (
+          <Button variant="link" className="tools-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
+            {open ? "Hide members" : "View members"}
+          </Button>
+        )}
+        {team.canCoordinate && (
+          <Button variant="outline" size="sm" onClick={add}>
+            <Plus size={15} aria-hidden="true" /> Add a member
+          </Button>
+        )}
+      </div>
       {open && (
         <>
           <div className="live-list" style={{ marginTop: 18 }}>

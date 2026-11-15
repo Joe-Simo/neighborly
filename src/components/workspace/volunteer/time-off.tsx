@@ -11,7 +11,7 @@ export function TimeOffSection() {
   const { data, pending, ownPerson, perform, words } = useWorkspace();
   return (
     <>
-      <div className="live-note">
+      <div className="live-note paper-rise">
         {words.timeOff.note}
       </div>
       <div className="live-list">
@@ -135,9 +135,11 @@ function LiveAvailability({
             <Input type="date" name="end" required />
           </LiveField>
         </div>
-        <Button type="submit" variant="outline">
-          {words.timeOff.addAvailable}
-        </Button>
+        <div>
+          <Button type="submit" variant="outline">
+            {words.timeOff.addAvailable}
+          </Button>
+        </div>
       </form>
     </section>
   );

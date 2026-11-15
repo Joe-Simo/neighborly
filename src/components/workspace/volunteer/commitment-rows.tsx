@@ -76,7 +76,7 @@ export function IncomingRequests() {
   } = useWorkspace();
   const incoming = incomingRequests(data);
   return incoming.length ? (
-      <section className="live-section live-request-section" aria-labelledby="live-requests-title">
+      <section className="live-section live-request-section paper-settle" aria-labelledby="live-requests-title">
         <div className="live-section-head">
           <h2 id="live-requests-title">{words.requests.title}</h2>
           <span className="live-count">
@@ -102,15 +102,6 @@ export function IncomingRequests() {
                   {item?.location && <p className="live-request-location">{item.location}</p>}
                 </div>
                 <div className="live-row-actions">
-                  {item && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(event) => showCommitment(item, event.currentTarget)}
-                    >
-                      {words.commitments.details}
-                    </Button>
-                  )}
                   <Button
                     disabled={pending || !item}
                     size="sm"
@@ -146,6 +137,15 @@ export function IncomingRequests() {
                   >
                     {words.requests.decline}
                   </Button>
+                  {item && (
+                    <Button
+                      variant="link"
+                      className="tools-quiet"
+                      onClick={(event) => showCommitment(item, event.currentTarget)}
+                    >
+                      {words.commitments.details}
+                    </Button>
+                  )}
                 </div>
               </div>
             );

@@ -68,15 +68,6 @@ export function TasksSection() {
       <section>
         <div className="live-section-head">
           <h2>Tasks</h2>
-          {isOwner && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => open("task")}
-            >
-              <Plus size={15} /> Add task
-            </Button>
-          )}
         </div>
         {taskRows}
       </section>
@@ -152,11 +143,7 @@ export function TasksSection() {
                   <div className="live-row-actions">
                     <Button
                       size="sm"
-                      variant={
-                        response === "accepted"
-                          ? "secondary"
-                          : "outline"
-                      }
+                      variant={response === "accepted" ? "secondary" : "default"}
                       disabled={pending}
                       onClick={() =>
                         void perform({
@@ -170,7 +157,7 @@ export function TasksSection() {
                     </Button>
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="outline"
                       disabled={pending}
                       onClick={() =>
                         void perform({
