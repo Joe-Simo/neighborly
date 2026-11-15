@@ -730,6 +730,9 @@ export function NeighborRecordView({
           >
             Remove this record
           </Button>
+          <span className="live-count help-private">
+            <Lock size={14} aria-hidden="true" /> Owners only
+          </span>
         </p>
       )}
     </>

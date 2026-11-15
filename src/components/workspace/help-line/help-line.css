@@ -153,7 +153,7 @@
 .help-sheet .help-blank { margin: 0 0 12px; font-size: 17px; }
 
 /* Removing a record: quiet at the foot, in ink, never red. */
-.help-remove { margin: 56px 0 0; padding-top: 20px; border-top: 1px solid var(--live-line, #ded8cb); }
+.help-remove { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px; margin: 56px 0 0; padding-top: 20px; border-top: 1px solid var(--live-line, #ded8cb); }
 .live-app .help-remove .help-remove-open { min-height: 44px; height: auto; padding: 0; border: 0; background: none; font-size: 16px; font-weight: 400; color: #283c32; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .live-app .help-remove .help-remove-open:hover { background: none; text-decoration-thickness: 2px; }
 .help-remove-terms { display: grid; gap: 14px; margin: 0; padding: 0 0 18px; border-bottom: 1px solid var(--live-line, #ded8cb); }
