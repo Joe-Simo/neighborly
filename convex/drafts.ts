@@ -18,19 +18,30 @@ export const identity = internalQuery({
   handler: async ctx => getAuthUserId(ctx),
 });
 
+/** How many times a group may ask the model in one month. At Jev's price this is a few cents; it is here so a mistake cannot run up a bill. */
+export const monthlyAllowance = 2000;
+
+/**
+ * Counts one request to the model, or says why it may not be made: the person's five a minute, or
+ * the group's allowance for the month. A refusal is not an error; the draft simply comes back for review.
+ */
 export const reserve = internalMutation({
-  args: { userId: v.id("users") }, returns: v.null(),
-  handler: async (ctx, { userId }) => {
+  args: { userId: v.id("users"), churchId: v.optional(v.id("churches")) },
+  returns: v.union(v.literal("ok"), v.literal("minute"), v.literal("month")),
+  handler: async (ctx, { userId, churchId }) => {
     const windowStart = Math.floor(Date.now() / 60_000) * 60_000;
     const previous = await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
-    if (previous?.windowStart === windowStart && previous.count >= 5) {
-      throw new Error("Please wait a minute before preparing another draft.");
-    }
+    if (previous?.windowStart === windowStart && previous.count >= 5) return "minute" as const;
+    const month = new Date().toISOString().slice(0, 7);
+    const used = churchId ? await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", q => q.eq("churchId", churchId).eq("month", month)).unique() : null;
+    if (used && used.count >= monthlyAllowance) return "month" as const;
     if (previous) await ctx.db.patch("aiUsage", previous._id, {
       windowStart, count: previous.windowStart === windowStart ? previous.count + 1 : 1,
     });
     else await ctx.db.insert("aiUsage", { userId, windowStart, count: 1 });
-    return null;
+    if (used) await ctx.db.patch("aiUsageByChurch", used._id, { count: used.count + 1 });
+    else if (churchId) await ctx.db.insert("aiUsageByChurch", { churchId, month, count: 1 });
+    return "ok" as const;
   },
 });
 
@@ -80,7 +91,7 @@ export const suggestTeam = action({
     const fields = ["teamName", "recurrence", "peopleCount", "time"] as const;
     const present = fields.filter(field => draft[field]);
     if (!present.length) return fallback;
-    await ctx.runMutation(internal.drafts.reserve, { userId });
+    if (await ctx.runMutation(internal.drafts.reserve, { userId }) !== "ok") throw new Error("Please wait a minute before preparing another draft.");
     const sure = await confidence(env.TYPESAFE_API_KEY, { description, proposed: draft }, Object.fromEntries(present.map(field => [field,
       `Does description explicitly and unambiguously support proposed.${field}? ${stated} Never infer availability, consent, qualifications, membership, or a new fact.`,
     ])) as Record<(typeof present)[number], string>);
@@ -142,7 +153,7 @@ export const draftRequest = action({
     };
     const present = Object.keys(proposed) as (keyof typeof proposed)[];
     if (!present.length) return fallback;
-    await ctx.runMutation(internal.drafts.reserve, { userId });
+    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }), proposed }, Object.fromEntries(present.map(field => [field,
       `Does note explicitly and unambiguously support proposed.${field}? ${stated} Never infer need, eligibility, a decision, or a new fact.`,
     ])) as Record<(typeof present)[number], string>);
@@ -176,7 +187,7 @@ export const readUrgency = action({
     const signs = urgentSigns(note);
     const fallback = { signs, verification: "review" as const };
     if (!env.TYPESAFE_API_KEY || note.length > 2000 || !signs.length) return fallback;
-    await ctx.runMutation(internal.drafts.reserve, { userId });
+    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     const meaning = { shutoff: "a utility is being or about to be shut off", eviction: "the household faces eviction", noFood: "the household has no food now", child: "a child lives in the household", elder: "an elderly person or a person living alone is involved", medical: "there is a medical need" };
     const sure = await confidence(env.TYPESAFE_API_KEY, { note: withoutIdentity(note, { names, addresses }) }, Object.fromEntries(signs.map(({ reason }) => [reason,
       `Does note explicitly state that ${meaning[reason]}? ${stated} Never infer need, eligibility, a decision, or a new fact.`,

@@ -147,6 +147,20 @@ describe("a call note drafted into a request", () => {
     expect(await t.run(ctx => ctx.db.query("auditEvents").collect())).toEqual([]);
   });
 
+  test("a group that has used its month's allowance gets the draft for review, not an error", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = answers({ kind: 0.99, amountRequested: 0.99, payeeKind: 0.99 });
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids, coordinator } = await helpLine();
+    const month = new Date().toISOString().slice(0, 7);
+    await t.run(ctx => ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month, count: 1999 }));
+    const args = { churchId: ids.churchId, callId: ids.callId };
+    expect((await coordinator.action(api.drafts.draftRequest, args)).verification).toBe("checked");
+    expect((await coordinator.action(api.drafts.draftRequest, args)).verification).toBe("review");
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(2000);
+  });
+
   test("a field the model is not sure of comes back blank", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     vi.stubGlobal("fetch", answers({ kind: 0.99, amountRequested: 0.4, payeeKind: 0.99 }));
