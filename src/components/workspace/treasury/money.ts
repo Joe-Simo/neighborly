@@ -30,17 +30,15 @@ export function parseCents(text: string) {
 }
 
 /**
- * How a large figure writes itself while it rolls to its value: with cents when the value has
- * them, in whole dollars when it does not, so the width does not jump on the way.
+ * How a large figure writes itself while it rolls to its value: in whole-dollar steps, with the
+ * value's own cents held still, so "$14,126.50" goes to "$13,501.50" and never shows a stray cent.
  */
-export const figureRoll = (value: number) => (amount: number) =>
-  value % 100 === 0
-    ? formatFigure(Math.round(amount / 100) * 100)
-    : formatCents(Math.round(amount));
-/** The balance always shows its cents. */
-export const centsRoll = (amount: number) => formatCents(Math.round(amount));
+export const figureRoll = (value: number) => (amount: number) => {
+  const cents = value % 100;
+  return formatFigure(Math.round((amount - cents) / 100) * 100 + cents);
+};
 
-/** For the large figures: whole dollars drop the ".00", "$2,150". */
+/** For headlines, totals and cards: whole dollars drop the ".00", "$2,150". Ledger rows keep their cents. */
 export function formatFigure(cents: number) {
   return cents % 100 === 0 ? formatCents(cents).slice(0, -3) : formatCents(cents);
 }

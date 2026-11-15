@@ -4,11 +4,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/workspace/primitives";
-import {
-  centsRoll,
-  figureRoll,
-  formatCents,
-} from "@/components/workspace/treasury/money";
+import { figureRoll, formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
   dayLabel,
@@ -136,7 +132,7 @@ export function LedgerView({
         <div>
           <dt>Balance today</dt>
           <dd>
-            <CountUp value={ledger.balance} format={centsRoll} />
+            <CountUp value={ledger.balance} format={figureRoll(ledger.balance)} />
             <small>As of {weekDayLabel(ledger.today)}</small>
           </dd>
         </div>
@@ -174,7 +170,7 @@ export function LedgerView({
           <div className="help-sheet-body">
             <div>
               <h2 id="treasury-waiting-title">
-                {categoryLabel(first.kind)}, {formatCents(first.remaining)} to{" "}
+                {categoryLabel(first.kind)}, {formatFigure(first.remaining)} to{" "}
                 {first.payeeName}
               </h2>
               <p className="help-why">
@@ -183,15 +179,15 @@ export function LedgerView({
               </p>
               {paid ? (
                 <p>
-                  {formatCents(paid.amount)} is in the ledger.{" "}
+                  {formatFigure(paid.amount)} is in the ledger.{" "}
                   {left > 0
-                    ? `${formatCents(left)} of the approved amount is still to pay.`
+                    ? `${formatFigure(left)} of the approved amount is still to pay.`
                     : "This request is paid in full."}
                 </p>
               ) : (
                 <p>
                   {first.paid > 0
-                    ? `${formatCents(first.paid)} of the ${formatCents(first.amountApproved)} approved is already paid. `
+                    ? `${formatFigure(first.paid)} of the ${formatFigure(first.amountApproved)} approved is already paid. `
                     : ""}
                   The payment goes to {first.payeeName}, never to the neighbor.
                 </p>
@@ -212,7 +208,7 @@ export function LedgerView({
             <h2 id="treasury-also-title">Also waiting</h2>
             <span className="live-count">
               {count(waiting.length, "request", "requests")},{" "}
-              {formatCents(waiting.reduce((sum, row) => sum + row.remaining, 0))}
+              {formatFigure(waiting.reduce((sum, row) => sum + row.remaining, 0))}
             </span>
           </div>
           <div className="live-list">
@@ -223,7 +219,7 @@ export function LedgerView({
                 </div>
                 <div>
                   <h3>
-                    {formatCents(request.remaining)} to {request.payeeName}
+                    {formatFigure(request.remaining)} to {request.payeeName}
                   </h3>
                   <p>
                     {categoryLabel(request.kind)} for{" "}
@@ -233,7 +229,7 @@ export function LedgerView({
                     />
                     . {request.summary}
                     {request.paid > 0 &&
-                      `. ${formatCents(request.paid)} already paid`}
+                      `. ${formatFigure(request.paid)} already paid`}
                   </p>
                 </div>
                 <Button variant="outline" onClick={() => onPay(request)}>
@@ -350,7 +346,7 @@ export function LedgerView({
           <div>
             <h3>A quiet month so far.</h3>
             <p>
-              Nothing is recorded in {month} yet. {formatCents(ledger.opening)}{" "}
+              Nothing is recorded in {month} yet. {formatFigure(ledger.opening)}{" "}
               was carried in.
             </p>
           </div>
@@ -367,7 +363,7 @@ export function LedgerView({
                   yet
                 </h2>
                 <p>
-                  {formatCents(onHand.total)} on hand. Record the trip to the
+                  {formatFigure(onHand.total)} on hand. Record the trip to the
                   bank as one deposit, the way the statement will show it.
                 </p>
               </div>

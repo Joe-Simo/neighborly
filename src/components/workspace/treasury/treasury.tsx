@@ -19,7 +19,7 @@ import { BankRoom } from "@/components/workspace/treasury/bank-view";
 import { ShelfRoom } from "@/components/workspace/treasury/shelf-view";
 import { DepositForm } from "@/components/workspace/treasury/deposit-form";
 import { usePaidMoment } from "@/components/workspace/treasury/paid-moment";
-import { formatCents } from "@/components/workspace/treasury/money";
+import { formatFigure } from "@/components/workspace/treasury/money";
 import type { Refusal } from "@/components/workspace/treasury/form-parts";
 import {
   dayLabel,
@@ -85,6 +85,10 @@ export function TreasurySection() {
   const reverseEntry = useMutation(api.treasury.reverseEntry);
 
   const [open, setOpen] = useState<Open | null>(null);
+  // What the dialog last held stays in it while it closes, so it never shows empty or as another form.
+  const [held, setHeld] = useState(open);
+  if (open && open !== held) setHeld(open);
+  const view = open ?? held;
   const [done, setDone] = useState("");
   const notice = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -154,14 +158,14 @@ export function TreasurySection() {
   };
   const empty = isUntouched(shown);
 
-  const lines = open?.is === "entry" ? entryLines(open.entry) : null;
+  const lines = view?.is === "entry" ? entryLines(view.entry) : null;
   const sheet =
-    open?.is === "payment"
+    view?.is === "payment"
       ? {
           title: "Record a payment",
-          description: `${open.request.summary}. Paid to ${open.request.payeeName}, never to the neighbor.`,
+          description: `${view.request.summary}. Paid to ${view.request.payeeName}, never to the neighbor.`,
         }
-      : open?.is === "money"
+      : view?.is === "money"
         ? moneyOut
           ? {
               title: "Record money out",
@@ -172,16 +176,16 @@ export function TreasurySection() {
               description:
                 "A collection, a gift, or what the conference holds today.",
             }
-        : open?.is === "deposit"
+        : view?.is === "deposit"
           ? {
               title: "Record a deposit",
               description:
                 "The gifts you carried to the bank together. Nothing about them changes; they become one line to match.",
             }
-          : open?.is === "entry" && lines
+          : view?.is === "entry" && lines
             ? {
                 title: lines.title,
-                description: `${dayLabel(open.entry.date)} · ${lines.detail}`,
+                description: `${dayLabel(view.entry.date)} · ${lines.detail}`,
               }
             : null;
 
@@ -235,11 +239,11 @@ export function TreasurySection() {
         title={sheet?.title ?? ""}
         description={sheet?.description}
       >
-        {open?.is === "payment" && (
+        {view?.is === "payment" && (
           <>
             <PaymentForm
-              key={open.request.requestId}
-              request={open.request}
+              key={view.request.requestId}
+              request={view.request}
               today={shown.today}
               onCancel={() => setOpen(null)}
               onSubmit={({ checkNumber, ...payment }) =>
@@ -247,20 +251,20 @@ export function TreasurySection() {
                   () =>
                     recordPayment({
                       churchId,
-                      requestId: open.request.requestId,
+                      requestId: view.request.requestId,
                       ...payment,
                       ...(checkNumber.trim() && { checkNumber }),
                     }).then((entryId) =>
-                      pay(open.request, payment.amount, entryId),
+                      pay(view.request, payment.amount, entryId),
                     ),
-                  `${formatCents(payment.amount)} to ${open.request.payeeName} is recorded, and the balance is up to date.`,
+                  `${formatFigure(payment.amount)} to ${view.request.payeeName} is recorded, and the balance is up to date.`,
                   payment.date,
                 )
               }
             />
           </>
         )}
-        {open?.is === "money" && (
+        {view?.is === "money" && (
           <>
             <MoneyForm
               today={shown.today}
@@ -324,14 +328,14 @@ export function TreasurySection() {
                           memo,
                         });
                   },
-                  `${formatCents(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
+                  `${formatFigure(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
                   date,
                 )
               }
             />
           </>
         )}
-        {open?.is === "deposit" && gifts && (
+        {view?.is === "deposit" && gifts && (
           <>
             <DepositForm
               gifts={gifts}
@@ -340,27 +344,27 @@ export function TreasurySection() {
               onSubmit={(deposit, total) =>
                 settle(
                   () => recordDeposit({ churchId, ...deposit }),
-                  `A deposit of ${formatCents(total)} is recorded. It will wait in Match the bank until the statement shows it.`,
+                  `A deposit of ${formatFigure(total)} is recorded. It will wait in Match the bank until the statement shows it.`,
                 )
               }
             />
           </>
         )}
-        {open?.is === "entry" && (
+        {view?.is === "entry" && (
           <>
             <EntryDetail
-              key={open.entry.id}
-              entry={open.entry}
+              key={view.entry.id}
+              entry={view.entry}
               onClose={() => setOpen(null)}
               onReverse={(reason) =>
                 settle(
                   () =>
                     reverseEntry({
                       churchId,
-                      entryId: open.entry.id,
+                      entryId: view.entry.id,
                       reason,
                     }),
-                  `${formatCents(open.entry.amount)} is taken back with a new entry dated today. The first entry stays in the ledger.`,
+                  `${formatFigure(view.entry.amount)} is taken back with a new entry dated today. The first entry stays in the ledger.`,
                   shown.today,
                 )
               }

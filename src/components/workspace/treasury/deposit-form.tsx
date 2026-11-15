@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Toggle } from "@/components/ui/toggle";
 import { LiveField } from "@/components/workspace/primitives";
-import { formatCents } from "@/components/workspace/treasury/money";
+import { formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   FormActions,
   FormError,
@@ -81,7 +81,7 @@ export function DepositForm({
         <span>
           {going.length} of {gifts.length} going to the bank
         </span>
-        <strong>{formatCents(total)}</strong>
+        <strong>{formatFigure(total)}</strong>
       </p>
       <div className="live-form-grid treasury-form-grid">
         <LiveField label="Day deposited">
@@ -106,7 +106,7 @@ export function DepositForm({
       </div>
       {error && <FormError message={error} />}
       <FormActions saving={saving} onCancel={onCancel}>
-        Record deposit{going.length ? ` of ${formatCents(total)}` : ""}
+        Record deposit{going.length ? ` of ${formatFigure(total)}` : ""}
       </FormActions>
     </form>
   );

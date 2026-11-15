@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useMutation, useQueries, useQuery } from "convex/react";
 import { ArrowLeft, CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -10,12 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
 import { CountUp } from "@/components/workspace/primitives";
-import {
-  centsRoll,
-  figureRoll,
-  formatCents,
-  parseCents,
-} from "@/components/workspace/treasury/money";
+import { figureRoll, parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
   dayLabel,
@@ -29,7 +24,7 @@ const count = (n: number) => `${n} ${n === 1 ? "entry" : "entries"}`;
 const art = { backgroundImage: "url(/assets/painted-world/meal.webp)" };
 /** "$214.60 to Demo Power & Light", the way a statement line reads. */
 const line = (entry: BankEntry) =>
-  `${formatCents(entry.amount)} ${entry.kind === "income" ? "from" : "to"} ${entry.payee}`;
+  `${formatFigure(entry.amount)} ${entry.kind === "income" ? "from" : "to"} ${entry.payee}`;
 const under = (entry: BankEntry) =>
   [
     entry.checkNumber && `Check ${entry.checkNumber}`,
@@ -81,7 +76,13 @@ export function BankView({
   onBack: () => void;
 }) {
   const [statement, setStatement] = useState("");
-  const typed = statement.trim();
+  // The balance is judged after a pause in typing or on leaving the field, never mid-number.
+  const [settled, setSettled] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(statement), 600);
+    return () => clearTimeout(timer);
+  }, [statement]);
+  const typed = settled.trim();
   // A statement can end at zero, which the money reader does not take.
   const says = /^\$?0(\.0{1,2})?$/.test(typed) ? 0 : parseCents(typed);
   const gap = says === null ? null : says - bank.cleared;
@@ -105,7 +106,7 @@ export function BankView({
         <div>
           <dt>Cleared the bank</dt>
           <dd>
-            <CountUp value={bank.cleared} format={centsRoll} />
+            <CountUp value={bank.cleared} format={figureRoll(bank.cleared)} />
             <small>Your statement should say the same</small>
           </dd>
         </div>
@@ -116,7 +117,7 @@ export function BankView({
             <CountUp value={Math.abs(onItsWay)} format={figureRoll(Math.abs(onItsWay))} />
             <small>
               {bank.waitingCount
-                ? `${formatCents(bank.onItsWayIn)} in, ${formatCents(bank.onItsWayOut)} out`
+                ? `${formatFigure(bank.onItsWayIn)} in, ${formatFigure(bank.onItsWayOut)} out`
                 : "Nothing is waiting"}
             </small>
           </dd>
@@ -152,7 +153,7 @@ export function BankView({
                   the ledger agree.
                 </h2>
                 <p className="help-why">
-                  {formatCents(bank.cleared)} has cleared on both.{" "}
+                  {formatFigure(bank.cleared)} has cleared on both.{" "}
                   {bank.waitingCount
                     ? `${count(bank.waitingCount)} still on the way.`
                     : "Nothing is waiting."}
@@ -172,10 +173,10 @@ export function BankView({
             ) : (
               <>
                 <h2 id="treasury-statement-title" data-waiting>
-                  Off by {formatCents(Math.abs(gap))}.
+                  Off by {formatFigure(Math.abs(gap))}.
                 </h2>
                 <p className="help-why">
-                  The statement shows {formatCents(Math.abs(gap))}{" "}
+                  The statement shows {formatFigure(Math.abs(gap))}{" "}
                   {gap > 0 ? "more" : "less"} than what has cleared here.
                 </p>
                 <p>
@@ -218,6 +219,7 @@ export function BankView({
                 placeholder="0.00"
                 value={statement}
                 onChange={(event) => setStatement(event.target.value)}
+                onBlur={() => setSettled(statement)}
               />
             </label>
           </div>
@@ -254,8 +256,8 @@ export function BankView({
                   <>
                     <p role="status">
                       Mark {count(bank.waitingCount)} cleared:{" "}
-                      {formatCents(bank.onItsWayIn)} in and{" "}
-                      {formatCents(bank.onItsWayOut)} out, through{" "}
+                      {formatFigure(bank.onItsWayIn)} in and{" "}
+                      {formatFigure(bank.onItsWayOut)} out, through{" "}
                       {dayLabel(bank.asOf)}. You can take any of them back
                       after.
                     </p>
@@ -296,7 +298,7 @@ export function BankView({
                 <div className="help-row" key={deposit.id}>
                   <DateLeaf day={deposit.date} />
                   <div>
-                    <h3>{formatCents(deposit.total)} deposit</h3>
+                    <h3>{formatFigure(deposit.total)} deposit</h3>
                     <p>
                       <span className="treasury-day">{dayLabel(deposit.date)} · </span>
                       {deposit.count} {deposit.count === 1 ? "gift" : "gifts"} carried
@@ -307,7 +309,7 @@ export function BankView({
                   <Button
                     variant="outline"
                     disabled={busy !== null}
-                    aria-label={`Mark cleared: ${formatCents(deposit.total)} deposit`}
+                    aria-label={`Mark cleared: ${formatFigure(deposit.total)} deposit`}
                     onClick={() => onClearDeposit(deposit)}
                   >
                     {busy === deposit.id ? "Marking…" : "Mark cleared"}
@@ -472,7 +474,7 @@ export function BankRoom({
       onKeep={(balance) =>
         change("keep", async () => {
           await agreeStatement({ churchId, endsOn: shown.asOf, balance });
-          return `The ${dayLabel(shown.asOf)} statement is kept at ${formatCents(balance)}.`;
+          return `The ${dayLabel(shown.asOf)} statement is kept at ${formatFigure(balance)}.`;
         })
       }
       onClearDeposit={(deposit) =>
@@ -482,7 +484,7 @@ export function BankRoom({
             depositId: deposit.id,
             clearedOn: shown.asOf,
           });
-          return `The ${formatCents(deposit.total)} deposit is marked cleared.`;
+          return `The ${formatFigure(deposit.total)} deposit is marked cleared.`;
         })
       }
       onClear={(entry) =>

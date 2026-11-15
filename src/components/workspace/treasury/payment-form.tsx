@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { LiveField } from "@/components/workspace/primitives";
-import {
-  centsToInput,
-  formatCents,
-  parseCents,
-} from "@/components/workspace/treasury/money";
+import { centsToInput, parseCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   FormActions,
   FormError,
@@ -51,7 +47,7 @@ export function PaymentForm({
           return setError("Enter the amount in dollars and cents, like 214.60.");
         if (cents > request.remaining)
           return setError(
-            `Enter ${formatCents(request.remaining)} or less. That is what is left of the approved amount.`,
+            `Enter ${formatFigure(request.remaining)} or less. That is what is left of the approved amount.`,
           );
         setError("");
         setSaving(true);
@@ -63,7 +59,7 @@ export function PaymentForm({
       <div className="live-form-grid treasury-form-grid">
         <LiveField
           label="Amount"
-          help={`${formatCents(request.remaining)} left of ${formatCents(request.amountApproved)} approved.`}
+          help={`${formatFigure(request.remaining)} left of ${formatFigure(request.amountApproved)} approved.`}
         >
           <Input
             name="amount"

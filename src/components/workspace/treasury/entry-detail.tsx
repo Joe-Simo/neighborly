@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LiveField } from "@/components/workspace/primitives";
-import { formatCents } from "@/components/workspace/treasury/money";
+import { formatFigure } from "@/components/workspace/treasury/money";
 import {
   FormError,
   type Refusal,
@@ -30,7 +30,7 @@ export function EntryDetail({
       data-in={entry.kind === "income" ? "" : undefined}
     >
       {entry.kind === "income" ? "+ " : "− "}
-      {formatCents(entry.amount)}
+      {formatFigure(entry.amount)}
     </p>
   );
   if (entry.reversed || entry.reverses)
