@@ -23,6 +23,9 @@ describe("a call note becomes a proposed request", () => {
   test("reads who is paid from the payee's own name, and nothing from a name that does not say", () => {
     expect(prepareRequestDraft("Water bill is $72 and due on the 28th. Paid to County Water Authority.")).toMatchObject({ kind: "utility", amountRequested: 7200, payeeKind: "utility", payeeName: "County Water Authority", notes: [] });
     expect(prepareRequestDraft("Car repair, $380, paid to Sample Auto Shop.")).toMatchObject({ payeeKind: "vendor", payeeName: "Sample Auto Shop" });
+    expect(prepareRequestDraft("Power bill, $140 to Sample Power Company, the utility company.")).toMatchObject({ kind: "utility", amountRequested: 14000, payeeKind: "utility", payeeName: "Sample Power Company", notes: [] });
+    expect(prepareRequestDraft("Owes $315.20 to Sample Gas Company for gas.")).toMatchObject({ payeeKind: "utility", payeeName: "Sample Gas Company" });
+    expect(prepareRequestDraft("Rent is $500. She gave $50 to Jordan Ellis.")).toMatchObject({ payeeKind: null, payeeName: "" });
     expect(prepareRequestDraft("Owes $90, paid to Jordan Ellis.")).toMatchObject({ payeeKind: null, payeeName: "Jordan Ellis" });
     expect(prepareRequestDraft("Rent of $500 might be paid to Sample Court Apartments.").payeeKind).toBeNull();
     expect(prepareRequestDraft("Missed work due to illness. Rent is $500.").payeeName).toBe("");

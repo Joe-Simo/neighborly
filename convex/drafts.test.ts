@@ -374,15 +374,15 @@ describe("a call note drafted into a request", () => {
     const { t, ids } = await helpLine();
     const before = await t.run(ctx => ctx.db.query("calls").collect());
     const report = await t.action(internal.drafts.measure, { churchId: ids.churchId });
-    expect(report).toMatchObject({ status: "done", notes: 36, unanswered: 0, model: "jev-1.14.0" });
-    // Every top line counts all 36 notes, and every line under "fresh" the 12 fresh ones: no line leaves out a row it shows.
+    expect(report).toMatchObject({ status: "done", notes: 38, unanswered: 0, model: "jev-1.14.0" });
+    // Every top line counts all 38 notes, and every line under "fresh" the 12 fresh ones: no line leaves out a row it shows.
     for (const arm of ["mix", "confirm", "choose", "trial"] as const) {
       const marks = report.rows.flatMap(row => Object.values(row[arm] ?? {}));
       for (const mark of ["right", "blank", "wrong"] as const) expect(report[arm][mark]).toBe(marks.filter(value => value === mark).length);
-      expect(report[arm].right + report[arm].blank + report[arm].wrong).toBe(144);
+      expect(report[arm].right + report[arm].blank + report[arm].wrong).toBe(152);
       expect(report.fresh[arm].right + report.fresh[arm].blank + report.fresh[arm].wrong).toBe(48);
     }
-    expect(report.rows).toHaveLength(36);
+    expect(report.rows).toHaveLength(38);
     // The first note is the one the live runs passed: code proposes every field and each is confirmed.
     expect(report.rows[0]).toMatchObject({ id: "rent-eviction", confirm: { kind: "right", amount: "right", payeeKind: "right", signs: "right" }, choose: { kind: "wrong", signs: "blank" } });
     // The way the screens work: code says rent, this fake Jev picks food, so the kind is left blank instead of shown wrong.
@@ -391,7 +391,7 @@ describe("a call note drafted into a request", () => {
     expect(report.rows[0].scores).toMatchObject({ kind: 0.95, confirm_eviction: 0.95, choose_kind: "food", choose_kind_confidence: 0.95 });
     expect(JSON.stringify(report)).not.toMatch(/marisol|jennings|example lane|555|behind on/i);
     for (const [, init] of fetch.mock.calls) expect(init.body).not.toMatch(/marisol|vega|jennings|555-01|14 example/i);
-    expect(await t.run(ctx => ctx.db.query("aiUsageByChurch").collect())).toMatchObject([{ churchId: ids.churchId, count: 36 }]);
+    expect(await t.run(ctx => ctx.db.query("aiUsageByChurch").collect())).toMatchObject([{ churchId: ids.churchId, count: 38 }]);
     expect(await t.run(ctx => ctx.db.query("calls").collect())).toEqual(before);
     expect(await t.run(ctx => ctx.db.query("assistanceRequests").collect())).toEqual([]);
   });

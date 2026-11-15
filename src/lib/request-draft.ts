@@ -41,6 +41,16 @@ function statedPayee(clause: string): string | undefined {
   const intro = payeeIntroPattern.exec(clause);
   return intro ? properNamePattern.exec(clause.slice(intro.index + intro[0].length))?.[0] : undefined;
 }
+const amountToPattern = /(?:\$\s?[\d,.]*\d|\b(?:dollars|bucks))\s+to\s+/i;
+/**
+ * "$140 to Sample Power Company" names who is paid only when the name says what it is or the sentence does
+ * ("the utility company"). "$50 to Jordan" may be anyone, the neighbor included, so it gives nothing.
+ */
+function amountPayee(clause: string): string | undefined {
+  const intro = amountToPattern.exec(clause);
+  const name = intro && properNamePattern.exec(clause.slice(intro.index + intro[0].length))?.[0];
+  return name && draftPayeeKinds.some((kind) => nameKinds[kind].test(name) || payeeWords[kind].test(clause)) ? name : undefined;
+}
 const unsure = /\?|\b(?:not|no|never|n't|if|maybe|might|unless|or|either|doesn't|don't|didn't|won't|isn't|wasn't|sin|nunca|quiz[aá]s?)\b/i;
 
 const units: Readonly<Record<string, number>> = {
@@ -139,7 +149,7 @@ export function prepareRequestDraft(note: string): RequestDraft {
     kinds.push(...mentioned);
     sums.push(...stated);
     payees.push(...draftPayeeKinds.filter((payee) => payeeWords[payee].test(clause)));
-    const payee = statedPayee(clause);
+    const payee = statedPayee(clause) ?? amountPayee(clause);
     if (payee) payees.push(...draftPayeeKinds.filter((kind) => nameKinds[kind].test(payee)));
     const name = payee ?? utilityNames.exec(clause)?.[1];
     if (name) names.push(name.replace(/[.,]$/, ""));
