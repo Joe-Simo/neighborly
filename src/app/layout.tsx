@@ -6,7 +6,7 @@ export const viewport: Viewport = {
   themeColor: "#f5f3ec",
 };
 export const metadata: Metadata = {
-  metadataBase: new URL("https://neighborly-church.vercel.app"),
+  metadataBase: new URL("https://kindhelps.com"),
   title: "Neighborly — Good work, together.",
   description:
     "A place for churches and communities to organize volunteering, bring people together, and help in their own way.",
