@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 const description = "Our Welcome team serves every other Sunday. We need two people from 9am to 10am.";
@@ -261,5 +261,40 @@ describe("a call note drafted into a request", () => {
     expect(await t.run(ctx => ctx.db.query("assistanceRequests").collect())).toEqual([]);
     expect(await t.run(ctx => ctx.db.query("ledgerEntries").collect())).toEqual([]);
     expect(await t.run(ctx => ctx.db.query("auditEvents").collect())).toEqual([]);
+  });
+
+  test("the measuring run sends only made-up notes, counts against the month, and reports marks and scores without a note", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    type Asked = { state: { note: string }; questions: Record<string, { type: string }> };
+    const fetch = vi.fn<(url: string, init: { body: string }) => Promise<Response>>(async (_url, init) => {
+      const { questions } = JSON.parse(init.body) as Asked;
+      return Response.json({ answers: Object.fromEntries(Object.entries(questions).map(([name, question]) => [name, question.type === "choice" ? { type: "choice", choice: "food", confidence: 0.95, probabilities: {} } : { type: "noul", noul: name.startsWith("choose_") ? 0.02 : 0.95 }])) });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids } = await helpLine();
+    const before = await t.run(ctx => ctx.db.query("calls").collect());
+    const report = await t.action(internal.drafts.measure, { churchId: ids.churchId });
+    expect(report).toMatchObject({ status: "done", notes: 23, unanswered: 0 });
+    expect(report.rows).toHaveLength(23);
+    // The first note is the one the live runs passed: code proposes every field and each is confirmed.
+    expect(report.rows[0]).toMatchObject({ id: "rent-eviction", confirm: { kind: "right", amount: "right", payeeKind: "right", signs: "right" }, choose: { kind: "wrong", signs: "blank" } });
+    expect(report.rows[0].scores).toMatchObject({ kind: 0.95, confirm_eviction: 0.95, choose_kind: "food", choose_kind_confidence: 0.95 });
+    expect(JSON.stringify(report)).not.toMatch(/marisol|jennings|example lane|555|behind on/i);
+    for (const [, init] of fetch.mock.calls) expect(init.body).not.toMatch(/marisol|vega|jennings|555-01|14 example/i);
+    expect(await t.run(ctx => ctx.db.query("aiUsageByChurch").collect())).toMatchObject([{ churchId: ids.churchId, count: 23 }]);
+    expect(await t.run(ctx => ctx.db.query("calls").collect())).toEqual(before);
+    expect(await t.run(ctx => ctx.db.query("assistanceRequests").collect())).toEqual([]);
+  });
+
+  test("the measuring run does nothing without a key or without room in the month", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids } = await helpLine();
+    vi.stubEnv("TYPESAFE_API_KEY", "");
+    expect(await t.action(internal.drafts.measure, { churchId: ids.churchId })).toMatchObject({ status: "no key", rows: [] });
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    await t.run(ctx => ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month: new Date().toISOString().slice(0, 7), count: 1990 }));
+    expect(await t.action(internal.drafts.measure, { churchId: ids.churchId })).toMatchObject({ status: "no allowance", rows: [] });
+    expect(fetch).not.toHaveBeenCalled();
   });
 });
