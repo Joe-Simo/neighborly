@@ -263,13 +263,11 @@ function HelpLine() {
 function whyFirst(urgent: NonNullable<Call["urgent"]>) {
   const text = words().urgent;
   const day = urgent.day ?? 0;
-  return urgent.reasons.flatMap((reason) =>
-    reason === "shutoff" || reason === "eviction"
-      ? [text[reason](day)]
-      : reason === "noFood" || reason === "child" || reason === "elder" || reason === "medical"
-        ? [text[reason]]
-        : [],
-  );
+  const known = new Map<string, string | ((day: number) => string)>(Object.entries(text));
+  return urgent.reasons.flatMap((reason) => {
+    const say = ["label", "origin", "notUrgent"].includes(reason) ? undefined : known.get(reason);
+    return say === undefined ? [] : [typeof say === "string" ? say : say(day)];
+  });
 }
 
 export function HelpLineView({

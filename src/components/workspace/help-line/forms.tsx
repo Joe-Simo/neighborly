@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LiveField } from "@/components/workspace/primitives";
 import {
   cents,
@@ -336,14 +337,20 @@ export function DecideForm({
   churchId,
   request,
   decision,
+  known,
   onSaved,
 }: {
   churchId: ChurchId;
   request: HelpRequest;
   decision: "approved" | "declined";
+  /** The group's places, when the caller already has them. */
+  known?: { id: string; name: string }[];
   onSaved: () => void;
 }) {
   const decide = useMutation(api.assistance.decide);
+  const listed = useQuery(api.assistance.agencies, known ? "skip" : { churchId });
+  const agencies = known ?? listed;
+  const [referred, setReferred] = useState<string[]>(request.referrals ?? []);
   const { pending, error, save } = useSave();
   const [amountError, setAmountError] = useState("");
   const approving = decision === "approved";
@@ -355,6 +362,9 @@ export function DecideForm({
         const amountApproved = approving ? cents(value("amount")) : null;
         if (approving && !amountApproved)
           return setAmountError("Enter the amount to approve, in dollars.");
+        const places = [...referred, value("elsewhere")].filter(Boolean);
+        if (places.length > 4)
+          return setAmountError("Name at most four places.");
         setAmountError("");
         const outcome = await save(() =>
           decide({
@@ -363,7 +373,8 @@ export function DecideForm({
             decision,
             amountApproved: amountApproved ?? undefined,
             note: value("note"),
-            referral: approving ? undefined : value("referral"),
+            // An older backend does not know the list of places yet; it keeps the single line.
+            ...(agencies ? { referrals: places } : { referral: places.join(", ") }),
           }),
         );
         if (outcome.saved) onSaved();
@@ -385,14 +396,31 @@ export function DecideForm({
       <LiveField label={approving ? "Note on the decision" : "Why it was declined"}>
         <Textarea name="note" rows={3} />
       </LiveField>
-      {!approving && (
+      <fieldset className="help-lines">
+        <legend>Also referred to</legend>
+        {agencies && agencies.length > 0 && (
+          <ToggleGroup
+            type="multiple"
+            variant="outline"
+            className="help-places"
+            aria-label="Places your group refers to"
+            value={referred}
+            onValueChange={setReferred}
+          >
+            {agencies.map((agency) => (
+              <ToggleGroupItem key={agency.id} value={agency.name}>
+                {agency.name}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )}
         <LiveField
-          label="Referred elsewhere"
-          help="Where you pointed them, such as 211 or the county program. Leave empty if nowhere."
+          label={agencies?.length ? "Somewhere else" : "Where"}
+          help="Such as 211 or the county rent program. It is offered here next time. Leave empty if nowhere."
         >
-          <Input name="referral" defaultValue={request.referral} />
+          <Input name="elsewhere" maxLength={120} defaultValue={request.referral} />
         </LiveField>
-      )}
+      </fieldset>
       <FormEnd
         error={amountError || error}
         pending={pending}

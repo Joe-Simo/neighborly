@@ -74,6 +74,8 @@ export const requestRow = v.object({
   status: requestFields.status,
   decisionNote: v.string(),
   referral: v.string(),
+  /** Other places the neighbor was pointed to, by name, at most four. */
+  referrals: v.array(v.string()),
   decidedByName: v.union(v.string(), v.null()),
   decidedAt: v.union(v.number(), v.null()),
   payeeKind: requestFields.payeeKind,
@@ -101,6 +103,7 @@ export async function toRequestRow(found: Lookups, request: Doc<"assistanceReque
     status: request.status,
     decisionNote: request.decisionNote,
     referral: request.referral ?? "",
+    referrals: request.referrals ?? [],
     decidedByName: request.decidedBy ? await found.memberName(request.decidedBy) : null,
     decidedAt: request.decidedAt ?? null,
     payeeKind: request.payeeKind,
@@ -201,15 +204,39 @@ export const updateRequest = mutation({
   },
 });
 
+/** The places a group refers neighbors to, by name, for the decision form to offer. */
+export const agencies = query({
+  args: { churchId: v.id("churches") },
+  returns: v.array(v.object({ id: v.id("referralAgencies"), name: v.string(), phone: v.string(), helpsWith: v.string() })),
+  handler: async (ctx, { churchId }) => {
+    await neighborAccess(ctx, churchId);
+    const rows = await ctx.db.query("referralAgencies").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(100);
+    return rows.map((row) => ({ id: row._id, name: row.name, phone: row.phone, helpsWith: row.helpsWith }));
+  },
+});
+
+/** Up to four places, each kept on the group's list the first time it is named so it is offered next time. */
+async function referredTo(ctx: MutationCtx, churchId: Id<"churches">, names: string[]) {
+  const places = names.map((name) => text(name, "A referral", 120)).filter((name, index, all) => name && all.findIndex((other) => nameKey(other) === nameKey(name)) === index);
+  if (places.length > 4) throw new Error("Name at most four places.");
+  const known = await ctx.db.query("referralAgencies").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(100);
+  return Promise.all(places.map(async (name) => {
+    const onList = known.find((agency) => nameKey(agency.name) === nameKey(name));
+    if (!onList) await ctx.db.insert("referralAgencies", { churchId, name, phone: "", helpsWith: "" });
+    return onList?.name ?? name;
+  }));
+}
+
 /** Approves or declines an open request, and keeps who decided and when. `referral` says where else the neighbor was pointed, such as 211. */
 export const decide = mutation({
-  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), decision: v.union(v.literal("approved"), v.literal("declined")), amountApproved: v.optional(v.number()), note: v.string(), referral: v.optional(v.string()) },
+  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), decision: v.union(v.literal("approved"), v.literal("declined")), amountApproved: v.optional(v.number()), note: v.string(), referral: v.optional(v.string()), referrals: v.optional(v.array(v.string())) },
   returns: v.null(),
-  handler: async (ctx, { churchId, requestId, decision, amountApproved, note, referral }) => {
+  handler: async (ctx, { churchId, requestId, decision, amountApproved, note, referral, referrals }) => {
     const member = await neighborAccess(ctx, churchId);
     const existing = await ownRequest(ctx, churchId, requestId);
     if (existing.status !== "open") throw new Error("This request has already been decided.");
-    const decided = { decisionNote: text(note, "The note", 500), referral: referral === undefined ? existing.referral : text(referral, "The referral", 500), decidedBy: member._id, decidedAt: Date.now() };
+    const places = referrals === undefined ? existing.referrals : await referredTo(ctx, churchId, referrals);
+    const decided = { decisionNote: text(note, "The note", 500), referrals: places, referral: referral === undefined ? existing.referral : text(referral, "The referral", 500), decidedBy: member._id, decidedAt: Date.now() };
     if (decision === "declined") {
       await ctx.db.patch("assistanceRequests", requestId, { status: "declined", ...decided });
       return null;

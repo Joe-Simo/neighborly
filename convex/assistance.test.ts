@@ -56,6 +56,7 @@ describe("who may use the help line and requests", () => {
         () => caller.query(api.assistance.requestsForNeighbor, { churchId, neighborId: ids.rosa }),
         () => caller.query(api.assistance.request, { churchId, requestId }),
         () => caller.query(api.assistance.calls, { churchId }),
+        () => caller.query(api.assistance.agencies, { churchId }),
         () => caller.mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Called back.", callback: "none" }),
         () => caller.mutation(api.assistance.linkCall, { churchId, callId, neighborId: ids.earl }),
         () => caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["shutoff"], day: 21, by: "assistant" }),
@@ -72,6 +73,20 @@ describe("who may use the help line and requests", () => {
         else await attempt();
       }
     }
+  });
+
+  test("a decision can name up to four places, and each is offered the next time", async () => {
+    const { ids, as } = await setup();
+    const churchId = ids.church, caller = as(ids.owner);
+    const requestId = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...rent });
+    await expect(caller.mutation(api.assistance.decide, { churchId, requestId, decision: "declined", note: "", referrals: ["a", "b", "c", "d", "e"] })).rejects.toThrow("at most four");
+    await caller.mutation(api.assistance.decide, { churchId, requestId, decision: "declined", note: "Outside our area.", referrals: ["Sample County Rent Help", " 211 ", "sample county rent help"] });
+    expect((await caller.query(api.assistance.request, { churchId, requestId })).referrals).toEqual(["Sample County Rent Help", "211"]);
+    expect((await caller.query(api.assistance.agencies, { churchId })).map((agency) => agency.name)).toEqual(["211", "Sample County Rent Help"]);
+    const second = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...rent });
+    await caller.mutation(api.assistance.decide, { churchId, requestId: second, decision: "approved", amountApproved: 1000, note: "", referrals: ["SAMPLE COUNTY RENT HELP"] });
+    expect(await caller.query(api.assistance.agencies, { churchId })).toHaveLength(2);
+    expect((await caller.query(api.assistance.request, { churchId, requestId: second })).referrals).toEqual(["Sample County Rent Help"]);
   });
 
   test("calls to return first lead the list, and a person's word outranks the assistant's", async () => {
