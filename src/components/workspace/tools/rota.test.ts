@@ -14,7 +14,7 @@ describe("the weekly rota", () => {
     expect(weekLabel(start)).toBe("November 15 to 21, 2026");
     expect(weekLabel(weekStart(at("2026-11-21T23:30"), zone, 2))).toBe("November 29 to December 5, 2026");
   });
-  test("lists each day's shifts in time order and leaves out other weeks and empty days", () => {
+  test("lists all seven days, each day's shifts in time order, and leaves out other weeks", () => {
     const days = weekRota([
       shift("c", "2026-11-18T09:00", null),
       shift("b", "2026-11-16T13:00", "Thomas Okafor"),
@@ -23,8 +23,13 @@ describe("the weekly rota", () => {
       shift("early", "2026-11-14T21:00", "Renee Baptiste"),
     ], weekStart(at("2026-11-17T12:00"), zone));
     expect(days.map((day) => [day.label, day.shifts.map((item) => `${item.time} ${item.who ?? "open"}`)])).toEqual([
+      ["Sunday, November 15", []],
       ["Monday, November 16", ["9:00 AM to 12:00 PM Marisol Vega", "1:00 PM to 4:00 PM Thomas Okafor"]],
+      ["Tuesday, November 17", []],
       ["Wednesday, November 18", ["9:00 AM to 12:00 PM open"]],
+      ["Thursday, November 19", []],
+      ["Friday, November 20", []],
+      ["Saturday, November 21", []],
     ]);
   });
   test("the week the clocks change is still seven days", () => {

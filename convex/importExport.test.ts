@@ -83,3 +83,59 @@ describe("bringing members in from a spreadsheet", () => {
     await expect(as(ids.owner).query(api.importExport.checkMembers, { churchId: ids.church, rows: tooMany })).rejects.toThrow("up to 300");
   });
 });
+
+const blank = { phone: "", email: "", address: "", adults: "", children: "", language: "", notes: "" };
+const households = [
+  { line: 2, ...blank, name: "Alma Almonte", phone: "(555) 0100", address: "12 Sample St, Apt 3", adults: "2", children: "3", language: "Spanish", notes: "Prefers a call after 5." },
+  { line: 3, ...blank, name: "Benito Castellanos", phone: "555-0142" },
+  { line: 4, ...blank, name: "  ", phone: "(555) 0103" },
+  { line: 5, ...blank, name: "Celeste Desrosiers", phone: "(555) 0104", adults: "two" },
+  { line: 6, ...blank, name: "ALMA  ALMONTE" },
+  { line: 7, ...blank, name: "Darnell Eastman", phone: "555.0100" },
+  { line: 8, ...blank, name: "celeste hyppolite", phone: "(555) 0199" },
+  { line: 9, ...blank, name: "Esperanza Figueroa", language: "Klingon" },
+  { line: 10, ...blank, name: "Fabrice Greenhalgh", language: "kreyòl", children: "0" },
+];
+
+describe("bringing neighbors in from a spreadsheet", () => {
+  async function withNeighbor() {
+    const world = await setup();
+    await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(555) 0142", phoneKey: "5550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "ht", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
+    const neighbors = () => world.t.run((ctx) => ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", world.ids.church)).collect());
+    return { ...world, neighbors };
+  }
+
+  test("good rows are added; a duplicate phone or name, in the file or on file, is caught and reported", async () => {
+    const { ids, as, neighbors } = await withNeighbor();
+    const preview = await as(ids.coordinator).query(api.importExport.checkNeighbors, { churchId: ids.church, rows: households });
+    expect(preview.map((row) => [row.line, row.outcome])).toEqual([[2, "ready"], [3, "same_phone"], [4, "no_name"], [5, "bad_count"], [6, "repeated"], [7, "repeated"], [8, "same_name"], [9, "bad_language"], [10, "ready"]]);
+    expect(await neighbors()).toHaveLength(1);
+
+    const results = await as(ids.coordinator).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households });
+    expect(results.map((row) => row.outcome)).toEqual(["added", "same_phone", "no_name", "bad_count", "repeated", "repeated", "same_name", "bad_language", "added"]);
+    const added = (await neighbors()).filter((neighbor) => neighbor.name !== "Celeste Hyppolite");
+    expect(added).toMatchObject([
+      { name: "Alma Almonte", nameKey: "alma almonte", phone: "(555) 0100", phoneKey: "5550100", address: "12 Sample St, Apt 3", adults: 2, children: 3, language: "es", notes: "Prefers a call after 5.", createdBy: ids.coordinator.memberId },
+      { name: "Fabrice Greenhalgh", phone: "", phoneKey: "", adults: 1, children: 0, language: "ht" },
+    ]);
+    // Sending the file again adds nobody: everyone in it is now on file.
+    const again = await as(ids.coordinator).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households });
+    expect(again.filter((row) => row.outcome === "added")).toEqual([]);
+    expect(await neighbors()).toHaveLength(3);
+  });
+
+  test("a member is refused, and what comes back never carries more than the name", async () => {
+    const { t, ids, as, neighbors } = await withNeighbor();
+    const refused = "Neighbor records are open to coordinators and owners only.";
+    await expect(as(ids.member).query(api.importExport.checkNeighbors, { churchId: ids.church, rows: households })).rejects.toThrow(refused);
+    await expect(as(ids.member).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households })).rejects.toThrow(refused);
+    await expect(t.mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households })).rejects.toThrow("Sign in required.");
+    expect(await neighbors()).toHaveLength(1);
+    const preview = await as(ids.owner).query(api.importExport.checkNeighbors, { churchId: ids.church, rows: households });
+    for (const row of preview) expect(Object.keys(row).sort()).toEqual(["line", "name", "outcome"]);
+    const events = async () => (await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect())).filter((event) => event.action === "neighbors_imported");
+    expect(await events()).toHaveLength(0);
+    await as(ids.owner).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households });
+    expect(await events()).toMatchObject([{ actorId: ids.owner.userId, targetId: "2" }]);
+  });
+});

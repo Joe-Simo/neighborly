@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/workspace/tools/rota";
 
-export function WeeklyRotaView({ group, week, days, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
+export function WeeklyRotaView({ group, week, days, printed, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
+  const planned = days.some((day) => day.shifts.length > 0);
   return (
     <section className="live-section">
       <div className="live-section-head">
@@ -16,14 +17,14 @@ export function WeeklyRotaView({ group, week, days, onEarlier, onLater, onPrint 
       <div className="tools-week">
         <Button variant="outline" className="tools-week-step" aria-label="Earlier week" onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
         <Button variant="outline" className="tools-week-step" aria-label="Later week" onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
-        <Button disabled={!days.length} onClick={onPrint}><Printer size={16} aria-hidden="true" /> Print this week</Button>
+        <Button disabled={!planned} onClick={onPrint}><Printer size={16} aria-hidden="true" /> Print this week</Button>
       </div>
       <div className="tools-rota" aria-live="polite">
         <header>
           <p>{group}</p>
           <h3>{week}</h3>
         </header>
-        {days.length ? (
+        {planned ? (
           <div className="live-table-scroll">
             <table>
               <thead>
@@ -32,6 +33,7 @@ export function WeeklyRotaView({ group, week, days, onEarlier, onLater, onPrint 
               {days.map((day) => (
                 <tbody key={day.key}>
                   <tr className="tools-rota-day"><th scope="rowgroup" colSpan={4}>{day.label}</th></tr>
+                  {!day.shifts.length && <tr className="tools-rota-none"><td colSpan={4}>Nothing planned</td></tr>}
                   {day.shifts.map((shift) => (
                     <tr key={shift.id}>
                       <td>{shift.time}</td>
@@ -53,13 +55,14 @@ export function WeeklyRotaView({ group, week, days, onEarlier, onLater, onPrint 
             </div>
           </div>
         )}
+        <footer className="tools-rota-foot"><span>Kind Helps</span><span>Printed {printed}</span></footer>
       </div>
     </section>
   );
 }
 
 export function WeeklyRota() {
-  const { data, now, personName, teamName } = useWorkspace();
+  const { data, now, format, personName, teamName } = useWorkspace();
   const [weeksAhead, setWeeksAhead] = useState(0);
   const start = weekStart(now, data.church.timeZone, weeksAhead);
   const shifts = data.commitments
@@ -70,6 +73,7 @@ export function WeeklyRota() {
       group={data.church.name}
       week={weekLabel(start)}
       days={weekRota(shifts, start)}
+      printed={format(now, { dateStyle: "long" })}
       onEarlier={() => setWeeksAhead((value) => value - 1)}
       onLater={() => setWeeksAhead((value) => value + 1)}
       onPrint={() => window.print()}

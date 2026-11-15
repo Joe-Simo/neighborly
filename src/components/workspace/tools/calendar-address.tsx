@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useAction, useQuery } from "convex/react";
 import { CalendarPlus, Check, Copy } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -9,19 +9,28 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 
-/** Each calendar app has its own way to follow an address; these open the right screen with it filled in. */
-export function calendarLinks(address: string) {
-  const webcal = address.replace(/^https?:/, "webcal:");
-  return [
-    { label: "Add to Apple Calendar", href: webcal },
-    { label: "Add to Google Calendar", href: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}` },
-    { label: "Add to Outlook", href: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(address)}` },
-  ];
+type CalendarApp = "apple" | "google" | "outlook";
+/** The calendar most likely already on this device: Apple's on an iPhone, iPad or Mac, Outlook on Windows, Google elsewhere. */
+export function likelyCalendar(userAgent: string): CalendarApp {
+  if (/iPhone|iPad|Macintosh/.test(userAgent)) return "apple";
+  return /Windows/.test(userAgent) ? "outlook" : "google";
 }
+/** Each calendar app has its own way to follow an address; these open the right screen with it filled in, this device's own first. */
+export function calendarLinks(address: string, first: CalendarApp) {
+  const webcal = address.replace(/^https?:/, "webcal:");
+  const links = [
+    { app: "apple" as const, label: "Add to Apple Calendar", href: webcal },
+    { app: "google" as const, label: "Add to Google Calendar", href: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}` },
+    { app: "outlook" as const, label: "Add to Outlook", href: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(address)}` },
+  ];
+  return [...links.filter((link) => link.app === first), ...links.filter((link) => link.app !== first)];
+}
+const noChange = () => () => {};
 
 export function CalendarAddressView({ address, busy, error, onCreate }: { address: string | null; busy: boolean; error: string; onCreate: () => void }) {
   const [copied, setCopied] = useState(false);
   const [replacing, setReplacing] = useState(false);
+  const device = useSyncExternalStore(noChange, () => likelyCalendar(navigator.userAgent), () => "google" as const);
   return (
     <section>
       <div className="live-section-head">
@@ -34,8 +43,8 @@ export function CalendarAddressView({ address, busy, error, onCreate }: { addres
       {address ? (
         <>
           <div className="help-actions tools-after">
-            {calendarLinks(address).map((link) => (
-              <Button key={link.label} variant="outline" asChild>
+            {calendarLinks(address, device).map((link, index) => (
+              <Button key={link.app} variant="outline" className={index === 0 ? "tools-first" : undefined} asChild>
                 <a href={link.href} target="_blank" rel="noreferrer"><CalendarPlus size={18} aria-hidden="true" /> {link.label}</a>
               </Button>
             ))}
@@ -54,7 +63,7 @@ export function CalendarAddressView({ address, busy, error, onCreate }: { addres
             This address is yours alone; anyone who has it can see when and where you serve. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands, make a new one and the old one stops working.
           </p>
           <div className="help-actions tools-replace">
-            <Button variant="ghost" disabled={busy} onClick={() => setReplacing(true)}>Make a new address</Button>
+            <Button variant="outline" disabled={busy} onClick={() => setReplacing(true)}>Make a new address</Button>
           </div>
           <Dialog open={replacing} onOpenChange={setReplacing}>
             <DialogContent className="live-dialog">
