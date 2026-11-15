@@ -119,10 +119,6 @@
   font-size: 17px;
   margin: 0;
 }
-.treasury-notice:focus-visible {
-  outline: 2px solid #456f46;
-  outline-offset: 3px;
-}
 @media (prefers-reduced-motion: reduce) {
   .live-app .help-what [data-slot="button"] {
     transition: none;
