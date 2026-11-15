@@ -54,9 +54,9 @@ export function householdDetail(adults: number, children: number) {
     ? `${count(adults, "adult", "adults")}, ${count(children, "child", "children")}`
     : count(adults, "adult", "adults");
 }
-/** "2 Winter coat vouchers": what a voucher request takes from the shelf. */
+/** "2 winter coat vouchers": what a voucher request takes from the shelf. */
 export const vouchers = (voucher: { item: string; quantity: number }) =>
-  `${voucher.quantity} ${voucher.item} ${voucher.quantity === 1 ? "voucher" : "vouchers"}`;
+  `${voucher.quantity} ${voucher.item.toLowerCase()} ${voucher.quantity === 1 ? "voucher" : "vouchers"}`;
 export const requestTitle = (request: HelpRequest) =>
   request.voucher
     ? vouchers(request.voucher)

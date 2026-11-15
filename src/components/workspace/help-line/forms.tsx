@@ -27,6 +27,7 @@ import {
   languageLabels,
   money,
   payeeLabels,
+  shortMoney,
   recordHref,
   type Call,
   type HelpRequest,
@@ -109,10 +110,10 @@ const onShelf = (shelf: Shelf, item: string) =>
   shelf.find((line) => line.item.toLowerCase() === item.trim().toLowerCase());
 const onHand = (line: Shelf[number] | undefined) =>
   !line
-    ? "Not on the shelf yet."
+    ? "not on the shelf yet"
     : line.onHand > 0
-      ? `${line.onHand} on hand.`
-      : "None on hand. The treasurer adds vouchers as they arrive.";
+      ? `${line.onHand} on hand`
+      : "none on hand";
 
 export function FormEnd({
   error,
@@ -292,9 +293,16 @@ export function RequestForm({
   const { pending, error, save } = useSave();
   const [amountError, setAmountError] = useState("");
   const [kind, setKind] = useState(start?.kind ?? "rent");
-  const [item, setItem] = useState(start?.voucher?.item ?? "");
+  // The shelf's kind that is chosen; null means a kind the shelf does not hold yet, named by hand.
+  const [choice, setChoice] = useState<string | null>();
   const shelf = useShelf(churchId, true);
   const fromShelf = kind === "voucher" && shelf;
+  const asked = start?.voucher?.item ?? "";
+  const chosen =
+    choice !== undefined || !shelf
+      ? (choice ?? null)
+      : (onShelf(shelf, asked)?.item ??
+        (asked ? null : (shelf[0]?.item ?? null)));
   return (
     <form
       className="live-form help-form"
@@ -313,7 +321,7 @@ export function RequestForm({
           payeeName: value("payeeName"),
           ...(fromShelf && {
             voucher: {
-              item: onShelf(fromShelf, item)?.item ?? item.trim(),
+              item: chosen ?? value("item"),
               quantity: Number(value("quantity")),
             },
           }),
@@ -372,35 +380,35 @@ export function RequestForm({
           </LiveField>
         )}
       </div>
-      {fromShelf && (
+      {fromShelf && fromShelf.length > 0 && (
+        <LiveField label="Voucher for">
+          <NativeSelect
+            className="w-full"
+            value={chosen ?? ""}
+            onChange={(event) => setChoice(event.target.value || null)}
+          >
+            {fromShelf.map((line) => (
+              <option key={line.item} value={line.item}>
+                {line.item}, {onHand(line)}
+              </option>
+            ))}
+            <option value="">Something else</option>
+          </NativeSelect>
+        </LiveField>
+      )}
+      {fromShelf && chosen === null && (
         <LiveField
-          label="Voucher for"
-          help={item.trim() ? onHand(onShelf(fromShelf, item)) : undefined}
+          label={fromShelf.length ? "Name the voucher" : "Voucher for"}
+          help="The treasurer adds it to the shelf when vouchers arrive."
         >
           <Input
             name="item"
-            list="help-shelf"
             maxLength={80}
             required
-            autoComplete="off"
-            value={item}
-            onChange={(event) => setItem(event.target.value)}
+            defaultValue={onShelf(fromShelf, asked) ? "" : asked}
           />
-          <datalist id="help-shelf">
-            {fromShelf.map((line) => (
-              <option key={line.item} value={line.item} />
-            ))}
-          </datalist>
         </LiveField>
       )}
-      <LiveField label="What they need">
-        <Textarea
-          name="summary"
-          rows={3}
-          required
-          defaultValue={start?.summary}
-        />
-      </LiveField>
       {fromShelf ? (
         <p className="help-form-note">
           Vouchers come off the shelf when the request is approved. Nobody is
@@ -505,7 +513,7 @@ export function DecideForm({
       {voucher && (
         <LiveField
           label="How many to give"
-          help={`They asked for ${vouchers(voucher)}.${shelf ? ` ${onHand(onShelf(shelf, voucher.item))}` : ""}`}
+          help={`They asked for ${vouchers(voucher)}.${shelf ? ` The shelf has ${onHand(onShelf(shelf, voucher.item))}.` : ""}`}
         >
           <Input
             name="quantity"
@@ -577,6 +585,52 @@ export function DecideForm({
         pending={pending}
         submit={approving ? "Approve request" : "Decline request"}
       />
+    </form>
+  );
+}
+
+/** Ends a request that will go no further, and says plainly what happens to what was given or paid. */
+export function CloseForm({
+  churchId,
+  request,
+  onSaved,
+}: {
+  churchId: ChurchId;
+  request: HelpRequest;
+  onSaved: () => void;
+}) {
+  const close = useMutation(api.assistance.closeRequest);
+  const payable = useQuery(
+    api.treasury.payable,
+    request.voucher ? "skip" : { churchId },
+  );
+  const { pending, error, save } = useSave();
+  const paid = payable?.find((row) => row.requestId === request.id)?.paid ?? 0;
+  const effect = request.voucher
+    ? request.status === "paid"
+      ? `${vouchers(request.voucher)} ${request.voucher.quantity === 1 ? "goes" : "go"} back on the shelf. No money has moved.`
+      : "Nothing was given. No money has moved."
+    : !payable
+      ? ""
+      : paid > 0
+        ? `${shortMoney(paid)} of ${shortMoney(request.amountApproved ?? 0)} was paid and stays in the ledger. The rest is not paid.`
+        : "No money has moved.";
+  return (
+    <form
+      className="live-form help-form"
+      onSubmit={async (event) => {
+        const value = fieldsOf(event);
+        const outcome = await save(() =>
+          close({ churchId, requestId: request.id, note: value("note") }),
+        );
+        if (outcome.saved) onSaved();
+      }}
+    >
+      <LiveField label="Why it is being closed">
+        <Textarea name="note" rows={3} required maxLength={500} />
+      </LiveField>
+      <p className="help-form-note">{effect}</p>
+      <FormEnd error={error} pending={pending} submit="Close request" />
     </form>
   );
 }

@@ -225,11 +225,14 @@ describe("a request for help", () => {
     await caller.mutation(api.assistance.decide, { churchId, requestId, decision: "approved", quantity: 3, note: "" });
     expect(await caller.query(api.assistance.request, { churchId, requestId })).toMatchObject({ voucher: { item: "Winter coat", quantity: 3 }, amountApproved: 0, status: "paid" });
     expect(await onHand()).toEqual([["Winter coat", 7]]);
+    const history = async () => { await caller.mutation(api.neighbors.open, { churchId, neighborId: ids.rosa }); return (await caller.query(api.neighbors.record, { churchId, neighborId: ids.rosa })).history; };
+    expect(await history()).toContainEqual(expect.objectContaining({ type: "voucher", requestId, item: "Winter coat", quantity: 3 }));
     expect((await caller.query(api.treasury.payable, { churchId })).map((row) => row.requestId)).not.toContain(requestId);
 
     await caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "Coats came from a relative instead." });
     expect(await onHand()).toEqual([["Winter coat", 10]]);
     await expect(caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "" })).rejects.toThrow("already finished");
+    expect((await history()).map((event) => event.type)).toEqual(["decision"]);
 
     const declined = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...coats });
     await caller.mutation(api.assistance.decide, { churchId, requestId: declined, decision: "declined", note: "Outside our area." });
