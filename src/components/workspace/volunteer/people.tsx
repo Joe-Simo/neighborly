@@ -58,7 +58,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
       >
         <dl>
           <dt>What goes</dt>
-          <dd>Their name and email address, their places on teams, their time off, and their sign-in to this conference. What they had promised to do from now on is open again.</dd>
+          <dd>Their name and email address, their places on teams, their time off, and their sign-in to this conference. What they had promised to do from now on is open again. Planned visits they were part of will need a new second visitor.</dd>
           <dt>What stays</dt>
           <dd>The visits and hours they logged stay in the year’s counts as “a former member”.</dd>
         </dl>
