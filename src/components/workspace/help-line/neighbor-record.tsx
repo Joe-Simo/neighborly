@@ -12,10 +12,10 @@ import {
   CloseForm,
   takingBack,
   DecideForm,
-  HelpDialog,
   NeighborForm,
   RequestForm,
 } from "@/components/workspace/help-line/forms";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
   AccountsForm,
   AtHome,
@@ -156,7 +156,7 @@ export function NeighborRecord({
         }}
       />
       {step?.kind === "people" && (
-        <HelpDialog
+        <LiveDialog
           title="Who lives here"
           description={`${neighbor.name}’s household, as they told us.`}
           onClose={close}
@@ -166,10 +166,10 @@ export function NeighborRecord({
             household={record.household}
             onSaved={() => finish("Household saved.")}
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "money" && (
-        <HelpDialog
+        <LiveDialog
           title="Money each month"
           description="What comes in and what goes out, in round numbers."
           onClose={close}
@@ -179,10 +179,10 @@ export function NeighborRecord({
             money={record.money}
             onSaved={() => finish("The month is saved.")}
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "accounts" && (
-        <HelpDialog
+        <LiveDialog
           title="Accounts"
           description="Where a bill is paid, so the treasurer does not have to ask twice."
           onClose={close}
@@ -197,19 +197,19 @@ export function NeighborRecord({
               finish("Accounts saved.");
             }}
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "note" && (
-        <HelpDialog
+        <LiveDialog
           title="Add a note"
           description={`On ${neighbor.name}’s record, for whoever helps next.`}
           onClose={close}
         >
           <NoteForm target={target} onSaved={() => finish("Note added.")} />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "request" && (
-        <HelpDialog
+        <LiveDialog
           title="Add a request"
           description={`For ${neighbor.name}. Nothing is paid or given until it is approved.`}
           onClose={close}
@@ -221,10 +221,10 @@ export function NeighborRecord({
               finish("Request saved. It is waiting for a decision.")
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "change" && (
-        <HelpDialog
+        <LiveDialog
           title="Change the request"
           description="You can change a request until it is decided."
           onClose={close}
@@ -235,10 +235,10 @@ export function NeighborRecord({
             request={step.request}
             onSaved={() => finish("Request changed.")}
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {(step?.kind === "approve" || step?.kind === "decline") && (
-        <HelpDialog
+        <LiveDialog
           title={
             step.kind === "approve" ? "Approve request" : "Decline request"
           }
@@ -255,10 +255,10 @@ export function NeighborRecord({
               )
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "close" && (
-        <HelpDialog
+        <LiveDialog
           title={
             takingBack(step.request) ? "Take back voucher" : "Close request"
           }
@@ -274,10 +274,10 @@ export function NeighborRecord({
               )
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "details" && (
-        <HelpDialog
+        <LiveDialog
           title="Change details"
           description={`What we keep about ${neighbor.name}.`}
           onClose={close}
@@ -287,7 +287,7 @@ export function NeighborRecord({
             neighbor={neighbor}
             onSaved={() => finish("Details saved.")}
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
     </>
   );

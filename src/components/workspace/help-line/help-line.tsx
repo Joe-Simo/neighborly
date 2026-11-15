@@ -14,13 +14,8 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { words } from "@/lib/words";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import {
-  CallForm,
-  HelpDialog,
-  NeighborForm,
-  RequestForm,
-  ReturnForm,
-} from "@/components/workspace/help-line/forms";
+import { CallForm, NeighborForm, RequestForm, ReturnForm } from "@/components/workspace/help-line/forms";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
   count,
   initials,
@@ -173,7 +168,7 @@ function HelpLine() {
         }
       />
       {step?.kind === "change" && step.drafted.call.neighborId && (
-        <HelpDialog
+        <LiveDialog
           title="Change the draft"
           description={`For ${caller(step.drafted.call)}. Nothing is saved until you save it here.`}
           onClose={close}
@@ -190,10 +185,10 @@ function HelpLine() {
             }}
             onSaved={() => saved(step.drafted.call)}
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "log" && (
-        <HelpDialog
+        <LiveDialog
           title="Log a call"
           description="Write down every call, even a wrong number."
           onClose={close}
@@ -208,10 +203,10 @@ function HelpLine() {
               )
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "return" && (
-        <HelpDialog
+        <LiveDialog
           title="Mark returned"
           description={`${caller(step.call)}${step.call.phone ? `, ${step.call.phone}` : ""}`}
           onClose={close}
@@ -223,10 +218,10 @@ function HelpLine() {
               finish(`Marked returned. ${caller(step.call)} has been called back.`)
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "request" && step.call.neighborId && (
-        <HelpDialog
+        <LiveDialog
           title="Add a request"
           description={`For ${caller(step.call)}. Nothing is paid until it is approved.`}
           onClose={close}
@@ -238,10 +233,10 @@ function HelpLine() {
             start={{ summary: step.call.note }}
             onSaved={() => saved(step.call)}
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
       {step?.kind === "neighbor" && (
-        <HelpDialog
+        <LiveDialog
           title="Add a neighbor"
           description="This call will be kept on their record."
           onClose={close}
@@ -253,7 +248,7 @@ function HelpLine() {
               finish("Neighbor added. This call is now on their record.")
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
     </>
   );

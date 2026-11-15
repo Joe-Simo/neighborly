@@ -82,6 +82,9 @@ export const requestRow = v.object({
   referrals: v.array(v.string()),
   decidedByName: v.union(v.string(), v.null()),
   decidedAt: v.union(v.number(), v.null()),
+  /** Who closed it and when; null on a request that was never closed, or was closed before this was kept. */
+  closedByName: v.union(v.string(), v.null()),
+  closedAt: v.union(v.number(), v.null()),
   payeeKind: requestFields.payeeKind,
   payeeName: v.string(),
   /** What was asked for from the shelf, on a voucher request. No money is owed on one. */
@@ -112,6 +115,8 @@ export async function toRequestRow(found: Lookups, request: Doc<"assistanceReque
     referrals: request.referrals ?? [],
     decidedByName: request.decidedBy ? await found.memberName(request.decidedBy) : null,
     decidedAt: request.decidedAt ?? null,
+    closedByName: request.closedBy ? await found.memberName(request.closedBy) : null,
+    closedAt: request.closedAt ?? null,
     payeeKind: request.payeeKind,
     payeeName: request.payeeName,
     voucher: request.voucher ?? null,
@@ -271,7 +276,7 @@ export const decide = mutation({
   },
 });
 
-/** Closes a request that will go no further, such as when the neighbor resolved it, and never writes over who approved it. Closing a voucher request after it was given takes the vouchers back onto the shelf. */
+/** Closes a request that will go no further, such as when the neighbor resolved it, keeping who closed it and when beside who approved it. Closing a voucher request after it was given takes the vouchers back onto the shelf. */
 export const closeRequest = mutation({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), note: v.string() },
   returns: v.null(),
@@ -282,7 +287,7 @@ export const closeRequest = mutation({
     if (existing.status !== "open" && existing.status !== "approved" && !given) throw new Error("This request is already finished.");
     if (given && Date.now() - (existing.decidedAt ?? 0) > TAKE_BACK_DAYS * DAY) throw new Error(`A voucher can be taken back for ${TAKE_BACK_DAYS} days after it was given.`);
     if (given) await voucherGiven(ctx, member, { requestId, item: given.item, quantity: 0 });
-    await ctx.db.patch("assistanceRequests", requestId, { status: "closed", decisionNote: text(note, "The note", 500), decidedBy: existing.decidedBy ?? member._id, decidedAt: existing.decidedAt ?? Date.now() });
+    await ctx.db.patch("assistanceRequests", requestId, { status: "closed", decisionNote: text(note, "The note", 500), decidedBy: existing.decidedBy ?? member._id, decidedAt: existing.decidedAt ?? Date.now(), closedBy: member._id, closedAt: Date.now() });
     return null;
   },
 });

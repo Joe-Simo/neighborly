@@ -4,18 +4,10 @@ import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useAction, useMutation, useQueries, useQuery } from "convex/react";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,49 +37,8 @@ const fieldsOf = (event: FormEvent<HTMLFormElement>) => {
   return (name: string) => String(data.get(name) ?? "").trim();
 };
 
-export function HelpDialog({
-  title,
-  description,
-  onClose,
-  children,
-}: {
-  title: string;
-  description: string;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        className="live-dialog help-dialog"
-        showCloseButton={false}
-        // Start in the first box to fill in, not on the close button.
-        onOpenAutoFocus={(event) => {
-          const first =
-            event.currentTarget instanceof HTMLElement &&
-            event.currentTarget.querySelector<HTMLElement>(
-              "input, textarea, select",
-            );
-          if (!first) return;
-          event.preventDefault();
-          first.focus();
-        }}
-      >
-        {/* The title and the way out stay in view while a long form scrolls, as the button does. */}
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogClose asChild>
-            <Button variant="ghost" size="icon" aria-label="Close">
-              <X aria-hidden="true" />
-            </Button>
-          </DialogClose>
-        </DialogHeader>
-        <DialogDescription>{description}</DialogDescription>
-        {children}
-      </DialogContent>
-    </Dialog>
-  );
-}
+/** The shared dialog under its old name, for rooms that still ask for it here. */
+export { LiveDialog as HelpDialog } from "@/components/workspace/live-dialog";
 
 /**
  * What the treasury's voucher shelf holds. Undefined while it loads, and also when the backend is

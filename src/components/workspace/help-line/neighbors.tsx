@@ -13,7 +13,8 @@ import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import "@/components/workspace/tools/tools.css";
 import { NeighborsImport } from "@/components/workspace/tools/neighbors-import";
 import { RequestsImport } from "@/components/workspace/tools/requests-import";
-import { HelpDialog, NeighborForm } from "@/components/workspace/help-line/forms";
+import { NeighborForm } from "@/components/workspace/help-line/forms";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
   household,
   initials,
@@ -106,7 +107,7 @@ function Neighbors() {
         </section>
       )}
       {adding && (
-        <HelpDialog
+        <LiveDialog
           title="Add a neighbor"
           description="We check first that they are not already on file."
           onClose={() => setAdding(false)}
@@ -128,7 +129,7 @@ function Neighbors() {
               </Button>
             }
           />
-        </HelpDialog>
+        </LiveDialog>
       )}
     </>
   );
