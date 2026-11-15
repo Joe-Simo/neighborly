@@ -67,6 +67,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   renderer.toneMappingExposure = 1.1;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFShadowMap;
+  renderer.localClippingEnabled = true;
   renderer.domElement.setAttribute("aria-hidden", "true");
   renderer.domElement.style.touchAction = "pan-y";
   host.appendChild(renderer.domElement);
@@ -137,6 +138,17 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   // The card's bone sits inside two holders, so the finished pass can lay it in the palm, turned to the hand, without touching its authored path.
   let cardSeat: T.Group | undefined;
   let cardLie: T.Group | undefined;
+  // The card's own soft shadow on the palm, and how far its short settle has run once it lands.
+  let cardShadow: T.Mesh<T.PlaneGeometry, T.MeshBasicMaterial> | undefined;
+  let cardWidth = 1;
+  // The giving thumb, drawn once more over the card so the card sits in the pinch, not in front of the hand.
+  let givingHand: T.Object3D | undefined;
+  const thumbLine = new T.Plane(new T.Vector3(0, 1, 0), 0);
+  const thumbBox = new T.Box3();
+  // How far up the giving hand the underside of its thumb runs, and how far the card leans in under it while it waits.
+  const thumbFrom = .5;
+  const cardTuck = [-.11, .07] as const;
+  let landed = 0;
   let openingOutcome: ReliefOutcome = "rest";
   const openingRoot = new T.Group();
   scene.add(openingRoot);
@@ -144,6 +156,9 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const seatShift = new T.Vector3();
   // Where the card comes to rest, measured from the end of its authored path: across, up, its turn, and how far it lies back onto the palm.
   const cardRest = [.8, -.06, .2, -.85] as const;
+  // The card is drawn a little larger than it was authored, so it reads in the giving hand.
+  const cardScale = 1.3;
+  const cardSettle = .2;
   const openingGuideScale = new T.Vector3(1, 1, 1);
   const openingPickTargets: T.Object3D[] = [];
   const openingMaterials = new Map<T.Material, { opacity: number; transparent: boolean; depthWrite: boolean }>();
@@ -642,8 +657,31 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
         cardSeat.rotation.z = cardRest[2] * arrived;
         cardSeat.rotation.x = cardRest[3] * arrived;
         cardLie.position.copy(openingGuide.position).negate();
+        // Larger while it waits in the giving hand; it lands at the size the palm was painted for.
+        const scale = cardScale + (1 - cardScale) * arrived;
+        cardSeat.scale.setScalar(scale);
+        const waiting = 1 - smooth(Math.min(1, (openingPlayback?.passed() ?? 0) * 4));
+        cardSeat.position.x += cardTuck[0] * waiting; cardSeat.position.y += cardTuck[1] * waiting;
+        // Landing: the card drops the last little way onto the palm and its shadow gathers under it.
+        const down = (openingPlayback?.passed() ?? 0) >= 1;
+        landed = down ? reduce ? 1 : Math.min(1, landed + dt / cardSettle) : 0;
+        const settled = 1 - (1 - landed) * (1 - landed);
+        cardSeat.position.y += (1 - settled) * arrived * cardWidth * .09;
+        if (cardShadow) {
+          cardShadow.position.copy(cardSeat.position);
+          cardShadow.position.x -= cardWidth * .02;
+          cardShadow.position.y -= cardWidth * (.2 + (1 - settled) * .05);
+          cardShadow.rotation.z = cardSeat.rotation.z;
+          cardShadow.scale.set(cardWidth * (1.38 - settled * .12), cardWidth * (.6 - settled * .06), 1);
+          cardShadow.material.opacity = arrived * (.36 + settled * .26) * openingOpacity;
+          cardShadow.visible = arrived > 0;
+        }
       }
       openingModel.updateMatrixWorld(true);
+      if (givingHand) {
+        thumbBox.setFromObject(givingHand);
+        thumbLine.constant = -(thumbBox.min.y + (thumbBox.max.y - thumbBox.min.y) * thumbFrom);
+      }
       const fading = openingOpacity > 0 && openingOpacity < 1;
       for (const [surface, original] of openingMaterials) {
         const transparent = original.transparent || fading;
@@ -662,7 +700,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     camera.updateProjectionMatrix();
     renderer.render(scene, camera);
     if (!ready && artwork.has(current) && openingLoaded) { ready = true; options.onReady?.(); }
-    if ((!scrollMode && phase === "transitioning" && transitionReady) || interaction !== interactionTarget || !pointer.equals(pointerTarget) || openingPlayback?.isRunning()) wake();
+    if ((!scrollMode && phase === "transitioning" && transitionReady) || interaction !== interactionTarget || !pointer.equals(pointerTarget) || openingPlayback?.isRunning() || ((openingPlayback?.passed() ?? 0) >= 1 && landed < 1)) wake();
   }
   function wake() {
     if (!frame && !disposed && !lost && visible && !document.hidden) { frame = requestAnimationFrame(draw); }
@@ -823,11 +861,47 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       cardSeat.add(cardLie);
       openingGuide.parent.add(cardSeat);
       cardLie.add(openingGuide);
+      let leaf: T.Object3D = openingGuide;
+      openingModel.traverse((object) => { if (object instanceof T.Mesh && /^Role[ _]guide[ _].*leaf[ _]1/.test(object.name)) leaf = object; });
+      openingModel.updateMatrixWorld(true);
+      cardWidth = Math.max(.01, new T.Box3().setFromObject(leaf).getSize(new T.Vector3()).x) || 1;
+      const blot = document.createElement("canvas");
+      blot.width = blot.height = 64;
+      const pen = blot.getContext("2d");
+      if (pen) {
+        const fade = pen.createRadialGradient(32, 32, 0, 32, 32, 32);
+        fade.addColorStop(0, "rgba(54,30,14,1)"); fade.addColorStop(.45, "rgba(54,30,14,.55)"); fade.addColorStop(1, "rgba(54,30,14,0)");
+        pen.fillStyle = fade; pen.fillRect(0, 0, 64, 64);
+      }
+      cardShadow = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: new T.CanvasTexture(blot), transparent: true, depthWrite: false, depthTest: false, toneMapped: false, opacity: 0 }));
+      cardShadow.name = "Card shadow";
+      cardShadow.visible = false;
+      // Painted in order: the hands, then the shadow on the palm, then the card over it. The card's sheets join the later pass so they can follow the shadow.
+      cardShadow.renderOrder = 2;
+      openingModel.traverse((object) => {
+        if (!(object instanceof T.Mesh) || !/^Role[ _]guide[ _]/.test(object.name)) return;
+        object.renderOrder = 3;
+        for (const surface of Array.isArray(object.material) ? object.material : [object.material]) surface.transparent = true;
+      });
+      cardSeat.parent?.add(cardShadow);
+      givingHand = undefined;
+      openingModel.traverse((object) => { if (object instanceof T.Mesh && /^Offering[ _]hand/.test(object.name)) givingHand = object; });
+      const hand = givingHand as T.Mesh | undefined;
+      if (hand && !Array.isArray(hand.material)) {
+        const thumb = hand.clone();
+        const surface = hand.material.clone();
+        surface.clippingPlanes = [thumbLine];
+        surface.depthTest = false;
+        thumb.material = surface;
+        thumb.name = "Giving thumb";
+        thumb.renderOrder = 5;
+        hand.parent?.add(thumb);
+      }
     }
     openingPlayback.apply(openingOutcome, true, reduce, true);
     openingPlayback.apply(openingOutcome, false, reduce);
     openingModel.traverse((object) => {
-      if (!(object instanceof T.Mesh)) return;
+      if (!(object instanceof T.Mesh) || object === cardShadow) return;
       if (/^Role[ _]guide[ _]/.test(object.name)) openingPickTargets.push(object);
       for (const surface of Array.isArray(object.material) ? object.material : [object.material]) {
         if (!openingMaterials.has(surface)) openingMaterials.set(surface, { opacity: surface.opacity, transparent: surface.transparent, depthWrite: surface.depthWrite });
@@ -849,7 +923,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     openingMixer = undefined;
     openingPlayback = undefined;
     openingGuide = undefined;
-    cardSeat = cardLie = undefined;
+    cardSeat = cardLie = undefined; cardShadow = undefined; givingHand = undefined;
     openingMaterials.clear();
     openingPickTargets.length = 0;
     openingAsset = "";

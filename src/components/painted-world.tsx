@@ -182,7 +182,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
       const [fromX, fromY] = at(path.from), [toX, toY] = at(path.to);
       element.style.setProperty("--card-x", `${fromX}px`); element.style.setProperty("--card-y", `${fromY}px`);
       element.style.setProperty("--card-dx", `${toX - fromX}px`); element.style.setProperty("--card-dy", `${toY - fromY}px`);
-      element.style.setProperty("--card-size", `${Math.max(56, paintingWidth * .115)}px`);
+      element.style.setProperty("--card-size", `${Math.max(72, paintingWidth * .15)}px`);
     };
     place();
     const observer = new ResizeObserver(place);
