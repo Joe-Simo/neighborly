@@ -553,3 +553,19 @@
   .report .help-bars li { grid-template-columns: 330px minmax(0, 1fr) 120px; }
   .report .report-teams li { grid-template-columns: 330px minmax(0, 1fr) 150px; }
 }
+
+/* A count-only row draws no bar: a count is not on the dollar scale. */
+.report .help-bars li[data-counted] .help-bar { visibility: hidden; }
+.report .help-bars li[data-counted] .help-amount { white-space: nowrap; }
+@media screen and (min-width: 851px) {
+  .report .help-bars li[data-counted] { grid-template-columns: 230px minmax(0, 1fr) max-content; }
+}
+@media screen and (min-width: 1100px) {
+  .report .help-bars li[data-counted] { grid-template-columns: 330px minmax(0, 1fr) max-content; }
+}
+@media (max-width: 850px) {
+  .report .help-bars li[data-counted] .help-bar { display: none; }
+}
+@media print {
+  .report .help-bars li[data-counted] { grid-template-columns: 150pt minmax(0, 1fr) max-content; }
+}

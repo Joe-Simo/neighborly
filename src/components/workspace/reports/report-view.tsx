@@ -216,6 +216,7 @@ export function ReportView({
   const mostHours = Math.max(...serving.map((line) => line.hours));
   // A request closed after money went out was paid in part, so it stands with the paid ones.
   const inPart = report.requests.closedAfterPart.requests;
+  const voucherMoney = report.kinds.some((line) => line.kind === "voucher" && line.paid > 0);
   const outcomes = [
     {
       is: "paid",
@@ -275,7 +276,7 @@ export function ReportView({
           <dd>
             {money(report.helpPaid)}
             <small>
-              {report.vouchers.given > 0 ? "Paid direct or given as vouchers, never in cash" : "Paid direct, never in cash"}
+              {voucherMoney ? "Paid direct or given as vouchers, never in cash" : "Paid direct, never in cash"}
               {moved && `. ${money(report.history.amount)} more is in ServWare history.`}
             </small>
           </dd>
@@ -286,26 +287,33 @@ export function ReportView({
         <h2>By kind of help</h2>
       </div>
       <ol className="help-bars">
-        {report.kinds.map((line) => (
-          <li key={line.kind}>
-            <div>
-              <h3>{kindLabels[line.kind]}</h3>
-              <p>
-                {line.kind === "voucher" && report.vouchers.given > 0
-                  ? `${plural(report.vouchers.given, "voucher")} given, worth ${money(line.paid)} · ${plural(line.people, "person", "people")}`
-                  : line.requestsPaid > 0
-                  ? `${plural(line.requestsPaid, "request")} paid · ${plural(line.people, "person", "people")}`
-                  : report.closed
-                    ? `None this ${noun}`
-                    : `None yet this ${noun}`}
-              </p>
-            </div>
-            <div className="help-bar" aria-hidden="true">
-              <span style={share(line.paid, largestKind)} />
-            </div>
-            <span className="help-amount">{money(line.paid)}</span>
-          </li>
-        ))}
+        {report.kinds.map((line) => {
+          // Vouchers with no money paid are a count: no bar and no dollar figure, since a count is not on the dollar scale.
+          const counted = line.kind === "voucher" && line.paid <= 0 && report.vouchers.given > 0;
+          const people = plural(line.people, "person", "people");
+          return (
+            <li key={line.kind} data-counted={counted ? "" : undefined}>
+              <div>
+                <h3>{kindLabels[line.kind]}</h3>
+                <p>
+                  {counted
+                    ? `Given from the shelf · ${people}`
+                    : line.kind === "voucher" && report.vouchers.given > 0
+                      ? `${plural(report.vouchers.given, "voucher")} given · ${money(line.paid)} paid · ${people}`
+                      : line.requestsPaid > 0
+                        ? `${plural(line.requestsPaid, "request")} paid · ${people}`
+                        : report.closed
+                          ? `None this ${noun}`
+                          : `None yet this ${noun}`}
+                </p>
+              </div>
+              <div className="help-bar" aria-hidden="true">
+                {!counted && <span style={share(line.paid, largestKind)} />}
+              </div>
+              <span className="help-amount">{counted ? plural(report.vouchers.given, "voucher") : money(line.paid)}</span>
+            </li>
+          );
+        })}
       </ol>
       {moved && (
         <p className="report-history">
