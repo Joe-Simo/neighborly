@@ -370,7 +370,7 @@
 .live-app .live-empty:not([data-lead]) { grid-template-columns: minmax(0, 1fr); }
 .live-empty:not([data-lead]) > .paper-vignette { display: none; }
 .paper-vignette { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--paper-shade); }
-.live-app .live-empty h3 { font: 400 26px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0; }
+.live-app .live-empty :is(h2, h3) { font: 400 26px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0; color: var(--live-ink); }
 .live-app .live-empty p { margin: 8px 0 0; font-size: 17px; line-height: 1.5; }
 .live-app .live-empty p:empty { display: none; }
 .live-app .live-empty [data-slot="button"] { margin-top: 14px; }

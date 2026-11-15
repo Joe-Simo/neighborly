@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useWorkspace } from "@/components/workspace/context";
 import { headings } from "@/components/workspace/navigation";
@@ -80,11 +80,30 @@ export function LiveEmpty({
     >
       <ReliefPicture name={picture} focus={focus} vignette className="paper-vignette" />
       <div>
-        <h3>{title}</h3>
+        <FollowingHeading>{title}</FollowingHeading>
         <p>{children}</p>
       </div>
     </div>
   );
+}
+
+/**
+ * A heading whose level follows the page: h2 straight under the room's h1, h3 under a
+ * section's h2, so a block that can sit in either place never skips a level.
+ */
+export function FollowingHeading({ children }: { children: ReactNode }) {
+  const [level, setLevel] = useState<2 | 3>(2);
+  const place = useRef<HTMLHeadingElement>(null);
+  useLayoutEffect(() => {
+    const here = place.current;
+    if (!here) return;
+    const before = [...(here.closest("main") ?? document).querySelectorAll("h1, h2, h3, h4")]
+      .filter((heading) => heading !== here && heading.compareDocumentPosition(here) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .at(-1);
+    setLevel(!before || before.tagName === "H1" ? 2 : 3);
+  }, []);
+  const Heading = level === 2 ? "h2" : "h3";
+  return <Heading ref={place}>{children}</Heading>;
 }
 
 /**
@@ -118,7 +137,9 @@ export function CountUp({
     return () => cancelAnimationFrame(frame);
   }, [value]);
   return (
-    <span className={className ? `count-up ${className}` : "count-up"} aria-label={format(value)}>
+    <span className={className ? `count-up ${className}` : "count-up"}>
+      {/* A screen reader gets the figure itself, once; the rolling digits are for the eye. */}
+      <span className="sr-only">{format(value)}</span>
       <span aria-hidden="true">{format(shown)}</span>
     </span>
   );
