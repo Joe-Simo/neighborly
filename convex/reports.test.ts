@@ -229,6 +229,19 @@ describe("the year's counts for the sample conference", () => {
     expect((await as(owner.userId).action(api.drafts.checkYear, { churchId, year: 2027 })).flags).toEqual([]);
   });
 
+  test("the check names no neighbor to open for a record that was removed for good", async () => {
+    const { t, as, churchId, owner } = await sample();
+    const [kept, removed] = await t.run(async (ctx) => {
+      const requests = await ctx.db.query("assistanceRequests").collect();
+      const other = requests.find((request) => request.neighborId !== requests[0].neighborId)!;
+      // What removal leaves: the row without a name, marked by an empty name key, so the year still adds up.
+      await ctx.db.patch("neighbors", requests[0].neighborId, { name: "Record removed", nameKey: "" });
+      return [other, requests[0]];
+    });
+    const found = await as(owner.userId).query(api.reports.flagged, { churchId, requestIds: [kept._id, removed._id], visitIds: [] });
+    expect(found.requests.map((request) => request.neighborId)).toEqual([kept.neighborId, null]);
+  });
+
   test("the years on offer run from the first record to today's", async () => {
     const { as, churchId, coordinator } = await sample();
     expect(await as(coordinator.userId).query(api.reports.years, { churchId })).toEqual({ current: 2027, years: [2027, 2026] });

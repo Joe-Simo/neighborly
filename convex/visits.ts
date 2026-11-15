@@ -25,6 +25,13 @@ type Language = Infer<typeof language>;
 const languageNames: Record<Language, string> = { en: "English", es: "Spanish", ht: "Haitian Creole" };
 const kind = v.union(v.literal("rent"), v.literal("utility"), v.literal("food"), v.literal("voucher"), v.literal("other"));
 
+/**
+ * A neighbor's record removed for good stays as a nameless row (empty nameKey) so the visits made
+ * still count. Such a visit keeps its date, pair, hours and miles, and says nothing of who it was to.
+ */
+const RECORD_REMOVED = "Record removed";
+const recordRemoved = (neighbor: Doc<"neighbors"> | null | undefined) => !neighbor || neighbor.nameKey === "";
+
 const response = v.union(v.literal("pending"), v.literal("accepted"), v.literal("declined"));
 const person = v.object({ memberId: v.id("memberships"), name: v.string() });
 const visitRow = v.object({
@@ -41,6 +48,8 @@ const visitRow = v.object({
   visitors: v.array(v.object({ memberId: v.id("memberships"), name: v.string(), hours: v.number(), miles: v.number(), response, removed: v.boolean() })),
   notes: v.string(),
   completedAt: v.union(v.number(), v.null()),
+  /** The neighbor's record was removed for good: no name, street, reason or note is carried. */
+  recordRemoved: v.boolean(),
 });
 const arrangeRow = v.object({
   requestId: v.id("assistanceRequests"),
@@ -157,6 +166,12 @@ async function names(ctx: Ctx, visits: Doc<"visits">[], requests: Doc<"assistanc
 function toVisitRow(found: Awaited<ReturnType<typeof names>>, visit: Doc<"visits">): VisitRow {
   const neighbor = found.neighbor.get(visit.neighborId);
   const request = visit.requestId ? found.request.get(visit.requestId) : undefined;
+  if (recordRemoved(neighbor))
+    return {
+      id: visit._id, neighborId: visit.neighborId, neighborName: RECORD_REMOVED, address: "", requestId: null, kind: null, amount: null,
+      scheduledAt: visit.scheduledAt, status: visit.status, notes: "", completedAt: visit.completedAt ?? null, recordRemoved: true,
+      visitors: visit.visitors.map((visitor) => ({ ...visitor, response: visitor.response ?? "accepted", name: found.member.get(visitor.memberId) ?? formerMember, removed: !found.member.has(visitor.memberId) })),
+    };
   return {
     id: visit._id,
     neighborId: visit.neighborId,
@@ -171,6 +186,7 @@ function toVisitRow(found: Awaited<ReturnType<typeof names>>, visit: Doc<"visits
     visitors: visit.visitors.map((visitor) => ({ ...visitor, response: visitor.response ?? "accepted", name: found.member.get(visitor.memberId) ?? formerMember, removed: !found.member.has(visitor.memberId) })),
     notes: visit.notes,
     completedAt: visit.completedAt ?? null,
+    recordRemoved: false,
   };
 }
 
@@ -205,12 +221,14 @@ export const board = query({
     ]);
     const visitsOf = await Promise.all(open.map((request) => ctx.db.query("visits").withIndex("by_request", (q) => q.eq("requestId", request._id)).take(10)));
     const waiting = open.filter((_, index) => visitsOf[index].every((visit) => visit.status === "cancelled")).sort((a, b) => a.createdAt - b.createdAt);
-    const scheduled = recent.filter((visit) => visit.status === "scheduled");
+    const planned = recent.filter((visit) => visit.status === "scheduled");
     const writtenUp = recent.filter((visit) => visit.status === "completed").sort((a, b) => b.scheduledAt - a.scheduledAt).slice(0, 8);
-    const found = await names(ctx, [...scheduled, ...writtenUp], waiting);
+    const found = await names(ctx, [...planned, ...writtenUp], waiting);
+    // A visit still planned to a record since removed is no visit to make: it leaves the board.
+    const scheduled = planned.filter((visit) => !recordRemoved(found.neighbor.get(visit.neighborId)));
     const toArrange = waiting.flatMap((request) => {
       const neighbor = found.neighbor.get(request.neighborId);
-      return neighbor ? [{ requestId: request._id, neighborId: neighbor._id, neighborName: neighbor.name, address: neighbor.address, language: neighbor.language, kind: request.kind, amount: request.amountRequested, askedAt: request.createdAt }] : [];
+      return neighbor && !recordRemoved(neighbor) ? [{ requestId: request._id, neighborId: neighbor._id, neighborName: neighbor.name, address: neighbor.address, language: neighbor.language, kind: request.kind, amount: request.amountRequested, askedAt: request.createdAt }] : [];
     });
 
     const [first, ...rest] = toArrange;
@@ -296,6 +314,7 @@ export const sheet = query({
       names(ctx, [visit]),
     ]);
     if (!church || !neighbor) throw new ConvexError("Visit not found.");
+    if (recordRemoved(neighbor)) throw new ConvexError("Record not found.");
     const earlier = await ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", visit.neighborId)).order("desc").take(50);
     const last = earlier
       .filter((other) => other.status === "completed" && other._id !== visit._id && (other.completedAt ?? other.scheduledAt) < visit.scheduledAt)
@@ -318,6 +337,13 @@ export const sheet = query({
 async function ownVisit(ctx: Ctx, churchId: Id<"churches">, visitId: Id<"visits">) {
   const visit = await ctx.db.get("visits", visitId);
   if (!visit || visit.churchId !== churchId) throw new ConvexError("Visit not found.");
+  return visit;
+}
+
+/** A visit that can still be changed: its neighbor's record has not been removed. */
+async function openVisit(ctx: Ctx, churchId: Id<"churches">, visitId: Id<"visits">) {
+  const visit = await ownVisit(ctx, churchId, visitId);
+  if (recordRemoved(await ctx.db.get("neighbors", visit.neighborId))) throw new ConvexError("Record not found.");
   return visit;
 }
 
@@ -365,7 +391,7 @@ export const reschedule = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    const visit = await ownVisit(ctx, args.churchId, args.visitId);
+    const visit = await openVisit(ctx, args.churchId, args.visitId);
     const church = await ctx.db.get("churches", args.churchId);
     if (!church) throw new ConvexError("Group not found.");
     if (visit.status !== "scheduled") throw new ConvexError("Only a planned visit can change its time.");
@@ -384,7 +410,7 @@ export const replaceVisitor = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    const visit = await ownVisit(ctx, args.churchId, args.visitId);
+    const visit = await openVisit(ctx, args.churchId, args.visitId);
     const church = await ctx.db.get("churches", args.churchId);
     if (!church) throw new ConvexError("Group not found.");
     if (visit.status !== "scheduled") throw new ConvexError("Only a planned visit can change its pair.");
@@ -407,12 +433,13 @@ export const mine = query({
     const me = await membership(ctx, churchId);
     const coming = await ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", Date.now() - VISIT_LENGTH)).take(400);
     const own = coming.filter((visit) => visit.status === "scheduled" && visit.visitors.some((visitor) => visitor.memberId === me._id)).slice(0, 20);
-    return await Promise.all(own.map(async (visit) => {
+    return (await Promise.all(own.map(async (visit) => {
       const partnerId = visit.visitors.find((visitor) => visitor.memberId !== me._id)?.memberId;
       const [neighbor, partner] = await Promise.all([ctx.db.get("neighbors", visit.neighborId), partnerId ? ctx.db.get("memberships", partnerId) : null]);
       // A partner removed for good leaves the seat empty until the coordinator asks someone else.
-      return { id: visit._id, scheduledAt: visit.scheduledAt, street: streetOnly(neighbor?.address ?? ""), partner: partner && !partner.removedAt ? partner.name : "", response: visit.visitors.find((visitor) => visitor.memberId === me._id)?.response ?? "accepted" };
-    }));
+      if (recordRemoved(neighbor)) return [];
+      return [{ id: visit._id, scheduledAt: visit.scheduledAt, street: streetOnly(neighbor?.address ?? ""), partner: partner && !partner.removedAt ? partner.name : "", response: visit.visitors.find((visitor) => visitor.memberId === me._id)?.response ?? "accepted" }];
+    }))).flat();
   },
 });
 
@@ -422,7 +449,7 @@ export const respond = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const me = await membership(ctx, args.churchId);
-    const visit = await ownVisit(ctx, args.churchId, args.visitId);
+    const visit = await openVisit(ctx, args.churchId, args.visitId);
     if (!visit.visitors.some((visitor) => visitor.memberId === me._id)) throw new ConvexError("Visit not found.");
     if (visit.status !== "scheduled") throw new ConvexError("This visit is no longer planned.");
     await ctx.db.patch("visits", visit._id, { visitors: visit.visitors.map((visitor) => (visitor.memberId === me._id ? { ...visitor, response: args.response } : visitor)) });
@@ -440,7 +467,7 @@ export const writeUp = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    const visit = await ownVisit(ctx, args.churchId, args.visitId);
+    const visit = await openVisit(ctx, args.churchId, args.visitId);
     if (visit.status !== "scheduled") throw new ConvexError("This visit is already written up or was cancelled.");
     const notes = args.notes.trim();
     if (!notes) throw new ConvexError("Write a few words about what you found.");
@@ -458,7 +485,7 @@ export const cancel = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    const visit = await ownVisit(ctx, args.churchId, args.visitId);
+    const visit = await openVisit(ctx, args.churchId, args.visitId);
     if (visit.status !== "scheduled") throw new ConvexError("Only a planned visit can be called off.");
     await ctx.db.patch("visits", visit._id, { status: "cancelled" });
     return null;
@@ -471,7 +498,7 @@ export const openSheet = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
-    const visit = await ownVisit(ctx, args.churchId, args.visitId);
+    const visit = await openVisit(ctx, args.churchId, args.visitId);
     await logNeighborOpening(ctx, member, visit.neighborId);
     return null;
   },

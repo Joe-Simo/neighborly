@@ -532,7 +532,7 @@ export function VisitsView({
                     />
                   </p>
                   <h3>{visit.neighborName}</h3>
-                  <p className="visits-found">{visit.notes}</p>
+                  {visit.notes && <p className="visits-found">{visit.notes}</p>}
                 </div>
                 <div className="live-row-actions">
                   <span className="live-status visits-given">
