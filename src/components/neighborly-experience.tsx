@@ -125,7 +125,7 @@ export function NeighborlyExperience() {
     update();
     return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.classList.remove("is-connected"); };
   }, []);
-  return <div className="neighborly-connected-world" ref={root}><ExperienceSoundProvider><PaintedWorld heroOnly suspendOffscreen passed={passed} onContinue={goToDoors} onPass={() => {
+  return <div className="neighborly-connected-world is-connected" ref={root}><ExperienceSoundProvider><PaintedWorld heroOnly suspendOffscreen passed={passed} onContinue={goToDoors} onPass={() => {
     // The card crosses to the open hand, and then the journey begins by itself. Any scroll of the visitor's own takes over.
     setPassed(true);
     clearTimeout(transitionTimer.current);

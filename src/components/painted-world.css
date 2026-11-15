@@ -156,7 +156,7 @@
 .neighborly-connected-world.is-connected .neighborly-continuation{position:relative;margin-top:-200svh;background:transparent;overflow:visible}
 .neighborly-connected-world.is-connected .fresco-stage{background-color:transparent}
 /* Never fully absent: the courtyard is painted once, unseen, behind the portrait, so revealing it costs nothing. */
-.neighborly-connected-world.is-connected .fresco-stage{opacity:max(var(--entry-door),.002)}
+.neighborly-connected-world.is-connected .fresco-stage{opacity:var(--entry-door)}
 .neighborly-connected-world.is-connected .fresco-stage[aria-hidden=true]{pointer-events:none}
 .neighborly-connected-world.is-connected #neighborly-courtyard{scroll-margin-top:-100svh}
 .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] .painted-world-caption,
@@ -180,7 +180,8 @@
 /* The cue keeps its words and its arrow apart at every width. */
 .painted-world[data-hero-only=true] .painted-world-scroll-cue span{max-width:none}
 /* The opening arrives rather than appears: the painting settles out of the paper, then the words rise in the order they are read. */
-@keyframes painted-arrive{from{opacity:0;scale:1.035}}
+/* Starts faintly present, not absent: the painting is the first thing on the page and is counted as painted when it arrives. */
+@keyframes painted-arrive{from{opacity:.01;scale:1.035}}
 @keyframes painted-rise{from{opacity:0;translate:0 18px}}
 @keyframes painted-fade{from{opacity:0}}
 @media(prefers-reduced-motion:no-preference){

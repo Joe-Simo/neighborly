@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Kind Helps",
     short_name: "Kind Helps",
     description:
-      "A place for churches and communities to organize volunteering, bring people together, and help in their own way.",
+      "Kind Helps keeps a conference’s help line, home visits, ledger and yearly report in one place, with the volunteers who do the work. Free for every conference.",
     start_url: "/app",
     scope: "/",
     display: "standalone",
