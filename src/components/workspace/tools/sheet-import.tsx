@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 export type LeftOut = { line: number; name: string; reason: string };
 export type SheetStep =
   | { step: "choose"; error?: string; fileName?: string }
-  | { step: "working"; label: string; progress?: string }
+  | { step: "working"; label: string; progress?: string; read?: { names: string[]; lines: number }; saving?: { fileName: string; ready: number } }
   | { step: "review"; fileName: string; ready: number; leftOut: LeftOut[]; error?: string }
   | { step: "done"; done: number; leftOut: LeftOut[]; error?: string };
 export type SheetWords = {
@@ -44,6 +44,8 @@ export async function inBatches<Row, Result>(rows: Row[], size: number, run: (ba
   }
   return { results, finished: true };
 }
+/** The first lines of a file, shown rising while the rest is checked. */
+export const readSoFar = (rows: { line: number; name: string }[]) => ({ names: rows.slice(0, 6).map((row) => row.name || `Line ${row.line}`), lines: rows.length });
 export const linesOf = (done: number, all: number) => `${done.toLocaleString("en-US")} of ${all.toLocaleString("en-US")} lines`;
 
 function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }) {
@@ -84,11 +86,9 @@ function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }
 export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, onReset }: { words: SheetWords; state: SheetStep; icon: ReactNode; afterDone?: ReactNode; onFile: (file: File) => void; onYes: () => void; onReset: () => void }) {
   const chooser = useRef<HTMLInputElement>(null);
   return (
-    <section className="live-section">
-      <div className="live-section-head">
-        <h2>{words.title}</h2>
-      </div>
-      <p className="live-deck">{words.deck}</p>
+    <section className="tools-leaf" data-open={state.step === "choose" ? undefined : ""} aria-labelledby={`${words.id}-name`}>
+      <h2 id={`${words.id}-name`}>{words.title}</h2>
+      <p className="tools-leaf-deck">{words.deck}</p>
       {"error" in state && state.error && <div className="live-error" role="alert"><p>{state.error}</p></div>}
       {state.step === "choose" && (
         <div className="tools-file">
@@ -111,15 +111,30 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
           <a className="tools-sample" download={words.sample.fileName} href={`data:text/csv;charset=utf-8,${encodeURIComponent(words.sample.text)}`}>Download a sample file</a>
         </div>
       )}
-      {state.step === "working" && (
-        <>
+      {state.step === "working" && state.saving && (
+        <section className="help-sheet tools-sheet paper-fold" aria-busy="true">
+          <p className="help-sheet-label">Yes given</p>
+          <div className="help-sheet-body">
+            <div>
+              <h2>{words.yes(state.saving.ready)}</h2>
+              <p className="help-why">From {state.saving.fileName}.</p>
+            </div>
+          </div>
+        </section>
+      )}
+      {state.step === "working" && !state.saving && (
+        state.read ? (
+          <ol className="tools-reading paper-rows" aria-hidden="true">
+            {state.read.names.map((name, index) => <li key={index}><span>{index + 2}</span>{name}</li>)}
+            {state.read.lines > state.read.names.length && <li className="tools-reading-more">and {(state.read.lines - state.read.names.length).toLocaleString("en-US")} more</li>}
+          </ol>
+        ) : (
           <div className="help-skeleton" aria-hidden="true">
             <div><i /><span><b /><b /></span></div>
-            <div><i /><span><b /><b /></span></div>
           </div>
-          <p role="status" className={state.progress ? "tools-progress" : "sr-only"}>{state.label}{state.progress && `. ${state.progress}.`}</p>
-        </>
+        )
       )}
+      {state.step === "working" && <p role="status" className={state.progress ? "tools-progress" : "sr-only"}>{state.label}{state.progress && `. ${state.progress}.`}</p>}
       {state.step === "review" && (
         <>
           <section className="help-sheet tools-sheet tools-done" aria-labelledby={`${words.id}-title`} tabIndex={-1} ref={(node) => node?.focus()}>

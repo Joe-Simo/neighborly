@@ -8,7 +8,7 @@ import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
 import { readNeighborRows, type NeighborRow } from "@/components/workspace/tools/neighbor-rows";
 import { mostRows } from "@/components/workspace/tools/member-rows";
-import { inBatches, linesOf, SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
+import { inBatches, linesOf, readSoFar, SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
 
 type Checked = FunctionReturnType<typeof api.importExport.checkNeighbors>;
 type Imported = FunctionReturnType<typeof api.importExport.importNeighbors>;
@@ -65,7 +65,7 @@ export function NeighborsImport() {
           .then(async (text) => {
             const sheet = readNeighborRows(text);
             if ("error" in sheet) return setState({ step: "choose", error: sheet.error, fileName: file.name });
-            const { results: checked, finished } = await inBatches(sheet.rows, mostRows, (batch) => convex.query(api.importExport.checkNeighbors, { churchId, rows: batch }), (done) => setState({ step: "working", label: "Reading your file", progress: sheet.rows.length > mostRows ? linesOf(done, sheet.rows.length) : undefined }));
+            const { results: checked, finished } = await inBatches(sheet.rows, mostRows, (batch) => convex.query(api.importExport.checkNeighbors, { churchId, rows: batch }), (done) => setState({ step: "working", label: "Reading your file", read: readSoFar(sheet.rows), progress: sheet.rows.length > mostRows ? linesOf(done, sheet.rows.length) : undefined }));
             if (!finished) throw new Error("The check did not finish.");
             setRows(sheet.rows);
             setState({ step: "review", fileName: file.name, ready: checked.filter((row) => row.outcome === "ready").length, leftOut: neighborsLeftOut(checked, sheet.rows) });
@@ -75,8 +75,8 @@ export function NeighborsImport() {
       onYes={() => {
         if (state.step !== "review") return;
         const review = state;
-        setState({ step: "working", label: "Adding the records" });
-        void inBatches(rows, mostRows, (batch) => importNeighbors({ churchId, rows: batch }), (done) => setState({ step: "working", label: "Adding the records", progress: rows.length > mostRows ? linesOf(done, rows.length) : undefined })).then(({ results, finished }) => {
+        setState({ step: "working", label: "Adding the records", saving: review });
+        void inBatches(rows, mostRows, (batch) => importNeighbors({ churchId, rows: batch }), (done) => setState({ step: "working", label: "Adding the records", saving: review, progress: rows.length > mostRows ? linesOf(done, rows.length) : undefined })).then(({ results, finished }) => {
           if (!finished && !results.length) return setState({ ...review, error: "The records could not be added. Nothing was saved and your file is still here; try again." });
           setState({ step: "done", done: results.filter((row) => row.outcome === "added").length, leftOut: neighborsLeftOut(results, rows), error: finished ? undefined : `The connection dropped partway through. ${linesOf(results.length, rows.length)} were dealt with and are safe. Choose the same file again to finish; nothing is added twice.` });
         });

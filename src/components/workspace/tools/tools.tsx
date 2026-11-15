@@ -22,12 +22,12 @@ export function ToolsSection() {
       </section>
     );
   return (
-    <>
+    <div className="tools-leaves paper-rows">
       <NeighborsImport />
       <RequestsImport />
       <MembersImport />
       <PayeesImport />
       <RecordsExport />
-    </>
+    </div>
   );
 }

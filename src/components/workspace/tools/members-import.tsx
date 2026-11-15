@@ -8,7 +8,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { invitationLinksCsv, readMemberRows, type MemberRow } from "@/components/workspace/tools/member-rows";
-import { SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
+import { readSoFar, SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
 
 type Checked = FunctionReturnType<typeof api.importExport.checkMembers>;
 type Imported = FunctionReturnType<typeof api.importExport.importMembers>;
@@ -61,6 +61,7 @@ export function MembersImport() {
           .then(async (text) => {
             const sheet = readMemberRows(text);
             if ("error" in sheet) return setState({ step: "choose", error: sheet.error, fileName: file.name });
+            setState({ step: "working", label: "Reading your file", read: readSoFar(sheet.rows) });
             const checked = await convex.query(api.importExport.checkMembers, { churchId, rows: sheet.rows });
             setRows(sheet.rows);
             setState({ step: "review", fileName: file.name, ready: checked.filter((row) => row.outcome === "ready").length, leftOut: membersLeftOut(checked) });
@@ -70,7 +71,7 @@ export function MembersImport() {
       onYes={() => {
         if (state.step !== "review") return;
         const review = state;
-        setState({ step: "working", label: "Creating the invitations" });
+        setState({ step: "working", label: "Creating the invitations", saving: review });
         void importMembers({ churchId, batchId: crypto.randomUUID(), rows })
           .then((imported) => {
             setResults(imported);

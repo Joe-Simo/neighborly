@@ -52,7 +52,7 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
           </div>
         ) : (
           <div className="help-empty">
-            <div className="help-empty-art" style={{ backgroundImage: "url(/assets/threshold/courtyard-quiet-plate-v1.webp)" }} aria-hidden="true" />
+            <div className="help-empty-art" aria-hidden="true" />
             <div>
               <h3>{text.quietTitle}</h3>
               <p>{text.quietDetail}</p>

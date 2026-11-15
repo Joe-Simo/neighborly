@@ -19,7 +19,7 @@
   .tools-address { flex-direction: column; align-items: stretch; }
 }
 .tools-rota { margin-top: 30px; }
-.tools-rota header p { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--live-muted); }
+.tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--live-muted); }
 .tools-rota header h3 { margin: 4px 0 18px; font: 400 28px/1.15 "Newsreader", serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
 .tools-rota td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -82,7 +82,7 @@ p.tools-quiet { margin: 14px 0 0; }
 .live-dialog.tools-rota-dialog { max-width: min(880px, calc(100vw - 32px)) !important; width: 100%; }
 /* In the dialog the rota is outside the app frame, so it brings the frame's table rules with it. */
 .live-dialog .tools-rota table { width: 100%; border-collapse: collapse; font-size: 17px; }
-.live-dialog .tools-rota th { text-align: left; color: var(--live-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; padding: 14px 10px; border-bottom: 1px solid var(--live-line); }
+.live-dialog .tools-rota th { text-align: left; color: var(--live-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; padding: 14px 10px; border-bottom: 1px solid var(--live-line); }
 .live-dialog .tools-rota td { padding: 20px 10px; border-bottom: 1px solid var(--live-line); }
 .live-dialog .tools-rota th:first-child, .live-dialog .tools-rota td:first-child { padding-left: 0; }
 @media print {
@@ -100,3 +100,48 @@ p.tools-quiet { margin: 14px 0 0; }
   .live-app .live-section-head > [data-slot="button"].tools-quiet { flex-basis: 100%; justify-content: flex-start; margin-top: -6px; }
 }
 :is(.live-app, .live-dialog) .tools-address input::selection { background: #dde5d3; color: var(--live-ink); }
+
+/* Your files, in paper: each thing to bring in is a leaf of paper; the one in use opens across the page. */
+.tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; margin-top: 36px; max-width: 1040px; }
+.tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: 28px 30px 26px; background: #fffdf7; border: 1px solid #e0dccb; border-radius: 3px; box-shadow: 0 1px 0 #fff inset, 0 16px 30px -26px #3b3a2466, 0 2px 5px -3px #3b3a2433; }
+.live-app .tools-leaf > h2 { margin: 0 0 10px; font: 400 27px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
+.tools-leaf-deck { margin: 0; max-width: 62ch; font-size: 17px; line-height: 1.5; color: var(--live-muted); }
+.tools-leaf > .tools-file { max-width: none; margin-top: 22px; }
+.tools-leaf .tools-small { max-width: 62ch; }
+.tools-leaf .tools-sheet { margin-bottom: 0; }
+.tools-leaf .help-sheet { background: var(--live-paper, #f7f4ed); box-shadow: 0 1px 0 #fff inset, 0 2px 5px -3px #3b3a2440; }
+.tools-leaf .help-sheet::after { background: linear-gradient(225deg, #fffdf7 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%); }
+.tools-leaf .live-error, .tools-leaf .tools-done { margin-top: 22px; }
+@media (min-width: 1000px) {
+  .tools-leaves { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .tools-leaf { grid-column: span 3; }
+  .tools-leaf[data-open], .tools-leaf-wide { grid-column: 1 / -1; }
+  /* While one file is open across the page, the other three sit side by side under it, so no gap is left. */
+  .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) { grid-column: span 2; }
+}
+@media (max-width: 700px) {
+  .tools-leaves { gap: 16px; margin-top: 26px; }
+  .tools-leaf { padding: 22px 20px 20px; }
+  .live-app .tools-leaf > h2 { font-size: 24px; }
+}
+/* A file being read: its first lines rise one by one, as they are on the page of the spreadsheet. */
+.tools-reading { list-style: none; margin: 22px 0 0; padding: 0; border-top: 1px solid var(--live-line); }
+.tools-reading li { display: flex; align-items: baseline; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--live-line); font-size: 17px; color: var(--live-ink); overflow-wrap: anywhere; }
+.tools-reading li span { flex: none; width: 3ch; text-align: right; font-size: 13px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
+.tools-reading .tools-reading-more { padding-left: calc(3ch + 16px); font-size: 15px; color: var(--live-muted); }
+.tools-gathering { border-top: 0; }
+/* The bundle: three leaves, one in each colour, that lift together when the download is taken. */
+.tools-bundle-line { align-items: center; gap: 18px; }
+.tools-bundle { position: relative; flex: none; width: 56px; height: 46px; }
+.tools-bundle i { position: absolute; left: 12px; right: 12px; bottom: 3px; height: 34px; border-radius: 2px; background: #fffdf7; border: 1px solid #d9d4c2; border-top: 3px solid #365c46; box-shadow: 0 2px 4px -2px #3b3a2455; transform-origin: 50% 100%; }
+.tools-bundle i:nth-child(1) { rotate: -13deg; left: 6px; right: 18px; border-top-color: #6f5f93; }
+.tools-bundle i:nth-child(2) { rotate: 11deg; left: 18px; right: 6px; border-top-color: #c8962e; }
+.tools-bundle[data-lifted] i { animation: tools-lift 460ms var(--paper-ease, ease-out); }
+.tools-bundle[data-lifted] i:nth-child(2) { animation-delay: 40ms; }
+.tools-bundle[data-lifted] i:nth-child(3) { animation-delay: 80ms; }
+@keyframes tools-lift { 45% { translate: 0 -10px; } }
+@media (prefers-reduced-motion: reduce) { .tools-bundle[data-lifted] i { animation: none; } }
+@media (max-width: 700px) { .tools-bundle { display: none; } }
+.live-app .tools-records .live-date-leaf strong span { font-size: inherit; line-height: inherit; letter-spacing: inherit; text-transform: none; }
+.tools-leaf.paper-corner::after { background: linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%); }
+.tools-leaf.paper-corner > h2 { padding-right: 34px; }

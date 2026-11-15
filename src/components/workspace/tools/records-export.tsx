@@ -8,13 +8,40 @@ import { CircleCheck, Download, FolderDown } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
+import { CountUp } from "@/components/workspace/primitives";
 import { recordFiles, recordsCsv, recordsFileName, recordsZipName, type RecordFileKey } from "@/components/workspace/tools/records";
 
 export type GatheredFile = { key: RecordFileKey; title: string; fileName: string; lines: number; csv: string };
 export type RecordsStep =
   | { step: "ready"; error?: string }
-  | { step: "working"; progress: string }
+  | { step: "working"; progress: string; files: GatheredFile[] }
   | { step: "done"; files: GatheredFile[] };
+
+/**
+ * The way out. One yes gathers the conference's own records into six spreadsheets on this device.
+ * Nothing is sent anywhere, and each file uses the column names the imports read, so it can come back in.
+ */
+const count = (amount: number) => Math.round(amount).toLocaleString("en-US");
+
+function FileRows({ files, onDownload }: { files: GatheredFile[]; onDownload?: (file: GatheredFile) => void }) {
+  return files.map((file) => (
+    <div className="help-row" data-quiet={file.lines ? undefined : ""} key={file.key}>
+      <div className="live-date-leaf">
+        <span>{file.lines === 1 ? "Line" : "Lines"}</span>
+        <strong><CountUp value={file.lines} format={count} /></strong>
+      </div>
+      <div>
+        <h3>{file.title}</h3>
+        <p>{file.lines ? file.fileName : "Nothing here yet."}</p>
+      </div>
+      {onDownload && file.lines > 0 && (
+        <Button variant="link" className="tools-one" aria-label={`Download this file: ${file.title}`} onClick={() => onDownload(file)}>
+          Download this file
+        </Button>
+      )}
+    </div>
+  ));
+}
 
 /**
  * The way out. One yes gathers the conference's own records into six spreadsheets on this device.
@@ -22,12 +49,11 @@ export type RecordsStep =
  */
 export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, onReset }: { state: RecordsStep; onGather: () => void; onDownloadAll: (files: GatheredFile[]) => void; onDownload: (file: GatheredFile) => void; onReset: () => void }) {
   const filled = state.step === "done" ? state.files.filter((file) => file.lines > 0) : [];
+  const [lifted, setLifted] = useState(0);
   return (
-    <section className="live-section">
-      <div className="live-section-head">
-        <h2>Take your records with you</h2>
-      </div>
-      <p className="live-deck">
+    <section className={`tools-leaf tools-leaf-wide paper-corner${state.step === "done" ? " paper-fold" : ""}`} data-open={state.step === "ready" ? undefined : ""} aria-labelledby="records-export-name">
+      <h2 id="records-export-name">Take your records with you</h2>
+      <p className="tools-leaf-deck">
         Your conference’s records are yours. Download them as spreadsheets whenever you like: to keep, to print, or to move. They go to this device only; nothing is sent anywhere.
       </p>
       {"error" in state && state.error && <div className="live-error" role="alert"><p>{state.error}</p></div>}
@@ -43,8 +69,9 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
       )}
       {state.step === "working" && (
         <>
-          <div className="help-skeleton tools-records" aria-hidden="true">
-            {recordFiles.map((file) => <div key={file.key}><i /><span><b /><b /></span></div>)}
+          <div className="live-list tools-records" aria-hidden="true">
+            <FileRows files={state.files} />
+            <div className="help-skeleton tools-gathering"><div><i /><span><b /><b /></span></div></div>
           </div>
           <p role="status" className="tools-progress">{state.progress}</p>
         </>
@@ -56,30 +83,15 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
             <span>Your records are ready on this device. Keep the files somewhere safe: they hold your neighbors’ private details.</span>
           </div>
           {filled.length > 0 && (
-            <div className="help-actions tools-after">
-              <Button onClick={() => onDownloadAll(filled)}>
+            <div className="help-actions tools-after tools-bundle-line">
+              <span className="tools-bundle" key={lifted} data-lifted={lifted ? "" : undefined} aria-hidden="true"><i /><i /><i /></span>
+              <Button onClick={() => { setLifted((times) => times + 1); onDownloadAll(filled); }}>
                 <Download size={18} aria-hidden="true" /> {filled.length === 1 ? "Download the file" : `Download all ${filled.length} files`}
               </Button>
             </div>
           )}
           <div className="live-list tools-records">
-            {state.files.map((file) => (
-              <div className="help-row" data-quiet={file.lines ? undefined : ""} key={file.key}>
-                <div className="live-date-leaf">
-                  <span>{file.lines === 1 ? "Line" : "Lines"}</span>
-                  <strong>{file.lines.toLocaleString("en-US")}</strong>
-                </div>
-                <div>
-                  <h3>{file.title}</h3>
-                  <p>{file.lines ? file.fileName : "Nothing here yet."}</p>
-                </div>
-                {file.lines > 0 && (
-                  <Button variant="link" className="tools-one" aria-label={`Download this file: ${file.title}`} onClick={() => onDownload(file)}>
-                    Download this file
-                  </Button>
-                )}
-              </div>
-            ))}
+            <FileRows files={state.files} onDownload={onDownload} />
           </div>
           <div className="help-actions tools-after">
             <Button variant="outline" onClick={onReset}>Put these away</Button>
@@ -110,7 +122,7 @@ export function RecordsExport() {
       const rows: string[][] = [];
       let columns: string[] = [], cursor: string | null = null, done = false;
       while (!done) {
-        setState({ step: "working", progress: `Gathering ${file.gathering}.${rows.length ? ` ${rows.length.toLocaleString("en-US")} lines so far.` : ""} File ${index + 1} of ${recordFiles.length}.` });
+        setState({ step: "working", files: [...files], progress: `Gathering ${file.gathering}.${rows.length ? ` ${rows.length.toLocaleString("en-US")} lines so far.` : ""} File ${index + 1} of ${recordFiles.length}.` });
         const page: { columns: string[]; rows: string[][]; cursor: string; done: boolean } = await convex.query(api.importExport.exportPage, { churchId, file: file.key, cursor });
         rows.push(...page.rows);
         ({ columns, cursor, done } = page);
