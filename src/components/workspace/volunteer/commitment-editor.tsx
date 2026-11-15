@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { DateTime } from "luxon";
 import { Button } from "@/components/ui/button";
+import { WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveField } from "@/components/workspace/primitives";
@@ -115,20 +116,10 @@ export function LiveCommitmentEditor({
       </LiveField>
       <div className="live-form-grid">
         <LiveField label="Starts">
-          <Input
-            type="datetime-local"
-            name="start"
-            defaultValue={draft.start}
-            required
-          />
+          <WhenField name="start" defaultValue={draft.start} required />
         </LiveField>
         <LiveField label="Ends">
-          <Input
-            type="datetime-local"
-            name="end"
-            defaultValue={draft.end}
-            required
-          />
+          <WhenField name="end" defaultValue={draft.end} required />
         </LiveField>
       </div>
       <LiveField label="Where">

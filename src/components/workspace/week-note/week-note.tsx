@@ -141,17 +141,19 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
   const lines = weekLines(text, counts);
   if (!lines.length) return waiting ? null : <WeekFigures />;
   if (brief && !open) {
+    // The figures come first so they stay on a phone's first screen; the line under them says only what they do not.
+    const rest = weekLines(text, counts, 6).filter((line) => !["help-line", "visits", "neighbors"].includes(line.area));
     return (
       <>
-        <p className={`!mb-8 flex flex-wrap items-baseline gap-x-3 gap-y-2 text-[17px] leading-snug text-[var(--live-ink)] ${waiting ? held : "paper-rise"}`} aria-hidden={waiting || undefined} inert={waiting}>
+        {!waiting && <WeekFigures />}
+        <p className={`!-mt-4 !mb-8 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[15px] leading-snug text-[var(--live-muted)] ${waiting ? held : "paper-rise"}`} aria-hidden={waiting || undefined} inert={waiting}>
           <span>
-            <strong className="font-[650]">{text.brief.label}:</strong> {lines.slice(0, 3).map((line) => line.brief).join(", ")}.
+            <strong className="font-[650] text-[var(--live-ink)]">{text.brief.label}{rest.length ? ":" : ""}</strong>{rest.length ? ` ${rest.map((line) => line.brief).join(", ")}.` : ""}
           </span>
           <button type="button" className={quietLink} onClick={() => setOpen(true)}>
             {text.read}
           </button>
         </p>
-        {!waiting && <WeekFigures />}
       </>
     );
   }

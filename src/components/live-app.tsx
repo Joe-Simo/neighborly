@@ -41,6 +41,15 @@ export function LiveApp({
   const signOut = () => clerk.signOut({ redirectUrl: "/app" });
   const viewer = useQuery(api.workspace.viewer, ready ? {} : "skip");
   const sampleVisitor = useQuery(api.demo.visiting, ready ? {} : "skip");
+  // The sample link always opens the sample. Someone already signed in as themselves is signed out
+  // first; the sign-in screen then opens the sample without a second press.
+  const leavingForSample = enterSample && sampleEntry && sampleVisitor === false;
+  const leftForSample = useRef(false);
+  useEffect(() => {
+    if (!leavingForSample || leftForSample.current) return;
+    leftForSample.current = true;
+    void clerk.signOut({ redirectUrl: "/app?intent=sample" });
+  }, [leavingForSample, clerk]);
   const churchPage = usePaginatedQuery(
     api.pages.churchesPage,
     ready ? {} : "skip",
@@ -135,6 +144,7 @@ export function LiveApp({
     return (
       <LiveRoomLoading label="Checking your session…" />
     );
+  if (leavingForSample) return <LiveRoomLoading label="Opening the sample conference…" />;
   if (!isAuthenticated)
     return (
       <LiveAuth key={intent} intent={intent} sampleEntry={sampleEntry} enterSample={enterSample} />

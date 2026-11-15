@@ -55,6 +55,8 @@ export function es(set: WordSet): Words {
       signOut: "Salir",
       leaveSample: "Salir de la muestra",
       sampleMark: "Muestra · personas inventadas",
+      /** After the conference's name in a room's kicker: "St. Example Conference · Sample". */
+      sample: "Muestra",
       language: "Idioma",
       roomInEnglish: "Esta sala todavía está en inglés.",
       typedStays: "Lo que escriben las personas queda como lo escribieron.",
@@ -109,7 +111,7 @@ export function es(set: WordSet): Words {
       emptyDetail:
         "Los compromisos nuevos aparecerán aquí con su fecha, persona y preparación.",
       placeOpen: "Hay un lugar libre",
-      status: { accepted: "aceptado", open: "libre", cancelled: "cancelado" },
+      status: { accepted: "Aceptado", open: "Libre", cancelled: "Cancelado" },
       viewPreparation: "Ver la preparación",
       viewCommitment: "Ver el compromiso",
       details: "Detalles",

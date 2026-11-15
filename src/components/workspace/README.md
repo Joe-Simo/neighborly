@@ -125,3 +125,10 @@ name to nothing: add it to `reliefReady` in `relief.tsx` yourself. The script le
 (#f7f4ed): it reads the paper colour from the top left 300px, then moves every pixel by the difference, in full where
 the pixel is paper and fading out 70 levels of colour away, so the subject keeps its own colour and no tan cloud shows
 where a head fades into the page. Any page that shows a relief picture on #f7f4ed should use files cut this way.
+
+## Dialogs
+
+Every dialog is a `LiveDialog`: paper sheet, title and a 44px way out held at the top, the form's button held at the
+foot (`live-form-actions`), first field focused with a mouse and the title on touch. Under 700px it is a sheet from the
+bottom edge, above the keyboard. Do not use the raw `Dialog`, and no browser date or time boxes inside one: use
+`DateField`, `TimeField`, or `WhenField` (a day and a time under one name, the same value as `datetime-local`).

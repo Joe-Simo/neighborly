@@ -662,7 +662,7 @@ export function DraftSheet({
       aria-labelledby="draft-title"
     >
       <p className="help-sheet-label">
-        {sealed ? "Approved" : text.waiting(waiting)}
+        {sealed ? text.approved : text.waiting(waiting)}
       </p>
       <div className="help-sheet-body">
         <div>

@@ -1,4 +1,4 @@
-import { v, type Infer } from "convex/values";
+import { ConvexError, v, type Infer } from "convex/values";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { neighborAccess, neighborRecord } from "./access";
@@ -29,12 +29,12 @@ export const phoneKey = (phone: string) => phone.replace(/\D/g, "").replace(/^1(
 
 function text(value: string, label: string, max: number, required = false) {
   const trimmed = value.trim();
-  if (required && !trimmed) throw new Error(`${label} is needed.`);
-  if (trimmed.length > max) throw new Error(`${label} is too long.`);
+  if (required && !trimmed) throw new ConvexError(`${label} is needed.`);
+  if (trimmed.length > max) throw new ConvexError(`${label} is too long.`);
   return trimmed;
 }
 function wholeCents(amount: number, label: string, min = 0) {
-  if (!Number.isInteger(amount) || amount < min || amount > MAX_CENTS) throw new Error(`${label} must be a dollar amount.`);
+  if (!Number.isInteger(amount) || amount < min || amount > MAX_CENTS) throw new ConvexError(`${label} must be a dollar amount.`);
   return amount;
 }
 
@@ -128,12 +128,12 @@ export async function toRequestRow(found: Lookups, request: Doc<"assistanceReque
 
 async function ownRequest(ctx: QueryCtx | MutationCtx, churchId: Id<"churches">, requestId: Id<"assistanceRequests">) {
   const request = await ctx.db.get("assistanceRequests", requestId);
-  if (!request || request.churchId !== churchId) throw new Error("Request not found.");
+  if (!request || request.churchId !== churchId) throw new ConvexError("Request not found.");
   return request;
 }
 async function ownCall(ctx: QueryCtx | MutationCtx, churchId: Id<"churches">, callId: Id<"calls">) {
   const call = await ctx.db.get("calls", callId);
-  if (!call || call.churchId !== churchId) throw new Error("Call not found.");
+  if (!call || call.churchId !== churchId) throw new ConvexError("Call not found.");
   return call;
 }
 
@@ -183,13 +183,13 @@ const requestDetails = {
   voucher: v.optional(v.object({ item: v.string(), quantity: v.number() })),
 };
 function howMany(quantity: number) {
-  if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_VOUCHERS) throw new Error(`Enter how many vouchers, from 1 to ${MAX_VOUCHERS}.`);
+  if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_VOUCHERS) throw new ConvexError(`Enter how many vouchers, from 1 to ${MAX_VOUCHERS}.`);
   return quantity;
 }
 /** A voucher request names what comes off the shelf; nobody is paid, so it carries no amount and no payee. */
 function cleanDetails(args: { kind: Doc<"assistanceRequests">["kind"]; summary: string; amountRequested: number; payeeKind: Infer<typeof payeeKind>; payeeName: string; voucher?: { item: string; quantity: number } }) {
   const summary = text(args.summary, "What they need", 500, true);
-  if (args.voucher && args.kind !== "voucher") throw new Error("Only a voucher request names a voucher.");
+  if (args.voucher && args.kind !== "voucher") throw new ConvexError("Only a voucher request names a voucher.");
   if (args.voucher) return { kind: args.kind, summary, amountRequested: 0, payeeKind: "vendor" as const, payeeName: "", voucher: { item: text(args.voucher.item, "The voucher", 80, true), quantity: howMany(args.voucher.quantity) } };
   return { kind: args.kind, summary, amountRequested: wholeCents(args.amountRequested, "The amount"), payeeKind: args.payeeKind, payeeName: text(args.payeeName, "Who is paid", 120), voucher: undefined };
 }
@@ -202,7 +202,7 @@ export const createRequest = mutation({
     const { member } = await neighborRecord(ctx, churchId, neighborId);
     if (callId) {
       const call = await ownCall(ctx, churchId, callId);
-      if (call.neighborId && call.neighborId !== neighborId) throw new Error("That call belongs to another neighbor.");
+      if (call.neighborId && call.neighborId !== neighborId) throw new ConvexError("That call belongs to another neighbor.");
       if (!call.neighborId) await ctx.db.patch("calls", callId, { neighborId });
     }
     // The request takes the place of any draft the assistant left waiting on this call.
@@ -218,7 +218,7 @@ export const updateRequest = mutation({
   handler: async (ctx, { churchId, requestId, ...details }) => {
     await neighborAccess(ctx, churchId);
     const existing = await ownRequest(ctx, churchId, requestId);
-    if (existing.status !== "open") throw new Error("This request has already been decided.");
+    if (existing.status !== "open") throw new ConvexError("This request has already been decided.");
     await ctx.db.patch("assistanceRequests", requestId, cleanDetails(details));
     return null;
   },
@@ -238,7 +238,7 @@ export const agencies = query({
 /** Up to four places, each kept on the group's list the first time it is named so it is offered next time. */
 async function referredTo(ctx: MutationCtx, churchId: Id<"churches">, names: string[]) {
   const places = names.map((name) => text(name, "A referral", 120)).filter((name, index, all) => name && all.findIndex((other) => nameKey(other) === nameKey(name)) === index);
-  if (places.length > 4) throw new Error("Name at most four places.");
+  if (places.length > 4) throw new ConvexError("Name at most four places.");
   const known = await ctx.db.query("referralAgencies").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(100);
   return Promise.all(places.map(async (name) => {
     const onList = known.find((agency) => nameKey(agency.name) === nameKey(name));
@@ -258,7 +258,7 @@ export const decide = mutation({
   handler: async (ctx, { churchId, requestId, decision, amountApproved, quantity, note, referral, referrals }) => {
     const member = await neighborAccess(ctx, churchId);
     const existing = await ownRequest(ctx, churchId, requestId);
-    if (existing.status !== "open") throw new Error("This request has already been decided.");
+    if (existing.status !== "open") throw new ConvexError("This request has already been decided.");
     const places = referrals === undefined ? existing.referrals : await referredTo(ctx, churchId, referrals);
     const decided = { decisionNote: text(note, "The note", 500), referrals: places, referral: referral === undefined ? existing.referral : text(referral, "The referral", 500), decidedBy: member._id, decidedAt: Date.now() };
     if (decision === "declined") {
@@ -271,8 +271,8 @@ export const decide = mutation({
       await ctx.db.patch("assistanceRequests", requestId, { status: "paid", amountApproved: 0, voucher, ...decided });
       return null;
     }
-    if (existing.payeeKind === "neighbor" || !existing.payeeName) throw new Error("Add who is paid before approving. Payments go to the landlord, utility or store.");
-    if (amountApproved === undefined) throw new Error("The approved amount is needed.");
+    if (existing.payeeKind === "neighbor" || !existing.payeeName) throw new ConvexError("Add who is paid before approving. Payments go to the landlord, utility or store.");
+    if (amountApproved === undefined) throw new ConvexError("The approved amount is needed.");
     await ctx.db.patch("assistanceRequests", requestId, { status: "approved", amountApproved: wholeCents(amountApproved, "The approved amount", 1), ...decided });
     return null;
   },
@@ -286,8 +286,8 @@ export const closeRequest = mutation({
     const member = await neighborAccess(ctx, churchId);
     const existing = await ownRequest(ctx, churchId, requestId);
     const given = existing.status === "paid" && existing.voucher;
-    if (existing.status !== "open" && existing.status !== "approved" && !given) throw new Error("This request is already finished.");
-    if (given && Date.now() - (existing.decidedAt ?? 0) > TAKE_BACK_DAYS * DAY) throw new Error(`A voucher can be taken back for ${TAKE_BACK_DAYS} days after it was given.`);
+    if (existing.status !== "open" && existing.status !== "approved" && !given) throw new ConvexError("This request is already finished.");
+    if (given && Date.now() - (existing.decidedAt ?? 0) > TAKE_BACK_DAYS * DAY) throw new ConvexError(`A voucher can be taken back for ${TAKE_BACK_DAYS} days after it was given.`);
     if (given) await voucherGiven(ctx, member, { requestId, item: given.item, quantity: 0 });
     await ctx.db.patch("assistanceRequests", requestId, { status: "closed", decisionNote: text(note, "The note", 500), decidedBy: existing.decidedBy ?? member._id, decidedAt: existing.decidedAt ?? Date.now(), closedBy: member._id, closedAt: Date.now() });
     return null;
@@ -302,7 +302,7 @@ export const closeRequest = mutation({
 export async function settleRequest(ctx: MutationCtx, member: Doc<"memberships">, requestId: Id<"assistanceRequests">, fullyPaid: boolean): Promise<void> {
   const existing = await ownRequest(ctx, member.churchId, requestId);
   const from = fullyPaid ? "approved" : "paid";
-  if (existing.status !== from) throw new Error(fullyPaid ? "Only an approved request can be paid." : "Only a paid request can be reopened for payment.");
+  if (existing.status !== from) throw new ConvexError(fullyPaid ? "Only an approved request can be paid." : "Only a paid request can be reopened for payment.");
   await ctx.db.patch("assistanceRequests", requestId, { status: fullyPaid ? "paid" : "approved" });
 }
 
@@ -385,8 +385,8 @@ export const recordCall = mutation({
   handler: async (ctx, { churchId, callerName, phone, note, callback, neighborId, ownerId }) => {
     const member = neighborId ? (await neighborRecord(ctx, churchId, neighborId)).member : await neighborAccess(ctx, churchId);
     const key = phoneKey(phone), now = Date.now();
-    if (!key && !callerName.trim()) throw new Error("A name or a phone number is needed.");
-    if (ownerId && (await ctx.db.get("memberships", ownerId))?.churchId !== churchId) throw new Error("Member not found.");
+    if (!key && !callerName.trim()) throw new ConvexError("A name or a phone number is needed.");
+    if (ownerId && (await ctx.db.get("memberships", ownerId))?.churchId !== churchId) throw new ConvexError("Member not found.");
     let matched = neighborId;
     if (!matched && key) {
       const sameNumber = await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", key)).take(2);
@@ -409,7 +409,7 @@ export const setUrgency = mutation({
     const member = await neighborAccess(ctx, churchId);
     const call = await ownCall(ctx, churchId, callId);
     if (by === "assistant" && call.urgent?.by === "person") return null;
-    if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new Error("The day should be a day of the month.");
+    if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new ConvexError("The day should be a day of the month.");
     await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by, byMember: by === "person" ? member._id : undefined } });
     return null;
   },
@@ -422,7 +422,7 @@ export const markReturned = mutation({
   handler: async (ctx, { churchId, callId, outcome }) => {
     const member = await neighborAccess(ctx, churchId);
     const call = await ownCall(ctx, churchId, callId);
-    if (call.callback !== "needed") throw new Error("This call is not waiting for a callback.");
+    if (call.callback !== "needed") throw new ConvexError("This call is not waiting for a callback.");
     await ctx.db.patch("calls", callId, { callback: "done", returnedBy: member._id, returnedAt: Date.now(), outcome: text(outcome ?? "", "The outcome", 500) });
     return null;
   },

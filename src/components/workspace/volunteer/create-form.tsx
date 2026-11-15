@@ -5,6 +5,7 @@ import { useAction } from "convex/react";
 import { LoaderCircle } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { DateField, WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -192,7 +193,7 @@ export function LiveCreateForm({
       )}
       {kind === "meeting" && (
         <div className="live-note">
-          All current group members will be invited. Each person chooses whether
+          Everyone in the conference will be invited. Each person chooses whether
           to attend.
         </div>
       )}
@@ -215,18 +216,10 @@ export function LiveCreateForm({
       {(kind === "commitment" || kind === "meeting" || kind === "timeOff") && (
         <div className="live-form-grid">
           <LiveField label={kind === "timeOff" ? "First day" : "Starts"}>
-            <Input
-              type={kind === "timeOff" ? "date" : "datetime-local"}
-              name="start"
-              required
-            />
+            {kind === "timeOff" ? <DateField name="start" required /> : <WhenField name="start" required />}
           </LiveField>
           <LiveField label={kind === "timeOff" ? "Last day" : "Ends"}>
-            <Input
-              type={kind === "timeOff" ? "date" : "datetime-local"}
-              name="end"
-              required
-            />
+            {kind === "timeOff" ? <DateField name="end" required /> : <WhenField name="end" required />}
           </LiveField>
         </div>
       )}
@@ -245,19 +238,17 @@ export function LiveCreateForm({
       )}
       {kind === "commitment" && (
         <div className="live-form-grid">
-          <LiveField label="Repeat every (weeks)">
-            <Input
-              type="number"
-              name="intervalWeeks"
-              defaultValue="1"
-              min={1}
-              max={52}
-              required
-            />
+          <LiveField label="Repeats">
+            <NativeSelect name="intervalWeeks" defaultValue="1" required>
+              <option value="1">Every week</option>
+              <option value="2">Every 2 weeks</option>
+              <option value="3">Every 3 weeks</option>
+              <option value="4">Every 4 weeks</option>
+            </NativeSelect>
           </LiveField>
           <LiveField
-            label="Number of dates"
-            help="Choose 1 for a one-off commitment. Up to 52 dates within one year."
+            label="How many times"
+            help="1 is a single date. Up to 52 within one year."
           >
             <Input
               type="number"
@@ -281,7 +272,7 @@ export function LiveCreateForm({
       {kind === "task" && (
         <>
           <LiveField label="Due (optional)">
-            <Input type="datetime-local" name="dueAt" />
+            <WhenField name="dueAt" />
           </LiveField>
           <LiveField label="Owner">
             <NativeSelect name="assigneeId">
