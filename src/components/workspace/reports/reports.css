@@ -419,59 +419,76 @@
    breakpoint, so the wide layout is stated again here. Page one is the summary, then every line. */
 @media print {
   /* A named page, so this room's margins and foot never reach another room's printed sheet. */
-  .report { page: year-report; }
+  .report { page: year-report; --print-line: #6b6b6b; }
   html, body, .live-app { background: #fff !important; }
   /* Only when the report is the page being printed: other rooms print their own sheets. */
   body:has(.report) :not(:has(.report)):not(.report):not(.report *) { display: none !important; }
   .live-layout, .live-main { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
   .report * { color: #000 !important; animation: none !important; }
   .report .report-period, .report .report-actions, .report .help-done, .report .report-month-bar, .report .report-every-line { display: none !important; }
-  .report-print-head { display: block; margin-bottom: 9pt; }
+  /* The head of the sheet: whose year it is on the left, the wordmark on the right, one rule under both. */
+  .report-print-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24pt; margin-bottom: 10pt; }
+  .report-print-head > div > p:first-child { font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+  .report-print-head strong { font: 400 17pt/1 "Newsreader", Georgia, serif; letter-spacing: -0.03em; white-space: nowrap; }
+  .report .report-aside { margin-top: 8pt; max-width: none; font-size: 11pt; line-height: 1.4; }
+  .report .help-figures dd small .report-own-line { display: inline; }
+  .report .help-figures dd small .report-own-line::before { content: " · "; }
   .report-print-head h1 { font: 400 24pt/1.1 "Newsreader", Georgia, serif; letter-spacing: -0.03em; margin: 2pt 0 4pt; }
-  .report-print-head p { margin: 0; font-size: 10.5pt; }
+  .report-print-head p { margin: 0; font-size: 11pt; }
   .report .help-bar, .report .help-bar span, .report .report-outcomes span, .report .report-legend li::before { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 
-  .report .help-figures { grid-template-columns: 1.25fr 1fr 1fr; margin-bottom: 11pt; }
-  .report .help-figures > div { padding: 9pt 14pt 9pt 0; }
+  .report .help-figures { grid-template-columns: 1.25fr 1fr 1fr; margin-bottom: 14pt; border-top: 1.5pt solid #000; border-bottom-color: var(--print-line); }
+  .report .help-figures > div { padding: 10pt 14pt 10pt 0; }
   .report .help-figures > div:first-child { grid-column: auto; border-bottom: 0; }
-  .report .help-figures > div + div { padding-left: 14pt; border-left: 1px solid var(--live-line); }
-  .report .help-figures dt { font-size: 8pt; margin-bottom: 5pt; }
-  .report .help-figures dd, .report .help-figures > div:first-child dd { font-size: 24pt; }
-  .report .help-figures dd small { font-size: 9.5pt; margin-top: 6pt; }
-  .report .live-section { margin-top: 11pt; }
+  .report .help-figures > div + div { padding-left: 14pt; border-left: 1px solid var(--print-line); }
+  .report .help-figures dt { font-size: 9pt; margin-bottom: 6pt; }
+  .report .help-figures dd, .report .help-figures > div:first-child dd { font-size: 30pt; }
+  .report .help-figures dd small { font-size: 11pt; margin-top: 7pt; }
+  .report .live-section { margin-top: 16pt; }
   .report .live-section-head { flex-direction: row; align-items: baseline; margin-bottom: 6pt; break-after: avoid; }
-  .report .live-section-head h2 { font-size: 17pt; }
-  .report .live-count { font-size: 9.5pt; }
-  .report .help-bars li { grid-template-columns: 150pt minmax(0, 1fr) 80pt; gap: 16pt; padding: 4.5pt 0; break-inside: avoid; }
+  .report .live-section-head h2 { font-size: 16pt; }
+  .report .live-count { font-size: 11pt; }
+  .report .help-bars li { grid-template-columns: 150pt minmax(0, 1fr) 80pt; gap: 16pt; padding: 6pt 0; break-inside: avoid; border-color: var(--print-line); }
+  .report .help-bars { border-color: var(--print-line); }
   .report .help-bars .help-bar { grid-column: auto; order: 0; height: 8pt; }
-  .report .help-bars h3 { font-size: 13pt; }
-  .report .help-bars p { font-size: 9.5pt; }
+  .report .help-bars h3 { font: 600 12pt/1.25 "Source Sans 3", sans-serif; letter-spacing: 0; }
+  .report .help-bars p { font-size: 11pt; margin: 1pt 0 0; }
   .report .help-bars .help-amount { font-size: 13pt; }
-  /* Hours by team are in the lines on the next page; page one stays one page. */
-  .report .report-teams { display: none; }
-  .report .help-figures:has(+ .report-teams) { margin-bottom: 0; }
+  /* Page one is the year at a glance; time given opens page two with its teams, and the lines follow. */
+  .report .live-section:has(> .report-teams), .report .live-section:has(> .help-figures) { break-before: page; margin-top: 0; }
+  .report .report-teams { margin-top: 0; }
+  .report .report-teams li { grid-template-columns: 150pt minmax(0, 1fr) 80pt; }
+  .report .help-figures:has(+ .report-teams) { margin-bottom: 0; border-bottom: 0; }
+  .report .live-section-head, .report .report-form { border-color: #000 !important; }
+  /* Names at 12pt semibold; the members' table may run on into the second column. */
+  .report .report-form table:last-child { break-inside: auto; }
+  .report .report-form table:last-child tr { break-inside: avoid; }
+  .report .report-form table:last-child th { font-weight: 600; font-size: 12pt; }
+  .report .report-form table:last-child th small { font-weight: 400; font-size: 10pt; }
   .report .report-months, .report .report-months[data-months="3"] { grid-template-columns: repeat(12, minmax(0, 1fr)); break-inside: avoid; }
   .report .report-months[data-months="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .report .report-months li { padding: 5pt 2pt; border-top: 0 !important; }
-  .report .report-months li + li { border-left: 1px solid var(--live-line) !important; }
-  .report .report-months h3 { font-size: 8pt; margin-bottom: 3pt; }
-  .report .report-months p.help-amount { font-size: 11pt; }
-  .report .report-months p:not(.help-amount) { position: static; width: auto; height: auto; clip-path: none; font-size: 8.5pt; }
+  .report .report-months { border-color: var(--print-line); }
+  .report .report-months li { padding: 8pt 2pt; border-top: 0 !important; }
+  .report .report-months li + li { border-left: 1px solid var(--print-line) !important; }
+  .report .report-months h3 { font-size: 9pt; margin-bottom: 4pt; }
+  .report .report-months p.help-amount { font-size: 11.5pt; letter-spacing: -0.02em; }
+  .report .report-months p:not(.help-amount) { position: static; width: auto; height: auto; clip-path: none; font-size: 9pt; }
   .report .report-outcomes { height: 8pt; }
-  .report .report-legend { display: flex; gap: 4pt 20pt; margin-top: 8pt; font-size: 10pt; }
+  .report .report-legend { display: flex; gap: 4pt 20pt; margin-top: 8pt; font-size: 11pt; }
   .report .report-legend strong { font-size: 13pt; }
   .report .help-figures, .report .report-outcomes, .report .report-legend { break-inside: avoid; }
 
-  .report .report-lines { display: block; break-before: page; margin-top: 0; }
+  .report .report-lines { display: block; margin-top: 20pt; }
   .report .report-lines > .live-section-head { display: flex !important; margin-top: 0; }
   .report .report-lines > .report-form { display: block !important; columns: 2; column-gap: 28pt; padding-top: 0; }
   .report .report-form table { margin-bottom: 12pt; break-inside: avoid; }
-  .report .report-form caption { padding: 10pt 0 5pt; font-size: 8pt; }
+  .report .report-form th, .report .report-form td, .report .report-form caption { border-color: var(--print-line) !important; }
+  .report .report-form caption { padding: 10pt 0 5pt; font-size: 9pt; }
   .report .report-form th, .report .report-form td { padding: 4.5pt 0; }
-  .report .report-form th { font-size: 10pt; }
+  .report .report-form th { font-size: 11pt; }
   .report .report-form th small { font-size: 8.5pt; }
   .report .report-form td { font-size: 12pt; }
-  .report .help-footnote { margin-top: 14pt; max-width: none; font-size: 9.5pt; break-inside: avoid; }
+  .report .help-footnote { margin-top: 14pt; max-width: none; font-size: 10pt; break-inside: avoid; }
   .report-print-foot {
     display: flex;
     justify-content: space-between;
@@ -566,7 +583,7 @@
 @media screen and (min-width: 1100px) {
   .report .help-bars li[data-counted] { grid-template-columns: 330px minmax(0, 1fr) max-content; }
 }
-@media (max-width: 850px) {
+@media screen and (max-width: 850px) {
   /* On the phone the small line runs the full width under the title and the count, where the bar sits in other rows. */
   .report .help-bars li[data-counted] { row-gap: 4px; align-items: baseline; }
   .report .help-bars li[data-counted] > div:first-child { display: contents; }
@@ -577,4 +594,10 @@
 }
 @media print {
   .report .help-bars li[data-counted] { grid-template-columns: 150pt minmax(0, 1fr) max-content; }
+}
+
+/* On a phone the switches already name the year and the first figure's small line gives the months,
+   so the period sentence is kept for screen readers only and the first count sits on the first screen. */
+@media screen and (max-width: 600px) {
+  .report-period > p { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }

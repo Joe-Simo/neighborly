@@ -271,12 +271,15 @@ export function ReportView({
     <div className="report">
       <style>{pageFoot}</style>
       <header className="report-print-head">
-        <p>{groupName}</p>
-        <h1>The year, added up.</h1>
-        <p>
-          {periodLabel(report)}: {longSpanLabel(report)}
-          {soFar && ", so far"}
-        </p>
+        <div>
+          <p>{groupName}</p>
+          <h1>The year, added up.</h1>
+          <p>
+            {periodLabel(report)}: {longSpanLabel(report)}
+            {soFar && ", so far"}
+          </p>
+        </div>
+        <strong>kind helps</strong>
       </header>
       {period}
       {sheet}
