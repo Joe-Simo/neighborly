@@ -220,3 +220,44 @@ export function TimeField({
     </NativeSelect>
   );
 }
+
+/**
+ * A day and a time together, for a start, an end or a due moment. It takes and gives the same
+ * "YYYY-MM-DDTHH:mm" a datetime-local input does, under one `name`. Choosing a day first sets `firstTime`.
+ */
+export function WhenField({
+  name,
+  defaultValue = "",
+  required,
+  min,
+  from = "00:00",
+  to = "23:30",
+  firstTime = "09:00",
+}: {
+  name: string;
+  defaultValue?: string;
+  required?: boolean;
+  min?: string;
+  from?: string;
+  to?: string;
+  firstTime?: string;
+}) {
+  const [startDay = "", startTime = ""] = defaultValue.split("T");
+  const [day, setDay] = useState(startDay);
+  const [time, setTime] = useState(startTime.slice(0, 5));
+  return (
+    <span className="live-when">
+      <input type="hidden" name={name} value={day && time ? `${day}T${time}` : ""} />
+      <DateField
+        value={day}
+        min={min}
+        required={required}
+        onChange={(next) => {
+          setDay(next);
+          if (!time) setTime(firstTime);
+        }}
+      />
+      <TimeField value={time} from={from} to={to} required={required} onChange={(event) => setTime(event.target.value)} />
+    </span>
+  );
+}

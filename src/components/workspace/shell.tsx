@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
-import { PaperSurface } from "@/components/paper-surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -403,13 +402,12 @@ export function LiveWorkspace({
                 )
               )}
           </LiveDialog>
-          <PaperSurface
+          <LiveDialog
             title={selected?.title ?? words.detail.fallbackTitle}
-            variant="workspace"
-            returnFocusRef={commitmentTrigger}
+            className="live-detail-dialog"
             open={!!selected}
-            onOpenChange={(value) => {
-              if (!value && !pending) setSelectedCommitment(null);
+            onClose={() => {
+              if (!pending) setSelectedCommitment(null);
             }}
           >
         <CommitmentDetail
@@ -426,7 +424,7 @@ export function LiveWorkspace({
           }}
           onClose={() => setSelectedCommitment(null)}
         />
-        </PaperSurface>
+          </LiveDialog>
         <LiveDialog
           open={editingCommitment !== null}
           onClose={() => {

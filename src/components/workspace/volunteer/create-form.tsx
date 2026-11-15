@@ -5,6 +5,7 @@ import { useAction } from "convex/react";
 import { LoaderCircle } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { DateField, WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -215,18 +216,10 @@ export function LiveCreateForm({
       {(kind === "commitment" || kind === "meeting" || kind === "timeOff") && (
         <div className="live-form-grid">
           <LiveField label={kind === "timeOff" ? "First day" : "Starts"}>
-            <Input
-              type={kind === "timeOff" ? "date" : "datetime-local"}
-              name="start"
-              required
-            />
+            {kind === "timeOff" ? <DateField name="start" required /> : <WhenField name="start" required />}
           </LiveField>
           <LiveField label={kind === "timeOff" ? "Last day" : "Ends"}>
-            <Input
-              type={kind === "timeOff" ? "date" : "datetime-local"}
-              name="end"
-              required
-            />
+            {kind === "timeOff" ? <DateField name="end" required /> : <WhenField name="end" required />}
           </LiveField>
         </div>
       )}
@@ -281,7 +274,7 @@ export function LiveCreateForm({
       {kind === "task" && (
         <>
           <LiveField label="Due (optional)">
-            <Input type="datetime-local" name="dueAt" />
+            <WhenField name="dueAt" />
           </LiveField>
           <LiveField label="Owner">
             <NativeSelect name="assigneeId">
