@@ -359,7 +359,7 @@ export function ReportView({
           {report.requests.paidLater.amount > 0 && (
             <p className="report-aside">
               {report.requests.paidLater.requests > 0
-                ? `${plural(report.requests.paidLater.requests, "paid request")} of these, ${money(report.requests.paidLater.amount)} in all, ${report.requests.paidLater.requests === 1 ? "was" : "were"} paid after ${dayLabel(report.lastDay)}.`
+                ? `${count(report.requests.paidLater.requests)} of the paid requests, ${money(report.requests.paidLater.amount)} in all, ${report.requests.paidLater.requests === 1 ? "was" : "were"} paid after ${dayLabel(report.lastDay)}.`
                 : `${money(report.requests.paidLater.amount)} of what was approved was paid after ${dayLabel(report.lastDay)}.`}{" "}
               That money counts in the period it was paid, so it is not in help paid here.
             </p>
