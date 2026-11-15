@@ -163,12 +163,6 @@ export function TreasurySection() {
           )}
           {open?.is === "money" && (
             <>
-              <DialogHeader>
-                <DialogTitle>Record money</DialogTitle>
-                <DialogDescription>
-                  Money in, or money out that is not for a neighbor.
-                </DialogDescription>
-              </DialogHeader>
               <MoneyForm
                 today={shown.today}
                 start={empty ? "opening" : "collection"}

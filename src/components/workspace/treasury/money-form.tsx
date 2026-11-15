@@ -1,6 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import {
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { LiveField } from "@/components/workspace/primitives";
@@ -50,6 +55,15 @@ export function MoneyForm({
   const out = choice.direction === "out";
   const gift = out && choice.kind === "twinning";
   return (
+    <>
+      <DialogHeader>
+        <DialogTitle>{out ? "Record money out" : "Record money"}</DialogTitle>
+        <DialogDescription>
+          {out
+            ? "A purchase, dues or a fee the conference paid."
+            : "A collection, a gift, or what the conference holds today."}
+        </DialogDescription>
+      </DialogHeader>
     <form
       className="live-form"
       onSubmit={async (event) => {
@@ -145,5 +159,6 @@ export function MoneyForm({
         {gift ? "Record gift" : out ? "Record money out" : "Record money in"}
       </FormActions>
     </form>
+    </>
   );
 }
