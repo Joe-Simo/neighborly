@@ -2,7 +2,8 @@ import "@/components/live-workspace.css";
 import "@/components/workspace/help.css";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { ConvexAuthNextjsServerProvider } from "@/lib/convexAuth";
+import { ClerkProvider } from "@clerk/nextjs";
+import { LiveProviders } from "@/components/live-providers";
 import Loading from "./loading";
 import { PaperArrival } from "@/components/paper-arrival";
 
@@ -16,7 +17,9 @@ export default function LiveAppLayout({
   return (
     <div className="live-app">
       <Suspense fallback={<Loading />}>
-        <ConvexAuthNextjsServerProvider>{children}</ConvexAuthNextjsServerProvider>
+        <ClerkProvider signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
+          <LiveProviders>{children}</LiveProviders>
+        </ClerkProvider>
       </Suspense>
       <PaperArrival />
     </div>

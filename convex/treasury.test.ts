@@ -1,10 +1,9 @@
 /// <reference types="vite/client" />
 import { describe, expect, test } from "vitest";
 import { convexTest } from "convex-test";
-import { defineSchema, queryGeneric } from "convex/server";
-import { v } from "convex/values";
 import { DateTime } from "luxon";
 import schema from "./schema";
+import { signedIn } from "./clerk.testing";
 import { api, internal } from "./_generated/api";
 import { voucherGiven } from "./treasury";
 import type { Doc, Id } from "./_generated/dataModel";
@@ -21,9 +20,6 @@ type Request = Pick<Doc<"assistanceRequests">, "status" | "payeeKind" | "payeeNa
 async function setup() {
   const t = convexTest(schema, modules);
   const emails = new Map<string, string>();
-  const empty = defineSchema({});
-  t.registerComponent("auth", empty, { "./_generated/server.js": async () => ({}), "./public.ts": async () => ({ getSession: queryGeneric({ args: { sessionId: v.string() }, handler: async (_, { sessionId }) => (emails.has(sessionId) ? { userId: sessionId } : null) }) }) });
-  t.registerComponent("authEmail", empty, { "./_generated/server.js": async () => ({}), "./verifiedEmails.ts": async () => ({ getPrimaryEmail: queryGeneric({ args: { userId: v.string() }, handler: async (_, { userId }) => emails.get(userId) ?? null }) }) });
   const ids = await t.run(async (ctx) => {
     const church = await ctx.db.insert("churches", { name: "St. Sample Conference", timeZone: zone });
     const other = await ctx.db.insert("churches", { name: "Another Sample Conference", timeZone: zone });
@@ -43,7 +39,7 @@ async function setup() {
   const income = (amount: number, date: string, category = "Parish collection") =>
     t.run((ctx) => ctx.db.insert("ledgerEntries", { churchId: ids.church, kind: "income", amount, date, category, payee: "St. Sample Parish", memo: "Poor-box collection", recordedBy: ids.owner.memberId, createdAt: 0 }));
   const entries = (group = ids.church) => t.run((ctx) => ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", group)).collect());
-  return { t, ids, request, income, entries, as: (person: { userId: string }) => t.withIdentity({ subject: person.userId }) };
+  return { t, ids, request, income, entries, as: (person: { userId: string }) => signedIn(t, person.userId, emails.has(person.userId)) };
 }
 
 const sum = (rows: Pick<Doc<"ledgerEntries">, "kind" | "amount">[]) => rows.reduce((total, row) => total + (row.kind === "income" ? row.amount : -row.amount), 0);

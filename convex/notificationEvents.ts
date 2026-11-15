@@ -1,4 +1,4 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { user } from "./access";
 import { vStatus, type EmailId } from "@convex-dev/resend";
 import { v } from "convex/values";
 import { mutation, query, type MutationCtx } from "./_generated/server";
@@ -88,8 +88,7 @@ export async function cancelPendingNotification(ctx: MutationCtx, churchId: Id<"
   await ctx.db.patch("outbox", row._id, { state: "cancelled" });
 }
 async function owner(ctx: MutationCtx, churchId: Id<"churches">) {
-  const userId = await getAuthUserId(ctx);
-  if (!userId) throw new Error("Sign in required.");
+  const { id: userId } = await user(ctx);
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", churchId).eq("userId", userId)).unique();
   if (!member?.active || member.role !== "owner") throw new Error("Church owner access required.");
 }
@@ -104,7 +103,7 @@ export const queuePending = mutation({ args: { churchId: v.id("churches") }, ret
   return processed;
 } });
 export const status = query({ args: { churchId: v.id("churches") }, returns: v.array(v.object({ id: v.id("outbox"), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerStatus: v.union(vStatus, v.null()), failed: v.boolean() })), handler: async (ctx, { churchId }) => {
-  const userId = await getAuthUserId(ctx); if (!userId) throw new Error("Sign in required.");
+  const { id: userId } = await user(ctx);
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", churchId).eq("userId", userId)).unique();
   if (!member?.active || member.role !== "owner") throw new Error("Church owner access required.");
   const rows = await ctx.db.query("outbox").withIndex("by_church", q => q.eq("churchId", churchId)).order("desc").take(100);

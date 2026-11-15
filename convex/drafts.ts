@@ -1,11 +1,10 @@
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { action, internalMutation, internalQuery, query, env } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftPayeeKinds, prepareRequestDraft, requestKinds, withoutIdentity } from "../src/lib/request-draft";
 import { urgentReasons, urgentSigns, type UrgentSign } from "../src/lib/urgency";
-import { neighborAccess } from "./access";
+import { neighborAccess, user } from "./access";
 import { fiscalYear } from "./reports";
 import { paidTowardRequest } from "./treasury";
 
@@ -17,7 +16,7 @@ const draftResult = v.object({
 
 export const identity = internalQuery({
   args: {}, returns: v.union(v.id("users"), v.null()),
-  handler: async ctx => getAuthUserId(ctx),
+  handler: async ctx => ((await ctx.auth.getUserIdentity()) ? (await user(ctx)).id : null),
 });
 
 /** How many times a group may ask the model in one month. At Jev's price this is a few cents; it is here so a mistake cannot run up a bill. */

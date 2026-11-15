@@ -1,6 +1,6 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { user as account } from "./access";
 import { v } from "convex/values";
-import { components, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, type MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { enqueueInvitation, resend } from "./notifications";
@@ -10,13 +10,6 @@ const role = v.union(v.literal("member"), v.literal("coordinator"));
 const delivery = v.union(v.literal("not_sent"), v.literal("queued"));
 const created = v.object({ invitationId: v.id("invitations"), token: v.union(v.string(), v.null()), delivery });
 const normalizeEmail = (value: string) => value.trim().toLowerCase();
-async function account(ctx: MutationCtx) {
-  const id = await getAuthUserId(ctx);
-  if (!id) throw new Error("Sign in required.");
-  const email = await ctx.runQuery(components.authEmail.verifiedEmails.getPrimaryEmail, { userId: id });
-  if (!email) throw new Error("A verified email is required.");
-  return { id, email: normalizeEmail(email) };
-}
 async function coordinator(ctx: MutationCtx, churchId: Id<"churches">, userId: Id<"users">) {
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", churchId).eq("userId", userId)).unique();
   if (!member?.active || member.role !== "owner") throw new Error("Church owner access required.");

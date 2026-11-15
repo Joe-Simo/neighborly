@@ -1,10 +1,9 @@
 /// <reference types="vite/client" />
 import { describe, expect, test } from "vitest";
 import { convexTest } from "convex-test";
-import { defineSchema, queryGeneric } from "convex/server";
-import { v } from "convex/values";
 import { DateTime } from "luxon";
 import schema from "./schema";
+import { signedIn } from "./clerk.testing";
 import { api } from "./_generated/api";
 import * as functions from "./visits";
 import { freeToVisit, suggestPair, type Candidate } from "./visits";
@@ -24,9 +23,6 @@ const morning = (days: number) => {
 async function setup() {
   const t = convexTest(schema, modules);
   const emails = new Map<string, string>();
-  const empty = defineSchema({});
-  t.registerComponent("auth", empty, { "./_generated/server.js": async () => ({}), "./public.ts": async () => ({ getSession: queryGeneric({ args: { sessionId: v.string() }, handler: async (_, { sessionId }) => (emails.has(sessionId) ? { userId: sessionId } : null) }) }) });
-  t.registerComponent("authEmail", empty, { "./_generated/server.js": async () => ({}), "./verifiedEmails.ts": async () => ({ getPrimaryEmail: queryGeneric({ args: { userId: v.string() }, handler: async (_, { userId }) => emails.get(userId) ?? null }) }) });
   const now = Date.now();
   const ids = await t.run(async (ctx) => {
     const church = await ctx.db.insert("churches", { name: "Sample Conference", timeZone: zone });
@@ -56,7 +52,7 @@ async function setup() {
     return { church, other, owner, coordinator, daniel, graciela, colleen, samuel, stranger, rosa, elsewhere, request };
   });
   for (const person of [ids.owner, ids.coordinator, ids.daniel, ids.stranger]) emails.set(person.userId, `${person.userId}@neighborly.example`);
-  const as = (person: { userId: string }) => t.withIdentity({ subject: person.userId });
+  const as = (person: { userId: string }) => signedIn(t, person.userId, emails.has(person.userId));
   const away = (person: { memberId: typeof ids.owner.memberId }, from: number, through: number) =>
     t.run((ctx) => ctx.db.insert("timeOff", { churchId: ids.church, memberId: person.memberId, start: isoDay(from), end: isoDay(through), note: "Visiting family." }));
   return { t, ids, as, away, now };

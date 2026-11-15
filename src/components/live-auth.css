@@ -1,0 +1,32 @@
+/* The emailed code: large, evenly spaced digits that are easy to read back from a phone or a printout. */
+.live-auth .live-auth-code {
+  min-height: 60px;
+  font: 500 28px/1 ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.32em;
+  text-align: center;
+  padding-left: 0.32em;
+}
+.live-auth .live-deck strong {
+  color: #26352b;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+/* "Use a different email" is a button that looks like the back link beside it. */
+.live-app .live-auth button.live-back {
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-weight: 400;
+  text-decoration: none;
+}
+.live-auth-spin {
+  animation: live-spin 1s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-auth-spin {
+    animation: none;
+  }
+}

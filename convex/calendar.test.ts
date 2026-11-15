@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
-import { defineSchema, httpRouter, queryGeneric } from "convex/server";
-import { v } from "convex/values";
+import { httpRouter } from "convex/server";
 import schema from "./schema";
+import { signedIn } from "./clerk.testing";
 import { api } from "./_generated/api";
 import { feed, streetOnly } from "./calendar";
 
@@ -18,9 +18,6 @@ beforeEach(() => { vi.stubEnv("CONVEX_SITE_URL", site); });
 async function setup() {
   const t = convexTest(schema, modules);
   const emails = new Map<string, string>();
-  const empty = defineSchema({});
-  t.registerComponent("auth", empty, { "./_generated/server.js": async () => ({}), "./public.ts": async () => ({ getSession: queryGeneric({ args: { sessionId: v.string() }, handler: async (_, { sessionId }) => (emails.has(sessionId) ? { userId: sessionId } : null) }) }) });
-  t.registerComponent("authEmail", empty, { "./_generated/server.js": async () => ({}), "./verifiedEmails.ts": async () => ({ getPrimaryEmail: queryGeneric({ args: { userId: v.string() }, handler: async (_, { userId }) => emails.get(userId) ?? null }) }) });
   const now = Date.now();
   const ids = await t.run(async (ctx) => {
     const church = await ctx.db.insert("churches", { name: "St. Example Conference", timeZone: "America/New_York" });
@@ -54,7 +51,7 @@ async function setup() {
     return { church, marisol, thomas, renee };
   });
   for (const person of [ids.marisol, ids.thomas, ids.renee]) emails.set(person.userId, `${person.userId}@neighborly.example`);
-  return { t, ids, as: (person: { userId: string }) => { emails.set(person.userId, `${person.userId}@neighborly.example`); return t.withIdentity({ subject: person.userId }); } };
+  return { t, ids, as: (person: { userId: string }) => { emails.set(person.userId, `${person.userId}@neighborly.example`); return signedIn(t, person.userId); } };
 }
 const path = (address: string) => address.slice(site.length);
 /** Folded lines joined back together, as a calendar app reads them. */

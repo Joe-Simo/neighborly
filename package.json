@@ -13,6 +13,7 @@
     "test:backend": "vitest run convex"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.10.0",
     "@convex-dev/auth": "^2.0.0",
     "@convex-dev/resend": "^0.2.10",
     "@serwist/turbopack": "^9.5.13",

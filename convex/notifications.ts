@@ -1,4 +1,4 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { user } from "./access";
 import { Resend, vStatus, type EmailId } from "@convex-dev/resend";
 import { v } from "convex/values";
 import { components } from "./_generated/api";
@@ -42,8 +42,7 @@ export const invitationDelivery = query({
   args: { invitationId: v.id("invitations") },
   returns: v.object({ state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerStatus: v.union(vStatus, v.null()), failed: v.boolean() }),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Sign in required.");
+    const { id: userId } = await user(ctx);
     const invitation = await ctx.db.get("invitations", args.invitationId);
     if (!invitation) throw new Error("Invitation not found.");
     const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", invitation.churchId).eq("userId", userId)).unique();

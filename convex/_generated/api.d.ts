@@ -10,7 +10,6 @@
 
 import type * as access from "../access.js";
 import type * as assistance from "../assistance.js";
-import type * as auth from "../auth.js";
 import type * as calendar from "../calendar.js";
 import type * as drafts from "../drafts.js";
 import type * as http from "../http.js";
@@ -38,7 +37,6 @@ import type {
 declare const fullApi: ApiFromModules<{
   access: typeof access;
   assistance: typeof assistance;
-  auth: typeof auth;
   calendar: typeof calendar;
   drafts: typeof drafts;
   http: typeof http;

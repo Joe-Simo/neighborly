@@ -1,8 +1,6 @@
 /// <reference types="vite/client" />
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
-import { defineSchema, queryGeneric } from "convex/server";
-import { v } from "convex/values";
 import schema from "./schema";
 import { api } from "./_generated/api";
 
@@ -11,14 +9,8 @@ const description = "Our Welcome team serves every other Sunday. We need two peo
 
 async function setup() {
   const t = convexTest(schema, modules);
-  const id = await t.run(ctx => ctx.db.insert("users", {}));
-  t.registerComponent("auth", defineSchema({}), {
-    "./_generated/server.js": async () => ({}),
-    "./public.ts": async () => ({
-      getSession: queryGeneric({ args: { sessionId: v.string() }, handler: async (_, { sessionId }) => sessionId === id ? { userId: id } : null }),
-    }),
-  });
-  return { t, signed: t.withIdentity({ subject: id }) };
+  await t.run(ctx => ctx.db.insert("users", { clerkId: "clerk|sample" }));
+  return { t, signed: t.withIdentity({ subject: "clerk|sample", email: "sample@example.org", emailVerified: true }) };
 }
 
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
@@ -66,15 +58,11 @@ describe("a call note drafted into a request", () => {
 
   async function helpLine() {
     const t = convexTest(schema, modules);
-    const emails = new Set<string>();
-    const empty = defineSchema({});
-    t.registerComponent("auth", empty, { "./_generated/server.js": async () => ({}), "./public.ts": async () => ({ getSession: queryGeneric({ args: { sessionId: v.string() }, handler: async (_, { sessionId }) => (emails.has(sessionId) ? { userId: sessionId } : null) }) }) });
-    t.registerComponent("authEmail", empty, { "./_generated/server.js": async () => ({}), "./verifiedEmails.ts": async () => ({ getPrimaryEmail: queryGeneric({ args: { userId: v.string() }, handler: async (_, { userId }) => (emails.has(userId) ? "sample@example.org" : null) }) }) });
     const ids = await t.run(async ctx => {
       const churchId = await ctx.db.insert("churches", { name: "Sample Conference", timeZone: "America/New_York" });
       const otherChurch = await ctx.db.insert("churches", { name: "Elsewhere", timeZone: "UTC" });
       const join = async (role: "coordinator" | "member") => {
-        const userId = await ctx.db.insert("users", {});
+        const userId = await ctx.db.insert("users", { clerkId: `clerk|${role}` });
         return { userId, memberId: await ctx.db.insert("memberships", { churchId, userId, name: role, email: `${role}@example.org`, role, active: true, approved: true, coverOptIn: false }) };
       };
       const coordinator = await join("coordinator"), member = await join("member");
@@ -82,8 +70,8 @@ describe("a call note drafted into a request", () => {
       const callId = await ctx.db.insert("calls", { churchId, neighborId, callerName: "Rosa Delgado", phone: "(239) 555-0142", note, callback: "needed", takenBy: coordinator.memberId, takenAt: 0 });
       return { churchId, otherChurch, coordinator, member, callId };
     });
-    emails.add(ids.coordinator.userId); emails.add(ids.member.userId);
-    return { t, ids, coordinator: t.withIdentity({ subject: ids.coordinator.userId }), member: t.withIdentity({ subject: ids.member.userId }) };
+    const as = (role: "coordinator" | "member") => t.withIdentity({ subject: `clerk|${role}`, email: `${role}@example.org`, emailVerified: true });
+    return { t, ids, coordinator: as("coordinator"), member: as("member") };
   }
   const answers = (sure: Record<string, number>) => vi.fn<(url: string, init: { body: string }) => Promise<Response>>(async () => Response.json({ answers: Object.fromEntries(Object.entries(sure).map(([field, noul]) => [field, { type: "noul", noul }])) }));
 

@@ -2,15 +2,14 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { clearEntryContext } from "@/lib/live-entry";
 import {
   useAction,
-  useConvexAuth,
   useMutation,
   usePaginatedQuery,
   useQuery,
 } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useClerk } from "@clerk/nextjs";
+import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
@@ -32,12 +31,13 @@ export function LiveApp({
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
-  const { isLoading, isAuthenticated } = useConvexAuth();
-  const { signOut } = useAuthActions();
-  const viewer = useQuery(api.workspace.viewer, isAuthenticated ? {} : "skip");
+  const { isLoading, isAuthenticated, ready } = useAccount();
+  const clerk = useClerk();
+  const signOut = () => clerk.signOut({ redirectUrl: "/app" });
+  const viewer = useQuery(api.workspace.viewer, ready ? {} : "skip");
   const churchPage = usePaginatedQuery(
     api.pages.churchesPage,
-    isAuthenticated ? {} : "skip",
+    ready ? {} : "skip",
     { initialNumItems: 30 },
   );
   const createChurch = useMutation(api.workspace.createChurch);
@@ -133,11 +133,7 @@ export function LiveApp({
     );
   if (!isAuthenticated)
     return (
-      <LiveAuth
-        key={intent + invitationToken}
-        intent={intent}
-        invitationToken={invitationToken}
-      />
+      <LiveAuth key={intent} intent={intent} />
     );
   if (!viewer)
     return (
@@ -158,14 +154,12 @@ export function LiveApp({
         createChurch={async (value) => {
           setSelectedChurch(await createChurch(value));
           setEntryHandled(true);
-          clearEntryContext();
           router.replace("/app");
         }}
         joinChurch={async (value) => {
           setSelectedChurch(await joinChurch(value));
           setInvitationConsumed(true);
           setEntryHandled(true);
-          clearEntryContext();
           router.replace("/app");
         }}
       />

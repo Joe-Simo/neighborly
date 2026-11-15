@@ -1,16 +1,23 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { components } from "./_generated/api";
 import { v } from "convex/values";
 import { query, type QueryCtx, type MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 
+/**
+ * Who Clerk says is calling: their Clerk id and their email, only once Clerk has verified it.
+ * Convex has already checked the token's signature against auth.config.ts before this runs.
+ */
+export async function verifiedIdentity(ctx: QueryCtx | MutationCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) throw new Error("Sign in required.");
+  if (!identity.email || identity.emailVerified !== true) throw new Error("A verified email is required.");
+  return { clerkId: identity.subject, email: identity.email.trim().toLowerCase() };
+}
 /** The signed-in account. Every workspace function starts here. */
 export async function user(ctx: QueryCtx | MutationCtx) {
-  const id = await getAuthUserId(ctx);
-  if (!id) throw new Error("Sign in required.");
-  const email = await ctx.runQuery(components.authEmail.verifiedEmails.getPrimaryEmail, { userId: id });
-  if (!email) throw new Error("A verified email is required.");
-  return { id, email };
+  const { clerkId, email } = await verifiedIdentity(ctx);
+  const account = await ctx.db.query("users").withIndex("by_clerk", q => q.eq("clerkId", clerkId)).unique();
+  if (!account) throw new Error("Sign in required.");
+  return { id: account._id, email };
 }
 /** The caller's active membership in this group, or an error. */
 export async function membership(ctx: QueryCtx | MutationCtx, church: Id<"churches">) {

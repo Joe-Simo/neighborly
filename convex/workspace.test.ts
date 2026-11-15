@@ -1,15 +1,13 @@
 /// <reference types="vite/client" />
 import { describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
-import { defineSchema, queryGeneric, type FunctionReturnType } from "convex/server";
-import { v } from "convex/values";
+import type { FunctionReturnType } from "convex/server";
 import schema from "./schema";
+import { signedIn } from "./clerk.testing";
 import { api, internal } from "./_generated/api";
 const modules=import.meta.glob(["./**/*.ts","!./**/*.test.ts"]);
 async function setup(){
- const t=convexTest(schema,modules);const emails=new Map<string,string>();const empty=defineSchema({});
- t.registerComponent("auth",empty,{"./_generated/server.js":async()=>({}),"./public.ts":async()=>({getSession:queryGeneric({args:{sessionId:v.string()},handler:async(_,{sessionId})=>emails.has(sessionId)?{userId:sessionId}:null})})});
- t.registerComponent("authEmail",empty,{"./_generated/server.js":async()=>({}),"./verifiedEmails.ts":async()=>({getPrimaryEmail:queryGeneric({args:{userId:v.string()},handler:async(_,{userId})=>emails.get(userId)??null})})});
+ const t=convexTest(schema,modules);const emails=new Map<string,string>();
  const ids=await t.run(async ctx=>{
   const owner=await ctx.db.insert("users",{}), coord=await ctx.db.insert("users",{}), vol=await ctx.db.insert("users",{}), outsider=await ctx.db.insert("users",{});
   const church=await ctx.db.insert("churches",{name:"A",timeZone:"America/New_York"}),other=await ctx.db.insert("churches",{name:"B",timeZone:"UTC"});
@@ -23,7 +21,7 @@ async function setup(){
   return {owner,coord,vol,outsider,church,other,team,hidden,slot,secret,volunteer};
  });
  for(const id of [ids.owner,ids.coord,ids.vol,ids.outsider])emails.set(id,`${id}@example.org`);
- return {t,ids,as:(id:string)=>t.withIdentity({subject:id})};
+ return {t,ids,as:(id:string)=>signedIn(t, id, emails.has(id))};
 }
 describe("workspace access and consent",()=>{
  test("request pages carry authorized context independently of assigned commitments and pagination",async()=>{
@@ -153,6 +151,7 @@ describe("workspace access and consent",()=>{
   try {
    const {t,ids,as}=await setup();
    await t.run(async ctx=>{for(let i=0;i<205;i++){const userId=await ctx.db.insert("users",{});await ctx.db.insert("memberships",{churchId:ids.church,userId,name:`Member ${i}`,email:`member${i}@example.org`,role:"member",active:true,approved:false,coverOptIn:false});}});
+   vi.advanceTimersByTime(1000); // the meeting is called after these members joined
    await as(ids.owner).mutation(api.workspace.execute,{churchId:ids.church,command:{type:"createMeeting",title:"Gathering",start:"2099-11-23T09:00",end:"2099-11-23T10:00",location:"Hall"}});
    await t.finishAllScheduledFunctions(vi.runAllTimers);
    const result=await t.run(async ctx=>{const meeting=(await ctx.db.query("meetings").withIndex("by_church",q=>q.eq("churchId",ids.church)).unique())!;const invitees=await ctx.db.query("meetingInvitees").withIndex("by_meeting_member",q=>q.eq("meetingId",meeting._id)).collect();return {status:meeting.fanoutStatus,count:invitees.length};});

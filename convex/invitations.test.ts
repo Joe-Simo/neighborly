@@ -1,26 +1,16 @@
 /// <reference types="vite/client" />
 import { describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
-import { defineSchema, queryGeneric } from "convex/server";
-import { v } from "convex/values";
 import schema from "./schema";
+import { signedIn } from "./clerk.testing";
 import { api } from "./_generated/api";
 import resendTest from "@convex-dev/resend/test";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
-const emptySchema = defineSchema({});
 
 async function setup() {
   const t = convexTest(schema, modules);
   const emails = new Map<string, string>();
-  t.registerComponent("auth", emptySchema, {
-    "./_generated/server.js": async () => ({}),
-    "./public.ts": async () => ({ getSession: queryGeneric({ args: { sessionId: v.string() }, handler: async (_ctx, { sessionId }) => emails.has(sessionId) ? { userId: sessionId } : null }) }),
-  });
-  t.registerComponent("authEmail", emptySchema, {
-    "./_generated/server.js": async () => ({}),
-    "./verifiedEmails.ts": async () => ({ getPrimaryEmail: queryGeneric({ args: { userId: v.string() }, handler: async (_ctx, { userId }) => emails.get(userId) ?? null }) }),
-  });
   const ids = await t.run(async ctx => {
     const owner = await ctx.db.insert("users", {});
     const recipient = await ctx.db.insert("users", {});
@@ -36,7 +26,7 @@ async function setup() {
   emails.set(ids.recipient, "person@example.org");
   emails.set(ids.stranger, "other@example.org");
   emails.set(ids.coordinator, "coordinator@example.org");
-  return { t, ids, as: (id: string) => t.withIdentity({ subject: id }) };
+  return { t, ids, as: (id: string) => signedIn(t, id, emails.has(id), emails.get(id)) };
 }
 
 describe("church invitations", () => {

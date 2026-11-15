@@ -11,8 +11,9 @@ bun run dev
 ```
 
 Open http://localhost:3000. Public courtyard gestures use session-local state
-and send no messages or create commitments. `/app` uses Convex Auth v2 and the
-separate `neighborly-live` development backend for private workspaces.
+and send no messages or create commitments. `/app` signs people in with Clerk; Convex checks Clerk's token on every call
+(`convex/auth.config.ts`, `convex/access.ts`) and uses the separate
+`neighborly-live` development backend for private workspaces.
 The original `neighborly` backend is preserved and must not be overwritten.
 Use the deployment in `.env.local` when running `bunx convex dev --once`.
 
@@ -25,11 +26,15 @@ bun run build
 
 `test` runs both the Bun unit suite and the Vitest/convex-test backend suite.
 Those backend tests simulate authentication; they do not prove real email or
-browser sign-in. All real signup and recovery flows require a verified sender.
+browser sign-in. Clerk sends the sign-up and password codes itself.
 
 ## Live configuration
 
-The client needs `NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_CONVEX_SITE_URL`.
+The client needs `NEXT_PUBLIC_CONVEX_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL` and
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`. The website's server also needs
+`CLERK_SECRET_KEY`, and the Convex deployment needs `CLERK_JWT_ISSUER_DOMAIN`
+(Clerk's Frontend API URL, not a secret). Production Clerk keys work only on
+kindhelps.com; use the development instance's keys locally.
 Server secrets remain in the Convex deployment, never in public variables.
 Set `SITE_URL` to the exact frontend origin. After a dedicated sender is chosen,
 configure `SENDER_EMAIL` and `RESEND_API_KEY`; enable the notification outbox with

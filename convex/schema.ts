@@ -7,7 +7,9 @@ const cents = v.number();
 /** Calendar days are "yyyy-MM-dd" in the group's time zone, as in timeOff and availability. */
 const day = v.string();
 export default defineSchema({
-  users: defineTable({}),
+  // One row per person. Clerk proves who is signing in; clerkId ties that proof to this row, and every
+  // membership points here. legacyEmail is set only on accounts made before Clerk, until their owner returns.
+  users: defineTable({ clerkId: v.optional(v.string()), legacyEmail: v.optional(v.string()) }).index("by_clerk", ["clerkId"]).index("by_legacy_email", ["legacyEmail"]),
   aiUsage: defineTable({userId:v.id("users"),windowStart:v.number(),count:v.number()}).index("by_user",["userId"]),
   // The assistant's monthly allowance per group. month is "yyyy-MM".
   aiUsageByChurch: defineTable({ churchId: v.id("churches"), month: v.string(), count: v.number() }).index("by_church_month", ["churchId", "month"]),

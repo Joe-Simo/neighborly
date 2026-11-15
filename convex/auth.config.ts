@@ -1,3 +1,4 @@
 import type { AuthConfig } from "convex/server";
-import { convexAuthProvider } from "@convex-dev/auth/server";
-export default { providers: [convexAuthProvider()] } satisfies AuthConfig;
+// Clerk signs each session token; Convex checks it against this issuer. The value is Clerk's
+// Frontend API URL (not a secret), set per deployment as CLERK_JWT_ISSUER_DOMAIN.
+export default { providers: [{ domain: process.env.CLERK_JWT_ISSUER_DOMAIN!, applicationID: "convex" }] } satisfies AuthConfig;

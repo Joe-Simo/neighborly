@@ -1,10 +1,9 @@
 /// <reference types="vite/client" />
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
-import { defineSchema, queryGeneric } from "convex/server";
-import { v } from "convex/values";
 import { DateTime } from "luxon";
 import schema from "./schema";
+import { signedIn } from "./clerk.testing";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { fiscalYear, fiscalYearOf } from "./reports";
@@ -24,12 +23,9 @@ afterEach(() => void vi.useRealTimers());
 function start() {
   const t = convexTest(schema, modules);
   const emails = new Map<string, string>();
-  const empty = defineSchema({});
-  t.registerComponent("auth", empty, { "./_generated/server.js": async () => ({}), "./public.ts": async () => ({ getSession: queryGeneric({ args: { sessionId: v.string() }, handler: async (_, { sessionId }) => (emails.has(sessionId) ? { userId: sessionId } : null) }) }) });
-  t.registerComponent("authEmail", empty, { "./_generated/server.js": async () => ({}), "./verifiedEmails.ts": async () => ({ getPrimaryEmail: queryGeneric({ args: { userId: v.string() }, handler: async (_, { userId }) => emails.get(userId) ?? null }) }) });
   const as = (userId: Id<"users">) => {
     emails.set(userId, `${userId}@example.org`);
-    return t.withIdentity({ subject: userId });
+    return signedIn(t, userId);
   };
   return { t, as };
 }

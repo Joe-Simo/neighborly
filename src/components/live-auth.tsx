@@ -1,114 +1,296 @@
 "use client";
 
-import { useState, type FormEvent, type ComponentProps } from "react";
-import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import {
-  useSignInWithEmailPassword,
-  useSignUpWithEmailPassword,
-  useStartPasswordRecovery,
-  useCompleteSignUpWithEmailPassword,
-  useCompletePasswordRecovery,
-} from "@convex-dev/auth/methods/email-password/react";
+import { useSignIn, useSignUp } from "@clerk/nextjs";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
-import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import "./live-auth.css";
 
-type AccountError = {
-  error: string;
-  retryAfterMs?: number;
-  minimumLength?: number;
-  maximumLength?: number;
-};
-function errorMessage(error: AccountError): string {
-  switch (error.error) {
-    case "INVALID_EMAIL":
+export type LiveEntryIntent = "start" | "join" | "signin";
+type Flow = "signIn" | "signUp" | "reset";
+/** What the emailed code is for: finishing a new account, a first sign-in on this device, or a new password. */
+type Step = "details" | "code" | "newPassword";
+
+function errorMessage(error: unknown, flow: Flow): string {
+  const code = isClerkAPIResponseError(error) ? error.errors[0]?.code : undefined;
+  switch (code) {
+    case "form_param_format_invalid":
+    case "form_identifier_invalid":
       return "That email address doesn’t look right.";
-    case "EMAIL_TAKEN":
-      return "This email already has an account. Try signing in.";
-    case "INVALID_CREDENTIALS":
-    case "USER_NOT_FOUND":
-      return "We couldn’t sign you in. Check your email and password, and make sure you’ve validated your email.";
-    case "PASSWORD_TOO_SHORT":
-      return `Use at least ${error.minimumLength ?? 8} characters for your password.`;
-    case "PASSWORD_TOO_LONG":
-      return `Use no more than ${error.maximumLength ?? 128} characters for your password.`;
-    case "PASSWORD_TOO_COMMON":
+    case "form_identifier_exists":
+      return "This email already has an account. Choose Sign in.";
+    case "form_identifier_not_found":
+    case "invitation_account_not_exists":
+      return "No account uses that email yet. Choose Create account. If you were here before, use the same email and your groups will be waiting.";
+    case "form_password_incorrect":
+    case "strategy_for_user_invalid":
+      return "That password doesn’t match. Try again, or choose Forgot your password.";
+    case "form_password_length_too_short":
+      return "Use at least 8 characters for your password.";
+    case "form_password_length_too_long":
+      return "Use no more than 72 characters for your password.";
+    case "form_password_pwned":
+    case "form_password_compromised":
+      return flow === "signIn"
+        ? "This password has appeared in a data leak on another site. Choose Forgot your password to set a new one."
+        : "That password has appeared in a data leak on another site. Please choose a different one.";
+    case "form_password_not_strong_enough":
       return "Choose a less common password.";
-    case "PASSWORD_HAS_SURROUNDING_WHITESPACE":
-      return "Your password can’t start or end with a space.";
-    case "RATE_LIMITED":
-      return `Too many attempts. Try again in ${Math.ceil((error.retryAfterMs ?? 60000) / 1000)} seconds.`;
-    case "MISSING_SECRET":
-      return "Open this link in the same browser where you started. If needed, request a new link from this browser.";
-    case "INVALID_CHALLENGE":
-    case "INCORRECT_CODE":
-      return "This link is expired or has already been used. Please request a new one.";
+    case "form_code_incorrect":
+      return "That code doesn’t match. Check the email and try again, or send a new code.";
+    case "verification_expired":
+      return "That code has expired. Send a new one.";
+    case "verification_failed":
+    case "too_many_requests":
+    case "user_locked":
+      return "Too many attempts. Wait a little while, then try again.";
     default:
-      return "We couldn’t complete that request. Please try again. If email delivery has not been configured, account validation and recovery are unavailable.";
+      return "We couldn’t complete that. Please try again.";
   }
 }
 
-export type { LiveEntryIntent } from "@/lib/live-entry";
-import {
-  saveEntryContext,
-  restoreEntryContext,
-  entryDestination,
-  type LiveEntryIntent,
-} from "@/lib/live-entry";
+const headings: Record<Flow, string> = {
+  signIn: "Welcome back.",
+  signUp: "Good work starts here.",
+  reset: "Find your way back.",
+};
 
-export function LiveAuth({
-  intent = "signin",
-  invitationToken = "",
-}: {
-  intent?: LiveEntryIntent;
-  invitationToken?: string;
-}) {
-  const emailConfigured = useQuery(api.workspace.emailConfiguration, {});
-  const login = useSignInWithEmailPassword(api.auth);
-  const register = useSignUpWithEmailPassword(api.auth);
-  const recovery = useStartPasswordRecovery(api.auth);
-  const [flow, setFlow] = useState<"signIn" | "signUp" | "reset">(
-    intent === "start" || intent === "join" ? "signUp" : "signIn",
-  );
+export function LiveAuth({ intent = "signin" }: { intent?: LiveEntryIntent }) {
+  const { signIn } = useSignIn();
+  const { signUp } = useSignUp();
+  const [flow, setFlow] = useState<Flow>(intent === "start" || intent === "join" ? "signUp" : "signIn");
+  const [step, setStep] = useState<Step>("details");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [pending, setPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const pending = login.pending || register.pending || recovery.pending;
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  /** After a new code goes out, the button rests for a while so nobody sends five by pressing it again. */
+  const [resent, setResent] = useState(false);
+  const resting = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(resting.current), []);
+
+  function choose(next: Flow) {
+    setFlow(next);
+    setResent(false);
+    setStep("details");
     setError("");
     setNotice("");
-    const form = new FormData(event.currentTarget);
-    const email = String(form.get("email") ?? "").trim();
-    const password = String(form.get("password") ?? "");
-    saveEntryContext({ intent, invitationToken });
+    setShowPassword(false);
+  }
+
+  /** Each step of Clerk's flow reports its own error; the first one stops the run and is shown. */
+  async function run(steps: () => Promise<void>) {
+    setError("");
+    setNotice("");
+    setPending(true);
     try {
-      if (flow === "signIn") {
-        const result = await login.signIn({ email, password });
-        if (result.status !== "complete")
-          setError(errorMessage(result.userError));
-      } else if (flow === "signUp") {
-        const result = await register.signUp({ email, password });
-        if (result.success)
-          setNotice(
-            `Validation requested for ${email}. Open the email link in this browser to finish creating your account.`,
-          );
-        else setError(errorMessage(result.userError));
-      } else {
-        const result = await recovery.startPasswordRecovery({ email });
-        if (result.success)
-          setNotice(
-            `Recovery requested for ${result.sentTo}. Open the link in this browser to choose a new password.`,
-          );
-        else setError(errorMessage(result.userError));
-      }
-    } catch {
-      setError("We couldn’t reach the account service. Please try again.");
+      await steps();
+    } catch (failure) {
+      setError(errorMessage(failure, flow));
+    } finally {
+      setPending(false);
     }
   }
+  async function done(result: Promise<{ error: unknown }>) {
+    const { error: failure } = await result;
+    if (failure) throw failure;
+  }
+
+  /** After the password is accepted: either the person is in, or Clerk wants a code emailed to a new device. */
+  async function afterSignIn() {
+    if (signIn.status === "complete") return done(signIn.finalize());
+    if (signIn.status === "needs_client_trust" || signIn.status === "needs_second_factor") {
+      await done(signIn.mfa.sendEmailCode());
+      setStep("code");
+      return;
+    }
+    if (signIn.status === "needs_new_password") {
+      setStep("newPassword");
+      return;
+    }
+    throw new Error("Sign-in could not be completed.");
+  }
+
+  function submitDetails(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const emailAddress = String(form.get("email") ?? "").trim();
+    const password = String(form.get("password") ?? "");
+    setEmail(emailAddress);
+    void run(async () => {
+      if (flow === "signIn") {
+        await done(signIn.password({ emailAddress, password }));
+        await afterSignIn();
+      } else if (flow === "signUp") {
+        await done(signUp.password({ emailAddress, password }));
+        await done(signUp.verifications.sendEmailCode());
+        setStep("code");
+      } else {
+        await done(signIn.create({ identifier: emailAddress }));
+        await done(signIn.resetPasswordEmailCode.sendCode());
+        setStep("code");
+      }
+    });
+  }
+
+  function submitCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const code = String(new FormData(event.currentTarget).get("code") ?? "").replace(/\D/g, "");
+    void run(async () => {
+      if (flow === "signUp") {
+        await done(signUp.verifications.verifyEmailCode({ code }));
+        if (signUp.status !== "complete") throw new Error("Sign-up could not be completed.");
+        await done(signUp.finalize());
+      } else if (flow === "reset") {
+        await done(signIn.resetPasswordEmailCode.verifyCode({ code }));
+        setStep("newPassword");
+      } else {
+        await done(signIn.mfa.verifyEmailCode({ code }));
+        await afterSignIn();
+      }
+    });
+  }
+
+  function submitNewPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const password = String(new FormData(event.currentTarget).get("password") ?? "");
+    void run(async () => {
+      await done(signIn.resetPasswordEmailCode.submitPassword({ password }));
+      await afterSignIn();
+    });
+  }
+
+  function sendAgain() {
+    void run(async () => {
+      await done(
+        flow === "signUp"
+          ? signUp.verifications.sendEmailCode()
+          : flow === "reset"
+            ? signIn.resetPasswordEmailCode.sendCode()
+            : signIn.mfa.sendEmailCode(),
+      );
+      setNotice("A new code is on its way.");
+      setResent(true);
+      clearTimeout(resting.current);
+      resting.current = setTimeout(() => setResent(false), 30_000);
+    });
+  }
+
+  const messages = (
+    <>
+      {error && (
+        <div role="alert" className="live-error">
+          {error}
+        </div>
+      )}
+      {notice && (
+        <div role="status" className="live-success">
+          {notice}
+        </div>
+      )}
+    </>
+  );
+  const submitIcon = pending ? (
+    <LoaderCircle size={17} aria-hidden="true" className="live-auth-spin" />
+  ) : (
+    <ArrowRight size={17} aria-hidden="true" />
+  );
+  const passwordField = (label: string, autoComplete: "current-password" | "new-password") => (
+    <label className="live-field">
+      <span>{label}</span>
+      <div className="live-password-control">
+        <Input
+          aria-label={label}
+          type={showPassword ? "text" : "password"}
+          name="password"
+          autoComplete={autoComplete}
+          required
+          minLength={8}
+          maxLength={72}
+          disabled={pending}
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          aria-pressed={showPassword}
+          disabled={pending}
+          onClick={() => setShowPassword((value) => !value)}
+        >
+          {showPassword ? "Hide" : "Show"}
+        </Button>
+      </div>
+      {autoComplete === "new-password" && <small>Use at least 8 characters.</small>}
+    </label>
+  );
+
+  if (step === "code")
+    return (
+      <div className="live-auth">
+        <div className="live-auth-art" aria-hidden="true" />
+        <Button variant="link" className="live-back" onClick={() => choose(flow)}>
+          <ArrowLeft size={16} aria-hidden="true" /> Use a different email
+        </Button>
+        <p className="live-kicker">One more step</p>
+        <h1>Check your email.</h1>
+        <p className="live-deck">
+          We sent a six-digit code to <strong>{email}</strong>.{" "}
+          {flow === "signUp"
+            ? "Enter it to finish creating your account."
+            : flow === "reset"
+              ? "Enter it to choose a new password."
+              : "Enter it to finish signing in on this device."}
+        </p>
+        <form className="live-form" onSubmit={submitCode}>
+          <label className="live-field">
+            <span>Code from the email</span>
+            <Input
+              className="live-auth-code"
+              name="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9 ]*"
+              maxLength={12}
+              required
+              autoFocus
+              disabled={pending}
+            />
+            <small>It can take a minute to arrive. Look in spam if you don’t see it.</small>
+          </label>
+          {messages}
+          <Button type="submit" disabled={pending}>
+            {submitIcon}
+            {pending ? "Please wait…" : flow === "signUp" ? "Create account" : "Continue"}
+          </Button>
+          <Button type="button" variant="link" disabled={pending || resent} onClick={sendAgain}>
+            {resent ? "New code sent" : "Send a new code"}
+          </Button>
+        </form>
+      </div>
+    );
+
+  if (step === "newPassword")
+    return (
+      <div className="live-auth">
+        <div className="live-auth-art" aria-hidden="true" />
+        <p className="live-kicker">Almost there</p>
+        <h1>A fresh start.</h1>
+        <p className="live-deck">Choose a new password for {email}.</p>
+        <form className="live-form" onSubmit={submitNewPassword}>
+          {passwordField("New password", "new-password")}
+          {messages}
+          <Button type="submit" disabled={pending}>
+            {submitIcon}
+            {pending ? "Please wait…" : "Save and sign in"}
+          </Button>
+        </form>
+      </div>
+    );
+
   return (
     <div className="live-auth">
       <div className="live-auth-art" aria-hidden="true" />
@@ -117,15 +299,11 @@ export function LiveAuth({
       </Link>
       <p className="live-kicker">Your team’s place</p>
       <h1>
-        {flow === "signIn"
-          ? "Welcome back."
-          : flow === "signUp"
-            ? intent === "start"
-              ? "Bring your people together."
-              : intent === "join"
-                ? "A place with your people."
-                : "Good work starts here."
-            : "Find your way back."}
+        {flow === "signUp" && intent === "start"
+          ? "Bring your people together."
+          : flow === "signUp" && intent === "join"
+            ? "A place with your people."
+            : headings[flow]}
       </h1>
       <p className="live-deck">
         {flow === "signIn"
@@ -136,120 +314,52 @@ export function LiveAuth({
               : intent === "join"
                 ? "Create your account to join your group with an invitation."
                 : "Create your account to start a group or accept an invitation."
-            : "Request a secure link to reset your password."}
+            : "We’ll email you a code to choose a new password."}
       </p>
       <div className="live-auth-tabs" role="group" aria-label="Account options">
         <Button
           variant={flow === "signIn" ? "default" : "ghost"}
           aria-pressed={flow === "signIn"}
-          onClick={() => {
-            setFlow("signIn");
-            setError("");
-            setNotice("");
-            setShowPassword(false);
-          }}
+          onClick={() => choose("signIn")}
         >
           Sign in
         </Button>
         <Button
           variant={flow === "signUp" ? "default" : "ghost"}
           aria-pressed={flow === "signUp"}
-          onClick={() => {
-            setFlow("signUp");
-            setError("");
-            setNotice("");
-            setShowPassword(false);
-          }}
+          onClick={() => choose("signUp")}
         >
           Create account
         </Button>
       </div>
-      {flow !== "signIn" && emailConfigured === false && (
-        <div className="live-note live-auth-availability" role="status">
-          {flow === "reset"
-            ? "Password recovery is currently unavailable. Try again later."
-            : "Account creation is currently unavailable. Existing members can sign in."}
-        </div>
-      )}
-      <form className="live-form" onSubmit={submit}>
+      <form className="live-form" onSubmit={submitDetails}>
         <label className="live-field">
           <span>Email</span>
           <Input
             type="email"
             name="email"
             autoComplete="email"
+            defaultValue={email}
             required
             maxLength={254}
             disabled={pending}
           />
         </label>
-        {flow !== "reset" && (
-          <label className="live-field">
-            <span>Password</span>
-            <div className="live-password-control">
-              <Input
-                aria-label="Password"
-                type={showPassword ? "text" : "password"}
-                name="password"
-                autoComplete={
-                  flow === "signIn" ? "current-password" : "new-password"
-                }
-                required
-                minLength={8}
-                maxLength={128}
-                disabled={pending}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                aria-pressed={showPassword}
-                disabled={pending}
-                onClick={() => setShowPassword((value) => !value)}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </Button>
-            </div>
-            {flow === "signUp" && <small>Use at least 8 characters.</small>}
-          </label>
-        )}
-        {error && (
-          <div role="alert" className="live-error">
-            {error}
-          </div>
-        )}
-        {notice && (
-          <div role="status" className="live-success">
-            {notice}
-          </div>
-        )}
-        <Button
-          type="submit"
-          disabled={pending || (flow !== "signIn" && !emailConfigured)}
-        >
-          {pending ? (
-            <LoaderCircle size={17} aria-hidden="true" />
-          ) : (
-            <ArrowRight size={17} aria-hidden="true" />
-          )}
+        {flow !== "reset" &&
+          passwordField("Password", flow === "signIn" ? "current-password" : "new-password")}
+        {messages}
+        <Button type="submit" disabled={pending}>
+          {submitIcon}
           {pending
             ? "Please wait…"
             : flow === "signIn"
               ? "Sign in"
               : flow === "signUp"
                 ? "Create account"
-                : "Request reset link"}
+                : "Email me a code"}
         </Button>
         {flow === "signIn" && (
-          <Button
-            type="button"
-            variant="link"
-            onClick={() => {
-              setFlow("reset");
-              setError("");
-              setNotice("");
-            }}
-          >
+          <Button type="button" variant="link" onClick={() => choose("reset")}>
             Forgot your password?
           </Button>
         )}
@@ -259,129 +369,5 @@ export function LiveAuth({
         on your behalf.
       </p>
     </div>
-  );
-}
-
-export function LiveValidateEmail({ code }: { code: string }) {
-  const state = useCompleteSignUpWithEmailPassword(api.auth, {
-    emailCode: code,
-  });
-  return (
-    <div className="live-auth">
-      <div className="live-auth-art" aria-hidden="true" />
-      <h1>
-        {state.status === "loading"
-          ? "Validating your email…"
-          : state.status === "complete"
-            ? "You’re ready."
-            : "Let’s try that again."}
-      </h1>
-      {state.status === "error" && (
-        <p className="live-error" role="alert">
-          {errorMessage(state.userError)}
-        </p>
-      )}
-      {state.status === "complete" && (
-        <p className="live-deck">
-          Your email is validated and you’re signed in.
-        </p>
-      )}
-      <Button asChild style={{ marginTop: 25 }}>
-        <WorkspaceEntryLink>Open your workspace</WorkspaceEntryLink>
-      </Button>
-    </div>
-  );
-}
-
-export function LiveResetPassword({ code }: { code: string }) {
-  const state = useCompletePasswordRecovery(api.auth, { emailCode: code });
-  const [error, setError] = useState("");
-  if (state.status === "loading")
-    return (
-      <div className="live-auth">
-        <div className="live-auth-art" aria-hidden="true" />
-        <h1>Checking your link…</h1>
-      </div>
-    );
-  if (state.status === "error")
-    return (
-      <div className="live-auth">
-        <div className="live-auth-art" aria-hidden="true" />
-        <h1>Let’s try that again.</h1>
-        <p className="live-error">{errorMessage(state.userError)}</p>
-        <Link className="live-link" href="/app">
-          Return to sign in
-        </Link>
-      </div>
-    );
-  if (state.status === "complete")
-    return (
-      <div className="live-auth">
-        <div className="live-auth-art" aria-hidden="true" />
-        <h1>Password updated.</h1>
-        <Button asChild>
-          <WorkspaceEntryLink>Open your workspace</WorkspaceEntryLink>
-        </Button>
-      </div>
-    );
-  return (
-    <div className="live-auth">
-      <div className="live-auth-art" aria-hidden="true" />
-      <h1>A fresh start.</h1>
-      <form
-        className="live-form"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          setError("");
-          const result = await state.completePasswordRecovery({
-            newPassword: String(
-              new FormData(event.currentTarget).get("password") ?? "",
-            ),
-          });
-          if (result.status !== "complete")
-            setError(errorMessage(result.userError));
-        }}
-      >
-        <label className="live-field">
-          <span>New password</span>
-          <Input
-            type="password"
-            name="password"
-            autoComplete="new-password"
-            disabled={state.pending}
-            required
-            minLength={8}
-            maxLength={128}
-          />
-        </label>
-        {error && (
-          <div role="alert" className="live-error">
-            {error}
-          </div>
-        )}
-        <Button type="submit" disabled={state.pending}>
-          {state.pending ? "Updating…" : "Update password"}
-        </Button>
-      </form>
-    </div>
-  );
-}
-
-function WorkspaceEntryLink(props: Omit<ComponentProps<typeof Link>, "href">) {
-  const router = useRouter();
-  return (
-    <Link
-      {...props}
-      href="/app"
-      onClick={(event) => {
-        const destination = entryDestination(restoreEntryContext());
-        if (destination !== "/app") {
-          event.preventDefault();
-          router.push(destination);
-        }
-      }}
-    >
-      Open your workspace
-    </Link>
   );
 }
