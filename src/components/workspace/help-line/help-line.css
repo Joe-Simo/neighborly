@@ -153,11 +153,3 @@
 .help-sheet .help-blank { margin: 0 0 12px; font-size: 17px; }
 
 /* Removing a record: quiet at the foot, in ink, never red. */
-.help-remove { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px; margin: 56px 0 0; padding-top: 20px; border-top: 1px solid var(--live-line, #ded8cb); }
-.live-app .help-remove .help-remove-open { min-height: 44px; height: auto; padding: 0; border: 0; background: none; font-size: 16px; font-weight: 400; color: #283c32; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-.live-app .help-remove .help-remove-open:hover { background: none; text-decoration-thickness: 2px; }
-.help-remove-terms { display: grid; gap: 14px; margin: 0; padding: 0 0 18px; border-bottom: 1px solid var(--live-line, #ded8cb); }
-.help-remove-terms dt { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live-muted); margin-bottom: 4px; }
-.help-remove-terms dd { margin: 0; font-size: 17px; line-height: 1.5; color: #283c32; }
-.live-dialog .help-form .help-remove-confirm[data-slot="button"] { background: #283c32; border-color: #283c32; color: #f7f4ed; box-shadow: 0 2px 0 #18251f; }
-.live-dialog .help-form .help-remove-confirm[data-slot="button"]:hover:not(:disabled) { background: #1f3028; }
