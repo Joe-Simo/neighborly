@@ -28,3 +28,8 @@ export function parseCents(text: string) {
     Number((match[2] ?? "").padEnd(2, "0"));
   return Number.isSafeInteger(cents) && cents > 0 ? cents : null;
 }
+
+/** For the large figures: whole dollars drop the ".00", "$2,150". */
+export function formatFigure(cents: number) {
+  return cents % 100 === 0 ? formatCents(cents).slice(0, -3) : formatCents(cents);
+}

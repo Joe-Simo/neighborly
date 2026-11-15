@@ -1,16 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LiveEmpty } from "@/components/workspace/primitives";
-import { formatCents } from "@/components/workspace/treasury/money";
+import {
+  formatCents,
+  formatFigure,
+} from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
   dayLabel,
-  fullDayLabel,
+  entryLines,
   monthLabel,
+  TWINNING_GIFT,
+  weekDayLabel,
   type Ledger,
+  type LedgerEntry,
   type Payable,
 } from "@/components/workspace/treasury/labels";
 import "./treasury.css";
@@ -19,103 +24,172 @@ const neighborHref = (id: string) =>
   `/app/neighbors?neighbor=${encodeURIComponent(id)}`;
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
+const initials = (name: string) =>
+  name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2);
+const art = { backgroundImage: "url(/assets/painted-world/meal.webp)" };
+
+function NeighborLink({ id, name }: { id: string; name: string }) {
+  return (
+    <Link className="live-link" href={neighborHref(id)}>
+      {name}
+    </Link>
+  );
+}
 
 export function LedgerView({
   ledger,
   payable,
   onMonth,
   onPay,
+  onRecord,
+  onEntry,
 }: {
   ledger: Ledger;
   payable: Payable[];
   onMonth: (month: string) => void;
   onPay: (request: Payable) => void;
+  onRecord: () => void;
+  onEntry: (entry: LedgerEntry) => void;
 }) {
   const month = monthLabel(ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
   // Months are listed newest first.
   const earlier = ledger.months[position + 1];
   const later = position > 0 ? ledger.months[position - 1] : undefined;
+  const gifts = ledger.entries.filter(
+    (entry) =>
+      entry.category === TWINNING_GIFT && !entry.reverses && !entry.reversed,
+  ).length;
+  const paidFor = [
+    ledger.neighborsHelped > 0 &&
+      count(ledger.neighborsHelped, "neighbor", "neighbors"),
+    gifts > 0 && count(gifts, "twinning gift", "twinning gifts"),
+  ].filter(Boolean);
+  const [first, ...waiting] = payable;
+  const untouched =
+    ledger.months.length === 1 && !ledger.entries.length && !payable.length;
+
+  if (untouched)
+    return (
+      <div className="help-empty">
+        <div className="help-empty-art" style={art} aria-hidden="true" />
+        <div>
+          <h3>Start with what you have.</h3>
+          <p>
+            Record the balance your conference holds today. Every gift and
+            every payment after it will add up from there.
+          </p>
+          <Button onClick={onRecord}>
+            <Plus size={18} aria-hidden="true" /> Record money
+          </Button>
+        </div>
+      </div>
+    );
+
   return (
     <>
-      <dl className="treasury-figures">
+      <dl className="help-figures">
         <div>
           <dt>Balance today</dt>
           <dd>
             {formatCents(ledger.balance)}
-            <small>As of {fullDayLabel(ledger.today)}</small>
+            <small>As of {weekDayLabel(ledger.today)}</small>
           </dd>
         </div>
         <div>
           <dt>In, {month}</dt>
           <dd>
-            {formatCents(ledger.moneyIn)}
+            {formatFigure(ledger.moneyIn)}
             <small>
-              {ledger.incomeSources.map(categoryLabel).join(", ") ||
-                "Nothing received yet"}
+              {ledger.incomeSources.join(", ") || "Nothing received yet"}
             </small>
           </dd>
         </div>
         <div>
           <dt>Out, {month}</dt>
           <dd>
-            {formatCents(ledger.moneyOut)}
-            <small>
-              {count(ledger.neighborsHelped, "neighbor", "neighbors")} helped
-            </small>
+            {formatFigure(ledger.moneyOut)}
+            <small>{paidFor.join(", ") || "Nothing paid yet"}</small>
           </dd>
         </div>
       </dl>
 
-      {payable.length > 0 && (
-        <section
-          className="live-request-section"
-          aria-labelledby="treasury-payable-title"
-        >
+      {first && (
+        <section className="help-sheet" aria-labelledby="treasury-waiting-title">
+          <p className="help-sheet-label">Approved, waiting to be paid</p>
+          <div className="help-sheet-body">
+            <div>
+              <h2 id="treasury-waiting-title">
+                {categoryLabel(first.kind)}, {formatCents(first.remaining)} to{" "}
+                {first.payeeName}
+              </h2>
+              <p className="help-why">
+                For <NeighborLink id={first.neighborId} name={first.neighborName} />
+                . {first.summary}.
+              </p>
+              <p>
+                {first.paid > 0
+                  ? `${formatCents(first.paid)} of the ${formatCents(first.amountApproved)} approved is already paid. `
+                  : ""}
+                The payment goes to {first.payeeName}, never to the neighbor.
+              </p>
+            </div>
+            <div className="help-actions">
+              <Button onClick={() => onPay(first)}>Record payment</Button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {waiting.length > 0 && (
+        <section className="treasury-waiting" aria-labelledby="treasury-also-title">
           <div className="live-section-head">
-            <h2 id="treasury-payable-title">Approved, waiting to be paid</h2>
+            <h2 id="treasury-also-title">Also waiting</h2>
             <span className="live-count">
-              {count(payable.length, "request", "requests")} ·{" "}
-              {formatCents(payable.reduce((sum, row) => sum + row.remaining, 0))}
+              {count(waiting.length, "request", "requests")},{" "}
+              {formatCents(waiting.reduce((sum, row) => sum + row.remaining, 0))}
             </span>
           </div>
           <div className="live-list">
-            {payable.map((request) => (
-              <div className="live-row" key={request.requestId}>
-                <div className="live-row-main">
-                  <h3 className="treasury-owed">
-                    {categoryLabel(request.kind)} ·{" "}
+            {waiting.map((request) => (
+              <div className="help-row" key={request.requestId}>
+                <div className="help-avatar" aria-hidden="true">
+                  {initials(request.neighborName)}
+                </div>
+                <div>
+                  <h3>
                     {formatCents(request.remaining)} to {request.payeeName}
                   </h3>
                   <p>
-                    {request.summary}, for{" "}
-                    <Link
-                      className="live-link"
-                      href={neighborHref(request.neighborId)}
-                    >
-                      {request.neighborName}
-                    </Link>
+                    {categoryLabel(request.kind)} for{" "}
+                    <NeighborLink
+                      id={request.neighborId}
+                      name={request.neighborName}
+                    />
+                    . {request.summary}
                     {request.paid > 0 &&
-                      `. ${formatCents(request.paid)} of ${formatCents(request.amountApproved)} already paid`}
+                      `. ${formatCents(request.paid)} already paid`}
                   </p>
                 </div>
-                <div className="live-row-actions treasury-pay">
-                  <Button size="sm" onClick={() => onPay(request)}>
-                    Record payment
-                  </Button>
-                </div>
+                <Button variant="outline" onClick={() => onPay(request)}>
+                  Record payment
+                </Button>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      <div className="live-section-head treasury-head">
+      <div className="live-section-head">
         <div className="treasury-month">
           <h2 aria-live="polite">{month}</h2>
           <Button
             variant="ghost"
-            size="icon-sm"
+            size="icon"
             aria-label="Earlier month"
             disabled={!earlier}
             onClick={() => earlier && onMonth(earlier)}
@@ -124,7 +198,7 @@ export function LedgerView({
           </Button>
           <Button
             variant="ghost"
-            size="icon-sm"
+            size="icon"
             aria-label="Later month"
             disabled={!later}
             onClick={() => later && onMonth(later)}
@@ -132,57 +206,139 @@ export function LedgerView({
             <ChevronRight aria-hidden="true" />
           </Button>
         </div>
-        <span className="live-count">Every payment is tied to a request</span>
+        <div className="treasury-tools">
+          <span className="live-count">Every payment is tied to a request</span>
+          <Button variant={first ? "outline" : "default"} onClick={onRecord}>
+            <Plus size={18} aria-hidden="true" /> Record money
+          </Button>
+        </div>
       </div>
       {ledger.entries.length ? (
         <div className="live-table-scroll">
-          <table className="treasury-ledger" role="table">
-            <thead role="rowgroup">
-              <tr role="row">
-                <th role="columnheader" scope="col">Date</th>
-                <th role="columnheader" scope="col">What</th>
-                <th role="columnheader" scope="col">For</th>
-                <th role="columnheader" scope="col" className="treasury-money">In</th>
-                <th role="columnheader" scope="col" className="treasury-money">Out</th>
-                <th role="columnheader" scope="col" className="treasury-money">Balance</th>
+          <table className="help-ledger">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">What</th>
+                <th scope="col">For</th>
+                <th scope="col" className="help-money">In</th>
+                <th scope="col" className="help-money">Out</th>
+                <th scope="col" className="help-money">Balance</th>
               </tr>
             </thead>
-            <tbody role="rowgroup">
-              {ledger.entries.map((entry) => (
-                <tr role="row" key={entry.id}>
-                  <td role="cell">{dayLabel(entry.date)}</td>
-                  <td role="cell">{entry.what}</td>
-                  <td role="cell">
-                    {entry.neighbor ? (
-                      <Link
-                        className="live-link"
-                        href={neighborHref(entry.neighbor.id)}
-                      >
-                        {entry.neighbor.name}
-                      </Link>
-                    ) : (
-                      categoryLabel(entry.category)
-                    )}
-                  </td>
-                  <td role="cell" className="treasury-money">
-                    {entry.kind === "income" && formatCents(entry.amount)}
-                  </td>
-                  <td role="cell" className="treasury-money">
-                    {entry.kind === "expense" && formatCents(entry.amount)}
-                  </td>
-                  <td role="cell" className="treasury-money">
-                    {formatCents(entry.balance)}
-                  </td>
-                </tr>
-              ))}
+            <tbody>
+              {ledger.entries.map((entry) => {
+                const { title, detail } = entryLines(entry);
+                return (
+                  <tr
+                    key={entry.id}
+                    data-reversed={entry.reversed ? "" : undefined}
+                  >
+                    <td>{dayLabel(entry.date)}</td>
+                    <td className="help-what">
+                      <Button variant="ghost" onClick={() => onEntry(entry)}>
+                        {title}
+                      </Button>
+                      <small>
+                        {entry.reversed ? `Reversed · ${detail}` : detail}
+                      </small>
+                    </td>
+                    <td data-for>
+                      {entry.neighbor && (
+                        <NeighborLink
+                          id={entry.neighbor.id}
+                          name={entry.neighbor.name}
+                        />
+                      )}
+                    </td>
+                    <td className="help-money" data-in>
+                      {entry.kind === "income" &&
+                        `+ ${formatCents(entry.amount)}`}
+                    </td>
+                    <td className="help-money">
+                      {entry.kind === "expense" && formatCents(entry.amount)}
+                    </td>
+                    <td className="help-money" data-balance>
+                      {formatCents(entry.balance)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
+            <tfoot>
+              <tr>
+                <td />
+                <td>
+                  {ledger.month === ledger.today.slice(0, 7)
+                    ? `${month} so far`
+                    : month}
+                </td>
+                <td />
+                <td className="help-money" data-in>
+                  + {formatCents(ledger.moneyIn)}
+                </td>
+                <td className="help-money">{formatCents(ledger.moneyOut)}</td>
+                <td className="help-money">
+                  {formatCents(ledger.opening + ledger.moneyIn - ledger.moneyOut)}
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       ) : (
-        <LiveEmpty title={`Nothing recorded in ${month}.`}>
-          The balance carried in is {formatCents(ledger.opening)}.
-        </LiveEmpty>
+        <div className="help-empty">
+          <div className="help-empty-art" style={art} aria-hidden="true" />
+          <div>
+            <h3>A quiet month so far.</h3>
+            <p>
+              Nothing is recorded in {month} yet. {formatCents(ledger.opening)}{" "}
+              was carried in.
+            </p>
+          </div>
+        </div>
       )}
     </>
+  );
+}
+
+export function LedgerLoading() {
+  return (
+    <div role="status" aria-label="Opening the ledger">
+      <div className="help-skeleton treasury-skeleton-figures" />
+      <div className="help-skeleton">
+        <div><i /><span><b /><b /></span></div>
+        <div><i /><span><b /><b /></span></div>
+        <div><i /><span><b /><b /></span></div>
+      </div>
+    </div>
+  );
+}
+
+export function LedgerPrivate() {
+  return (
+    <div className="help-empty">
+      <div
+        className="help-empty-art"
+        style={{
+          backgroundImage: "url(/assets/painted-world/door.webp)",
+          backgroundColor: "#eeece0",
+          backgroundSize: "auto 120%",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "50% 20%",
+        }}
+        aria-hidden="true"
+      />
+      <div>
+        <h3>Kept private.</h3>
+        <p>
+          The ledger names the neighbors it helped, so it is open to
+          coordinators only. Your commitments and your team are where they
+          always are.
+        </p>
+        <Button variant="outline" asChild>
+          <Link href="/app/mine">My commitments</Link>
+        </Button>
+      </div>
+    </div>
   );
 }

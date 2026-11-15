@@ -56,6 +56,11 @@ describe("who may see and use the ledger", () => {
     await expect(as(ids.member).query(api.treasury.ledger, { churchId: ids.church })).rejects.toThrow(refused);
     await expect(as(ids.member).query(api.treasury.payable, { churchId: ids.church })).rejects.toThrow(refused);
     await expect(as(ids.member).mutation(api.treasury.recordPayment, payment)).rejects.toThrow(refused);
+    const gift = { churchId: ids.church, amount: 15000, date: day(), to: "St. Placeholder Conference" };
+    const collection = { churchId: ids.church, source: "collection" as const, amount: 64000, date: day(), from: "St. Sample Parish" };
+    await expect(as(ids.member).mutation(api.treasury.recordIncome, collection)).rejects.toThrow(refused);
+    await expect(as(ids.member).mutation(api.treasury.recordTwinningGift, gift)).rejects.toThrow(refused);
+    await expect(as(ids.stranger).mutation(api.treasury.recordIncome, collection)).rejects.toThrow("Workspace access required.");
     await expect(as(ids.stranger).query(api.treasury.ledger, { churchId: ids.church })).rejects.toThrow("Workspace access required.");
     await expect(as(ids.stranger).mutation(api.treasury.recordPayment, payment)).rejects.toThrow("Workspace access required.");
     expect(await entries()).toHaveLength(1);
@@ -83,7 +88,7 @@ describe("paying an approved request", () => {
 
     const view = await as(ids.coordinator).query(api.treasury.ledger, { churchId: ids.church, month: day(1).slice(0, 7) });
     expect(view.balance).toBe(78540);
-    expect(view.entries.find((entry) => entry.id === id)).toMatchObject({ what: "Shut-off notice on the electric bill, Demo Power & Light", neighbor: { id: ids.neighbor, name: "Alma Figueroa" } });
+    expect(view.entries.find((entry) => entry.id === id)).toMatchObject({ summary: "Shut-off notice on the electric bill", payee: "Demo Power & Light", neighbor: { id: ids.neighbor, name: "Alma Figueroa" } });
   });
 
   test("payments in parts never pass the approved amount", async () => {
@@ -140,6 +145,90 @@ describe("paying an approved request", () => {
   });
 });
 
+describe("money in and twinning gifts", () => {
+  test("each source is stored under its plain name and raises the balance; a gift out lowers it", async () => {
+    const { ids, as, entries } = await setup();
+    const owner = as(ids.owner);
+    const sources = [["opening", "Opening balance"], ["collection", "Parish collection"], ["walk", "Friends of the Poor Walk"], ["donation", "Donation"], ["twinning", "Twinning received"]] as const;
+    for (const [source] of sources) await owner.mutation(api.treasury.recordIncome, { churchId: ids.church, source, amount: 10001, date: day(2), from: " St. Sample Parish " });
+    await owner.mutation(api.treasury.recordTwinningGift, { churchId: ids.church, amount: 15000, date: day(1), to: "St. Placeholder Conference", memo: "Quarterly gift" });
+
+    const all = await entries();
+    expect(all.filter((entry) => entry.kind === "income").map((entry) => entry.category)).toEqual(sources.map(([, label]) => label));
+    expect(all.at(-1)).toMatchObject({ kind: "expense", amount: 15000, category: "Twinning gift", payee: "St. Placeholder Conference", memo: "Quarterly gift", recordedBy: ids.owner.memberId });
+    expect(all.every((entry) => entry.payee === entry.payee.trim() && !entry.requestId && !entry.neighborId)).toBe(true);
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(5 * 10001 - 15000);
+  });
+
+  test("an entry needs whole cents, a real day not ahead of today, and a name", async () => {
+    const { ids, as, entries } = await setup();
+    const owner = as(ids.owner);
+    const income = (fields: { amount?: number; date?: string; from?: string }) => owner.mutation(api.treasury.recordIncome, { churchId: ids.church, source: "donation", amount: 5000, date: day(), from: "Anonymous gift", ...fields });
+    const gift = (fields: { amount?: number; date?: string; to?: string }) => owner.mutation(api.treasury.recordTwinningGift, { churchId: ids.church, amount: 5000, date: day(), to: "St. Placeholder Conference", ...fields });
+    for (const record of [income, gift]) {
+      for (const amount of [99.5, 0, -1, Number.NaN]) await expect(record({ amount })).rejects.toThrow("Enter an amount");
+      await expect(record({ date: day(-1) })).rejects.toThrow("cannot be dated in the future");
+      await expect(record({ date: "2026-13-01" })).rejects.toThrow("Choose the day");
+    }
+    await expect(income({ from: "  " })).rejects.toThrow("Say where the money came from.");
+    await expect(gift({ to: "" })).rejects.toThrow("Say which conference");
+    expect(await entries()).toHaveLength(0);
+  });
+});
+
+describe("taking an entry back", () => {
+  test("a reversal is a new entry that restores the balance and leaves the original untouched", async () => {
+    const { ids, as, request, income, entries } = await setup();
+    const owner = as(ids.owner);
+    await income(100000, day(9));
+    const requestId = await request({ amountApproved: 30000 });
+    const paymentId = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 30000, date: day(3) });
+    const before = await entries();
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(70000);
+    expect(await owner.query(api.treasury.payable, { churchId: ids.church })).toEqual([]);
+
+    const reversalId = await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: paymentId, reason: " Check was lost in the mail " });
+    const after = await entries();
+    expect(after.slice(0, before.length)).toEqual(before);
+    expect(after.at(-1)).toMatchObject({ _id: reversalId, kind: "income", amount: 30000, date: day(), category: "utility", payee: "Demo Power & Light", memo: "Reversal: Check was lost in the mail", requestId, neighborId: ids.neighbor, reverses: paymentId });
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(100000);
+
+    // The request is owed again in full and can be paid again.
+    expect(await owner.query(api.treasury.payable, { churchId: ids.church })).toMatchObject([{ requestId, paid: 0, remaining: 30000 }]);
+    await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 30000, date: day() });
+    expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(70000);
+  });
+
+  test("the month counts a payment taken back as less paid out, not as money in", async () => {
+    const { ids, as, request, income } = await setup();
+    const owner = as(ids.owner);
+    await income(50000, day());
+    const paymentId = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request(), amount: 20000, date: day() });
+    const giftId = await owner.mutation(api.treasury.recordIncome, { churchId: ids.church, source: "donation", amount: 7000, date: day(), from: "Anonymous gift" });
+    expect(await owner.query(api.treasury.ledger, { churchId: ids.church })).toMatchObject({ moneyIn: 57000, moneyOut: 20000, neighborsHelped: 1 });
+    await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: paymentId, reason: "Paid twice by mistake" });
+    await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: giftId, reason: "Entered twice" });
+    const view = await owner.query(api.treasury.ledger, { churchId: ids.church });
+    expect(view).toMatchObject({ balance: 50000, moneyIn: 50000, moneyOut: 0, neighborsHelped: 0, incomeSources: ["Parish collection"] });
+    expect(view.entries.map((entry) => [entry.reversed, entry.reverses !== null])).toEqual([[false, true], [false, true], [true, false], [true, false], [false, false]]);
+  });
+
+  test("an entry is reversed once, with a reason, by someone allowed, inside their own group", async () => {
+    const { ids, as, income, entries } = await setup();
+    const entryId = await income(40000, day(1));
+    const reverse = (person: { userId: string }, reason = "Entered twice", churchId = ids.church) => as(person).mutation(api.treasury.reverseEntry, { churchId, entryId, reason });
+    await expect(reverse(ids.member)).rejects.toThrow(refused);
+    await expect(reverse(ids.stranger)).rejects.toThrow("Workspace access required.");
+    await expect(reverse(ids.stranger, "Entered twice", ids.other)).rejects.toThrow("Entry not found.");
+    await expect(reverse(ids.owner, "  ")).rejects.toThrow("Say why");
+    const reversalId = await reverse(ids.coordinator);
+    await expect(reverse(ids.owner)).rejects.toThrow("already been reversed");
+    await expect(as(ids.owner).mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: reversalId, reason: "Undo" })).rejects.toThrow("A reversal cannot be reversed.");
+    expect(await entries()).toHaveLength(2);
+    expect((await as(ids.owner).query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(0);
+  });
+});
+
 describe("a balance that always adds up", () => {
   test("after any sequence of money in and payments, the balance is the sum of the entries", async () => {
     const { ids, as, request, income, entries } = await setup();
@@ -149,8 +238,14 @@ describe("a balance that always adds up", () => {
       state = (state * 1103515245 + 12345) % 2147483648;
       return low + (state % (high - low + 1));
     };
-    for (let step = 0; step < 40; step++) {
-      if (next(0, 2) === 0) await income(next(1, 500000), day(next(0, 80)));
+    for (let step = 0; step < 60; step++) {
+      const move = next(0, 6);
+      if (move === 0) await income(next(1, 500000), day(next(0, 80)));
+      else if (move === 1) await as(ids.owner).mutation(api.treasury.recordIncome, { churchId: ids.church, source: "collection", amount: next(1, 500000), date: day(next(0, 80)), from: "St. Sample Parish" });
+      else if (move === 3) {
+        const open = (await entries()).filter((entry, _, all) => !entry.reverses && !all.some((other) => other.reverses === entry._id));
+        if (open.length) await as(ids.owner).mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: open[next(0, open.length - 1)]._id, reason: "Entered by mistake" });
+      } else if (move === 2) await as(ids.owner).mutation(api.treasury.recordTwinningGift, { churchId: ids.church, amount: next(1, 50000), date: day(next(0, 80)), to: "St. Placeholder Conference" });
       else {
         const approved = next(1, 90000);
         const requestId = await request({ amountApproved: approved });

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { centsToInput, formatCents, parseCents } from "./money";
+import { centsToInput, formatCents, formatFigure, parseCents } from "./money";
 
 describe("money typed by a person", () => {
   test("is read as whole cents", () => {
@@ -25,5 +25,8 @@ describe("money typed by a person", () => {
       expect(parseCents(formatCents(cents))).toBe(cents);
     }
     expect(formatCents(421840)).toBe("$4,218.40");
+    expect(formatFigure(215000)).toBe("$2,150");
+    expect(formatFigure(101260)).toBe("$1,012.60");
+    expect(formatFigure(-5000)).toBe("-$50");
   });
 });

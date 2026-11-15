@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LiveField } from "@/components/workspace/primitives";
 import {
@@ -9,6 +8,11 @@ import {
   formatCents,
   parseCents,
 } from "@/components/workspace/treasury/money";
+import {
+  FormActions,
+  FormError,
+  type Refusal,
+} from "@/components/workspace/treasury/form-parts";
 import type { Payable } from "@/components/workspace/treasury/labels";
 
 export type Payment = { amount: number; date: string; memo: string };
@@ -21,8 +25,7 @@ export function PaymentForm({
 }: {
   request: Payable;
   today: string;
-  /** Resolves to a message when the payment was refused. */
-  onSubmit: (payment: Payment) => Promise<string | null>;
+  onSubmit: (payment: Payment) => Promise<Refusal>;
   onCancel: () => void;
 }) {
   const [amount, setAmount] = useState(centsToInput(request.remaining));
@@ -85,19 +88,10 @@ export function PaymentForm({
           onChange={(event) => setMemo(event.target.value)}
         />
       </LiveField>
-      {error && (
-        <div className="live-error" role="alert">
-          {error}
-        </div>
-      )}
-      <div className="live-form-actions">
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={saving}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={saving}>
-          {saving ? "Recording…" : "Record payment"}
-        </Button>
-      </div>
+      {error && <FormError message={error} />}
+      <FormActions saving={saving} onCancel={onCancel}>
+        Record payment
+      </FormActions>
     </form>
   );
 }

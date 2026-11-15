@@ -1,126 +1,115 @@
-.treasury-figures {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 30px;
-  border-top: 2px solid #596e51;
-  padding: 22px 0 6px;
-  margin: 0 0 34px;
-}
-.treasury-figures dt {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--live-muted);
-  margin-bottom: 6px;
-}
-.treasury-figures dd {
-  margin: 0;
-  font:
-    400 34px/1.1 "Newsreader",
-    Georgia,
-    serif;
-  font-variant-numeric: tabular-nums;
-  color: var(--live-ink);
-}
-.treasury-figures small {
-  display: block;
-  font:
-    400 14px/1.4 "Source Sans 3",
-    sans-serif;
-  color: var(--live-muted);
-  margin-top: 6px;
-}
+/* Only what the treasury adds to the shared help-* styles. */
 .treasury-month {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .treasury-month h2 {
-  margin: 0 8px 0 0;
+  margin: 0 10px 0 0;
 }
-.live-app .treasury-money {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.live-app .treasury-month [data-slot="button"] {
+  width: 44px;
+  height: 44px;
 }
-.treasury-ledger {
-  min-width: 660px;
+.treasury-tools {
+  display: flex;
+  align-items: center;
+  gap: 22px;
 }
-.treasury-ledger td:first-child {
-  white-space: nowrap;
+.live-app .treasury-tools [data-slot="button"],
+.live-app .help-empty [data-slot="button"],
+.live-app .treasury-dialog [data-slot="button"] {
+  min-height: 44px;
+  padding-inline: 18px;
+  font-size: 16px;
+}
+.treasury-waiting {
+  margin-bottom: 52px;
+}
+.treasury-waiting .help-amount {
+  display: block;
+  text-align: center;
+  color: var(--help-ochre-ink);
+}
+.help-ledger tr[data-reversed] .help-what,
+.help-ledger tr[data-reversed] td.help-money:not([data-balance]) {
+  color: var(--live-muted);
+}
+.help-ledger tr[data-reversed] td.help-money:not([data-balance]) {
+  color: var(--live-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 .treasury-form-grid {
   align-items: start;
 }
-.treasury-owed {
-  font-variant-numeric: tabular-nums;
+.treasury-dialog .live-field small {
+  font-size: 15px;
 }
-@media (max-width: 700px) {
-  .treasury-figures {
-    grid-template-columns: 1fr;
-    gap: 18px;
+.treasury-skeleton-figures {
+  height: 150px;
+  margin-bottom: 46px;
+  border-top: 2px solid #596e51;
+  border-bottom: 1px solid var(--live-line);
+}
+@media (max-width: 850px) {
+  .treasury-tools {
+    flex-wrap: wrap;
+    gap: 10px 18px;
   }
-  .live-row:has(.treasury-pay),
-  .treasury-head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  /* On a phone each entry reads as three lines, with the amount and the balance after it on the right. */
-  .treasury-ledger {
-    min-width: 0;
-    display: block;
-  }
-  .treasury-ledger thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-  .treasury-ledger tbody {
-    display: block;
-    border-top: 1px solid var(--live-line);
-  }
-  .treasury-ledger tr {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 16px;
-    row-gap: 3px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--live-line);
-  }
-  .live-app .treasury-ledger td {
-    padding: 0;
-    border: 0;
+  .help-ledger td.help-what {
     grid-column: 1;
   }
-  .treasury-ledger td:empty {
-    display: none;
-  }
-  .live-app .treasury-ledger td:first-child,
-  .live-app .treasury-ledger td:nth-child(3),
-  .live-app .treasury-ledger td:last-child {
-    font-size: 14px;
-    color: var(--live-muted);
-  }
-  .live-app .treasury-ledger td:nth-child(2) {
-    font-weight: 600;
-    line-height: 1.35;
-  }
-  .live-app .treasury-ledger td.treasury-money {
+  .live-app table.help-ledger tbody td.help-money {
     grid-column: 2;
     grid-row: 2;
-    font-weight: 600;
+    align-self: start;
   }
-  .live-app .treasury-ledger td.treasury-money:last-child {
-    grid-row: 3;
-    font-weight: 400;
-  }
-  .treasury-ledger td:nth-child(4)::before {
-    content: "+";
-  }
-  .treasury-ledger td:nth-child(5)::before {
-    content: "−";
+}
+.live-app .help-what [data-slot="button"] {
+  display: inline;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  white-space: normal;
+  text-align: left;
+  border-radius: 2px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  text-decoration: underline transparent;
+  text-underline-offset: 5px;
+  transition: text-decoration-color 200ms ease;
+}
+.live-app .help-what [data-slot="button"]:hover {
+  text-decoration-color: #a9b697;
+}
+.help-ledger tr[data-reversed] .help-what [data-slot="button"] {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.treasury-entry-amount {
+  font: 400 44px/1 "Newsreader", Georgia, serif;
+  letter-spacing: -0.03em;
+  font-variant-numeric: lining-nums tabular-nums;
+  margin: 4px 0 6px;
+}
+.treasury-entry-amount[data-in] {
+  color: #3f6a45;
+}
+.treasury-dialog .live-detail {
+  font-size: 17px;
+  margin: 0;
+}
+.treasury-notice:focus-visible {
+  outline: 2px solid #456f46;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-app .help-what [data-slot="button"] {
+    transition: none;
   }
 }

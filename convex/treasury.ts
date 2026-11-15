@@ -15,6 +15,18 @@ const LEDGER_LIMIT = 10000;
 const REQUEST_ENTRY_LIMIT = 200;
 const PAYABLE_LIMIT = 200;
 const MEMO_LIMIT = 200;
+const NAME_LIMIT = 120;
+
+/** Where money comes from. The label is what the ledger stores and shows. */
+export const incomeSources = {
+  collection: "Parish collection",
+  walk: "Friends of the Poor Walk",
+  donation: "Donation",
+  twinning: "Twinning received",
+  opening: "Opening balance",
+} as const;
+export const TWINNING_GIFT = "Twinning gift";
+const incomeSource = v.union(v.literal("collection"), v.literal("walk"), v.literal("donation"), v.literal("twinning"), v.literal("opening"));
 
 type Ctx = QueryCtx | MutationCtx;
 type Entry = Doc<"ledgerEntries">;
@@ -27,6 +39,23 @@ async function group(ctx: Ctx, churchId: Id<"churches">) {
   const church = await ctx.db.get("churches", churchId);
   if (!church) throw new Error("Group not found.");
   return church;
+}
+function requireCents(amount: number) {
+  if (!isCents(amount)) throw new Error("Enter an amount in dollars and cents, more than zero.");
+}
+/** The day and note every new entry carries: a real calendar day, not ahead of today in the group's time zone. */
+async function dated(ctx: Ctx, churchId: Id<"churches">, date: string, note: string | undefined) {
+  if (!DateTime.fromFormat(date, "yyyy-MM-dd").isValid) throw new Error("Choose the day.");
+  if (date > today((await group(ctx, churchId)).timeZone)) throw new Error("An entry cannot be dated in the future.");
+  const memo = (note ?? "").trim();
+  if (memo.length > MEMO_LIMIT) throw new Error(`Keep the note under ${MEMO_LIMIT} characters.`);
+  return { date, memo };
+}
+function named(name: string, missing: string) {
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error(missing);
+  if (trimmed.length > NAME_LIMIT) throw new Error(`Keep the name under ${NAME_LIMIT} characters.`);
+  return trimmed;
 }
 const today = (timeZone: string) => DateTime.now().setZone(timeZone).toFormat("yyyy-MM-dd");
 
@@ -54,11 +83,16 @@ const ledgerRow = v.object({
   kind: v.union(v.literal("income"), v.literal("expense")),
   amount: v.number(),
   category: v.string(),
-  what: v.string(),
+  /** What the neighbor asked for, when the entry is tied to a request. */
+  summary: v.union(v.null(), v.string()),
   payee: v.string(),
   memo: v.string(),
   requestId: v.union(v.null(), v.id("assistanceRequests")),
   neighbor: neighborLink,
+  /** The entry this one takes back, if it is a reversal. */
+  reverses: v.union(v.null(), v.id("ledgerEntries")),
+  /** True once a later entry has taken this one back. */
+  reversed: v.boolean(),
   /** The balance after this entry. */
   balance: v.number(),
 });
@@ -87,6 +121,8 @@ export const ledger = query({
     const all = await ledgerEntries(ctx, args.churchId);
 
     let balance = 0, opening = 0, moneyIn = 0, moneyOut = 0;
+    const reversed = new Set(all.flatMap((entry) => entry.reverses ?? []));
+    const helped = new Map<Id<"neighbors">, number>();
     const months = new Set([day.slice(0, 7)]);
     const inMonth: { entry: Entry; balance: number }[] = [];
     for (const entry of all) {
@@ -95,8 +131,10 @@ export const ledger = query({
       if (entryMonth < month) opening += signed(entry);
       balance += signed(entry);
       if (entryMonth !== month) continue;
-      if (entry.kind === "income") moneyIn += entry.amount;
-      else moneyOut += entry.amount;
+      // A reversal takes away from the side it corrects, so a payment taken back is not counted as money in.
+      if (entry.kind === "income" === !entry.reverses) moneyIn += entry.reverses ? -entry.amount : entry.amount;
+      else moneyOut += entry.reverses ? -entry.amount : entry.amount;
+      if (entry.neighborId) helped.set(entry.neighborId, (helped.get(entry.neighborId) ?? 0) - signed(entry));
       inMonth.push({ entry, balance });
     }
 
@@ -113,8 +151,8 @@ export const ledger = query({
       opening,
       moneyIn,
       moneyOut,
-      incomeSources: [...new Set(inMonth.flatMap(({ entry }) => (entry.kind === "income" ? [entry.category] : [])))],
-      neighborsHelped: new Set(inMonth.flatMap(({ entry }) => (entry.kind === "expense" && entry.neighborId ? [entry.neighborId] : []))).size,
+      incomeSources: [...new Set(inMonth.flatMap(({ entry }) => (entry.kind === "income" && !entry.reverses && !reversed.has(entry._id) ? [entry.category] : [])))],
+      neighborsHelped: [...helped.values()].filter((paid) => paid > 0).length,
       entries: inMonth.reverse().map(({ entry, balance }) => {
         const request = entry.requestId && requests.get(entry.requestId);
         const neighbor = entry.neighborId && neighbors.get(entry.neighborId);
@@ -124,11 +162,13 @@ export const ledger = query({
           kind: entry.kind,
           amount: entry.amount,
           category: entry.category,
-          what: request ? `${request.summary}, ${entry.payee}` : entry.memo || entry.category,
+          summary: request?.summary ?? null,
           payee: entry.payee,
           memo: entry.memo,
           requestId: entry.requestId ?? null,
           neighbor: neighbor ? { id: neighbor._id, name: neighbor.name } : null,
+          reverses: entry.reverses ?? null,
+          reversed: reversed.has(entry._id),
           balance,
         };
       }),
@@ -175,7 +215,7 @@ export const recordPayment = mutation({
     const request = await ctx.db.get("assistanceRequests", args.requestId);
     if (!request || request.churchId !== args.churchId) throw new Error("Request not found.");
     if (request.status !== "approved" || request.amountApproved === undefined) throw new Error("Only an approved request can be paid.");
-    if (!isCents(args.amount)) throw new Error("Enter an amount in dollars and cents, more than zero.");
+    requireCents(args.amount);
 
     const neighbor = await ctx.db.get("neighbors", request.neighborId);
     const payee = request.payeeName.trim();
@@ -183,15 +223,59 @@ export const recordPayment = mutation({
     if (request.payeeKind === "neighbor" || (neighbor && nameKey(payee) === neighbor.nameKey))
       throw new Error("Payments go to the landlord, utility or store, never to the neighbor. Change who is paid on the request first.");
 
-    const day = today((await group(ctx, args.churchId)).timeZone);
-    if (!DateTime.fromFormat(args.date, "yyyy-MM-dd").isValid) throw new Error("Choose the day the payment was made.");
-    if (args.date > day) throw new Error("A payment cannot be dated in the future.");
-    const memo = (args.memo ?? "").trim();
-    if (memo.length > MEMO_LIMIT) throw new Error(`Keep the note under ${MEMO_LIMIT} characters.`);
+    const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
 
     const remaining = request.amountApproved - (await paidTowardRequest(ctx, request._id));
     if (args.amount > remaining) throw new Error(remaining > 0 ? "This is more than what is left of the approved amount." : "This request is already paid in full.");
 
-    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date: args.date, category: request.kind, payee, memo, requestId: request._id, neighborId: request.neighborId, recordedBy: member._id, createdAt: Date.now() });
+    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date, category: request.kind, payee, memo, requestId: request._id, neighborId: request.neighborId, recordedBy: member._id, createdAt: Date.now() });
+  },
+});
+
+/** Money in: a collection, the Friends of the Poor Walk, a donation, a twinning gift received, or the balance a group starts with. */
+export const recordIncome = mutation({
+  args: { churchId: v.id("churches"), source: incomeSource, amount: v.number(), date: v.string(), from: v.string(), memo: v.optional(v.string()) },
+  returns: v.id("ledgerEntries"),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    requireCents(args.amount);
+    const payee = named(args.from, "Say where the money came from.");
+    const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
+    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "income", amount: args.amount, date, category: incomeSources[args.source], payee, memo, recordedBy: member._id, createdAt: Date.now() });
+  },
+});
+
+/** A twinning gift out to another conference: the one payment that is not tied to a neighbor's request. */
+export const recordTwinningGift = mutation({
+  args: { churchId: v.id("churches"), amount: v.number(), date: v.string(), to: v.string(), memo: v.optional(v.string()) },
+  returns: v.id("ledgerEntries"),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    requireCents(args.amount);
+    const payee = named(args.to, "Say which conference the gift goes to.");
+    const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
+    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date, category: TWINNING_GIFT, payee, memo, recordedBy: member._id, createdAt: Date.now() });
+  },
+});
+
+/**
+ * Takes an entry back. Nothing in the ledger is ever edited or deleted: a mistake is corrected by
+ * a new entry for the same amount the other way, dated today, that points at the one it reverses.
+ */
+export const reverseEntry = mutation({
+  args: { churchId: v.id("churches"), entryId: v.id("ledgerEntries"), reason: v.string() },
+  returns: v.id("ledgerEntries"),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    const entry = await ctx.db.get("ledgerEntries", args.entryId);
+    if (!entry || entry.churchId !== args.churchId) throw new Error("Entry not found.");
+    if (entry.reverses) throw new Error("A reversal cannot be reversed. Record the entry again instead.");
+    const already = await ctx.db.query("ledgerEntries").withIndex("by_reverses", (q) => q.eq("reverses", entry._id)).first();
+    if (already) throw new Error("This entry has already been reversed.");
+    const reason = args.reason.trim();
+    if (!reason) throw new Error("Say why this entry is being reversed.");
+    if (reason.length > MEMO_LIMIT) throw new Error(`Keep the reason under ${MEMO_LIMIT} characters.`);
+    const date = today((await group(ctx, args.churchId)).timeZone);
+    return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: entry.kind === "income" ? "expense" : "income", amount: entry.amount, date, category: entry.category, payee: entry.payee, memo: `Reversal: ${reason}`, requestId: entry.requestId, neighborId: entry.neighborId, reverses: entry._id, recordedBy: member._id, createdAt: Date.now() });
   },
 });
