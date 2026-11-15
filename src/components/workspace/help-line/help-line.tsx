@@ -11,6 +11,7 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { Check, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { words } from "@/lib/words";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
@@ -38,7 +39,9 @@ type Drafted = { call: Call; draft: Draft };
 type Step =
   | { kind: "log" }
   | { kind: "return" | "request" | "neighbor" | "draft"; call: Call }
-  | { kind: "change"; drafted: Drafted };
+  | { kind: "change"; drafted: Drafted; neighborId?: Id<"neighbors"> }
+  // The caller is not on file yet: the neighbor is added first, then the draft goes on.
+  | { kind: "join"; drafted: Drafted; then: "approve" | "change" };
 
 const caller = (call: Call) =>
   call.neighborName ?? (call.callerName || "New caller");
@@ -62,7 +65,13 @@ function HelpLine() {
   const approving = useSave();
   // Every draft waits for its own yes; asking for another never drops one. The newest is on the sheet.
   const [drafts, setDrafts] = useState<Drafted[]>([]);
-  const drafted = drafts.at(0) ?? null;
+  const newest = drafts.at(0) ?? null;
+  // The call as it stands now, so a draft knows once its caller is on file.
+  const drafted = newest && {
+    ...newest,
+    call:
+      calls?.waiting.find((call) => call.id === newest.call.id) ?? newest.call,
+  };
   const settle = (call: Call) =>
     setDrafts((all) => all.filter((one) => one.call.id !== call.id));
   const [step, setStep] = useState<Step | null>(null);
@@ -100,13 +109,22 @@ function HelpLine() {
         { call: next.call, draft: outcome.result },
         ...all.filter((one) => one.call.id !== next.call.id),
       ]);
-    else setStep({ kind: "request", call: next.call });
+    else
+      setStep({
+        kind: next.call.neighborId ? "request" : "neighbor",
+        call: next.call,
+      });
   }
-  async function approve({ call, draft }: Drafted) {
+  async function approve(
+    asked: Drafted,
+    neighborId = asked.call.neighborId,
+  ) {
+    const { call, draft } = asked;
     const { kind, amountRequested, payeeKind, payeeName } = draft;
-    if (!call.neighborId || !kind || amountRequested === null || !payeeKind || !payeeName)
-      return;
-    const neighborId = call.neighborId;
+    if (!kind || amountRequested === null || !payeeKind || !payeeName) return;
+    if (!neighborId)
+      return setStep({ kind: "join", drafted: asked, then: "approve" });
+    setStep(null);
     const outcome = await approving.save(() =>
       createRequest({
         churchId,
@@ -122,6 +140,10 @@ function HelpLine() {
     );
     if (outcome.saved) saved(call);
   }
+  const changeFor =
+    step?.kind === "change"
+      ? (step.neighborId ?? step.drafted.call.neighborId)
+      : null;
   if (!calls) return <HelpLoading label="Opening the help line" />;
   return (
     <>
@@ -167,7 +189,13 @@ function HelpLine() {
               format={format}
               pending={approving.pending}
               onApprove={() => void approve(drafted)}
-              onChange={() => setStep({ kind: "change", drafted })}
+              onChange={() =>
+                setStep(
+                  drafted.call.neighborId
+                    ? { kind: "change", drafted }
+                    : { kind: "join", drafted, then: "change" },
+                )
+              }
               onDiscard={() => {
                 settle(drafted.call);
                 setDone("Draft discarded. Nothing was saved.");
@@ -176,7 +204,34 @@ function HelpLine() {
           )
         }
       />
-      {step?.kind === "change" && step.drafted.call.neighborId && (
+      {step?.kind === "join" && (
+        <LiveDialog
+          title="Add a neighbor"
+          description="This call and its request will be kept on their record."
+          onClose={close}
+        >
+          <NeighborForm
+            churchId={churchId}
+            call={step.drafted.call}
+            submit={
+              step.then === "approve"
+                ? "Save neighbor and request"
+                : "Save neighbor and continue"
+            }
+            useLabel={
+              step.then === "approve"
+                ? "Use this neighbor and approve"
+                : "Use this neighbor"
+            }
+            onSaved={(neighborId) =>
+              step.then === "approve"
+                ? void approve(step.drafted, neighborId)
+                : setStep({ kind: "change", drafted: step.drafted, neighborId })
+            }
+          />
+        </LiveDialog>
+      )}
+      {step?.kind === "change" && changeFor && (
         <LiveDialog
           title="Change the draft"
           description={`For ${caller(step.drafted.call)}. Nothing is saved until you save it here.`}
@@ -184,7 +239,7 @@ function HelpLine() {
         >
           <RequestForm
             churchId={churchId}
-            neighborId={step.drafted.call.neighborId}
+            neighborId={changeFor}
             callId={step.drafted.call.id}
             start={{
               ...step.drafted.draft,
@@ -359,23 +414,22 @@ export function HelpLineView({
                         {call.ownerName} is calling back
                       </span>
                     )}
-                    {call.neighborId ? (
-                      <>
-                        <Link className="live-link" href={recordHref(call.neighborId)}>
-                          Open record
-                        </Link>
-                        {!call.openRequest && !draftedCallIds.includes(call.id) && (
-                          <Button
-                            variant="link"
-                            className="help-text-action"
-                            disabled={busy}
-                            onClick={() => onStep({ kind: "draft", call })}
-                          >
-                            {busy ? "Drafting…" : "Draft a request"}
-                          </Button>
-                        )}
-                      </>
-                    ) : (
+                    {call.neighborId && (
+                      <Link className="live-link" href={recordHref(call.neighborId)}>
+                        Open record
+                      </Link>
+                    )}
+                    {!call.openRequest && !draftedCallIds.includes(call.id) && (
+                      <Button
+                        variant="link"
+                        className="help-text-action"
+                        disabled={busy}
+                        onClick={() => onStep({ kind: "draft", call })}
+                      >
+                        {busy ? "Drafting…" : "Draft a request"}
+                      </Button>
+                    )}
+                    {!call.neighborId && (
                       <Button
                         variant="link"
                         className="help-text-action"
@@ -491,7 +545,8 @@ export function DraftSheet({
           </h2>
           <p className="help-quote">“{draft.quote || call.note}”</p>
           <p className="help-why">
-            For {caller(call)}, from the message on{" "}
+            For {call.neighborId ? caller(call) : "a new caller"}, from the
+            message on{" "}
             {format(call.takenAt, {
               month: undefined,
               day: undefined,
@@ -506,7 +561,8 @@ export function DraftSheet({
           {complete ? (
             <>
               <Button disabled={pending} onClick={onApprove}>
-                <Check size={18} aria-hidden="true" /> {text.approve}
+                <Check size={18} aria-hidden="true" />{" "}
+                {call.neighborId ? text.approve : "Add neighbor and approve"}
               </Button>
               <Button variant="outline" disabled={pending} onClick={onChange}>
                 {text.change}

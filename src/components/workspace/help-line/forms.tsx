@@ -639,11 +639,17 @@ export function NeighborForm({
   churchId,
   neighbor,
   call,
+  submit,
+  useLabel,
   onSaved,
 }: {
   churchId: ChurchId;
   neighbor?: Neighbor;
   call?: Call;
+  /** What the save button says when adding a neighbor leads on to something else. */
+  submit?: string;
+  /** When given, someone already on file can be chosen instead, under this label. */
+  useLabel?: string;
   onSaved: (neighborId: Id<"neighbors">) => void;
 }) {
   const create = useMutation(api.neighbors.create);
@@ -796,7 +802,7 @@ export function NeighborForm({
             {duplicates[0].same === "phone" ? "phone number" : "name"}.
           </p>
           <p className="live-error-recovery">
-            Open the record, or change the{" "}
+            {useLabel ? "Use that record" : "Open the record"}, or change the{" "}
             {duplicates[0].same === "phone" ? "number" : "name"}. What you typed
             is still here. If this is someone else, save again.
           </p>
@@ -808,9 +814,20 @@ export function NeighborForm({
                   {[match.phone, match.address].filter(Boolean).join(" · ")}
                 </p>
               </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link href={recordHref(match.id)}>Open record</Link>
-              </Button>
+              {useLabel ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onSaved(match.id)}
+                >
+                  {useLabel}
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={recordHref(match.id)}>Open record</Link>
+                </Button>
+              )}
             </div>
           ))}
         </div>
@@ -823,7 +840,7 @@ export function NeighborForm({
             ? "Save changes"
             : duplicates.length
               ? "Save as a new neighbor"
-              : "Add neighbor"
+              : (submit ?? "Add neighbor")
         }
       />
     </form>
