@@ -772,3 +772,43 @@
  .live-mobile-menu-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
 }
 .live-menu-current{color:#4b5f42}
+
+/* Keep clear of the notch, the rounded corners and the home bar on iPhone and iPad. */
+.live-header {
+  padding-top: calc(18px + env(safe-area-inset-top));
+  padding-left: max(4vw, env(safe-area-inset-left));
+  padding-right: max(4vw, env(safe-area-inset-right));
+}
+.live-nav { padding-left: max(22px, env(safe-area-inset-left)); }
+.live-main {
+  padding-right: max(clamp(24px, 5vw, 78px), env(safe-area-inset-right));
+  padding-bottom: calc(100px + env(safe-area-inset-bottom));
+}
+@media (max-width: 850px) {
+  .live-header {
+    height: calc(74px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
+  }
+  .live-nav {
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+  }
+  .live-main {
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+  .live-auth { padding-bottom: env(safe-area-inset-bottom); }
+  .live-auth-art { height: calc(140px + env(safe-area-inset-top)); }
+}
+@media (max-width: 560px) {
+  .live-nav {
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+  .live-main {
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+}

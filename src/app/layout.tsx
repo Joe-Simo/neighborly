@@ -4,6 +4,7 @@ import "../../public/fonts/fonts.css";
 export const viewport: Viewport = {
   colorScheme: "light",
   themeColor: "#f5f3ec",
+  viewportFit: "cover",
 };
 export const metadata: Metadata = {
   metadataBase: new URL("https://kindhelps.com"),
