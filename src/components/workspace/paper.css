@@ -13,7 +13,7 @@
     count-up      a figure that rolls to its value; use <CountUp> from primitives.
   All of them are still for anyone who asks for less motion.
 */
-@property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #c8962e; }
+@property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
 .live-app,
 .live-dialog,
 .live-mobile-menu {
@@ -59,7 +59,10 @@
   animation-delay: var(--paper-wait, 0ms);
 }
 
-/* A folded corner for any sheet that is waiting for a yes. help-sheet already draws one. */
+/* A folded corner. One rule for every room: plain paper at rest, ochre only while
+   something waits for a person's yes, green once it is given or done.
+   paper-corner rests plain; help-sheet is the waiting sheet, so it is ochre unless
+   it says paper-rest; paper-waits and paper-fold name the other two states. */
 .paper-corner { position: relative; }
 .paper-corner::after {
   content: "";
@@ -77,6 +80,8 @@
   transform-origin: 100% 0;
   transition: --paper-corner 400ms var(--paper-ease);
 }
+.help-sheet, .paper-waits { --paper-corner: #c8962e; }
+.paper-rest { --paper-corner: #e6e1d2; }
 .paper-fold { --paper-corner: #365c46; }
 .paper-fold::after { animation: paper-press 400ms var(--paper-ease); }
 

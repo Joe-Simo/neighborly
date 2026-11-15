@@ -72,6 +72,8 @@ the head, the picture and the menu marker itself. Rooms use four classes:
 | `paper-rise` | A thing arrives: up 12px and in, 320ms. `paper-rows` on a parent does it for the first eight children, 30ms apart. `live-list`, `help-row`, `help-timeline` and `help-ledger` rows already have it. |
 | `paper-settle` | A sheet is laid down, 420ms. `help-sheet` already has it. |
 | `paper-fold` | Add to a `help-sheet` (or any `paper-corner`) when its yes is given: the corner turns from ochre to green and presses flat, 400ms. |
+| `paper-waits` | The corner is ochre: something here waits for a person's yes. `help-sheet` has it already. |
+| `paper-rest` | The corner is plain paper: add to a `help-sheet` that waits for nothing. `paper-corner` alone rests plain. |
 | `count-up` | A figure rolling to its value in 400ms: render `<CountUp value={n} format={...} />` from `primitives.tsx`. |
 
 Set `--paper-order` (0 to 7) on an element to place it in a stagger by hand.
@@ -84,3 +86,10 @@ It takes and gives the same `"YYYY-MM-DD"` string a date input does, so it repla
 read it from `FormData` by `name`, or pass `value` and `onChange(value)`. `min` and `max` bound the days.
 It is a 44px paper button that opens a month (shadcn Popover with react-day-picker), in en, es and ht, and never
 uses the system date box, so it holds its width on iPhone. Time off uses it; other rooms can switch when they like.
+
+## The paper corner rule
+
+A paper corner is plain paper at rest, ochre only while something waits for a person's yes, and green once it is
+given or done. Nothing else may colour a corner. In classes: `paper-corner` rests plain; `paper-waits` is ochre;
+`paper-fold` is green. A `help-sheet` is the waiting sheet and is ochre by default, so a `help-sheet` that waits
+for no one (a statement, a finished check) takes `paper-rest` until it earns `paper-fold`.

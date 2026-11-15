@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
 import { PaperSurface } from "@/components/paper-surface";
 import { Button } from "@/components/ui/button";
@@ -115,7 +115,7 @@ export function LiveWorkspace({
     (id ? words.shell.member : words.detail.unassigned);
   const teamName = (id: string) =>
     data.teams.find((team) => team.id === id)?.name ?? words.shell.team;
-  const [now] = useState(() => Date.now());
+  const now = useSyncExternalStore(noChange, openedAt, () => 0);
   async function perform(command: LiveCommand, success?: string) {
     setPending(true);
     setError("");
@@ -639,3 +639,11 @@ function useSystemTextSize() {
     };
   }, []);
 }
+
+/**
+ * The moment this workspace opened in the browser, read once and kept. A server
+ * render has no such moment and says 0, so no route reads the clock while prerendering.
+ */
+let opened: number | undefined;
+const openedAt = () => (opened ??= Date.now());
+const noChange = () => () => {};
