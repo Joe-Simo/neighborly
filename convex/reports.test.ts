@@ -296,12 +296,14 @@ describe("the parts the sample conference does not exercise", () => {
       const ask = (neighborId: Id<"neighbors">) => ctx.db.insert("assistanceRequests", { churchId: ids.churchId, neighborId, kind: "voucher", summary: "Beds", amountRequested: 0, status: "closed", decisionNote: "", payeeKind: "vendor", payeeName: "", source: "person", createdBy: ids.owner.memberId, createdAt: Date.parse("2026-03-03T15:00:00Z") });
       const shelf = (requestId: Id<"assistanceRequests">, date: string, change: number) => ctx.db.insert("voucherStock", { churchId: ids.churchId, date, change, item: "Bed", note: "", requestId, recordedBy: ids.owner.memberId, createdAt: 0 });
       const kept = await ask(other), returned = await ask(ids.neighborId);
+      // Given and marked paid, as the help line records a voucher: it owes no money.
+      await ctx.db.patch("assistanceRequests", kept, { status: "paid", amountApproved: 0 });
       await shelf(kept, "2026-03-04", -2);
       await shelf(returned, "2026-03-05", -1);
       await shelf(returned, "2026-03-09", 1);
     });
     const report = await as(ids.owner.userId).query(api.reports.year, { churchId: ids.churchId, year: 2026 });
-    expect(report.requests).toMatchObject({ received: 3, closed: 3, closedAfterPart: { requests: 1, paid: 20000, approved: 30000 } });
+    expect(report.requests).toMatchObject({ received: 3, closed: 2, paid: 1, paidLater: { requests: 0, amount: 0 }, closedAfterPart: { requests: 1, paid: 20000, approved: 30000 } });
     expect(report.helpPaid).toBe(20000);
     expect(report.vouchers).toEqual({ given: 2, takenBack: 1, requests: 1, households: 1 });
     // One household by money, one by a voucher it kept.

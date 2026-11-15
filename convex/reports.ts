@@ -372,7 +372,8 @@ export const year = query({
     for (const [requestId, toward] of paidByRequest) if (receivedIds.has(requestId)) paidTowardThese += toward.paid;
     const paidLater = { requests: 0, amount: 0 };
     for (const request of requests) {
-      if (request.status !== "paid") continue;
+      // A voucher from the shelf is marked paid and owes no money, so no payment is ever coming for it.
+      if (request.status !== "paid" || !request.amountApproved) continue;
       const paid = paidByRequest.get(request._id)?.paid ?? 0;
       if (paid <= 0) paidLater.requests += 1;
       paidLater.amount += Math.max(0, (request.amountApproved ?? 0) - paid);
