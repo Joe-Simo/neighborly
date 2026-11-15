@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import { mostRows } from "@/components/workspace/tools/member-rows";
+import { mostLines } from "@/components/workspace/tools/member-rows";
 
 export type NeighborRow = { line: number; name: string; phone: string; email: string; address: string; adults: string; children: string; language: string; notes: string };
 export type NeighborSheet = { rows: NeighborRow[] } | { error: string };
@@ -40,6 +40,6 @@ export function readNeighborRows(text: string): NeighborSheet {
     return [{ line: index + 2, name: found.name ? cell(found.name) : `${cell(found.first)} ${cell(found.last)}`.trim(), phone: phones.map(cell).find(Boolean) ?? "", email: cell(found.email), address: [[cell(found.address), cell(found.address2)].filter(Boolean).join(" "), cell(found.city), [cell(found.state), cell(found.zip)].filter(Boolean).join(" ")].filter(Boolean).join(", "), adults: cell(found.adults), children: cell(found.children), language: cell(found.language), notes: cell(found.notes) }];
   });
   if (!rows.length) return { error: "This file has column names but nobody in it." };
-  if (rows.length > mostRows) return { error: `This file has ${rows.length} lines. Bring in up to ${mostRows} at a time.` };
+  if (rows.length > mostLines) return { error: `This file has ${rows.length} lines. Bring in up to ${mostLines} at a time.` };
   return { rows };
 }

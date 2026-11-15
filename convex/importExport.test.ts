@@ -86,13 +86,13 @@ describe("bringing members in from a spreadsheet", () => {
 
 const blank = { phone: "", email: "", address: "", adults: "", children: "", language: "", notes: "" };
 const households = [
-  { line: 2, ...blank, name: "Alma Almonte", phone: "(555) 0100", address: "12 Sample St, Apt 3", adults: "2", children: "3", language: "Spanish", notes: "Prefers a call after 5." },
-  { line: 3, ...blank, name: "Benito Castellanos", phone: "555-0142" },
-  { line: 4, ...blank, name: "  ", phone: "(555) 0103" },
-  { line: 5, ...blank, name: "Celeste Desrosiers", phone: "(555) 0104", adults: "two" },
+  { line: 2, ...blank, name: "Alma Almonte", phone: "(100) 555-0100", address: "12 Sample St, Apt 3", adults: "2", children: "3", language: "Spanish", notes: "Prefers a call after 5." },
+  { line: 3, ...blank, name: "Benito Castellanos", phone: "(100) 555-0142" },
+  { line: 4, ...blank, name: "  ", phone: "(100) 555-0103" },
+  { line: 5, ...blank, name: "Celeste Desrosiers", phone: "(100) 555-0104", adults: "two" },
   { line: 6, ...blank, name: "ALMA  ALMONTE" },
-  { line: 7, ...blank, name: "Darnell Eastman", phone: "555.0100" },
-  { line: 8, ...blank, name: "celeste hyppolite", phone: "(555) 0199" },
+  { line: 7, ...blank, name: "Darnell Eastman", phone: "100.555.0100" },
+  { line: 8, ...blank, name: "celeste hyppolite", phone: "(100) 555-0199" },
   { line: 9, ...blank, name: "Esperanza Figueroa", language: "Klingon" },
   { line: 10, ...blank, name: "Fabrice Greenhalgh", language: "kreyòl", children: "0" },
 ];
@@ -100,7 +100,7 @@ const households = [
 describe("bringing neighbors in from a spreadsheet", () => {
   async function withNeighbor() {
     const world = await setup();
-    await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(555) 0142", phoneKey: "5550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "ht", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
+    await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "ht", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
     const neighbors = () => world.t.run((ctx) => ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", world.ids.church)).collect());
     return { ...world, neighbors };
   }
@@ -115,7 +115,7 @@ describe("bringing neighbors in from a spreadsheet", () => {
     expect(results.map((row) => row.outcome)).toEqual(["added", "same_phone", "no_name", "bad_count", "repeated", "repeated", "same_name", "bad_language", "added"]);
     const added = (await neighbors()).filter((neighbor) => neighbor.name !== "Celeste Hyppolite");
     expect(added).toMatchObject([
-      { name: "Alma Almonte", nameKey: "alma almonte", phone: "(555) 0100", phoneKey: "5550100", address: "12 Sample St, Apt 3", adults: 2, children: 3, language: "es", notes: "Prefers a call after 5.", createdBy: ids.coordinator.memberId },
+      { name: "Alma Almonte", nameKey: "alma almonte", phone: "(100) 555-0100", phoneKey: "1005550100", address: "12 Sample St, Apt 3", adults: 2, children: 3, language: "es", notes: "Prefers a call after 5.", createdBy: ids.coordinator.memberId },
       { name: "Fabrice Greenhalgh", phone: "", phoneKey: "", adults: 1, children: 0, language: "ht" },
     ]);
     // Sending the file again adds nobody: everyone in it is now on file.
@@ -144,7 +144,7 @@ describe("bringing past requests over from another system", () => {
   const blank = { phone: "", status: "Completed", type: "Rent", amount: "$1,250.00", payee: "Sample Street Apartments", notes: "Behind after reduced hours" };
   const history = [
     { line: 2, name: "Celeste Hyppolite", date: "03/14/2026", ...blank },
-    { line: 3, name: "Someone Else", date: "03/14/2026", ...blank, phone: "(555) 0142", type: "Electric bill", amount: "86.5", status: "Call Back", notes: "" },
+    { line: 3, name: "Someone Else", date: "03/14/2026", ...blank, phone: "(100) 555-0142", type: "Electric bill", amount: "86.5", status: "Call Back", notes: "" },
     { line: 4, name: "Nestor Orlov", date: "03/14/2026", ...blank },
     { line: 5, name: "Celeste Hyppolite", date: "14 March", ...blank },
     { line: 6, name: "Celeste Hyppolite", date: "03/15/2026", ...blank, amount: "a lot" },
@@ -155,7 +155,7 @@ describe("bringing past requests over from another system", () => {
   const recent = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
   async function withNeighbor() {
     const world = await setup();
-    const neighborId = await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(555) 0142", phoneKey: "5550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "ht", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
+    const neighborId = await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "ht", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
     const requests = () => world.t.run((ctx) => ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect());
     return { ...world, requests };
   }

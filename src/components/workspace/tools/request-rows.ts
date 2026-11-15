@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import { mostRows } from "@/components/workspace/tools/member-rows";
+import { mostLines } from "@/components/workspace/tools/member-rows";
 
 export type RequestRow = { line: number; name: string; phone: string; date: string; status: string; type: string; amount: string; payee: string; notes: string };
 export type RequestSheet = { rows: RequestRow[] } | { error: string };
@@ -36,6 +36,6 @@ export function readRequestRows(text: string): RequestSheet {
     return [{ line: index + 2, name: found.name ? cell(found.name) : `${cell(found.first)} ${cell(found.last)}`.trim(), phone: phones.map(cell).find(Boolean) ?? "", date: cell(found.date), status: cell(found.status), type: cell(found.type), amount: cell(found.amount), payee: cell(found.payee), notes: cell(found.notes) }];
   });
   if (!rows.length) return { error: "This file has column names but no requests in it." };
-  if (rows.length > mostRows) return { error: `This file has ${rows.length} lines. Bring in up to ${mostRows} at a time; ServWare can export one date range at a time.` };
+  if (rows.length > mostLines) return { error: `This file has ${rows.length} lines. Bring in up to ${mostLines} at a time.` };
   return { rows };
 }

@@ -1,15 +1,16 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
+import Papa from "papaparse";
 import { CircleCheck, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export type LeftOut = { line: number; name: string; reason: string };
 export type SheetStep =
   | { step: "choose"; error?: string; fileName?: string }
-  | { step: "working"; label: string }
+  | { step: "working"; label: string; progress?: string }
   | { step: "review"; fileName: string; ready: number; leftOut: LeftOut[]; error?: string }
-  | { step: "done"; done: number; leftOut: LeftOut[] };
+  | { step: "done"; done: number; leftOut: LeftOut[]; error?: string };
 export type SheetWords = {
   id: string;
   title: string;
@@ -26,7 +27,25 @@ export type SheetWords = {
   another: string;
 };
 
-function LeftOutRows({ rows }: { rows: LeftOut[] }) {
+/**
+ * A long file goes to the backend a batch at a time, in order. Each batch is saved whole or not at all.
+ * If one fails, what came before is kept and reported, and choosing the file again finishes the rest without doubling.
+ */
+export async function inBatches<Row, Result>(rows: Row[], size: number, run: (batch: Row[]) => Promise<Result[]>, onProgress: (done: number) => void) {
+  const results: Result[] = [];
+  for (let start = 0; start < rows.length; start += size) {
+    onProgress(start);
+    try {
+      results.push(...(await run(rows.slice(start, start + size))));
+    } catch {
+      return { results, finished: false };
+    }
+  }
+  return { results, finished: true };
+}
+export const linesOf = (done: number, all: number) => `${done.toLocaleString("en-US")} of ${all.toLocaleString("en-US")} lines`;
+
+function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }) {
   if (!rows.length) return null;
   return (
     <div className="tools-problems">
@@ -48,6 +67,11 @@ function LeftOutRows({ rows }: { rows: LeftOut[] }) {
           </div>
         ))}
       </div>
+      {download && (
+        <a className="tools-sample" download="left-out-lines.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(Papa.unparse({ fields: ["Line", "Name", "Why it was left out"], data: rows.map((row) => [row.line, row.name, row.reason]) }))}`}>
+          Download the left-out lines
+        </a>
+      )}
     </div>
   );
 }
@@ -90,6 +114,7 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
         <div className="help-skeleton" role="status" aria-label={state.label}>
           <div><i /><span><b /><b /></span></div>
           <div><i /><span><b /><b /></span></div>
+          {state.progress && <p className="tools-progress">{state.label}. {state.progress}.</p>}
         </div>
       )}
       {state.step === "review" && (
@@ -124,7 +149,7 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
             {state.done > 0 && afterDone}
             <Button variant="outline" onClick={onReset}>{words.another}</Button>
           </div>
-          <LeftOutRows rows={state.leftOut} />
+          <LeftOutRows rows={state.leftOut} download />
         </>
       )}
     </section>

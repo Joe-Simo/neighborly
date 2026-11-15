@@ -8,6 +8,8 @@ const firstColumns = ["first name", "first", "given name"];
 const lastColumns = ["last name", "last", "surname", "family name"];
 const emailColumns = ["email", "e-mail", "email address", "e-mail address"];
 export const mostRows = 300;
+/** A whole conference's file, several years of it, read at once and saved in batches of `mostRows`. */
+export const mostLines = 6000;
 
 /**
  * Reads a members spreadsheet saved as CSV. The first line names the columns; a Name column

@@ -36,20 +36,20 @@ async function setup() {
     await shift(marisol.memberId, now + 9 * DAY, { cancelled: true });
     await shift(marisol.memberId, now - 90 * DAY);
     await shift(thomas.memberId, now + 3 * DAY);
-    const neighbor = await ctx.db.insert("neighbors", { churchId: church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(555) 0142", phoneKey: "5550142", email: "celeste.hyppolite@neighborly.example", address: "412 Placeholder Rd, Apt 7", adults: 1, children: 2, language: "ht", notes: "Prefers afternoon visits.", createdBy: thomas.memberId, createdAt: now });
+    const neighbor = await ctx.db.insert("neighbors", { churchId: church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "celeste.hyppolite@neighborly.example", address: "412 Placeholder Rd, Apt 7", adults: 1, children: 2, language: "ht", notes: "Prefers afternoon visits.", createdBy: thomas.memberId, createdAt: now });
     const request = await ctx.db.insert("assistanceRequests", { churchId: church, neighborId: neighbor, kind: "utility", summary: "Shut-off notice on the electric bill", amountRequested: 18000, status: "open", decisionNote: "", payeeKind: "utility", payeeName: "Demo Power & Light", source: "person", createdBy: thomas.memberId, createdAt: now });
     const visit = (visitors: (typeof marisol.memberId)[], status: "scheduled" | "cancelled" = "scheduled") => ctx.db.insert("visits", { churchId: church, neighborId: neighbor, requestId: request, scheduledAt: now + 4 * DAY, status, visitors: visitors.map((memberId) => ({ memberId, hours: 0, miles: 0 })), notes: "Bring the utility pledge form.", createdBy: thomas.memberId, createdAt: now });
     await visit([marisol.memberId, renee.memberId]);
     await visit([thomas.memberId, renee.memberId]);
     await visit([marisol.memberId, thomas.memberId], "cancelled");
     // A visit already made, to someone on another street: once it is done it leaves the feed.
-    const earlier = await ctx.db.insert("neighbors", { churchId: church, name: "Wendell Orlov", nameKey: "wendell orlov", phone: "(555) 0177", phoneKey: "5550177", email: "", address: "88 Fixture Ln", adults: 2, children: 0, language: "en", notes: "", createdBy: thomas.memberId, createdAt: now });
+    const earlier = await ctx.db.insert("neighbors", { churchId: church, name: "Wendell Orlov", nameKey: "wendell orlov", phone: "(100) 555-0177", phoneKey: "1005550177", email: "", address: "88 Fixture Ln", adults: 2, children: 0, language: "en", notes: "", createdBy: thomas.memberId, createdAt: now });
     await ctx.db.insert("visits", { churchId: church, neighborId: earlier, scheduledAt: now - 3 * DAY, status: "completed", visitors: [marisol.memberId, renee.memberId].map((memberId) => ({ memberId, hours: 1.5, miles: 8 })), notes: "Reviewed the lease together.", completedAt: now - 3 * DAY, createdBy: thomas.memberId, createdAt: now });
     // Another group entirely, with its own neighbor and visit.
     const elsewhere = await ctx.db.insert("churches", { name: "St. Sample Conference", timeZone: "America/New_York" });
     const strangerUser = await ctx.db.insert("users", {});
     const stranger = await ctx.db.insert("memberships", { churchId: elsewhere, userId: strangerUser, name: "Walter", email: "walter@neighborly.example", role: "owner", active: true, approved: true, coverOptIn: false });
-    const far = await ctx.db.insert("neighbors", { churchId: elsewhere, name: "Odalys Montoya", nameKey: "odalys montoya", phone: "(555) 0188", phoneKey: "5550188", email: "", address: "7 Mockingbird Way", adults: 1, children: 1, language: "es", notes: "", createdBy: stranger, createdAt: now });
+    const far = await ctx.db.insert("neighbors", { churchId: elsewhere, name: "Odalys Montoya", nameKey: "odalys montoya", phone: "(100) 555-0188", phoneKey: "1005550188", email: "", address: "7 Mockingbird Way", adults: 1, children: 1, language: "es", notes: "", createdBy: stranger, createdAt: now });
     await ctx.db.insert("visits", { churchId: elsewhere, neighborId: far, scheduledAt: now + 4 * DAY, status: "scheduled", visitors: [{ memberId: stranger, hours: 0, miles: 0 }, { memberId: marisol.memberId, hours: 0, miles: 0 }], notes: "", createdBy: stranger, createdAt: now });
     return { church, marisol, thomas, renee };
   });
