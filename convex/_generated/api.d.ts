@@ -20,6 +20,7 @@ import type * as notificationEvents from "../notificationEvents.js";
 import type * as notifications from "../notifications.js";
 import type * as pages from "../pages.js";
 import type * as sampleData from "../sampleData.js";
+import type * as treasury from "../treasury.js";
 import type * as users from "../users.js";
 import type * as workspace from "../workspace.js";
 
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   pages: typeof pages;
   sampleData: typeof sampleData;
+  treasury: typeof treasury;
   users: typeof users;
   workspace: typeof workspace;
 }>;

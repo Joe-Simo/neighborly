@@ -1,0 +1,126 @@
+.treasury-figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 30px;
+  border-top: 2px solid #596e51;
+  padding: 22px 0 6px;
+  margin: 0 0 34px;
+}
+.treasury-figures dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--live-muted);
+  margin-bottom: 6px;
+}
+.treasury-figures dd {
+  margin: 0;
+  font:
+    400 34px/1.1 "Newsreader",
+    Georgia,
+    serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--live-ink);
+}
+.treasury-figures small {
+  display: block;
+  font:
+    400 14px/1.4 "Source Sans 3",
+    sans-serif;
+  color: var(--live-muted);
+  margin-top: 6px;
+}
+.treasury-month {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.treasury-month h2 {
+  margin: 0 8px 0 0;
+}
+.live-app .treasury-money {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.treasury-ledger {
+  min-width: 660px;
+}
+.treasury-ledger td:first-child {
+  white-space: nowrap;
+}
+.treasury-form-grid {
+  align-items: start;
+}
+.treasury-owed {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 700px) {
+  .treasury-figures {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .live-row:has(.treasury-pay),
+  .treasury-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  /* On a phone each entry reads as three lines, with the amount and the balance after it on the right. */
+  .treasury-ledger {
+    min-width: 0;
+    display: block;
+  }
+  .treasury-ledger thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .treasury-ledger tbody {
+    display: block;
+    border-top: 1px solid var(--live-line);
+  }
+  .treasury-ledger tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 16px;
+    row-gap: 3px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--live-line);
+  }
+  .live-app .treasury-ledger td {
+    padding: 0;
+    border: 0;
+    grid-column: 1;
+  }
+  .treasury-ledger td:empty {
+    display: none;
+  }
+  .live-app .treasury-ledger td:first-child,
+  .live-app .treasury-ledger td:nth-child(3),
+  .live-app .treasury-ledger td:last-child {
+    font-size: 14px;
+    color: var(--live-muted);
+  }
+  .live-app .treasury-ledger td:nth-child(2) {
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .live-app .treasury-ledger td.treasury-money {
+    grid-column: 2;
+    grid-row: 2;
+    font-weight: 600;
+  }
+  .live-app .treasury-ledger td.treasury-money:last-child {
+    grid-row: 3;
+    font-weight: 400;
+  }
+  .treasury-ledger td:nth-child(4)::before {
+    content: "+";
+  }
+  .treasury-ledger td:nth-child(5)::before {
+    content: "−";
+  }
+}
