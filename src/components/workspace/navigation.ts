@@ -6,6 +6,9 @@ import {
   Users,
   UserRound,
   Umbrella,
+  Phone,
+  House,
+  Landmark,
 } from "lucide-react";
 import type { LiveArea } from "@/components/workspace/areas";
 
@@ -17,6 +20,9 @@ export const navigation = [
   { id: "mine", label: "My commitments", icon: Check },
   { id: "time-off", label: "Time off", icon: Umbrella },
   { id: "tasks", label: "Tasks & meetings", icon: ClipboardList },
+  { id: "help-line", label: "Help line", icon: Phone },
+  { id: "neighbors", label: "Neighbors", icon: House },
+  { id: "treasury", label: "Treasury", icon: Landmark },
 ] as const;
 
 export type ActionKind =
