@@ -12,13 +12,16 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://kindhelps.com"),
   title: "Kind Helps — Good work, together.",
   description:
-    "A place for churches and communities to organize volunteering, bring people together, and help in their own way.",
+    "Kind Helps keeps a conference’s help line, home visits, ledger and yearly report in one place, with the volunteers who do the work. Free for every conference.",
   openGraph: {
+    type: "website",
+    siteName: "Kind Helps",
+    url: "/",
     title: "Kind Helps — Good work, together.",
-    description: "Your people. Your way to help. Volunteering for churches and communities.",
-    images: [{ url: "/assets/living-relief-poster.webp", width: 1440, height: 1024, alt: "The painted community and welcome guide of Kind Helps" }],
+    description: "The help line, home visits in pairs, the ledger and the yearly report, with the volunteers who do the work. Free for every conference.",
+    images: [{ url: "/assets/link-preview.jpg", width: 1200, height: 630, alt: "Two hands in layered paper relief, a small card resting in the open palm, and the words kind helps." }],
   },
-  twitter: { card: "summary_large_image" },
+  twitter: { card: "summary_large_image", images: ["/assets/link-preview.jpg"] },
   appleWebApp: {
     capable: true,
     title: "Kind Helps",

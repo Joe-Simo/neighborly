@@ -35,7 +35,8 @@ export function NeighborlyContinuation() {
   return <div className="neighborly-continuation" id="neighborly-courtyard" ref={root}>
     <FrescoThreshold />
     <noscript>
-      <style>{`.fresco-journey{display:none!important}`}</style>
+      {/* The page is laid out as the scrolling journey from its first paint, so nothing moves when the script arrives; without script it is a plain stacked page. */}
+      <style>{`.fresco-journey{display:none!important}.painted-world-track{height:auto!important;pointer-events:auto!important}.painted-world-viewport{position:relative!important;opacity:1!important}.neighborly-continuation{margin-top:0!important}.neighborly-connected-world::after{display:none!important}`}</style>
       <section className="neighborly-static-story" aria-label="The courtyard">
         {/* A native image keeps the courtyard available without client-side code. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
