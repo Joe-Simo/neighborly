@@ -130,8 +130,8 @@
   padding-top: 8px;
 }
 .treasury-dialog .live-field input[aria-invalid="true"] {
-  border-color: #9f4935;
-  box-shadow: 0 0 0 1px #9f4935;
+  border-color: #6f5f93;
+  box-shadow: 0 0 0 1px #6f5f93;
 }
 /* The way from the ledger to the bank statement, and back. */
 .treasury-foot {

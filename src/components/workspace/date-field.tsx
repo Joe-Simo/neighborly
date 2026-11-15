@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
 import { ChevronDown } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import { es, ht } from "react-day-picker/locale";
@@ -74,7 +74,11 @@ export function DateField({
   const [beside, setBeside] = useState(false);
   const chosen = value ?? own;
   const allowed = (day: string) => (!min || day >= min) && (!max || day <= max);
+  // A needed day left empty: said under the field in our own words, never the browser's bubble.
+  const [missing, setMissing] = useState(false);
+  const missingId = useId();
   const choose = (day: string) => {
+    setMissing(false);
     setOwn(day);
     setTyped(undefined);
     onChange?.(day);
@@ -115,7 +119,7 @@ export function DateField({
   return (
     <Popover open={open && !sheet} onOpenChange={setOpen}>
       <PopoverAnchor asChild>
-        <span className="live-date" data-open={open || undefined}>
+        <span className="live-date" data-open={open || undefined} data-missing={missing || undefined}>
           <input
             className="live-date-words"
             type="text"
@@ -123,6 +127,9 @@ export function DateField({
             disabled={disabled}
             readOnly={sheet}
             aria-haspopup="dialog"
+            aria-required={required || undefined}
+            aria-invalid={missing || undefined}
+            aria-describedby={missing ? missingId : undefined}
             placeholder={words.dateField.choose}
             value={typed ?? said}
             onChange={(event) => setTyped(event.target.value)}
@@ -162,6 +169,14 @@ export function DateField({
             required={required}
             tabIndex={-1}
             aria-hidden="true"
+            // The form's own check finds the empty day here; the answer goes to the field the person sees.
+            onInvalid={(event) => {
+              event.preventDefault();
+              setMissing(true);
+              const hidden = event.currentTarget;
+              if (hidden.form?.querySelector(":invalid") === hidden)
+                hidden.parentElement?.querySelector<HTMLInputElement>(".live-date-words")?.focus();
+            }}
             onChange={(event) => setOwn(event.target.value)}
             ref={(input) => {
               const form = input?.form;
@@ -173,6 +188,11 @@ export function DateField({
           />
         </span>
       </PopoverAnchor>
+      {missing && (
+        <small id={missingId} className="live-date-missing" role="alert">
+          {words.dateField.choose}.
+        </small>
+      )}
       <PopoverContent className="live-date-sheet" aria-label={label || words.dateField.choose} collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
         {month}
       </PopoverContent>
