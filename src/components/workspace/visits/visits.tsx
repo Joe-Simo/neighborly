@@ -1,7 +1,13 @@
 "use client";
 
 import "./visits.css";
-import { useCallback, useLayoutEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
@@ -59,6 +65,8 @@ function Visits() {
   const { pending, error, save, clear } = useSave();
   const [step, setStep] = useState<Step | null>(null);
   const [done, setDone] = useState("");
+  // The visit just planned or written up, so its row can show the paper moving into place.
+  const [fresh, setFresh] = useState<Fresh | null>(null);
   const start = (next: Step) => {
     setDone("");
     clear();
@@ -80,8 +88,9 @@ function Visits() {
     });
     return () => setHeadAction(null);
   }, [sheetId, setHeadAction, planVisit, waitingOnYes]);
-  const finish = (message: string) => {
+  const finish = (message: string, moved: Fresh | null = null) => {
     setStep(null);
+    setFresh(moved);
     setDone(message);
   };
   const day = (at: number) =>
@@ -98,7 +107,12 @@ function Visits() {
   if (!board) return <HelpLoading label="Opening home visits" />;
   return (
     <div className="visits-room">
-      {done && <HelpDone>{done}</HelpDone>}
+      {done &&
+        (fresh?.pair ? (
+          <VisitsAsked pair={fresh.pair}>{done}</VisitsAsked>
+        ) : (
+          <HelpDone>{done}</HelpDone>
+        ))}
       {error && (
         <div className="live-error" role="alert">
           <p>{error}</p>
@@ -112,6 +126,7 @@ function Visits() {
         now={now}
         format={format}
         busy={pending}
+        fresh={fresh?.id}
         onPlan={(requestId) => start({ kind: "plan", requestId })}
         onAsk={async (suggested, pair) => {
           setDone("");
@@ -127,6 +142,7 @@ function Visits() {
           if (outcome.saved)
             finish(
               `${firstName(pair[0].name)} and ${firstName(pair[1].name)} have been asked to visit ${suggested.request.neighborName} on ${day(suggested.scheduledAt)} at ${time(suggested.scheduledAt)}.`,
+              { id: outcome.result, pair: pair.map((person) => person.name) },
             );
         }}
         onWriteUp={(visit) => start({ kind: "writeUp", visit })}
@@ -147,6 +163,7 @@ function Visits() {
             onSaved={(planned) =>
               finish(
                 `${firstName(planned.pair[0])} and ${firstName(planned.pair[1])} have been asked to visit ${planned.neighborName}. The visit is under Coming up.`,
+                { id: planned.visitId, pair: planned.pair },
               )
             }
           />
@@ -182,6 +199,7 @@ function Visits() {
             onSaved={() =>
               finish(
                 `Written up. The visit to ${step.visit.neighborName} now counts toward the year’s hours and miles.`,
+                { id: step.visit.id },
               )
             }
           />
@@ -191,16 +209,50 @@ function Visits() {
   );
 }
 
-function Pair({ names }: { names: string[] }) {
+type Fresh = { id: Id<"visits">; pair?: string[] };
+
+/** Two people as one pair. joining plays the two sets of initials sliding together, once. */
+function Pair({
+  names,
+  joining,
+  bare,
+}: {
+  names: string[];
+  joining?: boolean;
+  bare?: boolean;
+}) {
   return (
-    <span className="help-person">
+    <span className={joining ? "help-person visits-join" : "help-person"}>
       {names.map((name) => (
         <span className="help-initials" key={name} aria-hidden="true">
           {initials(name)}
         </span>
       ))}
-      {names.join(" and ")}
+      {!bare && names.join(" and ")}
     </span>
+  );
+}
+
+/** The line after a pair is asked: their initials come together beside the words. */
+export function VisitsAsked({
+  pair,
+  children,
+}: {
+  pair: string[];
+  children: string;
+}) {
+  const line = useRef<HTMLDivElement>(null);
+  useEffect(() => line.current?.focus(), [children]);
+  return (
+    <div
+      className="live-success help-done visits-asked"
+      role="status"
+      tabIndex={-1}
+      ref={line}
+    >
+      <Pair names={pair} joining bare />
+      <span>{children}</span>
+    </div>
   );
 }
 
@@ -210,6 +262,7 @@ export function VisitsView({
   now,
   format,
   busy,
+  fresh,
   onPlan,
   onAsk,
   onWriteUp,
@@ -219,6 +272,8 @@ export function VisitsView({
   now: number;
   format: Workspace["format"];
   busy: boolean;
+  /** The visit just planned or written up: its pair joins, or its row settles into Written up. */
+  fresh?: Id<"visits">;
   onPlan: (requestId?: Id<"assistanceRequests">) => void;
   onAsk: (suggested: Suggestion, pair: NonNullable<Suggestion["pair"]>) => void;
   onWriteUp: (visit: Visit) => void;
@@ -277,7 +332,7 @@ export function VisitsView({
                 {need(suggested.request.kind, suggested.request.amount)}
               </p>
               {suggested.pair && (
-                <p className="help-why visits-pair">
+                <p className="help-why visits-pair visits-who">
                   <Pair names={suggested.pair.map((person) => person.name)} />
                 </p>
               )}
@@ -312,10 +367,7 @@ export function VisitsView({
       )}
 
       {nothing ? (
-        <HelpEmpty
-          title="No one is waiting on a visit."
-          art="/assets/painted-world/visit-mobile.webp"
-        >
+        <HelpEmpty title="No one is waiting on a visit.">
           When a request for help comes in on the help line, it appears here
           with two people who are free to go.
         </HelpEmpty>
@@ -342,13 +394,14 @@ export function VisitsView({
                   <div className="help-row" key={visit.id}>
                     {leaf(visit.scheduledAt)}
                     <div>
-                      <h3>{visit.neighborName}</h3>
-                      <p className="help-facts">
-                        <span>{visit.address}</span>
+                      <p className="visits-who">
                         <Pair
                           names={visit.visitors.map((visitor) => visitor.name)}
+                          joining={visit.id === fresh}
                         />
                       </p>
+                      <h3>{visit.neighborName}</h3>
+                      <p>{visit.address}</p>
                     </div>
                     <div className="live-row-actions">
                       <span
@@ -398,12 +451,12 @@ export function VisitsView({
               <div className="help-row" key={visit.id}>
                 {leaf(visit.scheduledAt)}
                 <div>
-                  <h3>{visit.neighborName}</h3>
-                  <p>
+                  <p className="visits-who">
                     <Pair
                       names={visit.visitors.map((visitor) => visitor.name)}
                     />
                   </p>
+                  <h3>{visit.neighborName}</h3>
                 </div>
                 <div className="live-row-actions">
                   <Button variant="outline" onClick={() => onWriteUp(visit)}>
@@ -424,16 +477,22 @@ export function VisitsView({
           </div>
           <div className="live-list">
             {board.writtenUp.map((visit) => (
-              <div className="help-row" data-quiet key={visit.id}>
+              <div
+                className={
+                  visit.id === fresh ? "help-row visits-filed" : "help-row"
+                }
+                data-quiet
+                key={visit.id}
+              >
                 {leaf(visit.scheduledAt)}
                 <div>
-                  <h3>{visit.neighborName}</h3>
-                  <p className="visits-found">{visit.notes}</p>
-                  <p>
+                  <p className="visits-who">
                     <Pair
                       names={visit.visitors.map((visitor) => visitor.name)}
                     />
                   </p>
+                  <h3>{visit.neighborName}</h3>
+                  <p className="visits-found">{visit.notes}</p>
                 </div>
                 <div className="live-row-actions">
                   <span className="live-status visits-given">

@@ -3,6 +3,15 @@
 .visits-pair {
   margin-top: 14px !important;
 }
+/* The two who go are the story of a visit: their names lead the row at body size, in ink. */
+.live-app .visits-who {
+  margin: 0 0 8px;
+  color: var(--live-ink, #283c32);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.help-row[data-quiet] .visits-who { color: var(--live-ink, #283c32); }
 .visits-quiet {
   margin: 0;
   padding: 26px 0;
@@ -206,6 +215,19 @@
     animation: none;
   }
 }
+/* Paper motion of this room. A pair is made: the two sets of initials slide together.
+   A visit is written up: its row is laid into Written up like a sheet into a folder. */
+@keyframes visits-join-first { from { opacity: 0; transform: translateX(-14px); } }
+@keyframes visits-join-second { from { opacity: 0; transform: translateX(22px); } }
+@keyframes visits-filed { from { background-color: var(--help-sheet, #fdfcf8); box-shadow: 0 10px 24px rgb(40 60 50 / 0.1); } }
+.visits-join .help-initials { animation: visits-join-first 420ms var(--paper-ease) 180ms backwards; }
+.visits-join .help-initials + .help-initials { animation-name: visits-join-second; }
+.visits-asked .help-person { flex-shrink: 0; }
+.help-row.visits-filed { animation: paper-settle 420ms var(--paper-ease) backwards, visits-filed 900ms ease-out 420ms backwards; }
+@media (prefers-reduced-motion: reduce) {
+  .visits-join .help-initials, .help-row.visits-filed { animation: none; }
+}
+
 /* On paper only the sheet is left: black on white, one page. */
 @media print {
   @page visit-sheet { margin: 12mm 14mm; }

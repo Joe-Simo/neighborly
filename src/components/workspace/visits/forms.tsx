@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DateTime } from "luxon";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -12,6 +13,7 @@ import {
   NativeSelectOption,
 } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import { useWorkspace } from "@/components/workspace/context";
 import { LiveField } from "@/components/workspace/primitives";
 import { count, languageLabels } from "@/components/workspace/help-line/format";
 import { useSave } from "@/components/workspace/help-line/use-save";
@@ -22,6 +24,85 @@ import {
   type Visit,
   type Visitors,
 } from "@/components/workspace/visits/format";
+
+const DAYS_AHEAD = 42;
+/** Half hours from 7:00 in the morning to 8:30 at night, as "HH:mm". */
+const HALF_HOURS = Array.from({ length: 28 }, (_, index) =>
+  DateTime.fromObject({ hour: 7 })
+    .plus({ minutes: index * 30 })
+    .toFormat("HH:mm"),
+);
+
+/**
+ * The day and the time of a visit, as two lists in the group's own wall clock. Plain lists read the
+ * same on every phone and need no typing. Together they post one field, "at", as yyyy-MM-ddTHH:mm.
+ */
+function WhenFields({ defaultValue }: { defaultValue?: string }) {
+  const { data, now, words } = useWorkspace();
+  const [startDay = "", startTime = ""] = (defaultValue ?? "").split("T");
+  const [day, setDay] = useState(startDay);
+  const [time, setTime] = useState(startTime);
+  const today = DateTime.fromMillis(now, { zone: data.church.timeZone });
+  const days = Array.from({ length: DAYS_AHEAD }, (_, index) =>
+    today.plus({ days: index }).toISODate(),
+  ).filter((value) => value !== null);
+  // A visit already set for a day or a time outside the lists keeps its own choice.
+  const dayChoices =
+    !startDay || days.includes(startDay) ? days : [startDay, ...days];
+  const timeChoices =
+    !startTime || HALF_HOURS.includes(startTime)
+      ? HALF_HOURS
+      : [...HALF_HOURS, startTime].sort();
+  return (
+    <div className="live-form-grid">
+      <input
+        type="hidden"
+        name="at"
+        value={day && time ? `${day}T${time}` : ""}
+      />
+      <LiveField label="Day">
+        <NativeSelect
+          required
+          value={day}
+          onChange={(event) => setDay(event.target.value)}
+          className="w-full"
+        >
+          <NativeSelectOption value="" disabled>
+            Choose a day
+          </NativeSelectOption>
+          {dayChoices.map((value) => (
+            <NativeSelectOption key={value} value={value}>
+              {DateTime.fromISO(value).toLocaleString(
+                { weekday: "long", month: "long", day: "numeric" },
+                { locale: words.locale },
+              )}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
+      </LiveField>
+      <LiveField label="Time">
+        <NativeSelect
+          required
+          value={time}
+          onChange={(event) => setTime(event.target.value)}
+          className="w-full"
+        >
+          <NativeSelectOption value="" disabled>
+            Choose a time
+          </NativeSelectOption>
+          {timeChoices.map((value) => (
+            <NativeSelectOption key={value} value={value}>
+              {DateTime.fromFormat(value, "HH:mm").toLocaleString(
+                DateTime.TIME_SIMPLE,
+                { locale: words.locale },
+              )}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
+      </LiveField>
+    </div>
+  );
+}
 
 function FormEnd({
   error,
@@ -101,7 +182,11 @@ export function PlanForm({
   churchId: Id<"churches">;
   board: Board;
   requestId?: Id<"assistanceRequests">;
-  onSaved: (planned: { neighborName: string; pair: [string, string] }) => void;
+  onSaved: (planned: {
+    visitId: Id<"visits">;
+    neighborName: string;
+    pair: [string, string];
+  }) => void;
 }) {
   const [search, setSearch] = useState("");
   const people = useQuery(api.visits.visitors, { churchId });
@@ -129,6 +214,7 @@ export function PlanForm({
         );
         if (outcome.saved)
           onSaved({
+            visitId: outcome.result,
             neighborName: who.neighborName,
             pair: [first.name, second.name],
           });
@@ -271,15 +357,7 @@ export function PlanFormView({
           </LiveField>
         </div>
       )}
-      <LiveField label="Day and time">
-        <Input
-          name="at"
-          type="datetime-local"
-          required
-          step={900}
-          defaultValue={board.suggested?.at}
-        />
-      </LiveField>
+      <WhenFields defaultValue={board.suggested?.at} />
       <div className="live-form-grid" key={chosen}>
         <LiveField label="First visitor">
           <VisitorSelect
@@ -458,15 +536,7 @@ export function TimeForm({
         if (outcome.saved) onSaved();
       }}
     >
-      <LiveField label="Day and time">
-        <Input
-          name="at"
-          type="datetime-local"
-          required
-          step={900}
-          defaultValue={at}
-        />
-      </LiveField>
+      <WhenFields defaultValue={at} />
       <FormEnd error={error} pending={pending} submit="Change the time" />
     </form>
   );
