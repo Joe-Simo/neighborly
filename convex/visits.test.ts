@@ -233,6 +233,26 @@ describe("a visitor removed from the conference for good", () => {
     }
   });
 
+  test("with both of a pair removed the visit still reads, and is called off to plan again", async () => {
+    vi.useFakeTimers({ toFake: ["Date", "setTimeout"] });
+    try {
+      const { t, ids, as } = await setup();
+      const churchId = ids.church, owner = as(ids.owner);
+      const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.colleen.memberId, ids.graciela.memberId] });
+      await owner.mutation(api.people.remove, { churchId, personId: ids.colleen.memberId, typedName: "Colleen Marsh" });
+      await owner.mutation(api.people.remove, { churchId, personId: ids.graciela.memberId, typedName: "Graciela Fuentes" });
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      expect((await owner.query(api.visits.board, { churchId })).scheduled[0].visitors.map((visitor) => visitor.removed)).toEqual([true, true]);
+      expect((await owner.query(api.visits.sheet, { churchId, visitId })).visitors).toEqual([]);
+      await owner.mutation(api.visits.cancel, { churchId, visitId });
+      const board = await owner.query(api.visits.board, { churchId });
+      expect(board.scheduled).toEqual([]);
+      expect(board.suggested?.request.requestId).toBe(ids.request);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   test("is never in a suggested pair, and keeps the visits they made under the one name", async () => {
     vi.useFakeTimers({ toFake: ["Date", "setTimeout"] });
     try {

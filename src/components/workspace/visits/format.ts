@@ -27,6 +27,9 @@ export const sheetHref = (visitId: string) => `/app/visits?sheet=${visitId}`;
 export function standing(visit: Visit) {
   // The owner removed one of the two for good: the visit is one visitor short.
   const gone = visit.visitors.find((visitor) => visitor.removed);
+  // Both removed: no one is left to keep a seat, so the visit is called off and planned again.
+  if (gone && visit.visitors.every((visitor) => visitor.removed))
+    return { state: "empty" as const, text: "Needs two visitors" };
   if (gone)
     return {
       state: "short" as const,

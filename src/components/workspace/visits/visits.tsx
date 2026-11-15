@@ -410,7 +410,7 @@ export function VisitsView({
             <span className="live-count">
               {[
                 coming.length ? `${thisWeek} this week` : "",
-                short ? `${count(short, "needs", "need")} a second visitor` : "",
+                short ? `${count(short, "is", "are")} short of a visitor` : "",
                 board.toArrange.length
                   ? `${count(board.toArrange.length, "more needs", "more need")} a pair`
                   : "",
