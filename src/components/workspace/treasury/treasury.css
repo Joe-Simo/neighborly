@@ -280,3 +280,8 @@
     display: inline;
   }
 }
+.live-app .treasury-statement input[aria-invalid="true"]:focus-visible {
+  outline: none;
+  border-color: #9f4935;
+  box-shadow: 0 0 0 1px #9f4935;
+}
