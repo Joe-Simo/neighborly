@@ -39,6 +39,7 @@ import {
   type Board,
   type Suggestion,
   type Visit,
+  useEnglishDates,
 } from "@/components/workspace/visits/format";
 import { VisitSheet } from "@/components/workspace/visits/visit-sheet";
 
@@ -57,7 +58,8 @@ export function VisitsSection() {
 }
 
 function Visits() {
-  const { data, format, now, setHeadAction } = useWorkspace();
+  const { data, now, setHeadAction } = useWorkspace();
+  const format = useEnglishDates();
   const churchId = data.church.id;
   const sheetId = useSearchParams().get("sheet");
   const board = useQuery(api.visits.board, { churchId });
@@ -425,8 +427,10 @@ export function VisitsView({
                       <p>{visit.address}</p>
                     </div>
                     <div className="live-row-actions">
+                      {/* Keyed by its words, so an answer arriving from a visitor's phone rises into place. */}
                       <span
-                        className="live-status"
+                        key={pair.text}
+                        className="live-status paper-rise"
                         data-state={
                           pair.state === "accepted" ? undefined : "waiting"
                         }
