@@ -19,9 +19,9 @@ const recentCalls = new Map([[194, DAY / 8], [195, DAY], [196, 2 * DAY], [197, 7
 const HOUSEHOLDS = 200;
 
 const volunteerNames = ["Marisol Vega", "Thomas Okafor", "Renee Baptiste", "Daniel Whitcombe", "Graciela Fuentes", "Samuel Adeyemi", "Colleen Marsh", "Jean-Luc Pierre", "Hannah Lindqvist", "Victor Salgado", "Priya Raman", "Walter Brzezinski"];
-// 25 first names and 20 family names; paired so that 200 households are all different.
-const firstNames = ["Alma", "Benito", "Celeste", "Darnell", "Esperanza", "Fabrice", "Gloria", "Hector", "Imani", "Josue", "Katia", "Leon", "Mireille", "Nestor", "Odalys", "Pascal", "Quiana", "Rosalind", "Stefan", "Tamika", "Ulises", "Violeta", "Wendell", "Yolande", "Zenaida"];
-const lastNames = ["Almonte", "Bellweather", "Castellanos", "Desrosiers", "Eastman", "Figueroa", "Greenhalgh", "Hyppolite", "Ibarra", "Joseph", "Kowalczyk", "Larkspur", "Montoya", "Nwosu", "Orlov", "Pemberton", "Quintanilla", "Rosemond", "Sandoval", "Thibodeaux"];
+// 200 first names, one for each household, in no order, and 40 family names. All invented.
+const firstNames = ["Alma", "Benito", "Celeste", "Darnell", "Esperanza", "Fabrice", "Gloria", "Hector", "Imani", "Josue", "Katia", "Leon", "Mireille", "Nestor", "Odalys", "Pascal", "Quiana", "Rosalind", "Stefan", "Tamika", "Ulises", "Violeta", "Wendell", "Yolande", "Zenaida", "Adela", "Bertrand", "Carmela", "Dieudonne", "Elodie", "Faustino", "Griselda", "Horacio", "Ines", "Jacinto", "Kerline", "Lazaro", "Magdalena", "Nadege", "Octavio", "Paloma", "Quentin", "Rafaela", "Silvio", "Therese", "Ubaldo", "Valentina", "Wilner", "Ximena", "Yvon", "Zoraida", "Anselmo", "Beatriz", "Clement", "Dolores", "Emeric", "Florencia", "Gaspard", "Herminia", "Isidro", "Jocelyne", "Karim", "Lourdes", "Maxime", "Noemi", "Orlando", "Perla", "Quincy", "Roselande", "Santiago", "Tatiana", "Urbain", "Veronica", "Wesner", "Yesenia", "Zacharie", "Amparo", "Bruno", "Consuelo", "Delphine", "Eusebio", "Fernande", "Gilberto", "Helene", "Ignacio", "Josette", "Kendrick", "Leticia", "Marcelin", "Nicolasa", "Oswaldo", "Priscila", "Remy", "Soledad", "Teodoro", "Ursula", "Vicente", "Widline", "Yanick", "Zulema", "Abelardo", "Bernadette", "Cornelio", "Daphne", "Evaristo", "Fabiola", "Gervais", "Hortensia", "Ismael", "Julienne", "Kervens", "Liliana", "Modeste", "Natividad", "Olivier", "Petra", "Raimundo", "Solange", "Tiburcio", "Viviane", "Wilfrid", "Yolaine", "Agustin", "Blandine", "Cayetano", "Darline", "Eladio", "Florette", "Gonzalo", "Heloise", "Inocencio", "Jesula", "Leopoldo", "Marisela", "Narciso", "Odette", "Porfirio", "Rosemene", "Sergio", "Thelma", "Valerio", "Wideline", "Aurelio", "Belkis", "Casimir", "Dalia", "Edgard", "Francisca", "Guerline", "Hipolito", "Iraida", "Jean-Marc", "Katiana", "Lisandro", "Mirlande", "Nemesio", "Ofelia", "Patrice", "Rebeca", "Sauveur", "Trinidad", "Venel", "Araceli", "Bastien", "Camila", "Donald", "Eugenia", "Fritz", "Genoveva", "Hubert", "Ivette", "Joaquin", "Kettly", "Luciano", "Marlene", "Norberto", "Olga", "Prosper", "Rosario", "Stanley", "Teresa", "Vladimir", "Altagracia", "Bolivar", "Clarisse", "Demetrio", "Edwige", "Feliciano", "Ginette", "Humberto", "Islande", "Julio", "Lucienne", "Mauricio", "Nathalie", "Omar", "Pilar", "Reynaldo", "Sabine", "Tomas"];
+const lastNames = ["Almonte", "Bellweather", "Castellanos", "Desrosiers", "Eastman", "Figueroa", "Greenhalgh", "Hyppolite", "Ibarra", "Joseph", "Kowalczyk", "Larkspur", "Montoya", "Nwosu", "Orlov", "Pemberton", "Quintanilla", "Rosemond", "Sandoval", "Thibodeaux", "Aguilar", "Beauvoir", "Charles", "Dorval", "Estime", "Fontaine", "Guerrero", "Hernandez", "Innocent", "Jeanty", "Lafleur", "Mathurin", "Navarro", "Ortega", "Paredes", "Raymond", "Salazar", "Toussaint", "Vargas", "Zamora"];
 const streets = ["Orchard St", "Mill Rd", "Chapel Ln", "Harbor Ave", "Cedar Ct", "Larkspur Way", "Garden St", "Bridge Rd"];
 const needs = [
   { kind: "rent", payeeKind: "landlord", payees: ["Orchard Street Apartments", "Mill Road Rentals", "Chapel Lane Property Group"], low: 25000, high: 90000, summaries: ["Behind on this month's rent after reduced hours", "Short on rent after a medical bill", "Needs help with a security deposit"] },
@@ -32,6 +32,19 @@ const needs = [
 ] as const;
 // Utilities and rent are most of what a conference is asked for.
 const kinds = [needs[0], needs[0], needs[0], needs[1], needs[1], needs[1], needs[1], needs[2], needs[2], needs[2], needs[3], needs[4]];
+// What a pair writes after a visit. Short, about the need and the home, never a judgment of the person.
+const visitNotes = [
+  "Visited together. Reviewed the bill and confirmed the amount with the payee.",
+  "Met at the kitchen table. Saw the shut-off notice and called the utility with her to confirm the balance.",
+  "Landlord confirmed the amount by phone while we were there. Agreed the help goes to him directly.",
+  "Two children at home. Pantry bag left today, and the rent request goes to the conference on Tuesday.",
+  "He lost hours at work last month and expects a full week again soon. Asked only for help with this one bill.",
+  "Lives alone, second floor, no lift. Prefers a phone call before any visit. Bill seen and copied.",
+  "Translated by her daughter. Read the lease together. The amount on the notice matches what she told the help line.",
+  "Short visit at the door at his request. Showed us the past-due notice. We prayed together before leaving.",
+  "New to the parish. Explained how the conference helps and that payment goes to the company, never in cash.",
+  "Follow-up visit. Last month's help kept the lights on. Brought a furniture voucher and the pantry hours.",
+];
 const strangers = ["Wrong number.", "Asked for the pantry's hours.", "Asked how to volunteer.", "Calling for a relative in another parish; referred to that conference.", "Hung up before leaving a name."];
 
 /** A small fixed-seed generator, so the sample conference is the same every time it is loaded. */
@@ -55,6 +68,17 @@ export const load = internalMutation({
   returns: v.id("churches"),
   handler: async (ctx, args) => {
     const random = generator(1833);
+    // A second stream for how things read (names, times of day, visit notes), so money and counts keep their own draws.
+    const look = generator(4127);
+    // A believable time on the same day: the help line mostly in the morning, visits mid-morning or late afternoon.
+    const clock = (time: number, slots: readonly (readonly [number, number])[]) => {
+      const [hour, minute] = look.pick(slots);
+      return DateTime.fromMillis(time, { zone }).startOf("day").set({ hour, minute: minute + look.between(0, 2) * 5 }).toMillis();
+    };
+    const callSlots = [[9, 5], [9, 20], [9, 40], [10, 0], [10, 15], [10, 35], [10, 50], [11, 10], [11, 30], [11, 45], [9, 30], [10, 25], [13, 15], [14, 40], [15, 20]] as const;
+    const visitSlots = [[9, 30], [10, 0], [10, 0], [10, 30], [10, 30], [11, 0], [11, 0], [14, 0], [16, 30], [17, 30]] as const;
+    const familyNames = Array.from({ length: HOUSEHOLDS }, (_, index) => lastNames[index % lastNames.length]);
+    for (let index = familyNames.length - 1; index > 0; index--) { const other = look.between(0, index); [familyNames[index], familyNames[other]] = [familyNames[other], familyNames[index]]; }
     const now = Date.now();
     const churchId = await ctx.db.insert("churches", { name: "St. Example Conference", timeZone: zone, sample: true });
 
@@ -137,17 +161,19 @@ export const load = internalMutation({
 
     // Households, and for each its calls, requests for help, visits in pairs and payments.
     for (let index = 0; index < HOUSEHOLDS; index++) {
-      const name = `${firstNames[index % 25]} ${lastNames[((index % 25) * 3 + Math.floor(index / 25)) % 20]}`;
+      const name = `${firstNames[index]} ${familyNames[index]}`;
       const phone = `(10${index < 100 ? 0 : 1}) 555-01${String(index % 100).padStart(2, "0")}`;
       const firstCall = start + random.between(1, days - 14) * DAY;
       const neighborId = await ctx.db.insert("neighbors", { churchId, name, nameKey: key(name), phone, phoneKey: phone.replace(/\D/g, ""), email: index % 5 === 0 ? `${key(name).replaceAll(" ", ".")}@${emailDomain}` : "", address: `${random.between(10, 980)} ${random.pick(streets)}, Apt ${random.between(1, 24)}`, adults: random.between(1, 3), children: random.between(0, 4), language: index % 4 === 1 ? "es" : index % 9 === 2 ? "ht" : "en", notes: index % 6 === 0 ? "Prefers a call after 5 PM." : "", createdBy: random.pick(staff), createdAt: firstCall });
       const callCount = random.between(1, 4);
       for (let call = 0; call < callCount; call++) {
         const recent = call === callCount - 1 ? recentCalls.get(index) : undefined;
-        const planned = firstCall + call * random.between(25, 80) * DAY + random.between(9, 16) * 3600000;
+        const planned = clock(firstCall + call * random.between(25, 80) * DAY + random.between(9, 16) * 3600000, callSlots);
         // A household's later calls stop where the calendar does; only the chosen recent cases reach this week.
         if (recent === undefined && planned > now - 3 * DAY) break;
-        const takenAt = recent !== undefined ? now - recent : planned;
+        // A recent call keeps its day and takes a morning time, unless that morning has not come yet.
+        const morning = recent !== undefined ? clock(now - recent, callSlots) : planned;
+        const takenAt = recent === undefined ? planned : morning < now - 20 * 60000 ? morning : now - recent;
         const age = now - takenAt;
         const need = random.pick(kinds);
         const summary = random.pick(need.summaries);
@@ -172,10 +198,10 @@ export const load = internalMutation({
         if (outcome !== "closed") {
           const first = random.between(0, visitors.length - 1);
           const pair = [visitors[first], visitors[(first + random.between(1, visitors.length - 1)) % visitors.length]];
-          const scheduledAt = takenAt + random.between(1, 2) * DAY;
+          const scheduledAt = clock(takenAt + random.between(1, 2) * DAY, visitSlots);
           const done = scheduledAt < now && outcome !== "open";
           const hours = random.between(2, 5) / 2, miles = random.between(4, 22);
-          await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, now + random.between(1, 3) * DAY), status: done ? "completed" : "scheduled", visitors: pair.map((memberId) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0 })), notes: done ? "Visited together. Reviewed the bill and confirmed the amount with the payee." : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
+          await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, clock(now + random.between(1, 3) * DAY, visitSlots)), status: done ? "completed" : "scheduled", visitors: pair.map((memberId) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0 })), notes: done ? look.pick(visitNotes) : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
         }
         if (outcome === "paid" && amountApproved && decidedAt && !voucher)
           await entry("expense", decidedAt + DAY, amountApproved, need.kind, payeeName, "", { requestId, neighborId, ...(need.kind === "food" || need.kind === "voucher" ? {} : { checkNumber: String(checkNumber++) }) });
@@ -184,7 +210,7 @@ export const load = internalMutation({
 
     // Calls that never became a household: about three a month.
     for (let call = 0; call < Math.floor(days / 10); call++) {
-      const takenAt = start + call * 10 * DAY + random.between(1, 8) * DAY + random.between(9, 16) * 3600000;
+      const takenAt = clock(start + call * 10 * DAY + random.between(1, 8) * DAY + random.between(9, 16) * 3600000, callSlots);
       if (takenAt > now - DAY) break;
       await ctx.db.insert("calls", { churchId, callerName: "No name given", phone: "", note: random.pick(strangers), callback: "none", takenBy: random.pick(staff), takenAt });
     }
@@ -196,8 +222,8 @@ export const load = internalMutation({
       { callerName: "Leon Pemberton", phone: "(102) 555-0103", note: "Called to thank the two visitors who came in October.", outcome: "Passed his thanks on to the pair.", daysAgo: 2 },
     ];
     for (const [index, call] of returned.entries()) {
-      const takenAt = now - call.daysAgo * DAY - 5 * 3600000;
-      await ctx.db.insert("calls", { churchId, callerName: call.callerName, phone: call.phone, note: call.note, callback: "done", takenBy: staff[index % staff.length], takenAt, ownerId: staff[(index + 1) % staff.length], returnedBy: staff[(index + 1) % staff.length], returnedAt: takenAt + 18 * 3600000, outcome: call.outcome });
+      const takenAt = clock(now - call.daysAgo * DAY, callSlots);
+      await ctx.db.insert("calls", { churchId, callerName: call.callerName, phone: call.phone, note: call.note, callback: "done", takenBy: staff[index % staff.length], takenAt, ownerId: staff[(index + 1) % staff.length], returnedBy: staff[(index + 1) % staff.length], returnedAt: clock(takenAt + DAY, callSlots), outcome: call.outcome });
     }
 
     // What the conference spends besides help, then what comes in. Each month's collection is set close
