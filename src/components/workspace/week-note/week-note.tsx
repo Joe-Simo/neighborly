@@ -171,7 +171,7 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
       <div className="min-h-0">
         <section className="help-sheet after:!hidden" aria-labelledby={waiting ? undefined : "week-note"}>
           <p className={`help-sheet-label !text-[var(--live-muted)] ${waiting ? "invisible" : ""}`}>
-            {formatDate(words.locale, monday, { timeZone: data.church.timeZone, weekday: "long", month: "long", day: "numeric" })}
+            {text.weekOf(formatDate(words.locale, monday, { timeZone: data.church.timeZone, month: "long", day: "numeric" }))}
           </p>
           <h2 id={waiting ? undefined : "week-note"} className={waiting ? held : undefined}>
             <span>{text.title}</span>

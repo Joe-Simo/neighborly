@@ -325,6 +325,7 @@ export function ht(set: WordSet): Words {
     },
     monday: {
       title: "Semèn sa a, an brèf.",
+      weekOf: (date: string) => `Semèn ${date}`,
       origin: "Konte apati dosye ou yo ak règ fiks. Asistan an pa ekri anyen ladan l.",
       calls: (count) => `${count} apèl ap tann repons.`,
       firstByAssistant: (count) => `Asistan an mete ${count} an premye.`,

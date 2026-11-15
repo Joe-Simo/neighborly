@@ -335,6 +335,7 @@ export function en(set: WordSet) {
     },
     monday: {
       title: "This week, in short.",
+      weekOf: (date: string) => `Week of ${date}`,
       origin: "Counted from your records by fixed rules. The assistant writes none of it.",
       calls: (count: number) => (count === 1 ? "1 call is waiting to be returned." : `${count} calls are waiting to be returned.`),
       firstByAssistant: (count: number) => (count === 1 ? "1 was put first by the assistant." : `${count} were put first by the assistant.`),

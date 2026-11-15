@@ -330,6 +330,7 @@ export function es(set: WordSet): Words {
     },
     monday: {
       title: "Esta semana, en breve.",
+      weekOf: (date: string) => `Semana del ${date}`,
       origin: "Contado a partir de tus registros con reglas fijas. El asistente no escribe nada de esto.",
       calls: (count) => (count === 1 ? "1 llamada espera respuesta." : `${count} llamadas esperan respuesta.`),
       firstByAssistant: (count) => (count === 1 ? "El asistente puso 1 primero." : `El asistente puso ${count} primero.`),
