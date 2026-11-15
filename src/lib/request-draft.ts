@@ -92,11 +92,24 @@ function only<T>(values: T[]): T | null {
   return unique.length === 1 ? unique[0] : null;
 }
 
-/** What a draft says when code proposes no kind of help. Taken back off when the model reads a kind the code could not. */
-export const kindNotes = {
-  several: "The note mentions more than one kind of help. Choose one, or make a request for each.",
-  missing: "The note does not say what kind of help is asked for.",
+/** How many times a group may ask the model in one month. At Jev's price this is a few cents; it is here so a mistake cannot run up a bill. */
+export const monthlyAllowance = 2000;
+/**
+ * Every line a draft can carry about a blank field, in English. The screen finds each by its key and says it in
+ * the reader's language (words.assistant.notes), so a line added here needs its three translations there.
+ */
+export const draftNotes = {
+  kindSeveral: "The note mentions more than one kind of help. Choose one, or make a request for each.",
+  kindMissing: "The note does not say what kind of help is asked for.",
+  amountSeveral: "The note gives more than one amount. Enter the amount asked for.",
+  amountMissing: "The note does not give an amount.",
+  payee: "Confirm who is paid. Payment goes to the landlord, utility or store, never to the neighbor.",
+  doubtful: "Part of the note is a question or is unsure, so it was left out.",
+  confirmKind: "Please confirm the kind of help.",
+  confirmPayee: "Please confirm who is paid.",
 };
+/** What a draft says when code proposes no kind of help. Taken back off when the model reads a kind the code could not. */
+export const kindNotes = { several: draftNotes.kindSeveral, missing: draftNotes.kindMissing };
 /**
  * Copies what a call note states plainly into the shape of a request for help.
  * It proposes; it does not infer need, eligibility or a decision, and it saves nothing.
@@ -135,9 +148,9 @@ export function prepareRequestDraft(note: string): RequestDraft {
     notes: [],
   };
   if (draft.kind === null) draft.notes.push(new Set(kinds).size > 1 ? kindNotes.several : kindNotes.missing);
-  if (draft.amountRequested === null) draft.notes.push(new Set(sums).size > 1 ? "The note gives more than one amount. Enter the amount asked for." : "The note does not give an amount.");
-  if (draft.payeeKind === null || !draft.payeeName) draft.notes.push("Confirm who is paid. Payment goes to the landlord, utility or store, never to the neighbor.");
-  if (doubtful) draft.notes.push("Part of the note is a question or is unsure, so it was left out.");
+  if (draft.amountRequested === null) draft.notes.push(new Set(sums).size > 1 ? draftNotes.amountSeveral : draftNotes.amountMissing);
+  if (draft.payeeKind === null || !draft.payeeName) draft.notes.push(draftNotes.payee);
+  if (doubtful) draft.notes.push(draftNotes.doubtful);
   return draft;
 }
 

@@ -302,6 +302,15 @@ describe("a call note drafted into a request", () => {
     expect(Object.values(questions).every(question => question.type === "noul" && question.criteria)).toBe(true);
   });
 
+  test("the note as the assistant is given it has no name, phone or address, and a member cannot ask for it", async () => {
+    const { ids, coordinator, member } = await helpLine();
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { callerName: "Rosa Delgado", note: "Mrs. Rosa Delgado called, (239) 555-0142. Light bill is $145. She lives at 14 Sample Street." }));
+    const sent = await coordinator.query(api.drafts.noteAsSent, { churchId: ids.churchId, callId: ids.callId });
+    expect(sent).toContain("Light bill is $145");
+    expect(sent).not.toMatch(/Rosa|Delgado|555|Sample Street/);
+    await expect(member.query(api.drafts.noteAsSent, { churchId: ids.churchId, callId: ids.callId })).rejects.toThrow();
+  });
+
   test("a field the model is not sure of comes back blank", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     vi.stubGlobal("fetch", answers({ kind: 0.99, payeeKind: 0.4 }));

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords } from "@/components/workspace/failure";
 import { headings } from "@/components/workspace/navigation";
+import { FollowingHeading } from "@/components/workspace/primitives";
 import { ReliefPicture } from "@/components/workspace/relief";
 
 /**
@@ -47,7 +48,7 @@ export function LiveState({
     >
       {art && <ReliefPicture name={art.picture} focus={art.focus} vignette className="paper-vignette" />}
       <div>
-        <h3>{title}</h3>
+        <FollowingHeading>{title}</FollowingHeading>
         <p>{children}</p>
         {action}
       </div>

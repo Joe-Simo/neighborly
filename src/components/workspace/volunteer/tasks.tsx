@@ -45,7 +45,7 @@ export function TasksSection() {
                   <div>
                     <h3><span>{task.title}</span></h3>
                     <p>
-                      {personName(task.assigneeId)}
+                      <span className="volunteer-who">{personName(task.assigneeId)}</span>
                       {task.dueAt && <span className="volunteer-due"> · {words.tasks.due(format(task.dueAt))}</span>}
                     </p>
                   </div>

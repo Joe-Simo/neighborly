@@ -210,7 +210,7 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
           )}
           <div className={`mt-6 flex flex-wrap items-baseline justify-between gap-x-6 ${waiting ? "invisible" : ""}`}>
             <p className="!m-0 !max-w-none text-[15px]">{text.origin}</p>
-            <button type="button" className={`${quietLink} !text-[15px] min-[761px]:!min-h-0`} onClick={putAway}>
+            <button type="button" className={`${quietLink} !text-[15px]`} onClick={putAway}>
               {text.done}
             </button>
           </div>

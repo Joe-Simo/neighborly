@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { LiveApp } from "@/components/live-app";
 import { areaTitles, liveAreas } from "@/components/workspace/areas";
 
 export async function generateMetadata({ params }: { params: Promise<{ area: string }> }): Promise<Metadata> {
@@ -17,5 +16,6 @@ export default async function Page({
   const { area } = await params;
   const matched = liveAreas.find((candidate) => candidate === area);
   if (!matched) notFound();
-  return <LiveApp area={matched} />;
+  // The room itself is drawn by the frame in the layout (LiveFrame), which stays mounted between rooms.
+  return null;
 }

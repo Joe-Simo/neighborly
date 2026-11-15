@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,13 +61,23 @@ export function LiveDialog({
       document.documentElement.removeAttribute("data-live-short");
     };
   }, [open]);
+  const opener = useRef<HTMLElement | null>(null);
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent
         className={cn("live-dialog live-dialog-fixed", className)}
         showCloseButton={false}
         onFocus={(event) => keepInView(event.target)}
+        onCloseAutoFocus={(event) => {
+          // No DialogTrigger here, so the way back is ours: to what was focused when the dialog
+          // opened, unless the room has already moved focus somewhere of its own (a saved notice).
+          event.preventDefault();
+          const from = opener.current;
+          const free = !document.activeElement || document.activeElement === document.body;
+          if (free && from?.isConnected) from.focus();
+        }}
         onOpenAutoFocus={(event) => {
+          opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
           const first =
             event.currentTarget instanceof HTMLElement &&
             event.currentTarget.querySelector<HTMLElement>(

@@ -62,7 +62,7 @@
 }
 .live-app .volunteer-task p { margin: 0; font-size: 17px; }
 /* The due date stays whole when the line has to break. */
-.volunteer-due { white-space: nowrap; }
+.volunteer-due, .volunteer-who { white-space: nowrap; }
 .volunteer-task > [data-slot="button"], .volunteer-task > .live-status { flex: none; }
 .volunteer-task[data-done] h3 { color: var(--live-muted); }
 .volunteer-task[data-done] h3 span { background-size: 100% 1.5px; }
@@ -99,7 +99,8 @@
   .live-row.volunteer-task { align-items: center; flex-wrap: wrap; gap: 8px 12px; }
   .volunteer-task > div { display: contents; }
   .volunteer-task h3 { flex: 1 1 100%; margin: 0; }
-  .volunteer-task p { flex: 1 1 0; min-width: 0; }
+  /* The line keeps its natural width, so a button that does not fit beside it drops under it; a name never breaks. */
+  .volunteer-task p { flex: 0 1 auto; min-width: 0; }
   .volunteer-task > [data-slot="button"] { min-height: 44px; margin-left: auto; }
 }
 @media (prefers-reduced-motion: reduce) {

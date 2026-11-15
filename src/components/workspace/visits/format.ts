@@ -1,5 +1,7 @@
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../../convex/_generated/api";
+import { useWorkspace, type Workspace } from "@/components/workspace/context";
+import { formatDate } from "@/lib/words";
 import {
   kindLabels,
   shortMoney,
@@ -44,4 +46,14 @@ export function standing(visit: Visit) {
         ? "Waiting on both"
         : `Waiting on ${firstName(waiting[0].name)}`,
   };
+}
+
+/**
+ * Home visits is a coordinator's room and reads in English throughout, so its dates do too,
+ * whatever language the person reads the members' rooms in.
+ */
+export function useEnglishDates(): Workspace["format"] {
+  const { data } = useWorkspace();
+  return (time, options) =>
+    formatDate("en", time, { timeZone: data.church.timeZone, month: "short", day: "numeric", ...options });
 }

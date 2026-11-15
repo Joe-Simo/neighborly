@@ -16,14 +16,15 @@ import { HelpLoading } from "@/components/workspace/help-line/room";
 import { LiveFailure } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
 import { TimeForm } from "@/components/workspace/visits/forms";
-import { need, type Sheet } from "@/components/workspace/visits/format";
+import { need, useEnglishDates, type Sheet } from "@/components/workspace/visits/format";
 
 /**
  * What the pair carries to the door, made to be printed.
  * Opening it shows a neighbor's details, so it is written down first, like opening the record.
  */
 export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
-  const { data, format, now, setHeading } = useWorkspace();
+  const { data, now, setHeading } = useWorkspace();
+  const format = useEnglishDates();
   const churchId = data.church.id;
   // One neighbor's details: a plain head, with no painting.
   useLayoutEffect(() => {
@@ -60,7 +61,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       <VisitSheetView
         sheet={sheet}
         format={format}
-        printed={format(now, { dateStyle: "long" })}
+        printed={format(now, { month: "long", day: "numeric", year: "numeric" })}
         sample={data.church.sample}
         onPrint={() => window.print()}
         onCallOff={() => setStep("callOff")}

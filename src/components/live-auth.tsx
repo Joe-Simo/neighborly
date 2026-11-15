@@ -7,7 +7,6 @@ import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ReliefPicture } from "@/components/workspace/relief";
 import { languageNames, languages } from "@/lib/words";
 import { cn } from "@/lib/utils";
 import { authWords, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
@@ -53,6 +52,14 @@ function errorKey(error: unknown, flow: Flow): AuthError {
       return "other";
   }
 }
+
+/**
+ * The door fills the whole wall here, so it is asked for larger than a room's head ever is:
+ * a wide desktop shows it edge to edge, an upright iPad a little wider than the screen.
+ */
+const doorSources = (type: "avif" | "webp") =>
+  [640, 1024, 1536, 2400].map((width) => `/assets/relief/relief-visit-${width}.${type} ${width}w`).join(", ");
+const doorSizes = "(max-width: 699px) 228px, (max-width: 1100px) and (orientation: portrait) 118vw, max(100vw, 150vh)";
 
 export function LiveAuth({
   intent = "signin",
@@ -422,7 +429,18 @@ export function LiveAuth({
   return (
     <div className="entry" lang={language}>
       <div className="entry-art" aria-hidden="true">
-        <ReliefPicture name="visit" focus="var(--entry-focus)" sizes="100vw" />
+        <picture className="relief">
+          <source type="image/avif" srcSet={doorSources("avif")} sizes={doorSizes} />
+          <source type="image/webp" srcSet={doorSources("webp")} sizes={doorSizes} />
+          <img
+            src="/assets/relief/relief-visit-1536.webp"
+            alt=""
+            width={1536}
+            height={1024}
+            decoding="async"
+            style={{ objectPosition: "var(--entry-focus)" }}
+          />
+        </picture>
       </div>
       <main className="entry-sheet paper-settle">
         <div className={cn("entry-paper paper-corner", given ? "paper-fold" : step !== "details" && "paper-waits")}>

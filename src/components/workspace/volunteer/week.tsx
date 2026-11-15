@@ -1,5 +1,6 @@
 "use client";
 
+import { AssistantGuide } from "@/components/workspace/week-note/assistant-limits";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -64,6 +65,9 @@ export function WeekSection() {
         )}
       </section>
       </div>
+      <p className="!mt-14 !mb-0 border-t border-[var(--live-line)] pt-3">
+        <AssistantGuide />
+      </p>
       {printing && (
         <LiveDialog title={words.week.printWeek} className="tools-rota-dialog" onClose={() => setPrinting(false)}>
           <WeeklyRota titled={false} />

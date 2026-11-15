@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { action, internalAction, internalMutation, internalQuery, query, env } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
-import { draftPayeeKinds, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
+import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { neighborAccess, user } from "./access";
@@ -20,8 +20,6 @@ export const identity = internalQuery({
   handler: async ctx => ((await ctx.auth.getUserIdentity()) ? (await user(ctx)).id : null),
 });
 
-/** How many times a group may ask the model in one month. At Jev's price this is a few cents; it is here so a mistake cannot run up a bill. */
-export const monthlyAllowance = 2000;
 
 /**
  * Counts one request to the model, or says why it may not be made: the person's five a minute, or
@@ -241,6 +239,18 @@ export const callNote = internalQuery({
 });
 
 /**
+ * A call's note exactly as the assistant is given it: names, phones, emails and addresses taken out by the same
+ * code that prepares the request. The draft sheet shows it so a person can see what was read. It calls no model.
+ */
+export const noteAsSent = query({
+  args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: v.string(),
+  handler: async (ctx, args): Promise<string> => {
+    const { note, names, addresses } = await ctx.runQuery(internal.drafts.callNote, args);
+    return withoutIdentity(note, { names, addresses });
+  },
+});
+
+/**
  * Turns a call note into a proposed request for help. It saves nothing: the screen shows the
  * draft, and the request exists only after a person approves it through assistance.
  * Code proposes each field and the model says whether the note mentions it. For the kind of help the
@@ -269,11 +279,11 @@ export const draftRequest = action({
     // Field names, numbers and a kind from the closed list only, never the note: enough to see why a field came back blank.
     console.log(`jev ${JSON.stringify({ ...sure, chosenKind: pick?.kind, chosenConfidence: pick?.confidence })}`);
     const kind = settleKind(draft.kind, sure.kind, pick);
-    if (draft.kind && !kind) draft.notes.push("Please confirm the kind of help.");
+    if (draft.kind && !kind) draft.notes.push(draftNotes.confirmKind);
     const notes = draft.kind || !kind ? draft.notes : draft.notes.filter(line => line !== kindNotes.missing && line !== kindNotes.several);
     if (draft.payeeKind && (sure.payeeKind ?? 0) < sureEnough) {
       draft.payeeKind = null;
-      draft.notes.push("Please confirm who is paid.");
+      draft.notes.push(draftNotes.confirmPayee);
     }
     return { ...draft, kind, notes, verification: "checked" as const };
   },

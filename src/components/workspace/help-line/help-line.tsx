@@ -1,5 +1,6 @@
 "use client";
 
+import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
   useCallback,
   useEffect,
@@ -685,6 +686,7 @@ export function DraftSheet({
           </p>
         </div>
         <div className="help-actions" inert={sealed}>
+          <DraftToDo notes={draft.notes} />
           {complete ? (
             <>
               <Button disabled={pending} onClick={onApprove}>
@@ -718,14 +720,7 @@ export function DraftSheet({
       </div>
       <p className="help-assistant help-assistant-line">
         <Sparkles size={16} aria-hidden="true" />
-        <span>
-          {draft.verification === "checked"
-            ? "Written by the assistant from the call note and checked against it."
-            : "Written by the assistant from the call note. It could not be checked, so please read each detail against the note."}{" "}
-          {!complete && `${text.blank} `}
-          {draft.notes.length > 0 && `${draft.notes.join(" ")} `}
-          {!sealed && "Nothing is saved until you approve it."}
-        </span>
+        <AssistantLimits callId={call.id} verification={draft.verification} notes={draft.notes} sealed={sealed} />
       </p>
     </section>
   );

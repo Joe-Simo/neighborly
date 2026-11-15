@@ -26,8 +26,8 @@ export type ReliefName = (typeof reliefNames)[number];
  */
 export const reliefReady: readonly ReliefName[] = ["call", "help", "year", "week", "visit", "people", "commitment", "tasks", "files", "rest", "neighbors", "mine", "teams"];
 
-const widths = [640, 1024, 1536] as const;
-const sources = (name: ReliefName, type: "avif" | "webp") =>
+const usual: readonly number[] = [640, 1024, 1536];
+const sources = (name: ReliefName, type: "avif" | "webp", widths: readonly number[]) =>
   widths.map((width) => `/assets/relief/relief-${name}-${width}.${type} ${width}w`).join(", ");
 
 /**
@@ -39,6 +39,7 @@ export function ReliefPicture({
   focus = "70% 50%",
   sizes = "(min-width: 900px) 46vw, 100vw",
   vignette = false,
+  widths = usual,
   className,
 }: {
   name: ReliefName;
@@ -46,14 +47,16 @@ export function ReliefPicture({
   sizes?: string;
   /** A small round crop, close on the subject. */
   vignette?: boolean;
+  /** The widths cut for this picture, when it has more than the usual three (the visit also has 2400). */
+  widths?: readonly number[];
   className?: string;
 }) {
   if (!reliefReady.includes(name))
     return <ReliefPlaceholder name={name} vignette={vignette} className={className} />;
   return (
     <picture className={cn("relief", className)}>
-      <source type="image/avif" srcSet={sources(name, "avif")} sizes={vignette ? "96px" : sizes} />
-      <source type="image/webp" srcSet={sources(name, "webp")} sizes={vignette ? "96px" : sizes} />
+      <source type="image/avif" srcSet={sources(name, "avif", widths)} sizes={vignette ? "96px" : sizes} />
+      <source type="image/webp" srcSet={sources(name, "webp", widths)} sizes={vignette ? "96px" : sizes} />
       <img
         src={`/assets/relief/relief-${name}-1024.webp`}
         alt=""
