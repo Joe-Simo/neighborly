@@ -67,3 +67,4 @@
 
 .live-app .tools-done:focus, .live-app .tools-done:focus-visible { outline: none; }
 .live-app .tools-progress { margin: 18px 0 0; font-size: 17px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
+.tools-records { margin-top: 22px; }

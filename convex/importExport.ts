@@ -313,3 +313,98 @@ export const payees = query({
     return rows.map((row) => ({ id: row._id, name: row.name, kind: row.kind, phone: row.phone }));
   },
 });
+
+/**
+ * The way out: an owner takes the conference's own records away as spreadsheets, a page at a time so a
+ * large conference never times out. Nothing is sent anywhere; the pages go to the owner's own browser and
+ * become files on that device. The column names are the ones the imports above read, so a file taken out
+ * here comes back in here. An account number leaves with only its last four digits.
+ */
+const exportFile = v.union(v.literal("neighbors"), v.literal("requests"), v.literal("visits"), v.literal("ledger"), v.literal("payees"), v.literal("members"));
+const exportColumns = {
+  neighbors: ["Name", "Phone", "Email", "Address", "Adults", "Children", "Language", "Notes", "Alert", "Household", "Monthly income", "Monthly expenses", "Accounts"],
+  requests: ["Name", "Phone", "Request Date", "Request Status", "Assistance Type", "Value", "Payee", "Request Notes", "Outcome", "Amount Requested", "Amount Approved", "Decision Note", "Decided On", "Referrals", "Entered"],
+  visits: ["Name", "Date", "Time", "Status", "Visitors", "Hours", "Miles", "Notes", "Completed On"],
+  ledger: ["Date", "Kind", "Amount", "Category", "Payee", "Memo", "Check Number", "Cleared On", "Neighbor", "Reverses an earlier entry", "Voided"],
+  payees: ["Name", "Type", "Address", "Phone", "Email", "Notes"],
+  members: ["Name", "Email", "Role", "Active", "Approved", "Language"],
+} as const;
+const languageNames = { en: "English", es: "Spanish", ht: "Creole" } as const;
+const title = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
+const dollars = (cents: number | undefined) => (cents === undefined ? "" : (cents / 100).toFixed(2));
+const yesNo = (value: boolean) => (value ? "Yes" : "No");
+/** "Sample Power, account ending 4821": enough to recognise the account, never enough to use it. */
+export const maskedAccount = (account: { kind: string; name: string; accountNumber: string }) => {
+  const digits = account.accountNumber.replace(/\s/g, "");
+  return `${title(account.kind)}: ${account.name}${digits ? `, account ending ${digits.slice(-4)}` : ""}`;
+};
+
+async function ownerExport(ctx: QueryCtx, churchId: Id<"churches">) {
+  const member = await neighborAccess(ctx, churchId);
+  if (member.role !== "owner") throw new Error("Only an owner can take the records out.");
+  const church = await ctx.db.get("churches", churchId);
+  if (!church) throw new Error("Group not found.");
+  return { member, church };
+}
+
+/** Writes down that the records were taken out, and by whom, before the first page is read. */
+export const recordExport = mutation({
+  args: { churchId: v.id("churches") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const { member } = await ownerExport(ctx, args.churchId);
+    await ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: member.userId, action: "records_exported", at: Date.now() });
+    return null;
+  },
+});
+
+/** One page of one file: its column names, up to 200 lines as text, and where the next page starts. */
+export const exportPage = query({
+  args: { churchId: v.id("churches"), file: exportFile, cursor: v.union(v.string(), v.null()) },
+  returns: v.object({ columns: v.array(v.string()), rows: v.array(v.array(v.string())), cursor: v.string(), done: v.boolean() }),
+  handler: async (ctx, { churchId, file, cursor }) => {
+    const { church } = await ownerExport(ctx, churchId);
+    const page = { cursor, numItems: 200 };
+    const day = (time: number | undefined) => (time === undefined ? "" : DateTime.fromMillis(time, { zone: church.timeZone }).toFormat("MM/dd/yyyy"));
+    const names = new Map<string, string>();
+    const nameOf = async (table: "neighbors" | "memberships", id: Id<"neighbors"> | Id<"memberships"> | undefined) => {
+      if (!id) return "";
+      if (!names.has(id)) names.set(id, (await ctx.db.get(table, id as never) as { name: string } | null)?.name ?? "");
+      return names.get(id) ?? "";
+    };
+    const finish = (result: { continueCursor: string; isDone: boolean }, rows: string[][]) => ({ columns: [...exportColumns[file]] as string[], rows, cursor: result.continueCursor, done: result.isDone });
+
+    if (file === "neighbors") {
+      const result = await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      const sum = (lines: { amount: number }[] | undefined) => (lines ? dollars(lines.reduce((total, line) => total + line.amount, 0)) : "");
+      return finish(result, result.page.map((row) => [row.name, row.phone, row.email, row.address, String(row.adults), String(row.children), languageNames[row.language], row.notes, row.alert ?? "",
+        (row.household ?? []).map((person) => `${person.relationship}${person.child ? " (child)" : ""}${person.birthYear ? `, born ${person.birthYear}` : ""}`).join("; "),
+        sum(row.money?.income), sum(row.money?.expenses), (row.accounts ?? []).map(maskedAccount).join("; ")]));
+    }
+    if (file === "requests") {
+      const result = await ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => {
+        const neighbor = await ctx.db.get("neighbors", row.neighborId);
+        const given = row.importedAmount ?? (row.status === "paid" ? row.amountApproved : undefined);
+        return [neighbor?.name ?? "", neighbor?.phone ?? "", day(row.createdAt), row.status === "open" ? "Open" : "Completed", title(row.kind), dollars(given), row.payeeName, row.summary, title(row.status),
+          dollars(row.amountRequested), dollars(row.amountApproved), row.decisionNote, day(row.decidedAt), [...(row.referrals ?? []), ...(row.referral ? [row.referral] : [])].join("; "),
+          row.source === "import" ? "Brought over from earlier records" : row.source === "ai_draft" ? "Drafted by the assistant, approved by a person" : "By a person"];
+      })));
+    }
+    if (file === "visits") {
+      const result = await ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => [await nameOf("neighbors", row.neighborId), day(row.scheduledAt), DateTime.fromMillis(row.scheduledAt, { zone: church.timeZone }).toFormat("h:mm a"), title(row.status),
+        (await Promise.all(row.visitors.map((visitor) => nameOf("memberships", visitor.memberId)))).join("; "), String(row.visitors.reduce((total, visitor) => total + visitor.hours, 0)), String(row.visitors.reduce((total, visitor) => total + visitor.miles, 0)), row.notes, day(row.completedAt)])));
+    }
+    if (file === "ledger") {
+      const result = await ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, await Promise.all(result.page.map(async (row) => [row.date, row.kind === "income" ? "Money in" : "Money out", dollars(row.amount), row.category, row.payee, row.memo, row.checkNumber ?? "", row.clearedOn ?? "", await nameOf("neighbors", row.neighborId), yesNo(Boolean(row.reverses)), yesNo(Boolean(row.voidedAt))])));
+    }
+    if (file === "payees") {
+      const result = await ctx.db.query("payees").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+      return finish(result, result.page.map((row) => [row.name, title(row.kind), row.address, row.phone, row.email, row.notes]));
+    }
+    const result = await ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
+    return finish(result, result.page.map((row) => [row.name, row.email, title(row.role), yesNo(row.active), yesNo(row.approved), row.language ? languageNames[row.language] : ""]));
+  },
+});

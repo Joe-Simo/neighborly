@@ -226,3 +226,57 @@ describe("bringing over the list of payees", () => {
     await expect(as(ids.member).mutation(api.importExport.importPayees, { churchId: ids.church, rows: list })).rejects.toThrow(refused);
   });
 });
+
+describe("taking the records out", () => {
+  async function withRecords() {
+    const world = await setup();
+    const { ids } = world;
+    await world.t.run(async (ctx) => {
+      const base = { churchId: ids.church, createdBy: ids.owner.memberId, createdAt: Date.UTC(2026, 2, 14, 16) };
+      const neighborId = await ctx.db.insert("neighbors", { ...base, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd, Apt 7", adults: 1, children: 2, language: "ht", notes: "=cmd", accounts: [{ kind: "utility", name: "Demo Power & Light", accountNumber: "0098 7654 4821", phone: "" }] });
+      const requestId = await ctx.db.insert("assistanceRequests", { ...base, neighborId, kind: "utility", summary: "Shut-off notice", amountRequested: 8650, amountApproved: 8000, status: "paid", decisionNote: "", payeeKind: "utility", payeeName: "Demo Power & Light", source: "person" });
+      await ctx.db.insert("visits", { ...base, neighborId, requestId, scheduledAt: Date.UTC(2026, 2, 16, 14), status: "completed", visitors: [{ memberId: ids.coordinator.memberId, hours: 1.5, miles: 6 }, { memberId: ids.member.memberId, hours: 1.5, miles: 0 }], notes: "Kind welcome" });
+      await ctx.db.insert("ledgerEntries", { churchId: ids.church, kind: "expense", amount: 8000, date: "2026-03-17", category: "utility", payee: "Demo Power & Light", memo: "", requestId, neighborId, checkNumber: "1042", recordedBy: ids.owner.memberId, createdAt: 0 });
+      await ctx.db.insert("payees", { ...base, kind: "utility", name: "Demo Power & Light", nameKey: "demo power light", address: "", phone: "", email: "", notes: "" });
+    });
+    return world;
+  }
+  const files = ["neighbors", "requests", "visits", "ledger", "payees", "members"] as const;
+
+  test("an owner gets every file; an account number leaves with only its last four digits", async () => {
+    const { t, ids, as } = await withRecords();
+    const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, file, cursor: null })] as const)));
+    for (const file of files) expect(pages[file].done).toBe(true);
+    expect(pages.neighbors.rows).toEqual([["Celeste Hyppolite", "(100) 555-0142", "", "412 Placeholder Rd, Apt 7", "1", "2", "Creole", "=cmd", "", "", "", "", "Utility: Demo Power & Light, account ending 4821"]]);
+    expect(JSON.stringify(pages)).not.toContain("7654");
+    expect(pages.requests.rows[0].slice(0, 9)).toEqual(["Celeste Hyppolite", "(100) 555-0142", "03/14/2026", "Completed", "Utility", "80.00", "Demo Power & Light", "Shut-off notice", "Paid"]);
+    expect(pages.visits.rows).toEqual([["Celeste Hyppolite", "03/16/2026", "10:00 AM", "Completed", "Thomas; Renee", "3", "6", "Kind welcome", ""]]);
+    expect(pages.ledger.rows).toEqual([["2026-03-17", "Money out", "80.00", "utility", "Demo Power & Light", "", "1042", "", "Celeste Hyppolite", "No", "No"]]);
+    expect(pages.members.rows.map((row) => row[2])).toEqual(["Owner", "Coordinator", "Member"]);
+
+    // What went out comes back in: the same column names, read into another conference, are all ready.
+    const elsewhere = await t.run(async (ctx) => {
+      const church = await ctx.db.insert("churches", { name: "Second Example Conference", timeZone: "America/New_York" });
+      await ctx.db.insert("memberships", { churchId: church, userId: ids.owner.userId, name: "Marisol", email: "marisol@neighborly.example", role: "owner", active: true, approved: true, coverOptIn: false });
+      return church;
+    });
+    const cell = (file: (typeof files)[number], row: string[], column: string) => row[pages[file].columns.indexOf(column)];
+    const neighbors = pages.neighbors.rows.map((row, index) => ({ line: index + 2, name: cell("neighbors", row, "Name"), phone: cell("neighbors", row, "Phone"), email: cell("neighbors", row, "Email"), address: cell("neighbors", row, "Address"), adults: cell("neighbors", row, "Adults"), children: cell("neighbors", row, "Children"), language: cell("neighbors", row, "Language"), notes: cell("neighbors", row, "Notes") }));
+    expect((await as(ids.owner).mutation(api.importExport.importNeighbors, { churchId: elsewhere, rows: neighbors })).map((row) => row.outcome)).toEqual(["added"]);
+    const requests = pages.requests.rows.map((row, index) => ({ line: index + 2, name: cell("requests", row, "Name"), phone: cell("requests", row, "Phone"), date: cell("requests", row, "Request Date"), status: cell("requests", row, "Request Status"), type: cell("requests", row, "Assistance Type"), amount: cell("requests", row, "Value"), payee: cell("requests", row, "Payee"), notes: cell("requests", row, "Request Notes") }));
+    expect((await as(ids.owner).mutation(api.importExport.importRequests, { churchId: elsewhere, rows: requests })).map((row) => row.outcome)).toEqual(["added"]);
+    const payees = pages.payees.rows.map((row, index) => ({ line: index + 2, name: cell("payees", row, "Name"), type: cell("payees", row, "Type"), address: "", phone: "", email: "", notes: "" }));
+    expect((await as(ids.owner).mutation(api.importExport.importPayees, { churchId: elsewhere, rows: payees })).map((row) => row.outcome)).toEqual(["added"]);
+  });
+
+  test("only an owner may, and taking the records out is written down", async () => {
+    const { t, ids, as } = await withRecords();
+    for (const person of [ids.coordinator, ids.member]) {
+      await expect(as(person).query(api.importExport.exportPage, { churchId: ids.church, file: "members", cursor: null })).rejects.toThrow();
+      await expect(as(person).mutation(api.importExport.recordExport, { churchId: ids.church })).rejects.toThrow();
+    }
+    await as(ids.owner).mutation(api.importExport.recordExport, { churchId: ids.church });
+    const events = (await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect())).filter((event) => event.action === "records_exported");
+    expect(events).toMatchObject([{ actorId: ids.owner.userId }]);
+  });
+});
