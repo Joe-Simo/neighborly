@@ -1,0 +1,11 @@
+.tools-address { display: flex; gap: 10px; align-items: center; max-width: 640px; margin-top: 22px; }
+.tools-address input { font-variant-numeric: tabular-nums; text-overflow: ellipsis; }
+.tools-choices { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.tools-small { font-size: 14px; color: var(--live-muted); line-height: 1.55; max-width: 640px; margin: 18px 0 0; }
+.tools-file { max-width: 460px; margin-top: 22px; }
+.tools-file input { height: auto; padding: 10px 12px; }
+.tools-problems { margin-top: 26px; }
+@media (max-width: 700px) {
+  .tools-address { flex-direction: column; align-items: stretch; }
+  .tools-choices > * { flex: 1 1 100%; }
+}
