@@ -243,11 +243,34 @@
   .live-app .entry .live-back { margin-bottom: 16px; }
 }
 
-/* ── Upright screens: the door as a band across the top, the sheet laid over its foot ── */
-@media (max-width: 850px), (max-width: 1100px) and (orientation: portrait) {
+/* ── An iPad, upright or small: still side by side. The sheet lies over the door's frame and
+   both hands stay in view at its right. ── */
+@media (min-width: 700px) and (max-width: 850px), (min-width: 700px) and (max-width: 1100px) and (orientation: portrait) {
   .entry {
     --entry-focus: 60% 50%;
-    --entry-band: min(52vw, 42svh);
+    padding-top: calc(32px + env(safe-area-inset-top));
+    padding-left: max(28px, env(safe-area-inset-left));
+  }
+  .entry-sheet { width: clamp(360px, 46vw, 478px); }
+}
+/* A touch screen scrolls the page under the clock. Once it moves, a strip of the same paper covers
+   the status area, so no line of the sheet is ever read behind the time or the island. */
+@media (max-width: 1100px) {
+  .entry::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 2;
+    height: env(safe-area-inset-top);
+    background: var(--paper);
+  }
+  @supports (animation-timeline: scroll()) {
+    .entry::before { animation: paper-show linear both; animation-timeline: scroll(); animation-range: 0 48px; }
+  }
+}
+/* ── A phone: the door as a band across the top, the sheet laid over its foot ── */
+@media (max-width: 699px) {
+  .entry {
     display: block;
     padding: 0 0 calc(40px + env(safe-area-inset-bottom));
     background: var(--paper-shade);
@@ -258,26 +281,7 @@
     height: calc(var(--entry-band) + env(safe-area-inset-top));
     background: var(--paper);
   }
-  .entry-sheet {
-    position: relative;
-    width: min(100% - 48px, 540px);
-    margin: -56px auto 0;
-  }
-}
-/* On an iPhone the page scrolls under the clock. Once it moves, a strip of the same paper covers the
-   status area, so no line of the sheet is ever read behind the time or the island. */
-@media (max-width: 850px), (max-width: 1100px) and (orientation: portrait) {
-  .entry::before {
-    content: "";
-    position: fixed;
-    inset: 0 0 auto;
-    z-index: 2;
-    height: env(safe-area-inset-top);
-    background: var(--paper-shade);
-  }
-  @supports (animation-timeline: scroll()) {
-    .entry::before { animation: paper-show linear both; animation-timeline: scroll(); animation-range: 0 48px; }
-  }
+  .entry-sheet { position: relative; }
 }
 /* A phone: the band is 132 points, the picture kept whole and anchored to its right. */
 @media (max-width: 699px) {
@@ -294,7 +298,7 @@
   }
   .entry-sheet {
     width: calc(100% - max(24px, env(safe-area-inset-left) + env(safe-area-inset-right)));
-    margin-top: -22px;
+    margin: -22px auto 0;
   }
   .entry-paper { padding-top: 20px; }
   .live-app .entry .live-back { margin-bottom: 12px; }
