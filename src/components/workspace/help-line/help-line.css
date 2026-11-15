@@ -100,6 +100,11 @@
 .help-lists .live-section-head { position: relative; z-index: 1; background: var(--live-paper); }
 /* A neighbor's name opens the record; on a phone the whole row does, and the button goes. */
 .help-row-open { color: inherit; text-decoration: none; }
+/* The name is one line of type; its target is taller than it looks. */
+@media (min-width: 701px) {
+  .help-row-open { position: relative; }
+  .help-row-open::after { content: ""; position: absolute; inset: -12px -8px; }
+}
 @media (max-width: 850px) {
   .help-sealed .help-actions { display: none; }
   .help-sealed .help-sheet-body { row-gap: 24px; }
