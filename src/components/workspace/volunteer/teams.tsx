@@ -18,7 +18,7 @@ export function TeamsSection() {
   const [addingTo, setAddingTo] = useState<LiveWorkspaceData["teams"][number] | null>(null);
   // Teams joined in this visit: their slip stays, folded green, so the yes is seen to land.
   const [joined, setJoined] = useState<string[]>([]);
-  const candidates = addingTo ? data.people.filter((person) => !addingTo.memberIds.includes(person.id)) : [];
+  const candidates = addingTo ? data.people.filter((person) => person.active && !addingTo.memberIds.includes(person.id)) : [];
   return (
     <div className="live-grid live-teams paper-rows">
       {data.teams.length ? (
@@ -167,16 +167,17 @@ function LiveTeamRoster({
           <div className="live-list team-roster">
             {roster.results.map((person) => (
               <div className="live-row" key={person.personId}>
-                <div>
-                  <h3>{person.name}</h3>
-                  <p>
-                    {person.status === "invited"
-                      ? "Invitation pending"
-                      : person.approved
-                        ? "Approved for this team"
-                        : "Team approval pending"}{" "}
-                    · {person.role}
-                  </p>
+                <div className="live-person">
+                  <span className="live-avatar" aria-hidden="true">{initials(person.name)}</span>
+                  <div>
+                    <h3>{person.name}</h3>
+                    <p data-waits={person.status === "invited" || !person.approved ? "" : undefined}>
+                      {person.role === "coordinator" ? "Coordinator" : "Member"}
+                      {person.status === "invited"
+                        ? " · Invited, waiting to join"
+                        : !person.approved && " · Waiting for team approval"}
+                    </p>
+                  </div>
                 </div>
                 {team.canCoordinate && (
                   <div className="live-row-actions">

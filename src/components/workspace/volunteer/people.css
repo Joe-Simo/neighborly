@@ -74,7 +74,12 @@
 .team-candidates h3 { font-size: 19px; }
 .team-candidates p { margin: 2px 0 0; font-size: 16px; }
 .team-roster { margin-top: 18px; }
-.team-roster .live-row { min-height: 80px; padding-block: 16px; }
+/* A member, then what can be done for them on the line below: the same shape at every width. */
+.team-roster .live-row { flex-direction: column; align-items: stretch; gap: 10px; min-height: 80px; padding-block: 16px; }
 .team-roster h3 { font-size: 19px; }
-.team-roster p { font-size: 16px; }
+.team-roster p { margin: 2px 0 0; font-size: 16px; }
+.team-roster p[data-waits] { color: var(--help-ochre-ink, #88642c); }
+.team-roster .live-row-actions { padding-left: 57px; gap: 8px 10px; }
+.live-app .team-roster select { min-height: 40px; font-size: 15px; }
+@media (pointer: coarse) { .live-app .team-roster select { min-height: 44px; } }
 .team-more { margin-top: 16px; }
