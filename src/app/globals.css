@@ -88,8 +88,9 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid #364acf;
-  outline-offset: 5px;
+  /* Keyboard focus on paper: the workspace's ring. Over the painting the ring is turned round; see threshold-experience.css. */
+  outline: 2px solid #365c46;
+  outline-offset: 2px;
 }
 .skip-link {
   position: fixed;
