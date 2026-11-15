@@ -224,8 +224,8 @@ export function ReportView({
   const printedOn = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: report.timeZone }).format(printed);
   // The foot of every printed page, set in the page margin so it never covers a line.
   const quoted = (text: string) => `"${text.replace(/[\\"]/g, "\\$&").replace(/\s+/g, " ")}"`;
-  const named = sample ? `${groupName} · Sample, made-up people` : groupName;
-  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(`${named} · ${periodLabel(report)}, ${spanLabel(report)}`)}; font: 9pt "Source Sans 3", sans-serif; color: #000; } @bottom-right { content: ${quoted(`Printed ${printedOn} · page `)} counter(page) " of " counter(pages); font: 9pt "Source Sans 3", sans-serif; color: #000; } } }`;
+  const printedLine = `${sample ? "Sample · " : ""}Printed ${printedOn}`;
+  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(`${groupName} · ${periodLabel(report)}, ${spanLabel(report)}`)}; font: 9pt "Source Sans 3", sans-serif; color: #000; } @bottom-right { content: ${quoted(`${printedLine} · page `)} counter(page) " of " counter(pages); font: 9pt "Source Sans 3", sans-serif; color: #000; } } }`;
   const sections = new Map<string, ReportLine[]>();
   for (const line of reportLines(report))
     sections.set(line.section, [...(sections.get(line.section) ?? []), line]);
@@ -499,7 +499,7 @@ export function ReportView({
       <footer className="report-print-foot">
         <strong>kind helps</strong>
         <span>
-          {named} · {periodLabel(report)}, {spanLabel(report)} · Printed {printedOn}
+          {groupName} · {periodLabel(report)}, {spanLabel(report)} · {printedLine}
         </span>
       </footer>
     </div>

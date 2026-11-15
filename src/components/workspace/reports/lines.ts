@@ -176,7 +176,7 @@ export function reportCsv(report: YearReport, groupName: string, sample = false)
   const members = memberLines(report);
   return Papa.unparse([
     [groupName, periodLabel(report), longSpanLabel(report)],
-    ...(sample ? [["Sample", "Made-up people, not a real conference"]] : []),
+    ...(sample ? [["Sample"]] : []),
     [],
     ["Section", "Line", "Value"],
     ...lines,
