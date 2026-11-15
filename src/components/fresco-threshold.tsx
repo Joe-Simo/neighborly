@@ -45,7 +45,9 @@ export function FrescoThreshold() {
     const update = () => {
       raf = 0;
       const width = host.clientWidth, height = host.clientHeight;
-      const phone = width <= 899;
+      // A phone on its side is wide but short: it takes the wide layout with a lower fresco.
+      const short = height <= 500 && width > height;
+      const phone = width <= 899 && !short;
       const travelled = -track.getBoundingClientRect().top / Math.max(1, height);
       const door = media.matches ? Number(travelled > 1.5) : ease(clamp((travelled - doorsOpen[0]) / (doorsOpen[1] - doorsOpen[0])));
       const grow = media.matches ? door : ease(clamp((travelled - wallOpens[0]) / (wallOpens[1] - wallOpens[0])));
@@ -53,9 +55,9 @@ export function FrescoThreshold() {
       const doorWidth = phone ? width * .73 : Math.min(width * .5, 630);
       const doorHeight = Math.min(height * (phone ? .5 : .78), doorWidth * (phone ? 1.6 : 1.35));
       const doorX = phone ? width / 2 : width / 2 + doorWidth * .2, doorY = phone ? height * .54 : height * .52;
-      const frameHeight = phone ? Math.min((width - 40) * 1.2, height - 290) : Math.min(width * .35, height - 290);
+      const frameHeight = phone ? Math.min((width - 40) * 1.2, height - 290) : short ? height - 124 : Math.min(width * .35, height - 290);
       const frameWidth = phone ? width - 40 : frameHeight * 2;
-      const frameY = Math.max(phone ? 84 : 96, (height - frameHeight - (phone ? 150 : 120)) / 2) + frameHeight / 2;
+      const frameY = (short ? 60 : Math.max(phone ? 84 : 96, (height - frameHeight - (phone ? 150 : 120)) / 2)) + frameHeight / 2;
       const corner = Math.min(frameWidth * .18, frameHeight * .36);
       const w = mix(doorWidth, frameWidth, grow), h = mix(doorHeight, frameHeight, grow);
       wall.style.width = `${w}px`; wall.style.height = `${h}px`;

@@ -210,7 +210,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
       <div className="painted-world-viewport" ref={viewport}>
         <div className="painted-world-art" ref={host} aria-hidden="true" />
         {(!ready || failed || !canRender) && <picture className="painted-world-fallback">
-          <source media={heroOnly ? "(max-width:700px)" : "(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)"} srcSet={fallbackSource(visibleScene, true, openingOutcome === "accepted")} />
+          <source media={heroOnly ? "(max-width:700px), (max-height:500px) and (min-aspect-ratio:10/11)" : "(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)"} srcSet={fallbackSource(visibleScene, true, openingOutcome === "accepted")} />
           <img crossOrigin="anonymous" fetchPriority="high" src={fallbackSource(visibleScene, false, openingOutcome === "accepted")} alt="" />
         </picture>}
         {heroOnly && reached && !passed && (!ready || failed || !canRender) && <picture className="painted-world-fallback painted-world-fallback-passed">
