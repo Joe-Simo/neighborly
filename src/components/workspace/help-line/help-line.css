@@ -138,3 +138,12 @@
   .help-household { display: none; }
   .help-last { white-space: nowrap; }
 }
+/* The assistant is reading: the title's place breathes until the words arrive. */
+.help-reading-title { height: 34px; width: min(22ch, 80%); margin: 4px 0 16px; border-radius: 2px; background: #e9e7da; animation: help-breathe 1.6s ease-in-out infinite; }
+/* The way on from the line that says what changed. */
+.help-done { flex-wrap: wrap; }
+.help-done > span { flex: 1 1 14rem; min-width: 0; }
+.help-done > :is(a, [data-slot="button"]) { margin-left: auto; }
+.help-done > a { min-height: 44px; display: inline-flex; align-items: center; }
+@media (prefers-reduced-motion: reduce) { .help-reading-title { animation: none; } }
+.help-sheet .help-blank { margin: 0 0 12px; font-size: 17px; }

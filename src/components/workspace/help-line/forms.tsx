@@ -4,7 +4,7 @@ import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useAction, useMutation, useQueries, useQuery } from "convex/react";
-import { Check } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -105,10 +105,14 @@ export function CallForm({
   churchId,
   neighbor,
   onSaved,
+  draftable = false,
 }: {
   churchId: ChurchId;
   neighbor?: Pick<Neighbor, "id" | "name" | "phone">;
-  onSaved: (matched: boolean) => void;
+  /** `draft` is true when the person asked to go straight on to the assistant's draft of a request. */
+  onSaved: (matched: boolean, callId: Call["id"], draft: boolean) => void;
+  /** Offers "Save and draft a request" beside the plain save. */
+  draftable?: boolean;
 }) {
   const record = useMutation(api.assistance.recordCall);
   const readUrgency = useAction(api.drafts.readUrgency);
@@ -118,8 +122,14 @@ export function CallForm({
     <form
       className="live-form help-form"
       onSubmit={async (event) => {
+        // Which of the two buttons sent the form: the plain save, or the one that goes on to a draft.
+        const sender = (event.nativeEvent as SubmitEvent).submitter;
         const value = fieldsOf(event);
         const callback = value("callback") === "none" ? "none" : "needed";
+        const draft =
+          callback === "needed" &&
+          sender instanceof HTMLButtonElement &&
+          sender.value === "draft";
         const outcome = await save(() =>
           record({
             churchId,
@@ -131,7 +141,7 @@ export function CallForm({
           }),
         );
         if (!outcome.saved) return;
-        onSaved(outcome.result.neighborId !== null);
+        onSaved(outcome.result.neighborId !== null, outcome.result.callId, draft);
         if (callback === "none") return;
         // The assistant reads the note for a reason to call first. The call is already saved;
         // if the assistant is away or finds nothing, the list simply keeps its plain order.
@@ -178,7 +188,18 @@ export function CallForm({
           <option value="none">Nothing more to do</option>
         </NativeSelect>
       </LiveField>
-      <FormEnd error={error} pending={pending} submit="Save call" />
+      <FormEnd error={error} pending={pending} submit="Save call">
+        {draftable && (
+          <Button
+            type="submit"
+            variant="outline"
+            value="draft"
+            disabled={pending}
+          >
+            <Sparkles size={17} aria-hidden="true" /> Save and draft a request
+          </Button>
+        )}
+      </FormEnd>
     </form>
   );
 }
