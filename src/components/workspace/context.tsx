@@ -18,8 +18,9 @@ import type { Words } from "@/lib/words";
 /**
  * quiet draws it in the outline style. Set it while a sheet with its own filled button
  * is on screen, so the screen never has two filled buttons.
+ * plus shows the plus icon: only where the button adds a thing (Log a call, Add a neighbor).
  */
-export type LiveHeadAction = { label: string; run: () => void; quiet?: boolean };
+export type LiveHeadAction = { label: string; run: () => void; quiet?: boolean; plus?: boolean };
 
 export type Workspace = {
   area: LiveArea;

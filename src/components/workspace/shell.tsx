@@ -265,7 +265,7 @@ export function LiveWorkspace({
                 variant={headAction.quiet ? "outline" : "default"}
                 onClick={headAction.run}
               >
-                <Plus size={17} aria-hidden="true" />
+                {headAction.plus && <Plus size={17} aria-hidden="true" />}
                 {headAction.label}
               </Button>
             )}
