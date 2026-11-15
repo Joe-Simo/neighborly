@@ -105,7 +105,7 @@ export const headings: Record<LiveArea, LiveHeading> = {
   "time-off": {
     title: "Room for life.",
     deck: "Keep your team informed while you take time away.",
-    art: { picture: "rest" },
+    art: { picture: "rest", band: 0.2 },
   },
   tasks: {
     title: "The little things matter.",
