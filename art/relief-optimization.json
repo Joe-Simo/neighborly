@@ -1,0 +1,36 @@
+{
+  "source": "Blender renders; editable texture sources retained in art/textures",
+  "conversion": "cwebp 1.6.0 quality 88, method 6; dimensions and composition preserved",
+  "files": [
+    {
+      "name": "living-relief-poster",
+      "sourceBytes": 2338366,
+      "webBytes": 130116
+    },
+    {
+      "name": "living-relief-accepted",
+      "sourceBytes": 2335647,
+      "webBytes": 129994
+    },
+    {
+      "name": "living-relief-mobile",
+      "sourceBytes": 1827275,
+      "webBytes": 59986
+    },
+    {
+      "name": "living-relief-mobile-accepted",
+      "sourceBytes": 1824513,
+      "webBytes": 59532
+    },
+    {
+      "name": "living-relief-narrow",
+      "sourceBytes": 1694788,
+      "webBytes": 43286
+    },
+    {
+      "name": "living-relief-narrow-accepted",
+      "sourceBytes": 1693294,
+      "webBytes": 43102
+    }
+  ]
+}

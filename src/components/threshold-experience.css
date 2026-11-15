@@ -1,0 +1,549 @@
+.threshold-experience{--door-progress:0;position:relative;min-height:860px;height:110svh;max-height:1250px;overflow:hidden;isolation:isolate;background:#eee7d7;color:#293f32;perspective:1600px}
+.threshold-world,.threshold-shade,.threshold-curtain{position:absolute;inset:0;pointer-events:none}
+.threshold-world{background:#b6ac82;transform:scale(1.16);transition:transform 1800ms cubic-bezier(.18,.65,.18,1),background-position 1800ms cubic-bezier(.18,.65,.18,1);z-index:-3}
+.threshold-shade{z-index:-2;background:linear-gradient(0deg,#182c23b3,transparent 65%);opacity:var(--door-progress);transition:opacity 1s}
+.threshold-curtain{z-index:-1;background:#eee7d7 url(/assets/paper-world/continuation.webp) center/cover no-repeat;opacity:calc(1 - var(--door-progress));transition:opacity 1.1s ease}
+.threshold-experience[data-open=true] .threshold-world{transform:scale(1.3)}
+.threshold-experience[data-destination="0"] .threshold-world{background-position:20% 50%;transform-origin:20% 55%}
+.threshold-experience[data-destination="1"] .threshold-world{background-position:50% 50%;transform-origin:50% 55%}
+.threshold-experience[data-destination="2"] .threshold-world{background-position:85% 50%;transform-origin:85% 45%}
+.threshold-portal{position:absolute;left:50%;top:13%;width:min(50vw,630px);height:78%;transform:translateX(-35%) scale(calc(1 + var(--door-progress) * .12));opacity:calc(1 - max(0,var(--door-progress) - .8) * 5);transition:transform 1.3s cubic-bezier(.18,.65,.18,1),opacity 1.3s;touch-action:pan-y}
+.threshold-frame{height:100%;border-radius:50% 50% 0 0/30% 30% 0 0;position:relative;transform-style:preserve-3d;box-shadow:0 0 0 6px #9c8660,0 0 0 13px #e0d2b8,0 0 0 16px #ad9670,0 25px 70px #51433045;background:#2c392c;perspective:1500px}
+.threshold-door{position:absolute;top:0;bottom:0;width:50.15%;background-image:url(/assets/threshold/doors.webp);background-size:200% 100%;backface-visibility:hidden;transition:transform 1.3s cubic-bezier(.18,.65,.18,1);box-shadow:inset 0 0 25px #17271c22}
+.threshold-door-left{left:0;transform-origin:left center;border-radius:100% 0 0 0/30% 0 0 0;transform:rotateY(calc(var(--door-progress) * -115deg));background-position:left center}
+.threshold-door-right{right:0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;transform:rotateY(calc(var(--door-progress) * 115deg));background-position:right center}
+.threshold-experience[data-dragging=true] .threshold-door,.threshold-experience[data-dragging=true] .threshold-curtain,.threshold-experience[data-dragging=true] .threshold-portal{transition:none}
+.threshold-header{position:absolute;top:35px;left:5%;right:5%;display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:11px;z-index:3}
+.threshold-header>a{min-height:44px;display:flex;gap:12px;align-items:center;color:inherit;text-decoration:none}
+.threshold-invitation{position:absolute;left:7%;top:29%;z-index:2;transition:opacity .45s,transform .7s;max-width:42%;pointer-events:none}
+.threshold-invitation h2{font-size:clamp(65px,6.6vw,110px);line-height:.97;margin:27px 0 24px}
+.threshold-invitation>p:last-child{font-size:14px;line-height:1.7}
+.threshold-experience[data-open=true] .threshold-invitation{opacity:0;transform:translateY(-20px)}
+.threshold-experience[data-open=true] .threshold-header{color:#fff5de;text-shadow:0 1px 8px #1b2f21}
+.threshold-open-action{position:absolute;left:7%;bottom:12%;z-index:4;display:flex;flex-direction:column;align-items:flex-start;gap:15px}
+.threshold-open[data-slot=button]{background:#293f32;color:#fff6e4;border-radius:0;min-height:54px;padding:0 24px;font-size:13px;gap:32px}
+.threshold-open-action>span{font-size:10px;opacity:.65}
+.threshold-explore{position:absolute;inset:0;pointer-events:none;z-index:3;animation:threshold-enter 1.2s .45s both}
+.threshold-caption{position:absolute;left:7%;bottom:20%;max-width:370px;color:#fff6e4;text-shadow:0 2px 20px #142a21}
+.threshold-caption h3{font:400 clamp(43px,4.4vw,68px)/1 'Newsreader',Georgia,serif;letter-spacing:-.045em;margin:16px 0}
+.threshold-caption>p:not(.neighborly-eyebrow){font-size:15px;line-height:1.6;max-width:30ch}
+.threshold-caption>a{pointer-events:auto;min-height:44px;display:inline-flex;gap:24px;align-items:center;font-size:13px;color:inherit;text-decoration:none;border-bottom:1px solid #fff6e480}
+.threshold-destinations{position:absolute;left:7%;right:7%;bottom:8%;display:flex;gap:35px;pointer-events:auto;border-top:1px solid #fff6e450;padding-top:17px}
+.threshold-destinations [data-slot=button]{background:none;color:#fff6e4;min-height:48px;height:auto;padding:0 0 9px;gap:13px;border-radius:0;opacity:.6;font-size:13px;white-space:normal}
+.threshold-destinations [data-slot=button][aria-pressed=true]{opacity:1;border-bottom:1px solid #fff6e4}
+.threshold-destinations button>span{font-size:9px}
+.threshold-restart[data-slot=button]{pointer-events:auto;position:absolute;right:5%;top:85px;min-height:44px;background:none;color:#fff6e4;border-radius:0;font-size:10px;gap:9px}
+.threshold-experience :focus-visible{outline:2px solid currentColor;outline-offset:5px}
+@keyframes threshold-enter{from{opacity:0}to{opacity:1}}
+@media(max-width:700px){.threshold-experience{height:100svh;min-height:740px;max-height:none}.threshold-header{top:22px;left:7%;right:7%;font-size:9px}.threshold-header>span{max-width:16ch}.threshold-portal{width:73%;left:50%;top:22%;height:61%;transform:translateX(-50%) scale(calc(1 + var(--door-progress) * .12))}.threshold-invitation{top:10%;left:7%;max-width:86%}.threshold-invitation .neighborly-eyebrow{display:none}.threshold-invitation h2{font-size:48px;margin:25px 0 0;text-shadow:0 1px 20px #eee7d7}.threshold-invitation>p:last-child{display:none}.threshold-open-action{bottom:7%;left:50%;transform:translateX(-50%);align-items:center;white-space:nowrap}.threshold-caption{left:7%;bottom:27%;max-width:80%}.threshold-caption h3{font-size:48px}.threshold-caption>p:not(.neighborly-eyebrow){font-size:14px}.threshold-destinations{gap:12px;left:7%;right:7%;bottom:8%;align-items:flex-start}.threshold-destinations [data-slot=button]{font-size:11px;flex:1;display:block;text-align:left}.threshold-destinations button>span{display:block;margin-bottom:8px}.threshold-restart[data-slot=button]{top:75px}.threshold-world{background-position:50% 50%}.threshold-experience[data-open=true] .threshold-world{transform:scale(1.1)}}
+@media(prefers-reduced-motion:reduce){.threshold-experience *{transition:none!important;animation:none!important}.threshold-experience[data-open=true] .threshold-world{transform:none}.threshold-experience[data-open=true] .threshold-portal{display:none}}
+.threshold-frame{background:transparent}
+.threshold-experience[data-open=true] .threshold-open-action{top:78px;right:5%;left:auto;bottom:auto;transform:none}
+.threshold-experience[data-open=true] .threshold-open{background:#20342999;border:1px solid #fff6e44d;color:#fff6e4;min-height:44px;font-size:10px;padding:0 12px;gap:14px}
+@media(max-width:700px){.threshold-experience[data-open=true] .threshold-open-action{top:73px;right:7%}}
+.threshold-invitation{max-width:28%}.threshold-invitation h2{font-size:clamp(60px,5.5vw,86px)}
+.threshold-destinations [data-slot=button]{border:0;box-shadow:none}
+.threshold-destinations [data-slot=button][aria-pressed=true]{border-bottom:1px solid #fff6e4}
+.threshold-experience[data-open=true] .threshold-world{transform:translate3d(calc(var(--look-x,0) * -12px),calc(var(--look-y,0) * -8px),0) scale(1.3)}
+@media(max-width:700px){.threshold-invitation{max-width:86%}.threshold-invitation h2{font-size:48px}.threshold-experience[data-open=true] .threshold-world{transform:scale(1.1)}}
+@media(prefers-reduced-motion:reduce){.threshold-experience[data-open=true] .threshold-world{transform:none}}
+@media(max-width:700px){.threshold-portal{top:29%;height:54%}}
+/* Independently positioned painted planes, driven by the courtyard camera. */
+.threshold-world{background:#b6ac82;transform:none!important;transition:filter 1800ms ease;overflow:hidden}
+.threshold-background,.threshold-foreground,.threshold-lamps{position:absolute;left:50%;top:50%;width:var(--scene-width,100%);height:var(--scene-height,100%);max-width:none;object-fit:cover;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),var(--scene-y,0px),0);will-change:transform;pointer-events:none}
+.threshold-foreground{transform:translate(-50%,-50%) translate3d(var(--fore-x,0px),var(--fore-y,0px),0);transform-origin:28% 16%;animation:courtyard-breeze 14s ease-in-out infinite alternate;animation-play-state:paused}
+.threshold-experience[data-open=true] .threshold-foreground{animation-play-state:running}
+.threshold-lamps{z-index:1;opacity:0;background:radial-gradient(ellipse at 86% 37%,#ffca6680 0,transparent 16%),radial-gradient(ellipse at 91% 46%,#ffc25d66 0,transparent 11%);mix-blend-mode:screen;transition:opacity 1800ms}
+.threshold-foreground{z-index:2}.threshold-sunlight{position:absolute;inset:0;z-index:3;background:linear-gradient(112deg,transparent 15%,#fff1bc20 28%,transparent 38%,#ffe8a214 48%,transparent 65%);mix-blend-mode:soft-light;opacity:.7;pointer-events:none;transition:opacity 1800ms}
+.threshold-experience[data-evening=true] .threshold-background{filter:brightness(.58) saturate(.78)}
+.threshold-experience[data-evening=true] .threshold-foreground{filter:brightness(.55) saturate(.78)}
+.threshold-experience[data-evening=true] .threshold-lamps{opacity:1}
+.threshold-experience[data-evening=true] .threshold-sunlight{opacity:0}
+.threshold-light-control[data-slot=button]{pointer-events:auto;position:absolute;left:5%;top:78px;background:#20342999;color:#fff6e4;min-height:44px;padding:0 12px;gap:9px;border-radius:0;border:1px solid #fff6e44d;font-size:10px}
+.threshold-experience[data-open=true]{touch-action:pan-y;cursor:grab}.threshold-experience[data-courtyard-dragging=true]{cursor:grabbing}.threshold-experience button,.threshold-experience a{cursor:pointer}
+@keyframes courtyard-breeze{from{transform:translate(-50%,-50%) translate3d(var(--fore-x,0px),var(--fore-y,0px),0) rotate(-.12deg) scale(1.015)}to{transform:translate(-50%,-50%) translate3d(var(--fore-x,0px),var(--fore-y,0px),0) rotate(.12deg) scale(1.025)}}
+@media(max-width:700px){.threshold-light-control[data-slot=button]{top:73px;left:7%}}
+@media(prefers-reduced-motion:reduce){.threshold-foreground{animation:none}.threshold-background,.threshold-foreground,.threshold-lamps,.threshold-sunlight{transition:none;will-change:auto}}
+.threshold-background,.threshold-foreground{transition:filter 1800ms ease}
+.threshold-foreground{animation-play-state:paused!important}
+.threshold-experience[data-open=true][data-courtyard-visible=true] .threshold-foreground{animation-play-state:running!important}
+.threshold-sunlight{inset:-8%;animation:courtyard-light 18s ease-in-out infinite alternate;animation-play-state:paused}
+.threshold-experience[data-open=true][data-courtyard-visible=true] .threshold-sunlight{animation-play-state:running}
+@keyframes courtyard-light{from{transform:translateX(-2%) rotate(-1deg)}to{transform:translateX(2%) rotate(1deg)}}
+@media(prefers-reduced-motion:reduce){.threshold-sunlight,.threshold-foreground{animation:none!important}.threshold-background,.threshold-foreground{transition:none!important}}
+.threshold-experience[data-open=true] .threshold-portal{pointer-events:none}
+.threshold-experience[data-courtyard-visible=false] .threshold-foreground,.threshold-experience[data-courtyard-visible=false] .threshold-sunlight{animation-play-state:paused!important}
+
+.threshold-look-hint{position:absolute;right:7%;bottom:10%;font-size:10px;color:#fff6e4b3;letter-spacing:.03em}@media(max-width:700px){.threshold-look-hint{left:7%;right:auto;bottom:19%}}
+.threshold-table-state{position:absolute;left:50%;top:50%;width:var(--scene-width,100%);height:var(--scene-height,100%);max-width:none;object-fit:cover;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),var(--scene-y,0px),0);opacity:0;clip-path:inset(42% 25% 25% 35%);transition:opacity 1100ms ease;pointer-events:none}
+.threshold-experience[data-table-ready=true] .threshold-table-state{opacity:1}
+.threshold-experience[data-evening=true] .threshold-table-state{filter:brightness(.58) saturate(.78)}
+.threshold-care-action[data-slot=button]{pointer-events:auto;display:flex;min-height:48px;padding:0 0;background:transparent;color:#fff6e4;gap:20px;border:0;border-bottom:1px solid #fff6e470;border-radius:0;font-size:14px;box-shadow:none;margin:10px 0}
+@media(prefers-reduced-motion:reduce){.threshold-table-state{transition:none}}
+.threshold-table-state{clip-path:inset(40% 31% 24% 32%);mask-image:linear-gradient(90deg,transparent 31.5%,#000 33%,#000 68%,transparent 69.5%);mask-size:100% 100%}
+@media(max-width:700px){.threshold-experience[data-destination="1"] .threshold-caption{bottom:24%;max-width:88%}.threshold-experience[data-destination="1"] .threshold-caption h3{font-size:40px}.threshold-experience[data-destination="1"] .threshold-caption>p:not(.neighborly-eyebrow){max-width:32ch;font-size:13px}.threshold-experience[data-destination="1"] .threshold-care-action{min-height:44px;margin:3px 0}.threshold-experience[data-destination="1"] .threshold-look-hint{bottom:17%}}
+.threshold-garden-state,.threshold-hall-state{position:absolute;left:50%;top:50%;width:var(--scene-width,100%);height:var(--scene-height,100%);max-width:none;object-fit:cover;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),var(--scene-y,0px),0);opacity:0;transition:opacity 1.2s ease;pointer-events:none}
+.threshold-garden-state{clip-path:inset(34% 67% 18% 0);mask-image:linear-gradient(90deg,#000 0%,#000 30%,transparent 33%)}
+.threshold-hall-state{clip-path:polygon(77% 35%,79% 25%,84% 19%,89% 18%,94% 23%,96% 34%,96% 69%,77% 69%)}
+.threshold-experience[data-garden-ready=true] .threshold-garden-state,.threshold-experience[data-hall-ready=true] .threshold-hall-state{opacity:1}
+.threshold-experience[data-evening=true] .threshold-garden-state,.threshold-experience[data-evening=true] .threshold-hall-state{filter:brightness(.58) saturate(.78)}
+.threshold-caption>div>p:not(.neighborly-eyebrow){font-size:15px;line-height:1.6;max-width:30ch}
+@media(max-width:700px){.threshold-caption{bottom:24%;max-width:88%}.threshold-caption h3{font-size:40px}.threshold-caption>div>p:not(.neighborly-eyebrow){font-size:13px;max-width:32ch}.threshold-care-action{min-height:44px;margin:3px 0}.threshold-look-hint{bottom:17%}}
+@media(prefers-reduced-motion:reduce){.threshold-garden-state,.threshold-hall-state{transition:none}}
+.threshold-garden-state{clip-path:inset(32% 62% 16% 0);mask-image:linear-gradient(90deg,#000 0%,#000 35%,transparent 38%)}
+
+.threshold-quiet-control[data-slot=button]{position:absolute;right:5%;top:132px;pointer-events:auto;min-height:44px;padding:0 12px;background:#20342999;border:1px solid #fff6e44d;border-radius:0;color:#fff6e4;font-size:10px}
+.threshold-caption,.threshold-destinations,.threshold-look-hint{transition:opacity .65s ease,transform .8s ease}
+.threshold-experience[data-quiet=true] .threshold-caption,.threshold-experience[data-quiet=true] .threshold-destinations,.threshold-experience[data-quiet=true] .threshold-look-hint{opacity:0;transform:translateY(10px);visibility:hidden;pointer-events:none}
+.threshold-experience[data-quiet=true] .threshold-shade{opacity:.25}
+@media(max-width:700px){.threshold-quiet-control[data-slot=button]{right:7%;top:125px}}
+.threshold-world{scale:var(--care-zoom,1);transform-origin:50% 50%}
+.threshold-experience[data-acting=true] .threshold-caption{opacity:.7}
+.threshold-overview[data-slot=button]{pointer-events:auto;position:absolute;right:5%;top:184px;min-height:44px;background:#203429b3;color:#fff6e4;border:1px solid #fff6e44d;border-radius:0;font-size:11px;gap:15px;padding:0 12px}
+@media(max-width:700px){.threshold-overview[data-slot=button]{top:176px;right:7%;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.threshold-world{scale:1}}
+.threshold-world{scale:calc(1 + var(--care-zoom,0))}
+.threshold-scene-markers{position:absolute;left:50%;top:50%;width:var(--scene-width,100%);height:var(--scene-height,100%);transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),var(--scene-y,0px),0);z-index:4;pointer-events:none}
+.threshold-marker[data-slot=button]{position:absolute;min-width:44px;min-height:44px;padding:0 12px;gap:8px;border-radius:24px;background:#263e31b8;color:#fff7df;border:1px solid #fff7df80;pointer-events:auto;font-size:11px;box-shadow:0 3px 15px #15291e30;backdrop-filter:blur(3px)}
+.threshold-marker-0{left:20%;top:50%}.threshold-marker-1{left:52%;top:50%}.threshold-marker-2{left:85%;top:43%}
+.threshold-marker[data-slot=button]:hover{background:#263e31ed}.threshold-marker[data-slot=button]:focus-visible{outline:2px solid #fff7df;outline-offset:5px}
+.threshold-experience[data-quiet=true] .threshold-scene-markers{visibility:hidden}
+.threshold-result{display:flex;align-items:center;gap:8px;text-transform:uppercase;font-size:9px;letter-spacing:.1em;color:#fff5d5;margin-bottom:15px}
+@media(max-width:700px){.threshold-marker[data-slot=button]{padding:0;min-width:44px;width:44px}.threshold-marker span{display:none}}
+.threshold-table-chair,.threshold-table-settings{position:absolute;left:50%;top:50%;width:var(--scene-width,100%);height:var(--scene-height,100%);max-width:none;object-fit:cover;pointer-events:none;opacity:0}
+.threshold-table-chair{transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) - (1 - var(--table-chair,0)) * 55px),calc(var(--scene-y,0px) + (1 - var(--table-chair,0)) * 25px),0);filter:drop-shadow(7px 8px 5px #32251433)}
+.threshold-table-settings{transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),calc(var(--scene-y,0px) - (1 - var(--table-settings,0)) * 24px),0);filter:drop-shadow(2px 3px 2px #32251430)}
+.threshold-experience[data-table-ready=true] .threshold-table-chair{opacity:var(--table-chair,1)}
+.threshold-experience[data-table-ready=true] .threshold-table-settings{opacity:var(--table-settings,1)}
+.threshold-experience[data-evening=true] .threshold-table-chair,.threshold-experience[data-evening=true] .threshold-table-settings{filter:brightness(.58) saturate(.78) drop-shadow(2px 3px 3px #111a1555)}
+.threshold-table-chair{transform-origin:37% 67%;scale:none;transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) - (1 - var(--table-chair,0)) * 55px),calc(var(--scene-y,0px) + (1 - var(--table-chair,0)) * 25px),0) scale(.68)}
+.threshold-table-settings{transform-origin:51% 57%;scale:none;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),calc(var(--scene-y,0px) - (1 - var(--table-settings,0)) * 24px),0) scale(.62)}
+.threshold-table-chair{transform-origin:37% 67%;transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) + var(--scene-width) * .05 - (1 - var(--table-chair,0)) * 55px),calc(var(--scene-y,0px) - var(--scene-height) * .03 + (1 - var(--table-chair,0)) * 25px),0) scale(.68)}
+.threshold-garden-basket,.threshold-garden-plants,.threshold-hall-chairs,.threshold-hall-flowers{position:absolute;left:50%;top:50%;width:var(--scene-width,100%);height:var(--scene-height,100%);max-width:none;object-fit:cover;pointer-events:none;opacity:0;filter:drop-shadow(3px 5px 3px #35271333)}
+.threshold-garden-basket{transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) - (1 - var(--garden-basket,0)) * 30px),var(--scene-y,0px),0)}
+.threshold-garden-plants{transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),calc(var(--scene-y,0px) + (1 - var(--garden-plants,0)) * 12px),0)}
+.threshold-hall-chairs{transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) + (1 - var(--hall-chairs,0)) * 25px),var(--scene-y,0px),0)}
+.threshold-hall-flowers{transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),calc(var(--scene-y,0px) - (1 - var(--hall-flowers,0)) * 12px),0)}
+.threshold-experience[data-garden-ready=true] .threshold-garden-basket{opacity:var(--garden-basket,1)}.threshold-experience[data-garden-ready=true] .threshold-garden-plants{opacity:var(--garden-plants,1)}.threshold-experience[data-hall-ready=true] .threshold-hall-chairs{opacity:var(--hall-chairs,1)}.threshold-experience[data-hall-ready=true] .threshold-hall-flowers{opacity:var(--hall-flowers,1)}
+.threshold-experience[data-evening=true] :is(.threshold-garden-basket,.threshold-garden-plants,.threshold-hall-chairs,.threshold-hall-flowers){filter:brightness(.58) saturate(.78) drop-shadow(3px 5px 3px #111a1540)}
+.threshold-garden-basket{transform-origin:17% 65%;transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) - (1 - var(--garden-basket,0)) * 30px),calc(var(--scene-y,0px) - var(--scene-height) * .035),0) scale(.65)}
+.threshold-garden-plants{transform-origin:18% 62%;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),calc(var(--scene-y,0px) - var(--scene-height) * .018 + (1 - var(--garden-plants,0)) * 12px),0) scale(.78)}
+.threshold-hall-chairs{transform-origin:87% 62%;transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) + (1 - var(--hall-chairs,0)) * 25px),var(--scene-y,0px),0) scale(.75)}
+.threshold-hall-flowers{transform-origin:88% 64%;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),calc(var(--scene-y,0px) - var(--scene-height) * .018 - (1 - var(--hall-flowers,0)) * 12px),0) scale(.55)}
+.threshold-shared-result{position:absolute;left:7%;bottom:18%;max-width:580px;color:#fff6e4;text-shadow:0 2px 20px #142a21;animation:shared-result-in 1.2s ease both;pointer-events:none}
+.threshold-shared-result h3{font:400 clamp(48px,6vw,86px)/.98 'Newsreader',Georgia,serif;letter-spacing:-.055em;margin:22px 0 28px}.threshold-shared-result h3 em{font-weight:400}
+.threshold-shared-result>a{display:inline-flex;align-items:center;gap:24px;min-height:48px;border-bottom:1px solid #fff6e480;text-decoration:none;font-size:13px;pointer-events:auto}
+@keyframes shared-result-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(max-width:700px){.threshold-shared-result{left:7%;right:7%;bottom:19%}.threshold-shared-result h3{font-size:48px}.threshold-shared-result .neighborly-eyebrow{max-width:27ch;line-height:1.7}}
+@media(prefers-reduced-motion:reduce){.threshold-shared-result{animation:none}}
+.threshold-retry[data-slot=button]{position:absolute;left:7%;bottom:16%;pointer-events:auto;min-height:44px;color:#fff6e4;background:#203429b3;border-radius:0}
+/* Let the artwork occupy the full viewport while the narrative stays anchored. */
+.threshold-experience[data-acting=true] .threshold-scene-markers,.threshold-experience[data-acting=true] .threshold-destinations,.threshold-experience[data-acting=true] .threshold-look-hint{opacity:.15;transition:opacity .35s;pointer-events:none}
+.threshold-experience[data-acting=true] .threshold-caption{opacity:1}
+.threshold-experience[data-acting=true] .threshold-caption>div{opacity:.55;transition:opacity .35s}
+.threshold-experience[data-overview=true] .threshold-shade{background:linear-gradient(0deg,#14271cb3,transparent 65%);opacity:1}
+.threshold-experience[data-acting=true] .threshold-scene-markers,.threshold-experience[data-acting=true] .threshold-destinations{opacity:1;pointer-events:auto}
+.threshold-experience[data-destination="0"]{--fallback-x:30%}.threshold-experience[data-destination="1"]{--fallback-x:0%}.threshold-experience[data-destination="2"]{--fallback-x:-30%}
+.threshold-background,.threshold-table-chair,.threshold-table-settings,.threshold-garden-basket,.threshold-garden-plants,.threshold-hall-chairs,.threshold-hall-flowers{width:var(--scene-width,200%);height:var(--scene-height,116%)}
+
+
+/* Keep the painting luminous; concentrate contrast behind reading areas. */
+.threshold-shade{background:linear-gradient(90deg,#14291e88 0%,#14291e33 34%,transparent 65%),linear-gradient(0deg,#14291e70,transparent 32%)}
+.threshold-caption{max-width:340px}
+.threshold-caption h3{max-width:9ch}
+.threshold-marker[data-slot=button]{background:#263e318c;backdrop-filter:none;border-color:#fff7df55}
+.threshold-marker span{max-width:0;opacity:0;overflow:hidden;white-space:nowrap;transition:max-width .35s,opacity .35s}
+.threshold-marker:hover span,.threshold-marker:focus-visible span{max-width:90px;opacity:1}
+.threshold-marker[data-slot=button]{gap:0;width:44px;padding:0;justify-content:center;transition:width .35s,padding .35s,gap .35s}
+.threshold-marker[data-slot=button]:hover,.threshold-marker[data-slot=button]:focus-visible{width:auto;padding:0 12px;gap:8px}
+@media(max-width:700px){.threshold-shade{background:linear-gradient(0deg,#14291e99,transparent 78%)}.threshold-marker span{display:none}}
+
+.threshold-experience:not([data-nearby=true]) .threshold-door{background-image:none}
+.threshold-experience:not([data-nearby=true]) .threshold-curtain{background-image:none}
+
+.threshold-experience{height:100svh;max-height:none;min-height:760px;scroll-margin-top:0}.threshold-experience[data-open=true]{min-height:760px}@media(max-width:700px){.threshold-experience,.threshold-experience[data-open=true]{min-height:740px}}
+/* One restrained control rail leaves the architectural view uninterrupted. */
+.threshold-experience[data-open=true] .threshold-open-action{top:28px;right:5%}
+.threshold-light-control[data-slot=button]{top:28px;left:auto;right:calc(5% + 54px);padding:0;width:44px;min-width:44px;background:#20342966;border-color:#fff6e433;border-radius:50%}
+.threshold-experience[data-open=true] .threshold-open{width:44px;min-width:44px;padding:0;justify-content:center;border-radius:50%;background:#20342966;border-color:#fff6e433}
+.threshold-light-control .threshold-tool-label,.threshold-experience[data-open=true] .threshold-open .threshold-tool-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.threshold-experience[data-open=true] .threshold-header>a{margin-right:110px}
+.threshold-quiet-control[data-slot=button]{top:auto;bottom:25px;right:5%;background:transparent;border:0;padding:0;min-height:44px}
+.threshold-overview[data-slot=button]{top:88px;right:5%;background:#20342988}
+.threshold-look-hint{right:auto;left:7%;bottom:25px;line-height:44px}
+.threshold-destinations{bottom:90px}
+.threshold-caption{bottom:25%}
+@media(max-width:700px){.threshold-experience[data-open=true] .threshold-open-action{top:20px;right:7%}.threshold-light-control[data-slot=button]{top:20px;right:calc(7% + 52px)}.threshold-experience[data-open=true] .threshold-header>a{visibility:hidden;pointer-events:none}.threshold-overview[data-slot=button]{top:76px;right:7%}.threshold-quiet-control[data-slot=button]{bottom:65px;right:7%}.threshold-look-hint{bottom:65px}.threshold-destinations{bottom:120px}.threshold-caption,.threshold-experience[data-destination="1"] .threshold-caption{bottom:30%}}
+
+.threshold-open-action>span{opacity:1;color:#53604e}
+
+/* Split the painted row without resampling its pixels; each chair has its own arrival. */
+.threshold-hall-chair-0{clip-path:inset(0 17% 0 0);--chair-arrival:clamp(0,calc(var(--hall-chairs,0) * 1.6),1)}
+.threshold-hall-chair-1{clip-path:inset(0 11.8% 0 83%);--chair-arrival:clamp(0,calc((var(--hall-chairs,0) - .2) * 1.6),1)}
+.threshold-hall-chair-2{clip-path:inset(0 0 0 88.2%);--chair-arrival:clamp(0,calc((var(--hall-chairs,0) - .375) * 1.6),1)}
+.threshold-experience[data-hall-ready=true] .threshold-hall-chairs{opacity:var(--chair-arrival,0);transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) + (1 - var(--chair-arrival,0)) * 25px),var(--scene-y,0px),0) scale(.75)}
+/* The chair is an invitation before it becomes a place prepared for someone. */
+.threshold-experience[data-destination="1"][data-table-ready=false] .threshold-table-chair{opacity:1}
+.threshold-chair-handle[data-slot=button]{position:absolute;left:calc(50% + var(--scene-x,0px) - var(--scene-width,100vw) * .07);top:calc(50% + var(--scene-height,100vh) * .14);z-index:5;pointer-events:auto;touch-action:pan-y;min-height:48px;padding:8px 14px;background:#263e31c9;color:#fff7df;border:1px solid #fff7df80;border-radius:24px;gap:12px;cursor:grab;font-size:11px}
+.threshold-experience[data-chair-dragging=true] .threshold-chair-handle{cursor:grabbing;background:#263e31}
+.threshold-chair-handle:focus-visible{outline:2px solid #fff7df;outline-offset:5px}
+@media(max-width:700px){.threshold-experience[data-destination="1"] .threshold-caption{bottom:39%}.threshold-experience[data-destination="1"] .threshold-caption h3{font-size:42px;margin:12px 0}.threshold-experience[data-destination="1"] .threshold-caption>div>p:not(.neighborly-eyebrow){max-width:27ch}}
+.threshold-experience[data-destination="0"][data-garden-ready=false] .threshold-garden-basket{opacity:1}
+.threshold-basket-handle[data-slot=button]{left:calc(50% + var(--scene-x,0px) - var(--scene-width,100vw) * .31);top:calc(50% + var(--scene-height,100vh) * .13)}
+@media(max-width:700px){.threshold-experience[data-destination="0"] .threshold-caption{bottom:39%}}
+.threshold-chair-handle[data-slot=button]{left:clamp(16px,calc(50% + var(--scene-x,0px) - var(--scene-width,100vw) * .07),calc(100% - 150px))}
+.threshold-basket-handle[data-slot=button]{left:clamp(16px,calc(50% + var(--scene-x,0px) - var(--scene-width,100vw) * .31),calc(100% - 150px))}
+.threshold-experience[data-destination="2"][data-hall-ready=false] .threshold-hall-flowers{opacity:1}
+.threshold-flowers-handle[data-slot=button]{left:clamp(16px,calc(50% + var(--scene-x,0px) + var(--scene-width,100vw) * .35),calc(100% - 150px));top:calc(50% + var(--scene-height,100vh) * .14)}
+@media(max-width:700px){.threshold-experience[data-destination="2"] .threshold-caption{bottom:39%}}
+.threshold-journey{position:relative;height:400svh}
+.threshold-journey>.threshold-experience{position:sticky;top:0;height:100svh;min-height:740px;max-height:none}
+@media(max-width:700px){.threshold-journey{height:370svh}.threshold-journey>.threshold-experience{min-height:100svh}}
+@media(prefers-reduced-motion:reduce){.threshold-journey{height:330svh}}
+.threshold-caption{opacity:calc(1 - var(--journey-travel,0) * .85)}
+.threshold-destinations{border-top:0;gap:22px;bottom:7%}
+.threshold-destinations [data-slot=button]{font-size:11px}
+.threshold-destinations button>span{opacity:.65}
+.threshold-experience[data-travelling=true] .threshold-caption{opacity:0;visibility:hidden;pointer-events:none}
+.threshold-experience[data-travelling=true] .threshold-chair-handle{visibility:hidden;pointer-events:none}
+@media(max-width:700px){.threshold-destinations{bottom:92px}.threshold-quiet-control[data-slot=button]{bottom:40px}.threshold-look-hint{bottom:40px}}
+.threshold-journey>.threshold-experience{min-height:100svh}
+@media(min-width:701px) and (max-height:740px){.threshold-caption{bottom:24%;max-width:330px}.threshold-caption h3{font-size:44px;margin:10px 0}.threshold-caption>div>p:not(.neighborly-eyebrow){font-size:13px}.threshold-care-action{margin:4px 0}.threshold-destinations{bottom:6%}}
+@media(prefers-reduced-motion:reduce){.threshold-experience[data-travelling=true] .threshold-caption{opacity:1;visibility:visible;pointer-events:auto}.threshold-experience[data-travelling=true] .threshold-chair-handle{visibility:visible;pointer-events:auto}}
+.threshold-experience[data-entering=true] .threshold-explore{opacity:0;visibility:hidden;pointer-events:none}
+.threshold-experience[data-entering=true] .threshold-door,.threshold-experience[data-entering=true] .threshold-curtain,.threshold-experience[data-entering=true] .threshold-portal{transition:none}
+/* These objects belong to the courtyard, including before and after a gesture. */
+.threshold-experience .threshold-table-chair,
+.threshold-experience .threshold-garden-basket,
+.threshold-experience .threshold-hall-flowers,
+.threshold-experience[data-table-ready=true] .threshold-table-chair,
+.threshold-experience[data-garden-ready=true] .threshold-garden-basket,
+.threshold-experience[data-hall-ready=true] .threshold-hall-flowers{opacity:1}
+/* All handles point along the same rightward placement gesture. */
+.threshold-hall-flowers{transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) - (1 - var(--hall-flowers,0)) * 30px),calc(var(--scene-y,0px) - var(--scene-height) * .018),0) scale(.55)}
+
+.threshold-experience[data-motion-unavailable=true] .threshold-chair-handle{cursor:pointer}
+@media(max-width:700px){.threshold-experience[data-destination="2"] .threshold-caption{top:17%;bottom:auto;max-width:85%}.threshold-experience[data-destination="2"] .threshold-caption h3{font-size:38px;max-width:12ch}.threshold-experience[data-destination="2"] .threshold-caption>div>p:not(.neighborly-eyebrow){max-width:29ch}}
+@media(max-width:700px){.threshold-experience[data-destination="1"] .threshold-caption{top:17%;bottom:auto;max-width:85%}.threshold-experience[data-destination="1"] .threshold-caption h3{font-size:38px;max-width:12ch}}
+@media(max-height:500px) and (min-width:701px){
+  .threshold-invitation{top:24%;max-width:30%}
+  .threshold-invitation h2{font-size:44px;margin:12px 0}
+  .threshold-invitation>p:last-child{display:none}
+  .threshold-open-action{bottom:7%}
+  .threshold-open[data-slot=button]{min-height:44px;padding:0 18px}
+  .threshold-caption{top:21%;bottom:auto;max-width:31%}
+  .threshold-caption h3{font-size:32px;margin:8px 0}
+  .threshold-caption>div>p:not(.neighborly-eyebrow){font-size:12px;line-height:1.45}
+  .threshold-caption>a{font-size:12px;min-height:44px}
+  .threshold-result{margin:0 0 6px;font-size:8px}
+  .threshold-destinations{left:43%;right:5%;bottom:18px;padding-top:0;gap:18px}
+  .threshold-destinations [data-slot=button]{font-size:10px}
+  .threshold-look-hint{display:none}
+  .threshold-quiet-control[data-slot=button]{left:7%;right:auto;bottom:4px}
+  .threshold-shared-result{bottom:18%;max-width:70%}
+  .threshold-shared-result h3{font-size:50px}
+}
+@media(max-height:500px) and (min-width:701px){.threshold-quiet-control[data-slot=button]{left:43%;bottom:65px}}
+.threshold-table-response{position:absolute;left:50%;top:50%;width:var(--scene-width,200%);height:var(--scene-height,116%);max-width:none;object-fit:cover;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),var(--scene-y,0px),0);clip-path:inset(44% 50.4% 43% 44.4%);opacity:0;transition:opacity .7s ease;pointer-events:none}
+.threshold-experience[data-table-ready=true] .threshold-table-response{opacity:var(--table-settings,0)}
+@media(prefers-reduced-motion:reduce){.threshold-table-response{transition:none}}
+/* One authored response interval keeps the two painted poses from lingering together. */
+.threshold-table-response{transition:none}
+.threshold-experience[data-table-ready=true] .threshold-table-response{opacity:clamp(0,calc((var(--table-settings,0) - .65) * 5),1)}
+.threshold-experience[data-evening=true] .threshold-table-response{filter:brightness(.58) saturate(.78)}
+.threshold-table-response{transition:filter 1800ms ease}
+@media(prefers-reduced-motion:reduce){.threshold-table-response{transition:none}}
+.threshold-retry[data-slot=button]{left:auto;right:7%;bottom:25%;z-index:6}
+.threshold-skip{position:absolute;z-index:7;right:5%;bottom:22px;display:inline-flex;align-items:center;min-height:44px;color:inherit;font-size:11px;text-underline-offset:5px}
+.threshold-experience[data-open=true] .threshold-skip{color:#fff6e4;right:auto;left:calc(7% + 125px)}
+@media(max-width:700px){.threshold-skip{right:7%;bottom:4px}.threshold-experience[data-open=true] .threshold-skip{left:7%;bottom:40px}.threshold-look-hint{display:none}}
+@media(min-width:701px) and (max-height:500px){.threshold-experience[data-open=true] .threshold-skip{left:7%;bottom:4px}}
+/* A camera transition must never conceal the keyboard user's current control. */
+.threshold-experience[data-travelling=true] .threshold-caption:focus-within,
+.threshold-experience[data-quiet=true] .threshold-caption:focus-within{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+.threshold-experience[data-travelling=true] .threshold-chair-handle:focus-visible{visibility:visible;pointer-events:auto}.threshold-hall-response{position:absolute;left:50%;top:50%;width:var(--scene-width,200%);height:var(--scene-height,116%);max-width:none;object-fit:cover;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),var(--scene-y,0px),0);clip-path:inset(46% 11.9% 40% 82.9%);opacity:0;transition:filter 1800ms ease;pointer-events:none}
+.threshold-experience[data-hall-ready=true] .threshold-hall-response{opacity:clamp(0,calc((var(--hall-flowers,0) - .65) * 5),1)}
+.threshold-experience[data-evening=true] .threshold-hall-response{filter:brightness(.58) saturate(.78)}
+@media(prefers-reduced-motion:reduce){.threshold-hall-response{transition:none}}
+.threshold-replay[data-slot=button]{pointer-events:auto;display:flex;min-height:44px;padding:0;color:#fff6e4;background:none;border:0;border-radius:0;gap:12px;font-size:11px;margin-top:8px}
+/* The harvest becomes the table's contribution as the camera follows it. */
+.threshold-experience[data-garden-ready=true] .threshold-garden-basket{transform:translate(-50%,-50%) translate3d(calc(var(--scene-x,0px) - (1 - var(--garden-basket,0)) * 30px + var(--scene-width,100vw) * .35 * var(--harvest-placement,0)),calc(var(--scene-y,0px) - var(--scene-height,100vh) * (.035 + .075 * var(--harvest-placement,0))),0) scale(calc(.65 - .23 * var(--harvest-placement,0)))}
+
+.threshold-experience[data-garden-ready=true] .threshold-garden-basket{opacity:var(--harvest-opacity,1)}
+/* Keep the people and acts of care clear beneath the desktop reading area. */
+@media(min-width:1001px) and (min-height:741px){
+  .threshold-caption{top:18%;bottom:auto;max-width:330px}
+  .threshold-caption h3{font-size:clamp(46px,4.2vw,64px);margin:12px 0}
+  .threshold-caption>div>p:not(.neighborly-eyebrow){max-width:29ch}
+}
+@media(min-width:1001px) and (min-height:741px){
+  .threshold-experience[data-destination="2"] .threshold-caption{top:15%;max-width:370px}
+  .threshold-experience[data-destination="2"] .threshold-caption h3{font-size:48px;max-width:none;white-space:nowrap}
+  .threshold-experience[data-destination="2"] .threshold-result{margin-bottom:8px}
+}
+.threshold-experience[data-courtyard-only=true] .threshold-portal,.threshold-experience[data-courtyard-only=true] .threshold-curtain,.threshold-experience[data-courtyard-only=true] .threshold-invitation,.threshold-experience[data-courtyard-only=true] .threshold-open-action{display:none}
+.threshold-experience[data-courtyard-only=true][data-entering=true] .threshold-explore{opacity:1;visibility:visible;pointer-events:none}
+
+/* The persistent sound dock already occupies the lower-left corner. */
+@media(min-width:701px){.threshold-look-hint{display:none}.threshold-experience[data-open=true] .threshold-skip{left:14%}}
+
+/* Candidate portrait framing: the canopy borders the scene instead of covering it.
+   Independent translation preserves the existing breeze and all background registration. */
+@media(max-width:700px){
+  .threshold-experience[data-courtyard-only=true] .threshold-foreground{
+    translate:0 0;transition:translate .8s ease;
+  }
+  .threshold-experience[data-courtyard-only=true][data-destination="0"] .threshold-foreground{translate:-18vw -14svh;}
+}
+
+@media(prefers-reduced-motion:reduce){.threshold-experience[data-courtyard-only=true] .threshold-foreground{transition:none}}
+
+/* The offered bread extends beyond the earlier head-turn study. */
+.threshold-experience[data-courtyard-only=true] .threshold-table-response{clip-path:inset(43% 49.5% 41% 40.5%)}
+/* Authored pose change: a clean cut avoids blending two faces or arms. */
+.threshold-experience[data-courtyard-only=true][data-table-ready=true] .threshold-table-response{opacity:round(down,calc(var(--table-settings,0) / .8),1)}
+
+.threshold-experience[data-courtyard-only=true] .threshold-hall-response{clip-path:inset(45% 11.5% 37% 80.7%)}
+.threshold-experience[data-courtyard-only=true][data-hall-ready=true] .threshold-hall-response{opacity:round(down,calc(var(--hall-flowers,0) / .8),1)}
+
+/* Once care is visible, leave the human response room to speak. */
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-caption h3,
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-caption .neighborly-eyebrow{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-caption .threshold-result{display:none}
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-caption>div>p:not(.neighborly-eyebrow):not(.sr-only){font:400 clamp(26px,2.5vw,38px)/1.15 'Newsreader',Georgia,serif;letter-spacing:-.025em;max-width:18ch;margin:0 0 16px}
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-care-action{font-size:10px;min-height:44px;margin:0;border:0;opacity:.8}
+@media(max-width:700px){
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-caption{top:14%;bottom:auto;max-width:82%}
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-caption>div>p:not(.neighborly-eyebrow):not(.sr-only){font-size:28px;max-width:19ch}
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-caption>a{border:0;min-height:44px}
+}
+
+/* The final portrait composition gathers the complete courtyard in one view. */
+@media(max-width:700px){
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-world{background:#eee7d7}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-foreground{opacity:0}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-shade{opacity:0}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-shared-result{top:8%;bottom:auto;color:#293f32;text-shadow:none}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-shared-result h3{font-size:52px;margin:16px 0}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-shared-result>a{border-color:#293f3255}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-replay{color:#293f32}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-header,
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-skip,
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-quiet-control{color:#293f32}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-header{visibility:hidden}
+}
+
+/* In the scroll story, authored pose variables reveal each action continuously. */
+.threshold-experience[data-scroll-care=true] .threshold-table-chair{opacity:var(--table-chair,0)}
+.threshold-experience[data-scroll-care=true] .threshold-table-settings{opacity:var(--table-settings,0)}
+.threshold-experience[data-scroll-care=true] .threshold-garden-basket{opacity:calc(var(--garden-basket,0) * var(--harvest-opacity,1))}
+.threshold-experience[data-scroll-care=true] .threshold-garden-plants{opacity:var(--garden-plants,0)}
+.threshold-experience[data-scroll-care=true] .threshold-hall-chairs{opacity:var(--chair-arrival,0)}
+.threshold-experience[data-scroll-care=true] .threshold-hall-flowers{opacity:var(--hall-flowers,0)}
+.threshold-experience[data-scroll-care=true] .threshold-table-response{opacity:round(down,calc(var(--table-settings,0) / .8),1)}
+.threshold-experience[data-scroll-care=true] .threshold-hall-response{opacity:round(down,calc(var(--hall-flowers,0) / .8),1)}
+
+.threshold-experience[data-scroll-care=true] .threshold-overview{display:none}
+
+@media(max-width:700px){
+.threshold-experience[data-scroll-care=true][data-overview=true]:not([data-final-framed=true]) .threshold-shared-result{opacity:0;visibility:hidden;animation:none;pointer-events:none}
+.threshold-experience[data-scroll-care=true][data-overview=true][data-final-framed=true] .threshold-shared-result{animation:none;opacity:1;visibility:visible;transition:opacity .45s ease}
+}
+@media(prefers-reduced-motion:reduce){.threshold-experience[data-scroll-care=true] .threshold-shared-result{transition:none!important}}
+
+/* Give each scroll-authored act room to unfold after the doorway handoff. */
+.depth-experience-candidate .threshold-journey{height:550svh}
+/* Keep scroll geometry stable when the system motion preference changes. */
+@media(prefers-reduced-motion:reduce){.depth-experience-candidate .threshold-journey{height:550svh}}
+
+/* Short phones need a landscape composition, even below the tablet breakpoint. */
+@media(max-height:500px) and (max-width:700px) and (orientation:landscape){
+.threshold-experience[data-courtyard-only=true] .threshold-caption{top:22%;bottom:auto;left:6%;max-width:29%}
+.threshold-experience[data-courtyard-only=true] .threshold-caption h3{font-size:28px;line-height:1;margin:8px 0;max-width:none}
+.threshold-experience[data-courtyard-only=true] .threshold-caption>div>p:not(.neighborly-eyebrow):not(.sr-only){font-size:11px;line-height:1.4}
+.threshold-experience[data-courtyard-only=true][data-care-complete=true] .threshold-caption>div>p:not(.neighborly-eyebrow):not(.sr-only){font-size:23px;line-height:1.1}
+.threshold-experience[data-courtyard-only=true] .threshold-caption>a{font-size:11px;min-height:44px}
+.threshold-experience[data-courtyard-only=true] .threshold-destinations{left:40%;right:5%;bottom:18px;gap:12px}
+.threshold-experience[data-courtyard-only=true] .threshold-destinations [data-slot=button]{font-size:9px;display:flex;gap:6px}
+.threshold-experience[data-courtyard-only=true] .threshold-destinations button>span{margin:0}
+.threshold-experience[data-courtyard-only=true] .threshold-quiet-control{right:5%;bottom:62px;font-size:10px}
+.threshold-experience[data-courtyard-only=true] .threshold-skip{left:23%;bottom:10px;font-size:10px}
+.threshold-experience[data-courtyard-only=true] .threshold-foreground{translate:0 0}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-shared-result{top:20%;left:6%;max-width:46%;color:#fff6e4;text-shadow:0 2px 20px #142a21}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-shared-result h3{font-size:38px;margin:12px 0}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-world{background:#b6ac82}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-shade{opacity:1}
+.threshold-experience[data-courtyard-only=true][data-overview=true] .threshold-replay{color:#fff6e4}
+}
+
+/* Compose the portrait ending around the wide painting, with actions beneath it. */
+@media(max-width:700px) and (orientation:portrait){
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-shared-result{inset:0;max-width:none;pointer-events:none}
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-shared-result>.neighborly-eyebrow{position:absolute;left:7%;right:7%;top:9%;max-width:30ch}
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-shared-result>h3{position:absolute;left:7%;right:7%;top:17%;margin:0;font-size:clamp(46px,13vw,62px)}
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-shared-result>a{position:absolute;left:7%;right:7%;top:calc(50% + 25vw + 24px);justify-content:space-between;min-height:52px}
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-replay{position:absolute;left:7%;top:calc(50% + 25vw + 88px);margin:0}
+}
+
+.threshold-experience[data-spatial-chair-ready=true] .threshold-table-chair{visibility:hidden}
+
+.threshold-final-links{display:flex;gap:24px;pointer-events:auto;margin:12px 0}
+.threshold-final-links a{display:inline-flex;align-items:center;gap:12px;min-height:44px;font-size:12px;text-decoration:none}
+@media(max-width:700px) and (orientation:portrait){
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-final-links{position:absolute;left:7%;right:7%;top:calc(50% + 25vw + 78px);margin:0;justify-content:space-between}
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-replay{top:calc(50% + 25vw + 128px)}
+}
+@media(max-height:500px) and (orientation:landscape){.threshold-final-links{margin:0;gap:18px}.threshold-final-links a{min-height:32px;font-size:10px}}
+@media(max-width:700px) and (orientation:portrait){
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-skip{display:none}
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-quiet-control{display:none}
+}
+
+/* The ending already exposes the next steps and replay; omit duplicate story controls. */
+.threshold-experience[data-scroll-care=true][data-overview=true] :is(.threshold-skip,.threshold-quiet-control){display:none}
+@media(max-height:500px) and (orientation:landscape){
+.threshold-experience[data-scroll-care=true][data-overview=true] .threshold-replay{position:fixed;left:auto;right:6%;bottom:24px;margin:0}
+}
+
+/* Scroll choreography already reveals this layer; avoid a second delayed fade. */
+.threshold-experience[data-scroll-care=true] .threshold-explore{animation:none}
+
+/* Keep reading contrast local so the courtyard retains its warm light. */
+.threshold-experience[data-scroll-care=true] .threshold-caption{isolation:isolate}
+.threshold-experience[data-scroll-care=true] .threshold-caption:before{content:"";position:absolute;inset:-30px -34px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 35% 45%,#20372bcc 0%,#20372b88 42%,transparent 74%);filter:blur(14px)}
+.threshold-experience[data-scroll-care=true][data-travelling=true] .threshold-caption:before{opacity:0}
+@media(prefers-reduced-motion:reduce){.threshold-experience[data-scroll-care=true] .threshold-caption:before{filter:none}}
+
+/* Keep the story exit beside, rather than beneath, the persistent sound dock. */
+@media(max-width:700px){
+  .threshold-experience[data-open=true]:not([data-overview=true]) .threshold-skip{left:calc(7% + 106px);bottom:12px}
+  .threshold-experience[data-open=true]:not([data-overview=true]) .threshold-quiet-control[data-slot=button]{left:auto;right:7%;bottom:56px}
+}
+
+/* A failed courtyard keeps both recovery and the product route available. */
+.threshold-load-error{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:32px;background:#eee7d7;color:#293f32;text-align:center}
+.threshold-load-error p{font:400 clamp(30px,5vw,48px)/1.15 'Newsreader',Georgia,serif;letter-spacing:-.035em;margin:0 0 8px}
+.threshold-load-error [data-slot=button],.threshold-load-error a{display:inline-flex;align-items:center;gap:12px;min-height:44px;color:inherit;font-size:13px;background:transparent;border-radius:0;text-underline-offset:5px}
+.threshold-load-error :is(a,button):focus-visible{outline:2px solid currentColor;outline-offset:5px}
+
+.threshold-open-action[hidden]{display:none}
+
+.threshold-invitation-action[data-slot=button]{pointer-events:auto;display:flex;align-items:center;gap:20px;min-height:44px;padding:0;border:0;border-bottom:1px solid #fff6e480;border-radius:0;background:transparent;color:inherit;font-size:13px;text-shadow:inherit;box-shadow:none}
+.threshold-invitation-action[data-slot=button]:hover{background:transparent;border-bottom-color:currentColor}
+
+.threshold-guide-mark{display:grid;grid-template-columns:8px 18px;gap:3px;width:44px;height:34px;align-content:center;padding:8px;background:#eee7d7;box-shadow:1px 2px 5px #15251b33;transform:rotate(-6deg);flex-shrink:0}.threshold-guide-mark i{background:#b28c42;grid-row:span 2}.threshold-guide-mark b{height:2px;background:#827b69}
+.threshold-invitation-action[data-slot=button]{margin-top:12px;text-align:left;white-space:normal;max-width:290px;padding-block:8px}
+
+
+.threshold-table-note[data-slot=button]{position:absolute;z-index:6;left:clamp(20px,calc(50% + var(--scene-x,0px) + var(--scene-width,100vw) * .055),calc(100% - 180px));top:calc(50% + var(--scene-height,100vh) * .055);display:flex;gap:10px;min-height:54px;padding:8px 12px;border:1px solid #baa77c;background:#f4eddb;color:#304536;box-shadow:0 5px 16px #25392b35;transform:rotate(-3deg);border-radius:1px;text-align:left}
+.threshold-table-note strong,.threshold-table-note small{display:block}.threshold-table-note strong{font:400 23px/1.1 'Newsreader',Georgia,serif}.threshold-table-note small{font-size:10px;margin-top:4px}.threshold-table-note .threshold-guide-mark{box-shadow:none;padding:6px;width:30px;background:transparent}.threshold-table-note:focus-visible{outline:2px solid #fff5df;outline-offset:5px}
+
+.threshold-table-note[data-slot=button]{min-height:48px;padding:6px 9px;gap:7px;box-shadow:0 3px 5px #25392b45;transform:perspective(500px) rotateX(12deg) rotate(-5deg);transform-origin:50% 100%}.threshold-table-note strong{font-size:21px}
+
+/* The generous hit area stays flat while the paper follows the tabletop. */
+.threshold-table-note[data-slot=button]{left:clamp(12px,calc(50% + var(--scene-x,0px) + var(--scene-width,100vw) * .02),calc(100% - 155px));top:calc(50% + var(--scene-height,100vh) * -.005);padding:10px;min-height:64px;background:transparent;border:0;box-shadow:none;transform:none}
+.threshold-table-note-paper{display:flex;align-items:center;gap:6px;padding:7px 10px;background:#e9dfc7;border:1px solid #c1ae87;box-shadow:1px 3px 3px #27352040;transform:perspective(400px) rotateX(48deg) rotateZ(-4deg);transform-origin:50% 100%}
+.threshold-table-note[data-slot=button]:hover{background:transparent}.threshold-table-note[data-slot=button]:hover .threshold-table-note-paper{border-color:#816f46}.threshold-table-note strong{font-size:20px}.threshold-table-note small{font-size:10px}
+.threshold-table-note[data-slot=button]{left:clamp(12px,calc(50% + var(--scene-x,0px) - var(--scene-width,100vw) * .025),calc(100% - 155px));top:calc(50% + var(--scene-height,100vh) * .03)}
+
+.threshold-table-welcome{position:absolute;left:50%;top:50%;width:var(--scene-width,200%);height:var(--scene-height,116%);max-width:none;object-fit:cover;transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),var(--scene-y,0px),0);clip-path:inset(43% 48% 41% 37%);opacity:0;pointer-events:none}
+.threshold-experience[data-invitation=accepted] .threshold-table-welcome{opacity:1;z-index:1}
+@media(prefers-reduced-motion:reduce){.threshold-table-welcome{transition:none}}
+.threshold-table-welcome{clip-path:none;mask-image:radial-gradient(ellipse 9% 10% at 44.5% 51%,#000 62%,transparent 100%);mask-repeat:no-repeat}
+
+.threshold-experience[data-answer-focus=true] :is(.threshold-chair-handle,.threshold-destinations,.threshold-quiet-control){visibility:hidden;pointer-events:none}
+.threshold-explore-after[data-slot=button]{position:absolute;z-index:7;right:5%;bottom:25px;min-height:44px;background:#eee7d7e8;color:#304536;border-radius:0;font-size:11px;gap:12px}
+@media(max-width:700px){.threshold-explore-after[data-slot=button]{right:7%;bottom:62px}}
+
+/* Larger, fewer foreground forms share the opening relief's material language. */
+.threshold-foreground{opacity:.82}
+/* Opaque pigment shapes avoid ghosting over the quieter mural. */
+.threshold-foreground{opacity:1}
+/* The quiet base already supplies the resting person; only the matched
+   accepted welcome layer changes her pose in the main experience. */
+.threshold-experience:not([data-courtyard-only=true]) .threshold-table-response{display:none}
+/* Keep light lettering readable where the sculptural foliage crosses it. */
+.threshold-caption{isolation:isolate}
+.threshold-caption::before{content:"";position:absolute;z-index:-1;inset:-28px -40px;pointer-events:none;background:radial-gradient(ellipse at 35% 45%,#1b322ab8 0%,#1b322a73 48%,transparent 76%)}
+@media(max-width:700px){.threshold-caption::before{inset:-24px -30px;background:radial-gradient(ellipse at 35% 45%,#1b322ac9 0%,#1b322a80 48%,transparent 78%)}}
+
+/* Between phone and desktop widths the skip link must clear the persistent sound control. */
+@media(min-width:701px) and (max-width:900px){.threshold-experience[data-open=true]:not([data-overview=true]) .threshold-skip{left:calc(7% + 150px)}}
+
+/* The doorway is a real opening. The paper wall keeps its place around the arch, the courtyard is seen only through it,
+   and entering carries the wall past the visitor while the courtyard draws near. */
+.threshold-experience[data-courtyard-only=false]{--arch-w:min(50vw,630px);--arch-h:78%;--arch-x:calc(50% + var(--arch-w) * .15);--arch-y:52%;--arch-mask-y:59.09%;--walk:clamp(0,calc((var(--door-progress) - .3) / .7),1);--pass:calc(1 + var(--walk) * var(--walk) * 4.2);--wall:clamp(0,calc((1 - var(--door-progress)) * 3.4),1)}
+.threshold-experience[data-courtyard-only=false] .threshold-curtain{opacity:var(--wall);scale:var(--pass);transform-origin:var(--arch-x) var(--arch-y);transition:opacity 1.1s ease,scale 1.3s cubic-bezier(.18,.65,.18,1);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 100V30a50 30 0 0 1 100 0v70z'/%3E%3C/svg%3E"),linear-gradient(#000,#000);
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 100V30a50 30 0 0 1 100 0v70z'/%3E%3C/svg%3E"),linear-gradient(#000,#000);
+  -webkit-mask-size:var(--arch-w) var(--arch-h),100% 100%;mask-size:var(--arch-w) var(--arch-h),100% 100%;
+  -webkit-mask-position:var(--arch-x) var(--arch-mask-y),0 0;mask-position:var(--arch-x) var(--arch-mask-y),0 0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-composite:xor;mask-composite:exclude}
+.threshold-experience[data-courtyard-only=false] .threshold-portal{transform:translateX(-35%) scale(var(--pass));opacity:var(--wall)}
+.threshold-experience[data-courtyard-only=false] .threshold-door-left{transform:rotateY(calc(min(1,var(--door-progress) * 2.4) * 88deg))}
+.threshold-experience[data-courtyard-only=false] .threshold-door-right{transform:rotateY(calc(min(1,var(--door-progress) * 2.4) * -88deg))}
+.threshold-experience[data-courtyard-only=false] .threshold-world{overflow:visible;scale:calc((1 + var(--care-zoom,0)) * (.86 + .14 * var(--door-progress)));transition:filter 1800ms ease,scale 1.3s cubic-bezier(.18,.65,.18,1)}
+.threshold-experience[data-courtyard-only=false]:is([data-entering=true],[data-dragging=true],[data-acting=true],[data-chair-dragging=true]) .threshold-world{transition:filter 1800ms ease}
+@media(max-width:700px){
+  .threshold-experience[data-courtyard-only=false]{--arch-w:73%;--arch-h:54%;--arch-x:50%;--arch-y:56%;--arch-mask-y:63.04%}
+  .threshold-experience[data-courtyard-only=false] .threshold-portal{transform:translateX(-50%) scale(var(--pass))}
+}
+@media(prefers-reduced-motion:reduce){.threshold-experience[data-courtyard-only=false] :is(.threshold-curtain,.threshold-world){scale:1}.threshold-experience[data-courtyard-only=false] .threshold-portal{transform:translateX(-35%)}}
+@media(prefers-reduced-motion:reduce) and (max-width:700px){.threshold-experience[data-courtyard-only=false] .threshold-portal{transform:translateX(-50%)}}
+
+/* The painting breathes. Layers answer the pointer by their distance, and petals fall from the tree. */
+.threshold-experience[data-open=true] .threshold-world>:is(img,.threshold-lamps){translate:calc(var(--look-x,0) * -7px) calc(var(--look-y,0) * -4px)}
+.threshold-experience[data-open=true] .threshold-world>.threshold-foreground{translate:calc(var(--look-x,0) * -26px) calc(var(--look-y,0) * -13px)}
+.threshold-petals{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.threshold-petals i{position:absolute;top:-4%;left:calc(8% + var(--petal) * 11%);width:11px;height:8px;border-radius:80% 20% 75% 25%/70% 30% 70% 30%;background:radial-gradient(ellipse at 30% 35%,#fffaf0,#f1e3c8 70%,#e4d2b0);box-shadow:0 1px 2px #5a4a3022;opacity:0;animation:courtyard-petal calc(17s + var(--petal) * 2.3s) linear calc(var(--petal) * -5.1s) infinite;animation-play-state:paused}
+.threshold-petals i:nth-child(1){--petal:0}.threshold-petals i:nth-child(2){--petal:1}.threshold-petals i:nth-child(3){--petal:2}.threshold-petals i:nth-child(4){--petal:3}.threshold-petals i:nth-child(5){--petal:4}.threshold-petals i:nth-child(6){--petal:5}.threshold-petals i:nth-child(7){--petal:6}
+.threshold-petals i:nth-child(even){width:8px;height:6px}
+@keyframes courtyard-petal{0%{opacity:0;transform:translate3d(0,0,0) rotate(0)}6%{opacity:.9}30%{transform:translate3d(7vw,32svh,0) rotate(140deg)}55%{transform:translate3d(9vw,58svh,0) rotate(250deg)}80%{opacity:.85;transform:translate3d(16vw,86svh,0) rotate(400deg)}100%{opacity:0;transform:translate3d(18vw,108svh,0) rotate(480deg)}}
+.threshold-experience[data-open=true][data-courtyard-visible=true] .threshold-petals i{animation-play-state:running}
+.threshold-experience[data-evening=true] .threshold-petals{filter:brightness(.6)}
+.threshold-experience:is([data-open=false],[data-entering=true]) .threshold-petals{visibility:hidden}
+@media(prefers-reduced-motion:reduce){.threshold-petals{display:none}.threshold-experience[data-open=true] .threshold-world>:is(img,.threshold-lamps,.threshold-foreground){translate:none}}
+
+/* By hand. The doors and each object show that they can be held, and the hold fills as it is carried. */
+.threshold-experience[data-open=false][data-base-ready=true] .threshold-portal{cursor:grab}
+.threshold-experience[data-dragging=true] .threshold-portal{cursor:grabbing}
+.threshold-chair-handle[data-slot=button]{background:linear-gradient(90deg,#3b6149 calc(var(--hand,0) * 100%),#263e31c9 calc(var(--hand,0) * 100%))}
+.threshold-experience[data-chair-dragging=true] .threshold-chair-handle[data-slot=button]{background:linear-gradient(90deg,#3b6149 calc(var(--hand,0) * 100%),#263e31 calc(var(--hand,0) * 100%))}
+.threshold-chair-handle[data-slot=button]>svg{animation:threshold-hand-nudge 2.6s cubic-bezier(.3,0,.2,1) infinite}
+.threshold-experience:is([data-chair-dragging=true],[data-acting=true]) .threshold-chair-handle[data-slot=button]>svg{animation:none}
+@keyframes threshold-hand-nudge{0%,55%,100%{transform:none}70%{transform:translateX(7px)}85%{transform:translateX(-1px)}}
+@media(prefers-reduced-motion:reduce){.threshold-chair-handle[data-slot=button]>svg{animation:none}}
+
+/* The gathering. When everything made together comes into view, the day turns to its warmest hour and the lamps come on. */
+.threshold-world::after{content:"";position:absolute;inset:-4%;z-index:3;pointer-events:none;background:radial-gradient(ellipse 70% 60% at 82% 24%,#ffc978aa,transparent 70%),linear-gradient(200deg,#ffb96a33,transparent 55%);mix-blend-mode:soft-light;opacity:0;transition:opacity 2400ms ease}
+.threshold-experience[data-overview=true]:not([data-evening=true]) .threshold-world::after{opacity:1}
+.threshold-experience[data-overview=true]:not([data-evening=true]) :is(.threshold-background,.threshold-foreground){filter:saturate(1.1) sepia(.14) brightness(.96)}
+.threshold-experience[data-overview=true]:not([data-evening=true]) .threshold-lamps{opacity:.8}
+.threshold-shared-result>*{animation:shared-result-in 1.1s cubic-bezier(.2,.65,.2,1) both}
+.threshold-shared-result>:nth-child(2){animation-delay:.25s}.threshold-shared-result>:nth-child(3){animation-delay:.6s}.threshold-shared-result>:nth-child(n+4){animation-delay:.8s}
+@media(prefers-reduced-motion:reduce){.threshold-shared-result>*{animation:none}.threshold-world::after{transition:none}}
+.threshold-experience[data-courtyard-only=true] .threshold-petals{display:none}
+
+/* A calmer courtyard. While the visitor is only looking, the secondary controls step back and leave the painting, its caption and the object in hand. */
+.threshold-experience[data-courtyard-only=false][data-open=true] :is(.threshold-skip,.threshold-quiet-control,.threshold-light-control,.threshold-open-action,.threshold-destinations,.threshold-header>a){transition:opacity .35s ease}
+.threshold-experience[data-courtyard-only=false][data-open=true][data-resting=true]:not([data-overview=true]) :is(.threshold-skip,.threshold-quiet-control,.threshold-light-control,.threshold-open-action,.threshold-destinations,.threshold-header>a){opacity:0;pointer-events:none;transition:opacity 1.1s ease}
+
+/* The people stand on their own painted layers, lifted from the courtyard painting, so they can breathe. */
+.threshold-figure{position:absolute;left:50%;top:50%;width:var(--scene-width,200%);height:var(--scene-height,116%);transform:translate(-50%,-50%) translate3d(var(--scene-x,0px),var(--scene-y,0px),0);pointer-events:none;transition:filter 1800ms ease}
+.threshold-figure img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;animation:threshold-figure-sway 7.5s ease-in-out infinite alternate;animation-play-state:paused}
+.threshold-figure-woman img{transform-origin:47.2% 57.2%;--sway:.5deg}
+.threshold-figure-couple img{transform-origin:85.2% 62.3%;--sway:.32deg;animation-duration:9.5s;animation-delay:-3s}
+.threshold-experience[data-open=true][data-courtyard-visible=true] .threshold-figure img{animation-play-state:running}
+.threshold-experience[data-open=true] .threshold-world>.threshold-figure{translate:calc(var(--look-x,0) * -7px) calc(var(--look-y,0) * -4px)}
+.threshold-experience[data-evening=true] .threshold-figure{filter:brightness(.58) saturate(.78)}
+.threshold-experience[data-overview=true]:not([data-evening=true]) .threshold-figure{filter:saturate(1.1) sepia(.14) brightness(.96)}
+@keyframes threshold-figure-sway{from{transform:rotate(calc(var(--sway) * -1))}to{transform:rotate(var(--sway))}}
+@media(prefers-reduced-motion:reduce){.threshold-figure{transition:none}.threshold-figure img{animation:none}}
+
+/* The living courtyard: the painting drawn with depth and moving light, laid exactly where the painted layers sit. */
+.living-courtyard{position:absolute;inset:0;z-index:-4;pointer-events:none;background:#b6ac82}
+.threshold-experience[data-living=true] .threshold-world{background:transparent}
+.living-courtyard canvas{display:block;width:100%;height:100%}
+.threshold-experience:not([data-living=true]) .living-courtyard{visibility:hidden}
+.threshold-experience[data-living=true] :is(.threshold-background,.threshold-figure,.threshold-table-welcome,.threshold-hall-response,.threshold-petals){visibility:hidden}
+.threshold-experience[data-living=true] .threshold-world::after{background:radial-gradient(ellipse 70% 60% at 82% 24%,#ffc978aa,transparent 70%)}

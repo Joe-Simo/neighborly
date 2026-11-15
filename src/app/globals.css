@@ -1,225 +1,1152 @@
-@import "tailwindcss";
-
+@import "tailwindcss" source("../");
+@import "tw-animate-css";
 :root {
-  --paper: #faf7f1;
-  --card: #ffffff;
-  --ink: #1c2530;
-  --mute: #5d6672;
-  --line: #e6e0d4;
-  --accent: #0e6b66;
-  --accent-ink: #0a4f4b;
-  --accent-soft: #e3f1ef;
-  --gold: #b7791f;
-  --gold-soft: #fbf0dc;
-  --ok: #1d7347;
-  --ok-soft: #e3f3e9;
-  --warn: #8a5300;
-  --warn-soft: #fdf1da;
-  --bad: #a3282b;
-  --bad-soft: #fbe6e4;
+  color-scheme: only light;
+  --background: #f5f3ec;
+  --foreground: #242a27;
+  --card: #fbfaf6;
+  --card-foreground: #242a27;
+  --popover: #fbfaf6;
+  --popover-foreground: #242a27;
+  --primary: #275748;
+  --primary-foreground: #fff;
+  --secondary: #e9e6dc;
+  --secondary-foreground: #242a27;
+  --muted: #eeece4;
+  --muted-foreground: #60685f;
+  --accent: #e6e1ee;
+  --accent-foreground: #514972;
+  --destructive: #963e32;
+  --border: #d9d9ce;
+  --input: #c9cdc1;
+  --ring: #364acf;
+  --radius: 0.5rem;
 }
 
 @theme inline {
-  --color-paper: var(--paper);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-card: var(--card);
-  --color-ink: var(--ink);
-  --color-mute: var(--mute);
-  --color-line: var(--line);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-ink: var(--accent-ink);
-  --color-accent-soft: var(--accent-soft);
-  --color-gold: var(--gold);
-  --color-gold-soft: var(--gold-soft);
-  --color-ok: var(--ok);
-  --color-ok-soft: var(--ok-soft);
-  --color-warn: var(--warn);
-  --color-warn-soft: var(--warn-soft);
-  --color-bad: var(--bad);
-  --color-bad-soft: var(--bad-soft);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans SC", "Noto Sans KR", "Noto Sans Arabic", sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
-
-html,
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+html {
+  background: var(--background);
+}
 body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
 }
-
-:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 6px;
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
 }
-
-@layer components {
-  .font-display {
-    font-family: var(--font-display);
-    font-optical-sizing: auto;
+button:not(:disabled),
+a {
+  cursor: pointer;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #364acf;
+  outline-offset: 5px;
+}
+.skip-link {
+  position: fixed;
+  top: -70px;
+  left: 20px;
+  z-index: 100;
+  background: var(--foreground);
+  color: white;
+  padding: 10px 18px;
+}
+.skip-link:focus {
+  top: 20px;
+}
+.mural-screen {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100svh;
+  min-height: 720px;
+  overflow: hidden;
+  background: #f5f3ec;
+}
+.relief-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.relief-art > * {
+  width: 100%;
+  height: 100%;
+}
+.mural-header {
+  position: absolute;
+  top: 3.1%;
+  left: 3.9%;
+  right: 3.9%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+.mural-wordmark {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(36px, 3.65vw, 58px);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+.mural-header p {
+  margin-top: 10px;
+  font-size: clamp(14px, 1.25vw, 20px);
+}
+.mural-start[data-slot="button"] {
+  background: #f5f3eceb;
+  padding: 10px 18px;
+  font-size: 16px;
+  border: 0;
+}
+.mural-header-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+.mural-navigation {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 9px 14px;
+  background: #f5f3ecf5;
+  font-size: 14px;
+}
+.mural-navigation a {
+  text-underline-offset: 5px;
+  text-decoration-thickness: 1px;
+}
+.mural-navigation a:hover {
+  text-decoration-line: underline;
+}
+.ambient-sound[data-on="true"] {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 45;
+  background: #f5f3ec;
+  color: #275748;
+  border: 1px solid #b7bcb1;
+  min-height: 44px;
+  padding-inline: 14px;
+}
+@media (max-width: 700px) {
+  .mural-navigation { display: none; }
+}
+.mural-perspectives {
+  display: flex;
+  align-items: center;
+  padding: 0 4px 0 9px;
+  background: #f5f3ecf5;
+  border-radius: 2px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.mural-perspectives [data-slot="button"] {
+  min-height: 34px;
+  padding: 0 7px;
+  font-size: 13px;
+}
+.mural-title {
+  position: absolute;
+  left: 3.2%;
+  top: 34.5%;
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(74px, 9.75vw, 152px);
+  font-weight: 400;
+  letter-spacing: -0.065em;
+  line-height: 0.9;
+}
+.mural-title em {
+  font-weight: 400;
+}
+.mural-decision {
+  position: absolute;
+  left: 48%;
+  top: 44.1%;
+  width: 46%;
+  outline: none;
+}
+.mural-example-label {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  color: #465348;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.mural-decision h2 {
+  display: inline-block;
+  padding-bottom: 18px;
+  border-bottom: 2px solid #d4ab57;
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(30px, 3vw, 48px);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+.mural-role {
+  font-size: clamp(13px, 1vw, 17px);
+  color: #566252;
+  margin: 15px 0 8px;
+}
+.mural-action[data-slot="button"] {
+  display: flex;
+  width: fit-content;
+  height: auto;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(21px, 2.1vw, 34px);
+  font-weight: 500;
+  color: #275748;
+  letter-spacing: -0.025em;
+  white-space: normal;
+  text-align: left;
+  justify-content: flex-start;
+  gap: 18px;
+}
+.mural-action[data-slot="button"]:hover {
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 7px;
+}
+.mural-action svg {
+  width: 30px;
+  height: 30px;
+}
+.mural-secondary[data-slot="button"] {
+  margin-top: 6px;
+  color: #665c8c;
+  font-size: clamp(20px, 1.8vw, 28px);
+}
+.mural-dates {
+  position: absolute;
+  left: 20%;
+  right: 17%;
+  bottom: max(3.3%, 38px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mural-date[data-slot="button"] {
+  position: relative;
+  height: auto;
+  min-height: 48px;
+  min-width: 70px;
+  border: 0;
+  padding: 10px 15px;
+  border-radius: 0;
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(19px, 1.55vw, 26px);
+  font-weight: 400;
+  color: #242a27;
+}
+.mural-date[data-slot="button"] + .mural-date {
+  border-left: 1px solid #83746050;
+}
+.mural-date[aria-pressed="true"] {
+  color: #275748;
+  font-weight: 600;
+}
+.mural-date[aria-pressed="true"]:after {
+  content: "";
+  position: absolute;
+  height: 4px;
+  left: 16px;
+  right: 16px;
+  bottom: 0;
+  border-radius: 5px;
+  background: #275748;
+}
+.mural-date[data-slot="button"]:hover {
+  background: #f5f3ec66;
+}
+.mural-footer {
+  position: absolute;
+  bottom: 9px;
+  left: 3.9%;
+  right: 2.8%;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  font-size: 12px;
+  color: #5b5a4c;
+}
+.mural-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.mural-tools [data-slot="button"] {
+  font-size: 13px;
+  padding: 6px;
+  height: auto;
+  min-height: 30px;
+  background: transparent;
+}
+.mural-tools svg {
+  width: 13px;
+  height: 13px;
+}
+.mural-sheet[data-slot="dialog-content"] {
+  left: auto;
+  right: 3.5vw;
+  top: 8vh;
+  width: min(620px, 93vw);
+  max-width: none;
+  max-height: 84svh;
+  overflow-y: auto;
+  translate: none;
+  padding: 42px;
+  border-radius: 8px;
+  background: #f5f3ec;
+  box-shadow: 0 20px 80px #242a2738;
+  gap: 0;
+  font-size: 17px;
+}
+.mural-sheet-workspace[data-slot="dialog-content"],
+.mural-sheet-start[data-slot="dialog-content"] {
+  left: 3.5vw;
+  right: 3.5vw;
+  width: auto;
+}
+.mural-sheet-workspace[data-slot="dialog-content"] {
+  padding: 35px;
+}
+.mural-sheet-start[data-slot="dialog-content"] {
+  padding: 50px;
+}
+.surface-context {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+  color: #60685f;
+  margin: 8px 0 20px;
+}
+.surface-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 42px;
+  line-height: 1.08;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+.surface-description {
+  margin-top: 14px;
+  font-size: 17px;
+  line-height: 1.45;
+}
+.surface-dates {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 25px -7px;
+}
+.surface-dates .mural-date[data-slot="button"] {
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 14px;
+  padding: 8px 9px;
+  min-width: 58px;
+  min-height: 40px;
+}
+.belonging-record {
+  border-top: 1px solid #242a2725;
+  border-bottom: 1px solid #242a2725;
+  padding: 16px 0;
+  display: grid;
+  gap: 9px;
+  font-size: 14px;
+}
+.belonging-record > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.belonging-record span {
+  text-align: right;
+  color: #60685f;
+}
+.belonging-record strong {
+  font-weight: 600;
+}
+.acting-as {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 20px 0;
+  font-size: 14px;
+}
+.flow-content {
+  margin-top: 28px;
+}
+.flow-content h3 {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 29px;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: 400;
+}
+.flow-content p {
+  margin: 14px 0 20px;
+  color: #505a50;
+}
+.flow-content [data-slot="button"] {
+  white-space: normal;
+  height: auto;
+  min-height: 44px;
+}
+.flow-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.surface-disclaimer {
+  font-size: 12px;
+  color: #687065;
+  margin-top: 28px;
+}
+.cover-candidate {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+}
+.cover-candidate p {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+.initials {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e5e1d4;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.preparation-detail {
+  margin-top: 30px;
+  padding-top: 26px;
+  border-top: 1px solid #242a2720;
+}
+.meta,
+.quiet-note {
+  font-size: 14px;
+  color: #60685f;
+}
+.quiet-note {
+  margin-top: 16px;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.panel-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+.detail-line {
+  display: flex;
+  gap: 12px;
+  margin: 15px 0;
+}
+.detail-line svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  color: #275748;
+  margin-top: 4px;
+}
+.steps {
+  padding: 0;
+  margin: 25px 0;
+  list-style-position: inside;
+}
+.steps li {
+  padding: 9px 0;
+  border-bottom: 1px solid #242a2715;
+}
+.response-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.workspace-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+.workspace-entry h2,
+.draft-inner h2 {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(36px, 4.3vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 400;
+  margin: 12px 0 16px;
+}
+.workspace {
+  border-top: 1px solid #242a2730;
+}
+.workspace-top {
+  padding: 24px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  border-bottom: 1px solid #242a2720;
+}
+.workspace-top h3 {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 30px;
+  font-weight: 400;
+}
+.workspace-inner {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  min-height: 480px;
+}
+.workspace-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 25px 20px 25px 0;
+  gap: 7px;
+  border-right: 1px solid #242a2720;
+}
+.workspace-nav [data-slot="button"] {
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+}
+.workspace-content {
+  padding: 26px 0 26px 30px;
+  min-width: 0;
+}
+.workspace-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+.workspace-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid #242a2720;
+}
+.workspace-row p {
+  font-size: 14px;
+  color: #60685f;
+  margin-top: 6px;
+}
+.other-work-heading {
+  font-size: 20px;
+  margin-top: 25px;
+}
+.actor-context {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 25px;
+}
+.draft-section {
+  background: none;
+  padding: 0;
+}
+.draft-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 60px;
+}
+.draft-inner > div > p {
+  margin-top: 25px;
+  color: #60685f;
+  max-width: 360px;
+}
+.draft-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.draft-form textarea {
+  min-height: 100px;
+}
+.draft-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.field-error {
+  color: #963b30;
+  font-size: 14px;
+}
+@media (min-aspect-ratio: 1.8/1) {
+  .mural-screen {
+    min-height: 700px;
   }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    box-shadow: 0 1px 0 rgba(28, 37, 48, 0.03), 0 8px 24px -16px rgba(28, 37, 48, 0.18);
+  .mural-decision {
+    top: 42%;
   }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+}
+@media (min-width: 701px) {
+  .mural-dates,
+  .mural-footer > * {
+    isolation: isolate;
+  }
+  .mural-footer > * {
+    position: relative;
+  }
+  .mural-dates::before,
+  .mural-footer > *::before {
+    content: "";
+    position: absolute;
+    inset: -3px -7px;
+    z-index: -1;
+    background: #f5f3ecf5;
+    border-radius: 2px;
+  }
+  .mural-footer > *::before {
+    inset-block: -1px;
+  }
+  .mural-decision {
+    left: 51%;
+    width: 43%;
+  }
+  .mural-title {
+    font-size: clamp(61px, min(9.1vw, 16svh), 152px);
+  }
+}
+@media (min-width: 701px) {
+  .mural-brand {
+    position: relative;
+    isolation: isolate;
+  }
+  .mural-brand::before {
+    content: "";
+    position: absolute;
+    inset: -9px -13px;
+    z-index: -1;
+    background: #f5f3ecf5;
+    border-radius: 2px;
+  }
+}
+@media (701px <= width <= 1150px) {
+  .mural-dates {
+    bottom: max(3.3%, 45px);
+  }
+}
+@media (max-width: 1000px) {
+  .mural-title {
+    left: 3.5%;
+  }
+  .mural-decision h2 {
+    font-size: 3.5vw;
+  }
+  .mural-dates {
+    left: 14%;
+    right: 8%;
+    bottom: max(5%, 45px);
+  }
+  .mural-footer {
+    font-size: 11px;
+    bottom: 7px;
+  }
+  .mural-tools [data-slot="button"] {
+    font-size: 12px;
+  }
+  .mural-sheet-workspace[data-slot="dialog-content"],
+  .mural-sheet-start[data-slot="dialog-content"] {
+    padding: 30px;
+  }
+}
+@media (max-width: 700px) {
+  .mural-screen {
+    height: auto;
+    min-height: 100svh;
+    padding: 29px 24px 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .relief-art {
+    position: relative;
+    grid-area: 2 / 1 / 5 / 2;
+    margin-inline: -24px;
+  }
+  .mural-header {
+    grid-area: 1 / 1;
+    position: relative;
+    inset: auto;
+    padding-bottom: 12px;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .mural-wordmark {
+    font-size: 39px;
+  }
+  .mural-header p {
+    max-width: 175px;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .mural-start[data-slot="button"] {
+    font-size: 13px;
+    padding: 7px 9px;
+    height: auto;
+    max-width: 125px;
+    white-space: normal;
+  }
+  .mural-header-actions {
+    gap: 2px;
+  }
+  .mural-perspectives {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(44px, auto));
+    padding: 0;
+    background: transparent;
+  }
+  .mural-perspectives span {
+    grid-column: 1 / -1;
+    color: #5b5a4c;
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+  }
+  .mural-perspectives [data-slot="button"] {
+    min-width: 44px;
     min-height: 44px;
-    padding: 0.55rem 1.1rem;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color 150ms, color 150ms, border-color 150ms, transform 150ms;
+    padding: 0 5px;
   }
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  .mural-start svg {
+    display: none;
   }
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
+  .mural-title {
+    grid-area: 2 / 1;
+    position: relative;
+    inset: auto;
+    margin-top: 286px;
+    font-size: clamp(60px, 13.8vw, 94px);
+    line-height: 0.92;
+    letter-spacing: -0.055em;
   }
-  .btn-primary:hover:not(:disabled) {
-    background: var(--accent-ink);
-  }
-  .btn-ghost {
-    background: transparent;
-    color: var(--ink);
-    border: 1px solid var(--line);
-  }
-  .btn-ghost:hover:not(:disabled) {
-    border-color: var(--accent);
-    color: var(--accent-ink);
-  }
-  .btn-ok {
-    background: var(--ok);
-    color: #fff;
-  }
-  .btn-sm {
-    min-height: 36px;
-    padding: 0.35rem 0.85rem;
-    font-size: 0.85rem;
-  }
-
-  .field {
+  .mural-decision {
+    grid-area: 3 / 1;
+    position: relative;
+    inset: auto;
     width: 100%;
-    background: #fff;
-    border: 1px solid #cfc7b8;
-    border-radius: 12px;
-    padding: 0.65rem 0.85rem;
-    font-size: 1rem;
-    line-height: 1.5;
+    margin-top: 10px;
+    padding: 12px 0 24px;
   }
-  .field:focus {
-    border-color: var(--accent);
-    outline: 3px solid color-mix(in srgb, var(--accent) 25%, transparent);
-    outline-offset: 0;
+  .mural-example-label {
+    position: static;
+    margin-bottom: 6px;
   }
+  .mural-decision h2 {
+    font-size: 35px;
+  }
+  .mural-role {
+    font-size: 14px;
+    margin-top: 12px;
+  }
+  .mural-action[data-slot="button"] {
+    font-size: 24px;
+    padding: 9px 0;
+  }
+  .mural-secondary[data-slot="button"] {
+    font-size: 23px;
+  }
+  .mural-dates {
+    grid-area: 4 / 1;
+    position: relative;
+    inset: auto;
+    margin-top: 233px;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-top: 1px solid #242a2720;
+    background-color: #f5f3ec;
+    box-shadow: -24px 0 #f5f3ec, 24px 0 #f5f3ec;
+  }
+  .mural-date[data-slot="button"] {
+    min-width: 28%;
+    font-size: 21px;
+    padding: 10px;
+  }
+  .mural-date[data-slot="button"] + .mural-date {
+    border: 0;
+  }
+  .mural-footer {
+    grid-area: 5 / 1;
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 12px;
+    margin-top: 15px;
+  }
+  .mural-tools [data-slot="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 13px;
+  }
+  .mural-sheet[data-slot="dialog-content"] {
+    inset: 12px 12px auto;
+    width: auto;
+    max-height: calc(100svh - 24px);
+    padding: 40px 24px 28px;
+  }
+  .mural-sheet-workspace[data-slot="dialog-content"],
+  .mural-sheet-start[data-slot="dialog-content"] {
+    inset: 10px;
+    max-height: calc(100svh - 20px);
+    padding: 40px 20px 25px;
+  }
+  .surface-title {
+    font-size: 36px;
+  }
+  .surface-context {
+    flex-direction: column;
+    gap: 3px;
+  }
+  .acting-as {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .belonging-record > div {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .belonging-record span {
+    text-align: left;
+  }
+  .workspace-entry {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .workspace-inner {
+    display: block;
+  }
+  .workspace-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid #242a2720;
+    padding: 15px 0;
+  }
+  .workspace-nav [data-slot="button"] {
+    white-space: nowrap;
+  }
+  .workspace-content {
+    padding: 25px 0;
+  }
+  .workspace-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .draft-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
+  .draft-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+.relief-stage,
+.relief-canvas,
+.relief-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.relief-poster {
+  transition: opacity 180ms linear;
+}
+.relief-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.relief-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    border-radius: 999px;
-    padding: 0.15rem 0.6rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    line-height: 1.5;
-    border: 1px solid transparent;
-    max-width: 100%;
-    overflow-wrap: anywhere;
+.relief-mount {
+  position: absolute;
+  inset: 0;
+}
+.relief-study-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.relief-study {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(24px, 5vw, 96px);
+  padding: 8svh clamp(24px, 6vw, 110px);
+  background: #f5f3ec;
+}
+.relief-study-art {
+  position: sticky;
+  top: 15svh;
+  aspect-ratio: 1.40625;
+  overflow: hidden;
+  background: #e7ddca;
+}
+.relief-study-notes h2 {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: #566252;
+}
+.relief-study-note {
+  display: grid;
+  align-content: center;
+  min-height: 52svh;
+  max-width: 30ch;
+  padding-block: 22px;
+}
+.relief-study-note h3 {
+  margin: 0 0 12px;
+  font: 400 clamp(32px, 4vw, 60px) / 0.97 "Newsreader", Georgia, serif;
+  letter-spacing: -0.04em;
+}
+.relief-study-notes a {
+  color: #275748;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@media (max-width: 700px) {
+  .relief-study {
+    display: block;
+    padding: 0 24px 30px;
   }
-  .chip-ok {
-    background: var(--ok-soft);
-    color: var(--ok);
+  .relief-study-art {
+    top: 0;
+    height: min(52svh, 143vw);
+    margin-inline: -24px;
+    aspect-ratio: auto;
+    z-index: 1;
   }
-  .chip-check {
-    background: var(--warn-soft);
-    color: var(--warn);
+  .relief-study-notes {
+    padding-top: 24px;
   }
-  .chip-missing {
-    background: var(--bad-soft);
-    color: var(--bad);
-  }
-  .chip-neutral {
-    background: #f1ede5;
-    color: var(--mute);
-  }
-
-  mark.fact {
-    background: var(--gold-soft);
-    color: inherit;
-    border-bottom: 2px solid var(--gold);
-    border-radius: 3px;
-    padding: 0 2px;
-  }
-  mark.fact-missing {
-    background: var(--bad-soft);
-    border-bottom-color: var(--bad);
-  }
-  mark.fact-check {
-    background: var(--warn-soft);
-    border-bottom-color: var(--warn);
-  }
-  mark.drift {
-    background: transparent;
-    color: inherit;
-    text-decoration: underline wavy var(--gold);
-    text-underline-offset: 4px;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .rise {
-      animation: rise 260ms ease-out both;
-    }
-    @keyframes rise {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-    }
-    .shimmer {
-      background: linear-gradient(90deg, #f1ede5 0%, #faf7f1 50%, #f1ede5 100%);
-      background-size: 200% 100%;
-      animation: shimmer 1.3s linear infinite;
-    }
-    @keyframes shimmer {
-      to {
-        background-position: -200% 0;
-      }
-    }
-    .bar {
-      transition: width 500ms ease-out;
-    }
+  .relief-study-note {
+    min-height: 46svh;
+    align-content: start;
   }
 }
 
-@page {
-  size: letter;
-  margin: 0.55in;
+@media (min-width: 701px) and (max-height: 800px) and (min-aspect-ratio: 3/2) and (max-aspect-ratio: 9/5) {
+  .mural-screen {
+    margin-bottom: 42px;
+    overflow: visible;
+  }
+  .mural-dates {
+    bottom: 0;
+  }
+  .mural-dates::before {
+    inset-block: 0;
+  }
+  .mural-footer {
+    bottom: -42px;
+    height: 42px;
+  }
 }
 
-@media print {
-  html,
-  body {
-    background: #fff;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .flyer-sheet {
-    break-inside: avoid;
-  }
-  * {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+@media (max-width: 420px) {
+  .mural-screen .relief-poster img {
+    object-position: calc(50% - 18px) 50%;
   }
 }
+
+/* Reserve a clear text area above the Blender cast. */
+@media (min-width: 701px) {
+  .mural-screen[data-artwork="cast"] .mural-decision {
+    top: 18%;
+  }
+}
+@media (max-width: 700px) {
+  .mural-screen[data-artwork="cast"] .mural-title {
+    margin-top: 28px;
+  }
+  .mural-screen[data-artwork="cast"] .relief-art {
+    grid-area: 4 / 1;
+    height: 300px;
+  }
+  .mural-screen[data-artwork="cast"] .mural-dates {
+    grid-area: 5 / 1;
+    margin-top: 0;
+  }
+  .mural-screen[data-artwork="cast"] .mural-footer {
+    grid-area: 6 / 1;
+  }
+  .mural-screen[data-artwork="cast"] .relief-poster img {
+    object-position: center;
+  }
+}
+.relief-study:has(.relief-stage[data-artwork="cast"]) .relief-study-art {
+  background: #f5f3ec;
+}
+
+/* Intermediate portrait/tablet widths use the cast's compact composition. */
+@media (701px <= width <= 1023px) {
+  .mural-screen[data-artwork="cast"] {
+    height: auto;
+    min-height: 100svh;
+    padding: 29px 24px 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mural-screen[data-artwork="cast"] .relief-art {
+    position: relative;
+    grid-area: 4 / 1;
+    height: 300px;
+    margin-inline: -24px;
+  }
+  .mural-screen[data-artwork="cast"] .mural-header {
+    grid-area: 1 / 1;
+    position: relative;
+    inset: auto;
+    padding-bottom: 12px;
+  }
+  .mural-screen[data-artwork="cast"] .mural-title {
+    grid-area: 2 / 1;
+    position: relative;
+    inset: auto;
+    margin-top: 28px;
+    font-size: clamp(60px, 8vw, 82px);
+  }
+  .mural-screen[data-artwork="cast"] .mural-decision {
+    grid-area: 3 / 1;
+    position: relative;
+    inset: auto;
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px 0 24px;
+  }
+  .mural-screen[data-artwork="cast"] .mural-example-label {
+    position: static;
+    margin-bottom: 6px;
+  }
+  .mural-screen[data-artwork="cast"] .mural-decision h2 { font-size: 35px; }
+  .mural-screen[data-artwork="cast"] .mural-role { font-size: 14px; }
+  .mural-screen[data-artwork="cast"] .mural-action[data-slot="button"] { font-size: 24px; }
+  .mural-screen[data-artwork="cast"] .mural-secondary[data-slot="button"] { font-size: 23px; }
+  .mural-screen[data-artwork="cast"] .mural-dates {
+    grid-area: 5 / 1;
+    position: relative;
+    inset: auto;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-top: 1px solid #242a2720;
+  }
+  .mural-screen[data-artwork="cast"] .mural-footer {
+    grid-area: 6 / 1;
+    position: relative;
+    inset: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 15px;
+  }
+}
+.mural-screen[data-artwork="cast"] .relief-poster img { object-fit: contain; object-position: center; }
+
+/* One sheet of paper carries the visitor from the story into the workspace. */
+.neighborly-paper-carry{position:fixed;inset:0;z-index:80;display:none;place-items:center;background:#eee7d7 url(/assets/paper-world/continuation.webp) center/cover;box-shadow:0 -18px 60px #24382c40,0 18px 60px #24382c40}
+.neighborly-paper-carry[data-carrying=true]{display:grid}
+.neighborly-paper-carry span{font:400 clamp(34px,4vw,56px)/1 'Newsreader',Georgia,serif;letter-spacing:-.05em;color:#293f32}

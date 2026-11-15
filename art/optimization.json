@@ -1,0 +1,25 @@
+{
+  "method": "Original transparent Blender PNGs retained in art/renders; browser WebP composited onto page paper #f5f3ec, quality 85.",
+  "files": [
+    {
+      "name": "mural-poster",
+      "sourceBytes": 1179510,
+      "webBytes": 18878
+    },
+    {
+      "name": "mural-mobile",
+      "sourceBytes": 537999,
+      "webBytes": 15376
+    },
+    {
+      "name": "mural-accepted",
+      "sourceBytes": 1181330,
+      "webBytes": 19134
+    },
+    {
+      "name": "mural-mobile-accepted",
+      "sourceBytes": 541201,
+      "webBytes": 16118
+    }
+  ]
+}

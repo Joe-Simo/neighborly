@@ -1,0 +1,55 @@
+{
+  "source": "Google Fonts canonical CSS2 API; binaries served unmodified from fonts.gstatic.com",
+  "retrieved": "2026-11-05",
+  "cssRequest": "https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap",
+  "licenses": [
+    "/fonts/licenses/Newsreader-OFL.txt",
+    "/fonts/licenses/Source-Sans-3-OFL.txt"
+  ],
+  "fonts": [
+    {
+      "file": "newsreader-latin-variable.woff2",
+      "url": "https://fonts.gstatic.com/s/newsreader/v26/cY9AfjOCX1hbuyalUrK4397yjA.woff2",
+      "bytes": 132000,
+      "sha256": "6e4f2958c3a7c4a80acde4e5a679abe7e01bc1e30b92be3c7a8b696ef401d101",
+      "family": "Newsreader",
+      "style": "normal",
+      "weights": "200 800",
+      "subset": "latin",
+      "format": "woff2"
+    },
+    {
+      "file": "newsreader-latin-variable-italic.woff2",
+      "url": "https://fonts.gstatic.com/s/newsreader/v26/cY9CfjOCX1hbuyalUrK439vCjohC.woff2",
+      "bytes": 146872,
+      "sha256": "5dfcd10d24af8c82927ba57f7983dd997f7b200594c09c35a1b1ed9fc4597506",
+      "family": "Newsreader",
+      "style": "italic",
+      "weights": "200 800",
+      "subset": "latin",
+      "format": "woff2"
+    },
+    {
+      "file": "source-sans-3-latin-variable.woff2",
+      "url": "https://fonts.gstatic.com/s/sourcesans3/v20/nwpStKy2OAdR1K-IwhWudF-R3w8aZQ.woff2",
+      "bytes": 28872,
+      "sha256": "19143dca075972bc84e3fd9eab7416dd40cc565dccb2435a044bdfabe060c7d5",
+      "family": "Source Sans 3",
+      "style": "normal",
+      "weights": "200 900",
+      "subset": "latin",
+      "format": "woff2"
+    },
+    {
+      "file": "source-sans-3-latin-variable-italic.woff2",
+      "url": "https://fonts.gstatic.com/s/sourcesans3/v20/nwpMtKy2OAdR1K-IwhWudF-R3woqZ-LY.woff2",
+      "bytes": 28460,
+      "sha256": "5fbc14d56cea35e60596c72ca969b349443c6a536f74e11748eed8b3a396e61d",
+      "family": "Source Sans 3",
+      "style": "italic",
+      "weights": "200 900",
+      "subset": "latin",
+      "format": "woff2"
+    }
+  ]
+}

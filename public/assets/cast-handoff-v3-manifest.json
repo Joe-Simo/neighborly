@@ -1,0 +1,200 @@
+{
+  "model": "/assets/cast-handoff-v3.glb",
+  "layout": "cast",
+  "cameras": {
+    "group": {
+      "position": [
+        0.1,
+        4.0,
+        8.0
+      ],
+      "target": [
+        0.1,
+        1.4,
+        0.0
+      ],
+      "orthoHeight": 5.0
+    },
+    "person": {
+      "position": [
+        0.25,
+        3.7,
+        8
+      ],
+      "target": [
+        0.25,
+        1.1,
+        0
+      ],
+      "orthoHeight": 2
+    },
+    "exchange": {
+      "position": [
+        1.85,
+        4.65,
+        8
+      ],
+      "target": [
+        1.85,
+        1.15,
+        0
+      ],
+      "orthoHeight": 1.6
+    },
+    "preparation": {
+      "position": [
+        2.1,
+        4.65,
+        8
+      ],
+      "target": [
+        2.1,
+        1.15,
+        0
+      ],
+      "orthoHeight": 1.6
+    }
+  },
+  "mobileCameras": {
+    "group": {
+      "position": [
+        0.05,
+        3.15,
+        8
+      ],
+      "target": [
+        0.05,
+        0.55,
+        0
+      ],
+      "orthoHeight": 2.2,
+      "orthoWidth": 3.2
+    },
+    "person": {
+      "position": [
+        -0.75,
+        3.7,
+        8
+      ],
+      "target": [
+        -0.75,
+        1.1,
+        0
+      ],
+      "orthoHeight": 2
+    },
+    "exchange": {
+      "position": [
+        0.4,
+        4.65,
+        8
+      ],
+      "target": [
+        0.4,
+        1.15,
+        0
+      ],
+      "orthoHeight": 1.5
+    },
+    "preparation": {
+      "position": [
+        0.85,
+        4.65,
+        8
+      ],
+      "target": [
+        0.85,
+        1.15,
+        0
+      ],
+      "orthoHeight": 1.5
+    }
+  },
+  "roots": {
+    "CastPair": {
+      "desktop": {
+        "position": [
+          1.85,
+          0.02,
+          0
+        ]
+      },
+      "mobile": {
+        "position": [
+          0.4,
+          0.02,
+          0
+        ]
+      }
+    },
+    "GraceStage": {
+      "desktop": {
+        "position": [
+          0.25,
+          0.0184,
+          -0.32
+        ],
+        "rotation": [
+          0,
+          0.27,
+          0
+        ]
+      },
+      "mobile": {
+        "position": [
+          -0.75,
+          0.0184,
+          -0.5
+        ],
+        "rotation": [
+          0,
+          0.27,
+          0
+        ]
+      }
+    }
+  },
+  "posters": {
+    "rest": {
+      "desktop": "/assets/cast-handoff-v3-poster.webp",
+      "mobile": "/assets/cast-handoff-v3-mobile-poster.webp",
+      "narrow": "/assets/cast-handoff-v3-narrow-poster.webp"
+    },
+    "accepted": {
+      "desktop": "/assets/cast-handoff-v3-accepted.webp",
+      "mobile": "/assets/cast-handoff-v3-mobile-accepted.webp",
+      "narrow": "/assets/cast-handoff-v3-narrow-accepted.webp"
+    }
+  },
+  "descriptions": {
+    "rest": "Grace remains with her team while Ellis holds the role guide and Noor considers one commitment.",
+    "accepted": "Noor holds the role guide after explicitly accepting one commitment, with Grace and Ellis still beside her."
+  },
+  "clips": [
+    "rest",
+    "settle",
+    "pending",
+    "accepted",
+    "declined"
+  ],
+  "fps": 30,
+  "frames": [
+    1,
+    60
+  ],
+  "narrowBreakpoint": 349,
+  "posterSizes": {
+    "desktop": [
+      1440,
+      900
+    ],
+    "mobile": [
+      390,
+      300
+    ],
+    "narrow": [
+      320,
+      300
+    ]
+  }
+}

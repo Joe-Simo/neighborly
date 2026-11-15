@@ -1,0 +1,16 @@
+.env*
+.git/
+.next/
+node_modules/
+output/
+art/**
+!art/camera-presets.json
+docs/
+.playwright*/
+New Folder/
+*.icloud-preserved.*
+**/*.test.ts
+*.tsbuildinfo
+public/assets/monumental-*
+public/assets/painted-world/*.glb
+public/assets/painted-world/rooms/

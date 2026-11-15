@@ -1,0 +1,61 @@
+.doorway-depth-study{min-height:100svh;background:#e9e1d2;color:#293f32;display:grid;grid-template-rows:auto minmax(360px,1fr) auto}
+.doorway-depth-study header{display:flex;align-items:center;justify-content:space-between;padding:20px 5%;gap:20px}
+.doorway-depth-study header a{font:36px/1 Georgia,serif;text-decoration:none}
+.doorway-depth-study header p{font-size:12px;letter-spacing:.04em}
+.doorway-depth-canvas{height:70svh;min-height:360px;overflow:hidden}
+.doorway-depth-canvas canvas{width:100%;height:100%;display:block}
+.doorway-depth-study footer{padding:20px 5% 30px;max-width:650px;width:100%;justify-self:center}
+.doorway-depth-study label{display:flex;justify-content:space-between;font-size:14px}
+.doorway-depth-study input{width:100%;min-height:44px;accent-color:#49664b;cursor:ew-resize}
+.doorway-depth-study footer p{font-size:12px;line-height:1.5;margin:4px 0}
+.doorway-depth-study :focus-visible{outline:2px solid #49664b;outline-offset:5px}
+@media(max-width:600px){.doorway-depth-study header{padding:18px 6%}.doorway-depth-study header a{font-size:28px}.doorway-depth-canvas{height:65svh}}
+
+.doorway-depth-track{height:240svh;position:relative}.doorway-depth-canvas{position:sticky;top:0;height:100svh;min-height:0}
+@media(max-width:600px){.doorway-depth-canvas{height:100svh}}
+
+.doorway-depth-stage{position:sticky;top:0;height:100svh;overflow:hidden}
+.doorway-depth-stage .doorway-depth-canvas{position:absolute;inset:0}
+.doorway-depth-invitation{position:absolute;z-index:2;left:7%;top:24%;color:#293f32;max-width:32%;transition:opacity .2s;}
+.doorway-depth-invitation p{font-size:11px;line-height:1.5}
+.doorway-depth-invitation h1{font:400 clamp(52px,6vw,88px)/.98 'Newsreader',Georgia,serif;letter-spacing:-.055em;margin:24px 0 30px}
+.doorway-depth-invitation button{min-height:48px;background:#293f32;color:#fff6e4;border-radius:0;padding:12px 24px}
+@media(max-width:700px){.doorway-depth-invitation{top:9%;left:7%;max-width:86%}.doorway-depth-invitation h1{font-size:44px;margin:12px 0 20px}.doorway-depth-invitation button{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.doorway-depth-invitation{transition:none}}
+@media(max-width:700px){.doorway-depth-invitation{inset:9% 7% 0;max-width:none}.doorway-depth-invitation button{position:absolute;top:78%;left:50%;transform:translateX(-50%);white-space:nowrap}}
+.doorway-depth-fallback{object-fit:cover;object-position:center;z-index:0}
+.doorway-depth-canvas{z-index:1}
+.doorway-depth-stage:has(.doorway-depth-fallback) .doorway-depth-invitation{padding:20px;background:#eee7d7ed}
+.doorway-depth-embedded{display:block}
+.depth-experience-candidate .doorway-depth-track{height:340svh}
+.depth-experience-candidate .neighborly-continuation{margin-top:-200svh;background:transparent}
+.depth-experience-candidate .threshold-experience{opacity:var(--depth-handoff,0)}
+.depth-experience-candidate .continuation-backdrop{display:none}
+
+
+.depth-experience-candidate .threshold-experience[data-depth-arriving=true] :is(.threshold-caption,.threshold-chair-handle,.threshold-destinations){visibility:hidden;pointer-events:none}
+
+/* The opaque WebGL surface replaces the fallback only after its first complete frame. */
+.doorway-depth-study:not([data-ready=true]) .doorway-depth-canvas,
+.doorway-depth-study[data-failed=true] .doorway-depth-canvas{visibility:hidden}
+
+/* The spatial study leaves a clear typographic band above its architecture. */
+.doorway-depth-study:not(.doorway-depth-embedded) .doorway-depth-invitation{top:8%;left:7%;max-width:86%}
+.doorway-depth-study:not(.doorway-depth-embedded) .doorway-depth-invitation h1{font-size:clamp(38px,4.4vw,62px);margin:12px 0}
+@media(min-width:701px){.doorway-depth-study:not(.doorway-depth-embedded) .doorway-depth-invitation{max-width:30%;top:20%}}
+
+@media(max-width:700px){.doorway-depth-study[data-architecture=true] .doorway-depth-invitation{top:7%}.doorway-depth-study[data-architecture=true] .doorway-depth-invitation h1{font-size:36px;margin:8px 0}}
+
+@media(max-height:500px) and (orientation:landscape){
+.doorway-depth-study[data-architecture=true] .doorway-depth-invitation{inset:18% auto auto 5%;width:25%;max-width:25%}
+.doorway-depth-study[data-architecture=true] .doorway-depth-invitation h1{font-size:28px;line-height:1.02;margin:10px 0 18px}
+.doorway-depth-study[data-architecture=true] .doorway-depth-invitation p{font-size:9px;max-width:20ch}
+.doorway-depth-study[data-architecture=true] .doorway-depth-invitation button{position:static;transform:none;min-height:44px;padding:10px 14px;font-size:11px}
+}
+
+/* The entrance is a passage in the story, not another full hero. */
+@media(min-width:701px){
+.doorway-depth-study[data-architecture=true] .doorway-depth-invitation{top:14%;left:6%;max-width:24%}
+.doorway-depth-study[data-architecture=true] .doorway-depth-invitation h1{font-size:clamp(36px,3.5vw,54px);line-height:1.02;margin:16px 0 24px}
+.doorway-depth-study[data-architecture=true] .doorway-depth-invitation p{max-width:24ch;font-size:11px}
+}

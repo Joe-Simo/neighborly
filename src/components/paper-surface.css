@@ -1,0 +1,39 @@
+.paper-overlay[data-slot=dialog-overlay]{z-index:40;background:rgba(30,39,30,.18);backdrop-filter:none;animation-duration:550ms}
+.paper-surface{position:fixed;z-index:50;left:50%;top:50%;width:min(620px,calc(100vw - 32px));height:min(640px,calc(100dvh - 48px));transform:translate(-50%,-50%);outline:none;color:#283e32;isolation:isolate}
+.paper-reading{height:100%;padding:27px 40px 34px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#b9bca8 transparent;transition:opacity 180ms ease;}
+.paper-surface-entry{background:transparent}
+.paper-surface-entry[data-ready=false] .paper-reading{opacity:0;pointer-events:none}
+.paper-surface-entry[data-ready=true] .paper-reading{opacity:1}
+.paper-surface-workspace{background:#f7f3e7;box-shadow:0 30px 80px #1b2a2a24,0 1px 0 #fff inset;animation:paper-workspace-open 350ms cubic-bezier(.22,.8,.2,1) both;transform-origin:50% 90%}
+.paper-surface-workspace:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(96deg,transparent 48.5%,#ad987214 50%,#fff5 51%,transparent 53%)}
+.paper-surface[data-state=closed]{pointer-events:none;animation:paper-close 550ms ease both}
+.paper-heading-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:37px}
+.paper-imprint{font-size:10px;letter-spacing:.055em;color:#66715f}.paper-imprint span{padding:0 6px}
+.paper-heading-row [data-slot=button]{border-radius:50%;color:#43553d}
+.paper-heading{font:400 clamp(34px,5vw,48px)/1.06 "Newsreader",Georgia,serif;letter-spacing:-.035em;max-width:13ch;margin:0 0 22px;outline:none}
+.paper-heading:focus-visible{outline:2px solid #57744c;outline-offset:5px}
+.paper-body{font-size:14px;line-height:1.65}.paper-body>p{color:#64705d;margin-bottom:24px;max-width:41ch}
+.paper-choices{display:grid;border-top:1px solid #cbcbb9;margin-top:30px}
+.paper-choices a{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 0;border-bottom:1px solid #cbcbb9;color:#314d3b;text-decoration:none}
+.paper-choices a strong{font:400 27px/1.2 "Newsreader",Georgia,serif;display:block;letter-spacing:-.02em}.paper-choices a small{display:block;font-size:12px;color:#6c7664;margin-top:3px}
+.paper-choices a:hover strong{text-decoration:underline;text-underline-offset:5px}.paper-choices a:focus-visible{outline:2px solid #57744c;outline-offset:4px}
+.paper-signin{display:flex;align-items:center;justify-content:space-between;margin-top:26px;gap:15px;font-size:12px;color:#617059}.paper-signin a{color:#34553c;text-decoration:underline;text-underline-offset:4px}
+.paper-footer-note{font-size:10px!important;letter-spacing:.025em;margin-top:34px!important;color:#7a806f!important}
+@keyframes paper-workspace-open{from{opacity:0;transform:translate(-50%,-44%) perspective(1200px) rotateX(13deg) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) perspective(1200px) rotateX(0) scale(1)}}
+@keyframes paper-close{to{opacity:0}}
+@media(max-width:640px){.paper-reading{padding:19px 25px 28px}.paper-heading-row{margin-bottom:28px}.paper-imprint{font-size:9px}.paper-heading{font-size:39px}.paper-choices{margin-top:20px}.paper-choices a{padding:16px 0}.paper-choices a strong{font-size:25px}.paper-footer-note{margin-top:25px!important}}
+@media(prefers-reduced-motion:reduce){.paper-surface,.paper-overlay,.paper-reading{animation:none!important;transition:none!important}}
+
+/* The invitation grows from its folded guide and returns to the same place. */
+.paper-surface-invitation{width:min(560px,calc(100vw - 40px));height:min(690px,calc(100dvh - 56px));left:calc(100% - min(560px,calc(100vw - 40px))/2 - 5vw);background:#f7f3e7;box-shadow:0 28px 80px #192c2738,0 1px 0 #fff inset;transform-origin:50% 50%;--paper-origin-x:0px;--paper-origin-y:30px;--paper-origin-scale-x:.92;--paper-origin-scale-y:.92}
+.paper-surface-invitation:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(96deg,transparent 48.5%,#ad98721c 50%,#fff6 51%,transparent 53%)}
+.paper-surface-invitation[data-state=open]{animation:paper-invitation-open 500ms cubic-bezier(.22,.8,.2,1) both}
+.paper-surface-invitation[data-state=closed]{animation:paper-invitation-close 500ms cubic-bezier(.4,0,.6,1) both}
+@keyframes paper-invitation-open{from{opacity:0;transform:translate(calc(-50% + var(--paper-origin-x)),calc(-50% + var(--paper-origin-y))) scale(var(--paper-origin-scale-x),var(--paper-origin-scale-y))}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes paper-invitation-close{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(calc(-50% + var(--paper-origin-x)),calc(-50% + var(--paper-origin-y))) scale(var(--paper-origin-scale-x),var(--paper-origin-scale-y))}}
+@media(max-width:900px){.paper-surface-invitation{left:50%}}
+@media(prefers-reduced-motion:reduce){.paper-surface-invitation[data-state]{animation:none!important;transform:translate(-50%,-50%)}}
+/* Let the paper arrive before its typography, avoiding two reading planes. */
+.paper-surface-invitation[data-state=open] .paper-reading{animation:invitation-reading-arrive 500ms ease both}
+@keyframes invitation-reading-arrive{0%,65%{opacity:0}100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.paper-surface-invitation[data-state=open] .paper-reading{animation:none}}

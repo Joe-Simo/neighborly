@@ -1,0 +1,373 @@
+[
+  {
+    "award": "https://www.awwwards.com/sites/lando-norris",
+    "name": "Lando Norris",
+    "original": "https://landonorris.com/",
+    "browser_status": "Live; scrolled and opened navigation",
+    "observation": "Portrait/helmet identity, dramatic scale, lime/olive system, editorial photography."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/messenger",
+    "name": "Messenger",
+    "original": "https://messenger.abeto.co",
+    "browser_status": "entered and played movement",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/igloo-inc",
+    "name": "Igloo Inc",
+    "original": "https://www.igloo.inc/",
+    "browser_status": "entered and scrolled through project reveal",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/dont-board-me",
+    "name": "Don't Board Me",
+    "original": "https://dontboardme.com",
+    "browser_status": "Live; opened and scrolled through illustrated service/process sections",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/opal-tadpole",
+    "name": "Opal Tadpole",
+    "original": "https://www.opalcamera.com/opal-tadpole",
+    "browser_status": "redirected to Opal Electronics letter",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/lusion-v3",
+    "name": "Lusion v3",
+    "original": "https://lusion.co/",
+    "browser_status": "opened; scrolled; opened menu",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/noomo-agency",
+    "name": "Noomo Agency",
+    "original": "https://noomoagency.com",
+    "browser_status": "Live current site; scrolled",
+    "observation": "Jellyfish/glass and pixel forms over editorial copy; overlapping layers observed; current copy differs from award-era context."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/mana-yerba-mate",
+    "name": "Mana Yerba Mate",
+    "original": "https://en.manayerbamate.com/",
+    "browser_status": "Live current shop; dismissed promo and scrolled",
+    "observation": "Product can, fruit illustration and flavour color share packaging language; large promotional overlay dominates initial visit."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/kpr",
+    "name": "KPR",
+    "original": "https://kprverse.com/",
+    "browser_status": "Partial live; entry and chapter controls inspected",
+    "observation": "Illustrated character fills frame, technical UI border, very large identity verbs; narrow viewport rejected; later canvas views incomplete."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/the-other-side-of-truth",
+    "name": "The Other Side of Truth",
+    "original": "https://theothersideoftruth.com",
+    "browser_status": "Live; switched viewpoint and scrolled",
+    "observation": "Core comparison control changes the palette and framing; interaction embodies editorial thesis."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/persepolis-reimagined",
+    "name": "Persepolis Reimagined",
+    "original": "http://www.getty.edu/persepolis",
+    "browser_status": "entered; scrolled to Gate of All Nations",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/pangram-pangram-foundry",
+    "name": "Pangram Pangram Foundry",
+    "original": "https://pangrampangram.com/",
+    "browser_status": "opened; changed card/list view",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/star-atlas",
+    "name": "Star Atlas",
+    "original": "https://staratlas.com",
+    "browser_status": "Live current site; dismissed signup and scrolled",
+    "observation": "Sci-fi instrument typography, section numbering and fleet imagery; no signup or financial action."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/prometheus-fuels",
+    "name": "Prometheus Fuels",
+    "original": "https://www.prometheusfuels.com/",
+    "browser_status": "Redirected/replaced",
+    "observation": "Original URL leads to current black/red Prometheus corporate site, not the earlier cinematic award experience."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/umami-land",
+    "name": "Umami Land",
+    "original": "https://umamiland.withgoogle.com/en",
+    "browser_status": "redirected to Google",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/chungi-folio",
+    "name": "Chungi Folio",
+    "original": "https://www.chungiyoo.com/",
+    "browser_status": "application server error",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/mammut-expedition-baikal",
+    "name": "Mammut Expedition Baikal",
+    "original": "https://eiger-extreme.mammut.com",
+    "browser_status": "Internal Server Error",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/kode",
+    "name": "Kode Sports Club",
+    "original": "https://www.kodeclubs.com/",
+    "browser_status": "entered; toured and moved in world",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/dark-official-netflix-guide",
+    "name": "Dark: Official Netflix Guide",
+    "original": "http://darknetflix.io",
+    "browser_status": "browser blocked URL",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/synchronized-studio",
+    "name": "Synchronized studio",
+    "original": "https://synchronized.studio/",
+    "browser_status": "Live current site; scrolled",
+    "observation": "Large distorted serif typography, fine radial line forms, black texture; typography itself is artwork."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/pioneer-corn-revolutionized",
+    "name": "Pioneer - Corn Revolutionized",
+    "original": "https://cornrevolution.resn.global/",
+    "browser_status": "Live; scrolled into explanatory chapters",
+    "observation": "Detailed corn close-up transitions to computational candidate particles; subject drives scale and visual metaphor."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/bruno-simon-portfolio",
+    "name": "Bruno Simon Portfolio",
+    "original": "https://bruno-simon.com/",
+    "browser_status": "blank dark page after repeated observations",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/ma",
+    "name": "MA",
+    "original": "https://matruecannabis.com",
+    "browser_status": "redirected; age/terms gate not accepted",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/the-cool-club-x-fwa",
+    "name": "The Cool Club x FWA",
+    "original": "https://fwa.thecoolclub.co/",
+    "browser_status": "address unreachable",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/nomadic-tribe",
+    "name": "Nomadic Tribe",
+    "original": "https://2019.makemepulse.com",
+    "browser_status": "entered; dragged plant to bloom; advanced to interactive landscape",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/orano",
+    "name": "Orano",
+    "original": "https://www.orano.group/experience/innovation/en",
+    "browser_status": "Live; entered catalogue and Protect detail",
+    "observation": "Wireframe gamma-camera rover, technical grid and yellow accent make the product explanation spatial."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/koox",
+    "name": "koox",
+    "original": "http://koox.co.uk/",
+    "browser_status": "Changed current shop",
+    "observation": "Current juice ecommerce page, not the remembered illustrated award-era experience."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/franshals-museum",
+    "name": "Frans Hals Museum",
+    "original": "https://www.franshalsmuseum.nl/en/",
+    "browser_status": "Changed current museum site; scrolled",
+    "observation": "Current dark/peach rounded editorial panels and collection photography; original award version not established."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/active-theory-v4",
+    "name": "Active Theory v4",
+    "original": "https://activetheory.net",
+    "browser_status": "Partial live current world; scrolled",
+    "observation": "Refractive logo and luminous particle landscape; Work control attempted, full project view not confirmed."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/the-new-mobile-workforce-4",
+    "name": "The New Mobile Workforce",
+    "original": "https://thenewmobileworkforce.imm-g-prod.com/",
+    "browser_status": "browser certificate hostname error; no bypass",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/simply-chocolate",
+    "name": "Simply Chocolate",
+    "original": "https://simplychocolate.dk",
+    "browser_status": "Changed current shop",
+    "observation": "Seasonal calendar campaign and commerce navigation; do not attribute current layout to original award edition."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/inside-the-head-publication",
+    "name": "Inside The Head",
+    "original": "https://insidethehead.co/",
+    "browser_status": "entered chapters and read Age layout",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/dunkirk-webvr",
+    "name": "Dunkirk WebVR",
+    "original": "https://webvrgame.dunkirkmovie.com/",
+    "browser_status": "certificate hostname error; no bypass",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/ouigo-let-s-play",
+    "name": "OUIGO - Let's play",
+    "original": "http://letsplay.ouigo.com",
+    "browser_status": "browser blocked original URL",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/mendo-book-store",
+    "name": "Mendo",
+    "original": "http://www.mendo.nl",
+    "browser_status": "current catalogue; scrolled and menu attempted",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/protest-sportswear",
+    "name": "Protest Sportswear",
+    "original": "https://www.protest.eu",
+    "browser_status": "current shop; initial and cookie overlay viewed",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/paper-planes",
+    "name": "Paper Planes",
+    "original": "http://paperplanes.world",
+    "browser_status": "desktop globe/planes rendered; gesture attempted; mobile participation not tested",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/kikk-festival2016",
+    "name": "KIKK Festival 2016",
+    "original": "http://www.kikk.be/2016/",
+    "browser_status": "current redirect displays404",
+    "observation": "See firsthand notes and explicit status; no complete-experience claim beyond recorded actions."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/cavalier-conqueror-of-excellence",
+    "name": "Cavalier: Conqueror of Excellence",
+    "original": "https://cavalierchallenge.com",
+    "browser_status": "Unavailable in this session",
+    "observation": "Repeatedly remained on Loading / Redirecting screen."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/falter-inferno",
+    "name": "Falter Inferno",
+    "original": "http://falter.madebywild.com/#en",
+    "browser_status": "Unavailable",
+    "observation": "Browser reported address unreachable."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/because-recollection",
+    "name": "Because Recollection",
+    "original": "http://www.because-recollection.com",
+    "browser_status": "Unavailable in this browser",
+    "observation": "Original URL blocked by client; no alternate bypass used."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/weber-bbq-cultures",
+    "name": "Weber - BBQ Cultures",
+    "original": "http://bbqcultures.com",
+    "browser_status": "Replaced",
+    "observation": "Destination is a placeholder WordPress affiliate template, not the original experience."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/beagle-better-proposals",
+    "name": "Beagle - Better proposals",
+    "original": "http://curvy.dk/beagle/site/",
+    "browser_status": "Live; scrolled through product story",
+    "observation": "Full-screen staged explanation; Import Content uses actual proposal-shaped documents as the visual material."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/in-pieces",
+    "name": "In Pieces",
+    "original": "http://species-in-pieces.com",
+    "browser_status": "Unavailable in this browser",
+    "observation": "Original HTTP URL blocked by client."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/nixon-ecommerce-platform",
+    "name": "Nixon eCommerce Platform",
+    "original": "http://nixon.com",
+    "browser_status": "Changed current shop",
+    "observation": "Current seasonal watch campaign and standard ecommerce; no original-era claim."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/aquest-1",
+    "name": "AQuest",
+    "original": "http://www.aquest.it",
+    "browser_status": "Live current site; dismissed cookies and scrolled",
+    "observation": "Large plain typography yields to a full-width collage/reel; current projects are 2025–2026."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/dragone",
+    "name": "Dragone",
+    "original": "http://www.dragone.com",
+    "browser_status": "Live current site; scrolled",
+    "observation": "Theatrical costume/performance collage and show imagery organize its visual identity."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/a-journey-through-middle-earth",
+    "name": "A Journey Through Middle-earth",
+    "original": "http://middle-earth.thehobbit.com",
+    "browser_status": "Unavailable in this browser",
+    "observation": "Original URL blocked by client."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/pharrell-williams-24-hours-of-happy",
+    "name": "PHARRELL WILLIAMS - 24 HOURS OF HAPPY",
+    "original": "http://24hoursofhappy.com",
+    "browser_status": "Partially available",
+    "observation": "Yellow typographic intro loads; embedded YouTube player reports an error, so no full playback experience claimed."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/into-the-arctic-greenpeace-1",
+    "name": "Into the Arctic - Greenpeace",
+    "original": "http://www.hellomonday.net/archive/greenpeace/intothearctic/en/",
+    "browser_status": "Unavailable in this browser",
+    "observation": "Original archive URL blocked by client."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/blacknegative",
+    "name": "Blacknegative",
+    "original": "http://www.blacknegative.com/",
+    "browser_status": "Partial live; forest-film entry visible; deeper controls not confirmed",
+    "observation": "Loader resolves to forest-film hero and restrained typography; click/scroll attempts did not establish deeper navigation."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/made-in-a-free-world-slavery-footprint",
+    "name": "Made in a Free World: Slavery Footprint",
+    "original": "http://www.slaveryfootprint.org/",
+    "browser_status": "Live; opened What explanation; no personal survey submitted",
+    "observation": "A direct question and linked-chain illustration lead into explanatory media. No personal survey answers supplied."
+  },
+  {
+    "award": "https://www.awwwards.com/sites/360-c2-b0-langstrasse-zurich",
+    "name": "360° Langstrasse Zürich",
+    "original": "http://www.360langstrasse.sf.tv/",
+    "browser_status": "Unavailable: browser DNS/name-resolution failure",
+    "observation": "Browser reported DNS/name resolution failure."
+  }
+]

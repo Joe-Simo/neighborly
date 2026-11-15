@@ -1,104 +1,168 @@
 # Neighborly
 
-**Live demo:** https://neighborly-church.vercel.app
+A painted introduction to volunteering for churches and communities, with a
+shared portrait-to-courtyard journey and a private coordination app.
 
-**Demo video (2.5 minutes):** https://vimeo.com/1244881382
+## Run
 
-Neighborly helps a church invite its neighbors in the languages they speak at home. A volunteer enters the church's ZIP code and sees which languages people nearby speak, from US Census data. They write or paste an announcement. AI drafts each translation, a separate AI call turns it back into English, and code checks every time, date, number, phone and address. A fluent volunteer then approves each block. Only then can the church export a web snippet, email text or a printable one-page flyer per language. When the announcement cites a Bible verse, Neighborly inserts the verse from a public-domain Bible in that language, never from AI.
-
-Built for the [AI for Church Hackathon 2026](https://aiforchurch.com/hackathon), Outreach and Evangelism track.
-
-## Why
-
-Many churches want to welcome neighbors who read Spanish, Haitian Creole, Vietnamese or Chinese better than English, but they have no translator on staff. Machine translation is fast, but a wrong time or address on an invitation means a family shows up at the wrong hour. Neighborly keeps the speed of AI and adds the checks a careful volunteer would make.
-
-## How it works
-
-1. **Neighbors.** The church's ZIP code is looked up in American Community Survey 2024 5-year table C16001 (language spoken at home by ability to speak English). Neighborly shows each language group, its margin of error, and how many speak English less than "very well". It pre-selects up to three languages by that number and marks small, unreliable estimates.
-2. **Announcement.** Start from a sample for the fictional church Grace Fellowship or paste your own. Each paragraph is a block. A line saying the message was translated with AI help and checked by a volunteer is added and translated too. A church glossary (for example "small group", "communion", "kids check-in") is sent with every request.
-3. **Translate and review.** For each language:
-   - one AI call translates the blocks using the glossary;
-   - a second AI call translates the result back into English without seeing the original;
-   - code (no AI) extracts every time, date, phone, price, street address, email, link and number from the English and checks it in the translation, including full-width and Arabic-Indic digits and afternoon words for PM times;
-   - weekdays and months are checked in the back-translation, and numbers that appear only in the translation are flagged;
-   - glossary terms are checked, and English words that did not come back are underlined as hints.
-   The reviewer can edit any block and back-translate the edit.
-4. **Publish.** Export stays locked until a named reviewer approves every block of every language. An approval is bound to a hash of the exact text approved, so any edit sends the block back to review. Blocks with flags need the reviewer to tick that they checked them. Exports are an HTML snippet with the right `lang` and `dir` for each language, plain email text, and a printable letter-size flyer for each language at `/flyer?lang=xx`. The flyer page rebuilds the same gate from the saved workspace, so it shows a locked message until every block is approved.
-
-Translation streams its progress (translating, then back-translating) so the page can show which step is running, how long it has taken and an estimate, since free models can take close to a minute.
-
-## AI use, disclosed
-
-- Translation and back-translation use free open models through [OpenRouter](https://openrouter.ai): by default `google/gemma-4-31b-it:free`, then `nvidia/nemotron-3-ultra-550b-a55b:free`, then `google/gemma-4-26b-a4b-it:free`. The model used is shown on every translation.
-- The free tier has a daily limit, and the server caps itself at 36 calls a day. When live AI is unavailable, the sample announcements show **recorded examples**: real output from those models, captured on November 3, 2026 with `scripts/record-examples.mjs`, labelled "Recorded example" with the model and date. Your own text is never answered with recorded output.
-- AI is not used for the Census numbers, the fact checks, the glossary checks or the approval rules. Those are plain code with tests.
-- The AI is never asked to write scripture or theology. The prompt tells it to keep Bible references as references and never write out a verse. Verse text is inserted by code from the bundled public-domain Bibles below.
-- Parts of this codebase were written with an AI coding assistant and reviewed by the author.
-
-## Scripture sources
-
-When an English block cites a verse such as "Hebrews 13:2", code finds the reference and looks it up in `src/data/scripture.json`. That file was built by `scripts/fetch-scripture.mjs` from the eBible.org HTML editions listed here. The script refuses a translation whose eBible copyright page does not say "Public Domain", and it stores that page's statement next to the text.
-
-| Language | Translation | eBible.org id | Public-domain status | Evidence |
-| --- | --- | --- | --- | --- |
-| English | King James Version (1769 text) | eng-kjv2006 | Public domain outside the United Kingdom. In the UK the Crown holds rights by letters patent. | https://ebible.org/eng-kjv2006/copyright.htm |
-| Spanish | Reina-Valera 1909 | spaRV1909 | Public domain, published 1909 | https://ebible.org/spaRV1909/copyright.htm |
-| French | Louis Segond 1910 | fraLSG | Public domain, published 1910 | https://ebible.org/fraLSG/copyright.htm |
-| German | Lutherbibel 1912 | deu1912 | Public domain, published 1912 | https://ebible.org/deu1912/copyright.htm |
-| Russian | Synodal Translation (1876) | russyn | Public domain, published 1876 | https://ebible.org/russyn/copyright.htm |
-| Vietnamese | Kinh Thánh, Cadman (NT 1923, OT 1925) | vie1934 | Public domain. eBible.org reports the copyright expired on January 1, 2019 (NT) and January 1, 2021 (OT). | https://ebible.org/vie1934/copyright.htm |
-| Korean | Korean Bible 1910 | kor | Public domain, 1910 translation | https://ebible.org/kor/copyright.htm |
-| Arabic | Smith and Van Dyck (1865) | arb-vd | Public domain, published 1865 | https://ebible.org/arb-vd/copyright.htm |
-
-Left out on purpose, so these languages show the reference with a plain note instead of verse text:
-
-- **Chinese:** the Chinese Union Version on eBible.org is the 1989 punctuated revision, whose copyright status we could not confirm.
-- **Haitian Creole:** the 1985 Bib La public-domain claim rests on publication without a copyright notice, which we could not verify.
-- **Portuguese, Tagalog, Hindi:** the eBible.org editions are recent or copyrighted.
-- **Ukrainian, Polish:** not checked yet.
-
-Only a short list of verses often used in invitations is bundled (Leviticus 19:34, Matthew 11:28, Matthew 25:35, Luke 14:13, John 3:16, Romans 15:7, Hebrews 13:2). Any other reference is kept as a reference with a note. If the English quotes a verse in full, translation stays off until only the reference is left, and a translation that comes back much longer than a paragraph citing a verse is flagged for the reviewer.
-
-## Safeguards
-
-- Human approval of every block, bound to the exact text, before any export.
-- Code checks for times, dates, numbers, phones, addresses, emails and links, shown as chips with text and icons, not color alone.
-- An AI disclosure line in every export, reviewed like the rest.
-- No accounts. Work is saved in the browser's local storage. Only the text being translated leaves the browser, to OpenRouter.
-- The daily AI call cap and the translation cache are shared by all server instances through a private Vercel Blob store on the free Hobby plan (hard limits, no card, nothing billed). Updates use ETag compare-and-swap so two servers cannot both spend the last call. If Blob is unavailable, each instance falls back to its own memory and the status line says so.
-- Inputs are validated with zod and limited in size. The OpenRouter key stays on the server.
-- Sample data only: Grace Fellowship, its address on Grace Lane, its 555 phone number and its `.example` email and website are fictional.
-
-## Limits
-
-See the [Limits and safeguards page](https://neighborly-church.vercel.app/limits). In short: AI translations can be wrong and back-translation does not prove they are right; Census estimates for small groups have wide margins; Census groups some languages together (for example French, Haitian, or Cajun); the free AI tier runs out; verse text exists only for the bundled languages and verses.
-
-## Data sources
-
-- US Census Bureau, American Community Survey 2024 5-year estimates (2020 to 2024), table C16001, by ZIP code tabulation area. The app reads it from [Census Reporter](https://censusreporter.org)'s public API, which republishes the Census Bureau's ACS tables and needs no key. If `CENSUS_API_KEY` is set, the server reads `api.census.gov` directly instead.
-
-## Stack
-
-Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, zod, Vitest, Vercel Blob (free Hobby plan). Hosted on Vercel. No paid services.
-
-## Run it
-
-```bash
-pnpm install
-cp .env.example .env.local   # add a free OpenRouter key, or leave it empty to use recorded examples
-pnpm dev
+```sh
+bun install
+bun run dev
 ```
 
-Checks:
+Open http://localhost:3000. Public courtyard gestures use session-local state
+and send no messages or create commitments. `/app` uses Convex Auth v2 and the
+separate `neighborly-live` development backend for private workspaces.
+The original `neighborly` backend is preserved and must not be overwritten.
+Use the deployment in `.env.local` when running `bunx convex dev --once`.
 
-```bash
-pnpm test         # Census parsing, fact checker, approval gate, export gating, scripture, shared cap
-pnpm lint
-pnpm typecheck
-pnpm build
-pnpm check:dashes
+```sh
+bun run lint
+bun run typecheck
+bun run test
+bun run build
 ```
 
-## License
+`test` runs both the Bun unit suite and the Vitest/convex-test backend suite.
+Those backend tests simulate authentication; they do not prove real email or
+browser sign-in. All real signup and recovery flows require a verified sender.
 
-MIT. See [LICENSE](LICENSE).
+## Live configuration
+
+The client needs `NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_CONVEX_SITE_URL`.
+Server secrets remain in the Convex deployment, never in public variables.
+Set `SITE_URL` to the exact frontend origin. After a dedicated sender is chosen,
+configure `SENDER_EMAIL` and `RESEND_API_KEY`; enable the notification outbox with
+`EMAIL_DELIVERY_ENABLED=true` only after delivery verification. Domain and email
+setup require an owner-chosen sender domain and test recipient. Account-email
+readiness is independent of the group-notification switch; leaving that switch
+off prevents the outbox from sending group notifications.
+
+`TYPESAFE_API_KEY` optionally enables server-side checks of explicit team-draft
+facts. Without it, the deterministic draft remains editable and is labeled for
+review. AI never creates members, assigns work or infers consent. Invitations
+store only token hashes; an authorized owner may copy the one-time invitation
+link for manual delivery while email is unavailable.
+
+The app includes private church/team membership, dated and recurring
+responsibilities, availability, cover requests, reviewed time off, tasks,
+meetings and announcements. Server-side permissions and explicit recipient
+acceptance are authoritative. Presentation effects never authorize an action.
+
+## Artwork
+
+At the user's request, the main page again selects the painted relief through
+`reliefArtwork` in `src/lib/artwork.ts`. Its model is
+`public/assets/living-relief.glb`; its desktop, mobile and narrow stills and
+camera states are described by the relief artwork definition and manifest.
+The artwork combines generated portrait pigment layers with Blender-authored
+displaced hands, a folded guide and gesture animation.
+
+The editable source is `art/living-relief.blend`, with generated source
+pigments in `art/textures/` and original rendered PNGs in
+`art/renders/relief/`. To regenerate from Blender's Python console:
+
+```python
+exec(compile(open('/Users/josephsimo/Documents/Neighborly/art/build_relief.py').read(), 'build_relief.py', 'exec'))
+```
+
+Then run `bun art/optimize-relief.ts` from the project root to encode WebP
+stills. The stateful example, sample workspace, draft validation and other
+functional fixes are retained. The current implementation passes lint,
+typecheck, production build, 44 unit tests and 24 backend tests. The local
+production preview is http://localhost:3144. The hosted preview is
+https://neighborly-m3tj8c34t-simo-js.vercel.app (Vercel authentication required). See
+`docs/acceptance.md` for bounded evidence and remaining verification limits.
+
+## Preserved cast experiment
+
+The volumetric cast work is preserved as an experiment and is not selected
+by the main page. `src/lib/cast-artwork.ts` and its v4 manifest remain available
+with the editable scenes, model, stills and export tooling.
+
+The editable prepared scene is `art/cast-handoff-v3.blend`; its input is
+`art/cast-lod80-pose-final.blend`. The model is
+`public/assets/cast-handoff-v4.glb` (1,471,164 bytes; SHA-256
+`5ba8d361a94c7c812b65b91f7d4456bd168dc381e8770be0a429b28c2b7c6cf1`).
+Named clips are `rest`, `settle`, `pending`, `accepted` and `declined`.
+The application chooses the clip; animation never authorizes acceptance,
+sends a message or completes a task.
+
+`art/cast_export.py` exports the selected meshes and rigs, runs the lossless
+meshopt encoder in `art/tooling/encode-meshopt.ts`, renders matching stills,
+and uses `/opt/homebrew/bin/cwebp` to encode them. Its pinned encoder
+dependencies have a separate lockfile:
+
+```sh
+cd art/tooling
+bun install --frozen-lockfile
+```
+
+To regenerate the v3 export from the prepared scene, open
+`art/cast-handoff-v3.blend` in Blender, then run in its Python console
+(replace the root if the project has moved):
+
+```python
+import sys
+sys.path.insert(0, '/Users/josephsimo/Documents/Neighborly/art')
+from cast_export import export_current
+export_current(asset_prefix='cast-handoff-v3', model_suffix='', mobile_size=(390, 300), include_narrow=True, lossless=True)
+```
+
+This regenerates the v3 source export and its six stills. The preserved v4
+package reuses those stills and applies palette materials and compatible
+primitive batching without changing geometry, skins or animation. After the
+v3 export, reproduce the v4 model from the project root with:
+
+```sh
+bun art/tooling/batch-cast.ts public/assets/cast-handoff-v3.glb public/assets/cast-handoff-v4.glb art/renders/cast/cast-handoff-v4-batch-audit.json
+```
+
+The retained script reproduced the exact v4 SHA-256 above. Its palette
+material conversion changes the tested rendered image by at most 2/255 per
+channel; it is not an assertion of byte-identical material factors. The v4
+manifest selects the v4 model and the six v3 stills. Source PNG renders, the uncompressed
+GLB, cleanup/encoding audits and checksummed receipt are retained in
+`art/renders/cast/`. The receipt records the selected source and encoder
+versions. Regeneration is not visual acceptance: inspect the exported scene
+in the browser, including mobile, reduced motion and fallback states.
+
+The cast uses a MakeHuman/MPFB anatomical base with subsequent Neighborly
+sculpting, clothing and animation work. The installed MPFB base identifies
+itself as hm08, released under CC0. MPFB code uses GPL-3.0-or-later; the asset
+license is separate. See `licenses/MakeHuman-MPFB-NOTICE.md` and
+`licenses/MakeHuman-MPFB-CC0.md`. The final body data blocks have no retained
+source UUIDs, so the precise derivative chain and any optional asset inventory
+remain incompletely documented. Do not describe this as wholly modeled from
+scratch or free of third-party art inputs. Font OFL records remain in
+`licenses/` and `public/fonts/`.
+
+The original procedural mural also remains historical work. Cast verification
+records are retained in `docs/acceptance.md`; they do not establish current
+relief quality or phone performance.
+
+The application previously passed direct lint, typecheck, production build
+and 32 tests / 195 assertions with the cast selected. Physical iPhone Air
+Safari interaction reached acceptance and preparation during that cast check.
+Those results remain historical and do not establish a quantified physical
+frame rate.
+
+A separate cloud development deployment has been created for `neighborly-live`.
+No production backend was overwritten and real email delivery remains disabled.
+For the complete still experience, append `?noWebGL=1` to the local URL.
+
+
+## Artwork review
+
+The original artwork is selected on the review page again:
+https://neighborly-15lws9m33-simo-js.vercel.app/relief-review
+
+Generated replacement studies are preserved locally but unapproved and excluded
+from deployment. Future work must retain the original proportions and character.
+
+
+## Current unified design preview
+
+Use https://neighborly-design-simo-js.vercel.app/ as the single design-review address. The homepage is the painted journey; /painted-world and /experience redirect to /. After verifying a new preview, retarget this alias in the existing simo-js/neighborly project rather than distributing another temporary deployment URL. This alias is a design preview, not a production-domain promotion.
+
+The current design direction is scroll/swipe-driven: scroll the homepage to move through the painted story. This supersedes the earlier click-to-advance interaction. The canonical design address remains https://neighborly-design-simo-js.vercel.app/.

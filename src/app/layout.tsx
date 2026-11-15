@@ -1,26 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin", "latin-ext", "vietnamese", "cyrillic"], variable: "--font-inter", display: "swap" });
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
-
-export const metadata: Metadata = {
-  title: "Neighborly: church announcements in your neighbors' languages",
-  description:
-    "Find the languages your church's neighbors speak from Census data, translate an announcement with AI, check every number by code, and let a fluent volunteer approve each block before it goes out.",
-  metadataBase: new URL("https://neighborly-church.vercel.app"),
+import "../../public/fonts/fonts.css";
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#f5f3ec",
 };
-
-export const viewport: Viewport = { themeColor: "#faf7f1", width: "device-width", initialScale: 1 };
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export const metadata: Metadata = {
+  metadataBase: new URL("https://neighborly-church.vercel.app"),
+  title: "Neighborly — Good work, together.",
+  description:
+    "A place for churches and communities to organize volunteering, bring people together, and help in their own way.",
+  openGraph: {
+    title: "Neighborly — Good work, together.",
+    description: "Your people. Your way to help. Volunteering for churches and communities.",
+    images: [{ url: "/assets/living-relief-poster.webp", width: 1440, height: 1024, alt: "Neighborly’s painted community and welcome guide" }],
+  },
+  twitter: { card: "summary_large_image" },
+};
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
-      <body className="min-h-dvh break-words">
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-white">
-          Skip to the workspace
-        </a>
+    <html lang="en">
+      <body>
         {children}
       </body>
     </html>

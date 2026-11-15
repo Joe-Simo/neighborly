@@ -12,8 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Demo video and write-up sources (Remotion, scripts), not part of the app build:
-    "submission/**",
+    "convex/_generated/**",
+    // Upstream Three.js decoder distribution, copied without modification.
+    "public/assets/painted-world/draco/**",
   ]),
 ]);
 

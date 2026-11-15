@@ -1,0 +1,21 @@
+{
+  "purpose": "Use exact regular display instance and single italic hero word without shipping unused font axes/styles. Source originals retained.",
+  "files": [
+    {
+      "file": "newsreader-display-regular.woff2",
+      "source": "newsreader-latin-variable.woff2",
+      "transformation": "FontTools 4.68.0 static instancing: wght=400, opsz=72; original Latin glyph coverage retained.",
+      "sha256": "cb0ab1316cdbe1270f41f1de80bf95767fbcc88fcff20b15b470bb9c74a093ef",
+      "bytes": 21668,
+      "license": "OFL-1.1; see licenses/ and original provenance.json"
+    },
+    {
+      "file": "newsreader-together-italic.woff2",
+      "source": "newsreader-latin-variable-italic.woff2",
+      "transformation": "FontTools 4.68.0 static instancing: wght=400, opsz=72; subset to exact hero text together. including required glyph dependencies.",
+      "sha256": "b8ed53de75433aeac91393e254f97ee202600c08f89816656320a42ac699a8d0",
+      "bytes": 1540,
+      "license": "OFL-1.1; see licenses/ and original provenance.json"
+    }
+  ]
+}

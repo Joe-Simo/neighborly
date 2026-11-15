@@ -1,0 +1,258 @@
+{
+  "medium": "Original image-informed painted 2.5D relief authored in Blender",
+  "scope": "Not fully volumetric human models. Portrait pigment is supplied imagery; hands and paper have physical displaced surfaces and authored gesture rigs.",
+  "scene": "Neighborly \u2014 Living relief",
+  "rig": "ReliefRig",
+  "guideBone": "Guide",
+  "clipNames": [
+    "rest",
+    "settle",
+    "pending",
+    "accepted",
+    "declined"
+  ],
+  "animationSeconds": 1.5,
+  "handoff": "Guide follows donor to contact, holds briefly, then follows the evaluated receiving-hand transform; no application state is authorized by animation.",
+  "triangleCount": 54412,
+  "glbBytes": 2022328,
+  "sources": [
+    {
+      "source": "art/textures/relief-background.png",
+      "sourceSize": [
+        1487,
+        1058
+      ],
+      "deliverySize": [
+        1440,
+        1025
+      ],
+      "alpha": false
+    },
+    {
+      "source": "art/textures/relief-background-mobile-parallel-margin.png",
+      "sourceSize": [
+        863,
+        1822
+      ],
+      "deliverySize": [
+        863,
+        1822
+      ],
+      "alpha": false
+    },
+    {
+      "source": "art/textures/relief-background-mobile-narrow.png",
+      "sourceSize": [
+        864,
+        1821
+      ],
+      "deliverySize": [
+        864,
+        1821
+      ],
+      "alpha": false
+    },
+    {
+      "source": "art/textures/donor-hand.png",
+      "sourceSize": [
+        1448,
+        1086
+      ],
+      "deliverySize": [
+        1100,
+        825
+      ],
+      "alpha": true
+    },
+    {
+      "source": "art/textures/receiver-hand.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "deliverySize": [
+        1100,
+        733
+      ],
+      "alpha": true
+    }
+  ],
+  "config": {
+    "background": {
+      "file": "relief-background.png"
+    },
+    "mobile_background": {
+      "file": "relief-background-mobile-parallel-margin.png"
+    },
+    "narrow_background": {
+      "file": "relief-background-mobile-narrow.png"
+    },
+    "donor": {
+      "file": "donor-hand.png",
+      "bounds": [
+        -0.020833,
+        0.610352,
+        0.423611,
+        0.90332
+      ]
+    },
+    "receiver": {
+      "file": "receiver-hand.png",
+      "bounds": [
+        0.618056,
+        0.639648,
+        1.020833,
+        0.917969
+      ]
+    },
+    "guide": {
+      "center": [
+        -0.73,
+        -0.82,
+        2.7
+      ],
+      "width": 1.45,
+      "height": 1.02
+    }
+  },
+  "coordinates": "glTF +Y up, face +Z; source Blender X/Z art plane, negative Y relief toward camera",
+  "backgroundObjects": {
+    "desktop": "BackgroundDesktop",
+    "mobile": "BackgroundMobile",
+    "narrow": "BackgroundNarrow"
+  },
+  "mobileGestureTransform": {
+    "object": "ReliefRig",
+    "scale": [
+      0.54,
+      0.54,
+      0.54
+    ],
+    "position": [
+      0,
+      4,
+      0
+    ]
+  },
+  "narrowGestureTransform": {
+    "object": "ReliefRig",
+    "scale": [
+      0.54,
+      0.54,
+      0.54
+    ],
+    "position": [
+      0,
+      4,
+      0
+    ]
+  },
+  "cameras": {
+    "group": {
+      "position": [
+        0,
+        5.12,
+        30
+      ],
+      "target": [
+        0,
+        5.12,
+        0
+      ],
+      "orthoHeight": 10.24
+    },
+    "person": {
+      "position": [
+        0,
+        6.0,
+        30
+      ],
+      "target": [
+        0,
+        6.0,
+        0
+      ],
+      "orthoHeight": 9.3
+    },
+    "exchange": {
+      "position": [
+        0.3,
+        3.35,
+        30
+      ],
+      "target": [
+        0.3,
+        3.35,
+        0
+      ],
+      "orthoHeight": 6.7
+    },
+    "preparation": {
+      "position": [
+        1.1,
+        3.1,
+        30
+      ],
+      "target": [
+        1.1,
+        3.1,
+        0
+      ],
+      "orthoHeight": 6.5
+    }
+  },
+  "mobileCameras": {
+    "group": {
+      "position": [
+        0,
+        8.44,
+        30
+      ],
+      "target": [
+        0,
+        8.44,
+        0
+      ],
+      "orthoHeight": 16.88
+    },
+    "person": {
+      "position": [
+        0,
+        11.5,
+        30
+      ],
+      "target": [
+        0,
+        11.5,
+        0
+      ],
+      "orthoHeight": 10.8
+    },
+    "exchange": {
+      "position": [
+        0.1,
+        5.5,
+        30
+      ],
+      "target": [
+        0.1,
+        5.5,
+        0
+      ],
+      "orthoHeight": 8.8
+    },
+    "preparation": {
+      "position": [
+        0.65,
+        5.4,
+        30
+      ],
+      "target": [
+        0.65,
+        5.4,
+        0
+      ],
+      "orthoHeight": 8.4
+    }
+  }
+}
