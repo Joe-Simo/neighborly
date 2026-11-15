@@ -12,7 +12,7 @@ import type { Id } from "./_generated/dataModel";
  *   bunx convex run sampleData:clear '{"churchId":"..."}'
  */
 const zone = "America/New_York";
-const emailDomain = "neighborly.example";
+const emailDomain = "kindhelps.example";
 const DAY = 86400000;
 /** The last call of these households is this recent, so the demo always has open work whatever day it is loaded. */
 const recentCalls = new Map([[194, DAY / 8], [195, DAY], [196, 2 * DAY], [197, 7 * DAY], [198, 9 * DAY], [199, 12 * DAY]]);

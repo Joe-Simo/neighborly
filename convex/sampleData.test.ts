@@ -95,11 +95,11 @@ describe("sample conference", () => {
     const t = start();
     await t.mutation(internal.sampleData.load, {});
     const data = await everything(t);
-    for (const member of data.memberships) expect(member.email).toMatch(/@neighborly\.example$/);
+    for (const member of data.memberships) expect(member.email).toMatch(/@kindhelps\.example$/);
     for (const neighbor of data.neighbors) {
       // Area codes cannot begin with 1, so these numbers cannot belong to anyone.
       expect(neighbor.phone).toMatch(/^\(10[01]\) 555-01\d\d$/);
-      if (neighbor.email) expect(neighbor.email).toMatch(/@neighborly\.example$/);
+      if (neighbor.email) expect(neighbor.email).toMatch(/@kindhelps\.example$/);
     }
     expect(new Set(data.neighbors.map((neighbor) => neighbor.nameKey)).size).toBe(200);
     expect(new Set(data.neighbors.map((neighbor) => neighbor.phoneKey)).size).toBe(200);
