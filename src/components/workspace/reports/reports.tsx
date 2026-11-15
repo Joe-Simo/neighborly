@@ -6,7 +6,9 @@ import { DateTime } from "luxon";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
+import { readFailure, stateWords } from "@/components/workspace/failure";
 import { HelpRoom } from "@/components/workspace/help-line/room";
+import { LiveFailure, LiveState } from "@/components/workspace/states";
 import { csvFileName, reportCsv } from "@/components/workspace/reports/lines";
 import { YearCheck, type YearCheckResult } from "@/components/workspace/reports/year-check";
 import {
@@ -18,21 +20,26 @@ import {
 } from "@/components/workspace/reports/report-view";
 
 /** Says what happened and what to do when the year cannot be read, and leaves the rest of the workspace standing. */
-class ReportBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
+class ReportBoundary extends Component<{ children: ReactNode }, { failed: string }> {
+  state = { failed: "" };
+  static getDerivedStateFromError(cause: unknown) {
+    // The backend's own sentence when it refused (a year too large to add up), calm words otherwise.
+    return { failed: readFailure(cause, "Your records are safe and nothing was changed. Check your connection, then try again.") };
   }
   render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <div className="live-error report-error" role="alert">
-        <p>The year couldn’t be added up just now. Your records are safe and nothing was changed.</p>
-        <p className="live-error-recovery">Check your connection, then try again.</p>
-        <Button variant="outline" onClick={() => this.setState({ failed: false })}>
-          Try again
-        </Button>
-      </div>
+      <LiveState
+        kind="error"
+        title="The year couldn’t be added up."
+        action={
+          <Button variant="outline" onClick={() => this.setState({ failed: "" })}>
+            {stateWords.tryAgain}
+          </Button>
+        }
+      >
+        {this.state.failed}
+      </LiveState>
     );
   }
 }
@@ -45,7 +52,7 @@ function Report() {
   const [quarter, setQuarter] = useState<Quarter>();
   const [done, setDone] = useState("");
   const checkYear = useAction(api.drafts.checkYear);
-  const [check, setCheck] = useState<{ year: number; result?: YearCheckResult; at?: number; failed?: boolean }>();
+  const [check, setCheck] = useState<{ year: number; result?: YearCheckResult; at?: number; failed?: string }>();
 
   // The yearly report is written in the fall, so until January the year that just closed opens first.
   const today = DateTime.fromMillis(now, { zone: data.church.timeZone });
@@ -78,8 +85,8 @@ function Report() {
     setCheck({ year });
     try {
       setCheck({ year, result: await checkYear({ churchId, year }), at: Date.now() });
-    } catch {
-      setCheck({ year, failed: true });
+    } catch (cause) {
+      setCheck({ year, failed: readFailure(cause, "The check couldn’t run just now.") });
     }
   }, [checkYear, churchId, year]);
   // The check reads a whole year, so it steps aside while a quarter is shown.
@@ -132,10 +139,7 @@ function Report() {
       }
       sheet={
         found?.failed ? (
-          <div className="live-error report-error" role="alert">
-            <p>The check couldn’t run just now. The report itself is not affected.</p>
-            <p className="live-error-recovery">Try again in a minute. You can still print or save the year.</p>
-          </div>
+          <LiveFailure message={found.failed} kept="The report itself is not affected. You can still print or save the year." />
         ) : (
           found?.result &&
           !quarter && (

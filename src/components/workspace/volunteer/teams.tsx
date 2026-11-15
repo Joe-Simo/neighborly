@@ -6,7 +6,6 @@ import { Plus } from "lucide-react";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/native-select";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -137,6 +136,13 @@ function LiveTeamRoster({
     open ? { churchId: data.church.id, teamId: team.id } : "skip",
     { initialNumItems: 20 },
   );
+  const [managingId, setManagingId] = useState<string | null>(null);
+  const managing = roster.results.find((person) => person.personId === managingId);
+  // One choice at a time: the dialog closes as the choice is sent, and the row shows what came of it.
+  const choose = (command: LiveCommand) => {
+    setManagingId(null);
+    void run(command);
+  };
   const faces = team.memberIds.flatMap((id) => data.people.find((person) => person.id === id) ?? []).slice(0, 4);
   return (
     <div>
@@ -162,6 +168,53 @@ function LiveTeamRoster({
           </Button>
         )}
       </div>
+      {managing && (
+        <LiveDialog
+          title={managing.name}
+          description={<>{team.name} · {managing.role === "coordinator" ? "Coordinator" : "Member"}</>}
+          onClose={() => setManagingId(null)}
+        >
+          <div className="live-manage">
+            {managing.status === "active" && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => choose({ type: "setTeamApproval", teamId: team.id, personId: managing.personId, approved: !managing.approved })}
+                >
+                  {managing.approved ? "Revoke approval for this team" : "Approve for this team"}
+                </Button>
+                {isOwner && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={pending}
+                    onClick={() =>
+                      choose({
+                        type: "setTeamRole",
+                        teamId: team.id,
+                        personId: managing.personId,
+                        role: managing.role === "coordinator" ? "member" : "coordinator",
+                      })
+                    }
+                  >
+                    {managing.role === "coordinator" ? "Make a member of this team" : "Make a coordinator of this team"}
+                  </Button>
+                )}
+              </>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => choose({ type: "setTeamMember", teamId: team.id, personId: managing.personId, member: false })}
+            >
+              {managing.status === "invited" ? "Withdraw the invitation" : "Remove from this team"}
+            </Button>
+          </div>
+        </LiveDialog>
+      )}
       {open && (
         <>
           <div className="live-list team-roster">
@@ -181,62 +234,8 @@ function LiveTeamRoster({
                 </div>
                 {team.canCoordinate && (
                   <div className="live-row-actions">
-                    {person.status === "active" && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={pending}
-                          onClick={() =>
-                            void run({
-                              type: "setTeamApproval",
-                              teamId: team.id,
-                              personId: person.personId,
-                              approved: !person.approved,
-                            })
-                          }
-                        >
-                          {person.approved
-                            ? "Revoke approval"
-                            : "Approve for team"}
-                        </Button>
-                        {isOwner && (
-                          <NativeSelect
-                            aria-label={`Team role for ${person.name}`}
-                            value={person.role}
-                            disabled={pending}
-                            onChange={(event) =>
-                              void run({
-                                type: "setTeamRole",
-                                teamId: team.id,
-                                personId: person.personId,
-                                role:
-                                  event.target.value === "coordinator"
-                                    ? "coordinator"
-                                    : "member",
-                              })
-                            }
-                          >
-                            <option value="member">Member</option>
-                            <option value="coordinator">Coordinator</option>
-                          </NativeSelect>
-                        )}
-                      </>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={pending}
-                      onClick={() =>
-                        void run({
-                          type: "setTeamMember",
-                          teamId: team.id,
-                          personId: person.personId,
-                          member: false,
-                        })
-                      }
-                    >
-                      Remove
+                    <Button variant="outline" size="sm" aria-label={`Manage ${person.name}`} onClick={() => setManagingId(person.personId)}>
+                      Manage
                     </Button>
                   </div>
                 )}
