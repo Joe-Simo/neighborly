@@ -27,8 +27,6 @@ export function ht(set: WordSet): Words {
   const t = terms[set];
   return {
     locale: "ht",
-    // Browsers have no Creole calendar words. French ones are the closest a reader will know.
-    dates: "fr-HT",
     terms: t,
     menu: {
       week: "Semèn sa a",
@@ -38,6 +36,11 @@ export function ht(set: WordSet): Words {
       mine: "Angajman mwen",
       "time-off": "Jou konje",
       tasks: "Travay ak reyinyon",
+      "help-line": "Liy èd",
+      neighbors: "Vwazen",
+      treasury: "Trezò",
+      reports: "Rapò",
+      visits: "Vizit lakay",
     },
     shell: {
       menu: "Meni",
@@ -50,6 +53,7 @@ export function ht(set: WordSet): Words {
       skip: "Ale nan espas ou",
       signOut: "Soti",
       language: "Lang",
+      typedStays: "Sa moun yo ekri rete jan yo te ekri l.",
       member: "Manm",
       team: "Ekip",
       limited: "Kèk lis montre sèlman yon pati. Sèvi ak Chaje plis nan seksyon an pou wè rès la.",
@@ -59,18 +63,6 @@ export function ht(set: WordSet): Words {
         title: "Bon travay, semèn sa a.",
         deck: "Angajman ou, plan tout moun ak sa pou ou konnen.",
       },
-      team: {
-        title: "Yon plas nan ekip la.",
-        deck: "Gen plas pou chak moun isit la, menm lè plan yo chanje.",
-      },
-      people: {
-        title: "Moun, ansanm.",
-        deck: "Kominote ou ak ekip li rann posib yo.",
-      },
-      commitments: {
-        title: "Angajman ki klè.",
-        deck: "Gade sa ki kouvri, sa ki lib ak sa k ap tann repons.",
-      },
       mine: {
         title: "Pati pa ou.",
         deck: "Sa ou aksepte, ak sa ou bezwen pou ou pare.",
@@ -79,19 +71,9 @@ export function ht(set: WordSet): Words {
         title: "Tan pou lavi.",
         deck: "Fè ekip ou konnen lè ou pa la.",
       },
-      tasks: {
-        title: "Ti bagay yo konte.",
-        deck: "Travay ak reyinyon tout moun, chak ak pwochen etap li.",
-      },
     },
     actions: {
-      team: "Kreye yon ekip",
-      invite: "Envite yon moun",
-      commitment: "Ajoute yon angajman",
       timeOff: "Planifye jou konje",
-      task: "Ajoute yon travay",
-      meeting: "Planifye yon reyinyon",
-      announcement: "Pataje yon anons",
     },
     week: {
       comingUp: "Sa k ap vini",
@@ -191,6 +173,20 @@ export function ht(set: WordSet): Words {
       saved: "Anrejistre.",
       updated: "Mete ajou.",
       failed: "Chanjman an pa t anrejistre. Tanpri eseye ankò.",
+    },
+    visits: {
+      title: "Vizit lakay",
+      count: (count) => `${count} vizit, toujou de pa de`,
+      notSaved: "Repons ou pa anrejistre. Eseye ankò.",
+      on: (street) => `Yon vizit nan ${street}`,
+      nearby: "yon ri ki pre",
+      partner: (name) => `Avèk ${name}. Kowòdonatè ou gen fèy vizit la.`,
+      go: "M ap ale",
+      cannot: "Mwen pa ka ale",
+      going: "Ou prale",
+      notGoing: "Ou pa ka ale",
+      cannotAfterAll: "Finalman mwen pa ka ale",
+      canAfterAll: "Finalman mwen ka ale",
     },
     urgent: {
       label: "Rele an premye",

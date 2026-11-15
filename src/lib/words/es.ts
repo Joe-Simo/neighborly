@@ -27,7 +27,6 @@ export function es(set: WordSet): Words {
   const t = terms[set];
   return {
     locale: "es",
-    dates: "es-US",
     terms: t,
     menu: {
       week: "Esta semana",
@@ -37,6 +36,11 @@ export function es(set: WordSet): Words {
       mine: "Mis compromisos",
       "time-off": "Días libres",
       tasks: "Tareas y reuniones",
+      "help-line": "Línea de ayuda",
+      neighbors: "Vecinos",
+      treasury: "Tesorería",
+      reports: "Informes",
+      visits: set === "vincentian" ? "Visitas Domiciliarias" : "Visitas a casa",
     },
     shell: {
       menu: "Menú",
@@ -49,6 +53,7 @@ export function es(set: WordSet): Words {
       skip: "Ir a tu espacio",
       signOut: "Salir",
       language: "Idioma",
+      typedStays: "Lo que escriben las personas queda como lo escribieron.",
       member: "Miembro",
       team: "Equipo",
       limited: "Algunas listas muestran solo una parte. Usa Cargar más en la sección correspondiente para ver el resto.",
@@ -58,18 +63,6 @@ export function es(set: WordSet): Words {
         title: "Buen trabajo, esta semana.",
         deck: "Tus compromisos, los planes de todos y lo que hay que saber.",
       },
-      team: {
-        title: "Un lugar en el equipo.",
-        deck: "Aquí hay lugar para cada persona, aunque cambien sus planes.",
-      },
-      people: {
-        title: "Personas, juntas.",
-        deck: "Tu comunidad y los equipos que hace posibles.",
-      },
-      commitments: {
-        title: "Compromisos claros.",
-        deck: "Mira qué está cubierto, qué está libre y qué espera respuesta.",
-      },
       mine: {
         title: "Tu parte.",
         deck: "Lo que has aceptado, con lo necesario para llegar con calma.",
@@ -78,19 +71,9 @@ export function es(set: WordSet): Words {
         title: "Tiempo para la vida.",
         deck: "Avisa a tu equipo cuando vayas a estar fuera.",
       },
-      tasks: {
-        title: "Lo pequeño importa.",
-        deck: "Tareas y reuniones de todos, cada una con su próximo paso.",
-      },
     },
     actions: {
-      team: "Crear un equipo",
-      invite: "Invitar a alguien",
-      commitment: "Agregar un compromiso",
       timeOff: "Planear días libres",
-      task: "Agregar una tarea",
-      meeting: "Planear una reunión",
-      announcement: "Compartir un aviso",
     },
     week: {
       comingUp: "Lo que viene",
@@ -195,6 +178,20 @@ export function es(set: WordSet): Words {
       saved: "Guardado.",
       updated: "Actualizado.",
       failed: "No se pudo guardar el cambio. Inténtalo de nuevo.",
+    },
+    visits: {
+      title: set === "vincentian" ? "Visitas Domiciliarias" : "Visitas a casa",
+      count: (count) => `${count} ${count === 1 ? "visita" : "visitas"}, siempre de dos en dos`,
+      notSaved: "No se guardó tu respuesta. Inténtalo de nuevo.",
+      on: (street) => `Una visita en ${street}`,
+      nearby: "una calle cercana",
+      partner: (name) => `Con ${name}. Tu coordinador tiene la hoja de la visita.`,
+      go: "Voy",
+      cannot: "No puedo ir",
+      going: "Vas a ir",
+      notGoing: "No puedes ir",
+      cannotAfterAll: "Al final no puedo ir",
+      canAfterAll: "Al final sí puedo ir",
     },
     urgent: {
       label: "Llamar primero",

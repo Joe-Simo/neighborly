@@ -1,4 +1,4 @@
-import type { Terms, WordSet } from "./sets";
+import type { Language, Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
   general: {
@@ -25,9 +25,7 @@ const terms: Record<WordSet, Terms> = {
 export function en(set: WordSet) {
   const t = terms[set];
   return {
-    locale: "en",
-    /** The locale dates and times are written in. */
-    dates: "en-US",
+    locale: "en" as Language,
     terms: t,
     menu: {
       week: "This week",
@@ -37,6 +35,11 @@ export function en(set: WordSet) {
       mine: "My commitments",
       "time-off": "Time off",
       tasks: "Tasks & meetings",
+      "help-line": "Help line",
+      neighbors: "Neighbors",
+      treasury: "Treasury",
+      reports: "Reports",
+      visits: "Home visits",
     },
     shell: {
       menu: "Menu",
@@ -49,6 +52,7 @@ export function en(set: WordSet) {
       skip: "Skip to your workspace",
       signOut: "Sign out",
       language: "Language",
+      typedStays: "Words people typed stay as they wrote them.",
       member: "Member",
       team: "Team",
       limited: "Some overview lists show a limited set of records. Use Load more in the matching section to see additional records.",
@@ -58,18 +62,6 @@ export function en(set: WordSet) {
         title: "Good work, this week.",
         deck: "Your commitments, shared plans and the things to know.",
       },
-      team: {
-        title: "A place on the team.",
-        deck: "People belong here, even when their plans change.",
-      },
-      people: {
-        title: "People, together.",
-        deck: "Your community and the teams they make possible.",
-      },
-      commitments: {
-        title: "Clear commitments.",
-        deck: "See what’s covered, what’s open and what’s awaiting a reply.",
-      },
       mine: {
         title: "Your part in it.",
         deck: "What you’ve accepted, with the preparation to feel ready.",
@@ -78,19 +70,9 @@ export function en(set: WordSet) {
         title: "Room for life.",
         deck: "Keep your team informed while you take time away.",
       },
-      tasks: {
-        title: "The little things matter.",
-        deck: "Shared tasks and meetings, each with a clear next step.",
-      },
     },
     actions: {
-      team: "Create a team",
-      invite: "Invite someone",
-      commitment: "Add a commitment",
       timeOff: "Plan time off",
-      task: "Add a task",
-      meeting: "Plan a meeting",
-      announcement: "Share an announcement",
     },
     week: {
       comingUp: "Coming up",
@@ -192,6 +174,20 @@ export function en(set: WordSet) {
       saved: "Saved.",
       updated: "Updated.",
       failed: "That change couldn’t be saved. Please try again.",
+    },
+    visits: {
+      title: "Home visits",
+      count: (count: number) => `${count} ${count === 1 ? "visit" : "visits"}, always with a partner`,
+      notSaved: "Your answer was not saved. Try again.",
+      on: (street: string) => `A visit on ${street}`,
+      nearby: "a street nearby",
+      partner: (name: string) => `With ${name}. Your coordinator has the visit sheet.`,
+      go: "I’ll go",
+      cannot: "I can’t go",
+      going: "You’re going",
+      notGoing: "You can’t go",
+      cannotAfterAll: "I can’t go after all",
+      canAfterAll: "I can go after all",
     },
     /** Why the assistant put a call first. A person can always move it. */
     urgent: {

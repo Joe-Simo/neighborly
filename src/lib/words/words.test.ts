@@ -34,7 +34,7 @@ describe("words", () => {
     const english = new Map(phrases(words("en")));
     for (const language of ["es", "ht"] as const) {
       const same = phrases(words(language))
-        .filter(([at, phrase]) => at !== "locale" && at !== "dates" && english.get(at) === phrase)
+        .filter(([at, phrase]) => at !== "locale" && english.get(at) === phrase)
         .map(([at]) => at);
       expect(same, language).toEqual([]);
     }
