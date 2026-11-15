@@ -65,6 +65,22 @@ export function es(set: WordSet): Words {
       limited: "Algunas listas muestran solo una parte. Usa Cargar más en la sección correspondiente para ver el resto.",
     },
     headings: {
+      team: {
+        title: "Un lugar en el equipo.",
+        deck: "Aquí cada persona tiene su lugar, aunque sus planes cambien.",
+      },
+      people: {
+        title: "Personas, juntas.",
+        deck: "Tu comunidad y los equipos que hace posibles.",
+      },
+      commitments: {
+        title: "Compromisos claros.",
+        deck: "Mira lo que está cubierto, lo que está libre y lo que espera respuesta.",
+      },
+      tasks: {
+        title: "Lo pequeño importa.",
+        deck: "Tareas y reuniones compartidas, cada una con su siguiente paso.",
+      },
       week: {
         title: "Buen trabajo, esta semana.",
         deck: "Tus compromisos, los planes de todos y lo que hay que saber.",
@@ -82,6 +98,7 @@ export function es(set: WordSet): Words {
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
       announcementSees: `Todos en ${t.group === "grupo" ? "el grupo" : "la conferencia"} lo ven en Esta semana.`,
+      announcementForm: { title: "Título", message: "Mensaje", save: "Guardar", saving: "Guardando…" },
     },
     dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora" },
     week: {
@@ -107,6 +124,10 @@ export function es(set: WordSet): Words {
         "Los compromisos que aceptes aparecerán aquí con todo lo necesario para prepararte.",
     },
     commitments: {
+      filterLabel: "Filtrar por equipo",
+      allTeams: "Todos los equipos",
+      noneForTeamTitle: "Este equipo no tiene fechas próximas.",
+      noneForTeamDetail: "Elige otro equipo o mira todos los equipos para ver los demás compromisos.",
       emptyTitle: "No hay compromisos próximos.",
       emptyDetail:
         "Los compromisos nuevos aparecerán aquí con su fecha, persona y preparación.",
@@ -279,7 +300,6 @@ export function es(set: WordSet): Words {
       makeNew: "Crear una dirección nueva",
       makeNewTitle: "¿Crear una dirección nueva?",
       makeNewDetail: "La dirección anterior deja de funcionar de inmediato. Tendrás que añadir la nueva a tu calendario otra vez.",
-      keep: "Conservar esta dirección",
       get: "Obtener mi dirección de calendario",
       finding: "Buscando tu calendario",
       failed: "No se pudo crear tu dirección de calendario. No ha cambiado nada; revisa tu conexión e inténtalo de nuevo.",

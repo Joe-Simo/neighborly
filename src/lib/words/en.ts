@@ -64,6 +64,22 @@ export function en(set: WordSet) {
       limited: "Some overview lists show a limited set of records. Use Load more in the matching section to see additional records.",
     },
     headings: {
+      team: {
+        title: "A place on the team.",
+        deck: "People belong here, even when their plans change.",
+      },
+      people: {
+        title: "People, together.",
+        deck: "Your community and the teams they make possible.",
+      },
+      commitments: {
+        title: "Clear commitments.",
+        deck: "See what’s covered, what’s open and what’s awaiting a reply.",
+      },
+      tasks: {
+        title: "The little things matter.",
+        deck: "Shared tasks and meetings, each with a clear next step.",
+      },
       week: {
         title: "Good work, this week.",
         deck: "Your commitments, shared plans and the things to know.",
@@ -81,6 +97,7 @@ export function en(set: WordSet) {
       timeOff: "Plan time off",
       announcement: "Share an announcement",
       announcementSees: `Everyone in the ${t.group} sees this on This week.`,
+      announcementForm: { title: "Title", message: "Message", save: "Save", saving: "Saving…" },
     },
     dateField: { choose: "Choose a day", done: "Done", chooseTime: "Choose a time" },
     week: {
@@ -106,6 +123,10 @@ export function en(set: WordSet) {
         "Commitments you accept will appear here with everything you need to prepare.",
     },
     commitments: {
+      filterLabel: "Filter by team",
+      allTeams: "All teams",
+      noneForTeamTitle: "No upcoming dates for this team.",
+      noneForTeamDetail: `Choose another team or view all teams to see the rest of your ${t.group}’s commitments.`,
       emptyTitle: "No upcoming commitments.",
       emptyDetail:
         "New commitments will appear here with their date, person and preparation.",
@@ -281,7 +302,6 @@ export function en(set: WordSet) {
       makeNew: "Make a new address",
       makeNewTitle: "Make a new address?",
       makeNewDetail: "The old address stops working straight away. You will need to add the new one to your calendar again.",
-      keep: "Keep this address",
       get: "Get my calendar address",
       finding: "Finding your calendar",
       failed: "Your calendar address could not be made. Nothing has changed; check your connection, then try again.",
