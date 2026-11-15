@@ -116,7 +116,17 @@ describe("the year's counts for the sample conference", () => {
     const theirs = new Set(received.map((request) => request._id));
     const paidFor = (own: boolean) => data.ledger.filter((entry) => entry.kind === "expense" && entry.requestId && inYearDay(entry.date) && theirs.has(entry.requestId) === own).reduce((sum, entry) => sum + entry.amount, 0);
     expect(paidFor(true) + paidFor(false)).toBe(hand.helpPaid);
+    // Marked paid, yet the payment falls after the year: counted here as paid later, and in help paid next year.
+    const paidInYear = (requestId: string) => data.ledger.filter((entry) => entry.kind === "expense" && entry.requestId === requestId && inYearDay(entry.date)).reduce((sum, entry) => sum + entry.amount, 0);
+    const later = received.filter((request) => request.status === "paid" && paidInYear(request._id) < (request.amountApproved ?? 0));
+    const paidLater = { requests: later.filter((request) => paidInYear(request._id) === 0).length, amount: later.reduce((sum, request) => sum + (request.amountApproved ?? 0) - paidInYear(request._id), 0) };
+    expect(report.kinds.reduce((paid, line) => paid + line.requestsPaid, 0)).toBe(count("paid") - paidLater.requests + data.ledger.filter((entry) => entry.kind === "expense" && entry.requestId && inYearDay(entry.date) && !theirs.has(entry.requestId)).length);
+    expect(report.requests.amountApproved).toBe(report.requests.paidTowardThese + paidLater.amount + received.reduce((sum, request) => sum + (request.status === "approved" ? request.amountApproved ?? 0 : 0), 0));
+    expect(paidLater).toEqual({ requests: 4, amount: 54000 });
+    const few = received.slice(0, 3);
+    expect(await as(owner.userId).query(api.reports.requestHomes, { churchId, requestIds: few.map((request) => request._id) })).toEqual(few.map((request) => ({ requestId: request._id, neighborId: request.neighborId })));
     expect(report.requests).toEqual({
+      paidLater,
       paidTowardThese: paidFor(true),
       paidTowardEarlier: paidFor(false),
       received: received.length,
@@ -230,6 +240,7 @@ describe("the year's counts for the sample conference", () => {
     const { t, as, churchId, member } = await sample();
     await expect(as(member.userId).query(api.reports.year, { churchId, year: 2026 })).rejects.toThrow(refused);
     await expect(as(member.userId).query(api.reports.years, { churchId })).rejects.toThrow(refused);
+    await expect(as(member.userId).query(api.reports.requestHomes, { churchId, requestIds: [] })).rejects.toThrow(refused);
     await expect(t.query(api.reports.year, { churchId, year: 2026 })).rejects.toThrow("Sign in required.");
     const stranger = await t.run(async (ctx) => {
       const userId = await ctx.db.insert("users", {});

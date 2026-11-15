@@ -1,13 +1,14 @@
 "use client";
 
-import { Component, useState, type ReactNode } from "react";
-import { useQuery } from "convex/react";
+import { Component, useCallback, useLayoutEffect, useState, type ReactNode } from "react";
+import { useAction, useQuery } from "convex/react";
 import { DateTime } from "luxon";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { HelpRoom } from "@/components/workspace/help-line/room";
 import { csvFileName, reportCsv } from "@/components/workspace/reports/lines";
+import { YearCheck, type YearCheckResult } from "@/components/workspace/reports/year-check";
 import {
   ReportLoading,
   QuarterSwitch,
@@ -37,12 +38,14 @@ class ReportBoundary extends Component<{ children: ReactNode }, { failed: boolea
 }
 
 function Report() {
-  const { data, now } = useWorkspace();
+  const { data, now, setHeadAction } = useWorkspace();
   const churchId = data.church.id;
   const onRecord = useQuery(api.reports.years, { churchId });
   const [chosen, setChosen] = useState<number>();
   const [quarter, setQuarter] = useState<Quarter>();
   const [done, setDone] = useState("");
+  const checkYear = useAction(api.drafts.checkYear);
+  const [check, setCheck] = useState<{ year: number; result?: YearCheckResult; failed?: boolean }>();
 
   // The yearly report is written in the fall, so until January the year that just closed opens first.
   const today = DateTime.fromMillis(now, { zone: data.church.timeZone });
@@ -55,6 +58,30 @@ function Report() {
   // The year last shown stays on screen while the next one is added up.
   const [shown, setShown] = useState(report);
   if (report && report !== shown) setShown(report);
+
+  const found = check?.year === year ? check : undefined;
+  const flaggedRequests = found?.result?.flags.flatMap(({ record }) => (record.table === "assistanceRequests" ? [record.id] : [])) ?? [];
+  const homes = useQuery(api.reports.requestHomes, flaggedRequests.length ? { churchId, requestIds: flaggedRequests } : "skip");
+
+  const checking = Boolean(found && !found.result && !found.failed);
+  const lookOver = useCallback(async () => {
+    if (year === undefined) return;
+    setDone("");
+    setCheck({ year });
+    try {
+      setCheck({ year, result: await checkYear({ churchId, year }) });
+    } catch {
+      setCheck({ year, failed: true });
+    }
+  }, [checkYear, churchId, year]);
+  // The check reads a whole year, so it steps aside while a quarter is shown.
+  const canCheck = year !== undefined && !quarter && Boolean(shown);
+  useLayoutEffect(() => {
+    if (!canCheck) return;
+    // Filled until its sheet is open; then the sheet is the thing to read.
+    setHeadAction({ label: checking ? "Checking" : "Check before you send", run: () => void (checking || lookOver()), quiet: checking || Boolean(found?.result) });
+    return () => setHeadAction(null);
+  }, [canCheck, checking, found?.result, lookOver, setHeadAction]);
 
   if (!onRecord || !shown || year === undefined) return <ReportLoading />;
 
@@ -93,6 +120,23 @@ function Report() {
             }}
           />
         </div>
+      }
+      sheet={
+        found?.failed ? (
+          <div className="live-error report-error" role="alert">
+            <p>The check couldn’t run just now. The report itself is not affected.</p>
+            <p className="live-error-recovery">Try again in a minute. You can still print or save the year.</p>
+          </div>
+        ) : (
+          found?.result &&
+          !quarter && (
+            <YearCheck
+              result={found.result}
+              homes={new Map(homes?.map((home) => [home.requestId, home.neighborId]))}
+              onClose={() => setCheck(undefined)}
+            />
+          )
+        )
       }
       onPrint={() => window.print()}
       onSpreadsheet={() => saveSpreadsheet(shown)}
