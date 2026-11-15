@@ -331,6 +331,8 @@
 /* Gifts in a deposit: each one a row that is in or out. */
 .treasury-gifts {
   display: grid;
+  grid-auto-rows: max-content;
+  flex: none;
   max-height: 40vh;
   overflow-y: auto;
   border-top: 1px solid #d9ddce;

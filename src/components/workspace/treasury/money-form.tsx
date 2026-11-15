@@ -1,11 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import {
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -55,6 +50,8 @@ export function MoneyForm({
   today,
   start,
   own,
+  payees,
+  onOut,
   onRetire,
   onSubmit,
   onCancel,
@@ -63,11 +60,18 @@ export function MoneyForm({
   start: IncomeSource;
   /** The conference's own kinds; undefined until the backend offers them, and then none can be added. */
   own?: OwnKind[];
+  /** Who the conference pays, offered as suggestions under "Paid to"; a typed name is always allowed. */
+  payees?: string[];
+  /** Tells the sheet whether its title should name money out. */
+  onOut: (out: boolean) => void;
   onRetire: (id: string) => void;
   onSubmit: (money: Money) => Promise<Refusal>;
   onCancel: () => void;
 }) {
-  const [choice, setChoice] = useState<Choice>({ direction: "in", kind: start });
+  const [choice, setChoice] = useState<Choice>({
+    direction: "in",
+    kind: start,
+  });
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today);
   const [name, setName] = useState("");
@@ -79,22 +83,15 @@ export function MoneyForm({
   const out = choice.direction === "out";
   const gift = out && choice.kind === "twinning";
   return (
-    <>
-      <DialogHeader>
-        <DialogTitle>{out ? "Record money out" : "Record money"}</DialogTitle>
-        <DialogDescription>
-          {out
-            ? "A purchase, dues or a fee the conference paid."
-            : "A collection, a gift, or what the conference holds today."}
-        </DialogDescription>
-      </DialogHeader>
     <form
       className="live-form"
       onSubmit={async (event) => {
         event.preventDefault();
         const cents = parseCents(amount);
         if (cents === null)
-          return setError("Enter the amount in dollars and cents, like 640.00.");
+          return setError(
+            "Enter the amount in dollars and cents, like 640.00.",
+          );
         setError("");
         setSaving(true);
         const refusal = await onSubmit({
@@ -129,7 +126,10 @@ export function MoneyForm({
               : key === "in:new" || key === "out:new"
                 ? { direction: key === "in:new" ? "in" : "out", kind: "new" }
                 : choices.find((candidate) => keyOf(candidate) === key);
-            if (chosen) setChoice(chosen);
+            if (chosen) {
+              setChoice(chosen);
+              onOut(chosen.direction === "out");
+            }
           }}
         >
           <optgroup label="Money in">
@@ -187,6 +187,7 @@ export function MoneyForm({
           onClick={() => {
             onRetire(choice.id);
             setChoice({ direction: "in", kind: start });
+            onOut(false);
           }}
         >
           Stop offering this kind
@@ -215,15 +216,25 @@ export function MoneyForm({
           />
         </LiveField>
       </div>
-      <LiveField label={gift ? "To which conference" : out ? "Paid to" : "From"}>
+      <LiveField
+        label={gift ? "To which conference" : out ? "Paid to" : "From"}
+      >
         <Input
           name="name"
+          list={out && !gift && payees?.length ? "treasury-payees" : undefined}
           maxLength={120}
           placeholder={out ? "" : "The parish, the Walk, an anonymous gift"}
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
         />
+        {out && !gift && payees && payees.length > 0 && (
+          <datalist id="treasury-payees">
+            {payees.map((payee) => (
+              <option key={payee} value={payee} />
+            ))}
+          </datalist>
+        )}
       </LiveField>
       {out && (
         <LiveField label="Check number (optional)">
@@ -250,6 +261,5 @@ export function MoneyForm({
         {gift ? "Record gift" : out ? "Record money out" : "Record money in"}
       </FormActions>
     </form>
-    </>
   );
 }

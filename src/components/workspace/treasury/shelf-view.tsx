@@ -6,13 +6,7 @@ import { ArrowLeft, CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import { Input } from "@/components/ui/input";
 import { LiveField } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -24,11 +18,17 @@ import {
 } from "@/components/workspace/treasury/form-parts";
 import { dayLabel, type Shelf } from "@/components/workspace/treasury/labels";
 
-const many = (n: number) => `${n} ${Math.abs(n) === 1 ? "voucher" : "vouchers"}`;
+const many = (n: number) =>
+  `${n} ${Math.abs(n) === 1 ? "voucher" : "vouchers"}`;
 const art = {
   backgroundImage: "url(/assets/painted-world/meal.webp)",
 };
-export type Vouchers = { item: string; change: number; date: string; note: string };
+export type Vouchers = {
+  item: string;
+  change: number;
+  date: string;
+  note: string;
+};
 
 function VoucherForm({
   items,
@@ -106,11 +106,17 @@ function VoucherForm({
           />
         </LiveField>
       </div>
-      <LiveField label={down ? "Why the count is going down" : "Note (optional)"}>
+      <LiveField
+        label={down ? "Why the count is going down" : "Note (optional)"}
+      >
         <Input
           name="note"
           maxLength={200}
-          placeholder={down ? "Counted by hand, two were missing" : "From the thrift store, November"}
+          placeholder={
+            down
+              ? "Counted by hand, two were missing"
+              : "From the thrift store, November"
+          }
           value={note}
           onChange={(event) => setNote(event.target.value)}
         />
@@ -159,9 +165,15 @@ export function ShelfView({
               <thead>
                 <tr>
                   <th scope="col">Voucher</th>
-                  <th scope="col" className="help-money">Received</th>
-                  <th scope="col" className="help-money">Given</th>
-                  <th scope="col" className="help-money">On hand</th>
+                  <th scope="col" className="help-money">
+                    Received
+                  </th>
+                  <th scope="col" className="help-money">
+                    Given
+                  </th>
+                  <th scope="col" className="help-money">
+                    On hand
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -176,13 +188,13 @@ export function ShelfView({
                         </small>
                       )}
                     </td>
-                    <td className="help-money" data-label="Received">{row.received}</td>
-                    <td className="help-money" data-label="Given">{row.given}</td>
-                    <td
-                      className="help-money"
-                      data-label="On hand"
-                      data-total
-                    >
+                    <td className="help-money" data-label="Received">
+                      {row.received}
+                    </td>
+                    <td className="help-money" data-label="Given">
+                      {row.given}
+                    </td>
+                    <td className="help-money" data-label="On hand" data-total>
                       {row.onHand === 0 && <small>none left</small>}
                       {row.onHand}
                     </td>
@@ -191,10 +203,15 @@ export function ShelfView({
               </tbody>
             </table>
           </div>
-          <section className="treasury-lately treasury-moves" aria-labelledby="treasury-moves-title">
+          <section
+            className="treasury-lately treasury-moves"
+            aria-labelledby="treasury-moves-title"
+          >
             <div className="live-section-head">
               <h2 id="treasury-moves-title">Lately</h2>
-              <span className="live-count">The newest {shelf.lately.length}</span>
+              <span className="live-count">
+                The newest {shelf.lately.length}
+              </span>
             </div>
             <ul className="treasury-lines">
               {shelf.lately.map((row) => (
@@ -205,7 +222,8 @@ export function ShelfView({
                     {many(Math.abs(row.change))}, {row.item}
                   </span>
                   <span>
-                    {row.note || (row.forRequest ? "Given on a request" : "Received")}
+                    {row.note ||
+                      (row.forRequest ? "Given on a request" : "Received")}
                   </span>
                 </li>
               ))}
@@ -271,38 +289,37 @@ export function ShelfRoom({
         onBack={onBack}
         onAdd={() => setAdding(true)}
       />
-      <Dialog open={adding} onOpenChange={setAdding}>
-        <DialogContent className="live-dialog treasury-dialog">
-          <DialogHeader>
-            <DialogTitle>Record vouchers</DialogTitle>
-            <DialogDescription>
-              Vouchers the thrift store gave you, or a correction after
-              counting them by hand.
-            </DialogDescription>
-          </DialogHeader>
-          <VoucherForm
-            items={shelf.items.map((row) => row.item)}
-            today={today}
-            onCancel={() => setAdding(false)}
-            onSubmit={async (vouchers) => {
-              try {
-                await recordVouchers({ churchId, ...vouchers });
-              } catch (cause) {
-                return cause instanceof Error
-                  ? cause.message.replace(/^.*?Uncaught Error:\s*/, "").split("\n")[0]
-                  : "That couldn’t be recorded. Please try again.";
-              }
-              setAdding(false);
-              setDone(
-                vouchers.change > 0
-                  ? `${many(vouchers.change)} for ${vouchers.item.trim()} are on the shelf.`
-                  : `The count for ${vouchers.item.trim()} is corrected.`,
-              );
-              return null;
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+      <LiveDialog
+        open={adding}
+        onClose={() => setAdding(false)}
+        className="treasury-dialog"
+        title="Record vouchers"
+        description="Vouchers the thrift store gave you, or a correction after counting them by hand."
+      >
+        <VoucherForm
+          items={shelf.items.map((row) => row.item)}
+          today={today}
+          onCancel={() => setAdding(false)}
+          onSubmit={async (vouchers) => {
+            try {
+              await recordVouchers({ churchId, ...vouchers });
+            } catch (cause) {
+              return cause instanceof Error
+                ? cause.message
+                    .replace(/^.*?Uncaught Error:\s*/, "")
+                    .split("\n")[0]
+                : "That couldn’t be recorded. Please try again.";
+            }
+            setAdding(false);
+            setDone(
+              vouchers.change > 0
+                ? `${many(vouchers.change)} for ${vouchers.item.trim()} are on the shelf.`
+                : `The count for ${vouchers.item.trim()} is corrected.`,
+            );
+            return null;
+          }}
+        />
+      </LiveDialog>
     </>
   );
 }

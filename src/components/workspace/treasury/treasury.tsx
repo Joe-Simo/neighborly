@@ -1,22 +1,10 @@
 "use client";
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueries, useQuery } from "convex/react";
 import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { LiveDialog } from "@/components/workspace/live-dialog";
 import { useWorkspace } from "@/components/workspace/context";
 import {
   isUntouched,
@@ -61,7 +49,10 @@ export function TreasurySection() {
     api.treasury.ledger,
     allowed ? { churchId, month } : "skip",
   );
-  const payable = useQuery(api.treasury.payable, allowed ? { churchId } : "skip");
+  const payable = useQuery(
+    api.treasury.payable,
+    allowed ? { churchId } : "skip",
+  );
   // Asked for in a way that cannot fail the room: whatever the backend does not answer yet stays hidden.
   const asked = useMemo(() => {
     const all: Parameters<typeof useQueries>[0] = {
@@ -69,6 +60,7 @@ export function TreasurySection() {
       gifts: { query: api.treasury.undeposited, args: { churchId } },
       shelf: { query: api.treasury.voucherShelf, args: { churchId } },
       kinds: { query: api.treasury.kinds, args: { churchId } },
+      payees: { query: api.importExport.payees, args: { churchId } },
     };
     return allowed ? all : {};
   }, [allowed, churchId]);
@@ -77,6 +69,8 @@ export function TreasurySection() {
   const gifts = answered<Gift[]>(extra.gifts);
   const shelf = answered<Shelf>(extra.shelf);
   const kinds = answered<Kind[]>(extra.kinds);
+  const payees = answered<{ name: string }[]>(extra.payees);
+  const [moneyOut, setMoneyOut] = useState(false);
   const recordDeposit = useMutation(api.treasury.recordDeposit);
   const addKind = useMutation(api.treasury.addKind);
   const retireKind = useMutation(api.treasury.retireKind);
@@ -96,6 +90,7 @@ export function TreasurySection() {
   }, [done]);
   const recordMoney = () => {
     setDone("");
+    setMoneyOut(false);
     setOpen({ is: "money" });
   };
   // The month last shown stays on screen while the next one loads.
@@ -112,6 +107,7 @@ export function TreasurySection() {
       plus: true,
       run: () => {
         setDone("");
+        setMoneyOut(false);
         setOpen({ is: "money" });
       },
       quiet,
@@ -156,6 +152,37 @@ export function TreasurySection() {
   };
   const empty = isUntouched(shown);
 
+  const lines = open?.is === "entry" ? entryLines(open.entry) : null;
+  const sheet =
+    open?.is === "payment"
+      ? {
+          title: "Record a payment",
+          description: `${open.request.summary}. Paid to ${open.request.payeeName}, never to the neighbor.`,
+        }
+      : open?.is === "money"
+        ? moneyOut
+          ? {
+              title: "Record money out",
+              description: "A purchase, dues or a fee the conference paid.",
+            }
+          : {
+              title: "Record money",
+              description:
+                "A collection, a gift, or what the conference holds today.",
+            }
+        : open?.is === "deposit"
+          ? {
+              title: "Record a deposit",
+              description:
+                "The gifts you carried to the bank together. Nothing about them changes; they become one line to match.",
+            }
+          : open?.is === "entry" && lines
+            ? {
+                title: lines.title,
+                description: `${dayLabel(open.entry.date)} · ${lines.detail}`,
+              }
+            : null;
+
   return (
     <>
       {done && (
@@ -184,7 +211,10 @@ export function TreasurySection() {
           }
         }
         onDeposit={() => show({ is: "deposit" })}
-        shelf={shelf?.items.reduce((sum, row) => sum + Math.max(row.onHand, 0), 0)}
+        shelf={shelf?.items.reduce(
+          (sum, row) => sum + Math.max(row.onHand, 0),
+          0,
+        )}
         onShelf={() => {
           setDone("");
           setAtShelf(true);
@@ -194,136 +224,144 @@ export function TreasurySection() {
           setAtBank(true);
         }}
       />
-      <Dialog
+      <LiveDialog
         open={open !== null}
-        onOpenChange={(value) => {
-          if (!value) setOpen(null);
-        }}
+        onClose={() => setOpen(null)}
+        className="treasury-dialog"
+        title={sheet?.title ?? ""}
+        description={sheet?.description}
       >
-        <DialogContent className="live-dialog treasury-dialog">
-          {open?.is === "payment" && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Record a payment</DialogTitle>
-                <DialogDescription>
-                  {open.request.summary}. Paid to {open.request.payeeName},
-                  never to the neighbor.
-                </DialogDescription>
-              </DialogHeader>
-              <PaymentForm
-                key={open.request.requestId}
-                request={open.request}
-                today={shown.today}
-                onCancel={() => setOpen(null)}
-                onSubmit={({ checkNumber, ...payment }) =>
-                  settle(
-                    () =>
-                      recordPayment({
+        {open?.is === "payment" && (
+          <>
+            <PaymentForm
+              key={open.request.requestId}
+              request={open.request}
+              today={shown.today}
+              onCancel={() => setOpen(null)}
+              onSubmit={({ checkNumber, ...payment }) =>
+                settle(
+                  () =>
+                    recordPayment({
+                      churchId,
+                      requestId: open.request.requestId,
+                      ...payment,
+                      ...(checkNumber.trim() && { checkNumber }),
+                    }),
+                  `${formatCents(payment.amount)} to ${open.request.payeeName} is recorded, and the balance is up to date.`,
+                  payment.date,
+                )
+              }
+            />
+          </>
+        )}
+        {open?.is === "money" && (
+          <>
+            <MoneyForm
+              today={shown.today}
+              start={empty ? "opening" : "collection"}
+              onCancel={() => setOpen(null)}
+              payees={payees?.map((payee) => payee.name)}
+              onOut={setMoneyOut}
+              own={kinds?.map((kind) => ({
+                id: kind.id,
+                name: kind.name,
+                direction: kind.direction === "income" ? "in" : "out",
+              }))}
+              onRetire={(id) => {
+                const kind = kinds?.find((row) => row.id === id);
+                if (kind) void retireKind({ churchId, kindId: kind.id });
+              }}
+              onSubmit={({ name, memo, amount, date, checkNumber, ...what }) =>
+                settle(
+                  async () => {
+                    const sent = checkNumber.trim() && { checkNumber };
+                    if (what.kind === "own" || what.kind === "new") {
+                      const kindId =
+                        what.kind === "new"
+                          ? await addKind({
+                              churchId,
+                              direction:
+                                what.direction === "in" ? "income" : "expense",
+                              name: what.kindName,
+                            })
+                          : kinds?.find((row) => row.id === what.id)?.id;
+                      if (!kindId)
+                        throw new Error(
+                          "This kind is no longer offered. Choose another.",
+                        );
+                      return recordOwnKind({
                         churchId,
-                        requestId: open.request.requestId,
-                        ...payment,
-                        ...(checkNumber.trim() && { checkNumber }),
-                      }),
-                    `${formatCents(payment.amount)} to ${open.request.payeeName} is recorded, and the balance is up to date.`,
-                    payment.date,
-                  )
-                }
-              />
-            </>
-          )}
-          {open?.is === "money" && (
-            <>
-              <MoneyForm
-                today={shown.today}
-                start={empty ? "opening" : "collection"}
-                onCancel={() => setOpen(null)}
-                own={kinds?.map((kind) => ({
-                  id: kind.id,
-                  name: kind.name,
-                  direction: kind.direction === "income" ? "in" : "out",
-                }))}
-                onRetire={(id) => {
-                  const kind = kinds?.find((row) => row.id === id);
-                  if (kind) void retireKind({ churchId, kindId: kind.id });
-                }}
-                onSubmit={({ name, memo, amount, date, checkNumber, ...what }) =>
-                  settle(
-                    async () => {
-                      const sent = checkNumber.trim() && { checkNumber };
-                      if (what.kind === "own" || what.kind === "new") {
-                        const kindId =
-                          what.kind === "new"
-                            ? await addKind({
-                                churchId,
-                                direction: what.direction === "in" ? "income" : "expense",
-                                name: what.kindName,
-                              })
-                            : kinds?.find((row) => row.id === what.id)?.id;
-                        if (!kindId) throw new Error("This kind is no longer offered. Choose another.");
-                        return recordOwnKind({ churchId, kindId, name, amount, date, memo, ...sent });
-                      }
-                      return what.direction === "out"
-                        ? recordSpending({ churchId, kind: what.kind, to: name, amount, date, memo, ...sent })
-                        : recordIncome({ churchId, source: what.kind, from: name, amount, date, memo });
-                    },
-                    `${formatCents(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
-                    date,
-                  )
-                }
-              />
-            </>
-          )}
-          {open?.is === "deposit" && gifts && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Record a deposit</DialogTitle>
-                <DialogDescription>
-                  The gifts you carried to the bank together. Nothing about
-                  them changes; they become one line to match.
-                </DialogDescription>
-              </DialogHeader>
-              <DepositForm
-                gifts={gifts}
-                today={shown.today}
-                onCancel={() => setOpen(null)}
-                onSubmit={(deposit, total) =>
-                  settle(
-                    () => recordDeposit({ churchId, ...deposit }),
-                    `A deposit of ${formatCents(total)} is recorded. It will wait in Match the bank until the statement shows it.`,
-                  )
-                }
-              />
-            </>
-          )}
-          {open?.is === "entry" && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{entryLines(open.entry).title}</DialogTitle>
-                <DialogDescription>
-                  {dayLabel(open.entry.date)} · {entryLines(open.entry).detail}
-                </DialogDescription>
-              </DialogHeader>
-              <EntryDetail
-                key={open.entry.id}
-                entry={open.entry}
-                onClose={() => setOpen(null)}
-                onReverse={(reason) =>
-                  settle(
-                    () =>
-                      reverseEntry({
-                        churchId,
-                        entryId: open.entry.id,
-                        reason,
-                      }),
-                    `${formatCents(open.entry.amount)} is taken back with a new entry dated today. The first entry stays in the ledger.`,
-                    shown.today,
-                  )
-                }
-              />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+                        kindId,
+                        name,
+                        amount,
+                        date,
+                        memo,
+                        ...sent,
+                      });
+                    }
+                    return what.direction === "out"
+                      ? recordSpending({
+                          churchId,
+                          kind: what.kind,
+                          to: name,
+                          amount,
+                          date,
+                          memo,
+                          ...sent,
+                        })
+                      : recordIncome({
+                          churchId,
+                          source: what.kind,
+                          from: name,
+                          amount,
+                          date,
+                          memo,
+                        });
+                  },
+                  `${formatCents(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
+                  date,
+                )
+              }
+            />
+          </>
+        )}
+        {open?.is === "deposit" && gifts && (
+          <>
+            <DepositForm
+              gifts={gifts}
+              today={shown.today}
+              onCancel={() => setOpen(null)}
+              onSubmit={(deposit, total) =>
+                settle(
+                  () => recordDeposit({ churchId, ...deposit }),
+                  `A deposit of ${formatCents(total)} is recorded. It will wait in Match the bank until the statement shows it.`,
+                )
+              }
+            />
+          </>
+        )}
+        {open?.is === "entry" && (
+          <>
+            <EntryDetail
+              key={open.entry.id}
+              entry={open.entry}
+              onClose={() => setOpen(null)}
+              onReverse={(reason) =>
+                settle(
+                  () =>
+                    reverseEntry({
+                      churchId,
+                      entryId: open.entry.id,
+                      reason,
+                    }),
+                  `${formatCents(open.entry.amount)} is taken back with a new entry dated today. The first entry stays in the ledger.`,
+                  shown.today,
+                )
+              }
+            />
+          </>
+        )}
+      </LiveDialog>
     </>
   );
 }
