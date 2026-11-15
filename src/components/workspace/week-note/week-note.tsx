@@ -146,7 +146,7 @@ export function WeekNoteView({ counts, monday, brief, onDone }: { counts: Counts
             ))}
           </ul>
           <p className="!max-w-none text-[15px]">{text.origin}</p>
-          <button type="button" className={quietLink} onClick={putAway}>
+          <button type="button" className={`${quietLink} !text-[15px]`} onClick={putAway}>
             {text.done}
           </button>
         </section>
