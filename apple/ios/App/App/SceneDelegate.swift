@@ -116,6 +116,9 @@ final class ShellViewController: CAPBridgeViewController {
         slow.backgroundColor = paper
         slow.scrollView.backgroundColor = paper
         slow.scrollView.contentInsetAdjustmentBehavior = .never
+        // The scroll bar flashes when a scroll view first appears; this page does not scroll.
+        slow.scrollView.showsVerticalScrollIndicator = false
+        slow.scrollView.showsHorizontalScrollIndicator = false
         clearTopEdge(of: slow)
         slow.alpha = 0
         let events = SlowPageEvents(
