@@ -34,7 +34,11 @@
   font-weight: 600;
   animation: paper-rise 320ms var(--paper-ease) backwards;
 }
-.volunteer-given { text-transform: capitalize; }
+.volunteer-choice .volunteer-given { text-transform: capitalize; }
+.live-app .volunteer-given[data-no] { color: var(--live-muted); font-weight: 400; }
+.volunteer-meeting .live-row-actions { gap: 6px 22px; }
+.live-app .volunteer-said { margin: 0 0 28px; }
+.volunteer-said:focus { outline: none; }
 
 /* The commitment just accepted is laid into the list like a sheet into a folder. */
 @keyframes volunteer-filed { from { background-color: var(--help-sheet, #fdfcf8); box-shadow: 0 10px 24px rgb(40 60 50 / 0.1); } }
@@ -70,8 +74,7 @@
 .volunteer-meetings { display: grid; gap: 22px; }
 .volunteer-meetings .help-sheet { margin: 0; padding: 26px 30px; }
 .volunteer-yes { --paper-corner: #365c46; }
-:is(.volunteer-choice.paper-fold, .volunteer-meeting:is(.volunteer-yes, .paper-fold)) .help-sheet-label { color: #365c46; }
-.volunteer-meeting.paper-rest .help-sheet-label { color: var(--live-muted); }
+.volunteer-choice.paper-fold .help-sheet-label { color: #365c46; }
 .volunteer-meeting .help-sheet-body { align-items: center; }
 .volunteer-meeting-desk {
   display: flex;
@@ -90,7 +93,12 @@
   .volunteer-choice-row, .volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); }
   .volunteer-meetings .help-sheet { padding: 22px 20px; }
   :is(.volunteer-choice, .volunteer-meeting) h3 { font-size: 24px; padding-right: 26px; }
-  .live-row.volunteer-task { align-items: flex-start; flex-direction: column; gap: 12px; }
+  /* The title has the row to itself; the button sits on the line of who and when, at the right. */
+  .live-row.volunteer-task { align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+  .volunteer-task > div { display: contents; }
+  .volunteer-task h3 { flex: 1 1 100%; margin: 0; }
+  .volunteer-task p { flex: 1 1 0; min-width: 0; }
+  .volunteer-task > [data-slot="button"] { min-height: 44px; margin-left: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   .volunteer-given, .live-row.volunteer-filed, .volunteer-ticked h3 span, .volunteer-ticked [data-slot="button"] svg { animation: none; }
