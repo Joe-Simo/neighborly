@@ -12,6 +12,7 @@ change to a file marked closed.
 | `sections.ts` | Which component renders each section. |
 | `shell.tsx` | Header, menus, notices, the shared dialogs. |
 | `context.tsx` | `useWorkspace()`: the group, the signed-in person, date helpers, `perform`, `confirm`. |
+| `help.css` | Every `help-*` class from the design reference. The layout loads it once; sections do not import it or keep a copy. |
 | `types.ts`, `primitives.tsx` | Shared types; `LiveLoading`, `LiveEmpty`, `LiveField`. |
 | `convex/schema.ts` | Every table, including `neighbors`, `calls`, `assistanceRequests`, `visits` and `ledgerEntries`. Money is whole cents. |
 | `convex/access.ts` | `user()` and `membership()`: the gate every backend function starts with. `neighborAccess()` and `neighborRecord()`: the gate for anything about a neighbor. |
@@ -44,3 +45,5 @@ file imported by the section, using the existing `live-*` classes first.
 
 To appear in the menu a section needs one line each in `areas.ts`,
 `navigation.ts` (entry, heading, primary action) and `sections.ts`.
+A help-side room's heading carries `room: "help"` and, except for a single
+neighbor's record, `art` (a crop of an approved painting for the page head).

@@ -1,4 +1,5 @@
 import "@/components/live-workspace.css";
+import "@/components/workspace/help.css";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ConvexAuthNextjsServerProvider } from "@/lib/convexAuth";

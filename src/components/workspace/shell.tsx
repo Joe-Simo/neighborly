@@ -133,6 +133,7 @@ export function LiveWorkspace({
   }
   const primary = primaryActions[area];
   const Section = sections[area];
+  const heading = headings[area];
   const workspace: Workspace = {
     area,
     data,
@@ -203,14 +204,19 @@ export function LiveWorkspace({
             </Link>
           ))}
         </nav>
-        <main className="live-main" id="workspace-content" tabIndex={-1}>
-          <div className="live-page-head">
+        <main
+          className="live-main"
+          id="workspace-content"
+          tabIndex={-1}
+          data-room={heading.room}
+        >
+          <div className="live-page-head" data-art={heading.art ? "" : undefined}>
             <div>
               <p className="live-kicker">
                 {data.church.name} · {data.church.timeZone}
               </p>
-              <h1>{headings[area].title}</h1>
-              <p className="live-deck">{headings[area].deck}</p>
+              <h1>{heading.title}</h1>
+              <p className="live-deck">{heading.deck}</p>
             </div>
             {((isOwner && area !== "mine") ||
               (data.canCoordinate && area === "commitments") ||
@@ -219,6 +225,17 @@ export function LiveWorkspace({
                 <Plus size={17} aria-hidden="true" />
                 {actionTitles[primary]}
               </Button>
+            )}
+            {heading.art && (
+              <div
+                className="live-head-art"
+                aria-hidden="true"
+                style={{
+                  backgroundImage: `url(${heading.art.src})`,
+                  backgroundPosition: heading.art.position,
+                  backgroundSize: heading.art.size ?? "cover",
+                }}
+              />
             )}
           </div>
           {data.truncated.length > 0 && (

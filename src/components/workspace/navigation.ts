@@ -45,7 +45,17 @@ export const primaryActions: Record<LiveArea, ActionKind> = {
   "time-off": "timeOff",
   tasks: "task",
 };
-export const headings: Record<LiveArea, { title: string; deck: string }> = {
+/**
+ * room "help" marks the help-side rooms, which use the shared help.css styles.
+ * art is a crop of an approved painting in the page head; only art already in public/assets.
+ */
+export type LiveHeading = {
+  title: string;
+  deck: string;
+  room?: "help";
+  art?: { src: string; position: string; size?: string };
+};
+export const headings: Record<LiveArea, LiveHeading> = {
   week: {
     title: "Good work, this week.",
     deck: "Your commitments, shared plans and the things to know.",
