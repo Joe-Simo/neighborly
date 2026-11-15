@@ -132,3 +132,10 @@ Every dialog is a `LiveDialog`: paper sheet, title and a 44px way out held at th
 foot (`live-form-actions`), first field focused with a mouse and the title on touch. Under 700px it is a sheet from the
 bottom edge, above the keyboard. Do not use the raw `Dialog`, and no browser date or time boxes inside one: use
 `DateField`, `TimeField`, or `WhenField` (a day and a time under one name, the same value as `datetime-local`).
+
+## Leaders' rooms are English throughout
+
+A room marked `leadersOnly` in `navigation.ts` is hidden from members and is English for everyone who opens it.
+The shell gives that room's subtree (the head, the room, its dialogs) a workspace whose `words` are the English
+table, so anything that reads `useWorkspace().words`, the states family included, follows with no props. The bar and
+the menu stay in the person's own language. A member's room must read every string from the word tables.

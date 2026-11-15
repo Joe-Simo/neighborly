@@ -99,7 +99,11 @@ export function LiveWorkspace({
   // Areas the words do not cover yet keep their English line.
   const menu: Partial<Record<LiveArea, string>> = words.menu;
   const actions: Partial<Record<ActionKind, string>> = words.actions;
-  const translatedHeadings: Partial<Record<LiveArea, { title: string; deck: string }>> = words.headings;
+  // A leaders' room is English throughout: its head, its dialogs, its notices and whatever shared piece
+  // reads the workspace's words inside it. The bar and the menu stay in the person's own language.
+  const english = navigation.some((item) => item.id === area && "leadersOnly" in item);
+  const roomWords = english ? wordsFor("en", data.church.wordSet) : words;
+  const translatedHeadings: Partial<Record<LiveArea, { title: string; deck: string }>> = roomWords.headings;
   const ownPerson = data.people.find((person) => person.id === data.user.id);
   const isOwner = ownPerson?.role === "owner";
   const selected = selectedCommitment;
@@ -205,6 +209,7 @@ export function LiveWorkspace({
         outcomeNotice.current?.focus({ preventScroll: true }),
       ),
   };
+  const roomWorkspace = english ? { ...workspace, words: roomWords } : workspace;
   return (
     <WorkspaceProvider value={workspace}>
     <div className="live-app" lang={words.locale}>
@@ -264,11 +269,13 @@ export function LiveWorkspace({
             </Link>
           ))}
         </nav>
+        <WorkspaceProvider value={roomWorkspace}>
         <main
           className="live-main"
           id="workspace-content"
           tabIndex={-1}
           data-room={heading.room}
+          lang={roomWords.locale}
           style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
           ref={mainRef}
         >
@@ -287,12 +294,12 @@ export function LiveWorkspace({
               )}
               <p className="live-kicker">
                 {churchName}
-                {data.church.sample ? ` · ${words.shell.sample}` : ""}
+                {data.church.sample ? ` · ${roomWords.shell.sample}` : ""}
               </p>
               <h1>{heading.title}</h1>
               <p className="live-deck">{heading.deck}</p>
-              {words.locale !== "en" && !translatedHeadings[area] && (
-                <p className="!mt-4 text-[15px] text-[#68715f]">{words.shell.roomInEnglish}</p>
+              {words.locale !== "en" && (english || !translatedHeadings[area]) && (
+                <p className="!mt-4 text-[15px] text-[#68715f]">{roomWords.shell.roomInEnglish}</p>
               )}
             </div>
             <div className="live-head-actions">
@@ -362,6 +369,7 @@ export function LiveWorkspace({
             </RoomBoundary>
           </div>
         </main>
+        </WorkspaceProvider>
       </div>
       <div className="paper-wave" aria-hidden="true" ref={waveRef}>
         {["#365c46", "#6f5f93", "#f7f4ed"].map((fill, sheet) => (
@@ -370,6 +378,7 @@ export function LiveWorkspace({
           </svg>
         ))}
       </div>
+      <WorkspaceProvider value={roomWorkspace}>
           <LiveDialog
             open={dialog !== null}
             onClose={() => {
@@ -545,6 +554,7 @@ export function LiveWorkspace({
               </Button>
             </div>
         </LiveDialog>
+      </WorkspaceProvider>
       </div>
     </WorkspaceProvider>
   );
