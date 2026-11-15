@@ -32,7 +32,9 @@ xcodebuild -project apple/ios/App/App.xcodeproj -scheme App -sdk iphonesimulator
 view, paper with the small k, over the web view until the first page has
 loaded, then fades it away. After twelve seconds without the page it shows
 `web/slow.html` ("This is taking a while.") while the same load carries on
-underneath. A load that fails outright ends on `web/offline.html`. Both pages
+underneath, with a spinner and no button. Thirty seconds later the load is
+stopped and the page offers "Try again", which starts a fresh one. A load that
+fails outright ends on `web/offline.html`. Both pages
 share `web/shell.css`.
 
 To see the slow page in a simulator, shorten the wait on the launch command:

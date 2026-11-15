@@ -28,8 +28,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 /// first page has loaded, so the app never shows blank paper. If the page has
 /// not arrived after twelve seconds it shows the "taking a while" page instead,
 /// while the same load carries on underneath, and fades to the page when it
-/// arrives. A load that fails outright ends on the no-connection page, which
-/// Capacitor loads from `server.errorPath`.
+/// arrives. Thirty seconds after that the load is stopped and the page offers
+/// "Try again", which starts a fresh one. A load that fails outright ends on
+/// the no-connection page, which Capacitor loads from `server.errorPath`.
 final class ShellViewController: CAPBridgeViewController {
     private let paper = UIColor(red: 0.9608, green: 0.9529, blue: 0.9255, alpha: 1)
     private var cover: UIView?
@@ -37,6 +38,9 @@ final class ShellViewController: CAPBridgeViewController {
     private var slowPageEvents: SlowPageEvents?
     private var loading: NSKeyValueObservation?
     private var slowTimer: Timer?
+    private var stopTimer: Timer?
+    /// True once the slow load has been stopped and the person is offered "Try again".
+    private var stopped = false
 
     /// Seconds to wait for the first page. `-slowAfter 1` on the launch
     /// command shortens it so the slow page can be checked in a simulator.
@@ -85,8 +89,9 @@ final class ShellViewController: CAPBridgeViewController {
     }
 
     private func revealIfLoaded() {
-        guard let webView, !webView.isLoading else { return }
+        guard let webView, !webView.isLoading, !stopped else { return }
         slowTimer?.invalidate()
+        stopTimer?.invalidate()
         lift([cover, slowPage])
         cover = nil
         slowPage = nil
@@ -116,8 +121,9 @@ final class ShellViewController: CAPBridgeViewController {
         let events = SlowPageEvents(
             shown: { [weak self] in
                 UIView.animate(withDuration: 0.3) { self?.slowPage?.alpha = 1 }
+                self?.startStopTimer()
             },
-            tryAgain: { [weak self] in self?.waitAgain() }
+            tryAgain: { [weak self] in self?.loadAfresh() }
         )
         slow.navigationDelegate = events
         slowPageEvents = events
@@ -126,14 +132,29 @@ final class ShellViewController: CAPBridgeViewController {
         slow.loadFileURL(page, allowingReadAccessTo: page.deletingLastPathComponent())
     }
 
-    /// The first load is still running underneath, so "Try again" goes back to
-    /// the k and gives it another wait. Starting a second load here would
-    /// cancel the first, which Capacitor reads as a failure.
-    private func waitAgain() {
-        lift([slowPage])
-        slowPage = nil
-        slowPageEvents = nil
-        startSlowTimer()
+    private func startStopTimer() {
+        stopTimer?.invalidate()
+        stopTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: false) { [weak self] _ in
+            self?.stopWaiting()
+        }
+    }
+
+    /// Stopping the load makes Capacitor put the no-connection page in the web
+    /// view underneath; `stopped` keeps the slow page on top of it, now with a
+    /// "Try again" that does start a load.
+    private func stopWaiting() {
+        guard let webView, webView.isLoading, slowPage != nil else { return }
+        stopped = true
+        webView.stopLoading()
+        slowPage?.evaluateJavaScript("document.body.classList.add('stopped')")
+    }
+
+    private func loadAfresh() {
+        guard stopped, let webView, let bridge else { return }
+        stopped = false
+        slowPage?.evaluateJavaScript("document.body.classList.remove('stopped')")
+        webView.load(URLRequest(url: bridge.config.appStartServerURL))
+        startStopTimer()
     }
 }
 

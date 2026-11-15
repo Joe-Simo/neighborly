@@ -44,3 +44,15 @@ a.again:focus-visible { outline: 3px solid #364acf; outline-offset: 4px; }
     background-position: 50% max(calc(env(safe-area-inset-top) - 43.7vw), calc(0px - var(--island)));
   }
 }
+/* The slow page: a spinner while the load is still running, and once it has
+   been stopped, a line that says so and a button that starts a fresh load. */
+span.ready, a.again.ready, .stopped .trying { display: none; }
+.stopped span.ready { display: inline; }
+.stopped a.again.ready { display: inline-flex; }
+.spinner {
+  width: 28px; height: 28px; margin-top: 36px; border-radius: 50%;
+  border: 3px solid #d9ddd3; border-top-color: #365c46;
+  animation: turn 0.9s linear infinite;
+}
+@keyframes turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 6s; } }

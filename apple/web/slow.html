@@ -11,8 +11,12 @@
 <main>
   <p class="kicker">Kind Helps</p>
   <h1>This is taking<br>a while.</h1>
-  <p class="deck">Nothing is lost. The connection is slow, and we are still trying.</p>
-  <a class="again" href="https://kindhelps.com/app">Try again</a>
+  <p class="deck" aria-live="polite">
+    <span class="trying">Nothing is lost. The connection is slow, and we are still trying.</span>
+    <span class="ready">Nothing is lost. The connection is slow. Try again when you are ready.</span>
+  </p>
+  <div class="spinner trying" role="status" aria-label="Still trying"></div>
+  <a class="again ready" href="https://kindhelps.com/app">Try again</a>
 </main>
 </body>
 </html>
