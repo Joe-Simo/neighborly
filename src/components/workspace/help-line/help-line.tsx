@@ -59,7 +59,7 @@ type Step =
   // The caller is not on file yet: the neighbor is added first, then the draft goes on.
   | { kind: "join"; drafted: Drafted; then: "approve" | "change" };
 
-/** How long an approved draft stays on the page, folded, before the next one rises. */
+/** How long a saved draft stays on the page, folded, before the next one rises. */
 const SEAL_MS = 1400;
 const PAPER_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
 
@@ -123,7 +123,7 @@ function HelpLine() {
   // The call whose note the assistant is reading.
   const [reading, setReading] = useState<Call["id"] | null>(null);
   const close = () => setStep(null);
-  // The approved draft stays a moment with its corner folded, then the next one rises.
+  // The saved draft stays a moment with its corner folded, then the next one rises.
   const [sealed, setSealed] = useState<
     (Drafted & { neighborId: Id<"neighbors"> }) | null
   >(null);
@@ -343,7 +343,7 @@ function HelpLine() {
             }
             useLabel={
               step.then === "approve"
-                ? "Use this neighbor and approve"
+                ? "Use this neighbor and save"
                 : "Use this neighbor"
             }
             onSaved={(neighborId) =>
@@ -714,8 +714,8 @@ function ReadingSheet({ note }: { note?: string }) {
       <p className="help-assistant help-assistant-line">
         <Sparkles size={16} aria-hidden="true" />
         <span>
-          It writes down only what the note says, and leaves blank what it
-          does not. Nothing is saved until you approve it.
+          It fills in only what the note says, and leaves blank what it does
+          not. Nothing is saved until you say so.
         </span>
       </p>
     </section>
@@ -773,7 +773,7 @@ export function DraftSheet({
     >
       <p className="help-sheet-label">
         {sealed
-          ? text.approved
+          ? "Saved, waiting for a decision"
           : complete
             ? text.waiting(waiting)
             : "A draft with blanks"}
@@ -813,7 +813,7 @@ export function DraftSheet({
             <>
               <Button disabled={pending} onClick={onApprove}>
                 <Check size={18} aria-hidden="true" />{" "}
-                {call.neighborId ? text.approve : "Add neighbor and approve"}
+                {call.neighborId ? "Save this request" : "Add neighbor and save"}
               </Button>
               <Button variant="outline" disabled={pending} onClick={onChange}>
                 {text.change}

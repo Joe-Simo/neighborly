@@ -80,11 +80,14 @@ export function FormEnd({
   error,
   pending,
   submit,
+  value,
   children,
 }: {
   error: string;
   pending: boolean;
   submit: string;
+  /** Sent as the button's value, for a form with more than one way to save. */
+  value?: string;
   children?: ReactNode;
 }) {
   return (
@@ -93,7 +96,7 @@ export function FormEnd({
       <div className="live-form-actions">
         <LiveWaiting when={pending} />
         {children}
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" value={value} disabled={pending}>
           {submit}
         </Button>
       </div>
@@ -118,6 +121,10 @@ export function CallForm({
   const readUrgency = useAction(api.drafts.readUrgency);
   const setUrgency = useMutation(api.assistance.setUrgency);
   const { pending, error, save } = useSave();
+  // With words to draft from and a call back owed, going on to the draft is the main way forward.
+  const [said, setSaid] = useState(false);
+  const [owed, setOwed] = useState(true);
+  const lead = draftable && said && owed;
   return (
     <form
       className="live-form help-form"
@@ -180,26 +187,50 @@ export function CallForm({
         </LiveField>
       </div>
       <LiveField label="What they said">
-        <Textarea name="note" rows={4} required />
+        <Textarea
+          name="note"
+          rows={4}
+          required
+          onChange={(event) => setSaid(!!event.target.value.trim())}
+        />
       </LiveField>
       <LiveField label="Next step">
-        <NativeSelect name="callback" className="w-full" defaultValue="needed">
+        <NativeSelect
+          name="callback"
+          className="w-full"
+          defaultValue="needed"
+          onChange={(event) => setOwed(event.target.value !== "none")}
+        >
           <option value="needed">Call them back</option>
           <option value="none">Nothing more to do</option>
         </NativeSelect>
       </LiveField>
-      <FormEnd error={error} pending={pending} submit="Save call">
-        {draftable && (
-          <Button
-            type="submit"
-            variant="outline"
-            value="draft"
-            disabled={pending}
-          >
-            <Sparkles size={17} aria-hidden="true" /> Save and draft a request
+      {lead ? (
+        <FormEnd
+          error={error}
+          pending={pending}
+          submit="Save and draft a request"
+          value="draft"
+        >
+          <Button type="submit" variant="outline" disabled={pending}>
+            Save call
           </Button>
-        )}
-      </FormEnd>
+        </FormEnd>
+      ) : (
+        <FormEnd error={error} pending={pending} submit="Save call">
+          {draftable && owed && (
+            <Button
+              type="submit"
+              variant="outline"
+              value="draft"
+              disabled={pending}
+            >
+              <Sparkles size={17} aria-hidden="true" /> Save and draft a
+              request
+            </Button>
+          )}
+        </FormEnd>
+      )}
     </form>
   );
 }
