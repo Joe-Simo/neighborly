@@ -100,7 +100,8 @@ describe("sample conference", () => {
       expect(new Set(visit.visitors.map((visitor) => visitor.memberId)).size).toBe(2);
       const logged = visit.visitors.every((visitor) => visitor.hours > 0 && visitor.miles > 0);
       expect(logged).toBe(visit.status === "completed");
-      if (visit.status === "scheduled") expect(visit.scheduledAt).toBeGreaterThan(Date.now());
+      // One past visit is left unmarked on purpose, for the year check to find.
+      if (visit.status === "scheduled" && !visit.notes) expect(visit.scheduledAt).toBeGreaterThan(Date.now());
     }
   });
 

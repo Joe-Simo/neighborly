@@ -80,6 +80,7 @@ export const load = internalMutation({
     // The planned visits tell the whole story of a pair: both said yes, nobody has answered, one answer in.
     const pairAnswers = [["accepted", "accepted"], ["pending", "pending"], ["accepted", "pending"], ["accepted", "accepted"]] as const;
     let plannedVisits = 0;
+    const households: Id<"neighbors">[] = [];
     const familyNames = Array.from({ length: HOUSEHOLDS }, (_, index) => lastNames[index % lastNames.length]);
     for (let index = familyNames.length - 1; index > 0; index--) { const other = look.between(0, index); [familyNames[index], familyNames[other]] = [familyNames[other], familyNames[index]]; }
     const now = Date.now();
@@ -171,6 +172,7 @@ export const load = internalMutation({
       const phone = `(10${index < 100 ? 0 : 1}) 555-01${String(index % 100).padStart(2, "0")}`;
       const firstCall = start + random.between(1, days - 14) * DAY;
       const neighborId = await ctx.db.insert("neighbors", { churchId, name, nameKey: key(name), phone, phoneKey: phone.replace(/\D/g, ""), email: index % 5 === 0 ? `${key(name).replaceAll(" ", ".")}@${emailDomain}` : "", address: `${random.between(10, 980)} ${random.pick(streets)}, Apt ${random.between(1, 24)}`, adults: random.between(1, 3), children: random.between(0, 4), language: index % 4 === 1 ? "es" : index % 9 === 2 ? "ht" : "en", notes: index % 6 === 0 ? "Prefers a call after 5 PM." : "", createdBy: random.pick(staff), createdAt: firstCall });
+      households.push(neighborId);
       const callCount = random.between(1, 4);
       for (let call = 0; call < callCount; call++) {
         const recent = call === callCount - 1 ? recentCalls.get(index) : undefined;
@@ -222,6 +224,14 @@ export const load = internalMutation({
       if (takenAt > now - DAY) break;
       await ctx.db.insert("calls", { churchId, callerName: "No name given", phone: "", note: random.pick(strangers), callback: "none", takenBy: random.pick(staff), takenAt });
     }
+
+    // Three records for the year check to find, written apart from the loop and its draws, 75 days back so they
+    // fall inside the fiscal year the reports room opens. Two requests were approved and no payment was
+    // recorded (one note says a check was sent); one visit's note says it happened and it is not marked done.
+    const findingsAt = now - 75 * DAY;
+    await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[2], kind: "rent", summary: "One month's rent after reduced hours at work.", amountRequested: 60000, amountApproved: 60000, status: "approved", decisionNote: "Approved after the home visit. The treasurer sent the check to the landlord on the 12th.", decidedBy: owner, decidedAt: findingsAt + 4 * DAY, payeeKind: "landlord", payeeName: "Mill Road Rentals", source: "person", createdBy: staff[1], createdAt: findingsAt });
+    await ctx.db.insert("visits", { churchId, neighborId: households[6], scheduledAt: findingsAt + 2 * DAY, status: "scheduled", visitors: [visitors[0], visitors[3]].map((memberId) => ({ memberId, hours: 0, miles: 0, response: "accepted" as const })), notes: "We met with her on Tuesday afternoon. Gave the pantry hours and she will call about the light bill.", createdBy: owner, createdAt: findingsAt });
+    await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[10], kind: "utility", summary: "Electric bill with a shut-off notice.", amountRequested: 21000, amountApproved: 21000, status: "approved", decisionNote: "Approved after the home visit.", decidedBy: owner, decidedAt: findingsAt + 3 * DAY, payeeKind: "utility", payeeName: "City Power & Light", source: "person", createdBy: staff[1], createdAt: findingsAt });
 
     // A call waiting to be returned whose note names two amounts, so a draft from it leaves the amount for a person.
     await ctx.db.insert("calls", { churchId, callerName: "Denise Walker", phone: "(102) 555-0163", note: "Light bill is $145, and $60 is past due from last month.", callback: "needed", takenBy: staff[2], takenAt: clock(now - DAY, callSlots) });

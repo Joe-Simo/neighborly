@@ -215,15 +215,18 @@ describe("the year's counts for the sample conference", () => {
         "households": 179,
         "miles": 8456,
         "people": 753,
-        "requests": 352,
+        "requests": 354,
         "visits": 320,
       }
     `);
   });
 
-  test("the check before sending finds nothing wrong in a fresh sample, vouchers included", async () => {
+  test("the check before sending finds the three seeded records and nothing else, vouchers included", async () => {
     const { as, churchId, owner } = await sample();
-    for (const year of [2026, 2027]) expect((await as(owner.userId).action(api.drafts.checkYear, { churchId, year })).flags, String(year)).toEqual([]);
+    // Two requests approved with no payment (one note says a check was sent) and one visit whose note says it happened.
+    const found = (await as(owner.userId).action(api.drafts.checkYear, { churchId, year: 2026 })).flags;
+    expect(found.map((flag) => flag.kind).sort()).toEqual(["approvedNotPaid", "noteSaysPaid", "visitNotMarked"]);
+    expect((await as(owner.userId).action(api.drafts.checkYear, { churchId, year: 2027 })).flags).toEqual([]);
   });
 
   test("the years on offer run from the first record to today's", async () => {
