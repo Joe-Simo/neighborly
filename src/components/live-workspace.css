@@ -928,6 +928,19 @@
 @media (max-width: 699px) and (orientation: portrait) {
   .live-auth-art { height: max(61vw, calc(140px + env(safe-area-inset-top))); }
 }
+/* Under a notch or an island (a top inset over 20px) a face would sit behind
+   the hardware, so the band shows the hands and the card instead: plain
+   painted paper under the status area, both hands whole below it. CSS cannot
+   ask about an inset directly, so --island is a huge length when the inset is
+   over 20px and nothing otherwise; taking it away from the usual value lets
+   max() pick the island value. Without an inset nothing here changes. */
+@media (max-width: 699px) and (orientation: portrait) {
+  .live-auth-art {
+    --island: calc(max(0px, env(safe-area-inset-top) - 20px) * 9999);
+    height: max(calc(24vw + env(safe-area-inset-top)), calc(61vw - var(--island)));
+    background-position: 50% max(calc(env(safe-area-inset-top) - 39.3vw), calc(0px - var(--island)));
+  }
+}
 @media (max-width: 699px) and (orientation: portrait) and (max-height: 700px) {
   .live-auth-art {
     height: calc(84px + env(safe-area-inset-top));
