@@ -10,6 +10,8 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
+import "@/components/workspace/tools/tools.css";
+import { NeighborsImport } from "@/components/workspace/tools/neighbors-import";
 import { HelpDialog, NeighborForm } from "@/components/workspace/help-line/forms";
 import {
   household,
@@ -49,6 +51,7 @@ function Neighbors() {
   const churchId = data.church.id;
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
   const add = useCallback(() => setAdding(true), []);
   useLayoutEffect(() => {
     setHeadAction({ label: "Add a neighbor", run: add });
@@ -80,6 +83,11 @@ function Neighbors() {
       ) : (
         <HelpLoading label="Finding neighbors" />
       )}
+      {importing && (
+        <section className="live-section">
+          <NeighborsImport />
+        </section>
+      )}
       {adding && (
         <HelpDialog
           title="Add a neighbor"
@@ -90,6 +98,18 @@ function Neighbors() {
             churchId={churchId}
             onSaved={(id) => router.push(recordHref(id))}
           />
+          <p className="help-form-note">
+            <Button
+              variant="link"
+              className="help-text-action"
+              onClick={() => {
+                setAdding(false);
+                setImporting(true);
+              }}
+            >
+              or bring in a spreadsheet
+            </Button>
+          </p>
         </HelpDialog>
       )}
     </>
