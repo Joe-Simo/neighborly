@@ -40,6 +40,7 @@ import { useSave } from "@/components/workspace/help-line/use-save";
 import { DraftSheet, caller } from "@/components/workspace/help-line/draft-sheet";
 import {
   HelpDone,
+  readSealedSheet,
   HelpEmpty,
   HelpLoading,
   HelpRoom,
@@ -48,7 +49,7 @@ import {
 type Draft = FunctionReturnType<typeof api.drafts.draftRequest>;
 type Drafted = { call: Call; draft: Draft };
 /** The line that says what changed, and where it leads: a neighbor's record, or a draft of the call just saved. */
-type Done = { message: string; record?: Id<"neighbors">; draft?: Call["id"] };
+type Done = { message: string; record?: Id<"neighbors">; draft?: Call["id"]; filed?: { name: string; asks: string } };
 type Step =
   | { kind: "log" }
   | {
@@ -127,13 +128,14 @@ function HelpLine() {
   useEffect(() => {
     if (!sealed) return;
     const after = setTimeout(() => {
-      void foldLeaves().then(() => {
-        setSealed(null);
-        setDone({
-          message: `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
-          record: sealed.neighborId,
-        });
+      // The sheet's own words, read off it, are what the saved line carries: they travel there as the sheet closes.
+      const asks = readSealedSheet();
+      setDone({
+        message: asks ? "Request saved. It waits for the conference to decide." : `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
+        record: sealed.neighborId,
+        filed: asks ? { name: caller(sealed.call), asks } : undefined,
       });
+      void foldLeaves().then(() => setSealed(null));
     }, FOLD_HOLD);
     return () => clearTimeout(after);
   }, [sealed]);
@@ -235,6 +237,9 @@ function HelpLine() {
     <>
       {done && (
         <HelpDone
+          // A filed draft is a new line each time, so its words set off from their own sheet.
+          key={done.filed ? `${done.record}:${done.filed.asks}` : "said"}
+          filed={done.filed}
           action={
             done.record ? (
               <Link className="live-link" href={recordHref(done.record)}>
