@@ -711,7 +711,7 @@ function ReadingSheet({ note }: { note?: string }) {
       <p className="help-sheet-label">The assistant is reading the note</p>
       <div className="help-sheet-body">
         <div>
-          <div className="help-reading-title" aria-hidden="true" />
+          <p className="help-reading-title">Reading what was written.</p>
           {note && <p className="help-quote">“{note}”</p>}
         </div>
       </div>
