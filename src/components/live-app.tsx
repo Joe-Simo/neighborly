@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAction, useMutation } from "convex/react";
-import { usePaginatedQuery, useQuery } from "convex-helpers/react/cache/hooks";
+import { usePaginatedQuery, useQuery } from "@/components/workspace/query";
 import { useClerk } from "@clerk/nextjs";
 import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
@@ -34,7 +34,7 @@ export function LiveApp({
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
-  const { isLoading, isAuthenticated, ready } = useAccount();
+  const { ready, signedOut } = useAccount();
   const clerk = useClerk();
   const signOut = () => {
     try {
@@ -160,24 +160,16 @@ export function LiveApp({
     team: [teamPage],
   };
   const roomWaiting = (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
-  if (isLoading)
-    return (
-      <LiveRoomLoading label="Checking your session…" />
-    );
   if (leavingForSample) return <LiveRoomLoading label="Opening the sample conference…" />;
-  if (!isAuthenticated)
+  // The sign-in sheet is for someone known to be signed out. Until that is known, and from then until
+  // the workspace has arrived, there is one waiting screen and nothing else: a signed-in person goes
+  // from it straight to their room.
+  if (signedOut)
     return (
       <LiveAuth key={intent} intent={intent} sampleEntry={sampleEntry} enterSample={enterSample} />
     );
-  if (!viewer)
-    return (
-      <LiveRoomLoading />
-    );
   // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
-  if (sampleVisitor === undefined)
-    return (
-      <LiveRoomLoading />
-    );
+  if (!ready || !viewer || sampleVisitor === undefined) return <LiveRoomLoading />;
   if (sampleVisitor && !churchId) return <SampleResetting leave={signOut} />;
   if (
     !churchId ||

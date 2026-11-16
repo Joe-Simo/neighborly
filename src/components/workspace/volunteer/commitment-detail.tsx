@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePaginatedQuery } from "convex-helpers/react/cache/hooks";
+import { usePaginatedQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";

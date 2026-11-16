@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation } from "convex/react";
-import { useQuery } from "convex-helpers/react/cache/hooks";
+import { useQuery } from "@/components/workspace/query";
 import { CircleCheck, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";

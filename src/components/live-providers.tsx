@@ -27,7 +27,7 @@ let enteredSession: string | null = null;
  */
 export function useAccount() {
   const { isLoading, isAuthenticated } = useConvexAuth();
-  const { sessionId } = useAuth();
+  const { sessionId, isLoaded, isSignedIn } = useAuth();
   const enter = useMutation(api.users.enter);
   // Remembered beyond this component, so a frame that is ever mounted again does not ask a second time.
   const [entered, setEntered] = useState<string | null>(enteredSession);
@@ -47,5 +47,12 @@ export function useAccount() {
     };
   }, [isAuthenticated, sessionId, enter]);
   if (failure) throw failure;
-  return { isLoading, isAuthenticated, ready: isAuthenticated && entered === sessionId };
+  return {
+    isLoading,
+    isAuthenticated,
+    ready: isAuthenticated && entered === sessionId,
+    // Only once Clerk itself has answered "nobody is signed in". While Clerk knows a session and the
+    // backend is still confirming it, the answer is "not yet", never "signed out".
+    signedOut: isLoaded && !isSignedIn && !isLoading && !isAuthenticated,
+  };
 }
