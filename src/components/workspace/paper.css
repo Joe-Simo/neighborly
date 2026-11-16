@@ -290,6 +290,33 @@
   .live-main > :not(.live-page-head) { max-width: 1040px; }
 }
 
+/* ── The side column: from 1280 up, a room that fills it (RoomAside) gets one quiet column on the right.
+   It floats, so everything else in the room keeps its own flow and margins, and it stays in view while the room scrolls. */
+.live-aside { display: none; }
+@media (min-width: 1280px) {
+  .live-main:has(> .live-aside:not(:empty)) {
+    --aside-wide: clamp(264px, 22vw, 340px);
+    --aside-gap: clamp(40px, 4vw, 64px);
+    display: flow-root;
+  }
+  .live-main:has(> .live-aside:not(:empty)) > :not(.live-page-head, .live-aside) {
+    max-width: min(1040px, calc(100% - var(--aside-wide) - var(--aside-gap)));
+  }
+  .live-aside:not(:empty) {
+    display: block;
+    float: right;
+    position: sticky;
+    top: 32px;
+    width: var(--aside-wide);
+    animation: paper-desk 380ms var(--paper-ease) backwards;
+    animation-delay: calc(var(--paper-wait, 0ms) + 140ms);
+  }
+  .live-aside-sheet { padding-left: 28px; border-left: 1px solid var(--live-line); font-size: 15px; line-height: 1.5; }
+  .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; }
+}
+@media print { .live-aside { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { .live-aside { animation: none !important; } }
+
 /* ── Up to 899px there is no side menu ────────────────────────────────── */
 @media (max-width: 899px) {
   .live-app .live-layout { display: block; }
