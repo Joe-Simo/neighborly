@@ -68,7 +68,7 @@ describe("the fiscal year", () => {
 describe("the year's counts for the sample conference", () => {
   test("every total matches a count done by hand from the records", async () => {
     const { as, churchId, data, owner } = await sample();
-    const report = await as(owner.userId).query(api.reports.year, { at: Date.now(), churchId, year: 2026 });
+    const report = await as(owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026 });
 
     // The hand count: walk the raw records one neighbor at a time, with the year written out as plain dates.
     const from = Date.parse("2025-10-01T04:00:00Z"), to = Date.parse("2026-10-01T04:00:00Z");
@@ -257,8 +257,8 @@ describe("the year's counts for the sample conference", () => {
       if (!found) throw new Error("The sample has no settled household to remove.");
       return { ...found, requestIds: requests.filter((request) => request.neighborId === found._id).map((request) => request._id) };
     });
-    const { years } = await owned.query(api.reports.years, { at: Date.now(), churchId });
-    const everything = async () => Promise.all(years.flatMap((year) => [undefined, 1, 2, 3, 4].map((quarter) => owned.query(api.reports.year, { at: Date.now(), churchId, year, ...(quarter ? { quarter: quarter as 1 | 2 | 3 | 4 } : {}) }))));
+    const { years } = await owned.query(api.reports.years, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId });
+    const everything = async () => Promise.all(years.flatMap((year) => [undefined, 1, 2, 3, 4].map((quarter) => owned.query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year, ...(quarter ? { quarter: quarter as 1 | 2 | 3 | 4 } : {}) }))));
     const before = await everything();
     expect(before.some((report) => report.households > 0 && report.helpPaid > 0)).toBe(true);
 
@@ -276,19 +276,19 @@ describe("the year's counts for the sample conference", () => {
 
   test("the years on offer run from the first record to today's", async () => {
     const { as, churchId, coordinator } = await sample();
-    expect(await as(coordinator.userId).query(api.reports.years, { at: Date.now(), churchId })).toEqual({ current: 2027, years: [2027, 2026] });
-    const running = await as(coordinator.userId).query(api.reports.year, { at: Date.now(), churchId, year: 2027 });
+    expect(await as(coordinator.userId).query(api.reports.years, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).toEqual({ current: 2027, years: [2027, 2026] });
+    const running = await as(coordinator.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2027 });
     expect(running).toMatchObject({ closed: false, firstDay: "2026-10-01", lastDay: "2027-09-30" });
     expect(running.calls.waiting).toBeGreaterThan(0);
     // The year that just began starts with what the last one ended with.
-    const last = await as(coordinator.userId).query(api.reports.year, { at: Date.now(), churchId, year: 2026 });
+    const last = await as(coordinator.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026 });
     expect(running.money.beginningBalance).toBe(last.money.endingBalance);
   });
 
   test("the cash lines agree with the treasury's own cash flow for the same days", async () => {
     const { as, churchId, owner } = await sample();
     for (const quarter of [undefined, 1, 3] as const) {
-      const report = await as(owner.userId).query(api.reports.year, { at: Date.now(), churchId, year: 2026, quarter });
+      const report = await as(owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026, quarter });
       const flow = await as(owner.userId).query(api.treasury.cashFlow, { churchId, from: report.firstDay, to: report.lastDay });
       // The one difference in wording: an opening balance entered inside the period is cash in to the ledger, and the beginning balance here.
       const openingEntered = flow.kinds.find((kind) => kind.direction === "in" && kind.category === "Opening balance")?.amount ?? 0;
@@ -302,7 +302,7 @@ describe("the year's counts for the sample conference", () => {
 
   test("a report carries counts and never a neighbor's name, phone or address", async () => {
     const { as, churchId, data, owner } = await sample();
-    const text = JSON.stringify(await as(owner.userId).query(api.reports.year, { at: Date.now(), churchId, year: 2026 }));
+    const text = JSON.stringify(await as(owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026 }));
     for (const neighbor of data.neighbors) {
       for (const part of [neighbor.name, ...neighbor.name.split(" "), neighbor.phone, neighbor.phoneKey, neighbor.address, neighbor._id])
         expect(text.includes(part), part).toBe(false);
@@ -311,18 +311,18 @@ describe("the year's counts for the sample conference", () => {
 
   test("members and people outside the group are refused", async () => {
     const { t, as, churchId, member } = await sample();
-    await expect(as(member.userId).query(api.reports.year, { at: Date.now(), churchId, year: 2026 })).rejects.toThrow(refused);
-    await expect(as(member.userId).query(api.reports.years, { at: Date.now(), churchId })).rejects.toThrow(refused);
+    await expect(as(member.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026 })).rejects.toThrow(refused);
+    await expect(as(member.userId).query(api.reports.years, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).rejects.toThrow(refused);
     await expect(as(member.userId).query(api.reports.flagged, { churchId, requestIds: [], visitIds: [] })).rejects.toThrow(refused);
-    await expect(t.query(api.reports.year, { at: Date.now(), churchId, year: 2026 })).rejects.toThrow("Sign in required.");
+    await expect(t.query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026 })).rejects.toThrow("Sign in required.");
     const stranger = await t.run(async (ctx) => {
       const userId = await ctx.db.insert("users", {});
       const elsewhere = await ctx.db.insert("churches", { name: "Elsewhere", timeZone: "UTC" });
       await ctx.db.insert("memberships", { churchId: elsewhere, userId, name: "Owner elsewhere", email: "owner@example.org", role: "owner", active: true, approved: true, coverOptIn: false });
       return userId;
     });
-    await expect(as(stranger).query(api.reports.year, { at: Date.now(), churchId, year: 2026 })).rejects.toThrow("Workspace access required.");
-    await expect(as(stranger).query(api.reports.years, { at: Date.now(), churchId })).rejects.toThrow("Workspace access required.");
+    await expect(as(stranger).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026 })).rejects.toThrow("Workspace access required.");
+    await expect(as(stranger).query(api.reports.years, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).rejects.toThrow("Workspace access required.");
   });
 });
 
@@ -358,7 +358,7 @@ describe("the parts the sample conference does not exercise", () => {
       await shelf(returned, "2026-03-05", -1);
       await shelf(returned, "2026-03-09", 1);
     });
-    const report = await as(ids.owner.userId).query(api.reports.year, { at: Date.now(), churchId: ids.churchId, year: 2026 });
+    const report = await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2026 });
     expect(report.requests).toMatchObject({ received: 3, closed: 2, paid: 1, paidLater: { requests: 0, amount: 0 }, closedAfterPart: { requests: 1, paid: 20000, approved: 30000 } });
     expect(report.helpPaid).toBe(20000);
     expect(report.vouchers).toEqual({ given: 2, takenBack: 1, requests: 1, households: 1 });
@@ -382,13 +382,13 @@ describe("the parts the sample conference does not exercise", () => {
       const mistaken = await entry("income", "2026-03-02", 7000, "Donation");
       await entry("expense", "2026-03-03", 7000, "Donation", { reverses: mistaken });
     });
-    const report = await as(ids.owner.userId).query(api.reports.year, { at: Date.now(), churchId: ids.churchId, year: 2026 });
+    const report = await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2026 });
     expect(report.helpPaid).toBe(20000);
     expect(report.kinds[1]).toEqual({ kind: "utility", requests: 1, requestsPaid: 1, households: 1, people: 5, paid: 20000 });
     expect(report).toMatchObject({ households: 1, people: 5, adults: 2, children: 3, householdsByLanguage: { en: 0, es: 1, ht: 0 }, visits: 0 });
     expect(report.requests).toMatchObject({ received: 1, approved: 1, referred: 1, amountApproved: 30000, paidTowardThese: 20000, paidTowardEarlier: 0 });
     // Seen from the next year, the same payments would be toward an earlier request; here the year after has none.
-    expect((await as(ids.owner.userId).query(api.reports.year, { at: Date.now(), churchId: ids.churchId, year: 2027 })).requests).toMatchObject({ received: 0, paidTowardThese: 0, paidTowardEarlier: 0 });
+    expect((await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2027 })).requests).toMatchObject({ received: 0, paidTowardThese: 0, paidTowardEarlier: 0 });
     expect(report.money).toEqual({ beginningBalance: 100000, received: 50000, sources: [{ label: "Parish collection", amount: 50000 }], otherSpending: [{ label: "Twinning gift", amount: 15000 }], spent: 35000, endingBalance: 115000 });
     expect(report.months[4]).toMatchObject({ month: "2026-02", requests: 1, households: 1, paid: 20000 });
     expect(report.months[3]).toMatchObject({ month: "2026-01", moneyIn: 50000 });
@@ -407,7 +407,7 @@ describe("the parts the sample conference does not exercise", () => {
       await history(other, "rent", "2025-09-02T15:00:00Z", 99900);
       await ctx.db.insert("ledgerEntries", { churchId: ids.churchId, kind: "expense", amount: 20000, date: "2026-02-13", category: "utility", payee: "Example Water Authority", memo: "", requestId: ids.requestId, neighborId: ids.neighborId, recordedBy: ids.owner.memberId, createdAt: 0 });
     });
-    const report = await as(ids.owner.userId).query(api.reports.year, { at: Date.now(), churchId: ids.churchId, year: 2026 });
+    const report = await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2026 });
     expect(report.history).toEqual({
       requests: 4, households: 2, people: 8, amount: 81000,
       kinds: [{ kind: "rent", requests: 2, amount: 75000 }, { kind: "utility", requests: 0, amount: 0 }, { kind: "food", requests: 2, amount: 6000 }, { kind: "voucher", requests: 0, amount: 0 }, { kind: "other", requests: 0, amount: 0 }],
@@ -420,7 +420,7 @@ describe("the parts the sample conference does not exercise", () => {
     expect(report.kinds.map((line) => [line.requests, line.paid])).toEqual([[0, 0], [1, 20000], [0, 0], [0, 0], [0, 0]]);
     expect(report.money.spent).toBe(20000);
     expect(report.months.reduce((sum, line) => sum + line.requests, 0)).toBe(1);
-    const first = await as(ids.owner.userId).query(api.reports.year, { at: Date.now(), churchId: ids.churchId, year: 2026, quarter: 1 });
+    const first = await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2026, quarter: 1 });
     expect(first.history).toMatchObject({ requests: 2, households: 1, amount: 51000, householdsInAll: 1 });
   });
 
@@ -445,7 +445,7 @@ describe("the parts the sample conference does not exercise", () => {
       await ctx.db.insert("visits", { churchId: ids.churchId, neighborId: ids.neighborId, scheduledAt: Date.parse("2026-11-20T15:00:00Z"), status: "scheduled", visitors: [{ memberId: ids.owner.memberId, hours: 0, miles: 0 }, { memberId: ids.helper.memberId, hours: 0, miles: 0 }], notes: "", createdBy: ids.owner.memberId, createdAt: 0 });
       await ctx.db.insert("visits", { churchId: ids.churchId, neighborId: ids.neighborId, scheduledAt: Date.parse("2026-11-05T15:00:00Z"), status: "cancelled", visitors: [], notes: "", createdBy: ids.owner.memberId, createdAt: 0 });
     });
-    const report = await as(ids.owner.userId).query(api.reports.year, { at: Date.now(), churchId: ids.churchId, year: 2027 });
+    const report = await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2027 });
     expect(report.time.teams.map(({ name, shifts, people, hours }) => ({ name, shifts, people, hours }))).toEqual([{ name: "Help line", shifts: 2, people: 2, hours: 6 }, { name: "Pantry", shifts: 1, people: 1, hours: 1.5 }]);
     expect(report.time).toMatchObject({ shiftHours: 7.5, hours: 10.5, activeMembers: 2, membersServing: 2 });
     expect(report.time.members.map(({ name, visits, shifts, hours, miles }) => ({ name, visits, shifts, hours, miles }))).toEqual([{ name: "Sample Helper", visits: 1, shifts: 2, hours: 6, miles: 12 }, { name: "Sample Owner", visits: 1, shifts: 1, hours: 4.5, miles: 12 }]);
@@ -455,7 +455,7 @@ describe("the parts the sample conference does not exercise", () => {
 
   test("a quarter is three months of the same year, and the four quarters add up to it", async () => {
     const { as, churchId, owner } = await sample();
-    const read = (quarter?: 1 | 2 | 3 | 4) => as(owner.userId).query(api.reports.year, { at: Date.now(), churchId, year: 2026, quarter });
+    const read = (quarter?: 1 | 2 | 3 | 4) => as(owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026, quarter });
     const [whole, ...quarters] = await Promise.all([read(), read(1), read(2), read(3), read(4)]);
     expect(quarters.map((quarter) => [quarter.quarter, quarter.firstDay, quarter.lastDay, quarter.months.length])).toEqual([[1, "2025-10-01", "2025-12-31", 3], [2, "2026-01-01", "2026-03-31", 3], [3, "2026-04-01", "2026-06-30", 3], [4, "2026-07-01", "2026-09-30", 3]]);
     expect(whole.quarter).toBeNull();
@@ -474,10 +474,10 @@ describe("the parts the sample conference does not exercise", () => {
   test("a group with no records gets a year of zeros, not an error", async () => {
     const { t, as, ids } = await conference();
     await t.run((ctx) => ctx.db.delete(ids.requestId));
-    const report = await as(ids.owner.userId).query(api.reports.year, { at: Date.now(), churchId: ids.churchId, year: 2027 });
+    const report = await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2027 });
     expect(report).toMatchObject({ households: 0, people: 0, visits: 0, helpPaid: 0, calls: { taken: 0, returned: 0, waiting: 0 }, money: { beginningBalance: 0, received: 0, spent: 0, endingBalance: 0, sources: [], otherSpending: [] } });
     expect(report.kinds.every((line) => line.paid === 0 && line.requests === 0)).toBe(true);
-    expect(await as(ids.owner.userId).query(api.reports.years, { at: Date.now(), churchId: ids.churchId })).toEqual({ current: 2027, years: [2027] });
-    await expect(as(ids.owner.userId).query(api.reports.year, { at: Date.now(), churchId: ids.churchId, year: 26 })).rejects.toThrow("Choose a year.");
+    expect(await as(ids.owner.userId).query(api.reports.years, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId })).toEqual({ current: 2027, years: [2027] });
+    await expect(as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 26 })).rejects.toThrow("Choose a year.");
   });
 });

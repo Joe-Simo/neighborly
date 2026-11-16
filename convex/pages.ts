@@ -3,7 +3,7 @@ import { parseCalendarDate, overlapsTimeOff } from "../src/lib/scheduling";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import { query, type QueryCtx } from "./_generated/server";
-import { hour, user as account } from "./access";
+import { user as account } from "./access";
 import type { Id } from "./_generated/dataModel";
 const churchId=v.id("churches"), text=v.string();
 async function member(ctx:QueryCtx,church:Id<"churches">){
@@ -59,9 +59,10 @@ export const teamsPage=query({args:{churchId,paginationOpts:paginationOptsValida
 const rosterItem=v.object({personId:v.id("memberships"),name:text,status:v.union(v.literal("active"),v.literal("invited")),role:teamRole,approved:v.boolean()});
 export const teamRosterPage=query({args:{churchId,teamId:v.id("teams"),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(rosterItem),handler:async(ctx,args)=>{const me=await member(ctx,args.churchId);const team=await ctx.db.get("teams",args.teamId);if(!team||team.churchId!==args.churchId)throw new ConvexError("Team not found.");const access=await teamAccess(ctx,args.teamId,me);if(!access.visible)throw new ConvexError("Team access required.");if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");const page=await ctx.db.query("teamMembers").withIndex("by_team_member",q=>q.eq("teamId",args.teamId)).paginate(args.paginationOpts);return {...page,page:await Promise.all(page.page.map(async r=>({personId:r.memberId,name:(await ctx.db.get("memberships",r.memberId))?.name??"A former member",status:r.status,role:r.teamRole,approved:r.approved})))};}});
 export const churchesPage=query({args:{paginationOpts:paginationOptsValidator},returns:paginationResultValidator(v.object({id:churchId,name:text})),handler:async(ctx,args)=>{const {id:user}=await account(ctx);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");const page=await ctx.db.query("memberships").withIndex("by_user",q=>q.eq("userId",user)).paginate(args.paginationOpts);const churches=await Promise.all(page.page.filter(m=>m.active).map(m=>ctx.db.get("churches",m.churchId)));return {...page,page:churches.filter(c=>c!==null).map(c=>({id:c._id,name:c.name}))};}});
-export const coverCandidates=query({args:{churchId,at:hour,commitmentId:v.id("commitments"),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(v.object({id:v.id("memberships"),name:text})),handler:async(ctx,args)=>{
+export const coverCandidates=query({args:{churchId,commitmentId:v.id("commitments"),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(v.object({id:v.id("memberships"),name:text})),handler:async(ctx,args)=>{
  const me=await member(ctx,args.churchId);const slot=await ctx.db.get("commitments",args.commitmentId);const church=await ctx.db.get("churches",args.churchId);if(!slot||!church||slot.churchId!==args.churchId)throw new ConvexError(refusals.noCommitment);
- if(!(await teamAccess(ctx,slot.teamId,me)).coordinate)throw new ConvexError("Team coordinator access required.");if(slot.cancelled||slot.assigneeId||slot.start<=args.at)throw new ConvexError(refusals.notOpen);if(args.paginationOpts.numItems>10)throw new Error("Page size exceeds 10.");
+ if(!(await teamAccess(ctx,slot.teamId,me)).coordinate)throw new ConvexError("Team coordinator access required.");// Whether the turn has begun is for the asking to refuse, by the real clock (requestCover): a query never reads the clock.
+ if(slot.cancelled||slot.assigneeId)throw new ConvexError(refusals.notOpen);if(args.paginationOpts.numItems>10)throw new Error("Page size exceeds 10.");
  const parts=new Intl.DateTimeFormat("en",{timeZone:church.timeZone,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(slot.start);const part=(type:Intl.DateTimeFormatPartTypes)=>parts.find(p=>p.type===type)?.value;const startDay=`${part("year")}-${part("month")}-${part("day")}`;
  const page=await ctx.db.query("teamMembers").withIndex("by_team_member",q=>q.eq("teamId",slot.teamId)).paginate(args.paginationOpts);
  const candidates=await Promise.all(page.page.map(async rel=>{if(rel.status!=="active"||!rel.approved)return null;const p=await ctx.db.get("memberships",rel.memberId);if(!p?.active||p.churchId!==args.churchId||!p.approved||!p.coverOptIn)return null;

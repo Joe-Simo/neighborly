@@ -1,7 +1,7 @@
 import { ConvexError, v, type Infer } from "convex/values";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { hour, neighborAccess, neighborRecord } from "./access";
+import { hour, hourAsked, neighborAccess, neighborRecord } from "./access";
 import { voucherGiven } from "./treasury";
 import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
@@ -360,12 +360,13 @@ export const calls = query({
     const waiting = needed.filter((call) => !kept(call)).sort((a, b) => first(a) - first(b) || a.takenAt - b.takenAt);
     // Only the week is read, never the year behind it: the calls returned since then, and the calls taken
     // since then that were settled on the spot and so carry no time of return.
-    const since = at - WEEK;
+    const since = hourAsked(at) - WEEK;
     const [returnedSince, takenSince] = await Promise.all([
       ctx.db.query("calls").withIndex("by_church_callback_returned", (q) => q.eq("churchId", churchId).eq("callback", "done").gte("returnedAt", since)).order("desc").take(200),
-      ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("takenAt", since)).order("desc").take(200),
+      ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("takenAt", since)).order("desc")
+        .filter((q) => q.and(q.eq(q.field("callback"), "done"), q.eq(q.field("returnedAt"), undefined))).take(200),
     ]);
-    const done = [...returnedSince, ...takenSince.filter((call) => call.callback === "done" && call.returnedAt === undefined)];
+    const done = [...returnedSince, ...takenSince];
     const returned = done.filter((call) => !kept(call)).sort((a, b) => (b.returnedAt ?? b.takenAt) - (a.returnedAt ?? a.takenAt));
     const found = lookups(ctx);
     return {

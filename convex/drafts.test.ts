@@ -246,10 +246,12 @@ describe("a call note drafted into a request", () => {
       const iso = (time: number) => new Date(time).toISOString().slice(0, 10);
       await ctx.db.insert("timeOff", { churchId: ids.churchId, memberId: ids.member.memberId, start: iso(now - 2 * day), end: iso(now + 3 * day), note: "" });
     });
-    const note = await coordinator.query(api.drafts.weekNote, { at: Date.now(), churchId: ids.churchId });
+    const note = await coordinator.query(api.drafts.weekNote, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId });
     expect(note).toEqual({ callsWaiting: 2, callsFirstByAssistant: 1, callsFirstByPerson: 0, oldestWaitingDays: 3, visitsPlanned: 1, requestsOpen: 0, approvedUnpaid: 1, approvedUnpaidCents: 25000, openPlaces: 1, away: 1 });
+    // The hour asked about began before a call taken within it: its age reads zero, never less.
+    expect((await coordinator.query(api.drafts.weekNote, { at: Math.floor(Date.now() / 3600000) * 3600000 - 96 * 3600000, churchId: ids.churchId })).oldestWaitingDays).toBe(0);
     expect(fetch).not.toHaveBeenCalled();
-    await expect(member.query(api.drafts.weekNote, { at: Date.now(), churchId: ids.churchId })).rejects.toThrow("coordinators and owners only");
+    await expect(member.query(api.drafts.weekNote, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId })).rejects.toThrow("coordinators and owners only");
   });
 
   test("scores from the live runs: 0.9 stands, 0.89 and below leave the field blank for a person", async () => {

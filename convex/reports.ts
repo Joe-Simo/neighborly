@@ -2,7 +2,7 @@ import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { hour, neighborAccess } from "./access";
+import { hour, hourAsked, neighborAccess } from "./access";
 import { spokenName } from "./spoken";
 import { incomeSources, paidTowardRequest } from "./treasury";
 
@@ -189,7 +189,7 @@ export const years = query({
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     if (!church) throw new ConvexError("Group not found.");
-    const current = fiscalYearOf(at, church.timeZone);
+    const current = fiscalYearOf(hourAsked(at), church.timeZone);
     const [call, request, visit, entry] = await Promise.all([
       ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).first(),
       ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", churchId)).first(),
@@ -245,7 +245,7 @@ export const year = query({
     if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new ConvexError("Choose a year.");
     const zone = church.timeZone;
     const span = fiscalYear(args.year, zone, args.quarter);
-    const now = args.at;
+    const now = hourAsked(args.at);
     const monthOf = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM");
     const inChurch = { churchId: args.churchId };
 
