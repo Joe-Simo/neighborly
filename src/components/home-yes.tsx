@@ -21,7 +21,7 @@ export function HomeYes() {
       {/* The call note this draft was made from: the card that has come down the page, tucked behind the sheet's corner. */}
       <span className="card-station" data-station="sheet" data-turn={-7} data-tuck="-.2,-.5" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/assets/home/card-480.webp" width={480} height={320} alt="" loading="lazy" decoding="async" />
+        <img src="/assets/home/card-light-480.webp" width={480} height={320} alt="" loading="lazy" decoding="async" />
       </span>
       {settled && <HomeYesCard />}
     </div>

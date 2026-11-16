@@ -39,7 +39,7 @@ export function ThreadCard() {
     const update = () => {
       raf = 0;
       const height = innerHeight;
-      let pose: Pose | null = null, landed: HTMLElement | null = null, lift = 0;
+      let pose: Pose | null = null, landed: HTMLElement | null = null, lift = 0, tone = 1;
       // From the open hand to the doors, and through them as they open.
       if (hand && frame && journey && stage) {
         const entered = clamp(-world.getBoundingClientRect().top / Math.max(1, stage.getBoundingClientRect().height));
@@ -47,11 +47,12 @@ export function ThreadCard() {
         // It rests on the doors where they meet, under the rings, and goes in ahead of the visitor as they open.
         const seam: Pose = { x: doors.left + doors.width / 2, y: doors.top + doors.height * .69, w: from.w * .62, r: -5, o: 1 };
         const out = clamp((entered - .45) / .5), through = smooth(clamp((-journey.getBoundingClientRect().top / height - 1.15) / .6));
-        if (out > 0) { pose = between({ ...from, o: 0 }, seam, out); pose.o = clamp(out * 5) * (1 - through); pose.w *= 1 - through * .6; pose.y -= through * doors.height * .12; lift = Math.sin(out * Math.PI); }
+        if (out > 0) { pose = between({ ...from, o: 0 }, seam, out); pose.o = clamp(out * 5) * (1 - through); pose.w *= 1 - through * .6; pose.y -= through * doors.height * .12; lift = Math.sin(out * Math.PI); tone = clamp(out * 2.5); }
         hand.parentElement?.toggleAttribute("data-away", out > 0);
       }
       // Chapter by chapter: the card leaves one picture as the next comes into the window.
       let last: Pose = pose ? { ...pose, o: 0 } : { x: innerWidth / 2, y: -80, w: 96, r: 0, o: 0 };
+      const flight = Math.max(76, Math.min(124, innerWidth * .0722));
       let before: Stop | null = null;
       for (const stop of chapters) {
         const { at, panel } = stop, box = panel.getBoundingClientRect(), holds = box.height > height * 1.2;
@@ -59,6 +60,7 @@ export function ThreadCard() {
         // A chapter that does not hold the window calls the card later, so the card has rested in the picture before.
         const from = height * (holds ? .92 : .62), coming = clamp((from - box.top) / Math.max(1, from - rest));
         if (coming <= 0) break;
+        tone = 1;
         const waits = at.dataset.waits === "true", arrive = clamp((coming - .12) / (stop.tuck || waits ? .7 : .88));
         // The place before lets its card out the way it went in, and only then does the card leave.
         if (arrive <= 0) { if (before) draw(before, smooth(coming / .12)); break; }
@@ -77,7 +79,9 @@ export function ThreadCard() {
           pose = down > 0 ? between(above, over, down) : { ...last, y: last.y - to.w * .5 * swift(up), o: 1 - up };
           pose.o = down > 0 ? clamp(down * 3) : before ? 1 - up : 0; lift = down > 0 ? 1 - down : up; landed = null;
         }
-        else if (arrive < 1) { pose = between(last, over, arrive); pose.o = Math.max(pose.o, clamp(arrive * 6)); lift = Math.sin(arrive * Math.PI); landed = null; if (!waits && arrive > .82) pose.y += Math.sin((arrive - .82) / .18 * Math.PI) * 5; }
+        else if (arrive < 1) { pose = between(last, over, arrive); const air = Math.sin(arrive * Math.PI);
+          // In the air it is a little larger than where it lies, rides a low arc and turns a few degrees; it closes on its shadow as it lands.
+          pose.w = mix(pose.w, Math.max(pose.w, flight), air); pose.y -= air * flight * .2; pose.r += air * (over.x > last.x ? 5 : -5); pose.o = Math.max(pose.o, clamp(arrive * 6)); lift = Math.sin(arrive * Math.PI); landed = null; if (!waits && arrive > .82) pose.y += Math.sin((arrive - .82) / .18 * Math.PI) * 5; }
         else if (waits && laid < .66) { const down = laid / .66; pose = between(over, ready, down); lift = 1 - down; landed = null; if (down > .7) pose.y += Math.sin((down - .7) / .3 * Math.PI) * 5; }
         else { draw(stop, 1 - smooth(!stop.tuck ? 1 : waits ? clamp((laid - .66) / .34) : clamp((coming - .82) / .18))); pose = to; landed = at; }
         last = ready; before = stop;
@@ -89,7 +93,7 @@ export function ThreadCard() {
         pose = between({ x: Math.min(innerWidth - to.w, to.x + to.w * 1.6), y: to.y - to.w * 1.1, w: to.w * 1.1, r: to.r + 16, o: 0 }, to, down);
         pose.o = clamp(down * 5);
         if (down > .82 && down < 1) pose.y += Math.sin((down - .82) / .18 * Math.PI) * 5;
-        lift = Math.sin(down * Math.PI); landed = down >= 1 ? end : null;
+        lift = Math.sin(down * Math.PI); tone = 1 - clamp((down - .5) / .5); landed = down >= 1 ? end : null;
       }
       // It never crosses the line under the fresco: it comes out onto the paper below it.
       const caption = world.querySelector<HTMLElement>(".fresco-caption")?.getBoundingClientRect();
@@ -100,6 +104,7 @@ export function ThreadCard() {
       if (shown && pose) {
         element.style.transform = `translate3d(${pose.x.toFixed(1)}px,${pose.y.toFixed(1)}px,0) rotate(${pose.r.toFixed(2)}deg) scale(${(pose.w / 240).toFixed(4)})`;
         element.style.setProperty("--lift", lift.toFixed(3));
+        element.style.setProperty("--tone", tone.toFixed(3));
       }
     };
     const request = () => { if (!raf) raf = requestAnimationFrame(update); };
@@ -108,6 +113,6 @@ export function ThreadCard() {
     update();
     return () => { cancelAnimationFrame(raf); removeEventListener("scroll", request); removeEventListener("resize", request); here?.classList.remove("is-here"); world.classList.remove("thread-live"); };
   }, [world]);
-  // eslint-disable-next-line @next/next/no-img-element
-  return <><span ref={mark} hidden />{world && createPortal(<div ref={card} className="thread-card" aria-hidden="true"><i /><img src="/assets/home/card-480.webp" width={480} height={320} alt="" decoding="async" /></div>, world)}</>;
+  /* eslint-disable @next/next/no-img-element */
+  return <><span ref={mark} hidden />{world && createPortal(<div ref={card} className="thread-card" aria-hidden="true"><i /><img src="/assets/home/card-480.webp" width={480} height={320} alt="" decoding="async" /><img className="thread-card-light" src="/assets/home/card-light-480.webp" width={480} height={320} alt="" decoding="async" /></div>, world)}</>;
 }

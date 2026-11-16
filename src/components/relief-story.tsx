@@ -16,9 +16,9 @@ const sizes = "(max-width: 820px) 92vw, 56vw";
 const layer = (name: string, small: number, large: number, type: string) => `/assets/home/relief-${name}-${small}.${type} ${small}w, /assets/home/relief-${name}-${large}.${type} ${large}w`;
 
 // The card as it lies in a picture. On a piece it is placed in the piece's own box, which is the picture with a margin all round.
-const station = ({ picture, card }: (typeof story)[number]) => <span className="card-station" data-station={picture} data-turn={card.turn} data-waits={"waits" in card || undefined} data-tuck={"tuck" in card ? card.tuck.join() : undefined} style={{ left: `${card.x}%`, top: `${card.y}%`, width: `${card.w}%`, rotate: `${card.turn}deg` }}>
+const station = ({ picture, card }: (typeof story)[number]) => <span className="card-station" data-station={picture} data-turn={card.turn} data-waits={"waits" in card || undefined} data-tuck={"tuck" in card ? card.tuck.join() : undefined} style={{ left: `${card.x}%`, top: `${card.y}%`, width: `max(${card.w}%, 72px)`, rotate: `${card.turn}deg` }}>
   {/* eslint-disable-next-line @next/next/no-img-element */}
-  <img src="/assets/home/card-480.webp" width={480} height={320} alt="" loading="lazy" decoding="async" />
+  <img src="/assets/home/card-light-480.webp" width={480} height={320} alt="" loading="lazy" decoding="async" />
 </span>;
 
 /** What a conference does with Kind Helps, one idea to a screen, each with its own cut-paper picture. */

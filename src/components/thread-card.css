@@ -2,7 +2,9 @@
 .thread-card{position:fixed;z-index:6;left:-120px;top:-80px;width:240px;height:160px;opacity:0;pointer-events:none;will-change:transform,opacity}
 .thread-card img{position:relative;display:block;width:100%;height:100%}
 /* Its shadow: close when it lies on something, further off and fainter while it is in the air. */
-.thread-card i{position:absolute;inset:6% 4% 2%;border-radius:8px;background:radial-gradient(closest-side,#2a1e1466,#2a1e1400);opacity:calc(.9 - var(--lift,0) * .45);transform:translate(calc(4px + var(--lift,0) * 16px),calc(8px + var(--lift,0) * 30px)) scale(calc(1.06 + var(--lift,0) * .12))}
+.thread-card i{position:absolute;inset:4% 3% 0;border-radius:10px;background:radial-gradient(closest-side,#2a1e1470,#2a1e1400);opacity:calc(.95 - var(--lift,0) * .5);transform:translate(calc(5px + var(--lift,0) * 21px),calc(9px + var(--lift,0) * 22px)) scale(calc(1.08 + var(--lift,0) * .3))}
+/* On the pale paper the card is its lighter self; in the two hands it is the tone it was painted in. */
+.thread-card-light.thread-card-light{position:absolute;inset:0;opacity:var(--tone,1)}
 /* Where the card lies in a picture. With reduced motion, or without script, it simply lies in every one. */
 .card-station{position:absolute;aspect-ratio:1.5;translate:-50% -50%;pointer-events:none}
 .card-station img{display:block;width:100%;height:100%;filter:drop-shadow(2px 4px 3px #2a1e1447)}
