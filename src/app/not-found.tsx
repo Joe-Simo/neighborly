@@ -3,7 +3,7 @@ import "@/components/public-state.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { stateWords } from "@/components/workspace/failure";
+import { stateWords } from "@/components/workspace/state-words";
 
 export const metadata: Metadata = {
   title: "Page not found · Kind Helps",
