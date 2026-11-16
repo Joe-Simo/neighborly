@@ -266,3 +266,20 @@
   .visits-paper-foot { display: flex; justify-content: space-between; margin: 3mm 0 0; padding-top: 2mm; border-top: 0.5pt solid #000; font-size: 9pt; }
   .visits-paper-foot span:first-child { font: 400 12pt/1 "Newsreader", Georgia, serif; }
 }
+
+/* ── The side column on a wide screen: the week's visits by day, the hour beside the two who go ── */
+.visits-aside-day { padding: 14px 0; border-top: 1px solid var(--live-line); }
+.visits-aside-day:first-of-type { padding-top: 0; border-top: 0; }
+.live-app .visits-aside-day h3 { margin: 0 0 8px; font-family: inherit; font-size: 15px; font-weight: 600; line-height: 1.5; letter-spacing: 0; color: var(--live-ink, #283c32); }
+.visits-aside-day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.visits-aside-day li { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: baseline; }
+.visits-aside-day li > span:first-child { color: var(--live-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.visits-aside-day strong { display: block; font-weight: 400; color: var(--live-ink, #283c32); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.visits-aside-day em { display: block; font-style: normal; color: var(--help-plum, #6f5f93); }
+/* A name is never broken: a pair wraps between its two names only. */
+.visits-name { white-space: nowrap; }
+/* Beside the side column the room's own column is narrow, so a row's answer and buttons sit under its words. */
+@media (min-width: 1280px) {
+  .live-main:has(> .live-aside:not(:empty)) .visits-room .help-row { row-gap: 14px; }
+  .live-main:has(> .live-aside:not(:empty)) .visits-room .help-row > .live-row-actions { grid-column: 2; justify-content: flex-start; }
+}
