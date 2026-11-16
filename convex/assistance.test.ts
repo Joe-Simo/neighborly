@@ -247,7 +247,7 @@ describe("a request for help", () => {
     await caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "Coats came from a relative instead." });
     expect(await onHand()).toEqual([["Winter coat", 10]]);
     await expect(caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "" })).rejects.toThrow("already finished");
-    expect(await history()).toEqual([expect.objectContaining({ type: "voucher", takenBack: true, canTakeBack: false, who: "Marisol Vega", closedBy: "Marisol Vega", note: "Coats came from a relative instead." })]);
+    expect(await history()).toEqual([expect.objectContaining({ type: "voucher", takenBack: true, takeBackUntil: null, who: "Marisol Vega", closedBy: "Marisol Vega", note: "Coats came from a relative instead." })]);
 
     const old = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...coats });
     await caller.mutation(api.assistance.decide, { churchId, requestId: old, decision: "approved", note: "" });

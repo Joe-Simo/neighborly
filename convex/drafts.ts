@@ -374,14 +374,14 @@ const visitedWords = /\b(?:visited|we met|met with|went to see|stopped by|visita
  * No names leave this function except inside toRead, which never leaves the server.
  */
 export const yearRecords = internalQuery({
-  args: { churchId: v.id("churches"), year: v.number() },
+  // `now` comes from the action that asks: a query never reads the clock.
+  args: { churchId: v.id("churches"), year: v.number(), now: v.number() },
   returns: v.object({ userId: v.id("users"), flags: v.array(yearFlag), toRead: v.array(toRead) }),
-  handler: async (ctx, { churchId, year }) => {
+  handler: async (ctx, { churchId, year, now }) => {
     const member = await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     if (!church || !Number.isInteger(year) || year < 2000 || year > 2100) throw new ConvexError("Year not found.");
     const { start, end } = fiscalYear(year, church.timeZone);
-    const now = Date.now();
     const [requests, visits] = await Promise.all([
       ctx.db.query("assistanceRequests").withIndex("by_church", q => q.eq("churchId", churchId).gte("createdAt", start).lt("createdAt", end)).take(1000),
       ctx.db.query("visits").withIndex("by_church", q => q.eq("churchId", churchId).gte("scheduledAt", start).lt("scheduledAt", end)).take(1000),
@@ -422,7 +422,7 @@ export const checkYear = action({
   args: { churchId: v.id("churches"), year: v.number() },
   returns: v.object({ flags: v.array(yearFlag), verification: v.union(v.literal("review"), v.literal("checked")) }),
   handler: async (ctx, args): Promise<{ flags: (typeof yearFlag.type)[]; verification: "review" | "checked" }> => {
-    const { userId, flags, toRead: reading } = await ctx.runQuery(internal.drafts.yearRecords, args);
+    const { userId, flags, toRead: reading } = await ctx.runQuery(internal.drafts.yearRecords, { ...args, now: Date.now() });
     // With no model, a person reads the notes code picked out; they are flagged as a rule's finding.
     const unread = { flags: [...flags, ...reading.map(({ kind, record }) => ({ kind, record, source: "rule" as const }))], verification: "review" as const };
     if (!reading.length) return { flags, verification: "checked" };

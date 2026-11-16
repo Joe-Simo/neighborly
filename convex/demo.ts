@@ -77,6 +77,21 @@ export const refresh = internalMutation({
   },
 });
 
+/**
+ * What the nightly schedule runs. One reset reads and rewrites the whole made-up year, about 3.5 MB of the
+ * month's database allowance, so a deployment nobody is shown, a development one, can turn the nightly reset
+ * off with SAMPLE_NIGHTLY=off and be reset by hand (demo:refresh) when its sample is wanted fresh.
+ * Unset, as on the live site, the sample is reset every night.
+ */
+export const nightly = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    if (process.env.SAMPLE_NIGHTLY !== "off") await ctx.runMutation(internal.demo.refresh, {});
+    return null;
+  },
+});
+
 export const reload = internalMutation({
   args: { userId: v.id("users"), month: v.string(), aiUsed: v.number() },
   returns: v.null(),
