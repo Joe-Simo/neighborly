@@ -107,7 +107,7 @@ export function ht(set: WordSet): Words {
       timeOff: "Planifye jou konje",
       announcement: "Pataje yon anons",
       commitment: "Ajoute yon angajman",
-      commitmentTimes: (zone: string) => `Lè yo se ${zone}.`,
+      commitmentTimes: (zone: string) => `Lè yo nan zòn ${zone}.`,
       commitmentForm: {
         title: "Tit", team: "Ekip", chooseTeam: "Chwazi yon ekip…", starts: "Kòmanse", ends: "Fini", where: "Ki kote pou rankontre",
         preparation: "Preparasyon", preparationHelp: "Kisa moun nan dwe konnen oswa fè davans?",

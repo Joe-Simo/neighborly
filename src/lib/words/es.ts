@@ -106,7 +106,7 @@ export function es(set: WordSet): Words {
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
       commitment: "Agregar un compromiso",
-      commitmentTimes: (zone: string) => `Las horas son ${zone}.`,
+      commitmentTimes: (zone: string) => `Horario: ${zone}.`,
       commitmentForm: {
         title: "Título", team: "Equipo", chooseTeam: "Elige un equipo…", starts: "Empieza", ends: "Termina", where: "Dónde reunirse",
         preparation: "Preparación", preparationHelp: "¿Qué debe saber o hacer la persona de antemano?",
