@@ -12,7 +12,7 @@ precision highp float;
 uniform sampler2D uMap, uDepth, uNormal, uFigures, uIdle, uAnswer;
 uniform vec2 uRes, uView, uSun;
 uniform vec4 uRect;
-uniform float uDolly, uAlive, uDusk, uLook, uTurn, uWelcome, uResponse, uTime;
+uniform float uDolly, uAlive, uDusk, uLook, uTurn, uWelcome, uResponse, uTime, uWarm;
 varying vec2 vUv;
 const float FOCUS = .24;
 const float IMAGE = 2.;
@@ -53,6 +53,8 @@ vec3 relight(vec3 col, vec3 n, vec2 t, float d){
   float glow = exp(-length(away) * 3.4) * (.35 + max(0., dot(n, normalize(vec3(away, .3))))) * 1.5 + hall;
   vec3 night = col * vec3(.4, .46, .68) + vec3(0., .004, .018);
   night = mix(night, col * vec3(1.22, .98, .68), clamp(glow, 0., 1.));
+  // Once the wall has opened the day's light warms a little, and stays.
+  col *= mix(vec3(1.), vec3(1.07, 1.01, .9), uWarm * (.45 + .55 * smoothstep(.1, .7, lum(col))));
   return mix(col, night, uDusk);
 }
 
@@ -170,7 +172,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const uniforms = {
       uMap: { ...empty }, uDepth: { ...empty }, uNormal: { ...empty }, uFigures: { ...empty }, uIdle: { ...empty }, uAnswer: { ...empty },
       uRes: { value: new Vector2(1, 1) }, uRect: { value: new Vector4(0, 0, 2, 1) }, uView: { value: new Vector2() }, uSun: { value: new Vector2(-.45, -.55) },
-      uDolly: { value: 0 }, uAlive: { value: 1 }, uDusk: { value: 0 }, uLook: { value: 0 }, uTurn: { value: 0 }, uWelcome: { value: 0 }, uResponse: { value: 0 }, uTime: { value: 0 },
+      uDolly: { value: 0 }, uAlive: { value: 1 }, uDusk: { value: 0 }, uLook: { value: 0 }, uTurn: { value: 0 }, uWelcome: { value: 0 }, uResponse: { value: 0 }, uTime: { value: 0 }, uWarm: { value: 0 },
     };
     const material = new ShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms, depthTest: false, depthWrite: false });
     const geometry = new PlaneGeometry(2, 2);
@@ -204,6 +206,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       const glance = host.dataset.open === "true" && host.dataset.destination === place && waited > 1.5 && waited < 5.5;
       return { noticing: Number(on || glance), answering: Number(on && seconds - answer.since < 4.5) };
     };
+    const journey = host.closest(".fresco-journey");
     let raf = 0, last = 0, began = 0, disposed = false;
     const tick = (time: number) => {
       raf = requestAnimationFrame(tick);
@@ -229,8 +232,13 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       // Measured in the canvas's own units, so the scene stays in register when its holder is scaled on the page.
       const unit = stage.width / Math.max(1, frame.clientWidth) || 1;
       uniforms.uRect.value.set((painting.left - stage.left) / unit, (painting.top - stage.top) / unit, painting.width / unit, painting.height / unit);
-      uniforms.uView.value.set(-look.x * .03, -look.y * .022);
-      uniforms.uSun.value.set(-.45 + look.x * 1.5, -.55 + look.y * .9);
+      // Scrolling through the fresco, the near stone and the far hills part by about ten pixels from first sight to last.
+      const through = still || !journey ? .5 : Math.max(0, Math.min(1, (-journey.getBoundingClientRect().top / Math.max(1, innerHeight) - 2.6) / .9));
+      const part = (through - .5) * 10 / (.9 * Math.max(1, painting.height));
+      uniforms.uView.value.set(-look.x * .03, -look.y * .022 + part);
+      // The light warms once, when the wall has opened, and the sun leans a little with it.
+      uniforms.uWarm.value = mix(uniforms.uWarm.value, Number(host.dataset.open === "true"), still ? 1 : 1 - Math.exp(-dt * .9));
+      uniforms.uSun.value.set(-.45 + look.x * 1.5 + uniforms.uWarm.value * .25, -.55 + look.y * .9);
       // Walking in: the near world grows faster than the far one as the doors are passed, and eases back for the last wide view.
       const entered = Math.min(1, Number(host.style.getPropertyValue("--door-progress") || 0) / .2);
       uniforms.uDolly.value = mix(uniforms.uDolly.value, still ? 0 : host.dataset.overview === "true" ? .5 : .2 + entered * entered * (3 - 2 * entered), follow);

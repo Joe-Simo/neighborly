@@ -1,5 +1,6 @@
 import "@/components/live-workspace.css";
 import "@/components/public-state.css";
+import "@/components/public-page.css";
 import type { Metadata } from "next";
 import { TryAgain } from "./try-again";
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 export default function Offline() {
   return (
     <div className="live-app public-state">
-      <main className="live-auth">
+      <main className="live-auth paper-rise">
         <div className="live-auth-art" aria-hidden="true" />
         <p className="live-kicker">Kind Helps</p>
         <h1>No connection right now.</h1>
