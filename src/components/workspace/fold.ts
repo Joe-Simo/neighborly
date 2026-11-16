@@ -25,6 +25,14 @@ export async function closeUp(sheet: HTMLElement) {
   sheet.style.boxSizing = "border-box";
   sheet.style.overflow = "hidden";
   holdThePage();
+  if (sheet.getBoundingClientRect().bottom <= 0) {
+    // Wholly above the window: nobody sees it go, so it goes at once, and what the person is looking at
+    // stays where it is. Browsers that anchor the scroll do that themselves; the others are told.
+    const before = document.body.offsetHeight;
+    sheet.style.display = "none";
+    if (!CSS.supports("overflow-anchor", "auto")) window.scrollBy(0, document.body.offsetHeight - before);
+    return;
+  }
   await sheet.animate(
     [
       { height, opacity: 1, marginTop, marginBottom, paddingTop, paddingBottom },
@@ -40,15 +48,21 @@ export async function closeUp(sheet: HTMLElement) {
  * browser. So the page keeps the height that holds their place, and gives it back as soon as they
  * scroll up far enough not to need it.
  */
+let letGo: (() => void) | undefined;
 function holdThePage() {
   const page = document.documentElement;
-  if (page.style.minHeight) return;
   const held = window.scrollY;
+  // Each closing holds the place the person is at now, not the place of an earlier one.
+  letGo?.();
   page.style.minHeight = `${held + window.innerHeight}px`;
   const release = () => {
     if (window.scrollY === held || window.scrollY + window.innerHeight > document.body.offsetHeight) return;
+    letGo?.();
+  };
+  letGo = () => {
     page.style.minHeight = "";
     window.removeEventListener("scroll", release);
+    letGo = undefined;
   };
   window.addEventListener("scroll", release, { passive: true });
 }
@@ -59,6 +73,7 @@ function openFlat(sheet: HTMLElement) {
   sheet.getAnimations().forEach((move) => move.cancel());
   sheet.style.overflow = "";
   sheet.style.boxSizing = "";
+  sheet.style.display = "";
 }
 
 const never = Symbol("never");

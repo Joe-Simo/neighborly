@@ -3,6 +3,7 @@
 import { FOLD_HOLD, foldLeaves, useSavedLine } from "@/components/workspace/fold";
 import "./volunteer.css";
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { ArrowRight, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LiveEmpty } from "@/components/workspace/primitives";
@@ -29,23 +30,11 @@ export function CommitmentRows({
   const { data, format, when, personName, teamName, showCommitment, words } =
     useWorkspace();
   const statuses: Partial<Record<string, string>> = words.commitments.status;
-  const landed = useRef<string>(undefined);
-  const land = (row: HTMLDivElement | null) => {
-    if (!row || landed.current === fresh) return;
-    landed.current = fresh;
-    // The page stays where it is unless the row is wholly out of view.
-    const { top, bottom } = row.getBoundingClientRect();
-    if (bottom > 0 && top < window.innerHeight) return;
-    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    row.scrollIntoView({ block: "nearest", behavior: still ? "auto" : "smooth" });
-  };
   return items.length ? (
       <div className="live-list">
         {items.map((item) => (
           <div
             className={`live-row live-commitment-row${item.id === fresh ? " volunteer-filed" : ""}`}
-            // Show where the accepted commitment landed, if it is off the screen.
-            ref={item.id === fresh ? land : undefined}
             key={item.id}
           >
             <div className="live-date-leaf" aria-hidden="true"><span>{format(item.start, { day: undefined, month: "short" })}</span><strong>{format(item.start, { month: undefined, day: "numeric" })}</strong><span>{format(item.start, { month: undefined, day: undefined, weekday: "short" })}</span></div>
@@ -125,7 +114,10 @@ export function useAcceptedArrival() {
 export function IncomingRequests({
   onGiven,
   onAccepted,
+  place,
 }: {
+  /** The heading of the list the accepted commitment goes into, said in the green line when that row is out of view. */
+  place?: string;
   /** The commitment whose yes was just pressed, while its sheet is held; undefined once the hold is over. */
   onGiven?: (commitmentId: string | undefined) => void;
   onAccepted?: (commitmentId: string) => void;
@@ -163,8 +155,12 @@ export function IncomingRequests({
     setGiven(undefined);
     onGiven?.(undefined);
     if (!saved) return;
-    if (accept) onAccepted?.(request.commitmentId);
-    setSaid({ words: accept ? words.requests.accepted : words.requests.declined, of: request.id });
+    if (!accept) return setSaid({ words: words.requests.declined, of: request.id });
+    // The page never moves after a yes. When the row has landed out of view, the line says where it is.
+    flushSync(() => onAccepted?.(request.commitmentId));
+    const row = document.querySelector(".live-row.volunteer-filed")?.getBoundingClientRect();
+    const hidden = row && (row.bottom <= 0 || row.top >= window.innerHeight);
+    setSaid({ words: hidden && place ? words.requests.acceptedUnder(place) : words.requests.accepted, of: request.id });
   };
   const line = said && <Said key={said.of}>{said.words}</Said>;
   const waiting = shown.filter((request) => request.id !== given?.id).length;

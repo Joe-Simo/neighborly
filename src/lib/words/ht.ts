@@ -165,6 +165,7 @@ export function ht(set: WordSet): Words {
       accept: "Aksepte",
       decline: "Mwen pa kapab",
       accepted: "Angajman aksepte. Plan ou ajou.",
+      acceptedUnder: (place: string) => `Angajman aksepte. Li nan ${place}.`,
       declined: "Demann refize. Yo pa ba ou okenn angajman.",
     },
     detail: {

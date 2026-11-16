@@ -165,6 +165,7 @@ export function es(set: WordSet): Words {
       accept: "Aceptar",
       decline: "No puedo",
       accepted: "Compromiso aceptado. Tu plan está al día.",
+      acceptedUnder: (place: string) => `Compromiso aceptado. Está en ${place}.`,
       declined: "Petición rechazada. No se te asignó ningún compromiso.",
     },
     detail: {

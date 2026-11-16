@@ -22,7 +22,7 @@ export function MineSection() {
   );
   return (
     <>
-      <IncomingRequests {...requests} />
+      <IncomingRequests {...requests} place={words.mine.accepted} />
       <MyVisits />
       <section className="live-section">
         <h2>{words.mine.accepted}</h2>

@@ -26,7 +26,7 @@ export function WeekSection() {
   return (
     <>
       <WeekNote brief={incoming.length > 0} />
-      <IncomingRequests {...requests} />
+      <IncomingRequests {...requests} place={words.week.comingUp} />
       {/* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */}
       <div className="min-[1100px]:grid min-[1100px]:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)] min-[1100px]:items-start min-[1100px]:gap-x-14">
       <section className="live-section">

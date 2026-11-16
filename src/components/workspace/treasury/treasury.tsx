@@ -244,7 +244,7 @@ export function TreasurySection() {
                     }).then((entryId) =>
                       pay(view.request, payment.amount, entryId),
                     ),
-                  `${formatFigure(payment.amount)} to ${view.request.payeeName} is recorded, and the balance is up to date.`,
+                  `${formatFigure(payment.amount)} to ${view.request.payeeName} is recorded in the ledger, and the balance is up to date.`,
                   payment.date,
                 )
               }
@@ -315,7 +315,7 @@ export function TreasurySection() {
                           memo,
                         });
                   },
-                  `${formatFigure(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded, and the balance is up to date.`,
+                  `${formatFigure(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded in the ledger, and the balance is up to date.`,
                   date,
                 )
               }

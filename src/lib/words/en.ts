@@ -166,6 +166,7 @@ export function en(set: WordSet) {
       accept: "Accept",
       decline: "Decline",
       accepted: "Commitment accepted. Your plan is updated.",
+      acceptedUnder: (place: string) => `Commitment accepted. It is under ${place}.`,
       declined: "Request declined. No commitment has been assigned.",
     },
     detail: {
