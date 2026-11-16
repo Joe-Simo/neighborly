@@ -37,6 +37,7 @@ import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { AsideSlot, useWideScreen } from "@/components/workspace/aside";
 import { useSavedLine } from "@/components/workspace/fold";
 import { ReliefPicture } from "@/components/workspace/relief";
+import { ArrivingRelief } from "@/components/workspace/relief-arrival";
 import { sections } from "@/components/workspace/sections";
 import type {
   LiveCommand,
@@ -303,7 +304,7 @@ export function LiveWorkspace({
                     <ReliefPicture name={under.picture} focus={under.focus} />
                   </span>
                 )}
-                <ReliefPicture name={heading.art.picture} focus={heading.art.focus} />
+                <ArrivingRelief name={heading.art.picture} focus={heading.art.focus} />
               </div>
             )}
             <div className="live-head-words">
