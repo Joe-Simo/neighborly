@@ -104,6 +104,9 @@
   animation: paper-press 520ms var(--paper-ease), paper-mark 620ms ease-out;
 }
 
+/* A saved line is read in ink, on every room's green. */
+:is(.live-app, .live-dialog) .live-success { color: var(--paper-ink); }
+
 .count-up { font-variant-numeric: lining-nums tabular-nums; }
 
 /* Rows and links answer a pointer the same way everywhere: the paper lifts a little, the line under a link thickens. */
