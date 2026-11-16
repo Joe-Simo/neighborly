@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
 import { CountUp } from "@/components/workspace/primitives";

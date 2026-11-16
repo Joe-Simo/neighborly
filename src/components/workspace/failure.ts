@@ -23,7 +23,7 @@ export const stateWords = {
   missingAction: "Go to your workspace",
   needed: "Fill this in.",
   neededChoice: "Choose one.",
-  neededCheck: "Check this one.",
+  neededCheck: "Look at this again.",
 } as const;
 
 /** The form controls a browser's own check can refuse (a fieldset can be `:invalid` too, and is not one). */

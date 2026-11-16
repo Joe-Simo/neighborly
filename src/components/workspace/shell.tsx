@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import type { LiveArea } from "@/components/workspace/areas";
 import { readFailure } from "@/components/workspace/failure";
+import { LiveLoading } from "@/components/workspace/primitives";
 import { LiveConnection, RoomBoundary } from "@/components/workspace/states";
 import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -54,6 +55,7 @@ export function LiveWorkspace({
   selectChurch,
   pagination,
   requestCommitments = [],
+  roomWaiting = false,
 }: {
   area: LiveArea;
   data: LiveWorkspaceData;
@@ -67,6 +69,8 @@ export function LiveWorkspace({
   selectChurch?: ReactNode;
   pagination?: ReactNode;
   requestCommitments?: LiveWorkspaceData["commitments"];
+  /** The room's own first lists are still on their way: the frame stands and the room says it is opening. */
+  roomWaiting?: boolean;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<ActionKind | null>(null);
@@ -162,18 +166,10 @@ export function LiveWorkspace({
   // On a phone the menu button says "Menu" and tells a screen reader which room this is.
   const menuLabel = menu[area] ?? navigation.find((item) => item.id === area)?.label;
   const navRef = useNavMarker(area);
-  const mainRef = useRef<HTMLElement | null>(null);
   const waveRef = useArrival();
   useSystemTextSize();
-  // The room being left steps back at once; the next one rises in when it arrives.
-  const leave = (event: MouseEvent<HTMLAnchorElement>, id: LiveArea) => {
-    setMobileMenuOpen(false);
-    if (id === area || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const main = mainRef.current;
-    if (!main) return;
-    main.dataset.leaving = "";
-    window.setTimeout(() => delete main.dataset.leaving, 1500);
-  };
+  // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
+  const leave = () => setMobileMenuOpen(false);
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const Section = sections[area];
   const heading = headingOverride
@@ -239,7 +235,7 @@ export function LiveWorkspace({
             }}>
               <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{churchName}</DialogDescription>{data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}</DialogHeader>
               <div className="live-menu-rooms">
-                <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={(event) => leave(event, id)}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
+                <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={leave}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
                 {selectChurch}
               </div>
               <div className="live-menu-foot">
@@ -262,7 +258,7 @@ export function LiveWorkspace({
               key={id}
               href={`/app/${id}`}
               aria-current={area === id ? "page" : undefined}
-              onClick={(event) => leave(event, id)}
+              onClick={leave}
             >
               <Icon aria-hidden="true" />
               {menu[id] ?? label}
@@ -277,7 +273,6 @@ export function LiveWorkspace({
           data-room={heading.room}
           lang={roomWords.locale}
           style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
-          ref={mainRef}
         >
           <div className="live-page-head" key={`head-${area}`}>
             {heading.art && (
@@ -364,7 +359,7 @@ export function LiveWorkspace({
           <LiveConnection />
           <div className="live-room" key={area}>
             <RoomBoundary key={area}>
-              <Section />
+              {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Section />}
               {pagination}
             </RoomBoundary>
           </div>

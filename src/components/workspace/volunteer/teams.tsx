@@ -3,7 +3,7 @@
 import "./people.css";
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery } from "convex-helpers/react/cache/hooks";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";

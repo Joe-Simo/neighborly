@@ -2,12 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  useAction,
-  useMutation,
-  usePaginatedQuery,
-  useQuery,
-} from "convex/react";
+import { useAction, useMutation } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex-helpers/react/cache/hooks";
 import { useClerk } from "@clerk/nextjs";
 import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
@@ -150,6 +146,17 @@ export function LiveApp({
     churchId && area === "team" ? { churchId } : "skip",
     { initialNumItems: 15 },
   );
+  // A room's own first lists, on a first visit. A room seen in the last few minutes has them already.
+  const firstPages: Partial<Record<LiveArea, { status: string }[]>> = {
+    week: [requestPage, announcementPage],
+    mine: [commitmentPage, requestPage],
+    commitments: [commitmentPage, requestPage],
+    people: [peoplePage],
+    tasks: [taskPage, meetingPage],
+    "time-off": [absencePage, availabilityPage],
+    team: [teamPage],
+  };
+  const roomWaiting = (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
   if (isLoading)
     return (
       <LiveRoomLoading label="Checking your session…" />
@@ -199,6 +206,7 @@ export function LiveApp({
   return (
     <LiveWorkspace
       area={area}
+      roomWaiting={roomWaiting}
       requestCommitments={requestPage.results.flatMap((request) => request.commitment ? [request.commitment] : [])}
       data={{
         ...dashboard,

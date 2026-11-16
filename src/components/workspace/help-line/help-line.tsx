@@ -11,7 +11,8 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
-import { useAction, useMutation, useQueries, useQuery } from "convex/react";
+import { useAction, useMutation, useQueries } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
 import type { FunctionReturnType } from "convex/server";
 import { Check, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
