@@ -122,7 +122,7 @@ export function ht(set: WordSet): Words {
     },
     dateField: { choose: "Chwazi yon jou", done: "Fini", chooseTime: "Chwazi yon lè" },
     week: {
-      figures: { calls: "Apèl pou retounen", visits: "Vizit ki planifye", requests: "Demann k ap tann yon wi" },
+      figures: { calls: "Apèl pou retounen", visits: "Vizit ki planifye", requests: "Demann k ap tann yon wi", oldest: (days) => `Pi ansyen an, ${days} jou`, toPay: (count) => `${count} apwouve, poko peye` },
       comingUp: "Sa k ap vini",
       nextSevenDays: "7 jou k ap vini yo",
       printWeek: "Enprime semèn nan",

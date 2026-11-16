@@ -145,7 +145,7 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
     const rest = weekLines(text, counts, 6).filter((line) => !["help-line", "visits", "neighbors"].includes(line.area));
     return (
       <>
-        {!waiting && <WeekFigures />}
+        {!waiting && <WeekFigures noted />}
         <p className={`!-mt-4 !mb-8 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[15px] leading-snug text-[var(--live-muted)] ${waiting ? held : "paper-rise"}`} aria-hidden={waiting || undefined} inert={waiting}>
           <span>
             <strong className="font-[650] text-[var(--live-ink)]">{text.brief.label}{rest.length ? ":" : ""}</strong>{rest.length ? ` ${rest.map((line) => line.brief).join(", ")}.` : ""}
