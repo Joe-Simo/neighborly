@@ -73,12 +73,13 @@ export function HomeYesCard() {
     const arrive = (part: HTMLElement | null, delay: number, rise = 0, duration = 260) => {
       if (part) moves.push(part.animate([{ opacity: 0, transform: `translateY(${rise}px)` }, { opacity: 1, transform: "none" }], { duration, delay, easing: PAPER_EASE, fill: "backwards" }));
     };
-    arrive(find(".home-yes-filed .help-sheet-label"), 180);
+    // The list begins to form about 120ms before the draft has finished leaving, so the paper is never seen bare.
+    arrive(find(".home-yes-filed .help-sheet-label"), 30);
     arrive(find("[data-new] small"), 360, 0, 160);
     // The tick is set down at the head of the line as the words reach it. Carried straight from the foot of the sheet it would cross them.
     const tick = find("[data-new] i");
     if (tick) moves.push(tick.animate([{ opacity: 0, transform: "scale(1.5)" }, { opacity: 1, transform: "none" }], { duration: 220, delay: 300, easing: PAPER_EASE, fill: "backwards" }));
-    root.querySelectorAll<HTMLElement>(".home-yes-filed li:not([data-new])").forEach((row, order) => arrive(row, 180 + order * 40, 12));
+    root.querySelectorAll<HTMLElement>(".home-yes-filed li:not([data-new])").forEach((row, order) => arrive(row, 90 + order * 40, 12));
     arrive(find(".home-yes-year"), 440, 0, 160);
     arrive(find(".home-yes-after"), 520, 8, 80);
     return () => moves.forEach(move => move.cancel());
