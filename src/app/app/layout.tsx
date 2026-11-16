@@ -5,7 +5,6 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { LiveFrame } from "@/components/live-frame";
-import { AuthOnTheClient } from "@/components/auth-on-the-client";
 import { protect } from "@/lib/sample-ticket";
 import { LiveProviders } from "@/components/live-providers";
 import Loading from "./loading";
