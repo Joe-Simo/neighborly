@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, useSeenForSix } from "@/components/workspace/fold";
 import "./volunteer.css";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CircleCheck } from "lucide-react";
@@ -85,19 +85,15 @@ export function CommitmentRows({
  * page and stays as a message for screen readers.
  */
 function Said({ children }: { children: string }) {
-  const [seen, setSeen] = useState(true);
   const line = useRef<HTMLParagraphElement>(null);
-  useEffect(() => {
-    line.current?.focus();
-    const leave = setTimeout(() => setSeen(false), 6000);
-    return () => clearTimeout(leave);
-  }, []);
+  const seen = useSeenForSix(line);
+  useEffect(() => line.current?.focus(), []);
   return (
     <p
       ref={line}
       tabIndex={-1}
       role="status"
-      className={seen ? "live-success volunteer-said paper-rise" : "sr-only"}
+      className={seen ? "live-success volunteer-said paper-settle" : "sr-only"}
     >
       {children}
     </p>

@@ -34,7 +34,7 @@ import {
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
-import { closeUp } from "@/components/workspace/fold";
+import { useSeenForSix } from "@/components/workspace/fold";
 import { ReliefPicture } from "@/components/workspace/relief";
 import { sections } from "@/components/workspace/sections";
 import type {
@@ -622,16 +622,8 @@ function useNavMarker(area: LiveArea) {
  * stays as a message for screen readers. Each new outcome is a new line (the old one is cleared first).
  */
 function Outcome({ children, ref }: { children: string; ref: RefObject<HTMLDivElement | null> }) {
-  const [seen, setSeen] = useState(true);
-  useEffect(() => {
-    // It is laid down like a slip, and after six seconds it closes up so the page below does not jump.
-    const leave = window.setTimeout(() => {
-      const line = ref.current;
-      if (line) void closeUp(line).then(() => setSeen(false));
-      else setSeen(false);
-    }, 6000);
-    return () => window.clearTimeout(leave);
-  }, [ref]);
+  // It is laid down like a slip, and after six seconds it closes up so the page below does not jump.
+  const seen = useSeenForSix(ref);
   return (
     <div className={seen ? "live-success paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
       {children}

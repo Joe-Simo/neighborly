@@ -1,3 +1,5 @@
+import { useEffect, useState, type RefObject } from "react";
+
 /**
  * How long a sheet stays after its yes, its corner green and its word showing, before it moves on:
  * the fold itself (about half a second) and time to read the word. One timing in every room.
@@ -30,4 +32,22 @@ export async function closeUp(sheet: HTMLElement) {
     ],
     { duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "forwards" },
   ).finished;
+}
+
+/**
+ * The green line that says what was done, in every room: true for six seconds, during which the line is
+ * on the page; then the line closes up and the answer turns false, and the room keeps the words as a
+ * message for screen readers only.
+ */
+export function useSeenForSix(line: RefObject<HTMLElement | null>) {
+  const [seen, setSeen] = useState(true);
+  useEffect(() => {
+    const leave = window.setTimeout(() => {
+      const paper = line.current;
+      if (paper) void closeUp(paper).then(() => setSeen(false));
+      else setSeen(false);
+    }, 6000);
+    return () => window.clearTimeout(leave);
+  }, [line]);
+  return seen;
 }

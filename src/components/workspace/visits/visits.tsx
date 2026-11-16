@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, useSeenForSix } from "@/components/workspace/fold";
 import "./visits.css";
 import {
   useCallback,
@@ -256,16 +256,12 @@ export function VisitsDone({
   pair?: string[];
   children: string;
 }) {
-  const [seen, setSeen] = useState(true);
   const line = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    line.current?.focus();
-    const leave = setTimeout(() => setSeen(false), 6000);
-    return () => clearTimeout(leave);
-  }, []);
+  const seen = useSeenForSix(line);
+  useEffect(() => line.current?.focus(), []);
   return (
     <div
-      className={seen ? "live-success help-done visits-done paper-rise" : "sr-only"}
+      className={seen ? "live-success help-done visits-done paper-settle" : "sr-only"}
       role="status"
       tabIndex={-1}
       ref={line}
