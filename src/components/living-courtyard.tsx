@@ -19,7 +19,8 @@ const float IMAGE = 2.;
 const vec2 HALL = vec2(.885, .44);
 const vec2 PX = vec2(1. / 1774., 1. / 887.);
 
-float depthAt(vec2 t){ return texture2D(uDepth, clamp(t, 0., 1.)).r; }
+// The two near pillars stand at the picture's side edges. Lifted from the wall they would uncover a strip with nothing behind it, which shows as upright streaks; so towards each side edge everything settles onto the plane that does not move.
+float depthAt(vec2 t){ float edge = smoothstep(.03, .12, t.x) * smoothstep(.97, .88, t.x); return mix(FOCUS, texture2D(uDepth, clamp(t, 0., 1.)).r, edge); }
 float lum(vec3 c){ return dot(c, vec3(.299, .587, .114)); }
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float cover(){ return max(uRect.z / IMAGE, uRect.w); }
