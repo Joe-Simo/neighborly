@@ -14,7 +14,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation } from "convex/react";
 import { useHour, useQuery } from "@/components/workspace/query";
-import { CircleCheck, Printer } from "lucide-react";
+import { ArrowRight, CircleCheck, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -567,47 +567,42 @@ export function VisitsView({
             <span className="live-count">The latest visits</span>
           </div>
           <div className="live-list">
-            {board.writtenUp.map((visit) => (
-              <div
-                className={
-                  visit.id === fresh ? "help-row visits-filed" : "help-row"
-                }
-                data-quiet
-                key={visit.id}
-              >
-                {leaf(visit.scheduledAt)}
-                <div>
-                  <p className="visits-who">
-                    <Pair
-                      names={visit.visitors.map((visitor) => visitor.name)}
-                    />
+            {board.writtenUp.map((visit) => {
+              const miles = Math.max(0, ...visit.visitors.map((visitor) => visitor.miles));
+              const href = visit.requestId ? requestHref(visit.neighborId, visit.requestId) : null;
+              // Two lines: who was visited and who went; what they found, and what the visit gave.
+              // The whole row opens the request it was for, through the one link on the name.
+              return (
+                <div
+                  className={visit.id === fresh ? "help-row visits-written visits-filed" : "help-row visits-written"}
+                  data-quiet
+                  key={visit.id}
+                >
+                  <p className="visits-written-who">
+                    <strong>
+                      {href ? (
+                        <Link className="help-row-open" href={href}>
+                          {visit.neighborName}
+                        </Link>
+                      ) : (
+                        visit.neighborName
+                      )}
+                    </strong>
+                    <span>
+                      <Pair names={visit.visitors.map((visitor) => visitor.name)} />
+                    </span>
                   </p>
-                  <h3>{visit.neighborName}</h3>
-                  {visit.notes && <p className="visits-found">{visit.notes}</p>}
+                  <p className="visits-written-found">
+                    <span className="visits-given">
+                      {format(visit.scheduledAt, { month: "short" })} · {count(visit.visitors[0]?.hours ?? 0, "hour", "hours")} ·{" "}
+                      {count(miles, "mile", "miles")}
+                    </span>
+                    <span>{visit.notes || "No notes written."}</span>
+                  </p>
+                  {href && <ArrowRight className="help-row-arrow" size={20} aria-hidden="true" />}
                 </div>
-                <div className="live-row-actions">
-                  <span className="live-status visits-given">
-                    {count(visit.visitors[0]?.hours ?? 0, "hour", "hours")} ·{" "}
-                    {count(
-                      Math.max(
-                        ...visit.visitors.map((visitor) => visitor.miles),
-                      ),
-                      "mile",
-                      "miles",
-                    )}
-                  </span>
-                  {visit.requestId && (
-                    <Button variant="outline" asChild>
-                      <Link
-                        href={requestHref(visit.neighborId, visit.requestId)}
-                      >
-                        Open the request
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

@@ -250,10 +250,13 @@ export function TreasurySection() {
                       ...payment,
                       ...(checkNumber.trim() && { checkNumber }),
                     })
-                      .then((entryId) => pay(view.request, payment.amount, entryId))
+                      .then((entryId) =>
+                        pay(view.request, payment.amount, entryId, payment.date, checkNumber.trim() || undefined),
+                      )
                       .finally(() => setPaying(null));
                   },
-                  `${formatFigure(payment.amount)} to ${view.request.payeeName} is recorded in the ledger, and the balance is up to date.`,
+                  // The sheet becomes its ledger line, which says so itself.
+                  "",
                   payment.date,
                 )
               }

@@ -827,5 +827,66 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
 /* Under 900px the room's picture already stands at the head a screen above: the empty place is the sentence and its line alone. */
 @media (max-width: 899px) {
   .live-app :is(.live-empty, .help-empty) { grid-template-columns: minmax(0, 1fr); }
-  .live-app :is(.live-empty > .paper-vignette, .help-empty-art) { display: none; }
+  .live-app :is(.live-empty, .help-empty) > .paper-vignette, .live-app .help-empty-art { display: none; }
+}
+
+/* ── Room heads at true size, as the home page lays its pictures ──────────────────────────────
+   Desk: the whole picture, never cropped, standing the full height of the head less 48px of paper under the hands,
+   anchored right with paper to its left. Phone: the whole picture above the heading, edge to edge. */
+@media (min-width: 700px) {
+  .live-head-art { width: calc(var(--head-wide) * 0.5); }
+  .live-head-art > .relief:not(.live-head-under),
+  .live-head-art > .relief.live-head-under {
+    position: absolute; inset: 0 0 auto auto; width: auto; height: calc(100% - 48px); aspect-ratio: 3 / 2;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%);
+    mask-image: linear-gradient(90deg, transparent, #000 22%);
+  }
+  .live-head-art > .relief img { object-fit: contain; object-position: right top !important; }
+}
+@media (max-width: 699px) and (min-height: 701px) {
+  .live-page-head:not([data-rested]) .live-head-art { height: auto; aspect-ratio: 3 / 2; }
+  .live-page-head:not([data-rested]) .live-head-art > .relief { position: absolute; inset: 0; top: 0; width: 100%; height: 100%; -webkit-mask-image: none; mask-image: none; }
+  .live-page-head:not([data-rested]) .live-head-art > .relief img { object-fit: contain; object-position: center !important; }
+}
+
+/* ── This week: the three figures as cut paper ─────────────────────────────────────────────
+   Each figure is a card laid on the page, hand-cut and leaning a little, its number cut from green paper and
+   standing proud of the card, the same craft as the Reports year piece. Each card is still the way into its room. */
+nav.week-figures { gap: clamp(12px, 1.6vw, 20px); border: 0; margin-bottom: 44px; }
+nav.week-figures a, nav.week-figures a + a {
+  position: relative; padding: 20px 22px 18px; border: 0;
+  background: #fffdf7; border-radius: 3px;
+  box-shadow: 0 0 0 1px #e3dccb, 0 1px 0 #283c3214, 0 16px 26px -18px rgb(40 60 50 / 0.42);
+  rotate: var(--lean, -0.7deg);
+}
+nav.week-figures a:nth-child(2) { --lean: 0.5deg; }
+nav.week-figures a:nth-child(3) { --lean: -0.25deg; }
+nav.week-figures .count-up {
+  font-size: clamp(52px, 5.6vw, 84px); color: #3f6a50;
+  text-shadow: 0 -1px 0 #5b8468, 1px 2px 0 #2c4a38, 3px 7px 8px rgb(40 60 50 / 0.28);
+}
+@media (hover: hover) {
+  nav.week-figures a { transition: translate 200ms var(--paper-ease), box-shadow 200ms var(--paper-ease); }
+  nav.week-figures a:hover { transform: none; translate: 0 -2px; box-shadow: 0 0 0 1px #d9d1bb, 0 1px 0 #283c3214, 0 22px 30px -18px rgb(40 60 50 / 0.48); }
+}
+@media (max-width: 560px) {
+  nav.week-figures { gap: 8px; }
+  nav.week-figures a, nav.week-figures a + a { padding: 14px 10px 12px; }
+  nav.week-figures .count-up { font-size: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { nav.week-figures a { transition: none; } }
+/* Numeral beside its words: a card is as tall as its number. What is waiting is said in ink beside the small ochre ring. */
+nav.week-figures a, nav.week-figures a + a { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 18px; row-gap: 4px; align-content: center; align-items: center; padding: 16px 20px; }
+nav.week-figures .count-up { grid-row: 1 / span 2; align-self: center; }
+nav.week-figures a > span:nth-child(2) { align-self: end; }
+nav.week-figures a > small { align-self: start; min-height: 0; margin: 0; color: var(--live-ink); display: inline-flex; align-items: center; gap: 8px; }
+nav.week-figures a > small:empty { display: none; }
+nav.week-figures a > small::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #c8962e; }
+nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row: 1 / span 2; align-self: center; }
+@media (max-width: 560px) {
+  nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  nav.week-figures a, nav.week-figures a + a { padding: 10px 16px; column-gap: 16px; }
+  nav.week-figures .count-up { font-size: 44px; }
+  nav.week-figures a > span:nth-child(2) { font-size: 16px; }
+  nav.week-figures a > small { font-size: 14px; min-height: 0; }
 }
