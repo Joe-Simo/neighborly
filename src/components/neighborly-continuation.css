@@ -16,9 +16,9 @@
 /* What a conference gets, written on one sheet of the workspace's own paper, its corner folded in ochre. */
 .neighborly-gets{grid-column:1;grid-row:1;position:relative;margin:0;padding:clamp(10px,1.2vw,18px) clamp(24px,3vw,48px);list-style:none;background:#f7f4ed;box-shadow:0 1px 0 #fffdf7 inset,0 30px 60px -34px #51433066,0 2px 8px #5143301a;clip-path:polygon(0 0,calc(100% - 44px) 0,100% 44px,100% 120%,0 120%)}
 .neighborly-gets::after{content:"";position:absolute;top:0;right:0;width:44px;height:44px;background:linear-gradient(225deg,transparent 50%,#c8962e 50%);filter:drop-shadow(-2px 3px 3px #5143303d)}
-.neighborly-gets li{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:baseline;gap:6px 32px;padding:clamp(18px,1.9vw,28px) 0;border-top:1px solid #293f3224}
+.neighborly-gets li{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:baseline;gap:6px 32px;padding:clamp(16px,1.5vw,22px) 0;border-top:1px solid #293f3224}
 .neighborly-gets li:first-child{border-top:0}
-.neighborly-gets h3{margin:0;font:400 clamp(26px,2.3vw,38px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em}
+.neighborly-gets h3{margin:0;font:400 clamp(26px,2.1vw,34px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em}
 .neighborly-gets p{margin:0;font-size:17px;line-height:1.5;text-wrap:pretty}
 .neighborly-gets li:last-child h3{font-style:italic;color:#365c46}
 .neighborly-final-actions{display:flex;flex-direction:column;align-items:flex-start;gap:18px;max-width:380px}
