@@ -744,3 +744,8 @@
 [tabindex="-1"]:not(a, button, input, select, textarea, summary, [role="button"], [role="gridcell"], [role="tab"], [role="option"], [role="radio"], [role="checkbox"], [role="menuitem"], [role="switch"]):is(:focus, :focus-visible) {
   outline: none;
 }
+
+/* A dialog or sheet never changes the page's width: the scrollbar's place is kept while the page is locked
+   behind it, so nothing shifts sideways when one opens or closes. The lock's own compensation is then not needed. */
+html:has(.live-app) { scrollbar-gutter: stable; }
+html:has(.live-app) > body[data-scroll-locked] { margin-right: 0 !important; padding-right: 0 !important; }
