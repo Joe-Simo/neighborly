@@ -270,12 +270,12 @@ export function VisitsDone({
       tabIndex={-1}
       ref={line}
     >
-      {pair ? (
+      {seen && (pair ? (
         <Pair names={pair} joining bare />
       ) : (
         <CircleCheck size={22} aria-hidden="true" />
-      )}
-      <span>{children}</span>
+      ))}
+      {seen ? <span>{children}</span> : children}
     </div>
   );
 }

@@ -174,10 +174,20 @@ export function prepareRequestDraft(note: string): RequestDraft {
 
 const streetWords = "st|street|ave|avenue|blvd|boulevard|rd|road|dr|drive|ln|lane|ct|court|cir|circle|way|pkwy|parkway|ter|terrace|pl|place|trl|trail|hwy|highway|calle|avenida";
 const addressPattern = new RegExp(`\\b\\d{1,6}\\s+(?:[\\p{L}\\p{N}.']+\\s+){0,4}(?:${streetWords})\\b(?:\\.?,?\\s*(?:apt|apartment|unit|lot|suite|ste|#)\\.?\\s*[\\p{L}\\p{N}-]+)?`, "giu");
-const safeCapitals = new Set([
-  "i", "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",
-  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "fpl", "lcec", "teco",
-]);
+/** Days and months in the three languages a note is written in. A schedule is not identity, and the model needs it. */
+const calendarWords = [
+  "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",
+  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+  "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "setiembre", "octubre", "noviembre", "diciembre",
+  "lunes", "martes", "miércoles", "miercoles", "jueves", "viernes", "sábado", "sabado", "domingo",
+  "janvye", "fevriye", "mas", "avril", "me", "jen", "jiyè", "jiye", "out", "septanm", "oktòb", "oktob", "novanm", "desanm",
+  "lendi", "madi", "mèkredi", "mekredi", "jedi", "vandredi", "samdi", "dimanch",
+];
+const safeCapitals = new Set(["i", "fpl", "lcec", "teco", ...calendarWords]);
+/** "Tuesdays" and "sábados" are as safe as "Tuesday" and "sábado". */
+const isSafe = (word: string) => safeCapitals.has(word.toLowerCase()) || safeCapitals.has(word.toLowerCase().replace(/s$/, ""));
+/** Months and days that are also given names. Before a surname ("April Johnson", "Julio Reyes") they are a person. */
+const alsoNames = "April|May|June|August|Abril|Julio|Domingo|Mercedes";
 
 function escape(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -205,7 +215,8 @@ export function withoutIdentity(note: string, known: { names: string[]; addresse
     .replace(/\b((?:my name is|name is|this is|i am|i'm|me llamo|soy)\s+)[\p{L}'-]+(?:\s+[\p{L}'-]+)?/giu, "$1[name]")
     .replace(/\b(?:mr|mrs|ms|miss|dr|sr|sra|fr|father|sister|deacon)\.?\s+[\p{L}'-]+/giu, "[name]")
     // A capitalised word after another word in the same sentence is a proper noun.
-    .replace(/(?<=[\p{L}\p{N}\],'’"”)]\s+)\p{Lu}[\p{L}\p{N}'’&-]*/gu, (word) => (safeCapitals.has(word.toLowerCase()) ? word : "[name]"))
+    .replace(/(?<=[\p{L}\p{N}\],'’"”)]\s+)\p{Lu}[\p{L}\p{N}'’&-]*/gu, (word) => (isSafe(word) ? word : "[name]"))
+    .replace(new RegExp(`\\b(?:${alsoNames})(?=\\s+\\[name\\])`, "g"), "[name]")
     // A sentence that opens with two capitalised words opens with a name.
     .replace(/(^|[.!?]\s+)\p{Lu}[\p{L}'’-]*(?=\s+\[name\])/gu, "$1[name]");
   return text.replace(/\[name\](?:\s+\[name\])+/g, "[name]");

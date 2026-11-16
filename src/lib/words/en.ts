@@ -488,13 +488,17 @@ export function en(set: WordSet) {
         createDeck: "Give your conference a private place to organize its people, plans and acts of care.",
         joinDeck: "Use your invitation to join your conference. You’ll choose the commitments you accept.",
         choose: "Choose how to begin", start: "Start a conference", invited: "I have an invitation",
-        yourName: "Your name", conferenceName: "Conference name", timeZone: "Conference time zone",
-        timeZoneHelp: "Commitments and meeting times use this time zone.",
+        yourName: "Your name", conferenceName: "Conference name", timeZone: "Time zone for all times",
         what: "A conference is the parish team that answers the help line and visits in pairs.",
-        note: "Only invited members can open yours. You can add teams and invite people after creating it.",
+        note: "Only invited members can open yours.",
         code: "Invitation code", codeHelp: "Use the code supplied by your coordinator. Joining does not accept a commitment.",
         creating: "Creating your conference…", joining: "Joining your conference…", create: "Create conference", join: "Join conference",
-        notSaved: "We couldn’t save that. Please try again.", kept: "Your entries are still here. Check the details and try again.",
+        // The button named in each line is `create` or `join` word for word.
+        notSaved: "We couldn’t save that. Your entries are still here. Press Create conference again.",
+        notSavedJoin: "We couldn’t save that. Your entries are still here. Press Join conference again.",
+        // Still read by the welcome sheet until the sign-in thread's next push; remove with timeZoneHelp in all three files then.
+        timeZoneHelp: "Commitments and meeting times use this time zone.", kept: "Your entries are still here. Check the details and try again.",
+        addName: "Add your name.", addConferenceName: "Add the conference’s name.", addCode: "Add your invitation code.",
       },
     },
   };
