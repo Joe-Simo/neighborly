@@ -108,6 +108,19 @@ final class ShellViewController: CAPBridgeViewController {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { self?.revealIfLoaded() }
         }
         startSlowTimer()
+        watchForFirstScreen()
+    }
+
+    /// The first real screen is often ready well before the last picture has
+    /// arrived and the page counts as loaded. So the page is asked ten times a
+    /// second whether it is past its skeleton, and the cover lifts the moment it is.
+    private func watchForFirstScreen() {
+        guard cover != nil, !stopped, let webView else { return }
+        let ready = "!!document.querySelector('.live-app') && !document.querySelector('.paper-loading') && document.fonts.status === 'loaded'"
+        webView.evaluateJavaScript(ready) { [weak self] result, _ in
+            if result as? Bool == true { self?.reveal(whileLoading: true); return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self?.watchForFirstScreen() }
+        }
     }
 
     private func place(_ layer: UIView) {
@@ -147,8 +160,8 @@ final class ShellViewController: CAPBridgeViewController {
         reveal()
     }
 
-    private func reveal() {
-        guard let webView, !webView.isLoading, !stopped else { return }
+    private func reveal(whileLoading: Bool = false) {
+        guard let webView, whileLoading || !webView.isLoading, !stopped, cover != nil || slowPage != nil else { return }
         slowTimer?.invalidate()
         stopTimer?.invalidate()
         lift([cover, slowPage])
