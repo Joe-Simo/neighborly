@@ -4,9 +4,20 @@ import { Button } from "@/components/ui/button";
 import { LiveEmpty, LiveField } from "@/components/workspace/primitives";
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
-import { formatDays } from "@/lib/words";
+import { formatDate, type Words } from "@/lib/words";
 import { MonthAway } from "@/components/workspace/volunteer/asides";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
+
+/** The one date pattern for whole days: "Thursday, November 19 to Saturday, November 21". The year is written only when it is not this one. */
+function readDays(words: Words, start: string, end: string) {
+  const read = (day: string) => {
+    const time = Date.parse(`${day}T12:00:00Z`);
+    if (!Number.isFinite(time)) return day;
+    return formatDate(words.locale, time, { timeZone: "UTC", weekday: "long", month: "long", day: "numeric", year: day.startsWith(String(new Date().getFullYear())) ? undefined : "numeric" });
+  };
+  const whole = start === end ? read(start) : `${read(start)} ${words.rota.through} ${read(end)}`;
+  return whole.charAt(0).toUpperCase() + whole.slice(1);
+}
 
 export function TimeOffSection() {
   const { data, pending, ownPerson, perform, words, openAction } = useWorkspace();
@@ -25,7 +36,7 @@ export function TimeOffSection() {
               <div className="live-row" key={item.id}>
                 <div>
                   <h3>
-                    {formatDays(words.locale, item.start, item.end)}
+                    {readDays(words, item.start, item.end)}
                   </h3>
                   {item.note && <p>{item.note}</p>}
                 </div>
@@ -96,7 +107,7 @@ function LiveAvailability({
           .map((item) => (
             <div className="live-row" key={item.id}>
               <span>
-                {formatDays(words.locale, item.start, item.end)}
+                {readDays(words, item.start, item.end)}
               </span>
               <Button
                 variant="ghost"
