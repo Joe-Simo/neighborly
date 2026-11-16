@@ -852,7 +852,6 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     new GLTFLoader().load(asset, (gltf) => {
     if (disposed || revision !== openingLoadRevision) { disposeOpening(gltf.scene); return; }
     if (openingModel) { openingMixer?.stopAllAction(); openingMixer?.uncacheRoot(openingModel); openingRoot.remove(openingModel); disposeOpening(openingModel); openingMaterials.clear(); openingPickTargets.length = 0; }
-    openingLoaded = true;
     openingModel = gltf.scene;
     openingMixer = new T.AnimationMixer(openingModel);
     openingPlayback = createReliefPlayback(openingMixer, gltf.animations);
@@ -912,8 +911,26 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
         if (!openingMaterials.has(surface)) openingMaterials.set(surface, { opacity: surface.opacity, transparent: surface.transparent, depthWrite: surface.depthWrite });
       }
     });
-    openingRoot.add(openingModel);
-    wake();
+    // The first frame used to send every picture to the graphics card and build every shader in one long task.
+    // Now each picture goes up in a turn of its own and the shaders are built without holding the page; the
+    // still painting stays in place until the scene is truly ready to be drawn, so nothing is seen to change.
+    const model = openingModel;
+    const show = () => {
+      if (disposed || revision !== openingLoadRevision || openingModel !== model) return;
+      openingLoaded = true;
+      openingRoot.add(model);
+      wake();
+    };
+    const pictures = new Set<T.Texture>();
+    for (const surface of openingMaterials.keys()) for (const value of Object.values(surface)) if (value instanceof T.Texture && value.image) pictures.add(value);
+    void (async () => {
+      for (const picture of pictures) {
+        if (disposed || revision !== openingLoadRevision) return;
+        renderer.initTexture(picture);
+        await new Promise<void>((next) => setTimeout(next));
+      }
+      await renderer.compileAsync(model, camera, scene);
+    })().then(show, show);
   }, undefined, () => {
     if (disposed || revision !== openingLoadRevision) return;
     // A model from another breakpoint cannot stand in for this composition.
