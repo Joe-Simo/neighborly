@@ -631,7 +631,7 @@ function Outcome({ children, ref }: { children: string; ref: RefObject<HTMLDivEl
   );
 }
 
-/** Once a session, on the first room after sign-in or the sample link, the paper sweeps up and settles as the page. */
+/** On the first room after sign-in or the sample link, and only then, the paper sweeps up and settles as the page. */
 function useArrival() {
   const wave = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
@@ -639,9 +639,12 @@ function useArrival() {
     const app = element?.closest<HTMLElement>(".live-app");
     if (!element || !app) return;
     try {
-      // The sheet carried over from the home page is its own arrival.
-      if (sessionStorage.getItem("kind-helps-arrived") || sessionStorage.getItem("neighborly-paper")) return;
-      sessionStorage.setItem("kind-helps-arrived", "1");
+      // Only for someone who has just come through the door (sign-in or the sample link). A person already
+      // signed in goes from the launch mark straight to their room. The sheet carried over from the home
+      // page is its own arrival.
+      const fromTheDoor = sessionStorage.getItem("kind-helps-door");
+      sessionStorage.removeItem("kind-helps-door");
+      if (!fromTheDoor || sessionStorage.getItem("neighborly-paper")) return;
     } catch {
       return;
     }
