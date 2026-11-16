@@ -5,7 +5,7 @@ import { prepareDraft } from "../src/lib/draft";
 import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
-import { neighborAccess, user } from "./access";
+import { hour, hourAsked, neighborAccess, user } from "./access";
 import { fiscalYear } from "./reports";
 import { paidTowardRequest } from "./treasury";
 
@@ -374,14 +374,14 @@ const visitedWords = /\b(?:visited|we met|met with|went to see|stopped by|visita
  * No names leave this function except inside toRead, which never leaves the server.
  */
 export const yearRecords = internalQuery({
-  args: { churchId: v.id("churches"), year: v.number() },
+  // `now` comes from the action that asks: a query never reads the clock.
+  args: { churchId: v.id("churches"), year: v.number(), now: v.number() },
   returns: v.object({ userId: v.id("users"), flags: v.array(yearFlag), toRead: v.array(toRead) }),
-  handler: async (ctx, { churchId, year }) => {
+  handler: async (ctx, { churchId, year, now }) => {
     const member = await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     if (!church || !Number.isInteger(year) || year < 2000 || year > 2100) throw new ConvexError("Year not found.");
     const { start, end } = fiscalYear(year, church.timeZone);
-    const now = Date.now();
     const [requests, visits] = await Promise.all([
       ctx.db.query("assistanceRequests").withIndex("by_church", q => q.eq("churchId", churchId).gte("createdAt", start).lt("createdAt", end)).take(1000),
       ctx.db.query("visits").withIndex("by_church", q => q.eq("churchId", churchId).gte("scheduledAt", start).lt("scheduledAt", end)).take(1000),
@@ -422,7 +422,7 @@ export const checkYear = action({
   args: { churchId: v.id("churches"), year: v.number() },
   returns: v.object({ flags: v.array(yearFlag), verification: v.union(v.literal("review"), v.literal("checked")) }),
   handler: async (ctx, args): Promise<{ flags: (typeof yearFlag.type)[]; verification: "review" | "checked" }> => {
-    const { userId, flags, toRead: reading } = await ctx.runQuery(internal.drafts.yearRecords, args);
+    const { userId, flags, toRead: reading } = await ctx.runQuery(internal.drafts.yearRecords, { ...args, now: Date.now() });
     // With no model, a person reads the notes code picked out; they are flagged as a rule's finding.
     const unread = { flags: [...flags, ...reading.map(({ kind, record }) => ({ kind, record, source: "rule" as const }))], verification: "review" as const };
     if (!reading.length) return { flags, verification: "checked" };
@@ -446,17 +446,17 @@ export const checkYear = action({
  * because a mark by the assistant means the note was read by it. The screen turns the counts into sentences.
  */
 export const weekNote = query({
-  args: { churchId: v.id("churches") },
+  args: { churchId: v.id("churches"), at: hour },
   returns: v.object({
     callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
     visitsPlanned: v.number(), requestsOpen: v.number(), approvedUnpaid: v.number(), approvedUnpaidCents: v.number(),
     openPlaces: v.number(), away: v.number(),
   }),
-  handler: async (ctx, { churchId }) => {
+  handler: async (ctx, { churchId, at }) => {
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     if (!church) throw new ConvexError("Group not found.");
-    const now = Date.now(), weekEnd = now + 7 * 86_400_000;
+    const now = hourAsked(at), weekEnd = now + 7 * 86_400_000;
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: church.timeZone }).format(now);
     const lastDay = new Intl.DateTimeFormat("en-CA", { timeZone: church.timeZone }).format(weekEnd);
     const [waiting, visits, open, approved, commitments, timeOff] = await Promise.all([
@@ -473,7 +473,8 @@ export const weekNote = query({
       callsWaiting: waiting.length,
       callsFirstByAssistant: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
       callsFirstByPerson: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "person").length,
-      oldestWaitingDays: waiting.length ? Math.floor((now - Math.min(...waiting.map(call => call.takenAt))) / 86_400_000) : 0,
+      // The hour asked about began before a call taken within it, so the age never reads below zero.
+      oldestWaitingDays: waiting.length ? Math.max(0, Math.floor((now - Math.min(...waiting.map(call => call.takenAt))) / 86_400_000)) : 0,
       visitsPlanned: visits.filter(visit => visit.status === "scheduled").length,
       requestsOpen: open.length, approvedUnpaid: approved.length, approvedUnpaidCents,
       openPlaces: commitments.filter(item => !item.cancelled && !item.assigneeId && item.start >= now && item.start < weekEnd).length,

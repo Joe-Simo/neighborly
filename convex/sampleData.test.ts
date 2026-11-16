@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 /// <reference types="vite/client" />
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import type { Id } from "./_generated/dataModel";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { internal } from "./_generated/api";
@@ -264,5 +265,48 @@ describe("sample conference", () => {
     expect(after.users.map((user) => user._id)).toEqual([kept.userId]);
     expect(after.memberships).toHaveLength(1);
     for (const table of tables.slice(3)) expect(after[table], table).toHaveLength(0);
+  });
+});
+
+describe("nightly reset", () => {
+  afterEach(() => void vi.useRealTimers());
+  const tablesOf = (t: ReturnType<typeof start>, churchId: Id<"churches">) => t.run(async (ctx) => {
+    const rows: string[] = [];
+    for (const table of ["memberships", "teams", "commitments", "neighbors", "calls", "assistanceRequests", "visits", "ledgerEntries", "deposits", "voucherStock", "tasks", "invitations", "requestDrafts", "meetings"] as const)
+      rows.push(...(await ctx.db.query(table).withIndex("by_church", (q) => q.eq("churchId", churchId)).collect()).map(() => table));
+    return rows.sort();
+  });
+
+  test("writes only what moved, drops what a visitor added, and keeps the conference's id", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-16T09:00:00Z"));
+    const t = start();
+    const userId = await t.run((ctx) => ctx.db.insert("users", {}));
+    const owner = { userId, name: "Sample Owner", email: "demo@kindhelps.com" };
+    const churchId = await t.mutation(internal.sampleData.load, { owner });
+    // A visitor changes a household and adds a call during the day.
+    await t.run(async (ctx) => {
+      const neighbor = (await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).first())!;
+      await ctx.db.patch("neighbors", neighbor._id, { name: "Typed by a visitor" });
+      const member = (await ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).first())!;
+      await ctx.db.insert("tasks", { churchId, title: "A visitor's task", dueAt: null, assigneeId: member._id, complete: false });
+    });
+
+    vi.setSystemTime(new Date("2026-11-17T09:00:00Z"));
+    const result = await t.mutation(internal.sampleData.renew, { churchId, owner });
+    const renewed = await tablesOf(t, churchId);
+    // The same rows as a fresh load on that day, so the six standing items are there as they would be.
+    const fresh = start();
+    const freshUser = await fresh.run((ctx) => ctx.db.insert("users", {}));
+    const freshId = await fresh.mutation(internal.sampleData.load, { owner: { ...owner, userId: freshUser } });
+    expect(renewed).toEqual(await tablesOf(fresh, freshId));
+    await t.run(async (ctx) => {
+      expect(await ctx.db.query("neighbors").filter((q) => q.eq(q.field("name"), "Typed by a visitor")).collect()).toHaveLength(0);
+      expect(await ctx.db.query("tasks").filter((q) => q.eq(q.field("title"), "A visitor's task")).collect()).toHaveLength(0);
+      expect((await ctx.db.query("churches").collect()).map((church) => church._id)).toEqual([churchId]);
+    });
+    // Most of the year holds still: far fewer rows are written than kept.
+    // Most of the year holds still: of about 2,100 rows, under a tenth are written (97 on this day).
+    expect(result.written).toBeLessThan(result.kept / 10);
   });
 });

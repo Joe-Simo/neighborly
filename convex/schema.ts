@@ -84,7 +84,7 @@ export default defineSchema({
     returnedAt: v.optional(v.number()),
     outcome: v.optional(v.string()),
     urgent: v.optional(v.object({ reasons: v.array(v.string()), day: v.optional(v.number()), by: v.union(v.literal("assistant"), v.literal("person")), byMember: v.optional(v.id("memberships")) })),
-  }).index("by_church", ["churchId", "takenAt"]).index("by_church_callback", ["churchId", "callback"]).index("by_neighbor", ["neighborId"]),
+  }).index("by_church", ["churchId", "takenAt"]).index("by_church_callback", ["churchId", "callback"]).index("by_church_callback_returned", ["churchId", "callback", "returnedAt"]).index("by_neighbor", ["neighborId"]),
   // A request the assistant drafted from a call note, waiting for a person's yes. Kept so it survives a reload.
   // Only what the draft says, the call it came from, who asked and when: no neighbor name, phone or address.
   requestDrafts: defineTable({

@@ -79,7 +79,8 @@ export const saveAddress = internalMutation({
 
 /** The iCalendar text behind one address, or null when the address is wrong or its member has left. */
 export const feedText = internalQuery({
-  args: { token: v.string() },
+  // `now` comes from the HTTP action that asks: a query never reads the clock.
+  args: { token: v.string(), now: v.number() },
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, args) => {
     if (!tokenPattern.test(args.token)) return null;
@@ -89,8 +90,7 @@ export const feedText = internalQuery({
     const church = await ctx.db.get("churches", feed.churchId);
     if (!member?.active || !church || member.churchId !== church._id) return null;
 
-    const now = Date.now();
-    const from = now - lookBack;
+    const now = args.now, from = now - lookBack;
     const calendar = ical({ name: church.name, prodId: { company: "Kind Helps", product: "Calendar", language: "EN" }, ttl: HOUR / 1000 });
     const shifts = await ctx.db.query("commitments").withIndex("by_assignee_end", (q) => q.eq("assigneeId", member._id).gt("end", from)).take(mostEvents);
     for (const shift of shifts) {
@@ -115,7 +115,7 @@ export const feedText = internalQuery({
 /** GET /calendar/<token>.ics. Anything but a live address gets an empty 404. */
 export const feed = httpAction(async (ctx, request) => {
   const token = new URL(request.url).pathname.match(/^\/calendar\/([0-9a-f]{64})\.ics$/)?.[1];
-  const text = token ? await ctx.runQuery(internal.calendar.feedText, { token }) : null;
+  const text = token ? await ctx.runQuery(internal.calendar.feedText, { token, now: Date.now() }) : null;
   if (text === null) return new Response(null, { status: 404 });
   return new Response(text, { status: 200, headers: { "Content-Type": "text/calendar; charset=utf-8", "Cache-Control": "private, max-age=900" } });
 });

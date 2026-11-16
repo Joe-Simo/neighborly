@@ -45,7 +45,8 @@ describe("the sample conference a visitor looks around", () => {
     await refreshed(t);
     const after = await guest.query(api.workspace.viewer, {});
     expect(after.churches).toHaveLength(1);
-    expect(after.churches[0].id).not.toBe(first.id);
+    // The conference keeps its id, so an open page and its address stay good across the night.
+    expect(after.churches[0].id).toBe(first.id);
     const left = await t.run(async (ctx) => ({
       churches: await ctx.db.query("churches").collect(),
       typed: (await ctx.db.query("tasks").collect()).filter((task) => task.title === "Typed by a visitor"),
@@ -59,6 +60,25 @@ describe("the sample conference a visitor looks around", () => {
     expect(left.churches).toHaveLength(1);
     expect(left.typed).toHaveLength(0);
     expect(left.visitors).toHaveLength(1);
+  });
+
+  test("the nightly reset can be turned off for a deployment nobody is shown", async () => {
+    const t = start();
+    const nightly = async () => {
+      await t.mutation(internal.demo.nightly, {});
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      return t.run(async (ctx) => (await ctx.db.query("tasks").collect()).filter((task) => task.title === "Typed by a visitor").length);
+    };
+    await nightly();
+    const type = () => t.run(async (ctx) => {
+      const church = (await ctx.db.query("churches").first())!;
+      await ctx.db.insert("tasks", { churchId: church._id, title: "Typed by a visitor", dueAt: null, assigneeId: null, complete: false });
+    });
+    await type();
+    vi.stubEnv("SAMPLE_NIGHTLY", "off");
+    expect(await nightly()).toBe(1);
+    vi.stubEnv("SAMPLE_NIGHTLY", "");
+    expect(await nightly()).toBe(0);
   });
 
   test("a refresh leaves every other conference alone, sample or real", async () => {
@@ -113,5 +133,47 @@ describe("the sample conference a visitor looks around", () => {
     const t = start();
     await refreshed(t);
     expect(await t.run((ctx) => ctx.db.query("churches").collect())).toHaveLength(0);
+  });
+
+  // Convex keeps one answer for everyone who asks the same question, and the sample is one conference
+  // shared by every visitor. A query that reads the clock loses that and is run again while a page sits
+  // open, which is what spent a month's allowance in two days. So the time comes in as an argument.
+  test("no room's query reads the clock, and none but the year's report reads more than a room needs", async () => {
+    const t = start();
+    await refreshed(t);
+    const guest = t.withIdentity(visitor);
+    await guest.mutation(api.users.enter, {});
+    const [{ id: churchId }] = (await guest.query(api.workspace.viewer, {})).churches;
+    const at = Math.floor(Date.now() / 3600000) * 3600000;
+    const read = (ask: (ctx: Parameters<Parameters<typeof guest.run>[0]>[0]) => Promise<unknown>) =>
+      guest.run(async (ctx) => {
+        const clock = vi.spyOn(Date, "now");
+        await ask(ctx);
+        const looked = clock.mock.calls.length;
+        clock.mockRestore();
+        return { looked, bytes: (await ctx.meta.getTransactionMetrics()).bytesRead.used };
+      });
+    const rooms = {
+      helpLine: await read((ctx) => ctx.runQuery(api.assistance.calls, { churchId, at })),
+      weekNote: await read((ctx) => ctx.runQuery(api.drafts.weekNote, { churchId, at })),
+      board: await read((ctx) => ctx.runQuery(api.visits.board, { churchId, at })),
+      mine: await read((ctx) => ctx.runQuery(api.visits.mine, { churchId, at })),
+      years: await read((ctx) => ctx.runQuery(api.reports.years, { churchId, at })),
+      year: await read((ctx) => ctx.runQuery(api.reports.year, { churchId, at, year: 2026 })),
+      record: await read(async (ctx) => {
+        const [neighbor] = await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1);
+        return ctx.runQuery(api.neighbors.record, { churchId, neighborId: neighbor._id });
+      }),
+    };
+    for (const [room, { looked }] of Object.entries(rooms)) expect(looked, room).toBe(0);
+    // Only a whole hour is taken, so the kept answers are one an hour, and a query asked without the hour is refused.
+    await expect(guest.query(api.assistance.calls, { churchId, at: at + 1 })).rejects.toThrow("Reload the page");
+    // @ts-expect-error a page that sends no hour
+    await expect(guest.query(api.assistance.calls, { churchId })).rejects.toThrow();
+    // The help line read 74 KB when it took the last 200 returned calls to find a week of them.
+    expect(rooms.helpLine.bytes).toBeLessThan(40_000);
+    for (const room of [rooms.weekNote, rooms.board, rooms.mine, rooms.years, rooms.record]) expect(room.bytes).toBeLessThan(100_000);
+    // A whole year added up is the one large read, and it is asked only in the Reports room.
+    expect(rooms.year.bytes).toBeLessThan(1_000_000);
   });
 });

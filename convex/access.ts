@@ -20,6 +20,12 @@ export async function user(ctx: QueryCtx | MutationCtx) {
   return { id: account._id, email };
 }
 /** The caller's active membership in this group, or an error. */
+export async function firstMembership(ctx: QueryCtx | MutationCtx) {
+  const account = await user(ctx);
+  const member = await ctx.db.query("memberships").withIndex("by_user", q => q.eq("userId", account.id)).filter(q => q.eq(q.field("active"), true)).first();
+  if (!member) throw new ConvexError("Workspace access required.");
+  return member;
+}
 export async function membership(ctx: QueryCtx | MutationCtx, church: Id<"churches">) {
   const account = await user(ctx);
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", church).eq("userId", account.id)).unique();
@@ -51,6 +57,23 @@ export async function neighborRecord(ctx: QueryCtx | MutationCtx, church: Id<"ch
 /** Writes the audit line for opening a record. Queries cannot write, so the screen calls a mutation that calls this. */
 export async function logNeighborOpening(ctx: MutationCtx, member: Doc<"memberships">, neighborId: Id<"neighbors">) {
   await ctx.db.insert("auditEvents", { churchId: member.churchId, actorId: member.userId, action: "neighbor.opened", targetId: neighborId, at: Date.now() });
+}
+/**
+ * The time a screen is asking about: the start of the hour on the reader's clock. A query that needs "now"
+ * takes it as this argument and never reads the clock itself. Convex keeps an answer for everyone who asks
+ * the same question, and a query that reads the clock loses that: it is run again and again while a page
+ * sits open. With the hour as an argument, one answer serves the whole hour, or until a record changes.
+ */
+export const hour = v.number();
+const HOUR = 3_600_000;
+/**
+ * The hour a query was asked about. Only a whole hour is taken, so the answers Convex keeps are one per
+ * hour and never one per odd value a page might send. The hour comes from the reader's own clock: a wrong
+ * one changes only what that reader is shown, never what they may open.
+ */
+export function hourAsked(at: number) {
+  if (!Number.isInteger(at) || at % HOUR !== 0 || at < 0 || at > 8.64e15) throw new ConvexError("Reload the page to see this room.");
+  return at;
 }
 /** For the screens: whether to offer neighbor records at all. The backend check above is the real gate. */
 export const canOpenNeighborRecords = query({

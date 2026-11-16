@@ -75,7 +75,7 @@ describe("removing a person for good", () => {
   test("nothing that says who they were is left in any table, and their work still counts", async () => {
     const { t, churchId, ownerUser, person } = await conference();
     const owner = signedIn(t, ownerUser);
-    const before = await owner.query(api.reports.year, { churchId, year: 2026 });
+    const before = await owner.query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026 });
 
     const visited = await t.run(async (ctx) => (await ctx.db.query("visits").collect()).find((visit) => visit.status === "completed" && visit.visitors.some((visitor) => visitor.memberId === person._id && visitor.hours > 0))!);
     await owner.mutation(api.people.remove, { churchId, personId: person._id, typedName: `  ${person.name.toUpperCase()} ` });
@@ -105,7 +105,7 @@ describe("removing a person for good", () => {
     });
 
     // The year still adds up: same households, visits and hours, with their line under the plain name.
-    const after = await owner.query(api.reports.year, { churchId, year: 2026 });
+    const after = await owner.query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: 2026 });
     expect(after.households).toBe(before.households);
     expect(after.visits).toBe(before.visits);
     expect(after.time.hours).toBe(before.time.hours);
@@ -123,6 +123,9 @@ describe("removing a person for good", () => {
     const people = (await owner.query(api.workspace.dashboard, { churchId })).people;
     expect(people.some((row) => row.id === person._id || row.name === formerMember)).toBe(false);
     await expect(signedIn(t, person.userId).query(api.workspace.dashboard, { churchId })).rejects.toThrow("Workspace access required.");
+    // Asked without naming one, as the sample door does: the conference they belong to, and nothing once they are gone.
+    expect((await owner.query(api.workspace.dashboard, {})).church.id).toBe(churchId);
+    await expect(signedIn(t, person.userId).query(api.workspace.dashboard, {})).rejects.toThrow("Workspace access required.");
     vi.useRealTimers();
   });
 
