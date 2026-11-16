@@ -164,8 +164,19 @@
   .help-sheet[data-blank] .help-assistant-line { grid-column: 2; margin: 6px 0 0; padding: 2px 0 2px 28px; border-top: 0; border-left: 1px solid #e6e0ee; }
 }
 /* A phone number is never broken across lines, and on a phone the sheet's main act takes the full width so "Discard" is not left alone on a line. */
-.help-record-facts .help-phone { white-space: nowrap; }
+.help-tel { white-space: nowrap; }
 @media (max-width: 699px) {
   .help-record-facts { grid-template-columns: max-content minmax(0, 1fr); column-gap: 32px; }
+  /* A waiting call on a phone: the words, then "Mark returned" across the row, then the smaller acts under it. */
+  .help-row[data-call]:not([data-quiet]) { row-gap: 0; }
+  .help-row[data-call]:not([data-quiet]) > :first-child { grid-row: 1 / span 8; }
+  .help-row[data-call]:not([data-quiet]) > :nth-child(2) { display: contents; }
+  .help-row[data-call]:not([data-quiet]) > :nth-child(2) > * { grid-column: 2; }
+  .help-row[data-call]:not([data-quiet]) > .live-row-actions { order: 1; margin: 16px 0 0; }
+  .live-app .help-row[data-call]:not([data-quiet]) > .live-row-actions [data-slot="button"] { width: 100%; }
+  .help-row[data-call]:not([data-quiet]) .help-row-more { order: 2; margin-top: 14px; }
   .help-sheet .help-actions > [data-slot="button"]:first-child { flex: 1 0 100%; }
 }
+/* "Reach them" stands first in At home: four columns on a wide desk, two by two on a narrower one. */
+@media (min-width: 851px) { .help-home { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 34px; } }
+@media (min-width: 1180px) { .help-home { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

@@ -633,7 +633,7 @@ export function DecideForm({
       <FormEnd
         error={amountError || error}
         pending={pending}
-        submit={approving ? "Approve request" : "Decline request"}
+        submit={approving ? "Approve this request" : "Decline this request"}
       />
     </form>
   );
@@ -690,7 +690,7 @@ export function CloseForm({
       <FormEnd
         error={error}
         pending={pending}
-        submit={back ? "Take back voucher" : "Close request"}
+        submit={back ? "Take back this voucher" : "Close this request"}
       />
     </form>
   );

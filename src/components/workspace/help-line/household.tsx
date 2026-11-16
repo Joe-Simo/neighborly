@@ -16,6 +16,7 @@ import {
   accountKinds,
   cents,
   householdDetail,
+  languageLabels,
   livesHere,
   shortMoney,
   total,
@@ -24,7 +25,7 @@ import {
 import { useSave } from "@/components/workspace/help-line/use-save";
 
 type Target = { churchId: Id<"churches">; neighborId: Id<"neighbors"> };
-export type HomeStep = "people" | "money" | "accounts";
+export type HomeStep = "details" | "people" | "money" | "accounts";
 export type Accounts = { kind: keyof typeof accountKinds; name: string; accountNumber: string; phone: string }[];
 
 /**
@@ -62,6 +63,18 @@ export function AtHome({
         <h2 id="at-home-title">At home</h2>
       </div>
       <dl className="help-home">
+        <div>
+          <dt>Reach them</dt>
+          <dd>
+            {record.neighbor.address || "No address on file"}
+            <small>
+              <span className="help-tel">{record.neighbor.phone || "No phone on file"}</span>
+              {" · "}Speaks {languageLabels[record.neighbor.language]}
+            </small>
+            {record.neighbor.email && <small>{record.neighbor.email}</small>}
+          </dd>
+          {change("details", false, "")}
+        </div>
         <div>
           <dt>Lives here</dt>
           <dd>

@@ -113,7 +113,8 @@ export function NeighborRecord({
   const deck =
     record &&
     [
-      record.neighbor.address,
+      // The address stands in "Reach them" under At home, at reading size, not in this small line.
+      !homeReady && record.neighbor.address,
       household(record.neighbor.adults, record.neighbor.children).toLowerCase(),
       `on file since ${format(record.since, { day: undefined, month: "long", year: "numeric" })}`,
     ]
@@ -270,7 +271,7 @@ export function NeighborRecord({
       {(step?.kind === "approve" || step?.kind === "decline") && (
         <LiveDialog
           title={
-            step.kind === "approve" ? "Approve request" : "Decline request"
+            step.kind === "approve" ? "Approve this request" : "Decline this request"
           }
           description={`${requestTitle(step.request)}. ${step.request.summary}`}
           onClose={close}
@@ -290,7 +291,7 @@ export function NeighborRecord({
       {step?.kind === "close" && (
         <LiveDialog
           title={
-            takingBack(step.request) ? "Take back voucher" : "Close request"
+            takingBack(step.request) ? "Take back this voucher" : "Close this request"
           }
           description={`${requestTitle(step.request)}. ${step.request.summary}`}
           onClose={close}
@@ -485,24 +486,17 @@ export function NeighborRecordView({
         </div>
       </dl>
 
-      <dl className="help-record-facts" data-few={home ? "" : undefined}>
-        <div>
-          <dt>Phone</dt>
-          <dd className="help-phone">{neighbor.phone || "None on file"}</dd>
-        </div>
-        <div>
-          <dt>Speaks</dt>
-          <dd>{languageLabels[neighbor.language]}</dd>
-        </div>
-        {home ? (
-          neighbor.email && (
+      {!home && (
+        <>
+          <dl className="help-record-facts" data-few="">
             <div>
-              <dt>Email</dt>
-              <dd>{neighbor.email}</dd>
+              <dt>Phone</dt>
+              <dd className="help-tel">{neighbor.phone || "None on file"}</dd>
             </div>
-          )
-        ) : (
-          <>
+            <div>
+              <dt>Speaks</dt>
+              <dd>{languageLabels[neighbor.language]}</dd>
+            </div>
             <div>
               <dt>Household</dt>
               <dd>{householdDetail(neighbor.adults, neighbor.children)}</dd>
@@ -511,19 +505,20 @@ export function NeighborRecordView({
               <dt>{landlord ? "Landlord" : "Email"}</dt>
               <dd>{landlord ?? (neighbor.email || "None on file")}</dd>
             </div>
-          </>
-        )}
-      </dl>
-      <p className="help-note">
-        {neighbor.notes && <>{neighbor.notes} </>}
-        <Button
-          variant="link"
-          className="help-text-action"
-          onClick={() => onStep({ kind: "details" })}
-        >
-          Change details
-        </Button>
-      </p>
+          </dl>
+          <p className="help-note">
+            {neighbor.notes && <>{neighbor.notes} </>}
+            <Button
+              variant="link"
+              className="help-text-action"
+              onClick={() => onStep({ kind: "details" })}
+            >
+              Change details
+            </Button>
+          </p>
+        </>
+      )}
+      {home && neighbor.notes && <p className="help-note">{neighbor.notes}</p>}
 
       {home && (
         <AtHome
