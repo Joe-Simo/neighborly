@@ -149,10 +149,10 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const thumbFrom = .5;
   const cardTuck = [-.11, .07] as const;
   let landed = 0;
-  // The open hand takes the card: it gives 6px under the small weight and comes back, and its palm closes 3 degrees and keeps hold.
+  // The open hand takes the card: it gives 12px under the small weight and comes back, and its palm closes 6 degrees and keeps hold, the card sinking 3px deeper into it.
   let receiver: T.Object3D | undefined, receiverPalm: T.Object3D | undefined;
   let taken = 0, gaveDip = 0, gaveCurl = 0, setDip = NaN, setCurl = NaN;
-  const takeTime = .62, takeDip = 6, takeCurl = -3 * Math.PI / 180;
+  const takeTime = .45, takeDip = 11, takeCurl = -6 * Math.PI / 180, takeSink = 3;
   let openingOutcome: ReliefOutcome = "rest";
   const openingRoot = new T.Group();
   scene.add(openingRoot);
@@ -684,13 +684,14 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
         // What was added last frame is taken off first, unless the playback has since written the bone afresh.
         if (receiver) { if (receiver.position.y === setDip) receiver.position.y += gaveDip; receiver.position.y -= dip; setDip = receiver.position.y; gaveDip = dip; }
         if (receiverPalm) { if (receiverPalm.rotation.z === setCurl) receiverPalm.rotation.z -= gaveCurl; receiverPalm.rotation.z += curl; setCurl = receiverPalm.rotation.z; gaveCurl = curl; }
-        cardSeat.position.y -= dip;
+        const held = reduce ? 0 : 1 - (1 - taken) ** 3;
+        cardSeat.position.y -= dip + held * takeSink * pixel;
         if (cardShadow) {
           cardShadow.position.copy(cardSeat.position);
           cardShadow.position.x -= cardWidth * rest * .02;
           cardShadow.position.y -= cardWidth * rest * (.2 + (1 - settled) * .05);
           cardShadow.rotation.z = cardSeat.rotation.z;
-          cardShadow.scale.set(cardWidth * rest * (1.38 - settled * .12), cardWidth * rest * (.6 - settled * .06), 1);
+          cardShadow.scale.set(cardWidth * rest * (1.38 - settled * .12 - held * .1), cardWidth * rest * (.6 - settled * .06 - held * .05), 1);
           cardShadow.material.opacity = arrived * (.36 + settled * .26) * openingOpacity;
           cardShadow.visible = arrived > 0;
         }
