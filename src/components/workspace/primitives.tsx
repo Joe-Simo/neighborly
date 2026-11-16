@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords, wrongControl } from "@/components/workspace/failure";
@@ -27,7 +26,6 @@ export function LiveLoading({
   const opening = useOpening();
   return (
     <div className="live-loading" role="status">
-      <LoaderCircle size={20} aria-hidden="true" />
       <span className="text-balance">{label ?? opening}</span>
     </div>
   );
@@ -60,7 +58,6 @@ export function LiveRoomLoading({
       />
       <div className="paper-loading-words">
         <p className="paper-loading-label" role="status">
-          <LoaderCircle size={20} aria-hidden="true" />
           <span className="text-balance">{label ?? opening}</span>
         </p>
         {children}

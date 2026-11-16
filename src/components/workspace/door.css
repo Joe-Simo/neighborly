@@ -37,7 +37,7 @@
 .door-opening[data-spoken] { inset: auto; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .door-opening[data-low]:not([data-spoken]) { inset: auto 24px 14vh; }
 @media (prefers-reduced-motion: reduce) { .door-opening[data-low]:not([data-spoken]) { inset: calc(50vh + 64px) 24px auto; } }
-.door-opening svg { flex: none; animation: live-spin 1s linear infinite; }
+/* A wait is the one quiet line, never a turning wheel. */
 @keyframes door-opening-in { from { opacity: 0; } }
 /* Reduce Motion: no sweep. The paper is simply there, and gives way in one short fade. */
 @media (prefers-reduced-motion: reduce) {
@@ -45,7 +45,7 @@
   .door-card, .door-card > * { animation: none; }
   .door-card > * { display: none; }
   .door-sweep > svg:not(:last-of-type), .door-sweep:has(.door-card) > svg { display: none; }
-  .door-opening, .door-opening svg { animation: none; }
+  .door-opening { animation: none; }
 }
 /* For someone from the door the sweep takes the place of the waiting screen's mark and line. */
 body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
