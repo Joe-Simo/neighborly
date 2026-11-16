@@ -132,10 +132,12 @@
 }
 .live-head-words > :nth-child(2) { animation-delay: calc(var(--paper-wait, 0ms) + 40ms); }
 .live-head-words > :nth-child(n + 3) { animation: paper-rise 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
-/* The room's filled button rises like the rest but is whole within two frames: a filled button caught half
-   faded is a pale bar whose white label cannot be read, and reads as a button with no name. */
-@keyframes paper-set { from { opacity: 0; transform: translateY(12px); } 12% { opacity: 1; } }
+/* The room's filled button is whole or not drawn: no fade. It is hidden through the wait, then there in one
+   frame, fill and label together, and only its 12px rise carries on. The same in every room. */
+@keyframes paper-set { from { visibility: hidden; transform: translateY(12px); } }
 .live-head-actions { animation: paper-set 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
+/* A saved line's sentences each stay whole where there is room, so the line breaks between them. */
+.live-said { display: inline-block; white-space: pre-wrap; }
 /* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
 /* Between rooms: one cross-fade of 200ms. The new picture comes up over the last one, which stays whole under it

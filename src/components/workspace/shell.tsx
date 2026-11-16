@@ -1,5 +1,6 @@
 "use client";
 
+import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, CircleCheck, LogOut, Menu, Plus } from "lucide-react";
@@ -712,7 +713,7 @@ function Outcome({ children, ref }: { children: string; ref: RefObject<HTMLDivEl
   return (
     <div className={seen ? "live-success help-done paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
       {seen && <CircleCheck size={22} aria-hidden="true" />}
-      {seen ? <span>{children}</span> : children}
+      {seen ? <SavedWords>{children}</SavedWords> : children}
     </div>
   );
 }

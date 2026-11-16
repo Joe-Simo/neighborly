@@ -1,5 +1,6 @@
 "use client";
 
+import { SavedWords } from "@/components/workspace/saved-words";
 import { cn } from "@/lib/utils";
 import { useSavedLine } from "@/components/workspace/fold";
 import "./help-line.css";
@@ -105,7 +106,7 @@ export function HelpDone({
   return (
     <div className={seen ? cn("live-success help-done paper-settle", className) : "sr-only"} role="status" tabIndex={-1} ref={line}>
       {seen && <CircleCheck size={22} aria-hidden="true" />}
-      {seen ? <span>{children}</span> : children}
+      {seen ? <SavedWords>{children}</SavedWords> : children}
       {seen && action}
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { SavedWords } from "@/components/workspace/saved-words";
 import { FOLD_HOLD, arriving, foldLeaves, openUp, useSavedLine, viewTop } from "@/components/workspace/fold";
 import "./volunteer.css";
 import { useEffect, useRef, useState } from "react";
@@ -97,7 +98,7 @@ function Said({ children }: { children: string }) {
       className={seen ? "live-success help-done volunteer-said paper-settle" : "sr-only"}
     >
       {seen && <CircleCheck size={22} aria-hidden="true" />}
-      {seen ? <span>{children}</span> : children}
+      {seen ? <SavedWords>{children}</SavedWords> : children}
     </p>
   );
 }
