@@ -462,6 +462,20 @@ export function ht(set: WordSet): Words {
     welcome: {
       pass: "Pase kat la",
       hint: "Pase kat la pou kòmanse.",
+      first: {
+        createKicker: "Yon ti kòmansman", joinKicker: "Yon envitasyon pou fè pati",
+        createTitle: "Fè plas pou moun ou yo.", joinTitle: "Moun ou yo la.",
+        createDeck: "Bay konferans ou a yon plas prive pou òganize moun li yo, plan li yo ak zèv charite li yo.",
+        joinDeck: "Sèvi ak envitasyon ou pou antre nan konferans ou a. Se ou ki chwazi angajman ou aksepte yo.",
+        choose: "Chwazi kijan pou kòmanse", start: "Kòmanse yon konferans", invited: "Mwen gen yon envitasyon",
+        yourName: "Non ou", conferenceName: "Non konferans lan", timeZone: "Zòn lè konferans lan",
+        timeZoneHelp: "Angajman yo ak reyinyon yo sèvi ak zòn lè sa a.",
+        what: "Yon konferans se ekip pawas la ki reponn liy èd la epi ki fè vizit de pa de.",
+        note: "Se sèlman manm yo envite ki ka louvri pa ou a. Ou ka ajoute ekip epi envite moun apre ou fin kreye l.",
+        code: "Kòd envitasyon", codeHelp: "Sèvi ak kòd kowòdonatè ou a ba ou a. Antre pa vle di ou aksepte yon angajman.",
+        creating: "N ap kreye konferans ou a…", joining: "N ap antre nan konferans ou a…", create: "Kreye konferans", join: "Antre nan konferans lan",
+        notSaved: "Nou pa t kapab anrejistre sa. Tanpri eseye ankò.", kept: "Sa ou te ekri a toujou la. Verifye detay yo epi eseye ankò.",
+      },
     },
   };
 }

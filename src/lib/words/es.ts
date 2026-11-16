@@ -467,6 +467,20 @@ export function es(set: WordSet): Words {
     welcome: {
       pass: "Pasa la tarjeta",
       hint: "Pasa la tarjeta para comenzar.",
+      first: {
+        createKicker: "Un pequeño comienzo", joinKicker: "Una invitación a pertenecer",
+        createTitle: "Haz lugar para tu gente.", joinTitle: "Tu gente está aquí.",
+        createDeck: "Dale a tu conferencia un lugar privado para organizar a su gente, sus planes y sus obras de caridad.",
+        joinDeck: "Usa tu invitación para unirte a tu conferencia. Tú eliges los compromisos que aceptas.",
+        choose: "Elige cómo empezar", start: "Empezar una conferencia", invited: "Tengo una invitación",
+        yourName: "Tu nombre", conferenceName: "Nombre de la conferencia", timeZone: "Zona horaria de la conferencia",
+        timeZoneHelp: "Los compromisos y las reuniones usan esta zona horaria.",
+        what: "Una conferencia es el equipo de la parroquia que atiende la línea de ayuda y visita en parejas.",
+        note: "Solo los miembros invitados pueden abrir la tuya. Después de crearla puedes agregar equipos e invitar personas.",
+        code: "Código de invitación", codeHelp: "Usa el código que te dio tu coordinador. Unirte no acepta ningún compromiso.",
+        creating: "Creando tu conferencia…", joining: "Uniéndote a tu conferencia…", create: "Crear conferencia", join: "Unirme a la conferencia",
+        notSaved: "No pudimos guardar eso. Inténtalo de nuevo.", kept: "Lo que escribiste sigue aquí. Revisa los datos e inténtalo de nuevo.",
+      },
     },
   };
 }
