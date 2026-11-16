@@ -226,6 +226,23 @@ export function LiveWorkspace({
       window.removeEventListener("resize", read);
     };
   }, [area]);
+  // A keyboard on a phone slides the view down the page without moving the page itself, so anything held at the
+  // top would be left behind above the view. The shell says how far the view has slid; the bar and a held
+  // saved line add it to their place (`--live-pan`).
+  useEffect(() => {
+    const view = window.visualViewport;
+    if (!view) return;
+    const root = document.documentElement.style;
+    const read = () => root.setProperty("--live-pan", `${Math.max(0, view.offsetTop)}px`);
+    read();
+    view.addEventListener("resize", read);
+    view.addEventListener("scroll", read);
+    return () => {
+      view.removeEventListener("resize", read);
+      view.removeEventListener("scroll", read);
+      root.removeProperty("--live-pan");
+    };
+  }, []);
   // The first room is whole: its sheet has arrived and its picture is in. The iPhone app's launch cover may wait
   // for `.live-app[data-room-in]`, so the mark never lifts on a room that is still coming up under it.
   const app = useRef<HTMLDivElement>(null);

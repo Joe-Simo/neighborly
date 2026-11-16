@@ -79,6 +79,12 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Its own arriving moves are over for good; being measured must not start them again.
   sheet.dataset.paperClosing = "";
+  // A line held under the top edge has no room in the page: it fades where it is, and that is all.
+  if (sheet.dataset.paperHeld !== undefined) {
+    await sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: LEAVE, fill: "forwards", easing: "cubic-bezier(0.6, 0, 0.9, 0.6)" }).finished;
+    sheet.style.pointerEvents = "none";
+    return;
+  }
   const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
   const height = sheet.offsetHeight;
   sheet.style.boxSizing = "border-box";
@@ -122,7 +128,6 @@ export function arriving(change: () => void) {
   pageBefore = undefined;
 }
 
-const laidAbove = new WeakSet<HTMLElement>();
 /**
  * Where the window's own top edge is for the page: under the bar when the bar is held (under 900px), else 0.
  * Anything that asks "is this in view" measures from here, so nothing counts as seen while it lies under the bar.
@@ -150,12 +155,20 @@ export function openUp(sheet: HTMLElement) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Asked twice, it opens once: an opening already under way is dropped before the paper is measured.
   sheet.getAnimations().forEach((move) => move.id === OPENING && move.cancel());
-  // Laid in above the window, nobody sees it open: it is there at once and what the person is looking at
-  // stays where it is. Browsers that anchor the scroll do that themselves; the others are told, once.
-  if (home(sheet).top < viewTop()) {
-    if (!laidAbove.has(sheet) && !CSS.supports("overflow-anchor", "auto"))
-      window.scrollBy(0, document.body.offsetHeight - pageWithout(sheet, "gone"));
-    laidAbove.add(sheet);
+  // Laid in above the window (or under the bar), it takes no room in the page at all: it is drawn held under
+  // the top edge, out of the page's flow, so nothing the person is looking at moves and there is nothing to
+  // make up for in any browser. A dialog scrolls its own paper, so a line in one keeps its place there.
+  const place = home(sheet);
+  if (place.top < viewTop() && !sheet.closest(".live-dialog")) {
+    Object.assign(sheet.style, {
+      position: "fixed",
+      top: "calc(var(--live-bar, 0px) + var(--live-pan, 0px) + 8px)",
+      left: `${place.left}px`,
+      width: `${place.width}px`,
+      margin: "0",
+      zIndex: "15",
+    });
+    sheet.dataset.paperHeld = "";
     return;
   }
   const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
@@ -216,8 +229,12 @@ export function settleFrom(sheet: HTMLElement, from: number) {
 
 /** Undoes closeUp on a piece of paper that stays on the page for new words. */
 function openFlat(sheet: HTMLElement) {
-  if (!sheet.style.overflow) return;
+  if (!sheet.style.overflow && sheet.dataset.paperHeld === undefined) return;
   sheet.getAnimations().forEach((move) => move.cancel());
+  if (sheet.dataset.paperHeld !== undefined) {
+    Object.assign(sheet.style, { position: "", top: "", left: "", width: "", margin: "", zIndex: "", pointerEvents: "" });
+    delete sheet.dataset.paperHeld;
+  }
   sheet.style.overflow = "";
   sheet.style.boxSizing = "";
   delete sheet.dataset.paperClosing;
