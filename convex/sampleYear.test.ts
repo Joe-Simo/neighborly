@@ -8,14 +8,12 @@ import { sampleYear } from "../src/lib/sample-year";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 
-// The sample is built backward from today, so today is the moment the home page's figures were taken.
-beforeEach(() => {
-  vi.useFakeTimers({ toFake: ["Date"] });
-  vi.setSystemTime(new Date(sampleYear.asOf));
-});
+beforeEach(() => void vi.useFakeTimers({ toFake: ["Date"] }));
 afterEach(() => void vi.useRealTimers());
 
-test("the home page's four figures are the sample's own yearly report", async () => {
+// The sample is rebuilt every night from the day it is built on; its closed year must read the same on any of them.
+test.each(["2026-11-16T15:00:00Z", "2026-11-30T09:00:00Z"])("the home page's four figures are the sample's own yearly report, built on %s", async (day) => {
+  vi.setSystemTime(new Date(day));
   const t = convexTest(schema, modules);
   const churchId = await t.mutation(internal.sampleData.load, {});
   const owner = await t.run(async (ctx) => (await ctx.db.query("memberships").collect()).find((member) => member.role === "owner"));
