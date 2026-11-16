@@ -38,6 +38,8 @@ export function arriveFromTheDoor() {
   arrivedAt = performance.now();
   // The room under the paper is drawn finished: its own entry is skipped until the next room (door.css; the shell lifts the mark).
   document.documentElement.dataset.fromDoor = "";
+  // For anything outside the page that must give way to the sweep (the iPhone app's strip): there for the whole run.
+  document.documentElement.dataset.door = "sweeping";
   for (const watch of watchers) watch();
 }
 const watch = (watcher: () => void) => {
@@ -81,6 +83,7 @@ export function DoorSweep() {
       const leave = paper.current?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: plain ? 180 : LIFT, easing: "linear", fill: "forwards" });
       const over = () => {
         setHolding(false);
+        delete document.documentElement.dataset.door;
         finished = arrival;
         for (const watch of watchers) watch();
       };
