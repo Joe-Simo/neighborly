@@ -94,6 +94,8 @@ final class ShellViewController: CAPBridgeViewController {
         guard let webView else { return }
         clearTopEdge(of: webView)
         webView.allowsLinkPreview = false
+        // A swipe from the left edge goes back, as in any app: from Privacy to sign-in, from a record to its list.
+        webView.allowsBackForwardNavigationGestures = true
         // Paper, not white or black, when a page is pulled past its end.
         webView.underPageBackgroundColor = paper
         webView.scrollView.backgroundColor = paper
