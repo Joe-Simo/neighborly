@@ -145,6 +145,9 @@ export function en(set: WordSet) {
         "Commitments you accept will appear here with everything you need to prepare.",
     },
     commitments: {
+      weekByTeam: "This week by team",
+      covered: "Covered",
+      placesOpen: (count: number) => (count === 1 ? "1 place open" : `${count} places open`),
       filterLabel: "Filter by team",
       allTeams: "All teams",
       noneForTeamTitle: "No upcoming dates for this team.",
@@ -187,6 +190,9 @@ export function en(set: WordSet) {
       released: "Commitment released. Your other dates are unchanged.",
     },
     timeOff: {
+      thisMonth: "This month",
+      away: "Away",
+      canHelp: "Can help",
       note: "Time off does not remove you from your teams. Existing commitments need a separate change so everyone knows what is covered.",
       remove: "Remove",
       removed: "Time off removed.",
@@ -229,6 +235,7 @@ export function en(set: WordSet) {
     },
     /** Tasks & meetings, as a member sees them. Planning a meeting and reviewing replies are leaders' tools and stay English. */
     tasks: {
+      nextMeeting: "Next meeting",
       tasks: "Tasks",
       add: "Add a task",
       markDone: "Mark done",
