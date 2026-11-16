@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
+import { HomeYes } from "./home-yes";
 import { ClosingBand, Colophon } from "./public-ending";
 import { useSettled } from "@/lib/use-settled";
 import "./neighborly-continuation.css";
@@ -45,6 +46,7 @@ export function NeighborlyContinuation() {
       </section>
     </noscript>
     <ReliefStory />
+    <HomeYes />
     <section id="how-neighborly-works" tabIndex={-1} className="neighborly-together" aria-labelledby="together-title">
       <div className="neighborly-together-paper" data-settled={settled} aria-hidden="true" />
       <div className="neighborly-together-bottom" data-reveal>
