@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
-import { ReliefPicture, reliefMoves, reliefSources, type ReliefName } from "@/components/workspace/relief";
+import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type AnimationEventHandler, type CSSProperties } from "react";
+import { ReliefPicture, reliefMoves, reliefSources, whenDecoded, type ReliefName } from "@/components/workspace/relief";
 
 const ARRIVED = "kind-helps-arrived";
 const arrived = () => (sessionStorage.getItem(ARRIVED) ?? "").split(" ").filter(Boolean);
@@ -14,6 +14,26 @@ function unseen(name: ReliefName) {
   }
 }
 
+const SIZES = "(min-width: 900px) 46vw, 100vw";
+const fetched = new Set<string>();
+/**
+ * Fetches the head pictures of rooms not yet opened, in the cut each will first be shown in, so that going
+ * to a room finds its picture already here. Asked for once the first room has settled, never before it.
+ */
+export function fetchAhead(names: readonly ReliefName[]) {
+  for (const name of names) {
+    const move = reliefMoves[name];
+    const cuts = move && unseen(name) ? ["-base", "-piece", ...(move.front ? ["-front"] : [])] : [""];
+    for (const cut of cuts) {
+      if (fetched.has(name + cut)) continue;
+      fetched.add(name + cut);
+      const link = document.createElement("link");
+      Object.assign(link, { rel: "preload", as: "image", type: "image/avif", imageSrcset: reliefSources(name + cut, "avif"), imageSizes: SIZES });
+      document.head.append(link);
+    }
+  }
+}
+
 /** What each laying of a picture was told, by its id: it plays, or it does not, for as long as it stands. */
 const decided = new Map<string, boolean>();
 const noChange = () => () => {};
@@ -23,7 +43,22 @@ const noChange = () => () => {};
  * makes one small move into its place: the cup is set down, the key goes on its hook. Every other time, and for
  * every picture without layers, it is the flat picture.
  */
-export function ArrivingRelief({ name, focus = "70% 50%", onReady }: { name: ReliefName; focus?: string; onReady: () => void }) {
+export function ArrivingRelief({
+  name,
+  focus = "70% 50%",
+  band,
+  onReady,
+  className,
+  onAnimationEnd,
+}: {
+  name: ReliefName;
+  focus?: string;
+  /** Where the phone's band looks, from 0 at the picture's top to 1 at its foot. */
+  band?: number;
+  onReady: () => void;
+  className?: string;
+  onAnimationEnd?: AnimationEventHandler<HTMLElement>;
+}) {
   const move = reliefMoves[name];
   // Decided once, when the picture is laid, and kept while it stands, so it is never swapped mid-move.
   // A server render and the first pass over it always show the flat picture.
@@ -66,15 +101,23 @@ export function ArrivingRelief({ name, focus = "70% 50%", onReady }: { name: Rel
     const late = window.setTimeout(onReady, 1500);
     return () => window.clearTimeout(late);
   }, [layersIn, onReady]);
-  if (!move || !moving) return <ReliefPicture name={name} focus={focus} onReady={onReady} />;
-  const sizes = "(min-width: 900px) 46vw, 100vw";
+  const placed = band === undefined ? undefined : ({ "--relief-y": band } as CSSProperties);
+  if (!move || !moving)
+    return <ReliefPicture name={name} focus={focus} onReady={onReady} className={className} style={placed} onAnimationEnd={onAnimationEnd} />;
+  const layerIn = (image: HTMLImageElement) => {
+    if (image.dataset.in !== undefined) return;
+    image.dataset.in = "";
+    whenDecoded(image, () => setLoaded((count) => count + 1));
+  };
+  const sizes = SIZES;
   // Laid in this order: the base, the piece that moves, and where the cut has one, a still front over the piece.
   const layers = move.front ? (["base", "piece", "front"] as const) : (["base", "piece"] as const);
   return (
     <span
-      className="relief relief-layers"
+      className={`relief relief-layers${className ? ` ${className}` : ""}`}
       ref={stack}
-      style={{ "--piece-x": `${move.x ?? 0}px`, "--piece-y": `${move.y ?? 0}px`, "--piece-turn": `${move.turn ?? 0}deg`, "--piece-about": move.about ?? "50% 50%" } as CSSProperties}
+      onAnimationEnd={onAnimationEnd}
+      style={{ ...placed, "--piece-x": `${move.x ?? 0}px`, "--piece-y": `${move.y ?? 0}px`, "--piece-turn": `${move.turn ?? 0}deg`, "--piece-about": move.about ?? "50% 50%" } as CSSProperties}
     >
       {layers.map((layer) => (
         <picture key={layer} className={`relief-${layer}`}>
@@ -86,19 +129,11 @@ export function ArrivingRelief({ name, focus = "70% 50%", onReady }: { name: Rel
             width={1536}
             height={1024}
             style={{ objectPosition: focus }}
-            ref={(image) => {
-              // Already in from the cache: no load event will come.
-              if (!image?.complete || image.dataset.in !== undefined) return;
-              image.dataset.in = "";
-              setLoaded((count) => count + 1);
-            }}
+            // Already in from the cache: no load event will come.
+            ref={(image) => void (image?.complete && layerIn(image))}
             // A layer that cannot be had must not leave the piece out of place.
             onError={() => setLoaded(layers.length)}
-            onLoad={({ currentTarget: image }) => {
-              if (image.dataset.in !== undefined) return;
-              image.dataset.in = "";
-              setLoaded((count) => count + 1);
-            }}
+            onLoad={({ currentTarget }) => layerIn(currentTarget)}
           />
         </picture>
       ))}
