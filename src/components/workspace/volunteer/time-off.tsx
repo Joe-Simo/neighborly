@@ -32,6 +32,7 @@ export function TimeOffSection() {
                 <Button
                   variant="outline"
                   size="sm"
+                  aria-label={`${words.timeOff.remove}: ${readDays(words, item.start, item.end)}`}
                   disabled={pending}
                   onClick={() =>
                     void perform(
@@ -99,6 +100,7 @@ function LiveAvailability({
                 {readDays(words, item.start, item.end)}
               </span>
               <Button
+                aria-label={`${words.timeOff.remove}: ${readDays(words, item.start, item.end)}`}
                 variant="ghost"
                 size="sm"
                 onClick={() =>

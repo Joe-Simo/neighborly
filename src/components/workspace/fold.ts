@@ -258,6 +258,30 @@ function openFlat(sheet: HTMLElement) {
 const never = Symbol("never");
 
 /**
+ * One polite region for the whole page, there before anything is said in it: a line that is drawn already
+ * holding its words is not read out by every screen reader, a change inside a waiting region is.
+ */
+function spokenPlace() {
+  const kept = document.getElementById("live-spoken");
+  if (kept) return kept;
+  const place = document.createElement("div");
+  place.id = "live-spoken";
+  place.className = "sr-only";
+  place.setAttribute("role", "status");
+  place.setAttribute("aria-live", "polite");
+  place.setAttribute("aria-atomic", "true");
+  return document.body.appendChild(place);
+}
+/** The shell calls this once it is drawn, so the region is waiting long before the first saved line. */
+export const readyToSpeak = () => void spokenPlace();
+/** Says a line to a screen reader without moving focus. The same words said twice are spoken twice. */
+export function speak(words: string) {
+  const place = spokenPlace();
+  place.textContent = "";
+  window.setTimeout(() => (place.textContent = words), 120);
+}
+
+/**
  * The green line that says what was done, in every room. True while the line is on the page; then the line
  * closes up and the answer turns false, and the room keeps the words as a message for screen readers only.
  * A plain line stays six seconds. A line that carries an action (`action: true`) stays twelve, and its clock
@@ -274,6 +298,15 @@ export function useSavedLine(
     if (!line.current) return;
     openFlat(line.current);
     openUp(line.current);
+  }, [line, of]);
+  // Spoken as well as seen. A line that takes focus is read by that; the others are said in the page's polite region.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const now = line.current;
+      if (!now || now === document.activeElement) return;
+      speak(typeof of === "string" ? of : (now.textContent ?? ""));
+    });
+    return () => cancelAnimationFrame(frame);
   }, [line, of]);
   useEffect(() => {
     const stay = action ? 12000 : 6000;

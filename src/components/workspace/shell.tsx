@@ -3,11 +3,12 @@
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
-import { ArrowLeft, CircleCheck, LogOut, Menu, Plus } from "lucide-react";
+import { ArrowLeft, CircleCheck, LogOut, Menu, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogTrigger,
   DialogHeader,
@@ -36,7 +37,7 @@ import {
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { AsideSlot, useWideScreen } from "@/components/workspace/aside";
-import { useSavedLine } from "@/components/workspace/fold";
+import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
 import { ArrivingRelief, fetchAhead } from "@/components/workspace/relief-arrival";
 import { sections } from "@/components/workspace/sections";
@@ -187,6 +188,7 @@ export function LiveWorkspace({
   useKeysInUse();
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
   const leave = () => setMobileMenuOpen(false);
+  useEffect(readyToSpeak, []);
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const Section = sections[area];
   const heading = headingOverride
@@ -346,11 +348,13 @@ export function LiveWorkspace({
           </div>
           <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <DialogTrigger asChild><Button variant="ghost" className="live-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu aria-hidden="true" />{words.shell.menu}</Button></DialogTrigger>
-            <DialogContent className="live-mobile-menu" onOpenAutoFocus={(event) => {
+            <DialogContent className="live-mobile-menu" aria-modal="true" showCloseButton={false} onOpenAutoFocus={(event) => {
               // Opening the menu lands on the sheet itself, not on its first control.
               event.preventDefault();
               if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
             }}>
+              {/* Close comes first, for a reader and for Tab; it sits where the eye expects it, top right. */}
+              <DialogClose asChild><Button variant="ghost" size="icon-sm" className="live-menu-close absolute top-2 right-2" aria-label={words.shell.close}><X aria-hidden="true" /></Button></DialogClose>
               <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{churchName}</DialogDescription>{data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}</DialogHeader>
               <div className="live-menu-rooms">
                 <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={leave}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
@@ -749,7 +753,8 @@ function Outcome({ children, action, ref }: { children: string; action?: ReactNo
   // It is laid down like a slip, and after six seconds (twelve with a way back) it closes up so the page below does not jump.
   const seen = useSavedLine(ref, { action: !!action, of: children });
   return (
-    <div className={seen ? "live-success help-done paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
+    // Not a status region of its own: the words are said in the page's one polite region (fold.ts), which was there first.
+    <div className={seen ? "live-success help-done paper-settle" : "sr-only"} tabIndex={-1} ref={ref}>
       {seen && <CircleCheck size={22} aria-hidden="true" />}
       {seen ? <SavedWords>{children}</SavedWords> : children}
       {seen && action}
