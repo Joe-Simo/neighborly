@@ -12,7 +12,7 @@ precision highp float;
 uniform sampler2D uMap, uDepth, uNormal, uFigures, uIdle, uAnswer;
 uniform vec2 uRes, uView, uSun;
 uniform vec4 uRect;
-uniform float uDolly, uAlive, uDusk, uLook, uTurn, uWelcome, uResponse, uTime, uWarm;
+uniform float uDolly, uAlive, uDusk, uLook, uTurn, uWelcome, uResponse, uTime, uWarm, uBreeze, uGust;
 varying vec2 vUv;
 const float FOCUS = .24;
 const float IMAGE = 2.;
@@ -28,6 +28,25 @@ float cover(){ return max(uRect.z / IMAGE, uRect.w); }
 vec2 paintingAt(vec2 px){ return .5 + (px - uRect.xy - uRect.zw * .5) / (cover() * vec2(IMAGE, 1.)); }
 // Where a ray through painting point b lands if the surface sits at nearness h. The table and everything beyond it stay exactly in place; only the near world grows.
 vec2 texAt(vec2 b, vec2 pivot, float h){ return pivot + (b - pivot - uView * (h - FOCUS)) / (1. + uDolly * max(h - FOCUS, 0.)); }
+
+// A breeze: whatever was painted soft (leaves, wisteria, hung cloth) sways a few pixels, each cluster nearly as one, and the stone never does.
+// What is soft is read from a blurred copy of the painting itself, so a leaf's whole outline moves and the wall a hand's width away holds still.
+vec2 breezeAt(vec2 t, float d, float ground){
+  vec3 near = texture2D(uMap, t, 4.).rgb;
+  float soft = smoothstep(.3, .19, near.r - near.b) * smoothstep(.1, .17, d) * smoothstep(.97, .9, d) * (1. - ground);
+  float gust = .35 + .65 * uGust;
+  vec2 sway = vec2(sin(uTime * 1.25 + t.x * 26. + t.y * 11.) + .5 * sin(uTime * 2.1 + t.x * 61. - t.y * 37.), .45 * sin(uTime * 1.6 + t.x * 19. + t.y * 43.));
+  return t + sway * PX * 3.4 * soft * gust * uBreeze * mix(.45, 1., smoothstep(.12, .3, d));
+}
+
+// Leaf shadow on the paving. The sun's patches are already in the painting, so nothing is drawn over them: the painted light itself is read from a little to one side, and the patches' edges stir as leaves would move them. The paving's joints are finer than the reading and stay put.
+vec3 dapple(vec3 col, vec2 t, float ground){
+  vec2 g = vec2((t.x - .46) * IMAGE, 1.) / max(t.y - .5, .06);
+  vec2 stir = vec2(sin(uTime * .9 + g.y * 1.3 + g.x * .7) + .5 * sin(uTime * 1.7 - g.x * 2.3), sin(uTime * .7 + g.x * 1.1) + .5 * sin(uTime * 1.3 + g.y * 2.9));
+  vec2 aside = stir * PX * (3. + 6.5 * uGust) * clamp((t.y - .5) * 3., .3, 1.3);
+  vec3 moved = texture2D(uMap, t + aside, 2.).rgb / max(texture2D(uMap, t, 2.).rgb, .05);
+  return col * mix(vec3(1.), clamp(moved, .74, 1.3), ground * smoothstep(.6, .68, t.y) * uBreeze);
+}
 
 vec3 reliefAt(sampler2D image, vec2 t){
   float gx = lum(texture2D(image, t - vec2(PX.x * 1.5, 0.)).rgb) - lum(texture2D(image, t + vec2(PX.x * 1.5, 0.)).rgb);
@@ -115,7 +134,11 @@ void main(){
   }
   vec2 t = clamp(texAt(b, pivot, hit), 0., 1.);
   float d = depthAt(t);
-  vec3 col = relight(texture2D(uMap, t).rgb, normalize(texture2D(uNormal, t).xyz * 2. - 1. + reliefAt(uMap, t)), t, d);
+  vec3 lie = texture2D(uNormal, t).xyz;
+  float ground = smoothstep(.34, .2, lie.g) * step(.56, t.y);
+  vec2 w = uBreeze > .001 ? breezeAt(t, d, ground) : t;
+  vec3 col = relight(texture2D(uMap, w).rgb, normalize(lie * 2. - 1. + reliefAt(uMap, w)), t, d);
+  if (uBreeze > .001 && ground > .001) col = dapple(col, t, ground);
   col = person(col, b, pivot);
 
   float motes = 0.;
@@ -154,7 +177,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const origins = new WeakMap<HTMLElement, { x: number; y: number }>();
     const release = () => { host.removeAttribute("data-living"); host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => { layer.style.removeProperty("scale"); layer.style.removeProperty("translate"); origins.delete(layer); }); };
     const lost = (event: Event) => { event.preventDefault(); release(); };
-    const restored = () => { if (uniforms.uMap.value) host.setAttribute("data-living", "true"); };
+    const restored = () => { if (uniforms.uMap.value && !gone) host.setAttribute("data-living", "true"); };
     renderer.domElement.addEventListener("webglcontextlost", lost);
     renderer.domElement.addEventListener("webglcontextrestored", restored);
 
@@ -173,14 +196,14 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const uniforms = {
       uMap: { ...empty }, uDepth: { ...empty }, uNormal: { ...empty }, uFigures: { ...empty }, uIdle: { ...empty }, uAnswer: { ...empty },
       uRes: { value: new Vector2(1, 1) }, uRect: { value: new Vector4(0, 0, 2, 1) }, uView: { value: new Vector2() }, uSun: { value: new Vector2(-.45, -.55) },
-      uDolly: { value: 0 }, uAlive: { value: 1 }, uDusk: { value: 0 }, uLook: { value: 0 }, uTurn: { value: 0 }, uWelcome: { value: 0 }, uResponse: { value: 0 }, uTime: { value: 0 }, uWarm: { value: 0 },
+      uDolly: { value: 0 }, uAlive: { value: 1 }, uDusk: { value: 0 }, uLook: { value: 0 }, uTurn: { value: 0 }, uWelcome: { value: 0 }, uResponse: { value: 0 }, uTime: { value: 0 }, uWarm: { value: 0 }, uBreeze: { value: 0 }, uGust: { value: 0 },
     };
     const material = new ShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms, depthTest: false, depthWrite: false });
     const geometry = new PlaneGeometry(2, 2);
     const scene = new Scene().add(new Mesh(geometry, material));
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    let detail = 1, pace = 1 / 60, strained = 0, calm = 0, recoveries = 0;
+    let detail = 1, pace = 1 / 60, strained = 0, calm = 0, recoveries = 0, failing = 0;
     const resize = () => {
       renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25) * detail);
       renderer.setSize(frame.clientWidth, frame.clientHeight, false);
@@ -194,6 +217,19 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const look = { x: 0, y: 0 };
     const onPointer = (event: PointerEvent) => { if (event.pointerType === "touch") return; pointer.x = event.clientX / innerWidth - .5; pointer.y = event.clientY / innerHeight - .5; pointer.seen = true; };
     addEventListener("pointermove", onPointer, { passive: true });
+    // On a phone the picture leans as the phone is tilted, measured from however it was first held. Only where the browser gives the tilt without asking the person anything.
+    const tilts = matchMedia("(pointer: coarse)").matches && typeof DeviceOrientationEvent !== "undefined" && !("requestPermission" in DeviceOrientationEvent);
+    const held = { side: 0, front: 0, known: false };
+    const onTilt = (event: DeviceOrientationEvent) => {
+      if (event.gamma === null || event.beta === null) return;
+      const turned = Math.abs(screen.orientation?.angle ?? 0) % 180 === 90;
+      const side = turned ? event.beta : event.gamma, front = turned ? event.gamma : event.beta;
+      if (!held.known) { held.side = side; held.front = front; held.known = true; }
+      // The resting hold follows slowly, so a phone kept at a new angle comes back to level.
+      held.side = mix(held.side, side, .004); held.front = mix(held.front, front, .004);
+      pointer.x = Math.max(-.5, Math.min(.5, (side - held.side) / 28)); pointer.y = Math.max(-.5, Math.min(.5, (front - held.front) / 28)); pointer.seen = true;
+    };
+    if (tilts && !still) addEventListener("deviceorientation", onTilt, { passive: true });
 
     const shown = (selector: string) => { const layer = host.querySelector(selector); return layer ? Number(getComputedStyle(layer).opacity) : 0; };
     // Left alone, the people notice you now and then: a look up, a turn of the head. An act of care is answered with a reach or a wave, and then they stay turned towards you.
@@ -208,13 +244,21 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       return { noticing: Number(on || glance), answering: Number(on && seconds - answer.since < 4.5) };
     };
     const journey = host.closest(".fresco-journey");
-    let raf = 0, last = 0, began = 0, disposed = false;
+    let raf = 0, last = 0, seconds = 0, disposed = false, ready = false, inView = false, gone = false;
+    // Nothing is drawn while the courtyard is off the screen or the tab is hidden, and the breeze picks up where it left off.
+    const run = () => {
+      const wanted = ready && inView && !document.hidden && !gone && !disposed;
+      if (wanted && !raf) { last = 0; raf = requestAnimationFrame(tick); }
+      else if (!wanted && raf) { cancelAnimationFrame(raf); raf = 0; }
+    };
+    const watcher = new IntersectionObserver(entries => { inView = entries[entries.length - 1].isIntersecting; run(); });
+    watcher.observe(frame);
+    document.addEventListener("visibilitychange", run);
     const tick = (time: number) => {
       raf = requestAnimationFrame(tick);
-      if (!began) began = time;
-      const elapsed = (time - last) / 1000 || .016;
+      const elapsed = last ? (time - last) / 1000 : .016;
       const dt = Math.min(.05, elapsed); last = time;
-      const seconds = (time - began) / 1000;
+      seconds += dt;
       const stage = frame.getBoundingClientRect();
       const painting = host.querySelector(paintingSelector)?.getBoundingClientRect();
       if (!painting || stage.bottom < 0 || stage.top > innerHeight || renderer.getContext().isContextLost()) return;
@@ -222,13 +266,16 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       pace = mix(pace, Math.min(elapsed, .1), .06);
       strained = pace > .0195 ? strained + 1 : 0;
       if (strained > 40 && detail > .7) { detail -= .15; strained = 0; calm = 0; pace = 1 / 60; resize(); }
+      // A device that cannot hold thirty frames a second even at the smallest size gets the painting as a still, for good.
+      failing = detail <= .71 && pace > .034 ? failing + 1 : 0;
+      if (failing > 90) { gone = true; release(); run(); return; }
       // A busy moment, such as the first load, should not cost sharpness for the whole visit: after a long calm spell the detail is tried again, twice at most.
       calm = pace < .0175 ? calm + 1 : 0;
       if (calm > 360 && detail < 1 && recoveries < 2) { detail = Math.min(1, detail + .15); recoveries += 1; calm = 0; resize(); }
       const follow = still ? 1 : 1 - Math.exp(-dt * 2.6);
       const driftX = still ? 0 : Math.sin(seconds * .33) * (pointer.seen ? .08 : .34), driftY = still ? 0 : Math.cos(seconds * .26) * (pointer.seen ? .06 : .2);
-      look.x = mix(look.x, still ? 0 : pointer.x + driftX, follow);
-      look.y = mix(look.y, still ? 0 : pointer.y + driftY, follow);
+      look.x = mix(look.x, still ? 0 : Math.max(-.5, Math.min(.5, pointer.x + driftX)), follow);
+      look.y = mix(look.y, still ? 0 : Math.max(-.5, Math.min(.5, pointer.y + driftY)), follow);
       const evening = host.dataset.evening === "true";
       // Measured in the canvas's own units, so the scene stays in register when its holder is scaled on the page.
       const unit = stage.width / Math.max(1, frame.clientWidth) || 1;
@@ -236,7 +283,12 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       // Scrolling through the fresco, the near stone and the far hills part by about ten pixels from first sight to last.
       const through = still || !journey ? .5 : Math.max(0, Math.min(1, (-journey.getBoundingClientRect().top / Math.max(1, innerHeight) - 2.6) / .9));
       const part = (through - .5) * 10 / (.9 * Math.max(1, painting.height));
-      uniforms.uView.value.set(-look.x * .03, -look.y * .022 + part);
+      // The picture leans with the pointer or the phone's tilt: the nearest paving moves 14px at most on the screen, 8px up and down, whatever size the painting is drawn.
+      const nearest = .9 - FOCUS;
+      uniforms.uView.value.set(-look.x * 2 * 14 / (nearest * Math.max(1, painting.width)), -look.y * 2 * 8 / (nearest * Math.max(1, painting.height)) + part);
+      // The breeze rises once and then comes and goes in gusts, never on a beat.
+      uniforms.uBreeze.value = mix(uniforms.uBreeze.value, Number(!still), still ? 1 : 1 - Math.exp(-dt * .8));
+      uniforms.uGust.value = .5 + .5 * Math.sin(seconds * .23) * Math.sin(seconds * .11 + 1.3);
       // The light warms once, when the wall has opened, and the sun leans a little with it.
       uniforms.uWarm.value = mix(uniforms.uWarm.value, Number(host.dataset.open === "true"), still ? 1 : 1 - Math.exp(-dt * .9));
       uniforms.uSun.value.set(-.45 + look.x * 1.5 + uniforms.uWarm.value * .25, -.55 + look.y * .9);
@@ -289,14 +341,18 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       await renderer.compileAsync(scene, camera);
       if (disposed) return;
       host.setAttribute("data-living", "true");
-      raf = requestAnimationFrame(tick);
+      ready = true;
+      run();
     }).catch(() => { /* Without the living layers the painted courtyard shows exactly as it always has. */ });
 
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
       observer.disconnect();
+      watcher.disconnect();
+      document.removeEventListener("visibilitychange", run);
       removeEventListener("pointermove", onPointer);
+      removeEventListener("deviceorientation", onTilt);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       renderer.domElement.removeEventListener("webglcontextrestored", restored);
       release();
