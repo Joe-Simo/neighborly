@@ -12,7 +12,7 @@
 .neighborly-together h2{margin:0;font:400 clamp(40px,4.8cqw,88px)/1.02 'Newsreader',Georgia,serif;letter-spacing:-.045em}
 .neighborly-together h2 em{font-weight:400}
 .neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start;gap:28px clamp(48px,6vw,110px)}
-.neighborly-together-statement{grid-column:2;grid-row:1;margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:pretty}
+.neighborly-together-statement{grid-column:2;grid-row:1;align-self:center;margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:pretty}
 /* What a conference gets, written on one sheet of the workspace's own paper, its corner folded in ochre. */
 .neighborly-gets{grid-column:1;grid-row:1;position:relative;margin:0;padding:clamp(10px,1.2vw,18px) clamp(24px,3vw,48px);list-style:none;background:#f7f4ed;box-shadow:0 1px 0 #fffdf7 inset,0 30px 60px -34px #51433066,0 2px 8px #5143301a;clip-path:polygon(0 0,calc(100% - 44px) 0,100% 44px,100% 120%,0 120%)}
 .neighborly-gets::after{content:"";position:absolute;top:0;right:0;width:44px;height:44px;background:linear-gradient(225deg,transparent 50%,#c8962e 50%);filter:drop-shadow(-2px 3px 3px #5143303d)}

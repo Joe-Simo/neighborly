@@ -14,7 +14,7 @@ const gets = [
   ["Visits in pairs", "What the two members saw, and what was asked, stays with the request."],
   ["The ledger", "Every bill paid is on one page: to whom, for whom, and how much."],
   ["The yearly report", "The totals are kept as the work is done. Check them, then print."],
-  ["Your people", "Each member sees what they said yes to, in English, Spanish or Haitian Creole."],
+  ["Your people", "Each member sees what they said yes to, in English or Spanish."],
   ["The assistant", "It drafts a request from the call note. A person checks every one."],
   ["Free", "For every conference. There is nothing to buy."],
 ] as const;
