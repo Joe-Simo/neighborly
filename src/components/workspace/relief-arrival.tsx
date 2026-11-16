@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { ReliefPicture, reliefMoves, reliefSources, type ReliefName } from "@/components/workspace/relief";
 
 const ARRIVED = "kind-helps-arrived";
@@ -42,6 +42,23 @@ export function ArrivingRelief({ name, focus = "70% 50%" }: { name: ReliefName; 
       // No storage: the move plays on each first laying of the picture, which is harmless.
     }
   }, [moving, name]);
+  // The piece lies at its start from the moment it is laid. Once every layer is in, it is given its one move
+  // home, which holds the start until it begins and the rest once it ends: there is no moment in between
+  // where the piece could be painted anywhere else.
+  const stack = useRef<HTMLSpanElement>(null);
+  const count = move?.front ? 3 : 2;
+  useLayoutEffect(() => {
+    const piece = stack.current?.querySelector<HTMLElement>(".relief-piece");
+    if (!piece || loaded < count || piece.getAnimations().length) return;
+    const style = getComputedStyle(piece);
+    piece.animate([{ transform: style.transform }, { transform: "none" }], {
+      duration: 520,
+      // After the head has settled, and after the paper wave where there is one.
+      delay: 380 + (parseFloat(style.getPropertyValue("--paper-wait")) || 0),
+      easing: style.getPropertyValue("--paper-ease").trim() || "ease-out",
+      fill: "both",
+    });
+  }, [loaded, count]);
   if (!move || !moving) return <ReliefPicture name={name} focus={focus} />;
   const sizes = "(min-width: 900px) 46vw, 100vw";
   // Laid in this order: the base, the piece that moves, and where the cut has one, a still front over the piece.
@@ -49,8 +66,7 @@ export function ArrivingRelief({ name, focus = "70% 50%" }: { name: ReliefName; 
   return (
     <span
       className="relief relief-layers"
-      // The piece waits at its start until both layers are in, then makes its move once.
-      data-moving={loaded >= layers.length ? "" : undefined}
+      ref={stack}
       style={{ "--piece-x": `${move.x ?? 0}px`, "--piece-y": `${move.y ?? 0}px`, "--piece-turn": `${move.turn ?? 0}deg`, "--piece-about": move.about ?? "50% 50%" } as CSSProperties}
     >
       {layers.map((layer) => (

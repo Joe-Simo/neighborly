@@ -8,8 +8,7 @@ import { ArrowRight, Lock } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { NameToConfirm } from "@/components/workspace/help-line/forms";
 import { readFailure } from "@/components/workspace/failure";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";
@@ -39,7 +38,9 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState("");
-  const matches = typed.trim().toLowerCase() === person.name.trim().toLowerCase();
+  // The same reading of a name the backend and the name box make.
+  const key = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const matches = key(typed) === key(person.name);
   return (
     <LiveDialog title="Remove this person" description={`Everything we keep about ${person.name} in this conference, for good.`} onClose={onClose}>
       <form
@@ -68,8 +69,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
           <dd>The visits and hours they logged stay in the year’s counts as “a former member”.</dd>
           </div>
         </dl>
-        <Label htmlFor="people-remove-name">Type {person.name} to remove them</Label>
-        <Input id="people-remove-name" value={typed} onChange={(event) => setTyped(event.target.value)} autoComplete="off" autoCapitalize="words" spellCheck={false} />
+        <NameToConfirm label={`Type ${person.name} to remove them`} name={person.name} typed={typed} onTyped={setTyped} />
         <p className="for-good-last">This cannot be undone.</p>
         {failed && <LiveFailure message={failed} kept="Nothing was removed." />}
         <div className="live-form-actions">

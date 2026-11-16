@@ -245,8 +245,6 @@
 .relief-layers { position: relative; }
 .relief-layers > picture { position: absolute; inset: 0; }
 .relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: translate(var(--piece-x), var(--piece-y)) rotate(var(--piece-turn)); }
-.relief-layers[data-moving] > .relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: none; transition: transform 520ms var(--paper-ease) calc(var(--paper-wait, 0ms) + 380ms); }
-@media (prefers-reduced-motion: reduce) { .relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: none !important; transition: none !important; } }
 .live-head-art { pointer-events: none; overflow: hidden; isolation: isolate; }
 /*
   Up to 699px: a band across the top that is the desktop head in miniature. The picture
