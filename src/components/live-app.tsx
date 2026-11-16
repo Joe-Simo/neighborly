@@ -9,7 +9,7 @@ import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
-import { leftKey, useEntryLanguage } from "@/components/live-auth-words";
+import { authWords, leftKey, useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
 import type { LiveArea } from "@/components/workspace/areas";
 import { stateWords } from "@/components/workspace/failure";
@@ -90,6 +90,15 @@ export function LiveApp({
     api.workspace.dashboard,
     churchId ? { churchId } : "skip",
   );
+  // The page says which language it is showing, so a screen reader speaks Spanish as Spanish, in the rooms and in
+  // every dialog (dialogs are drawn outside the rooms, straight under <body>). Before the rooms it is the door's.
+  const shown = dashboard && !sampleVisitor ? dashboard.user.language : deviceLanguage;
+  useEffect(() => {
+    document.documentElement.lang = shown;
+    return () => {
+      document.documentElement.lang = "en";
+    };
+  }, [shown]);
   // Asked from the hour the app was opened, so the question stays the same and the first page is what is coming.
   const [openedAt] = useState(() => Math.floor(Date.now() / 3_600_000) * 3_600_000);
   const commitmentPage = usePaginatedQuery(
@@ -174,7 +183,7 @@ export function LiveApp({
       setWaitedLong(false);
     };
   }, [waiting]);
-  if (leavingForSample) return <LiveRoomLoading label="Opening the sample conference…" />;
+  if (leavingForSample) return <LiveRoomLoading label={authWords[deviceLanguage].sampleOpening} />;
   // The sign-in sheet is for someone known to be signed out. Until that is known, and from then until
   // the workspace has arrived, there is one waiting screen and nothing else: a signed-in person goes
   // from it straight to their room.
