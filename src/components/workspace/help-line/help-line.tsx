@@ -809,6 +809,11 @@ export function DraftSheet({
             .
           </p>
           {/* What to do about a blank reads with the text, at its measure, never beside the buttons. */}
+          {!complete && !call.neighborId && (
+            <p className="help-why">
+              First, add {call.callerName || "the caller"} as a neighbor.
+            </p>
+          )}
           <DraftToDo notes={draft.notes} />
         </div>
         <div className="help-actions" inert={sealed}>
