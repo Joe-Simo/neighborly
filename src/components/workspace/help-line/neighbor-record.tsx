@@ -68,7 +68,7 @@ export function NeighborRecord({
   /** From a link to one request: that request is the one on the sheet. */
   requestId?: string | null;
 }) {
-  const { data, format, setHeading } = useWorkspace();
+  const { data, format, now, setHeading } = useWorkspace();
   const churchId = data.church.id;
   const open = useMutation(api.neighbors.open);
   const asked = useRef(false);
@@ -178,6 +178,7 @@ export function NeighborRecord({
       <NeighborRecordView
         record={record}
         format={format}
+        now={now}
         home={homeReady}
         numbers={numbers}
         onShowNumbers={() => void reveal()}
@@ -345,7 +346,7 @@ export function NeighborRecord({
   );
 }
 
-function happened(event: Record["history"][number]) {
+function happened(event: Record["history"][number], now: number) {
   switch (event.type) {
     case "payment":
       return {
@@ -387,8 +388,8 @@ function happened(event: Record["history"][number]) {
           .filter(Boolean)
           .join(" · "),
         found: event.note,
-        // An older backend does not say; then the link stays away.
-        takeBack: event.canTakeBack ? event.requestId : undefined,
+        // The backend says until when and never reads the clock in a query; taking it back is checked there by the real one.
+        takeBack: event.takeBackUntil !== null && now <= event.takeBackUntil ? event.requestId : undefined,
       };
     case "decision":
       if (event.status === "closed")
@@ -415,6 +416,7 @@ function happened(event: Record["history"][number]) {
 export function NeighborRecordView({
   record,
   format,
+  now,
   home = true,
   numbers = null,
   onShowNumbers = () => {},
@@ -422,6 +424,8 @@ export function NeighborRecordView({
 }: {
   record: Record;
   format: Workspace["format"];
+  /** The page's own clock, for what depends on the time, such as whether a voucher may still be taken back. */
+  now: number;
   home?: boolean;
   numbers?: Accounts | null;
   onShowNumbers?: () => void;
@@ -658,7 +662,7 @@ export function NeighborRecordView({
                 {record.history
                   .filter((event) => year(event.at) === label)
                   .map((event, index) => {
-                    const line = happened(event);
+                    const line = happened(event, now);
                     const given =
                       "takeBack" in line &&
                       record.requests.find(
