@@ -36,7 +36,7 @@ export default function Privacy() {
         <h2>Who can see it</h2>
         <div>
           <p>Only people signed in to that conference. Neighbors’ records, calls, requests, visits and the ledger open to the conference’s owner and coordinators only. Other members see their own commitments and teams. One conference cannot see another’s records.</p>
-          <p>Each time a neighbor’s record is opened, it is written in the conference’s own log. The owner can download the conference’s records as files, and each download is logged with who did it.</p>
+          <p>Opening a neighbor’s record is written in the conference’s own log, with who and when. So is each request to see a full account number, and each download of the conference’s records. The list of neighbors and its search, which show name, phone and address to owners and coordinators, are not logged.</p>
         </div>
       </section>
       <section>
