@@ -92,11 +92,16 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   });
   // Wholly above the window nobody sees it go, so it goes at once and what the person is looking at stays
   // where it is. Browsers that anchor the scroll do that themselves; the others are told.
-  const unseen = sheet.getBoundingClientRect().bottom <= 0;
+  const unseen = home(sheet).bottom <= viewTop();
+  // A saved line whose place is above the window is held in view under the top edge (paper.css). The person
+  // does see that one go: it fades where it is, and only then is its room above the window given up, at once.
+  const carried = unseen && sheet.getBoundingClientRect().bottom > viewTop();
+  const fade = "cubic-bezier(0.6, 0, 0.9, 0.6)";
+  if (carried) await sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: LEAVE, fill: "forwards", easing: fade }).finished;
   if (unseen && !CSS.supports("overflow-anchor", "auto")) window.scrollBy(0, -lost);
   const timing = { duration: unseen ? 0 : LEAVE, fill: "forwards" } as const;
   // It stays readable to the end: the fade runs the whole length and is slow to start.
-  sheet.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, easing: "cubic-bezier(0.6, 0, 0.9, 0.6)" });
+  sheet.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, easing: fade });
   await sheet.animate(
     [
       { height: `${height}px`, minHeight: "0px", marginTop, marginBottom, paddingTop, paddingBottom },
@@ -127,6 +132,15 @@ export function viewTop() {
   return bar && getComputedStyle(bar).position === "sticky" ? bar.getBoundingClientRect().bottom : 0;
 }
 
+/** Where a piece of paper lies in the page itself, whether or not it is being held in view just now. */
+function home(sheet: HTMLElement) {
+  const held = sheet.style.position;
+  sheet.style.position = "static";
+  const place = sheet.getBoundingClientRect();
+  sheet.style.position = held;
+  return place;
+}
+
 /**
  * The other way: a piece of paper just laid into the page opens its own room over the same 360ms, starting
  * from exactly the height the page had before it, so what is under it is moved aside and never jumps.
@@ -138,7 +152,7 @@ export function openUp(sheet: HTMLElement) {
   sheet.getAnimations().forEach((move) => move.id === OPENING && move.cancel());
   // Laid in above the window, nobody sees it open: it is there at once and what the person is looking at
   // stays where it is. Browsers that anchor the scroll do that themselves; the others are told, once.
-  if (sheet.getBoundingClientRect().top < viewTop()) {
+  if (home(sheet).top < viewTop()) {
     if (!laidAbove.has(sheet) && !CSS.supports("overflow-anchor", "auto"))
       window.scrollBy(0, document.body.offsetHeight - pageWithout(sheet, "gone"));
     laidAbove.add(sheet);

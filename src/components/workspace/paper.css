@@ -417,6 +417,12 @@
 @media (prefers-reduced-motion: reduce) { .live-app .live-header, .live-bar-room { transition: none; } }
 @media print { .live-app .live-header { position: static; } }
 
+/* A saved line whose place has gone above the window is still seen: the same line holds just under the top of
+   what can be seen (under the bar where the bar is held) for as long as it is on the page, then closes as ever.
+   The page is never moved to it. It is one element, so it is said once. */
+:is(.live-app, .live-dialog) .live-success.help-done { position: sticky; top: calc(var(--live-bar, 0px) + 8px); z-index: 15; }
+@media print { .live-app .live-success.help-done { position: static; } }
+
 /* The menu sheet fills the screen between the insets: its title, every room in a list that scrolls, and a foot that stays. */
 .live-mobile-menu[data-slot="dialog-content"] {
   inset: env(safe-area-inset-top) 0 0 0 !important;

@@ -150,12 +150,22 @@ function keepInView(target: Element | EventTarget | null) {
   const footHeld = !!actions && getComputedStyle(actions).position === "sticky";
   const foot = footHeld ? actions.getBoundingClientRect().top : sheet.getBoundingClientRect().bottom;
   // Its label comes along, so the person still reads what the box is for.
-  const field = (target.closest(".live-field") ?? target).getBoundingClientRect();
+  const whole = target.closest(".live-field") ?? target;
+  const field = whole.getBoundingClientRect();
   sheet.style.scrollPaddingTop = `${(held ? head.offsetHeight : 0) + ABOVE + Math.max(0, target.getBoundingClientRect().top - field.top)}px`;
   sheet.style.scrollPaddingBottom = `${(footHeld ? actions.offsetHeight : 0) + BELOW}px`;
   // Where both cannot be had, the label wins: the box is never pushed up under the title.
   if (field.top < top + ABOVE) sheet.scrollBy({ top: field.top - top - ABOVE });
-  else if (field.bottom > foot - BELOW) sheet.scrollBy({ top: Math.min(field.bottom - foot + BELOW, field.top - top - ABOVE) });
+  else if (field.height <= foot - BELOW - top - ABOVE) {
+    if (field.bottom > foot - BELOW) sheet.scrollBy({ top: field.bottom - foot + BELOW });
+  } else {
+    // Label, box and the helper line under it do not all fit. A helper is shown whole or not at all: the box's
+    // foot is brought to the buttons, so the helper lies wholly under them and no line of it is cut in half.
+    const box = target.getBoundingClientRect();
+    const helper = whole.querySelector("small")?.getBoundingClientRect();
+    const gap = helper && helper.top >= box.bottom ? Math.min(BELOW, helper.top - box.bottom) : BELOW;
+    sheet.scrollBy({ top: Math.min(box.bottom - foot + gap, field.top - top - ABOVE) });
+  }
 }
 const ABOVE = 16;
 const BELOW = 12;
