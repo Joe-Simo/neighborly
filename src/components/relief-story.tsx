@@ -55,7 +55,7 @@ export function ReliefStory() {
     return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
   }, []);
   return <section ref={root} className="relief-story" aria-label="What a conference does with Kind Helps">
-    {story.map((part, index) => <article key={part.picture} className="relief-panel" data-side={index % 2 ? "left" : "right"}>
+    {story.map((part, index) => <article key={part.picture} className="relief-panel" data-chapter={part.picture} data-side={index % 2 ? "left" : "right"}>
       <div className="relief-hold">
       <div className="relief-words"><h2>{part.title}</h2><p>{part.copy}</p></div>
       <div className="relief-picture" data-picture={part.picture}>

@@ -103,6 +103,33 @@
 [data-picture=year] .relief-piece{transform-origin:45.6% 50%;backface-visibility:visible}
 [data-picture=year] [data-piece=page]{transform:rotateY(calc(var(--q) * -98deg))}
 [data-picture=year] [data-piece=ribbon]{transform:rotateY(calc(min(1,var(--q) * 1.35) * -98deg))}
+/* Each chapter is its own page: one window of scroll, and its own crop and scale of its picture. */
+@media(min-width:821px){
+  .relief-panel{min-height:118svh}
+  /* The call: close in on the receiver, the picture large and off the top and right of the window; the words sit low on the paper under it. */
+  .relief-panel[data-chapter=call] .relief-hold{grid-template-columns:minmax(0,1fr) auto;align-items:end;padding-bottom:7svh}
+  .relief-panel[data-chapter=call] .relief-picture{align-self:start;width:min(64vw,104svh);aspect-ratio:16/10;margin-top:-4svh}
+  .relief-panel[data-chapter=call] .relief-layers{width:112%;height:126%;margin:-7% 0 0 -6%}
+  .relief-panel[data-chapter=call] .relief-hold{gap:0 3vw}
+  .relief-panel[data-chapter=call] .relief-words{--drop:0px;align-self:end}
+  /* The visit: an upright crop on the door, small and low at the left; the heading stands tall across the paper beside it. */
+  .relief-panel[data-chapter=visit] .relief-hold{grid-template-columns:auto minmax(0,1fr);gap:0 6vw;padding-left:9vw;padding-right:7%}
+  .relief-panel[data-chapter=visit] .relief-picture{order:-1;justify-self:start;align-self:end;margin-bottom:8svh;width:min(38vw,70svh);aspect-ratio:4/5;-webkit-mask:none;mask:none;clip-path:polygon(0 3%,30% 0,62% 2%,100% 0,100% 97%,70% 100%,36% 98%,0 100%)}
+  .relief-panel[data-chapter=visit] .relief-layers{width:187.5%;margin-left:-23%}
+  .relief-panel[data-chapter=visit] .relief-words{margin-left:0;align-self:center}
+  .relief-panel[data-chapter=visit] .relief-words h2{font-size:clamp(80px,12.5vw,200px)}
+  /* The help: set in the middle, the words above and the envelope passing hand to hand in a wide strip below. */
+  .relief-panel[data-chapter=help] .relief-hold{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;justify-items:center;align-content:center;gap:2svh;padding:0 7%}
+  .relief-panel[data-chapter=help] .relief-words{--drop:0px;display:flex;align-items:baseline;gap:4vw;text-align:left}
+  .relief-panel[data-chapter=help] .relief-words p{margin:0;max-width:16em}
+  .relief-panel[data-chapter=help] .relief-picture{justify-self:center;width:min(76vw,128svh);aspect-ratio:2.4/1}
+  .relief-panel[data-chapter=help] .relief-layers{height:160%;margin-top:-13%}
+  /* The year: the open book large at the left, close enough to read the page; the figures beside it. */
+  .relief-panel[data-chapter=year] .relief-hold{gap:0 4vw}
+  .relief-panel[data-chapter=year] .relief-words{margin-left:0}
+  .relief-panel[data-chapter=year] .relief-picture{width:min(56vw,96svh);aspect-ratio:5/4}
+  .relief-panel[data-chapter=year] .relief-layers{width:136%;height:116%;margin:-8% 0 0 -12%}
+}
 @media(max-width:820px){
   .relief-story{margin-top:-9vw;padding:2svh 0 48px}
   .relief-story::before,.relief-story::after{height:10vw}
