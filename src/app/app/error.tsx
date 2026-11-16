@@ -1,7 +1,8 @@
 "use client";
 import "@/components/public-state.css";
 import { Button } from "@/components/ui/button";
-import { stateWords } from "@/components/workspace/failure";
+import { useEntryLanguage } from "@/components/live-auth-words";
+import { words as wordsFor } from "@/lib/words";
 
 export default function WorkspaceError({
   reset,
@@ -9,17 +10,18 @@ export default function WorkspaceError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // Outside the workspace's own tables, so it speaks the language chosen at the door.
+  const [language] = useEntryLanguage();
+  const said = wordsFor(language);
   return (
     <div className="public-state">
-      <main className="live-auth">
+      <main className="live-auth" lang={said.locale}>
         <div className="live-auth-art" aria-hidden="true" />
         <p className="live-kicker">Kind Helps</p>
-        <h1>We couldn’t open this.</h1>
-        <p className="live-deck">
-          Nothing is lost. Your workspace is still there; try again to reconnect.
-        </p>
+        <h1>{said.states.launchTitle}</h1>
+        <p className="live-deck">{said.states.launchDeck}</p>
         <Button onClick={reset} style={{ marginTop: 24 }}>
-          {stateWords.tryAgain}
+          {said.states.tryAgain}
         </Button>
       </main>
     </div>

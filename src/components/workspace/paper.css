@@ -473,6 +473,10 @@
 }
 .paper-loading-label svg { animation: live-spin 1s linear infinite; flex: none; }
 /* A short wait inside a form or a dialog: just the line. */
+/* The one way to wait, everywhere: a quiet line, and only once the wait has lasted 400ms, so a quick
+   answer never flashes it. No grey rows standing in for content. */
+.live-loading { animation: live-wait-in 160ms ease 400ms backwards; }
+@keyframes live-wait-in { from { opacity: 0; } }
 .live-app .live-loading,
 .live-dialog .live-loading { background: none; border-top: 1px solid var(--live-line); padding: 24px 0; min-height: 0; font-size: 17px; }
 @media (max-width: 899px) {

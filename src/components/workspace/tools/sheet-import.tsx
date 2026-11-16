@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveLoading } from "@/components/workspace/primitives";
 import "./tools.css";
 import { LiveFailure } from "@/components/workspace/states";
 import { useRef, type ReactNode } from "react";
@@ -130,8 +131,9 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
             {state.read.lines > state.read.names.length && <li className="tools-reading-more">and {(state.read.lines - state.read.names.length).toLocaleString("en-US")} more</li>}
           </ol>
         ) : (
-          <div className="help-skeleton" aria-hidden="true">
-            <div><i /><span><b /><b /></span></div>
+          // Hidden from a screen reader here because the status line below says the same.
+          <div aria-hidden="true">
+            <LiveLoading label={state.label} />
           </div>
         )
       )}

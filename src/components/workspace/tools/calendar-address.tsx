@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { LiveFailure } from "@/components/workspace/states";
 import { readFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
+import { LiveLoading } from "@/components/workspace/primitives";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 
 type CalendarApp = "apple" | "google" | "outlook";
@@ -98,9 +99,7 @@ export function CalendarAddress({ titled = true }: { titled?: boolean }) {
   const [error, setError] = useState("");
   if (address === undefined)
     return (
-      <div className="help-skeleton" role="status" aria-label={words.calendar.finding}>
-        <div><i /><span><b /><b /></span></div>
-      </div>
+      <LiveLoading label={words.calendar.finding} />
     );
   return (
     <CalendarAddressView
