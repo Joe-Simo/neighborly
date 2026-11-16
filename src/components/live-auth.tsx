@@ -7,7 +7,7 @@ import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { languageNames, languages } from "@/lib/words";
+import { languageNames, languages, words } from "@/lib/words";
 import { LiveField } from "@/components/workspace/primitives";
 import { cn } from "@/lib/utils";
 import { authWords, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
@@ -80,6 +80,8 @@ export function LiveAuth({
   const [email, setEmail] = useState("");
   const [language, setLanguage] = useEntryLanguage();
   const w = authWords[language];
+  /** "Fill this in." is the workspace's own sentence, read from the same book so the two never differ. */
+  const { needed } = words(language).states;
   const [error, setError] = useState<AuthError | "">("");
   const [notice, setNotice] = useState(false);
   /** The server has said yes: the sheet's corner turns green while the workspace opens. */
@@ -276,7 +278,7 @@ export function LiveAuth({
     <LiveField
       label={label}
       help={autoComplete === "new-password" ? w.passwordHint : undefined}
-      said={{ needed: w.needed, neededCheck: w.errors.short }}
+      said={{ needed, neededCheck: w.errors.short }}
     >
       <div className="live-password-control">
         <Input
@@ -315,7 +317,7 @@ export function LiveAuth({
           {w.codeSent} <strong>{email}</strong>. {w.codeFor[flow]}
         </p>
         <form className="live-form" onSubmit={submitCode}>
-          <LiveField label={w.codeLabel} help={w.codeHint} said={{ needed: w.needed, neededCheck: w.errors.code }}>
+          <LiveField label={w.codeLabel} help={w.codeHint} said={{ needed, neededCheck: w.errors.code }}>
             <Input
               className="live-auth-code"
               name="code"
@@ -385,7 +387,7 @@ export function LiveAuth({
           </div>
         )}
         <form className="live-form" onSubmit={submitDetails}>
-          <LiveField label={w.email} said={{ needed: w.needed, neededCheck: w.errors.email }}>
+          <LiveField label={w.email} said={{ needed, neededCheck: w.errors.email }}>
             <Input
               type="email"
               name="email"
