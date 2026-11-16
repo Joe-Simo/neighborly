@@ -49,8 +49,8 @@ export const admit = mutation({
 });
 
 /**
- * Nightly, and once by hand at set-up: throws away the visitor's sample conference and loads the made-up
- * year again, so whatever a visitor typed is gone by morning. Touches only sample conferences that the
+ * Nightly, and once by hand at set-up: brings the visitor's sample conference back to the made-up year,
+ * so whatever a visitor typed is gone by morning. Only rows that differ are written (see sampleData.renew). Touches only sample conferences that the
  * visitor account belongs to. Does nothing until the deployment names the visitor account.
  */
 export const refresh = internalMutation({
@@ -62,24 +62,22 @@ export const refresh = internalMutation({
     const known = await ctx.db.query("users").withIndex("by_clerk", (q) => q.eq("clerkId", clerkId)).unique();
     const userId = known?._id ?? (await ctx.db.insert("users", { clerkId }));
     const memberships = await ctx.db.query("memberships").withIndex("by_user", (q) => q.eq("userId", userId)).take(100);
-    // The month's AI allowance belongs to the sample as a whole, so a fresh conference does not get a fresh one.
-    const month = new Date().toISOString().slice(0, 7);
-    let aiUsed = 0;
+    const owner = { userId, ...sampleOwner };
+    let samples = 0;
     for (const member of memberships) {
       if (!(await isSampleChurch(ctx, member.churchId))) continue;
-      const used = await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", (q) => q.eq("churchId", member.churchId).eq("month", month)).unique();
-      aiUsed += used?.count ?? 0;
-      await ctx.runMutation(internal.sampleData.clear, { churchId: member.churchId });
+      samples++;
+      // Only what differs from the made-up year is written; the closed year is kept as it is.
+      await ctx.runMutation(internal.sampleData.renew, { churchId: member.churchId, owner });
     }
-    // Loaded in its own step, so clearing a year and writing a year never share one transaction's limits.
-    await ctx.scheduler.runAfter(0, internal.demo.reload, { userId, month, aiUsed });
+    if (!samples) await ctx.runMutation(internal.sampleData.load, { owner });
     return null;
   },
 });
 
 /**
- * What the nightly schedule runs. One reset reads and rewrites the whole made-up year, about 3.5 MB of the
- * month's database allowance, so a deployment nobody is shown, a development one, can turn the nightly reset
+ * What the nightly schedule runs. One reset reads the whole sample, about 1 MB of the month's database
+ * allowance, and writes what moved, so a deployment nobody is shown, a development one, can turn the nightly reset
  * off with SAMPLE_NIGHTLY=off and be reset by hand (demo:refresh) when its sample is wanted fresh.
  * Unset, as on the live site, the sample is reset every night.
  */
@@ -88,16 +86,6 @@ export const nightly = internalMutation({
   returns: v.null(),
   handler: async (ctx) => {
     if (process.env.SAMPLE_NIGHTLY !== "off") await ctx.runMutation(internal.demo.refresh, {});
-    return null;
-  },
-});
-
-export const reload = internalMutation({
-  args: { userId: v.id("users"), month: v.string(), aiUsed: v.number() },
-  returns: v.null(),
-  handler: async (ctx, { userId, month, aiUsed }) => {
-    const churchId: Id<"churches"> = await ctx.runMutation(internal.sampleData.load, { owner: { userId, ...sampleOwner } });
-    if (aiUsed > 0) await ctx.db.insert("aiUsageByChurch", { churchId, month, count: aiUsed });
     return null;
   },
 });
