@@ -49,7 +49,7 @@ export function ArrivingRelief({ name, focus = "70% 50%" }: { name: ReliefName; 
       className="relief relief-layers"
       // The piece waits at its start until both layers are in, then makes its move once.
       data-moving={loaded >= 2 ? "" : undefined}
-      style={{ "--piece-x": `${move.x ?? 0}px`, "--piece-y": `${move.y ?? 0}px`, "--piece-turn": `${move.turn ?? 0}deg` } as CSSProperties}
+      style={{ "--piece-x": `${move.x ?? 0}px`, "--piece-y": `${move.y ?? 0}px`, "--piece-turn": `${move.turn ?? 0}deg`, "--piece-about": move.about ?? "50% 50%" } as CSSProperties}
     >
       {(["base", "piece"] as const).map((layer) => (
         <picture key={layer} className={`relief-${layer}`}>
