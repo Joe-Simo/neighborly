@@ -1,6 +1,6 @@
 /* The journey after the opening: the doors, the courtyard as a fresco, and the story in four pictures. One material: paper. */
-.fresco-journey{position:relative;height:450svh}
-.fresco-stage{--door:0;--grow:0;position:sticky;top:0;height:100svh;overflow:hidden;isolation:isolate;outline:0;color:#293f32;background:#eee7d7 center/cover no-repeat}
+.fresco-journey{position:relative;height:555svh}
+.fresco-stage{--door:0;--grow:0;--inside:0;--standing:0;position:sticky;top:0;height:100svh;overflow:hidden;isolation:isolate;outline:0;color:#293f32;background:#eee7d7 center/cover no-repeat}
 /* What lies below the first screen is fetched once the first screen is complete. */
 .fresco-stage[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
 .fresco-stage a:focus-visible,.fresco-stage button:focus-visible{outline:2px solid #365c46;outline-offset:2px}
@@ -20,22 +20,27 @@
 
 /* One opening in the wall. It is the doorway first, then the frame of the fresco. */
 .fresco-frame{position:absolute;z-index:1;box-shadow:0 0 0 calc(var(--grow) * 12px) #f5f0e3,0 0 0 calc(var(--grow) * 13px) #cdbf9f,0 28px 70px #51433040}
-.fresco-frame::before{content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;box-shadow:0 0 0 6px #9c8660,0 0 0 13px #e0d2b8,0 0 0 16px #ad9670;opacity:calc(1 - var(--grow) * 2.2);pointer-events:none}
+.fresco-frame::before{content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;box-shadow:0 0 0 6px #9c8660,0 0 0 13px #e0d2b8,0 0 0 16px #ad9670;opacity:calc((1 - var(--grow) * 2.2) * (1 - var(--inside) * 2));pointer-events:none}
 .fresco-wall{position:absolute;inset:0;overflow:hidden;border-radius:inherit;background:#b6ac82}
 /* The painting lies a little behind the wall's face. */
-.fresco-wall::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 18px 44px #1b2a1f99,inset 0 0 0 1px #2c392c4d,inset 0 -8px 26px #1b2a1f40;pointer-events:none}
+.fresco-wall::after{content:"";position:absolute;inset:0;border-radius:inherit;opacity:calc(1 - var(--inside));box-shadow:inset 0 18px 44px #1b2a1f99,inset 0 0 0 1px #2c392c4d,inset 0 -8px 26px #1b2a1f40;pointer-events:none}
 .fresco-view{position:absolute;left:50%;top:50%;translate:-50% -50%}
 .fresco-painting{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .fresco-view .living-courtyard{position:absolute;inset:0;pointer-events:none}
 .fresco-view .living-courtyard canvas{display:block;width:100%;height:100%}
 .fresco-stage:not([data-living=true]) .living-courtyard{visibility:hidden}
-.fresco-doors{position:absolute;inset:0;border-radius:inherit;perspective:1500px;opacity:calc(1 - var(--grow) * 3);pointer-events:none}
+.fresco-doors{position:absolute;inset:0;border-radius:inherit;perspective:1500px;opacity:min(calc(1 - var(--grow) * 3),calc(1 - var(--inside) * 3));pointer-events:none}
 .fresco-doors i{position:absolute;top:0;bottom:0;width:50.15%;background-color:#8fa888;background-size:200% 100%;backface-visibility:hidden;box-shadow:inset 0 0 25px #17271c22}
 .fresco-stage[data-settled=true] .fresco-doors i{background-image:url(/assets/threshold/doors-1000.webp)}
 .fresco-doors i:first-child{left:0;transform-origin:left center;border-radius:100% 0 0 0/30% 0 0 0;background-position:left center;transform:rotateY(calc(var(--door) * 88deg))}
 .fresco-doors i:last-child{right:0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;background-position:right center;transform:rotateY(calc(var(--door) * -88deg))}
 .fresco-caption{position:absolute;z-index:2;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;opacity:calc(var(--grow) * 2.5 - 1.5);translate:0 calc((1 - var(--grow)) * 20px)}
 .fresco-caption em{font-weight:400}
+/* Standing in the courtyard: the words are set large on the paving, and the wordmark steps aside so nothing sits over the picture. */
+.fresco-standing{position:absolute;z-index:2;left:0;right:0;bottom:9svh;margin:0;text-align:center;color:#2b3d2f;font:400 clamp(64px,8.6vw,152px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.06em;text-shadow:0 1px 0 #f6eedb80,0 0 40px #f3e6c8a6;opacity:clamp(0,calc((var(--inside) - .8) * 5),1);translate:0 calc((1 - var(--standing)) * 14px);pointer-events:none}
+.fresco-standing em{font-weight:400}
+.fresco-header{opacity:calc(1 - var(--inside))}
+.fresco-stage[data-inside=true] .fresco-header{visibility:hidden}
 @media(max-width:899px) and (min-height:501px){
   .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .fresco-brand{font-size:30px}

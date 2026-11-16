@@ -208,6 +208,8 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       return { noticing: Number(on || glance), answering: Number(on && seconds - answer.since < 4.5) };
     };
     const journey = host.closest(".fresco-journey");
+    // Walking through the doors, the near stone slides out past the window's edges faster than the far hills.
+    const inside = () => Number(host.style.getPropertyValue("--inside") || 0);
     let raf = 0, last = 0, began = 0, disposed = false;
     const tick = (time: number) => {
       raf = requestAnimationFrame(tick);
@@ -234,7 +236,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       const unit = stage.width / Math.max(1, frame.clientWidth) || 1;
       uniforms.uRect.value.set((painting.left - stage.left) / unit, (painting.top - stage.top) / unit, painting.width / unit, painting.height / unit);
       // Scrolling through the fresco, the near stone and the far hills part by about ten pixels from first sight to last.
-      const through = still || !journey ? .5 : Math.max(0, Math.min(1, (-journey.getBoundingClientRect().top / Math.max(1, innerHeight) - 2.6) / .9));
+      const through = still || !journey ? .5 : Math.max(0, Math.min(1, (-journey.getBoundingClientRect().top / Math.max(1, innerHeight) - 3.65) / .9));
       const part = (through - .5) * 10 / (.9 * Math.max(1, painting.height));
       uniforms.uView.value.set(-look.x * .03, -look.y * .022 + part);
       // The light warms once, when the wall has opened, and the sun leans a little with it.
@@ -242,7 +244,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       uniforms.uSun.value.set(-.45 + look.x * 1.5 + uniforms.uWarm.value * .25, -.55 + look.y * .9);
       // Walking in: the near world grows faster than the far one as the doors are passed, and eases back for the last wide view.
       const entered = Math.min(1, Number(host.style.getPropertyValue("--door-progress") || 0) / .2);
-      uniforms.uDolly.value = mix(uniforms.uDolly.value, still ? 0 : host.dataset.overview === "true" ? .5 : .2 + entered * entered * (3 - 2 * entered), follow);
+      uniforms.uDolly.value = mix(uniforms.uDolly.value, still ? 0 : host.dataset.overview === "true" ? .5 : .2 + entered * entered * (3 - 2 * entered) + inside() * .25, follow);
       const world = host.querySelector<HTMLElement>(".threshold-world");
       if (world && host.dataset.living === "true") {
         const frameOfWorld = world.getBoundingClientRect();
