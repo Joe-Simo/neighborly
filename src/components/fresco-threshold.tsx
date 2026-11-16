@@ -92,7 +92,9 @@ export function FrescoThreshold() {
       wall.style.width = `${w}px`; wall.style.height = `${h}px`;
       // Moved by translate only, from a box held at the stage's corner: its size changes, but nothing in the page's layout moves as it travels.
       wall.style.translate = `${(mix(mix(doorX, width / 2, grow), width / 2, inside) - w / 2).toFixed(2)}px ${(centreY - h / 2).toFixed(2)}px`;
-      wall.style.borderRadius = `${mix(50, corner / frameWidth * 100, grow)}% ${mix(50, corner / frameWidth * 100, grow)}% 0 0 / ${mix(30, corner / frameHeight * 100, grow)}% ${mix(30, corner / frameHeight * 100, grow)}% 0 0`;
+      // Once the opening is past every edge of the window its arch is out of sight: the wall drops its rounded clip, so the courtyard is no longer drawn twice through a mask on every frame of the walk.
+      const covers = centreY - h / 2 <= 0 && centreY + h / 2 >= height && w >= width;
+      wall.style.borderRadius = covers ? "0" : `${mix(50, corner / frameWidth * 100, grow)}% ${mix(50, corner / frameWidth * 100, grow)}% 0 0 / ${mix(30, corner / frameHeight * 100, grow)}% ${mix(30, corner / frameHeight * 100, grow)}% 0 0`;
       // The painting keeps one size and is only ever scaled, so the living scene is never redrawn at a new size mid-journey.
       const sceneHeight = Math.max(doorHeight, frameHeight, media.matches ? 0 : height);
       scene.style.width = `${sceneHeight * 2}px`; scene.style.height = `${sceneHeight}px`;
