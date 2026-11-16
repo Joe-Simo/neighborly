@@ -8,6 +8,7 @@ import { useClerk } from "@clerk/nextjs";
 import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { useDashboard } from "@/components/workspace/dashboard";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
 import { authWords, leftKey, useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
@@ -100,10 +101,7 @@ function LiveRooms({
   const churchId =
     churches.find((church) => church.id === selectedChurch)?.id ??
     churches[0]?.id;
-  const dashboard = useQuery(
-    api.workspace.dashboard,
-    churchId ? { churchId } : "skip",
-  );
+  const dashboard = useDashboard({ churchId, enterSample, ready, listing: viewer === undefined, sampleVisitor });
   // The page says which language it is showing, so a screen reader speaks Spanish as Spanish, in the rooms and in
   // every dialog (dialogs are drawn outside the rooms, straight under <body>). Before the rooms it is the door's.
   const shown = dashboard && !sampleVisitor ? dashboard.user.language : deviceLanguage;
@@ -458,3 +456,4 @@ function SampleResetting({ leave }: { leave: () => void }) {
     </LiveRoomLoading>
   );
 }
+
