@@ -113,7 +113,8 @@
 .team-roster { margin-top: 18px; }
 .team-roster .live-row { min-height: 80px; padding-block: 12px; }
 .team-roster h3 { font-size: 19px; }
-.team-roster p { margin: 2px 0 0; font-size: 16px; }
+/* A line that must wrap on a phone breaks into two even parts, never one word left alone. */
+.team-roster p { margin: 2px 0 0; font-size: 16px; text-wrap: balance; }
 .team-roster p[data-waits] { color: var(--help-ochre-ink, #88642c); }
 .team-more { margin-top: 16px; }
 /* The last choice ends a place on the team, so a hairline sets it apart from the two above. */

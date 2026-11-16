@@ -19,8 +19,10 @@ import type { Words } from "@/lib/words";
  * quiet draws it in the outline style. Set it while a sheet with its own filled button
  * is on screen, so the screen never has two filled buttons.
  * plus shows the plus icon: only where the button adds a thing (Log a call, Add a neighbor).
+ * unsettled is true while the room is still finding out which style the button takes (its data has not
+ * arrived). The button keeps its place and is not drawn, so it arrives once, in its final style.
  */
-export type LiveHeadAction = { label: string; run: () => void; quiet?: boolean; plus?: boolean };
+export type LiveHeadAction = { label: string; run: () => void; quiet?: boolean; plus?: boolean; unsettled?: boolean };
 
 export type Workspace = {
   area: LiveArea;
@@ -36,7 +38,8 @@ export type Workspace = {
   when: (start: number, end: number) => string;
   personName: (id: string | null) => string;
   teamName: (id: string) => string;
-  perform: (command: LiveCommand, success?: string) => Promise<boolean>;
+  /** `undo` puts a way back on the saved line: the command that reverses this one, and what to say once it has. */
+  perform: (command: LiveCommand, success?: string, undo?: { command: LiveCommand; said: string }) => Promise<boolean>;
   openAction: (kind: ActionKind) => void;
   showCommitment: (item: LiveCommitment, trigger: HTMLButtonElement) => void;
   confirm: (confirmation: LiveConfirmation) => void;

@@ -85,6 +85,7 @@ function Visits() {
     setStep({ kind: "plan" });
   }, []);
   const waitingOnYes = Boolean(board?.suggested);
+  const boardUnknown = board === undefined;
   useLayoutEffect(() => {
     if (sheetId) return;
     // The pair sheet has the screen's one filled button, so the head button goes quiet beside it.
@@ -92,10 +93,12 @@ function Visits() {
       label: "Plan a visit",
       run: planVisit,
       quiet: waitingOnYes,
+      // Until the board has arrived the room cannot know whether a suggestion will hold the filled button.
+      unsettled: boardUnknown,
       plus: true,
     });
     return () => setHeadAction(null);
-  }, [sheetId, setHeadAction, planVisit, waitingOnYes]);
+  }, [sheetId, setHeadAction, planVisit, waitingOnYes, boardUnknown]);
   const finish = (message: string, moved: Fresh | null = null) => {
     setStep(null);
     setFresh(moved);
