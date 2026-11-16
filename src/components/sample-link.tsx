@@ -28,3 +28,15 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
 export function SampleLink(props: Omit<ComponentProps<typeof Link>, "href">) {
   return <Link {...props} href="/app?intent=sample" {...useSampleDoor()} />;
 }
+
+/** A phone has no pointing: as a ref, fetches Clerk's scripts once the way in comes near the window, before the tap. */
+export function warmWhenNear(link: HTMLElement | null) {
+  if (!link) return;
+  const near = new IntersectionObserver((seen) => {
+    if (!seen.some((entry) => entry.isIntersecting)) return;
+    warmSignIn();
+    near.disconnect();
+  }, { rootMargin: "600px 0px" });
+  near.observe(link);
+  return () => near.disconnect();
+}
