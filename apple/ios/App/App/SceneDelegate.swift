@@ -38,6 +38,11 @@ final class ShellViewController: CAPBridgeViewController {
     private let paper = UIColor(red: 0.9608, green: 0.9529, blue: 0.9255, alpha: 1)
     private var cover: UIView?
     private var statusStrip: UIView?
+    /// The top bar's paper, and the lighter paper of the sign-in sheet.
+    private let barPaper = UIColor(red: 0.9686, green: 0.9569, blue: 0.9294, alpha: 1)
+    private let sheetPaper = UIColor(red: 0.9843, green: 0.9804, blue: 0.9647, alpha: 1)
+    /// True while the page shown is the way in (`.entry`).
+    private var onSignIn = false
     private var slowPage: WKWebView?
     private var slowPageEvents: SlowPageEvents?
     private var loading: NSKeyValueObservation?
@@ -64,6 +69,35 @@ final class ShellViewController: CAPBridgeViewController {
             forMainFrameOnly: true
         ))
         scripts.add(PrintRequests { [weak self] in self?.printPage() }, name: "kindHelpsPrint")
+        // The page can tell it is inside the app: `:root[data-shell="ios"]`,
+        // set before its first paint. The way in leaves its own status strip
+        // out under that mark, and says here when it is the page shown, so the
+        // app's strip holds the status area for as long as it is. The door's
+        // sweep (`data-door="sweeping"`) counts as having left: its colour
+        // covers the status area as one sheet, so the strip is gone at once.
+        scripts.addUserScript(WKUserScript(
+            source: "document.documentElement.dataset.shell = 'ios';",
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
+        scripts.addUserScript(WKUserScript(
+            source: """
+            (() => {
+              let shown = null;
+              const tell = () => {
+                const now = !!document.querySelector(".entry") && document.documentElement.dataset.door !== "sweeping";
+                if (now === shown) return;
+                shown = now;
+                window.webkit.messageHandlers.kindHelpsSignIn.postMessage(now);
+              };
+              new MutationObserver(tell).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-door"] });
+              tell();
+            })();
+            """,
+            injectionTime: .atDocumentEnd,
+            forMainFrameOnly: true
+        ))
+        scripts.add(SignInShown { [weak self] shown in self?.signIn(shown: shown) }, name: "kindHelpsSignIn")
         // In the app a long press brings up no web callout, a tap leaves no
         // grey flash, and a button's words are not selected by accident.
         // Giving stays on the web: the App Store does not allow it in an
@@ -114,27 +148,70 @@ final class ShellViewController: CAPBridgeViewController {
         watchForFirstScreen()
         let keyboard = NotificationCenter.default
         keyboard.addObserver(self, selector: #selector(keyboardComing), name: UIResponder.keyboardWillShowNotification, object: nil)
+        keyboard.addObserver(self, selector: #selector(keyboardGoing), name: UIResponder.keyboardWillHideNotification, object: nil)
         keyboard.addObserver(self, selector: #selector(keyboardGone), name: UIResponder.keyboardDidHideNotification, object: nil)
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        statusStrip?.frame.size.height = view.safeAreaInsets.top
+    }
+
+    private func layStrip(_ colour: UIColor) {
+        guard statusStrip == nil else { return }
+        let strip = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: view.safeAreaInsets.top))
+        strip.backgroundColor = colour
+        strip.autoresizingMask = [.flexibleWidth]
+        strip.isUserInteractionEnabled = false
+        if let cover { view.insertSubview(strip, belowSubview: cover) } else { view.addSubview(strip) }
+        statusStrip = strip
+    }
+
+    /// On the way in the strip is there from the first frame, so nothing has
+    /// to arrive when the keyboard does. Leaving for a room, it is gone in the
+    /// same frame, out of the way of the door's sweep: a room draws its own
+    /// bar there at rest.
+    private func signIn(shown: Bool) {
+        guard shown != onSignIn else { return }
+        onSignIn = shown
+        if shown {
+            statusStrip?.removeFromSuperview()
+            statusStrip = nil
+            layStrip(barPaper)
+        } else {
+            statusStrip?.removeFromSuperview()
+            statusStrip = nil
+        }
+    }
+
+    /// On a phone the keyboard slides the sign-in sheet up under the clock, so
+    /// the strip turns to the sheet's paper in step with the keyboard and
+    /// turns back as it leaves. On an iPad the sheet stays clear of the clock.
+    private func tintStrip(_ colour: UIColor, with note: Notification) {
+        guard onSignIn, view.bounds.width < 700 else { return }
+        let time = note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval ?? 0.25
+        UIView.animate(withDuration: time) { self.statusStrip?.backgroundColor = colour }
     }
 
     /// While the keyboard slides, iOS moves the page under the clock for a few
     /// frames before the page's own top bar can follow. In a room, a strip of
     /// the bar's paper covers the status area for as long as the keyboard is up.
     /// Not over a sheet: there the page behind is dimmed, and the strip would glare.
-    @objc private func keyboardComing() {
+    @objc private func keyboardComing(_ note: Notification) {
+        guard !onSignIn else { return tintStrip(sheetPaper, with: note) }
         guard statusStrip == nil, view.safeAreaInsets.top > 0, let webView else { return }
         webView.evaluateJavaScript("!!document.querySelector('.live-header') && !document.querySelector('[role=dialog], dialog[open]')") { [weak self] result, _ in
-            guard let self, result as? Bool == true, self.statusStrip == nil else { return }
-            let strip = UIView(frame: CGRect(x: 0, y: 0, width: self.view.bounds.width, height: self.view.safeAreaInsets.top))
-            strip.backgroundColor = UIColor(red: 0.9686, green: 0.9569, blue: 0.9294, alpha: 1)
-            strip.autoresizingMask = [.flexibleWidth]
-            strip.isUserInteractionEnabled = false
-            self.view.addSubview(strip)
-            self.statusStrip = strip
+            guard let self, result as? Bool == true, !self.onSignIn else { return }
+            self.layStrip(self.barPaper)
         }
     }
 
+    @objc private func keyboardGoing(_ note: Notification) {
+        tintStrip(barPaper, with: note)
+    }
+
     @objc private func keyboardGone() {
+        guard !onSignIn else { return }
         lift([statusStrip])
         statusStrip = nil
     }
@@ -285,6 +362,19 @@ private final class SlowPageEvents: NSObject, WKNavigationDelegate {
         guard navigationAction.navigationType == .linkActivated else { return decisionHandler(.allow) }
         decisionHandler(.cancel)
         tryAgain()
+    }
+}
+
+/// Hears from the page when the way in is shown, and when it is left.
+private final class SignInShown: NSObject, WKScriptMessageHandler {
+    private let changed: (Bool) -> Void
+
+    init(changed: @escaping (Bool) -> Void) {
+        self.changed = changed
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        changed(message.body as? Bool == true)
     }
 }
 

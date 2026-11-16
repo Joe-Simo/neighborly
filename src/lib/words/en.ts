@@ -289,6 +289,8 @@ export function en(set: WordSet) {
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {
       opening: "Opening…",
+      /** After a pull on the iPhone app's page when nothing is behind. */
+      upToDate: "Up to date.",
       needed: "Fill this in.",
       neededChoice: "Choose one.",
       neededCheck: "Look at this again.",

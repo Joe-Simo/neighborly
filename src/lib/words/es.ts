@@ -286,6 +286,7 @@ export function es(set: WordSet): Words {
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {
       opening: "Abriendo…",
+      upToDate: "Al día.",
       needed: "Completa esto.",
       neededChoice: "Elige una opción.",
       neededCheck: "Revisa esto.",
