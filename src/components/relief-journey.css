@@ -29,11 +29,11 @@
 .fresco-view .living-courtyard{position:absolute;inset:0;pointer-events:none}
 .fresco-view .living-courtyard canvas{display:block;width:100%;height:100%}
 .fresco-stage:not([data-living=true]) .living-courtyard{visibility:hidden}
-.fresco-doors{position:absolute;inset:0;border-radius:inherit;perspective:1500px;opacity:min(calc(1 - var(--grow) * 3),calc(1 - var(--inside) * 3));pointer-events:none}
+.fresco-doors{position:absolute;inset:0;border-radius:inherit;perspective:1500px;opacity:clamp(0,calc(1 - var(--grow) * 1000),1);pointer-events:none}
 .fresco-doors i{position:absolute;top:0;bottom:0;width:50.15%;background-color:#8fa888;background-size:200% 100%;backface-visibility:hidden;box-shadow:inset 0 0 25px #17271c22}
 .fresco-stage[data-settled=true] .fresco-doors i{background-image:url(/assets/threshold/doors-1000.webp)}
-.fresco-doors i:first-child{left:0;transform-origin:left center;border-radius:100% 0 0 0/30% 0 0 0;background-position:left center;transform:rotateY(calc(var(--door) * 88deg))}
-.fresco-doors i:last-child{right:0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;background-position:right center;transform:rotateY(calc(var(--door) * -88deg))}
+.fresco-doors i:first-child{left:0;transform-origin:left center;border-radius:100% 0 0 0/30% 0 0 0;background-position:left center;transform:rotateY(calc(var(--door) * 88deg + var(--inside) * 40deg))}
+.fresco-doors i:last-child{right:0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;background-position:right center;transform:rotateY(calc(var(--door) * -88deg - var(--inside) * 40deg))}
 .fresco-caption{position:absolute;z-index:2;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;opacity:calc(var(--grow) * 2.5 - 1.5);translate:0 calc((1 - var(--grow)) * 20px)}
 .fresco-caption em{font-weight:400}
 /* Standing in the courtyard: the words are set large on the paving, and the wordmark steps aside so nothing sits over the picture. */

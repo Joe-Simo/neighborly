@@ -68,19 +68,24 @@ export function FrescoThreshold() {
       const frameWidth = phone ? width - 40 : frameHeight * 2;
       const frameY = (short ? 60 : Math.max(phone ? 84 : 96, (height - frameHeight - (phone ? 150 : 120)) / 2)) + frameHeight / 2;
       const corner = Math.min(frameWidth * .18, frameHeight * .36);
-      // The opening travels door, then whole window, then frame; at the window the arch has straightened to its edges.
-      const w = mix(mix(doorWidth, frameWidth, grow), width, inside), h = mix(mix(doorHeight, frameHeight, grow), height, inside);
+      // The opening travels door, then past the window, then frame. Walking in, the arch keeps its curve and grows until its shoulders have left the window: a box half as wide again as the window, a little above it, clears the top corners.
+      const pastW = width * 1.5, pastH = height * 1.6, pastTop = -height * .13;
+      const w = mix(mix(doorWidth, frameWidth, grow), pastW, inside), h = mix(mix(doorHeight, frameHeight, grow), pastH, inside);
+      const centreY = mix(mix(doorY, frameY, grow), pastTop + pastH / 2, inside);
       wall.style.width = `${w}px`; wall.style.height = `${h}px`;
-      wall.style.left = `${mix(mix(doorX, width / 2, grow), width / 2, inside) - w / 2}px`; wall.style.top = `${mix(mix(doorY, frameY, grow), height / 2, inside) - h / 2}px`;
-      const arch = 1 - inside;
-      wall.style.borderRadius = `${mix(50, corner / frameWidth * 100, grow) * arch}% ${mix(50, corner / frameWidth * 100, grow) * arch}% 0 0 / ${mix(30, corner / frameHeight * 100, grow) * arch}% ${mix(30, corner / frameHeight * 100, grow) * arch}% 0 0`;
+      wall.style.left = `${mix(mix(doorX, width / 2, grow), width / 2, inside) - w / 2}px`; wall.style.top = `${centreY - h / 2}px`;
+      wall.style.borderRadius = `${mix(50, corner / frameWidth * 100, grow)}% ${mix(50, corner / frameWidth * 100, grow)}% 0 0 / ${mix(30, corner / frameHeight * 100, grow)}% ${mix(30, corner / frameHeight * 100, grow)}% 0 0`;
       // The painting keeps one size and is only ever scaled, so the living scene is never redrawn at a new size mid-journey.
       const sceneHeight = Math.max(doorHeight, frameHeight, media.matches ? 0 : height);
       scene.style.width = `${sceneHeight * 2}px`; scene.style.height = `${sceneHeight}px`;
       // On a wide wall the near pillar at the painting's left edge is left outside the frame: the painting is drawn a little larger and held to the right, so painted courtyard meets the frame on every side.
-      const cover = Math.max(h / sceneHeight, w / (sceneHeight * 2)) * (phone ? 1 : mix(frescoInset, 1, inside));
+      // The painting is sized by the opening, except walking in, where it covers the window itself while the opening grows past it.
+      const framed = Math.max(h / sceneHeight, w / (sceneHeight * 2)) * (phone ? 1 : frescoInset);
+      const cover = mix(framed, Math.max(height / sceneHeight, width / (sceneHeight * 2)), inside);
+      const held = phone ? 0 : sceneHeight * cover * (1 - 1 / frescoInset) * (1 - inside);
+      const lift = (height / 2 - centreY) * inside;
       scene.style.scale = String(cover);
-      scene.style.translate = phone ? "" : `calc(-50% - ${(sceneHeight * cover * (1 - 1 / frescoInset)).toFixed(2)}px) -50%`;
+      scene.style.translate = `calc(-50% - ${held.toFixed(2)}px) calc(-50% + ${lift.toFixed(2)}px)`;
       host.style.setProperty("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
