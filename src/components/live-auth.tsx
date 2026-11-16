@@ -7,11 +7,10 @@ import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { languageNames, languages, words } from "@/lib/words";
+import { words } from "@/lib/words";
 import { LiveField } from "@/components/workspace/primitives";
-import { cn } from "@/lib/utils";
 import { authWords, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
-import "./live-auth.css";
+import { EntrySheet } from "./entry-sheet";
 
 export type LiveEntryIntent = "start" | "join" | "signin";
 type Flow = "signIn" | "signUp" | "reset";
@@ -54,14 +53,6 @@ function errorKey(error: unknown, flow: Flow): AuthError {
   }
 }
 
-/**
- * The door fills the whole wall here, so it is asked for larger than a room's head ever is:
- * a wide desktop shows it edge to edge, an upright iPad at the screen's own width.
- */
-const doorSources = (type: "avif" | "webp") =>
-  [640, 1024, 1536, 2400].map((width) => `/assets/relief/relief-visit-${width}.${type} ${width}w`).join(", ");
-const doorSizes = "(max-width: 699px) 228px, (max-width: 1100px) and (orientation: portrait) 100vw, max(100vw, 150vh)";
-
 export function LiveAuth({
   intent = "signin",
   sampleEntry = false,
@@ -78,7 +69,7 @@ export function LiveAuth({
   const [flow, setFlow] = useState<Flow>(intent === "start" || intent === "join" ? "signUp" : "signIn");
   const [step, setStep] = useState<Step>("details");
   const [email, setEmail] = useState("");
-  const [language, setLanguage] = useEntryLanguage();
+  const [language] = useEntryLanguage();
   const w = authWords[language];
   /** "Fill this in." is the workspace's own sentence, read from the same book so the two never differ. */
   const { needed } = words(language).states;
@@ -429,41 +420,8 @@ export function LiveAuth({
     );
 
   return (
-    <div className="entry" lang={language}>
-      <div className="entry-art" aria-hidden="true">
-        <picture className="relief">
-          <source type="image/avif" srcSet={doorSources("avif")} sizes={doorSizes} />
-          <source type="image/webp" srcSet={doorSources("webp")} sizes={doorSizes} />
-          <img
-            src="/assets/relief/relief-visit-1536.webp"
-            alt=""
-            width={1536}
-            height={1024}
-            decoding="async"
-            style={{ objectPosition: "var(--entry-focus)" }}
-          />
-        </picture>
-      </div>
-      <main className="entry-sheet paper-settle">
-        <div className={cn("entry-paper paper-corner", given ? "paper-fold" : step !== "details" && "paper-waits")}>
-          <div key={`${flow}:${step}`} className="entry-page paper-rows">
-            {page}
-          </div>
-          <div className="entry-languages" role="group" aria-label={w.language}>
-            {languages.map((choice) => (
-              <Button
-                key={choice}
-                variant="link"
-                lang={choice}
-                aria-pressed={choice === language}
-                onClick={() => setLanguage(choice)}
-              >
-                {languageNames[choice]}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </main>
-    </div>
+    <EntrySheet page={`${flow}:${step}`} corner={given ? "given" : step !== "details" ? "waits" : "rest"}>
+      {page}
+    </EntrySheet>
   );
 }
