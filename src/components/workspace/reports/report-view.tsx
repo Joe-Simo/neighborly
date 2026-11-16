@@ -384,6 +384,17 @@ export function ReportView({
                             if (event.currentTarget.matches(":focus-visible")) setTip(line.month);
                           }}
                           onBlur={() => setTip((shown) => (shown === line.month ? undefined : shown))}
+                          // A mouse resting on the month holds the tip up; a click while it rests there must not put it away.
+                          onPointerEnter={(event) => {
+                            if (event.pointerType === "mouse") setTip(line.month);
+                          }}
+                          onPointerLeave={(event) => {
+                            if (event.pointerType === "mouse" && !event.currentTarget.matches(":focus-visible"))
+                              setTip((shown) => (shown === line.month ? undefined : shown));
+                          }}
+                          onClick={(event) => {
+                            if (tip === line.month && event.currentTarget.matches(":hover") && matchMedia("(hover: hover)").matches) event.preventDefault();
+                          }}
                         />
                       </PopoverTrigger>
                       <PopoverContent
