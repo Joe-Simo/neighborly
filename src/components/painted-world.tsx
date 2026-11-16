@@ -252,10 +252,10 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           </div>
           {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Kind Helps">
             <a className="painted-world-primary-invitation" href="#neighborly-courtyard" onClick={event => { if (passed && onContinue) { event.preventDefault(); onContinue(); } else if (!passed && onPass) { event.preventDefault(); onPass(); } }}>{passed || !onPass ? "Go through the doors" : "Pass the card"}<ArrowUpRight size={15} aria-hidden="true" /></a>
-            <Link href="/app?intent=start">Start a group <ArrowUpRight size={15} aria-hidden="true" /></Link>
+            <Link href="/app?intent=start">Start a conference <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </nav>}
           {!heroOnly && scene === "complete" && <nav className="painted-world-scene-actions" aria-label="Start with Kind Helps">
-            <Button asChild className="painted-world-scene-start"><Link href="/app?intent=start">Start a group <ArrowUpRight size={16} aria-hidden="true" /></Link></Button>
+            <Button asChild className="painted-world-scene-start"><Link href="/app?intent=start">Start a conference <ArrowUpRight size={16} aria-hidden="true" /></Link></Button>
             <Link href="/app?intent=join">Join your people <ArrowUpRight size={16} aria-hidden="true" /></Link>
             <Link href="/app?intent=signin">Sign in</Link>
             <a href="#story-start" className="painted-world-restart">Experience again</a>
@@ -273,7 +273,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
       <h2 id="community-title">Your people.<br /><em>Your way to help.</em></h2>
       <p>A shared place for the plans, people, and acts of care that matter to your community.</p>
       <div className="painted-world-account">
-        <Button asChild className="painted-world-start"><Link href="/app?intent=start">Start a group <ArrowUpRight aria-hidden="true" /></Link></Button>
+        <Button asChild className="painted-world-start"><Link href="/app?intent=start">Start a conference <ArrowUpRight aria-hidden="true" /></Link></Button>
         <Link href="/app?intent=join">Join your people <ArrowUpRight size={16} aria-hidden="true" /></Link>
         <Link href="/app?intent=signin">Sign in</Link>
       </div>
