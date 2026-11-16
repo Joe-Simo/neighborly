@@ -386,6 +386,12 @@
   .live-head-actions { margin-top: 12px; }
 }
 
+/* A phone, back in a room already opened in this visit: the head is at rest. The lower band, the kicker and the
+   headline; the deck was read on arrival. The work starts about a hand higher. */
+@media (max-width: 699px) {
+  .live-page-head[data-rested] .live-head-art { height: 96px; margin-bottom: 10px; }
+  .live-app .live-page-head[data-rested] .live-deck { display: none; }
+}
 
 /* The menu sheet fills the screen between the insets: its title, every room in a list that scrolls, and a foot that stays. */
 .live-mobile-menu[data-slot="dialog-content"] {
