@@ -5,6 +5,7 @@ import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
 import { HomeYes } from "./home-yes";
 import { ThreadCard } from "./thread-card";
+import { ReliefLean } from "./relief-lean";
 import { ClosingBand, Colophon } from "./public-ending";
 import { useSettled } from "@/lib/use-settled";
 import "./neighborly-continuation.css";
@@ -49,6 +50,7 @@ export function NeighborlyContinuation() {
     </noscript>
     <ThreadCard />
     <ReliefStory />
+    <ReliefLean />
     <HomeYes />
     <section id="how-neighborly-works" tabIndex={-1} className="neighborly-together" aria-labelledby="together-title">
       <div className="neighborly-together-paper" data-settled={settled} aria-hidden="true" />
