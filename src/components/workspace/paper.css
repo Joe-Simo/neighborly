@@ -31,7 +31,20 @@
 @keyframes paper-settle { from { opacity: 0; transform: translateY(14px) rotate(-0.4deg); } }
 @keyframes paper-unveil { from { opacity: 0; transform: translateX(12px); } }
 @keyframes paper-show { from { opacity: 0; } }
-@keyframes paper-press { 40% { transform: scale(1.22); } }
+/* The yes: the corner lifts off the sheet, takes its green, and is pressed flat with a thumb. */
+@keyframes paper-press {
+  0% { transform: none; box-shadow: -3px 3px 6px -4px #3b3a2466; }
+  34% { transform: scale(1.36) rotate(-2deg); box-shadow: -10px 10px 18px -8px #3b3a2480; }
+  62% { transform: scale(0.94); box-shadow: -1px 1px 2px -2px #3b3a2466; }
+  100% { transform: none; box-shadow: -3px 3px 6px -4px #3b3a2466; }
+}
+/* The sheet gives a little under the thumb. */
+@keyframes paper-taken { 62% { transform: translateY(1.5px); } }
+/* The mark in the corner is drawn once the corner is down. */
+@keyframes paper-mark { from { background-size: 0 0, auto; } 55% { background-size: 0 0, auto; } }
+/* Between rooms one picture is laid over the other: the old sheet slides back under, the new one comes to rest on it. */
+@keyframes paper-lay { from { opacity: 0; transform: translateX(26px); } 45% { opacity: 1; } }
+@keyframes paper-under { 30% { opacity: 1; } to { opacity: 0; transform: translateX(-16px); } }
 @keyframes paper-breathe { 50% { opacity: 0.55; } }
 
 .paper-rise,
@@ -82,8 +95,14 @@
 }
 .help-sheet, .paper-waits { --paper-corner: #c8962e; }
 .paper-rest { --paper-corner: #e6e1d2; }
-.paper-fold { --paper-corner: #365c46; }
-.paper-fold::after { animation: paper-press 400ms var(--paper-ease); }
+.paper-fold { --paper-corner: #365c46; animation: paper-taken 520ms var(--paper-ease); }
+/* Green is never the only sign: the folded corner carries a small tick, so done reads without colour. */
+.paper-fold::after {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23f7f4ed' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.2 6.4 4.9 9 9.8 3.2'/%3E%3C/svg%3E") 6px 21px / 11px 11px no-repeat,
+    linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%);
+  animation: paper-press 520ms var(--paper-ease), paper-mark 620ms ease-out;
+}
 
 .count-up { font-variant-numeric: lining-nums tabular-nums; }
 
@@ -112,6 +131,8 @@
 .live-head-actions { animation: paper-rise 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
 /* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
+.live-head-art[data-laid] > .relief { animation: paper-lay 560ms var(--paper-ease) backwards; animation-delay: 40ms; }
+.live-head-under { position: absolute; inset: 0; z-index: -1; animation: paper-under 560ms var(--paper-ease) forwards; }
 .live-room { animation: paper-show 240ms ease backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
 
 /* Once a session, after sign-in or the sample link: three sheets sweep up and the last one settles as the page. */
@@ -212,7 +233,7 @@
 .live-head-actions:empty { display: none; }
 .relief { display: block; width: 100%; height: 100%; }
 .relief img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.live-head-art { pointer-events: none; overflow: hidden; }
+.live-head-art { pointer-events: none; overflow: hidden; isolation: isolate; }
 /*
   Up to 699px: a band across the top that is the desktop head in miniature. The picture
   is anchored right and sized so the middle 62% of its height fills the band; the rest
@@ -223,7 +244,8 @@
   height: 132px;
   margin: calc(-1 * var(--live-top)) calc(-1 * max(var(--live-pad), env(safe-area-inset-right))) 16px calc(-1 * var(--live-pad));
 }
-.live-head-art > .relief {
+.live-head-art > .relief,
+.live-head-under > .relief {
   position: absolute;
   right: 0;
   top: calc(-61.3% * var(--relief-y, 0.5));
@@ -247,7 +269,7 @@
     height: auto;
     margin: 0;
   }
-  .live-head-art > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
+  .live-head-art > .relief, .live-head-under > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
   .live-head-words,
   .live-head-actions {
     position: relative;
@@ -494,11 +516,11 @@
 /* ── Stillness for those who ask for it ───────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .paper-rise, .paper-rows > *, .live-list > *, .help-row, .help-timeline li, .help-ledger tbody tr,
-  .paper-settle, .help-sheet, .paper-fold::after, .live-head-words > *, .live-head-actions, .live-head-art > .relief,
+  .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-head-words > *, .live-head-actions, .live-head-art > .relief,
   .live-room, .live-mobile-menu, .paper-loading b, .paper-loading i, .paper-loading-frame .live-nav b,
   .help-skeleton i, .help-skeleton b, .paper-loading-label svg { animation: none; }
   .paper-loading-label { animation-duration: 1ms; }
-  .paper-wave { display: none !important; }
+  .paper-wave, .live-head-under { display: none !important; }
   .live-app[data-arriving] { --paper-wait: 0ms; }
   .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
   .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }

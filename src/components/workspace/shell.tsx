@@ -30,6 +30,7 @@ import {
   navigation,
   primaryActions,
   type ActionKind,
+  type LiveHeading,
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
@@ -177,6 +178,10 @@ export function LiveWorkspace({
   const heading = headingOverride
     ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
     : { ...headings[area], ...translatedHeadings[area] };
+  // Between rooms the picture of the room just left lies under the new one for a moment, so one sheet is laid on another.
+  const [headArt, setHeadArt] = useState<{ area: LiveArea; under: LiveHeading["art"] | null }>({ area, under: null });
+  if (headArt.area !== area) setHeadArt({ area, under: headings[headArt.area].art });
+  const under = headArt.under && headArt.under.picture !== heading.art.picture ? headArt.under : null;
   const workspace: Workspace = {
     area,
     data,
@@ -278,7 +283,20 @@ export function LiveWorkspace({
         >
           <div className="live-page-head" key={`head-${area}`}>
             {heading.art && (
-              <div className="live-head-art" style={heading.art.band === undefined ? undefined : ({ "--relief-y": heading.art.band } as CSSProperties)}>
+              <div
+                className="live-head-art"
+                data-laid={under ? "" : undefined}
+                style={heading.art.band === undefined ? undefined : ({ "--relief-y": heading.art.band } as CSSProperties)}
+              >
+                {under && (
+                  <span
+                    className="live-head-under"
+                    style={{ "--relief-y": under.band ?? 0.5 } as CSSProperties}
+                    onAnimationEnd={() => setHeadArt((now) => ({ ...now, under: null }))}
+                  >
+                    <ReliefPicture name={under.picture} focus={under.focus} />
+                  </span>
+                )}
                 <ReliefPicture name={heading.art.picture} focus={heading.art.focus} />
               </div>
             )}
