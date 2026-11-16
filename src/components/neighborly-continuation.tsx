@@ -63,8 +63,9 @@ export function NeighborlyContinuation() {
         <ul aria-label="What your conference gets">
           {rooms.map(([picture, title, line, turn], index) => <li key={title} style={{ "--turn": `${turn}deg`, "--i": index } as CSSProperties}>
             <picture>
-              <source type="image/avif" srcSet={`/assets/relief/relief-${picture}-640.avif`} />
-              <img src={`/assets/relief/relief-${picture}-640.webp`} width={640} height={427} alt="" loading="lazy" decoding="async" />
+              {/* A close detail of the room's relief, hand and object only, so no card repeats the story's pictures above it. */}
+              <source type="image/avif" srcSet={`/assets/relief/relief-${picture}-detail-728.avif`} />
+              <img src={`/assets/relief/relief-${picture}-detail-728.webp`} width={728} height={485} alt="" loading="lazy" decoding="async" />
             </picture>
             <div>
               <h3>{title}</h3>
