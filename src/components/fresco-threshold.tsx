@@ -16,6 +16,8 @@ const doorsOpen = [1.15, 1.85] as const;
 // The wall waits until the doors have swung clear, so the two never show at once.
 const wallOpens = [1.9, 2.7] as const;
 const rest = 2.9;
+// How much larger than its frame the painting is drawn on a wide wall.
+const frescoInset = 1.064;
 
 /** The doors open once, onto the courtyard painted on the wall beyond them. */
 // The courtyard's light is drawn with the 3D library, which is fetched only when the doors are near, not with the page.
@@ -66,7 +68,10 @@ export function FrescoThreshold() {
       // The painting keeps one size and is only ever scaled, so the living scene is never redrawn at a new size mid-journey.
       const sceneHeight = Math.max(doorHeight, frameHeight);
       scene.style.width = `${sceneHeight * 2}px`; scene.style.height = `${sceneHeight}px`;
-      scene.style.scale = String(Math.max(h / sceneHeight, w / (sceneHeight * 2)));
+      // On a wide wall the near pillar at the painting's left edge is left outside the frame: the painting is drawn a little larger and held to the right, so painted courtyard meets the frame on every side.
+      const cover = Math.max(h / sceneHeight, w / (sceneHeight * 2)) * (phone ? 1 : frescoInset);
+      scene.style.scale = String(cover);
+      scene.style.translate = phone ? "" : `calc(-50% - ${(sceneHeight * cover * (1 - 1 / frescoInset)).toFixed(2)}px) -50%`;
       host.style.setProperty("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
