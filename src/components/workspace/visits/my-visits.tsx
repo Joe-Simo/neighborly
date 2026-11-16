@@ -74,6 +74,8 @@ export function MyVisitsView({
             hour: "numeric",
             minute: "2-digit",
           }).split(/\s/);
+          // For a reader, each answer says which visit it is for, as the row shows it.
+          const subject = `${words.on(visit.street || words.nearby)}, ${format(visit.scheduledAt, { weekday: "long", month: "long", day: "numeric" })}`;
           return (
             <div className="help-row" key={visit.id}>
               <div className="live-date-leaf">
@@ -96,6 +98,7 @@ export function MyVisitsView({
                   <>
                     <Button
                       disabled={busy}
+                      aria-label={`${words.go}: ${subject}`}
                       onClick={() => onAnswer(visit, "accepted")}
                     >
                       <Check size={18} aria-hidden="true" /> {words.go}
@@ -103,6 +106,7 @@ export function MyVisitsView({
                     <Button
                       variant="outline"
                       disabled={busy}
+                      aria-label={`${words.cannot}: ${subject}`}
                       onClick={() => onAnswer(visit, "declined")}
                     >
                       {words.cannot}

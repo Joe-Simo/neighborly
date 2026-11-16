@@ -16,7 +16,8 @@ import "@/components/workspace/door.css";
  * in, who goes from the launch mark straight to their room.
  */
 const SWEEP = 380;
-const LIFT = 140;
+/** The last sheet is lifted up and off the room, which is already whole under it. */
+const LIFT = 220;
 /** A wait is quiet at first: the line is not drawn for this long after the paper is down. With no sweep the paper is down at once, so the quiet is longer. */
 const QUIET = 400;
 const QUIET_PLAIN = 1000;
@@ -31,17 +32,61 @@ let arrivals = 0;
 // Kept beside the count, not in the component, so the sweep keeps its clock however the tree under it is redrawn.
 let finished = 0;
 let arrivedAt = 0;
+// The home page's card is the last sheet for someone it sent to the sample; anyone else gets plain paper.
+let carried = false;
+let card = false;
+/** Called by the door when it starts opening the sample, and again with false if the sample did not open. */
+export function carryTheCard(carry = true) {
+  carried = carry;
+}
 const watchers = new Set<() => void>();
+/** Someone has just come through the door and is still in the first room: figures are drawn at their value, not rolled. */
+export const cameThroughTheDoor = () => typeof document !== "undefined" && document.documentElement.dataset.fromDoor !== undefined;
 /** Called in the frame the door's sheet leaves. */
 export function arriveFromTheDoor() {
   arrivals += 1;
   arrivedAt = performance.now();
+  card = carried;
+  carried = false;
   // The room under the paper is drawn finished: its own entry is skipped until the next room (door.css; the shell lifts the mark).
   document.documentElement.dataset.fromDoor = "";
   // For anything outside the page that must give way to the sweep (the iPhone app's strip): there for the whole run.
   document.documentElement.dataset.door = "sweeping";
   for (const watch of watchers) watch();
 }
+/**
+ * The card becomes the page: its two grey lines travel to the two lines of the headline and its ochre square to
+ * the ring of "Start here", thinning as the words under them come up. Only what is in the window is aimed at.
+ */
+function marksBecomeThePage(card: HTMLElement, timing: KeyframeAnimationOptions, lifted: number) {
+  const [square, ...bars] = [...card.children].filter((mark): mark is HTMLElement => mark instanceof HTMLElement);
+  const heading = document.querySelector(".live-app .live-head-words h1");
+  const lines: DOMRect[] = [];
+  if (heading) {
+    const range = document.createRange();
+    range.selectNodeContents(heading);
+    for (const rect of range.getClientRects()) if (rect.width > 1 && !lines.some((line) => Math.abs(line.top - rect.top) < rect.height / 2)) lines.push(rect);
+  }
+  const start = document.querySelector(".live-app .start-here")?.getBoundingClientRect();
+  const ring = start && new DOMRect(start.left, start.top + start.height / 2 - 5, 10, 10);
+  const pairs: [HTMLElement | undefined, DOMRect | undefined][] = [[square, ring], [bars[0], lines[0]], [bars[1], lines[1] ?? lines[0]]];
+  for (const [mark, to] of pairs) {
+    if (!mark) continue;
+    const from = mark.getBoundingClientRect();
+    const opacity = getComputedStyle(mark).opacity;
+    const seen = to && to.bottom > 0 && to.top < window.innerHeight;
+    mark.style.transformOrigin = "0 0";
+    mark.animate(
+      [
+        { opacity, transform: "none" },
+        // The card under them is rising by `lifted`; the marks are carried back down by as much, so they stay on the page.
+        { opacity: 0, transform: `translate(${seen ? to.left - from.left : 0}px, ${(seen ? to.top - from.top : 0) + lifted}px) scale(${seen ? to.width / from.width : 1}, ${seen ? to.height / from.height : 1})` },
+      ],
+      timing,
+    );
+  }
+}
+
 const watch = (watcher: () => void) => {
   watchers.add(watcher);
   return () => void watchers.delete(watcher);
@@ -53,7 +98,8 @@ const watch = (watcher: () => void) => {
  */
 function underneathIsReady() {
   const room = document.querySelector(".live-app .live-room");
-  if (room) return document.querySelector(".live-app[data-room-whole]") !== null;
+  // A part of the room that is still on its way says so (`data-room-pending`), and the paper waits for it too.
+  if (room) return document.querySelector(".live-app[data-room-whole]") !== null && document.querySelector(".live-app [data-room-pending]") === null;
   return document.querySelector(".paper-loading") === null;
 }
 
@@ -80,7 +126,24 @@ export function DoorSweep() {
       // The line leaves first, in this same frame, so it is never read over the room.
       paper.current?.querySelector<HTMLElement>(".door-opening")?.style.setProperty("visibility", "hidden");
       setHolding(false);
-      const leave = paper.current?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: plain ? 180 : LIFT, easing: "linear", fill: "forwards" });
+      // Whatever in the room is still arriving is finished now: the sheet comes off a room at rest.
+      for (const move of document.getAnimations()) {
+        const on = move.effect instanceof KeyframeEffect ? move.effect.target : null;
+        if (on?.closest(".live-app") && move.effect?.getComputedTiming().iterations !== Infinity) move.finish();
+      }
+      const sheet = paper.current?.querySelector<HTMLElement>(".door-card, .door-paper");
+      const far = -((sheet?.getBoundingClientRect().bottom ?? window.innerHeight) + 70);
+      const away = { duration: LIFT, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" } as const;
+      const leave = sheet && !plain
+        ? sheet.animate([{ transform: "none" }, { transform: `translateY(${far}px)` }], away)
+        : paper.current?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, easing: "linear", fill: "forwards" });
+      if (sheet && !plain) {
+        // The sheets behind are long covered; they go at once, so the one sheet is all that is over the room.
+        for (const behind of paper.current?.querySelectorAll<SVGElement>(":scope > svg") ?? []) behind.style.display = "none";
+        sheet.style.visibility = "visible";
+        // The card leaves its marks behind: they go to their places on the page as it lifts off them.
+        if (sheet.matches(".door-card:not([data-waits])")) marksBecomeThePage(sheet, away, -far);
+      }
       const over = () => {
         setHolding(false);
         delete document.documentElement.dataset.door;
@@ -98,6 +161,8 @@ export function DoorSweep() {
       if (landed && read && (underneathIsReady() || waited > LONGEST)) return lift();
       if (landed && saidAt === 0 && waited >= (plain ? QUIET_PLAIN : SWEEP + QUIET)) {
         saidAt = performance.now();
+        // A wait: the card's marks give way to the line.
+        paper.current?.querySelector(".door-card")?.setAttribute("data-waits", "");
         setHolding(true);
       }
       frame = requestAnimationFrame(look);
@@ -109,11 +174,13 @@ export function DoorSweep() {
   if (!playing) return null;
   return createPortal(
     <div className="door-sweep" ref={paper} aria-hidden={holding ? undefined : true}>
-      {["#365c46", "#6f5f93", "#f7f4ed"].map((fill, sheet) => (
+      {["#365c46", "#6f5f93", "#f7f4ed"].slice(0, card ? 2 : 3).map((fill, sheet) => (
         <svg key={fill} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path fill={fill} d={["M0 9C18 1 34 13 53 7S84 0 100 8V100H0Z", "M0 5C22 12 40 0 60 6S88 12 100 4V100H0Z", "M0 10C16 3 38 9 56 4S86 11 100 6V100H0Z"][sheet]} />
         </svg>
       ))}
+      {/* The card passed on the home page, grown to the size of the page: its mark and two lines thin away as it becomes the paper. */}
+      {card ? <div className="door-card"><i /><b /><b /></div> : <div className="door-paper" />}
       {holding && (
         <p className="door-opening" role="status">
           <LoaderCircle size={20} aria-hidden="true" />

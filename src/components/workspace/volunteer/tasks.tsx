@@ -20,7 +20,7 @@ import { NextMeeting } from "@/components/workspace/volunteer/asides";
 function keepFocus(pressed: HTMLButtonElement, done: boolean, tries = 90) {
   requestAnimationFrame(() => {
     if (document.activeElement && document.activeElement !== document.body && document.activeElement !== pressed) return;
-    const open = [...document.querySelectorAll<HTMLButtonElement>('.volunteer-task button[aria-pressed="false"]')].filter((button) => button !== pressed);
+    const open = [...document.querySelectorAll<HTMLButtonElement>('.volunteer-task:not([data-done]) .volunteer-task-act button')].filter((button) => button !== pressed);
     const after = open.find((button) => pressed.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING);
     const next = done ? (after ?? open[0] ?? document.querySelector<HTMLElement>("[data-tasks-head]")) : pressed;
     // While the save is still settling every button is off, and a button that is off cannot take focus:
@@ -71,34 +71,34 @@ export function TasksSection() {
                     </p>
                   </div>
                   {mine ? (
-                    <Button
-                      variant="outline"
-                      aria-pressed={task.complete}
-                      // For a keyboard the done row's own button is the way back, so it says so.
-                      aria-label={task.complete ? words.tasks.undoDone(task.title) : undefined}
-                      disabled={pending}
-                      onClick={async (event) => {
-                        const pressed = event.currentTarget;
-                        const saved = await perform(
-                          { type: "setTaskComplete", taskId: task.id, complete: !task.complete },
-                          task.complete ? words.tasks.openAgain(task.title) : words.tasks.markedDone(task.title),
-                          task.complete
-                            ? undefined
-                            : { command: { type: "setTaskComplete", taskId: task.id, complete: false }, said: words.tasks.openAgain(task.title), returnTo: pressed },
-                        );
-                        if (saved) setTicked(task.complete ? undefined : task.id);
-                        if (saved) keepFocus(pressed, !task.complete);
-                        else keepFocus(pressed, false);
-                      }}
-                    >
-                      {task.complete ? (
-                        <>
+                    // A done row says so in plain words; the button beside it names the one act left, as the saved line does.
+                    <div className="volunteer-task-act">
+                      {task.complete && (
+                        <span className="volunteer-task-done">
                           <Check size={16} aria-hidden="true" /> {words.tasks.done}
-                        </>
-                      ) : (
-                        words.tasks.markDone
+                        </span>
                       )}
-                    </Button>
+                      <Button
+                        variant="outline"
+                        aria-label={task.complete ? words.tasks.reopenTask(task.title) : `${words.tasks.markDone}: ${task.title}`}
+                        disabled={pending}
+                        onClick={async (event) => {
+                          const pressed = event.currentTarget;
+                          const saved = await perform(
+                            { type: "setTaskComplete", taskId: task.id, complete: !task.complete },
+                            task.complete ? words.tasks.openAgain(task.title) : words.tasks.markedDone(task.title),
+                            task.complete
+                              ? undefined
+                              : { command: { type: "setTaskComplete", taskId: task.id, complete: false }, said: words.tasks.openAgain(task.title), returnTo: pressed },
+                          );
+                          if (saved) setTicked(task.complete ? undefined : task.id);
+                          if (saved) keepFocus(pressed, !task.complete);
+                          else keepFocus(pressed, false);
+                        }}
+                      >
+                        {task.complete ? words.tasks.reopen : words.tasks.markDone}
+                      </Button>
+                    </div>
                   ) : (
                     <span className="live-status" data-state={task.complete ? "accepted" : "open"}>
                       {task.complete ? words.tasks.done : words.tasks.open}
@@ -162,6 +162,7 @@ export function TasksSection() {
                         <Button
                           variant="link"
                           className="tools-quiet"
+                          aria-label={`${words.tasks.changeReply}: ${meeting.title}`}
                           onClick={() => setChanging(meeting.id)}
                         >
                           {words.tasks.changeReply}
@@ -169,10 +170,10 @@ export function TasksSection() {
                       </div>
                     ) : (
                       <div className="live-row-actions">
-                        <Button disabled={pending} onClick={() => void reply("accepted")}>
+                        <Button disabled={pending} aria-label={`${words.tasks.attend}: ${meeting.title}`} onClick={() => void reply("accepted")}>
                           {words.tasks.attend}
                         </Button>
-                        <Button variant="outline" disabled={pending} onClick={() => void reply("declined")}>
+                        <Button variant="outline" disabled={pending} aria-label={`${words.tasks.decline}: ${meeting.title}`} onClick={() => void reply("declined")}>
                           {words.tasks.decline}
                         </Button>
                       </div>

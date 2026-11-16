@@ -262,7 +262,7 @@ export function LedgerView({
                       `. ${formatFigure(request.paid)} already paid`}
                   </p>
                 </div>
-                <Button variant="outline" onClick={() => onPay(request)}>
+                <Button variant="outline" aria-label={`Record payment: ${formatFigure(request.remaining)} to ${request.payeeName}`} onClick={() => onPay(request)}>
                   Record payment
                 </Button>
               </div>

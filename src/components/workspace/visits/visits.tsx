@@ -399,6 +399,7 @@ export function VisitsView({
                 <>
                   <Button
                     disabled={busy}
+                    aria-label={`Ask this pair: ${suggested.request.neighborName}, ${weekday(suggested.scheduledAt)}`}
                     onClick={() =>
                       suggested.pair && onAsk(suggested, suggested.pair)
                     }
@@ -407,13 +408,14 @@ export function VisitsView({
                   </Button>
                   <Button
                     variant="outline"
+                    aria-label={`Choose others: ${suggested.request.neighborName}`}
                     onClick={() => onPlan(suggested.request.requestId)}
                   >
                     Choose others
                   </Button>
                 </>
               ) : (
-                <Button onClick={() => onPlan(suggested.request.requestId)}>
+                <Button aria-label={`Choose a pair: ${suggested.request.neighborName}`} onClick={() => onPlan(suggested.request.requestId)}>
                   Choose a pair
                 </Button>
               )}
@@ -548,7 +550,7 @@ export function VisitsView({
                   <h3>{visit.neighborName}</h3>
                 </div>
                 <div className="live-row-actions">
-                  <Button variant="outline" onClick={() => onWriteUp(visit)}>
+                  <Button variant="outline" aria-label={`Write up: ${visit.neighborName}, ${weekday(visit.scheduledAt)}`} onClick={() => onWriteUp(visit)}>
                     Write up
                   </Button>
                 </div>
