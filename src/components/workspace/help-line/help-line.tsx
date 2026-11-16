@@ -27,6 +27,7 @@ import {
   RequestForm,
   ReturnForm,
 } from "@/components/workspace/help-line/forms";
+import { OnTheLine, owners, turnsToday } from "@/components/workspace/help-line/on-the-line";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
   count,
@@ -75,7 +76,7 @@ export function HelpLineSection() {
 }
 
 function HelpLine() {
-  const { data, format, setHeadAction } = useWorkspace();
+  const { data, format, now, setHeadAction } = useWorkspace();
   const churchId = data.church.id;
   const calls = useQuery(api.assistance.calls, { churchId });
   const draftRequest = useAction(api.drafts.draftRequest);
@@ -222,7 +223,7 @@ function HelpLine() {
     step?.kind === "change"
       ? (step.neighborId ?? step.drafted.call.neighborId)
       : null;
-  if (!calls) return <HelpLoading label="Opening the help line" />;
+  if (!calls) return <HelpLoading />;
   const read = calls.waiting.find((call) => call.id === reading);
   // A call just saved can go straight on to its draft.
   const offer = calls.waiting.find(
@@ -268,6 +269,7 @@ function HelpLine() {
           </p>
         </div>
       )}
+      <OnTheLine turns={turnsToday({ data, now, format })} calling={owners(calls.waiting)} />
       <HelpLineView
         calls={calls}
         format={format}

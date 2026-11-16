@@ -11,22 +11,18 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { headings } from "@/components/workspace/navigation";
+import { LiveLoading } from "@/components/workspace/primitives";
 import { ReliefPicture } from "@/components/workspace/relief";
 import { LiveState } from "@/components/workspace/states";
 
-/** Paper-colored blocks in the shape of the rows, while the records arrive. */
-export function HelpLoading({ label }: { label: string }) {
+/**
+ * While a room's rows arrive: the one quiet "Opening…" line of the whole product, and only after 400ms,
+ * so a quick arrival shows nothing. No grey rows: grey is not paper. `label` says what is awaited, for whoever reads the page's source; it is not shown.
+ */
+export function HelpLoading({ label }: { label?: string }) {
   return (
-    <div className="help-skeleton" role="status" aria-label={label}>
-      {[0, 1, 2].map((row) => (
-        <div key={row}>
-          <i />
-          <span>
-            <b />
-            <b />
-          </span>
-        </div>
-      ))}
+    <div className="help-opening" data-awaits={label}>
+      <LiveLoading />
     </div>
   );
 }
@@ -123,11 +119,11 @@ export function HelpRoom({
   loading?: string;
   children: ReactNode;
 }) {
-  const { data, words } = useWorkspace();
+  const { data } = useWorkspace();
   const allowed = useQuery(api.access.canOpenNeighborRecords, {
     churchId: data.church.id,
   });
   if (allowed === undefined)
-    return <HelpLoading label={words.states.opening} />;
+    return <HelpLoading />;
   return allowed ? children : <KeptPrivate />;
 }

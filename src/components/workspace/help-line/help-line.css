@@ -183,3 +183,21 @@
   .help-row-arrow { display: none; }
   .help-neighbor .live-row-actions:not(:has(.live-status)) { display: none; }
 }
+/* The side column: who is on the line today and who is calling back. Names in ink, the rest quiet, hairlines between. */
+.help-aside-list { list-style: none; margin: 0; padding: 0; }
+.help-aside-list li { display: flex; flex-direction: column; padding: 10px 0; border-top: 1px solid var(--live-line); }
+.help-aside-list li:first-child { padding-top: 0; border-top: 0; }
+.help-aside-list strong { font-weight: 600; color: var(--live-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.help-aside-list strong[data-open] { font-weight: 400; color: var(--help-plum); }
+.help-aside-list span, .help-aside-none { color: var(--live-muted); }
+.help-aside-none { margin: 0; }
+.live-app .live-aside-sheet h3.live-kicker { margin: 28px 0 14px; }
+/* Waiting is one quiet line, and it is not drawn for the first 400ms. */
+.help-opening { animation: help-opening 1ms linear 400ms backwards; }
+@keyframes help-opening { from { opacity: 0; } }
+/* Beside the side column the room's own column is narrow until about 1720px, so a sheet reads down, as on a tablet. */
+@media (min-width: 1280px) and (max-width: 1719px) {
+  .live-main:has(> .live-aside:not(:empty)) .help-sheet-body { grid-template-columns: 1fr; }
+  .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] { display: block; }
+  .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] .help-assistant-line { margin: 18px 0 0; padding: 16px 0 0; border-top: 1px solid #e6e0ee; border-left: 0; }
+}

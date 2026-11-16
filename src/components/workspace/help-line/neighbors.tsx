@@ -82,7 +82,7 @@ function Neighbors() {
           onAdd={add}
         />
       ) : (
-        <HelpLoading label="Finding neighbors" />
+        <HelpLoading />
       )}
       {adding && (
         <LiveDialog

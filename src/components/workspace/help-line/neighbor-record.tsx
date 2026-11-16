@@ -170,7 +170,7 @@ export function NeighborRecord({
         said who this household was is gone.
       </LiveState>
     );
-  if (!record) return <HelpLoading label="Opening the record" />;
+  if (!record) return <HelpLoading />;
   const { neighbor } = record;
   return (
     <>
