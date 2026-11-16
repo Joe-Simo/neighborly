@@ -200,6 +200,21 @@ export function LiveWorkspace({
   // let go before the next can be seen.
   const [pictured, setPictured] = useState<LiveArea>();
   const picturedNow = useCallback(() => setPictured(area), [area]);
+  // The first room is whole: its sheet has arrived and its picture is in. The iPhone app's launch cover may wait
+  // for `.live-app[data-room-in]`, so the mark never lifts on a room that is still coming up under it.
+  const app = useRef<HTMLDivElement>(null);
+  const whole = pictured !== undefined && !roomWaiting;
+  useEffect(() => {
+    const room = app.current?.querySelector(".live-room");
+    if (!whole || !room || app.current?.dataset.roomIn !== undefined) return;
+    let waiting = true;
+    void Promise.allSettled(room.getAnimations().map((move) => move.finished)).then(() => {
+      if (waiting && app.current) app.current.dataset.roomIn = "";
+    });
+    return () => {
+      waiting = false;
+    };
+  }, [whole]);
   // Once the first room's picture is in, the other rooms' pictures are fetched quietly behind it.
   const settled = pictured !== undefined;
   const others = menuItems.map((item) => headings[item.id].art.picture).join(" ");
@@ -241,7 +256,7 @@ export function LiveWorkspace({
   const roomWorkspace = english ? { ...workspace, words: roomWords } : workspace;
   return (
     <WorkspaceProvider value={workspace}>
-    <div className="live-app" lang={words.locale}>
+    <div className="live-app" lang={words.locale} ref={app}>
       <a className="live-skip" href="#workspace-content">{words.shell.skip}</a>
       <header className="live-header">
         <Link href="/" className="live-wordmark">
