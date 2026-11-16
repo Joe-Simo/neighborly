@@ -14,35 +14,27 @@
 .neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start;gap:28px clamp(48px,6vw,110px)}
 .neighborly-together-statement{grid-column:2;grid-row:1;align-self:center;margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:pretty}
 /* What a conference gets, written on one sheet of the workspace's own paper, its corner folded in ochre. */
-.neighborly-gets{grid-column:1;grid-row:1;position:relative;margin:0;padding:clamp(10px,1.2vw,18px) clamp(24px,3vw,48px);list-style:none;background:#f7f4ed;box-shadow:0 1px 0 #fffdf7 inset,0 30px 60px -34px #51433066,0 2px 8px #5143301a;clip-path:polygon(0 0,calc(100% - 44px) 0,100% 44px,100% 120%,0 120%)}
-.neighborly-gets::after{content:"";position:absolute;top:0;right:0;width:44px;height:44px;background:linear-gradient(225deg,transparent 50%,#c8962e 50%);filter:drop-shadow(-2px 3px 3px #5143303d)}
-.neighborly-gets li{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:baseline;gap:6px 32px;padding:clamp(16px,1.5vw,22px) 0;border-top:1px solid #293f3224}
-.neighborly-gets li:first-child{border-top:0}
-.neighborly-gets h3{margin:0;font:400 clamp(26px,2.1vw,34px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em}
-.neighborly-gets p{margin:0;font-size:17px;line-height:1.5;text-wrap:pretty}
-.neighborly-gets li:last-child h3{font-style:italic;color:#365c46}
 .neighborly-final-actions{display:flex;flex-direction:column;align-items:flex-start;gap:18px;max-width:380px}
 .neighborly-begin[data-slot=button]{height:auto;min-height:64px;padding:18px 26px;gap:28px;border-radius:0;background:#293f32;color:#f5eedf;font-size:17px;white-space:normal;box-shadow:none}
 .neighborly-begin[data-slot=button]:hover{background:#3a5040}
 .neighborly-final-links{display:flex;flex-wrap:wrap;gap:6px 30px}
-.neighborly-final-links a{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-size:16px;text-decoration:none;border-bottom:1px solid #293f3260;transition:border-color .3s}
-.neighborly-final-links a:hover{border-bottom-color:currentColor}
+.neighborly-final-links a{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-size:16px;text-decoration:none;border-bottom:1px solid #293f3260;background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size 160ms cubic-bezier(.2,.7,.2,1)}
+/* A link's line is drawn from the left, in ink, over its pale one. */
+.neighborly-final-links a:is(:hover,:focus-visible){background-size:100% 1px}
 .neighborly-final-actions small{font-size:14px;line-height:1.5;color:#3d4f43}
 .neighborly-colophon{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px;padding:12px 0 calc(82px + env(safe-area-inset-bottom));font-size:15px}
 .neighborly-colophon>a:first-child{order:3;flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 19.5vw/.8 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:#293f32;text-decoration:none}
 /* The name stays on paper: beneath it the cloth is seen as through a thin sheet. */
 .neighborly-together::after{content:"";position:absolute;left:0;right:0;bottom:0;z-index:-1;height:calc(19.5vw + 150px);background:linear-gradient(#eee7d700,#eee7d7d9 38%,#eee7d7e6);pointer-events:none}
 /* One quiet way to give; it never competes with the invitation above it. */
-.neighborly-give{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#343e3366;transition:text-decoration-color .3s ease}
-.neighborly-give:hover{text-decoration-color:currentColor}
+.neighborly-give{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#343e3366;background:linear-gradient(currentColor,currentColor) 0 calc(50% + .75em)/0 1px no-repeat;transition:background-size 160ms cubic-bezier(.2,.7,.2,1)}
+.neighborly-give:is(:hover,:focus-visible){background-size:100% 1px}
 .neighborly-colophon nav{display:flex;gap:0 28px}
 @media(max-width:900px){
   .neighborly-together{padding-inline:20px}
   .neighborly-together h2 em{margin-left:0}
   .neighborly-together-bottom{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
   .neighborly-together-statement{grid-column:auto;grid-row:auto;max-width:22ch;font-size:clamp(24px,6.6vw,34px)}
-  .neighborly-gets{grid-column:auto;grid-row:auto;margin-top:20px;padding:6px 22px}
-  .neighborly-gets li{grid-template-columns:minmax(0,1fr)}
   .neighborly-final-actions{max-width:none}
 }
 @media(max-width:700px){
@@ -77,7 +69,7 @@
   .neighborly-close .neighborly-final-links{gap:0 26px}
   .neighborly-close .neighborly-final-actions small{font-size:13px}
 }
-@media(prefers-reduced-motion:reduce){.has-reveal [data-reveal]{translate:none;transition:none}}
+@media(prefers-reduced-motion:reduce){.has-reveal [data-reveal]{translate:none;transition:none}.neighborly-final-links a,.neighborly-give{transition:none}}
 
 .neighborly-static-story{position:relative;background:#eee7d7;padding:0 0 60px}
 .neighborly-static-story img{display:block;width:100%;height:auto}

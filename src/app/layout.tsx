@@ -29,11 +29,17 @@ export const metadata: Metadata = {
     startupImage: launchScreens,
   },
 };
+// The three faces on the first screen are asked for with the page, so the first paint is already in them and nothing swaps in view.
+const firstFaces = ["newsreader-display-regular", "newsreader-display-italic", "source-sans-3-latin-variable"];
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {firstFaces.map((face) => <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />)}
+      </head>
       <body>
         <SerwistProvider swUrl="/serwist/sw.js" reloadOnOnline={false}>
           {children}

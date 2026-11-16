@@ -31,9 +31,9 @@ const openingStartsOn = "idle" as "idle" | "interaction";
 type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStoryProgress" | "setOpeningOutcome" | "setHandoff" | "setReducedMotion" | "dispose">;
 // Where the card rests in the giving hand and in the open hand, as shares of each opening painting.
 const cardPath = {
-  desktop: { size: [1440, 1024], from: [.443, .749], to: [.722, .772] },
+  desktop: { size: [1440, 1024], from: [.443, .749], to: [.722, .772], empty: [880, 646, 360, 295], card: .118 },
   // The phone's still is taken from the scene itself, so one path serves both.
-  mobile: { size: [780, 1688], from: [.415, .682], to: [.903, .694] },
+  mobile: { size: [780, 1688], from: [.415, .682], to: [.903, .694], empty: [610, 1071, 170, 165], card: .22 },
 } as const;
 
 /** Native scrolling owns the narrative; the artwork never traps wheel or touch input. */
@@ -179,6 +179,12 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
       element.style.setProperty("--card-x", `${fromX}px`); element.style.setProperty("--card-y", `${fromY}px`);
       element.style.setProperty("--card-dx", `${toX - fromX}px`); element.style.setProperty("--card-dy", `${toY - fromY}px`);
       element.style.setProperty("--card-size", `${Math.max(72, paintingWidth * .15)}px`);
+      // The travelling card's place in the open hand, and the patch of empty hand it leaves behind (thread-card.css).
+      const [emptyX, emptyY, emptyWidth, emptyHeight] = path.empty;
+      element.style.setProperty("--hand-x", `${left + emptyX * scale}px`); element.style.setProperty("--hand-y", `${top + emptyY * scale}px`);
+      element.style.setProperty("--hand-w", `${emptyWidth * scale}px`); element.style.setProperty("--hand-h", `${emptyHeight * scale}px`);
+      element.style.setProperty("--hand-card", `${paintingWidth * path.card}px`);
+      element.querySelector<HTMLElement>(".painted-world-hand")?.toggleAttribute("data-tall", mobile);
     };
     place();
     const observer = new ResizeObserver(place);
@@ -234,6 +240,11 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           <img src={fallbackSource("opening", false, true)} alt="" />
         </picture>}
         {heroOnly && onPass && !passed && <div className="painted-world-card" aria-hidden="true" onPointerDown={takeCard} onPointerMove={carryCard} onPointerUp={event => releaseCard(event)} onPointerCancel={event => releaseCard(event, true)} />}
+        {heroOnly && <span className="painted-world-hand" aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <span className="thread-empty"><img src="/assets/home/hand-empty.webp" alt="" loading="lazy" decoding="async" /><img src="/assets/home/hand-empty-mobile.webp" alt="" loading="lazy" decoding="async" /></span>
+          <span className="card-station" data-station="hand" data-turn={7} />
+        </span>}
         <div className="painted-world-shade" aria-hidden="true" />
         <header className="painted-world-header">
           <a href="#story-start" className="painted-world-brand" aria-label="Kind Helps home">kind helps</a>

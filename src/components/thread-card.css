@@ -1,0 +1,58 @@
+/* The travelling card. It is drawn 240px wide and only ever moved, turned and scaled. */
+.thread-card{position:fixed;z-index:6;left:-120px;top:-80px;width:240px;height:160px;opacity:0;pointer-events:none;will-change:transform,opacity}
+.thread-card img{position:relative;display:block;width:100%;height:100%}
+/* Its shadow: close when it lies on something, further off and fainter while it is in the air. */
+.thread-card i{position:absolute;inset:4% 3% 0;border-radius:10px;background:radial-gradient(closest-side,#2a1e1470,#2a1e1400);opacity:calc(.95 - var(--lift,0) * .5);transform:translate(calc(5px + var(--lift,0) * 21px),calc(9px + var(--lift,0) * 22px)) scale(calc(1.08 + var(--lift,0) * .3))}
+/* On the pale paper the card is its lighter self; in the two hands it is the tone it was painted in. */
+.thread-card-light.thread-card-light{position:absolute;inset:0;opacity:var(--tone,1)}
+/* Where the card lies in a picture. With reduced motion, or without script, it simply lies in every one. */
+.card-station{position:absolute;aspect-ratio:1.5;translate:-50% -50%;pointer-events:none}
+.card-station img{display:block;width:100%;height:100%;filter:drop-shadow(2px 4px 3px #2a1e1447)}
+.thread-live .card-station{opacity:0}
+.thread-live .card-station.is-here{opacity:1}
+/* The open hand, empty: laid in register over a picture whose hand already holds the painted card, and only while the card is on its way. */
+.thread-empty{position:absolute;opacity:0}
+.thread-empty img{display:block;width:100%;height:100%}
+.thread-live .thread-empty{opacity:1;transition:opacity 160ms linear}
+.thread-live :is(.neighborly-close-hand,.painted-world-hand):has(.is-here) .thread-empty,.thread-live .painted-world-hand:not([data-away]) .thread-empty,.painted-world[data-passed=false] .thread-empty{opacity:0}
+/* The closing picture's own box: it is fitted by width and kept 28% down, exactly as the picture is. */
+.neighborly-close-hand{position:absolute;overflow:clip;left:0;width:100%;top:calc(28% - 19.911cqw);height:71.111cqw;pointer-events:none}
+.neighborly-close-hand .thread-empty{left:61.111%;top:63.086%;width:25%;height:28.809%}
+.neighborly-close-hand .card-station{left:72.7%;top:76%;width:11.8%}
+@media(max-width:1279px),(max-height:444px){.neighborly-close-hand{top:0}}
+@media(max-width:700px) and (orientation:portrait){
+  .neighborly-close-hand{height:216.41cqw}
+  .neighborly-close-hand .thread-empty{left:78.205%;top:63.448%;width:21.795%;height:9.775%}
+  .neighborly-close-hand .card-station{left:90.3%;top:69.4%;width:22%}
+}
+/* The opening's open hand: the same patch and place, found where the opening painting is drawn (painted-world.tsx). */
+.painted-world-hand{position:absolute;z-index:2;inset:0;pointer-events:none}
+.painted-world-hand .thread-empty{left:var(--hand-x,-999px);top:var(--hand-y,0);width:var(--hand-w,0);height:var(--hand-h,0)}
+.painted-world-hand .thread-empty img:last-child,.painted-world-hand[data-tall] .thread-empty img:first-child{display:none}
+.painted-world-hand[data-tall] .thread-empty img:last-child{display:block}
+.painted-world[data-passed=true] .painted-world-hand{--pass:1}
+.painted-world-hand .card-station{left:calc(var(--card-x,-200px) + var(--card-dx,0px) * var(--pass,0));top:calc(var(--card-y,0px) + var(--card-dy,0px) * var(--pass,0));width:var(--hand-card,96px)}
+@media print{.thread-card{display:none}}
+/* The ending: the card is no longer painted in the hand. The hand is open, and holds out the card that is the way into the sample. */
+:root .neighborly-close .neighborly-close-hand .thread-empty{opacity:1}
+.neighborly-close-offer{position:absolute;z-index:2;left:0;width:100%;top:calc(28% - 19.911cqw);height:71.111cqw;pointer-events:none}
+.card-offer{position:absolute;left:69%;top:77.6%;width:max(20.8%,240px);aspect-ratio:1.5;translate:-50% -50%;rotate:-4deg;display:block;min-height:56px;pointer-events:auto;color:#253e31;text-decoration:none;border-radius:8px;background:url(/assets/home/card-blank-480.webp) center/100% 100%;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s}
+.card-offer>i{position:absolute;left:8%;top:14%;width:8%;aspect-ratio:1;background:#c8962e}
+.card-offer>svg{position:absolute;right:8%;top:12%;width:18px;height:18px}
+.card-offer-words{position:absolute;left:9%;right:8%;bottom:13%;display:flex;flex-direction:column;gap:6px;transition:opacity .24s linear .12s}
+.card-offer strong{font:400 clamp(20px,1.85cqw,27px)/1.08 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:balance}
+.card-offer small{font:400 13px/1.35 'Source Sans 3',sans-serif;color:#3d4f43}
+.card-offer:hover{translate:-50% calc(-50% - 4px);filter:drop-shadow(3px 10px 8px #2a1e1446)}
+.card-offer:active{translate:-50% calc(-50% + 1px);filter:drop-shadow(1px 2px 2px #2a1e1460)}
+.card-offer:focus-visible{outline:2px solid #365c46;outline-offset:4px}
+/* While the travelling card is on its way it is the card; the way in is shown once it has landed, or at once to a keyboard. */
+.thread-live .card-offer:not(.is-here):not(:focus-visible){opacity:0;pointer-events:none}
+.thread-live .card-offer:not(.is-here):not(:focus-visible) .card-offer-words{opacity:0;transition:none}
+.card-offer[data-given]{opacity:0}
+@media(max-width:1279px),(max-height:444px){.neighborly-close-offer{top:0}}
+@media(max-width:700px) and (orientation:portrait){
+  .neighborly-close-offer{height:216.41cqw}
+  .card-offer{left:58%;top:78.8%;width:68%}
+  .card-offer strong{font-size:clamp(20px,6.2cqw,26px)}
+}
+@media(prefers-reduced-motion:reduce){.card-offer,.card-offer-words{transition:none}.card-offer:hover,.card-offer:active{translate:-50% -50%}}
