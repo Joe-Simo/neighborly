@@ -2,12 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { PaintedWorld } from "./painted-world";
-import { NeighborlyContinuation } from "./neighborly-continuation";
 import { ExperienceSoundProvider } from "./experience-sound-context";
 
 /** A short, wide screen: the opening cannot be pinned there, so the page simply scrolls. Keep in step with the same query in painted-world.css. */
 const sidewaysPhone = "(max-height:500px) and (min-aspect-ratio:10/11)";
+
+// Everything below the opening is drawn by the server as before, but its script is a piece of its own: the opening
+// comes alive first, and the doors, the story and the ending follow in a later turn instead of one long one.
+const NeighborlyContinuation = dynamic(() => import("./neighborly-continuation").then(module => module.NeighborlyContinuation));
 
 export function NeighborlyExperience() {
   const [passed, setPassed] = useState(false);
