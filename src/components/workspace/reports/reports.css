@@ -746,3 +746,24 @@
 @media screen and (max-width: 600px) {
   .report-period > p { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
+
+/* On a phone the year leads: the figure, its sentence and the slips stand before the year switch and the
+   buttons. By kind of help reads whole on one screen: each kind is a name and its amount, its count under,
+   and a thin bar, so the five lines that make the year are seen together. */
+@media (max-width: 600px) {
+  .report-year { order: -1; margin-top: 8px; }
+  .report :is(.help-bars:not(.report-teams)) li { row-gap: 6px; column-gap: 16px; padding: 12px 0 14px; }
+  .report :is(.help-bars:not(.report-teams)) h3 { font-size: 21px; }
+  .report :is(.help-bars:not(.report-teams)) p { font-size: 14px; }
+  .report :is(.help-bars:not(.report-teams)) .help-amount { font-size: 22px; }
+  .report :is(.help-bars:not(.report-teams)) .help-bar { height: 8px; margin-top: 2px; }
+}
+/* Six months across on a phone: each amount keeps 8px of paper from its neighbours, a step smaller on the narrowest phones. */
+@media (max-width: 600px) {
+  .report-months:not([data-months="3"]) { column-gap: 8px; }
+  .report-months:not([data-months="3"]) li { padding-inline: 0; }
+  .report-months:not([data-months="3"]) p.help-amount { font-size: 14px; letter-spacing: -0.03em; }
+}
+@media (max-width: 370px) {
+  .report-months:not([data-months="3"]) p.help-amount { font-size: 13px; }
+}
