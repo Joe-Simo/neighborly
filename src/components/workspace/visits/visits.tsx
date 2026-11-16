@@ -258,7 +258,7 @@ export function VisitsDone({
 }) {
   const line = useRef<HTMLDivElement>(null);
   const seen = useSeenForSix(line);
-  useEffect(() => line.current?.focus(), []);
+  useEffect(() => line.current?.focus({ preventScroll: true }), []);
   return (
     <div
       className={seen ? "live-success help-done visits-done paper-settle" : "sr-only"}

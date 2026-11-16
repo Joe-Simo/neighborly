@@ -71,7 +71,7 @@ the head, the picture and the menu marker itself. Rooms use four classes:
 | --- | --- |
 | `paper-rise` | A thing arrives: up 12px and in, 320ms. `paper-rows` on a parent does it for the first eight children, 30ms apart. `live-list`, `help-row`, `help-timeline` and `help-ledger` rows already have it. |
 | `paper-settle` | A sheet is laid down, 420ms. `help-sheet` already has it. |
-| `paper-fold` | Add to a `help-sheet` (or any `paper-corner`) when its yes is given: the corner lifts, turns from ochre to green and is pressed flat with a tick, about half a second. Keep the sheet on the page for `FOLD_HOLD` (`fold.ts`, 1.6 s) before it moves on, so the word can be read; then mark what goes with `data-fold-leaves` and `await foldLeaves()`, which closes it up over 320ms so the page never jumps. |
+| `paper-fold` | Add to a `help-sheet` (or any `paper-corner`) when its yes is given: the corner lifts, turns from ochre to green and is pressed flat with a tick, about half a second. Keep the sheet on the page for `FOLD_HOLD` (`fold.ts`, 1.8 s, which reads as 1.6 s of green once the corner has turned) before it moves on, so the word can be read; then mark what goes with `data-fold-leaves` and `await foldLeaves()`, which closes it up over 360ms and holds the page so it never jumps. |
 | `paper-waits` | The corner is ochre: something here waits for a person's yes. `help-sheet` has it already. |
 | `paper-rest` | The corner is plain paper: add to a `help-sheet` that waits for nothing. `paper-corner` alone rests plain. |
 | `count-up` | A figure rolling to its value in 400ms: render `<CountUp value={n} format={...} />` from `primitives.tsx`. |
