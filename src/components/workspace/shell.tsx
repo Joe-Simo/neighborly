@@ -187,10 +187,15 @@ export function LiveWorkspace({
     ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
     : { ...headings[area], ...translatedHeadings[area] };
   // Between rooms the picture of the room just left lies under the new one for a moment, so one sheet is laid on another.
+  // A room opened before in this visit comes back with its head at rest (phones only, in paper.css): the full
+  // head is the arrival, and an arrival happens once. Decided as the room is entered, so nothing below ever jumps.
+  const [rested, setRested] = useState(false);
+  useEffect(() => void roomsOpened.add(area), [area]);
   // `laid` stays for the life of the head, so the picture's entrance is never swapped (and so run again) when
   // the last room's picture is taken away from under it.
   const [headArt, setHeadArt] = useState<{ area: LiveArea; under: LiveHeading["art"] | null; laid: boolean }>({ area, under: null, laid: false });
   if (headArt.area !== area) {
+    setRested(roomsOpened.has(area));
     const last = headings[headArt.area].art;
     const differs = !!last && last.picture !== heading.art?.picture;
     setHeadArt({ area, under: differs ? last : null, laid: differs });
@@ -322,7 +327,7 @@ export function LiveWorkspace({
           lang={roomWords.locale}
           style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
         >
-          <div className="live-page-head">
+          <div className="live-page-head" data-rested={rested ? "" : undefined}>
             {heading.art && (
               // The band stands across rooms and each picture is known by its name, so the last room's picture
               // is the very one that was on screen (never a fresh copy that has to load and decode again).
@@ -767,3 +772,5 @@ let opened: number | undefined;
 const openedAt = () => (opened ??= Date.now());
 const noChange = () => () => {};
 const nothing = () => {};
+/** The rooms opened since the page was loaded. */
+const roomsOpened = new Set<LiveArea>();
