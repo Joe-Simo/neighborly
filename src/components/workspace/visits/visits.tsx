@@ -97,8 +97,11 @@ function Visits() {
     setFresh(moved);
     setDone(message);
   };
+  // A weekday alone names a day of this week; a visit further off is given its date.
   const day = (at: number) =>
-    format(at, { weekday: "long", month: undefined, day: undefined });
+    Math.abs(at - now) < WEEK
+      ? format(at, { weekday: "long", month: undefined, day: undefined })
+      : format(at, { weekday: "long", month: "long", day: "numeric" });
   const time = (at: number) =>
     format(at, {
       month: undefined,

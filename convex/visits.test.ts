@@ -301,6 +301,22 @@ describe("a neighbor's record removed for good", () => {
   });
 });
 
+describe("a visit written up long after it was made", () => {
+  test("comes first under Written up, ahead of later visits written up before it", async () => {
+    const { t, ids, as } = await setup();
+    const churchId = ids.church, owner = as(ids.owner);
+    const pair = (hours: number) => [{ memberId: ids.daniel.memberId, hours, miles: 0, response: "accepted" as const }, { memberId: ids.colleen.memberId, hours, miles: 0, response: "accepted" as const }];
+    const old = await t.run(async (ctx) => {
+      for (let day = 1; day <= 9; day++) await ctx.db.insert("visits", { churchId, neighborId: ids.rosa, scheduledAt: Date.now() - day * DAY, status: "completed", visitors: pair(1), notes: "Found at home.", completedAt: Date.now() - day * DAY, createdBy: ids.owner.memberId, createdAt: 0 });
+      return ctx.db.insert("visits", { churchId, neighborId: ids.rosa, scheduledAt: Date.now() - 73 * DAY, status: "scheduled", visitors: pair(0), notes: "", createdBy: ids.owner.memberId, createdAt: 0 });
+    });
+    await owner.mutation(api.visits.writeUp, { churchId, visitId: old, notes: "Gave the pantry hours.", hours: 1.5, miles: 12, driverId: ids.daniel.memberId });
+    const first = (await owner.query(api.visits.board, { churchId })).writtenUp[0];
+    expect(first.id).toBe(old);
+    expect(first.visitors.map((visitor) => [visitor.hours, visitor.miles])).toEqual([[1.5, 12], [1.5, 0]]);
+  });
+});
+
 describe("changing the time of a planned visit", () => {
   test("both visitors are asked again, and no one is moved onto a day they are away", async () => {
     const { ids, as, away, now } = await setup();
