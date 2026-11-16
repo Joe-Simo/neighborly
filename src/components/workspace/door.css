@@ -1,0 +1,22 @@
+/* From the door only: three sheets sweep up in 440ms and the last, paper, covers the room until it is whole. */
+.door-sweep { position: fixed; inset: 0; z-index: 80; overflow: hidden; pointer-events: none; }
+.door-sweep > svg { position: absolute; left: 0; top: -14vh; width: 100%; height: 116vh; animation: door-sheet-up 320ms cubic-bezier(0.2, 0.7, 0.2, 1) calc(0ms - var(--door-since, 0ms)) backwards; }
+.door-sweep > svg:nth-child(2) { animation-delay: calc(60ms - var(--door-since, 0ms)); }
+.door-sweep > svg:nth-child(3) { animation-delay: calc(120ms - var(--door-since, 0ms)); }
+@keyframes door-sheet-up { from { transform: translateY(101%); } }
+/* The one quiet line, where the waiting screen has it, if the room is not ready when the paper has landed. */
+.door-opening {
+  position: fixed; inset: calc(50vh + 64px) 24px auto; display: flex; justify-content: center; align-items: center; gap: 12px; margin: 0;
+  font: 400 17px/1.5 "Source Sans 3", sans-serif; color: #68715f; text-align: center;
+  animation: door-opening-in 200ms ease backwards;
+}
+.door-opening svg { flex: none; animation: live-spin 1s linear infinite; }
+@keyframes door-opening-in { from { opacity: 0; } }
+/* Reduce Motion: no sweep. The paper is simply there, and gives way in one short fade. */
+@media (prefers-reduced-motion: reduce) {
+  .door-sweep > svg { animation: none; }
+  .door-sweep > svg:not(:last-of-type) { display: none; }
+  .door-opening, .door-opening svg { animation: none; }
+}
+/* For someone from the door the sweep takes the place of the waiting screen's mark and line. */
+body:has(.door-sweep) .paper-loading > * { visibility: hidden; }

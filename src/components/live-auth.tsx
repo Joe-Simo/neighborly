@@ -220,11 +220,6 @@ export function LiveAuth({
 
   const openSample = useEffectEvent(() => void lookAround());
   const sampleAsked = useRef(false);
-  // Whoever stands at the door gets the paper's welcome when the rooms open. Someone already signed in, who
-  // opens the app or comes back to the page, never sees this screen and goes straight to their room.
-  useEffect(() => {
-    try { sessionStorage.setItem("kind-helps-door", "1"); } catch { /* Without storage the rooms simply open. */ }
-  }, []);
   useEffect(() => {
     if (!enterSample || !sampleEntry || sampleAsked.current) return;
     sampleAsked.current = true;
