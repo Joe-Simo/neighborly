@@ -131,8 +131,11 @@
   animation-delay: var(--paper-wait, 0ms);
 }
 .live-head-words > :nth-child(2) { animation-delay: calc(var(--paper-wait, 0ms) + 40ms); }
-.live-head-words > :nth-child(n + 3),
-.live-head-actions { animation: paper-rise 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
+.live-head-words > :nth-child(n + 3) { animation: paper-rise 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
+/* The room's filled button rises like the rest but is whole within two frames: a filled button caught half
+   faded is a pale bar whose white label cannot be read, and reads as a button with no name. */
+@keyframes paper-set { from { opacity: 0; transform: translateY(12px); } 12% { opacity: 1; } }
+.live-head-actions { animation: paper-set 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
 /* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
 /* Between rooms: one cross-fade of 200ms. The new picture comes up over the last one, which stays whole under it
@@ -401,10 +404,13 @@
   .live-app { --live-bar: calc(60px + env(safe-area-inset-top, 0px)); }
   .live-app .live-header { position: sticky; top: 0; z-index: 20; border-bottom-color: transparent; transition: border-color 150ms ease; }
   .live-app .live-header[data-scrolled] { border-bottom-color: var(--live-line); }
-  html:has(.live-app) { scroll-padding-top: calc(72px + env(safe-area-inset-top, 0px)); }
+  /* Whatever the page is taken to (an anchor, a box given focus) stops 12px under the bar. Said on the room's
+     own things, not on the window: the bar's own Menu button must never count as hidden, or giving it focus
+     would move the page. */
+  .live-main, .live-main * { scroll-margin-top: calc(var(--live-bar) + 12px); }
   /* The room's name, beside the wordmark. One line or not at all: a name that does not fit beside the 1px
      post wraps under it, out of the line's height, and is not drawn. */
-  .live-bar-room { display: flex; flex: 1 1 0; flex-wrap: wrap; min-width: 0; height: 20px; overflow: hidden; margin-top: 7px; font-size: 14px; line-height: 20px; color: var(--live-muted); opacity: 0; transition: opacity 150ms ease; }
+  .live-bar-room { display: flex; flex: 1 1 0; flex-wrap: wrap; min-width: 0; height: 20px; overflow: hidden; margin-top: 6.5px; font-size: 14px; line-height: 20px; color: var(--live-muted); opacity: 0; transition: opacity 150ms ease; }
   .live-bar-room > i { width: 1px; height: 20px; }
   .live-bar-room > span { white-space: nowrap; }
   .live-bar-room[data-shown] { opacity: 1; }
@@ -412,7 +418,6 @@
 @media (max-width: 899px) and (max-height: 699px) {
   .live-app { --live-bar: calc(52px + env(safe-area-inset-top, 0px)); }
   .live-app .live-header { min-height: calc(52px + env(safe-area-inset-top)); padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: 4px; }
-  html:has(.live-app) { scroll-padding-top: calc(64px + env(safe-area-inset-top, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) { .live-app .live-header, .live-bar-room { transition: none; } }
 @media print { .live-app .live-header { position: static; } }
@@ -678,7 +683,7 @@
 .live-error > div { flex: 1 1 260px; min-width: 0; }
 .live-error .live-error-recovery { margin-top: 4px; font-size: 15px; color: #5d6657; }
 /* Clear of a dialog's pinned buttons when it is brought into view. */
-.live-failure { scroll-margin-block: 24px 104px; }
+.live-failure { scroll-margin-block: calc(var(--live-bar, 0px) + 24px) 104px; }
 .live-failure [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
 .live-waiting { margin: 0; font-size: 15px; line-height: 1.5; color: #5d6657; }
 .live-connection {

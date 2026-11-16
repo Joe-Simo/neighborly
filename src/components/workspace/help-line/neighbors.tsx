@@ -114,7 +114,6 @@ function NeighborRow({
   format: Workspace["format"];
 }) {
   // A row says the name and the street, never the phone: that is inside the record, where each opening is logged.
-  const dot = neighbor.address ? " · " : "";
   return (
             <div className="help-row help-neighbor">
               <span className="help-avatar" aria-hidden="true">
@@ -126,17 +125,16 @@ function NeighborRow({
                     {neighbor.name}
                   </Link>
                 </h3>
-                <p>
-                  {neighbor.address}
-                  <span className="help-household">
-                    {dot}
-                    {household(neighbor.adults, neighbor.children)}
-                  </span>{" "}
-                  <span className="help-last">
-                    {dot}
-                    {neighbor.lastHelpedAt
-                      ? `last helped ${format(neighbor.lastHelpedAt, { day: undefined, year: "numeric" })}`
-                      : "not helped yet"}
+                {/* Each fact brings its own dot before it; a fact that starts a line has its dot cut off (help-line.css). */}
+                <p className="help-facts">
+                  <span>
+                    {neighbor.address && <span>{neighbor.address}</span>}
+                    <span className="help-household">{household(neighbor.adults, neighbor.children)}</span>
+                    <span className="help-last">
+                      {neighbor.lastHelpedAt
+                        ? `last helped ${format(neighbor.lastHelpedAt, { day: undefined, year: "numeric" })}`
+                        : "not helped yet"}
+                    </span>
                   </span>
                 </p>
               </div>
