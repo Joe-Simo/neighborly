@@ -120,7 +120,8 @@
   .relief-panel[data-chapter=visit] .relief-words h2{font-size:clamp(80px,12.5vw,200px)}
   /* The help: set in the middle, the words above and the envelope passing hand to hand in a wide strip below. */
   .relief-panel[data-chapter=help] .relief-hold{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;justify-items:center;align-content:center;gap:2svh;padding:0 7%}
-  .relief-panel[data-chapter=help] .relief-words{--drop:0px;display:flex;align-items:baseline;gap:4vw;text-align:left}
+  .relief-panel[data-chapter=help] .relief-words{--drop:0px;display:flex;align-items:last baseline;gap:4vw;text-align:left}
+  /* The sentence's last line sits on the heading's baseline. */
   .relief-panel[data-chapter=help] .relief-words p{margin:0;max-width:16em}
   .relief-panel[data-chapter=help] .relief-picture{justify-self:center;width:min(76vw,128svh);aspect-ratio:2.4/1}
   .relief-panel[data-chapter=help] .relief-layers{height:160%;margin-top:-13%}
