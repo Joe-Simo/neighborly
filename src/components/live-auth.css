@@ -311,6 +311,14 @@
     background: var(--paper);
   }
   .entry-sheet { position: relative; }
+  /* On a phone the strip rides in the page itself and sticks to its top edge, so it holds at every
+     scroll position, the very end included, without leaning on a fixed layer in the app's web view. */
+  .entry::before {
+    display: block;
+    position: sticky;
+    inset: 0 auto auto;
+    margin-bottom: calc(-1 * env(safe-area-inset-top));
+  }
 }
 /* A phone: the band is 132 points, the picture kept whole and anchored to its right. */
 @media (max-width: 699px) {

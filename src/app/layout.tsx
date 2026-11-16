@@ -33,7 +33,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <SerwistProvider swUrl="/serwist/sw.js" reloadOnOnline={false}>
           {children}

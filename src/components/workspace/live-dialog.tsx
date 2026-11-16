@@ -69,11 +69,15 @@ export function LiveDialog({
     };
   }, [open]);
   // The way out is named in the reader's language wherever the dialog opens inside the workspace.
-  const close = useWorkspaceIfAny()?.words.shell.close ?? "Close";
+  const words = useWorkspaceIfAny()?.words;
+  const close = words?.shell.close ?? "Close";
   const opener = useRef<HTMLElement | null>(null);
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent
+        // A dialog is drawn under <body>, outside its room: it says its own language, so a leaders' English
+        // form is not read aloud in the page's Spanish.
+        lang={words?.locale}
         className={cn("live-dialog live-dialog-fixed", className)}
         showCloseButton={false}
         onFocus={(event) => keepInView(event.target)}

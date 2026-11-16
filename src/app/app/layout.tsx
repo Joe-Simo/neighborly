@@ -11,6 +11,8 @@ import { PaperArrival } from "@/components/paper-arrival";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
+const firstLanguage = `(function(){try{var k=["en","es","ht"],c=null;try{c=localStorage.getItem("kind-helps:language")}catch(e){}var l=k.indexOf(c)>-1?c:null;if(!l){var n=navigator.languages||[];for(var i=0;i<n.length&&!l;i++){for(var j=0;j<k.length;j++){if(n[i].toLowerCase().indexOf(k[j])===0){l=k[j];break}}}}document.documentElement.lang=l||"en"}catch(e){}})()`;
+
 export default function LiveAppLayout({
   children,
 }: {
@@ -18,6 +20,9 @@ export default function LiveAppLayout({
 }) {
   return (
     <div className="live-app">
+      {/* Before anything is drawn the page already says its language: the one chosen at the door, else the device's
+          (the same answer as deviceLanguage in live-auth-words.ts). The app corrects it once it knows the member's own. */}
+      <script dangerouslySetInnerHTML={{ __html: firstLanguage }} />
       {/* The menu's words are set in these faces from the first frame, so no label wraps and then jumps. */}
       {["source-sans-3-latin-variable", "newsreader-display-regular"].map((face) => (
         <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
