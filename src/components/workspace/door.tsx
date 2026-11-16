@@ -29,6 +29,8 @@ const watchers = new Set<() => void>();
 export function arriveFromTheDoor() {
   arrivals += 1;
   arrivedAt = performance.now();
+  // The room under the paper is drawn finished: its own entry is skipped until the next room (door.css; the shell lifts the mark).
+  document.documentElement.dataset.fromDoor = "";
   for (const watch of watchers) watch();
 }
 const watch = (watcher: () => void) => {

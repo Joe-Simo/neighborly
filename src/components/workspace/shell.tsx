@@ -197,6 +197,11 @@ export function LiveWorkspace({
   // head is the arrival, and an arrival happens once. Decided as the room is entered, so nothing below ever jumps.
   const [rested, setRested] = useState(false);
   useEffect(() => void roomsOpened.add(area), [area]);
+  // The first room after the door is drawn finished under the sweep's paper (door.css). The next room arrives as rooms do.
+  const firstArea = useRef(area);
+  useLayoutEffect(() => {
+    if (area !== firstArea.current) delete document.documentElement.dataset.fromDoor;
+  }, [area]);
   // `laid` stays for the life of the head, so the picture's entrance is never swapped (and so run again) when
   // the last room's picture is taken away from under it.
   const [headArt, setHeadArt] = useState<{ area: LiveArea; under: LiveHeading["art"] | null; laid: boolean }>({ area, under: null, laid: false });
