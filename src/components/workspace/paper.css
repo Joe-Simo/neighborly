@@ -829,3 +829,22 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
   .live-app :is(.live-empty, .help-empty) { grid-template-columns: minmax(0, 1fr); }
   .live-app :is(.live-empty > .paper-vignette, .help-empty-art) { display: none; }
 }
+
+/* ── Room heads at true size, as the home page lays its pictures ──────────────────────────────
+   Desk: the whole picture, never cropped, standing the full height of the head less 48px of paper under the hands,
+   anchored right with paper to its left. Phone: the whole picture above the heading, edge to edge. */
+@media (min-width: 700px) {
+  .live-head-art { width: calc(var(--head-wide) * 0.5); }
+  .live-head-art > .relief:not(.live-head-under),
+  .live-head-art > .relief.live-head-under {
+    position: absolute; inset: 0 0 auto auto; width: auto; height: calc(100% - 48px); aspect-ratio: 3 / 2;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%);
+    mask-image: linear-gradient(90deg, transparent, #000 22%);
+  }
+  .live-head-art > .relief img { object-fit: contain; object-position: right top !important; }
+}
+@media (max-width: 699px) and (min-height: 701px) {
+  .live-page-head:not([data-rested]) .live-head-art { height: auto; aspect-ratio: 3 / 2; }
+  .live-page-head:not([data-rested]) .live-head-art > .relief { position: absolute; inset: 0; top: 0; width: 100%; height: 100%; -webkit-mask-image: none; mask-image: none; }
+  .live-page-head:not([data-rested]) .live-head-art > .relief img { object-fit: contain; object-position: center !important; }
+}
