@@ -239,6 +239,11 @@ export function en(set: WordSet) {
       tasks: "Tasks",
       add: "Add a task",
       markDone: "Mark done",
+      /** Saved lines: the act, then the task by its own title. */
+      markedDone: (title: string) => `Marked done. ${title}`,
+      openAgain: (title: string) => `Open again. ${title}`,
+      added: (title: string) => `Task added. ${title}`,
+      undo: "Undo",
       done: "Done",
       open: "Open",
       emptyTitle: "A clear list, for now.",

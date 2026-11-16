@@ -147,15 +147,18 @@ function HelpLine() {
     setDone(null);
     setStep({ kind: "log" });
   }, []);
+  const draftsUnknown = answer === undefined;
   useLayoutEffect(() => {
     setHeadAction({
       label: "Log a call",
       run: log,
       quiet: sheetOpen,
+      // Until the drafts have arrived the room cannot know whether a sheet will hold the filled button.
+      unsettled: draftsUnknown,
       plus: true,
     });
     return () => setHeadAction(null);
-  }, [setHeadAction, log, sheetOpen]);
+  }, [setHeadAction, log, sheetOpen, draftsUnknown]);
   const saved = (call: Call) => {
     settle(call);
     finish(
