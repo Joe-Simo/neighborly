@@ -43,8 +43,6 @@
 /* The mark in the corner is drawn once the corner is down. */
 @keyframes paper-mark { from { background-size: 0 0, auto; } 55% { background-size: 0 0, auto; } }
 /* Between rooms one picture is laid over the other: the old sheet slides back under, the new one comes to rest on it. */
-@keyframes paper-lay { from { opacity: 0; transform: translateX(26px); } 45% { opacity: 1; } }
-@keyframes paper-under { 30% { opacity: 1; } to { opacity: 0; transform: translateX(-16px); } }
 @keyframes paper-breathe { 50% { opacity: 0.55; } }
 
 .paper-rise,
@@ -137,8 +135,14 @@
 .live-head-actions { animation: paper-rise 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
 /* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
-.live-head-art[data-laid] > .relief { animation: paper-lay 560ms var(--paper-ease) backwards; animation-delay: 40ms; }
-.live-head-under { position: absolute; inset: 0; z-index: -1; animation: paper-under 560ms var(--paper-ease) forwards; }
+/* Between rooms: one cross-fade of 200ms. The new picture comes up over the last one, which stays whole under it
+   and is taken away only when the new one is fully there, so bare paper never shows through. */
+.live-head-art[data-laid] > .relief { animation: paper-show 200ms ease-out backwards; }
+.live-head-under { position: absolute; inset: 0; z-index: -1; animation: paper-gone 200ms step-end forwards; }
+@keyframes paper-gone { to { opacity: 0; } }
+/* Neither begins until the new picture is in: the last room's picture stays whole under an empty band, never a blank one. */
+.live-head-art:not([data-ready]) > .relief,
+.live-head-art:not([data-ready]) > .live-head-under { animation-play-state: paused; }
 /* The room's body is one sheet laid on the desk under the head; its rows then arrive on it in order. */
 @keyframes paper-desk { from { opacity: 0; transform: translateY(10px); } 60% { opacity: 1; } }
 .live-room { animation: paper-desk 380ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }

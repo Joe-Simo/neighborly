@@ -23,7 +23,7 @@ const noChange = () => () => {};
  * makes one small move into its place: the cup is set down, the key goes on its hook. Every other time, and for
  * every picture without layers, it is the flat picture.
  */
-export function ArrivingRelief({ name, focus = "70% 50%" }: { name: ReliefName; focus?: string }) {
+export function ArrivingRelief({ name, focus = "70% 50%", onReady }: { name: ReliefName; focus?: string; onReady: () => void }) {
   const move = reliefMoves[name];
   // Decided once, when the picture is laid, and kept while it stands, so it is never swapped mid-move.
   // A server render and the first pass over it always show the flat picture.
@@ -59,7 +59,14 @@ export function ArrivingRelief({ name, focus = "70% 50%" }: { name: ReliefName; 
       fill: "both",
     });
   }, [loaded, count]);
-  if (!move || !moving) return <ReliefPicture name={name} focus={focus} />;
+  // The head waits for its picture before it lets the last room's go; a picture that never comes must not hold it.
+  const layersIn = moving && loaded >= count;
+  useEffect(() => {
+    if (layersIn) return onReady();
+    const late = window.setTimeout(onReady, 1500);
+    return () => window.clearTimeout(late);
+  }, [layersIn, onReady]);
+  if (!move || !moving) return <ReliefPicture name={name} focus={focus} onReady={onReady} />;
   const sizes = "(min-width: 900px) 46vw, 100vw";
   // Laid in this order: the base, the piece that moves, and where the cut has one, a still front over the piece.
   const layers = move.front ? (["base", "piece", "front"] as const) : (["base", "piece"] as const);

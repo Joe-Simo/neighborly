@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, CircleCheck, LogOut, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -187,9 +187,19 @@ export function LiveWorkspace({
     ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
     : { ...headings[area], ...translatedHeadings[area] };
   // Between rooms the picture of the room just left lies under the new one for a moment, so one sheet is laid on another.
-  const [headArt, setHeadArt] = useState<{ area: LiveArea; under: LiveHeading["art"] | null }>({ area, under: null });
-  if (headArt.area !== area) setHeadArt({ area, under: headings[headArt.area].art });
-  const under = headArt.under && headArt.under.picture !== heading.art.picture ? headArt.under : null;
+  // `laid` stays for the life of the head, so the picture's entrance is never swapped (and so run again) when
+  // the last room's picture is taken away from under it.
+  const [headArt, setHeadArt] = useState<{ area: LiveArea; under: LiveHeading["art"] | null; laid: boolean }>({ area, under: null, laid: false });
+  if (headArt.area !== area) {
+    const last = headings[headArt.area].art;
+    const differs = !!last && last.picture !== heading.art?.picture;
+    setHeadArt({ area, under: differs ? last : null, laid: differs });
+  }
+  const under = headArt.under;
+  // The room whose picture is in and can be painted. Until then the head's moves wait, so one picture is never
+  // let go before the next can be seen.
+  const [pictured, setPictured] = useState<LiveArea>();
+  const picturedNow = useCallback(() => setPictured(area), [area]);
   const workspace: Workspace = {
     area,
     data,
@@ -293,7 +303,8 @@ export function LiveWorkspace({
             {heading.art && (
               <div
                 className="live-head-art"
-                data-laid={under ? "" : undefined}
+                data-laid={headArt.laid ? "" : undefined}
+                data-ready={pictured === area ? "" : undefined}
                 style={heading.art.band === undefined ? undefined : ({ "--relief-y": heading.art.band } as CSSProperties)}
               >
                 {under && (
@@ -305,7 +316,7 @@ export function LiveWorkspace({
                     <ReliefPicture name={under.picture} focus={under.focus} />
                   </span>
                 )}
-                <ArrivingRelief name={heading.art.picture} focus={heading.art.focus} />
+                <ArrivingRelief name={heading.art.picture} focus={heading.art.focus} onReady={picturedNow} />
               </div>
             )}
             <div className="live-head-words">

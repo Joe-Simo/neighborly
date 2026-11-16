@@ -59,8 +59,11 @@ export function ReliefPicture({
   sizes = "(min-width: 900px) 46vw, 100vw",
   vignette = false,
   widths = usual,
+  onReady,
   className,
 }: {
+  /** Called once the picture can be painted (or cannot be had), so whoever lays it can wait for it. */
+  onReady?: () => void;
   name: ReliefName;
   focus?: string;
   sizes?: string;
@@ -83,6 +86,9 @@ export function ReliefPicture({
         height={1024}
         decoding="async"
         style={{ objectPosition: focus }}
+        ref={onReady && ((image) => void (image?.complete && onReady()))}
+        onLoad={onReady}
+        onError={onReady}
       />
     </picture>
   );
