@@ -47,7 +47,16 @@ export function LiveRoomLoading({
   const opening = useOpening();
   return (
     <main className="live-main paper-loading">
-      <span className="paper-loading-mark" aria-hidden="true">k</span>
+      {/* The app's own launch mark (apple/…/Splash.imageset), the same file at the same place: the true centre of the screen. */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed 240px mark that must be there in the first paint, not optimised or lazy */}
+      <img
+        className="paper-loading-mark"
+        src="/launch/mark-240.png"
+        srcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x"
+        width={240}
+        height={240}
+        alt=""
+      />
       <div className="paper-loading-words">
         <p className="paper-loading-label" role="status">
           <LoaderCircle size={20} aria-hidden="true" />

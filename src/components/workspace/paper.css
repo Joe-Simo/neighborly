@@ -447,17 +447,10 @@
 
 /* ── Loading: plain paper with the mark, where the app's launch screen has it. One quiet line after 400ms ── */
 .live-main.paper-loading { position: fixed; inset: 0; z-index: 30; max-width: none; margin: 0; padding: 0; background: #f5f3ec; }
-.paper-loading-mark {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  /* Sized and set so the glyph lies on the launch picture's own (public/launch), not merely near it. */
-  translate: calc(-50% + 6px) calc(-50% + 19.5px);
-  font: 400 140.5px / 1 "Newsreader", Georgia, serif;
-  color: #283c32;
-  user-select: none;
-}
-.paper-loading-words { position: absolute; inset: calc(50% + 104px) 24px auto; display: grid; justify-items: center; text-align: center; }
+/* The mark is the app's launch picture, 240px square on the true centre of the screen (vw and vh, no insets),
+   so the app's cover gives way to this page without a step. The same in every browser. */
+.paper-loading-mark { position: fixed; left: calc(50vw - 120px); top: calc(50vh - 120px); width: 240px; height: 240px; max-width: none; user-select: none; pointer-events: none; }
+.paper-loading-words { position: fixed; inset: calc(50vh + 64px) 24px auto; display: grid; justify-items: center; text-align: center; }
 .paper-loading-label {
   display: flex;
   gap: 12px;
