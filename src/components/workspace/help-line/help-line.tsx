@@ -1,5 +1,6 @@
 "use client";
 
+import { FOLD_HOLD, foldLeaves } from "@/components/workspace/fold";
 import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
   useCallback,
@@ -60,8 +61,6 @@ type Step =
   // The caller is not on file yet: the neighbor is added first, then the draft goes on.
   | { kind: "join"; drafted: Drafted; then: "approve" | "change" };
 
-/** How long a saved draft stays on the page, folded, before the next one rises. */
-const SEAL_MS = 1400;
 const PAPER_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
 
 const caller = (call: Call) =>
@@ -131,12 +130,14 @@ function HelpLine() {
   useEffect(() => {
     if (!sealed) return;
     const after = setTimeout(() => {
-      setSealed(null);
-      setDone({
-        message: `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
-        record: sealed.neighborId,
+      void foldLeaves().then(() => {
+        setSealed(null);
+        setDone({
+          message: `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
+          record: sealed.neighborId,
+        });
       });
-    }, SEAL_MS);
+    }, FOLD_HOLD);
     return () => clearTimeout(after);
   }, [sealed]);
   const onSheet = sealed ?? drafted;
@@ -770,6 +771,7 @@ export function DraftSheet({
   return (
     <section
       className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
+      data-fold-leaves={sealed ? "" : undefined}
       aria-labelledby="draft-title"
       data-blank={complete ? undefined : ""}
     >

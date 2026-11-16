@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FOLD_HOLD } from "@/components/workspace/fold";
 import type { Payable } from "@/components/workspace/treasury/labels";
 
 /** The request a payment was just recorded for, and the ledger entry that payment became. */
@@ -12,12 +13,12 @@ export type Paid = {
   leaving: boolean;
 };
 
-const SHOWN = 4000;
+const SHOWN = FOLD_HOLD;
 const LEAVING = 320;
 const LANDED = 1600;
 
 /**
- * The paid sheet stays about four seconds, or until the next tap, then settles into its
+ * The paid sheet stays for the hold every folded sheet has, or until the next tap, then settles into its
  * ledger row, which holds a highlight for a moment while the next request rises.
  */
 export function usePaidMoment() {

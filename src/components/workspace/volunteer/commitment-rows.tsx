@@ -1,5 +1,6 @@
 "use client";
 
+import { FOLD_HOLD, foldLeaves } from "@/components/workspace/fold";
 import "./volunteer.css";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CircleCheck } from "lucide-react";
@@ -103,9 +104,6 @@ function Said({ children }: { children: string }) {
   );
 }
 
-/** How long a sheet stays, its corner green, after a yes: long enough to be seen. */
-const FOLD_BEAT = 800;
-
 type CoverRequest = LiveWorkspaceData["requests"][number];
 
 /**
@@ -138,10 +136,13 @@ export function IncomingRequests({
   const statuses: Partial<Record<string, string>> = words.commitments.status;
   const respond = async (request: CoverRequest, accept: boolean) => {
     if (accept) setGiven(request);
-    const beat = new Promise((settle) => setTimeout(settle, accept ? FOLD_BEAT : 0));
+    const beat = new Promise((settle) => setTimeout(settle, accept ? FOLD_HOLD : 0));
     setSaid(undefined);
     const saved = await perform({ type: "respondCover", requestId: request.id, accept });
-    if (accept && saved) await beat;
+    if (accept && saved) {
+      await beat;
+      await foldLeaves();
+    }
     setGiven(undefined);
     if (!saved) return;
     if (accept) onAccepted?.(request.commitmentId);
@@ -152,7 +153,11 @@ export function IncomingRequests({
   return shown.length ? (
     <>
       {line}
-      <section className={`help-sheet volunteer-choice${given ? " paper-fold" : ""}`} aria-labelledby="live-requests-title">
+      <section
+        className={`help-sheet volunteer-choice${given ? " paper-fold" : ""}`}
+        // The last request takes the sheet with it; otherwise only its own line leaves.
+        data-fold-leaves={given && shown.length === 1 ? "" : undefined}
+        aria-labelledby="live-requests-title">
         <p className="help-sheet-label">{waiting ? words.requests.awaiting(waiting) : statuses.accepted}</p>
         <h2 id="live-requests-title">{words.requests.title}</h2>
         <div className="volunteer-choice-rows">
@@ -163,7 +168,7 @@ export function IncomingRequests({
               (commitment) => commitment.id === request.commitmentId,
             );
             return (
-              <div className="volunteer-choice-row" key={request.id}>
+              <div className="volunteer-choice-row" data-fold-leaves={request.id === given?.id && shown.length > 1 ? "" : undefined} key={request.id}>
                 <div>
                   <h3>{item?.title ?? words.requests.fallbackTitle}</h3>
                   <p className="volunteer-choice-when">

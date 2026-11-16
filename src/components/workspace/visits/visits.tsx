@@ -1,5 +1,6 @@
 "use client";
 
+import { FOLD_HOLD, foldLeaves } from "@/components/workspace/fold";
 import "./visits.css";
 import {
   useCallback,
@@ -134,7 +135,7 @@ function Visits() {
         onAsk={async (suggested, pair) => {
           setDone("");
           setAsked(suggested);
-          const beat = new Promise((settle) => setTimeout(settle, FOLD_BEAT));
+          const beat = new Promise((settle) => setTimeout(settle, FOLD_HOLD));
           const outcome = await save(() =>
             plan({
               churchId,
@@ -145,6 +146,7 @@ function Visits() {
             }),
           );
           await beat;
+          if (outcome.saved) await foldLeaves();
           setAsked(null);
           if (outcome.saved)
             finish(
@@ -219,8 +221,6 @@ function Visits() {
 }
 
 type Fresh = { id: Id<"visits">; pair?: string[] };
-/** How long a sheet stays after its yes, so the corner is seen turning green: the fold, and a breath. */
-export const FOLD_BEAT = 650;
 
 /** Two people as one pair. joining plays the two sets of initials sliding together, once. */
 function Pair({
@@ -349,6 +349,7 @@ export function VisitsView({
           // Each request is its own sheet, so the next one rises as the last one leaves.
           key={suggested.request.requestId}
           className={asked ? "help-sheet paper-fold" : "help-sheet"}
+          data-fold-leaves={asked ? "" : undefined}
           aria-label={`Visit to arrange for ${suggested.request.neighborName}`}
         >
           <p className="help-sheet-label">
