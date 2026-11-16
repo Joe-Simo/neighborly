@@ -45,7 +45,8 @@ describe("the sample conference a visitor looks around", () => {
     await refreshed(t);
     const after = await guest.query(api.workspace.viewer, {});
     expect(after.churches).toHaveLength(1);
-    expect(after.churches[0].id).not.toBe(first.id);
+    // The conference keeps its id, so an open page and its address stay good across the night.
+    expect(after.churches[0].id).toBe(first.id);
     const left = await t.run(async (ctx) => ({
       churches: await ctx.db.query("churches").collect(),
       typed: (await ctx.db.query("tasks").collect()).filter((task) => task.title === "Typed by a visitor"),
@@ -66,13 +67,18 @@ describe("the sample conference a visitor looks around", () => {
     const nightly = async () => {
       await t.mutation(internal.demo.nightly, {});
       await t.finishAllScheduledFunctions(vi.runAllTimers);
-      return (await t.run((ctx) => ctx.db.query("churches").collect())).map((church) => church._id);
+      return t.run(async (ctx) => (await ctx.db.query("tasks").collect()).filter((task) => task.title === "Typed by a visitor").length);
     };
-    const [first] = await nightly();
+    await nightly();
+    const type = () => t.run(async (ctx) => {
+      const church = (await ctx.db.query("churches").first())!;
+      await ctx.db.insert("tasks", { churchId: church._id, title: "Typed by a visitor", dueAt: null, assigneeId: null, complete: false });
+    });
+    await type();
     vi.stubEnv("SAMPLE_NIGHTLY", "off");
-    expect(await nightly()).toEqual([first]);
+    expect(await nightly()).toBe(1);
     vi.stubEnv("SAMPLE_NIGHTLY", "");
-    expect(await nightly()).not.toEqual([first]);
+    expect(await nightly()).toBe(0);
   });
 
   test("a refresh leaves every other conference alone, sample or real", async () => {
