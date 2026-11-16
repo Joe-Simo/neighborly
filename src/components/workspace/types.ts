@@ -13,7 +13,7 @@ export type LiveCommand =
 export type LiveConfirmation = {
   title: string;
   body: string;
-  /** The button's words: the act itself ("Cancel commitment"), never a bare "Confirm". */
-  action?: string;
+  /** The button's words: the act itself ("Cancel commitment"). Required, so no dialog can fall back to a bare "Confirm". */
+  action: string;
   command: LiveCommand;
 };
