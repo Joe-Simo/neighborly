@@ -108,6 +108,7 @@ export function TreasurySection() {
   const firstUse = !shown || isUntouched(shown);
   // A request waiting to be paid holds the one filled button, so the head's goes quiet.
   const quiet = Boolean(payable?.length);
+  const payableUnknown = payable === undefined;
   useLayoutEffect(() => {
     if (!allowed || firstUse || atBank || atShelf) return;
     setHeadAction({
@@ -119,9 +120,11 @@ export function TreasurySection() {
         setOpen({ is: "money" });
       },
       quiet,
+      // Until the requests to pay have arrived the room cannot know which style the button takes.
+      unsettled: payableUnknown,
     });
     return () => setHeadAction(null);
-  }, [allowed, firstUse, atBank, atShelf, quiet, setHeadAction]);
+  }, [allowed, firstUse, atBank, atShelf, quiet, payableUnknown, setHeadAction]);
 
   if (allowed === false) return <LedgerPrivate />;
   if (!shown || !payable) return <LedgerLoading />;

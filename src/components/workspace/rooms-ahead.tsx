@@ -20,6 +20,9 @@ export function RoomsAhead({ data }: { data: LiveWorkspaceData }) {
       drafts: { query: api.assistance.drafts, args: { churchId } },
       board: { query: api.visits.board, args: { churchId } },
       years: { query: api.reports.years, args: { churchId } },
+      allowed: { query: api.access.canOpenNeighborRecords, args: { churchId } },
+      ledger: { query: api.treasury.ledger, args: { churchId } },
+      payable: { query: api.treasury.payable, args: { churchId } },
     };
     return leads ? ahead : {};
   }, [churchId, leads]);
