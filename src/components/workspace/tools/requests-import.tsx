@@ -37,7 +37,7 @@ export const requestWords: SheetWords = {
   promise: "Each is kept as history on the neighbor\u2019s record. No money moves and the ledger is not touched. A request still open stays open only if it is under 60 days old. Nothing is saved until you say so.",
   done: (count) => `${requests(count)} added. See them on each neighbor\u2019s record.`,
   nothingDone: "Nothing new was added.",
-  another: "Bring in another file",
+  another: "Choose another file",
 };
 export function requestsLeftOut(rows: (Checked[number] | Imported[number])[]): LeftOut[] {
   return rows.flatMap((row) => (row.outcome === "ready" || row.outcome === "added" ? [] : [{ line: row.line, name: row.name, reason: reasons[row.outcome] }]));

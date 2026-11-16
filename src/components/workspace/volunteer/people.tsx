@@ -66,7 +66,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
           </div>
           <div>
           <dt>What stays</dt>
-          <dd>The visits and hours they logged stay in the year’s counts as “a former member”.</dd>
+          <dd>The visits and hours they logged stay in the year’s counts under “A former member”.</dd>
           </div>
         </dl>
         <NameToConfirm label={`Type ${person.name} to remove them`} name={person.name} typed={typed} onTyped={setTyped} />
@@ -74,7 +74,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
         {failed && <LiveFailure message={failed} kept="Nothing was removed." />}
         <div className="live-form-actions">
           <Button type="submit" className="for-good-confirm" disabled={!matches || busy}>
-            {busy ? "Removing" : "Remove this person"}
+            {busy ? "Removing…" : "Remove this person"}
           </Button>
         </div>
       </form>
@@ -147,9 +147,12 @@ export function PeopleSection() {
                     setManagingId(null);
                     setConfirmation({
                       title: managing.approved
-                        ? "Revoke service approval?"
-                        : "Approve for service?",
-                      body: "Team qualifications are managed separately. Revoking approval withdraws pending cover requests; accepted commitments stay intact.",
+                        ? `Mark ${managing.name} not ready to serve?`
+                        : `Mark ${managing.name} ready to serve?`,
+                      body: managing.approved
+                        ? "Open requests to cover are withdrawn. Commitments already accepted stay."
+                        : "They can be asked to cover and to serve on teams.",
+                      action: managing.approved ? "Mark not ready" : "Mark ready to serve",
                       command: {
                         type: "setApproval",
                         personId: managing.id,
@@ -158,7 +161,7 @@ export function PeopleSection() {
                     });
                   }}
                 >
-                  {managing.approved ? "Revoke approval" : "Approve"}
+                  {managing.approved ? "Mark not ready" : "Mark ready to serve"}
                   <small>{managing.approved ? "They can no longer be asked to cover. Accepted commitments stay." : "They can be asked to cover and to serve on teams."}</small>
                 </Button>
                 <Button
@@ -233,6 +236,7 @@ export function PeopleSection() {
                             setConfirmation({
                               title: "Revoke this invitation?",
                               body: "The link will stop working. This does not remove anyone who has already joined.",
+                              action: "Revoke invitation",
                               command: {
                                 type: "revokeInvitation",
                                 invitationId: invite.id,

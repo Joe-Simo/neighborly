@@ -26,7 +26,7 @@ export function readPayeeRows(text: string): PayeeSheet {
   const present = parsed.meta.fields ?? [];
   const find = (wanted: readonly string[]) => wanted.find((name) => present.includes(name));
   const found = { name: find(columns.name), type: find(columns.type), address: find(columns.address), address2: find(columns.address2), city: find(columns.city), state: find(columns.state), zip: find(columns.zip), phone: find(columns.phone), email: find(columns.email), notes: find(columns.notes) };
-  if (!found.name) return { error: "We could not find a Name column. The first line of the file should name the columns, such as Name, Type and Phone." };
+  if (!found.name) return { error: "This file has no Name column. Its first line should name the columns, such as Name, Type and Phone." };
   const rows = parsed.data.flatMap((row, index) => {
     if (Object.values(row).every((value) => !value?.trim())) return [];
     const cell = (column: string | undefined) => (column ? (row[column] ?? "").trim() : "");

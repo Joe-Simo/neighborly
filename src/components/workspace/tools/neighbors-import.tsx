@@ -19,7 +19,7 @@ const reasons: Record<Problem, string> = {
   no_name: "The name is missing.",
   too_long: "One of the boxes on this line holds more than a record can keep.",
   bad_count: "Adults and children should be whole numbers, with at least one adult.",
-  bad_language: "The language should be English, Spanish or Creole, or left empty.",
+  bad_language: "The language should be English, Spanish or Haitian Creole, or left empty.",
   repeated: "The same name or phone number is on an earlier line of this file.",
   same_phone: "A neighbor with this phone number is already on file.",
   same_name: "A neighbor with this name is already on file.",
@@ -36,7 +36,7 @@ export const neighborWords: SheetWords = {
   promise: "Each becomes a private record, open to coordinators only. Nothing is saved until you say so.",
   done: (count) => `${neighbors(count)} added. Their records are in the neighbor list now.`,
   nothingDone: "Nobody new was added.",
-  another: "Bring in another file",
+  another: "Choose another file",
 };
 /** A line with no name is known by the first thing it does have, read from the file on this device. */
 export function neighborsLeftOut(rows: (Checked[number] | Imported[number])[], sheet: NeighborRow[]): LeftOut[] {

@@ -358,10 +358,10 @@ export function BankView({
                   variant="link"
                   className="treasury-take-back"
                   disabled={busy !== null}
-                  aria-label={`Take it back: ${line(entry)}`}
+                  aria-label={`Mark not cleared: ${line(entry)}`}
                   onClick={() => onUndo(entry)}
                 >
-                  Take it back
+                  Mark not cleared
                 </Button>
               </div>
             ))}

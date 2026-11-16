@@ -24,8 +24,8 @@ export function readMemberRows(text: string): MemberSheet {
   const columns = parsed.meta.fields ?? [];
   const find = (wanted: string[]) => columns.find((column) => wanted.includes(column));
   const name = find(nameColumns), first = find(firstColumns), last = find(lastColumns), email = find(emailColumns);
-  if (!email) return { error: "We could not find an Email column. The first line of the file should name the columns, such as Name and Email." };
-  if (!name && !first) return { error: "We could not find a Name column. The first line of the file should name the columns, such as Name and Email." };
+  if (!email) return { error: "This file has no Email column. Its first line should name the columns, such as Name and Email." };
+  if (!name && !first) return { error: "This file has no Name column. Its first line should name the columns, such as Name and Email." };
   const rows = parsed.data.flatMap((row, index) => {
     if (Object.values(row).every((value) => !value?.trim())) return [];
     const cell = (column: string | undefined) => (column ? (row[column] ?? "").trim() : "");

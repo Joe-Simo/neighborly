@@ -15,7 +15,7 @@ type Flag = YearCheckResult["flags"][number];
 
 /** The sheet's own English words, used until the shared words carry them; the shared ones win when they do. */
 const english = {
-  putAway: "Put this away",
+  putAway: "Hide the check",
   checked: "Checked {requests}, {visits} and the ledger, today at {time}.",
   requests: (count: number) => (count === 1 ? "1 request" : `${count} requests`),
   visits: (count: number) => (count === 1 ? "1 visit" : `${count} visits`),

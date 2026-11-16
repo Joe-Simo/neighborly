@@ -258,7 +258,7 @@ export function en(set: WordSet) {
     people: {
       roles: { owner: "Owner", coordinator: "Coordinator", member: "Member" },
       removed: "Access removed",
-      waiting: "Waiting for approval",
+      waiting: "Not yet ready to serve",
     },
     /** Teams, as a member sees it. Adding and approving members are leaders' tools and stay English. */
     teams: {
@@ -273,7 +273,7 @@ export function en(set: WordSet) {
       coordinator: "Coordinator",
       member: "Member",
       invitedWaiting: "Invited, waiting to join",
-      waitingApproval: "Waiting for team approval",
+      waitingApproval: "Waiting for the team’s coordinator",
       loadMore: "Load more members",
       loading: "Loading members…",
       emptyTitle: "Start with one team.",
@@ -407,7 +407,7 @@ export function en(set: WordSet) {
       byRule: "Found by counting.",
       byAssistant: "The assistant read the note. Please read it yourself.",
       open: "Open the record",
-      putAway: "Put this away",
+      putAway: "Hide the check",
       /** What was looked over. The screen puts the two counts and the time of day in the marked places. */
       checked: "Checked {requests}, {visits} and the ledger, today at {time}.",
       requests: (count: number) => (count === 1 ? "1 request" : `${count} requests`),

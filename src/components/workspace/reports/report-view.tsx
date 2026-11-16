@@ -216,7 +216,7 @@ export function ReportView({
               <Printer size={17} aria-hidden="true" /> Print this {noun}
             </Button>
             <Button variant="outline" onClick={onSpreadsheet}>
-              <Download size={17} aria-hidden="true" /> Spreadsheet
+              <Download size={17} aria-hidden="true" /> Download as a spreadsheet
             </Button>
           </div>
         )}

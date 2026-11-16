@@ -33,7 +33,7 @@ export type Money = (
   memo: string;
   checkNumber: string;
 };
-/** Every choice in the "What is it?" list, keyed "in:collection", "out:pantry". */
+/** Every choice in the "Kind of money" list, keyed "in:collection", "out:pantry". */
 const choices = [
   ...incomeSources.map(([kind]) => ({ direction: "in", kind }) as const),
   ...spendingKinds.map(([kind]) => ({ direction: "out", kind }) as const),
@@ -108,7 +108,7 @@ export function MoneyForm({
       }}
     >
       <LiveField
-        label="What is it?"
+        label="Kind of money"
         help={
           out
             ? "Help for a neighbor is not recorded here. It is paid from their approved request, so it stays tied to it."

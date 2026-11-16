@@ -28,8 +28,8 @@ export function readRequestRows(text: string): RequestSheet {
   const find = (wanted: readonly string[]) => wanted.find((name) => present.includes(name));
   const found = { name: find(columns.name), first: find(columns.first), last: find(columns.last), date: find(columns.date), status: find(columns.status), type: find(columns.type), amount: find(columns.amount), payee: find(columns.payee), notes: find(columns.notes) };
   const phones = columns.phone.filter((name) => present.includes(name));
-  if (!found.name && !found.first) return { error: "We could not find a Name column. The first line of the file should name the columns, such as First Name, Last Name and Request Date." };
-  if (!found.date) return { error: "We could not find a Request Date column. Each past request needs the day it was made." };
+  if (!found.name && !found.first) return { error: "This file has no Name column. Its first line should name the columns, such as First Name, Last Name and Request Date." };
+  if (!found.date) return { error: "This file has no Request Date column. Each past request needs the day it was made." };
   const rows = parsed.data.flatMap((row, index) => {
     if (Object.values(row).every((value) => !value?.trim())) return [];
     const cell = (column: string | undefined) => (column ? (row[column] ?? "").trim() : "");

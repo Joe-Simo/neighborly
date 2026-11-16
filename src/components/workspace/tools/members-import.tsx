@@ -35,7 +35,7 @@ export const memberWords: SheetWords = {
   promise: "Each person gets a private link, good for seven days. Nothing is sent until you say so.",
   done: (count) => `${people(count)} invited. Download the private links to pass on yourself; they are shown this once and not kept.`,
   nothingDone: "Nobody new was invited.",
-  another: "Bring in another file",
+  another: "Choose another file",
 };
 export function membersLeftOut(rows: (Checked[number] | Imported[number])[]): LeftOut[] {
   return rows.flatMap((row) => (row.outcome === "ready" || row.outcome === "invited" ? [] : [{ line: row.line, name: row.name || row.email, reason: reasons[row.outcome] }]));
