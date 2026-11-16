@@ -12,8 +12,10 @@ import "@/components/workspace/door.css";
  * The paper's welcome for someone who has just come through the door: the sign-in sheet or the sample link.
  * Three sheets sweep up the instant the sheet leaves, while the room loads under them; the last is paper.
  * It adds no wait: the paper lifts as soon as it has landed and the room under it is whole (heading, picture
- * and the head button in its final style). If the room is not ready yet the paper holds with the one quiet
- * opening line on it, and lifts when the room is. Never between rooms, and never for someone already signed
+ * and the head button in its final style). If the room is not ready yet the sheet holds and lifts when the room
+ * is. Plain paper holds with the one quiet opening line on it. The card holds as the card: its marks stay, its
+ * ochre square breathes (ochre is waiting), the line is only spoken, and the moment the room is whole the card
+ * lifts and its marks go to their places. Only a wait past LATE draws the line, low on the card. Never between rooms, and never for someone already signed
  * in, who goes from the launch mark straight to their room.
  */
 const SWEEP = 380;
@@ -24,6 +26,8 @@ const QUIET = 400;
 const QUIET_PLAIN = 1000;
 /** Once drawn, the line stays long enough to be read: a line that flashes is worse than none. */
 const READ = 700;
+/** The card says nothing in writing until the wait has been this long after it landed. */
+const LATE = 4000;
 /** The green is already rising in the first frame the sheet is gone. */
 const HEAD_START = 48;
 /** If nothing under the paper ever settles, it lifts anyway and shows what is there. */
@@ -109,7 +113,8 @@ function underneathIsReady() {
 export function DoorSweep() {
   const arrival = useSyncExternalStore(watch, () => arrivals, () => 0);
   const done = useSyncExternalStore(watch, () => finished, () => 0);
-  const [holding, setHolding] = useState(false);
+  /** A wait: "spoken" is the line for screen readers only (the card holds as itself), "shown" draws it. */
+  const [holding, setHolding] = useState<false | "spoken" | "shown">(false);
   const paper = useRef<HTMLDivElement>(null);
   const [language] = useEntryLanguage();
   const playing = arrival > done;
@@ -165,11 +170,22 @@ export function DoorSweep() {
       const landed = plain || waited >= SWEEP;
       const read = saidAt === 0 || performance.now() - saidAt >= READ;
       if (landed && read && (underneathIsReady() || waited > LONGEST)) return lift();
-      if (landed && saidAt === 0 && waited >= (plain ? QUIET_PLAIN : SWEEP + QUIET)) {
+      const held = plain ? null : paper.current?.querySelector<HTMLElement>(".door-card");
+      if (held) {
+        // The card waits as the card. Nothing is drawn that must then be read, so it lifts the frame the room is whole.
+        if (landed && held.dataset.holds === undefined && waited >= SWEEP + QUIET) {
+          held.dataset.holds = "";
+          setHolding("spoken");
+        }
+        if (saidAt === 0 && waited >= SWEEP + LATE) {
+          saidAt = performance.now();
+          setHolding("shown");
+        }
+      } else if (landed && saidAt === 0 && waited >= (plain ? QUIET_PLAIN : SWEEP + QUIET)) {
         saidAt = performance.now();
-        // A wait: the card's marks give way to the line.
+        // A wait on a sheet with no motion: the card's marks are not drawn, and the line stands alone.
         paper.current?.querySelector(".door-card")?.setAttribute("data-waits", "");
-        setHolding(true);
+        setHolding("shown");
       }
       frame = requestAnimationFrame(look);
     };
@@ -188,7 +204,7 @@ export function DoorSweep() {
       {/* The card passed on the home page, grown to the size of the page: its mark and two lines thin away as it becomes the paper. */}
       {card ? <div className="door-card"><i /><b /><b /></div> : <div className="door-paper" />}
       {holding && (
-        <p className="door-opening" role="status">
+        <p className="door-opening" role="status" data-spoken={holding === "spoken" ? "" : undefined} data-low={card ? "" : undefined}>
           <LoaderCircle size={20} aria-hidden="true" />
           <span>{wordsFor(language).states.opening}</span>
         </p>
