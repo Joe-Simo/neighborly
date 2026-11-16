@@ -158,7 +158,9 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const cardRest = [.8, -.06, .2, -.85] as const;
   // The card is drawn a little larger than it was authored, so it reads in the giving hand.
   const cardScale = 1.3;
-  const cardSettle = .2;
+  // The landing: how long the hand takes to receive the card, and how far the card drops onto it, in screen pixels.
+  const cardSettle = .3;
+  const cardDrop = 6;
   const openingGuideScale = new T.Vector3(1, 1, 1);
   const openingPickTargets: T.Object3D[] = [];
   const openingMaterials = new Map<T.Material, { opacity: number; transparent: boolean; depthWrite: boolean }>();
@@ -643,7 +645,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       openingModel.getObjectByName("BackgroundMobile")?.traverse((object) => { object.visible = openingFrame.mobile && !openingFrame.narrow; });
       openingModel.getObjectByName("BackgroundNarrow")?.traverse((object) => { object.visible = openingFrame.mobile && openingFrame.narrow; });
       const rig = openingModel.getObjectByName("ReliefRig");
-      if (rig) { rig.scale.setScalar(openingFrame.mobile ? 0.62 : 1); rig.position.set(0, openingFrame.mobile ? 4.6 : 0, 0); }
+      const rigScale = openingFrame.mobile ? 0.62 : 1;
+      if (rig) { rig.scale.setScalar(rigScale); rig.position.set(0, openingFrame.mobile ? 4.6 : 0, 0); }
       if (openingGuide && openingOutcome === "rest" && !handing) {
         const lift = smooth(interaction);
         openingGuide.position.copy(openingGuidePosition);
@@ -657,22 +660,24 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
         cardSeat.rotation.z = cardRest[2] * arrived;
         cardSeat.rotation.x = cardRest[3] * arrived;
         cardLie.position.copy(openingGuide.position).negate();
-        // Larger while it waits in the giving hand; it lands at the size the palm was painted for.
-        const scale = cardScale + (1 - cardScale) * arrived;
-        cardSeat.scale.setScalar(scale);
+        // Larger while it waits in the giving hand; it lands at the size that suits the palm on this screen.
+        // On a phone the whole scene is small, so the card keeps its larger size all the way into the palm, where the eye can still read it.
+        const rest = openingFrame.mobile ? cardScale : 1;
+        cardSeat.scale.setScalar(cardScale + (rest - cardScale) * arrived);
         const waiting = 1 - smooth(Math.min(1, (openingPlayback?.passed() ?? 0) * 4));
         cardSeat.position.x += cardTuck[0] * waiting; cardSeat.position.y += cardTuck[1] * waiting;
         // Landing: the card drops the last little way onto the palm and its shadow gathers under it.
         const down = (openingPlayback?.passed() ?? 0) >= 1;
         landed = down ? reduce ? 1 : Math.min(1, landed + dt / cardSettle) : 0;
-        const settled = 1 - (1 - landed) * (1 - landed);
-        cardSeat.position.y += (1 - settled) * arrived * cardWidth * .09;
+        // A soft ease out: quick at first, then the last of the drop is slow, as a hand gives under a small weight.
+        const settled = 1 - (1 - landed) ** 3;
+        cardSeat.position.y += (1 - settled) * arrived * cardDrop * worldHeight / Math.max(1, host.clientHeight) / (scale * rigScale);
         if (cardShadow) {
           cardShadow.position.copy(cardSeat.position);
-          cardShadow.position.x -= cardWidth * .02;
-          cardShadow.position.y -= cardWidth * (.2 + (1 - settled) * .05);
+          cardShadow.position.x -= cardWidth * rest * .02;
+          cardShadow.position.y -= cardWidth * rest * (.2 + (1 - settled) * .05);
           cardShadow.rotation.z = cardSeat.rotation.z;
-          cardShadow.scale.set(cardWidth * (1.38 - settled * .12), cardWidth * (.6 - settled * .06), 1);
+          cardShadow.scale.set(cardWidth * rest * (1.38 - settled * .12), cardWidth * rest * (.6 - settled * .06), 1);
           cardShadow.material.opacity = arrived * (.36 + settled * .26) * openingOpacity;
           cardShadow.visible = arrived > 0;
         }
