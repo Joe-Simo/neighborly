@@ -131,6 +131,12 @@ describe("removing a record", () => {
       await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 18600, date: today, category: "utility", payee: "Example Power", memo: "For Esperanza Montoya, account ending 0042", checkNumber: "1042", requestId: paid, neighborId, recordedBy: ids.owner.memberId, createdAt: now });
       // Money once handed to her in person, entered by hand in the treasury with her name as the payee.
       await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 2500, date: today, category: "food", payee: "Mrs. E. Montoya", memo: "Groceries, paid to her directly", neighborId, recordedBy: ids.owner.memberId, createdAt: now + 1 });
+      // Money recorded by hand with her name typed as the payee and no link to her record, and a deposit that names her.
+      await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 2500, date: today, category: "supplies", payee: "Esperanza Montoya", memo: "Supplies", recordedBy: ids.owner.memberId, createdAt: now + 2 });
+      await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 900, date: today, category: "supplies", payee: "Sample Hardware", memo: "Lock for esperanza montoya’s door", recordedBy: ids.owner.memberId, createdAt: now + 3 });
+      await ctx.db.insert("deposits", { churchId, date: today, total: 1000, memo: "Given back by Esperanza Montoya", recordedBy: ids.owner.memberId, createdAt: now });
+      // A line of somebody else that only shares a word of her name is not hers and keeps its words.
+      await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 4000, date: today, category: "other", payee: "Montoya County Water", memo: "Hall water", recordedBy: ids.owner.memberId, createdAt: now + 4 });
       await ctx.db.insert("voucherStock", { churchId, date: today, change: -1, item: "Furniture voucher", note: "Given to Esperanza", requestId: voucher, recordedBy: ids.owner.memberId, createdAt: now });
       await ctx.db.insert("visits", { churchId, neighborId, requestId: paid, scheduledAt: now - 8000, status: "completed", visitors: [{ memberId: ids.owner.memberId, hours: 1, miles: 6 }], notes: "Esperanza showed us the notice.", completedAt: now - 7000, ...by });
     });
@@ -146,13 +152,19 @@ describe("removing a record", () => {
       requestDrafts: await ctx.db.query("requestDrafts").collect(),
       assistanceRequests: await ctx.db.query("assistanceRequests").collect(),
       visits: await ctx.db.query("visits").collect(),
-      ledgerEntries: await ctx.db.query("ledgerEntries").collect(),
+      ledgerEntries: (await ctx.db.query("ledgerEntries").collect()).filter((entry) => entry.category !== "other"),
       voucherStock: await ctx.db.query("voucherStock").collect(),
+      deposits: await ctx.db.query("deposits").collect(),
       auditEvents: await ctx.db.query("auditEvents").collect(),
+      others: (await ctx.db.query("ledgerEntries").collect()).filter((entry) => entry.category === "other"),
     }));
+    expect(left.others).toMatchObject([{ payee: "Montoya County Water", memo: "Hall water" }]);
+    left.others = [];
+    expect(left.ledgerEntries.filter((entry) => entry.category === "supplies")).toMatchObject([{ payee: "Record removed", memo: "Supplies", amount: 2500 }, { payee: "Sample Hardware", memo: "Record removed", amount: 900 }]);
+    expect(left.deposits).toMatchObject([{ memo: "Record removed", total: 1000 }]);
     // No row anywhere still says who she was, where she lives, her phone, her account, who was paid for her or what was said.
     const everything = JSON.stringify(left).toLowerCase();
-    for (const trace of ["esperanza", "montoya", "5550104", "555-0104", "14 sample st", "0042", "5550100042", "nights", "notice", "behind", "bill", "bed for", "sample thrift", "groceries", "directly"]) expect(everything, trace).not.toContain(trace);
+    for (const trace of ["esperanza", "montoya", "5550104", "555-0104", "14 sample st", "0042", "5550100042", "nights", "notice", "behind", "bill", "bed for", "sample thrift", "groceries", "directly", "lock for", "given back"]) expect(everything, trace).not.toContain(trace);
     expect(left.neighborNotes).toEqual([]);
     expect(left.requestDrafts).toEqual([]);
     // What the year counts is kept as rows with nothing said in them: a nameless household of the same size and language,
@@ -168,7 +180,7 @@ describe("removing a record", () => {
     expect(left.visits).toMatchObject([{ status: "completed", notes: "", visitors: [{ hours: 1, miles: 6 }] }]);
     // and the money and the shelf exactly as they were, still tied to that nameless household.
     // A landlord, utility or store stays as the payee; a payee that carries her name does not.
-    expect(left.ledgerEntries).toMatchObject([
+    expect(left.ledgerEntries.filter((entry) => entry.category !== "supplies")).toMatchObject([
       { amount: 18600, date: today, category: "utility", payee: "Example Power", checkNumber: "1042", memo: "Record removed", neighborId },
       { amount: 2500, date: today, category: "food", payee: "Record removed", memo: "Record removed", neighborId },
     ]);

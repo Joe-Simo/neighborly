@@ -967,7 +967,9 @@ export function RemoveForm({
           <dt>What stays</dt>
           <dd>
             The money, the dates and the counts, so the year’s totals do not
-            change. Nothing left says who they were.
+            change. Nothing left says who they were. Their name written by
+            hand somewhere else, such as a note on another record, a task or
+            an announcement, is not searched for.
           </dd>
         </div>
       </dl>

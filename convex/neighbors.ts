@@ -168,7 +168,9 @@ export const update = mutation({
  * What stays is what the year counts, with nothing in it that identifies anyone: a nameless row for the
  * household (how many adults and children, and the language), its calls, requests and visits as dates,
  * kinds, amounts and volunteers' hours, and the ledger and shelf lines without their memo. So no figure
- * of a year changes when a record is removed. A removed record has an empty nameKey, which no live record
+ * of a year changes when a record is removed. The neighbor's whole name typed by hand on any other line of
+ * the ledger, the shelf or the deposits goes too. Free writing elsewhere (another record's notes, tasks,
+ * announcements) is not searched, and the sheet says so. A removed record has an empty nameKey, which no live record
  * can have; neighborRecord() in access.ts answers "Record not found." for it, and lists leave it out.
  * The audit trail keeps who removed a record and when, by the record's id alone.
  */
@@ -180,13 +182,15 @@ export const remove = mutation({
     if (member.role !== "owner") throw new ConvexError("Only an owner can remove a neighbor’s record.");
     if (nameKey(typedName) !== neighbor.nameKey) throw new ConvexError("Type the neighbor’s name as it is written on the record.");
 
-    const [requests, visits, notes, tied, entries, everyCall] = await Promise.all([
+    const [requests, visits, notes, tied, everyCall, ledger, shelf, deposits] = await Promise.all([
       ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
       ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
       ctx.db.query("neighborNotes").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
       ctx.db.query("calls").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
-      ctx.db.query("ledgerEntries").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
       ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
+      ctx.db.query("deposits").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect(),
     ]);
     if (requests.some((request) => request.status === "open" || request.status === "approved"))
       throw new ConvexError("A request for this neighbor is still open. Decide it or close it first.");
@@ -201,19 +205,27 @@ export const remove = mutation({
     });
     const calls = [...tied, ...loose];
     const drafts = (await Promise.all(calls.map((call) => ctx.db.query("requestDrafts").withIndex("by_call", (q) => q.eq("callId", call._id)).collect()))).flat();
-    const byRequest = await Promise.all(requests.map(async (request) => ({
-      entries: await ctx.db.query("ledgerEntries").withIndex("by_request", (q) => q.eq("requestId", request._id)).collect(),
-      shelf: await ctx.db.query("voucherStock").withIndex("by_request", (q) => q.eq("requestId", request._id)).collect(),
-    })));
 
-    // Who was paid stays when it is a landlord, a utility or a store. A payee that carries any part of the
-    // neighbor's name would say who the household was, so it goes; better one store too many than one name left.
-    const named = new Set(neighbor.nameKey.split(" ").filter((word) => word.length > 2));
-    const namesThem = (payee: string) => nameKey(payee).split(" ").some((word) => named.has(word));
-    const lines = new Map([...entries, ...byRequest.flatMap((found) => found.entries)].map((entry) => [entry._id, entry]));
-    for (const entry of lines.values())
-      await ctx.db.patch("ledgerEntries", entry._id, { memo: REMOVED, ...(namesThem(entry.payee) && { payee: REMOVED }) });
-    for (const line of byRequest.flatMap((found) => found.shelf)) await ctx.db.patch("voucherStock", line._id, { note: REMOVED });
+    // The money of the whole conference is read, because a name can be typed by hand on a line with no link to the record.
+    // On a line tied to the record the memo goes, and so does a payee that carries any part of the name: who was paid
+    // stays when it is a landlord, a utility or a store, and better one store too many than one name left.
+    // On every other line, and on deposits and the voucher shelf, a field goes only when it carries the whole name,
+    // so that removing a Lee does not blank every payment to Lee County Electric.
+    const words = neighbor.nameKey.split(" ");
+    const part = new Set(words.filter((word) => word.length > 2));
+    const said = (text: string) => new Set(nameKey(text).split(" "));
+    const anyOf = (text: string) => [...said(text)].some((word) => part.has(word));
+    const whole = (text: string) => { const found = said(text); return words.every((word) => found.has(word)); };
+    const theirs = new Set<string>(requests.map((request) => request._id));
+    for (const entry of ledger) {
+      const tiedLine = entry.neighborId === neighborId || (entry.requestId !== undefined && theirs.has(entry.requestId));
+      const payee = tiedLine ? anyOf(entry.payee) : whole(entry.payee);
+      const memo = tiedLine || whole(entry.memo);
+      if (payee || memo) await ctx.db.patch("ledgerEntries", entry._id, { ...(payee && { payee: REMOVED }), ...(memo && { memo: REMOVED }) });
+    }
+    for (const line of shelf)
+      if ((line.requestId !== undefined && theirs.has(line.requestId)) || whole(line.note)) await ctx.db.patch("voucherStock", line._id, { note: REMOVED });
+    for (const deposit of deposits) if (whole(deposit.memo)) await ctx.db.patch("deposits", deposit._id, { memo: REMOVED });
 
     for (const draft of drafts) await ctx.db.delete("requestDrafts", draft._id);
     for (const note of notes) await ctx.db.delete("neighborNotes", note._id);
