@@ -94,9 +94,10 @@ function Said({ children }: { children: string }) {
       ref={line}
       tabIndex={-1}
       role="status"
-      className={seen ? "live-success volunteer-said paper-settle" : "sr-only"}
+      className={seen ? "live-success help-done volunteer-said paper-settle" : "sr-only"}
     >
-      {children}
+      {seen && <CircleCheck size={22} aria-hidden="true" />}
+      {seen ? <span>{children}</span> : children}
     </p>
   );
 }

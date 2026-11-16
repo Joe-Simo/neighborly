@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
-import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
+import { ArrowLeft, CircleCheck, LogOut, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -632,8 +632,9 @@ function Outcome({ children, ref }: { children: string; ref: RefObject<HTMLDivEl
   // It is laid down like a slip, and after six seconds it closes up so the page below does not jump.
   const seen = useSavedLine(ref);
   return (
-    <div className={seen ? "live-success paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
-      {children}
+    <div className={seen ? "live-success help-done paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
+      {seen && <CircleCheck size={22} aria-hidden="true" />}
+      {seen ? <span>{children}</span> : children}
     </div>
   );
 }
