@@ -159,6 +159,8 @@ export function LiveWorkspace({
     setError("");
     setDialog(kind);
   }
+  // An act's name, in the reader's language where the tables have it. Tasks keep theirs with the room's words.
+  const actName = (kind: ActionKind) => (kind === "task" ? words.tasks.add : (actions[kind] ?? actionTitles[kind]));
   const primary = primaryActions[area];
   // A menu line marked for leaders is shown only to coordinators and owners of the group.
   const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
@@ -304,7 +306,7 @@ export function LiveWorkspace({
                 area === "time-off") && (
                 <Button onClick={() => open(primary)}>
                   <Plus size={17} aria-hidden="true" />
-                  {actions[primary] ?? actionTitles[primary]}
+                  {actName(primary)}
                 </Button>
               )}
               {headAction && (
@@ -375,7 +377,7 @@ export function LiveWorkspace({
             onClose={() => {
               if (!pending) setDialog(null);
             }}
-            title={dialog && (actions[dialog] ?? actionTitles[dialog])}
+            title={dialog && actName(dialog)}
             description={
               dialog === "invite"
                 ? "They’ll choose to join your conference."

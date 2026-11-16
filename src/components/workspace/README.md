@@ -164,3 +164,9 @@ import { ConvexQueryCacheProvider } from "convex-helpers/react/cache/provider";
 One frame serves every room (`src/components/live-frame.tsx`, in the app layout). A link from one room
 to another is an ordinary `<Link href="/app/…">`; the frame takes the click and changes room without
 asking the server. Never draw `LiveApp` from a page, and never hide a room before the next one stands.
+
+## Pictures from a harness
+
+The live sample keeps Eastern time, so a harness that takes pictures does too, or its days and hours
+will not match the live site: give the sample conference `timeZone: "America/New_York"` and open the
+browser in the same zone (Playwright: `browser.newContext({ timezoneId: "America/New_York", locale: "en-US" })`).

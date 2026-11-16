@@ -163,6 +163,7 @@ export function PeopleSection() {
                     setManagingId(null);
                     setConfirmation({
                       title: `${managing.active ? "Remove" : "Restore"} ${group} access?`,
+                      action: managing.active ? "Remove access" : "Restore access",
                       body: "This changes access to your conference. Accepted commitments remain recorded; pending cover requests are withdrawn when access is removed.",
                       command: {
                         type: "setMembership",
