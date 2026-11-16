@@ -504,8 +504,14 @@ export function HelpLineView({
   useLayoutEffect(() => {
     const now = new Map<string, { top: number; waiting: boolean }>();
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const travel = (piece: HTMLElement, by: number) =>
-      piece.animate([{ transform: `translateY(${by}px)` }, { transform: "none" }], { duration: 480, easing: PAPER_EASE });
+    // A row gliding under a resting pointer is not being pointed at: it takes no hover wash until it has landed.
+    const travel = (piece: HTMLElement, by: number) => {
+      piece.style.pointerEvents = "none";
+      const move = piece.animate([{ transform: `translateY(${by}px)` }, { transform: "none" }], { duration: 480, easing: PAPER_EASE });
+      const land = () => void (piece.style.pointerEvents = "");
+      move.addEventListener("finish", land);
+      move.addEventListener("cancel", land);
+    };
     const stayed: [HTMLElement, number][] = [];
     let travelled = false;
     lists.current
