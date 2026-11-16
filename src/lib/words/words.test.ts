@@ -71,3 +71,19 @@ describe("words", () => {
     expect(words().menu.week).toBe("This week");
   });
 });
+
+describe("refusals a member can meet", () => {
+  test("each one is said in Spanish and Creole, and is still the backend's sentence word for word", async () => {
+    const { refusals } = await import("../refusals");
+    const backend = (await Promise.all(["workspace.ts", "pages.ts"].map((file) => Bun.file(`${import.meta.dir}/../../../convex/${file}`).text()))).join("\n");
+    for (const [key, sentence] of Object.entries(refusals)) {
+      for (const language of ["es", "ht"] as const) {
+        const said = words(language).notices.refused[sentence];
+        expect(said, `${language} ${key}`).toBeTruthy();
+        expect(said).not.toBe(sentence);
+      }
+      // away and busy are read from the table by the backend itself; the rest are written out there.
+      expect(backend.includes(`refusals.${key}`) || backend.includes(`"${sentence}"`), key).toBe(true);
+    }
+  });
+});

@@ -299,7 +299,7 @@ export function en(set: WordSet) {
       updated: "Updated.",
       failed: "That change couldn’t be saved. Please try again.",
       /** A refusal the backend says in English, in this language, keyed by the English sentence. */
-      refused: { [refusals.away]: refusals.away, [refusals.busy]: refusals.busy } as Record<string, string>,
+      refused: Object.fromEntries(Object.values(refusals).map((sentence) => [sentence, sentence])) as Record<string, string>,
     },
     visits: {
       title: "Home visits",
