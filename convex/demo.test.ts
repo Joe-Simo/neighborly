@@ -61,6 +61,20 @@ describe("the sample conference a visitor looks around", () => {
     expect(left.visitors).toHaveLength(1);
   });
 
+  test("the nightly reset can be turned off for a deployment nobody is shown", async () => {
+    const t = start();
+    const nightly = async () => {
+      await t.mutation(internal.demo.nightly, {});
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      return (await t.run((ctx) => ctx.db.query("churches").collect())).map((church) => church._id);
+    };
+    const [first] = await nightly();
+    vi.stubEnv("SAMPLE_NIGHTLY", "off");
+    expect(await nightly()).toEqual([first]);
+    vi.stubEnv("SAMPLE_NIGHTLY", "");
+    expect(await nightly()).not.toEqual([first]);
+  });
+
   test("a refresh leaves every other conference alone, sample or real", async () => {
     const t = start();
     const others = await t.run(async (ctx) => {
@@ -140,6 +154,10 @@ describe("the sample conference a visitor looks around", () => {
       mine: await read((ctx) => ctx.runQuery(api.visits.mine, { churchId, at })),
       years: await read((ctx) => ctx.runQuery(api.reports.years, { churchId, at })),
       year: await read((ctx) => ctx.runQuery(api.reports.year, { churchId, at, year: 2026 })),
+      record: await read(async (ctx) => {
+        const [neighbor] = await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1);
+        return ctx.runQuery(api.neighbors.record, { churchId, neighborId: neighbor._id });
+      }),
     };
     for (const [room, { looked }] of Object.entries(rooms)) expect(looked, room).toBe(0);
     // Only a whole hour is taken, so the kept answers are one an hour. A page from before the hour was asked for
@@ -148,7 +166,7 @@ describe("the sample conference a visitor looks around", () => {
     expect((await guest.query(api.assistance.calls, { churchId })).waiting.length).toBeGreaterThan(0);
     // The help line read 74 KB when it took the last 200 returned calls to find a week of them.
     expect(rooms.helpLine.bytes).toBeLessThan(40_000);
-    for (const room of [rooms.weekNote, rooms.board, rooms.mine, rooms.years]) expect(room.bytes).toBeLessThan(100_000);
+    for (const room of [rooms.weekNote, rooms.board, rooms.mine, rooms.years, rooms.record]) expect(room.bytes).toBeLessThan(100_000);
     // A whole year added up is the one large read, and it is asked only in the Reports room.
     expect(rooms.year.bytes).toBeLessThan(1_000_000);
   });

@@ -67,14 +67,19 @@ export const load = internalMutation({
   args: { owner: v.optional(v.object({ userId: v.id("users"), name: v.string(), email: v.string() })) },
   returns: v.id("churches"),
   handler: async (ctx, args) => {
-    const random = generator(1833);
-    // A second stream for how things read (names, times of day, visit notes), so money and counts keep their own draws.
+    // The year that has closed holds still: whatever day the sample is loaded, the same households, calls,
+    // requests, visits and payments come out for it, so its yearly report reads the same to the dollar.
+    // Only what is recent moves with today. That is why every household draws from a stream of its own
+    // (what today cuts short in one never shifts another), and so does each month of other money.
+    // A second stream is for how things read (names, times of day, visit notes), so money and counts keep their own draws.
     const look = generator(4127);
+    type Stream = ReturnType<typeof generator>;
     // A believable time on the same day: the help line mostly in the morning, visits mid-morning or late afternoon.
-    const clock = (time: number, slots: readonly (readonly [number, number])[]) => {
-      const [hour, minute] = look.pick(slots);
-      return DateTime.fromMillis(time, { zone }).startOf("day").set({ hour, minute: minute + look.between(0, 2) * 5 }).toMillis();
+    const clockFrom = (stream: Stream) => (time: number, slots: readonly (readonly [number, number])[]) => {
+      const [hour, minute] = stream.pick(slots);
+      return DateTime.fromMillis(time, { zone }).startOf("day").set({ hour, minute: minute + stream.between(0, 2) * 5 }).toMillis();
     };
+    const clock = clockFrom(look);
     const callSlots = [[9, 5], [9, 20], [9, 40], [10, 0], [10, 15], [10, 35], [10, 50], [11, 10], [11, 30], [11, 45], [9, 30], [10, 25], [13, 15], [14, 40], [15, 20]] as const;
     const visitSlots = [[9, 30], [10, 0], [10, 0], [10, 30], [10, 30], [11, 0], [11, 0], [14, 0], [16, 30], [17, 30]] as const;
     // The planned visits tell the whole story of a pair: both said yes, nobody has answered, one answer in.
@@ -189,6 +194,8 @@ export const load = internalMutation({
     const firstMonth = thisFiscalYear.minus({ years: 1 });
     const start = firstMonth.toMillis();
     const days = Math.floor((now - start) / DAY);
+    // The closed year's own length in days. First calls are drawn inside it, never from how far today has come.
+    const closedDays = Math.round(thisFiscalYear.diff(firstMonth, "days").days);
     const spentByMonth = new Map<string, number>();
     const book: { id: Id<"ledgerEntries">; kind: "income" | "expense"; amount: number; date: string; category: string }[] = [];
     const vouchersGiven: { requestId: Id<"assistanceRequests">; time: number; item: string }[] = [];
@@ -213,9 +220,10 @@ export const load = internalMutation({
 
     // Households, and for each its calls, requests for help, visits in pairs and payments.
     for (let index = 0; index < HOUSEHOLDS; index++) {
+      const random = generator(1833 + index * 7919), look = generator(4127 + index * 104729), clock = clockFrom(look);
       const name = `${firstNames[index]} ${familyNames[index]}`;
       const phone = `(10${index < 100 ? 0 : 1}) 555-01${String(index % 100).padStart(2, "0")}`;
-      const firstCall = start + random.between(1, days - 14) * DAY;
+      const firstCall = start + random.between(1, closedDays - 14) * DAY;
       const neighborId = await ctx.db.insert("neighbors", { churchId, name, nameKey: key(name), phone, phoneKey: phone.replace(/\D/g, ""), email: index % 5 === 0 ? `${key(name).replaceAll(" ", ".")}@${emailDomain}` : "", address: `${random.between(10, 980)} ${random.pick(streets)}, Apt ${random.between(1, 24)}`, adults: random.between(1, 3), children: random.between(0, 4), language: index % 4 === 1 ? "es" : index % 9 === 2 ? "ht" : "en", notes: index % 6 === 0 ? "Prefers a call after 5 PM." : "", createdBy: random.pick(staff), createdAt: firstCall });
       households.push(neighborId);
       const callCount = random.between(1, 4);
@@ -238,7 +246,9 @@ export const load = internalMutation({
         // The same numbers are drawn for every kind, so changing one kind's rules leaves the rest of the year as it was.
         const asked = Math.round(random.between(need.low, need.high) / 500) * 500;
         const amountRequested = voucher ? 0 : asked;
-        const drawn = age < 6 * DAY ? "open" : age < 13 * DAY ? "approved" : random.pick(["paid", "paid", "paid", "paid", "paid", "paid", "paid", "declined", "closed"] as const);
+        // Drawn for every request, so a recent one that is still open today settles the same way once it is old.
+        const settled = random.pick(["paid", "paid", "paid", "paid", "paid", "paid", "paid", "declined", "closed"] as const);
+        const drawn = age < 6 * DAY ? "open" : age < 13 * DAY ? "approved" : settled;
         const outcome = voucher && drawn === "approved" ? "paid" : drawn;
         const granted = outcome === "approved" || outcome === "paid";
         const share = granted ? Math.min(asked, Math.round((asked * random.between(60, 100)) / 100 / 500) * 500) : undefined;
@@ -264,6 +274,7 @@ export const load = internalMutation({
     }
 
     // Calls that never became a household: about three a month.
+    const random = generator(613);
     for (let call = 0; call < Math.floor(days / 10); call++) {
       const takenAt = clock(start + call * 10 * DAY + random.between(1, 8) * DAY + random.between(9, 16) * 3600000, callSlots);
       if (takenAt > now - DAY) break;
@@ -332,10 +343,11 @@ export const load = internalMutation({
         await ctx.db.insert("neighborNotes", { churchId, neighborId: neighbor._id, body: noted[(place + note * 5) % noted.length], authorId: extra.pick(staff), createdAt: clock(neighbor.createdAt + DAY + Math.floor(extra.next() * span), callSlots) });
     }
 
-    // Three records for the year check to find, written apart from the loop and its draws, 75 days back so they
+    // Three records for the year check to find, written apart from the loop and its draws, so they
     // fall inside the fiscal year the reports room opens. Two requests were approved and no payment was
     // recorded (one note says a check was sent); one visit's note says it happened and it is not marked done.
-    const findingsAt = now - 75 * DAY;
+    // Four weeks before the closed year ends, on a fixed day, so they never slip out of it and move its totals.
+    const findingsAt = thisFiscalYear.toMillis() - 28 * DAY;
     await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[2], kind: "rent", summary: "One month's rent after reduced hours at work.", amountRequested: 60000, amountApproved: 60000, status: "approved", decisionNote: "Approved after the home visit. The treasurer sent the check to the landlord on the 12th.", decidedBy: owner, decidedAt: findingsAt + 4 * DAY, payeeKind: "landlord", payeeName: "Mill Road Rentals", source: "person", createdBy: staff[1], createdAt: findingsAt });
     await ctx.db.insert("visits", { churchId, neighborId: households[6], scheduledAt: clock(findingsAt + 2 * DAY, visitSlots), status: "scheduled", visitors: [visitors[0], visitors[3]].map((memberId) => ({ memberId, hours: 0, miles: 0, response: "accepted" as const })), notes: "We met with her on Tuesday afternoon. Gave the pantry hours and she will call about the light bill.", createdBy: owner, createdAt: findingsAt });
     await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[10], kind: "utility", summary: "Electric bill with a shut-off notice.", amountRequested: 21000, amountApproved: 21000, status: "approved", decisionNote: "Approved after the home visit.", decidedBy: owner, decidedAt: findingsAt + 3 * DAY, payeeKind: "utility", payeeName: "City Power & Light", source: "person", createdBy: staff[1], createdAt: findingsAt });
@@ -373,7 +385,8 @@ export const load = internalMutation({
     // to what that month paid out, so the year reads like a conference that gives away what it receives.
     const months = Array.from({ length: Math.floor(today.diff(firstMonth, "months").months) + 1 }, (_, index) => firstMonth.plus({ months: index }));
     const on = (month: DateTime, day: number) => month.set({ day, hour: 12 }).toMillis();
-    for (const month of months) {
+    for (const [index, month] of months.entries()) {
+      const random = generator(3001 + index);
       if (on(month, 20) < now) await entry("expense", on(month, 20), random.between(150, 320) * 100, "Pantry purchase", "Corner Family Market", "Shelf-stable food for the pantry");
       if (month.month === 10 && on(month, 12) < now) await entry("expense", on(month, 12), 60000, "Council dues", "District Council", "Annual solidarity contribution");
       if (month.month % 4 === 2 && on(month, 9) < now) await entry("expense", on(month, 9), random.between(40, 110) * 100, "Supplies", "Main Street Office Supply", "Paper, postage and phone line");
@@ -383,7 +396,8 @@ export const load = internalMutation({
     await ctx.db.insert("ledgerKinds", { churchId, direction: "expense", name: "Bus tokens", nameKey: "bus tokens", recordedBy: owner, createdAt: on(months[5], 3) });
     await entry("income", on(months[6], 14), 38600, "Bake sale", "Parish hall table", "Spring bake sale after the 10 o'clock Mass");
     await entry("expense", on(months[7], 8), 12000, "Bus tokens", "County Transit", "Forty tokens for the help line to hand out", { checkNumber: String(checkNumber++) });
-    for (const month of months) {
+    for (const [index, month] of months.entries()) {
+      const random = generator(5003 + index);
       const spent = spentByMonth.get(month.toFormat("yyyy-MM")) ?? 0;
       if (on(month, 2) < now) await entry("income", on(month, 2), Math.max(150000, Math.round((spent * random.between(90, 102)) / 100 / 500) * 500), "Parish collection", "St. Example Parish", "Fifth-Sunday and poor-box collection");
       if (month.month % 3 !== 0 && on(month, 10) < now) await entry("income", on(month, 10), random.between(20, 75) * 1000, "Donation", "Anonymous gift", "Designated for rent and utilities");
