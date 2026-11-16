@@ -610,6 +610,7 @@ export function NeighborRecordView({
                   {request.status === "open" ? (
                     <Button
                       variant="outline"
+                      aria-label={`Approve request: ${requestTitle(request)}`}
                       onClick={() => onStep({ kind: "approve", request })}
                     >
                       Approve request
@@ -680,6 +681,7 @@ export function NeighborRecordView({
                                 <Button
                                   variant="link"
                                   className="help-text-action"
+                                  aria-label={`Take it back: ${line.what}`}
                                   onClick={() =>
                                     onStep({ kind: "close", request: given })
                                   }
