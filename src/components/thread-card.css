@@ -36,7 +36,7 @@
 /* The ending: the card is no longer painted in the hand. The hand is open, and holds out the card that is the way into the sample. */
 :root .neighborly-close .neighborly-close-hand .thread-empty{opacity:1}
 .neighborly-close-offer{position:absolute;z-index:2;left:0;width:100%;top:calc(28% - 19.911cqw);height:71.111cqw;pointer-events:none}
-.card-offer{position:absolute;left:69%;top:77.6%;width:max(20.8%,240px);aspect-ratio:1.5;translate:-50% -50%;rotate:-4deg;display:block;min-height:56px;pointer-events:auto;color:#253e31;text-decoration:none;border-radius:8px;background:url(/assets/home/card-blank-480.webp) center/100% 100%;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s}
+.card-offer{position:absolute;left:69%;top:77.6%;width:max(20.8%,240px);aspect-ratio:1.5;translate:-50% -50%;rotate:-4deg;display:block;min-height:56px;pointer-events:auto;color:#253e31;text-decoration:none;background:url(/assets/home/card-blank-480.webp) center/100% 100%;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s}
 .card-offer>i{position:absolute;left:8%;top:14%;width:8%;aspect-ratio:1;background:#c8962e}
 .card-offer>svg{position:absolute;right:8%;top:12%;width:18px;height:18px}
 .card-offer-words{position:absolute;left:9%;right:8%;bottom:13%;display:flex;flex-direction:column;gap:6px;transition:opacity .24s linear .12s}
