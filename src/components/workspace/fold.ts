@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 
 /**
  * How long a sheet stays after its yes, its corner green and its word showing, before it moves on:
@@ -117,6 +117,7 @@ export function arriving(change: () => void) {
   pageBefore = undefined;
 }
 
+const laidAbove = new WeakSet<HTMLElement>();
 /**
  * The other way: a piece of paper just laid into the page opens its own room over the same 360ms, starting
  * from exactly the height the page had before it, so what is under it is moved aside and never jumps.
@@ -126,6 +127,14 @@ export function openUp(sheet: HTMLElement) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Asked twice, it opens once: an opening already under way is dropped before the paper is measured.
   sheet.getAnimations().forEach((move) => move.id === OPENING && move.cancel());
+  // Laid in above the window, nobody sees it open: it is there at once and what the person is looking at
+  // stays where it is. Browsers that anchor the scroll do that themselves; the others are told, once.
+  if (sheet.getBoundingClientRect().top < 0) {
+    if (!laidAbove.has(sheet) && !CSS.supports("overflow-anchor", "auto"))
+      window.scrollBy(0, document.body.offsetHeight - pageWithout(sheet, "gone"));
+    laidAbove.add(sheet);
+    return;
+  }
   const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
   const height = sheet.offsetHeight;
   holdThePage();
@@ -236,29 +245,26 @@ export function useSavedLine(
 
 /**
  * For a box that gets a little taller when a live record lands in it (a ledger with one more row): it grows
- * into its new height over the same 360ms, so the page under it is moved and never jumps. Only a small
+ * into its new height over the same 360ms, so the page under it is moved and never jumps. It is measured after
+ * every render and before the browser paints, so the new row is never seen at full height first. Only a small
  * growth at the same width counts; a filter, a new page of rows or a turned phone are left alone.
  */
 export function useGrowsSmoothly(box: RefObject<HTMLElement | null>) {
-  useEffect(() => {
+  const was = useRef<{ width: number; height: number }>(undefined);
+  useLayoutEffect(() => {
     const paper = box.current;
-    if (!paper || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let was: { width: number; height: number } | undefined;
-    const watch = new ResizeObserver(() => {
-      const now = { width: paper.offsetWidth, height: paper.offsetHeight };
-      const grown = was && now.width === was.width ? now.height - was.height : 0;
-      // Its own growing is seen here too, as the height it is passing through; only the end counts.
-      if (paper.getAnimations().some((move) => move.id === GROWING)) return;
-      if (grown > 0 && grown <= 200 && was) {
-        holdThePage();
-        paper.animate(
-          [{ height: `${was.height}px`, overflow: "hidden" }, { height: `${now.height}px`, overflow: "hidden" }],
-          { id: GROWING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
-        );
-      }
-      was = now;
-    });
-    watch.observe(paper);
-    return () => watch.disconnect();
-  }, [box]);
+    if (!paper) return;
+    // While it grows, what can be measured is the height it is passing through; the end is already kept.
+    if (paper.getAnimations().some((move) => move.id === GROWING)) return;
+    const before = was.current;
+    const now = { width: paper.offsetWidth, height: paper.offsetHeight };
+    was.current = now;
+    const grown = before && now.width === before.width ? now.height - before.height : 0;
+    if (!before || grown <= 0 || grown > 200 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    holdThePage();
+    paper.animate(
+      [{ height: `${before.height}px`, overflow: "hidden" }, { height: `${now.height}px`, overflow: "hidden" }],
+      { id: GROWING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+    );
+  });
 }
