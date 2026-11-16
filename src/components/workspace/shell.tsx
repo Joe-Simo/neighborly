@@ -2,7 +2,8 @@
 
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { useConvexConnectionState } from "convex/react";
+import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, CircleCheck, LogOut, Menu, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -190,6 +191,24 @@ export function LiveWorkspace({
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
   const leave = () => setMobileMenuOpen(false);
   useEffect(readyToSpeak, []);
+  // The iPhone app's pull to refresh asks the page whether it is current (see `Window.kindHelpsPulled` below).
+  // The answer comes from the connection the page already holds: nothing is read from the backend for it.
+  const { isWebSocketConnected } = useConvexConnectionState();
+  const pulled = useEffectEvent(() => {
+    const room = document.querySelector(".live-app .live-room");
+    const current = isWebSocketConnected && !roomWaiting && !!room && !room.querySelector('.live-state[data-kind="error"]');
+    if (!current) return false;
+    setError("");
+    setUndo(undefined);
+    setNotice(roomWords.states.upToDate);
+    return true;
+  });
+  useEffect(() => {
+    window.kindHelpsPulled = () => pulled();
+    return () => {
+      delete window.kindHelpsPulled;
+    };
+  }, []);
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const Section = sections[area];
   const heading = headingOverride
@@ -744,6 +763,16 @@ function useNavMarker(area: LiveArea) {
     return () => resized.disconnect();
   }, [area]);
   return nav;
+}
+
+declare global {
+  interface Window {
+    /**
+     * Only while a room is on the page. The iPhone app calls it on a pull: exactly `true` means the room is
+     * current (and the page has said "Up to date"); anything else, or no function at all, and the app reloads.
+     */
+    kindHelpsPulled?: () => boolean | Promise<boolean>;
+  }
 }
 
 /**
