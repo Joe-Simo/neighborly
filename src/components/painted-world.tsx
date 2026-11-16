@@ -32,9 +32,8 @@ type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStor
 // Where the card rests in the giving hand and in the open hand, as shares of each opening painting.
 const cardPath = {
   desktop: { size: [1440, 1024], from: [.443, .749], to: [.722, .772] },
-  mobile: { size: [780, 1688], from: [.422, .619], to: [.747, .624] },
-  // Until the scene is drawn, phones show the painted picture, where the hands sit lower and closer.
-  mobilePicture: { size: [780, 1688], from: [.432, .683], to: [.715, .688] },
+  // The phone's still is taken from the scene itself, so one path serves both.
+  mobile: { size: [780, 1688], from: [.415, .682], to: [.903, .694] },
 } as const;
 
 /** Native scrolling owns the narrative; the artwork never traps wheel or touch input. */
@@ -171,7 +170,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
       if (!art) return;
       // The painting fills its box exactly as the picture and the scene do, so the card is found where it is drawn.
       const mobile = isPaintedPortrait(art.width, art.height);
-      const path = cardPath[mobile ? ready && !failed ? "mobile" : "mobilePicture" : "desktop"];
+      const path = cardPath[mobile ? "mobile" : "desktop"];
       const scale = Math.max(art.width / path.size[0], art.height / path.size[1]);
       const paintingWidth = path.size[0] * scale, paintingHeight = path.size[1] * scale;
       const left = art.left - frame.left + (art.width - paintingWidth) / 2, top = art.top - frame.top - (paintingHeight - art.height) * (mobile ? 0 : openingKeptAbove);
