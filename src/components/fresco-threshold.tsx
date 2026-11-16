@@ -73,7 +73,8 @@ export function FrescoThreshold() {
       const w = mix(mix(doorWidth, frameWidth, grow), pastW, inside), h = mix(mix(doorHeight, frameHeight, grow), pastH, inside);
       const centreY = mix(mix(doorY, frameY, grow), pastTop + pastH / 2, inside);
       wall.style.width = `${w}px`; wall.style.height = `${h}px`;
-      wall.style.left = `${mix(mix(doorX, width / 2, grow), width / 2, inside) - w / 2}px`; wall.style.top = `${centreY - h / 2}px`;
+      // Moved by translate only, from a box held at the stage's corner: its size changes, but nothing in the page's layout moves as it travels.
+      wall.style.translate = `${(mix(mix(doorX, width / 2, grow), width / 2, inside) - w / 2).toFixed(2)}px ${(centreY - h / 2).toFixed(2)}px`;
       wall.style.borderRadius = `${mix(50, corner / frameWidth * 100, grow)}% ${mix(50, corner / frameWidth * 100, grow)}% 0 0 / ${mix(30, corner / frameHeight * 100, grow)}% ${mix(30, corner / frameHeight * 100, grow)}% 0 0`;
       // The painting keeps one size and is only ever scaled, so the living scene is never redrawn at a new size mid-journey.
       const sceneHeight = Math.max(doorHeight, frameHeight, media.matches ? 0 : height);
@@ -85,7 +86,8 @@ export function FrescoThreshold() {
       const held = phone ? 0 : sceneHeight * cover * (1 - 1 / frescoInset) * (1 - inside);
       const lift = (height / 2 - centreY) * inside;
       scene.style.scale = String(cover);
-      scene.style.translate = `calc(-50% - ${held.toFixed(2)}px) calc(-50% + ${lift.toFixed(2)}px)`;
+      // The painting is centred in the opening by translate too, from the opening's corner.
+      scene.style.translate = `calc(-50% + ${(w / 2 - held).toFixed(2)}px) calc(-50% + ${(h / 2 + lift).toFixed(2)}px)`;
       host.style.setProperty("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
