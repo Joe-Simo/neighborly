@@ -5,6 +5,7 @@ import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "r
 import Link from "next/link";
 import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
 import { CountUp } from "@/components/workspace/primitives";
@@ -195,6 +196,8 @@ export function ReportView({
   printNext?: boolean;
 }) {
   const [everyLine, setEveryLine] = useState(false);
+  /** The month whose exact figures are held up in a tip, as "yyyy-MM". */
+  const [tip, setTip] = useState<string>();
   const soFar = report.closed ? "" : " so far";
   const noun = periodNoun(report);
   const blank = isBlank(report);
@@ -394,6 +397,33 @@ export function ReportView({
                   <>
                     <p className="help-amount">{money(line.paid)}</p>
                     <p>{plural(line.visits, "visit")}</p>
+                    <Popover open={tip === line.month} onOpenChange={(open) => setTip(open ? line.month : undefined)}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="report-month-open"
+                          aria-label={`${monthLabel(line.month)}: ${money(line.paid)} in help paid, ${plural(line.visits, "visit")}`}
+                          onFocus={(event) => {
+                            if (event.currentTarget.matches(":focus-visible")) setTip(line.month);
+                          }}
+                          onBlur={() => setTip((shown) => (shown === line.month ? undefined : shown))}
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="report-tip"
+                        side="top"
+                        align="center"
+                        collisionPadding={12}
+                        onOpenAutoFocus={(event) => event.preventDefault()}
+                        onCloseAutoFocus={(event) => event.preventDefault()}
+                      >
+                        <p className="report-tip-month">{monthLabel(line.month)}</p>
+                        <p className="help-amount">{money(line.paid)}</p>
+                        <p>
+                          in help paid, {plural(line.visits, "visit")}
+                        </p>
+                      </PopoverContent>
+                    </Popover>
                   </>
                 )}
               </li>
