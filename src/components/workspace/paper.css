@@ -781,3 +781,23 @@ html:has(.live-app) > body[data-scroll-locked] { margin-right: 0 !important; pad
 html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu, .live-date-sheet) :is(a, button, summary, [role], [tabindex]):not(input, textarea, select):is(:focus, :focus-visible) { outline: none; }
 /* The same for a date field on a phone, which is a field that cannot be typed in: focus put back on it draws no ring. */
 html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visible) { outline: none; }
+
+/* ── A phone turned on its side (a window under 450px tall) ───────────────
+   Usable and tidy: the bar is not held, the head is its kicker, headline and action with the picture kept
+   only where it sits beside them, and so the room itself shows in the first window. */
+@media (max-height: 450px) and (max-width: 950px) {
+  .live-app { --live-bar: 0px; }
+  .live-app .live-header { position: static; }
+  .live-app .live-page-head { min-height: 0; margin-bottom: 14px; padding-bottom: 14px; }
+  .live-app .live-main .live-page-head .live-kicker { margin-bottom: 6px; }
+  .live-app .live-page-head h1 { font-size: 32px; line-height: 1.04; }
+  .live-app .live-page-head .live-deck { display: none; }
+  .live-app .live-head-actions { margin-top: 12px; }
+}
+@media (max-height: 450px) and (max-width: 699px) {
+  .live-app .live-head-art { display: none; }
+}
+/* A sheet on a turned phone with the keyboard up has room for one thing: the box being typed in. Its title
+   and its buttons scroll with the form, and the sheet may use the whole of what the keyboard leaves. */
+[data-live-short] .live-dialog-fixed .live-form-actions { position: static; }
+[data-live-short] .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { max-height: var(--live-view-height, 100dvh); }

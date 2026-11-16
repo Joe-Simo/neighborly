@@ -135,7 +135,9 @@ export function CountUp({
   format?: (amount: number) => string;
   className?: string;
 }) {
-  const [shown, setShown] = useState(value);
+  // It starts where the roll starts. Starting at the value showed the figure whole for a frame, then dropped it
+  // to nothing and rolled it back up, which read as the figure stepping back.
+  const [shown, setShown] = useState(() => (typeof window !== "undefined" && !matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : value));
   const from = useRef(0);
   useEffect(() => {
     const start = from.current;
