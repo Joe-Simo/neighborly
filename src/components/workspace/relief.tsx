@@ -45,6 +45,15 @@ export const reliefMoves: Partial<Record<ReliefName, { x?: number; y?: number; t
   call: { y: 7 },
   // The door comes to rest. Short: past 3px the edge of the cut shows at the sleeves.
   visit: { x: -3, front: true },
+  // The ribbon is laid on the page.
+  year: { y: -4 },
+  // The door is drawn to.
+  neighbors: { x: 5 },
+  // The hand presses the fold flat.
+  tasks: { y: -4 },
+  // The hand reaches in to join the others.
+  people: { x: 4 },
+  // Still on purpose, until a cut holds at every start: mine, teams, rest, help, files.
 };
 
 const usual: readonly number[] = [640, 1024, 1536];
