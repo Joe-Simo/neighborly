@@ -218,3 +218,9 @@ There is one way to wait: `<LiveLoading />` from `primitives`, a quiet line ("Op
 language, or the `label` you pass). It shows only after 400ms, so a quick answer never flashes it.
 No grey rows or blocks stand in for content anywhere. The full-screen `LiveRoomLoading` is for the
 frame alone, before anyone's workspace has arrived.
+
+## What the iPhone app's launch cover may watch
+
+- `.paper-loading` is on screen while the whole workspace is still on its way (`LiveRoomLoading`).
+- `.live-app[data-room-in]` is set once, when the first room is whole: its sheet has finished arriving and its
+  head picture is loaded and decoded. A cover that lifts on this never shows a room still coming up under the mark.

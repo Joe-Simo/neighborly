@@ -59,8 +59,8 @@ export function LiveDialog({
       root.setProperty("--live-view-top", `${view.offsetTop}px`);
       // Only a phone on its side has too little height for a held title; there it scrolls away with the form.
       document.documentElement.toggleAttribute("data-live-short", view.height < 240);
-      // On the smallest phones with the keyboard up, the held button gives its place too: the box being
-      // filled in and its label come first, and the button is one scroll below.
+      // On the smallest phones with the keyboard up, the held title and the held button are drawn closer,
+      // so the box being filled in, its label and the button all fit above the keyboard.
       document.documentElement.toggleAttribute("data-live-tight", view.height < 360);
       // The keyboard has moved the sheet: bring the box being typed in back between the title and the buttons.
       requestAnimationFrame(() => keepInView(document.activeElement));
