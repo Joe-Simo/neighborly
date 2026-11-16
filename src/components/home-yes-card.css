@@ -13,30 +13,45 @@
 .home-yes-stage .help-actions [data-slot=button]{min-height:44px;padding-inline:18px;font-size:16px}
 .home-yes-stage [data-slot=button]:focus-visible{outline:2px solid #365c46;outline-offset:2px}
 
-/* Filed: the sheet lifts off the desk and is gone; the list it went into is laid down in its place, the new line first. */
-.home-yes-sheet{transition:opacity 360ms cubic-bezier(.6,0,.9,.6),transform 360ms var(--paper-ease)}
-[data-step=filed]>.home-yes-sheet{opacity:0;transform:translateY(-14px) scale(.985);pointer-events:none}
-.home-yes-filed{position:relative;padding:30px 34px 26px;background:var(--help-sheet);border:1px solid #e0dccb;border-radius:3px;box-shadow:0 1px 0 #fff inset,0 18px 34px -26px #3b3a2466,0 2px 5px -3px #3b3a2440;opacity:0;transform:translateY(14px);pointer-events:none;outline:0}
-[data-step=filed]>.home-yes-filed{opacity:1;transform:none;pointer-events:auto;transition:opacity 320ms var(--paper-ease) 200ms,transform 420ms var(--paper-ease) 200ms}
-.home-yes-filed .help-sheet-label{color:#52644f}
-.home-yes-filed ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--live-line)}
-.home-yes-filed li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 24px;padding:16px 0 16px 30px;border-bottom:1px solid var(--live-line)}
-.home-yes-filed li strong{grid-column:1/-1;font:400 24px/1.2 "Newsreader",Georgia,serif;letter-spacing:-.02em}
-.home-yes-filed li span{font-size:17px;line-height:1.5}
+/* The sheet is already on the desk when it is reached, and one paper holds both the draft and the list: it never changes size. */
+.home-yes-stage{align-items:stretch}
+.home-yes-sheet{display:grid}
+.home-yes-stage .help-sheet,.home-yes-stage .help-sheet.help-sealed{animation:none}
+.home-yes-stage .help-seal{animation-duration:200ms;animation-delay:0ms}
+.home-yes-stage .help-seal path{animation-duration:200ms;animation-delay:80ms}
+
+/* Filed: the sheet's words give way within 160ms, and the list's words travel from them (home-yes-card.tsx). Back to rest is one 200ms cross-fade. */
+.home-yes-sheet .help-sheet>*{transition:opacity 200ms linear}
+[data-step=filed] .help-sheet>*{opacity:0;transition-duration:160ms}
+/* The two things that travel are never seen twice: the sheet's own leave at once as the list's set off from their place. */
+[data-step=filed] .help-sheet :is(.help-from strong,h2){opacity:0}
+.home-yes-filed{position:relative;padding:31px 35px 27px;opacity:0;pointer-events:none;transition:opacity 200ms linear}
+[data-step=filed]>.home-yes-filed{opacity:1;pointer-events:auto;transition:none}
+.home-yes-filed .help-sheet-label{color:#52644f;margin:0;padding-bottom:14px;border-bottom:1px solid var(--live-line)}
+.home-yes-filed ol{list-style:none;margin:0;padding:0}
+.home-yes-filed li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 24px;padding:14px 0 14px 30px}
+.home-yes-filed li+li{border-top:1px solid var(--live-line)}
+.home-yes-filed li>*{transform-origin:0 0}
+.home-yes-filed li>i{transform-origin:50% 50%}
+.home-yes-filed li strong{grid-column:1/-1;justify-self:start;font:400 24px/1.2 "Newsreader",Georgia,serif;letter-spacing:-.02em;white-space:nowrap}
+.home-yes-filed li span{justify-self:start;font-size:17px;line-height:1.5}
 .home-yes-filed li small{font-size:15px;line-height:1.5;color:var(--live-muted)}
-.home-yes-filed li::before{content:"";position:absolute;left:4px;top:25px;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #c8962e}
+.home-yes-filed li:not([data-new])::before{content:"";position:absolute;left:4px;top:23px;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #c8962e}
 .home-yes-filed li[data-new] small{color:#365c46}
-.home-yes-filed li[data-new]::before{left:0;top:21px;width:18px;height:18px;border-radius:0;box-shadow:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23365c46' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 12.5l5 5L19.5 7'/%3E%3C/svg%3E") center/contain no-repeat}
-.home-yes-after{display:flex;flex-wrap:wrap;align-items:center;gap:0 22px;margin:14px 0 0;font-size:17px}
+.home-yes-filed li i{position:absolute;left:0;top:19px;width:18px;height:18px;color:#365c46}
+.home-yes-filed li i svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.home-yes-after{display:flex;flex-wrap:wrap;align-items:center;gap:0 22px;margin:0;padding-top:10px;border-top:1px solid var(--live-line);font-size:17px}
 .home-yes-after>span{font:400 24px/1.2 "Newsreader",Georgia,serif;letter-spacing:-.02em;margin-right:6px}
 .home-yes-after [data-slot=button]{height:auto;border:0;background:none;box-shadow:none;min-height:44px;padding:0;gap:8px;border-radius:0;font-size:17px;font-weight:400;color:#283c32;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .home-yes-after .home-yes-again{margin-left:auto;font-size:16px;color:var(--live-muted)}
 @media(max-width:850px){
-  .home-yes-filed{padding:26px 22px 20px}
+  .home-yes-filed{padding:27px 23px 21px}
+  .home-yes-filed .help-sheet-label{padding-right:30px}
   .home-yes-filed li{grid-template-columns:minmax(0,1fr)}
   .home-yes-after .home-yes-again{margin-left:0}
 }
 @media(prefers-reduced-motion:reduce){
-  .home-yes-sheet,[data-step=filed]>.home-yes-filed{transition:none}
-  [data-step=filed]>.home-yes-sheet,.home-yes-filed{transform:none}
+  [data-step=filed] .help-sheet :is(.help-from strong,h2){opacity:1}
+  [data-step=filed] .help-sheet>*{transition-duration:200ms}
+  [data-step=filed]>.home-yes-filed{transition:opacity 200ms linear}
 }
