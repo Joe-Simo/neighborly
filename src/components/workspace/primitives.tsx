@@ -33,8 +33,9 @@ export function LiveLoading({
 }
 
 /**
- * The whole workspace is on its way: the frame and a room's shape in paper, breathing.
- * The line with the spinner joins only after two seconds, so a quick load never flashes it.
+ * The whole workspace is on its way: plain paper with the mark where the app's launch screen has it, so one
+ * follows the other without a seam. One quiet line joins it only after 400ms, so a quick load never flashes it.
+ * No bars stand in for the room. The iPhone app's cover watches for `.paper-loading`; keep that class.
  */
 export function LiveRoomLoading({
   label,
@@ -45,31 +46,25 @@ export function LiveRoomLoading({
 }) {
   const opening = useOpening();
   return (
-    <>
-      <header className="live-header">
-        <span className="live-wordmark">kind helps</span>
-      </header>
-      <div className="paper-loading-frame">
-        <div className="live-nav" aria-hidden="true">
-          {[0, 1, 2, 3, 4, 5, 6].map((line) => <b key={line} />)}
-        </div>
-        <main className="live-main paper-loading">
-          <div aria-hidden="true">
-            <div className="paper-loading-head"><b /><b /><b /></div>
-            <div className="paper-loading-rows">
-              {[0, 1, 2].map((row) => (
-                <div key={row}><i /><span><b /><b /></span></div>
-              ))}
-            </div>
-          </div>
-          <p className="paper-loading-label" role="status">
-            <LoaderCircle size={20} aria-hidden="true" />
-            <span className="text-balance">{label ?? opening}</span>
-          </p>
-          {children}
-        </main>
+    <main className="live-main paper-loading">
+      {/* The app's own launch mark (apple/…/Splash.imageset), the same file at the same place: the true centre of the screen. */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed 240px mark that must be there in the first paint, not optimised or lazy */}
+      <img
+        className="paper-loading-mark"
+        src="/launch/mark-240.png"
+        srcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x"
+        width={240}
+        height={240}
+        alt=""
+      />
+      <div className="paper-loading-words">
+        <p className="paper-loading-label" role="status">
+          <LoaderCircle size={20} aria-hidden="true" />
+          <span className="text-balance">{label ?? opening}</span>
+        </p>
+        {children}
       </div>
-    </>
+    </main>
   );
 }
 

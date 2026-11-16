@@ -103,11 +103,13 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   if (away) return <WeekFigures />;
   // Counts on their way: for those who lead, the note's place is kept in paper at the size it last had,
   // so nothing below it moves when it arrives. No remembered number is shown, only its shape.
-  if (!counts) return isOwner || data.canCoordinate ? <WeekNoteView counts={remembered(last)} monday={monday} brief={brief} waiting onDone={() => {}} /> : null;
+  if (!counts) return isOwner || data.canCoordinate ? <WeekNoteView key="waiting" counts={remembered(last)} monday={monday} brief={brief} waiting onDone={() => {}} /> : null;
   // An older backend answers without saying who put a call first; the note waits for the one that does.
   if (!("callsFirstByAssistant" in counts)) return null;
   return (
     <WeekNoteView
+      // A new sheet, not the kept place filled in: it is laid down with its words.
+      key="note"
       counts={counts}
       monday={monday}
       brief={brief}
@@ -124,8 +126,8 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
 }
 
 const quietLink = "min-h-11 inline-flex items-center border-0 bg-transparent p-0 text-[17px] !text-[var(--live-accent)] !underline decoration-[#b9c4b0] underline-offset-4 hover:decoration-current cursor-pointer";
-/** While waiting, the words keep their room unseen and a bar of paper lies where each line will be. */
-const held = "relative [&>*]:invisible before:absolute before:left-0 before:top-[0.3em] before:h-[0.8em] before:w-[min(100%,26rem)] before:rounded-[3px] before:bg-[var(--paper-shade,#ece8dc)] before:content-[''] before:animate-[paper-breathe_1.6s_ease-in-out_infinite] motion-reduce:before:animate-none";
+/** While waiting, the note keeps its room unseen: no bars, no empty card. It arrives with its words or not yet. */
+const held = "invisible";
 
 export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }: { counts: Counts; monday: number; brief: boolean; waiting?: boolean; onDone: () => void }) {
   const { data, words } = useWorkspace();
@@ -167,7 +169,7 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
   const callDetail = lines.find((line) => line.area === "help-line")?.parts.slice(1) ?? [];
   const also = weekLines(text, counts, 6).filter((line) => !figures.some((figure) => figure.area === line.area));
   return (
-    <div className={`grid transition-[grid-template-rows,opacity,translate] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] ${leaving ? "-translate-y-2 grid-rows-[0fr] overflow-hidden opacity-0" : "grid-rows-[1fr]"}`} aria-hidden={waiting || undefined} inert={waiting}>
+    <div className={`grid transition-[grid-template-rows,opacity,translate] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] ${leaving ? "-translate-y-2 grid-rows-[0fr] overflow-hidden opacity-0" : "grid-rows-[1fr]"} ${waiting ? held : ""}`} aria-hidden={waiting || undefined} inert={waiting}>
       <div className="min-h-0">
         <section className="help-sheet after:!hidden" aria-labelledby={waiting ? undefined : "week-note"}>
           <p className={`help-sheet-label !text-[var(--live-muted)] ${waiting ? "invisible" : ""}`}>

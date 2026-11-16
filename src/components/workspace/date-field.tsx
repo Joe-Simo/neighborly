@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useSyncExternalStore } from "react";
+import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronDown } from "lucide-react";
 import { wrongControl } from "@/components/workspace/failure";
 import { DayPicker } from "react-day-picker";
@@ -117,10 +117,17 @@ export function DateField({
       }}
     />
   );
+  // Whichever way the month closes (a day chosen, Escape, a tap outside), focus goes back to what opened it:
+  // the button on a desk, the field itself on a phone. There is no trigger for the library to return to.
+  const field = useRef<HTMLSpanElement>(null);
+  const backToOpener = (event: Event) => {
+    event.preventDefault();
+    field.current?.querySelector<HTMLElement>(sheet ? ".live-date-words" : ".live-date-open")?.focus({ preventScroll: true });
+  };
   return (
     <Popover open={open && !sheet} onOpenChange={setOpen}>
       <PopoverAnchor asChild>
-        <span className="live-date" data-open={open || undefined} data-missing={missing || undefined}>
+        <span ref={field} className="live-date" data-open={open || undefined} data-missing={missing || undefined}>
           <input
             className="live-date-words"
             type="text"
@@ -194,11 +201,11 @@ export function DateField({
           {words.dateField.choose}.
         </small>
       )}
-      <PopoverContent className="live-date-sheet" aria-label={label || words.dateField.choose} collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
+      <PopoverContent className="live-date-sheet" onCloseAutoFocus={backToOpener} aria-label={label || words.dateField.choose} collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
         {month}
       </PopoverContent>
       <Dialog open={open && sheet} onOpenChange={setOpen}>
-        <DialogContent className="live-date-sheet live-date-bottom" showCloseButton={false}>
+        <DialogContent className="live-date-sheet live-date-bottom" onCloseAutoFocus={backToOpener} showCloseButton={false}>
           <div className="live-date-bar">
             <DialogTitle>{label || words.dateField.choose}</DialogTitle>
             <DialogClose className="live-date-done">{words.dateField.done}</DialogClose>

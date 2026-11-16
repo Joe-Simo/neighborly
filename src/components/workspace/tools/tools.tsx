@@ -9,6 +9,7 @@ import { MembersImport } from "@/components/workspace/tools/members-import";
 import { PayeesImport } from "@/components/workspace/tools/payees-import";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveState } from "@/components/workspace/states";
+import { CloseConference } from "@/components/workspace/closing/close-conference";
 import { RecordsExport } from "@/components/workspace/tools/records-export";
 
 /** Your files: bring records in, then take them with you. The calendar address and the printed week live in their own rooms. */
@@ -32,12 +33,16 @@ export function ToolsSection() {
       </div>
     );
   return (
-    <div className="tools-leaves paper-rows">
-      <NeighborsImport />
-      <RequestsImport />
-      <MembersImport />
-      <PayeesImport />
-      <RecordsExport />
-    </div>
+    <>
+      <div className="tools-leaves paper-rows">
+        <NeighborsImport />
+        <RequestsImport />
+        <MembersImport />
+        <PayeesImport />
+        <RecordsExport />
+      </div>
+      {/* The last thing in the room, after the way to take everything out. It draws only for an owner, never in the sample. */}
+      <CloseConference />
+    </>
   );
 }

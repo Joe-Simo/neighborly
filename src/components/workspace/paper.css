@@ -196,8 +196,7 @@
 .live-app .live-nav a[aria-current="page"] { background: none; box-shadow: none; }
 @media (min-width: 900px) {
   /* The menu is as wide as its longest label in any language, so no label wraps; the group's name wraps inside that width. */
-  .live-app .live-layout,
-  .paper-loading-frame { grid-template-columns: minmax(230px, max-content) minmax(0, 1fr); }
+  .live-app .live-layout { grid-template-columns: minmax(230px, max-content) minmax(0, 1fr); }
   .live-nav a { white-space: nowrap; }
   .live-nav svg { flex: none; }
   .live-nav .live-church-name,
@@ -242,11 +241,12 @@
 .relief { display: block; width: 100%; height: 100%; }
 .relief img { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* A picture in two layers: the piece lies exactly over the base, waits at its start, and makes one small move home. */
+/* In a room head the two layers fill the band itself, which is their frame at every width. */
 .relief-layers { position: relative; }
 .relief-layers > picture { position: absolute; inset: 0; }
-.relief-piece { transform: translate(var(--piece-x), var(--piece-y)) rotate(var(--piece-turn)); }
-.relief-layers[data-moving] > .relief-piece { transform: none; transition: transform 520ms var(--paper-ease) calc(var(--paper-wait, 0ms) + 380ms); }
-@media (prefers-reduced-motion: reduce) { .relief-piece { transform: none !important; transition: none !important; } }
+.relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: translate(var(--piece-x), var(--piece-y)) rotate(var(--piece-turn)); }
+.relief-layers[data-moving] > .relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: none; transition: transform 520ms var(--paper-ease) calc(var(--paper-wait, 0ms) + 380ms); }
+@media (prefers-reduced-motion: reduce) { .relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: none !important; transition: none !important; } }
 .live-head-art { pointer-events: none; overflow: hidden; isolation: isolate; }
 /*
   Up to 699px: a band across the top that is the desktop head in miniature. The picture
@@ -284,7 +284,6 @@
     margin: 0;
   }
   .live-head-art > .relief, .live-head-under > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
-  .live-head-art > .relief-layers { position: relative; }
   .live-head-words,
   .live-head-actions {
     position: relative;
@@ -446,37 +445,20 @@
   box-shadow: inset 0 0 0 1px #283c3214;
 }
 
-/* ── Loading: the room's own shape in paper, breathing. The spinner line only after two seconds ── */
-.paper-loading-frame { display: grid; grid-template-columns: 230px minmax(0, 1fr); }
-.paper-loading-frame > .live-nav { display: block; }
-.paper-loading b,
-.paper-loading i,
-.paper-loading-frame .live-nav b,
-.help-skeleton i,
-.help-skeleton b {
-  display: block;
-  border-radius: 3px;
-  background: var(--paper-shade, #ece8dc);
-  animation: paper-breathe 1.6s ease-in-out infinite;
-}
-.paper-loading-frame .live-nav b { height: 18px; width: 62%; margin: 15px 12px 27px; }
-.paper-loading-frame .live-nav b:nth-child(odd) { width: 48%; }
-.paper-loading-head { position: relative; padding-bottom: 30px; margin-bottom: 36px; border-bottom: 1px solid var(--live-line); }
-.paper-loading-head b:nth-child(1) { height: 13px; width: 190px; margin-bottom: 18px; }
-.paper-loading-head b:nth-child(2) { height: clamp(40px, 5vw, 72px); width: min(520px, 78%); }
-.paper-loading-head b:nth-child(3) { height: 18px; width: min(380px, 62%); margin-top: 22px; animation-delay: 200ms; }
-.paper-loading-rows > div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 24px; padding: 24px 0; border-bottom: 1px solid var(--live-line); }
-.paper-loading-rows i { height: 72px; }
-.paper-loading-rows b { height: 22px; width: 44%; margin: 8px 0 14px; }
-.paper-loading-rows b + b { height: 14px; width: 66%; margin: 0; animation-delay: 200ms; }
+/* ── Loading: plain paper with the mark, where the app's launch screen has it. One quiet line after 400ms ── */
+.live-main.paper-loading { position: fixed; inset: 0; z-index: 30; max-width: none; margin: 0; padding: 0; background: #f5f3ec; }
+/* The mark is the app's launch picture, 240px square on the true centre of the screen (vw and vh, no insets),
+   so the app's cover gives way to this page without a step. The same in every browser. */
+.paper-loading-mark { position: fixed; left: calc(50vw - 120px); top: calc(50vh - 120px); width: 240px; height: 240px; max-width: none; user-select: none; pointer-events: none; }
+.paper-loading-words { position: fixed; inset: calc(50vh + 64px) 24px auto; display: grid; justify-items: center; text-align: center; }
 .paper-loading-label {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin: 22px 0 0;
+  margin: 0;
   font-size: 17px;
   color: var(--live-muted);
-  animation: paper-show 300ms ease 2s backwards;
+  animation: paper-show 300ms ease 400ms backwards;
 }
 .paper-loading-label svg { animation: live-spin 1s linear infinite; flex: none; }
 /* A short wait inside a form or a dialog: just the line. */
@@ -486,10 +468,6 @@
 @keyframes live-wait-in { from { opacity: 0; } }
 .live-app .live-loading,
 .live-dialog .live-loading { background: none; border-top: 1px solid var(--live-line); padding: 24px 0; min-height: 0; font-size: 17px; }
-@media (max-width: 899px) {
-  .paper-loading-frame { display: block; }
-  .paper-loading-frame > .live-nav { display: none; }
-}
 
 /* ── The volunteer rooms ──────────────────────────────────────────────── */
 /* A note is a slip of paper with a green edge, not a grey box. */
@@ -576,8 +554,7 @@
 @media (prefers-reduced-motion: reduce) {
   .paper-rise, .paper-rows > *, .live-list > *, .help-row, .help-timeline li, .help-ledger tbody tr,
   .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-head-words > *, .live-head-actions, .live-head-art > .relief,
-  .live-room, .live-mobile-menu, .paper-loading b, .paper-loading i, .paper-loading-frame .live-nav b,
-  .help-skeleton i, .help-skeleton b, .paper-loading-label svg { animation: none; }
+  .live-room, .live-mobile-menu, .paper-loading-label svg { animation: none; }
   .paper-loading-label { animation-duration: 1ms; }
   .paper-wave, .live-head-under { display: none !important; }
   .live-app[data-arriving] { --paper-wait: 0ms; }
@@ -738,6 +715,7 @@
 
 /* A phone with the keyboard up: the dialog's title gives its place to the boxes. */
 [data-live-short] .live-dialog-fixed [data-slot="dialog-header"] { position: static; }
+[data-live-tight] .live-dialog-fixed .live-form-actions { position: static; }
 /* With the keyboard up under a dialog (LiveDialog marks it), the page behind steps back to plain paper, so a
    see-through keyboard and its bar never show the room's words under the sheet. It returns as the keyboard goes. */
 .live-app { transition: opacity 160ms ease; }
@@ -756,3 +734,9 @@
    behind it, so nothing shifts sideways when one opens or closes. The lock's own compensation is then not needed. */
 html:has(.live-app) { scrollbar-gutter: stable; }
 html:has(.live-app) > body[data-scroll-locked] { margin-right: 0 !important; padding-right: 0 !important; }
+
+/* The ring is for keys. Without keys in use (the shell marks the page while they are), a control that is not a box
+   to type in draws no ring, however it came by its focus: a tap, or the app putting focus back where it was. */
+html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu, .live-date-sheet) :is(a, button, summary, [role], [tabindex]):not(input, textarea, select):is(:focus, :focus-visible) { outline: none; }
+/* The same for a date field on a phone, which is a field that cannot be typed in: focus put back on it draws no ring. */
+html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visible) { outline: none; }

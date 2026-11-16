@@ -140,8 +140,8 @@
   .help-household { display: none; }
   .help-last { white-space: nowrap; }
 }
-/* The assistant is reading: the title's place breathes until the words arrive. */
-.help-reading-title { height: 34px; width: min(22ch, 80%); margin: 4px 0 16px; border-radius: 2px; background: #e9e7da; animation: help-breathe 1.6s ease-in-out infinite; }
+/* The assistant is reading: one quiet sentence holds the title's place, at the title's height, until the words arrive. */
+.help-sheet .help-reading-title { margin: 4px 0 16px; font: 400 22px / 34px "Newsreader", Georgia, serif; color: var(--live-muted); }
 /* The way on from the line that says what changed. */
 .help-done { flex-wrap: wrap; }
 .help-done > span { flex: 1 1 14rem; min-width: 0; }
@@ -201,3 +201,9 @@
   .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] { display: block; }
   .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] .help-assistant-line { margin: 18px 0 0; padding: 16px 0 0; border-top: 1px solid #e6e0ee; border-left: 0; }
 }
+/* The draft card's first line: who called and when. The name is never broken across lines. */
+.help-sheet .help-from { margin: 0 0 8px; font-size: 19px; line-height: 1.4; color: var(--live-ink); }
+.help-sheet .help-from strong { font-weight: 600; white-space: nowrap; }
+/* Closing a conference: the offered first step sits between the terms and the name, quiet, on one line where it fits. */
+.closing-first { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; }
+.closing-first p { margin: 0; font-size: 17px; color: var(--live-ink); }

@@ -37,6 +37,8 @@ const en = {
   sample: "Look around a sample conference",
   sampleOpening: "Opening the sample conference…",
   sampleNote: "Made-up people. Whatever you change is cleared each night.",
+  /** The same promise in a few words, for the smallest phones. */
+  sampleNoteShort: "Made-up people, cleared nightly.",
   sampleFailed: "The sample conference did not open. Try again.",
   sampleBusy: "The sample conference is busy. Try again in a minute.",
   foot: "Your workspace is private. Joining a team does not accept any commitment on your behalf.",
@@ -117,6 +119,8 @@ const es: AuthWords = {
   sample: "Recorrer una conferencia de muestra",
   sampleOpening: "Abriendo la conferencia de muestra…",
   sampleNote: "Personas inventadas. Lo que cambies se borra cada noche.",
+  /** The same promise in a few words, for the smallest phones. */
+  sampleNoteShort: "Personas inventadas, se borra cada noche.",
   sampleFailed: "La conferencia de muestra no se abrió. Inténtalo de nuevo.",
   sampleBusy: "La conferencia de muestra está ocupada. Inténtalo en un minuto.",
   foot: "Tu espacio es privado. Unirte a un equipo no acepta ningún compromiso en tu nombre.",
@@ -195,6 +199,8 @@ const ht: AuthWords = {
   sample: "Vizite yon konferans egzanp",
   sampleOpening: "N ap louvri konferans egzanp lan…",
   sampleNote: "Moun envante. Tout sa ou chanje efase chak swa.",
+  /** The same promise in a few words, for the smallest phones. */
+  sampleNoteShort: "Moun envante, efase chak swa.",
   sampleFailed: "Konferans egzanp lan pa louvri. Eseye ankò.",
   sampleBusy: "Konferans egzanp lan okipe. Eseye ankò nan yon minit.",
   foot: "Espas ou a prive. Antre nan yon ekip pa aksepte okenn angajman nan non ou.",

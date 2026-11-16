@@ -1,7 +1,7 @@
 "use client";
 
 import "./reports.css";
-import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -175,6 +175,28 @@ export function ReportView({
   const [everyLine, setEveryLine] = useState(false);
   /** The month whose exact figures are held up in a tip, as "yyyy-MM". */
   const [tip, setTip] = useState<string>();
+  /** Months whose tip, held above them, would lie over the caption at the right of the heading: theirs is held to the left instead. */
+  const [crowded, setCrowded] = useState<ReadonlySet<string>>(new Set());
+  const months = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    const chart = months.current;
+    const caption = chart?.parentElement?.querySelector(".live-section-head .live-count");
+    if (!chart || !caption) return;
+    const measure = () => {
+      const kept = caption.getBoundingClientRect();
+      // A tip is about 240px wide and 150px tall, centred over its month.
+      const found = [...chart.querySelectorAll<HTMLElement>(".report-month-open")].flatMap((month) => {
+        const cell = month.getBoundingClientRect();
+        const middle = cell.left + cell.width / 2;
+        return cell.top - 150 < kept.bottom && middle + 128 > kept.left && month.dataset.month ? [month.dataset.month] : [];
+      });
+      setCrowded((before) => (before.size === found.length && found.every((month) => before.has(month)) ? before : new Set(found)));
+    };
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(chart);
+    return () => watch.disconnect();
+  }, [report]);
   const soFar = report.closed ? "" : " so far";
   const noun = periodNoun(report);
   const blank = isBlank(report);
@@ -352,7 +374,7 @@ export function ReportView({
             Help paid<span className="report-wide">, and the visits behind it</span>
           </span>
         </div>
-        <ol className="report-months" data-months={report.months.length}>
+        <ol className="report-months" data-months={report.months.length} ref={months}>
           {report.months.map((line) => {
             const ahead = line.month > thisMonth;
             return (
@@ -374,12 +396,18 @@ export function ReportView({
                   <>
                     <p className="help-amount">{money(line.paid)}</p>
                     <p>{plural(line.visits, "visit")}</p>
+                    {/* Not read in the flow of the page, where the figures already are; it is what the button says of itself. */}
+                    <span id={`month-${line.month}`} hidden>
+                      {money(line.paid)} in help paid, {plural(line.visits, "visit")}
+                    </span>
                     <Popover open={tip === line.month} onOpenChange={(open) => setTip(open ? line.month : undefined)}>
                       <PopoverTrigger asChild>
                         <button
                           type="button"
                           className="report-month-open"
-                          aria-label={`${monthLabel(line.month)}: ${money(line.paid)} in help paid, ${plural(line.visits, "visit")}`}
+                          data-month={line.month}
+                          aria-label={monthLabel(line.month)}
+                          aria-describedby={`month-${line.month}`}
                           onFocus={(event) => {
                             if (event.currentTarget.matches(":focus-visible")) setTip(line.month);
                           }}
@@ -399,8 +427,8 @@ export function ReportView({
                       </PopoverTrigger>
                       <PopoverContent
                         className="report-tip"
-                        side="top"
-                        align="center"
+                        side={crowded.has(line.month) ? "left" : "top"}
+                        align={crowded.has(line.month) ? "start" : "center"}
                         collisionPadding={12}
                         onOpenAutoFocus={(event) => event.preventDefault()}
                         onCloseAutoFocus={(event) => event.preventDefault()}

@@ -57,8 +57,11 @@ export function LiveDialog({
       if (sheet) settled.observe(sheet);
       root.setProperty("--live-view-height", `${view.height}px`);
       root.setProperty("--live-view-top", `${view.offsetTop}px`);
-      // With little height left, the title scrolls away with the form so the boxes have the room.
-      document.documentElement.toggleAttribute("data-live-short", view.height < 440);
+      // Only a phone on its side has too little height for a held title; there it scrolls away with the form.
+      document.documentElement.toggleAttribute("data-live-short", view.height < 240);
+      // On the smallest phones with the keyboard up, the held button gives its place too: the box being
+      // filled in and its label come first, and the button is one scroll below.
+      document.documentElement.toggleAttribute("data-live-tight", view.height < 360);
       // The keyboard has moved the sheet: bring the box being typed in back between the title and the buttons.
       requestAnimationFrame(() => keepInView(document.activeElement));
     };
@@ -72,6 +75,7 @@ export function LiveDialog({
       root.removeProperty("--live-view-height");
       root.removeProperty("--live-view-top");
       document.documentElement.removeAttribute("data-live-short");
+      document.documentElement.removeAttribute("data-live-tight");
       document.documentElement.removeAttribute("data-live-keyboard");
     };
   }, [open]);
@@ -87,7 +91,11 @@ export function LiveDialog({
         lang={words?.locale}
         className={cn("live-dialog live-dialog-fixed", className)}
         showCloseButton={false}
-        onFocus={(event) => keepInView(event.target)}
+        onFocus={({ target }) => {
+          keepInView(target);
+          // A phone scrolls a focused box into view by itself a moment later, without saying so; look once more.
+          window.setTimeout(() => document.activeElement === target && keepInView(target), 400);
+        }}
         onCloseAutoFocus={(event) => {
           // No DialogTrigger here, so the way back is ours: to what was focused when the dialog
           // opened, unless the room has already moved focus somewhere of its own (a saved notice).
@@ -126,17 +134,28 @@ export function LiveDialog({
 }
 
 /**
- * A box being filled in stays clear of the title held at the top of its dialog and the buttons
- * held at its foot, which matters most on a small phone once the keyboard is up.
+ * A box being filled in is wholly in view with its label: the label's top at least 16px under the title held
+ * at the top of its dialog, the box's foot clear of the buttons held at the bottom. This matters most on a
+ * phone once the keyboard is up. The sheet is also told those two edges (scroll padding), so the phone's own
+ * scroll to a focused box lands in the same place and the two never pull against each other.
  */
 function keepInView(target: Element | EventTarget | null) {
   if (!(target instanceof HTMLElement) || !target.matches("input, textarea, select")) return;
   const sheet = target.closest<HTMLElement>(".live-dialog-fixed");
   if (!sheet) return;
-  const top = sheet.querySelector('[data-slot="dialog-header"]')?.getBoundingClientRect().bottom ?? sheet.getBoundingClientRect().top;
-  const foot = sheet.querySelector(".live-form-actions")?.getBoundingClientRect().top ?? sheet.getBoundingClientRect().bottom;
+  const head = sheet.querySelector<HTMLElement>('[data-slot="dialog-header"]');
+  const held = !!head && getComputedStyle(head).position === "sticky";
+  const top = held ? head.getBoundingClientRect().bottom : sheet.getBoundingClientRect().top;
+  const actions = sheet.querySelector<HTMLElement>(".live-form-actions");
+  const footHeld = !!actions && getComputedStyle(actions).position === "sticky";
+  const foot = footHeld ? actions.getBoundingClientRect().top : sheet.getBoundingClientRect().bottom;
   // Its label comes along, so the person still reads what the box is for.
   const field = (target.closest(".live-field") ?? target).getBoundingClientRect();
-  if (field.bottom > foot - 12) sheet.scrollBy({ top: Math.min(field.bottom - foot + 12, field.top - top - 12) });
-  else if (field.top < top + 12) sheet.scrollBy({ top: field.top - top - 12 });
+  sheet.style.scrollPaddingTop = `${(held ? head.offsetHeight : 0) + ABOVE + Math.max(0, target.getBoundingClientRect().top - field.top)}px`;
+  sheet.style.scrollPaddingBottom = `${(footHeld ? actions.offsetHeight : 0) + BELOW}px`;
+  // Where both cannot be had, the label wins: the box is never pushed up under the title.
+  if (field.top < top + ABOVE) sheet.scrollBy({ top: field.top - top - ABOVE });
+  else if (field.bottom > foot - BELOW) sheet.scrollBy({ top: Math.min(field.bottom - foot + BELOW, field.top - top - ABOVE) });
 }
+const ABOVE = 16;
+const BELOW = 12;
