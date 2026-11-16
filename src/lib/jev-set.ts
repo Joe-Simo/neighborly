@@ -69,4 +69,4 @@ export const jevSet: SetNote[] = [
  * notes only. Copy the "fresh" figures for "mix" from the run's file (/mnt/project-files/measure-run-N.txt) and nothing else;
  * this is the one place the sheet reads them from.
  */
-export const measured = { run: 4, day: "2026-11-15", notes: 12, right: 43, blank: 5, wrong: 0 };
+export const measured = { run: 6, day: "2026-11-15", notes: 12, right: 42, blank: 6, wrong: 0 };

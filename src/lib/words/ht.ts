@@ -26,6 +26,8 @@ const terms: Record<WordSet, Terms> = {
 /** Haitian Creole. Written without a native speaker's review; one is still owed. */
 export function ht(set: WordSet): Words {
   const t = terms[set];
+  const place = set === "vincentian" ? "konferans" : "espas";
+  const Place = place.charAt(0).toUpperCase() + place.slice(1);
   return {
     locale: "ht",
     terms: t,
@@ -46,13 +48,13 @@ export function ht(set: WordSet): Words {
     },
     shell: {
       menu: "Meni",
-      menuTitle: "Espas ou",
-      menuLabel: "Meni espas ou",
-      menuCurrent: (section) => `Meni espas ou, ou nan: ${section}`,
+      menuTitle: `${Place} ou`,
+      menuLabel: `Meni ${place} ou`,
+      menuCurrent: (section) => `Meni ${place} ou, ou nan: ${section}`,
       allSections: "Tout seksyon yo",
-      workspace: "Espas ou",
+      workspace: `${Place} ou`,
       current: "Isit la",
-      skip: "Ale nan espas ou",
+      skip: `Ale nan ${place} ou`,
       signOut: "Soti",
       leaveSample: "Kite egzanp lan",
       close: "Fèmen",
@@ -64,6 +66,11 @@ export function ht(set: WordSet): Words {
       typedStays: "Sa moun yo ekri rete jan yo te ekri l.",
       member: "Manm",
       team: "Ekip",
+      more: {
+        load: (what) => `Chaje plis ${what}`,
+        loading: (what) => `N ap chaje ${what}…`,
+        what: { commitments: "angajman", people: "moun", invitations: "envitasyon", teams: "ekip", announcements: "anons", cover: "demann ranplasman", timeOff: "jou konje", availability: "disponiblite", tasks: "travay", meetings: "reyinyon" },
+      },
       limited: "Kèk lis montre sèlman yon pati. Sèvi ak Chaje plis nan seksyon an pou wè rès la.",
     },
     headings: {
@@ -99,8 +106,16 @@ export function ht(set: WordSet): Words {
     actions: {
       timeOff: "Planifye jou konje",
       announcement: "Pataje yon anons",
+      commitment: "Ajoute yon angajman",
+      commitmentTimes: (zone: string) => `Lè yo nan zòn ${zone}.`,
+      commitmentForm: {
+        title: "Tit", team: "Ekip", chooseTeam: "Chwazi yon ekip…", starts: "Kòmanse", ends: "Fini", where: "Ki kote pou rankontre",
+        preparation: "Preparasyon", preparationHelp: "Kisa moun nan dwe konnen oswa fè davans?",
+        repeats: "Repete", everyWeek: "Chak semèn", everyWeeks: (count: number) => `Chak ${count} semèn`,
+        times: "Konbyen fwa", timesHelp: "1 se yon sèl dat. Jiska 52 nan yon ane.", save: "Anrejistre", saving: "N ap anrejistre…",
+      },
       announcementSees: `Tout moun nan ${t.group} lan wè sa nan Semèn sa a.`,
-      announcementForm: { title: "Tit", message: "Mesaj", save: "Anrejistre", saving: "N ap anrejistre…" },
+      announcementForm: { title: "Tit", message: "Mesaj", save: "Pataje anons", saving: "N ap pataje…" },
     },
     dateField: { choose: "Chwazi yon jou", done: "Fini", chooseTime: "Chwazi yon lè" },
     week: {
@@ -260,13 +275,13 @@ export function ht(set: WordSet): Words {
       offlineTitle: "Pa gen koneksyon kounye a.",
       offlineDeck: "Sa ki sou ekran an rete la. Chanjman yo ap voye lè aparèy sa a gen koneksyon ankò.",
       errorTitle: "Sal sa a pa t louvri.",
-      errorDeck: "Anyen pa pèdi. Eseye ankò; si li toujou pa louvri, rès espas ou a nan meni an.",
+      errorDeck: `Anyen pa pèdi. Eseye ankò; si li toujou pa louvri, rès ${place} ou a nan meni an.`,
       privateTitle: "Sa rete prive.",
       privateDeck: `Sal sa a gen non ${t.neighbors} nou ede yo, kidonk se kowòdonatè yo sèlman ki ka louvri l. Angajman ou ak ekip ou kote yo toujou ye a.`,
       privateAction: "Angajman mwen",
       missingTitle: "Paj sa a pa la.",
-      missingDeck: "Adrès la ka ansyen oswa mal ekri. Espas ou a jan ou te kite l la.",
-      missingAction: "Ale nan espas ou",
+      missingDeck: `Adrès la ka ansyen oswa mal ekri. ${Place} ou a jan ou te kite l la.`,
+      missingAction: `Ale nan ${place} ou`,
     },
     notices: {
       saved: "Anrejistre.",

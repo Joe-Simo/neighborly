@@ -383,7 +383,9 @@ export function LiveWorkspace({
             description={
               dialog === "invite"
                 ? "They’ll choose to join your conference."
-                : dialog === "commitment" || dialog === "meeting"
+                : dialog === "commitment"
+                  ? words.actions.commitmentTimes(zoneName(data.church.timeZone, words.locale))
+                  : dialog === "meeting"
                   ? `Times are ${zoneName(data.church.timeZone)}.`
                   : dialog === "timeOff"
                     ? words.timeOffForm.teamSees

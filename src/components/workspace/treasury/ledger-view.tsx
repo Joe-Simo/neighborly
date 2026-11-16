@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { CountUp } from "@/components/workspace/primitives";
 import { LiveState } from "@/components/workspace/states";
+import { sentence } from "@/lib/utils";
 import { figureRoll, formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
@@ -177,7 +178,7 @@ export function LedgerView({
               </h2>
               <p className="help-why">
                 For <NeighborLink id={first.neighborId} name={first.neighborName} />
-                . {first.summary}.
+                . {sentence(first.summary)}
               </p>
               {paid ? (
                 <p>

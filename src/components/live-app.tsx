@@ -10,6 +10,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
 import { leftKey, useEntryLanguage } from "@/components/live-auth-words";
+import { words as wordsFor, type Words } from "@/lib/words";
 import type { LiveArea } from "@/components/workspace/areas";
 import { LiveRoomLoading } from "@/components/workspace/primitives";
 import { LiveWorkspace } from "@/components/workspace/shell";
@@ -87,10 +88,12 @@ export function LiveApp({
     api.workspace.dashboard,
     churchId ? { churchId } : "skip",
   );
+  // Asked from the hour the app was opened, so the question stays the same and the first page is what is coming.
+  const [openedAt] = useState(() => Math.floor(Date.now() / 3_600_000) * 3_600_000);
   const commitmentPage = usePaginatedQuery(
     api.pages.commitmentsPage,
     churchId && (area === "commitments" || area === "mine")
-      ? { churchId, scope: area === "mine" ? "mine" : "all" }
+      ? { churchId, scope: area === "mine" ? "mine" : "all", from: openedAt }
       : "skip",
     { initialNumItems: 30 },
   );
@@ -203,6 +206,8 @@ export function LiveApp({
     return (
       <LiveRoomLoading />
     );
+  // The buttons under long lists stand outside the rooms, so they read the same words the rooms do.
+  const more = wordsFor(sampleVisitor ? deviceLanguage : dashboard.user.language, dashboard.church.wordSet).shell.more;
   return (
     <LiveWorkspace
       area={area}
@@ -247,37 +252,37 @@ export function LiveApp({
       pagination={
         <>
           {(area === "commitments" || area === "mine") && (
-            <PageMore page={commitmentPage} label="commitments" />
+            <PageMore page={commitmentPage} label={more.what.commitments} words={more} />
           )}
           {area === "people" && (
             <>
-              <PageMore page={peoplePage} label="people" />
+              <PageMore page={peoplePage} label={more.what.people} words={more} />
               {dashboard.people.find(
                 (person) => person.id === dashboard.user.id,
               )?.role === "owner" && (
-                <PageMore page={invitationPage} label="invitations" />
+                <PageMore page={invitationPage} label={more.what.invitations} words={more} />
               )}
             </>
           )}
           {area === "team" && (
-            <PageMore page={teamPage} label="teams" count={15} />
+            <PageMore page={teamPage} label={more.what.teams} words={more} count={15} />
           )}
           {area === "week" && (
-            <PageMore page={announcementPage} label="announcements" />
+            <PageMore page={announcementPage} label={more.what.announcements} words={more} />
           )}
           {["week", "mine", "commitments"].includes(area) && (
-            <PageMore page={requestPage} label="cover requests" />
+            <PageMore page={requestPage} label={more.what.cover} words={more} />
           )}
           {area === "time-off" && (
             <>
-              <PageMore page={absencePage} label="time off" />
-              <PageMore page={availabilityPage} label="availability" />
+              <PageMore page={absencePage} label={more.what.timeOff} words={more} />
+              <PageMore page={availabilityPage} label={more.what.availability} words={more} />
             </>
           )}
           {area === "tasks" && (
             <>
-              <PageMore page={taskPage} label="tasks" />
-              <PageMore page={meetingPage} label="meetings" />
+              <PageMore page={taskPage} label={more.what.tasks} words={more} />
+              <PageMore page={meetingPage} label={more.what.meetings} words={more} />
             </>
           )}
         </>
@@ -350,8 +355,10 @@ export function LiveApp({
 function PageMore({
   page,
   label,
+  words,
   count = 30,
 }: {
+  words: Words["shell"]["more"];
   page: {
     status: "LoadingFirstPage" | "CanLoadMore" | "LoadingMore" | "Exhausted";
     loadMore: (count: number) => void;
@@ -368,8 +375,8 @@ function PageMore({
         onClick={() => page.loadMore(count)}
       >
         {page.status === "CanLoadMore"
-          ? `Load more ${label}`
-          : `Loading ${label}…`}
+          ? words.load(label)
+          : words.loading(label)}
       </Button>
     </div>
   );
