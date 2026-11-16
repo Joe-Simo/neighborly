@@ -35,6 +35,8 @@
   animation: paper-rise 320ms var(--paper-ease) backwards;
 }
 .volunteer-choice .volunteer-given { text-transform: capitalize; }
+/* On a phone the buttons sit 3px down; the word that takes their place sits where they sat, so the sheet keeps its height. */
+@media (max-width: 560px) { .live-app .volunteer-choice .volunteer-choice-row > .volunteer-given { margin-top: 3px; } }
 .live-app .volunteer-given[data-no] { color: var(--live-muted); font-weight: 400; }
 .volunteer-meeting .live-row-actions { gap: 6px 22px; }
 .live-app .volunteer-said { margin: 0 0 28px; }

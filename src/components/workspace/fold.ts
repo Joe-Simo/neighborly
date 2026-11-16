@@ -40,6 +40,36 @@ function pageWithout(sheet: HTMLElement, as: "gone" | "put away") {
 }
 
 /**
+ * The margin under a piece of paper closed to nothing that makes the page exactly `target` tall. It is found
+ * by trying, not by sums: a closed sheet keeps its neighbours' margins apart where its absence lets them
+ * fold together, and folded margins do not add up. Nothing is painted while it tries.
+ */
+function closedMargin(sheet: HTMLElement, target: number) {
+  const { style } = sheet;
+  const kept = style.cssText;
+  Object.assign(style, { boxSizing: "border-box", overflow: "hidden", height: "0px", minHeight: "0px", marginTop: "0px", paddingTop: "0px", paddingBottom: "0px" });
+  let margin = 0;
+  for (let turn = 0; turn < 6; turn++) {
+    style.marginBottom = `${margin}px`;
+    const over = document.body.offsetHeight - target;
+    if (!over) break;
+    margin -= over;
+  }
+  style.cssText = kept;
+  return `${margin}px`;
+}
+
+/** Measures with every opening that is under way set to its end: the page as it will be once they are done. */
+function onceOpened<T>(measure: () => T) {
+  const moves = document.getAnimations().filter((move) => move.id === OPENING);
+  const at = moves.map((move) => move.currentTime);
+  moves.forEach((move) => (move.currentTime = LEAVE));
+  const found = measure();
+  moves.forEach((move, index) => (move.currentTime = at[index]));
+  return found;
+}
+
+/**
  * One piece of paper fades and closes up over 360ms, ending at exactly the height the page will have
  * without it; a plain cut for anyone who asks for less motion. `after` says what the room does with it next:
  * takes it out ("gone"), or keeps its words for screen readers only ("put away").
@@ -53,9 +83,12 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   sheet.style.boxSizing = "border-box";
   sheet.style.overflow = "hidden";
   holdThePage();
-  const page = document.body.offsetHeight;
-  const lost = page - pageWithout(sheet, after);
-  const own = height + parseFloat(marginTop) + parseFloat(marginBottom);
+  // Where the close must end: the page without this paper, and with whatever is opening beside it open.
+  const { lost, closed } = onceOpened(() => {
+    const page = document.body.offsetHeight;
+    const without = pageWithout(sheet, after);
+    return { lost: page - without, closed: closedMargin(sheet, without) };
+  });
   // Wholly above the window nobody sees it go, so it goes at once and what the person is looking at stays
   // where it is. Browsers that anchor the scroll do that themselves; the others are told.
   const unseen = sheet.getBoundingClientRect().bottom <= 0;
@@ -63,19 +96,29 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   const timing = { duration: unseen ? 0 : LEAVE, fill: "forwards" } as const;
   // It stays readable to the end: the fade runs the whole length and is slow to start.
   sheet.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, easing: "cubic-bezier(0.6, 0, 0.9, 0.6)" });
-  // A closed sheet still keeps its neighbours' margins apart, which its absence does not; the last margin makes up for it.
   await sheet.animate(
     [
-      { height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
-      { height: "0px", marginTop: "0px", marginBottom: `${own - lost}px`, paddingTop: "0px", paddingBottom: "0px" },
+      { height: `${height}px`, minHeight: "0px", marginTop, marginBottom, paddingTop, paddingBottom },
+      { height: "0px", minHeight: "0px", marginTop: "0px", marginBottom: closed, paddingTop: "0px", paddingBottom: "0px" },
     ],
     { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   ).finished;
 }
 
+let pageBefore: number | undefined;
+/**
+ * For a change that puts one thing where another was (a row where the empty list's words were): run the
+ * change inside this, and whatever opens during it starts from the page as it truly was.
+ */
+export function arriving(change: () => void) {
+  pageBefore = document.body.offsetHeight;
+  change();
+  pageBefore = undefined;
+}
+
 /**
  * The other way: a piece of paper just laid into the page opens its own room over the same 360ms, starting
- * from exactly the height the page had without it, so what is under it is moved aside and never jumps.
+ * from exactly the height the page had before it, so what is under it is moved aside and never jumps.
  * Call it before the browser paints (a layout effect or a ref). Nothing happens for anyone who asks for less motion.
  */
 export function openUp(sheet: HTMLElement) {
@@ -85,14 +128,12 @@ export function openUp(sheet: HTMLElement) {
   const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
   const height = sheet.offsetHeight;
   holdThePage();
-  const page = document.body.offsetHeight;
-  const gained = page - pageWithout(sheet, "gone");
-  const own = height + parseFloat(marginTop) + parseFloat(marginBottom);
-  const closed = { overflow: "hidden", boxSizing: "border-box" };
+  const shut = { overflow: "hidden", boxSizing: "border-box", minHeight: "0px" };
+  const from = closedMargin(sheet, pageBefore ?? pageWithout(sheet, "gone"));
   sheet.animate(
     [
-      { ...closed, height: "0px", marginTop: "0px", marginBottom: `${own - gained}px`, paddingTop: "0px", paddingBottom: "0px" },
-      { ...closed, height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
+      { ...shut, height: "0px", marginTop: "0px", marginBottom: from, paddingTop: "0px", paddingBottom: "0px" },
+      { ...shut, height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
     ],
     { id: OPENING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   );

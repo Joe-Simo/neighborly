@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves, openUp, useSavedLine } from "@/components/workspace/fold";
+import { FOLD_HOLD, arriving, foldLeaves, openUp, useSavedLine } from "@/components/workspace/fold";
 import "./volunteer.css";
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -170,16 +170,18 @@ export function IncomingRequests({
     // will rest once the sheet has closed and the green line is laid is worked out from that, and when
     // that is not wholly inside the window the line says where it is.
     const leaving = document.querySelector<HTMLElement>("[data-fold-leaves]")?.offsetHeight ?? 0;
-    flushSync(() => {
-      onGiven?.(undefined);
-      onAccepted?.(request.commitmentId);
-    });
+    arriving(() =>
+      flushSync(() => {
+        onGiven?.(undefined);
+        onAccepted?.(request.commitmentId);
+      }),
+    );
     // (The row is still closed at this moment, opening its room, so its full height is read from what it holds.)
     const row = document.querySelector(".live-row.volunteer-filed");
     const top = row ? row.getBoundingClientRect().top - leaving + LINE_ROOM : 0;
     const hidden = row && (top < 0 || top + row.scrollHeight > window.innerHeight);
-    // The line opens as the sheet closes, in one move.
-    setSaid({ words: hidden && place ? words.requests.acceptedUnder(place) : words.requests.accepted, of: request.id });
+    // The line opens as the sheet closes, in one move. It is laid first, so the close knows it is there.
+    flushSync(() => setSaid({ words: hidden && place ? words.requests.acceptedUnder(place) : words.requests.accepted, of: request.id }));
     await foldLeaves();
     setGiven(undefined);
   };

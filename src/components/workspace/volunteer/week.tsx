@@ -23,9 +23,13 @@ export function WeekSection() {
   const upcoming = upcomingCommitments(data.commitments, now);
   const incoming = incomingRequests(data);
   const { held, fresh, requests } = useAcceptedArrival();
+  // Once the note has been kept short for a request, it stays short for this visit: answering the last
+  // request must not unfold the whole note under the person's hand.
+  const [briefed, setBriefed] = useState(false);
+  if (incoming.length > 0 && !briefed) setBriefed(true);
   return (
     <>
-      <WeekNote brief={incoming.length > 0} />
+      <WeekNote brief={briefed || incoming.length > 0} />
       <IncomingRequests {...requests} place={words.week.comingUp} />
       {/* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */}
       <div className="min-[1100px]:grid min-[1100px]:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)] min-[1100px]:items-start min-[1100px]:gap-x-14">
