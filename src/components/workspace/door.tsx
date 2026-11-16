@@ -17,6 +17,13 @@ import "@/components/workspace/door.css";
  */
 const SWEEP = 380;
 const LIFT = 140;
+/** A wait is quiet at first: the line is not drawn for this long after the paper is down. With no sweep the paper is down at once, so the quiet is longer. */
+const QUIET = 400;
+const QUIET_PLAIN = 1000;
+/** Once drawn, the line stays long enough to be read: a line that flashes is worse than none. */
+const READ = 700;
+/** The green is already rising in the first frame the sheet is gone. */
+const HEAD_START = 48;
 /** If nothing under the paper ever settles, it lifts anyway and shows what is there. */
 const LONGEST = 12000;
 
@@ -58,13 +65,14 @@ export function DoorSweep() {
 
   // Drawn again part way through, the sheets carry on from where the clock is; they never start over.
   useLayoutEffect(() => {
-    if (playing) paper.current?.style.setProperty("--door-since", `${Math.round(performance.now() - arrivedAt)}ms`);
+    if (playing) paper.current?.style.setProperty("--door-since", `${Math.round(performance.now() - arrivedAt) + HEAD_START}ms`);
   }, [playing]);
   useEffect(() => {
     if (!playing) return;
     const plain = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let frame = 0;
     let lifting = false;
+    let saidAt = 0;
     const lift = () => {
       lifting = true;
       // The line leaves first, in this same frame, so it is never read over the room.
@@ -83,9 +91,12 @@ export function DoorSweep() {
       if (lifting) return;
       const waited = performance.now() - arrivedAt;
       const landed = plain || waited >= SWEEP;
-      if (landed && (underneathIsReady() || waited > LONGEST)) return lift();
-      // The standing rule for a wait: the line is not drawn for the first 400ms, so a room a moment late never flashes it.
-      if (landed && waited >= (plain ? 0 : SWEEP) + 400) setHolding(true);
+      const read = saidAt === 0 || performance.now() - saidAt >= READ;
+      if (landed && read && (underneathIsReady() || waited > LONGEST)) return lift();
+      if (landed && saidAt === 0 && waited >= (plain ? QUIET_PLAIN : SWEEP + QUIET)) {
+        saidAt = performance.now();
+        setHolding(true);
+      }
       frame = requestAnimationFrame(look);
     };
     frame = requestAnimationFrame(look);
