@@ -15,7 +15,7 @@ import "@/components/workspace/door.css";
  * opening line on it, and lifts when the room is. Never between rooms, and never for someone already signed
  * in, who goes from the launch mark straight to their room.
  */
-const SWEEP = 440;
+const SWEEP = 380;
 const LIFT = 140;
 /** If nothing under the paper ever settles, it lifts anyway and shows what is there. */
 const LONGEST = 12000;
@@ -67,7 +67,8 @@ export function DoorSweep() {
     let lifting = false;
     const lift = () => {
       lifting = true;
-      // The line leaves first, so it is never read over the room.
+      // The line leaves first, in this same frame, so it is never read over the room.
+      paper.current?.querySelector<HTMLElement>(".door-opening")?.style.setProperty("visibility", "hidden");
       setHolding(false);
       const leave = paper.current?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: plain ? 180 : LIFT, easing: "linear", fill: "forwards" });
       const over = () => {
@@ -83,7 +84,8 @@ export function DoorSweep() {
       const waited = performance.now() - arrivedAt;
       const landed = plain || waited >= SWEEP;
       if (landed && (underneathIsReady() || waited > LONGEST)) return lift();
-      if (landed) setHolding(true);
+      // The standing rule for a wait: the line is not drawn for the first 400ms, so a room a moment late never flashes it.
+      if (landed && waited >= (plain ? 0 : SWEEP) + 400) setHolding(true);
       frame = requestAnimationFrame(look);
     };
     frame = requestAnimationFrame(look);
