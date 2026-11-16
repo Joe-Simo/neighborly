@@ -738,3 +738,5 @@ html:has(.live-app) > body[data-scroll-locked] { margin-right: 0 !important; pad
 /* The ring is for keys. Without keys in use (the shell marks the page while they are), a control that is not a box
    to type in draws no ring, however it came by its focus: a tap, or the app putting focus back where it was. */
 html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu, .live-date-sheet) :is(a, button, summary, [role], [tabindex]):not(input, textarea, select):is(:focus, :focus-visible) { outline: none; }
+/* The same for a date field on a phone, which is a field that cannot be typed in: focus put back on it draws no ring. */
+html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visible) { outline: none; }
