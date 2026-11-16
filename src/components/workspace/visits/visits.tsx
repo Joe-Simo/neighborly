@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves, useSeenForSix } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, useSavedLine } from "@/components/workspace/fold";
 import "./visits.css";
 import {
   useCallback,
@@ -257,7 +257,7 @@ export function VisitsDone({
   children: string;
 }) {
   const line = useRef<HTMLDivElement>(null);
-  const seen = useSeenForSix(line);
+  const seen = useSavedLine(line);
   useEffect(() => line.current?.focus({ preventScroll: true }), []);
   return (
     <div

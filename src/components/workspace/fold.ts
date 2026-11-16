@@ -53,20 +53,49 @@ function holdThePage() {
   window.addEventListener("scroll", release, { passive: true });
 }
 
+/** Undoes closeUp on a piece of paper that stays on the page for new words. */
+function openFlat(sheet: HTMLElement) {
+  if (!sheet.style.overflow) return;
+  sheet.getAnimations().forEach((move) => move.cancel());
+  sheet.style.overflow = "";
+  sheet.style.boxSizing = "";
+}
+
+const never = Symbol("never");
+
 /**
- * The green line that says what was done, in every room: true for six seconds, during which the line is
- * on the page; then the line closes up and the answer turns false, and the room keeps the words as a
- * message for screen readers only.
+ * The green line that says what was done, in every room. True while the line is on the page; then the line
+ * closes up and the answer turns false, and the room keeps the words as a message for screen readers only.
+ * A plain line stays six seconds. A line that carries an action (`action: true`) stays twelve, and its clock
+ * stops while the pointer is over it or its action has focus. A room that keeps one line mounted and changes
+ * its words passes the words as `of`, so each new saying is seen afresh.
  */
-export function useSeenForSix(line: RefObject<HTMLElement | null>) {
-  const [seen, setSeen] = useState(true);
+export function useSavedLine(
+  line: RefObject<HTMLElement | null>,
+  { action = false, of }: { action?: boolean; of?: unknown } = {},
+) {
+  const [left, setLeft] = useState<unknown>(never);
   useEffect(() => {
-    const leave = window.setTimeout(() => {
-      const paper = line.current;
-      if (paper) void closeUp(paper).then(() => setSeen(false));
-      else setSeen(false);
-    }, 6000);
-    return () => window.clearTimeout(leave);
-  }, [line]);
-  return seen;
+    // A line that closed up before is opened flat again for its new words.
+    if (line.current) openFlat(line.current);
+    const stay = action ? 12000 : 6000;
+    const step = 250;
+    let shown = 0;
+    const clock = window.setInterval(() => {
+      const now = line.current;
+      const held = now && (now.matches(":hover") || (now !== document.activeElement && now.contains(document.activeElement)));
+      if (held) return;
+      shown += step;
+      if (shown < stay) return;
+      window.clearInterval(clock);
+      if (now) void closeUp(now).then(() => setLeft(of));
+      else setLeft(of);
+    }, step);
+    return () => window.clearInterval(clock);
+  }, [line, action, of]);
+  // Once the room has put the words away for screen readers, the closing move is taken off them.
+  useEffect(() => {
+    if (left === of && line.current) openFlat(line.current);
+  }, [left, of, line]);
+  return left !== of;
 }
