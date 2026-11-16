@@ -193,7 +193,8 @@
   .painted-world[data-hero-only=true] .painted-world-caption h1{animation:painted-rise 1.1s cubic-bezier(.2,.65,.2,1) .35s both}
   .painted-world[data-hero-only=true] .painted-world-description{animation:painted-rise 1s cubic-bezier(.2,.65,.2,1) .6s both}
   .painted-world[data-hero-only=true] .painted-world-opening-actions{animation:painted-rise 1s cubic-bezier(.2,.65,.2,1) .8s both}
-  .painted-world[data-hero-only=true] :is(.painted-world-header,.painted-world-tools){animation:painted-fade 1.2s ease 1.1s both}
+  /* The paper bar with the name is there from the first frame; only the tools wait. */
+  .painted-world[data-hero-only=true] .painted-world-tools{animation:painted-fade 1.2s ease 1.1s both}
 }
 
 /* ── The opening, in the paper world ───────────────────────────────────────── */
