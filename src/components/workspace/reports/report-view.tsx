@@ -245,6 +245,7 @@ export function ReportView({
   const moved = report.history.requests > 0;
   const largestKind = Math.max(...report.kinds.map((line) => line.paid));
   const largestMonth = Math.max(...report.months.map((line) => line.paid));
+  const mostVisits = Math.max(...report.months.map((line) => line.visits));
   const serving = [
     { name: "Home visits", detail: `${plural(report.visits, "visit")}, always in pairs`, hours: report.visitHours },
     ...report.time.teams.map((team) => ({
@@ -371,7 +372,7 @@ export function ReportView({
         <div className="live-section-head">
           <h2>Month by month</h2>
           <span className="live-count">
-            Help paid<span className="report-wide">, and the visits behind it</span>
+            <i className="report-key" aria-hidden="true" />Help paid<span className="report-wide">, and <i className="report-key" data-of="visits" aria-hidden="true" />the visits behind it</span>
           </span>
         </div>
         <ol className="report-months" data-months={report.months.length} ref={months}>
@@ -384,6 +385,8 @@ export function ReportView({
                 data-ahead={ahead ? "" : undefined}
               >
                 <div className="report-month-bar" aria-hidden="true">
+                  {/* Two strips of cut paper: the help paid, and behind it the visits that month, each against the year's largest. */}
+                  {!ahead && <i style={share(line.visits, mostVisits)} />}
                   {!ahead && <span style={share(line.paid, largestMonth)} />}
                 </div>
                 <h3>

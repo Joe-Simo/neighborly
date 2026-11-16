@@ -112,9 +112,7 @@
 .report-months[data-months="3"] {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-.report-months[data-months="3"] .report-month-bar span {
-  width: 44px;
-}
+.report-months[data-months="3"] .report-month-bar { --strip: 56px; }
 .report-months li {
   display: flex;
   flex-direction: column;
@@ -124,24 +122,59 @@
 .report-months li + li {
   border-left: 1px solid var(--live-line);
 }
+/* The year in cut paper. Each month is two strips standing on a ledge: green for the help paid, and behind it,
+   beside it, a narrower one in plum for the visits made. Each strip is cut by hand (its top is never quite level), leans a
+   hair its own way and throws its shadow on the paper. Heights are shares of the year's largest month. */
 .report-month-bar {
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  height: 132px;
+  height: 148px;
   margin-bottom: 16px;
+  border-bottom: 1px solid #cfc9b8;
+  --strip: min(40px, 52%);
+  --lean: -1.1deg;
+  --cut: polygon(0 5px, 100% 0, 100% 100%, 0 100%);
 }
-.report-month-bar span {
+.report-months li:nth-child(3n + 2) .report-month-bar { --lean: 0.9deg; --cut: polygon(0 0, 100% 4px, 100% 100%, 0 100%); }
+.report-months li:nth-child(3n) .report-month-bar { --lean: -0.4deg; --cut: polygon(0 2px, 52% 0, 100% 5px, 100% 100%, 0 100%); }
+.report-month-bar :is(span, i) {
   display: block;
-  width: 22px;
-  min-height: 2px;
+  width: var(--strip);
+  min-height: 3px;
   height: var(--share);
-  border-radius: 1px 1px 0 0;
-  background: linear-gradient(0deg, #365c46, #5d8064);
+  clip-path: var(--cut);
   transform-origin: bottom;
+  rotate: var(--lean);
   animation: report-rise 420ms var(--paper-ease) backwards;
   animation-delay: calc(var(--paper-wait, 0ms) + 90ms + var(--paper-order, 0) * 30ms);
 }
+/* Shadows are thrown by the strips' holders, so a strip's cut top shapes its shadow too. */
+.report-month-bar { filter: drop-shadow(2px 1px 0 rgb(40 60 50 / 0.14)) drop-shadow(7px 9px 9px rgb(40 60 50 / 0.16)); }
+.report-month-bar span {
+  position: relative;
+  z-index: 1;
+  translate: calc(var(--strip) * -0.24) 0;
+  background: linear-gradient(0deg, #335844, #3f6a50);
+}
+.report-month-bar i {
+  position: absolute;
+  bottom: 0;
+  left: calc(50% + var(--strip) * 0.26 + 4px);
+  width: calc(var(--strip) * 0.4);
+  rotate: calc(var(--lean) * -1.4);
+  background: linear-gradient(0deg, #66578a, #7767a0);
+  animation-delay: calc(var(--paper-wait, 0ms) + 30ms + var(--paper-order, 0) * 30ms);
+}
+/* Under the pointer or the keyboard a month's strips are lifted a little off the paper. */
+.report-months li:is(:hover, :focus-within) .report-month-bar { filter: drop-shadow(3px 2px 0 rgb(40 60 50 / 0.14)) drop-shadow(10px 14px 12px rgb(40 60 50 / 0.2)); translate: 0 -2px; }
+.report-month-bar { transition: translate 160ms var(--paper-ease), filter 160ms var(--paper-ease); }
+/* The caption's two small keys say which paper is which. */
+.report-key { display: inline-block; width: 10px; height: 10px; margin-right: 6px; background: #3d6a50; vertical-align: baseline; }
+.report-key[data-of="visits"] { background: #6f5f93; margin-left: 2px; }
+@media (prefers-reduced-motion: reduce) { .report-month-bar { transition: none; } .report-months li:is(:hover, :focus-within) .report-month-bar { translate: none; } }
+@media print { .report-month-bar { filter: none; } }
 .report-months li:nth-child(2) { --paper-order: 1; }
 .report-months li:nth-child(3) { --paper-order: 2; }
 .report-months li:nth-child(4) { --paper-order: 3; }
@@ -408,7 +441,7 @@
   .report-months li:nth-child(7) { border-left: 0; }
   .report-months li:nth-child(n + 7) { border-top: 1px solid var(--live-line); }
   .report-month-bar { height: 72px; margin-bottom: 10px; }
-  .report-month-bar span { width: 16px; }
+  .report-month-bar { --strip: 18px; }
   .report-months h3 { margin-bottom: 4px; }
   .report-months p.help-amount { font-size: 16px; margin: 0; }
   .report-months p:not(.help-amount) { font-size: 15px; }
@@ -423,7 +456,7 @@
   .report-skeleton-figures > div:nth-child(2) { padding-left: 0; border-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .report-month-bar span, .report-outcomes, .report .help-bar span, .report-skeleton-figures b, .report-skeleton-figures i, .report-tip { animation: none; }
+  .report-month-bar span, .report-month-bar i, .report-key, .report-outcomes, .report .help-bar span, .report-skeleton-figures b, .report-skeleton-figures i, .report-tip { animation: none; }
   .report-month-open { transition: none; }
   .live-app .report-years [data-slot="toggle-group-item"], .report-every-line svg { transition: none; }
   .report-lines[data-open] > .report-form { animation: none; }
