@@ -90,7 +90,7 @@ export function KeptPrivate() {
  * page (the line is still opening, and clips what is inside it); the line's own words take over when they land.
  * Transforms and opacity only. Nothing moves for anyone who asks for less motion, or if the line is out of view.
  */
-let setOff: { name?: DOMRect; asks?: DOMRect } = {};
+let setOff: { name?: DOMRect; asks?: DOMRect; sheet?: DOMRect } = {};
 /**
  * Call just before the saved line is laid: where the sealed sheet's name and request stand now. The line opens
  * from nothing, so the page is as it is at this moment when the words set off.
@@ -98,6 +98,7 @@ let setOff: { name?: DOMRect; asks?: DOMRect } = {};
 export function readSealedSheet() {
   const sheet = document.querySelector(".help-sheet.help-sealed");
   setOff = {
+    sheet: sheet?.getBoundingClientRect(),
     name: sheet?.querySelector(".help-from strong")?.getBoundingClientRect(),
     asks: sheet?.querySelector("#draft-title")?.getBoundingClientRect(),
   };
@@ -119,7 +120,51 @@ function fileAway(line: HTMLElement) {
   if (place.top < 0 || place.bottom > window.innerHeight) return;
   // The whole sheet, corner and all, is gone within 140ms, so its words are never seen twice and its green corner
   // is never left hanging alone; the room it took closes under the line as the words rise.
-  sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: "forwards" });
+  // The yes: the sheet becomes its saved line. Its top edge stays where it is and it shortens upward to the line's
+  // height, at the very pace the room closes up beneath it (fold.ts closeUp, 360ms), so its foot is always the list's
+  // top and it never passes over a row. Its green corner turns further as it is taken; its words fade to the line's
+  // own two, which travel on their own; it takes the line's green as it lands, and gives way to the line.
+  // A copy does this above the page; the sheet itself is gone at once.
+  const from = setOff.sheet ?? sheet.getBoundingClientRect();
+  const card = sheet.cloneNode(true) as HTMLElement;
+  card.setAttribute("aria-hidden", "true");
+  card.removeAttribute("id");
+  card.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
+  Object.assign(card.style, {
+    position: "fixed", left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`,
+    margin: "0", zIndex: "29", pointerEvents: "none", overflow: "hidden", boxSizing: "border-box", animation: "none",
+  });
+  card.classList.add("help-handed");
+  // Its words keep the sheet's measure and size until they fade: outside the room's column they would set anew.
+  const originals = [...sheet.querySelectorAll<HTMLElement>("*")];
+  card.querySelectorAll<HTMLElement>("*").forEach((part, index) => {
+    const source = originals[index];
+    if (!source) return;
+    const look = getComputedStyle(source);
+    Object.assign(part.style, { width: `${source.getBoundingClientRect().width}px`, fontSize: look.fontSize, lineHeight: look.lineHeight, boxSizing: "border-box" });
+  });
+  // Inside the room's frame, so it keeps the room's own setting of its words.
+  (sheet.closest(".live-app") ?? document.body).append(card);
+  sheet.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 1, fill: "forwards" });
+  [...card.children].forEach((part) => (part as HTMLElement).animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100, easing: "ease-out", fill: "forwards" }));
+  const lineLook = getComputedStyle(line);
+  const paper = getComputedStyle(sheet).backgroundColor;
+  const done = () => card.remove();
+  const close = "cubic-bezier(0.2, 0.7, 0.2, 1)";
+  card.animate([{ height: `${from.height}px` }, { height: `${place.height}px` }], { duration: 360, easing: close, fill: "forwards" });
+  card.animate(
+    [
+      { backgroundColor: paper, borderRadius: getComputedStyle(sheet).borderRadius, boxShadow: getComputedStyle(sheet).boxShadow, opacity: 1 },
+      { backgroundColor: paper, offset: 0.35 },
+      { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, boxShadow: "0 0 0 #0000", opacity: 1, offset: 0.7 },
+      { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, boxShadow: "0 0 0 #0000", opacity: 0 },
+    ],
+    { duration: 520, fill: "forwards" },
+  ).finished.then(done, done);
+  const corner = `${window.innerWidth < 700 ? 48 : 64}px`;
+  card.animate([{ width: "38px", height: "38px", opacity: 1 }, { width: corner, height: corner, opacity: 1, offset: 0.23 }, { width: corner, height: corner, opacity: 0, offset: 0.7 }, { opacity: 0 }], {
+    duration: 520, easing: "cubic-bezier(0.3, 0, 0.2, 1)", fill: "forwards", pseudoElement: "::after",
+  });
   const travel = (from: HTMLElement | null, to: HTMLElement | null, start: DOMRect | undefined, resized: boolean) => {
     if (!from || !to || !start) return;
     const end = ends.get(to) ?? to.getBoundingClientRect();
