@@ -96,6 +96,8 @@ export function LiveWorkspace({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  // The way back offered on the saved line, when the act has one.
+  const [undo, setUndo] = useState<{ command: LiveCommand; said: string }>();
   const [invitationLink, setInvitationLink] = useState("");
   const [invitationDelivery, setInvitationDelivery] = useState<
     "not_sent" | "queued"
@@ -133,10 +135,11 @@ export function LiveWorkspace({
   const now = useSyncExternalStore(noChange, openedAt, () => 0);
   // The sample says so once, in its mark, not also in its name.
   const churchName = data.church.sample ? data.church.name.replace(/\s*\(sample\)\s*$/i, "") : data.church.name;
-  async function perform(command: LiveCommand, success?: string) {
+  async function perform(command: LiveCommand, success?: string, back?: { command: LiveCommand; said: string }) {
     setPending(true);
     setError("");
     setNotice("");
+    setUndo(undefined);
     if (command.type === "invite") setInvitationLink("");
     try {
       const result = await run(command);
@@ -151,7 +154,10 @@ export function LiveWorkspace({
             ? "Invitation created and email queued. Delivery is not yet confirmed."
             : "Invitation created. No email was sent.",
         );
-      else if (success) setNotice(success);
+      else if (success) {
+        setNotice(success);
+        setUndo(back);
+      }
       return true;
     } catch (cause) {
       const said = readFailure(cause, words.notices.failed);
@@ -431,7 +437,10 @@ export function LiveWorkspace({
               )}
               {headAction && (
                 <Button
+                  // A new style is a new button: it never fades from one fill to the other with its label lost between.
+                  key={headAction.quiet ? "quiet" : "filled"}
                   variant={headAction.quiet ? "outline" : "default"}
+                  style={headAction.unsettled ? { visibility: "hidden" } : undefined}
                   onClick={headAction.run}
                 >
                   {headAction.plus && <Plus size={17} aria-hidden="true" />}
@@ -473,7 +482,18 @@ export function LiveWorkspace({
               </Button>
             </div>
           )}
-          {notice && <Outcome ref={outcomeNotice}>{notice}</Outcome>}
+          {notice && (
+            <Outcome
+              ref={outcomeNotice}
+              action={undo && (
+                <Button variant="link" className="help-text-action" disabled={pending} onClick={() => void perform(undo.command, undo.said)}>
+                  {words.tasks.undo}
+                </Button>
+              )}
+            >
+              {notice}
+            </Outcome>
+          )}
           <LiveConnection />
           {wide && <div className="live-aside" key={`aside-${area}`} ref={setAside} />}
           <AsideSlot value={aside}>
@@ -533,7 +553,7 @@ export function LiveWorkspace({
                     pending={pending}
                     error={error}
                     onSubmit={async (command) => {
-                      if (await perform(command, "Saved.")) setDialog(null);
+                      if (await perform(command, command.type === "createTask" ? words.tasks.added(command.title) : "Saved.")) setDialog(null);
                     }}
                   />
                 )
@@ -724,13 +744,14 @@ function useNavMarker(area: LiveArea) {
  * The green line that says what was done. It is seen for six seconds, then leaves the page and
  * stays as a message for screen readers. Each new outcome is a new line (the old one is cleared first).
  */
-function Outcome({ children, ref }: { children: string; ref: RefObject<HTMLDivElement | null> }) {
-  // It is laid down like a slip, and after six seconds it closes up so the page below does not jump.
-  const seen = useSavedLine(ref);
+function Outcome({ children, action, ref }: { children: string; action?: ReactNode; ref: RefObject<HTMLDivElement | null> }) {
+  // It is laid down like a slip, and after six seconds (twelve with a way back) it closes up so the page below does not jump.
+  const seen = useSavedLine(ref, { action: !!action, of: children });
   return (
     <div className={seen ? "live-success help-done paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
       {seen && <CircleCheck size={22} aria-hidden="true" />}
       {seen ? <SavedWords>{children}</SavedWords> : children}
+      {seen && action}
     </div>
   );
 }

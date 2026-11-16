@@ -138,6 +138,10 @@
 .live-head-actions { animation: paper-set 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
 /* A saved line's sentences each stay whole where there is room, so the line breaks between them. */
 .live-said { display: inline-block; white-space: pre-wrap; }
+/* Between rooms the last room's words hold until the new ones are there: the new words and the room's button are whole from their
+   first frame and only rise into place, so the paper never stands with a picture and no heading. */
+@keyframes paper-turn { from { transform: translateY(10px); } }
+.live-page-head:has(.live-head-art[data-laid]) :is(.live-head-words > *, .live-head-actions) { animation-name: paper-turn; }
 /* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
 /* Between rooms: one cross-fade of 200ms. The new picture comes up over the last one, which stays whole under it
