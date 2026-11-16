@@ -2,7 +2,9 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 /** The open hand holds the card out: it is the way into the sample. */
-export function CardOffer({ onOpen }: { onOpen?: React.MouseEventHandler<HTMLAnchorElement> }) {
+import type { MouseEventHandler } from "react";
+
+export function CardOffer({ onOpen }: { onOpen?: MouseEventHandler<HTMLAnchorElement> }) {
   return <span className="neighborly-close-offer">
     <Link href="/app?intent=sample" className="card-offer" data-station="end" data-turn={-4} onClick={onOpen}>
       <i aria-hidden="true" />

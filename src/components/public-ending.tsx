@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { CardOffer } from "./card-offer";
+import { CardOfferGrow } from "./card-offer-grow";
 import "./neighborly-continuation.css";
 import "./thread-card.css";
 
@@ -18,7 +18,7 @@ export function ClosingBand() {
         <img src="/assets/home/hand-empty.webp" width={360} height={295} alt="" loading="lazy" decoding="async" />
       </picture>
     </span>
-    <CardOffer />
+    <CardOfferGrow />
     <div className="neighborly-close-words">
       <h2 id="together-title">Bring this to<br /><em>your people.</em></h2>
       <div className="neighborly-final-actions">

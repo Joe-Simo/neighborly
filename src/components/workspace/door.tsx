@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { LoaderCircle } from "lucide-react";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
+import { dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
 import "@/components/workspace/door.css";
 
 /**
@@ -38,6 +39,8 @@ let card = false;
 /** Called by the door when it starts opening the sample, and again with false if the sample did not open. */
 export function carryTheCard(carry = true) {
   carried = carry;
+  // The sample did not open: the card the home page grew is let go, and the door's sheet with its notice is under it.
+  if (!carry) dropTheHeldCard();
 }
 const watchers = new Set<() => void>();
 /** Someone has just come through the door and is still in the first room: figures are drawn at their value, not rolled. */
@@ -113,7 +116,10 @@ export function DoorSweep() {
 
   // Drawn again part way through, the sheets carry on from where the clock is; they never start over.
   useLayoutEffect(() => {
-    if (playing) paper.current?.style.setProperty("--door-since", `${Math.round(performance.now() - arrivedAt) + HEAD_START}ms`);
+    if (!playing) return;
+    paper.current?.style.setProperty("--door-since", `${Math.round(performance.now() - arrivedAt) + HEAD_START}ms`);
+    // The home page's card has been held over the window all along: the sweep's card is already at full size, so nothing sweeps up.
+    if (card && takeTheHeldCard()) paper.current?.setAttribute("data-held", "");
   }, [playing]);
   useEffect(() => {
     if (!playing) return;
