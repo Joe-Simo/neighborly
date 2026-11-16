@@ -145,7 +145,7 @@ export function TreasurySection() {
     try {
       await change();
     } catch (cause) {
-      return readFailure(cause, "That couldn’t be recorded. Please try again.");
+      return readFailure(cause, "Nothing was recorded, and what you typed is still here. Try again.");
     }
     if (date) setMonth(date.slice(0, 7));
     setOpen(null);
@@ -348,7 +348,6 @@ export function TreasurySection() {
             <EntryDetail
               key={view.entry.id}
               entry={view.entry}
-              onClose={() => setOpen(null)}
               onReverse={(reason) =>
                 settle(
                   () =>

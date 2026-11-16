@@ -295,7 +295,7 @@ export function ShelfRoom({
             try {
               await recordVouchers({ churchId, ...vouchers });
             } catch (cause) {
-              return readFailure(cause, "That couldn’t be recorded. Please try again.");
+              return readFailure(cause, "Nothing was recorded, and what you typed is still here. Try again.");
             }
             setAdding(false);
             setDone(

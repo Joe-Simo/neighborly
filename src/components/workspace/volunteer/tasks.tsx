@@ -178,7 +178,7 @@ export function TasksSection() {
                     <div className="volunteer-meeting-desk">
                       {meeting.fanoutStatus === "processing" && (
                         <span className="live-status" data-state="pending">
-                          Preparing invitations
+                          Preparing invitations…
                         </span>
                       )}
                       {isOwner && meeting.fanoutStatus === "processing" && (
@@ -192,11 +192,11 @@ export function TasksSection() {
                                 type: "retryMeetingFanout",
                                 meetingId: meeting.id,
                               },
-                              "Invitation preparation restarted.",
+                              "Preparing the invitations again.",
                             )
                           }
                         >
-                          Retry preparation
+                          Prepare the invitations again
                         </Button>
                       )}
                       {isOwner && (
@@ -237,7 +237,7 @@ function LiveMeetingResponses({
   return (
     <div className="volunteer-replies">
       <Button variant="link" className="tools-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {open ? "Hide replies" : "Review member replies"}
+        {open ? "Hide replies" : "Show replies"}
       </Button>
       {open && (
         <>

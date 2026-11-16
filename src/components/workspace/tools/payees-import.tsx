@@ -33,7 +33,7 @@ export const payeeWords: SheetWords = {
   promise: "Names and how to reach them only. No money and no account numbers come with the list. Nothing is saved until you say so.",
   done: (count) => `${payees(count)} added to your list.`,
   nothingDone: "Nothing new was added.",
-  another: "Bring in another file",
+  another: "Choose another file",
 };
 export function payeesLeftOut(rows: (Checked[number] | Imported[number])[]): LeftOut[] {
   return rows.flatMap((row) => (row.outcome === "ready" || row.outcome === "added" ? [] : [{ line: row.line, name: row.name, reason: reasons[row.outcome] }]));

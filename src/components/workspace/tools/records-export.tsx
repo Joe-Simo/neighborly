@@ -63,7 +63,7 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
       {state.step === "ready" && (
         <div className="tools-file">
           <div className="help-actions">
-            <Button onClick={onGather}><FolderDown size={18} aria-hidden="true" /> Gather my records</Button>
+            <Button onClick={onGather}><FolderDown size={18} aria-hidden="true" /> Gather your records</Button>
           </div>
           <p className="tools-small">
             Everything your conference has written here, one file for each kind of record: the neighbors and their notes, calls, requests and visits; the ledger, deposits and vouchers; your members, teams and commitments. Account numbers show their last four digits only. Each time, it is written down who took the records out.
@@ -96,7 +96,7 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
             <FileRows files={state.files} onDownload={onDownload} />
           </div>
           <div className="help-actions tools-after">
-            <Button variant="outline" onClick={onReset}>Put these away</Button>
+            <Button variant="outline" onClick={onReset}>Hide the files</Button>
           </div>
         </>
       )}

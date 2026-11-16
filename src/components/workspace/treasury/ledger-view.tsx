@@ -384,7 +384,7 @@ export function LedgerView({
       )}
 
       {(uncleared !== undefined || onHand || shelf !== undefined) && (
-        <section className="treasury-foot" aria-label="More of the treasury">
+        <section className="treasury-foot" aria-label="Also in Treasury">
           {onHand && onHand.count > 0 && (
             <div>
               <div>

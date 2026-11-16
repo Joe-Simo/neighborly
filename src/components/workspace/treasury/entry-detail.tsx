@@ -15,11 +15,9 @@ import type { LedgerEntry } from "@/components/workspace/treasury/labels";
 export function EntryDetail({
   entry,
   onReverse,
-  onClose,
 }: {
   entry: LedgerEntry;
   onReverse: (reason: string) => Promise<Refusal>;
-  onClose: () => void;
 }) {
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
@@ -42,11 +40,6 @@ export function EntryDetail({
             ? "This entry was taken back by a later one. Both stay in the ledger."
             : "This entry takes back an earlier one. Both stay in the ledger."}
         </p>
-        <div className="live-form-actions">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Close
-          </Button>
-        </div>
       </div>
     );
   return (
@@ -63,7 +56,7 @@ export function EntryDetail({
     >
       {amount}
       <LiveField
-        label="Entered by mistake? Say why"
+        label="Why this entry is being reversed"
         help="Nothing is erased. A new entry for the same amount the other way is added today, and both stay in the ledger."
       >
         <Input
@@ -77,9 +70,6 @@ export function EntryDetail({
       </LiveField>
       {error && <FormError message={error} />}
       <div className="live-form-actions">
-        <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
-          Close
-        </Button>
         <Button type="submit" variant="outline" disabled={saving}>
           {saving ? "Reversing…" : "Reverse this entry"}
         </Button>

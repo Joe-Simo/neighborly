@@ -621,7 +621,7 @@ export function LiveWorkspace({
                     setConfirmation(null);
                 }}
               >
-                {confirmation?.action ?? "Confirm"}
+                {confirmation?.action}
               </Button>
             </div>
         </LiveDialog>

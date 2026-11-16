@@ -187,7 +187,7 @@ function LiveTeamRoster({
                   disabled={pending}
                   onClick={() => choose({ type: "setTeamApproval", teamId: team.id, personId: managing.personId, approved: !managing.approved })}
                 >
-                  {managing.approved ? "Revoke approval for this team" : "Approve for this team"}
+                  {managing.approved ? "Mark not ready for this team" : "Mark ready for this team"}
                   <small>
                     {managing.approved
                       ? "They stay on the team. Their open requests to cover for it are withdrawn."
@@ -212,7 +212,7 @@ function LiveTeamRoster({
                     <small>
                       {managing.role === "coordinator"
                         ? "They keep their place and no longer manage this team’s members."
-                        : "They can add, approve and remove this team’s members, and become a coordinator of the conference."}
+                        : "They can add and remove this team’s members and mark them ready, and become a coordinator of the conference."}
                     </small>
                   </Button>
                 )}

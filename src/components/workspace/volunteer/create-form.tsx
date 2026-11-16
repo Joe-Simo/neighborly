@@ -69,7 +69,7 @@ export function LiveCreateForm({
       );
     } catch {
       setDraftNote(
-        "We couldn’t prepare a draft. You can enter the team name below.",
+        "No name could be drafted. Enter the team name below.",
       );
     } finally {
       setPreparing(false);
@@ -154,7 +154,7 @@ export function LiveCreateForm({
         <>
           <LiveField
             label="Describe your team (optional)"
-            help="We’ll prepare a name for you to review. Don’t include private member information."
+            help="A name is drafted for you to check. Leave out members’ private details."
           >
             <Textarea
               value={draftDescription}
@@ -168,7 +168,7 @@ export function LiveCreateForm({
             disabled={!draftDescription.trim() || preparing}
             onClick={() => void prepare()}
           >
-            {preparing ? "Preparing…" : "Prepare a draft"}
+            {preparing ? "Preparing…" : "Draft a name"}
           </Button>
           {draftNote && (
             <div className="live-note" role="status">
@@ -353,7 +353,7 @@ export function LiveCreateForm({
               {kind === "announcement" ? form.saving : (own?.saving ?? "Saving…")}
             </>
           ) : kind === "invite" ? (
-            "Create invitation"
+            "Create the meeting invitation"
           ) : kind === "announcement" ? (
             form.save
           ) : (

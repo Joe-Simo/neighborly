@@ -33,7 +33,7 @@ export function readNeighborRows(text: string): NeighborSheet {
   const find = (wanted: readonly string[]) => wanted.map((name) => present.find((column) => column === name)).find(Boolean);
   const phones = columns.phone.filter((name) => present.includes(name));
   const found = { name: find(columns.name), first: find(columns.first), last: find(columns.last), email: find(columns.email), address: find(columns.address), address2: find(columns.address2), city: find(columns.city), state: find(columns.state), zip: find(columns.zip), adults: find(columns.adults), children: find(columns.children), language: find(columns.language), notes: find(columns.notes) };
-  if (!found.name && !found.first) return { error: "We could not find a Name column. The first line of the file should name the columns, such as Name, Phone and Address." };
+  if (!found.name && !found.first) return { error: "This file has no Name column. Its first line should name the columns, such as Name, Phone and Address." };
   const rows = parsed.data.flatMap((row, index) => {
     if (Object.values(row).every((value) => !value?.trim())) return [];
     const cell = (column: string | undefined) => (column ? (row[column] ?? "").trim() : "");

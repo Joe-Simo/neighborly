@@ -95,7 +95,7 @@ function Report() {
   useLayoutEffect(() => {
     if (!canCheck) return;
     // Once the sheet is open the button has done its work, so it leaves the head.
-    setHeadAction({ label: checking ? "Checking" : "Check before you send", run: () => void (checking || lookOver()), quiet: checking });
+    setHeadAction({ label: checking ? "Checking…" : "Check before you send", run: () => void (checking || lookOver()), quiet: checking });
     return () => setHeadAction(null);
   }, [canCheck, checking, lookOver, setHeadAction]);
 

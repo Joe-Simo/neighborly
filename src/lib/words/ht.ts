@@ -253,7 +253,7 @@ export function ht(set: WordSet): Words {
     people: {
       roles: { owner: "Responsab", coordinator: "Kowòdonatè", member: "Manm" },
       removed: "Pa gen aksè ankò",
-      waiting: "Ap tann apwobasyon",
+      waiting: "Poko pare pou sèvi",
     },
     teams: {
       noDescription: "Yon ekip ki gen plas pou ede.",
@@ -267,7 +267,7 @@ export function ht(set: WordSet): Words {
       coordinator: "Kowòdonatè",
       member: "Manm",
       invitedWaiting: "Envite, poko antre",
-      waitingApproval: "Ap tann apwobasyon ekip la",
+      waitingApproval: "Ap tann kowòdonatè ekip la",
       loadMore: "Chaje plis manm",
       loading: "N ap chaje manm yo…",
       emptyTitle: "Kòmanse ak yon ekip.",

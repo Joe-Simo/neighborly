@@ -257,7 +257,7 @@ export function es(set: WordSet): Words {
     people: {
       roles: { owner: "Responsable", coordinator: "Coordinador", member: "Miembro" },
       removed: "Sin acceso",
-      waiting: "Esperando aprobación",
+      waiting: "Aún no listo para servir",
     },
     teams: {
       noDescription: "Un equipo donde hay lugar para ayudar.",
@@ -271,7 +271,7 @@ export function es(set: WordSet): Words {
       coordinator: "Coordinador",
       member: "Miembro",
       invitedWaiting: "Invitado, aún no se une",
-      waitingApproval: "Esperando la aprobación del equipo",
+      waitingApproval: "Esperando al coordinador del equipo",
       loadMore: "Cargar más miembros",
       loading: "Cargando miembros…",
       emptyTitle: "Empieza con un equipo.",
