@@ -89,7 +89,7 @@ const households = [
   { line: 6, ...blank, name: "ALMA  ALMONTE" },
   { line: 7, ...blank, name: "Darnell Eastman", phone: "100.555.0100" },
   { line: 8, ...blank, name: "celeste hyppolite", phone: "(100) 555-0199" },
-  { line: 9, ...blank, name: "Esperanza Figueroa", language: "Klingon" },
+  { line: 9, ...blank, name: "Esperanza Figueroa", language: "  mandarin " },
   { line: 10, ...blank, name: "Fabrice Greenhalgh", language: "kreyòl", children: "0" },
 ];
 
@@ -104,20 +104,22 @@ describe("bringing neighbors in from a spreadsheet", () => {
   test("good rows are added; a duplicate phone or name, in the file or on file, is caught and reported", async () => {
     const { ids, as, neighbors } = await withNeighbor();
     const preview = await as(ids.coordinator).query(api.importExport.checkNeighbors, { churchId: ids.church, rows: households });
-    expect(preview.map((row) => [row.line, row.outcome])).toEqual([[2, "ready"], [3, "same_phone"], [4, "no_name"], [5, "bad_count"], [6, "repeated"], [7, "repeated"], [8, "same_name"], [9, "bad_language"], [10, "ready"]]);
+    expect(preview.map((row) => [row.line, row.outcome])).toEqual([[2, "ready"], [3, "same_phone"], [4, "no_name"], [5, "bad_count"], [6, "repeated"], [7, "repeated"], [8, "same_name"], [9, "ready"], [10, "ready"]]);
     expect(await neighbors()).toHaveLength(1);
 
     const results = await as(ids.coordinator).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households });
-    expect(results.map((row) => row.outcome)).toEqual(["added", "same_phone", "no_name", "bad_count", "repeated", "repeated", "same_name", "bad_language", "added"]);
+    expect(results.map((row) => row.outcome)).toEqual(["added", "same_phone", "no_name", "bad_count", "repeated", "repeated", "same_name", "added", "added"]);
     const added = (await neighbors()).filter((neighbor) => neighbor.name !== "Celeste Hyppolite");
     expect(added).toMatchObject([
       { name: "Alma Almonte", nameKey: "alma almonte", phone: "(100) 555-0100", phoneKey: "1005550100", address: "12 Sample St, Apt 3", adults: 2, children: 3, language: "es", notes: "Prefers a call after 5.", createdBy: ids.coordinator.memberId },
+      // Any language is kept as written: it is the household's, not one of the app's.
+      { name: "Esperanza Figueroa", language: "other", languageName: "Mandarin" },
       { name: "Fabrice Greenhalgh", phone: "", phoneKey: "", adults: 1, children: 0, language: "ht" },
     ]);
     // Sending the file again adds nobody: everyone in it is now on file.
     const again = await as(ids.coordinator).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households });
     expect(again.filter((row) => row.outcome === "added")).toEqual([]);
-    expect(await neighbors()).toHaveLength(3);
+    expect(await neighbors()).toHaveLength(4);
   });
 
   test("a member is refused, and what comes back never carries more than the name", async () => {
@@ -132,7 +134,7 @@ describe("bringing neighbors in from a spreadsheet", () => {
     const events = async () => (await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect())).filter((event) => event.action === "neighbors_imported");
     expect(await events()).toHaveLength(0);
     await as(ids.owner).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households });
-    expect(await events()).toMatchObject([{ actorId: ids.owner.userId, targetId: "2" }]);
+    expect(await events()).toMatchObject([{ actorId: ids.owner.userId, targetId: "3" }]);
   });
 });
 
@@ -255,7 +257,7 @@ describe("taking the records out", () => {
     const { t, ids, as } = await withRecords();
     const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, file, cursor: null })] as const)));
     for (const file of files) expect(pages[file].done).toBe(true);
-    expect(pages.neighbors.rows).toEqual([["Celeste Hyppolite", "(100) 555-0142", "", "412 Placeholder Rd, Apt 7", "1", "2", "Creole", "=cmd", "", "", "", "", "Utility: Demo Power & Light, account ending 4821"]]);
+    expect(pages.neighbors.rows).toEqual([["Celeste Hyppolite", "(100) 555-0142", "", "412 Placeholder Rd, Apt 7", "1", "2", "Haitian Creole", "=cmd", "", "", "", "", "Utility: Demo Power & Light, account ending 4821"]]);
     expect(JSON.stringify(pages)).not.toContain("7654");
     expect(pages.requests.rows[0].slice(0, 9)).toEqual(["Celeste Hyppolite", "(100) 555-0142", "03/14/2026", "Completed", "Utility", "80.00", "Demo Power & Light", "Shut-off notice", "Paid"]);
     expect(pages.visits.rows).toEqual([["Celeste Hyppolite", "03/16/2026", "10:00 AM", "Completed", "Thomas; Renee", "3", "6", "Kind welcome", ""]]);
@@ -302,7 +304,7 @@ describe("taking the records out", () => {
       await ctx.db.insert("auditEvents", { churchId: ids.church, actorId: ids.owner.userId, action: "neighbor.removed", targetId: neighbor._id, at: Date.UTC(2026, 2, 20, 14, 5) });
     });
     const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, file, cursor: null })] as const)));
-    expect(pages.neighbors.rows).toEqual([["Record removed", "", "", "", "1", "2", "Creole", "", "", "", "", "", ""]]);
+    expect(pages.neighbors.rows).toEqual([["Record removed", "", "", "", "1", "2", "Haitian Creole", "", "", "", "", "", ""]]);
     expect(pages.notes.rows).toEqual([]);
     expect(pages.calls.rows).toEqual([["03/13/2026", "10:05 AM", "Record removed", "", "Record removed", "", "Returned", "Renee", "Thomas", "03/13/2026", "", ""]]);
     expect(pages.requests.rows[0].slice(0, 9)).toEqual(["Record removed", "", "03/14/2026", "Completed", "Utility", "80.00", "", "Record removed", "Paid"]);

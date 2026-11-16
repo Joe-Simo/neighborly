@@ -16,7 +16,7 @@ import {
   accountKinds,
   cents,
   householdDetail,
-  languageLabels,
+  spokenLabel,
   livesHere,
   shortMoney,
   total,
@@ -69,7 +69,7 @@ export function AtHome({
             {record.neighbor.address || "No address on file"}
             <small>
               <span className="help-tel">{record.neighbor.phone || "No phone on file"}</span>
-              {" · "}Speaks {languageLabels[record.neighbor.language]}
+              {" · "}Speaks {spokenLabel(record.neighbor)}
             </small>
             {record.neighbor.email && <small>{record.neighbor.email}</small>}
           </dd>

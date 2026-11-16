@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { neighborAccess } from "./access";
+import { spokenName } from "./spoken";
 import { incomeSources, paidTowardRequest } from "./treasury";
 
 /**
@@ -99,6 +100,8 @@ export const yearReport = v.object({
   /** Households that money went toward for more than one request in the period. */
   householdsHelpedAgain: v.number(),
   householdsByLanguage: v.object({ en: v.number(), es: v.number(), ht: v.number() }),
+  /** Households speaking any other language, by the name recorded, most households first. */
+  householdsByOtherLanguage: v.array(v.object({ name: v.string(), households: v.number() })),
   /** Completed home visits whose planned time falls in the year. */
   visits: v.number(),
   /** The people in the household at each completed visit, counted once per visit, as the national report counts. */
@@ -418,11 +421,16 @@ export const year = query({
     const households = new Map([...known].filter(([id]) => helped.has(id)));
     const historyHouseholds = [...inHistory].filter((id) => known.has(id));
     const householdsByLanguage = { en: 0, es: 0, ht: 0 };
+    const otherLanguages = new Map<string, { name: string; households: number }>();
     let adults = 0, children = 0;
     for (const neighbor of households.values()) {
       adults += neighbor.adults;
       children += neighbor.children;
-      householdsByLanguage[neighbor.language] += 1;
+      if (neighbor.language === "other") {
+        // One line per language however its capitals were typed; the first spelling met is the one shown.
+        const name = spokenName(neighbor), key = name.toLowerCase();
+        otherLanguages.set(key, { name: otherLanguages.get(key)?.name ?? name, households: (otherLanguages.get(key)?.households ?? 0) + 1 });
+      } else householdsByLanguage[neighbor.language] += 1;
     }
     for (const [key, set] of monthHouseholds) month(key).households = set.size;
 
@@ -458,6 +466,7 @@ export const year = query({
       children,
       householdsHelpedAgain: [...requestsPaidFor.values()].filter((paid) => paid > 1).length,
       householdsByLanguage,
+      householdsByOtherLanguage: [...otherLanguages.values()].sort((a, b) => b.households - a.households || a.name.localeCompare(b.name)),
       visits: visits.length,
       peopleVisited: visits.reduce((people, visit) => people + size(visit.neighborId), 0),
       visitHours: round(visitHours),

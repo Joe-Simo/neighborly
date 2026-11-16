@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { spoken } from "./spoken";
 const role = v.union(v.literal("owner"), v.literal("coordinator"), v.literal("member"));
 const language = v.union(v.literal("en"), v.literal("es"), v.literal("ht"));
 /** Money is stored as whole cents, always positive; the entry kind says which way it moves. */
@@ -47,7 +48,9 @@ export default defineSchema({
     address: v.string(),
     adults: v.number(),
     children: v.number(),
-    language,
+    /** What the household speaks: one of three codes, or "other" with its name beside it. */
+    language: spoken,
+    languageName: v.optional(v.string()),
     notes: v.string(),
     alert: v.optional(v.string()),
     // No names and a birth year, not a birth date, on purpose.

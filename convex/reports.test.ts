@@ -103,7 +103,7 @@ describe("the year's counts for the sample conference", () => {
       hand.people += size;
       hand.adults += neighbor.adults;
       hand.children += neighbor.children;
-      hand[neighbor.language] += 1;
+      if (neighbor.language !== "other") hand[neighbor.language] += 1;
     }
     expect(report).toMatchObject({ year: 2026, firstDay: "2025-10-01", lastDay: "2026-09-30", timeZone: zone, closed: true });
     expect({ households: report.households, people: report.people, adults: report.adults, children: report.children, visits: report.visits, peopleVisited: report.peopleVisited, hours: report.visitHours, miles: report.visitMiles, helpPaid: report.helpPaid, ...report.householdsByLanguage }).toEqual(hand);

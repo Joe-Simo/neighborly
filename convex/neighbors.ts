@@ -6,6 +6,7 @@ import { logNeighborOpening, neighborAccess, neighborRecord } from "./access";
 import { TAKE_BACK_DAYS, callRow, lookups, nameKey, phoneKey, requestRow, toCallRow, toRequestRow } from "./assistance";
 import { paidTowardRequest } from "./treasury";
 import schema from "./schema";
+import { longestLanguageName, spokenName } from "./spoken";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
@@ -21,6 +22,7 @@ const details = {
   adults: v.number(),
   children: v.number(),
   language: fields.language,
+  languageName: fields.languageName,
   notes: v.string(),
   alert: v.optional(v.string()),
 };
@@ -34,6 +36,7 @@ const toRow = (neighbor: Doc<"neighbors">): Infer<typeof neighborRow> => ({
   adults: neighbor.adults,
   children: neighbor.children,
   language: neighbor.language,
+  ...(neighbor.language === "other" ? { languageName: spokenName(neighbor) } : {}),
   notes: neighbor.notes,
   alert: neighbor.alert ?? "",
   createdAt: neighbor.createdAt,
@@ -43,6 +46,11 @@ const short = (value: string, label: string, max: number) => {
   const trimmed = value.trim();
   if (trimmed.length > max) throw new ConvexError(`${label} is too long.`);
   return trimmed;
+};
+
+const named = (language: string) => {
+  if (!language) throw new ConvexError("Name the language.");
+  return language;
 };
 
 function clean(args: Infer<ReturnType<typeof v.object<typeof details>>>) {
@@ -62,6 +70,8 @@ function clean(args: Infer<ReturnType<typeof v.object<typeof details>>>) {
     adults: count(args.adults, "Adults", 1),
     children: count(args.children, "Children", 0),
     language: args.language,
+    // Another language is named; one of the three carries no name, and saving one clears a name kept before.
+    languageName: args.language === "other" ? named(short(args.languageName ?? "", "The language", longestLanguageName)) : undefined,
     notes: short(args.notes, "The note", 2000),
     ...(args.alert === undefined ? {} : { alert: short(args.alert, "The alert", 160) }),
   };

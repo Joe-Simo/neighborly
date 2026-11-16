@@ -12,7 +12,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { count, languageLabels } from "@/components/workspace/help-line/format";
+import { count, spokenLabel } from "@/components/workspace/help-line/format";
 import { HelpLoading } from "@/components/workspace/help-line/room";
 import { LiveFailure } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
@@ -204,7 +204,7 @@ export function VisitSheetView({
           </div>
           <div>
             <dt>Speaks</dt>
-            <dd>{languageLabels[neighbor.language]}</dd>
+            <dd>{spokenLabel(neighbor)}</dd>
           </div>
           <div>
             <dt>Going together</dt>

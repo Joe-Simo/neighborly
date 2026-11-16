@@ -727,6 +727,8 @@ export function NeighborForm({
   const [checked, setChecked] = useState<typeof typed | null>(null);
   // An older backend does not send or accept the alert yet.
   const hasAlert = typeof neighbor?.alert === "string";
+  // A household speaks what it speaks: the three met most often are offered, and any other is named.
+  const [speaks, setSpeaks] = useState<string>(neighbor?.language ?? "en");
   const onFile = useQuery(
     api.neighbors.matches,
     !neighbor && checked ? { churchId, ...checked } : "skip",
@@ -746,6 +748,7 @@ export function NeighborForm({
           adults: Number(value("adults")),
           children: Number(value("children")),
           language: pick(languageLabels, value("language")) ?? "en",
+          ...(value("language") === "other" ? { languageName: value("languageName") } : {}),
           notes: value("notes"),
         };
         if (neighbor) {
@@ -828,7 +831,8 @@ export function NeighborForm({
           <NativeSelect
             name="language"
             className="w-full"
-            defaultValue={neighbor?.language ?? "en"}
+            value={speaks}
+            onChange={(event) => setSpeaks(event.target.value)}
           >
             {Object.entries(languageLabels).map(([code, label]) => (
               <option key={code} value={code}>
@@ -837,6 +841,17 @@ export function NeighborForm({
             ))}
           </NativeSelect>
         </LiveField>
+        {speaks === "other" && (
+          <LiveField label="Language">
+            <Input
+              name="languageName"
+              required
+              maxLength={40}
+              defaultValue={neighbor?.languageName}
+              autoComplete="off"
+            />
+          </LiveField>
+        )}
         <LiveField label="Email">
           <Input
             name="email"

@@ -80,6 +80,7 @@ export function reportLines(report: YearReport): ReportLine[] {
   for (const language of ["en", "es", "ht"] as const)
     if (report.householdsByLanguage[language])
       neighbors.count(`Households speaking ${languageLabels[language]}`, report.householdsByLanguage[language]);
+  for (const other of report.householdsByOtherLanguage) neighbors.count(`Households speaking ${other.name}`, other.households);
 
   const visits = section("Home visits");
   visits.count("Home visits made", report.visits);

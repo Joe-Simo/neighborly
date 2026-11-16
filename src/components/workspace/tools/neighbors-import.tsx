@@ -19,7 +19,6 @@ const reasons: Record<Problem, string> = {
   no_name: "The name is missing.",
   too_long: "One of the boxes on this line holds more than a record can keep.",
   bad_count: "Adults and children should be whole numbers, with at least one adult.",
-  bad_language: "The language should be English, Spanish or Haitian Creole, or left empty.",
   repeated: "The same name or phone number is on an earlier line of this file.",
   same_phone: "A neighbor with this phone number is already on file.",
   same_name: "A neighbor with this name is already on file.",

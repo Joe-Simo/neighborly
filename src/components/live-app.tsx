@@ -17,11 +17,22 @@ import { LiveRoomLoading } from "@/components/workspace/primitives";
 import "@/components/public-state.css";
 import { LiveWorkspace } from "@/components/workspace/shell";
 import { RoomsAhead } from "@/components/workspace/rooms-ahead";
+import { DoorSweep, useDoor } from "@/components/workspace/door";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 
-export function LiveApp({
+/** The app, with the door's sweep above whatever it is showing. */
+export function LiveApp(props: Parameters<typeof LiveRooms>[0]) {
+  return (
+    <>
+      <LiveRooms {...props} />
+      <DoorSweep />
+    </>
+  );
+}
+
+function LiveRooms({
   area = "week",
   invitationToken = "",
   intent = "signin",
@@ -39,6 +50,8 @@ export function LiveApp({
   const [entryHandled, setEntryHandled] = useState(false);
   const { ready, signedOut } = useAccount();
   const clerk = useClerk();
+  // The sweep starts in the frame the sign-in sheet (or the sample's) leaves.
+  useDoor(signedOut);
   const signOut = () => {
     try {
       window.sessionStorage.setItem(leftKey, "1");

@@ -35,7 +35,7 @@ import {
   household,
   householdDetail,
   kindLabels,
-  languageLabels,
+  spokenLabel,
   money,
   requestTitle,
   vouchers,
@@ -495,7 +495,7 @@ export function NeighborRecordView({
             </div>
             <div>
               <dt>Speaks</dt>
-              <dd>{languageLabels[neighbor.language]}</dd>
+              <dd>{spokenLabel(neighbor)}</dd>
             </div>
             <div>
               <dt>Household</dt>
