@@ -1,10 +1,12 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { CountUp } from "@/components/workspace/primitives";
+import { openUp, useGrowsSmoothly } from "@/components/workspace/fold";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
 import { figureRoll, formatCents, formatFigure } from "@/components/workspace/treasury/money";
@@ -82,6 +84,15 @@ export function LedgerView({
   /** The entry a paid sheet has just settled into; its row holds a highlight for a moment. */
   landed?: string | null;
 }) {
+  // A new row lands in the ledger by growing into it; the request after a paid one opens its own room, once.
+  const table = useRef<HTMLDivElement>(null);
+  useGrowsSmoothly(table);
+  const risen = useRef<string>(undefined);
+  const rise = (sheet: HTMLElement | null) => {
+    if (!sheet || risen.current === sheet.dataset.request) return;
+    risen.current = sheet.dataset.request;
+    openUp(sheet);
+  };
   const month = monthLabel(ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
   // Months are listed newest first.
@@ -160,6 +171,8 @@ export function LedgerView({
       {first && (
         <section
           key={first.requestId}
+          ref={landed && !paid ? rise : undefined}
+          data-request={first.requestId}
           className={paid ? "help-sheet treasury-sheet paper-fold" : "help-sheet treasury-sheet"}
           data-fold-leaves={paid ? "" : undefined}
           aria-labelledby="treasury-waiting-title"
@@ -266,7 +279,7 @@ export function LedgerView({
         <span className="live-count">Every payment for a neighbor is tied to a request</span>
       </div>
       {ledger.entries.length ? (
-        <div className="live-table-scroll">
+        <div className="live-table-scroll" ref={table}>
           <table className="help-ledger">
             <thead>
               <tr>

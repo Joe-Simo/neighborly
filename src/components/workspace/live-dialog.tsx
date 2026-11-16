@@ -46,7 +46,13 @@ export function LiveDialog({
     // The sheet reaches its new height a moment after the keyboard moves it, so the box being typed in
     // is brought back into view each time the sheet's own size changes, not only once.
     const settled = new ResizeObserver(() => keepInView(document.activeElement));
+    // The tallest the view has been since the dialog opened is the screen without its keyboard.
+    let tallest = view.height;
     const fit = () => {
+      tallest = Math.max(tallest, view.height);
+      // A see-through keyboard shows whatever lies under it, and nothing fixed to the window can be drawn
+      // there. So while the keyboard is up the page behind steps back, and what shows is plain paper.
+      document.documentElement.toggleAttribute("data-live-keyboard", view.height < tallest - 120);
       const sheet = document.activeElement?.closest(".live-dialog-fixed");
       if (sheet) settled.observe(sheet);
       root.setProperty("--live-view-height", `${view.height}px`);
@@ -66,6 +72,7 @@ export function LiveDialog({
       root.removeProperty("--live-view-height");
       root.removeProperty("--live-view-top");
       document.documentElement.removeAttribute("data-live-short");
+      document.documentElement.removeAttribute("data-live-keyboard");
     };
   }, [open]);
   // The way out is named in the reader's language wherever the dialog opens inside the workspace.
