@@ -77,7 +77,9 @@ export function LiveTimeOffForm({
           {error}
         </div>
       )}
-      <Button type="submit">{words.timeOffForm.review}</Button>
+      <div className="live-form-actions">
+        <Button type="submit">{words.timeOffForm.review}</Button>
+      </div>
     </form>
   );
 }
