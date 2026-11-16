@@ -14,7 +14,7 @@
 .public-words h1{margin:0 0 clamp(36px,5vw,80px);font:400 clamp(64px,9vw,144px)/.92 'Newsreader',Georgia,serif;letter-spacing:-.065em}
 .public-words section{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px clamp(40px,6vw,110px);padding:clamp(28px,3.2vw,48px) 0;border-top:1px solid #293f3224}
 .public-words h2{margin:0;max-width:14ch;font:400 clamp(28px,2.7vw,44px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em;text-wrap:balance}
-.public-words section>div{max-width:62ch;font-size:17px;line-height:1.6}
+.public-words section>div{max-width:47ch;font-size:17px;line-height:1.6}
 .public-words p,.public-words ul{margin:0 0 1em;text-wrap:pretty}
 .public-words section>div>:last-child{margin-bottom:0}
 .public-words ul{padding:0;list-style:none}
@@ -29,7 +29,8 @@
 .public-words-relief{display:none}
 @media(min-width:1280px){
   .public-words{position:relative}
-  .public-words-relief{display:block;position:absolute;right:0;top:clamp(8px,2vw,40px);width:340px;aspect-ratio:3/2;background:url(/assets/home/relief-kept-640.webp) center/cover no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat,linear-gradient(90deg,transparent,#000 34%);-webkit-mask-composite:source-in;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat,linear-gradient(90deg,transparent,#000 34%);mask-composite:intersect}
+  .public-words-relief{display:block;position:absolute;right:0;top:clamp(8px,2vw,40px);width:340px;aspect-ratio:3/2;background:url(/assets/home/relief-kept-640.webp) center/cover no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+  /* The relief is cut from its sheet along one wavy line, never faded into the page. */
 }
 @media(max-width:900px){
   .public-page-header{height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
