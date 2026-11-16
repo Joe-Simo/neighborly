@@ -3,6 +3,7 @@
 import { FOLD_HOLD, foldLeaves, useSavedLine } from "@/components/workspace/fold";
 import "./visits.css";
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -17,6 +18,7 @@ import { CircleCheck, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+import { RoomAside } from "@/components/workspace/aside";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { count, initials } from "@/components/workspace/help-line/format";
@@ -239,7 +241,16 @@ function Pair({
           {initials(name)}
         </span>
       ))}
-      {!bare && names.join(" and ")}
+      {!bare && (
+        <span>
+          {names.map((name, index) => (
+            <Fragment key={name}>
+              {index > 0 && " and "}
+              <span className="visits-name">{name}</span>
+            </Fragment>
+          ))}
+        </span>
+      )}
     </span>
   );
 }
@@ -332,6 +343,14 @@ export function VisitsView({
       </div>
     );
   };
+  // The side column on a wide screen: the week's visits by day. Only while the pair sheet holds the
+  // top of the room; without it, Coming up is the first thing on screen and says the same.
+  const goingOut = new Map<string, Visit[]>();
+  for (const visit of suggested ? coming : []) {
+    if (visit.scheduledAt >= now + WEEK) continue;
+    const day = format(visit.scheduledAt, { weekday: "long", month: "short", day: "numeric" });
+    goingOut.set(day, [...(goingOut.get(day) ?? []), visit]);
+  }
   const nothing =
     !suggested &&
     !coming.length &&
@@ -399,6 +418,31 @@ export function VisitsView({
         </section>
       )}
 
+      {goingOut.size > 0 && (
+        <RoomAside title="Going out this week">
+          {[...goingOut].map(([day, visits]) => (
+            <section className="visits-aside-day" key={day}>
+              <h3>{day}</h3>
+              <ul>
+                {visits.map((visit) => {
+                  const going = visit.visitors.filter((visitor) => !visitor.removed);
+                  return (
+                    <li key={visit.id}>
+                      <span>{part(visit.scheduledAt, { hour: "numeric", minute: "2-digit" })}</span>
+                      <span>
+                        {going.map((visitor) => (
+                          <strong key={visitor.memberId}>{visitor.name}</strong>
+                        ))}
+                        {going.length < 2 && <em>{standing(visit).text}</em>}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </RoomAside>
+      )}
       {nothing ? (
         <HelpEmpty title="No one is waiting on a visit.">
           When a request for help comes in on the help line, it appears here
