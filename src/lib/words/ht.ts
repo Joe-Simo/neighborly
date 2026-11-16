@@ -477,7 +477,6 @@ export function ht(set: WordSet): Words {
         creating: "N ap kreye konferans ou a…", joining: "N ap antre nan konferans ou a…", create: "Kreye konferans", join: "Antre nan konferans lan",
         notSaved: "Nou pa t kapab anrejistre sa. Sa ou te ekri a toujou la. Peze Kreye konferans ankò.",
         notSavedJoin: "Nou pa t kapab anrejistre sa. Sa ou te ekri a toujou la. Peze Antre nan konferans lan ankò.",
-        timeZoneHelp: "Angajman yo ak reyinyon yo sèvi ak zòn lè sa a.", kept: "Sa ou te ekri a toujou la. Verifye detay yo epi eseye ankò.",
         addName: "Mete non ou.", addConferenceName: "Mete non konferans lan.", addCode: "Mete kòd envitasyon ou.",
       },
     },

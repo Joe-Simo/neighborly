@@ -482,7 +482,6 @@ export function es(set: WordSet): Words {
         creating: "Creando tu conferencia…", joining: "Uniéndote a tu conferencia…", create: "Crear conferencia", join: "Unirme a la conferencia",
         notSaved: "No pudimos guardar eso. Lo que escribiste sigue aquí. Presiona Crear conferencia otra vez.",
         notSavedJoin: "No pudimos guardar eso. Lo que escribiste sigue aquí. Presiona Unirme a la conferencia otra vez.",
-        timeZoneHelp: "Los compromisos y las reuniones usan esta zona horaria.", kept: "Lo que escribiste sigue aquí. Revisa los datos e inténtalo de nuevo.",
         addName: "Escribe tu nombre.", addConferenceName: "Escribe el nombre de la conferencia.", addCode: "Escribe tu código de invitación.",
       },
     },
