@@ -255,7 +255,7 @@ export function en(set: WordSet) {
       opening: "Opening…",
       needed: "Fill this in.",
       neededChoice: "Choose one.",
-      neededCheck: "Check this one.",
+      neededCheck: "Look at this again.",
       notSaved: "That couldn’t be saved. Please try again.",
       offlineSave: "There is no connection right now, so this was not saved.",
       kept: "Nothing was saved, and what you typed is still here.",

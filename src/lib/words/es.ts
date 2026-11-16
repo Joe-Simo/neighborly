@@ -256,7 +256,7 @@ export function es(set: WordSet): Words {
       opening: "Abriendo…",
       needed: "Completa esto.",
       neededChoice: "Elige una opción.",
-      neededCheck: "Marca esta casilla.",
+      neededCheck: "Revisa esto.",
       notSaved: "No se pudo guardar. Inténtalo de nuevo.",
       offlineSave: "Ahora no hay conexión, así que esto no se guardó.",
       kept: "No se guardó nada, y lo que escribiste sigue aquí.",

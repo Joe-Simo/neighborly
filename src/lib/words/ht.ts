@@ -251,7 +251,7 @@ export function ht(set: WordSet): Words {
       opening: "N ap louvri…",
       needed: "Ranpli sa a.",
       neededChoice: "Chwazi youn.",
-      neededCheck: "Koche sa a.",
+      neededCheck: "Verifye sa a.",
       notSaved: "Sa pa t anrejistre. Tanpri eseye ankò.",
       offlineSave: "Pa gen koneksyon kounye a, kidonk sa pa t anrejistre.",
       kept: "Anyen pa t anrejistre, e sa ou te ekri a la toujou.",
