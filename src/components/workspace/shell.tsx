@@ -36,8 +36,8 @@ import {
 import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { AsideSlot, useWideScreen } from "@/components/workspace/aside";
 import { useSavedLine } from "@/components/workspace/fold";
-import { ReliefPicture } from "@/components/workspace/relief";
-import { ArrivingRelief } from "@/components/workspace/relief-arrival";
+import type { ReliefName } from "@/components/workspace/relief";
+import { ArrivingRelief, fetchAhead } from "@/components/workspace/relief-arrival";
 import { sections } from "@/components/workspace/sections";
 import type {
   LiveCommand,
@@ -200,6 +200,14 @@ export function LiveWorkspace({
   // let go before the next can be seen.
   const [pictured, setPictured] = useState<LiveArea>();
   const picturedNow = useCallback(() => setPictured(area), [area]);
+  // Once the first room's picture is in, the other rooms' pictures are fetched quietly behind it.
+  const settled = pictured !== undefined;
+  const others = menuItems.map((item) => headings[item.id].art.picture).join(" ");
+  useEffect(() => {
+    if (!settled) return;
+    const later = window.setTimeout(() => fetchAhead(others.split(" ") as ReliefName[]), 900);
+    return () => window.clearTimeout(later);
+  }, [settled, others]);
   const workspace: Workspace = {
     area,
     data,
@@ -299,27 +307,28 @@ export function LiveWorkspace({
           lang={roomWords.locale}
           style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
         >
-          <div className="live-page-head" key={`head-${area}`}>
+          <div className="live-page-head">
             {heading.art && (
-              <div
-                className="live-head-art"
-                data-laid={headArt.laid ? "" : undefined}
-                data-ready={pictured === area ? "" : undefined}
-                style={heading.art.band === undefined ? undefined : ({ "--relief-y": heading.art.band } as CSSProperties)}
-              >
+              // The band stands across rooms and each picture is known by its name, so the last room's picture
+              // is the very one that was on screen (never a fresh copy that has to load and decode again).
+              <div className="live-head-art" data-laid={headArt.laid ? "" : undefined} data-ready={pictured === area ? "" : undefined}>
+                <ArrivingRelief key={heading.art.picture} name={heading.art.picture} focus={heading.art.focus} band={heading.art.band} onReady={picturedNow} />
                 {under && (
-                  <span
+                  <ArrivingRelief
+                    key={under.picture}
+                    name={under.picture}
+                    focus={under.focus}
+                    band={under.band}
+                    onReady={nothing}
                     className="live-head-under"
-                    style={{ "--relief-y": under.band ?? 0.5 } as CSSProperties}
-                    onAnimationEnd={() => setHeadArt((now) => ({ ...now, under: null }))}
-                  >
-                    <ReliefPicture name={under.picture} focus={under.focus} />
-                  </span>
+                    onAnimationEnd={(event) => {
+                      if (event.target === event.currentTarget) setHeadArt((now) => ({ ...now, under: null }));
+                    }}
+                  />
                 )}
-                <ArrivingRelief name={heading.art.picture} focus={heading.art.focus} onReady={picturedNow} />
               </div>
             )}
-            <div className="live-head-words">
+            <div className="live-head-words" key={`words-${area}`}>
               {headingOverride?.back && (
                 <button type="button" className="live-back live-head-back" onClick={headingOverride.back.run}>
                   <ArrowLeft size={16} aria-hidden="true" />
@@ -336,7 +345,7 @@ export function LiveWorkspace({
                 <p className="!mt-4 text-[15px] text-[#68715f]">{roomWords.shell.roomInEnglish}</p>
               )}
             </div>
-            <div className="live-head-actions">
+            <div className="live-head-actions" key={`actions-${area}`}>
               {primary &&
                 ((isOwner && area !== "mine") ||
                 (data.canCoordinate && area === "commitments") ||
@@ -742,3 +751,4 @@ function useSystemTextSize() {
 let opened: number | undefined;
 const openedAt = () => (opened ??= Date.now());
 const noChange = () => () => {};
+const nothing = () => {};

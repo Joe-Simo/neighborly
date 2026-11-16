@@ -138,7 +138,7 @@
 /* Between rooms: one cross-fade of 200ms. The new picture comes up over the last one, which stays whole under it
    and is taken away only when the new one is fully there, so bare paper never shows through. */
 .live-head-art[data-laid] > .relief { animation: paper-show 200ms ease-out backwards; }
-.live-head-under { position: absolute; inset: 0; z-index: -1; animation: paper-gone 200ms step-end forwards; }
+.live-head-art > .relief.live-head-under { z-index: -1; animation: paper-gone 200ms step-end forwards; }
 @keyframes paper-gone { to { opacity: 0; } }
 /* Neither begins until the new picture is in: the last room's picture stays whole under an empty band, never a blank one. */
 .live-head-art:not([data-ready]) > .relief,
@@ -260,8 +260,7 @@
   height: 132px;
   margin: calc(-1 * var(--live-top)) calc(-1 * max(var(--live-pad), env(safe-area-inset-right))) 16px calc(-1 * var(--live-pad));
 }
-.live-head-art > .relief,
-.live-head-under > .relief {
+.live-head-art > .relief {
   position: absolute;
   right: 0;
   top: calc(-61.3% * var(--relief-y, 0.5));
@@ -285,7 +284,8 @@
     height: auto;
     margin: 0;
   }
-  .live-head-art > .relief, .live-head-under > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
+  .live-head-art > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
+  .live-head-art > .relief.live-head-under { position: absolute; inset: 0; }
   .live-head-words,
   .live-head-actions {
     position: relative;
@@ -558,7 +558,7 @@
   .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-head-words > *, .live-head-actions, .live-head-art > .relief,
   .live-room, .live-mobile-menu, .paper-loading-label svg { animation: none; }
   .paper-loading-label { animation-duration: 1ms; }
-  .paper-wave, .live-head-under { display: none !important; }
+  .paper-wave, .live-head-art[data-ready] > .live-head-under { display: none !important; }
   .live-app[data-arriving] { --paper-wait: 0ms; }
   .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
   .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }

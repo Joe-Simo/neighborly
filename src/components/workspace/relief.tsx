@@ -1,4 +1,4 @@
-import { useId, type CSSProperties } from "react";
+import { useId, type AnimationEventHandler, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 /** The paper relief pictures, by the name of their file: `public/assets/relief/relief-<name>-<width>.avif` and `.webp`. */
@@ -56,6 +56,9 @@ export const reliefMoves: Partial<Record<ReliefName, { x?: number; y?: number; t
   // Still on purpose, until a cut holds at every start: mine, teams, rest, help, files.
 };
 
+/** A picture that has loaded is not yet one that can be painted: this waits for its decode as well. */
+export const whenDecoded = (image: HTMLImageElement, then: () => void) => void image.decode().then(then, then);
+
 const usual: readonly number[] = [640, 1024, 1536];
 export const reliefSources = (name: string, type: "avif" | "webp", widths: readonly number[] = usual) =>
   widths.map((width) => `/assets/relief/relief-${name}-${width}.${type} ${width}w`).join(", ");
@@ -72,7 +75,11 @@ export function ReliefPicture({
   widths = usual,
   onReady,
   className,
+  style,
+  onAnimationEnd,
 }: {
+  style?: CSSProperties;
+  onAnimationEnd?: AnimationEventHandler<HTMLElement>;
   /** Called once the picture can be painted (or cannot be had), so whoever lays it can wait for it. */
   onReady?: () => void;
   name: ReliefName;
@@ -87,7 +94,7 @@ export function ReliefPicture({
   if (!reliefReady.includes(name))
     return <ReliefPlaceholder name={name} vignette={vignette} className={className} />;
   return (
-    <picture className={cn("relief", className)}>
+    <picture className={cn("relief", className)} style={style} onAnimationEnd={onAnimationEnd}>
       <source type="image/avif" srcSet={reliefSources(name, "avif", widths)} sizes={vignette ? "96px" : sizes} />
       <source type="image/webp" srcSet={reliefSources(name, "webp", widths)} sizes={vignette ? "96px" : sizes} />
       <img
@@ -97,8 +104,8 @@ export function ReliefPicture({
         height={1024}
         decoding="async"
         style={{ objectPosition: focus }}
-        ref={onReady && ((image) => void (image?.complete && onReady()))}
-        onLoad={onReady}
+        ref={onReady && ((image) => void (image?.complete && whenDecoded(image, onReady)))}
+        onLoad={onReady && (({ currentTarget }) => whenDecoded(currentTarget, onReady))}
         onError={onReady}
       />
     </picture>
