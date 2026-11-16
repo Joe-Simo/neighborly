@@ -10,6 +10,8 @@ const GROW = 520;
 /** If nothing on the other side takes the card (an error, a visitor already inside), it is let go rather than held for ever. */
 const LONGEST = 12000;
 const EASE = "cubic-bezier(.3,.6,.2,1)";
+/** On a wide window the card starts slowly, so it is seen as the card, words and all, before it fills the window; a fast start covered the window in about 120ms. */
+const WIDE = "cubic-bezier(.55,0,.25,1)";
 
 /** Pressed, the card is not left behind: the same card, words and all, grows to the window and becomes the first sheet of the room. */
 export function CardOfferGrow() {
@@ -43,10 +45,10 @@ export function CardOfferGrow() {
     const narrow = innerWidth < 701, rest = narrow ? .4 : 0;
     const grow = sheet.animate(narrow
       ? [{ transform: `rotate(${turn}deg)`, easing: EASE }, { transform: `translate(${dx}px,${dy}px) rotate(0deg) scale(${innerWidth * .92 / width})`, offset: rest, easing: "cubic-bezier(.5,0,.3,1)" }, end]
-      : [{ transform: `rotate(${turn}deg)` }, end], { ...timing, duration: narrow ? GROW + 200 : GROW, easing: narrow ? "linear" : EASE });
+      : [{ transform: `rotate(${turn}deg)` }, end], { ...timing, duration: narrow ? GROW + 200 : GROW, easing: narrow ? "linear" : WIDE });
     // Its words give way to the bare paper before any edge of them could leave the window.
     // On a narrow window the words go as soon as it starts to fill it, before any edge of them is cut.
-    const fade = narrow ? rest : .25;
+    const fade = narrow ? rest : .42;
     for (const mark of sheet.children) mark.animate([{ opacity: 1 }, { opacity: 1, offset: fade }, { opacity: 0, offset: fade + (narrow ? .08 : .12) }, { opacity: 0 }], { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     const since = performance.now();
     const keep = () => {
