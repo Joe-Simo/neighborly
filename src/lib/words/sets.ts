@@ -1,11 +1,10 @@
-export const languages = ["en", "es", "ht"] as const;
+export const languages = ["en", "es"] as const;
 export type Language = (typeof languages)[number];
 
 /** Each language named in itself, for the place where a person chooses theirs. */
 export const languageNames: Record<Language, string> = {
   en: "English",
   es: "Español",
-  ht: "Kreyòl ayisyen",
 };
 
 /**

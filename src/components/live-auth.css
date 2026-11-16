@@ -299,6 +299,9 @@
     background: var(--paper);
   }
 }
+/* Inside the iPhone and iPad app the shell itself holds the status area with a native strip for as long
+   as this sheet is shown, so the page draws none. Safari and the home-screen app never carry the mark. */
+:root[data-shell="ios"] .entry::before { display: none; }
 /* ── A phone: the door as a band across the top, the sheet laid over its foot ── */
 @media (max-width: 699px) {
   .entry {
@@ -319,7 +322,7 @@
     background: var(--paper);
   }
   .entry-sheet { position: relative; flex: none; }
-  /* Three languages and one more word share the foot line on the narrowest phone. */
+  /* Two languages and one more word share the foot line on the narrowest phone. */
   .entry-foot-line, .entry-languages { column-gap: 12px; }
   .entry::before { flex: none; }
   /* On a phone the strip rides in the page itself and sticks to its top edge, so it holds at every

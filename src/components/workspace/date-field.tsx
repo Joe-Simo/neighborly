@@ -4,14 +4,14 @@ import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronDown } from "lucide-react";
 import { wrongControl } from "@/components/workspace/failure";
 import { DayPicker } from "react-day-picker";
-import { es, ht } from "react-day-picker/locale";
+import { es } from "react-day-picker/locale";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate, type Language } from "@/lib/words";
 
-const calendars = { en: undefined, es, ht };
+const calendars = { en: undefined, es };
 
 /** "2026-11-20" and the local day it names, each way. */
 const toDay = (value: string) => {
@@ -21,7 +21,7 @@ const toDay = (value: string) => {
 const toValue = (day: Date) =>
   `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
 
-/** A typed day: 2026-11-19, or numbers in the order the language writes them (11/19 in English, 19/11 in Spanish and Creole). */
+/** A typed day: 2026-11-19, or numbers in the order the language writes them (11/19 in English, 19/11 in Spanish). */
 function readTyped(text: string, language: Language): string | undefined {
   const parts = text.trim().split(/[^0-9]+/).filter(Boolean).map(Number);
   if (parts.length < 2 || parts.length > 3) return undefined;

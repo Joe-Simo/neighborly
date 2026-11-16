@@ -110,10 +110,10 @@ Rows and links already lift on hover; do not add another hover of your own.
   input does: read it from `FormData` by `name`, or pass `value` and `onChange(value)`. `min` and `max` bound the days.
   Closed it reads "Thursday, November 19" with a chevron; open it is a month with 44px days (shadcn Popover with
   react-day-picker on a desk, a sheet from the bottom under 700px). On a desk a day can be typed (11/19 in English,
-  19/11 in Spanish and Creole, or 2026-11-19).
+  19/11 in Spanish, or 2026-11-19).
 - `<TimeField name="time" from="07:00" to="20:30" />` is a list of half hours as `"HH:mm"`, the range set by the room.
 
-Both speak en, es and ht from the word tables.
+Both speak en and es from the word tables.
 
 ## When something is not as usual
 
@@ -132,7 +132,7 @@ One family, in `states.tsx` and `failure.ts`; the look is in `paper.css`. Plum a
   sentence, at most one action. `LiveEmpty` stays the short way to write the empty one.
 - `<LiveConnection />` is the strip above a room while the connection is down, and `RoomBoundary` keeps a fault
   inside one room; the shell places both. Whole-page states (`app/error.tsx`, `not-found.tsx`, `/offline`) use
-  the sign-in layout. Words are `words.states` (en, es, ht); `stateWords` is the English copy for pages outside the workspace.
+  the sign-in layout. Words are `words.states` (en, es); `stateWords` is the English copy for pages outside the workspace.
 
 ## The paper corner rule
 

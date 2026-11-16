@@ -39,7 +39,8 @@ export function EntrySheet({
   // paper strip over the status area follows the view down. No word is ever read behind the clock.
   useEffect(() => {
     const view = window.visualViewport;
-    if (!view) return;
+    // The app's shell holds the status area natively (`data-shell="ios"`), so there is no strip to move.
+    if (!view || document.documentElement.dataset.shell === "ios") return;
     const root = document.documentElement.style;
     const read = () => root.setProperty("--live-pan", `${Math.max(0, view.offsetTop)}px`);
     read();

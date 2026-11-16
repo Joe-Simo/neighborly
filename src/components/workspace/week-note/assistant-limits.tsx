@@ -33,7 +33,7 @@ export function useOpenedIntoView<Part extends HTMLElement>(open: boolean) {
 
 /**
  * The help line is a leaders' room and reads in English throughout, so what stands inside it does too.
- * The Spanish and Creole phrases are in the tables for the day the room is translated: use the person's words then.
+ * The Spanish phrases are in the tables for the day the room is translated: use the person's words then.
  */
 function useRoomWords() {
   const { data } = useWorkspace();

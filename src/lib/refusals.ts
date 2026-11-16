@@ -1,6 +1,6 @@
 /**
  * Sentences the backend says to a member when it refuses their own act. The backend throws them
- * by name, in English; the word tables carry the same sentence in Spanish and Creole, keyed by the
+ * by name, in English; the word tables carry the same sentence in Spanish, keyed by the
  * English. Each sentence is written here and nowhere else.
  */
 export const refusals = {

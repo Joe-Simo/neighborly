@@ -17,7 +17,7 @@ describe("the language a person reads in", () => {
     const saved = async () => (await t.run(ctx => ctx.db.get("memberships", memberId)))?.language;
     await member.mutation(api.language.adopt, { churchId, language: "es" });
     expect(await saved()).toBe("es");
-    await member.mutation(api.language.adopt, { churchId, language: "ht" });
+    await member.mutation(api.language.adopt, { churchId, language: "en" });
     expect(await saved()).toBe("es");
     await member.mutation(api.language.choose, { churchId, language: "en" });
     await member.mutation(api.language.adopt, { churchId, language: "es" });
@@ -35,7 +35,7 @@ describe("the language a person reads in", () => {
     });
     const visitor = t.withIdentity({ subject: "clerk|visitor", email: "owner@example.org", emailVerified: true });
     await visitor.mutation(api.language.adopt, { churchId, language: "es" });
-    await visitor.mutation(api.language.choose, { churchId, language: "ht" });
+    await visitor.mutation(api.language.choose, { churchId, language: "en" });
     expect((await t.run(ctx => ctx.db.get("memberships", memberId)))?.language).toBeUndefined();
     vi.unstubAllEnvs();
   });
