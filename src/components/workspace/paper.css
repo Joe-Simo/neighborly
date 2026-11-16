@@ -827,7 +827,7 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
 /* Under 900px the room's picture already stands at the head a screen above: the empty place is the sentence and its line alone. */
 @media (max-width: 899px) {
   .live-app :is(.live-empty, .help-empty) { grid-template-columns: minmax(0, 1fr); }
-  .live-app :is(.live-empty > .paper-vignette, .help-empty-art) { display: none; }
+  .live-app :is(.live-empty, .help-empty) > .paper-vignette, .live-app .help-empty-art { display: none; }
 }
 
 /* ── Room heads at true size, as the home page lays its pictures ──────────────────────────────
