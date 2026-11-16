@@ -61,11 +61,20 @@
 .relief-words h2{margin:0;font:400 clamp(56px,6.4vw,112px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.065em}
 .relief-words p{margin:clamp(20px,2.2vw,32px) 0 0;max-width:34ch;font-size:17px;line-height:1.5;text-wrap:pretty}
 /* Each picture is cut from the page's own paper and runs off the nearest edge of the screen. Its waves are its only border. */
-.relief-picture{position:relative;aspect-ratio:3/2;width:min(100%,118svh);justify-self:end;overflow:hidden;translate:0 calc(var(--e) * 56px);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.relief-picture{position:relative;container-type:inline-size;aspect-ratio:3/2;width:min(100%,118svh);justify-self:end;overflow:hidden;translate:0 calc(var(--e) * 56px);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
 /* The inner corner closes in a curve, so no shape ends on a straight cut. */
 .relief-panel[data-side=left] .relief-picture{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V82C91 99 85 100 58 97S20 100 0 96Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V82C91 99 85 100 58 97S20 100 0 96Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
-.relief-picture img{display:block;width:100%;height:100%;object-fit:cover;scale:calc(1 + var(--e) * .06);transform-origin:100% 50%}
-.relief-panel[data-side=left] .relief-picture img{transform-origin:0 50%}
+.relief-layers{position:relative;width:100%;height:100%;scale:calc(1 + var(--e) * .06);transform-origin:100% 50%}
+.relief-panel[data-side=left] .relief-layers{transform-origin:0 50%}
+.relief-layers img{display:block;width:100%;height:100%;object-fit:cover}
+/* A piece is cut with a margin of 32 parts in 1536 all round, so a sleeve that leaves the picture has paper to move with. */
+.relief-piece{position:absolute;left:-2.0833%;top:-3.125%;width:104.1667%;height:106.25%;pointer-events:none}
+.relief-piece[data-moves]{transition:transform .6s cubic-bezier(.2,.7,.2,1) .12s}
+/* Where each loose piece waits before its picture arrives. The move is never more than about ten pixels. */
+.relief-story.is-live .relief-panel:not(.is-in) [data-picture=visit] .relief-piece[data-moves]{transform:scaleX(1.028)}
+[data-picture=visit] .relief-piece[data-moves]{transform-origin:12.3% 50%}
+.relief-story.is-live .relief-panel:not(.is-in) [data-picture=year] .relief-piece[data-moves]{transform:translateY(clamp(-5px,-.6cqw,-2px)) scaleX(.972)}
+[data-picture=year] .relief-piece[data-moves]{transform-origin:42.75% 100%}
 @media(max-width:820px){
   .relief-story{margin-top:-9vw;padding:2svh 0 48px}
   .relief-story::before,.relief-story::after{height:10vw}
@@ -74,7 +83,7 @@
   .relief-words{padding:0 20px}
   .relief-words h2{font-size:clamp(52px,15vw,84px)}
 }
-@media(prefers-reduced-motion:reduce){.relief-panel{--e:0!important}}
+@media(prefers-reduced-motion:reduce){.relief-panel{--e:0!important}.relief-story .relief-piece[data-moves]{transform:none!important;transition:none}}
 
 /* A phone on its side: the wide layout, set smaller, with room for the caption under a lower fresco. */
 @media(max-height:500px) and (min-aspect-ratio:10/11){
