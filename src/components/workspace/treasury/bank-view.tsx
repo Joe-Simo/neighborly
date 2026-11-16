@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueries } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import { CircleCheck } from "lucide-react";
@@ -414,9 +414,8 @@ export function BankRoom({
   const [asOf, setAsOf] = useState<string>();
   const bank = useQuery(api.treasury.reconciliation, { churchId, asOf });
   // Asked for in a way that cannot fail the screen if the backend does not have it yet.
-  const { kept } = useQueries({
-    kept: { query: api.treasury.statements, args: { churchId } },
-  });
+  const asked = useMemo(() => ({ kept: { query: api.treasury.statements, args: { churchId } } }), [churchId]);
+  const { kept } = useQueries(asked);
   const agreeStatement = useMutation(api.treasury.agreeStatement);
   const clearDeposit = useMutation(api.treasury.clearDeposit);
   const setCleared = useMutation(api.treasury.setCleared);
