@@ -149,6 +149,10 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const thumbFrom = .5;
   const cardTuck = [-.11, .07] as const;
   let landed = 0;
+  // The open hand takes the card: it gives 6px under the small weight and comes back, and its palm closes 3 degrees and keeps hold.
+  let receiver: T.Object3D | undefined, receiverPalm: T.Object3D | undefined;
+  let taken = 0, gaveDip = 0, gaveCurl = 0, setDip = NaN, setCurl = NaN;
+  const takeTime = .62, takeDip = 6, takeCurl = -3 * Math.PI / 180;
   let openingOutcome: ReliefOutcome = "rest";
   const openingRoot = new T.Group();
   scene.add(openingRoot);
@@ -674,6 +678,13 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
         // A soft ease out: quick at first, then the last of the drop is slow, as a hand gives under a small weight.
         const settled = 1 - (1 - landed) ** 3;
         cardSeat.position.y += (1 - settled) * arrived * cardDrop * worldHeight / Math.max(1, host.clientHeight) / (scale * rigScale);
+        taken = down ? reduce ? 1 : Math.min(1, taken + dt / takeTime) : 0;
+        const pixel = worldHeight / Math.max(1, host.clientHeight) / (scale * rigScale);
+        const dip = reduce ? 0 : Math.sin(Math.min(1, taken * 1.25) * Math.PI) * (1 - taken * .35) * takeDip * pixel, curl = reduce ? 0 : (1 - (1 - taken) ** 3) * takeCurl;
+        // What was added last frame is taken off first, unless the playback has since written the bone afresh.
+        if (receiver) { if (receiver.position.y === setDip) receiver.position.y += gaveDip; receiver.position.y -= dip; setDip = receiver.position.y; gaveDip = dip; }
+        if (receiverPalm) { if (receiverPalm.rotation.z === setCurl) receiverPalm.rotation.z -= gaveCurl; receiverPalm.rotation.z += curl; setCurl = receiverPalm.rotation.z; gaveCurl = curl; }
+        cardSeat.position.y -= dip;
         if (cardShadow) {
           cardShadow.position.copy(cardSeat.position);
           cardShadow.position.x -= cardWidth * rest * .02;
@@ -707,7 +718,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     camera.updateProjectionMatrix();
     renderer.render(scene, camera);
     if (!ready && artwork.has(current) && openingLoaded) { ready = true; options.onReady?.(); }
-    if ((!scrollMode && phase === "transitioning" && transitionReady) || interaction !== interactionTarget || !pointer.equals(pointerTarget) || openingPlayback?.isRunning() || ((openingPlayback?.passed() ?? 0) >= 1 && landed < 1)) wake();
+    if ((!scrollMode && phase === "transitioning" && transitionReady) || interaction !== interactionTarget || !pointer.equals(pointerTarget) || openingPlayback?.isRunning() || ((openingPlayback?.passed() ?? 0) >= 1 && (landed < 1 || taken < 1))) wake();
   }
   function wake() {
     if (!frame && !disposed && !lost && visible && !document.hidden) { frame = requestAnimationFrame(draw); }
@@ -860,6 +871,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     // Cache the authored rest transform before restoring a non-rest outcome.
     openingPlayback.apply("rest", true, true, true);
     openingGuide = openingModel.getObjectByName("Guide");
+    receiver = openingModel.getObjectByName("Receiver"); receiverPalm = openingModel.getObjectByName("ReceiverPalm");
     if (openingGuide) { openingGuidePosition.copy(openingGuide.position); openingGuideScale.copy(openingGuide.scale); }
     if (openingGuide?.parent) {
       cardSeat = new T.Group();
