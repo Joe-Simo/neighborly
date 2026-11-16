@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueries } from "convex/react";
-import { useQuery } from "convex-helpers/react/cache/hooks";
+import { useQuery } from "@/components/workspace/query";
 import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { readFailure } from "@/components/workspace/failure";

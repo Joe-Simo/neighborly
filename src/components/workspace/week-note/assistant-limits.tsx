@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, useState } from "react";
-import { useQuery } from "convex-helpers/react/cache/hooks";
+import { useEffect, useId, useRef, useState } from "react";
+import { useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { useWorkspace } from "@/components/workspace/context";
@@ -12,6 +12,24 @@ import { formatDay, words as book } from "@/lib/words";
 
 const noteKeys = Object.keys(draftNotes) as (keyof typeof draftNotes)[];
 const quiet = "inline-flex min-h-11 cursor-pointer items-center border-0 bg-transparent p-0 underline underline-offset-4 hover:decoration-current";
+
+/**
+ * For a part that opens in place below its link: on a phone it lands under the fold, and the link seems to do
+ * nothing. Brings the opened part into view (at once under Reduce Motion) and moves focus to it, so a screen
+ * reader says it opened. Put the ref on the opened part, with tabIndex={-1}.
+ */
+export function useOpenedIntoView<Part extends HTMLElement>(open: boolean) {
+  const part = useRef<Part>(null);
+  useEffect(() => {
+    const opened = part.current;
+    if (!open || !opened) return;
+    opened.focus({ preventScroll: true });
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // A part taller than the screen is read from its top; a shorter one only needs to be all in view.
+    opened.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: opened.offsetHeight > window.innerHeight * 0.8 ? "start" : "nearest" });
+  }, [open]);
+  return part;
+}
 
 /**
  * The help line is a leaders' room and reads in English throughout, so what stands inside it does too.
@@ -48,6 +66,7 @@ export function AssistantLimits({ callId, verification, notes, sealed = false }:
   const text = useRoomWords();
   const [open, setOpen] = useState(false);
   const id = useId();
+  const opened = useOpenedIntoView<HTMLSpanElement>(open);
   const whys = useDraftNotes(notes).map((note) => note.why);
   const removed: Record<string, string> = text.removed;
   const checked = verification === "checked";
@@ -60,7 +79,7 @@ export function AssistantLimits({ callId, verification, notes, sealed = false }:
         {open ? text.hide : text.show}
       </button>
       {open && (
-        <span id={id} className="paper-rise mt-4 grid gap-y-3 text-[15px] leading-snug text-[var(--live-ink)]">
+        <span id={id} ref={opened} tabIndex={-1} className="paper-rise mt-4 grid scroll-my-24 gap-y-3 text-[15px] leading-snug text-[var(--live-ink)] outline-none">
           {[
             {
               label: text.limits.read,

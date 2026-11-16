@@ -91,6 +91,15 @@ describe("what the model may see", () => {
     expect(withoutIdentity("Moved to 8 Sample St. Apt 4 last week. Owes $60.", known)).toBe("Moved to [address] last week. Owes $60.");
   });
 
+  test("days and months stay in three languages, and a month that is somebody's first name still goes", () => {
+    expect(withoutIdentity("Our food pantry team sorts donations on Tuesdays. Ask Jordan Ellis, (239) 555-0142.", known)).toBe("Our food pantry team sorts donations on Tuesdays. [name], [phone].");
+    expect(withoutIdentity("Shut-off is set for Friday, November 20. Rent was due in October.", known)).toBe("Shut-off is set for Friday, November 20. Rent was due in October.");
+    expect(withoutIdentity("Le cortan la luz el Viernes. Debe la renta de Noviembre y los Sábados no trabaja.", known)).toBe("Le cortan la luz el Viernes. Debe la renta de Noviembre y los Sábados no trabaja.");
+    expect(withoutIdentity("Y ap koupe kouran an Vandredi. Li dwe lwaye Novanm nan.", known)).toBe("Y ap koupe kouran an Vandredi. Li dwe lwaye Novanm nan.");
+    expect(withoutIdentity("Her neighbor April Johnson and her uncle Julio Reyes can drive her on Monday.", known)).toBe("Her neighbor [name] and her uncle [name] can drive her on Monday.");
+    expect(withoutIdentity("Her daughter Wednesday Addams called.", known)).not.toContain("Addams");
+  });
+
   test("what the check needs stays", () => {
     expect(withoutIdentity(rosa, known)).toBe(rosa);
   });

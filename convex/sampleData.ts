@@ -78,7 +78,9 @@ export const load = internalMutation({
     const callSlots = [[9, 5], [9, 20], [9, 40], [10, 0], [10, 15], [10, 35], [10, 50], [11, 10], [11, 30], [11, 45], [9, 30], [10, 25], [13, 15], [14, 40], [15, 20]] as const;
     const visitSlots = [[9, 30], [10, 0], [10, 0], [10, 30], [10, 30], [11, 0], [11, 0], [14, 0], [16, 30], [17, 30]] as const;
     // The planned visits tell the whole story of a pair: both said yes, nobody has answered, one answer in.
-    const pairAnswers = [["accepted", "accepted"], ["pending", "pending"], ["accepted", "pending"], ["accepted", "accepted"]] as const;
+    const pairAnswers = [["accepted", "accepted"], ["pending", "pending"], ["accepted", "pending"], ["accepted", "declined"], ["accepted", "accepted"]] as const;
+    // Visits still ahead are in the afternoon, so the coming mornings stay free for a pair to be offered.
+    const plannedSlots = [[13, 30], [14, 0], [15, 30], [16, 30], [17, 30]] as const;
     let plannedVisits = 0;
     const households: Id<"neighbors">[] = [];
     const familyNames = Array.from({ length: HOUSEHOLDS }, (_, index) => lastNames[index % lastNames.length]);
@@ -214,7 +216,7 @@ export const load = internalMutation({
           // Counted after this visit is written, so the first planned visit takes the first pair of answers.
           const planned = done ? 0 : plannedVisits++;
           const hours = random.between(2, 5) / 2, miles = random.between(4, 22);
-          await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, clock(now + random.between(1, 3) * DAY, visitSlots)), status: done ? "completed" : "scheduled", visitors: pair.map((memberId, seat) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0, ...(done ? {} : { response: pairAnswers[Math.min(planned, pairAnswers.length - 1)][seat] }) })), notes: done ? look.pick(visitNotes) : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
+          await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, clock(now + random.between(1, 3) * DAY, plannedSlots)), status: done ? "completed" : "scheduled", visitors: pair.map((memberId, seat) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0, ...(done ? {} : { response: pairAnswers[Math.min(planned, pairAnswers.length - 1)][seat] }) })), notes: done ? look.pick(visitNotes) : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
         }
         if (outcome === "paid" && amountApproved && decidedAt && !voucher)
           await entry("expense", decidedAt + DAY, amountApproved, need.kind, payeeName, "", { requestId, neighborId, ...(need.kind === "food" || need.kind === "voucher" ? {} : { checkNumber: String(checkNumber++) }) });
@@ -233,8 +235,11 @@ export const load = internalMutation({
     // recorded (one note says a check was sent); one visit's note says it happened and it is not marked done.
     const findingsAt = now - 75 * DAY;
     await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[2], kind: "rent", summary: "One month's rent after reduced hours at work.", amountRequested: 60000, amountApproved: 60000, status: "approved", decisionNote: "Approved after the home visit. The treasurer sent the check to the landlord on the 12th.", decidedBy: owner, decidedAt: findingsAt + 4 * DAY, payeeKind: "landlord", payeeName: "Mill Road Rentals", source: "person", createdBy: staff[1], createdAt: findingsAt });
-    await ctx.db.insert("visits", { churchId, neighborId: households[6], scheduledAt: findingsAt + 2 * DAY, status: "scheduled", visitors: [visitors[0], visitors[3]].map((memberId) => ({ memberId, hours: 0, miles: 0, response: "accepted" as const })), notes: "We met with her on Tuesday afternoon. Gave the pantry hours and she will call about the light bill.", createdBy: owner, createdAt: findingsAt });
+    await ctx.db.insert("visits", { churchId, neighborId: households[6], scheduledAt: clock(findingsAt + 2 * DAY, visitSlots), status: "scheduled", visitors: [visitors[0], visitors[3]].map((memberId) => ({ memberId, hours: 0, miles: 0, response: "accepted" as const })), notes: "We met with her on Tuesday afternoon. Gave the pantry hours and she will call about the light bill.", createdBy: owner, createdAt: findingsAt });
     await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[10], kind: "utility", summary: "Electric bill with a shut-off notice.", amountRequested: 21000, amountApproved: 21000, status: "approved", decisionNote: "Approved after the home visit.", decidedBy: owner, decidedAt: findingsAt + 3 * DAY, payeeKind: "utility", payeeName: "City Power & Light", source: "person", createdBy: staff[1], createdAt: findingsAt });
+
+    // A request with no visit planned yet, so Home visits always has a household waiting for a pair.
+    await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[14], kind: "utility", summary: "Past-due water bill", amountRequested: 9500, status: "open", decisionNote: "", payeeKind: "utility", payeeName: "County Water Authority", source: "person", createdBy: staff[2], createdAt: clock(now - DAY, callSlots) });
 
     // A call waiting to be returned whose note names two amounts, so a draft from it leaves the amount for a person.
     await ctx.db.insert("calls", { churchId, callerName: "Denise Walker", phone: "(102) 555-0163", note: "Light bill is $145, and $60 is past due from last month.", callback: "needed", takenBy: staff[2], takenAt: clock(now - DAY, callSlots) });

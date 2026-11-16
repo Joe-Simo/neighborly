@@ -509,6 +509,9 @@
 :is(.live-app, .live-dialog) .live-field small:is(.live-date-missing, .live-field-needed) { font-size: 15px; line-height: 1.4; color: #6f5f93; }
 :is(.live-app, .live-dialog) .live-field :is(input, textarea, select)[aria-invalid="true"]:not(.live-date-words) { border-color: #6f5f93; box-shadow: 0 0 0 1px #6f5f93; }
 .live-field:has(.live-date-missing) > .live-field-needed { display: none; }
+/* A wrong field in focus keeps one colour: its focus ring is plum too (5.1 to 1 on the paper), never green around plum. */
+:is(.live-app, .live-dialog) .live-date[data-missing]:has(.live-date-words:focus-visible),
+:is(.live-app, .live-dialog) .live-field :is(input, textarea, select)[aria-invalid="true"]:focus-visible { outline-color: #6f5f93; }
 .live-app .live-date .live-date-words, .live-dialog .live-date .live-date-words { flex: 1; min-width: 0; height: 100%; min-height: 0; margin: 0; padding: 0 0 0 12px; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none; color: inherit; font: inherit; font-size: 16px; text-overflow: ellipsis; }
 .live-date-words::placeholder { color: #66705f; opacity: 1; }
 .live-date-words:read-only { cursor: pointer; }

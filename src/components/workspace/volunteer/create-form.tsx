@@ -7,6 +7,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { DateField, WhenField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
+import { useOpenedIntoView } from "@/components/workspace/week-note/assistant-limits";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -39,6 +40,7 @@ export function LiveCreateForm({
   // What the assistant was given, when it was asked: null until a draft is prepared, "" when nothing was sent.
   const [sent, setSent] = useState<string | null>(null);
   const [showSent, setShowSent] = useState(false);
+  const sentPart = useOpenedIntoView<HTMLSpanElement>(showSent);
   const [preparing, setPreparing] = useState(false);
   async function prepare() {
     setPreparing(true);
@@ -176,7 +178,7 @@ export function LiveCreateForm({
                     {showSent ? "Hide what the assistant saw" : "What the assistant saw"}
                   </button>
                   {showSent && (
-                    <span id="team-draft-sent" className="paper-rise mt-3 grid gap-y-2 text-[15px] leading-snug">
+                    <span id="team-draft-sent" ref={sentPart} tabIndex={-1} className="paper-rise mt-3 grid scroll-my-24 gap-y-2 text-[15px] leading-snug outline-none">
                       {sent ? (
                         <>
                           <span className="block border-l-2 border-[#cfc5dc] pl-3 font-serif text-[17px]">{sent}</span>

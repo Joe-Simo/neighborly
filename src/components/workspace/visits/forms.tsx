@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DateTime } from "luxon";
 import { useMutation } from "convex/react";
-import { useQuery } from "convex-helpers/react/cache/hooks";
+import { useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ function VisitWhen({ defaultValue }: { defaultValue?: string }) {
           max={today.plus({ days: DAYS_AHEAD }).toISODate() ?? undefined}
         />
       </LiveField>
-      <LiveField label="Time">
+      <LiveField label="Time" said={{ neededChoice: "Choose a time." }}>
         <TimeField name="time" required defaultValue={time} />
       </LiveField>
     </div>
@@ -285,7 +285,7 @@ export function PlanFormView({
               onChange={(event) => onSearch(event.target.value)}
             />
           </LiveField>
-          <LiveField label="Neighbor">
+          <LiveField label="Neighbor" said={{ neededChoice: "Choose the neighbor." }}>
             <NativeSelect
               name="neighbor"
               required
@@ -310,14 +310,14 @@ export function PlanFormView({
       )}
       <VisitWhen defaultValue={board.suggested?.at} />
       <div className="live-form-grid" key={chosen}>
-        <LiveField label="First visitor">
+        <LiveField label="First visitor" said={{ neededChoice: "Choose the first visitor." }}>
           <VisitorSelect
             name="first"
             people={people}
             defaultValue={suggested?.pair?.[0].memberId}
           />
         </LiveField>
-        <LiveField label="Second visitor">
+        <LiveField label="Second visitor" said={{ neededChoice: "Choose the second visitor." }}>
           <VisitorSelect
             name="second"
             people={people}
@@ -546,6 +546,7 @@ export function ReplaceForm({
       <LiveField
         label={leaving.removed ? "Second visitor" : `In place of ${firstName(leaving.name)}`}
         help="The new visitor is asked for a yes. The other visitor’s answer stays as it is."
+        said={{ neededChoice: "Choose who goes." }}
       >
         <VisitorSelect name="joining" people={others} />
       </LiveField>

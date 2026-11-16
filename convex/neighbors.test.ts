@@ -129,6 +129,8 @@ describe("removing a record", () => {
       const paid = await ctx.db.insert("assistanceRequests", { churchId, neighborId, kind: "utility", summary: "Esperanza’s electric bill.", amountRequested: 18600, amountApproved: 18600, status: "paid", decisionNote: "", payeeKind: "utility", payeeName: "Example Power", source: "person", ...by });
       const voucher = await ctx.db.insert("assistanceRequests", { churchId, neighborId, kind: "voucher", summary: "A bed for the youngest.", amountRequested: 0, amountApproved: 0, status: "paid", decisionNote: "", payeeKind: "vendor", payeeName: "Sample Thrift Store", source: "person", voucher: { item: "Furniture voucher", quantity: 1 }, ...by });
       await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 18600, date: today, category: "utility", payee: "Example Power", memo: "For Esperanza Montoya, account ending 0042", checkNumber: "1042", requestId: paid, neighborId, recordedBy: ids.owner.memberId, createdAt: now });
+      // Money once handed to her in person, entered by hand in the treasury with her name as the payee.
+      await ctx.db.insert("ledgerEntries", { churchId, kind: "expense", amount: 2500, date: today, category: "food", payee: "Mrs. E. Montoya", memo: "Groceries, paid to her directly", neighborId, recordedBy: ids.owner.memberId, createdAt: now + 1 });
       await ctx.db.insert("voucherStock", { churchId, date: today, change: -1, item: "Furniture voucher", note: "Given to Esperanza", requestId: voucher, recordedBy: ids.owner.memberId, createdAt: now });
       await ctx.db.insert("visits", { churchId, neighborId, requestId: paid, scheduledAt: now - 8000, status: "completed", visitors: [{ memberId: ids.owner.memberId, hours: 1, miles: 6 }], notes: "Esperanza showed us the notice.", completedAt: now - 7000, ...by });
     });
@@ -150,7 +152,7 @@ describe("removing a record", () => {
     }));
     // No row anywhere still says who she was, where she lives, her phone, her account, who was paid for her or what was said.
     const everything = JSON.stringify(left).toLowerCase();
-    for (const trace of ["esperanza", "montoya", "5550104", "555-0104", "14 sample st", "0042", "5550100042", "nights", "notice", "behind", "bill", "bed for", "sample thrift"]) expect(everything, trace).not.toContain(trace);
+    for (const trace of ["esperanza", "montoya", "5550104", "555-0104", "14 sample st", "0042", "5550100042", "nights", "notice", "behind", "bill", "bed for", "sample thrift", "groceries", "directly"]) expect(everything, trace).not.toContain(trace);
     expect(left.neighborNotes).toEqual([]);
     expect(left.requestDrafts).toEqual([]);
     // What the year counts is kept as rows with nothing said in them: a nameless household of the same size and language,
@@ -165,7 +167,11 @@ describe("removing a record", () => {
     ]);
     expect(left.visits).toMatchObject([{ status: "completed", notes: "", visitors: [{ hours: 1, miles: 6 }] }]);
     // and the money and the shelf exactly as they were, still tied to that nameless household.
-    expect(left.ledgerEntries).toMatchObject([{ amount: 18600, date: today, category: "utility", payee: "Example Power", checkNumber: "1042", memo: "Record removed", neighborId }]);
+    // A landlord, utility or store stays as the payee; a payee that carries her name does not.
+    expect(left.ledgerEntries).toMatchObject([
+      { amount: 18600, date: today, category: "utility", payee: "Example Power", checkNumber: "1042", memo: "Record removed", neighborId },
+      { amount: 2500, date: today, category: "food", payee: "Record removed", memo: "Record removed", neighborId },
+    ]);
     expect(left.voucherStock).toMatchObject([{ change: -1, item: "Furniture voucher", note: "Record removed" }]);
     expect(left.auditEvents.map((event) => event.action)).toEqual(["neighbor.opened", "neighbor.removed"]);
     // The other household in the group, and the other group's, are untouched.

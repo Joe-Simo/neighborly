@@ -3,7 +3,7 @@
 import "./tools.css";
 import { useState, useSyncExternalStore } from "react";
 import { useAction } from "convex/react";
-import { useQuery } from "convex-helpers/react/cache/hooks";
+import { useQuery } from "@/components/workspace/query";
 import { CalendarPlus, Check, Copy } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
