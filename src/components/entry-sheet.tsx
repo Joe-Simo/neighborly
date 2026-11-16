@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { languageNames, languages } from "@/lib/words";
 import { cn } from "@/lib/utils";
@@ -52,6 +52,68 @@ export function EntrySheet({
       root.removeProperty("--live-pan");
     };
   }, []);
+  // On iPhone and iPad the sheet follows the system's text size (Settings, Larger Text) up to 130%, by the
+  // same measure the workspace shell uses once someone is signed in: the system's body size is 17px at
+  // the standard setting, and every size is scaled by the same share. Elsewhere nothing changes.
+  useEffect(() => {
+    if (!CSS.supports("font", "-apple-system-body")) return;
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;visibility:hidden;font:-apple-system-body;-webkit-text-size-adjust:100%";
+    document.body.append(probe);
+    const root = document.documentElement.style;
+    const fit = () => {
+      const share = Math.min(1.3, Math.max(1, parseFloat(getComputedStyle(probe).fontSize) / 17));
+      root.setProperty("-webkit-text-size-adjust", `${Math.round(share * 100)}%`);
+      // Larger words need a line each: the sheet stops setting two things side by side (`data-entry-large`).
+      document.documentElement.toggleAttribute("data-entry-large", share > 1.1);
+    };
+    fit();
+    document.addEventListener("visibilitychange", fit);
+    return () => {
+      document.removeEventListener("visibilitychange", fit);
+      root.removeProperty("-webkit-text-size-adjust");
+      document.documentElement.removeAttribute("data-entry-large");
+      probe.remove();
+    };
+  }, []);
+  // A keyboard covers the foot of the screen. The page is given that much more room below (`--entry-keys`),
+  // so it can truly scroll, and the form is moved by the least needed for its button to stand whole above
+  // the keys while the field being typed in stays in view under the status area.
+  const sheet = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const view = window.visualViewport;
+    if (!view) return;
+    const root = document.documentElement.style;
+    let frame = 0;
+    const settle = () => {
+      const keys = Math.abs(view.scale - 1) < 0.01 ? Math.round(window.innerHeight - view.height) : 0;
+      const up = keys > 120;
+      root.setProperty("--entry-keys", `${up ? keys : 0}px`);
+      cancelAnimationFrame(frame);
+      const field = document.activeElement;
+      if (!up || !(field instanceof HTMLElement) || !sheet.current?.contains(field)) return;
+      const button = field.closest("form")?.querySelector('button[type="submit"]');
+      if (!button) return;
+      // After the new room below has been laid out.
+      frame = requestAnimationFrame(() => {
+        const inset = parseFloat(getComputedStyle(sheet.current ?? field).getPropertyValue("--entry-top")) || 0;
+        const over = button.getBoundingClientRect().bottom + 12 - (view.offsetTop + view.height);
+        const room = (field.closest(".live-field") ?? field).getBoundingClientRect().top - (view.offsetTop + inset + 8);
+        const by = Math.min(over, room);
+        if (by < 1) return;
+        const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollBy({ top: by, behavior: still ? "auto" : "smooth" });
+      });
+    };
+    view.addEventListener("resize", settle);
+    document.addEventListener("focusin", settle);
+    return () => {
+      cancelAnimationFrame(frame);
+      view.removeEventListener("resize", settle);
+      document.removeEventListener("focusin", settle);
+      root.removeProperty("--entry-keys");
+    };
+  }, []);
   return (
     <div className="entry" lang={language}>
       <div className="entry-art" aria-hidden="true">
@@ -68,7 +130,7 @@ export function EntrySheet({
           />
         </picture>
       </div>
-      <main className="entry-sheet paper-settle">
+      <main ref={sheet} className="entry-sheet paper-settle">
         <div className={cn("entry-paper paper-corner", corner === "given" ? "paper-fold" : corner === "waits" && "paper-waits")}>
           <div key={page} className="entry-page paper-rows">
             {children}

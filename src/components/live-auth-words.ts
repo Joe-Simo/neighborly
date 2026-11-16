@@ -22,6 +22,8 @@ const en = {
   options: "Account options",
   signIn: "Sign in",
   create: "Create account",
+  /** Read after a tab's own words, so the tab and the form's button are not two controls of one name. */
+  tabHint: { signIn: "use an account you already have", create: "make a new account" },
   email: "Email",
   password: "Password",
   newPassword: "New password",
@@ -106,6 +108,8 @@ const es: AuthWords = {
   options: "Opciones de cuenta",
   signIn: "Iniciar sesión",
   create: "Crear cuenta",
+  /** Read after a tab's own words, so the tab and the form's button are not two controls of one name. */
+  tabHint: { signIn: "usa una cuenta que ya tienes", create: "haz una cuenta nueva" },
   email: "Correo electrónico",
   password: "Contraseña",
   newPassword: "Contraseña nueva",
