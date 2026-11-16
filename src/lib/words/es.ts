@@ -1,5 +1,6 @@
 import { measured as m } from "../jev-set";
 import type { Words } from "./en";
+import { refusals } from "../refusals";
 import type { Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
@@ -295,6 +296,7 @@ export function es(set: WordSet): Words {
       saved: "Guardado.",
       updated: "Actualizado.",
       failed: "No se pudo guardar el cambio. Inténtalo de nuevo.",
+      refused: { [refusals.away]: "Ese día figuras como fuera. Cambia tus días libres o di que no puedes con este.", [refusals.busy]: "Ya tienes un compromiso a esa hora. Di que no puedes con este o pide al coordinador que lo cambie." },
     },
     visits: {
       title: set === "vincentian" ? "Visitas domiciliarias" : "Visitas a casa",

@@ -1,5 +1,6 @@
 import { measured as m } from "../jev-set";
 import type { Words } from "./en";
+import { refusals } from "../refusals";
 import type { Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
@@ -291,6 +292,7 @@ export function ht(set: WordSet): Words {
       saved: "Anrejistre.",
       updated: "Mete ajou.",
       failed: "Chanjman an pa t anrejistre. Tanpri eseye ankò.",
+      refused: { [refusals.away]: "Jou sa a ou make kòm absan. Chanje jou konje ou, oswa di ou pa kapab pran sa a.", [refusals.busy]: "Ou gen yon angajman deja nan lè sa a. Di ou pa kapab pran sa a, oswa mande kowòdonatè a deplase l." },
     },
     visits: {
       title: "Vizit lakay",

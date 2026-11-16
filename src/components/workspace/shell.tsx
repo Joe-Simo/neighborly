@@ -150,7 +150,8 @@ export function LiveWorkspace({
       else if (success) setNotice(success);
       return true;
     } catch (cause) {
-      setError(readFailure(cause, words.notices.failed));
+      const said = readFailure(cause, words.notices.failed);
+      setError(words.notices.refused[said] ?? said);
       return false;
     } finally {
       setPending(false);

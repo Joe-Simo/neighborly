@@ -1,4 +1,5 @@
 import { measured as m } from "../jev-set";
+import { refusals } from "../refusals";
 import type { Language, Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
@@ -297,6 +298,8 @@ export function en(set: WordSet) {
       saved: "Saved.",
       updated: "Updated.",
       failed: "That change couldn’t be saved. Please try again.",
+      /** A refusal the backend says in English, in this language, keyed by the English sentence. */
+      refused: { [refusals.away]: refusals.away, [refusals.busy]: refusals.busy } as Record<string, string>,
     },
     visits: {
       title: "Home visits",

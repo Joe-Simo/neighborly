@@ -1,3 +1,4 @@
+import { refusals } from "../src/lib/refusals";
 /// <reference types="vite/client" />
 import { describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
@@ -105,7 +106,7 @@ describe("workspace access and consent",()=>{
   const records=await t.run(async ctx=>({availability:(await ctx.db.query("availability").withIndex("by_member",q=>q.eq("memberId",ids.volunteer)).unique())!,teamMember:(await ctx.db.query("teamMembers").withIndex("by_team_member",q=>q.eq("teamId",ids.team).eq("memberId",ids.volunteer)).unique())!}));
   await t.run(ctx=>ctx.db.delete("availability",records.availability._id));
   const args={churchId:ids.church,command:{type:"requestCover" as const,commitmentId:ids.slot,recipientId:ids.volunteer,expectedVersion:1}};
-  await expect(as(ids.coord).mutation(api.workspace.execute,args)).rejects.toThrow("not confirmed availability");
+  await expect(as(ids.coord).mutation(api.workspace.execute,args)).rejects.toThrow("has not said they are free that day");
   await as(ids.vol).mutation(api.workspace.execute,{churchId:ids.church,command:{type:"addAvailability",start:"2099-11-22",end:"2099-11-22"}});
   await t.run(ctx=>ctx.db.patch("teamMembers",records.teamMember._id,{approved:false}));
   await expect(as(ids.coord).mutation(api.workspace.execute,args)).rejects.toThrow("not approved for this team");
@@ -208,4 +209,20 @@ test("asked from a time, commitments come soonest first and leave out what has e
   expect(titles.indexOf("Soon")).toBeGreaterThanOrEqual(0);
   expect(titles.indexOf("Soon")).toBeLessThan(titles.indexOf("Later"));
   expect(page.page.map((row) => row.end)).toEqual([...page.page.map((row) => row.end)].sort((a, b) => a - b));
+});
+
+test("a person’s own yes needs no date on file, and only being away stops it", async () => {
+  const { t, ids, as } = await setup();
+  await as(ids.coord).mutation(api.workspace.execute, { churchId: ids.church, command: { type: "requestCover", commitmentId: ids.slot, recipientId: ids.volunteer, expectedVersion: 1 } });
+  const { request, slot } = await t.run(async (ctx) => {
+    for (const row of await ctx.db.query("availability").withIndex("by_member", (q) => q.eq("memberId", ids.volunteer)).collect()) await ctx.db.delete("availability", row._id);
+    return { request: (await ctx.db.query("requests").withIndex("by_commitment", (q) => q.eq("commitmentId", ids.slot)).unique())!, slot: (await ctx.db.get("commitments", ids.slot))! };
+  });
+  const yes = { churchId: ids.church, command: { type: "respondCover" as const, requestId: request._id, accept: true } };
+  const day = new Date(slot.start).toISOString().slice(0, 10);
+  const away = await t.run((ctx) => ctx.db.insert("timeOff", { churchId: ids.church, memberId: ids.volunteer, start: day, end: day, note: "" }));
+  await expect(as(ids.vol).mutation(api.workspace.execute, yes)).rejects.toThrow(refusals.away);
+  await t.run((ctx) => ctx.db.delete("timeOff", away));
+  await as(ids.vol).mutation(api.workspace.execute, yes);
+  expect((await t.run((ctx) => ctx.db.get("commitments", ids.slot)))?.assigneeId).toBe(ids.volunteer);
 });
