@@ -242,3 +242,7 @@
 /* While the name and the request are on their way up, the sentence under them waits, so nothing crosses it. */
 .help-filed[data-filed-from] .help-filed-words > span:last-child { animation: paper-show 180ms linear 400ms backwards; }
 @media (prefers-reduced-motion: reduce) { .help-filed[data-filed-from] .help-filed-words > span:last-child { animation: none; } }
+/* The sheet a yes hands over (room.tsx, fileAway): its green corner turns further as it is taken, to 64px on a desk
+   and 48px on a phone, which stays inside the sheet's top margin and so never over a word. */
+.help-handed { background-image: none !important; will-change: left, top, width, height, transform; }
+.help-handed::after { animation: none !important; }

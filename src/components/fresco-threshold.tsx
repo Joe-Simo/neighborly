@@ -19,8 +19,12 @@ const standing = [2.45, 3.05] as const;
 const wallOpens = [3.05, 3.75] as const;
 // The walk in, when the doors are opened by their button: long enough to read as steps, not a jump.
 const walkTime = 1400;
+// The longest the walk waits for the courtyard to be ready after the press.
+const readyWait = 700;
 // How much larger than its frame the painting is drawn on a wide wall.
 const frescoInset = 1.064;
+// Where the bell tower ends, as a share of the painting's width from its left edge, with a little air.
+const towerClear = .4;
 
 /** The doors open once, onto the courtyard painted on the wall beyond them. */
 // The courtyard's light is drawn with the 3D library, which is fetched only when the doors are near, not with the page.
@@ -36,6 +40,18 @@ export function FrescoThreshold() {
   const [near, setNear] = useState(false);
   const settled = useSettled();
 
+  // The courtyard is fetched and drawn before anyone can walk into it: when the doors come near, or a pointer or the keyboard reaches their button.
+  const warm = () => {
+    setNear(true);
+    void stage.current?.querySelector<HTMLImageElement>(".fresco-painting")?.decode().catch(() => undefined);
+  };
+  useEffect(() => {
+    const host = stage.current;
+    if (!host || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) { setNear(true); observer.disconnect(); } }, { rootMargin: "100% 0px" });
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     // The living courtyard waits for the first sign that the visitor is on their way to it.
     const arrive = () => setNear(true);
@@ -86,9 +102,13 @@ export function FrescoThreshold() {
       const cover = mix(framed, Math.max(height / sceneHeight, width / (sceneHeight * 2)), inside);
       const held = phone ? 0 : sceneHeight * cover * (1 - 1 / frescoInset) * (1 - inside);
       const lift = (height / 2 - centreY) * inside;
+      // On a phone, walking in, the narrow window would cut the bell tower at its left edge: the painting is drawn on a little, so that edge always falls clear to the right of the tower.
+      const paintingWidth = sceneHeight * 2 * cover, seenLeft = Math.max(0, width / 2 - w / 2);
+      const leftEdge = (seenLeft - (width / 2 - paintingWidth / 2)) / paintingWidth;
+      const pan = phone ? Math.max(0, towerClear - leftEdge) * paintingWidth * Math.min(1, inside * 4) : 0;
       scene.style.scale = String(cover);
       // The painting is centred in the opening by translate too, from the opening's corner.
-      scene.style.translate = `calc(-50% + ${(w / 2 - held).toFixed(2)}px) calc(-50% + ${(h / 2 + lift).toFixed(2)}px)`;
+      scene.style.translate = `calc(-50% + ${(w / 2 - held - pan).toFixed(2)}px) calc(-50% + ${(h / 2 + lift).toFixed(2)}px)`;
       host.style.setProperty("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
@@ -120,6 +140,18 @@ export function FrescoThreshold() {
     // A second press while walking changes nothing: the walk already under way carries on.
     if (walking.current) return;
     walking.current = true;
+    // The walk starts once the courtyard is drawn and its painting decoded, so no picture arrives mid-walk; it never waits longer than a short beat.
+    warm();
+    const asked = performance.now();
+    const ready = () => {
+      const painting = host.querySelector<HTMLImageElement>(".fresco-painting");
+      return host.dataset.living === "true" && !!painting?.complete;
+    };
+    const go = () => {
+      if (!ready() && performance.now() - asked < readyWait) return void requestAnimationFrame(go);
+      walk();
+    };
+    const walk = () => {
     const from = scrollY, to = start + host.clientHeight * (standing[0] + .05);
     const began = performance.now();
     // Paced by the clock, not by frames: a frame the browser holds back (a window behind another) is made up at the next step, and a timer carries the walk if frames stop coming.
@@ -133,6 +165,8 @@ export function FrescoThreshold() {
       timer = window.setTimeout(step, 50);
     };
     step();
+    };
+    go();
   };
 
   return <div ref={journey} className="fresco-journey">
@@ -144,7 +178,7 @@ export function FrescoThreshold() {
       <div className="fresco-invitation" aria-hidden={open}>
         <h2>There is room<br /><em>for you.</em></h2>
         <p>Bring a little of your time.</p>
-        <Button className="fresco-open" onClick={walkIn} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
+        <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
       </div>
       <div ref={frame} className="fresco-frame">
         <div className="fresco-wall">

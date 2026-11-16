@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { CardOffer } from "./card-offer";
+import { useSampleDoor } from "./sample-link";
 import { HELD_CARD, dropTheHeldCard } from "@/lib/held-card";
 
 /** The card grows from the hand until it is the window's paper, and is held there until the door's sweep takes it over. */
@@ -58,8 +59,21 @@ export function CardOfferGrow() {
       if (room || performance.now() - since > LONGEST) return dropTheHeldCard();
       requestAnimationFrame(keep);
     };
-    const go = () => { router.push(href); requestAnimationFrame(keep); };
+    const go = () => {
+      router.push(href);
+      requestAnimationFrame(keep);
+      // A wait is quiet at first; if the room is not on its way after 400ms, the paper says so in one line, as the door does.
+      window.setTimeout(() => {
+        if (!held.isConnected || held.dataset.dropping !== undefined) return;
+        const line = document.createElement("p");
+        line.className = "card-held-opening";
+        line.setAttribute("role", "status");
+        line.textContent = "Opening…";
+        held.append(line);
+        held.dataset.saying = "";
+      }, 400);
+    };
     grow.finished.then(go, go);
   }
-  return <CardOffer onOpen={open} />;
+  return <CardOffer door={useSampleDoor(open)} />;
 }
