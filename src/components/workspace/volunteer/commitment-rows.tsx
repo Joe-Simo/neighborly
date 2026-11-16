@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, arriving, foldLeaves, openUp, useSavedLine } from "@/components/workspace/fold";
+import { FOLD_HOLD, arriving, foldLeaves, openUp, useSavedLine, viewTop } from "@/components/workspace/fold";
 import "./volunteer.css";
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -180,7 +180,7 @@ export function IncomingRequests({
     // (The row is still closed at this moment, opening its room, so its full height is read from what it holds.)
     const row = document.querySelector(".live-row.volunteer-filed");
     const top = row ? row.getBoundingClientRect().top - leaving + LINE_ROOM : 0;
-    const hidden = row && (top < 0 || top + row.scrollHeight > window.innerHeight);
+    const hidden = row && (top < viewTop() || top + row.scrollHeight > window.innerHeight);
     // The line opens as the sheet closes, in one move. It is laid first, so the close knows it is there.
     flushSync(() => setSaid({ words: hidden && place ? words.requests.acceptedUnder(place) : words.requests.accepted, of: request.id }));
     await foldLeaves();

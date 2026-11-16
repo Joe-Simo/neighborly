@@ -119,6 +119,15 @@ export function arriving(change: () => void) {
 
 const laidAbove = new WeakSet<HTMLElement>();
 /**
+ * Where the window's own top edge is for the page: under the bar when the bar is held (under 900px), else 0.
+ * Anything that asks "is this in view" measures from here, so nothing counts as seen while it lies under the bar.
+ */
+export function viewTop() {
+  const bar = document.querySelector(".live-header");
+  return bar && getComputedStyle(bar).position === "sticky" ? bar.getBoundingClientRect().bottom : 0;
+}
+
+/**
  * The other way: a piece of paper just laid into the page opens its own room over the same 360ms, starting
  * from exactly the height the page had before it, so what is under it is moved aside and never jumps.
  * Call it before the browser paints (a layout effect or a ref). Nothing happens for anyone who asks for less motion.
@@ -129,7 +138,7 @@ export function openUp(sheet: HTMLElement) {
   sheet.getAnimations().forEach((move) => move.id === OPENING && move.cancel());
   // Laid in above the window, nobody sees it open: it is there at once and what the person is looking at
   // stays where it is. Browsers that anchor the scroll do that themselves; the others are told, once.
-  if (sheet.getBoundingClientRect().top < 0) {
+  if (sheet.getBoundingClientRect().top < viewTop()) {
     if (!laidAbove.has(sheet) && !CSS.supports("overflow-anchor", "auto"))
       window.scrollBy(0, document.body.offsetHeight - pageWithout(sheet, "gone"));
     laidAbove.add(sheet);

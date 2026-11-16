@@ -205,6 +205,26 @@ export function LiveWorkspace({
   // let go before the next can be seen.
   const [pictured, setPictured] = useState<LiveArea>();
   const picturedNow = useCallback(() => setPictured(area), [area]);
+  // The held bar (under 900px) draws its hairline only once the page has moved, and names the room once the
+  // headline has gone under it.
+  const bar = useRef<HTMLElement>(null);
+  const [barNow, setBarNow] = useState({ scrolled: false, named: false });
+  useEffect(() => {
+    const read = () => {
+      const headline = app.current?.querySelector(".live-page-head h1");
+      const under = bar.current?.getBoundingClientRect().bottom ?? 0;
+      const next = { scrolled: window.scrollY > 0, named: !!headline && headline.getBoundingClientRect().bottom < under };
+      setBarNow((now) => (now.scrolled === next.scrolled && now.named === next.named ? now : next));
+    };
+    const first = requestAnimationFrame(read);
+    window.addEventListener("scroll", read, { passive: true });
+    window.addEventListener("resize", read);
+    return () => {
+      cancelAnimationFrame(first);
+      window.removeEventListener("scroll", read);
+      window.removeEventListener("resize", read);
+    };
+  }, [area]);
   // The first room is whole: its sheet has arrived and its picture is in. The iPhone app's launch cover may wait
   // for `.live-app[data-room-in]`, so the mark never lifts on a room that is still coming up under it.
   const app = useRef<HTMLDivElement>(null);
@@ -263,10 +283,16 @@ export function LiveWorkspace({
     <WorkspaceProvider value={workspace}>
     <div className="live-app" lang={words.locale} ref={app}>
       <a className="live-skip" href="#workspace-content">{words.shell.skip}</a>
-      <header className="live-header">
+      <header className="live-header" ref={bar} data-scrolled={barNow.scrolled ? "" : undefined}>
         <Link href="/" className="live-wordmark">
           kind helps
         </Link>
+        {/* Under 900px, once the headline has gone under the held bar, the bar says which room this is. For the
+            eye only: the Menu button already tells a screen reader. Left out whole if it does not fit. */}
+        <span className="live-bar-room" aria-hidden="true" data-shown={barNow.named ? "" : undefined}>
+          <i />
+          <span>{menuLabel}</span>
+        </span>
         {data.church.sample && <p className="live-sample-mark live-header-sample">{words.shell.sampleMark}</p>}
         <div className="live-header-actions">
           <div className="live-header-desk contents">
