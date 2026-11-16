@@ -10,11 +10,3 @@
 }
 @media(max-width:850px){.home-yes-desk{min-height:459px}}
 @media(max-width:480px){.home-yes-desk{min-height:583px}}
-/* In the column beside the features sheet. */
-.home-yes-column{grid-column:2;grid-row:1;align-self:center;min-width:0}
-.home-yes-column .home-yes-desk{min-height:0}
-.home-yes-column .help-sheet-body{grid-template-columns:1fr}
-.home-yes-column .help-sealed .help-actions{display:none}
-.home-yes-column .help-seal{position:static}
-.home-yes-column .home-yes-filed li{grid-template-columns:minmax(0,1fr)}
-@media(max-width:900px){.home-yes-column{grid-column:auto;grid-row:auto}}

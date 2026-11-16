@@ -9,9 +9,8 @@ import "./home-yes.css";
 const HomeYesCard = dynamic(() => import("./home-yes-card").then(module => module.HomeYesCard), { ssr: false });
 
 /** The one place on the page where the visitor does a volunteer's work: a drafted request waits for their yes. */
-export function HomeYes({ place = "own" }: { place?: "own" | "column" }) {
+export function HomeYes() {
   const settled = useSettled();
-  if (place === "column") return <div className="home-yes-column"><p className="home-yes-kicker">The help line · Sample</p><div className="home-yes-desk">{settled && <HomeYesCard />}</div></div>;
   return <section className="home-yes" aria-labelledby="home-yes-title">
     <div className="relief-words home-yes-words">
       <p className="home-yes-kicker">The help line · Sample</p>
