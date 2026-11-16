@@ -12,7 +12,7 @@ import { ReliefPicture } from "@/components/workspace/relief";
 /**
  * One family for every state that is not the room working as usual: nothing here yet,
  * not yours to open, not found, did not open, no connection. Each is the room's own
- * round mark, one line in the serif, one plain sentence and at most one action.
+ * small paper card of the room's picture, one line in the serif, one plain sentence and at most one action.
  */
 /** The family's words in the person's language inside the shell, in English outside it. Never throws. */
 function useStateWords() {
@@ -37,7 +37,7 @@ export function LiveState({
   /** The one thing to do about it: a Button, or a link drawn as one. */
   action?: ReactNode;
 }) {
-  // Outside the shell there is no room, so no round mark: the words stand alone.
+  // Outside the shell there is no room, so no picture card: the words stand alone.
   const art = useAreaArt();
   return (
     <div

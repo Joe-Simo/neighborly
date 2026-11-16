@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { LiveApp } from "@/components/live-app";
 import type { LiveEntryIntent } from "@/components/live-auth";
 import { areaTitles, liveAreas } from "@/components/workspace/areas";
+import { askSampleTicket } from "@/lib/sample-ticket";
 
 const areaOf = (pathname: string) => {
   const [, app, segment, more] = pathname.split("/");
@@ -26,6 +27,12 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
   const asked = entry ? params.get("intent") : null;
   const intent: LiveEntryIntent =
     asked === "start" || asked === "join" || asked === "signin" ? asked : invite ? "join" : "signin";
+
+  // Arrived by the sample door from outside (a fresh load): the ticket is asked for now, while Clerk loads.
+  const enterSample = entry && params.get("intent") === "sample";
+  useEffect(() => {
+    if (enterSample && sampleEntry) askSampleTicket();
+  }, [enterSample, sampleEntry]);
 
   // Any link from one room to another, in the menu or inside a room, is taken here.
   useEffect(() => {
@@ -58,7 +65,7 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
           invitationToken={invite}
           intent={intent}
           sampleEntry={sampleEntry}
-          enterSample={entry && params.get("intent") === "sample"}
+          enterSample={enterSample}
         />
       )}
       {children}

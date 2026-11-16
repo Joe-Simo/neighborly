@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { SampleLink } from "@/components/sample-link";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraftSheet } from "@/components/workspace/help-line/draft-sheet";
@@ -117,7 +117,7 @@ export function HomeYesCard() {
       </ol>
       <p className="home-yes-after">
         <span>That is the whole idea.</span>
-        <Button asChild variant="link" className="home-yes-in"><Link ref={way} href="/app?intent=sample">Look around a sample conference<ArrowUpRight aria-hidden="true" /></Link></Button>
+        <Button asChild variant="link" className="home-yes-in"><SampleLink ref={way}>Look around a sample conference<ArrowUpRight aria-hidden="true" /></SampleLink></Button>
         <Button variant="link" className="home-yes-again" onClick={() => { again.current = true; setStep("waiting"); }}>See it again</Button>
       </p>
     </div>

@@ -97,8 +97,8 @@ export function ReliefPicture({
     return <ReliefPlaceholder name={name} vignette={vignette} className={className} />;
   return (
     <picture className={cn("relief", className)} style={style} onAnimationEnd={onAnimationEnd}>
-      <source type="image/avif" srcSet={reliefSources(name, "avif", widths)} sizes={vignette ? "96px" : sizes} />
-      <source type="image/webp" srcSet={reliefSources(name, "webp", widths)} sizes={vignette ? "96px" : sizes} />
+      <source type="image/avif" srcSet={reliefSources(name, "avif", widths)} sizes={vignette ? "180px" : sizes} />
+      <source type="image/webp" srcSet={reliefSources(name, "webp", widths)} sizes={vignette ? "180px" : sizes} />
       <img
         src={`/assets/relief/relief-${name}-1024.webp`}
         alt=""
