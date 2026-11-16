@@ -5,9 +5,9 @@ import "./relief-journey.css";
 
 // A picture with pieces is a plate with loose paper lying on it, and the first piece listed makes one small move. One without is a single painting.
 const story = [
-  { picture: "call", pieces: [], title: "The call.", copy: "Someone rings the help line. The message is kept, and someone is always next to call back." },
+  { picture: "call", pieces: ["piece"], title: "The call.", copy: "Someone rings the help line. The message is kept, and someone is always next to call back." },
   { picture: "visit", pieces: ["leaf", "hands"], title: "The visit.", copy: "Two members go to the home, together, and listen." },
-  { picture: "help", pieces: [], title: "The help.", copy: "The conference agrees. The bill is paid straight to the landlord or the utility." },
+  { picture: "help", pieces: ["piece"], title: "The help.", copy: "The conference agrees. The bill is paid straight to the landlord or the utility." },
   { picture: "year", pieces: ["piece"], title: "The year.", copy: "Every call, visit and dollar adds itself up for the yearly report." },
 ] as const;
 const sizes = "(max-width: 820px) 92vw, 56vw";
