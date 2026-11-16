@@ -29,10 +29,18 @@ export function LiveCreateForm({
   onSubmit: (command: LiveCommand) => Promise<void>;
 }) {
   // The announcement is a member's screen, so it speaks their language; the leaders' forms stay English.
-  const actions = useWorkspace().words.actions;
+  const { actions, tasks } = useWorkspace().words;
   const form = actions.announcementForm;
   // Adding a commitment opens from Commitments, a member's room, so its form speaks the reader's language too.
   const own = kind === "commitment" ? actions.commitmentForm : null;
+  // The button names the act. Members' forms say it in their language; leaders' forms stay English.
+  const acts = {
+    commitment: actions.commitment,
+    timeOff: actions.timeOff,
+    task: tasks.add,
+    team: "Create team",
+    meeting: "Plan meeting",
+  };
   const suggest = useAction(api.drafts.suggestTeam);
   const [draftDescription, setDraftDescription] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -349,7 +357,7 @@ export function LiveCreateForm({
           ) : kind === "announcement" ? (
             form.save
           ) : (
-            (own?.save ?? "Save")
+            acts[kind]
           )}
         </Button>
       </div>

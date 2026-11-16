@@ -400,12 +400,14 @@ function LaunchFailure({ language, leave }: { language: Language; leave: () => v
         <p className="live-kicker">Kind Helps</p>
         <h1 role="alert">{states.launchTitle ?? stateWords.launchTitle}</h1>
         <p className="live-deck">{states.launchDeck ?? stateWords.launchDeck}</p>
-        <div className="live-row-actions" style={{ marginTop: 24 }}>
-          <Button onClick={() => window.location.reload()}>{said.states.tryAgain}</Button>
-          <Button variant="link" onClick={leave}>
+        <Button onClick={() => window.location.reload()} style={{ marginTop: 24 }}>
+          {said.states.tryAgain}
+        </Button>
+        <p style={{ marginTop: 16 }}>
+          <button type="button" className="live-link" onClick={leave}>
             {said.shell.signOut}
-          </Button>
-        </div>
+          </button>
+        </p>
       </main>
     </div>
   );

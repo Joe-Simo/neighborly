@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type Ref } from "react";
 import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -351,11 +351,7 @@ export function LiveWorkspace({
               </Button>
             </div>
           )}
-          {notice && (
-            <div className="live-success" role="status" tabIndex={-1} ref={outcomeNotice}>
-              {notice}
-            </div>
-          )}
+          {notice && <Outcome ref={outcomeNotice}>{notice}</Outcome>}
           <LiveConnection />
           <div className="live-room" key={area}>
             <RoomBoundary key={area}>
@@ -488,7 +484,7 @@ export function LiveWorkspace({
                 onClick={() => setConfirmation(null)}
                 disabled={pending}
               >
-                Cancel
+                Go back
               </Button>
               <Button
                 disabled={pending}
@@ -500,7 +496,7 @@ export function LiveWorkspace({
                     setConfirmation(null);
                 }}
               >
-                Confirm
+                {confirmation?.action ?? "Confirm"}
               </Button>
             </div>
         </LiveDialog>
@@ -597,6 +593,23 @@ function useNavMarker(area: LiveArea) {
     return () => resized.disconnect();
   }, [area]);
   return nav;
+}
+
+/**
+ * The green line that says what was done. It is seen for six seconds, then leaves the page and
+ * stays as a message for screen readers. Each new outcome is a new line (the old one is cleared first).
+ */
+function Outcome({ children, ref }: { children: string; ref: Ref<HTMLDivElement> }) {
+  const [seen, setSeen] = useState(true);
+  useEffect(() => {
+    const leave = window.setTimeout(() => setSeen(false), 6000);
+    return () => window.clearTimeout(leave);
+  }, []);
+  return (
+    <div className={seen ? "live-success" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
+      {children}
+    </div>
+  );
 }
 
 /** Once a session, on the first room after sign-in or the sample link, the paper sweeps up and settles as the page. */
