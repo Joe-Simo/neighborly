@@ -95,6 +95,9 @@ function Said({ children }: { children: string }) {
 
 type CoverRequest = LiveWorkspaceData["requests"][number];
 
+/** The green line with its margin, and the row's own travel: what pushes the row down after it is measured. */
+const LINE_ROOM = 120;
+
 /**
  * For a room with the sheet above a list: the commitment stays out of the list while its sheet is held,
  * then travels into the list as the sheet closes. Spread `requests` on IncomingRequests, drop `held`
@@ -159,7 +162,9 @@ export function IncomingRequests({
     // The page never moves after a yes. When the row has landed out of view, the line says where it is.
     flushSync(() => onAccepted?.(request.commitmentId));
     const row = document.querySelector(".live-row.volunteer-filed")?.getBoundingClientRect();
-    const hidden = row && (row.bottom <= 0 || row.top >= window.innerHeight);
+    // Measured before the green line is laid above it and while the row is still 26px up on its way in,
+    // so it counts as seen only if the whole row will still be inside the window after both.
+    const hidden = row && (row.top < 0 || row.bottom + LINE_ROOM > window.innerHeight);
     setSaid({ words: hidden && place ? words.requests.acceptedUnder(place) : words.requests.accepted, of: request.id });
   };
   const line = said && <Said key={said.of}>{said.words}</Said>;
