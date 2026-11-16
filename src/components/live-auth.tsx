@@ -418,6 +418,7 @@ export function LiveAuth({
             </Button>
             {sampleError && failure(w[sampleError])}
             <small>{w.sampleNote}</small>
+            <small className="entry-sample-short">{w.sampleNoteShort}</small>
           </div>
         )}
         {flow === "signUp" && <p className="entry-foot">{w.foot}</p>}

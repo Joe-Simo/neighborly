@@ -198,6 +198,7 @@
   .live-app .entry :is(.entry-quiet, .entry-sample button, .entry-foot-line button):hover { text-decoration-thickness: 2px; }
 }
 
+.entry-sample-short { display: none; }
 /* The way into the sample conference: its own short passage under the form. */
 .entry-sample {
   display: grid;
@@ -354,12 +355,13 @@
   .entry-art > .relief { height: 128px; }
 }
 /* The smallest iPhone: sign-in fits the screen whole, so nothing scrolls. The band is lower still,
-   and the two sentences that only add colour (the deck, the sample's note) step aside. */
+   the deck steps aside and the sample's note is said in a few words. */
 @media (max-width: 699px) and (max-height: 680px) {
-  .entry { --entry-band: 84px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
-  .entry-art > .relief { height: 104px; }
+  .entry { --entry-band: 76px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .entry-art > .relief { height: 96px; }
   .live-app .entry .live-deck,
-  .entry-sample > small { display: none; }
+  .entry-sample > small:not(.entry-sample-short) { display: none; }
+  .entry-sample > .entry-sample-short { display: block; }
   .live-app .entry .live-form { gap: 12px; margin-top: 16px; }
   .entry-sample { margin-top: 12px; padding-top: 4px; }
   .entry-foot-line { margin-top: 4px; }
