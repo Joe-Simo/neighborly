@@ -9,6 +9,8 @@ export const FOLD_HOLD = 1800;
 const LEAVE = 360;
 const OPENING = "paper-open-up";
 const GROWING = "paper-grows";
+/** Where a held line comes from and goes to: just above its place, behind the bar or off the window. */
+const HELD_AWAY = "translateY(calc(-100% - 8px - var(--live-bar, 0px)))";
 
 /**
  * After the hold, whatever is marked `data-fold-leaves` goes: it fades and closes up over 360ms, so what
@@ -79,9 +81,11 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Its own arriving moves are over for good; being measured must not start them again.
   sheet.dataset.paperClosing = "";
-  // A line held under the top edge has no room in the page: it fades where it is, and that is all.
+  // A line held under the top edge has no room in the page, so leaving moves nothing else.
   if (sheet.dataset.paperHeld !== undefined) {
-    await sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: LEAVE, fill: "forwards", easing: "cubic-bezier(0.6, 0, 0.9, 0.6)" }).finished;
+    // It lies over the page, so it is never see-through: it slides back up under the top edge, whole.
+    await sheet.animate([{ transform: "none" }, { transform: HELD_AWAY }], { duration: LEAVE, fill: "forwards", easing: "cubic-bezier(0.6, 0, 0.9, 0.6)" }).finished;
+    sheet.style.visibility = "hidden";
     sheet.style.pointerEvents = "none";
     return;
   }
@@ -169,6 +173,9 @@ export function openUp(sheet: HTMLElement) {
       zIndex: "15",
     });
     sheet.dataset.paperHeld = "";
+    // Whole from its first frame: it comes down from under the top edge and is never drawn half faded over a row.
+    sheet.style.animation = "none";
+    sheet.animate([{ transform: HELD_AWAY }, { transform: "none" }], { duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" });
     return;
   }
   const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
@@ -232,7 +239,7 @@ function openFlat(sheet: HTMLElement) {
   if (!sheet.style.overflow && sheet.dataset.paperHeld === undefined) return;
   sheet.getAnimations().forEach((move) => move.cancel());
   if (sheet.dataset.paperHeld !== undefined) {
-    Object.assign(sheet.style, { position: "", top: "", left: "", width: "", margin: "", zIndex: "", pointerEvents: "" });
+    Object.assign(sheet.style, { position: "", top: "", left: "", width: "", margin: "", zIndex: "", pointerEvents: "", visibility: "", animation: "" });
     delete sheet.dataset.paperHeld;
   }
   sheet.style.overflow = "";

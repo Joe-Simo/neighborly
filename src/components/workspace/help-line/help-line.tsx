@@ -495,7 +495,7 @@ export function HelpLineView({
   sheet?: ReactNode;
 }) {
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
-  // A call marked returned travels down from where it waited into "Returned this week". Everything else in
+  // A call marked returned leaves where it waited and is laid into "Returned this week". Everything else in
   // the lists that the change moves (the rows under it, the next heading) glides to its new place in the same
   // move, and the page keeps its place: nothing the person is looking at jumps.
   const lists = useRef<HTMLDivElement>(null);
@@ -522,7 +522,16 @@ export function HelpLineView({
         row.dataset.arrived = "";
         if (still) return;
         row.style.animation = "none";
-        travel(row, was.top - top);
+        // Its place is already kept in "Returned this week". It is drawn there only once the heading and the
+        // rows around it have all but arrived, so it never lies across any of them on the way.
+        row.animate(
+          [
+            { opacity: 0, transform: "translateY(10px)" },
+            { opacity: 0, transform: "translateY(10px)", offset: 0.5 },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: 480, easing: "ease-out" },
+        );
       });
     const heads = new Map<Element, number>();
     lists.current?.querySelectorAll<HTMLElement>(".live-section-head").forEach((head) => {

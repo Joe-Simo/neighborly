@@ -102,7 +102,8 @@ export function LiveDialog({
           event.preventDefault();
           const from = opener.current;
           const free = !document.activeElement || document.activeElement === document.body;
-          if (free && from?.isConnected) from.focus();
+          // The person is where they were when they opened it; coming back must not move the page.
+          if (free && from?.isConnected) from.focus({ preventScroll: true });
         }}
         onOpenAutoFocus={(event) => {
           opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
