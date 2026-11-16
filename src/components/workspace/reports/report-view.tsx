@@ -390,7 +390,7 @@ export function ReportView({
               <div className="help-bar" aria-hidden="true">
                 {!counted && <span style={share(line.paid, largestKind)} />}
               </div>
-              <span className="help-amount">{counted ? plural(report.vouchers.given, "voucher") : money(line.paid)}</span>
+              <span className="help-amount">{counted ? plural(report.vouchers.given, "voucher") : wholeDollars(line.paid)}</span>
             </li>
           );
         })}
