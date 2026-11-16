@@ -158,6 +158,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const cardRest = [.8, -.06, .2, -.85] as const;
   // The card is drawn a little larger than it was authored, so it reads in the giving hand.
   const cardScale = 1.3;
+  // On a phone the hands are drawn smaller than on the wide painting, and sit in the open paper under the words.
+  const phoneRig = { scale: .76, lift: 3.48 };
   // The landing: how long the hand takes to receive the card, and how far the card drops onto it, in screen pixels.
   const cardSettle = .3;
   const cardDrop = 6;
@@ -645,8 +647,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       openingModel.getObjectByName("BackgroundMobile")?.traverse((object) => { object.visible = openingFrame.mobile && !openingFrame.narrow; });
       openingModel.getObjectByName("BackgroundNarrow")?.traverse((object) => { object.visible = openingFrame.mobile && openingFrame.narrow; });
       const rig = openingModel.getObjectByName("ReliefRig");
-      const rigScale = openingFrame.mobile ? 0.62 : 1;
-      if (rig) { rig.scale.setScalar(rigScale); rig.position.set(0, openingFrame.mobile ? 4.6 : 0, 0); }
+      const rigScale = openingFrame.mobile ? phoneRig.scale : 1;
+      if (rig) { rig.scale.setScalar(rigScale); rig.position.set(0, openingFrame.mobile ? phoneRig.lift : 0, 0); }
       if (openingGuide && openingOutcome === "rest" && !handing) {
         const lift = smooth(interaction);
         openingGuide.position.copy(openingGuidePosition);
