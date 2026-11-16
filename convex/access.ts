@@ -57,20 +57,15 @@ export async function logNeighborOpening(ctx: MutationCtx, member: Doc<"membersh
  * takes it as this argument and never reads the clock itself. Convex keeps an answer for everyone who asks
  * the same question, and a query that reads the clock loses that: it is run again and again while a page
  * sits open. With the hour as an argument, one answer serves the whole hour, or until a record changes.
- *
- * TEMPORARY: optional, so a page opened before this argument existed keeps working. Once no such page
- * can be open, make it `v.number()` and delete the fallback in `hourAsked`.
  */
-export const hour = v.optional(v.number());
+export const hour = v.number();
 const HOUR = 3_600_000;
 /**
  * The hour a query was asked about. Only a whole hour is taken, so the answers Convex keeps are one per
  * hour and never one per odd value a page might send. The hour comes from the reader's own clock: a wrong
  * one changes only what that reader is shown, never what they may open.
  */
-export function hourAsked(at: number | undefined) {
-  // TEMPORARY (see `hour`): the one place a query may read the clock, for a page that sends no hour.
-  if (at === undefined) return Math.floor(Date.now() / HOUR) * HOUR;
+export function hourAsked(at: number) {
   if (!Number.isInteger(at) || at % HOUR !== 0 || at < 0 || at > 8.64e15) throw new ConvexError("Reload the page to see this room.");
   return at;
 }

@@ -45,7 +45,8 @@ describe("the sample conference a visitor looks around", () => {
     await refreshed(t);
     const after = await guest.query(api.workspace.viewer, {});
     expect(after.churches).toHaveLength(1);
-    expect(after.churches[0].id).not.toBe(first.id);
+    // The conference keeps its id, so an open page and its address stay good across the night.
+    expect(after.churches[0].id).toBe(first.id);
     const left = await t.run(async (ctx) => ({
       churches: await ctx.db.query("churches").collect(),
       typed: (await ctx.db.query("tasks").collect()).filter((task) => task.title === "Typed by a visitor"),
@@ -66,13 +67,18 @@ describe("the sample conference a visitor looks around", () => {
     const nightly = async () => {
       await t.mutation(internal.demo.nightly, {});
       await t.finishAllScheduledFunctions(vi.runAllTimers);
-      return (await t.run((ctx) => ctx.db.query("churches").collect())).map((church) => church._id);
+      return t.run(async (ctx) => (await ctx.db.query("tasks").collect()).filter((task) => task.title === "Typed by a visitor").length);
     };
-    const [first] = await nightly();
+    await nightly();
+    const type = () => t.run(async (ctx) => {
+      const church = (await ctx.db.query("churches").first())!;
+      await ctx.db.insert("tasks", { churchId: church._id, title: "Typed by a visitor", dueAt: null, assigneeId: null, complete: false });
+    });
+    await type();
     vi.stubEnv("SAMPLE_NIGHTLY", "off");
-    expect(await nightly()).toEqual([first]);
+    expect(await nightly()).toBe(1);
     vi.stubEnv("SAMPLE_NIGHTLY", "");
-    expect(await nightly()).not.toEqual([first]);
+    expect(await nightly()).toBe(0);
   });
 
   test("a refresh leaves every other conference alone, sample or real", async () => {
@@ -160,10 +166,10 @@ describe("the sample conference a visitor looks around", () => {
       }),
     };
     for (const [room, { looked }] of Object.entries(rooms)) expect(looked, room).toBe(0);
-    // Only a whole hour is taken, so the kept answers are one an hour. A page from before the hour was asked for
-    // sends none and is still answered (temporary; see `hour` in access.ts).
+    // Only a whole hour is taken, so the kept answers are one an hour, and a query asked without the hour is refused.
     await expect(guest.query(api.assistance.calls, { churchId, at: at + 1 })).rejects.toThrow("Reload the page");
-    expect((await guest.query(api.assistance.calls, { churchId })).waiting.length).toBeGreaterThan(0);
+    // @ts-expect-error a page that sends no hour
+    await expect(guest.query(api.assistance.calls, { churchId })).rejects.toThrow();
     // The help line read 74 KB when it took the last 200 returned calls to find a week of them.
     expect(rooms.helpLine.bytes).toBeLessThan(40_000);
     for (const room of [rooms.weekNote, rooms.board, rooms.mine, rooms.years, rooms.record]) expect(room.bytes).toBeLessThan(100_000);
