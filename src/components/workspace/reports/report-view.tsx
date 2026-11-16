@@ -29,6 +29,8 @@ import {
 const share = (part: number, of: number): CSSProperties =>
   ({ "--share": `${of > 0 ? Math.max(0, Math.round((part / of) * 1000) / 10) : 0}%` }) as CSSProperties;
 
+const wholeDollars = (cents: number) => money(Math.round(cents / 100) * 100);
+
 const watchMotion = (changed: () => void) => {
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
   motion.addEventListener("change", changed);
@@ -245,6 +247,7 @@ export function ReportView({
   const moved = report.history.requests > 0;
   const largestKind = Math.max(...report.kinds.map((line) => line.paid));
   const largestMonth = Math.max(...report.months.map((line) => line.paid));
+  const mostVisits = Math.max(...report.months.map((line) => line.visits));
   const serving = [
     { name: "Home visits", detail: `${plural(report.visits, "visit")}, always in pairs`, hours: report.visitHours },
     ...report.time.teams.map((team) => ({
@@ -295,7 +298,41 @@ export function ReportView({
       {sheet}
       {done && <HelpDone>{done}</HelpDone>}
 
-      <dl className="help-figures">
+      {/* The year as one cut piece: what was paid, standing on a ledge, with the calls, requests and visits that led to it. */}
+      <dl className="report-year">
+        <div>
+          <dt>
+            <strong>{voucherMoney ? "Paid direct or given as vouchers" : "Paid direct"}</strong>, never in cash.{" "}
+            {report.helpPaid % 100 !== 0 && `${money(report.helpPaid)} to the cent. `}
+            {plural(report.history.householdsInAll, "household")} helped, {plural(report.history.peopleInAll, "person", "people")} in
+            all, {spanLabel(report)}
+            {soFar}.
+          </dt>
+          <dd className="report-year-paid">
+            <span>
+              <Figure value={Math.round(report.helpPaid / 100) * 100} order={0} step={100} format={money} />
+            </span>
+          </dd>
+        </div>
+        {[
+          { label: "Calls taken", value: report.calls.taken },
+          { label: "Requests received", value: report.requests.received },
+          { label: "Home visits, in pairs", value: report.visits },
+        ].map((figure, order) => (
+          <div key={figure.label}>
+            <dt>{figure.label}</dt>
+            <dd>
+              <span>
+                <b>
+                  <Figure value={figure.value} order={order + 1} />
+                </b>
+              </span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <dl className="help-figures report-figures-print">
         <div>
           <dt>Neighbors helped</dt>
           <dd>
@@ -353,7 +390,7 @@ export function ReportView({
               <div className="help-bar" aria-hidden="true">
                 {!counted && <span style={share(line.paid, largestKind)} />}
               </div>
-              <span className="help-amount">{counted ? plural(report.vouchers.given, "voucher") : money(line.paid)}</span>
+              <span className="help-amount">{counted ? plural(report.vouchers.given, "voucher") : wholeDollars(line.paid)}</span>
             </li>
           );
         })}
@@ -371,7 +408,7 @@ export function ReportView({
         <div className="live-section-head">
           <h2>Month by month</h2>
           <span className="live-count">
-            Help paid<span className="report-wide">, and the visits behind it</span>
+            <i className="report-key" aria-hidden="true" />Help paid, and <span className="report-key-pair"><i className="report-key" data-of="visits" aria-hidden="true" />the visits behind it</span>
           </span>
         </div>
         <ol className="report-months" data-months={report.months.length} ref={months}>
@@ -384,7 +421,9 @@ export function ReportView({
                 data-ahead={ahead ? "" : undefined}
               >
                 <div className="report-month-bar" aria-hidden="true">
-                  {!ahead && <span style={share(line.paid, largestMonth)} />}
+                  {/* Two strips of cut paper: the help paid, and behind it the visits that month, each against the year's largest. */}
+                  {!ahead && line.visits > 0 && <i style={share(line.visits, mostVisits)} />}
+                  {!ahead && line.paid > 0 && <span style={share(line.paid, largestMonth)} />}
                 </div>
                 <h3>
                   {monthLabel(line.month, true)}
@@ -394,20 +433,17 @@ export function ReportView({
                   <p>Still to come</p>
                 ) : (
                   <>
-                    <p className="help-amount">{money(line.paid)}</p>
+                    {/* Whole dollars here; the cents are in the tip, the table and the ledger. */}
+                    <p className="help-amount">{wholeDollars(line.paid)}</p>
                     <p>{plural(line.visits, "visit")}</p>
-                    {/* Not read in the flow of the page, where the figures already are; it is what the button says of itself. */}
-                    <span id={`month-${line.month}`} hidden>
-                      {money(line.paid)} in help paid, {plural(line.visits, "visit")}
-                    </span>
                     <Popover open={tip === line.month} onOpenChange={(open) => setTip(open ? line.month : undefined)}>
                       <PopoverTrigger asChild>
                         <button
                           type="button"
                           className="report-month-open"
                           data-month={line.month}
-                          aria-label={monthLabel(line.month)}
-                          aria-describedby={`month-${line.month}`}
+                          // The month read as one sentence: "May 2026: $1,630 paid, 11 visits."
+                          aria-label={`${monthLabel(line.month)}: ${wholeDollars(line.paid)} paid, ${plural(line.visits, "visit")}.`}
                           onFocus={(event) => {
                             if (event.currentTarget.matches(":focus-visible")) setTip(line.month);
                           }}

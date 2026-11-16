@@ -4,7 +4,7 @@ import { SavedWords } from "@/components/workspace/saved-words";
 import { cn } from "@/lib/utils";
 import { useSavedLine } from "@/components/workspace/fold";
 import "./help-line.css";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { useQuery } from "@/components/workspace/query";
 import { CircleCheck } from "lucide-react";
@@ -84,29 +84,114 @@ export function KeptPrivate() {
   );
 }
 
+/**
+ * The yes files the draft away: as the sealed sheet closes, its own name and its own request travel up into
+ * the saved line, so the thing that was on the sheet is seen to be kept. Each travels as a copy laid over the
+ * page (the line is still opening, and clips what is inside it); the line's own words take over when they land.
+ * Transforms and opacity only. Nothing moves for anyone who asks for less motion, or if the line is out of view.
+ */
+let setOff: { name?: DOMRect; asks?: DOMRect } = {};
+/**
+ * Call just before the saved line is laid: where the sealed sheet's name and request stand now. The line opens
+ * from nothing, so the page is as it is at this moment when the words set off.
+ */
+export function readSealedSheet() {
+  const sheet = document.querySelector(".help-sheet.help-sealed");
+  setOff = {
+    name: sheet?.querySelector(".help-from strong")?.getBoundingClientRect(),
+    asks: sheet?.querySelector("#draft-title")?.getBoundingClientRect(),
+  };
+  return sheet?.querySelector("#draft-title")?.textContent ?? "";
+}
+
+function fileAway(line: HTMLElement) {
+  const sheet = document.querySelector(".help-sheet.help-sealed");
+  if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // Once for a line, however often its effects are run.
+  if (line.dataset.filedFrom !== undefined) return;
+  line.dataset.filedFrom = "";
+  // Measured where the line will rest: its own arriving move is put aside for the measure (nothing has been painted yet).
+  line.style.animation = "none";
+  const place = line.getBoundingClientRect();
+  const rest = (part: HTMLElement) => part.getBoundingClientRect();
+  const ends = new Map([...line.querySelectorAll<HTMLElement>("[data-filed]")].map((part) => [part, rest(part)]));
+  line.style.animation = "";
+  if (place.top < 0 || place.bottom > window.innerHeight) return;
+  // The whole sheet, corner and all, is gone within 140ms, so its words are never seen twice and its green corner
+  // is never left hanging alone; the room it took closes under the line as the words rise.
+  sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: "forwards" });
+  const travel = (from: HTMLElement | null, to: HTMLElement | null, start: DOMRect | undefined, resized: boolean) => {
+    if (!from || !to || !start) return;
+    const end = ends.get(to) ?? to.getBoundingClientRect();
+    const look = getComputedStyle(to);
+    const copy = document.createElement("span");
+    copy.textContent = to.textContent;
+    copy.setAttribute("aria-hidden", "true");
+    Object.assign(copy.style, {
+      position: "fixed", left: `${end.left}px`, top: `${end.top}px`, zIndex: "30", margin: "0", pointerEvents: "none", whiteSpace: "nowrap",
+      font: look.font, letterSpacing: look.letterSpacing, color: look.color, transformOrigin: "0 0",
+    });
+    document.body.append(copy);
+    to.style.opacity = "0";
+    const move = `translate(${start.left - end.left}px, ${start.top - end.top}px)`;
+    // The name keeps its shape, sized by its letters. The request is never stretched: its small setting comes up
+    // where the large one stood as that fades, and is carried to its line.
+    const scale = parseFloat(getComputedStyle(from).fontSize) / parseFloat(look.fontSize);
+    const landed = () => {
+      to.style.opacity = "";
+      copy.remove();
+    };
+    // Each sets off as the sheet's own setting of it fades, so the two are a cross-fade and never a double.
+    copy.animate(
+      resized
+        ? [{ transform: `${move} scale(${scale})`, opacity: 0 }, { opacity: 1, offset: 0.25 }, { transform: "none", opacity: 1 }]
+        : [{ transform: move, opacity: 0 }, { opacity: 0, offset: 0.15 }, { opacity: 1, offset: 0.5 }, { transform: "none", opacity: 1 }],
+      { duration: 460, delay: 60, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "both" },
+    ).finished.then(landed, landed);
+  };
+  travel(sheet.querySelector<HTMLElement>(".help-from strong"), line.querySelector<HTMLElement>("[data-filed=name]"), setOff.name, true);
+  travel(sheet.querySelector<HTMLElement>("#draft-title"), line.querySelector<HTMLElement>("[data-filed=asks]"), setOff.asks, false);
+}
+
 /** The green line that says what changed, and the one way on from it. It takes focus so a screen reader hears it. */
 export function HelpDone({
   children,
   action,
   className,
   focus = true,
+  filed,
 }: {
   children: string;
   action?: ReactNode;
   className?: string;
   /** False where the line is only read out, and the person's place on the page is left alone. */
   focus?: boolean;
+  /** A draft was just filed by a yes: the line carries whose it is and what it asks, as the sheet showed them. */
+  filed?: { name: string; asks: string };
 }) {
   const line = useRef<HTMLDivElement>(null);
+  // Before the line starts to open: the filed words set off from the sheet (measured while the line is whole).
+  useLayoutEffect(() => {
+    if (filed && line.current) fileAway(line.current);
+    // Once, as the line is laid.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Six seconds, or twelve when it carries an action; then it closes up and stays as a message for screen readers.
   const seen = useSavedLine(line, { action: !!action, of: children });
   useEffect(() => {
     if (focus) line.current?.focus({ preventScroll: true });
   }, [children, focus]);
+  const said = filed ? `${filed.name}: ${filed.asks}. ${children}` : children;
   return (
-    <div className={seen ? cn("live-success help-done paper-settle", className) : "sr-only"} role="status" tabIndex={-1} ref={line}>
+    <div className={seen ? cn("live-success help-done paper-settle", filed && "help-filed", className) : "sr-only"} role="status" tabIndex={-1} ref={line}>
       {seen && <CircleCheck size={22} aria-hidden="true" />}
-      {seen ? <SavedWords>{children}</SavedWords> : children}
+      {!seen ? said : filed ? (
+        <span className="help-filed-words">
+          <strong data-filed="name">{filed.name}</strong>
+          <span data-filed="asks">{filed.asks}</span>
+          <SavedWords>{children}</SavedWords>
+        </span>
+      ) : <SavedWords>{children}</SavedWords>}
       {seen && action}
     </div>
   );

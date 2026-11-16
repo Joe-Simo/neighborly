@@ -224,3 +224,21 @@
 /* When a call travels to "Returned this week" the lists move their own rows; the browser must not also shift
    the page to follow one of them, nor to follow the saved line laid in above them in that same frame. */
 :has(> .help-lists), .help-lists { overflow-anchor: none; }
+
+/* A draft filed by a yes: the saved line carries the name and the request, set as the sheet set them, smaller.
+   They arrive from the sheet itself (room.tsx, fileAway). The sentence under them says what was done. */
+.help-done.help-filed { align-items: start; }
+.help-done.help-filed > svg { margin-top: 5px; }
+.help-filed-words { display: grid; justify-items: start; gap: 1px 0; min-width: 0; flex: 1 1 auto; }
+.help-filed-words strong { font: 400 24px/1.2 "Newsreader", Georgia, serif; letter-spacing: -0.02em; white-space: nowrap; transform-origin: 0 0; }
+.help-filed-words [data-filed="asks"] { font-size: 17px; line-height: 1.45; }
+.help-filed-words > span:last-child { font-size: 15px; line-height: 1.45; margin-top: 3px; }
+.help-done.help-filed > :is(a, button) { align-self: center; flex: none; }
+@media (max-width: 700px) {
+  .help-done.help-filed { flex-wrap: wrap; }
+  .help-filed-words { flex-basis: calc(100% - 40px); }
+  .help-done.help-filed > :is(a, button) { margin-left: 36px; }
+}
+/* While the name and the request are on their way up, the sentence under them waits, so nothing crosses it. */
+.help-filed[data-filed-from] .help-filed-words > span:last-child { animation: paper-show 180ms linear 400ms backwards; }
+@media (prefers-reduced-motion: reduce) { .help-filed[data-filed-from] .help-filed-words > span:last-child { animation: none; } }

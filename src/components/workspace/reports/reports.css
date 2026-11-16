@@ -99,6 +99,83 @@
   color: #52644f;
 }
 
+/* The year as one cut piece. The amount paid is cut from green paper and stands on a ledge; beside it stand three
+   small slips for the calls, requests and visits that led to it. Captions sit under the ledge. On paper the plain
+   figures print instead. */
+@media screen { .report-figures-print { display: none; } }
+.report-year {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, auto);
+  grid-template-rows: auto auto;
+  margin: 56px 0 54px;
+}
+.report-year > div { display: contents; }
+.report-year dd {
+  grid-row: 1;
+  display: flex;
+  align-items: flex-end;
+  margin: 0;
+  padding: 0 14px;
+  border-bottom: 1px solid #cfc9b8;
+}
+.report-year dt {
+  grid-row: 2;
+  padding: 14px 14px 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--live-muted);
+  max-width: 150px;
+}
+.report-year > div:first-child :is(dt, dd) { padding-left: 0; }
+.report-year > div:first-child dt { max-width: 520px; font-size: 16px; padding-right: 32px; }
+.report-year dt strong { font-weight: 650; color: var(--live-ink); }
+.report-year dd > span { display: block; filter: drop-shadow(1.5px 1px 0 rgb(40 60 50 / 0.26)) drop-shadow(7px 9px 9px rgb(40 60 50 / 0.17)); }
+.report-year-paid > span {
+  font: 400 min(124px, 20.5vw) / 0.78 "Newsreader", Georgia, serif;
+  letter-spacing: -0.045em;
+  font-variant-numeric: lining-nums;
+  color: #335844;
+  padding-bottom: 0.035em;
+  animation: paper-rise 420ms var(--paper-ease) backwards;
+  animation-delay: calc(var(--paper-wait, 0ms) + 60ms);
+}
+.report-year dd b {
+  display: block;
+  min-width: 84px;
+  padding: 16px 16px 9px;
+  background: #fbf9f3;
+  font: 400 42px/1 "Newsreader", Georgia, serif;
+  letter-spacing: -0.03em;
+  font-variant-numeric: lining-nums tabular-nums;
+  text-align: center;
+  color: var(--live-ink);
+  clip-path: polygon(0 6px, 100% 0, 100% 100%, 0 100%);
+  rotate: -1.4deg;
+  transform-origin: bottom;
+  animation: report-rise 420ms var(--paper-ease) backwards;
+  animation-delay: calc(var(--paper-wait, 0ms) + 150ms);
+}
+.report-year > div:nth-child(3) dd b { clip-path: polygon(0 0, 100% 5px, 100% 100%, 0 100%); rotate: 1deg; padding-top: 24px; animation-delay: calc(var(--paper-wait, 0ms) + 210ms); }
+.report-year > div:nth-child(4) dd b { clip-path: polygon(0 3px, 46% 0, 100% 6px, 100% 100%, 0 100%); rotate: -0.5deg; padding-top: 12px; animation-delay: calc(var(--paper-wait, 0ms) + 270ms); }
+@media (max-width: 850px) {
+  .report-year { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, auto); margin-bottom: 40px; }
+  .report-year > div:first-child :is(dt, dd) { grid-column: 1 / -1; }
+  .report-year > div:first-child dt { padding-right: 0; }
+  .report-year > div:not(:first-child) dd { grid-row: 3; padding: 30px 6px 0; justify-content: center; }
+  .report-year > div:not(:first-child) dt { grid-row: 4; padding: 10px 4px 0; text-align: center; justify-self: center; }
+  .report-year dd b { min-width: 72px; font-size: 34px; }
+  /* On a phone the figure comes first: its sentence, the slips, and only then the two buttons. */
+  .report { display: flex; flex-direction: column; }
+  .report > .report-period, .report-period > .report-controls { display: contents; }
+  .report-period > p { margin-bottom: 14px; }
+  .report-controls > .report-switches { margin-bottom: 8px; }
+  .report-year { margin-top: 34px; }
+  .report-controls > .report-actions { order: 1; margin-bottom: 44px; }
+  .report-year ~ * { order: 2; }
+}
+@media (prefers-reduced-motion: reduce) { .report-year-paid > span, .report-year dd b { animation: none; } }
+@media print { .report .report-year { display: none; } }
+
 /* Twelve months standing side by side, each as tall as the help it paid. */
 .report-months {
   list-style: none;
@@ -112,36 +189,66 @@
 .report-months[data-months="3"] {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-.report-months[data-months="3"] .report-month-bar span {
-  width: 44px;
-}
+.report-months[data-months="3"] .report-month-bar { --strip: 56px; }
 .report-months li {
   display: flex;
   flex-direction: column;
   padding: 22px 10px 18px;
   text-align: center;
 }
-.report-months li + li {
-  border-left: 1px solid var(--live-line);
-}
+/* The year in cut paper. Each month is two strips standing on a ledge: green for the help paid, and behind it,
+   beside it, a narrower one in a lighter sage for the visits made (plum is kept for what is wrong). Each strip is cut by hand (its top is never quite level), leans a
+   hair its own way and throws its shadow on the paper. Heights are shares of the year's largest month. */
 .report-month-bar {
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  height: 132px;
+  height: 148px;
   margin-bottom: 16px;
+  border-bottom: 1px solid #cfc9b8;
+  --strip: min(40px, 52%);
+  --lean: -1.1deg;
+  --cut: polygon(0 5px, 100% 0, 100% 100%, 0 100%);
 }
-.report-month-bar span {
+.report-months li:nth-child(3n + 2) .report-month-bar { --lean: 0.9deg; --cut: polygon(0 0, 100% 4px, 100% 100%, 0 100%); }
+.report-months li:nth-child(3n) .report-month-bar { --lean: -0.4deg; --cut: polygon(0 2px, 52% 0, 100% 5px, 100% 100%, 0 100%); }
+.report-month-bar :is(span, i) {
   display: block;
-  width: 22px;
-  min-height: 2px;
+  width: var(--strip);
   height: var(--share);
-  border-radius: 1px 1px 0 0;
-  background: linear-gradient(0deg, #365c46, #5d8064);
+  clip-path: var(--cut);
   transform-origin: bottom;
+  rotate: var(--lean);
   animation: report-rise 420ms var(--paper-ease) backwards;
   animation-delay: calc(var(--paper-wait, 0ms) + 90ms + var(--paper-order, 0) * 30ms);
 }
+/* Shadows are thrown by the strips' holders, so a strip's cut top shapes its shadow too. */
+.report-month-bar { filter: drop-shadow(2px 1px 0 rgb(40 60 50 / 0.14)) drop-shadow(7px 9px 9px rgb(40 60 50 / 0.16)); }
+.report-month-bar span {
+  position: relative;
+  z-index: 1;
+  translate: calc(var(--strip) * -0.24) 0;
+  background: linear-gradient(0deg, #335844, #3f6a50);
+}
+.report-month-bar i {
+  position: absolute;
+  bottom: 0;
+  left: calc(50% + var(--strip) * 0.26 + 4px);
+  width: calc(var(--strip) * 0.4);
+  rotate: calc(var(--lean) * -1.4);
+  background: linear-gradient(0deg, #5c876d, #648f75);
+  animation-delay: calc(var(--paper-wait, 0ms) + 30ms + var(--paper-order, 0) * 30ms);
+}
+/* Under the pointer or the keyboard a month's strips are lifted a little off the paper. */
+.report-months li:is(:hover, :focus-within) .report-month-bar { filter: drop-shadow(3px 2px 0 rgb(40 60 50 / 0.14)) drop-shadow(10px 14px 12px rgb(40 60 50 / 0.2)); translate: 0 -2px; }
+.report-month-bar { transition: translate 160ms var(--paper-ease), filter 160ms var(--paper-ease); }
+/* The caption's two small keys say which paper is which. */
+.report-key { display: inline-block; width: 10px; height: 10px; margin-right: 6px; background: #3d6a50; vertical-align: baseline; }
+.report-key[data-of="visits"] { background: #608b71; margin-left: 2px; }
+.report-key-pair { white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .report-month-bar { transition: none; } .report-months li:is(:hover, :focus-within) .report-month-bar { translate: none; } }
+@media print { .report-month-bar { filter: none; } }
 .report-months li:nth-child(2) { --paper-order: 1; }
 .report-months li:nth-child(3) { --paper-order: 2; }
 .report-months li:nth-child(4) { --paper-order: 3; }
@@ -175,7 +282,6 @@
 /* The whole month is the button: it holds the exact figures up in a paper tip. */
 .report-months li { position: relative; }
 .report-month-open { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 2px; transition: background-color 160ms var(--paper-ease); }
-.report-month-open:hover, .report-month-open[data-state="open"] { background: rgb(54 92 70 / 0.06); }
 .report-month-open:focus-visible { outline: 2px solid #365c46; outline-offset: -2px; }
 .report-tip { min-width: 148px; padding: 12px 16px 13px; border: 1px solid #d9ddce; border-radius: 4px; background: #f7f4ed; color: #283c32; font-family: "Source Sans 3", sans-serif; text-align: center; box-shadow: -5px -9px 22px -12px rgb(40 60 50 / 0.22), 0 18px 40px -18px rgb(40 60 50 / 0.4); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
 .report-tip p { margin: 0; font-size: 15px; color: #52644f; }
@@ -282,6 +388,9 @@
 .report .help-bars li:nth-child(3) { --paper-order: 2; }
 .report .help-bars li:nth-child(4) { --paper-order: 3; }
 .report .help-bars li:nth-child(5) { --paper-order: 4; }
+/* Kinds of help are one green family here: plum is kept for what is wrong and ochre for what waits, in charts too. */
+.report .help-bars li:nth-child(2) .help-bar span { background: #4f7a61; }
+.report .help-bars li:nth-child(3) .help-bar span { background: #648f75; }
 .report .help-bars li:nth-child(4) .help-bar span { background: color-mix(in srgb, #365c46 55%, #f7f4ed); }
 .report .help-bars li:nth-child(5) .help-bar span { background: color-mix(in srgb, #283c32 38%, #f7f4ed); }
 .report-form th small {
@@ -394,7 +503,8 @@
 }
 @media (max-width: 850px) {
   .report-period { align-items: flex-start; flex-direction: column; }
-  .report-wide { display: none; }
+  /* The whole key stays: it wraps under the heading. */
+  .live-section:has(> .report-months) > .live-section-head { flex-wrap: wrap; gap: 4px 16px; }
   .report-period p span { display: block; margin: 0 0 4px; }
   .live-app .report-years [data-slot="toggle-group-item"] { height: 44px; }
   .report-actions { width: 100%; }
@@ -405,14 +515,13 @@
   /* On a phone the year is two rows of six small bars. */
   .report-months { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .report-months li { padding: 16px 2px 14px; }
-  .report-months li:nth-child(7) { border-left: 0; }
   .report-months li:nth-child(n + 7) { border-top: 1px solid var(--live-line); }
   .report-month-bar { height: 72px; margin-bottom: 10px; }
-  .report-month-bar span { width: 16px; }
+  .report-month-bar { --strip: 18px; }
   .report-months h3 { margin-bottom: 4px; }
-  .report-months p.help-amount { font-size: 16px; margin: 0; }
+  .report-months p.help-amount { font-size: 15px; letter-spacing: -0.02em; margin: 0; }
   .report-months p:not(.help-amount) { font-size: 15px; }
-  .report-months:not([data-months="3"]) p:not(.help-amount) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .report-months:not([data-months="3"]) p:not(.help-amount) { font-size: 13px; white-space: nowrap; }
   .report-months[data-months="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .live-app .report-every-line { width: 100%; }
   .report-legend { display: grid; gap: 10px; }
@@ -423,7 +532,7 @@
   .report-skeleton-figures > div:nth-child(2) { padding-left: 0; border-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .report-month-bar span, .report-outcomes, .report .help-bar span, .report-skeleton-figures b, .report-skeleton-figures i, .report-tip { animation: none; }
+  .report-month-bar span, .report-month-bar i, .report-key, .report-outcomes, .report .help-bar span, .report-skeleton-figures b, .report-skeleton-figures i, .report-tip { animation: none; }
   .report-month-open { transition: none; }
   .live-app .report-years [data-slot="toggle-group-item"], .report-every-line svg { transition: none; }
   .report-lines[data-open] > .report-form { animation: none; }
@@ -524,6 +633,8 @@
 }
 
 /* The switches and what to do with the period, on one line. */
+/* With no year or quarter to choose, the two buttons end the period's own line. */
+.report-controls:not(:has(.report-switches)) { flex: 0 1 auto; }
 .report-controls {
   display: flex;
   flex: 1 1 100%;
