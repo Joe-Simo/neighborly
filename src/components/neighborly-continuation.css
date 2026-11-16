@@ -9,12 +9,12 @@
 .neighborly-together{position:relative;z-index:1;isolation:isolate;display:flex;flex-direction:column;gap:clamp(28px,3.4vw,52px);padding:clamp(64px,7vw,110px) 7% 0;outline:0}
 .neighborly-together-paper{position:absolute;inset:0;z-index:-1;background:center bottom/cover no-repeat;-webkit-mask-image:linear-gradient(transparent,#000 34%);mask-image:linear-gradient(transparent,#000 34%)}
 .neighborly-together-paper[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
-.neighborly-together h2{margin:0;font:400 clamp(56px,6.6vw,112px)/.94 'Newsreader',Georgia,serif;letter-spacing:-.065em}
+.neighborly-together h2{margin:0;font:400 clamp(40px,4.8cqw,88px)/1.02 'Newsreader',Georgia,serif;letter-spacing:-.045em}
 .neighborly-together h2 em{font-weight:400}
-.neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);grid-template-rows:auto 1fr;align-items:start;gap:28px clamp(48px,6vw,110px)}
-.neighborly-together-statement{margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:pretty}
+.neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start;gap:28px clamp(48px,6vw,110px)}
+.neighborly-together-statement{grid-column:2;grid-row:1;margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:pretty}
 /* What a conference gets, written on one sheet of the workspace's own paper, its corner folded in ochre. */
-.neighborly-gets{grid-row:1 / span 2;position:relative;margin:0;padding:clamp(10px,1.2vw,18px) clamp(24px,3vw,48px);list-style:none;background:#f7f4ed;box-shadow:0 1px 0 #fffdf7 inset,0 30px 60px -34px #51433066,0 2px 8px #5143301a;clip-path:polygon(0 0,calc(100% - 44px) 0,100% 44px,100% 120%,0 120%)}
+.neighborly-gets{grid-column:1;grid-row:1;position:relative;margin:0;padding:clamp(10px,1.2vw,18px) clamp(24px,3vw,48px);list-style:none;background:#f7f4ed;box-shadow:0 1px 0 #fffdf7 inset,0 30px 60px -34px #51433066,0 2px 8px #5143301a;clip-path:polygon(0 0,calc(100% - 44px) 0,100% 44px,100% 120%,0 120%)}
 .neighborly-gets::after{content:"";position:absolute;top:0;right:0;width:44px;height:44px;background:linear-gradient(225deg,transparent 50%,#c8962e 50%);filter:drop-shadow(-2px 3px 3px #5143303d)}
 .neighborly-gets li{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:baseline;gap:6px 32px;padding:clamp(18px,1.9vw,28px) 0;border-top:1px solid #293f3224}
 .neighborly-gets li:first-child{border-top:0}
@@ -37,18 +37,43 @@
 .neighborly-give:hover{text-decoration-color:currentColor}
 @media(max-width:900px){
   .neighborly-together{padding-inline:20px}
-  .neighborly-together h2{font-size:clamp(52px,15vw,104px)}
+  .neighborly-close{margin-inline:-20px}
   .neighborly-together h2 em{margin-left:0}
   .neighborly-together-bottom{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
-  .neighborly-together-statement{order:-2;max-width:22ch;font-size:clamp(24px,6.6vw,34px)}
-  .neighborly-final-actions{order:-1}
-  .neighborly-gets{grid-row:auto;margin-top:20px;padding:6px 22px}
+  .neighborly-together-statement{grid-column:auto;grid-row:auto;max-width:22ch;font-size:clamp(24px,6.6vw,34px)}
+  .neighborly-gets{grid-column:auto;grid-row:auto;margin-top:20px;padding:6px 22px}
   .neighborly-gets li{grid-template-columns:minmax(0,1fr)}
   .neighborly-final-actions{max-width:none}
 }
 @media(max-width:700px){
   .neighborly-final-actions{align-items:stretch}
   .neighborly-begin[data-slot=button]{width:100%;justify-content:space-between}
+}
+/* The close: the opening picture again, the card now in the open hand, and the words where the first headline stood. */
+.neighborly-close{position:relative;container-type:inline-size;margin-inline:-8.14%;height:min(100svh,100vw / 1.40625);color:#253e31}
+.neighborly-close-art{position:absolute;inset:0;-webkit-mask-image:linear-gradient(transparent,#000 9%,#000 93%,transparent);mask-image:linear-gradient(transparent,#000 9%,#000 93%,transparent)}
+.neighborly-close-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 28%}
+.neighborly-close-words{position:absolute;left:6%;top:36%;width:60%}
+.neighborly-close .neighborly-final-actions{flex-direction:row;flex-wrap:wrap;align-items:center;gap:14px 28px;max-width:none;margin-top:clamp(20px,2.4cqw,32px)}
+.neighborly-close .neighborly-begin[data-slot=button]{min-height:56px;padding:14px 24px}
+.neighborly-close .neighborly-final-actions small{flex-basis:100%;font-size:14px}
+@media(max-width:1279px),(max-height:444px){
+  /* Narrower screens: the picture whole, the words beneath it on the paper. */
+  .neighborly-close{height:auto}
+  .neighborly-close-art{position:relative;display:block;-webkit-mask-image:linear-gradient(transparent,#000 9%,#000 86%,transparent);mask-image:linear-gradient(transparent,#000 9%,#000 86%,transparent)}
+  .neighborly-close-art img{height:auto;object-fit:contain}
+  .neighborly-close-words{position:static;width:auto;padding:8px 7% 0}
+  .neighborly-together h2{font-size:clamp(48px,7.4vw,76px)}
+}
+@media(max-width:700px) and (orientation:portrait){
+  /* A phone held upright: the tall picture, the words on its open paper as on the first screen. */
+  .neighborly-close-art{-webkit-mask-image:linear-gradient(transparent,#000 5%,#000 96%,transparent);mask-image:linear-gradient(transparent,#000 5%,#000 96%,transparent)}
+  .neighborly-close-words{position:absolute;left:20px;right:20px;top:calc(216.4cqw * .328);padding:0}
+  .neighborly-together h2{font-size:clamp(32px,9.6cqw,44px)}
+  .neighborly-close .neighborly-final-actions{flex-direction:column;align-items:stretch;gap:6px;margin-top:14px}
+  .neighborly-close .neighborly-begin[data-slot=button]{min-height:52px;padding:12px 16px;font-size:16px}
+  .neighborly-close .neighborly-final-links{gap:0 26px}
+  .neighborly-close .neighborly-final-actions small{font-size:13px}
 }
 @media(prefers-reduced-motion:reduce){.has-reveal [data-reveal]{translate:none;transition:none}}
 

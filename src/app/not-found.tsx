@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { stateWords } from "@/components/workspace/state-words";
 
 export const metadata: Metadata = {
-  title: "Page not found · Kind Helps",
+  title: "Page not found — Kind Helps",
+  description: "The address may be old or mistyped. Kind Helps is at kindhelps.com.",
   robots: { index: false, follow: false },
 };
 

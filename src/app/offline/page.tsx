@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import { TryAgain } from "./try-again";
 
 export const metadata: Metadata = {
-  title: "No connection",
+  title: "No connection — Kind Helps",
+  description: "This device is offline. What is on screen is kept, and Kind Helps opens again when the connection returns.",
   robots: { index: false, follow: false },
 };
 
