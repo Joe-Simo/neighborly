@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, holdThePage } from "@/components/workspace/fold";
 import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
   useCallback,
@@ -495,12 +495,19 @@ export function HelpLineView({
   sheet?: ReactNode;
 }) {
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
-  // A call marked returned travels down from where it waited into "Returned this week".
+  // A call marked returned travels down from where it waited into "Returned this week". Everything else in
+  // the lists that the change moves (the rows under it, the next heading) glides to its new place in the same
+  // move, and the page keeps its place: nothing the person is looking at jumps.
   const lists = useRef<HTMLDivElement>(null);
   const before = useRef(new Map<string, { top: number; waiting: boolean }>());
+  const others = useRef(new Map<Element, number>());
   useLayoutEffect(() => {
     const now = new Map<string, { top: number; waiting: boolean }>();
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const travel = (piece: HTMLElement, by: number) =>
+      piece.animate([{ transform: `translateY(${by}px)` }, { transform: "none" }], { duration: 480, easing: PAPER_EASE });
+    const stayed: [HTMLElement, number][] = [];
+    let travelled = false;
     lists.current
       ?.querySelectorAll<HTMLElement>("[data-call]")
       .forEach((row) => {
@@ -509,19 +516,26 @@ export function HelpLineView({
         const top = row.getBoundingClientRect().top + window.scrollY;
         now.set(id, { top, waiting });
         const was = before.current.get(id);
+        if (was && was.waiting === waiting) stayed.push([row, was.top - top]);
         if (!was?.waiting || waiting) return;
+        travelled = true;
         row.dataset.arrived = "";
         if (still) return;
         row.style.animation = "none";
-        row.animate(
-          [
-            { transform: `translateY(${was.top - top}px)` },
-            { transform: "none" },
-          ],
-          { duration: 480, easing: PAPER_EASE },
-        );
+        travel(row, was.top - top);
       });
+    const heads = new Map<Element, number>();
+    lists.current?.querySelectorAll<HTMLElement>(".live-section-head").forEach((head) => {
+      heads.set(head, head.getBoundingClientRect().top + window.scrollY);
+      const was = others.current.get(head);
+      if (was !== undefined) stayed.push([head, was - (heads.get(head) ?? was)]);
+    });
+    if (travelled) {
+      holdThePage();
+      if (!still) stayed.forEach(([piece, by]) => Math.abs(by) > 1 && travel(piece, by));
+    }
     before.current = now;
+    others.current = heads;
   });
   const leaf = (at: number) => {
     const part = (options: Intl.DateTimeFormatOptions) =>

@@ -191,7 +191,7 @@ export function openUp(sheet: HTMLElement) {
  * scroll up far enough not to need it.
  */
 let letGo: (() => void) | undefined;
-function holdThePage() {
+export function holdThePage() {
   const page = document.documentElement;
   const held = window.scrollY;
   // Each closing holds the place the person is at now, not the place of an earlier one.
