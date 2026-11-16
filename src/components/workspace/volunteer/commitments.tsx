@@ -3,6 +3,7 @@
 import { upcomingCommitments } from "@/lib/commitment-visibility";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useWorkspace } from "@/components/workspace/context";
+import { WeekByTeam } from "@/components/workspace/volunteer/asides";
 import { CommitmentRows } from "@/components/workspace/volunteer/commitment-rows";
 
 export function CommitmentsSection() {
@@ -11,6 +12,7 @@ export function CommitmentsSection() {
   const datedCommitments = upcomingCommitments(data.commitments, now, true);
   return (
     <>
+      <WeekByTeam />
       <h2 className="sr-only">{words.menu.commitments}</h2>
       <div className="live-filter">
         <NativeSelect

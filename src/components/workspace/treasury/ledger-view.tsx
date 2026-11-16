@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { CountUp } from "@/components/workspace/primitives";
+import { CountUp, LiveLoading } from "@/components/workspace/primitives";
 import { openUp, useGrowsSmoothly } from "@/components/workspace/fold";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
@@ -432,17 +432,9 @@ export function LedgerView({
   );
 }
 
+/** The ledger is on its way: the one quiet line every room waits with. */
 export function LedgerLoading() {
-  return (
-    <div role="status" aria-label="Opening the ledger">
-      <div className="help-skeleton treasury-skeleton-figures" />
-      <div className="help-skeleton">
-        <div><i /><span><b /><b /></span></div>
-        <div><i /><span><b /><b /></span></div>
-        <div><i /><span><b /><b /></span></div>
-      </div>
-    </div>
-  );
+  return <LiveLoading />;
 }
 
 export function LedgerPrivate() {

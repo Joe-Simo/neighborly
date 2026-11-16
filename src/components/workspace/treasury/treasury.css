@@ -51,12 +51,6 @@
 .treasury-dialog .live-field small {
   font-size: 15px;
 }
-.treasury-skeleton-figures {
-  height: 150px;
-  margin-bottom: 46px;
-  border-top: 2px solid #596e51;
-  border-bottom: 1px solid var(--live-line);
-}
 @media (max-width: 850px) {
   .help-ledger td.help-what {
     grid-column: 1;

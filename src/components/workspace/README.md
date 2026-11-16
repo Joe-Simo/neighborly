@@ -193,3 +193,10 @@ asking the server. Never draw `LiveApp` from a page, and never hide a room befor
 The live sample keeps Eastern time, so a harness that takes pictures does too, or its days and hours
 will not match the live site: give the sample conference `timeZone: "America/New_York"` and open the
 browser in the same zone (Playwright: `browser.newContext({ timezoneId: "America/New_York", locale: "en-US" })`).
+
+## Waiting
+
+There is one way to wait: `<LiveLoading />` from `primitives`, a quiet line ("Opening…" in the reader's
+language, or the `label` you pass). It shows only after 400ms, so a quick answer never flashes it.
+No grey rows or blocks stand in for content anywhere. The full-screen `LiveRoomLoading` is for the
+frame alone, before anyone's workspace has arrived.

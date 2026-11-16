@@ -122,7 +122,7 @@ export function ht(set: WordSet): Words {
     },
     dateField: { choose: "Chwazi yon jou", done: "Fini", chooseTime: "Chwazi yon lè" },
     week: {
-      figures: { calls: "Apèl pou retounen", visits: "Vizit ki planifye", requests: "Demann k ap tann yon wi" },
+      figures: { calls: "Apèl pou retounen", visits: "Vizit ki planifye", requests: "Demann k ap tann yon wi", oldest: (days) => `Pi ansyen an, ${days} jou`, toPay: (count) => `${count} apwouve, poko peye` },
       comingUp: "Sa k ap vini",
       nextSevenDays: "7 jou k ap vini yo",
       printWeek: "Enprime semèn nan",
@@ -144,6 +144,9 @@ export function ht(set: WordSet): Words {
         "Angajman ou aksepte yo ap parèt isit la ak tout sa ou bezwen pou ou pare.",
     },
     commitments: {
+      weekByTeam: "Semèn sa a pa ekip",
+      covered: "Kouvri",
+      placesOpen: (count) => (count === 1 ? "1 plas lib" : `${count} plas lib`),
       filterLabel: "Chwazi yon ekip",
       allTeams: "Tout ekip yo",
       noneForTeamTitle: "Ekip sa a pa gen dat k ap vini.",
@@ -186,6 +189,9 @@ export function ht(set: WordSet): Words {
       released: "Angajman an lage. Lòt dat ou yo pa chanje.",
     },
     timeOff: {
+      thisMonth: "Mwa sa a",
+      away: "Jou konje",
+      canHelp: "Ou ka ede",
       note: "Jou konje pa retire ou nan ekip ou yo. Angajman ou genyen deja yo chanje apa, pou tout moun konnen sa ki kouvri.",
       remove: "Retire",
       removed: "Jou konje retire.",
@@ -225,6 +231,7 @@ export function ht(set: WordSet): Words {
       saved: "Jou konje anrejistre. Se sèlman angajman ou te gade yo ki lage.",
     },
     tasks: {
+      nextMeeting: "Pwochen reyinyon",
       tasks: "Travay",
       add: "Ajoute yon travay",
       markDone: "Make l fèt",
@@ -234,7 +241,7 @@ export function ht(set: WordSet): Words {
       emptyDetail: "Travay nou pataje yo ap parèt isit la ak moun ki responsab la ak dat la.",
       meetings: "Reyinyon",
       going: "Ou prale",
-      notGoing: "Ou pa ka vini",
+      notGoing: "Ou pa ka ale",
       waiting: "N ap tann repons ou",
       changeReply: "Chanje repons",
       due: (date) => `Pou ${date}`,

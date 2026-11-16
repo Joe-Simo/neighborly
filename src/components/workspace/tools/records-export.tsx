@@ -74,7 +74,6 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
         <>
           <div className="live-list tools-records" aria-hidden="true">
             <FileRows files={state.files} />
-            <div className="help-skeleton tools-gathering"><div><i /><span><b /><b /></span></div></div>
           </div>
           <p role="status" className="tools-progress">{state.progress}</p>
         </>

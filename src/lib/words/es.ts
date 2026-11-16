@@ -121,7 +121,7 @@ export function es(set: WordSet): Words {
     },
     dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora" },
     week: {
-      figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Peticiones que esperan un sí" },
+      figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Peticiones que esperan un sí", oldest: (days) => (days === 1 ? "La más antigua, 1 día" : `La más antigua, ${days} días`), toPay: (count) => (count === 1 ? "1 aprobada, sin pagar" : `${count} aprobadas, sin pagar`) },
       comingUp: "Lo que viene",
       nextSevenDays: "Próximos 7 días",
       printWeek: "Imprimir la semana",
@@ -143,6 +143,9 @@ export function es(set: WordSet): Words {
         "Los compromisos que aceptes aparecerán aquí con todo lo necesario para prepararte.",
     },
     commitments: {
+      weekByTeam: "Esta semana por equipo",
+      covered: "Cubierto",
+      placesOpen: (count) => (count === 1 ? "1 lugar libre" : `${count} lugares libres`),
       filterLabel: "Filtrar por equipo",
       allTeams: "Todos los equipos",
       noneForTeamTitle: "Este equipo no tiene fechas próximas.",
@@ -186,6 +189,9 @@ export function es(set: WordSet): Words {
       released: "Compromiso liberado. Tus otras fechas siguen igual.",
     },
     timeOff: {
+      thisMonth: "Este mes",
+      away: "Día libre",
+      canHelp: "Puedes ayudar",
       note: "Los días libres no te sacan de tus equipos. Los compromisos que ya tienes se cambian aparte, para que todos sepan qué está cubierto.",
       remove: "Quitar",
       removed: "Días libres quitados.",
@@ -229,6 +235,7 @@ export function es(set: WordSet): Words {
       saved: "Días libres guardados. Solo se liberaron los compromisos revisados.",
     },
     tasks: {
+      nextMeeting: "Próxima reunión",
       tasks: "Tareas",
       add: "Agregar una tarea",
       markDone: "Marcar como hecha",

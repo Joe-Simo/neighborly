@@ -9,6 +9,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
+import { NextMeeting } from "@/components/workspace/volunteer/asides";
 
 export function TasksSection() {
   const {
@@ -28,6 +29,7 @@ export function TasksSection() {
   const [changing, setChanging] = useState<string>();
   return (
     <>
+      <NextMeeting />
       <section>
         <div className="live-section-head">
           <h2>{words.tasks.tasks}</h2>
