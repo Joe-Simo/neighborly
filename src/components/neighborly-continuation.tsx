@@ -10,10 +10,10 @@ import "./neighborly-continuation.css";
 /** Everything after the opening: through the doors, the story of the work, and the way in. */
 // What a conference has on its first day, in the order the work happens.
 const gets = [
-  ["The help line", "Every call is written down once. The urgent ones rise to the top, and someone is always next to call back."],
-  ["Visits in pairs", "Two members go together. What they saw and what was asked stays with the request."],
+  ["The help line", "Every call is written down once, and the urgent ones rise to the top."],
+  ["Visits in pairs", "What the two members saw, and what was asked, stays with the request."],
   ["The ledger", "Every bill paid is on one page: to whom, for whom, and how much."],
-  ["The yearly report", "The year adds itself up, ready for you to check and print."],
+  ["The yearly report", "The totals are kept as the work is done. Check them, then print."],
   ["Free", "For every conference. There is nothing to buy."],
 ] as const;
 

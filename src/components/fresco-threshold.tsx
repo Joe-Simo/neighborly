@@ -104,7 +104,7 @@ export function FrescoThreshold() {
       </header>
       <div className="fresco-invitation" aria-hidden={open}>
         <h2>There is room<br /><em>for you.</em></h2>
-        <p>Bring a little of your time.<br />See what we can make together.</p>
+        <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
       </div>
       <div ref={frame} className="fresco-frame">
