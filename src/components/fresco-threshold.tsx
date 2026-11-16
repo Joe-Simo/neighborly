@@ -32,6 +32,7 @@ export function FrescoThreshold() {
   const frame = useRef<HTMLDivElement>(null);
   const view = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const walking = useRef(false);
   const [near, setNear] = useState(false);
   const settled = useSettled();
 
@@ -116,14 +117,22 @@ export function FrescoThreshold() {
     const start = track.getBoundingClientRect().top + scrollY;
     if (reduce) { window.scrollTo({ top: start + host.clientHeight * 2.4, behavior: "instant" }); return; }
     // The doors open and the visitor walks through in one paced move, coming to a stop standing in the courtyard.
+    // A second press while walking changes nothing: the walk already under way carries on.
+    if (walking.current) return;
+    walking.current = true;
     const from = scrollY, to = start + host.clientHeight * (standing[0] + .05);
     const began = performance.now();
-    const step = (now: number) => {
-      const t = Math.min(1, (now - began) / walkTime);
+    // Paced by the clock, not by frames: a frame the browser holds back (a window behind another) is made up at the next step, and a timer carries the walk if frames stop coming.
+    let timer = 0, frame = 0;
+    const step = () => {
+      cancelAnimationFrame(frame); clearTimeout(timer);
+      const t = Math.max(0, Math.min(1, (performance.now() - began) / walkTime));
       window.scrollTo({ top: from + (to - from) * (1 - Math.pow(1 - t, 3)), behavior: "instant" });
-      if (t < 1) requestAnimationFrame(step);
+      if (t >= 1) { walking.current = false; return; }
+      frame = requestAnimationFrame(step);
+      timer = window.setTimeout(step, 50);
     };
-    requestAnimationFrame(step);
+    step();
   };
 
   return <div ref={journey} className="fresco-journey">
