@@ -697,6 +697,11 @@
 
 /* A phone with the keyboard up: the dialog's title gives its place to the boxes. */
 [data-live-short] .live-dialog-fixed [data-slot="dialog-header"] { position: static; }
+/* With the keyboard up under a dialog (LiveDialog marks it), the page behind steps back to plain paper, so a
+   see-through keyboard and its bar never show the room's words under the sheet. It returns as the keyboard goes. */
+.live-app { transition: opacity 160ms ease; }
+[data-live-keyboard] .live-app { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .live-app { transition: none; } }
 
 /* ── Focus the program moves draws no ring ──────────────────────────────────
    A heading, a notice or a sheet that takes focus when it lands (tabindex -1) is for the

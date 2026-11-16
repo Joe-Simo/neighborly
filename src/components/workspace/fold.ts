@@ -8,6 +8,7 @@ export const FOLD_HOLD = 1800;
 
 const LEAVE = 360;
 const OPENING = "paper-open-up";
+const GROWING = "paper-grows";
 
 /**
  * After the hold, whatever is marked `data-fold-leaves` goes: it fades and closes up over 360ms, so what
@@ -213,4 +214,33 @@ export function useSavedLine(
     if (left === of && line.current) openFlat(line.current);
   }, [left, of, line]);
   return left !== of;
+}
+
+/**
+ * For a box that gets a little taller when a live record lands in it (a ledger with one more row): it grows
+ * into its new height over the same 360ms, so the page under it is moved and never jumps. Only a small
+ * growth at the same width counts; a filter, a new page of rows or a turned phone are left alone.
+ */
+export function useGrowsSmoothly(box: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const paper = box.current;
+    if (!paper || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let was: { width: number; height: number } | undefined;
+    const watch = new ResizeObserver(() => {
+      const now = { width: paper.offsetWidth, height: paper.offsetHeight };
+      const grown = was && now.width === was.width ? now.height - was.height : 0;
+      // Its own growing is seen here too, as the height it is passing through; only the end counts.
+      if (paper.getAnimations().some((move) => move.id === GROWING)) return;
+      if (grown > 0 && grown <= 200 && was) {
+        holdThePage();
+        paper.animate(
+          [{ height: `${was.height}px`, overflow: "hidden" }, { height: `${now.height}px`, overflow: "hidden" }],
+          { id: GROWING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+        );
+      }
+      was = now;
+    });
+    watch.observe(paper);
+    return () => watch.disconnect();
+  }, [box]);
 }

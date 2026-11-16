@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FOLD_HOLD, foldLeaves } from "@/components/workspace/fold";
+import { flushSync } from "react-dom";
+import { FOLD_HOLD, arriving, foldLeaves } from "@/components/workspace/fold";
 import type { Payable } from "@/components/workspace/treasury/labels";
 
 /** The request a payment was just recorded for, and the ledger entry that payment became. */
@@ -29,8 +30,13 @@ export function usePaidMoment() {
       let gone = false;
       void foldLeaves().then(() => {
         if (gone) return;
-        setLanded(paid.entryId);
-        setPaid(null);
+        // The next request's sheet takes this one's place in the same moment; it opens its room from here.
+        arriving(() =>
+          flushSync(() => {
+            setLanded(paid.entryId);
+            setPaid(null);
+          }),
+        );
       });
       return () => {
         gone = true;
