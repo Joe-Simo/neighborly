@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves, useSeenForSix } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, useSavedLine } from "@/components/workspace/fold";
 import "./volunteer.css";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CircleCheck } from "lucide-react";
@@ -89,7 +89,7 @@ export function CommitmentRows({
  */
 function Said({ children }: { children: string }) {
   const line = useRef<HTMLParagraphElement>(null);
-  const seen = useSeenForSix(line);
+  const seen = useSavedLine(line);
   // Focus tells a screen reader; it must not pull the page away from where the sheet was.
   useEffect(() => line.current?.focus({ preventScroll: true }), []);
   return (

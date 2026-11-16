@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueries } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import { CircleCheck } from "lucide-react";
+import { HelpDone } from "@/components/workspace/help-line/room";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -218,12 +219,7 @@ export function BankView({
           <p className="live-error-recovery">Nothing was changed.</p>
         </div>
       )}
-      {done && (
-        <div className="live-success help-done treasury-notice" role="status">
-          <CircleCheck size={22} aria-hidden="true" />
-          <span>{done}</span>
-        </div>
-      )}
+      {done && <HelpDone className="treasury-notice" focus={false}>{done}</HelpDone>}
 
       <section className="treasury-waiting treasury-uncleared" aria-labelledby="treasury-uncleared-title">
         <div className="live-section-head">

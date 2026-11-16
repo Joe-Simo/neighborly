@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+import { useSavedLine } from "@/components/workspace/fold";
 import "./help-line.css";
 import { useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
@@ -89,17 +91,26 @@ export function KeptPrivate() {
 export function HelpDone({
   children,
   action,
+  className,
+  focus = true,
 }: {
   children: string;
   action?: ReactNode;
+  className?: string;
+  /** False where the line is only read out, and the person's place on the page is left alone. */
+  focus?: boolean;
 }) {
   const line = useRef<HTMLDivElement>(null);
-  useEffect(() => line.current?.focus(), [children]);
+  // Six seconds, or twelve when it carries an action; then it closes up and stays as a message for screen readers.
+  const seen = useSavedLine(line, { action: !!action, of: children });
+  useEffect(() => {
+    if (focus) line.current?.focus({ preventScroll: true });
+  }, [children, focus]);
   return (
-    <div className="live-success help-done" role="status" tabIndex={-1} ref={line}>
-      <CircleCheck size={22} aria-hidden="true" />
-      <span>{children}</span>
-      {action}
+    <div className={seen ? cn("live-success help-done paper-settle", className) : "sr-only"} role="status" tabIndex={-1} ref={line}>
+      {seen && <CircleCheck size={22} aria-hidden="true" />}
+      {seen ? <span>{children}</span> : children}
+      {seen && action}
     </div>
   );
 }
