@@ -232,7 +232,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           {heroOnly && openingOutcome !== "accepted" && <source media="(max-width:700px)" type="image/avif" srcSet="/assets/living-relief-mobile-480.avif 480w, /assets/living-relief-mobile-780.avif 780w" sizes="100vw" />}
           <source media={heroOnly ? "(max-width:700px)" : "(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)"} srcSet={fallbackSource(visibleScene, true, openingOutcome === "accepted")} />
           {heroOnly && openingOutcome !== "accepted" && <source type="image/avif" srcSet="/assets/living-relief-poster-960.avif 960w, /assets/living-relief-poster-1440.avif 1440w" sizes="100vw" />}
-          <img crossOrigin="anonymous" fetchPriority="high" src={fallbackSource(visibleScene, false, openingOutcome === "accepted")} alt="" />
+          <img crossOrigin="anonymous" fetchPriority="high" decoding="sync" src={fallbackSource(visibleScene, false, openingOutcome === "accepted")} alt="" />
         </picture>}
         {heroOnly && reached && !passed && (!ready || failed || !canRender) && <picture className="painted-world-fallback painted-world-fallback-passed">
           <source media="(max-width:700px)" srcSet={fallbackSource("opening", true, true)} />

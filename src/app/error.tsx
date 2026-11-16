@@ -2,7 +2,7 @@
 import "@/components/live-workspace.css";
 import "@/components/public-state.css";
 import { Button } from "@/components/ui/button";
-import { stateWords } from "@/components/workspace/failure";
+import { stateWords } from "@/components/workspace/state-words";
 
 export default function PageError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
