@@ -222,5 +222,5 @@
 .help-facts > span > span::before { content: "·"; position: absolute; left: 0; width: 1.1em; text-align: center; }
 
 /* When a call travels to "Returned this week" the lists move their own rows; the browser must not also shift
-   the page to follow one of them. */
-.help-lists { overflow-anchor: none; }
+   the page to follow one of them, nor to follow the saved line laid in above them in that same frame. */
+:has(> .help-lists), .help-lists { overflow-anchor: none; }

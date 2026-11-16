@@ -108,7 +108,7 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   const carried = unseen && sheet.getBoundingClientRect().bottom > viewTop();
   const fade = "cubic-bezier(0.6, 0, 0.9, 0.6)";
   if (carried) await sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: LEAVE, fill: "forwards", easing: fade }).finished;
-  if (unseen && !CSS.supports("overflow-anchor", "auto")) window.scrollBy(0, -lost);
+  if (unseen && !anchored(sheet)) window.scrollBy(0, -lost);
   const timing = { duration: unseen ? 0 : LEAVE, fill: "forwards" } as const;
   // It stays readable to the end: the fade runs the whole length and is slow to start.
   sheet.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, easing: fade });
@@ -119,6 +119,14 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
     ],
     { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   ).finished;
+}
+
+/** Whether the browser itself keeps the view in place around this paper: it can, and no room it lies in says not to. */
+function anchored(sheet: HTMLElement) {
+  if (!CSS.supports("overflow-anchor", "auto")) return false;
+  for (let room = sheet.parentElement; room; room = room.parentElement)
+    if (getComputedStyle(room).overflowAnchor === "none") return false;
+  return true;
 }
 
 let pageBefore: number | undefined;

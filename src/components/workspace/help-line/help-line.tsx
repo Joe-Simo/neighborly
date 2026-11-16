@@ -523,11 +523,11 @@ export function HelpLineView({
         if (still) return;
         row.style.animation = "none";
         // Its place is already kept in "Returned this week". It is drawn there only once the heading and the
-        // rows around it have all but arrived, so it never lies across any of them on the way.
+        // rows around it have arrived (the last third of the move), so it never lies across any of them on the way.
         row.animate(
           [
             { opacity: 0, transform: "translateY(10px)" },
-            { opacity: 0, transform: "translateY(10px)", offset: 0.5 },
+            { opacity: 0, transform: "translateY(10px)", offset: 0.7 },
             { opacity: 1, transform: "none" },
           ],
           { duration: 480, easing: "ease-out" },
