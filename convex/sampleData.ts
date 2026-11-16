@@ -151,8 +151,8 @@ export const load = internalMutation({
     const openShift = await ctx.db.insert("commitments", { churchId, teamId: pantry, title: "Pantry morning", start: openSaturday.toMillis(), end: openSaturday.plus({ hours: 2 }).toMillis(), location: "Parish hall", preparation: "Sort the week's donations and pack food bags.", assigneeId: null, coordinatorId: pantryCrew[0], version: 1 });
     // The owner has been asked to take it and has not answered yet, so there is always a commitment waiting for a reply.
     await ctx.db.insert("teamMembers", { churchId, teamId: pantry, memberId: owner, teamRole: "member", approved: true, status: "active" });
-    // The owner is free on those days and not away, so a yes to the shift goes through.
-    await ctx.db.insert("availability", { churchId, memberId: owner, start: isoDay(now), end: isoDay(now + 60 * DAY) });
+    // The owner has offered the coming two weeks, which cover that shift and their own commitments, so a yes goes through.
+    await ctx.db.insert("availability", { churchId, memberId: owner, start: isoDay(now), end: isoDay(now + 14 * DAY) });
     await ctx.db.insert("requests", { churchId, commitmentId: openShift, recipientId: owner, commitmentVersion: 1, status: "pending" });
     await ctx.db.insert("timeOff", { churchId, memberId: others[5], start: isoDay(now + 9 * DAY), end: isoDay(now + 16 * DAY), note: "Visiting family." });
     // The owner's own days away this month, two days clear of their commitments and of the shift they are asked to take,
