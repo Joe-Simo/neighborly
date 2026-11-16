@@ -113,13 +113,22 @@ final class ShellViewController: CAPBridgeViewController {
         watchForFirstScreen()
     }
 
-    /// The first real screen is often ready well before the last picture has
-    /// arrived and the page counts as loaded. So the page is asked ten times a
-    /// second whether it is past its skeleton, and the cover lifts the moment it is.
+    /// Asks the page whether its first screen is whole. A room says so itself
+    /// with `.live-app[data-room-in]`, set once its sheet has arrived and its
+    /// head picture is in. Sign-in and the other screens without a room are
+    /// whole as soon as the waiting screen (`.paper-loading`) is gone.
+    private static let firstScreenWhole = """
+        !document.querySelector('.paper-loading') && document.fonts.status === 'loaded' && \
+        (!!document.querySelector('.live-app[data-room-in]') || \
+        (!!document.querySelector('.live-app') && !document.querySelector('.live-room, .live-header')))
+        """
+
+    /// The first screen is often whole well before the last picture has arrived
+    /// and the page counts as loaded. So the page is asked ten times a second,
+    /// and the cover lifts the moment it says yes.
     private func watchForFirstScreen() {
         guard cover != nil, !stopped, let webView else { return }
-        let ready = "!!document.querySelector('.live-app') && !document.querySelector('.paper-loading') && document.fonts.status === 'loaded'"
-        webView.evaluateJavaScript(ready) { [weak self] result, _ in
+        webView.evaluateJavaScript(Self.firstScreenWhole) { [weak self] result, _ in
             if result as? Bool == true { self?.reveal(whileLoading: true); return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self?.watchForFirstScreen() }
         }
@@ -147,19 +156,16 @@ final class ShellViewController: CAPBridgeViewController {
         }
     }
 
-    /// The page counts as loaded while it still shows its own "checking your
-    /// session" skeleton. The cover stays over that for up to four seconds, so
-    /// the launch goes from the k straight to the first real screen.
+    /// The page counts as loaded before its first screen is whole. The cover
+    /// stays for up to four seconds more, then lifts whatever the page says. The
+    /// no-connection page cannot answer and is shown at once.
     private func revealIfLoaded(waited: TimeInterval = 0) {
         guard let webView, !webView.isLoading, !stopped else { return }
-        guard cover == nil || waited >= 4 else {
-            webView.evaluateJavaScript("!!document.querySelector('.paper-loading')") { [weak self] result, _ in
-                guard result as? Bool == true else { self?.reveal(); return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self?.revealIfLoaded(waited: waited + 0.1) }
-            }
-            return
+        guard cover != nil, waited < 4 else { reveal(); return }
+        webView.evaluateJavaScript("!!document.querySelector('.live-app') && !(\(Self.firstScreenWhole))") { [weak self] result, _ in
+            guard result as? Bool == true else { self?.reveal(); return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self?.revealIfLoaded(waited: waited + 0.1) }
         }
-        reveal()
     }
 
     private func reveal(whileLoading: Bool = false) {
