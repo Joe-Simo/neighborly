@@ -8,6 +8,7 @@ import { stateWords, wrongControl } from "@/components/workspace/failure";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
 import { headings } from "@/components/workspace/navigation";
+import { cameThroughTheDoor } from "@/components/workspace/door";
 import { ReliefPicture } from "@/components/workspace/relief";
 
 /** "Opening…" in the reader's language: the room's own words inside the workspace, the door's language before it. */
@@ -137,8 +138,10 @@ export function CountUp({
 }) {
   // It starts where the roll starts. Starting at the value showed the figure whole for a frame, then dropped it
   // to nothing and rolled it back up, which read as the figure stepping back.
-  const [shown, setShown] = useState(() => (typeof window !== "undefined" && !matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : value));
-  const from = useRef(0);
+  // Under the door's paper the figure is already at its value, so the sheet lifts off a finished room.
+  const [still] = useState(cameThroughTheDoor);
+  const [shown, setShown] = useState(() => (!still && typeof window !== "undefined" && !matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : value));
+  const from = useRef(still ? value : 0);
   useEffect(() => {
     const start = from.current;
     from.current = value;

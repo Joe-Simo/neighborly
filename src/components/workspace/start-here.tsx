@@ -24,7 +24,7 @@ export function StartHere() {
 
 export function StartHereLine({ lead, rest, waiting = false }: { lead: string; rest: string; waiting?: boolean }) {
   return (
-    <Link className="start-here" href="/app/help-line" data-waiting={waiting ? "" : undefined} inert={waiting} aria-hidden={waiting || undefined}>
+    <Link className="start-here" href="/app/help-line" data-waiting={waiting ? "" : undefined} data-room-pending={waiting ? "" : undefined} inert={waiting} aria-hidden={waiting || undefined}>
       <span>
         <strong>{lead}:</strong> {rest}
       </span>
