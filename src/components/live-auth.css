@@ -199,6 +199,10 @@
 .live-app .entry .entry-pass .entry-quiet { position: absolute; top: -12px; right: 0; margin: 0; font-size: 15px; }
 /* At the larger text sizes the two no longer fit one line, so the question goes under the field. */
 :root[data-entry-large] .live-app .entry .entry-pass .entry-quiet { position: static; margin: 2px 0 -8px; }
+/* The same on the narrowest phone in Spanish, where the label and the question would nearly touch. */
+@media (max-width: 340px) {
+  .live-app .entry:lang(es) .entry-pass .entry-quiet { position: static; margin: 2px 0 -8px; }
+}
 @media (hover: hover) {
   .live-app .entry :is(.entry-quiet, .entry-sample button, .entry-foot-line button):hover { text-decoration-thickness: 2px; }
 }
