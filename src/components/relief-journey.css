@@ -81,6 +81,8 @@
 [data-picture=visit] .relief-piece[data-moves]{transform-origin:12.3% 50%}
 .relief-story.is-live .relief-panel:not(.is-in) [data-picture=year] .relief-piece[data-moves]{transform:translateY(clamp(-5px,-.6cqw,-2px)) scaleX(.972)}
 [data-picture=year] .relief-piece[data-moves]{transform-origin:42.75% 100%}
+/* On wide screens the first picture follows the fresco closely: it is half in view as the fresco's line leaves. */
+@media(min-width:821px){.relief-story{padding-top:0}.relief-panel:first-child{padding-top:0}}
 @media(max-width:820px){
   .relief-story{margin-top:-9vw;padding:2svh 0 48px}
   .relief-story::before,.relief-story::after{height:10vw}

@@ -170,7 +170,12 @@
 .neighborly-handoff-cover{position:fixed;inset:0;z-index:35;pointer-events:none;opacity:0;background:#eee7d7 url(/assets/paper-world/continuation.webp) center/cover;display:grid;place-items:center}.neighborly-travelling-guide{width:110px;height:78px;background:#faf4e6;box-shadow:0 8px 22px #243b3026;transform:rotate(-7deg);display:grid;grid-template-columns:16px 40px;gap:7px;padding:23px;align-content:center}.neighborly-travelling-guide i{background:#b28c42;grid-row:span 2}.neighborly-travelling-guide b{height:4px;background:#827b69}
 
 /* The paper between the portrait and the doorway carries the promise across. Decorative: the same line is real text in the courtyard header. */
-.neighborly-connected-world.is-connected::after{content:"Small acts. Shared purpose.";position:fixed;z-index:5;left:0;right:0;top:38%;padding:0 7%;text-align:center;font:italic 400 clamp(40px,5.2vw,84px)/1 'Newsreader',Georgia,serif;letter-spacing:-.04em;color:#293f32;pointer-events:none;opacity:calc((.38 - var(--entry-portrait)) * 2.7 * (1 - var(--entry-door) * 7));transform:translateY(calc(var(--entry-door) * -40px))}
+/* One line leaves before the next arrives: the headline, then this line alone, then the doors' own words. All three stand in the same place, on the paper at the left. Each has its own share of the scroll (neighborly-experience.tsx). */
+.neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-caption{opacity:var(--entry-caption,1)}
+.neighborly-connected-world.is-connected .fresco-invitation{opacity:calc((1 - var(--door) * 1.8) * var(--entry-words,1))}
+.neighborly-connected-world.is-connected::after{content:"Small acts.\A Shared purpose.";white-space:pre-line;position:fixed;z-index:5;left:7%;top:50%;width:min(40%,620px);font:italic 400 clamp(44px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.05em;color:#293f32;pointer-events:none;opacity:var(--entry-line,0);transform:translateY(calc(-50% - var(--entry-door) * 24px))}
+/* On a phone it stands where the doors' own words will: on the paper above the doors. */
+@media(max-width:899px) and (min-height:501px){.neighborly-connected-world.is-connected::after{left:max(20px,4%);top:calc(72px + env(safe-area-inset-top));width:auto;font-size:clamp(40px,12vw,64px);transform:none}}
 /* The promise waits until the opening headline has all but left the paper, so the two lines never cross. */
 /* Where the hero narrows, the second action crosses the painted hand and needs its own paper. */
 @media(max-width:900px){.painted-world-opening-actions a:not(.painted-world-primary-invitation){background:#eee7d7e6;padding:0 12px}}

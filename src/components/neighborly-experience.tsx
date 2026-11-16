@@ -73,6 +73,7 @@ export function NeighborlyExperience() {
       if (sideways.matches) {
         element.style.setProperty("--entry-portrait", "1");
         element.style.setProperty("--entry-door", "1");
+        for (const [name, value] of [["--entry-caption", "1"], ["--entry-line", "0"], ["--entry-words", "1"]]) element.style.setProperty(name, value);
         for (const part of element.querySelectorAll<HTMLElement>(".painted-world-track,.fresco-stage")) { part.inert = false; part.setAttribute("aria-hidden", "false"); }
         return;
       }
@@ -80,6 +81,11 @@ export function NeighborlyExperience() {
       const progress = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight)));
       element.style.setProperty("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4))));
       element.style.setProperty("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (progress - .3) / .5))));
+      // Three lines pass through the same place and never share it: the headline is gone by .38, the line between stands alone from .56 to .8, once the painting has thinned behind it, and the doors' words begin at .84.
+      const share = (from: number, to: number) => Math.max(0, Math.min(1, (progress - from) / (to - from)));
+      element.style.setProperty("--entry-caption", String(reduce ? Number(progress < .5) : 1 - share(.25, .38)));
+      element.style.setProperty("--entry-line", String(reduce ? 0 : Math.min(share(.56, .64), 1 - share(.73, .8))));
+      element.style.setProperty("--entry-words", String(reduce ? Number(progress >= .5) : share(.84, .95)));
       const portrait = element.querySelector<HTMLElement>(".painted-world-track");
       const courtyard = element.querySelector<HTMLElement>(".fresco-stage");
       const entered = progress >= (reduce ? .5 : .6);

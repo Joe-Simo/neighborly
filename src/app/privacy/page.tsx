@@ -19,6 +19,7 @@ export default function Privacy() {
     </header>
     <main className="public-words paper-rise">
       <h1>Privacy</h1>
+      <div className="public-words-relief" aria-hidden="true" />
       <section>
         <h2>Your records belong to your conference</h2>
         <div><p>Kind Helps is free software for a conference to keep its own work in one place. What a conference writes here belongs to the conference, not to us.</p></div>
