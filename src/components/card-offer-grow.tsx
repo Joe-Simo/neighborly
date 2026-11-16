@@ -9,6 +9,7 @@ import { HELD_CARD, dropTheHeldCard } from "@/lib/held-card";
 const GROW = 520;
 /** If nothing on the other side takes the card (an error, a visitor already inside), it is let go rather than held for ever. */
 const LONGEST = 12000;
+const EASE = "cubic-bezier(.3,.6,.2,1)";
 
 /** Pressed, the card is not left behind: the same card, words and all, grows to the window and becomes the first sheet of the room. */
 export function CardOfferGrow() {
@@ -36,10 +37,17 @@ export function CardOfferGrow() {
     const cover = Math.max(innerWidth * 1.08 / width, innerHeight * 1.08 / height);
     const dx = innerWidth / 2 - (box.left + box.width / 2), dy = innerHeight / 2 - (box.top + box.height / 2);
     offer.dataset.given = "";
-    const timing = { duration: GROW, easing: "cubic-bezier(.3,.6,.2,1)", fill: "forwards" } as const;
-    const grow = sheet.animate([{ transform: `rotate(${turn}deg)` }, { transform: `translate(${dx}px,${dy}px) rotate(0deg) scale(${cover})` }], timing);
-    // Its words are read as it comes up, and give way to the bare paper as it fills the window.
-    for (const mark of sheet.querySelectorAll(":scope > :not(.card-held-grain)")) mark.animate([{ opacity: 1 }, { opacity: 1, offset: .45 }, { opacity: 0 }], timing);
+    const timing = { duration: GROW, easing: EASE, fill: "forwards" } as const;
+    const end = { transform: `translate(${dx}px,${dy}px) rotate(0deg) scale(${cover})` };
+    // On a narrow window the card first rises to the middle and straightens at the window's width, whole and readable, and only then fills it.
+    const narrow = innerWidth < 701, rest = narrow ? .4 : 0;
+    const grow = sheet.animate(narrow
+      ? [{ transform: `rotate(${turn}deg)`, easing: EASE }, { transform: `translate(${dx}px,${dy}px) rotate(0deg) scale(${innerWidth * .92 / width})`, offset: rest, easing: "cubic-bezier(.5,0,.3,1)" }, end]
+      : [{ transform: `rotate(${turn}deg)` }, end], { ...timing, duration: narrow ? GROW + 200 : GROW, easing: narrow ? "linear" : EASE });
+    // Its words give way to the bare paper before any edge of them could leave the window.
+    // On a narrow window the words go as soon as it starts to fill it, before any edge of them is cut.
+    const fade = narrow ? rest : .25;
+    for (const mark of sheet.children) mark.animate([{ opacity: 1 }, { opacity: 1, offset: fade }, { opacity: 0, offset: fade + (narrow ? .08 : .12) }, { opacity: 0 }], { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     const since = performance.now();
     const keep = () => {
       if (!held.isConnected) return;
@@ -50,8 +58,6 @@ export function CardOfferGrow() {
     };
     const go = () => { router.push(href); requestAnimationFrame(keep); };
     grow.finished.then(go, go);
-    // Back on the home page later, the card is in the hand again.
-    setTimeout(() => delete offer.dataset.given, GROW + 600);
   }
   return <CardOffer onOpen={open} />;
 }
