@@ -241,7 +241,7 @@ export function ht(set: WordSet): Words {
       emptyDetail: "Travay nou pataje yo ap parèt isit la ak moun ki responsab la ak dat la.",
       meetings: "Reyinyon",
       going: "Ou prale",
-      notGoing: "Ou pa ka vini",
+      notGoing: "Ou pa ka ale",
       waiting: "N ap tann repons ou",
       changeReply: "Chanje repons",
       due: (date) => `Pou ${date}`,
