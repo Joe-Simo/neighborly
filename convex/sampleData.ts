@@ -238,6 +238,14 @@ export const load = internalMutation({
     await ctx.db.insert("visits", { churchId, neighborId: households[6], scheduledAt: clock(findingsAt + 2 * DAY, visitSlots), status: "scheduled", visitors: [visitors[0], visitors[3]].map((memberId) => ({ memberId, hours: 0, miles: 0, response: "accepted" as const })), notes: "We met with her on Tuesday afternoon. Gave the pantry hours and she will call about the light bill.", createdBy: owner, createdAt: findingsAt });
     await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[10], kind: "utility", summary: "Electric bill with a shut-off notice.", amountRequested: 21000, amountApproved: 21000, status: "approved", decisionNote: "Approved after the home visit.", decidedBy: owner, decidedAt: findingsAt + 3 * DAY, payeeKind: "utility", payeeName: "City Power & Light", source: "person", createdBy: staff[1], createdAt: findingsAt });
 
+    // Three more requests approved last week and not yet paid, written apart from the loop and its draws, so the
+    // count of approved requests waiting for payment reads clearly apart from the count still waiting for a yes.
+    for (const [index, waiting] of ([[30, "rent", "Short on rent after a medical bill", 52500, "landlord", "Orchard Street Apartments", 8], [41, "utility", "Shut-off notice on the electric bill", 18000, "utility", "City Power & Light", 9], [52, "food", "Groceries until the next paycheck", 6500, "vendor", "Corner Family Market", 10]] as const).entries())
+      await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[waiting[0]], kind: waiting[1], summary: waiting[2], amountRequested: waiting[3], amountApproved: waiting[3], status: "approved", decisionNote: "Approved after the home visit.", decidedBy: owner, decidedAt: clock(now - (waiting[6] - 3) * DAY, callSlots), payeeKind: waiting[4], payeeName: waiting[5], source: "person", createdBy: staff[index % staff.length], createdAt: clock(now - waiting[6] * DAY, callSlots) });
+
+    // A visit made last week and not yet written up, so there is always a recent one waiting for its write-up.
+    await ctx.db.insert("visits", { churchId, neighborId: households[20], scheduledAt: clock(now - 5 * DAY, visitSlots), status: "scheduled", visitors: [visitors[1], visitors[4]].map((memberId) => ({ memberId, hours: 0, miles: 0, response: "accepted" as const })), notes: "", createdBy: owner, createdAt: now - 8 * DAY });
+
     // A request with no visit planned yet, so Home visits always has a household waiting for a pair.
     await ctx.db.insert("assistanceRequests", { churchId, neighborId: households[14], kind: "utility", summary: "Past-due water bill", amountRequested: 9500, status: "open", decisionNote: "", payeeKind: "utility", payeeName: "County Water Authority", source: "person", createdBy: staff[2], createdAt: clock(now - DAY, callSlots) });
 

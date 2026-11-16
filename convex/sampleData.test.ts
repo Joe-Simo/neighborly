@@ -96,13 +96,16 @@ describe("sample conference", () => {
 
     // Visits are always two different people; only completed visits carry hours and miles.
     expect(data.visits.some((visit) => visit.status === "scheduled")).toBe(true);
+    let late = 0;
     for (const visit of data.visits) {
       expect(new Set(visit.visitors.map((visitor) => visitor.memberId)).size).toBe(2);
       const logged = visit.visitors.every((visitor) => visitor.hours > 0 && visitor.miles > 0);
       expect(logged).toBe(visit.status === "completed");
       // One past visit is left unmarked on purpose, for the year check to find.
-      if (visit.status === "scheduled" && !visit.notes) expect(visit.scheduledAt).toBeGreaterThan(Date.now());
+      // The other is last week's visit, waiting for its write-up.
+      if (visit.status === "scheduled" && !visit.notes && visit.scheduledAt < Date.now()) late++;
     }
+    expect(late).toBe(1);
   });
 
   test("the bank side agrees with the ledger", async () => {

@@ -99,12 +99,12 @@ describe("the sample conference a visitor looks around", () => {
     const t = start();
     const one = "a".repeat(64);
     const tries = [];
-    for (let i = 0; i < 6; i++) tries.push(await t.mutation(api.demo.admit, { visitor: one }));
-    expect(tries).toEqual([...Array<string>(5).fill(visitor.subject), null]);
+    for (let i = 0; i < 31; i++) tries.push(await t.mutation(api.demo.admit, { visitor: one }));
+    expect(tries).toEqual([...Array<string>(30).fill(visitor.subject), null]);
     expect(await t.mutation(api.demo.admit, { visitor: "not-a-hash" })).toBeNull();
-    let admitted = 5;
-    for (let i = 0; i < 40; i++) if (await t.mutation(api.demo.admit, { visitor: i.toString(16).padStart(64, "0") })) admitted++;
-    expect(admitted).toBe(30);
+    let admitted = 30;
+    for (let i = 0; i < 130; i++) if (await t.mutation(api.demo.admit, { visitor: i.toString(16).padStart(64, "0") })) admitted++;
+    expect(admitted).toBe(120);
   });
 
   test("nothing happens until the deployment names the visitor account", async () => {

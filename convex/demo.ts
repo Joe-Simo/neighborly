@@ -25,10 +25,10 @@ export const visiting = query({
 });
 
 const entries = new RateLimiter(components.rateLimiter, {
-  // One person opening the sample: a handful of tries a minute is plenty.
-  sampleEntryByVisitor: { kind: "token bucket", rate: 5, period: MINUTE, capacity: 5 },
+  // One network address: a room of judges may share it, so thirty a minute. Each entry is only a short ticket.
+  sampleEntryByVisitor: { kind: "token bucket", rate: 30, period: MINUTE, capacity: 30 },
   // Everyone together: a ceiling on how many sessions the shared account can be asked for.
-  sampleEntry: { kind: "token bucket", rate: 30, period: MINUTE, capacity: 30 },
+  sampleEntry: { kind: "token bucket", rate: 120, period: MINUTE, capacity: 120 },
 });
 
 /**
