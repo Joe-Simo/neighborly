@@ -1,12 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { CountUp, LiveLoading } from "@/components/workspace/primitives";
-import { openUp, useGrowsSmoothly } from "@/components/workspace/fold";
+import { openUp, settleFrom, useGrowsSmoothly } from "@/components/workspace/fold";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
 import { figureRoll, formatCents, formatFigure } from "@/components/workspace/treasury/money";
@@ -96,6 +96,15 @@ export function LedgerView({
     risen.current = sheet.dataset.request;
     openUp(sheet);
   };
+  // When the sheet turns to "Paid" its buttons go and it is shorter; it settles to that height, it does not snap.
+  const sheet = useRef<HTMLElement | null>(null);
+  const before = useRef({ tall: 0, paid: false });
+  useLayoutEffect(() => {
+    const now = sheet.current;
+    if (!now) return;
+    if (paid && !before.current.paid && before.current.tall) settleFrom(now, before.current.tall);
+    before.current = { tall: now.offsetHeight, paid: !!paid };
+  });
   const month = monthLabel(ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
   // Months are listed newest first.
@@ -176,7 +185,10 @@ export function LedgerView({
       {first && (
         <section
           key={first.requestId}
-          ref={landed && !paid ? rise : undefined}
+          ref={(node) => {
+            sheet.current = node;
+            if (landed && !paid) rise(node);
+          }}
           data-request={first.requestId}
           className={paid ? "help-sheet treasury-sheet paper-fold" : "help-sheet treasury-sheet"}
           data-fold-leaves={paid ? "" : undefined}
