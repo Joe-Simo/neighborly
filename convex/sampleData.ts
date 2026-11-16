@@ -232,6 +232,67 @@ export const load = internalMutation({
       await ctx.db.insert("calls", { churchId, callerName: "No name given", phone: "", note: random.pick(strangers), callback: "none", takenBy: random.pick(staff), takenAt });
     }
 
+    // The fuller record, written after the year's draws with its own stream so no figure above moves:
+    // where the conference sends people it cannot help itself, and on some households who lives there,
+    // the accounts a bill is paid to, what members have noted, and a word of caution to read first.
+    const extra = generator(2207);
+    const places = [
+      { name: "County Energy Assistance", phone: "(102) 555-0121", helpsWith: "Electric and gas bills, once a year for each household" },
+      { name: "Harbor Community Food Bank", phone: "(102) 555-0122", helpsWith: "Groceries on Tuesdays and Thursdays, no appointment" },
+      { name: "211 Help Line", phone: "(102) 555-0123", helpsWith: "Any need outside our area, day or night" },
+      { name: "Legal Aid of the Valley", phone: "(102) 555-0124", helpsWith: "Eviction notices and tenant questions" },
+      { name: "St. Example Parish Nurse", phone: "(102) 555-0125", helpsWith: "Prescriptions, blood pressure checks, rides to the clinic" },
+      { name: "County Housing Office", phone: "(102) 555-0126", helpsWith: "Rent help over what a conference can give, and the waiting list for housing" },
+    ];
+    for (const place of places) await ctx.db.insert("referralAgencies", { churchId, ...place });
+    // A third of the households say who lives there, in step with the adults and children already counted.
+    const thisYear = today.year;
+    const elders = ["Mother", "Father", "Grandmother", "Husband", "Wife", "Sister", "Brother", "Aunt"];
+    for (let index = 0; index < HOUSEHOLDS; index += 3) {
+      const neighbor = await ctx.db.get("neighbors", households[index]);
+      if (!neighbor) continue;
+      const adults = Array.from({ length: neighbor.adults }, (_, seat) => ({ relationship: seat === 0 ? "Head of household" : extra.pick(elders), child: false, birthYear: thisYear - extra.between(24, 78) }));
+      const young = Array.from({ length: neighbor.children }, () => ({ relationship: extra.pick(["Son", "Daughter", "Grandson", "Granddaughter"]), child: true, birthYear: thisYear - extra.between(1, 16) }));
+      await ctx.db.patch("neighbors", neighbor._id, { household: [...adults, ...young] });
+    }
+    // The accounts a bill is paid to, on a dozen households. Invented numbers; only the last four ever show.
+    const billed = [
+      { kind: "utility", name: "City Power & Light", phone: "(102) 555-0113" },
+      { kind: "utility", name: "County Water Authority", phone: "(102) 555-0114" },
+      { kind: "landlord", name: "Orchard Street Apartments", phone: "(102) 555-0111" },
+      { kind: "landlord", name: "Mill Road Rentals", phone: "(102) 555-0112" },
+    ] as const;
+    for (let place = 0; place < 12; place++) {
+      const first = billed[place % billed.length], second = billed[(place + 2) % billed.length];
+      const accounts = (place % 3 === 0 ? [first, second] : [first]).map((account) => ({ ...account, accountNumber: `00-${extra.between(1000, 9999)}-${extra.between(1000, 9999)}` }));
+      await ctx.db.patch("neighbors", households[4 + place * 16], { accounts });
+    }
+    // A word to read before calling or visiting, on a handful. About the visit, never a judgment of the person.
+    const alerts = ["Hard of hearing. Knock loudly and wait.", "Large dog in the yard. Call from the gate.", "Works nights. Do not call before noon.", "Speaks Spanish only. Send a Spanish speaker.", "Use the side door; the front steps are broken."];
+    for (const [place, alert] of alerts.entries()) await ctx.db.patch("neighbors", households[12 + place * 37], { alert });
+    // What members have noted on twenty records over the year, the plain things a later caller is glad to know.
+    const noted = [
+      "Called to say the lights stayed on. She asked us to thank the two who came.",
+      "Started a new job at the bakery this week. Expects a first full paycheck at the end of the month.",
+      "Daughter translates on the phone. Best reached after school lets out.",
+      "Brought the lease to the parish office so we could copy it for the file.",
+      "Asked for the pantry hours again. Gave them and the food bank's days.",
+      "Landlord agreed to wait two weeks once he heard the conference was helping.",
+      "Hours at work are back to full. Says this should be the last time he needs to ask.",
+      "Moved to the first floor of the same building. Address on the record is updated.",
+      "Would like a visit from the parish nurse. Passed the request on.",
+      "Returned the folding table we lent. Thanked the pantry team.",
+      "The county approved the energy grant. Our help covered the month in between.",
+      "Asked that we call before visiting. She does not open the door to a knock.",
+    ];
+    for (let place = 0; place < 20; place++) {
+      const neighbor = await ctx.db.get("neighbors", households[1 + place * 9]);
+      if (!neighbor) continue;
+      const span = Math.max(DAY, now - neighbor.createdAt - 2 * DAY);
+      for (let note = 0; note < (place % 4 === 0 ? 2 : 1); note++)
+        await ctx.db.insert("neighborNotes", { churchId, neighborId: neighbor._id, body: noted[(place + note * 5) % noted.length], authorId: extra.pick(staff), createdAt: clock(neighbor.createdAt + DAY + Math.floor(extra.next() * span), callSlots) });
+    }
+
     // Three records for the year check to find, written apart from the loop and its draws, 75 days back so they
     // fall inside the fiscal year the reports room opens. Two requests were approved and no payment was
     // recorded (one note says a check was sent); one visit's note says it happened and it is not marked done.
@@ -306,10 +367,11 @@ export const load = internalMutation({
       await ctx.db.insert("bankStatements", { churchId, endsOn, balance, agreedBy: owner, agreedAt: month.endOf("month").plus({ days: 5 }).toMillis() });
     }
 
-    // Two deposits: the month before last (cleared with its statement) and last month (not yet matched).
+    // A deposit for every month before this one: each month's gifts carried to the bank together. Those up
+    // to the month before last have cleared with their statements; last month's is not yet matched.
     // This month's gifts stay undeposited.
     const gifts = (month: DateTime) => book.filter((line) => line.kind === "income" && line.category !== "Opening balance" && line.date.startsWith(month.toFormat("yyyy-MM")));
-    for (const month of [lastMonth.minus({ months: 1 }), lastMonth]) {
+    for (const month of months.filter((month) => month <= lastMonth)) {
       const carried = gifts(month);
       if (!carried.length) continue;
       const date = carried.reduce((latest, line) => (line.date > latest ? line.date : latest), carried[0].date);

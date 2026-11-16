@@ -108,6 +108,30 @@ describe("sample conference", () => {
     expect(late).toBe(1);
   });
 
+  test("the fuller record is there and leaves the head counts as they were", async () => {
+    const t = start();
+    await t.mutation(internal.sampleData.load, {});
+    const found = await t.run(async (ctx) => ({
+      neighbors: await ctx.db.query("neighbors").collect(),
+      notes: await ctx.db.query("neighborNotes").collect(),
+      places: await ctx.db.query("referralAgencies").collect(),
+    }));
+    expect(found.places).toHaveLength(6);
+    expect(new Set(found.notes.map((note) => note.neighborId)).size).toBe(20);
+    expect(found.notes.every((note) => note.createdAt < Date.now())).toBe(true);
+    const listed = found.neighbors.filter((neighbor) => neighbor.household);
+    expect(listed.length).toBeGreaterThanOrEqual(60);
+    // Who lives there agrees with the adults and children already counted.
+    for (const neighbor of listed) {
+      expect(neighbor.household!.filter((person) => !person.child)).toHaveLength(neighbor.adults);
+      expect(neighbor.household!.filter((person) => person.child)).toHaveLength(neighbor.children);
+    }
+    expect(found.neighbors.filter((neighbor) => neighbor.alert)).toHaveLength(5);
+    expect(found.neighbors.filter((neighbor) => neighbor.accounts?.length)).toHaveLength(12);
+    // Every phone number is in the reserved range.
+    for (const place of found.places) expect(place.phone).toMatch(/^\(10[0-2]\) 555-01\d\d$/);
+  });
+
   test("the bank side agrees with the ledger", async () => {
     const t = start();
     await t.mutation(internal.sampleData.load, {});
@@ -120,7 +144,7 @@ describe("sample conference", () => {
       expect(statement.balance, statement.endsOn).toBe(cleared);
     }
     // A deposit's total is the gifts it carries, none dated after it, and only money in.
-    expect(data.deposits).toHaveLength(2);
+    expect(data.deposits.length).toBeGreaterThanOrEqual(12);
     for (const deposit of data.deposits) {
       const carried = data.ledgerEntries.filter((entry) => entry.depositId === deposit._id);
       expect(carried.length).toBeGreaterThan(0);
