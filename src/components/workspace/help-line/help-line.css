@@ -207,3 +207,9 @@
 /* Closing a conference: the offered first step sits between the terms and the name, quiet, on one line where it fits. */
 .closing-first { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; }
 .closing-first p { margin: 0; font-size: 17px; color: var(--live-ink); }
+/* On a phone, a sheet for an act that cannot be undone gives its actions the full width. */
+@media (max-width: 699px) {
+  .live-dialog .help-for-good .live-form-actions [data-slot="button"] { width: 100%; min-height: 44px; }
+}
+/* A name said back under the box is not broken across lines while it is short enough to fit a phone. */
+.help-name-whole { white-space: nowrap; }

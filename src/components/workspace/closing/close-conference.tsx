@@ -7,10 +7,9 @@ import { Download, Lock } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { LiveField } from "@/components/workspace/primitives";
+import { NameToConfirm } from "@/components/workspace/help-line/forms";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
 import "@/components/workspace/for-good.css";
@@ -50,7 +49,8 @@ export function CloseConference() {
       </p>
       {open && (
         <LiveDialog
-          title="Close this conference for good"
+          // "for good" stays together, so the title breaks as "Close this conference / for good".
+          title={"Close this conference for\u00a0good"}
           description={`${data.church.name}, and everything in it.`}
           onClose={() => setOpen(false)}
         >
@@ -85,7 +85,7 @@ export function CloseConferenceForm({
   const agrees = nameKey(typed) === nameKey(church.name);
   return (
     <form
-      className="live-form help-form"
+      className="live-form help-form help-for-good"
       onSubmit={async (event) => {
         event.preventDefault();
         if (!agrees) return;
@@ -118,18 +118,14 @@ export function CloseConferenceForm({
           <Download size={18} aria-hidden="true" /> Download your records
         </Button>
       </div>
-      <LiveField label={`Type ${church.name} to close it`}>
-        <Input
-          value={typed}
-          onChange={(event) => setTyped(event.target.value)}
-          autoComplete="off"
-          autoCapitalize="words"
-          spellCheck={false}
-          required
-        />
-      </LiveField>
+      <NameToConfirm
+        label={`Type ${church.name} to close it`}
+        name={church.name}
+        typed={typed}
+        onTyped={setTyped}
+      />
       <p className="for-good-last">This cannot be undone.</p>
-      {error && <LiveFailure message={error} />}
+      {error && <LiveFailure message={error} kept="Nothing was closed." />}
       <div className="live-form-actions">
         <LiveWaiting when={pending} />
         <Button
