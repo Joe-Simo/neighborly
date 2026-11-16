@@ -4,7 +4,7 @@ import "./people.css";
 import "@/components/workspace/for-good.css";
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import { Lock } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -95,15 +95,25 @@ export function PeopleSection() {
       {/* The rows are titled h3, so the list carries the h2 a screen reader steps by. */}
       <h2 className="sr-only">{words.menu.people}</h2>
       <div className="live-list">
-        {data.people.map((person) => (
-          <div className="live-row live-person-row people-row" key={person.id} data-away={person.active ? undefined : ""}>
+        {data.people.map((person) => {
+          // Only the owner has anything to open, and never on an owner's own row.
+          const opens = isOwner && person.role !== "owner";
+          return (
+          <div className="live-row live-person-row people-row" key={person.id} data-away={person.active ? undefined : ""} data-opens={opens ? "" : undefined}>
             <div className="live-person">
               <span className="live-avatar" aria-hidden="true">
                 {initials(person.name)}
               </span>
               <div>
                 <h3>
-                  {person.name}
+                  {opens ? (
+                    // The one control of the row: its target is the whole row (people.css).
+                    <button type="button" className="people-row-open" aria-label={`Manage ${person.name}`} onClick={() => setManagingId(person.id)}>
+                      {person.name}
+                    </button>
+                  ) : (
+                    person.name
+                  )}
                   <span className="people-role">{person.active ? (roles[person.role] ?? person.role) : words.people.removed}</span>
                 </h3>
                 {/* Members are sent names and roles only, so the line is there only for those who are sent an address. */}
@@ -116,14 +126,11 @@ export function PeopleSection() {
               <span data-waits="">{!person.approved && words.people.waiting}</span>
             </div>
             <div className="live-row-actions">
-              {isOwner && person.role !== "owner" && (
-                <Button variant="outline" size="sm" aria-label={`Manage ${person.name}`} onClick={() => setManagingId(person.id)}>
-                  Manage
-                </Button>
-              )}
+              {opens && <ArrowRight className="people-row-go" size={20} aria-hidden="true" />}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       {managing && (
         removing ? (
