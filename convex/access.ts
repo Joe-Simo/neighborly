@@ -20,6 +20,12 @@ export async function user(ctx: QueryCtx | MutationCtx) {
   return { id: account._id, email };
 }
 /** The caller's active membership in this group, or an error. */
+export async function firstMembership(ctx: QueryCtx | MutationCtx) {
+  const account = await user(ctx);
+  const member = await ctx.db.query("memberships").withIndex("by_user", q => q.eq("userId", account.id)).filter(q => q.eq(q.field("active"), true)).first();
+  if (!member) throw new ConvexError("Workspace access required.");
+  return member;
+}
 export async function membership(ctx: QueryCtx | MutationCtx, church: Id<"churches">) {
   const account = await user(ctx);
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", church).eq("userId", account.id)).unique();

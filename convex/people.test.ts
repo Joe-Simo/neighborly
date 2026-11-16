@@ -123,6 +123,9 @@ describe("removing a person for good", () => {
     const people = (await owner.query(api.workspace.dashboard, { churchId })).people;
     expect(people.some((row) => row.id === person._id || row.name === formerMember)).toBe(false);
     await expect(signedIn(t, person.userId).query(api.workspace.dashboard, { churchId })).rejects.toThrow("Workspace access required.");
+    // Asked without naming one, as the sample door does: the conference they belong to, and nothing once they are gone.
+    expect((await owner.query(api.workspace.dashboard, {})).church.id).toBe(churchId);
+    await expect(signedIn(t, person.userId).query(api.workspace.dashboard, {})).rejects.toThrow("Workspace access required.");
     vi.useRealTimers();
   });
 
