@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { languageNames, languages } from "@/lib/words";
+import { LiveField } from "@/components/workspace/primitives";
 import { cn } from "@/lib/utils";
 import { authWords, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import "./live-auth.css";
@@ -272,8 +273,11 @@ export function LiveAuth({
     <ArrowRight size={17} aria-hidden="true" />
   );
   const passwordField = (label: string, autoComplete: "current-password" | "new-password") => (
-    <label className="live-field">
-      <span>{label}</span>
+    <LiveField
+      label={label}
+      help={autoComplete === "new-password" ? w.passwordHint : undefined}
+      said={{ needed: w.needed, neededCheck: w.errors.short }}
+    >
       <div className="live-password-control">
         <Input
           aria-label={label}
@@ -296,8 +300,7 @@ export function LiveAuth({
           {showPassword ? w.hide : w.show}
         </Button>
       </div>
-      {autoComplete === "new-password" && <small>{w.passwordHint}</small>}
-    </label>
+    </LiveField>
   );
 
   const page =
@@ -312,8 +315,7 @@ export function LiveAuth({
           {w.codeSent} <strong>{email}</strong>. {w.codeFor[flow]}
         </p>
         <form className="live-form" onSubmit={submitCode}>
-          <label className="live-field">
-            <span>{w.codeLabel}</span>
+          <LiveField label={w.codeLabel} help={w.codeHint} said={{ needed: w.needed, neededCheck: w.errors.code }}>
             <Input
               className="live-auth-code"
               name="code"
@@ -326,8 +328,7 @@ export function LiveAuth({
               aria-invalid={error === "code" || error === "expired" || undefined}
               disabled={busy}
             />
-            <small>{w.codeHint}</small>
-          </label>
+          </LiveField>
           {messages}
           <Button type="submit" disabled={busy}>
             {submitIcon}
@@ -384,8 +385,7 @@ export function LiveAuth({
           </div>
         )}
         <form className="live-form" onSubmit={submitDetails}>
-          <label className="live-field">
-            <span>{w.email}</span>
+          <LiveField label={w.email} said={{ needed: w.needed, neededCheck: w.errors.email }}>
             <Input
               type="email"
               name="email"
@@ -395,7 +395,7 @@ export function LiveAuth({
               maxLength={254}
               disabled={busy}
             />
-          </label>
+          </LiveField>
           {flow !== "reset" && (
             <div className="entry-pass">
               {passwordField(w.password, flow === "signIn" ? "current-password" : "new-password")}

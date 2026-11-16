@@ -346,3 +346,6 @@
   .live-app .entry .live-back svg,
   .live-app .entry .live-form > button[type="submit"] svg { transition: none; }
 }
+
+/* While a field says what is wrong with it, its standing hint steps aside: one sentence, not two. */
+.entry .live-field:has(.live-field-needed) small:not(.live-field-needed) { display: none; }
