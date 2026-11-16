@@ -40,18 +40,48 @@ const needs = [
 // Utilities and rent are most of what a conference is asked for.
 const kinds = [needs[0], needs[0], needs[0], needs[1], needs[1], needs[1], needs[1], needs[2], needs[2], needs[2], needs[3], needs[4]];
 // What a pair writes after a visit. Short, about the need and the home, never a judgment of the person.
-const visitNotes = [
-  "Visited together. Reviewed the bill and confirmed the amount with the payee.",
-  "Met at the kitchen table. Saw the shut-off notice and called the utility with her to confirm the balance.",
-  "Landlord confirmed the amount by phone while we were there. Agreed the help goes to him directly.",
-  "Two children at home. Pantry bag left today, and the rent request goes to the conference on Tuesday.",
-  "He lost hours at work last month and expects a full week again soon. Asked only for help with this one bill.",
-  "Lives alone, second floor, no lift. Prefers a phone call before any visit. Bill seen and copied.",
-  "Translated by her daughter. Read the lease together. The amount on the notice matches what she told the help line.",
-  "Short visit at the door at his request. Showed us the past-due notice. We prayed together before leaving.",
-  "New to the parish. Explained how the conference helps and that payment goes to the company, never in cash.",
-  "Follow-up visit. Last month's help kept the lights on. Brought a furniture voucher and the pantry hours.",
+// A write-up is put together from three short parts: how the visit went, what the pair saw for this need,
+// and what happens next. The parts turn with the household and its visit, so neighbors read side by side
+// never say the same thing. Short, about the need and the home, never a judgment of the person.
+const visitOpenings = [
+  "Visited together.",
+  "Met at the kitchen table.",
+  "Short visit at the door, as asked.",
+  "Two children at home during the visit.",
+  "Lives alone, second floor, no lift.",
+  "A grown son translated for us.",
+  "New to the parish; explained how the conference helps.",
+  "Follow-up visit after last month's help.",
+  "Met on the porch; the apartment is being painted.",
+  "Grandmother raising two grandchildren.",
 ];
+const visitFindings: Record<string, readonly string[]> = {
+  rent: ["Read the lease together and saw the past-due notice.", "The landlord confirmed the amount by phone while we were there.", "Lost hours at work last month; a full schedule starts again soon.", "The notice gives until the 15th before a late fee.", "Asked only for this month's rent, not the arrears."],
+  utility: ["Saw the shut-off notice and called the utility to confirm the balance.", "The bill matches what was told to the help line.", "The furnace runs on gas; the bill doubled with the cold.", "A payment plan is set up for the rest of the balance.", "Copied the account number from the bill for the pledge."],
+  food: ["The pantry shelf was nearly empty; a bag was left today.", "Payday is next Friday; asked for groceries until then.", "A child has a dairy allergy; noted for the next bag.", "Gave the pantry hours and the bus that stops nearby.", "The fridge works again after last week's repair."],
+  voucher: ["Moved in this month with little furniture; beds are the need.", "The children need winter coats; sizes written down.", "A mattress and a table are what is missing.", "Took the voucher to the thrift store together.", "Clothing for a new job that starts Monday."],
+  other: ["The prescription is ready at the pharmacy; the co-pay is the gap.", "Needs a bus pass to reach a new job across town.", "Saw the pharmacy receipt and the doctor's note.", "The job starts next week; the pass covers the first month.", "Asked for help with this one bill only."],
+};
+const visitClosings = [
+  "Payment goes to the payee directly.",
+  "The request goes to the conference on Tuesday.",
+  "We prayed together before leaving.",
+  "Prefers a phone call before any visit.",
+  "Left the pantry hours and our number.",
+  "Will check in again in two weeks.",
+  "Bill seen and copied for the treasurer.",
+  "Grateful; asked us to thank the parish.",
+];
+/** One household's write-up for its `visit`th visit; `draw` is the one random number the visit already spends on it. */
+function visitNote(household: number, visit: number, kind: string, draw: number) {
+  const findings = visitFindings[kind] ?? visitFindings.other;
+  const turn = Math.floor(draw * 400_000) + household * 7 + visit;
+  return [
+    visitOpenings[turn % visitOpenings.length],
+    findings[Math.floor(turn / visitOpenings.length) % findings.length],
+    visitClosings[Math.floor(turn / (visitOpenings.length * findings.length)) % visitClosings.length],
+  ].join(" ");
+}
 const strangers = ["Wrong number.", "Asked for the pantry's hours.", "Asked how to volunteer.", "Calling for a relative in another parish; referred to that conference.", "Hung up before leaving a name."];
 
 /** A small fixed-seed generator, so the sample conference is the same every time it is loaded. */
@@ -232,6 +262,7 @@ async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
     const neighborId = await db.insert("neighbors", { churchId, name, nameKey: key(name), phone, phoneKey: phone.replace(/\D/g, ""), email: index % 5 === 0 ? `${key(name).replaceAll(" ", ".")}@${emailDomain}` : "", address: `${random.between(10, 980)} ${random.pick(streets)}, Apt ${random.between(1, 24)}`, adults: random.between(1, 3), children: random.between(0, 4), language: index % 4 === 1 ? "es" : index % 9 === 2 ? "ht" : "en", notes: index % 6 === 0 ? "Prefers a call after 5 PM." : "", createdBy: random.pick(staff), createdAt: firstCall });
     households.push(neighborId);
     const callCount = random.between(1, 4);
+    let written = 0;
     for (let call = 0; call < callCount; call++) {
       const recent = call === callCount - 1 ? recentCalls.get(index) : undefined;
       const planned = clock(firstCall + call * random.between(25, 80) * DAY + random.between(9, 16) * 3600000, callSlots);
@@ -271,7 +302,7 @@ async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
         // Counted after this visit is written, so the first planned visit takes the first pair of answers.
         const planned = done ? 0 : plannedVisits++;
         const hours = random.between(2, 5) / 2, miles = random.between(4, 22);
-        await db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, clock(now + random.between(1, 3) * DAY, plannedSlots)), status: done ? "completed" : "scheduled", visitors: pair.map((memberId, seat) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0, ...(done ? {} : { response: pairAnswers[Math.min(planned, pairAnswers.length - 1)][seat] }) })), notes: done ? look.pick(visitNotes) : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
+        await db.insert("visits", { churchId, neighborId, requestId, scheduledAt: done ? scheduledAt : Math.max(scheduledAt, clock(now + random.between(1, 3) * DAY, plannedSlots)), status: done ? "completed" : "scheduled", visitors: pair.map((memberId, seat) => ({ memberId, hours: done ? hours : 0, miles: done ? miles : 0, ...(done ? {} : { response: pairAnswers[Math.min(planned, pairAnswers.length - 1)][seat] }) })), notes: done ? visitNote(index, written++, need.kind, look.next()) : "", completedAt: done ? scheduledAt + 2 * 3600000 : undefined, createdBy: owner, createdAt: takenAt });
       }
       if (outcome === "paid" && amountApproved && decidedAt && !voucher)
         await entry("expense", decidedAt + DAY, amountApproved, need.kind, payeeName, "", { requestId, neighborId, ...(need.kind === "food" || need.kind === "voucher" ? {} : { checkNumber: String(checkNumber++) }) });
