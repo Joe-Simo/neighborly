@@ -74,8 +74,8 @@ export function LiveWelcome({
       <h1>{mode === "create" ? "Make room for your people." : "Your people are here."}</h1>
       <p className="live-deck">
         {mode === "create"
-          ? "Give your group a private place to organize its people, plans and acts of care."
-          : "Use your invitation to join your group. You’ll choose the commitments you accept."}
+          ? "Give your conference a private place to organize its people, plans and acts of care."
+          : "Use your invitation to join your conference. You’ll choose the commitments you accept."}
       </p>
       <ToggleGroup
         type="single"
@@ -89,7 +89,7 @@ export function LiveWelcome({
         className="live-welcome-modes"
         aria-label="Choose how to begin"
       >
-        <ToggleGroupItem value="create">Start a group</ToggleGroupItem>
+        <ToggleGroupItem value="create">Start a conference</ToggleGroupItem>
         <ToggleGroupItem value="join">I have an invitation</ToggleGroupItem>
       </ToggleGroup>
       <form className="live-form" onSubmit={submit} aria-busy={pending}>
@@ -104,11 +104,11 @@ export function LiveWelcome({
         </LiveField>
         {mode === "create" ? (
           <>
-            <LiveField label="Group or organization name">
+            <LiveField label="Conference name">
               <Input name="name" required maxLength={120} disabled={pending} />
             </LiveField>
             <LiveField
-              label="Group time zone"
+              label="Conference time zone"
               help="Commitments and meeting times use this time zone."
             >
               <NativeSelect
@@ -128,8 +128,9 @@ export function LiveWelcome({
               </NativeSelect>
             </LiveField>
             <div className="live-note">
-              Only invited members can access your group. You can add teams and
-              invite people after creating it.
+              A conference is the parish team that answers the help line and
+              visits in pairs. Only invited members can open yours. You can add
+              teams and invite people after creating it.
             </div>
           </>
         ) : (
@@ -156,12 +157,12 @@ export function LiveWelcome({
         <Button type="submit" disabled={pending}>
           {pending ? <LoaderCircle size={17} aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}{" "}
           {pending
-            ? mode === "create" ? "Creating your group…" : "Joining your group…"
+            ? mode === "create" ? "Creating your conference…" : "Joining your conference…"
             : mode === "create"
-              ? "Create group workspace"
-              : "Join group"}
+              ? "Create conference"
+              : "Join conference"}
         </Button>
-        <span className="sr-only" role="status">{pending ? mode === "create" ? "Creating your group." : "Joining your group." : ""}</span>
+        <span className="sr-only" role="status">{pending ? mode === "create" ? "Creating your conference." : "Joining your conference." : ""}</span>
       </form>
       <Button
         variant="link"

@@ -207,7 +207,8 @@ export function LiveApp({
       <LiveRoomLoading />
     );
   // The buttons under long lists stand outside the rooms, so they read the same words the rooms do.
-  const more = wordsFor(sampleVisitor ? deviceLanguage : dashboard.user.language, dashboard.church.wordSet).shell.more;
+  const shell = wordsFor(sampleVisitor ? deviceLanguage : dashboard.user.language, dashboard.church.wordSet).shell;
+  const more = shell.more;
   return (
     <LiveWorkspace
       area={area}
@@ -321,7 +322,7 @@ export function LiveApp({
         churches.length > 1 || churchPage.status === "CanLoadMore" ? (
           <div className="live-row-actions">
             <NativeSelect
-              aria-label="Group workspace"
+              aria-label={shell.groups.label}
               value={churchId}
               onChange={(event) => {
                 const church = churches.find(
@@ -342,7 +343,7 @@ export function LiveApp({
                 size="sm"
                 onClick={() => churchPage.loadMore(30)}
               >
-                More groups
+                {shell.groups.more}
               </Button>
             )}
           </div>
