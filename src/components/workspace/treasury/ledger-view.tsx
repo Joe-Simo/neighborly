@@ -63,6 +63,7 @@ export function LedgerView({
   onShelf,
   paid,
   landed,
+  paying,
 }: {
   ledger: Ledger;
   payable: Payable[];
@@ -83,6 +84,8 @@ export function LedgerView({
   paid?: Paid | null;
   /** The entry a paid sheet has just settled into; its row holds a highlight for a moment. */
   landed?: string | null;
+  /** The request whose payment is being sent; its sheet holds its place until the answer comes. */
+  paying?: Payable | null;
 }) {
   // A new row lands in the ledger by growing into it; the request after a paid one opens its own room, once.
   const table = useRef<HTMLDivElement>(null);
@@ -116,10 +119,12 @@ export function LedgerView({
     gifts > 0 && count(gifts, "twinning gift", "twinning gifts"),
     other > 0 && count(other, "other payment", "other payments"),
   ].filter(Boolean);
-  const others = paid
-    ? payable.filter((row) => row.requestId !== paid.request.requestId)
+  // The sheet stays on the request being paid, then on the paid one, whatever the list says meanwhile.
+  const kept = paid?.request ?? paying;
+  const others = kept
+    ? payable.filter((row) => row.requestId !== kept.requestId)
     : payable;
-  const [first, ...waiting] = paid ? [paid.request, ...others] : others;
+  const [first, ...waiting] = kept ? [kept, ...others] : others;
   const left = paid ? paid.request.remaining - paid.amount : 0;
   const untouched = isUntouched(ledger) && !payable.length;
 

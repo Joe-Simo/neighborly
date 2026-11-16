@@ -76,6 +76,9 @@ export function TreasurySection() {
   const payees = answered<{ name: string }[]>(extra.payees);
   const [moneyOut, setMoneyOut] = useState(false);
   const { paid, landed, pay } = usePaidMoment();
+  // The request being paid keeps its sheet from the moment the form is sent: the ledger answers before the
+  // payment's own yes does, and without this the next request would show in its place for one frame.
+  const [paying, setPaying] = useState<Payable | null>(null);
   const recordDeposit = useMutation(api.treasury.recordDeposit);
   const addKind = useMutation(api.treasury.addKind);
   const retireKind = useMutation(api.treasury.retireKind);
@@ -198,6 +201,7 @@ export function TreasurySection() {
         onEntry={(entry) => show({ is: "entry", entry })}
         paid={paid}
         landed={landed}
+        paying={paying}
         uncleared={bank?.waitingCount}
         onHand={
           gifts && {
@@ -235,15 +239,17 @@ export function TreasurySection() {
               onCancel={() => setOpen(null)}
               onSubmit={({ checkNumber, ...payment }) =>
                 settle(
-                  () =>
-                    recordPayment({
+                  () => {
+                    setPaying(view.request);
+                    return recordPayment({
                       churchId,
                       requestId: view.request.requestId,
                       ...payment,
                       ...(checkNumber.trim() && { checkNumber }),
-                    }).then((entryId) =>
-                      pay(view.request, payment.amount, entryId),
-                    ),
+                    })
+                      .then((entryId) => pay(view.request, payment.amount, entryId))
+                      .finally(() => setPaying(null));
+                  },
                   `${formatFigure(payment.amount)} to ${view.request.payeeName} is recorded in the ledger, and the balance is up to date.`,
                   payment.date,
                 )
