@@ -1,24 +1,30 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CardOffer } from "./card-offer";
 import "./neighborly-continuation.css";
 
-/** The picture every public page closes on: the same two people, the card now resting in the open hand. */
+/** The picture every public page closes on: the same two people, the open hand holding the card out as the way in. */
 export function ClosingBand() {
   return <div className="neighborly-close">
     <picture className="neighborly-close-art">
       <source media="(max-width:700px) and (orientation:portrait)" srcSet="/assets/living-relief-mobile-accepted.webp" width={780} height={1688} />
       <img src="/assets/living-relief-accepted.webp" width={1440} height={1024} alt="" loading="lazy" decoding="async" />
     </picture>
+    {/* The open hand before the card comes back to it, cut from the opening picture, and the place the card lands. */}
+    <span className="neighborly-close-hand" aria-hidden="true">
+      <picture className="thread-empty">
+        <source media="(max-width:700px) and (orientation:portrait)" srcSet="/assets/home/hand-empty-mobile.webp" width={170} height={165} />
+        <img src="/assets/home/hand-empty.webp" width={360} height={295} alt="" loading="lazy" decoding="async" />
+      </picture>
+    </span>
+    <CardOffer />
     <div className="neighborly-close-words">
       <h2 id="together-title">Bring this to<br /><em>your people.</em></h2>
       <div className="neighborly-final-actions">
-        <Button asChild className="neighborly-begin"><Link href="/app?intent=sample">Look around a sample conference<ArrowUpRight aria-hidden="true" /></Link></Button>
         <nav className="neighborly-final-links" aria-label="Your own conference">
           <Link href="/app?intent=start">Start your conference<ArrowUpRight size={16} aria-hidden="true" /></Link>
           <Link href="/app?intent=signin">Sign in<ArrowUpRight size={16} aria-hidden="true" /></Link>
         </nav>
-        <small>Every person in the sample is made up.</small>
       </div>
     </div>
   </div>;
