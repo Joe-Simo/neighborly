@@ -124,6 +124,7 @@ export function en(set: WordSet) {
     dateField: { choose: "Choose a day", done: "Done", chooseTime: "Choose a time" },
     week: {
       figures: { calls: "Calls waiting", visits: "Visits planned", requests: "Requests awaiting a yes", oldest: (days: number) => (days === 1 ? "Oldest call, 1 day" : `Oldest call, ${days} days`), toPay: (count: number) => `${count} approved, not yet paid` },
+      startHere: { lead: "Start here", rest: "a call is waiting for your yes." },
       comingUp: "Coming up",
       nextSevenDays: "Next 7 days",
       printWeek: "Print the week",
@@ -244,7 +245,8 @@ export function en(set: WordSet) {
       openAgain: (title: string) => `Open again. ${title}`,
       added: (title: string) => `Task added. ${title}`,
       undo: "Undo",
-      undoDone: (title: string) => `Undo: mark not done, ${title}`,
+      reopen: "Open again",
+      reopenTask: (title: string) => `Open again: ${title}`,
       done: "Done",
       open: "Open",
       emptyTitle: "A clear list, for now.",

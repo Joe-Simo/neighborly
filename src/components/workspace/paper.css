@@ -801,3 +801,17 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
    and its buttons scroll with the form, and the sheet may use the whole of what the keyboard leaves. */
 [data-live-short] .live-dialog-fixed .live-form-actions { position: static; }
 [data-live-short] .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { max-height: var(--live-view-height, 100dvh); }
+
+/* Sample visitors only: the one line that leads to the draft waiting for a yes. Ochre, because it waits. */
+.live-app .start-here {
+  display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; min-height: 44px; margin: -8px 0 20px;
+  font-size: 17px; line-height: 1.4; color: var(--paper-ink); text-decoration: none;
+}
+.live-app .start-here::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--paper-ochre); }
+.live-app .start-here { transition: opacity 200ms linear; }
+.live-app .start-here[data-waiting] { opacity: 0; }
+.live-app .start-here strong { font-weight: 650; }
+.live-app .start-here svg { flex: none; transition: transform 160ms var(--paper-ease); }
+.live-app .start-here:hover svg { transform: translateX(3px); }
+.live-app .start-here:hover span { text-decoration: underline; text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .live-app .start-here svg { transition: none; } }

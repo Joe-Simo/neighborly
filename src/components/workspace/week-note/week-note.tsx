@@ -103,7 +103,8 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   if (away) return <WeekFigures />;
   // Counts on their way: for those who lead, the note's place is kept in paper at the size it last had,
   // so nothing below it moves when it arrives. No remembered number is shown, only its shape.
-  if (!counts) return isOwner || data.canCoordinate ? <WeekNoteView key="waiting" counts={remembered(last)} monday={monday} brief={brief} waiting onDone={() => {}} /> : null;
+  // The door's paper (door.tsx) waits for them too: `data-room-pending`.
+  if (!counts) return isOwner || data.canCoordinate ? <><span hidden data-room-pending="" /><WeekNoteView key="waiting" counts={remembered(last)} monday={monday} brief={brief} waiting onDone={() => {}} /></> : <span hidden data-room-pending="" />;
   // An older backend answers without saying who put a call first; the note waits for the one that does.
   if (!("callsFirstByAssistant" in counts)) return null;
   return (
