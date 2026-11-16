@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import type { FunctionReturnType } from "convex/server";
-import { Check, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -32,13 +32,12 @@ import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
   count,
   initials,
-  kindLabels,
   recordHref,
-  shortMoney,
   type Call,
   type Calls,
 } from "@/components/workspace/help-line/format";
 import { useSave } from "@/components/workspace/help-line/use-save";
+import { DraftSheet, caller } from "@/components/workspace/help-line/draft-sheet";
 import {
   HelpDone,
   HelpEmpty,
@@ -63,9 +62,6 @@ type Step =
   | { kind: "join"; drafted: Drafted; then: "approve" | "change" };
 
 const PAPER_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
-
-const caller = (call: Call) =>
-  call.neighborName ?? (call.callerName || "New caller");
 
 export function HelpLineSection() {
   return (
@@ -308,6 +304,15 @@ function HelpLine() {
               waiting={drafts.length + (sealed ? 1 : 0)}
               format={format}
               pending={approving.pending}
+              toDo={<DraftToDo notes={onSheet.draft.notes} />}
+              limits={
+                <AssistantLimits
+                  callId={onSheet.call.id}
+                  verification={onSheet.draft.verification}
+                  notes={onSheet.draft.notes}
+                  sealed={onSheet === sealed}
+                />
+              }
               onApprove={() => void approve(onSheet)}
               onChange={() =>
                 setStep(
@@ -753,145 +758,6 @@ function ReadingSheet({ note }: { note?: string }) {
           It fills in only what the note says, and leaves blank what it does
           not. Nothing is saved until you say so.
         </span>
-      </p>
-    </section>
-  );
-}
-
-/** The one thing waiting for a yes: what the assistant drafted from a call note. Plum marks its words. */
-export function DraftSheet({
-  drafted: { call, draft },
-  waiting = 1,
-  sealed = false,
-  format,
-  pending,
-  onApprove,
-  onChange,
-  onDiscard,
-}: {
-  drafted: Drafted;
-  /** How many drafts wait for a yes, this one included. */
-  waiting?: number;
-  /** The yes was given and the request is on the record: the corner folds to green. */
-  sealed?: boolean;
-  format: Workspace["format"];
-  pending: boolean;
-  onApprove: () => void;
-  onChange: () => void;
-  onDiscard: () => void;
-}) {
-  const text = words().assistant;
-  const complete =
-    !!draft.kind &&
-    draft.amountRequested !== null &&
-    !!draft.payeeKind &&
-    !!draft.payeeName;
-  // What the note did not say stays blank, and the sheet says so in plain words.
-  const missing = [
-    !draft.kind && "the kind of help",
-    draft.amountRequested === null && "the amount",
-    (!draft.payeeKind || !draft.payeeName) && "who is paid",
-  ].filter((part) => part !== false);
-  const empty =
-    !draft.kind && draft.amountRequested === null && !draft.payeeName;
-  const title = empty
-    ? "Nothing to draft from this note yet"
-    : [
-        draft.kind ? kindLabels[draft.kind] : "A request",
-        draft.amountRequested !== null && shortMoney(draft.amountRequested),
-      ]
-        .filter((part) => part !== false)
-        .join(", ");
-  return (
-    <section
-      className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
-      data-fold-leaves={sealed ? "" : undefined}
-      aria-labelledby="draft-title"
-      data-blank={complete ? undefined : ""}
-    >
-      <p className="help-sheet-label">
-        {sealed
-          ? "Saved, waiting for a decision"
-          : complete
-            ? text.waiting(waiting)
-            : "A draft with blanks"}
-      </p>
-      <div className="help-sheet-body">
-        <div>
-          {/* The card leads with the call it was made from, so the line under it is never taken for a ledger entry.
-              The name is read from the call row for display only; it is not part of the draft or of what the assistant saw. */}
-          <p className="help-from">
-            {call.neighborName || call.callerName ? (
-              <strong>{caller(call)}</strong>
-            ) : (
-              "A caller who gave no name"
-            )}{" "}
-            called on {format(call.takenAt, { weekday: "long", month: "long" })}
-          </p>
-          <h2 id="draft-title">
-            {title}
-            {draft.payeeName && ` to ${draft.payeeName}`}
-          </h2>
-          {!complete && (
-            <p className="help-assistant help-blank">
-              The note does not say{" "}
-              {missing.length > 1
-                ? `${missing.slice(0, -1).join(", ")} or ${missing.at(-1)}`
-                : missing[0]}
-              . That is yours to add.
-            </p>
-          )}
-          <p className="help-quote">“{draft.quote || call.note}”</p>
-          <p className="help-why">
-            From the message taken at{" "}
-            {format(call.takenAt, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}
-            .{!call.neighborId && " Not yet on file as a neighbor."}
-          </p>
-          {/* What to do about a blank reads with the text, at its measure, never beside the buttons. */}
-          {!complete && !call.neighborId && (
-            <p className="help-why">
-              First, add {call.callerName || "the caller"} as a neighbor.
-            </p>
-          )}
-          <DraftToDo notes={draft.notes} />
-        </div>
-        <div className="help-actions" inert={sealed}>
-          {complete ? (
-            <>
-              <Button disabled={pending} onClick={onApprove}>
-                <Check size={18} aria-hidden="true" />{" "}
-                {call.neighborId ? "Save this request" : "Add neighbor and save"}
-              </Button>
-              <Button variant="outline" disabled={pending} onClick={onChange}>
-                {text.change}
-              </Button>
-            </>
-          ) : (
-            <Button onClick={onChange}>
-              {empty ? "Write the request" : "Fill in what is missing"}
-            </Button>
-          )}
-          <Button
-            variant="link"
-            className="help-text-action"
-            disabled={pending}
-            onClick={onDiscard}
-          >
-            {text.discard}
-          </Button>
-        </div>
-        {sealed && (
-          <p className="help-seal" role="status">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4.5 12.5l5 5L19.5 7" pathLength={1} />
-            </svg>
-            {text.saved}
-          </p>
-        )}
-      </div>
-      <p className="help-assistant help-assistant-line">
-        <Sparkles size={16} aria-hidden="true" />
-        <AssistantLimits callId={call.id} verification={draft.verification} notes={draft.notes} sealed={sealed} />
       </p>
     </section>
   );
