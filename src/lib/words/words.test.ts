@@ -73,17 +73,20 @@ describe("words", () => {
 });
 
 describe("refusals a member can meet", () => {
-  test("each one is said in Spanish and Creole, and is still the backend's sentence word for word", async () => {
+  test("each one is said in all three languages, and the backend throws it by name, never written out", async () => {
     const { refusals } = await import("../refusals");
     const backend = (await Promise.all(["workspace.ts", "pages.ts"].map((file) => Bun.file(`${import.meta.dir}/../../../convex/${file}`).text()))).join("\n");
     for (const [key, sentence] of Object.entries(refusals)) {
+      expect(words("en").notices.refused[sentence], `en ${key}`).toBe(sentence);
       for (const language of ["es", "ht"] as const) {
         const said = words(language).notices.refused[sentence];
         expect(said, `${language} ${key}`).toBeTruthy();
         expect(said).not.toBe(sentence);
       }
-      // away and busy are read from the table by the backend itself; the rest are written out there.
-      expect(backend.includes(`refusals.${key}`) || backend.includes(`"${sentence}"`), key).toBe(true);
+      expect(new RegExp(`refusals\\.${key}\\b`).test(backend), `${key} is thrown`).toBe(true);
+      expect(backend.includes(`"${sentence}"`), `${key} is written out`).toBe(false);
     }
+    // Every name the backend throws is in the table: a sentence added there cannot miss its translations.
+    for (const [, key] of backend.matchAll(/refusals\.(\w+)/g)) expect(Object.keys(refusals), key).toContain(key);
   });
 });

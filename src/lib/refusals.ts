@@ -1,11 +1,11 @@
 /**
  * Sentences the backend says to a member when it refuses their own act. The backend throws them
- * in English; the word tables carry the same sentence in Spanish and Creole, keyed by the English.
+ * by name, in English; the word tables carry the same sentence in Spanish and Creole, keyed by the
+ * English. Each sentence is written here and nowhere else.
  */
 export const refusals = {
   away: "You are marked away that day. Change your time off, or say you can’t take this one.",
   busy: "You already have a commitment at that time. Say you can’t take this one, or ask the coordinator to move it.",
-  // Thrown as plain sentences elsewhere in the backend (workspace.ts, pages.ts); keep each word for word with its source.
   changed: "This commitment changed. Review it again.",
   changedOrStarted: "The commitment changed or has already started. Review it again.",
   askNew: "This commitment changed or has already started. Ask the coordinator for a new request.",
