@@ -481,6 +481,21 @@ export function en(set: WordSet) {
     welcome: {
       pass: "Pass the card",
       hint: "Pass the card to begin.",
+      /** The sheet after a first sign-up, before anyone belongs anywhere. The door says "conference" whatever the word set. */
+      first: {
+        createKicker: "A small beginning", joinKicker: "An invitation to belong",
+        createTitle: "Make room for your people.", joinTitle: "Your people are here.",
+        createDeck: "Give your conference a private place to organize its people, plans and acts of care.",
+        joinDeck: "Use your invitation to join your conference. You’ll choose the commitments you accept.",
+        choose: "Choose how to begin", start: "Start a conference", invited: "I have an invitation",
+        yourName: "Your name", conferenceName: "Conference name", timeZone: "Conference time zone",
+        timeZoneHelp: "Commitments and meeting times use this time zone.",
+        what: "A conference is the parish team that answers the help line and visits in pairs.",
+        note: "Only invited members can open yours. You can add teams and invite people after creating it.",
+        code: "Invitation code", codeHelp: "Use the code supplied by your coordinator. Joining does not accept a commitment.",
+        creating: "Creating your conference…", joining: "Joining your conference…", create: "Create conference", join: "Join conference",
+        notSaved: "We couldn’t save that. Please try again.", kept: "Your entries are still here. Check the details and try again.",
+      },
     },
   };
 }
