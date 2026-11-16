@@ -15,6 +15,7 @@ change to a file marked closed.
 | `help.css` | Every `help-*` class from the design reference. The layout loads it once; sections do not import it or keep a copy. |
 | `types.ts`, `primitives.tsx` | Shared types; `LiveLoading`, `LiveRoomLoading`, `LiveEmpty`, `LiveField`, `CountUp`. |
 | `paper.css` | The paper frame: page head, motion, empty and loading states, phone bar, measure. |
+| `aside.tsx` | `RoomAside`: the room's one side column from 1280px up, and `useWideScreen()`. |
 | `relief.tsx` | `ReliefPicture`: a room's relief picture, or its drawn placeholder until the files arrive (`reliefReady`). |
 | `convex/schema.ts` | Every table, including `neighbors`, `calls`, `assistanceRequests`, `visits` and `ledgerEntries`. Money is whole cents. |
 | `convex/access.ts` | `user()` and `membership()`: the gate every backend function starts with. `neighborAccess()` and `neighborRecord()`: the gate for anything about a neighbor. |
@@ -60,6 +61,28 @@ the name of the room's relief picture.
 `setHeading({ title, deck, back: { label: "Ledger", run } })` draws a quiet link
 above the eyebrow in the page head, with a 44px touch area. Use it for every
 inner view (one record, one tool); do not draw a back link of your own in the room.
+
+## The side column on wide screens
+
+From 1280px up a room may fill one quiet column on the right of its paper; under 1280px the column does not
+exist (nothing is drawn, nothing is fetched for it), so it may never hold anything the phone lacks.
+
+```tsx
+import { RoomAside } from "@/components/workspace/aside";
+
+<RoomAside title={words.timeOff.thisMonth}>…</RoomAside>
+```
+
+- Draw it anywhere inside the room; the shell places it (22% of the window, 264 to 340px, a hairline on its left)
+  and narrows the room's own column beside it. It stays in view while the room scrolls.
+- One per room, and only what the room already has in hand: no new query, no new field on the backend. If the
+  aside needs a query of its own, read `useWideScreen()` and pass `"skip"` when it is false.
+- It answers "what else do I need here" (the month with days away, the week by team, the next meeting, who is
+  on the line today). No actions that exist nowhere else, no figures repeated from the room beside it.
+- Keep it shorter than the window. `title` is its kicker and its name for screen readers; in a member's room it
+  comes from the word tables. Inside, use the room's own quiet type: 15px text, 13px kickers, hairlines, no cards.
+- A room with a wide table (People, Neighbors, the ledger) leaves it out: at 1280px the room's column beside it
+  is about 590px.
 
 ## Motion, shared by every room
 
@@ -170,3 +193,10 @@ asking the server. Never draw `LiveApp` from a page, and never hide a room befor
 The live sample keeps Eastern time, so a harness that takes pictures does too, or its days and hours
 will not match the live site: give the sample conference `timeZone: "America/New_York"` and open the
 browser in the same zone (Playwright: `browser.newContext({ timezoneId: "America/New_York", locale: "en-US" })`).
+
+## Waiting
+
+There is one way to wait: `<LiveLoading />` from `primitives`, a quiet line ("Opening…" in the reader's
+language, or the `label` you pass). It shows only after 400ms, so a quick answer never flashes it.
+No grey rows or blocks stand in for content anywhere. The full-screen `LiveRoomLoading` is for the
+frame alone, before anyone's workspace has arrived.

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { CountUp } from "@/components/workspace/primitives";
+import { CountUp, LiveLoading } from "@/components/workspace/primitives";
 import { openUp, useGrowsSmoothly } from "@/components/workspace/fold";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
@@ -63,6 +63,7 @@ export function LedgerView({
   onShelf,
   paid,
   landed,
+  paying,
 }: {
   ledger: Ledger;
   payable: Payable[];
@@ -83,6 +84,8 @@ export function LedgerView({
   paid?: Paid | null;
   /** The entry a paid sheet has just settled into; its row holds a highlight for a moment. */
   landed?: string | null;
+  /** The request whose payment is being sent; its sheet holds its place until the answer comes. */
+  paying?: Payable | null;
 }) {
   // A new row lands in the ledger by growing into it; the request after a paid one opens its own room, once.
   const table = useRef<HTMLDivElement>(null);
@@ -116,10 +119,12 @@ export function LedgerView({
     gifts > 0 && count(gifts, "twinning gift", "twinning gifts"),
     other > 0 && count(other, "other payment", "other payments"),
   ].filter(Boolean);
-  const others = paid
-    ? payable.filter((row) => row.requestId !== paid.request.requestId)
+  // The sheet stays on the request being paid, then on the paid one, whatever the list says meanwhile.
+  const kept = paid?.request ?? paying;
+  const others = kept
+    ? payable.filter((row) => row.requestId !== kept.requestId)
     : payable;
-  const [first, ...waiting] = paid ? [paid.request, ...others] : others;
+  const [first, ...waiting] = kept ? [kept, ...others] : others;
   const left = paid ? paid.request.remaining - paid.amount : 0;
   const untouched = isUntouched(ledger) && !payable.length;
 
@@ -427,17 +432,9 @@ export function LedgerView({
   );
 }
 
+/** The ledger is on its way: the one quiet line every room waits with. */
 export function LedgerLoading() {
-  return (
-    <div role="status" aria-label="Opening the ledger">
-      <div className="help-skeleton treasury-skeleton-figures" />
-      <div className="help-skeleton">
-        <div><i /><span><b /><b /></span></div>
-        <div><i /><span><b /><b /></span></div>
-        <div><i /><span><b /><b /></span></div>
-      </div>
-    </div>
-  );
+  return <LiveLoading />;
 }
 
 export function LedgerPrivate() {

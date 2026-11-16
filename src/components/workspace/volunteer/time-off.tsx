@@ -5,12 +5,14 @@ import { LiveEmpty, LiveField } from "@/components/workspace/primitives";
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDays } from "@/lib/words";
+import { MonthAway } from "@/components/workspace/volunteer/asides";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TimeOffSection() {
   const { data, pending, ownPerson, perform, words, openAction } = useWorkspace();
   return (
     <>
+      <MonthAway />
       <div className="live-note paper-rise">
         {words.timeOff.note}
       </div>

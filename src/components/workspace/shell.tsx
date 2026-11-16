@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
-import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
+import { ArrowLeft, CircleCheck, LogOut, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +34,7 @@ import {
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
+import { AsideSlot, useWideScreen } from "@/components/workspace/aside";
 import { useSavedLine } from "@/components/workspace/fold";
 import { ReliefPicture } from "@/components/workspace/relief";
 import { sections } from "@/components/workspace/sections";
@@ -172,6 +173,9 @@ export function LiveWorkspace({
   const menuLabel = menu[area] ?? navigation.find((item) => item.id === area)?.label;
   const navRef = useNavMarker(area);
   const waveRef = useArrival();
+  // From 1280px up a room may fill one side column; under that the place for it does not exist.
+  const wide = useWideScreen();
+  const [aside, setAside] = useState<HTMLElement | null>(null);
   useSystemTextSize();
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
   const leave = () => setMobileMenuOpen(false);
@@ -375,12 +379,15 @@ export function LiveWorkspace({
           )}
           {notice && <Outcome ref={outcomeNotice}>{notice}</Outcome>}
           <LiveConnection />
+          {wide && <div className="live-aside" key={`aside-${area}`} ref={setAside} />}
+          <AsideSlot value={aside}>
           <div className="live-room" key={area}>
             <RoomBoundary key={area}>
               {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Section />}
               {pagination}
             </RoomBoundary>
           </div>
+          </AsideSlot>
         </main>
         </WorkspaceProvider>
       </div>
@@ -625,8 +632,9 @@ function Outcome({ children, ref }: { children: string; ref: RefObject<HTMLDivEl
   // It is laid down like a slip, and after six seconds it closes up so the page below does not jump.
   const seen = useSavedLine(ref);
   return (
-    <div className={seen ? "live-success paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
-      {children}
+    <div className={seen ? "live-success help-done paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
+      {seen && <CircleCheck size={22} aria-hidden="true" />}
+      {seen ? <span>{children}</span> : children}
     </div>
   );
 }
