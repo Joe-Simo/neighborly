@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { languageNames, languages } from "@/lib/words";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,23 @@ export function EntrySheet({
   children: ReactNode;
 }) {
   const [language, setLanguage] = useEntryLanguage();
+  // A keyboard on a phone slides the view down the page without moving the page itself. The workspace shell
+  // says how far as `--live-pan`; before anyone is signed in there is no shell, so the sheet says it, and the
+  // paper strip over the status area follows the view down. No word is ever read behind the clock.
+  useEffect(() => {
+    const view = window.visualViewport;
+    if (!view) return;
+    const root = document.documentElement.style;
+    const read = () => root.setProperty("--live-pan", `${Math.max(0, view.offsetTop)}px`);
+    read();
+    view.addEventListener("resize", read);
+    view.addEventListener("scroll", read);
+    return () => {
+      view.removeEventListener("resize", read);
+      view.removeEventListener("scroll", read);
+      root.removeProperty("--live-pan");
+    };
+  }, []);
   return (
     <div className="entry" lang={language}>
       <div className="entry-art" aria-hidden="true">

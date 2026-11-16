@@ -293,7 +293,7 @@
   .entry::before {
     content: "";
     position: fixed;
-    inset: 0 0 auto;
+    inset: var(--live-pan, 0px) 0 auto;
     z-index: 2;
     height: env(safe-area-inset-top);
     background: var(--paper);
@@ -327,7 +327,7 @@
   .entry::before {
     display: block;
     position: sticky;
-    inset: 0 auto auto;
+    inset: var(--live-pan, 0px) auto auto;
     margin-bottom: calc(-1 * env(safe-area-inset-top));
   }
 }
