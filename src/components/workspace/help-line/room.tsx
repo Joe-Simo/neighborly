@@ -117,8 +117,9 @@ function fileAway(line: HTMLElement) {
   const ends = new Map([...line.querySelectorAll<HTMLElement>("[data-filed]")].map((part) => [part, rest(part)]));
   line.style.animation = "";
   if (place.top < 0 || place.bottom > window.innerHeight) return;
-  // The sheet's own words give way within 100ms, so the name and the request are never seen twice; its paper closes under them.
-  for (const part of sheet.children) part.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100, fill: "forwards" });
+  // The whole sheet, corner and all, is gone within 140ms, so its words are never seen twice and its green corner
+  // is never left hanging alone; the room it took closes under the line as the words rise.
+  sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: "forwards" });
   const travel = (from: HTMLElement | null, to: HTMLElement | null, start: DOMRect | undefined, resized: boolean) => {
     if (!from || !to || !start) return;
     const end = ends.get(to) ?? to.getBoundingClientRect();
