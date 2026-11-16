@@ -159,12 +159,20 @@ export function LiveField({
   label,
   children,
   help,
+  said: own,
 }: {
   label: string;
   children: ReactNode;
   help?: string;
+  /** This field's own sentences, for a form outside the workspace's language tables or one that can say more than "Fill this in." */
+  said?: { needed?: string; neededChoice?: string; neededCheck?: string };
 }) {
   const field = useRef<HTMLLabelElement>(null);
+  // Read through a ref, so a caller's fresh object each render never rebinds the listeners.
+  const ownWords = useRef(own);
+  useEffect(() => {
+    ownWords.current = own;
+  });
   const noteId = useId();
   const [note, setNote] = useState("");
   const workspace = useWorkspaceIfAny();
@@ -186,14 +194,13 @@ export function LiveField({
       control.setAttribute("aria-describedby", noteId);
       if (control.form?.querySelector(wrongControl) === control) control.focus();
       const time = control.classList.contains("live-time") && workspace?.words.dateField.chooseTime;
+      const mine = ownWords.current;
       setNote(
         !control.validity.valueMissing
-          ? ("neededCheck" in said ? said.neededCheck : stateWords.neededCheck)
-          : time
-            ? `${time}.`
-            : control instanceof HTMLSelectElement
-              ? ("neededChoice" in said ? said.neededChoice : stateWords.neededChoice)
-              : ("needed" in said ? said.needed : stateWords.needed),
+          ? (mine?.neededCheck ?? ("neededCheck" in said ? said.neededCheck : stateWords.neededCheck))
+          : control instanceof HTMLSelectElement
+            ? (mine?.neededChoice ?? (time ? `${time}.` : "neededChoice" in said ? said.neededChoice : stateWords.neededChoice))
+            : (mine?.needed ?? ("needed" in said ? said.needed : stateWords.needed)),
       );
     };
     const settle = () => {
