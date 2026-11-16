@@ -241,11 +241,12 @@
 .relief { display: block; width: 100%; height: 100%; }
 .relief img { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* A picture in two layers: the piece lies exactly over the base, waits at its start, and makes one small move home. */
+/* In a room head the two layers fill the band itself, which is their frame at every width. */
 .relief-layers { position: relative; }
 .relief-layers > picture { position: absolute; inset: 0; }
-.relief-piece { transform: translate(var(--piece-x), var(--piece-y)) rotate(var(--piece-turn)); }
-.relief-layers[data-moving] > .relief-piece { transform: none; transition: transform 520ms var(--paper-ease) calc(var(--paper-wait, 0ms) + 380ms); }
-@media (prefers-reduced-motion: reduce) { .relief-piece { transform: none !important; transition: none !important; } }
+.relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: translate(var(--piece-x), var(--piece-y)) rotate(var(--piece-turn)); }
+.relief-layers[data-moving] > .relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: none; transition: transform 520ms var(--paper-ease) calc(var(--paper-wait, 0ms) + 380ms); }
+@media (prefers-reduced-motion: reduce) { .relief-piece { transform-origin: var(--piece-about, 50% 50%); transform: none !important; transition: none !important; } }
 .live-head-art { pointer-events: none; overflow: hidden; isolation: isolate; }
 /*
   Up to 699px: a band across the top that is the desktop head in miniature. The picture
@@ -283,7 +284,6 @@
     margin: 0;
   }
   .live-head-art > .relief, .live-head-under > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
-  .live-head-art > .relief-layers { position: relative; }
   .live-head-words,
   .live-head-actions {
     position: relative;
@@ -447,17 +447,10 @@
 
 /* ── Loading: plain paper with the mark, where the app's launch screen has it. One quiet line after 400ms ── */
 .live-main.paper-loading { position: fixed; inset: 0; z-index: 30; max-width: none; margin: 0; padding: 0; background: #f5f3ec; }
-.paper-loading-mark {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  /* Sized and set so the glyph lies on the launch picture's own (public/launch), not merely near it. */
-  translate: calc(-50% + 6px) calc(-50% + 19.5px);
-  font: 400 140.5px / 1 "Newsreader", Georgia, serif;
-  color: #283c32;
-  user-select: none;
-}
-.paper-loading-words { position: absolute; inset: calc(50% + 104px) 24px auto; display: grid; justify-items: center; text-align: center; }
+/* The mark is the app's launch picture, 240px square on the true centre of the screen (vw and vh, no insets),
+   so the app's cover gives way to this page without a step. The same in every browser. */
+.paper-loading-mark { position: fixed; left: calc(50vw - 120px); top: calc(50vh - 120px); width: 240px; height: 240px; max-width: none; user-select: none; pointer-events: none; }
+.paper-loading-words { position: fixed; inset: calc(50vh + 64px) 24px auto; display: grid; justify-items: center; text-align: center; }
 .paper-loading-label {
   display: flex;
   gap: 12px;
@@ -745,3 +738,5 @@ html:has(.live-app) > body[data-scroll-locked] { margin-right: 0 !important; pad
 /* The ring is for keys. Without keys in use (the shell marks the page while they are), a control that is not a box
    to type in draws no ring, however it came by its focus: a tap, or the app putting focus back where it was. */
 html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu, .live-date-sheet) :is(a, button, summary, [role], [tabindex]):not(input, textarea, select):is(:focus, :focus-visible) { outline: none; }
+/* The same for a date field on a phone, which is a field that cannot be typed in: focus put back on it draws no ring. */
+html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visible) { outline: none; }

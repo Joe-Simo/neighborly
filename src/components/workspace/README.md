@@ -159,8 +159,11 @@ plays it (`relief-arrival.tsx`); a room does nothing. A picture moves only when 
 - `relief-<name>-base-<width>`: the picture without the moving piece, the paper behind it painted in.
 - `relief-<name>-piece-<width>`: the piece alone, with its shadow, on a clear ground.
 
-Both on the flat picture's canvas, levelled the same way, at 640, 1024 and 1536 in AVIF and WebP, so that base and
-piece at rest are the flat picture. The entry gives where the piece starts, in screen pixels and degrees from rest,
+- `relief-<name>-front-<width>`, only where the cut needs it: a still layer laid over the piece (hands that stay
+  while the door leaf moves under them). The entry then says `front: true`.
+
+All on the flat picture's canvas, levelled the same way, at 640, 1024 and 1536 in AVIF and WebP, so that the layers
+at rest are the flat picture. The entry gives where the piece starts, in screen pixels and degrees from rest,
 6 to 10px: `week: { y: -8 }`, `commitment: { y: -8, turn: -2 }`. The piece waits there until both layers are in,
 then travels home in 520ms. Never fake a layer from the flat file.
 

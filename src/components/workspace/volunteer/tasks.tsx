@@ -11,6 +11,22 @@ import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { NextMeeting } from "@/components/workspace/volunteer/asides";
 
+/**
+ * While a task is saved its button sleeps, and a sleeping button drops the keyboard's focus to the page.
+ * Once the page has settled: after "Mark done", focus goes on to the next task still to do (the first one
+ * left when this was the last in the list), or to the list's heading when none is left. A tick taken back
+ * keeps focus on its own button.
+ */
+function keepFocus(pressed: HTMLButtonElement, done: boolean) {
+  requestAnimationFrame(() => {
+    if (document.activeElement && document.activeElement !== document.body && document.activeElement !== pressed) return;
+    const open = [...document.querySelectorAll<HTMLButtonElement>('.volunteer-task button[aria-pressed="false"]')].filter((button) => button !== pressed);
+    const after = open.find((button) => pressed.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const next = done ? (after ?? open[0] ?? document.querySelector<HTMLElement>("[data-tasks-head]")) : pressed;
+    next?.focus({ preventScroll: !done });
+  });
+}
+
 export function TasksSection() {
   const {
     data,
@@ -32,7 +48,7 @@ export function TasksSection() {
       <NextMeeting />
       <section>
         <div className="live-section-head">
-          <h2>{words.tasks.tasks}</h2>
+          <h2 tabIndex={-1} data-tasks-head>{words.tasks.tasks}</h2>
         </div>
         {data.tasks.length ? (
           <div className="live-list">
@@ -56,13 +72,16 @@ export function TasksSection() {
                       variant="outline"
                       aria-pressed={task.complete}
                       disabled={pending}
-                      onClick={async () => {
+                      onClick={async (event) => {
+                        const pressed = event.currentTarget;
                         const saved = await perform({
                           type: "setTaskComplete",
                           taskId: task.id,
                           complete: !task.complete,
                         });
                         if (saved) setTicked(task.complete ? undefined : task.id);
+                        if (saved) keepFocus(pressed, !task.complete);
+                        else keepFocus(pressed, false);
                       }}
                     >
                       {task.complete ? (

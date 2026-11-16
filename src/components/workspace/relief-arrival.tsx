@@ -44,14 +44,16 @@ export function ArrivingRelief({ name, focus = "70% 50%" }: { name: ReliefName; 
   }, [moving, name]);
   if (!move || !moving) return <ReliefPicture name={name} focus={focus} />;
   const sizes = "(min-width: 900px) 46vw, 100vw";
+  // Laid in this order: the base, the piece that moves, and where the cut has one, a still front over the piece.
+  const layers = move.front ? (["base", "piece", "front"] as const) : (["base", "piece"] as const);
   return (
     <span
       className="relief relief-layers"
       // The piece waits at its start until both layers are in, then makes its move once.
-      data-moving={loaded >= 2 ? "" : undefined}
-      style={{ "--piece-x": `${move.x ?? 0}px`, "--piece-y": `${move.y ?? 0}px`, "--piece-turn": `${move.turn ?? 0}deg` } as CSSProperties}
+      data-moving={loaded >= layers.length ? "" : undefined}
+      style={{ "--piece-x": `${move.x ?? 0}px`, "--piece-y": `${move.y ?? 0}px`, "--piece-turn": `${move.turn ?? 0}deg`, "--piece-about": move.about ?? "50% 50%" } as CSSProperties}
     >
-      {(["base", "piece"] as const).map((layer) => (
+      {layers.map((layer) => (
         <picture key={layer} className={`relief-${layer}`}>
           <source type="image/avif" srcSet={reliefSources(`${name}-${layer}`, "avif")} sizes={sizes} />
           <source type="image/webp" srcSet={reliefSources(`${name}-${layer}`, "webp")} sizes={sizes} />
@@ -68,7 +70,7 @@ export function ArrivingRelief({ name, focus = "70% 50%" }: { name: ReliefName; 
               setLoaded((count) => count + 1);
             }}
             // A layer that cannot be had must not leave the piece out of place.
-            onError={() => setLoaded(2)}
+            onError={() => setLoaded(layers.length)}
             onLoad={({ currentTarget: image }) => {
               if (image.dataset.in !== undefined) return;
               image.dataset.in = "";
