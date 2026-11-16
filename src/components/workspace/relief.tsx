@@ -32,9 +32,11 @@ export const reliefReady: readonly ReliefName[] = ["call", "help", "year", "week
  * layers are in `public/assets/relief/`, cut on the same canvas as the flat picture and levelled the same way:
  * `relief-<name>-base-<width>` (the picture without the piece, the paper behind it painted in) and
  * `relief-<name>-piece-<width>` (the piece alone on a clear ground), each at 640, 1024 and 1536 in AVIF and WebP.
- * Base and piece together, at rest, must be the flat picture. `relief-arrival.tsx` plays it.
+ * A cut in three has a third, still layer over the piece, `relief-<name>-front-<width>` (a hand that stays while the
+ * door moves under it): say `front: true`.
+ * All layers together, at rest, must be the flat picture. `relief-arrival.tsx` plays it.
  */
-export const reliefMoves: Partial<Record<ReliefName, { x?: number; y?: number; turn?: number; about?: string }>> = {
+export const reliefMoves: Partial<Record<ReliefName, { x?: number; y?: number; turn?: number; about?: string; front?: true }>> = {
   // The cup is set down.
   week: { y: -6 },
   // The key is hung on its hook and swings to rest; it turns about the hook. Short, so the paper under the hand stays clean.
