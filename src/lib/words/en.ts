@@ -275,6 +275,8 @@ export function en(set: WordSet) {
       needed: "Fill this in.",
       neededChoice: "Choose one.",
       neededCheck: "Look at this again.",
+      launchTitle: `We couldn’t open your ${place}.`,
+      launchDeck: "Nothing was lost. Try again in a moment.",
       notSaved: "That couldn’t be saved. Please try again.",
       offlineSave: "There is no connection right now, so this was not saved.",
       kept: "Nothing was saved, and what you typed is still here.",
@@ -496,8 +498,6 @@ export function en(set: WordSet) {
         // The button named in each line is `create` or `join` word for word.
         notSaved: "We couldn’t save that. Your entries are still here. Press Create conference again.",
         notSavedJoin: "We couldn’t save that. Your entries are still here. Press Join conference again.",
-        // Still read by the welcome sheet until the sign-in thread's next push; remove with timeZoneHelp in all three files then.
-        timeZoneHelp: "Commitments and meeting times use this time zone.", kept: "Your entries are still here. Check the details and try again.",
         addName: "Add your name.", addConferenceName: "Add the conference’s name.", addCode: "Add your invitation code.",
       },
     },

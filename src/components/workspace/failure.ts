@@ -21,6 +21,8 @@ export const stateWords = {
   missingTitle: "This page isn’t here.",
   missingDeck: "The address may be old or mistyped. Everything is where you left it.",
   missingAction: "Open Kind Helps",
+  launchTitle: "We couldn’t open your conference.",
+  launchDeck: "Nothing was lost. Try again in a moment.",
   needed: "Fill this in.",
   neededChoice: "Choose one.",
   neededCheck: "Look at this again.",

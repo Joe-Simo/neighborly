@@ -10,9 +10,11 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
 import { leftKey, useEntryLanguage } from "@/components/live-auth-words";
-import { words as wordsFor, type Words } from "@/lib/words";
+import { words as wordsFor, type Language, type Words } from "@/lib/words";
 import type { LiveArea } from "@/components/workspace/areas";
+import { stateWords } from "@/components/workspace/failure";
 import { LiveRoomLoading } from "@/components/workspace/primitives";
+import "@/components/public-state.css";
 import { LiveWorkspace } from "@/components/workspace/shell";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
@@ -160,6 +162,18 @@ export function LiveApp({
     team: [teamPage],
   };
   const roomWaiting = (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
+  // Waiting to learn who is here, or for their workspace to arrive. A wait that outlasts ten seconds
+  // (a session the backend will not accept, no connection) is said plainly, with a way on and a way out.
+  const waiting = !leavingForSample && !signedOut && (!ready || !viewer || sampleVisitor === undefined);
+  const [waitedLong, setWaitedLong] = useState(false);
+  useEffect(() => {
+    if (!waiting) return;
+    const timer = setTimeout(() => setWaitedLong(true), 10000);
+    return () => {
+      clearTimeout(timer);
+      setWaitedLong(false);
+    };
+  }, [waiting]);
   if (leavingForSample) return <LiveRoomLoading label="Opening the sample conference…" />;
   // The sign-in sheet is for someone known to be signed out. Until that is known, and from then until
   // the workspace has arrived, there is one waiting screen and nothing else: a signed-in person goes
@@ -169,7 +183,7 @@ export function LiveApp({
       <LiveAuth key={intent} intent={intent} sampleEntry={sampleEntry} enterSample={enterSample} />
     );
   // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
-  if (!ready || !viewer || sampleVisitor === undefined) return <LiveRoomLoading />;
+  if (waiting) return waitedLong ? <LaunchFailure language={deviceLanguage} leave={signOut} /> : <LiveRoomLoading />;
   if (sampleVisitor && !churchId) return <SampleResetting leave={signOut} />;
   if (
     !churchId ||
@@ -371,6 +385,30 @@ function PageMore({
           ? words.load(label)
           : words.loading(label)}
       </Button>
+    </div>
+  );
+}
+
+/** The workspace did not arrive: one line, one sentence, try again, and sign out as the quiet way out. */
+function LaunchFailure({ language, leave }: { language: Language; leave: () => void }) {
+  const said = wordsFor(language);
+  const states: Partial<Record<keyof typeof stateWords, string>> = said.states;
+  return (
+    <div className="public-state">
+      <main className="live-auth" lang={said.locale}>
+        <div className="live-auth-art" aria-hidden="true" />
+        <p className="live-kicker">Kind Helps</p>
+        <h1 role="alert">{states.launchTitle ?? stateWords.launchTitle}</h1>
+        <p className="live-deck">{states.launchDeck ?? stateWords.launchDeck}</p>
+        <Button onClick={() => window.location.reload()} style={{ marginTop: 24 }}>
+          {said.states.tryAgain}
+        </Button>
+        <p style={{ marginTop: 16 }}>
+          <button type="button" className="live-link" onClick={leave}>
+            {said.shell.signOut}
+          </button>
+        </p>
+      </main>
     </div>
   );
 }

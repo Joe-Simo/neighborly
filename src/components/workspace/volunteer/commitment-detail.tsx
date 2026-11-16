@@ -57,6 +57,7 @@ export function CommitmentDetail({
                   onClick={() => {
                     confirm({
                       title: "Cancel this commitment?",
+                      action: "Cancel commitment",
                       body: "This cancels this date, releases its accepted person and withdraws pending cover requests. The record is kept in the history. Other dates and team memberships stay unchanged.",
                       command: {
                         type: "cancelCommitment",

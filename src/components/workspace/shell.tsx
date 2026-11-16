@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type Ref } from "react";
 import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {
   navigation,
   primaryActions,
   type ActionKind,
+  type LiveHeading,
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
@@ -159,6 +160,8 @@ export function LiveWorkspace({
     setError("");
     setDialog(kind);
   }
+  // An act's name, in the reader's language where the tables have it. Tasks keep theirs with the room's words.
+  const actName = (kind: ActionKind) => (kind === "task" ? words.tasks.add : (actions[kind] ?? actionTitles[kind]));
   const primary = primaryActions[area];
   // A menu line marked for leaders is shown only to coordinators and owners of the group.
   const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
@@ -175,6 +178,10 @@ export function LiveWorkspace({
   const heading = headingOverride
     ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
     : { ...headings[area], ...translatedHeadings[area] };
+  // Between rooms the picture of the room just left lies under the new one for a moment, so one sheet is laid on another.
+  const [headArt, setHeadArt] = useState<{ area: LiveArea; under: LiveHeading["art"] | null }>({ area, under: null });
+  if (headArt.area !== area) setHeadArt({ area, under: headings[headArt.area].art });
+  const under = headArt.under && headArt.under.picture !== heading.art.picture ? headArt.under : null;
   const workspace: Workspace = {
     area,
     data,
@@ -276,7 +283,20 @@ export function LiveWorkspace({
         >
           <div className="live-page-head" key={`head-${area}`}>
             {heading.art && (
-              <div className="live-head-art" style={heading.art.band === undefined ? undefined : ({ "--relief-y": heading.art.band } as CSSProperties)}>
+              <div
+                className="live-head-art"
+                data-laid={under ? "" : undefined}
+                style={heading.art.band === undefined ? undefined : ({ "--relief-y": heading.art.band } as CSSProperties)}
+              >
+                {under && (
+                  <span
+                    className="live-head-under"
+                    style={{ "--relief-y": under.band ?? 0.5 } as CSSProperties}
+                    onAnimationEnd={() => setHeadArt((now) => ({ ...now, under: null }))}
+                  >
+                    <ReliefPicture name={under.picture} focus={under.focus} />
+                  </span>
+                )}
                 <ReliefPicture name={heading.art.picture} focus={heading.art.focus} />
               </div>
             )}
@@ -304,7 +324,7 @@ export function LiveWorkspace({
                 area === "time-off") && (
                 <Button onClick={() => open(primary)}>
                   <Plus size={17} aria-hidden="true" />
-                  {actions[primary] ?? actionTitles[primary]}
+                  {actName(primary)}
                 </Button>
               )}
               {headAction && (
@@ -351,11 +371,7 @@ export function LiveWorkspace({
               </Button>
             </div>
           )}
-          {notice && (
-            <div className="live-success" role="status" tabIndex={-1} ref={outcomeNotice}>
-              {notice}
-            </div>
-          )}
+          {notice && <Outcome ref={outcomeNotice}>{notice}</Outcome>}
           <LiveConnection />
           <div className="live-room" key={area}>
             <RoomBoundary key={area}>
@@ -379,7 +395,7 @@ export function LiveWorkspace({
             onClose={() => {
               if (!pending) setDialog(null);
             }}
-            title={dialog && (actions[dialog] ?? actionTitles[dialog])}
+            title={dialog && actName(dialog)}
             description={
               dialog === "invite"
                 ? "They’ll choose to join your conference."
@@ -488,7 +504,7 @@ export function LiveWorkspace({
                 onClick={() => setConfirmation(null)}
                 disabled={pending}
               >
-                Cancel
+                Go back
               </Button>
               <Button
                 disabled={pending}
@@ -500,7 +516,7 @@ export function LiveWorkspace({
                     setConfirmation(null);
                 }}
               >
-                Confirm
+                {confirmation?.action ?? "Confirm"}
               </Button>
             </div>
         </LiveDialog>
@@ -597,6 +613,23 @@ function useNavMarker(area: LiveArea) {
     return () => resized.disconnect();
   }, [area]);
   return nav;
+}
+
+/**
+ * The green line that says what was done. It is seen for six seconds, then leaves the page and
+ * stays as a message for screen readers. Each new outcome is a new line (the old one is cleared first).
+ */
+function Outcome({ children, ref }: { children: string; ref: Ref<HTMLDivElement> }) {
+  const [seen, setSeen] = useState(true);
+  useEffect(() => {
+    const leave = window.setTimeout(() => setSeen(false), 6000);
+    return () => window.clearTimeout(leave);
+  }, []);
+  return (
+    <div className={seen ? "live-success" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
+      {children}
+    </div>
+  );
 }
 
 /** Once a session, on the first room after sign-in or the sample link, the paper sweeps up and settles as the page. */

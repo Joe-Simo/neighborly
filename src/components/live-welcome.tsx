@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { readFailure } from "@/components/workspace/failure";
 import Link from "next/link";
-import { words } from "@/lib/words";
+import { words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
 import { useEntryLanguage } from "./live-auth-words";
 import { ArrowRight, LoaderCircle } from "lucide-react";
@@ -12,6 +12,25 @@ import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { NativeSelect } from "@/components/ui/native-select";
 import { LiveField } from "@/components/workspace/primitives";
+
+/**
+ * A time zone as a person says it: "Eastern Time, New York". The browser knows the zone's name
+ * in the reader's language; the city is the last part of the zone's own id. Where the browser
+ * has no names in that language, the city stands alone and no English is mixed in.
+ */
+function zoneLabel(language: Language, zone: string): string {
+  const city = zone.slice(zone.lastIndexOf("/") + 1).replaceAll("_", " ");
+  if (!Intl.DateTimeFormat.supportedLocalesOf(language).length) return city;
+  try {
+    const name = new Intl.DateTimeFormat(language, { timeZone: zone, timeZoneName: "longGeneric" })
+      .formatToParts(0)
+      .find((part) => part.type === "timeZoneName")?.value;
+    if (!name || name.startsWith("GMT")) return city;
+    return `${name.charAt(0).toLocaleUpperCase(language)}${name.slice(1)}, ${city}`;
+  } catch {
+    return city;
+  }
+}
 
 export function LiveWelcome({
   createChurch,
@@ -39,12 +58,15 @@ export function LiveWelcome({
   const [language] = useEntryLanguage();
   const book = words(language);
   const w = book.welcome.first;
-  const { needed } = book.states;
   const [error, setError] = useState("");
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
-  const zones = Intl.supportedValuesOf("timeZone");
+  /** Every zone the device knows, the device's own among them, each named in words. */
+  const zones = useMemo(() => {
+    const known = Intl.supportedValuesOf("timeZone");
+    return (known.includes(timeZone) ? known : [timeZone, ...known]).map((zone) => ({ zone, label: zoneLabel(language, zone) }));
+  }, [language, timeZone]);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
@@ -66,7 +88,7 @@ export function LiveWelcome({
       setGiven(true);
     } catch (cause) {
       setError(
-        readFailure(cause, w.notSaved),
+        readFailure(cause, mode === "create" ? w.notSaved : w.notSavedJoin),
       );
     } finally {
       setPending(false);
@@ -74,7 +96,15 @@ export function LiveWelcome({
   }
   const busy = pending || given;
   return (
-    <EntrySheet page={mode} corner={given ? "given" : "rest"}>
+    <EntrySheet
+      page={mode}
+      corner={given ? "given" : "rest"}
+      foot={
+        <Button variant="link" disabled={busy} onClick={() => void signOut()}>
+          {book.shell.signOut}
+        </Button>
+      }
+    >
       <Link href="/" className="live-wordmark">
         kind helps
       </Link>
@@ -92,27 +122,26 @@ export function LiveWelcome({
           setMode(value);
           setError("");
         }}
-        className="entry-tabs"
+        className="entry-tabs entry-halves"
         aria-label={w.choose}
       >
         <ToggleGroupItem value="create">{w.start}</ToggleGroupItem>
         <ToggleGroupItem value="join">{w.invited}</ToggleGroupItem>
       </ToggleGroup>
       <form className="live-form" onSubmit={submit} aria-busy={pending}>
-        <LiveField label={w.yourName} said={{ needed }}>
+        <LiveField label={w.yourName} said={{ needed: w.addName }}>
           <Input name="displayName" autoComplete="name" required maxLength={100} disabled={busy} />
         </LiveField>
         {mode === "create" ? (
           <>
-            <LiveField label={w.conferenceName} said={{ needed }}>
+            <LiveField label={w.conferenceName} said={{ needed: w.addConferenceName }}>
               <Input name="name" required maxLength={120} disabled={busy} />
             </LiveField>
-            <LiveField label={w.timeZone} help={w.timeZoneHelp} said={{ neededChoice: book.states.neededChoice }}>
+            <LiveField label={w.timeZone} said={{ neededChoice: book.states.neededChoice }}>
               <NativeSelect name="timeZone" defaultValue={timeZone} disabled={busy} required>
-                {!zones.includes(timeZone) && <option value={timeZone}>{timeZone}</option>}
-                {zones.map((zone) => (
+                {zones.map(({ zone, label }) => (
                   <option key={zone} value={zone}>
-                    {zone.replaceAll("_", " ")}
+                    {label}
                   </option>
                 ))}
               </NativeSelect>
@@ -125,7 +154,7 @@ export function LiveWelcome({
           <LiveField
             label={w.code}
             help={w.codeHelp}
-            said={{ needed }}
+            said={{ needed: w.addCode }}
           >
             <Input name="token" defaultValue={initialToken} required maxLength={500} autoComplete="off" disabled={busy} />
           </LiveField>
@@ -137,7 +166,6 @@ export function LiveWelcome({
             ref={(notice) => notice?.scrollIntoView({ block: "nearest" })}
           >
             <p>{error}</p>
-            <p className="live-error-recovery">{w.kept}</p>
           </div>
         )}
         <Button type="submit" disabled={busy}>
@@ -152,9 +180,6 @@ export function LiveWelcome({
           {pending ? (mode === "create" ? w.creating : w.joining) : ""}
         </span>
       </form>
-      <Button variant="link" className="entry-quiet entry-leave" disabled={busy} onClick={() => void signOut()}>
-        {book.shell.signOut}
-      </Button>
     </EntrySheet>
   );
 }

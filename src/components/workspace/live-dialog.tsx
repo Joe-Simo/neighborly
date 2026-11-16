@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { cn } from "@/lib/utils";
 
 /**
@@ -26,7 +27,7 @@ export function LiveDialog({
   description,
   open = true,
   onClose,
-  closeLabel = "Close",
+  closeLabel,
   className,
   children,
 }: {
@@ -67,6 +68,8 @@ export function LiveDialog({
       document.documentElement.removeAttribute("data-live-short");
     };
   }, [open]);
+  // The way out is named in the reader's language wherever the dialog opens inside the workspace.
+  const close = useWorkspaceIfAny()?.words.shell.close ?? "Close";
   const opener = useRef<HTMLElement | null>(null);
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
@@ -99,7 +102,7 @@ export function LiveDialog({
         <DialogHeader>
           <DialogTitle tabIndex={-1}>{title}</DialogTitle>
           <DialogClose asChild>
-            <Button variant="ghost" size="icon" aria-label={closeLabel}>
+            <Button variant="ghost" size="icon" aria-label={closeLabel ?? close}>
               <X aria-hidden="true" />
             </Button>
           </DialogClose>
