@@ -286,3 +286,6 @@
   .paper-sound-dock{position:absolute;left:auto;bottom:auto;top:62px;right:max(20px,env(safe-area-inset-right))}
   .paper-sound-dock [data-slot=button]{background:none;border-color:transparent}
 }
+/* The opening's two links never break inside a label. On a phone, once the card is passed, the longer "Go through the doors" stands alone. */
+.painted-world-opening-actions a{white-space:nowrap}
+@media(max-width:700px){.painted-world[data-passed=true] .painted-world-opening-actions a:not(.painted-world-primary-invitation){display:none}}
