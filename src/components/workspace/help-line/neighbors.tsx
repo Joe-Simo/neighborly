@@ -113,7 +113,8 @@ function NeighborRow({
   neighbor: Row;
   format: Workspace["format"];
 }) {
-  const dot = neighbor.address || neighbor.phone ? " · " : "";
+  // A row says the name and the street, never the phone: that is inside the record, where each opening is logged.
+  const dot = neighbor.address ? " · " : "";
   return (
             <div className="help-row help-neighbor">
               <span className="help-avatar" aria-hidden="true">
@@ -126,7 +127,7 @@ function NeighborRow({
                   </Link>
                 </h3>
                 <p>
-                  {neighbor.address || neighbor.phone}
+                  {neighbor.address}
                   <span className="help-household">
                     {dot}
                     {household(neighbor.adults, neighbor.children)}

@@ -875,9 +875,7 @@ export function NeighborForm({
             <div className="live-row" key={match.id}>
               <div>
                 <h3>{match.name}</h3>
-                <p>
-                  {[match.phone, match.address].filter(Boolean).join(" · ")}
-                </p>
+                {match.address && <p>{match.address}</p>}
               </div>
               {useLabel ? (
                 <Button
