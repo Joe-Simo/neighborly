@@ -222,7 +222,8 @@ export const board = query({
     const visitsOf = await Promise.all(open.map((request) => ctx.db.query("visits").withIndex("by_request", (q) => q.eq("requestId", request._id)).take(10)));
     const waiting = open.filter((_, index) => visitsOf[index].every((visit) => visit.status === "cancelled")).sort((a, b) => a.createdAt - b.createdAt);
     const planned = recent.filter((visit) => visit.status === "scheduled");
-    const writtenUp = recent.filter((visit) => visit.status === "completed").sort((a, b) => b.scheduledAt - a.scheduledAt).slice(0, 8);
+    // The latest written up come first, so a visit written up late is seen where it was just laid.
+    const writtenUp = recent.filter((visit) => visit.status === "completed").sort((a, b) => (b.completedAt ?? b.scheduledAt) - (a.completedAt ?? a.scheduledAt)).slice(0, 8);
     const found = await names(ctx, [...planned, ...writtenUp], waiting);
     // A visit still planned to a record since removed is no visit to make: it leaves the board.
     const scheduled = planned.filter((visit) => !recordRemoved(found.neighbor.get(visit.neighborId)));

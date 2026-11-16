@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ConvexQueryCacheProvider } from "convex-helpers/react/cache/provider";
 import { api } from "../../convex/_generated/api";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -12,10 +13,13 @@ const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 export function LiveProviders({ children }: { children: ReactNode }) {
   return (
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-      {children}
+      {/* What a room last showed is kept for five minutes after it is left, so going back shows it at once while it refreshes. */}
+      <ConvexQueryCacheProvider>{children}</ConvexQueryCacheProvider>
     </ConvexProviderWithClerk>
   );
 }
+
+let enteredSession: string | null = null;
 
 /**
  * Signed in, and the backend has found or made this person's account.
@@ -25,13 +29,17 @@ export function useAccount() {
   const { isLoading, isAuthenticated } = useConvexAuth();
   const { sessionId } = useAuth();
   const enter = useMutation(api.users.enter);
-  const [entered, setEntered] = useState<string | null>(null);
+  // Remembered beyond this component, so a frame that is ever mounted again does not ask a second time.
+  const [entered, setEntered] = useState<string | null>(enteredSession);
   const [failure, setFailure] = useState<Error | null>(null);
   useEffect(() => {
     if (!isAuthenticated || !sessionId) return;
     let current = true;
     enter({}).then(
-      () => current && setEntered(sessionId),
+      () => {
+        enteredSession = sessionId;
+        if (current) setEntered(sessionId);
+      },
       (error: unknown) => current && setFailure(error instanceof Error ? error : new Error("Account unavailable.")),
     );
     return () => {

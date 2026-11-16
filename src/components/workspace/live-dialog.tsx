@@ -42,7 +42,12 @@ export function LiveDialog({
     const view = window.visualViewport;
     if (!open || !view || !window.matchMedia(touchScreen).matches) return;
     const root = document.documentElement.style;
+    // The sheet reaches its new height a moment after the keyboard moves it, so the box being typed in
+    // is brought back into view each time the sheet's own size changes, not only once.
+    const settled = new ResizeObserver(() => keepInView(document.activeElement));
     const fit = () => {
+      const sheet = document.activeElement?.closest(".live-dialog-fixed");
+      if (sheet) settled.observe(sheet);
       root.setProperty("--live-view-height", `${view.height}px`);
       root.setProperty("--live-view-top", `${view.offsetTop}px`);
       // With little height left, the title scrolls away with the form so the boxes have the room.
@@ -54,6 +59,7 @@ export function LiveDialog({
     view.addEventListener("resize", fit);
     view.addEventListener("scroll", fit);
     return () => {
+      settled.disconnect();
       view.removeEventListener("resize", fit);
       view.removeEventListener("scroll", fit);
       root.removeProperty("--live-view-height");

@@ -86,7 +86,7 @@ export const list = query({
       ? await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).gte("phoneKey", digits).lt("phoneKey", `${digits}:`)).take(PAGE + 1)
       : words
         ? await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gte("nameKey", words).lt("nameKey", `${words}￿`)).take(PAGE + 1)
-        : await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId)).take(PAGE + 1);
+        : await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gt("nameKey", "")).take(PAGE + 1);
     const found = [...listed, ...byAddress.filter((neighbor) => !listed.some((other) => other._id === neighbor._id))];
     const rows = await Promise.all(found.slice(0, PAGE).map(async (neighbor) => {
       const requests = await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).order("desc").take(50);
@@ -162,10 +162,14 @@ export const update = mutation({
 
 /**
  * Removes a neighbor's record for good. An owner only, and only after typing the neighbor's name.
- * What goes: the record with its household, money and accounts, its notes, its calls (and calls from the
- * same phone that were never tied to it), drafts made from those calls, its requests and its home visits.
- * What stays: the ledger's payments and the voucher shelf's lines, with the neighbor, the request and the
- * memo taken off, so the year's totals hold and nothing in them says who was helped.
+ * Everything that says who they are or what was said goes: the name, phones, address, household, money,
+ * accounts and notes, the words of every call (also calls from the same phone never tied to the record),
+ * request and visit, and any draft made from those calls.
+ * What stays is what the year counts, with nothing in it that identifies anyone: a nameless row for the
+ * household (how many adults and children, and the language), its calls, requests and visits as dates,
+ * kinds, amounts and volunteers' hours, and the ledger and shelf lines without their memo. So no figure
+ * of a year changes when a record is removed. A removed record has an empty nameKey, which no live record
+ * can have; neighborRecord() in access.ts answers "Record not found." for it, and lists leave it out.
  * The audit trail keeps who removed a record and when, by the record's id alone.
  */
 export const remove = mutation({
@@ -202,17 +206,17 @@ export const remove = mutation({
       shelf: await ctx.db.query("voucherStock").withIndex("by_request", (q) => q.eq("requestId", request._id)).collect(),
     })));
 
-    const kept = { requestId: undefined, neighborId: undefined, memo: REMOVED };
     const entryIds = new Set([...entries, ...byRequest.flatMap((found) => found.entries)].map((entry) => entry._id));
-    for (const id of entryIds) await ctx.db.patch("ledgerEntries", id, kept);
-    for (const line of byRequest.flatMap((found) => found.shelf)) await ctx.db.patch("voucherStock", line._id, { requestId: undefined, note: REMOVED });
+    for (const id of entryIds) await ctx.db.patch("ledgerEntries", id, { memo: REMOVED });
+    for (const line of byRequest.flatMap((found) => found.shelf)) await ctx.db.patch("voucherStock", line._id, { note: REMOVED });
 
     for (const draft of drafts) await ctx.db.delete("requestDrafts", draft._id);
-    for (const call of calls) await ctx.db.delete("calls", call._id);
     for (const note of notes) await ctx.db.delete("neighborNotes", note._id);
-    for (const visit of visits) await ctx.db.delete("visits", visit._id);
-    for (const request of requests) await ctx.db.delete("assistanceRequests", request._id);
-    await ctx.db.delete("neighbors", neighborId);
+    // What the year counts stays as a row with nothing in it that was said or written about the household.
+    for (const call of calls) await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });
+    for (const visit of visits) await ctx.db.patch("visits", visit._id, { notes: "" });
+    for (const request of requests) await ctx.db.patch("assistanceRequests", request._id, { summary: REMOVED, decisionNote: "", payeeName: "", referral: undefined, referrals: undefined });
+    await ctx.db.patch("neighbors", neighborId, { name: REMOVED, nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", alert: undefined, household: undefined, money: undefined, accounts: undefined });
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.removed", targetId: neighborId, at: Date.now() });
     return null;
   },
@@ -376,7 +380,7 @@ export const record = query({
     const opened = await ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", neighborId)).order("desc").take(20);
     const openers = new Map<string, Promise<string>>();
     const opener = (userId: (typeof opened)[number]["actorId"]) => {
-      const known = openers.get(userId) ?? ctx.db.query("memberships").withIndex("by_church_user", (q) => q.eq("churchId", churchId).eq("userId", userId)).unique().then((member) => member?.name ?? "Former member");
+      const known = openers.get(userId) ?? ctx.db.query("memberships").withIndex("by_church_user", (q) => q.eq("churchId", churchId).eq("userId", userId)).unique().then((member) => member?.name ?? "A former member");
       openers.set(userId, known);
       return known;
     };

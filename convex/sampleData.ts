@@ -84,7 +84,7 @@ export const load = internalMutation({
     const familyNames = Array.from({ length: HOUSEHOLDS }, (_, index) => lastNames[index % lastNames.length]);
     for (let index = familyNames.length - 1; index > 0; index--) { const other = look.between(0, index); [familyNames[index], familyNames[other]] = [familyNames[other], familyNames[index]]; }
     const now = Date.now();
-    const churchId = await ctx.db.insert("churches", { name: "St. Example Conference", timeZone: zone, sample: true });
+    const churchId = await ctx.db.insert("churches", { name: "St. Example Conference", timeZone: zone, sample: true, wordSet: "vincentian" });
 
     // People. Without a real owner account, the first volunteer owns the group.
     const members: Id<"memberships">[] = [];
@@ -131,7 +131,10 @@ export const load = internalMutation({
     }
     // One shift nobody has taken yet, on the next Saturday still ahead, so the week has a place waiting for a name.
     const openSaturday = [0, 1].map((week) => monday.plus({ weeks: week, days: 5, hours: 10 })).find((day) => day.toMillis() > now)!;
-    await ctx.db.insert("commitments", { churchId, teamId: pantry, title: "Pantry morning", start: openSaturday.toMillis(), end: openSaturday.plus({ hours: 2 }).toMillis(), location: "Parish hall", preparation: "Sort the week's donations and pack food bags.", assigneeId: null, coordinatorId: pantryCrew[0], version: 1 });
+    const openShift = await ctx.db.insert("commitments", { churchId, teamId: pantry, title: "Pantry morning", start: openSaturday.toMillis(), end: openSaturday.plus({ hours: 2 }).toMillis(), location: "Parish hall", preparation: "Sort the week's donations and pack food bags.", assigneeId: null, coordinatorId: pantryCrew[0], version: 1 });
+    // The owner has been asked to take it and has not answered yet, so there is always a commitment waiting for a reply.
+    await ctx.db.insert("teamMembers", { churchId, teamId: pantry, memberId: owner, teamRole: "member", approved: true, status: "active" });
+    await ctx.db.insert("requests", { churchId, commitmentId: openShift, recipientId: owner, commitmentVersion: 1, status: "pending" });
     await ctx.db.insert("timeOff", { churchId, memberId: others[5], start: isoDay(now + 9 * DAY), end: isoDay(now + 16 * DAY), note: "Visiting family." });
     await ctx.db.insert("tasks", { churchId, title: "Restock the food pantry shelf", dueAt: now + 4 * DAY, assigneeId: others[4], complete: false });
     await ctx.db.insert("tasks", { churchId, title: "Send thank-you notes for the fall collection", dueAt: null, assigneeId: others[2], complete: true });
@@ -235,6 +238,10 @@ export const load = internalMutation({
 
     // A call waiting to be returned whose note names two amounts, so a draft from it leaves the amount for a person.
     await ctx.db.insert("calls", { churchId, callerName: "Denise Walker", phone: "(102) 555-0163", note: "Light bill is $145, and $60 is past due from last month.", callback: "needed", takenBy: staff[2], takenAt: clock(now - DAY, callSlots) });
+
+    // A call with a draft already made from it and waiting for a person's yes.
+    const drafted = await ctx.db.insert("calls", { churchId, callerName: "Rosa Fontaine", phone: "(102) 555-0164", note: "Behind on November rent, $450. The landlord is Mill Road Rentals.", callback: "needed", takenBy: staff[1], takenAt: clock(now - DAY, callSlots) });
+    await ctx.db.insert("requestDrafts", { churchId, callId: drafted, kind: "rent", amountRequested: 45000, payeeKind: "landlord", payeeName: "Mill Road Rentals", quote: "Behind on November rent, $450.", notes: [], verification: "checked", createdBy: staff[1], createdAt: now - DAY / 2 });
 
     // This week's returned calls from people who are not a household here, so the help line shows how a call ends.
     const returned = [

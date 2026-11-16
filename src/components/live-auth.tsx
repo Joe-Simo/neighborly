@@ -7,7 +7,8 @@ import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { languageNames, languages } from "@/lib/words";
+import { languageNames, languages, words } from "@/lib/words";
+import { LiveField } from "@/components/workspace/primitives";
 import { cn } from "@/lib/utils";
 import { authWords, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import "./live-auth.css";
@@ -55,11 +56,11 @@ function errorKey(error: unknown, flow: Flow): AuthError {
 
 /**
  * The door fills the whole wall here, so it is asked for larger than a room's head ever is:
- * a wide desktop shows it edge to edge, an upright iPad a little wider than the screen.
+ * a wide desktop shows it edge to edge, an upright iPad at the screen's own width.
  */
 const doorSources = (type: "avif" | "webp") =>
   [640, 1024, 1536, 2400].map((width) => `/assets/relief/relief-visit-${width}.${type} ${width}w`).join(", ");
-const doorSizes = "(max-width: 699px) 228px, (max-width: 1100px) and (orientation: portrait) 118vw, max(100vw, 150vh)";
+const doorSizes = "(max-width: 699px) 228px, (max-width: 1100px) and (orientation: portrait) 100vw, max(100vw, 150vh)";
 
 export function LiveAuth({
   intent = "signin",
@@ -79,6 +80,8 @@ export function LiveAuth({
   const [email, setEmail] = useState("");
   const [language, setLanguage] = useEntryLanguage();
   const w = authWords[language];
+  /** "Fill this in." is the workspace's own sentence, read from the same book so the two never differ. */
+  const { needed } = words(language).states;
   const [error, setError] = useState<AuthError | "">("");
   const [notice, setNotice] = useState(false);
   /** The server has said yes: the sheet's corner turns green while the workspace opens. */
@@ -272,8 +275,11 @@ export function LiveAuth({
     <ArrowRight size={17} aria-hidden="true" />
   );
   const passwordField = (label: string, autoComplete: "current-password" | "new-password") => (
-    <label className="live-field">
-      <span>{label}</span>
+    <LiveField
+      label={label}
+      help={autoComplete === "new-password" ? w.passwordHint : undefined}
+      said={{ needed, neededCheck: w.errors.short }}
+    >
       <div className="live-password-control">
         <Input
           aria-label={label}
@@ -296,8 +302,7 @@ export function LiveAuth({
           {showPassword ? w.hide : w.show}
         </Button>
       </div>
-      {autoComplete === "new-password" && <small>{w.passwordHint}</small>}
-    </label>
+    </LiveField>
   );
 
   const page =
@@ -312,8 +317,7 @@ export function LiveAuth({
           {w.codeSent} <strong>{email}</strong>. {w.codeFor[flow]}
         </p>
         <form className="live-form" onSubmit={submitCode}>
-          <label className="live-field">
-            <span>{w.codeLabel}</span>
+          <LiveField label={w.codeLabel} help={w.codeHint} said={{ needed, neededCheck: w.errors.code }}>
             <Input
               className="live-auth-code"
               name="code"
@@ -326,8 +330,7 @@ export function LiveAuth({
               aria-invalid={error === "code" || error === "expired" || undefined}
               disabled={busy}
             />
-            <small>{w.codeHint}</small>
-          </label>
+          </LiveField>
           {messages}
           <Button type="submit" disabled={busy}>
             {submitIcon}
@@ -384,8 +387,7 @@ export function LiveAuth({
           </div>
         )}
         <form className="live-form" onSubmit={submitDetails}>
-          <label className="live-field">
-            <span>{w.email}</span>
+          <LiveField label={w.email} said={{ needed, neededCheck: w.errors.email }}>
             <Input
               type="email"
               name="email"
@@ -395,7 +397,7 @@ export function LiveAuth({
               maxLength={254}
               disabled={busy}
             />
-          </label>
+          </LiveField>
           {flow !== "reset" && (
             <div className="entry-pass">
               {passwordField(w.password, flow === "signIn" ? "current-password" : "new-password")}

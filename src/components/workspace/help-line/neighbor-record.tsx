@@ -3,7 +3,8 @@
 import "@/components/workspace/for-good.css";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
 import { ArrowLeft, Lock, TriangleAlert } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -18,6 +19,7 @@ import {
   RequestForm,
 } from "@/components/workspace/help-line/forms";
 import { LiveDialog } from "@/components/workspace/live-dialog";
+import { LiveState } from "@/components/workspace/states";
 import { CountUp } from "@/components/workspace/primitives";
 import {
   AccountsForm,
@@ -81,15 +83,20 @@ export function NeighborRecord({
       () => setOpened("missing"),
     );
   }, [open, churchId, neighborId]);
-  // While a removal is on its way the record is held as it was and no longer read,
-  // so the screen never asks for a record that has just gone.
+  // While a removal is on its way the record is no longer read, so the screen never asks for
+  // one that has just gone; it shows the record as it last was. If the removal is refused,
+  // that last reading stays on the screen until the fresh one arrives, so the sheet and what
+  // it says are never taken down.
   const [held, setHeld] = useState<Record | null>(null);
+  const [removing, setRemoving] = useState(false);
   const [removed, setRemoved] = useState(false);
   const live = useQuery(
     api.neighbors.record,
-    opened === "yes" && !held && !removed ? { churchId, neighborId } : "skip",
+    opened === "yes" && !removing && !removed
+      ? { churchId, neighborId }
+      : "skip",
   );
-  const read = removed ? undefined : (held ?? live);
+  const read = removed ? undefined : (live ?? held ?? undefined);
   // The website goes live before the backend does. Until the backend knows about the home,
   // the record shows without it instead of failing.
   const homeReady = Array.isArray(read?.household);
@@ -149,8 +156,8 @@ export function NeighborRecord({
     );
   if (removed)
     return (
-      <HelpEmpty
-        first
+      <LiveState
+        kind="empty"
         title="The record is removed."
         action={
           <Button variant="outline" asChild>
@@ -158,9 +165,9 @@ export function NeighborRecord({
           </Button>
         }
       >
-        The money given stays in the year’s totals, with no name. Everything
-        else about this household is gone.
-      </HelpEmpty>
+        The year’s totals stay as they were, with no name. Everything that
+        said who this household was is gone.
+      </LiveState>
     );
   if (!record) return <HelpLoading label="Opening the record" />;
   const { neighbor } = record;
@@ -308,8 +315,11 @@ export function NeighborRecord({
           <RemoveForm
             churchId={churchId}
             neighbor={neighbor}
-            onBegin={() => setHeld(read ?? null)}
-            onRefused={() => setHeld(null)}
+            onBegin={() => {
+              setHeld(read ?? null);
+              setRemoving(true);
+            }}
+            onRefused={() => setRemoving(false)}
             onRemoved={() => {
               setStep(null);
               setRemoved(true);

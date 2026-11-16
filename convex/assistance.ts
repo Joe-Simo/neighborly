@@ -50,7 +50,7 @@ export function lookups(ctx: QueryCtx) {
       return known;
     },
     memberName(id: Id<"memberships">) {
-      const known = members.get(id) ?? ctx.db.get("memberships", id).then((member) => member?.name ?? "Former member");
+      const known = members.get(id) ?? ctx.db.get("memberships", id).then((member) => member?.name ?? "A former member");
       members.set(id, known);
       return known;
     },
@@ -148,7 +148,9 @@ export const requests = query({
       : await ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", churchId)).order("desc").take(200);
     const found = lookups(ctx);
     // Newest first by the day it was asked: a request brought over from older records keeps its own date.
-    return Promise.all(rows.sort((a, b) => b.createdAt - a.createdAt).map((row) => toRequestRow(found, row)));
+    // A request kept only for the year's count, after its neighbor's record was removed, is not listed.
+    const listed = (await Promise.all(rows.map(async (row) => ((await found.neighbor(row.neighborId))?.nameKey ? [row] : [])))).flat();
+    return Promise.all(listed.sort((a, b) => b.createdAt - a.createdAt).map((row) => toRequestRow(found, row)));
   },
 });
 
@@ -353,10 +355,12 @@ export const calls = query({
     const needed = await ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "needed")).take(100);
     // Calls to return first lead the list; within each group the one that has waited longest is first.
     const first = (call: Doc<"calls">) => (call.urgent?.reasons.length ? 0 : 1);
-    const waiting = needed.sort((a, b) => first(a) - first(b) || a.takenAt - b.takenAt);
+    // A call kept only for the year's count, after its neighbor's record was removed, has no name and no phone.
+    const kept = (call: Doc<"calls">) => !call.callerName && !call.phone;
+    const waiting = needed.filter((call) => !kept(call)).sort((a, b) => first(a) - first(b) || a.takenAt - b.takenAt);
     const done = await ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "done")).order("desc").take(200);
     const since = Date.now() - WEEK;
-    const returned = done.filter((call) => (call.returnedAt ?? call.takenAt) >= since).sort((a, b) => (b.returnedAt ?? b.takenAt) - (a.returnedAt ?? a.takenAt));
+    const returned = done.filter((call) => !kept(call) && (call.returnedAt ?? call.takenAt) >= since).sort((a, b) => (b.returnedAt ?? b.takenAt) - (a.returnedAt ?? a.takenAt));
     const found = lookups(ctx);
     return {
       waiting: await Promise.all(waiting.map((call) => toCallRow(found, call))),

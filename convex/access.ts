@@ -44,7 +44,8 @@ export async function neighborAccess(ctx: QueryCtx | MutationCtx, church: Id<"ch
 export async function neighborRecord(ctx: QueryCtx | MutationCtx, church: Id<"churches">, neighborId: Id<"neighbors">) {
   const member = await neighborAccess(ctx, church);
   const neighbor = await ctx.db.get("neighbors", neighborId);
-  if (!neighbor || neighbor.churchId !== church) throw new ConvexError("Record not found.");
+  // A removed record keeps a nameless row for the year's counts (see neighbors.remove); nobody can open it.
+  if (!neighbor || neighbor.churchId !== church || !neighbor.nameKey) throw new ConvexError("Record not found.");
   return { member, neighbor };
 }
 /** Writes the audit line for opening a record. Queries cannot write, so the screen calls a mutation that calls this. */

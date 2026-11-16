@@ -2,7 +2,8 @@
 
 import "./tools.css";
 import { useState, useSyncExternalStore } from "react";
-import { useAction, useQuery } from "convex/react";
+import { useAction } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
 import { CalendarPlus, Check, Copy } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";

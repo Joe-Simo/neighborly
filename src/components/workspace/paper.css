@@ -113,8 +113,6 @@
 /* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
 .live-room { animation: paper-show 240ms ease backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
-/* The room being left steps back while the next one is fetched. */
-.live-main[data-leaving] > * { opacity: 0; transition: opacity 120ms ease; }
 
 /* Once a session, after sign-in or the sample link: three sheets sweep up and the last one settles as the page. */
 .paper-wave { position: fixed; inset: 0; z-index: 80; display: none; overflow: hidden; pointer-events: none; }
@@ -514,7 +512,7 @@
   .paper-wave { display: none !important; }
   .live-app[data-arriving] { --paper-wait: 0ms; }
   .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
-  .live-main[data-leaving] > *, .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }
+  .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }
   :is(.live-row, .help-row):hover { transform: none; }
 }
 @media print {
@@ -637,6 +635,8 @@
 
 /* A day and a time side by side, one moment. */
 .live-when { display: grid; grid-template-columns: minmax(0, 1fr) minmax(118px, auto); gap: 8px; }
+/* The sentence for a missing day sits under the pair, never between the day and its time. */
+.live-when > .live-date-missing { grid-column: 1 / -1; order: 1; }
 .live-app .live-time select, .live-dialog .live-time select { height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; font-size: 16px; padding-left: 12px; }
 .live-time select:hover { border-color: #365c46; }
 /* Two moments never share a row: each keeps room to say its day in words. */

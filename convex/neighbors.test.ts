@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { signedIn } from "./clerk.testing";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import * as functions from "./neighbors";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
@@ -148,26 +148,76 @@ describe("removing a record", () => {
       voucherStock: await ctx.db.query("voucherStock").collect(),
       auditEvents: await ctx.db.query("auditEvents").collect(),
     }));
-    // The other household in the group, and the other group's, are untouched.
-    expect(left.neighbors.map((neighbor) => neighbor.name).sort()).toEqual(["Celeste Greenhalgh", "Darnell Joseph"]);
-    expect(left.calls).toMatchObject([{ callerName: "Darnell Joseph" }]);
-    for (const table of ["neighborNotes", "requestDrafts", "assistanceRequests", "visits"] as const) expect(left[table]).toEqual([]);
-    // No row anywhere still says who she was, where she lives, her phone, her account or what she told us.
+    // No row anywhere still says who she was, where she lives, her phone, her account, who was paid for her or what was said.
     const everything = JSON.stringify(left).toLowerCase();
-    for (const trace of ["esperanza", "montoya", "5550104", "555-0104", "14 sample st", "0042", "5550100042", "nights", "notice", "behind", neighborId]) {
-      if (trace === neighborId) expect(everything.split(neighborId).length - 1).toBe(left.auditEvents.length);
-      else expect(everything).not.toContain(trace);
-    }
-    // The money and the shelf keep their sums.
-    expect(left.ledgerEntries).toMatchObject([{ amount: 18600, date: today, category: "utility", payee: "Example Power", checkNumber: "1042", memo: "Record removed" }]);
-    expect(left.ledgerEntries[0]).not.toHaveProperty("neighborId");
-    expect(left.ledgerEntries[0]).not.toHaveProperty("requestId");
+    for (const trace of ["esperanza", "montoya", "5550104", "555-0104", "14 sample st", "0042", "5550100042", "nights", "notice", "behind", "bill", "bed for", "sample thrift"]) expect(everything, trace).not.toContain(trace);
+    expect(left.neighborNotes).toEqual([]);
+    expect(left.requestDrafts).toEqual([]);
+    // What the year counts is kept as rows with nothing said in them: a nameless household of the same size and language,
+    expect(left.neighbors.find((neighbor) => neighbor._id === neighborId)).toMatchObject({ name: "Record removed", nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", adults: 2, children: 2, language: "es" });
+    for (const gone of ["household", "money", "accounts", "alert"]) expect(left.neighbors.find((neighbor) => neighbor._id === neighborId)).not.toHaveProperty(gone);
+    // its three calls as dates, its two requests as kinds and amounts, its visit as hours and miles,
+    expect(left.calls.filter((call) => !call.callerName)).toHaveLength(3);
+    for (const call of left.calls.filter((one) => !one.callerName)) expect(call).toMatchObject({ phone: "", note: "" });
+    expect(left.assistanceRequests.map(({ kind, amountApproved, status, summary, payeeName, decisionNote }) => ({ kind, amountApproved, status, summary, payeeName, decisionNote }))).toEqual([
+      { kind: "utility", amountApproved: 18600, status: "paid", summary: "Record removed", payeeName: "", decisionNote: "" },
+      { kind: "voucher", amountApproved: 0, status: "paid", summary: "Record removed", payeeName: "", decisionNote: "" },
+    ]);
+    expect(left.visits).toMatchObject([{ status: "completed", notes: "", visitors: [{ hours: 1, miles: 6 }] }]);
+    // and the money and the shelf exactly as they were, still tied to that nameless household.
+    expect(left.ledgerEntries).toMatchObject([{ amount: 18600, date: today, category: "utility", payee: "Example Power", checkNumber: "1042", memo: "Record removed", neighborId }]);
     expect(left.voucherStock).toMatchObject([{ change: -1, item: "Furniture voucher", note: "Record removed" }]);
-    expect(left.voucherStock[0]).not.toHaveProperty("requestId");
     expect(left.auditEvents.map((event) => event.action)).toEqual(["neighbor.opened", "neighbor.removed"]);
+    // The other household in the group, and the other group's, are untouched.
+    expect(left.neighbors.filter((neighbor) => neighbor.nameKey).map((neighbor) => neighbor.name).sort()).toEqual(["Celeste Greenhalgh", "Darnell Joseph"]);
+    expect(left.calls.filter((call) => call.callerName)).toMatchObject([{ callerName: "Darnell Joseph" }]);
 
+    // Gone from every list, from search, from the check for someone already on file, and from the door itself.
     expect((await owner.query(api.neighbors.list, { churchId })).rows.map((row) => row.name)).toEqual(["Darnell Joseph"]);
-    await expect(owner.query(api.neighbors.record, { churchId, neighborId })).rejects.toThrow("Record not found.");
+    expect((await owner.query(api.neighbors.list, { churchId, search: "Record" })).rows).toEqual([]);
+    expect(await owner.query(api.neighbors.matches, { churchId, name: "Record removed", phone: "(100) 555-0104" })).toEqual([]);
+    expect((await owner.query(api.assistance.requests, { churchId })).map((request) => request.summary)).toEqual([]);
+    const helpLine = await owner.query(api.assistance.calls, { churchId });
+    expect([...helpLine.waiting, ...helpLine.returned].map((call) => call.callerName)).toEqual([]);
+    for (const attempt of [
+      () => owner.query(api.neighbors.record, { churchId, neighborId }),
+      () => owner.mutation(api.neighbors.open, { churchId, neighborId }),
+      () => owner.mutation(api.neighbors.addNote, { churchId, neighborId, body: "Back again." }),
+      () => owner.mutation(api.neighbors.remove, { churchId, neighborId, typedName: "Record removed" }),
+      () => owner.mutation(api.assistance.createRequest, { churchId, neighborId, kind: "rent", summary: "Rent.", amountRequested: 100, payeeKind: "landlord", payeeName: "Sample Property Co." }),
+    ]) await expect(attempt()).rejects.toThrow("Record not found.");
+    // The same person calling again is a new neighbor, not the old record back.
+    await owner.mutation(api.neighbors.create, { churchId, name: "Esperanza Montoya", phone: "(100) 555-0104", email: "", address: "", adults: 1, children: 0, language: "es", notes: "" });
+  });
+
+  test("no figure of the year changes when a record is removed", async () => {
+    const t = convexTest(schema, modules);
+    const userId = await t.run((ctx) => ctx.db.insert("users", {}));
+    const churchId = await t.mutation(internal.sampleData.load, { owner: { userId, name: "Marisol Vega", email: "owner@neighborly.example" } });
+    const owner = signedIn(t, userId);
+    // The household with the most on its record that nothing is still waiting on: paid requests, visits and calls.
+    const busiest = await t.run(async (ctx) => {
+      const settled = [];
+      for (const neighbor of await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect()) {
+        const requests = await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).collect();
+        const visits = await ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).collect();
+        if (requests.some((request) => request.status === "paid") && !requests.some((request) => request.status === "open" || request.status === "approved") && !visits.some((visit) => visit.status === "scheduled"))
+          settled.push({ neighbor, weight: requests.length + visits.length });
+      }
+      return settled.sort((a, b) => b.weight - a.weight)[0].neighbor;
+    });
+    const year = new Date().getUTCFullYear();
+    const books = async () => ({
+      thisYear: await owner.query(api.reports.year, { churchId, year }),
+      nextYear: await owner.query(api.reports.year, { churchId, year: year + 1 }),
+      shelf: await owner.query(api.treasury.voucherShelf, { churchId }),
+    });
+    const before = await books();
+    expect(before.thisYear.households + before.nextYear.households).toBeGreaterThan(0);
+    await owner.mutation(api.neighbors.remove, { churchId, neighborId: busiest._id, typedName: busiest.name });
+    const after = await books();
+    expect(after).toEqual(before);
+    expect(JSON.stringify(after)).not.toContain(busiest.name);
   });
 
   test("it waits while a request is undecided or a visit is planned, and never reaches into another group", async () => {

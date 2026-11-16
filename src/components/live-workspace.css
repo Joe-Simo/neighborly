@@ -310,9 +310,9 @@
 }
 .live-error {
   padding: 16px 20px;
-  background: #f4e8e3;
-  border-left: 3px solid #9f4935;
-  color: #71372b;
+  background: #fffdf7;
+  border-left: 3px solid #6f5f93;
+  color: #283c32;
   line-height: 1.5;
   margin: 18px 0;
 }

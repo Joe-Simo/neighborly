@@ -25,7 +25,7 @@ export default function LiveAppLayout({
       <Suspense fallback={<Loading />}>
         <ClerkProvider signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
           <LiveProviders>
-            <LiveFrame>{children}</LiveFrame>
+            <LiveFrame sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}>{children}</LiveFrame>
           </LiveProviders>
         </ClerkProvider>
       </Suspense>

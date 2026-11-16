@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useConvex, useMutation, useQuery } from "convex/react";
+import { useConvex, useMutation } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
 import type { FunctionReturnType } from "convex/server";
 import { FileInput } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";

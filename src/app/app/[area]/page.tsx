@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { areaTitles, liveAreas } from "@/components/workspace/areas";
 
+/** Every room is known ahead of time, so its page is built once and never waits on a function. */
+export function generateStaticParams() {
+  return liveAreas.map((area) => ({ area }));
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ area: string }> }): Promise<Metadata> {
   const { area } = await params;
   const matched = liveAreas.find((candidate) => candidate === area);

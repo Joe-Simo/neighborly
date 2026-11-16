@@ -242,6 +242,38 @@ describe("the year's counts for the sample conference", () => {
     expect(found.requests.map((request) => request.neighborId)).toEqual([kept.neighborId, null]);
   });
 
+  test("removing a neighbor’s record for good moves no figure of the year and leaves no name in it", async () => {
+    const { t, as, churchId, owner } = await sample();
+    const owned = as(owner.userId);
+    // A household the year really counts: money paid toward it and a visit made, with nothing still open.
+    const neighbor = await t.run(async (ctx) => {
+      const [neighbors, requests, visits, ledger] = await Promise.all([ctx.db.query("neighbors").collect(), ctx.db.query("assistanceRequests").collect(), ctx.db.query("visits").collect(), ctx.db.query("ledgerEntries").collect()]);
+      const found = neighbors.find((candidate) => {
+        const theirs = requests.filter((request) => request.neighborId === candidate._id);
+        const seen = visits.filter((visit) => visit.neighborId === candidate._id);
+        return theirs.some((request) => request.status === "paid" && ledger.some((entry) => entry.requestId === request._id)) && seen.some((visit) => visit.status === "completed")
+          && !theirs.some((request) => request.status === "open" || request.status === "approved") && !seen.some((visit) => visit.status === "scheduled");
+      });
+      if (!found) throw new Error("The sample has no settled household to remove.");
+      return { ...found, requestIds: requests.filter((request) => request.neighborId === found._id).map((request) => request._id) };
+    });
+    const { years } = await owned.query(api.reports.years, { churchId });
+    const everything = async () => Promise.all(years.flatMap((year) => [undefined, 1, 2, 3, 4].map((quarter) => owned.query(api.reports.year, { churchId, year, ...(quarter ? { quarter: quarter as 1 | 2 | 3 | 4 } : {}) }))));
+    const before = await everything();
+    expect(before.some((report) => report.households > 0 && report.helpPaid > 0)).toBe(true);
+
+    await owned.mutation(api.neighbors.remove, { churchId, neighborId: neighbor._id, typedName: neighbor.name });
+
+    const after = await everything();
+    expect(after).toEqual(before);
+    const written = JSON.stringify(after);
+    for (const detail of [neighbor.name, neighbor.phone, neighbor.address].filter(Boolean)) expect(written).not.toContain(detail);
+    // And the check before sending offers no way into the record that is gone.
+    const found = await owned.query(api.reports.flagged, { churchId, requestIds: neighbor.requestIds, visitIds: [] });
+    expect(found.requests.length).toBe(neighbor.requestIds.length);
+    expect(found.requests.every((request) => request.neighborId === null)).toBe(true);
+  });
+
   test("the years on offer run from the first record to today's", async () => {
     const { as, churchId, coordinator } = await sample();
     expect(await as(coordinator.userId).query(api.reports.years, { churchId })).toEqual({ current: 2027, years: [2027, 2026] });

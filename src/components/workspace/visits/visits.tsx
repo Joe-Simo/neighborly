@@ -10,7 +10,8 @@ import {
 } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
 import { CircleCheck, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -97,8 +98,11 @@ function Visits() {
     setFresh(moved);
     setDone(message);
   };
+  // A weekday alone names a day of this week; a visit further off is given its date.
   const day = (at: number) =>
-    format(at, { weekday: "long", month: undefined, day: undefined });
+    Math.abs(at - now) < WEEK
+      ? format(at, { weekday: "long", month: undefined, day: undefined })
+      : format(at, { weekday: "long", month: "long", day: "numeric" });
   const time = (at: number) =>
     format(at, {
       month: undefined,

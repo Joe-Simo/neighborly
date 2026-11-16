@@ -58,7 +58,7 @@ export const createChurch = mutation({ args: { name: text, timeZone: text, displ
   if (isSampleVisitor((await ctx.auth.getUserIdentity())?.subject)) throw new ConvexError("The sample account can only look around the sample conference. Create your own account to start a conference.");
   const name = required(args.name); const displayName = required(args.displayName); const zone = required(args.timeZone);
   try { new Intl.DateTimeFormat("en", { timeZone: zone }).format(0); } catch { throw new ConvexError("Enter a valid time zone."); }
-  const id = await ctx.db.insert("churches", { name, timeZone: zone });
+  const id = await ctx.db.insert("churches", { name, timeZone: zone, wordSet: "vincentian" });
   await ctx.db.insert("memberships", { churchId:id,userId:account.id,name:displayName,email:account.email,role:"owner",active:true,approved:true,coverOptIn:false });
   await ctx.db.insert("auditEvents",{churchId:id,actorId:account.id,action:"church_created",at:Date.now()});
   return id;

@@ -212,10 +212,6 @@
 /* The card waits in the giving hand. A visitor's own hand carries it across. */
 .painted-world-card{position:absolute;z-index:2;left:var(--card-x,-200px);top:var(--card-y,0);width:var(--card-size,96px);aspect-ratio:1.5;translate:calc(-50% + var(--card-dx,0px) * var(--pass,0)) calc(-50% + var(--card-dy,0px) * var(--pass,0));rotate:9deg;border-radius:6px;cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent}
 .painted-world-card:active{cursor:grabbing}
-.painted-world-card::before{content:"";position:absolute;inset:-9px;border:1.5px solid #c8962e;border-radius:10px;opacity:0;animation:card-call 2.8s cubic-bezier(.2,.7,.2,1) 2.2s infinite}
-.painted-world-card:active::before{animation:none;opacity:.9}
-@keyframes card-call{0%{scale:.94;opacity:0}25%{opacity:.9}100%{scale:1.2;opacity:0}}
-@media(prefers-reduced-motion:reduce){.painted-world-card::before{opacity:.7}}
 
 /* One paper bar holds the name at every size, and the painting begins beneath it. */
 /* On a wide, short screen filling the width would cut the eyes or the hands. There the painting keeps its height and its sides fade into the paper. */

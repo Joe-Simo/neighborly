@@ -16,7 +16,7 @@
   --muted-foreground: #60685f;
   --accent: #e6e1ee;
   --accent-foreground: #514972;
-  --destructive: #963e32;
+  --destructive: #6f5f93;
   --border: #d9d9ce;
   --input: #c9cdc1;
   --ring: #364acf;
@@ -656,7 +656,7 @@ select:focus-visible {
   gap: 18px;
 }
 .field-error {
-  color: #963b30;
+  color: #6f5f93;
   font-size: 14px;
 }
 @media (min-aspect-ratio: 1.8/1) {

@@ -3,7 +3,7 @@
 import "./help-line.css";
 import { useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
-import { useQuery } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
 import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";

@@ -4,7 +4,8 @@ import "@/components/workspace/for-good.css";
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
-import { useAction, useMutation, useQueries, useQuery } from "convex/react";
+import { useAction, useMutation, useQueries } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache/hooks";
 import { Check, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -958,15 +959,15 @@ export function RemoveForm({
         <div>
           <dt>What goes</dt>
           <dd>
-            The record, its calls, notes, addresses and phones, and with them
-            its requests and home visits. This household leaves the year’s
-            count of households helped.
+            The name, address, phones, household, money, accounts and notes,
+            and every word of its calls, requests and home visits.
           </dd>
         </div>
         <div>
           <dt>What stays</dt>
           <dd>
-            The money given stays in the year’s totals, with no name.
+            The money, the dates and the counts, so the year’s totals do not
+            change. Nothing left says who they were.
           </dd>
         </div>
       </dl>

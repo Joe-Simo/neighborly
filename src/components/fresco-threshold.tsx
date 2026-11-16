@@ -71,6 +71,8 @@ export function FrescoThreshold() {
       scene.style.width = `${sceneHeight * 2}px`; scene.style.height = `${sceneHeight}px`;
       scene.style.scale = String(Math.max(h / sceneHeight, w / (sceneHeight * 2)));
       host.style.setProperty("--door", door.toFixed(4));
+      // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
+      host.dataset.opening = String(door > 0);
       host.style.setProperty("--grow", grow.toFixed(4));
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
       host.style.setProperty("--caption-top", `${frameY + frameHeight / 2}px`);
