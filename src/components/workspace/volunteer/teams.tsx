@@ -9,11 +9,14 @@ import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
+import { words as wordsFor } from "@/lib/words";
 import { initials } from "@/components/workspace/volunteer/people";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TeamsSection() {
   const { data, pending, isOwner, perform, words } = useWorkspace();
+  // These lines are the leaders' and stay English, so they name the place in English: a conference, or a group.
+  const group = wordsFor("en", data.church.wordSet).terms.group;
   const t = words.teams;
   const [addingTo, setAddingTo] = useState<LiveWorkspaceData["teams"][number] | null>(null);
   // Teams joined in this visit: their slip stays, folded green, so the yes is seen to land.
@@ -74,7 +77,7 @@ export function TeamsSection() {
       ) : (
         <LiveEmpty title={t.emptyTitle}>
           Give your first team a name, then add people when they join
-          your group workspace.
+          your {group}.
         </LiveEmpty>
       )}
       {addingTo && (
@@ -107,7 +110,7 @@ export function TeamsSection() {
               ))}
             </div>
           ) : (
-            <p>Everyone in your group is already on this team.</p>
+            <p>Everyone in your {group} is already on this team.</p>
           )}
         </LiveDialog>
       )}

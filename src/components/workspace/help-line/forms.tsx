@@ -603,7 +603,7 @@ export function DecideForm({
             type="multiple"
             variant="outline"
             className="help-places"
-            aria-label="Places your group refers to"
+            aria-label="Places we refer people to"
             value={referred}
             onValueChange={setReferred}
           >

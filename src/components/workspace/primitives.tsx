@@ -5,19 +5,29 @@ import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords, wrongControl } from "@/components/workspace/failure";
+import { useEntryLanguage } from "@/components/live-auth-words";
+import { words as wordsFor } from "@/lib/words";
 import { headings } from "@/components/workspace/navigation";
 import { ReliefPicture } from "@/components/workspace/relief";
 
+/** "Opening…" in the reader's language: the room's own words inside the workspace, the door's language before it. */
+function useOpening() {
+  const workspace = useWorkspaceIfAny();
+  const [language] = useEntryLanguage();
+  return (workspace?.words ?? wordsFor(language)).states.opening;
+}
+
 /** A short wait inside a room, a form or a dialog: one quiet line. */
 export function LiveLoading({
-  label = "Opening your workspace…",
+  label,
 }: {
   label?: string;
 }) {
+  const opening = useOpening();
   return (
     <div className="live-loading" role="status">
       <LoaderCircle size={20} aria-hidden="true" />
-      <span className="text-balance">{label}</span>
+      <span className="text-balance">{label ?? opening}</span>
     </div>
   );
 }
@@ -27,12 +37,13 @@ export function LiveLoading({
  * The line with the spinner joins only after two seconds, so a quick load never flashes it.
  */
 export function LiveRoomLoading({
-  label = "Opening your workspace…",
+  label,
   children,
 }: {
   label?: string;
   children?: ReactNode;
 }) {
+  const opening = useOpening();
   return (
     <>
       <header className="live-header">
@@ -53,7 +64,7 @@ export function LiveRoomLoading({
           </div>
           <p className="paper-loading-label" role="status">
             <LoaderCircle size={20} aria-hidden="true" />
-            <span className="text-balance">{label}</span>
+            <span className="text-balance">{label ?? opening}</span>
           </p>
           {children}
         </main>

@@ -55,6 +55,8 @@ export function ht(set: WordSet): Words {
       workspace: `${Place} ou`,
       current: "Isit la",
       skip: `Ale nan ${place} ou`,
+      /** For someone who belongs to more than one: the picker in the bar. */
+      groups: { label: `Chwazi yon ${t.group}`, more: `Plis ${t.group}` },
       signOut: "Soti",
       leaveSample: "Kite egzanp lan",
       close: "Fèmen",

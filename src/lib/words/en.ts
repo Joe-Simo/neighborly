@@ -55,6 +55,8 @@ export function en(set: WordSet) {
       workspace: Place,
       current: "Current",
       skip: `Skip to your ${place}`,
+      /** For someone who belongs to more than one: the picker in the bar. */
+      groups: { label: `Choose a ${t.group}`, more: `More ${t.group}s` },
       signOut: "Sign out",
       leaveSample: "Leave the sample",
       close: "Close",
