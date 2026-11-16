@@ -99,7 +99,7 @@ export function en(set: WordSet) {
       timeOff: "Plan time off",
       announcement: "Share an announcement",
       announcementSees: `Everyone in the ${t.group} sees this on This week.`,
-      announcementForm: { title: "Title", message: "Message", save: "Save", saving: "Saving…" },
+      announcementForm: { title: "Title", message: "Message", save: "Share announcement", saving: "Sharing…" },
     },
     dateField: { choose: "Choose a day", done: "Done", chooseTime: "Choose a time" },
     week: {

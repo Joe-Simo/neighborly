@@ -100,7 +100,7 @@ export function es(set: WordSet): Words {
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
       announcementSees: `Todos en ${t.group === "grupo" ? "el grupo" : "la conferencia"} lo ven en Esta semana.`,
-      announcementForm: { title: "Título", message: "Mensaje", save: "Guardar", saving: "Guardando…" },
+      announcementForm: { title: "Título", message: "Mensaje", save: "Compartir aviso", saving: "Compartiendo…" },
     },
     dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora" },
     week: {

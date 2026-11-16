@@ -87,10 +87,12 @@ export function LiveApp({
     api.workspace.dashboard,
     churchId ? { churchId } : "skip",
   );
+  // Asked from the hour the app was opened, so the question stays the same and the first page is what is coming.
+  const [openedAt] = useState(() => Math.floor(Date.now() / 3_600_000) * 3_600_000);
   const commitmentPage = usePaginatedQuery(
     api.pages.commitmentsPage,
     churchId && (area === "commitments" || area === "mine")
-      ? { churchId, scope: area === "mine" ? "mine" : "all" }
+      ? { churchId, scope: area === "mine" ? "mine" : "all", from: openedAt }
       : "skip",
     { initialNumItems: 30 },
   );

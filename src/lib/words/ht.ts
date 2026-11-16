@@ -100,7 +100,7 @@ export function ht(set: WordSet): Words {
       timeOff: "Planifye jou konje",
       announcement: "Pataje yon anons",
       announcementSees: `Tout moun nan ${t.group} lan wè sa nan Semèn sa a.`,
-      announcementForm: { title: "Tit", message: "Mesaj", save: "Anrejistre", saving: "N ap anrejistre…" },
+      announcementForm: { title: "Tit", message: "Mesaj", save: "Pataje anons", saving: "N ap pataje…" },
     },
     dateField: { choose: "Chwazi yon jou", done: "Fini", chooseTime: "Chwazi yon lè" },
     week: {
