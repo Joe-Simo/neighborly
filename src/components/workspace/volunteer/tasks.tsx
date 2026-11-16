@@ -17,12 +17,15 @@ import { NextMeeting } from "@/components/workspace/volunteer/asides";
  * left when this was the last in the list), or to the list's heading when none is left. A tick taken back
  * keeps focus on its own button.
  */
-function keepFocus(pressed: HTMLButtonElement, done: boolean) {
+function keepFocus(pressed: HTMLButtonElement, done: boolean, tries = 90) {
   requestAnimationFrame(() => {
     if (document.activeElement && document.activeElement !== document.body && document.activeElement !== pressed) return;
     const open = [...document.querySelectorAll<HTMLButtonElement>('.volunteer-task button[aria-pressed="false"]')].filter((button) => button !== pressed);
     const after = open.find((button) => pressed.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING);
     const next = done ? (after ?? open[0] ?? document.querySelector<HTMLElement>("[data-tasks-head]")) : pressed;
+    // While the save is still settling every button is off, and a button that is off cannot take focus:
+    // wait for it rather than let focus fall to the page.
+    if (next instanceof HTMLButtonElement && next.disabled && tries > 0) return keepFocus(pressed, done, tries - 1);
     next?.focus({ preventScroll: !done });
   });
 }
