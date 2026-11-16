@@ -9,19 +9,20 @@ import { useWorkspace } from "@/components/workspace/context";
 import {
   CommitmentRows,
   IncomingRequests,
+  useAcceptedArrival,
 } from "@/components/workspace/volunteer/commitment-rows";
 import { MyVisits } from "@/components/workspace/visits/my-visits";
 
 export function MineSection() {
   const { data, now, words } = useWorkspace();
   const [calendar, setCalendar] = useState(false);
-  const [fresh, setFresh] = useState<string>();
+  const { held, fresh, requests } = useAcceptedArrival();
   const mine = upcomingCommitments(data.commitments, now).filter(
-    (item) => item.assigneeId === data.user.id,
+    (item) => item.assigneeId === data.user.id && item.id !== held,
   );
   return (
     <>
-      <IncomingRequests onAccepted={setFresh} />
+      <IncomingRequests {...requests} />
       <MyVisits />
       <section className="live-section">
         <h2>{words.mine.accepted}</h2>

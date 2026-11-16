@@ -33,6 +33,9 @@ export function CommitmentRows({
   const land = (row: HTMLDivElement | null) => {
     if (!row || landed.current === fresh) return;
     landed.current = fresh;
+    // The page stays where it is unless the row is wholly out of view.
+    const { top, bottom } = row.getBoundingClientRect();
+    if (bottom > 0 && top < window.innerHeight) return;
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     row.scrollIntoView({ block: "nearest", behavior: still ? "auto" : "smooth" });
   };
@@ -87,7 +90,8 @@ export function CommitmentRows({
 function Said({ children }: { children: string }) {
   const line = useRef<HTMLParagraphElement>(null);
   const seen = useSeenForSix(line);
-  useEffect(() => line.current?.focus(), []);
+  // Focus tells a screen reader; it must not pull the page away from where the sheet was.
+  useEffect(() => line.current?.focus({ preventScroll: true }), []);
   return (
     <p
       ref={line}
@@ -103,13 +107,27 @@ function Said({ children }: { children: string }) {
 type CoverRequest = LiveWorkspaceData["requests"][number];
 
 /**
+ * For a room with the sheet above a list: the commitment stays out of the list while its sheet is held,
+ * then travels into the list as the sheet closes. Spread `requests` on IncomingRequests, drop `held`
+ * from the list's items and give the list `fresh`.
+ */
+export function useAcceptedArrival() {
+  const [held, setHeld] = useState<string>();
+  const [fresh, setFresh] = useState<string>();
+  return { held, fresh, requests: { onGiven: setHeld, onAccepted: setFresh } };
+}
+
+/**
  * The sheet of what waits for this person's yes. Its corner is ochre while it waits.
  * On Accept the corner folds green and the line reads accepted for a beat; then the
  * sheet leaves and `onAccepted` names the commitment, so the list below can lay it in.
  */
 export function IncomingRequests({
+  onGiven,
   onAccepted,
 }: {
+  /** The commitment whose yes was just pressed, while its sheet is held; undefined once the hold is over. */
+  onGiven?: (commitmentId: string | undefined) => void;
   onAccepted?: (commitmentId: string) => void;
 }) {
   const {
@@ -131,7 +149,10 @@ export function IncomingRequests({
       : incoming;
   const statuses: Partial<Record<string, string>> = words.commitments.status;
   const respond = async (request: CoverRequest, accept: boolean) => {
-    if (accept) setGiven(request);
+    if (accept) {
+      setGiven(request);
+      onGiven?.(request.commitmentId);
+    }
     const beat = new Promise((settle) => setTimeout(settle, accept ? FOLD_HOLD : 0));
     setSaid(undefined);
     const saved = await perform({ type: "respondCover", requestId: request.id, accept });
@@ -140,6 +161,7 @@ export function IncomingRequests({
       await foldLeaves();
     }
     setGiven(undefined);
+    onGiven?.(undefined);
     if (!saved) return;
     if (accept) onAccepted?.(request.commitmentId);
     setSaid({ words: accept ? words.requests.accepted : words.requests.declined, of: request.id });

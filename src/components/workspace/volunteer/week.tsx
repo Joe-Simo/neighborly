@@ -12,6 +12,7 @@ import { WeekNote } from "@/components/workspace/week-note/week-note";
 import {
   CommitmentRows,
   IncomingRequests,
+  useAcceptedArrival,
   incomingRequests,
 } from "@/components/workspace/volunteer/commitment-rows";
 
@@ -21,10 +22,11 @@ export function WeekSection() {
   const weekEnd = now + 7 * 86400000;
   const upcoming = upcomingCommitments(data.commitments, now);
   const incoming = incomingRequests(data);
+  const { held, fresh, requests } = useAcceptedArrival();
   return (
     <>
       <WeekNote brief={incoming.length > 0} />
-      <IncomingRequests />
+      <IncomingRequests {...requests} />
       {/* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */}
       <div className="min-[1100px]:grid min-[1100px]:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)] min-[1100px]:items-start min-[1100px]:gap-x-14">
       <section className="live-section">
@@ -36,7 +38,8 @@ export function WeekSection() {
           )}
         </div>
         <CommitmentRows
-          items={withoutIncomingRequests(upcoming.filter((item) => item.start <= weekEnd), incoming)}
+          items={withoutIncomingRequests(upcoming.filter((item) => item.start <= weekEnd && item.id !== held), incoming)}
+          fresh={fresh}
           empty={{ title: incoming.length ? words.week.choiceAboveTitle : words.week.quietTitle, detail: incoming.length ? words.week.choiceAboveDetail : words.week.quietDetail }}
         />
       </section>

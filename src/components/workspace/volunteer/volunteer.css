@@ -42,7 +42,8 @@
 
 /* The commitment just accepted is laid into the list like a sheet into a folder. */
 @keyframes volunteer-filed { from { background-color: var(--help-sheet, #fdfcf8); box-shadow: 0 10px 24px rgb(40 60 50 / 0.1); } }
-.live-row.volunteer-filed { scroll-margin-block: 24px; animation: paper-settle 420ms var(--paper-ease) backwards, volunteer-filed 900ms ease-out 420ms backwards; }
+@keyframes volunteer-arrive { from { opacity: 0; transform: translateY(-26px) rotate(-0.4deg); } }
+.live-row.volunteer-filed { scroll-margin-block: 24px; animation: volunteer-arrive 520ms var(--paper-ease) backwards, volunteer-filed 900ms ease-out 520ms backwards; }
 
 /* Names at body size; a status reads as a word, not a code. */
 .live-app .live-commitment-row .live-row-main p { font-size: 17px; }
