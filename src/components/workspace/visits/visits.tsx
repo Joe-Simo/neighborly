@@ -348,7 +348,7 @@ export function VisitsView({
   const goingOut = new Map<string, Visit[]>();
   for (const visit of suggested ? coming : []) {
     if (visit.scheduledAt >= now + WEEK) continue;
-    const day = format(visit.scheduledAt, { weekday: "long", month: "short", day: "numeric" });
+    const day = format(visit.scheduledAt, { weekday: "long", month: "long", day: "numeric" });
     goingOut.set(day, [...(goingOut.get(day) ?? []), visit]);
   }
   const nothing =
