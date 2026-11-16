@@ -488,7 +488,7 @@ export function NeighborRecordView({
       <dl className="help-record-facts" data-few={home ? "" : undefined}>
         <div>
           <dt>Phone</dt>
-          <dd>{neighbor.phone || "None on file"}</dd>
+          <dd className="help-phone">{neighbor.phone || "None on file"}</dd>
         </div>
         <div>
           <dt>Speaks</dt>
