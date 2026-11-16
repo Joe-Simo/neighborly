@@ -255,6 +255,7 @@ export const load = internalMutation({
       const young = Array.from({ length: neighbor.children }, () => ({ relationship: extra.pick(["Son", "Daughter", "Grandson", "Granddaughter"]), child: true, birthYear: thisYear - extra.between(1, 16) }));
       await ctx.db.patch("neighbors", neighbor._id, { household: [...adults, ...young] });
     }
+    // The accounts, cautions and notes sit on households that also say who lives there, so one record shows it all.
     // The accounts a bill is paid to, on a dozen households. Invented numbers; only the last four ever show.
     const billed = [
       { kind: "utility", name: "City Power & Light", phone: "(102) 555-0113" },
@@ -265,11 +266,11 @@ export const load = internalMutation({
     for (let place = 0; place < 12; place++) {
       const first = billed[place % billed.length], second = billed[(place + 2) % billed.length];
       const accounts = (place % 3 === 0 ? [first, second] : [first]).map((account) => ({ ...account, accountNumber: `00-${extra.between(1000, 9999)}-${extra.between(1000, 9999)}` }));
-      await ctx.db.patch("neighbors", households[4 + place * 16], { accounts });
+      await ctx.db.patch("neighbors", households[place * 18], { accounts });
     }
     // A word to read before calling or visiting, on a handful. About the visit, never a judgment of the person.
     const alerts = ["Hard of hearing. Knock loudly and wait.", "Large dog in the yard. Call from the gate.", "Works nights. Do not call before noon.", "Speaks Spanish only. Send a Spanish speaker.", "Use the side door; the front steps are broken."];
-    for (const [place, alert] of alerts.entries()) await ctx.db.patch("neighbors", households[12 + place * 37], { alert });
+    for (const [place, alert] of alerts.entries()) await ctx.db.patch("neighbors", households[9 + place * 36], { alert });
     // What members have noted on twenty records over the year, the plain things a later caller is glad to know.
     const noted = [
       "Called to say the lights stayed on. She asked us to thank the two who came.",
@@ -286,7 +287,7 @@ export const load = internalMutation({
       "Asked that we call before visiting. She does not open the door to a knock.",
     ];
     for (let place = 0; place < 20; place++) {
-      const neighbor = await ctx.db.get("neighbors", households[1 + place * 9]);
+      const neighbor = await ctx.db.get("neighbors", households[place * 9]);
       if (!neighbor) continue;
       const span = Math.max(DAY, now - neighbor.createdAt - 2 * DAY);
       for (let note = 0; note < (place % 4 === 0 ? 2 : 1); note++)
