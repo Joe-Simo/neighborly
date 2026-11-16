@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { useMutation, useQueries } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
-import { CircleCheck } from "lucide-react";
+import { HelpDone } from "@/components/workspace/help-line/room";
 import { api } from "../../../../convex/_generated/api";
 import { readFailure } from "@/components/workspace/failure";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -93,10 +93,6 @@ export function TreasurySection() {
   if (open && open !== held) setHeld(open);
   const view = open ?? held;
   const [done, setDone] = useState("");
-  const notice = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (done) notice.current?.focus({ preventScroll: true });
-  }, [done]);
   const recordMoney = () => {
     setDone("");
     setMoneyOut(false);
@@ -192,17 +188,7 @@ export function TreasurySection() {
 
   return (
     <>
-      {done && (
-        <div
-          className="live-success help-done treasury-notice"
-          role="status"
-          tabIndex={-1}
-          ref={notice}
-        >
-          <CircleCheck size={22} aria-hidden="true" />
-          <span>{done}</span>
-        </div>
-      )}
+      {done && <HelpDone className="treasury-notice">{done}</HelpDone>}
       <LedgerView
         ledger={shown}
         payable={payable}
