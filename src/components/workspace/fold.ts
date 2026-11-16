@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
 
 /**
  * How long a sheet stays after its yes, its corner green and its word showing, before it moves on:
@@ -15,40 +15,58 @@ const OPENING = "paper-open-up";
  * For anyone who asks for less motion it is a plain cut.
  */
 export async function foldLeaves() {
-  await Promise.all([...document.querySelectorAll<HTMLElement>("[data-fold-leaves]")].map(closeUp));
+  await Promise.all([...document.querySelectorAll<HTMLElement>("[data-fold-leaves]")].map((sheet) => closeUp(sheet)));
 }
 
-/** One piece of paper fades and closes up over 360ms; a plain cut for anyone who asks for less motion. */
-export async function closeUp(sheet: HTMLElement) {
+/**
+ * How tall the page is without this piece of paper: taken out of the page for the measure and put straight
+ * back ("gone"), or as the room will keep it for screen readers ("put away"). Nothing is painted in between.
+ * Measured, not worked out, because margins fold together and rules about first and next neighbours change
+ * when a thing leaves, and those differ from room to room.
+ */
+function pageWithout(sheet: HTMLElement, as: "gone" | "put away") {
+  if (as === "put away") {
+    const own = sheet.className;
+    sheet.className = "sr-only";
+    const height = document.body.offsetHeight;
+    sheet.className = own;
+    return height;
+  }
+  const { parentNode, nextSibling } = sheet;
+  sheet.remove();
+  const height = document.body.offsetHeight;
+  parentNode?.insertBefore(sheet, nextSibling);
+  return height;
+}
+
+/**
+ * One piece of paper fades and closes up over 360ms, ending at exactly the height the page will have
+ * without it; a plain cut for anyone who asks for less motion. `after` says what the room does with it next:
+ * takes it out ("gone"), or keeps its words for screen readers only ("put away").
+ */
+export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "gone") {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // Its own arriving moves are over for good; being measured must not start them again.
+  sheet.dataset.paperClosing = "";
   const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
-  const height = `${sheet.offsetHeight}px`;
+  const height = sheet.offsetHeight;
   sheet.style.boxSizing = "border-box";
   sheet.style.overflow = "hidden";
   holdThePage();
-  if (sheet.getBoundingClientRect().bottom <= 0) {
-    // Wholly above the window: nobody sees it go, so it goes at once, and what the person is looking at
-    // stays where it is. Browsers that anchor the scroll do that themselves; the others are told.
-    const before = document.body.offsetHeight;
-    sheet.style.position = "absolute";
-    sheet.style.opacity = "0";
-    if (!CSS.supports("overflow-anchor", "auto")) window.scrollBy(0, document.body.offsetHeight - before);
-    return;
-  }
-  // What the page will lose when the sheet is gone, measured, so the close ends exactly there. A closed
-  // sheet still keeps its neighbours' margins apart, which its absence does not; the last margin makes up for it.
-  // (Taken out of the flow for the measure, not hidden, so a line that has focus keeps it.)
   const page = document.body.offsetHeight;
-  sheet.style.position = "absolute";
-  const lost = page - document.body.offsetHeight;
-  sheet.style.position = "";
-  const own = sheet.offsetHeight + parseFloat(marginTop) + parseFloat(marginBottom);
-  const timing = { duration: LEAVE, fill: "forwards" } as const;
+  const lost = page - pageWithout(sheet, after);
+  const own = height + parseFloat(marginTop) + parseFloat(marginBottom);
+  // Wholly above the window nobody sees it go, so it goes at once and what the person is looking at stays
+  // where it is. Browsers that anchor the scroll do that themselves; the others are told.
+  const unseen = sheet.getBoundingClientRect().bottom <= 0;
+  if (unseen && !CSS.supports("overflow-anchor", "auto")) window.scrollBy(0, -lost);
+  const timing = { duration: unseen ? 0 : LEAVE, fill: "forwards" } as const;
   // It stays readable to the end: the fade runs the whole length and is slow to start.
   sheet.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, easing: "cubic-bezier(0.6, 0, 0.9, 0.6)" });
+  // A closed sheet still keeps its neighbours' margins apart, which its absence does not; the last margin makes up for it.
   await sheet.animate(
     [
-      { height, marginTop, marginBottom, paddingTop, paddingBottom },
+      { height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
       { height: "0px", marginTop: "0px", marginBottom: `${own - lost}px`, paddingTop: "0px", paddingBottom: "0px" },
     ],
     { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
@@ -56,24 +74,25 @@ export async function closeUp(sheet: HTMLElement) {
 }
 
 /**
- * The other way: a piece of paper just laid into the page opens its own room over the same 360ms, so what
- * is under it is moved aside and never jumps. Nothing happens for anyone who asks for less motion.
+ * The other way: a piece of paper just laid into the page opens its own room over the same 360ms, starting
+ * from exactly the height the page had without it, so what is under it is moved aside and never jumps.
+ * Call it before the browser paints (a layout effect or a ref). Nothing happens for anyone who asks for less motion.
  */
 export function openUp(sheet: HTMLElement) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Asked twice, it opens once: an opening already under way is dropped before the paper is measured.
   sheet.getAnimations().forEach((move) => move.id === OPENING && move.cancel());
   const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
+  const height = sheet.offsetHeight;
+  holdThePage();
   const page = document.body.offsetHeight;
-  sheet.style.position = "absolute";
-  const gained = page - document.body.offsetHeight;
-  sheet.style.position = "";
-  const own = sheet.offsetHeight + parseFloat(marginTop) + parseFloat(marginBottom);
+  const gained = page - pageWithout(sheet, "gone");
+  const own = height + parseFloat(marginTop) + parseFloat(marginBottom);
   const closed = { overflow: "hidden", boxSizing: "border-box" };
   sheet.animate(
     [
       { ...closed, height: "0px", marginTop: "0px", marginBottom: `${own - gained}px`, paddingTop: "0px", paddingBottom: "0px" },
-      { ...closed, height: `${sheet.offsetHeight}px`, marginTop, marginBottom, paddingTop, paddingBottom },
+      { ...closed, height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
     ],
     { id: OPENING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   );
@@ -109,8 +128,7 @@ function openFlat(sheet: HTMLElement) {
   sheet.getAnimations().forEach((move) => move.cancel());
   sheet.style.overflow = "";
   sheet.style.boxSizing = "";
-  sheet.style.position = "";
-  sheet.style.opacity = "";
+  delete sheet.dataset.paperClosing;
 }
 
 const never = Symbol("never");
@@ -127,12 +145,13 @@ export function useSavedLine(
   { action = false, of }: { action?: boolean; of?: unknown } = {},
 ) {
   const [left, setLeft] = useState<unknown>(never);
+  // Before it is first painted, the line opens its own room; one that closed up before is opened flat first.
+  useLayoutEffect(() => {
+    if (!line.current) return;
+    openFlat(line.current);
+    openUp(line.current);
+  }, [line, of]);
   useEffect(() => {
-    // A line that closed up before is opened flat again for its new words.
-    if (line.current) {
-      openFlat(line.current);
-      openUp(line.current);
-    }
     const stay = action ? 12000 : 6000;
     const step = 250;
     let shown = 0;
@@ -143,7 +162,7 @@ export function useSavedLine(
       shown += step;
       if (shown < stay) return;
       window.clearInterval(clock);
-      if (now) void closeUp(now).then(() => setLeft(of));
+      if (now) void closeUp(now, "put away").then(() => setLeft(of));
       else setLeft(of);
     }, step);
     return () => window.clearInterval(clock);

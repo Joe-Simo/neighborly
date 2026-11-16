@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves, useSavedLine } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, openUp, useSavedLine } from "@/components/workspace/fold";
 import "./volunteer.css";
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -30,11 +30,19 @@ export function CommitmentRows({
   const { data, format, when, personName, teamName, showCommitment, words } =
     useWorkspace();
   const statuses: Partial<Record<string, string>> = words.commitments.status;
+  // The accepted row opens its own room in the list, once, before it is painted.
+  const opened = useRef<string>(undefined);
+  const arrive = (row: HTMLDivElement | null) => {
+    if (!row || opened.current === fresh) return;
+    opened.current = fresh;
+    openUp(row);
+  };
   return items.length ? (
       <div className="live-list">
         {items.map((item) => (
           <div
             className={`live-row live-commitment-row${item.id === fresh ? " volunteer-filed" : ""}`}
+            ref={item.id === fresh ? arrive : undefined}
             key={item.id}
           >
             <div className="live-date-leaf" aria-hidden="true"><span>{format(item.start, { day: undefined, month: "short" })}</span><strong>{format(item.start, { month: undefined, day: "numeric" })}</strong><span>{format(item.start, { month: undefined, day: undefined, weekday: "short" })}</span></div>
@@ -166,9 +174,10 @@ export function IncomingRequests({
       onGiven?.(undefined);
       onAccepted?.(request.commitmentId);
     });
-    const row = document.querySelector(".live-row.volunteer-filed")?.getBoundingClientRect();
-    const top = row ? row.top - leaving + LINE_ROOM : 0;
-    const hidden = row && (top < 0 || top + row.height > window.innerHeight);
+    // (The row is still closed at this moment, opening its room, so its full height is read from what it holds.)
+    const row = document.querySelector(".live-row.volunteer-filed");
+    const top = row ? row.getBoundingClientRect().top - leaving + LINE_ROOM : 0;
+    const hidden = row && (top < 0 || top + row.scrollHeight > window.innerHeight);
     // The line opens as the sheet closes, in one move.
     setSaid({ words: hidden && place ? words.requests.acceptedUnder(place) : words.requests.accepted, of: request.id });
     await foldLeaves();
@@ -241,5 +250,8 @@ export function IncomingRequests({
         </div>
       </section>
     </>
-    ) : (line ?? null);
+    ) : (
+    // The same shape as above, so the line is the same line when the sheet has gone.
+    <>{line}</>
+  );
 }

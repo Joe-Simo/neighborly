@@ -107,6 +107,9 @@
 /* A saved line is read in ink, on every room's green. */
 :is(.live-app, .live-dialog) .live-success { color: var(--paper-ink); }
 
+/* Paper that is closing up (fold.ts) has finished arriving: none of its own moves may start again. */
+[data-paper-closing], [data-paper-closing]::before, [data-paper-closing]::after { animation: none !important; }
+
 .count-up { font-variant-numeric: lining-nums tabular-nums; }
 
 /* Rows and links answer a pointer the same way everywhere: the paper lifts a little, the line under a link thickens. */
