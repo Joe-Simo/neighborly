@@ -229,17 +229,27 @@ export function LiveWorkspace({
   // for `.live-app[data-room-in]`, so the mark never lifts on a room that is still coming up under it.
   const app = useRef<HTMLDivElement>(null);
   const whole = pictured !== undefined && !roomWaiting;
+  // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
+  const [roomIn, setRoomIn] = useState(false);
   useEffect(() => {
     const room = app.current?.querySelector(".live-room");
-    if (!whole || !room || app.current?.dataset.roomIn !== undefined) return;
+    if (!whole || !room || roomIn) return;
     let waiting = true;
-    void Promise.allSettled(room.getAnimations().map((move) => move.finished)).then(() => {
-      if (waiting && app.current) app.current.dataset.roomIn = "";
-    });
+    void Promise.allSettled(room.getAnimations().map((move) => move.finished)).then(() => waiting && setRoomIn(true));
     return () => {
       waiting = false;
     };
-  }, [whole]);
+  }, [whole, roomIn]);
+  // The page's layout wraps the shell in a `.live-app` of its own, and that is the first one a cover finds:
+  // it carries the same mark for as long as the shell does.
+  useEffect(() => {
+    const frame = app.current?.parentElement?.closest<HTMLElement>(".live-app");
+    if (!roomIn || !frame) return;
+    frame.dataset.roomIn = "";
+    return () => {
+      delete frame.dataset.roomIn;
+    };
+  }, [roomIn]);
   // Once the first room's picture is in, the other rooms' pictures are fetched quietly behind it.
   const settled = pictured !== undefined;
   const others = menuItems.map((item) => headings[item.id].art.picture).join(" ");
@@ -281,7 +291,7 @@ export function LiveWorkspace({
   const roomWorkspace = english ? { ...workspace, words: roomWords } : workspace;
   return (
     <WorkspaceProvider value={workspace}>
-    <div className="live-app" lang={words.locale} ref={app}>
+    <div className="live-app" lang={words.locale} ref={app} data-room-in={roomIn ? "" : undefined}>
       <a className="live-skip" href="#workspace-content">{words.shell.skip}</a>
       <header className="live-header" ref={bar} data-scrolled={barNow.scrolled ? "" : undefined}>
         <Link href="/" className="live-wordmark">
