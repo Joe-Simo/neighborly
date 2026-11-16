@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 /// <reference types="vite/client" />
 import { describe, expect, test } from "vitest";
 import { convexTest } from "convex-test";
@@ -106,6 +107,38 @@ describe("sample conference", () => {
       if (visit.status === "scheduled" && !visit.notes && visit.scheduledAt < Date.now()) late++;
     }
     expect(late).toBe(1);
+  });
+
+  test("the side columns have something to show", async () => {
+    const t = start();
+    await t.mutation(internal.sampleData.load, { owner: await t.run(async (ctx) => ({ userId: await ctx.db.insert("users", {}), name: "Sample Owner", email: "owner@kindhelps.example" })) });
+    const found = await t.run(async (ctx) => ({
+      owner: (await ctx.db.query("memberships").collect()).find((member) => member.role === "owner")!,
+      teams: await ctx.db.query("teams").collect(),
+      commitments: await ctx.db.query("commitments").collect(),
+      timeOff: await ctx.db.query("timeOff").collect(),
+      meetings: await ctx.db.query("meetings").collect(),
+      invitees: await ctx.db.query("meetingInvitees").collect(),
+      responses: await ctx.db.query("meetingResponses").collect(),
+    }));
+    const zone = "America/New_York";
+    const today = DateTime.now().setZone(zone).toFormat("yyyy-MM-dd");
+    const helpLine = found.teams.find((team) => team.name === "Help line")!;
+    const turns = found.commitments.filter((shift) => shift.teamId === helpLine._id && DateTime.fromMillis(shift.start, { zone }).toFormat("yyyy-MM-dd") === today);
+    expect(turns.length).toBeGreaterThanOrEqual(2);
+    expect(turns.some((shift) => shift.assigneeId !== null)).toBe(true);
+    // The owner is away two days this month, on no day they are committed or asked for.
+    const away = found.timeOff.filter((span) => span.memberId === found.owner._id);
+    expect(away).toHaveLength(1);
+    expect(away[0].start.slice(0, 7)).toBe(today.slice(0, 7));
+    const busy = found.commitments.filter((shift) => shift.assigneeId === found.owner._id || (shift.assigneeId === null && shift.title === "Pantry morning")).map((shift) => DateTime.fromMillis(shift.start, { zone }).toFormat("yyyy-MM-dd"));
+    expect(busy.some((day) => day >= away[0].start && day <= away[0].end)).toBe(false);
+    // One meeting ahead, the owner invited and yet to answer.
+    expect(found.meetings).toHaveLength(1);
+    expect(found.meetings[0].end).toBeGreaterThan(Date.now());
+    expect(found.invitees.some((row) => row.memberId === found.owner._id)).toBe(true);
+    expect(found.responses.some((row) => row.memberId === found.owner._id)).toBe(false);
+    expect(found.responses.length).toBeGreaterThan(3);
   });
 
   test("the fuller record is there and leaves the head counts as they were", async () => {

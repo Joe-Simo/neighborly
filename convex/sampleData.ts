@@ -107,9 +107,11 @@ export const load = internalMutation({
       if (index < 8) await ctx.db.insert("availability", { churchId, memberId, start: isoDay(now), end: isoDay(now + 60 * DAY) });
     }
     const monday = DateTime.fromMillis(now, { zone }).startOf("week");
+    const passed: { start: number; assigneeId: Id<"memberships"> }[] = [];
     for (let week = 0; week < 5; week++) for (const [slot, weekday] of [1, 3, 5].entries()) {
       const start = monday.plus({ weeks: week, days: weekday - 1, hours: 9 }).toMillis();
-      if (start < now) continue;
+      // This week's mornings that have passed are written after the coming ones, below.
+      if (start < now) { passed.push({ start, assigneeId: others[(week * 3 + slot) % others.length] }); continue; }
       await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start, end: start + 3 * 3600000, location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: week === 4 ? null : others[(week * 3 + slot) % others.length], coordinatorId: others[1], version: 1 });
     }
     // The owner's own part, so "My commitments" and the calendar link have something to show:
@@ -117,6 +119,19 @@ export const load = internalMutation({
     const mine = monday.plus({ weeks: 1 });
     await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start: mine.plus({ days: 1, hours: 9 }).toMillis(), end: mine.plus({ days: 1, hours: 12 }).toMillis(), location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: owner, coordinatorId: others[1], version: 1 });
     await ctx.db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Renee Baptiste", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
+    // Today on the help line: the morning is covered and the afternoon still has an open place, whatever day the sample is loaded.
+    const todayStart = DateTime.fromMillis(now, { zone }).startOf("day");
+    const helpLineToday = async (hour: number, hours: number, assigneeId: Id<"memberships"> | null) => {
+      const start = todayStart.plus({ hours: hour }).toMillis();
+      // A Monday, Wednesday or Friday already has its morning above.
+      if (hour === 9 && [1, 3, 5].includes(todayStart.weekday)) return;
+      await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: hour === 9 ? "Help line morning" : "Help line afternoon", start, end: start + hours * 3600000, location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId, coordinatorId: others[1], version: 1 });
+    };
+    await helpLineToday(9, 3, others[3]);
+    // The afternoon's place stays open only while it is still ahead; a turn that has ended always has a name on it.
+    await helpLineToday(13, 3, todayStart.plus({ hours: 16 }).toMillis() > now ? null : others[5]);
+    // This week's mornings already past, so the week by team is never empty on its last days.
+    for (const shift of passed) await ctx.db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start: shift.start, end: shift.start + 3 * 3600000, location: "Parish office", preparation: "", assigneeId: shift.assigneeId, coordinatorId: others[1], version: 1 });
     // A year of finished shifts, so hours by team have something to add up: the help line twice a week
     // and the pantry on Saturdays. Kept under the 200 the overview reads, after the coming weeks above.
     const pantry = await ctx.db.insert("teams", { churchId, name: "Pantry", description: "Sorts donations and packs food bags on Saturday mornings." });
@@ -140,6 +155,21 @@ export const load = internalMutation({
     await ctx.db.insert("availability", { churchId, memberId: owner, start: isoDay(now), end: isoDay(now + 60 * DAY) });
     await ctx.db.insert("requests", { churchId, commitmentId: openShift, recipientId: owner, commitmentVersion: 1, status: "pending" });
     await ctx.db.insert("timeOff", { churchId, memberId: others[5], start: isoDay(now + 9 * DAY), end: isoDay(now + 16 * DAY), note: "Visiting family." });
+    // The owner's own days away this month, two days clear of their commitments and of the shift they are asked to take,
+    // so the month in Time off has something marked. Ahead if the month allows, else just behind.
+    const taken = new Set([mine.plus({ days: 1 }), mine.plus({ days: 3 }), openSaturday].map((day) => day.toFormat("yyyy-MM-dd")));
+    const monthDays = Array.from({ length: todayStart.daysInMonth ?? 30 }, (_, index) => todayStart.startOf("month").plus({ days: index }));
+    const free = (day: DateTime) => !taken.has(day.toFormat("yyyy-MM-dd"));
+    const pairs = monthDays.slice(0, -1).filter((day, index) => free(day) && free(monthDays[index + 1]));
+    const away = pairs.find((day) => day > todayStart.plus({ days: 4 })) ?? pairs.filter((day) => day < todayStart.minus({ days: 2 })).pop();
+    if (away) await ctx.db.insert("timeOff", { churchId, memberId: owner, start: away.toFormat("yyyy-MM-dd"), end: away.plus({ days: 1 }).toFormat("yyyy-MM-dd"), note: "Away with family." });
+    // The next conference meeting, with everyone invited and the owner yet to answer.
+    const meetingStart = monday.plus({ weeks: 1, days: 1, hours: 19 });
+    const meetingId = await ctx.db.insert("meetings", { churchId, fanoutStatus: "complete", cutoff: now, title: "Conference meeting", start: meetingStart.toMillis(), end: meetingStart.plus({ hours: 1 }).toMillis(), location: "Parish hall, room 2" });
+    for (const [index, memberId] of members.entries()) {
+      await ctx.db.insert("meetingInvitees", { churchId, meetingId, memberId });
+      if (memberId !== owner && index % 3 !== 2) await ctx.db.insert("meetingResponses", { churchId, meetingId, memberId, response: index % 5 === 4 ? "declined" : "accepted" });
+    }
     await ctx.db.insert("tasks", { churchId, title: "Restock the food pantry shelf", dueAt: now + 4 * DAY, assigneeId: others[4], complete: false });
     await ctx.db.insert("tasks", { churchId, title: "Send thank-you notes for the fall collection", dueAt: null, assigneeId: others[2], complete: true });
     await ctx.db.insert("announcements", { churchId, title: "Winter coat drive starts next week", body: "Bring coats to the parish office. Home visitors, ask each family for sizes.", authorId: owner, createdAt: now - 2 * DAY });
