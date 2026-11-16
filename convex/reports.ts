@@ -485,7 +485,8 @@ export const year = query({
       time: {
         hours: round(visitHours + shiftHours),
         shiftHours,
-        activeMembers: memberships.filter((member) => member.active).length,
+        // The council's report counts the people who can serve: with access, and marked ready to serve.
+        activeMembers: memberships.filter((member) => member.active && member.approved).length,
         membersServing: serving.size,
         teams: teamLines.filter((team) => team.shifts > 0).sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
         members: [...serving]

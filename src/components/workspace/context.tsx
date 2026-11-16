@@ -39,7 +39,7 @@ export type Workspace = {
   personName: (id: string | null) => string;
   teamName: (id: string) => string;
   /** `undo` puts a way back on the saved line: the command that reverses this one, and what to say once it has. */
-  perform: (command: LiveCommand, success?: string, undo?: { command: LiveCommand; said: string }) => Promise<boolean>;
+  perform: (command: LiveCommand, success?: string, undo?: { command: LiveCommand; said: string; returnTo?: HTMLElement }) => Promise<boolean>;
   openAction: (kind: ActionKind) => void;
   showCommitment: (item: LiveCommitment, trigger: HTMLButtonElement) => void;
   confirm: (confirmation: LiveConfirmation) => void;

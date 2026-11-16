@@ -74,6 +74,8 @@ export function TasksSection() {
                     <Button
                       variant="outline"
                       aria-pressed={task.complete}
+                      // For a keyboard the done row's own button is the way back, so it says so.
+                      aria-label={task.complete ? words.tasks.undoDone(task.title) : undefined}
                       disabled={pending}
                       onClick={async (event) => {
                         const pressed = event.currentTarget;
@@ -82,7 +84,7 @@ export function TasksSection() {
                           task.complete ? words.tasks.openAgain(task.title) : words.tasks.markedDone(task.title),
                           task.complete
                             ? undefined
-                            : { command: { type: "setTaskComplete", taskId: task.id, complete: false }, said: words.tasks.openAgain(task.title) },
+                            : { command: { type: "setTaskComplete", taskId: task.id, complete: false }, said: words.tasks.openAgain(task.title), returnTo: pressed },
                         );
                         if (saved) setTicked(task.complete ? undefined : task.id);
                         if (saved) keepFocus(pressed, !task.complete);

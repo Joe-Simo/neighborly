@@ -243,6 +243,7 @@ export function es(set: WordSet): Words {
       openAgain: (title) => `Pendiente de nuevo. ${title}`,
       added: (title) => `Tarea agregada. ${title}`,
       undo: "Deshacer",
+      undoDone: (title: string) => `Deshacer: marcar como no hecha, ${title}`,
       done: "Hecha",
       open: "Pendiente",
       emptyTitle: "La lista está al día, por ahora.",

@@ -244,6 +244,7 @@ export function en(set: WordSet) {
       openAgain: (title: string) => `Open again. ${title}`,
       added: (title: string) => `Task added. ${title}`,
       undo: "Undo",
+      undoDone: (title: string) => `Undo: mark not done, ${title}`,
       done: "Done",
       open: "Open",
       emptyTitle: "A clear list, for now.",

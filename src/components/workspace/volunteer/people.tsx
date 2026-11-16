@@ -4,7 +4,7 @@ import "./people.css";
 import "@/components/workspace/for-good.css";
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -22,10 +22,10 @@ export const initials = (name: string) => {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : (parts[0]?.[1] ?? ""))).toUpperCase();
 };
 /** An address in two whole pieces: it may break before the at sign and nowhere else. A piece too long for the line is cut short, with the full address one press or hover away. */
-function Address({ email }: { email: string }) {
+function Address({ email, oneLine }: { email: string; oneLine?: boolean }) {
   const at = email.lastIndexOf("@");
   return (
-    <span className="people-address" title={email}>
+    <span className="people-address" data-one-line={oneLine ? "" : undefined} title={email}>
       <span>{at < 0 ? email : email.slice(0, at)}</span>
       {at >= 0 && <span>{email.slice(at)}</span>}
     </span>
@@ -211,21 +211,31 @@ export function PeopleSection() {
             work on their behalf.
           </p>
           {data.invitations.length ? (
-            <div className="people-invitations">
+            // Rows like the people above, in the same columns. No folded corner: this wait is on someone else.
+            <div className="live-list people-invitations">
               {data.invitations.map((invite) => {
                 const waits = invite.status === "pending";
-                const joined = invite.status === "accepted";
+                const role = `Invited as ${(roles[invite.role] ?? invite.role).toLowerCase()}`;
                 return (
-                  <article
-                    key={invite.id}
-                    className={`people-invitation paper-corner paper-settle ${waits ? "paper-waits" : joined ? "paper-fold" : ""}`}
-                  >
-                    <h3><Address email={invite.email} /></h3>
-                    <p>Invited as {(roles[invite.role] ?? invite.role).toLowerCase()}</p>
-                    <div className="live-row-actions">
-                      <span className="live-status" data-state={invite.status}>
-                        {waits ? "Waiting for them to join" : joined ? "Joined" : invite.status}
+                  <div className="live-row live-person-row people-row people-invited" key={invite.id}>
+                    <div className="live-person">
+                      <span className="live-avatar" aria-hidden="true">
+                        <Mail size={18} />
                       </span>
+                      <div>
+                        <h3>
+                          <Address email={invite.email} oneLine />
+                          <span className="people-role">{role}</span>
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="live-meta">
+                      <span className="people-role-wide">{role}</span>
+                      <span data-waits={waits ? "" : undefined} data-joined={invite.status === "accepted" ? "" : undefined}>
+                        {waits ? "Waiting for them to join" : invite.status === "accepted" ? "Joined" : invite.status}
+                      </span>
+                    </div>
+                    <div className="live-row-actions">
                       {waits && (
                         <Button
                           variant="ghost"
@@ -244,11 +254,11 @@ export function PeopleSection() {
                             })
                           }
                         >
-                          Revoke
+                          Revoke invitation
                         </Button>
                       )}
                     </div>
-                  </article>
+                  </div>
                 );
               })}
             </div>

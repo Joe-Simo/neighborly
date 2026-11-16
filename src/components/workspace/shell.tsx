@@ -97,7 +97,7 @@ export function LiveWorkspace({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   // The way back offered on the saved line, when the act has one.
-  const [undo, setUndo] = useState<{ command: LiveCommand; said: string }>();
+  const [undo, setUndo] = useState<{ command: LiveCommand; said: string; returnTo?: HTMLElement }>();
   const [invitationLink, setInvitationLink] = useState("");
   const [invitationDelivery, setInvitationDelivery] = useState<
     "not_sent" | "queued"
@@ -135,7 +135,7 @@ export function LiveWorkspace({
   const now = useSyncExternalStore(noChange, openedAt, () => 0);
   // The sample says so once, in its mark, not also in its name.
   const churchName = data.church.sample ? data.church.name.replace(/\s*\(sample\)\s*$/i, "") : data.church.name;
-  async function perform(command: LiveCommand, success?: string, back?: { command: LiveCommand; said: string }) {
+  async function perform(command: LiveCommand, success?: string, back?: { command: LiveCommand; said: string; returnTo?: HTMLElement }) {
     setPending(true);
     setError("");
     setNotice("");
@@ -486,7 +486,10 @@ export function LiveWorkspace({
             <Outcome
               ref={outcomeNotice}
               action={undo && (
-                <Button variant="link" className="help-text-action" disabled={pending} onClick={() => void perform(undo.command, undo.said)}>
+                <Button variant="link" className="help-text-action" disabled={pending} onClick={async () => {
+                  // The line's button leaves with the line, so focus goes back to the thing the act was taken on.
+                  if (await perform(undo.command, undo.said)) focusWhenAwake(undo.returnTo);
+                }}>
                   {words.tasks.undo}
                 </Button>
               )}
@@ -754,6 +757,15 @@ function Outcome({ children, action, ref }: { children: string; action?: ReactNo
       {seen && action}
     </div>
   );
+}
+
+/** Focus for a control that may still be asleep while a save settles: wait for it, never let focus fall to the page. */
+function focusWhenAwake(target: HTMLElement | undefined, tries = 90) {
+  if (!target?.isConnected) return;
+  requestAnimationFrame(() => {
+    if (target instanceof HTMLButtonElement && target.disabled && tries > 0) return focusWhenAwake(target, tries - 1);
+    target.focus();
+  });
 }
 
 /** On the first room after sign-in or the sample link, and only then, the paper sweeps up and settles as the page. */
