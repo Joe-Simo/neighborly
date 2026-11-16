@@ -45,6 +45,7 @@ export function TeamsSection() {
                     <Button
                       disabled={pending}
                       size="sm"
+                      aria-label={`${t.join}: ${team.name}`}
                       onClick={async () => {
                         if (await perform({ type: "respondTeam", teamId: team.id, accept: true }))
                           setJoined((teams) => [...teams, team.id]);
@@ -56,6 +57,7 @@ export function TeamsSection() {
                       disabled={pending}
                       size="sm"
                       variant="ghost"
+                      aria-label={`${t.decline}: ${team.name}`}
                       onClick={() => void perform({ type: "respondTeam", teamId: team.id, accept: false })}
                     >
                       {t.decline}

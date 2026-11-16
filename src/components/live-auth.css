@@ -19,6 +19,9 @@
     max(24px, env(safe-area-inset-left), min(clamp(40px, 8vw, 168px), max(47vw, 70.5vh) - 510px));
   background: var(--paper);
 }
+/* Room for a phone's keyboard: the page grows below by the keyboard's height while it is up. */
+.live-app:has(> .entry, .entry) { padding-bottom: var(--entry-keys, 0px); }
+.entry-sheet { --entry-top: env(safe-area-inset-top); }
 /* The picture is the wall itself. Its left half is bare paper, and the sheet lies there. */
 .entry-art {
   position: fixed;
@@ -194,6 +197,12 @@
 /* "Forgot your password?" sits on the password's own label line, at its right. */
 .entry-pass { position: relative; }
 .live-app .entry .entry-pass .entry-quiet { position: absolute; top: -12px; right: 0; margin: 0; font-size: 15px; }
+/* At the larger text sizes the two no longer fit one line, so the question goes under the field. */
+:root[data-entry-large] .live-app .entry .entry-pass .entry-quiet { position: static; margin: 2px 0 -8px; }
+/* The same on the narrowest phone in Spanish, where the label and the question would nearly touch. */
+@media (max-width: 340px) {
+  .live-app .entry:lang(es) .entry-pass .entry-quiet { position: static; margin: 2px 0 -8px; }
+}
 @media (hover: hover) {
   .live-app .entry :is(.entry-quiet, .entry-sample button, .entry-foot-line button):hover { text-decoration-thickness: 2px; }
 }

@@ -38,6 +38,10 @@ export function CommitmentRows({
     opened.current = fresh;
     openUp(row);
   };
+  const opens = (item: (typeof items)[number]) =>
+    item.assigneeId === data.user.id && item.status === "accepted"
+      ? item.preparation.trim() ? words.commitments.viewPreparation : words.commitments.viewCommitment
+      : words.commitments.details;
   return items.length ? (
       <div className="live-list">
         {items.map((item) => (
@@ -66,11 +70,10 @@ export function CommitmentRows({
               </span>
               <Button
                 variant="outline"
+                aria-label={`${opens(item)}: ${item.title}, ${when(item.start, item.end)}`}
                 onClick={(event) => showCommitment(item, event.currentTarget)}
               >
-                {item.assigneeId === data.user.id && item.status === "accepted"
-                  ? item.preparation.trim() ? words.commitments.viewPreparation : words.commitments.viewCommitment
-                  : words.commitments.details} <ArrowRight size={15} aria-hidden="true" />
+                {opens(item)} <ArrowRight size={15} aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -226,6 +229,7 @@ export function IncomingRequests({
                   <div className="live-row-actions">
                     <Button
                       disabled={pending || !item}
+                      aria-label={`${words.requests.accept}: ${item?.title ?? words.requests.fallbackTitle}`}
                       onClick={() => void respond(request, true)}
                     >
                       {words.requests.accept}
@@ -233,6 +237,7 @@ export function IncomingRequests({
                     <Button
                       disabled={pending}
                       variant="outline"
+                      aria-label={`${words.requests.decline}: ${item?.title ?? words.requests.fallbackTitle}`}
                       onClick={() => void respond(request, false)}
                     >
                       {words.requests.decline}
@@ -241,6 +246,7 @@ export function IncomingRequests({
                       <Button
                         variant="link"
                         className="tools-quiet"
+                        aria-label={`${words.commitments.details}: ${item.title}`}
                         onClick={(event) => showCommitment(item, event.currentTarget)}
                       >
                         {words.commitments.details}

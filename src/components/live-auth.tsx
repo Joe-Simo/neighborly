@@ -91,6 +91,16 @@ export function LiveAuth({
   const [resent, setResent] = useState(false);
   const resting = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(resting.current), []);
+  // The tab of the browser, and what a screen reader says on arrival, name this page and not the workspace
+  // behind it. When the sheet leaves, the title it found is put back, so the room that opens is named as before.
+  const pageTitle = `${flow === "signUp" ? w.create : w.signIn} · Kind Helps`;
+  useEffect(() => {
+    const found = document.title;
+    document.title = pageTitle;
+    return () => {
+      document.title = found;
+    };
+  }, [pageTitle]);
 
   function choose(next: Flow) {
     setFlow(next);
@@ -375,10 +385,10 @@ export function LiveAuth({
         )}
         {flow !== "reset" && (
           <div className="entry-tabs" role="group" aria-label={w.options} data-flow={flow}>
-            <Button variant="ghost" aria-pressed={flow === "signIn"} disabled={busy} onClick={() => choose("signIn")}>
+            <Button variant="ghost" aria-label={`${w.signIn}: ${w.tabHint.signIn}`} aria-pressed={flow === "signIn"} disabled={busy} onClick={() => choose("signIn")}>
               {w.signIn}
             </Button>
-            <Button variant="ghost" aria-pressed={flow === "signUp"} disabled={busy} onClick={() => choose("signUp")}>
+            <Button variant="ghost" aria-label={`${w.create}: ${w.tabHint.create}`} aria-pressed={flow === "signUp"} disabled={busy} onClick={() => choose("signUp")}>
               {w.create}
             </Button>
           </div>
