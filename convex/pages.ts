@@ -15,9 +15,12 @@ async function teamAccess(ctx:QueryCtx,team:Id<"teams">,me:Awaited<ReturnType<ty
  return {visible:relation?.status==="active",coordinate:relation?.status==="active"&&relation.teamRole==="coordinator"&&me.role==="coordinator"};
 }
 const commitmentItem=v.object({id:v.id("commitments"),teamId:v.id("teams"),title:text,start:v.number(),end:v.number(),location:text,preparation:text,assigneeId:v.union(v.id("memberships"),v.null()),version:v.number(),status:text,coordinatorName:text});
-export const commitmentsPage=query({args:{churchId,scope:v.union(v.literal("all"),v.literal("mine")),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(commitmentItem),handler:async(ctx,args)=>{
+export const commitmentsPage=query({args:{churchId,scope:v.union(v.literal("all"),v.literal("mine")),/** With a time given, only what has not ended by then, soonest first: the room’s first page is the coming weeks. */from:v.optional(v.number()),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(commitmentItem),handler:async(ctx,args)=>{
  const me=await member(ctx,args.churchId);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");
- const page=args.scope==="mine"?await ctx.db.query("commitments").withIndex("by_assignee",q=>q.eq("assigneeId",me._id)).order("desc").paginate(args.paginationOpts):await ctx.db.query("commitments").withIndex("by_church",q=>q.eq("churchId",args.churchId)).order("desc").paginate(args.paginationOpts);
+ const from=args.from;
+ const page=args.scope==="mine"
+  ?await (from===undefined?ctx.db.query("commitments").withIndex("by_assignee",q=>q.eq("assigneeId",me._id)).order("desc"):ctx.db.query("commitments").withIndex("by_assignee_end",q=>q.eq("assigneeId",me._id).gte("end",from))).paginate(args.paginationOpts)
+  :await (from===undefined?ctx.db.query("commitments").withIndex("by_church",q=>q.eq("churchId",args.churchId)).order("desc"):ctx.db.query("commitments").withIndex("by_church_end",q=>q.eq("churchId",args.churchId).gte("end",from))).paginate(args.paginationOpts);
  const rows=await Promise.all(page.page.map(async c=>{if(c.churchId!==args.churchId)return null;const access=await teamAccess(ctx,c.teamId,me);if(!access.visible&&c.assigneeId!==me._id)return null;const coordinator=await ctx.db.get("memberships",c.coordinatorId);return {id:c._id,teamId:c.teamId,title:c.title,start:c.start,end:c.end,location:c.location,preparation:access.coordinate||c.assigneeId===me._id?c.preparation:"",assigneeId:c.assigneeId,version:c.version,status:c.cancelled?"cancelled":c.assigneeId?"accepted":"open",coordinatorName:coordinator?.name??"A former member"};}));
  return {...page,page:rows.filter(row=>row!==null)};
 }});

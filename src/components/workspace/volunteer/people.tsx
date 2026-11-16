@@ -15,6 +15,7 @@ import { LiveEmpty } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 import { useWorkspace } from "@/components/workspace/context";
+import { words as wordsFor } from "@/lib/words";
 
 /** "Ana Lucía Prieto" as "AP": the first and last name, so two people with one first name still differ. */
 export const initials = (name: string) => {
@@ -83,6 +84,8 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
 
 export function PeopleSection() {
   const { data, pending, isOwner, confirm: setConfirmation, words } = useWorkspace();
+  // The owner's tools here are English, so they name the place in English: a conference, or a group.
+  const group = wordsFor("en", data.church.wordSet).terms.group;
   const roles: Record<string, string> = words.people.roles;
   const [managingId, setManagingId] = useState<string | null>(null);
   const managing = data.people.find((person) => person.id === managingId);
@@ -159,9 +162,7 @@ export function PeopleSection() {
                     {
                     setManagingId(null);
                     setConfirmation({
-                      title: managing.active
-                        ? "Remove workspace access?"
-                        : "Restore workspace access?",
+                      title: `${managing.active ? "Remove" : "Restore"} ${group} access?`,
                       body: "This changes access to your conference. Accepted commitments remain recorded; pending cover requests are withdrawn when access is removed.",
                       command: {
                         type: "setMembership",
@@ -241,8 +242,7 @@ export function PeopleSection() {
             </div>
           ) : (
             <LiveEmpty title="No open invitations.">
-              Invite people when you’re ready to bring them into this
-              workspace.
+              Invite people when you’re ready to bring them into this {group}.
             </LiveEmpty>
           )}
         </section>

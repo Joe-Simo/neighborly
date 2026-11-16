@@ -191,3 +191,21 @@ describe("workspace access and consent",()=>{
  });
 
 });
+
+test("asked from a time, commitments come soonest first and leave out what has ended", async () => {
+  const { t, ids, as } = await setup();
+  const hour = 3_600_000, from = Date.now();
+  await t.run(async (ctx) => {
+    const source = (await ctx.db.get("commitments", ids.slot))!;
+    const { _id, _creationTime, ...slot } = source;
+    void _id; void _creationTime;
+    for (const [title, start] of [["Ended", from - 5 * hour], ["Later", from + 300 * hour], ["Soon", from + 2 * hour]] as const)
+      await ctx.db.insert("commitments", { ...slot, title, start, end: start + hour, assigneeId: null });
+  });
+  const page = await as(ids.coord).query(api.pages.commitmentsPage, { churchId: ids.church, scope: "all", from, paginationOpts: { numItems: 30, cursor: null } });
+  const titles = page.page.map((row) => row.title);
+  expect(titles).not.toContain("Ended");
+  expect(titles.indexOf("Soon")).toBeGreaterThanOrEqual(0);
+  expect(titles.indexOf("Soon")).toBeLessThan(titles.indexOf("Later"));
+  expect(page.page.map((row) => row.end)).toEqual([...page.page.map((row) => row.end)].sort((a, b) => a - b));
+});

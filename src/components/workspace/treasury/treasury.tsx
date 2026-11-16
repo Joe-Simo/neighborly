@@ -22,6 +22,7 @@ import { ShelfRoom } from "@/components/workspace/treasury/shelf-view";
 import { DepositForm } from "@/components/workspace/treasury/deposit-form";
 import { usePaidMoment } from "@/components/workspace/treasury/paid-moment";
 import { formatFigure } from "@/components/workspace/treasury/money";
+import { sentence } from "@/lib/utils";
 import type { Refusal } from "@/components/workspace/treasury/form-parts";
 import {
   dayLabel,
@@ -163,7 +164,7 @@ export function TreasurySection() {
     view?.is === "payment"
       ? {
           title: "Record a payment",
-          description: `${view.request.summary}. Paid to ${view.request.payeeName}, never to the neighbor.`,
+          description: `${sentence(view.request.summary)} Paid to ${view.request.payeeName}, never to the neighbor.`,
         }
       : view?.is === "money"
         ? moneyOut

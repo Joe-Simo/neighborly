@@ -20,7 +20,7 @@ const reasons: Record<Problem, string> = {
   bad_email: "The email address is missing or not complete.",
   bad_role: "The role should be Member or Coordinator, or left empty.",
   repeated: "This email address is in the file twice.",
-  already_member: "Already in your group.",
+  already_member: "Already a member here.",
   already_invited: "Already has an invitation waiting.",
 };
 const people = (count: number) => (count === 1 ? "1 person" : `${count} people`);
