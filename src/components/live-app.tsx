@@ -16,6 +16,7 @@ import { stateWords } from "@/components/workspace/failure";
 import { LiveRoomLoading } from "@/components/workspace/primitives";
 import "@/components/public-state.css";
 import { LiveWorkspace } from "@/components/workspace/shell";
+import { RoomsAhead } from "@/components/workspace/rooms-ahead";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -225,6 +226,8 @@ export function LiveApp({
   const shell = wordsFor(sampleVisitor ? deviceLanguage : dashboard.user.language, dashboard.church.wordSet).shell;
   const more = shell.more;
   return (
+    <>
+    <RoomsAhead data={dashboard} />
     <LiveWorkspace
       area={area}
       roomWaiting={roomWaiting}
@@ -365,6 +368,7 @@ export function LiveApp({
         ) : undefined
       }
     />
+    </>
   );
 }
 

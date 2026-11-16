@@ -38,29 +38,33 @@
 .people-row[data-away] .live-person,
 .people-row[data-away] .live-meta > span { opacity: 0.62; }
 
-/* Each open invitation is a slip that waits for the person's yes. */
-.people-invitations { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; margin-top: 22px; }
-.people-invitation {
-  display: grid;
-  gap: 4px;
-  min-height: 80px;
-  padding: 22px 26px 18px;
-  border: 1px solid #e0dccb;
-  border-radius: 3px;
-  background: #fffdf7;
-  box-shadow: 0 1px 0 #fff inset, 0 14px 26px -24px #3b3a2466, 0 2px 5px -3px #3b3a2440;
+/* A wait carries one mark everywhere: the small ochre ring. */
+.people-row .live-meta > span[data-waits]:not(:empty)::before, .team-roster p[data-waits]::before {
+  content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; box-sizing: border-box; border: 2px solid #c8962e;
 }
-.people-invitation h3 { margin: 0; padding-right: 26px; font-size: 19px; overflow-wrap: anywhere; }
-.people-invitation p { margin: 0; font-size: 16px; color: var(--live-muted); }
-.people-invitation .live-row-actions { justify-content: space-between; margin-top: 10px; }
-.live-app .people-invitation .live-status { font-size: 16px; }
-.live-app .people-invitation .live-status[data-state="accepted"] { color: var(--paper-green); }
+/* A second line of the wait starts under its first word, not under the ring. */
+.people-row .live-meta > span[data-waits]:not(:empty) { display: flex; align-items: flex-start; }
+.people-row .live-meta > span[data-waits]:not(:empty)::before { flex: none; margin-top: 0.4em; }
+/* Open invitations are rows in the people's own columns; the last column is wide enough for the act's whole name. */
+.people-invitations { margin-top: 22px; }
+.live-app .people-row { grid-template-columns: minmax(0, 1fr) 150px 210px 150px; }
+.people-invited .live-avatar { border: 1px dashed #b9bca9; background: none; color: #68715f; }
+.people-invited h3 { min-width: 0; margin: 0; font-size: 19px; }
+.people-invited .live-person { align-items: center; }
+.people-address[data-one-line] { flex-wrap: nowrap; }
+.people-address[data-one-line] > span:last-child { flex: none; }
+.people-address[data-one-line] > span:first-child { flex: 0 1 auto; min-width: 2ch; }
+.people-row .live-meta > span[data-joined] { color: var(--paper-green); }
 .people-invitations + .live-empty, .people-deck + .live-empty { margin-top: 22px; }
 .live-app .people-deck { margin-bottom: 0; }
 
 /* Between a phone and a desk the columns give the name room, so an address stays on one line. */
 @media (min-width: 701px) and (max-width: 1000px) {
-  .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 90px; }
+  .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
+  /* An address is longer than a name, so the invited role sits under it and the address takes both columns. */
+  .people-invited .live-person { grid-column: span 2; }
+  .people-invited .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0; color: var(--live-muted); }
+  .people-invited .live-meta > .people-role-wide { display: none; }
 }
 /* The role sits in its own column on a wide screen and beside the name on a phone; never both. */
 .people-role { display: none; }
@@ -70,7 +74,9 @@
   .people-role { display: inline; font: 400 15px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0; color: var(--live-muted); }
   .people-row .live-meta > .people-role-wide, .people-row .live-meta > span:empty { display: none; }
   .people-row .live-meta > span { padding-left: 59px; font-size: 15px; }
-  .people-invitations { grid-template-columns: 1fr; gap: 16px; }
+  .live-app .people-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .people-invited h3 { display: grid; gap: 0; }
+  .live-app .people-invited .live-row-actions { grid-column: 1 / -1; grid-row: auto; justify-content: flex-start; padding-left: 59px; margin-top: 8px; }
   /* On a phone the whole row is the way in, as on Neighbors; the arrow is not drawn. */
   .people-row-go { display: none; }
 }

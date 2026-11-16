@@ -91,7 +91,8 @@ function Report() {
     }
   }, [checkYear, churchId, year]);
   // The check reads a whole year, so it steps aside while a quarter is shown.
-  const canCheck = year !== undefined && !quarter && Boolean(shown) && !found?.result;
+  // It does not wait for the figures: the button arrives with the heading (frame thread, on the coordinator's word).
+  const canCheck = year !== undefined && !quarter && !found?.result;
   useLayoutEffect(() => {
     if (!canCheck) return;
     // Once the sheet is open the button has done its work, so it leaves the head.
