@@ -23,11 +23,14 @@ const doorSizes = "(max-width: 699px) 228px, (max-width: 1100px) and (orientatio
 export function EntrySheet({
   corner = "rest",
   page,
+  foot,
   children,
 }: {
   corner?: "rest" | "waits" | "given";
   /** Names the page written on the sheet; when it changes, the new lines arrive one after another. */
   page: string;
+  /** A quiet way out, set at the right of the language line. */
+  foot?: ReactNode;
   children: ReactNode;
 }) {
   const [language, setLanguage] = useEntryLanguage();
@@ -52,6 +55,7 @@ export function EntrySheet({
           <div key={page} className="entry-page paper-rows">
             {children}
           </div>
+          <div className="entry-foot-line">
           <div className="entry-languages" role="group" aria-label={authWords[language].language}>
             {languages.map((choice) => (
               <Button
@@ -64,6 +68,8 @@ export function EntrySheet({
                 {languageNames[choice]}
               </Button>
             ))}
+          </div>
+          {foot}
           </div>
         </div>
       </main>
