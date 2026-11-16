@@ -13,8 +13,10 @@
   display: grid;
   align-items: center;
   min-height: 100svh;
+  /* The door starts 47% across the wall. The sheet keeps its width and moves left when it must,
+     so at least 32px of bare paper always lies between the two. */
   padding: 32px max(24px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom))
-    max(clamp(40px, 8vw, 168px), env(safe-area-inset-left));
+    max(24px, env(safe-area-inset-left), min(clamp(40px, 8vw, 168px), max(47vw, 70.5vh) - 510px));
   background: var(--paper);
 }
 /* The picture is the wall itself. Its left half is bare paper, and the sheet lies there. */
@@ -250,7 +252,7 @@
     padding-top: calc(32px + env(safe-area-inset-top));
     padding-left: max(28px, env(safe-area-inset-left));
   }
-  .entry-sheet { width: clamp(340px, calc(max(47vw, 70.5vh) - 52px), 478px); }
+  .entry-sheet { width: clamp(340px, calc(max(47vw, 70.5vh) - 60px), 478px); }
 }
 /* Upright, the door is shown whole at the width of the screen, where its picture is sharp:
    standing on the foot of the wall at the right, bare paper above it, the sheet beside it. */
@@ -259,7 +261,7 @@
   .entry-sheet { width: clamp(400px, 46vw, 478px); }
   .entry-art > .relief {
     position: absolute;
-    right: -11vw;
+    left: max(11vw, calc(clamp(400px, 46vw, 478px) + 60px - 47vw));
     bottom: 0;
     width: 100vw;
     height: auto;
