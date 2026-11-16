@@ -42,3 +42,8 @@ export const figureRoll = (value: number) => (amount: number) => {
 export function formatFigure(cents: number) {
   return cents % 100 === 0 ? formatCents(cents).slice(0, -3) : formatCents(cents);
 }
+
+/** For the room's large figures: whole dollars, rounded, "$13,425". The ledger keeps the cents. */
+export function formatDollars(cents: number) {
+  return formatCents(Math.round(cents / 100) * 100).slice(0, -3);
+}
