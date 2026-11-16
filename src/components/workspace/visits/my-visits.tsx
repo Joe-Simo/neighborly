@@ -2,7 +2,7 @@
 
 import "./visits.css";
 import { useMutation } from "convex/react";
-import { useQuery } from "@/components/workspace/query";
+import { useHour, useQuery } from "@/components/workspace/query";
 import { Check } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,8 @@ import type { OwnVisit } from "@/components/workspace/visits/format";
 export function MyVisits() {
   const { data, format, words } = useWorkspace();
   const churchId = data.church.id;
-  const visits = useQuery(api.visits.mine, { churchId });
+  const at = useHour();
+  const visits = useQuery(api.visits.mine, at ? { churchId, at } : "skip");
   const respond = useMutation(api.visits.respond);
   const { pending, error, save } = useSave();
   if (!visits?.length) return null;

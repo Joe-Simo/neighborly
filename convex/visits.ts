@@ -2,7 +2,7 @@ import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { logNeighborOpening, membership, neighborAccess, neighborRecord } from "./access";
+import { hour, hourAsked, logNeighborOpening, membership, neighborAccess, neighborRecord } from "./access";
 import { streetOnly } from "./calendar";
 import { formerMember } from "./people";
 import { spoken, spokenName, type Spoken } from "./spoken";
@@ -204,18 +204,18 @@ function comingMornings(now: number, timeZone: string) {
  * the other requests with no visit yet, the visits still to make or to write up, and the last ones written up.
  */
 export const board = query({
-  args: { churchId: v.id("churches") },
+  args: { churchId: v.id("churches"), at: hour },
   returns: v.object({
     suggested: v.union(suggestion, v.null()),
     toArrange: v.array(arrangeRow),
     scheduled: v.array(visitRow),
     writtenUp: v.array(visitRow),
   }),
-  handler: async (ctx, { churchId }) => {
+  handler: async (ctx, { churchId, at }) => {
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     if (!church) throw new ConvexError("Group not found.");
-    const now = Date.now();
+    const now = hourAsked(at);
     const [recent, open] = await Promise.all([
       ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", now - 90 * DAY)).take(400),
       ctx.db.query("assistanceRequests").withIndex("by_church_status", (q) => q.eq("churchId", churchId).eq("status", "open")).take(100),
@@ -429,11 +429,11 @@ export const replaceVisitor = mutation({
  * the time, the street and the other visitor only: never the neighbor's name or the reason.
  */
 export const mine = query({
-  args: { churchId: v.id("churches") },
+  args: { churchId: v.id("churches"), at: hour },
   returns: v.array(v.object({ id: v.id("visits"), scheduledAt: v.number(), street: v.string(), partner: v.string(), response })),
-  handler: async (ctx, { churchId }) => {
+  handler: async (ctx, { churchId, at }) => {
     const me = await membership(ctx, churchId);
-    const coming = await ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", Date.now() - VISIT_LENGTH)).take(400);
+    const coming = await ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", hourAsked(at) - VISIT_LENGTH)).take(400);
     const own = coming.filter((visit) => visit.status === "scheduled" && visit.visitors.some((visitor) => visitor.memberId === me._id)).slice(0, 20);
     return (await Promise.all(own.map(async (visit) => {
       const partnerId = visit.visitors.find((visitor) => visitor.memberId !== me._id)?.memberId;

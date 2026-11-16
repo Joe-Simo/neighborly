@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useQueries } from "convex/react";
+import { useHour } from "@/components/workspace/query";
 import { api } from "../../../convex/_generated/api";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -15,17 +16,19 @@ export function RoomsAhead({ data }: { data: LiveWorkspaceData }) {
   const churchId = data.church.id;
   const role = data.people.find((person) => person.id === data.user.id)?.role;
   const leads = role === "owner" || role === "coordinator";
+  // The same hour the rooms ask with, or the question would be a different one and nothing would be shared.
+  const at = useHour();
   const asked = useMemo(() => {
     const ahead: Parameters<typeof useQueries>[0] = {
       drafts: { query: api.assistance.drafts, args: { churchId } },
-      board: { query: api.visits.board, args: { churchId } },
-      years: { query: api.reports.years, args: { churchId } },
+      board: { query: api.visits.board, args: { churchId, at } },
+      years: { query: api.reports.years, args: { churchId, at } },
       allowed: { query: api.access.canOpenNeighborRecords, args: { churchId } },
       ledger: { query: api.treasury.ledger, args: { churchId } },
       payable: { query: api.treasury.payable, args: { churchId } },
     };
-    return leads ? ahead : {};
-  }, [churchId, leads]);
+    return leads && at ? ahead : {};
+  }, [churchId, leads, at]);
   useQueries(asked);
   return null;
 }

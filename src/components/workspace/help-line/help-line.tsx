@@ -13,7 +13,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
-import { useQuery } from "@/components/workspace/query";
+import { useHour, useQuery } from "@/components/workspace/query";
 import type { FunctionReturnType } from "convex/server";
 import { Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -74,7 +74,8 @@ export function HelpLineSection() {
 function HelpLine() {
   const { data, format, now, setHeadAction } = useWorkspace();
   const churchId = data.church.id;
-  const calls = useQuery(api.assistance.calls, { churchId });
+  const at = useHour();
+  const calls = useQuery(api.assistance.calls, at ? { churchId, at } : "skip");
   const draftRequest = useAction(api.drafts.draftRequest);
   const createRequest = useMutation(api.assistance.createRequest);
   const setUrgency = useMutation(api.assistance.setUrgency);

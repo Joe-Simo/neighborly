@@ -2,7 +2,7 @@ import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { neighborAccess } from "./access";
+import { hour, hourAsked, neighborAccess } from "./access";
 import { spokenName } from "./spoken";
 import { incomeSources, paidTowardRequest } from "./treasury";
 
@@ -183,13 +183,13 @@ const add = <K>(totals: Map<K, number>, key: K, amount: number) => totals.set(ke
 
 /** The fiscal years that hold any record, newest first, and the one today falls in. */
 export const years = query({
-  args: { churchId: v.id("churches") },
+  args: { churchId: v.id("churches"), at: hour },
   returns: v.object({ current: v.number(), years: v.array(v.number()) }),
-  handler: async (ctx, { churchId }) => {
+  handler: async (ctx, { churchId, at }) => {
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     if (!church) throw new ConvexError("Group not found.");
-    const current = fiscalYearOf(Date.now(), church.timeZone);
+    const current = fiscalYearOf(hourAsked(at), church.timeZone);
     const [call, request, visit, entry] = await Promise.all([
       ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).first(),
       ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", churchId)).first(),
@@ -236,7 +236,7 @@ export const flagged = query({
 });
 
 export const year = query({
-  args: { churchId: v.id("churches"), year: v.number(), quarter: v.optional(v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4))) },
+  args: { churchId: v.id("churches"), at: hour, year: v.number(), quarter: v.optional(v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4))) },
   returns: yearReport,
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
@@ -245,7 +245,7 @@ export const year = query({
     if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new ConvexError("Choose a year.");
     const zone = church.timeZone;
     const span = fiscalYear(args.year, zone, args.quarter);
-    const now = Date.now();
+    const now = hourAsked(args.at);
     const monthOf = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM");
     const inChurch = { churchId: args.churchId };
 
