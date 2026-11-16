@@ -528,15 +528,15 @@ export function HelpLineView({
         row.dataset.arrived = "";
         if (still) return;
         row.style.animation = "none";
-        // Its place is already kept in "Returned this week". It is drawn there only once the heading and the
-        // rows around it have arrived (the last third of the move), so it never lies across any of them on the way.
+        // Its place is already kept in "Returned this week". It is drawn there only when the heading and the
+        // rows around it have landed (their move is 480ms), so it never lies under or across any of them.
         row.animate(
           [
-            { opacity: 0, transform: "translateY(10px)" },
-            { opacity: 0, transform: "translateY(10px)", offset: 0.7 },
+            { opacity: 0, transform: "translateY(10px)", easing: "linear" },
+            { opacity: 0, transform: "translateY(10px)", offset: 480 / 700, easing: "ease-out" },
             { opacity: 1, transform: "none" },
           ],
-          { duration: 480, easing: "ease-out" },
+          { duration: 700 },
         );
       });
     const heads = new Map<Element, number>();
