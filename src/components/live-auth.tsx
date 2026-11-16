@@ -426,7 +426,11 @@ export function LiveAuth({
     );
 
   return (
-    <EntrySheet page={`${flow}:${step}`} corner={given ? "given" : step !== "details" ? "waits" : "rest"}>
+    <EntrySheet
+      page={`${flow}:${step}`}
+      corner={given ? "given" : step !== "details" ? "waits" : "rest"}
+      foot={<Link href="/privacy">{w.privacy}</Link>}
+    >
       {page}
     </EntrySheet>
   );
