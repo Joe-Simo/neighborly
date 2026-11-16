@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex-helpers/react/cache/hooks";
+import { useQuery } from "@/components/workspace/query";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";

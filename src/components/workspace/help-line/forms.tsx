@@ -5,7 +5,7 @@ import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
-import { useQuery } from "convex-helpers/react/cache/hooks";
+import { useQuery } from "@/components/workspace/query";
 import { Check, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";

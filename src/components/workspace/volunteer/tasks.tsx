@@ -2,7 +2,7 @@
 
 import "./volunteer.css";
 import { useState } from "react";
-import { usePaginatedQuery } from "convex-helpers/react/cache/hooks";
+import { usePaginatedQuery } from "@/components/workspace/query";
 import { Check, CircleCheck, Plus } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";

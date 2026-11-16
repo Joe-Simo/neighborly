@@ -139,3 +139,28 @@ A room marked `leadersOnly` in `navigation.ts` is hidden from members and is Eng
 The shell gives that room's subtree (the head, the room, its dialogs) a workspace whose `words` are the English
 table, so anything that reads `useWorkspace().words`, the states family included, follows with no props. The bar and
 the menu stay in the person's own language. A member's room must read every string from the word tables.
+
+## Reading from the backend
+
+Rooms import `useQuery` and `usePaginatedQuery` from `@/components/workspace/query`, never from
+`convex/react` (`useQueries`, `useMutation`, `useAction` and `useConvex` stay with `convex/react`).
+Inside the app those two keep what a room last showed for five minutes after it is left, so going
+back shows the room at once while it refreshes.
+
+A picture harness or a test needs nothing new: with only a `ConvexProvider` around the room the same
+calls read straight from Convex. To see the keeping itself in a harness, wrap the room as the app does:
+
+```tsx
+import { ConvexProvider } from "convex/react";
+import { ConvexQueryCacheProvider } from "convex-helpers/react/cache/provider";
+
+<ConvexProvider client={client}>
+  <ConvexQueryCacheProvider>
+    <LiveWorkspace area={area} data={data} run={run} signOut={signOut} />
+  </ConvexQueryCacheProvider>
+</ConvexProvider>
+```
+
+One frame serves every room (`src/components/live-frame.tsx`, in the app layout). A link from one room
+to another is an ordinary `<Link href="/app/…">`; the frame takes the click and changes room without
+asking the server. Never draw `LiveApp` from a page, and never hide a room before the next one stands.
