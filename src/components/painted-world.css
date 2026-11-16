@@ -182,7 +182,9 @@
 /* The opening arrives rather than appears: the painting settles out of the paper, then the words rise in the order they are read. */
 /* Starts faintly present, not absent: the painting is the first thing on the page and is counted as painted when it arrives. */
 @keyframes painted-arrive{from{opacity:.01;scale:1.035}}
-@keyframes painted-rise{from{opacity:0;translate:0 18px}}
+/* The headline rises from faintly present too. On wide screens the painting fills the screen and browsers do not count it,
+   so the headline is what is measured as the first large thing painted; from nothing, it was never counted at all. */
+@keyframes painted-rise{from{opacity:.01;translate:0 18px}}
 @keyframes painted-fade{from{opacity:0}}
 @media(prefers-reduced-motion:no-preference){
   .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){animation:painted-arrive 1.8s cubic-bezier(.2,.6,.2,1) both}
