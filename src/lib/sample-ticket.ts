@@ -1,5 +1,5 @@
-import { preload } from "react-dom";
-import { clerkJSScriptUrl, clerkUIScriptUrl } from "@clerk/shared/loadClerkJsScript";
+import { preconnect, preload } from "react-dom";
+import { clerkJSScriptUrl, clerkUIScriptUrl, loadClerkJSScript, loadClerkUIScript } from "@clerk/shared/loadClerkJsScript";
 
 /**
  * The way into the sample conference starts before the visitor arrives at it.
@@ -8,6 +8,8 @@ import { clerkJSScriptUrl, clerkUIScriptUrl } from "@clerk/shared/loadClerkJsScr
  * server; one older than 40 s here is left for a fresh one, so Clerk always has time to trade it.
  */
 const fresh = 40_000;
+/** Where Clerk Protect, the bot check that every sign-in waits on, is served from. */
+export const protect = "https://cdn.protect.clerk.com";
 let asked: { at: number; reply: Promise<Response> } | null = null;
 
 /** Clerk's own cookie says whether someone is signed in before its script has loaded. */
@@ -34,4 +36,17 @@ export function warmSignIn() {
   if (!publishableKey) return;
   preload(clerkJSScriptUrl({ publishableKey }), { as: "script", crossOrigin: "anonymous" });
   preload(clerkUIScriptUrl({ publishableKey }), { as: "script", crossOrigin: "anonymous" });
+  // Clerk's bot check loads its script from here before any sign-in is sent; on a phone the connection alone was 0.34 s.
+  preconnect(protect);
+}
+
+/**
+ * Pressed: Clerk's scripts are not only fetched but run now, in the tags Clerk's own loader looks for, so the workspace
+ * finds Clerk ready and only has to start it. Clerk asks nothing of its servers until the workspace starts it.
+ */
+export function startSignIn() {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  if (!publishableKey) return;
+  void loadClerkJSScript({ publishableKey }).catch(() => undefined);
+  void loadClerkUIScript({ publishableKey }).catch(() => undefined);
 }
