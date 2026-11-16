@@ -44,10 +44,11 @@ export function HomeYear() {
     let frame = 0;
     let near = false;
     const follow = () => {
-      // The chapter's own act (relief-story.tsx sets --h from the scroll): the count runs through its middle and is done as the ribbon comes to rest.
+      // The chapter's own act (relief-story.tsx sets --h from the scroll): the count follows the ribbon.
       const act = Number(getComputedStyle(panel).getPropertyValue("--h")) || 0;
-      const progress = Math.max(0, Math.min(1, (act - .2) / .7));
-      write(1 - (1 - progress) ** 2);
+      // The ribbon starts over at .26 of the act and lies still at its end; the four figures leave with it and land with it.
+      const progress = Math.max(0, Math.min(1, (act - .26) / .74));
+      write(1 - (1 - progress) ** 3);
       frame = near && reached.some((value, index) => value < figures[index].total) ? requestAnimationFrame(follow) : 0;
     };
     const watch = new IntersectionObserver(entries => { near = entries.some(entry => entry.isIntersecting); if (near && !frame) frame = requestAnimationFrame(follow); });
