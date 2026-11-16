@@ -107,6 +107,11 @@ export const load = internalMutation({
       if (index < 8) await ctx.db.insert("availability", { churchId, memberId, start: isoDay(now), end: isoDay(now + 60 * DAY) });
     }
     const monday = DateTime.fromMillis(now, { zone }).startOf("week");
+    // Two states a leader meets at the door, kept apart from the twelve so no turn, pair or count above moves:
+    // one person who has joined and is not yet marked ready to serve, and one invitation still waiting for its answer.
+    // Both are invented, on the reserved example domain, and nothing is queued to be sent.
+    const newcomer = await ctx.db.insert("memberships", { churchId, userId: await ctx.db.insert("users", {}), name: "Lucia Ferreira", email: `lucia.ferreira@${emailDomain}`, role: "member", active: true, approved: false, coverOptIn: false, language: "en" });
+    await ctx.db.insert("invitations", { churchId, email: `ana.duarte@${emailDomain}`, role: "member", tokenHash: "sample-invitation-opens-nothing", expiresAt: now + 6 * DAY, status: "pending", createdBy: owner, createdAt: now - DAY, requestId: "sample-invitation-0001" });
     const passed: { start: number; assigneeId: Id<"memberships"> }[] = [];
     for (let week = 0; week < 5; week++) for (const [slot, weekday] of [1, 3, 5].entries()) {
       const start = monday.plus({ weeks: week, days: weekday - 1, hours: 9 }).toMillis();
@@ -137,6 +142,8 @@ export const load = internalMutation({
     const pantry = await ctx.db.insert("teams", { churchId, name: "Pantry", description: "Sorts donations and packs food bags on Saturday mornings." });
     const pantryCrew = others.slice(6, 11);
     for (const [index, memberId] of pantryCrew.entries()) await ctx.db.insert("teamMembers", { churchId, teamId: pantry, memberId, teamRole: index === 0 ? "coordinator" : "member", approved: true, status: "active" });
+    // The newcomer has asked for a place on the pantry team and waits for its coordinator.
+    await ctx.db.insert("teamMembers", { churchId, teamId: pantry, memberId: newcomer, teamRole: "member", approved: false, status: "active" });
     const helpLineCrew = others.filter((_, index) => index % 2 === 1);
     for (let week = 1; week <= 52; week++) {
       for (const [slot, weekday] of [2, 4].entries()) {

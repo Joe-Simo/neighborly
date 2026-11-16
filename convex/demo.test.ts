@@ -91,7 +91,8 @@ describe("the sample conference a visitor looks around", () => {
     await guest.mutation(api.users.enter, {});
     const [church] = (await guest.query(api.workspace.viewer, {})).churches;
     await expect(guest.action(api.invitations.create, { churchId: church.id, email: "someone@example.org", role: "member", requestId: "sample-request-0001" })).rejects.toThrow("cannot invite");
-    expect(await t.run((ctx) => ctx.db.query("invitations").collect())).toHaveLength(0);
+    // The sample carries one invented invitation of its own; the refused one adds nothing to it.
+    expect((await t.run((ctx) => ctx.db.query("invitations").collect())).map((row) => row.email)).toEqual(["ana.duarte@kindhelps.example"]);
     expect(await guest.query(api.demo.visiting, {})).toBe(true);
   });
 
