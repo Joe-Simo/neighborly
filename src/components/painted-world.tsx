@@ -252,7 +252,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           </div>
           {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Kind Helps">
             <a className="painted-world-primary-invitation" href="#neighborly-courtyard" onClick={event => { if (passed && onContinue) { event.preventDefault(); onContinue(); } else if (!passed && onPass) { event.preventDefault(); onPass(); } }}>{passed || !onPass ? "Go through the doors" : "Pass the card"}<ArrowUpRight size={15} aria-hidden="true" /></a>
-            <Link href="/app?intent=start">Start a group <ArrowUpRight size={15} aria-hidden="true" /></Link>
+            <Link href="/app?intent=start">Start a conference <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </nav>}
           {!heroOnly && scene === "complete" && <nav className="painted-world-scene-actions" aria-label="Start with Kind Helps">
             <Button asChild className="painted-world-scene-start"><Link href="/app?intent=start">Start a group <ArrowUpRight size={16} aria-hidden="true" /></Link></Button>
