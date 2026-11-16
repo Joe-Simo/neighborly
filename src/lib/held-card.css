@@ -1,3 +1,7 @@
 /* The home page's card, grown to the window: the card's own paper and grain, never a plain fill. */
 #card-held{position:fixed;inset:0;z-index:80;overflow:hidden;pointer-events:none;contain:strict}
 #card-held .card-held-sheet{position:absolute;translate:none;rotate:none;transform-origin:50% 50%;will-change:transform}
+/* The one quiet line, where the door's sheet has it, if the room is not on its way yet. */
+#card-held .card-held-opening{position:fixed;inset:calc(50vh + 64px) 24px auto;margin:0;text-align:center;font:400 17px/1.5 "Source Sans 3",sans-serif;color:#68715f;animation:card-held-line 200ms ease backwards}
+@keyframes card-held-line{from{opacity:0}}
+@media(prefers-reduced-motion:reduce){#card-held .card-held-opening{animation:none}}

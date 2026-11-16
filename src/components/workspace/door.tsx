@@ -39,6 +39,8 @@ let finished = 0;
 let arrivedAt = 0;
 // The home page's card is the last sheet for someone it sent to the sample; anyone else gets plain paper.
 let carried = false;
+// The home page's card was already saying "Opening…" when the sweep took it over: the sweep goes on saying it, with no gap.
+let heldSaying = false;
 let card = false;
 /** Called by the door when it starts opening the sample, and again with false if the sample did not open. */
 export function carryTheCard(carry = true) {
@@ -124,7 +126,10 @@ export function DoorSweep() {
     if (!playing) return;
     paper.current?.style.setProperty("--door-since", `${Math.round(performance.now() - arrivedAt) + HEAD_START}ms`);
     // The home page's card has been held over the window all along: the sweep's card is already at full size, so nothing sweeps up.
-    if (card && takeTheHeldCard()) paper.current?.setAttribute("data-held", "");
+    if (card) {
+      heldSaying = document.querySelector("#card-held[data-saying]") !== null;
+      if (takeTheHeldCard()) paper.current?.setAttribute("data-held", "");
+    }
   }, [playing]);
   useEffect(() => {
     if (!playing) return;
@@ -132,6 +137,8 @@ export function DoorSweep() {
     let frame = 0;
     let lifting = false;
     let saidAt = 0;
+    let goOnSaying = heldSaying;
+    heldSaying = false;
     const lift = () => {
       lifting = true;
       // The line leaves first, in this same frame, so it is never read over the room.
@@ -166,6 +173,14 @@ export function DoorSweep() {
     };
     const look = () => {
       if (lifting) return;
+      if (goOnSaying) {
+        goOnSaying = false;
+        // The home page's card already said it is opening: the hold carries on as shown, never spoken again.
+        saidAt = performance.now() - READ;
+        const said = paper.current?.querySelector<HTMLElement>(".door-card");
+        if (said) said.dataset.holds = "";
+        setHolding("shown");
+      }
       const waited = performance.now() - arrivedAt;
       const landed = plain || waited >= SWEEP;
       const read = saidAt === 0 || performance.now() - saidAt >= READ;
