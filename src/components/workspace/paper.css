@@ -325,7 +325,8 @@
     animation-delay: calc(var(--paper-wait, 0ms) + 140ms);
   }
   .live-aside-sheet { padding-left: 28px; border-left: 1px solid var(--live-line); font-size: 15px; line-height: 1.5; }
-  .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; }
+  /* The column's title is a kicker like every other: the room's h2 face does not reach it. */
+  .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; font-family: inherit; font-weight: 650; line-height: 1.5; }
 }
 @media print { .live-aside { display: none !important; } }
 @media (prefers-reduced-motion: reduce) { .live-aside { animation: none !important; } }

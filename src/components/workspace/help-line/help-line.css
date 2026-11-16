@@ -186,7 +186,9 @@
 .help-aside-list li { display: flex; flex-direction: column; padding: 10px 0; border-top: 1px solid var(--live-line); }
 .help-aside-list li:first-child { padding-top: 0; border-top: 0; }
 .help-aside-list strong { font-weight: 600; color: var(--live-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.help-aside-list strong[data-open] { font-weight: 400; color: var(--help-plum); }
+/* A place nobody holds yet carries the same ochre ring as an open place in the Commitments column. */
+.help-aside-list strong[data-open] { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.help-aside-list strong[data-open]::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #c8962e; }
 .help-aside-list span, .help-aside-none { color: var(--live-muted); }
 .help-aside-none { margin: 0; }
 .live-app .live-aside-sheet h3.live-kicker { margin: 28px 0 14px; }
