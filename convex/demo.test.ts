@@ -160,10 +160,10 @@ describe("the sample conference a visitor looks around", () => {
       }),
     };
     for (const [room, { looked }] of Object.entries(rooms)) expect(looked, room).toBe(0);
-    // Only a whole hour is taken, so the kept answers are one an hour. A page from before the hour was asked for
-    // sends none and is still answered (temporary; see `hour` in access.ts).
+    // Only a whole hour is taken, so the kept answers are one an hour, and a query asked without the hour is refused.
     await expect(guest.query(api.assistance.calls, { churchId, at: at + 1 })).rejects.toThrow("Reload the page");
-    expect((await guest.query(api.assistance.calls, { churchId })).waiting.length).toBeGreaterThan(0);
+    // @ts-expect-error a page that sends no hour
+    await expect(guest.query(api.assistance.calls, { churchId })).rejects.toThrow();
     // The help line read 74 KB when it took the last 200 returned calls to find a week of them.
     expect(rooms.helpLine.bytes).toBeLessThan(40_000);
     for (const room of [rooms.weekNote, rooms.board, rooms.mine, rooms.years, rooms.record]) expect(room.bytes).toBeLessThan(100_000);
