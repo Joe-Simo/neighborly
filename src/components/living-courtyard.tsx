@@ -12,7 +12,7 @@ precision highp float;
 uniform sampler2D uMap, uDepth, uNormal, uFigures, uIdle, uAnswer;
 uniform vec2 uRes, uView, uSun;
 uniform vec4 uRect;
-uniform float uDolly, uAlive, uDusk, uLook, uTurn, uWelcome, uResponse, uTime, uWarm, uBreeze, uGust;
+uniform float uDolly, uAlive, uDusk, uLook, uTurn, uWelcome, uResponse, uTime, uWarm, uBreeze, uGust, uTexels;
 varying vec2 vUv;
 const float FOCUS = .24;
 const float IMAGE = 2.;
@@ -22,21 +22,21 @@ const vec2 PX = vec2(1. / 1774., 1. / 887.);
 // The two near pillars stand at the picture's side edges. Lifted from the wall they would uncover a strip with nothing behind it, which shows as upright streaks; so towards each side edge everything settles onto the plane that does not move.
 float depthAt(vec2 t){ float edge = smoothstep(.03, .12, t.x) * smoothstep(.97, .88, t.x); return mix(FOCUS, texture2D(uDepth, clamp(t, 0., 1.)).r, edge); }
 float lum(vec3 c){ return dot(c, vec3(.299, .587, .114)); }
-float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float cover(){ return max(uRect.z / IMAGE, uRect.w); }
 // The painting fills its box the way the page's own image does: centred, covering.
 vec2 paintingAt(vec2 px){ return .5 + (px - uRect.xy - uRect.zw * .5) / (cover() * vec2(IMAGE, 1.)); }
 // Where a ray through painting point b lands if the surface sits at nearness h. The table and everything beyond it stay exactly in place; only the near world grows.
 vec2 texAt(vec2 b, vec2 pivot, float h){ return pivot + (b - pivot - uView * (h - FOCUS)) / (1. + uDolly * max(h - FOCUS, 0.)); }
 
-// A breeze: whatever was painted soft (leaves, wisteria, hung cloth) sways a few pixels, each cluster nearly as one, and the stone never does.
+// A breeze: whatever was painted soft (leaves, wisteria, hung cloth) sways, each cluster nearly as one, and the stone never does. The people stand on their own cards and are not touched by it.
 // What is soft is read from a blurred copy of the painting itself, so a leaf's whole outline moves and the wall a hand's width away holds still.
+// Measured on the screen: leaves move 3px at most, wisteria and violet cloth 5px, at any size the painting is drawn.
 vec2 breezeAt(vec2 t, float d, float ground){
   vec3 near = texture2D(uMap, t, 4.).rgb;
   float soft = smoothstep(.3, .19, near.r - near.b) * smoothstep(.1, .17, d) * smoothstep(.97, .9, d) * (1. - ground);
-  float gust = .35 + .65 * uGust;
-  vec2 sway = vec2(sin(uTime * 1.25 + t.x * 26. + t.y * 11.) + .5 * sin(uTime * 2.1 + t.x * 61. - t.y * 37.), .45 * sin(uTime * 1.6 + t.x * 19. + t.y * 43.));
-  return t + sway * PX * 3.4 * soft * gust * uBreeze * mix(.45, 1., smoothstep(.12, .3, d));
+  float reach = mix(3., 5., smoothstep(0., .04, near.b - near.g)) * mix(.45, 1., smoothstep(.12, .3, d));
+  vec2 sway = vec2(sin(uTime * 1.25 + t.x * 26. + t.y * 11.) + .5 * sin(uTime * 2.1 + t.x * 61. - t.y * 37.), .45 * sin(uTime * 1.6 + t.x * 19. + t.y * 43.)) / 1.58;
+  return t + sway * PX * uTexels * reach * soft * (.3 + .7 * uGust) * uBreeze;
 }
 
 // Leaf shadow on the paving. The sun's patches are already in the painting, so nothing is drawn over them: the painted light itself is read from a little to one side, and the patches' edges stir as leaves would move them. The paving's joints are finer than the reading and stay put.
@@ -141,17 +141,6 @@ void main(){
   if (uBreeze > .001 && ground > .001) col = dapple(col, t, ground);
   col = person(col, b, pivot);
 
-  float motes = 0.;
-  float aspect = uRes.x / uRes.y;
-  for (int k = 0; k < 3; k++) {
-    float layer = .22 + .24 * float(k);
-    vec2 m = (s - uView * layer * 2.2) * vec2(aspect, 1.) * (5. + 3. * float(k)) + vec2(uTime * .018 * float(k + 1), -uTime * .012);
-    float seed = hash(floor(m) + float(k) * 17.3);
-    vec2 at = .5 + .34 * vec2(sin(uTime * .31 + seed * 40.), cos(uTime * .23 + seed * 31.));
-    float twinkle = .55 + .45 * sin(uTime * (.8 + seed) + seed * 60.);
-    motes += smoothstep(.05, 0., length(fract(m) - at)) * step(.62, seed) * step(d, layer + .08) * twinkle;
-  }
-  col += motes * mix(vec3(1., .93, .78) * .2, vec3(1., .86, .42) * .7, uDusk) * uAlive;
   gl_FragColor = vec4(col, 1.);
 }`;
 
@@ -196,7 +185,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const uniforms = {
       uMap: { ...empty }, uDepth: { ...empty }, uNormal: { ...empty }, uFigures: { ...empty }, uIdle: { ...empty }, uAnswer: { ...empty },
       uRes: { value: new Vector2(1, 1) }, uRect: { value: new Vector4(0, 0, 2, 1) }, uView: { value: new Vector2() }, uSun: { value: new Vector2(-.45, -.55) },
-      uDolly: { value: 0 }, uAlive: { value: 1 }, uDusk: { value: 0 }, uLook: { value: 0 }, uTurn: { value: 0 }, uWelcome: { value: 0 }, uResponse: { value: 0 }, uTime: { value: 0 }, uWarm: { value: 0 }, uBreeze: { value: 0 }, uGust: { value: 0 },
+      uDolly: { value: 0 }, uAlive: { value: 1 }, uDusk: { value: 0 }, uLook: { value: 0 }, uTurn: { value: 0 }, uWelcome: { value: 0 }, uResponse: { value: 0 }, uTime: { value: 0 }, uWarm: { value: 0 }, uBreeze: { value: 0 }, uGust: { value: 0 }, uTexels: { value: 1 },
     };
     const material = new ShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms, depthTest: false, depthWrite: false });
     const geometry = new PlaneGeometry(2, 2);
@@ -217,6 +206,9 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const look = { x: 0, y: 0 };
     const onPointer = (event: PointerEvent) => { if (event.pointerType === "touch") return; pointer.x = event.clientX / innerWidth - .5; pointer.y = event.clientY / innerHeight - .5; pointer.seen = true; };
     addEventListener("pointermove", onPointer, { passive: true });
+    // When the pointer leaves the page the picture settles back to centre.
+    const onLeave = () => { pointer.x = 0; pointer.y = 0; };
+    document.documentElement.addEventListener("pointerleave", onLeave);
     // On a phone the picture leans as the phone is tilted, measured from however it was first held. Only where the browser gives the tilt without asking the person anything.
     const tilts = matchMedia("(pointer: coarse)").matches && typeof DeviceOrientationEvent !== "undefined" && !("requestPermission" in DeviceOrientationEvent);
     const held = { side: 0, front: 0, known: false };
@@ -274,8 +266,10 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       if (calm > 360 && detail < 1 && recoveries < 2) { detail = Math.min(1, detail + .15); recoveries += 1; calm = 0; resize(); }
       const follow = still ? 1 : 1 - Math.exp(-dt * 2.6);
       const driftX = still ? 0 : Math.sin(seconds * .33) * (pointer.seen ? .08 : .34), driftY = still ? 0 : Math.cos(seconds * .26) * (pointer.seen ? .06 : .2);
-      look.x = mix(look.x, still ? 0 : Math.max(-.5, Math.min(.5, pointer.x + driftX)), follow);
-      look.y = mix(look.y, still ? 0 : Math.max(-.5, Math.min(.5, pointer.y + driftY)), follow);
+      // The lean trails the pointer softly, by a little over half a second.
+      const trail = still ? 1 : 1 - Math.exp(-dt * 1.7);
+      look.x = mix(look.x, still ? 0 : Math.max(-.5, Math.min(.5, pointer.x + driftX)), trail);
+      look.y = mix(look.y, still ? 0 : Math.max(-.5, Math.min(.5, pointer.y + driftY)), trail);
       const evening = host.dataset.evening === "true";
       // Measured in the canvas's own units, so the scene stays in register when its holder is scaled on the page.
       const unit = stage.width / Math.max(1, frame.clientWidth) || 1;
@@ -288,10 +282,12 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       uniforms.uView.value.set(-look.x * 2 * 14 / (nearest * Math.max(1, painting.width)), -look.y * 2 * 8 / (nearest * Math.max(1, painting.height)) + part);
       // The breeze rises once and then comes and goes in gusts, never on a beat.
       uniforms.uBreeze.value = mix(uniforms.uBreeze.value, Number(!still), still ? 1 : 1 - Math.exp(-dt * .8));
-      uniforms.uGust.value = .5 + .5 * Math.sin(seconds * .23) * Math.sin(seconds * .11 + 1.3);
-      // The light warms once, when the wall has opened, and the sun leans a little with it.
+      // Gusts come five to eight seconds apart, never evenly.
+      uniforms.uGust.value = .5 + .5 * Math.sin(seconds * .97 + .6 * Math.sin(seconds * .31));
+      uniforms.uTexels.value = 1774 / Math.max(1, painting.width);
+      // The light warms once, when the wall has opened, and the sun leans a little with it. Pointer and breeze move things; they never change the light.
       uniforms.uWarm.value = mix(uniforms.uWarm.value, Number(host.dataset.open === "true"), still ? 1 : 1 - Math.exp(-dt * .9));
-      uniforms.uSun.value.set(-.45 + look.x * 1.5 + uniforms.uWarm.value * .25, -.55 + look.y * .9);
+      uniforms.uSun.value.set(-.45 + uniforms.uWarm.value * .25, -.55);
       // Walking in: the near world grows faster than the far one as the doors are passed, and eases back for the last wide view.
       const entered = Math.min(1, Number(host.style.getPropertyValue("--door-progress") || 0) / .2);
       uniforms.uDolly.value = mix(uniforms.uDolly.value, still ? 0 : host.dataset.overview === "true" ? .5 : .2 + entered * entered * (3 - 2 * entered), follow);
@@ -352,6 +348,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       watcher.disconnect();
       document.removeEventListener("visibilitychange", run);
       removeEventListener("pointermove", onPointer);
+      document.documentElement.removeEventListener("pointerleave", onLeave);
       removeEventListener("deviceorientation", onTilt);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       renderer.domElement.removeEventListener("webglcontextrestored", restored);
