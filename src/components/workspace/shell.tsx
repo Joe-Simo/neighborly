@@ -180,6 +180,7 @@ export function LiveWorkspace({
   // On a phone the menu button says "Menu" and tells a screen reader which room this is.
   const menuLabel = menu[area] ?? navigation.find((item) => item.id === area)?.label;
   const navRef = useNavMarker(area);
+  const waveRef = useArrival();
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
   const [aside, setAside] = useState<HTMLElement | null>(null);
@@ -509,6 +510,13 @@ export function LiveWorkspace({
         </main>
         </WorkspaceProvider>
       </div>
+      <div className="paper-wave" aria-hidden="true" ref={waveRef}>
+        {["#365c46", "#6f5f93", "#f7f4ed"].map((fill, sheet) => (
+          <svg key={fill} viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path fill={fill} d={["M0 9C18 1 34 13 53 7S84 0 100 8V100H0Z", "M0 5C22 12 40 0 60 6S88 12 100 4V100H0Z", "M0 10C16 3 38 9 56 4S86 11 100 6V100H0Z"][sheet]} />
+          </svg>
+        ))}
+      </div>
       <WorkspaceProvider value={roomWorkspace}>
           <LiveDialog
             open={dialog !== null}
@@ -758,6 +766,39 @@ function focusWhenAwake(target: HTMLElement | undefined, tries = 90) {
     if (target instanceof HTMLButtonElement && target.disabled && tries > 0) return focusWhenAwake(target, tries - 1);
     target.focus();
   });
+}
+
+/** On the first room after sign-in or the sample link, and only then, the paper sweeps up and settles as the page. */
+function useArrival() {
+  const wave = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const element = wave.current;
+    const app = element?.closest<HTMLElement>(".live-app");
+    if (!element || !app) return;
+    try {
+      // Only for someone who has just come through the door (sign-in or the sample link). A person already
+      // signed in goes from the launch mark straight to their room. The sheet carried over from the home
+      // page is its own arrival.
+      const fromTheDoor = sessionStorage.getItem("kind-helps-door");
+      sessionStorage.removeItem("kind-helps-door");
+      if (!fromTheDoor || sessionStorage.getItem("neighborly-paper")) return;
+    } catch {
+      return;
+    }
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    element.dataset.playing = "";
+    app.dataset.arriving = "";
+    const done = window.setTimeout(() => {
+      delete element.dataset.playing;
+      delete app.dataset.arriving;
+    }, 1200);
+    return () => {
+      window.clearTimeout(done);
+      delete element.dataset.playing;
+      delete app.dataset.arriving;
+    };
+  }, []);
+  return wave;
 }
 
 /**
