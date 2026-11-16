@@ -51,6 +51,3 @@ body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
   .door-card > b { left: 44%; top: 39.5%; width: 16%; height: 2.6%; }
   .door-card > b + b { left: 43%; top: 50%; width: 11%; }
 }
-/* The card grown on the home page was held over the window until now: the sweep starts at rest, with nothing to sweep. */
-.door-sweep[data-held] > svg { display: none; }
-.door-sweep[data-held] .door-card, .door-sweep[data-held] .door-card > * { animation: none; }
