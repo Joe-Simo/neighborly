@@ -112,7 +112,7 @@ function only<T>(values: T[]): T | null {
 export const monthlyAllowance = 2000;
 /**
  * Every line a draft can carry about a blank field, in English. The screen finds each by its key and says it in
- * the reader's language (words.assistant.notes), so a line added here needs its three translations there.
+ * the reader's language (words.assistant.notes), so a line added here needs its translations there.
  */
 export const draftNotes = {
   kindSeveral: "The note mentions more than one kind of help. Choose one, or make a request for each.",

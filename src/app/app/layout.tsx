@@ -11,7 +11,7 @@ import { PaperArrival } from "@/components/paper-arrival";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
-const firstLanguage = `(function(){try{var k=["en","es","ht"],c=null;try{c=localStorage.getItem("kind-helps:language")}catch(e){}var l=k.indexOf(c)>-1?c:null;if(!l){var n=navigator.languages||[];for(var i=0;i<n.length&&!l;i++){for(var j=0;j<k.length;j++){if(n[i].toLowerCase().indexOf(k[j])===0){l=k[j];break}}}}document.documentElement.lang=l||"en"}catch(e){}})()`;
+const firstLanguage = `(function(){try{var k=["en","es"],c=null;try{c=localStorage.getItem("kind-helps:language")}catch(e){}var l=k.indexOf(c)>-1?c:null;if(!l){var n=navigator.languages||[];for(var i=0;i<n.length&&!l;i++){for(var j=0;j<k.length;j++){if(n[i].toLowerCase().indexOf(k[j])===0){l=k[j];break}}}}document.documentElement.lang=l||"en"}catch(e){}})()`;
 
 export default function LiveAppLayout({
   children,

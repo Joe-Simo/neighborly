@@ -11,7 +11,7 @@ const shared = async (ctx: MutationCtx) => isSampleVisitor((await ctx.auth.getUs
 
 /** A person chooses the language they read the app in. It changes their own membership and nothing else. */
 export const choose = mutation({
-  args: { churchId: v.id("churches"), language: v.union(v.literal("en"), v.literal("es"), v.literal("ht")) },
+  args: { churchId: v.id("churches"), language: v.union(v.literal("en"), v.literal("es")) },
   returns: v.null(),
   handler: async (ctx, { churchId, language }) => {
     const member = await membership(ctx, churchId);
@@ -26,7 +26,7 @@ export const choose = mutation({
  * who read the door in Spanish does not walk into English rooms. It never replaces a language already chosen.
  */
 export const adopt = mutation({
-  args: { churchId: v.id("churches"), language: v.union(v.literal("en"), v.literal("es"), v.literal("ht")) },
+  args: { churchId: v.id("churches"), language: v.union(v.literal("en"), v.literal("es")) },
   returns: v.null(),
   handler: async (ctx, { churchId, language }) => {
     const member = await membership(ctx, churchId);

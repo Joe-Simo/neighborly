@@ -30,9 +30,9 @@ describe("words", () => {
     }
   });
 
-  test("Spanish and Creole are translated, not English left in place", () => {
+  test("Spanish is translated, not English left in place", () => {
     const english = new Map(phrases(words("en")));
-    for (const language of ["es", "ht"] as const) {
+    for (const language of ["es"] as const) {
       const same = phrases(words(language))
         .filter(([at, phrase]) => at !== "locale" && english.get(at) === phrase)
         .map(([at]) => at);
@@ -46,7 +46,6 @@ describe("words", () => {
     expect(words("es", "vincentian").week.fromGroup).toBe("De tu conferencia");
     expect(words("en", "vincentian").terms.visit).toBe("home visit");
     expect(words("es", "vincentian").terms.member).toBe("vicentino");
-    expect(words("ht", "vincentian").terms.group).toBe("konferans");
   });
 
   test("the person helped is a neighbor in every set, and the volunteer never is", () => {
@@ -73,12 +72,12 @@ describe("words", () => {
 });
 
 describe("refusals a member can meet", () => {
-  test("each one is said in all three languages, and the backend throws it by name, never written out", async () => {
+  test("each one is said in both languages, and the backend throws it by name, never written out", async () => {
     const { refusals } = await import("../refusals");
     const backend = (await Promise.all(["workspace.ts", "pages.ts"].map((file) => Bun.file(`${import.meta.dir}/../../../convex/${file}`).text()))).join("\n");
     for (const [key, sentence] of Object.entries(refusals)) {
       expect(words("en").notices.refused[sentence], `en ${key}`).toBe(sentence);
-      for (const language of ["es", "ht"] as const) {
+      for (const language of ["es"] as const) {
         const said = words(language).notices.refused[sentence];
         expect(said, `${language} ${key}`).toBeTruthy();
         expect(said).not.toBe(sentence);

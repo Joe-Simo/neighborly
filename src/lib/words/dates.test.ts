@@ -20,20 +20,10 @@ describe("dates in each language", () => {
     expect(formatDate("es", Date.parse("2026-11-17T05:30:00Z"), clock)).toBe("12:30 a.m.");
   });
 
-  test("Creole uses Creole day and month names, never French or English", () => {
-    expect(formatDate("ht", tuesday, shape)).toBe("mad 17 nov");
-    expect(formatDate("ht", tuesday, { timeZone: zone, weekday: "long", month: "long", day: "numeric" })).toBe("madi 17 novanm");
-    expect(formatDate("ht", Date.parse("2026-08-02T16:00:00Z"), { timeZone: zone, weekday: "long", month: "long", day: "numeric" })).toBe("dimanch 2 out");
-    expect(formatDate("ht", tuesday, clock)).toBe("9:00 AM");
-    // The day belongs to the group's time zone, not to the server's.
-    expect(formatDate("ht", Date.parse("2026-11-18T03:30:00Z"), shape)).toBe("mad 17 nov");
-  });
-
   test("the single pieces a row is built from", () => {
     expect(formatDate("es", tuesday, { timeZone: zone, month: "short" })).toBe("nov");
     expect(formatDate("es", tuesday, { timeZone: zone, day: "numeric" })).toBe("17");
     expect(formatDate("es", tuesday, { timeZone: zone, weekday: "short" })).toBe("mar");
-    expect(formatDate("ht", tuesday, { timeZone: zone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })).toBe("mad 17 nov, 9:00 AM");
     expect(formatDate("es", tuesday, { timeZone: zone, dateStyle: "medium" })).toBe("17 nov 2026");
     expect(formatDate("es", tuesday, { timeZone: zone, dateStyle: "short" })).toBe("17/11/2026");
     expect(formatDate("es", tuesday, { timeZone: zone, month: "long", year: "numeric" })).toBe("noviembre de 2026");
@@ -42,7 +32,6 @@ describe("dates in each language", () => {
   test("a stored day is written out the same in every time zone", () => {
     expect(formatDay("en", "2026-12-20")).toBe("Dec 20, 2026");
     expect(formatDay("es", "2026-12-20")).toBe("20 dic 2026");
-    expect(formatDay("ht", "2027-01-04")).toBe("4 jan 2027");
     expect(formatDays("en", "2026-12-20", "2027-01-04")).toBe("Dec 20, 2026 – Jan 4, 2027");
     expect(formatDays("es", "2026-12-20", "2027-01-04")).toBe("20 dic 2026 – 4 ene 2027");
     expect(formatDays("en", "2026-12-20", "2026-12-20")).toBe("Dec 20, 2026");

@@ -36,13 +36,11 @@ describe("the weekly rota", () => {
     const start = weekStart(at("2026-11-01T12:00"), zone);
     expect(weekRota([shift("x", "2026-11-07T23:00", null), shift("y", "2026-11-08T00:00", null)], start).flatMap((day) => day.shifts.map((item) => item.id))).toEqual(["x"]);
   });
-  test("Spanish and Creole write the week, the days and the times in their own words", () => {
+  test("Spanish writes the week, the days and the times in its own words", () => {
     const start = weekStart(at("2026-11-17T09:00"), zone);
     expect(weekLabel(start, "es", { to: "a", through: "al" })).toBe("15 al 21 de noviembre de 2026");
     expect(weekLabel(weekStart(at("2026-11-30T09:00"), zone), "es", { to: "a", through: "al" })).toBe("29 de noviembre al 5 de diciembre de 2026");
-    expect(weekLabel(start, "ht", { to: "rive", through: "rive" })).toBe("15 rive 21 novanm 2026");
     const [, monday] = weekRota([shift("a", "2026-11-16T09:00", null)], start, "es", { to: "a", through: "al" });
     expect([monday.label, monday.shifts[0].time]).toEqual(["Lunes, 16 de noviembre", "9:00 a.m. a 12:00 p.m."]);
-    expect(weekRota([], start, "ht", { to: "rive", through: "rive" })[2].label).toBe("Madi 17 novanm");
   });
 });

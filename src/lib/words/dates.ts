@@ -2,8 +2,8 @@ import type { Language } from "./sets";
 
 type Names = { long: string[]; short: string[] };
 /**
- * Spanish and Creole calendar words are carried here, not taken from the machine.
- * Machines disagree on Spanish order, and none knows Creole; a date must read the
+ * Spanish calendar words are carried here, not taken from the machine.
+ * Machines disagree on Spanish order; a date must read the
  * same on the server, in every browser and on every phone.
  */
 const calendars: Record<Exclude<Language, "en">, { weekday: Names; month: Names; of: string; am: string; pm: string }> = {
@@ -19,19 +19,6 @@ const calendars: Record<Exclude<Language, "en">, { weekday: Names; month: Names;
     of: " de ",
     am: "a.m.",
     pm: "p.m.",
-  },
-  ht: {
-    weekday: {
-      long: ["dimanch", "lendi", "madi", "mèkredi", "jedi", "vandredi", "samdi"],
-      short: ["dim", "len", "mad", "mèk", "jed", "van", "sam"],
-    },
-    month: {
-      long: ["janvye", "fevriye", "mas", "avril", "me", "jen", "jiyè", "out", "septanm", "oktòb", "novanm", "desanm"],
-      short: ["jan", "fev", "mas", "avr", "me", "jen", "jiy", "out", "sep", "okt", "nov", "des"],
-    },
-    of: " ",
-    am: "AM",
-    pm: "PM",
   },
 };
 
@@ -60,7 +47,7 @@ function fields(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatOptions
 /**
  * A date or time written as a reader of this language expects. English is the
  * machine's own en-US, which is the same everywhere and is what the screens have
- * always shown. Spanish and Creole are put together here: day before month,
+ * always shown. Spanish is put together here: day before month,
  * a twelve-hour clock, and the words from the tables above.
  */
 export function formatDate(language: Language, time: number, options: Intl.DateTimeFormatOptions): string {
