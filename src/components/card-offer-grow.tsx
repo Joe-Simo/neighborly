@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { CardOffer } from "./card-offer";
+import { useSampleDoor } from "./sample-link";
 import { HELD_CARD, dropTheHeldCard } from "@/lib/held-card";
 
 /** The card grows from the hand until it is the window's paper, and is held there until the door's sweep takes it over. */
@@ -74,5 +75,5 @@ export function CardOfferGrow() {
     };
     grow.finished.then(go, go);
   }
-  return <CardOffer onOpen={open} />;
+  return <CardOffer door={useSampleDoor(open)} />;
 }
