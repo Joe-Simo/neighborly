@@ -5,6 +5,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { logNeighborOpening, membership, neighborAccess, neighborRecord } from "./access";
 import { streetOnly } from "./calendar";
 import { formerMember } from "./people";
+import { spoken, spokenName, type Spoken } from "./spoken";
 import { overlapsTimeOff, parseCalendarDate, parseScheduledTime } from "../src/lib/scheduling";
 
 /**
@@ -22,7 +23,6 @@ const DAY = 24 * HOUR;
 export const VISIT_LENGTH = 2 * HOUR;
 const language = v.union(v.literal("en"), v.literal("es"), v.literal("ht"));
 type Language = Infer<typeof language>;
-const languageNames: Record<Language, string> = { en: "English", es: "Spanish", ht: "Haitian Creole" };
 const kind = v.union(v.literal("rent"), v.literal("utility"), v.literal("food"), v.literal("voucher"), v.literal("other"));
 
 /**
@@ -56,7 +56,8 @@ const arrangeRow = v.object({
   neighborId: v.id("neighbors"),
   neighborName: v.string(),
   address: v.string(),
-  language,
+  language: spoken,
+  languageName: v.optional(v.string()),
   kind,
   amount: v.number(),
   askedAt: v.number(),
@@ -110,7 +111,7 @@ export function freeToVisit<Person extends Candidate>(candidates: Person[], visi
  * Someone who speaks the neighbor's language goes first when there is one;
  * after that, whoever has visited least lately.
  */
-export function suggestPair<Person extends Candidate>(candidates: Person[], visit: { start: number; timeZone: string; language: Language }) {
+export function suggestPair<Person extends Candidate>(candidates: Person[], visit: { start: number; timeZone: string; language: Spoken; languageName?: string }) {
   const lightest = (a: Person, b: Person) => a.recent - b.recent || a.name.localeCompare(b.name);
   const free = freeToVisit(candidates, visit).sort(lightest);
   if (free.length < 2) return null;
@@ -120,12 +121,12 @@ export function suggestPair<Person extends Candidate>(candidates: Person[], visi
   if (!second) return null;
   const day = DateTime.fromMillis(visit.start, { zone: visit.timeZone }).toFormat("cccc");
   const firstName = (candidate: Person) => candidate.name.split(/\s+/)[0];
-  const spoken = languageNames[visit.language];
+  const said = spokenName(visit);
   const words =
     visit.language === "en" ? "" :
-    speaker && second.language === visit.language ? ` Both speak ${spoken}.` :
-    speaker ? ` ${firstName(speaker)} speaks ${spoken}.` :
-    ` No one free that day speaks ${spoken}.`;
+    speaker && second.language === visit.language ? ` Both speak ${said}.` :
+    speaker ? ` ${firstName(speaker)} speaks ${said}.` :
+    ` No one free that day speaks ${said}.`;
   const pair: [Person, Person] = first.name.localeCompare(second.name) <= 0 ? [first, second] : [second, first];
   return { pair, reason: `Both are free ${day} and neither is away.${words}` };
 }
@@ -229,7 +230,7 @@ export const board = query({
     const scheduled = planned.filter((visit) => !recordRemoved(found.neighbor.get(visit.neighborId)));
     const toArrange = waiting.flatMap((request) => {
       const neighbor = found.neighbor.get(request.neighborId);
-      return neighbor && !recordRemoved(neighbor) ? [{ requestId: request._id, neighborId: neighbor._id, neighborName: neighbor.name, address: neighbor.address, language: neighbor.language, kind: request.kind, amount: request.amountRequested, askedAt: request.createdAt }] : [];
+      return neighbor && !recordRemoved(neighbor) ? [{ requestId: request._id, neighborId: neighbor._id, neighborName: neighbor.name, address: neighbor.address, language: neighbor.language, ...(neighbor.language === "other" ? { languageName: spokenName(neighbor) } : {}), kind: request.kind, amount: request.amountRequested, askedAt: request.createdAt }] : [];
     });
 
     const [first, ...rest] = toArrange;
@@ -264,7 +265,7 @@ export const board = query({
       reason: "No two home visitors are free on a weekday morning this coming week. Choose a time and a pair yourself.",
     };
     for (const morning of mornings) {
-      const match = suggestPair(candidates, { start: morning.toMillis(), timeZone: church.timeZone, language: first.language });
+      const match = suggestPair(candidates, { start: morning.toMillis(), timeZone: church.timeZone, language: first.language, languageName: first.languageName });
       if (!match) continue;
       suggested = {
         request: first,
@@ -300,7 +301,7 @@ export const sheet = query({
     scheduledAt: v.number(),
     status: visitRow.fields.status,
     visitors: v.array(v.string()),
-    neighbor: v.object({ name: v.string(), phone: v.string(), address: v.string(), adults: v.number(), children: v.number(), language, notes: v.string() }),
+    neighbor: v.object({ name: v.string(), phone: v.string(), address: v.string(), adults: v.number(), children: v.number(), language: spoken, languageName: v.optional(v.string()), notes: v.string() }),
     request: v.union(v.object({ kind, summary: v.string(), amount: v.number(), payeeName: v.string() }), v.null()),
     /** What the pair before them found, so nobody asks the neighbor to tell it all again. */
     lastVisit: v.union(v.object({ at: v.number(), visitors: v.array(v.string()), notes: v.string() }), v.null()),
@@ -326,7 +327,7 @@ export const sheet = query({
       status: visit.status,
       // On a visit still planned, a removed member is not going: only the one who is, is named.
       visitors: toVisitRow(found, visit).visitors.filter((visitor) => visit.status !== "scheduled" || !visitor.removed).map((visitor) => visitor.name),
-      neighbor: { name: neighbor.name, phone: neighbor.phone, address: neighbor.address, adults: neighbor.adults, children: neighbor.children, language: neighbor.language, notes: neighbor.notes },
+      neighbor: { name: neighbor.name, phone: neighbor.phone, address: neighbor.address, adults: neighbor.adults, children: neighbor.children, language: neighbor.language, ...(neighbor.language === "other" ? { languageName: spokenName(neighbor) } : {}), notes: neighbor.notes },
       request: request ? { kind: request.kind, summary: request.summary, amount: request.amountRequested, payeeName: request.payeeName } : null,
       lastVisit: last ? { at: last.completedAt ?? last.scheduledAt, visitors: toVisitRow(await names(ctx, [last]), last).visitors.map((visitor) => visitor.name), notes: last.notes } : null,
     };

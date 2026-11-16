@@ -27,6 +27,7 @@ import type * as pages from "../pages.js";
 import type * as people from "../people.js";
 import type * as reports from "../reports.js";
 import type * as sampleData from "../sampleData.js";
+import type * as spoken from "../spoken.js";
 import type * as treasury from "../treasury.js";
 import type * as users from "../users.js";
 import type * as visits from "../visits.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   people: typeof people;
   reports: typeof reports;
   sampleData: typeof sampleData;
+  spoken: typeof spoken;
   treasury: typeof treasury;
   users: typeof users;
   visits: typeof visits;

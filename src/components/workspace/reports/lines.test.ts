@@ -4,7 +4,7 @@ import { csvFileName, isBlank, longSpanLabel, money, reportCsv, reportLines, spa
 
 const report = {
   year: 2026, quarter: null, firstDay: "2025-10-01", lastDay: "2026-09-30", timeZone: "America/New_York", closed: true,
-  households: 2, people: 7, adults: 3, children: 4, householdsHelpedAgain: 1, householdsByLanguage: { en: 1, es: 1, ht: 0 },
+  households: 2, people: 7, adults: 3, children: 4, householdsHelpedAgain: 1, householdsByLanguage: { en: 1, es: 1, ht: 0 }, householdsByOtherLanguage: [],
   visits: 3, peopleVisited: 11, visitHours: 7.5, visitMiles: 64, helpPaid: 45050,
   kinds: [
     { kind: "rent", requests: 1, requestsPaid: 1, households: 1, people: 4, paid: 40000 },
@@ -34,6 +34,9 @@ describe("the year, line by line", () => {
     expect([...new Set(lines.map((line) => line.section))]).toEqual(["Neighbors helped", "Home visits", "Requests for help", "Help paid", "Help line", "Time given", "Cash in and out"]);
     expect(lines.filter((line) => line.total).map((line) => [line.line, line.value])).toEqual([["All help paid", "$450.50"], ["Ending balance", "$899.50"]]);
     expect(lines.find((line) => line.line === "Hours on shifts, Help line")).toMatchObject({ value: "6", number: 6 });
+    // A household speaks what it speaks: each other language recorded has its own line.
+    const more = reportLines({ ...report, householdsByOtherLanguage: [{ name: "Mandarin", households: 2 }] });
+    expect(more.find((line) => line.line === "Households speaking Mandarin")).toMatchObject({ number: 2 });
     expect(lines.find((line) => line.line === "Spent: Twinning gift")).toMatchObject({ value: "$150", number: 150 });
     // Help brought over from ServWare is listed apart, and only when there is some.
     const moved = reportLines({ ...report, history: { requests: 3, households: 2, people: 6, amount: 61000, kinds: [{ kind: "rent", requests: 2, amount: 61000 }, { kind: "food", requests: 1, amount: 0 }], householdsInAll: 3, peopleInAll: 10 } }).filter((line) => line.section === "From ServWare history");

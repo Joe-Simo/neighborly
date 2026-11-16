@@ -24,7 +24,11 @@ export const languageLabels: Record<Neighbor["language"], string> = {
   en: "English",
   es: "Spanish",
   ht: "Haitian Creole",
+  other: "Another language",
 };
+/** What a household speaks, in words: one of the three, or the name recorded for another language. */
+export const spokenLabel = (neighbor: { language: Neighbor["language"]; languageName?: string }) =>
+  neighbor.language === "other" ? neighbor.languageName || languageLabels.other : languageLabels[neighbor.language];
 const dollars = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",

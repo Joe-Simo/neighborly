@@ -5,6 +5,7 @@ import { action, internalMutation, mutation, query, type QueryCtx } from "./_gen
 import type { Id } from "./_generated/dataModel";
 import { membership, neighborAccess } from "./access";
 import { nameKey, phoneKey } from "./assistance";
+import { longestLanguageName, readSpoken, spokenName, type Spoken } from "./spoken";
 
 /**
  * Bringing a members list in from a spreadsheet. Nobody is added on their behalf: every good row
@@ -100,11 +101,9 @@ const neighborRow = v.object({ line: v.number(), name: v.string(), phone: v.stri
 /** The name a removed record keeps (see neighbors.remove). A line with this name is never a household to bring in. */
 const REMOVED = "Record removed";
 const removedKey = nameKey(REMOVED);
-const neighborProblem = v.union(v.literal("no_name"), v.literal("too_long"), v.literal("bad_count"), v.literal("bad_language"), v.literal("repeated"), v.literal("same_phone"), v.literal("same_name"));
+const neighborProblem = v.union(v.literal("no_name"), v.literal("too_long"), v.literal("bad_count"), v.literal("repeated"), v.literal("same_phone"), v.literal("same_name"));
 const neighborChecked = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("ready"), neighborProblem) });
 const neighborImported = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("added"), neighborProblem) });
-const languages = new Map([["", "en"], ["en", "en"], ["english", "en"], ["es", "es"], ["spanish", "es"], ["espanol", "es"], ["español", "es"], ["ht", "ht"], ["creole", "ht"], ["haitian creole", "ht"], ["kreyol", "ht"], ["kreyòl", "ht"]] as const);
-type Language = "en" | "es" | "ht";
 
 async function reviewNeighbors(ctx: QueryCtx, churchId: Id<"churches">, rows: Infer<typeof neighborRow>[]) {
   if (rows.length > mostRows) throw new ConvexError(`Bring in up to ${mostRows} neighbors at a time.`);
@@ -116,20 +115,21 @@ async function reviewNeighbors(ctx: QueryCtx, churchId: Id<"churches">, rows: In
   return Promise.all(rows.map(async (row) => {
     const name = row.name.trim(), phone = row.phone.trim(), email = row.email.trim(), address = row.address.trim(), notes = row.notes.trim();
     const keys = { nameKey: nameKey(name), phoneKey: phoneKey(phone) };
-    const verdict = (outcome: Infer<typeof neighborChecked>["outcome"], record: { adults: number; children: number; language: Language } | null = null) => ({ line: row.line, name, outcome, record: record && { name, ...keys, phone, email, address, notes, ...record } });
+    const verdict = (outcome: Infer<typeof neighborChecked>["outcome"], record: { adults: number; children: number; language: Spoken; languageName?: string } | null = null) => ({ line: row.line, name, outcome, record: record && { name, ...keys, phone, email, address, notes, ...record } });
     if (!name || !keys.nameKey || keys.nameKey === removedKey) return verdict("no_name");
     if (name.length > 120 || phone.length > 40 || email.length > 200 || address.length > 300 || notes.length > 2000) return verdict("too_long");
     const adults = count(row.adults, 1, 1), children = count(row.children, 0, 0);
     if (adults === null || children === null) return verdict("bad_count");
-    const language: Language | undefined = languages.get(row.language.trim().toLowerCase() as never);
-    if (!language) return verdict("bad_language");
+    // Any language is taken as written: a household speaks what it speaks.
+    const speaks = readSpoken(row.language);
+    if ((speaks.languageName ?? "").length > longestLanguageName) return verdict("too_long");
     // The same order as adding one neighbor by hand: a shared phone number first, then a shared name.
     if ((keys.phoneKey && seenPhones.has(keys.phoneKey)) || seenNames.has(keys.nameKey)) return verdict("repeated");
     if (keys.phoneKey) seenPhones.add(keys.phoneKey);
     seenNames.add(keys.nameKey);
     if (keys.phoneKey && (await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", keys.phoneKey)).first())) return verdict("same_phone");
     if (await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).eq("nameKey", keys.nameKey)).first()) return verdict("same_name");
-    return verdict("ready", { adults, children, language });
+    return verdict("ready", { adults, children, ...speaks });
   }));
 }
 
@@ -418,7 +418,7 @@ export const exportPage = query({
     if (file === "neighbors") {
       const result = await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       const sum = (lines: { amount: number }[] | undefined) => (lines ? dollars(lines.reduce((total, line) => total + line.amount, 0)) : "");
-      return finish(result, result.page.map((row) => [row.name, row.phone, row.email, row.address, String(row.adults), String(row.children), languageNames[row.language], row.notes, row.alert ?? "",
+      return finish(result, result.page.map((row) => [row.name, row.phone, row.email, row.address, String(row.adults), String(row.children), spokenName(row), row.notes, row.alert ?? "",
         (row.household ?? []).map((person) => `${person.relationship}${person.child ? " (child)" : ""}${person.birthYear ? `, born ${person.birthYear}` : ""}`).join("; "),
         sum(row.money?.income), sum(row.money?.expenses), (row.accounts ?? []).map(maskedAccount).join("; ")]));
     }
