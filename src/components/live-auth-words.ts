@@ -39,6 +39,8 @@ const en = {
   sampleNote: "Made-up people. Whatever you change is cleared each night.",
   /** The same promise in a few words, for the smallest phones. */
   sampleNoteShort: "Made-up people, cleared nightly.",
+  /** The quiet link to the privacy page, at the end of the language line. */
+  privacy: "Privacy",
   sampleFailed: "The sample conference did not open. Try again.",
   sampleBusy: "The sample conference is busy. Try again in a minute.",
   foot: "Your workspace is private. Joining a team does not accept any commitment on your behalf.",
@@ -121,6 +123,8 @@ const es: AuthWords = {
   sampleNote: "Personas inventadas. Lo que cambies se borra cada noche.",
   /** The same promise in a few words, for the smallest phones. */
   sampleNoteShort: "Personas inventadas, se borra cada noche.",
+  /** The quiet link to the privacy page, at the end of the language line. */
+  privacy: "Privacidad",
   sampleFailed: "La conferencia de muestra no se abrió. Inténtalo de nuevo.",
   sampleBusy: "La conferencia de muestra está ocupada. Inténtalo en un minuto.",
   foot: "Tu espacio es privado. Unirte a un equipo no acepta ningún compromiso en tu nombre.",
@@ -201,6 +205,8 @@ const ht: AuthWords = {
   sampleNote: "Moun envante. Tout sa ou chanje efase chak swa.",
   /** The same promise in a few words, for the smallest phones. */
   sampleNoteShort: "Moun envante, efase chak swa.",
+  /** The quiet link to the privacy page, at the end of the language line. */
+  privacy: "Vi prive",
   sampleFailed: "Konferans egzanp lan pa louvri. Eseye ankò.",
   sampleBusy: "Konferans egzanp lan okipe. Eseye ankò nan yon minit.",
   foot: "Espas ou a prive. Antre nan yon ekip pa aksepte okenn angajman nan non ou.",
