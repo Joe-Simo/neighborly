@@ -13,6 +13,8 @@ const draftResult = v.object({
   teamName: v.string(), recurrence: v.string(), peopleCount: v.string(),
   time: v.string(), notes: v.array(v.string()),
   verification: v.union(v.literal("review"), v.literal("checked")),
+  /** The description exactly as the model was given it, with identity taken out. Empty when nothing was sent. */
+  sent: v.string(),
 });
 
 export const identity = internalQuery({
@@ -176,13 +178,12 @@ const signEnds: Record<UrgentReason, { true: string; false: string }> = {
 
 /** When code and Jev's own pick name the same kind, the pick stands at this easier line. Set from the 23-note run. */
 const agreed = 0.8;
-const kindQuestion: Question = { type: "choice", instructions: "What one kind of help does note ask for?", criteria: kindChoice };
 /**
- * A wording on trial, asked only by the measuring run. The live wording leaves a plainly stated bill blank
- * ("Water bill is $72" picked utility at 0.6 to 0.77) because the note never says "help". It replaces the live
- * wording only after a run shows fewer blanks and nothing wrong on the fresh notes.
+ * A call note states a bill more often than it says "help", so a bill or debt stated as a present fact counts
+ * as the ask. Measured as the "trial" arm of run 5 against the earlier wording ("What one kind of help does
+ * note ask for?"): 4 fewer blanks on 36 notes and nothing wrong, and the notes that ask for nothing scored lower.
  */
-const trialKindQuestion: Question = { ...kindQuestion, instructions: "What one kind of help does note ask for? A bill or an amount owed that note states as a present fact counts as asking for help with it." };
+const kindQuestion: Question = { type: "choice", instructions: "What one kind of help does note ask for? A bill or an amount owed that note states as a present fact counts as asking for help with it.", criteria: kindChoice };
 /** Jev's pick from the closed list, or null when the answer is not one. */
 function picked(answer: unknown): { kind: RequestKind | "none"; confidence: number } | null {
   if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number") return null;
@@ -219,23 +220,32 @@ export const suggestTeam = action({
     if (!userId) throw new ConvexError("Sign in to prepare a team draft.");
     if (!description.trim() || description.length > 2000) throw new ConvexError("Describe your team in up to 2,000 characters.");
     const draft = prepareDraft(description);
-    const fallback = { ...draft, verification: "review" as const };
+    const fallback = { ...draft, verification: "review" as const, sent: "" };
     if (!env.TYPESAFE_API_KEY) return fallback;
     const fields = ["teamName", "recurrence", "peopleCount", "time"] as const;
     const present = fields.filter(field => draft[field]);
-    if (!present.length) return fallback;
+    // Field names only, never the description: enough to see on the wire that nothing was read, so nothing was asked.
+    if (!present.length) {
+      console.log(`jev ${JSON.stringify({ team: "nothing read, nothing sent" })}`);
+      return fallback;
+    }
     if (await ctx.runMutation(internal.drafts.reserve, { userId }) !== "ok") throw new ConvexError("Please wait a minute before preparing another draft.");
-    const sure = await confidence(env.TYPESAFE_API_KEY, { description, proposed: draft }, Object.fromEntries(present.map(field => [field,
+    // A team's name is what the question is about, and a capitalised "Welcome" would leave as "[name]" and could
+    // never be confirmed. So the name code read goes in small letters, which the scrubbing lets through.
+    const plain = draft.teamName ? description.replace(new RegExp(draft.teamName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), draft.teamName.toLowerCase()) : description;
+    const sure = await confidence(env.TYPESAFE_API_KEY, { description: plain, proposed: { ...draft, teamName: draft.teamName.toLowerCase() } }, Object.fromEntries(present.map(field => [field,
       `Does description explicitly and unambiguously support proposed.${field}? ${stated} Never infer availability, consent, qualifications, membership, or a new fact.`,
     ])) as Record<(typeof present)[number], string>);
-    if (!sure) return fallback;
+    // The words left even when no usable answer came back, so the person is still shown them.
+    const sent = withoutIdentity(plain, { names: [], addresses: [] });
+    if (!sure) return { ...fallback, sent };
     for (const field of present) {
       if (sure[field] < sureEnough) {
         draft[field] = "";
         draft.notes.push(`Please confirm ${field === "teamName" ? "the team name" : field === "peopleCount" ? "how many people are needed" : field === "time" ? "the start and end time" : "how often the team meets"}.`);
       }
     }
-    return { ...draft, verification: "checked" as const };
+    return { ...draft, verification: "checked" as const, sent };
   },
 });
 
@@ -496,7 +506,7 @@ function judgeSigns(shown: UrgentReason[], wanted: UrgentReason[]): Outcome {
 const outcome = v.union(v.literal("right"), v.literal("blank"), v.literal("wrong"));
 const marks = v.object({ kind: outcome, amount: outcome, payeeKind: outcome, signs: outcome });
 const tally = v.object({ notesAllRight: v.number(), right: v.number(), blank: v.number(), wrong: v.number() });
-const arms = { mix: tally, confirm: tally, choose: tally, trial: tally };
+const arms = { mix: tally, confirm: tally, choose: tally };
 
 /**
  * Sends the made-up set in src/lib/jev-set.ts to the live model once and reports how it did. It is run by
@@ -507,8 +517,7 @@ const arms = { mix: tally, confirm: tally, choose: tally, trial: tally };
  * Each note is judged three ways from one request. "mix" is what the screens do: code proposes and Jev
  * confirms, and where code is silent Jev picks the kind and reads the sign itself. "confirm" is code proposing
  * and Jev confirming only; "choose" is Jev alone on kind and signs. The amount is read by code in all three,
- * and who is paid is settled the same way in all three, since Jev cannot write either. "trial" is the
- * screens' way with a wording of the kind question that is not live yet. Each top line counts every note
+ * and who is paid is settled the same way in all three, since Jev cannot write either. Each top line counts every note
  * in its rows. "fresh" holds the same lines counted only on the notes added after the lines were set, which
  * no line was set on: fresh.mix is the figure to trust and the one the screens quote. A shown value that
  * the note does not support is "wrong"; a right value left for a person is "blank".
@@ -518,11 +527,11 @@ export const measure = internalAction({
   returns: v.object({
     status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")),
     notes: v.number(), unanswered: v.number(), model: v.string(), ...arms, fresh: v.object(arms),
-    rows: v.array(v.object({ id: v.string(), mix: v.optional(marks), confirm: v.optional(marks), choose: v.optional(marks), trial: v.optional(marks), scores: v.record(v.string(), v.union(v.number(), v.string())) })),
+    rows: v.array(v.object({ id: v.string(), mix: v.optional(marks), confirm: v.optional(marks), choose: v.optional(marks), scores: v.record(v.string(), v.union(v.number(), v.string())) })),
   }),
   handler: async (ctx, { churchId }) => {
     const empty = { notesAllRight: 0, right: 0, blank: 0, wrong: 0 };
-    const blank = { mix: empty, confirm: empty, choose: empty, trial: empty };
+    const blank = { mix: empty, confirm: empty, choose: empty };
     const none = { notes: jevSet.length, unanswered: 0, model, ...blank, fresh: blank, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
@@ -534,7 +543,6 @@ export const measure = internalAction({
         ...Object.fromEntries(Object.entries(draftQuestions(draft, payeeShown)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
         ...Object.fromEntries(found.map(({ reason }) => [`confirm_${reason}`, { type: "noul" as const, instructions: confirmSigns[reason] }])),
         choose_kind: kindQuestion,
-        trial_kind: trialKindQuestion,
         ...Object.fromEntries(urgentReasons.map(reason => [`choose_${reason}`, signQuestion(reason, [])])),
       });
       if (!answers) return { id: item.id, scores: {} };
@@ -544,25 +552,22 @@ export const measure = internalAction({
         if (value !== null) scores[name] = Math.round(value * 100) / 100;
       }
       const yes = (name: string) => typeof scores[name] === "number" && scores[name] >= sureEnough;
-      const choice = picked(answers.choose_kind), trial = picked(answers.trial_kind);
-      for (const [name, pick] of [["choose_kind", choice], ["trial_kind", trial]] as const) {
-        if (!pick) continue;
-        scores[name] = pick.kind;
-        scores[`${name}_confidence`] = Math.round(pick.confidence * 100) / 100;
+      const choice = picked(answers.choose_kind);
+      if (choice) {
+        scores.choose_kind = choice.kind;
+        scores.choose_kind_confidence = Math.round(choice.confidence * 100) / 100;
       }
       const amount = draft.amountRequested;
       const payeeKind = draft.payeeKind && (!payeeShown || yes("payeeKind")) ? draft.payeeKind : null;
       const wanted = item.signs.map(sign => sign.reason);
       const chosenKind = choice && choice.kind !== "none" && choice.confidence >= sureEnough ? choice.kind : null;
       const codeFound = found.map(sign => sign.reason);
-      const screens = (pick: typeof choice) => ({
-        kind: judge(settleKind(draft.kind, noul(answers.kind), pick), item.kind), amount: judge(amount, item.amount), payeeKind: judge(payeeKind, item.payeeKind),
-        signs: judgeSigns(urgentReasons.filter(reason => yes(`${codeFound.includes(reason) ? "confirm" : "choose"}_${reason}`)), wanted),
-      });
       return {
         id: item.id, scores,
-        mix: screens(choice),
-        trial: screens(trial),
+        mix: {
+          kind: judge(settleKind(draft.kind, noul(answers.kind), choice), item.kind), amount: judge(amount, item.amount), payeeKind: judge(payeeKind, item.payeeKind),
+          signs: judgeSigns(urgentReasons.filter(reason => yes(`${codeFound.includes(reason) ? "confirm" : "choose"}_${reason}`)), wanted),
+        },
         confirm: {
           kind: judge(draft.kind && yes("kind") ? draft.kind : null, item.kind), amount: judge(amount, item.amount), payeeKind: judge(payeeKind, item.payeeKind),
           signs: judgeSigns(found.filter(({ reason }) => yes(`confirm_${reason}`)).map(sign => sign.reason), wanted),
@@ -579,7 +584,7 @@ export const measure = internalAction({
       const of = (mark: Outcome) => all.flat().filter(value => value === mark).length;
       return { notesAllRight: all.filter(row => row.every(value => value === "right")).length, right: of("right"), blank: of("blank"), wrong: of("wrong") };
     };
-    const lines = (freshOnly: boolean) => ({ mix: count("mix", freshOnly), confirm: count("confirm", freshOnly), choose: count("choose", freshOnly), trial: count("trial", freshOnly) });
+    const lines = (freshOnly: boolean) => ({ mix: count("mix", freshOnly), confirm: count("confirm", freshOnly), choose: count("choose", freshOnly) });
     return { status: "done" as const, notes: jevSet.length, unanswered: rows.filter(row => !row.confirm).length, model, ...lines(false), fresh: lines(true), rows };
   },
 });

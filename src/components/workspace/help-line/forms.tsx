@@ -1,5 +1,6 @@
 "use client";
 
+import "@/components/workspace/for-good.css";
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
@@ -953,7 +954,7 @@ export function RemoveForm({
         else onRefused();
       }}
     >
-      <dl className="help-remove-terms">
+      <dl className="for-good-terms">
         <div>
           <dt>What goes</dt>
           <dd>
@@ -985,7 +986,7 @@ export function RemoveForm({
         <LiveWaiting when={pending} />
         <Button
           type="submit"
-          className="help-remove-confirm"
+          className="for-good-confirm"
           disabled={pending || !agrees}
         >
           Remove this record

@@ -1,6 +1,7 @@
 "use client";
 
 import "./people.css";
+import "@/components/workspace/for-good.css";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { Lock } from "lucide-react";
@@ -56,18 +57,22 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
           }
         }}
       >
-        <dl>
+        <dl className="for-good-terms">
+          <div>
           <dt>What goes</dt>
           <dd>Their name and email address, their places on teams, their time off, and their sign-in to this conference. What they had promised to do from now on is open again. Planned visits they were part of will need a new second visitor.</dd>
+          </div>
+          <div>
           <dt>What stays</dt>
           <dd>The visits and hours they logged stay in the year’s counts as “a former member”.</dd>
+          </div>
         </dl>
         <Label htmlFor="people-remove-name">Type {person.name} to remove them</Label>
         <Input id="people-remove-name" value={typed} onChange={(event) => setTyped(event.target.value)} autoComplete="off" autoCapitalize="words" spellCheck={false} />
-        <p className="people-remove-last">This cannot be undone.</p>
+        <p className="for-good-last">This cannot be undone.</p>
         {failed && <LiveFailure message={failed} kept="Nothing was removed." />}
         <div className="live-form-actions">
-          <Button type="submit" disabled={!matches || busy}>
+          <Button type="submit" className="for-good-confirm" disabled={!matches || busy}>
             {busy ? "Removing" : "Remove this person"}
           </Button>
         </div>
@@ -175,14 +180,14 @@ export function PeopleSection() {
                 </Button>
           </div>
           {/* The one act here that cannot be undone: a quiet link under a hairline, as on a neighbor's record. */}
-          <div className="people-for-good">
-            <button type="button" className="live-link" disabled={pending} onClick={() => setRemoving(true)}>
+          <p className="for-good">
+            <Button variant="ghost" className="for-good-open" disabled={pending} onClick={() => setRemoving(true)}>
               Remove this person for good
-            </button>
-            <span className="people-owners">
+            </Button>
+            <span className="live-count help-private">
               <Lock size={14} aria-hidden="true" /> Owners only
             </span>
-          </div>
+          </p>
         </LiveDialog>
         )
       )}

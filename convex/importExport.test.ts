@@ -288,6 +288,36 @@ describe("taking the records out", () => {
     expect((await as(ids.owner).mutation(api.importExport.importPayees, { churchId: elsewhere, rows: payees })).map((row) => row.outcome)).toEqual(["added"]);
   });
 
+  test("a removed record leaves as 'Record removed': dates and amounts, nothing that names the household, and it is never brought back in as a household", async () => {
+    const { t, ids, as } = await withRecords();
+    // The shape neighbors.remove leaves behind.
+    await t.run(async (ctx) => {
+      const [neighbor] = await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect();
+      await ctx.db.patch("neighbors", neighbor._id, { name: "Record removed", nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", alert: undefined, household: undefined, money: undefined, accounts: undefined });
+      for (const note of await ctx.db.query("neighborNotes").collect()) await ctx.db.delete("neighborNotes", note._id);
+      for (const call of await ctx.db.query("calls").collect()) await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });
+      for (const visit of await ctx.db.query("visits").collect()) await ctx.db.patch("visits", visit._id, { notes: "" });
+      for (const request of await ctx.db.query("assistanceRequests").collect()) await ctx.db.patch("assistanceRequests", request._id, { summary: "Record removed", decisionNote: "", payeeName: "" });
+      for (const entry of await ctx.db.query("ledgerEntries").collect()) await ctx.db.patch("ledgerEntries", entry._id, { memo: "Record removed" });
+      await ctx.db.insert("auditEvents", { churchId: ids.church, actorId: ids.owner.userId, action: "neighbor.removed", targetId: neighbor._id, at: Date.UTC(2026, 2, 20, 14, 5) });
+    });
+    const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, file, cursor: null })] as const)));
+    expect(pages.neighbors.rows).toEqual([["Record removed", "", "", "", "1", "2", "Creole", "", "", "", "", "", ""]]);
+    expect(pages.notes.rows).toEqual([]);
+    expect(pages.calls.rows).toEqual([["03/13/2026", "10:05 AM", "Record removed", "", "Record removed", "", "Returned", "Renee", "Thomas", "03/13/2026", "", ""]]);
+    expect(pages.requests.rows[0].slice(0, 9)).toEqual(["Record removed", "", "03/14/2026", "Completed", "Utility", "80.00", "", "Record removed", "Paid"]);
+    expect(pages.visits.rows).toEqual([["Record removed", "03/16/2026", "10:00 AM", "Completed", "Thomas; Renee", "3", "6", "", ""]]);
+    expect(pages.ledger.rows).toEqual([["03/17/2026", "Money out", "80.00", "Utility", "Demo Power & Light", "Record removed", "1042", "", "Record removed", "No", "No"]]);
+    expect(pages.history.rows.at(-1)).toEqual(["03/20/2026", "10:05 AM", "Marisol", "Removed a neighbor’s record"]);
+    for (const word of ["Celeste", "Hyppolite", "555-0142", "Placeholder", "4821", "Shut-off", "Kind welcome"]) expect(JSON.stringify(pages)).not.toContain(word);
+
+    // Read back in, the line is left out: it is not a household, and its request has nobody to belong to.
+    const line = { line: 2, name: "Record removed", phone: "", email: "", address: "", adults: "1", children: "2", language: "Creole", notes: "" };
+    expect((await as(ids.owner).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: [line, { ...line, line: 3, name: "record  REMOVED" }] })).map((row) => row.outcome)).toEqual(["no_name", "no_name"]);
+    expect((await as(ids.owner).mutation(api.importExport.importRequests, { churchId: ids.church, rows: [{ line: 2, name: "Record removed", phone: "", date: "03/14/2026", status: "Completed", type: "Utility", amount: "80.00", payee: "", notes: "" }] })).map((row) => row.outcome)).toEqual(["no_name"]);
+    expect(await t.run((ctx) => ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect())).toHaveLength(1);
+  });
+
   test("only an owner may, and taking the records out is written down", async () => {
     const { t, ids, as } = await withRecords();
     for (const person of [ids.coordinator, ids.member]) {

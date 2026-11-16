@@ -8,7 +8,7 @@ import { formatDays } from "@/lib/words";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TimeOffSection() {
-  const { data, pending, ownPerson, perform, words } = useWorkspace();
+  const { data, pending, ownPerson, perform, words, openAction } = useWorkspace();
   return (
     <>
       <div className="live-note paper-rise">
@@ -43,7 +43,7 @@ export function TimeOffSection() {
               </div>
             ))
         ) : (
-          <LiveEmpty title={words.timeOff.emptyTitle}>
+          <LiveEmpty title={words.timeOff.emptyTitle} action={{ label: words.actions.timeOff, run: () => openAction("timeOff") }}>
             {words.timeOff.emptyDetail}
           </LiveEmpty>
         )}

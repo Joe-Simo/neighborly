@@ -21,10 +21,17 @@ describe("reviewable team drafting", () => {
     const fetch = vi.fn<(url: string, init: { body: string }) => Promise<Response>>(async () => Response.json({ answers: {} }));
     vi.stubGlobal("fetch", fetch);
     const { signed } = await setup();
-    await signed.action(api.drafts.suggestTeam, { description: "Our Welcome team serves every Sunday from 9am to 10am. We need two people. Ask Rosa Delgado, (239) 555-0142, rosa@sample.example, 14 Sample Street." });
+    const draft = await signed.action(api.drafts.suggestTeam, { description: "Our Welcome team serves every Sunday from 9am to 10am. We need two people. Ask Rosa Delgado, (239) 555-0142, rosa@sample.example, 14 Sample Street." });
     const sent = fetch.mock.calls[0][1].body;
     expect(sent).toContain("every");
     expect(sent).not.toMatch(/Rosa|Delgado|555-0142|rosa@|14 Sample/);
+    // The dialog shows the person exactly what left: the same scrubbed words, and nothing when nothing was asked.
+    expect(draft.sent).toContain("welcome team serves every Sunday");
+    expect(draft.sent).not.toMatch(/Rosa|Delgado|555-0142|rosa@|14 Sample/);
+    expect(sent).toContain(JSON.stringify(draft.sent).slice(1, -1));
+    const unread = await signed.action(api.drafts.suggestTeam, { description: "Ask Rosa Delgado, (239) 555-0142, about Saturdays." });
+    expect(unread).toMatchObject({ teamName: "", verification: "review", sent: "" });
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   test("there is one door to the model, and it takes identity out of everything it is handed", async () => {
@@ -376,7 +383,7 @@ describe("a call note drafted into a request", () => {
     const report = await t.action(internal.drafts.measure, { churchId: ids.churchId });
     expect(report).toMatchObject({ status: "done", notes: 38, unanswered: 0, model: "jev-1.14.0" });
     // Every top line counts all 38 notes, and every line under "fresh" the 12 fresh ones: no line leaves out a row it shows.
-    for (const arm of ["mix", "confirm", "choose", "trial"] as const) {
+    for (const arm of ["mix", "confirm", "choose"] as const) {
       const marks = report.rows.flatMap(row => Object.values(row[arm] ?? {}));
       for (const mark of ["right", "blank", "wrong"] as const) expect(report[arm][mark]).toBe(marks.filter(value => value === mark).length);
       expect(report[arm].right + report[arm].blank + report[arm].wrong).toBe(152);

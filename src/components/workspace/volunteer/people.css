@@ -6,22 +6,11 @@
 .people-row h3 { font-size: 19px; }
 .people-row .live-person p { margin: 2px 0 0; font-size: 16px; overflow-wrap: normal; }
 .people-row .live-person, .people-row .live-person > div { min-width: 0; }
-/* Removing for good, as on a neighbor's record: a quiet ink link under a hairline with its lock line, then a sheet
-   that says what goes and what stays, the name typed, and a dark ink button. Nothing here is red. */
-.people-for-good { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px; margin-top: 22px; padding-top: 18px; border-top: 1px solid color-mix(in srgb, #283c32 16%, transparent); }
-.people-for-good .live-link { min-height: 44px; padding: 0; border: 0; background: none; font: 400 16px/1.4 "Source Sans 3", sans-serif; color: #283c32; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
-.people-for-good .live-link:disabled { opacity: 0.5; cursor: default; }
-.people-owners { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; color: var(--live-muted); }
+/* Removing for good: the shared sheet (for-good.css) with this room's spacing for the typed name. */
 .people-remove { display: grid; gap: 12px; }
-.people-remove dl { margin: 0; padding-bottom: 20px; display: grid; gap: 4px; border-bottom: 1px solid color-mix(in srgb, #283c32 16%, transparent); }
-.people-remove dt { font: 600 13px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live-muted); }
-.people-remove dd { margin: 0 0 10px; font-size: 17px; line-height: 1.5; }
-.people-remove dd:last-child { margin-bottom: 0; }
 .people-remove label { margin-top: 8px; font-size: 16px; font-weight: 600; }
 .live-dialog .people-remove input { min-height: 48px; font-size: 17px; }
-.people-remove .people-remove-last { margin: 0; font-size: 15px; color: var(--live-muted); }
-.live-dialog .people-remove .live-form-actions [data-slot="button"] { min-height: 46px; padding-inline: 20px; font-size: 16px; background: #283c32; border-color: #283c32; color: #f7f4ed; }
-.live-dialog .people-remove .live-form-actions [data-slot="button"]:hover:not(:disabled) { background: color-mix(in srgb, #283c32 88%, #000); }
+.live-dialog .people-remove .live-form-actions [data-slot="button"] { min-height: 46px; padding-inline: 20px; font-size: 16px; }
 .people-address { display: flex; flex-wrap: wrap; max-width: 100%; }
 /* In the dialog the whole address is read, so it breaks at the at sign first and inside a piece only when it must. */
 .people-address-full { display: block; overflow-wrap: anywhere; }

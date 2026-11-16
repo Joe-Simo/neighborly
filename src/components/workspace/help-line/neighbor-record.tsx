@@ -1,5 +1,6 @@
 "use client";
 
+import "@/components/workspace/for-good.css";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
@@ -722,10 +723,10 @@ export function NeighborRecordView({
       </section>
 
       {record.mayRemove && (
-        <p className="help-remove">
+        <p className="for-good">
           <Button
             variant="ghost"
-            className="help-remove-open"
+            className="for-good-open"
             onClick={() => onStep({ kind: "remove" })}
           >
             Remove this record

@@ -46,7 +46,7 @@ const escaped = (text: string) => text.replace(/[&<>"]/g, (mark) => ({ "&": "&am
  * so it prints the same on a computer that has never seen the site.
  */
 export function recordsCover({ conference, sample, day, by, files, faces }: { conference: string; sample: boolean | undefined; day: string; by: string; files: { title: string; fileName: string; holds: string; lines: number }[]; faces?: { serif: string; sans: string } }) {
-  const rows = files.map((file) => `<tr><td><b>${escaped(file.title)}</b><small>${escaped(file.fileName)}</small></td><td>${escaped(file.holds)}</td><td class="n">${file.lines.toLocaleString("en-US")}</td></tr>`).join("");
+  const rows = files.map((file) => `<tr><td><b>${escaped(file.title)}</b><small>${escaped(file.fileName)}</small></td><td>${escaped(file.holds)}</td><td class="n">${file.lines ? file.lines.toLocaleString("en-US") : "None yet"}</td></tr>`).join("");
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -90,6 +90,8 @@ footer span:first-child { font: 400 12pt/1 "Newsreader", "Iowan Old Style", Geor
 <p>These files hold your neighbors’ private details. Keep them where only your conference’s officers can reach them, and do not send them by email.</p>
 <h2>Opening them</h2>
 <p>Each file opens in Excel, Numbers or Google Sheets. The column names are the ones Kind Helps reads, so any file can be brought back in from Your files.</p>
+<h2>Lines that read “Record removed”</h2>
+<p>When an owner removes a neighbor’s record, the name and every word written about the household are erased, and the dates and amounts stay under “Record removed” so the year’s totals still add up.</p>
 <footer><span>kind helps</span><span>${sample ? "Sample · " : ""}Gathered ${escaped(day)}</span></footer>
 </body>
 </html>

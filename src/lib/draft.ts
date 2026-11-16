@@ -27,7 +27,12 @@ const rangePattern = new RegExp(
 );
 const countPattern = /^(?:(?:we|our team)\s+(?:need|needs|require|requires)\s+)?(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+people(?:\s+(from\s+.+))?$/i;
 const recurrencePattern = /^(?:(?:our\s+([\p{L}][\p{L}\p{N} '&-]{0,60}?\bteam)|we)\s+(?:serves|serve|meets|meet)\s+)?(every\s+(?:other\s+)?Sunday)$/iu;
-const teamReferencePattern = /\bour\s+([\p{L}][\p{L}\p{N} '&-]{0,60}?\bteam)\b/giu;
+const teamReferencePattern = /\b(?:our|the|a|an)\s+((?:[\p{L}][\p{L}\p{N}'&-]*\s+){1,4}team)\b/giu;
+/** Words that sit before "team" without naming it: "a new team" has no name yet. */
+const unnamed = /^(?:new|small|big|second|third|another|other|whole|same|good|great|volunteer)\s+team$/i;
+/** A clause that asks, denies or hedges states nothing. */
+const unsure = /\?|n't\b|\b(?:not|no|never|if|maybe|perhaps|might|may|could|should|would|probably|possibly|unless|or|either)\b/i;
+const named = (name: string) => name.charAt(0).toUpperCase() + name.slice(1);
 
 /** Recognize only complete, affirmative clauses in the small supported grammar. */
 function clauses(description: string): string[] {
@@ -98,9 +103,11 @@ export function prepareDraft(description: string): TeamDraft {
   let uncertainTime = false;
   for (const part of parts) {
     const recurrence = recurrencePattern.exec(part);
-    const referencedTeams = [...part.matchAll(teamReferencePattern)].map((match) => match[1]);
-    if (recurrence?.[1]) teamNames.push(recurrence[1]);
-    else if (referencedTeams.length) uncertainTeam = true;
+    const referencedTeams = [...part.matchAll(teamReferencePattern)].map((match) => match[1]).filter((name) => !unnamed.test(name));
+    // "Our food pantry team sorts donations" names the team as plainly as "Our welcome team serves every Sunday".
+    if (recurrence?.[1]) teamNames.push(named(recurrence[1]));
+    else if (referencedTeams.length && unsure.test(part)) uncertainTeam = true;
+    else teamNames.push(...referencedTeams.map(named));
     if (recurrence)
       recurrences.push(
         /\bother\b/i.test(recurrence[2])

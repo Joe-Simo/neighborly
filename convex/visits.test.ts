@@ -270,6 +270,37 @@ describe("a visitor removed from the conference for good", () => {
   });
 });
 
+describe("a neighbor's record removed for good", () => {
+  test("its visits keep their dates and hours and say nothing of who it was; none can be opened, changed or planned", async () => {
+    const { t, ids, as } = await setup();
+    const churchId = ids.church, owner = as(ids.owner);
+    const visitors = (hours: number) => [{ memberId: ids.daniel.memberId, hours, miles: hours * 4, response: "accepted" as const }, { memberId: ids.colleen.memberId, hours, miles: 0, response: "accepted" as const }];
+    const made = await t.run((ctx) => ctx.db.insert("visits", { churchId, neighborId: ids.rosa, requestId: ids.request, scheduledAt: Date.now() - 5 * DAY, status: "completed", visitors: visitors(1.5), notes: "Rent is one month behind.", completedAt: Date.now() - 5 * DAY, createdBy: ids.owner.memberId, createdAt: Date.now() - 6 * DAY }));
+    const planned = await t.run((ctx) => ctx.db.insert("visits", { churchId, neighborId: ids.rosa, scheduledAt: morning(3).start, status: "scheduled", visitors: visitors(0), notes: "", createdBy: ids.owner.memberId, createdAt: Date.now() }));
+    expect(await as(ids.daniel).query(api.visits.mine, { churchId })).toHaveLength(1);
+    // The skeleton the removal leaves: no name key, no words.
+    await t.run((ctx) => ctx.db.patch("neighbors", ids.rosa, { name: "Record removed", nameKey: "", phone: "", phoneKey: "", address: "", notes: "" }));
+
+    const board = await owner.query(api.visits.board, { churchId });
+    expect(board.suggested).toBeNull();
+    expect(board.toArrange).toEqual([]);
+    expect(board.scheduled).toEqual([]);
+    expect(board.writtenUp).toHaveLength(1);
+    expect(board.writtenUp[0]).toMatchObject({ id: made, neighborName: "Record removed", address: "", notes: "", requestId: null, kind: null, amount: null, recordRemoved: true });
+    expect(board.writtenUp[0].visitors.map((visitor) => [visitor.name, visitor.hours, visitor.miles])).toEqual([["Daniel Whitcombe", 1.5, 6], ["Colleen Marsh", 1.5, 0]]);
+    expect(JSON.stringify(board)).not.toMatch(/Benito|Orchard|Rent is/);
+    expect(await as(ids.daniel).query(api.visits.mine, { churchId })).toEqual([]);
+
+    for (const visitId of [made, planned]) {
+      await expect(owner.query(api.visits.sheet, { churchId, visitId })).rejects.toThrow("Record not found.");
+      await expect(owner.mutation(api.visits.openSheet, { churchId, visitId })).rejects.toThrow("Record not found.");
+    }
+    await expect(owner.mutation(api.visits.reschedule, { churchId, visitId: planned, at: morning(4).at })).rejects.toThrow("Record not found.");
+    await expect(owner.mutation(api.visits.writeUp, { churchId, visitId: planned, notes: "Found at home.", hours: 1, miles: 2 })).rejects.toThrow("Record not found.");
+    await expect(as(ids.daniel).mutation(api.visits.respond, { churchId, visitId: planned, response: "accepted" })).rejects.toThrow("Record not found.");
+  });
+});
+
 describe("changing the time of a planned visit", () => {
   test("both visitors are asked again, and no one is moved onto a day they are away", async () => {
     const { ids, as, away, now } = await setup();
