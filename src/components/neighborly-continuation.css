@@ -35,6 +35,7 @@
 /* One quiet way to give; it never competes with the invitation above it. */
 .neighborly-give{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#343e3366;transition:text-decoration-color .3s ease}
 .neighborly-give:hover{text-decoration-color:currentColor}
+.neighborly-colophon nav{display:flex;gap:0 28px}
 @media(max-width:900px){
   .neighborly-together{padding-inline:20px}
   .neighborly-together h2 em{margin-left:0}

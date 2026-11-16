@@ -3,6 +3,8 @@ import "@/components/public-state.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PublicEnding } from "@/components/public-ending";
+import "@/components/public-page.css";
 import { stateWords } from "@/components/workspace/state-words";
 
 export const metadata: Metadata = {
@@ -13,8 +15,9 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
+    <>
     <div className="live-app public-state">
-      <main className="live-auth">
+      <main className="live-auth paper-rise">
         <div className="live-auth-art" aria-hidden="true" />
         <p className="live-kicker">Kind Helps</p>
         <h1>{stateWords.missingTitle}</h1>
@@ -24,5 +27,7 @@ export default function NotFound() {
         </Button>
       </main>
     </div>
+    <PublicEnding />
+    </>
   );
 }

@@ -1,0 +1,37 @@
+/* A public page of words, on the home page's paper: the name at the top, the words in one column, the closing band. */
+.public-page{min-height:100svh;background:#eee7d7;color:#293f32}
+.public-page a:focus-visible{outline:2px solid #365c46;outline-offset:2px}
+.public-page-header{display:flex;align-items:center;justify-content:space-between;gap:20px;height:76px;padding:0 max(20px,4%)}
+.public-page-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:inherit;text-decoration:none}
+.public-page-header>a:last-child{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 2px;font-size:15px;color:inherit;text-decoration:none;border-bottom:1px solid #253e3140}
+/* The page's words arrive as every sheet here does: rising a little, once. They are never hidden. */
+@keyframes paper-rise{from{translate:0 16px}}
+.paper-rise{animation:paper-rise .5s cubic-bezier(.2,.7,.2,1)}
+/* On a state page the painting stays where it is and only the words rise. */
+.public-state .paper-rise{animation:none}
+.public-state .paper-rise>:not(.live-auth-art){animation:paper-rise .5s cubic-bezier(.2,.7,.2,1)}
+.public-words{padding:clamp(40px,7vw,104px) 7% clamp(56px,7vw,110px)}
+.public-words h1{margin:0 0 clamp(36px,5vw,80px);font:400 clamp(64px,9vw,144px)/.92 'Newsreader',Georgia,serif;letter-spacing:-.065em}
+.public-words section{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px clamp(40px,6vw,110px);padding:clamp(28px,3.2vw,48px) 0;border-top:1px solid #293f3224}
+.public-words h2{margin:0;max-width:14ch;font:400 clamp(28px,2.7vw,44px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em;text-wrap:balance}
+.public-words section>div{max-width:62ch;font-size:17px;line-height:1.6}
+.public-words p,.public-words ul{margin:0 0 1em;text-wrap:pretty}
+.public-words section>div>:last-child{margin-bottom:0}
+.public-words ul{padding:0;list-style:none}
+.public-words li{margin:0 0 .7em;padding-left:1.1em;text-indent:-1.1em}
+.public-words li::before{content:"·";display:inline-block;width:1.1em;text-indent:0;font-weight:600}
+.public-words strong{font-weight:600}
+.public-words a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#293f3266}
+.public-words a:hover{text-decoration-color:currentColor}
+.public-words-last{font-size:15px;color:#3d4f43}
+@media(min-width:1280px){.public-words section>div{font-size:19px}.public-words-last{font-size:16px}}
+@media(max-width:900px){
+  .public-page-header{height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
+  .public-page-brand{font-size:30px}
+  .public-words{padding-inline:20px}
+  .public-words section{grid-template-columns:minmax(0,1fr)}
+  .public-words h2{max-width:none}
+}
+@media(prefers-reduced-motion:reduce){.paper-rise,.public-state .paper-rise>*{animation:none}}
+/* After a state page, whose paper is lighter, the ending begins in that paper. */
+.public-state+.neighborly-continuation{background:linear-gradient(#f7f4ed,#eee7d7 240px)}
