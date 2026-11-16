@@ -31,9 +31,11 @@ export function HomeYear() {
     const write = (progress: number) => figures.forEach((figure, index) => {
       const extra = figure.key === "requests" ? yes : 0;
       const value = progress >= 1 ? figure.total + extra : Math.floor((figure.total * progress) / figure.step) * figure.step;
-      if (value < reached[index]) return;
+      if (value < reached[index] || (value === reached[index] && shown[index].textContent === figure.say(value))) return;
       reached[index] = value;
       shown[index].textContent = figure.say(value);
+      // A reader hears only finished figures, and the one more once it is there.
+      if (value >= figure.total) shown[index].parentElement?.setAttribute("aria-label", figure.say(value));
     });
     const given = () => { yes = 1; if (reached[1] >= sampleYear.requests) { write(1); list.dataset.oneMore = "true"; } };
     window.addEventListener(YES_GIVEN, given);
@@ -49,11 +51,17 @@ export function HomeYear() {
       // The ribbon starts over at .26 of the act and lies still at its end; the four figures leave with it and land with it.
       const progress = Math.max(0, Math.min(1, (act - .26) / .74));
       write(1 - (1 - progress) ** 3);
-      frame = near && reached.some((value, index) => value < figures[index].total) ? requestAnimationFrame(follow) : 0;
+      frame = 0;
+      if (reached.every((value, index) => value >= figures[index].total)) stop();
     };
-    const watch = new IntersectionObserver(entries => { near = entries.some(entry => entry.isIntersecting); if (near && !frame) frame = requestAnimationFrame(follow); });
+    // The act only moves with the page, so the count is worked out once per scrolled frame and never while the page is still.
+    const ask = () => { if (near && !frame) frame = requestAnimationFrame(() => requestAnimationFrame(follow)); };
+    const stop = () => { window.removeEventListener("scroll", ask); window.removeEventListener("resize", ask); watch.disconnect(); };
+    const watch = new IntersectionObserver(entries => { near = entries.some(entry => entry.isIntersecting); ask(); });
     watch.observe(panel);
-    return () => { cancelAnimationFrame(frame); watch.disconnect(); window.removeEventListener(YES_GIVEN, given); };
+    window.addEventListener("scroll", ask, { passive: true });
+    window.addEventListener("resize", ask);
+    return () => { cancelAnimationFrame(frame); stop(); window.removeEventListener(YES_GIVEN, given); };
   }, []);
   return <>
     <dl className="home-year" ref={root}>
