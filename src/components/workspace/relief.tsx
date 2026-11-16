@@ -53,7 +53,9 @@ export const reliefMoves: Partial<Record<ReliefName, { x?: number; y?: number; t
   tasks: { y: -4 },
   // The hand reaches in to join the others.
   people: { x: 4 },
-  // Still on purpose, until a cut holds at every start: mine, teams, rest, help, files.
+  // The envelope is laid in the open hand. Short: the palm is not painted far under it.
+  help: { y: -3 },
+  // Still on purpose, until a cut holds at rest and at every start: mine, teams, rest, files.
 };
 
 /** A picture that has loaded is not yet one that can be painted: this waits for its decode as well. */
