@@ -30,6 +30,7 @@ export function Colophon({ home = "/" }: { home?: string }) {
     <a href={home}>kind helps</a>
     <span>Made for the good we can do.</span>
     <nav aria-label="About Kind Helps">
+      <Link className="neighborly-give" href="/privacy">Privacy</Link>
       <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">Give a gift</a>
     </nav>
   </footer>;
