@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { words } from "@/lib/words";
 import { LiveField } from "@/components/workspace/primitives";
+import { carryTheCard } from "@/components/workspace/door";
 import { authWords, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import { EntrySheet } from "./entry-sheet";
 
@@ -203,15 +204,20 @@ export function LiveAuth({
     setSampleError("");
     setLeftRead(true);
     setOpening(true);
+    carryTheCard();
     try {
       const response = await fetch("/app/look-around", { method: "POST" });
-      if (response.status === 429) return setSampleError("sampleBusy");
+      if (response.status === 429) {
+        carryTheCard(false);
+        return setSampleError("sampleBusy");
+      }
       if (!response.ok) throw new Error("No ticket.");
       const { ticket }: { ticket: string } = await response.json();
       await done(signIn.ticket({ ticket }));
       if (signIn.status !== "complete") throw new Error("Not complete.");
       await finish(() => signIn.finalize());
     } catch {
+      carryTheCard(false);
       setSampleError("sampleFailed");
     } finally {
       setOpening(false);

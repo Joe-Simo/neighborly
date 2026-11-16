@@ -8,6 +8,7 @@ import { WeeklyRota } from "@/components/workspace/tools/weekly-rota";
 import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-visibility";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
+import { StartHere } from "@/components/workspace/start-here";
 import { WeekNote } from "@/components/workspace/week-note/week-note";
 import {
   CommitmentRows,
@@ -29,6 +30,7 @@ export function WeekSection() {
   if (incoming.length > 0 && !briefed) setBriefed(true);
   return (
     <>
+      <StartHere />
       <WeekNote brief={briefed || incoming.length > 0} />
       <IncomingRequests {...requests} place={words.week.comingUp} />
       {/* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */}

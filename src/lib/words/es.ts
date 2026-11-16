@@ -122,6 +122,7 @@ export function es(set: WordSet): Words {
     dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora" },
     week: {
       figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Peticiones que esperan un sí", oldest: (days) => (days === 1 ? "La más antigua, 1 día" : `La más antigua, ${days} días`), toPay: (count) => (count === 1 ? "1 aprobada, sin pagar" : `${count} aprobadas, sin pagar`) },
+      startHere: { lead: "Empieza aquí", rest: "una llamada espera tu sí." },
       comingUp: "Lo que viene",
       nextSevenDays: "Próximos 7 días",
       printWeek: "Imprimir la semana",
