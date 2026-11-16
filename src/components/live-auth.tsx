@@ -55,11 +55,11 @@ function errorKey(error: unknown, flow: Flow): AuthError {
 
 /**
  * The door fills the whole wall here, so it is asked for larger than a room's head ever is:
- * a wide desktop shows it edge to edge, an upright iPad a little wider than the screen.
+ * a wide desktop shows it edge to edge, an upright iPad at the screen's own width.
  */
 const doorSources = (type: "avif" | "webp") =>
   [640, 1024, 1536, 2400].map((width) => `/assets/relief/relief-visit-${width}.${type} ${width}w`).join(", ");
-const doorSizes = "(max-width: 699px) 228px, (max-width: 1100px) and (orientation: portrait) 118vw, max(100vw, 150vh)";
+const doorSizes = "(max-width: 699px) 228px, (max-width: 1100px) and (orientation: portrait) 100vw, max(100vw, 150vh)";
 
 export function LiveAuth({
   intent = "signin",

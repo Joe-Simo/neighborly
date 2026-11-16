@@ -13,7 +13,7 @@ import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
-import { leftKey } from "@/components/live-auth-words";
+import { leftKey, useEntryLanguage } from "@/components/live-auth-words";
 import type { LiveArea } from "@/components/workspace/areas";
 import { LiveRoomLoading } from "@/components/workspace/primitives";
 import { LiveWorkspace } from "@/components/workspace/shell";
@@ -49,6 +49,8 @@ export function LiveApp({
   };
   const viewer = useQuery(api.workspace.viewer, ready ? {} : "skip");
   const sampleVisitor = useQuery(api.demo.visiting, ready ? {} : "skip");
+  // Sample visitors share one made-up member, so each reads the rooms in their own device's language, never a saved one.
+  const [deviceLanguage] = useEntryLanguage();
   // The sample link always opens the sample. Someone already signed in as themselves is signed out
   // first; the sign-in screen then opens the sample without a second press.
   const leavingForSample = enterSample && sampleEntry && sampleVisitor === false;
@@ -200,6 +202,7 @@ export function LiveApp({
       requestCommitments={requestPage.results.flatMap((request) => request.commitment ? [request.commitment] : [])}
       data={{
         ...dashboard,
+        user: sampleVisitor ? { ...dashboard.user, language: deviceLanguage } : dashboard.user,
         teams: area === "team" ? teamPage.results : dashboard.teams,
         requests: ["week", "mine", "commitments"].includes(area)
           ? requestPage.results

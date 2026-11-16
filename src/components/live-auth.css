@@ -243,38 +243,40 @@
   .live-app .entry .live-back { margin-bottom: 16px; }
 }
 
-/* ── An iPad, upright or small: still side by side. The sheet lies over the door's frame and
-   both hands stay in view at its right. ── */
-@media (min-width: 700px) and (max-width: 850px), (min-width: 700px) and (max-width: 1100px) and (orientation: portrait) {
+/* ── An iPad or a small window: still side by side, and the sheet never touches the door.
+   Sideways the door fills the wall and starts 47% across it, so the sheet takes what is left of that. ── */
+@media (min-width: 700px) and (max-width: 1250px) {
   .entry {
-    --entry-focus: 54% 50%;
     padding-top: calc(32px + env(safe-area-inset-top));
     padding-left: max(28px, env(safe-area-inset-left));
   }
-  .entry-sheet { width: clamp(400px, 46vw, 478px); }
+  .entry-sheet { width: clamp(340px, calc(max(47vw, 70.5vh) - 52px), 478px); }
 }
-/* Upright, the door is shown at the size its picture is sharp: a little wider than the screen,
-   standing on the foot of the wall, bare paper above it. */
+/* Upright, the door is shown whole at the width of the screen, where its picture is sharp:
+   standing on the foot of the wall at the right, bare paper above it, the sheet beside it. */
 @media (min-width: 700px) and (max-width: 1100px) and (orientation: portrait) {
   .entry { align-items: start; padding-top: max(14svh, calc(32px + env(safe-area-inset-top))); }
+  .entry-sheet { width: clamp(400px, 46vw, 478px); }
   .entry-art > .relief {
     position: absolute;
-    right: -9vw;
+    right: -11vw;
     bottom: 0;
-    width: 118vw;
+    width: 100vw;
     height: auto;
     aspect-ratio: 3 / 2;
-    -webkit-mask-image: linear-gradient(transparent, #000 14%);
-    mask-image: linear-gradient(transparent, #000 14%);
+    -webkit-mask-image: linear-gradient(transparent, #000 14%), linear-gradient(90deg, transparent, #000 14%);
+    mask-image: linear-gradient(transparent, #000 14%), linear-gradient(90deg, transparent, #000 14%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
   }
 }
 /* From an iPad up, the labels are 16px so the sheet holds its own beside the door. */
 @media (min-width: 700px) {
   .entry .live-field { font-size: 16px; }
 }
-/* A touch screen scrolls the page under the clock. Once it moves, a strip of the same paper covers
-   the status area, so no line of the sheet is ever read behind the time or the island. */
-@media (max-width: 1100px) {
+/* A touch screen scrolls the page under the clock. A strip of the same paper always covers the
+   status area, so no line of the sheet is ever read behind the time or the island. */
+@media (max-width: 1250px) {
   .entry::before {
     content: "";
     position: fixed;
@@ -282,9 +284,6 @@
     z-index: 2;
     height: env(safe-area-inset-top);
     background: var(--paper);
-  }
-  @supports (animation-timeline: scroll()) {
-    .entry::before { animation: paper-show linear both; animation-timeline: scroll(); animation-range: 0 48px; }
   }
 }
 /* ── A phone: the door as a band across the top, the sheet laid over its foot ── */

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,20 +15,39 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useWorkspace } from "@/components/workspace/context";
 import { languageNames, languages, type Language } from "@/lib/words";
+import { takeEntryLanguage, useEntryLanguage } from "@/components/live-auth-words";
 import { api } from "../../../convex/_generated/api";
+
+const carried = new Set<string>();
 
 /** The person's language, and the way to change it. A failed change says so where they are looking. */
 function useLanguage() {
   const { data, words } = useWorkspace();
   const save = useMutation(api.language.choose);
+  const adopt = useMutation(api.language.adopt);
   const [failed, setFailed] = useState(false);
+  const churchId = data.church.id;
+  // Visitors to the sample share one made-up member, so their language is kept on their own device and never
+  // saved: the rooms read the door's language for them (live-app.tsx), and choosing here changes that.
+  const visiting = useQuery(api.demo.visiting, {});
+  const [, setOnDevice] = useEntryLanguage();
+  // The door and the rooms speak one language: what the person pressed on the entry sheet is saved here, and
+  // the device's own language fills in for someone who has never chosen. Once per conference and visit.
+  useEffect(() => {
+    if (visiting !== false || carried.has(churchId)) return;
+    carried.add(churchId);
+    const entry = takeEntryLanguage();
+    void (entry.pressed ? save : adopt)({ churchId, language: entry.language }).catch(() => carried.delete(churchId));
+  }, [churchId, save, adopt, visiting]);
   return {
     words,
     current: words.locale,
     failed,
     choose: (language: Language) => {
       setFailed(false);
-      if (language !== words.locale) save({ churchId: data.church.id, language }).catch(() => setFailed(true));
+      if (language === words.locale) return;
+      if (visiting) setOnDevice(language);
+      else save({ churchId, language }).catch(() => setFailed(true));
     },
   };
 }
