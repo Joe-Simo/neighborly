@@ -233,7 +233,8 @@ describe("a call note drafted into a request", () => {
     const day = 86_400_000, now = Date.now();
     await t.run(async ctx => {
       const neighbor = (await ctx.db.query("neighbors").first())!;
-      await ctx.db.patch("calls", ids.callId, { takenAt: now - 3 * day - 1000 });
+      // Well past three days: the note is asked by the hour, so an age turns over up to an hour late.
+      await ctx.db.patch("calls", ids.callId, { takenAt: now - 3 * day - 7_200_000 });
       await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Earl Jennings", phone: "(239) 555-0178", note: "Power shut-off notice for the 21st. Lives alone.", callback: "needed", takenBy: ids.coordinator.memberId, takenAt: now - day, urgent: { reasons: ["shutoff"], day: 21, by: "assistant" } });
       await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Mai Tran", phone: "(239) 555-0119", note: "No food today.", callback: "done", takenBy: ids.coordinator.memberId, takenAt: now - day });
       await ctx.db.insert("visits", { churchId: ids.churchId, neighborId: neighbor._id, scheduledAt: now + 2 * day, status: "scheduled", visitors: [], notes: "", createdBy: ids.coordinator.memberId, createdAt: now });
