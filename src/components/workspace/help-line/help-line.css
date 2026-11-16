@@ -117,7 +117,7 @@
 }
 /* The neighbor list reads under letter heads that stay in view while their households pass. */
 .live-app .help-letter-head {
-  position: sticky; top: 0; z-index: 2; margin: 0; padding: 14px 0 10px;
+  position: sticky; top: var(--live-bar, 0px); z-index: 2; margin: 0; padding: 14px 0 10px;
   font: 400 26px/1 "Newsreader", Georgia, serif; letter-spacing: 0; color: #365c46;
   background: var(--live-paper); border-bottom: 1px solid var(--live-line);
 }
