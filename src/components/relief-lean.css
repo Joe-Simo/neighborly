@@ -1,0 +1,8 @@
+/* The story pictures are paper with air between the layers: what lies loose on a plate leans with the pointer. --lean-x and --lean-y run from -1 to 1 on the story.
+   The plate is the ground and stays, so its cut edge never slides under the picture's mask. What is hinged or bound to it stays too: the door, the light behind it, the book's page and the card waiting on it.
+   What is held in a hand moves as one thing, 9px at most, so nothing parts at a joint (receiver and cord, envelope and flap); the ribbon, pinned at the spine, gives 5px. Each shadow goes a little the other way.
+   Pieces are moved with `translate`, which leaves their own `transform` alone. */
+.relief-story{--lean-x:0;--lean-y:0}
+[data-lean] :is([data-picture=call],[data-picture=help]) .relief-piece,[data-lean] [data-piece=hands]{translate:calc(var(--lean-x) * 9px) calc(var(--lean-y) * 6px)}
+[data-lean] [data-piece=ribbon]{translate:calc(var(--lean-x) * 5px) calc(var(--lean-y) * 3px)}
+[data-lean] :is([data-picture=call],[data-picture=help],[data-piece=hands]) .relief-shadow{translate:calc(4px + var(--up) * 18px - var(--lean-x) * 5px) calc(6px + var(--up) * 26px - var(--lean-y) * 4px)}

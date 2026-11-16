@@ -1,23 +1,26 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
 import { HomeYes } from "./home-yes";
+import { ThreadCard } from "./thread-card";
+import { ReliefLean } from "./relief-lean";
 import { ClosingBand, Colophon } from "./public-ending";
 import { useSettled } from "@/lib/use-settled";
 import "./neighborly-continuation.css";
+import "./rooms.css";
 
 /** Everything after the opening: through the doors, the story of the work, and the way in. */
-// What a conference has on its first day, in the order the work happens.
-const gets = [
-  ["The help line", "Every call is written down once, and the urgent ones rise to the top."],
-  ["Visits in pairs", "What the two members saw, and what was asked, stays with the request."],
-  ["The ledger", "Every bill paid is on one page: to whom, for whom, and how much."],
-  ["The yearly report", "The totals are kept as the work is done. Check them, then print."],
-  ["Your people", "Each member sees what they said yes to, in English or Spanish."],
-  ["The assistant", "It drafts a request from the call note. A person checks every one."],
-  ["Free", "For every conference. There is nothing to buy."],
+// What a conference has on its first day, in the order the work happens. Each line lies under its room's own picture,
+// set at the small angle it was put down at.
+const rooms = [
+  ["call", "The help line", "Every call is written down once, and the urgent ones rise to the top.", -2.4],
+  ["visit", "Visits in pairs", "What the two members saw, and what was asked, stays with the request.", 1.6],
+  ["help", "The ledger", "Every bill paid is on one page: to whom, for whom, and how much.", -1.2],
+  ["year", "The yearly report", "The totals are kept as the work is done. Check them, then print.", 2.2],
+  ["people", "Your people", "Each member sees what they said yes to, in English or Spanish.", -1.8],
+  ["files", "The assistant", "It drafts a request from the call note. A person checks every one.", 1.3],
 ] as const;
 
 export function NeighborlyContinuation() {
@@ -45,15 +48,28 @@ export function NeighborlyContinuation() {
         <p>Faith, <em>lived out.</em></p>
       </section>
     </noscript>
+    <ThreadCard />
     <ReliefStory />
+    <ReliefLean />
     <HomeYes />
     <section id="how-neighborly-works" tabIndex={-1} className="neighborly-together" aria-labelledby="together-title">
       <div className="neighborly-together-paper" data-settled={settled} aria-hidden="true" />
-      <div className="neighborly-together-bottom" data-reveal>
-        <p className="neighborly-together-statement">One place to answer every call for help, from the first message to the visit, the bill and the year’s report.</p>
-        <ul className="neighborly-gets" aria-label="What your conference gets">
-          {gets.map(([title, line]) => <li key={title}><h3>{title}</h3><p>{line}</p></li>)}
+      <div className="neighborly-rooms" data-reveal>
+        <div>
+          <p className="neighborly-rooms-kicker">The rooms</p>
+          <p className="neighborly-together-statement">One place to answer every call for help, from the first message to the visit, the bill and the year’s report.</p>
+        </div>
+        <ul aria-label="What your conference gets">
+          {rooms.map(([picture, title, line, turn], index) => <li key={title} style={{ "--turn": `${turn}deg`, "--i": index } as CSSProperties}>
+            <picture>
+              <source type="image/avif" srcSet={`/assets/relief/relief-${picture}-640.avif`} />
+              <img src={`/assets/relief/relief-${picture}-640.webp`} width={640} height={427} alt="" loading="lazy" decoding="async" />
+            </picture>
+            <h3>{title}</h3>
+            <p>{line}</p>
+          </li>)}
         </ul>
+        <p className="neighborly-free"><em>Free.</em> For every conference. There is nothing to buy.</p>
       </div>
       <ClosingBand />
       <Colophon home="#story-start" />

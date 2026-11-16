@@ -1,0 +1,44 @@
+/* The rooms: six small pictures put down on the paper by hand, each with its name and its one line beneath it. */
+.neighborly-rooms{display:flex;flex-direction:column;gap:clamp(36px,4.4vw,72px)}
+.neighborly-rooms .neighborly-together-statement{max-width:30ch;font-size:clamp(26px,2.6vw,40px)}
+.neighborly-rooms-kicker{margin:0 0 clamp(14px,1.4vw,22px);font-size:13px;font-weight:650;line-height:1.3;letter-spacing:.1em;text-transform:uppercase;color:#52644f}
+.neighborly-rooms ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(40px,4.6vw,76px) clamp(28px,4vw,72px);margin:0;padding:0;list-style:none}
+.neighborly-rooms li{--off:0%;position:relative}
+/* No two were put down in line: each sits a little off its place in the row. */
+.neighborly-rooms li:nth-child(3n+2){margin-top:clamp(18px,2.6vw,44px)}
+.neighborly-rooms li:nth-child(3n){margin-top:clamp(6px,.9vw,14px)}
+.neighborly-rooms picture{position:relative;display:block;width:min(100%,300px);margin:0 0 22px var(--off);rotate:var(--turn);transform-origin:0 100%;transition:rotate .32s cubic-bezier(.2,.7,.2,1),translate .32s cubic-bezier(.2,.7,.2,1)}
+/* The words go with their picture: they start at its lower left corner, which is also the corner it turns on. */
+.neighborly-rooms li:nth-child(3n+2){--off:8%}
+.neighborly-rooms li:nth-child(3n){--off:-3%}
+.neighborly-rooms img{position:relative;display:block;width:100%;height:auto;box-shadow:0 1px 0 #fffdf7 inset}
+/* Its shadow is a sheet of its own under it: close while the picture lies, further off and fainter when it is lifted. */
+.neighborly-rooms picture::before{content:"";position:absolute;inset:10% 4% 1%;background:#51433059;box-shadow:0 12px 26px 4px #51433099;opacity:.62;transition:opacity .32s linear,translate .32s cubic-bezier(.2,.7,.2,1),scale .32s cubic-bezier(.2,.7,.2,1)}
+.neighborly-rooms h3{margin:0 0 0 var(--off);font:400 clamp(26px,2.1vw,34px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em}
+.neighborly-rooms li p{margin:8px 0 0 var(--off);max-width:24em;font-size:17px;line-height:1.5;text-wrap:pretty;opacity:.84;transition:opacity .32s linear}
+.neighborly-free{margin:clamp(4px,1vw,16px) 0 0;font:400 clamp(34px,4.4vw,72px)/1.04 'Newsreader',Georgia,serif;letter-spacing:-.045em;text-wrap:balance}
+.neighborly-free em{color:#365c46}
+@media(hover:hover){
+  /* Under the pointer a picture is picked up a little and held straight, and its line comes up to full ink. */
+  .neighborly-rooms li:hover picture{rotate:0deg;translate:0 -6px}
+  .neighborly-rooms li:hover picture::before{opacity:.34;translate:4px 12px;scale:1.03}
+  .neighborly-rooms li:hover p{opacity:1}
+}
+/* Set down one after another as the section comes into view. */
+.has-reveal .neighborly-rooms[data-reveal]{translate:none}
+.has-reveal .neighborly-rooms li{opacity:0;translate:0 -12px;transition:opacity .36s linear calc(var(--i) * 60ms),translate .46s cubic-bezier(.2,.7,.2,1) calc(var(--i) * 60ms)}
+.has-reveal .neighborly-rooms.is-visible li{opacity:1;translate:none}
+@media(max-width:900px){
+  /* One column of rows: the picture at the left, its words beside it. */
+  .neighborly-rooms ul{grid-template-columns:minmax(0,1fr);gap:30px}
+  .neighborly-rooms li{display:grid;grid-template-columns:clamp(112px,calc(77vw - 150px),220px) minmax(0,1fr);align-items:center;gap:0 18px}
+  .neighborly-rooms li:nth-child(n){--off:0%;margin-top:0}
+  .neighborly-rooms li:nth-child(n) picture{grid-row:1/3;width:100%;margin:0}
+  .neighborly-rooms h3{align-self:end;font-size:26px}
+  .neighborly-rooms li p{align-self:start;margin-top:6px}
+  .neighborly-free{font-size:clamp(34px,9.4vw,56px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .has-reveal .neighborly-rooms li{opacity:1;translate:none;transition:none}
+  .neighborly-rooms picture,.neighborly-rooms picture::before,.neighborly-rooms li p{transition:none}
+}

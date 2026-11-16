@@ -1,17 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import "./relief-journey.css";
 
-// A picture with pieces is a plate with loose paper lying on it, and the first piece listed makes one small move. One without is a single painting.
+// Each picture is a plate with loose paper lying on it, listed from the lowest sheet up. A piece that names a shadow casts one on the plate.
+// `tuck` is the way it goes in under something, in card widths along its own edges.
+// `card` is where the travelling card lies in the picture: on the plate, or on a named piece (moving with it, under whatever is listed after it).
 const story = [
-  { picture: "call", pieces: ["piece"], title: "The call.", copy: "Someone rings the help line. The message is kept, and someone is always next to call back." },
-  { picture: "visit", pieces: ["leaf", "hands"], title: "The visit.", copy: "Two members go to the home, together, and listen." },
-  { picture: "help", pieces: ["piece"], title: "The help.", copy: "The conference agrees. The bill is paid straight to the landlord or the utility." },
-  { picture: "year", pieces: ["piece"], title: "The year.", copy: "Every call, visit and dollar adds itself up for the yearly report." },
+  { picture: "call", plate: "call-ground", pieces: [{ name: "cord" }, { name: "piece", shadow: "piece" }], card: { on: null, x: 19, y: 80, w: 15, turn: -9 }, title: "The call.", copy: "Someone rings the help line. The message is kept, and someone is always next to call back." },
+  { picture: "visit", plate: "visit-ground", pieces: [{ name: "light" }, { name: "leaf", shadow: "leaf" }, { name: "hands", shadow: "hands" }], card: { on: "hands", x: 22.6, y: 61.4, w: 12, turn: 7 }, title: "The visit.", copy: "Two members go to the home, together, and listen." },
+  { picture: "help", plate: "help", pieces: [{ name: "envelope", shadow: "piece" }, { name: "flap" }], card: { on: "envelope", x: 55.7, y: 41.4, w: 15, turn: -14, tuck: [-.3, -.5] }, title: "The help.", copy: "The conference agrees. The bill is paid straight to the landlord or the utility." },
+  { picture: "year", plate: "year", pieces: [{ name: "page", shadow: "piece" }, { name: "ribbon" }], card: { on: "page", x: 66.5, y: 61.5, w: 13, turn: 11, waits: true, tuck: [.5, .12] }, title: "The year.", copy: "Every call, visit and dollar adds itself up for the yearly report." },
 ] as const;
 const sizes = "(max-width: 820px) 92vw, 56vw";
 const layer = (name: string, small: number, large: number, type: string) => `/assets/home/relief-${name}-${small}.${type} ${small}w, /assets/home/relief-${name}-${large}.${type} ${large}w`;
+
+// The card as it lies in a picture. On a piece it is placed in the piece's own box, which is the picture with a margin all round.
+const station = ({ picture, card }: (typeof story)[number]) => <span className="card-station" data-station={picture} data-turn={card.turn} data-waits={"waits" in card || undefined} data-tuck={"tuck" in card ? card.tuck.join() : undefined} style={{ left: `${card.x}%`, top: `${card.y}%`, width: `max(${card.w}%, 72px)`, rotate: `${card.turn}deg` }}>
+  {/* eslint-disable-next-line @next/next/no-img-element */}
+  <img src="/assets/home/card-light-480.webp" width={480} height={320} alt="" loading="lazy" decoding="async" />
+</span>;
 
 /** What a conference does with Kind Helps, one idea to a screen, each with its own cut-paper picture. */
 export function ReliefStory() {
@@ -52,20 +60,23 @@ export function ReliefStory() {
       <div className="relief-words"><h2>{part.title}</h2><p>{part.copy}</p></div>
       <div className="relief-picture" data-picture={part.picture}>
         <div className="relief-layers">
-          {part.pieces.length ? <picture>
-            <source type="image/avif" srcSet={layer(`${part.picture}-plate`, 768, 1536, "avif")} sizes={sizes} />
-            <img src={`/assets/home/relief-${part.picture}-plate-1536.webp`} srcSet={layer(`${part.picture}-plate`, 768, 1536, "webp")} sizes={sizes} width={1536} height={1024} alt="" loading="lazy" decoding="async" />
+          <picture>
+            <source type="image/avif" srcSet={layer(`${part.plate}-plate`, 768, 1536, "avif")} sizes={sizes} />
+            <img src={`/assets/home/relief-${part.plate}-plate-1536.webp`} srcSet={layer(`${part.plate}-plate`, 768, 1536, "webp")} sizes={sizes} width={1536} height={1024} alt="" loading="lazy" decoding="async" />
           </picture>
-            // eslint-disable-next-line @next/next/no-img-element
-            : <img src={`/assets/home/relief-${part.picture}-1536.webp`} srcSet={layer(part.picture, 768, 1536, "webp")} sizes={sizes} width={1536} height={1024} alt="" loading="lazy" decoding="async" />}
-          {part.pieces.map((piece, order) => <div key={piece} className="relief-piece" data-moves={order === 0 || undefined}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="relief-shadow" src={`/assets/home/relief-${part.picture}-${piece}-shadow.webp`} width={400} height={272} alt="" loading="lazy" decoding="async" />
-            <picture>
-              <source type="image/avif" srcSet={layer(`${part.picture}-${piece}`, 800, 1600, "avif")} sizes={sizes} />
-              <img src={`/assets/home/relief-${part.picture}-${piece}-1600.webp`} srcSet={layer(`${part.picture}-${piece}`, 800, 1600, "webp")} sizes={sizes} width={1600} height={1088} alt="" loading="lazy" decoding="async" />
-            </picture>
-          </div>)}
+          {part.pieces.map(piece => <Fragment key={piece.name}>
+            <div className="relief-piece" data-piece={piece.name}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {"shadow" in piece && <img className="relief-shadow" src={`/assets/home/relief-${part.picture}-${piece.shadow}-shadow.webp`} width={400} height={272} alt="" loading="lazy" decoding="async" />}
+              <picture>
+                <source type="image/avif" srcSet={layer(`${part.picture}-${piece.name}`, 800, 1600, "avif")} sizes={sizes} />
+                <img src={`/assets/home/relief-${part.picture}-${piece.name}-1600.webp`} srcSet={layer(`${part.picture}-${piece.name}`, 800, 1600, "webp")} sizes={sizes} width={1600} height={1088} alt="" loading="lazy" decoding="async" />
+              </picture>
+              {part.card.on === piece.name && !("waits" in part.card) && station(part)}
+            </div>
+            {part.card.on === piece.name && "waits" in part.card && station(part)}
+          </Fragment>)}
+          {part.card.on === null && station(part)}
         </div>
       </div>
       </div>

@@ -22,3 +22,7 @@
     margin: 0 4vw 0 calc(61svh + 7vw);
   }
 }
+/* A press goes 1px into the paper and its shadow closes under it. */
+.public-state [data-slot=button]{transition:translate 90ms ease,box-shadow 90ms ease}
+.public-state [data-slot=button]:active{translate:0 1px;box-shadow:none}
+@media (prefers-reduced-motion: reduce){.public-state [data-slot=button]{transition:none}}

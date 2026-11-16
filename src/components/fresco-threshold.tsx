@@ -13,9 +13,12 @@ const ease = (value: number) => value * value * (3 - 2 * value);
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
 // Screens of scrolling, counted from where the opening begins to give way: the doors rest, open, and the wall opens around the fresco.
 const doorsOpen = [1.15, 1.85] as const;
-// The wall waits until the doors have swung clear, so the two never show at once.
-const wallOpens = [1.9, 2.7] as const;
-const rest = 2.9;
+// Through the doors: the courtyard grows from the opening until it fills the window, holds a beat, then draws back into its frame on the wall.
+const walkThrough = [1.85, 2.45] as const;
+const standing = [2.45, 3.05] as const;
+const wallOpens = [3.05, 3.75] as const;
+// The walk in, when the doors are opened by their button: long enough to read as steps, not a jump.
+const walkTime = 1400;
 // How much larger than its frame the painting is drawn on a wide wall.
 const frescoInset = 1.064;
 
@@ -29,6 +32,7 @@ export function FrescoThreshold() {
   const frame = useRef<HTMLDivElement>(null);
   const view = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const walking = useRef(false);
   const [near, setNear] = useState(false);
   const settled = useSettled();
 
@@ -52,7 +56,11 @@ export function FrescoThreshold() {
       const phone = width <= 899 && !short;
       const travelled = -track.getBoundingClientRect().top / Math.max(1, height);
       const door = media.matches ? Number(travelled > 1.5) : ease(clamp((travelled - doorsOpen[0]) / (doorsOpen[1] - doorsOpen[0])));
+      // With Reduce Motion there is no walk: the doors open onto the framed courtyard.
+      const through = media.matches ? 0 : ease(clamp((travelled - walkThrough[0]) / (walkThrough[1] - walkThrough[0])));
       const grow = media.matches ? door : ease(clamp((travelled - wallOpens[0]) / (wallOpens[1] - wallOpens[0])));
+      const inside = through * (1 - grow);
+      const standingIn = media.matches ? 0 : clamp((travelled - standing[0]) / (standing[1] - standing[0])) * (1 - grow);
       // The doorway, as painted; and the fresco's frame on the wall beyond it.
       const doorWidth = phone ? width * .73 : Math.min(width * .5, 630);
       const doorHeight = Math.min(height * (phone ? .5 : .78), doorWidth * (phone ? 1.6 : 1.35));
@@ -61,24 +69,37 @@ export function FrescoThreshold() {
       const frameWidth = phone ? width - 40 : frameHeight * 2;
       const frameY = (short ? 60 : Math.max(phone ? 84 : 96, (height - frameHeight - (phone ? 150 : 120)) / 2)) + frameHeight / 2;
       const corner = Math.min(frameWidth * .18, frameHeight * .36);
-      const w = mix(doorWidth, frameWidth, grow), h = mix(doorHeight, frameHeight, grow);
+      // The opening travels door, then past the window, then frame. Walking in, the arch keeps its curve and grows until its shoulders have left the window: a box half as wide again as the window, a little above it, clears the top corners.
+      const pastW = width * 1.5, pastH = height * 1.6, pastTop = -height * .13;
+      const w = mix(mix(doorWidth, frameWidth, grow), pastW, inside), h = mix(mix(doorHeight, frameHeight, grow), pastH, inside);
+      const centreY = mix(mix(doorY, frameY, grow), pastTop + pastH / 2, inside);
       wall.style.width = `${w}px`; wall.style.height = `${h}px`;
-      wall.style.left = `${mix(doorX, width / 2, grow) - w / 2}px`; wall.style.top = `${mix(doorY, frameY, grow) - h / 2}px`;
+      // Moved by translate only, from a box held at the stage's corner: its size changes, but nothing in the page's layout moves as it travels.
+      wall.style.translate = `${(mix(mix(doorX, width / 2, grow), width / 2, inside) - w / 2).toFixed(2)}px ${(centreY - h / 2).toFixed(2)}px`;
       wall.style.borderRadius = `${mix(50, corner / frameWidth * 100, grow)}% ${mix(50, corner / frameWidth * 100, grow)}% 0 0 / ${mix(30, corner / frameHeight * 100, grow)}% ${mix(30, corner / frameHeight * 100, grow)}% 0 0`;
       // The painting keeps one size and is only ever scaled, so the living scene is never redrawn at a new size mid-journey.
-      const sceneHeight = Math.max(doorHeight, frameHeight);
+      const sceneHeight = Math.max(doorHeight, frameHeight, media.matches ? 0 : height);
       scene.style.width = `${sceneHeight * 2}px`; scene.style.height = `${sceneHeight}px`;
       // On a wide wall the near pillar at the painting's left edge is left outside the frame: the painting is drawn a little larger and held to the right, so painted courtyard meets the frame on every side.
-      const cover = Math.max(h / sceneHeight, w / (sceneHeight * 2)) * (phone ? 1 : frescoInset);
+      // The painting is sized by the opening, except walking in, where it covers the window itself while the opening grows past it.
+      const framed = Math.max(h / sceneHeight, w / (sceneHeight * 2)) * (phone ? 1 : frescoInset);
+      const cover = mix(framed, Math.max(height / sceneHeight, width / (sceneHeight * 2)), inside);
+      const held = phone ? 0 : sceneHeight * cover * (1 - 1 / frescoInset) * (1 - inside);
+      const lift = (height / 2 - centreY) * inside;
       scene.style.scale = String(cover);
-      scene.style.translate = phone ? "" : `calc(-50% - ${(sceneHeight * cover * (1 - 1 / frescoInset)).toFixed(2)}px) -50%`;
+      // The painting is centred in the opening by translate too, from the opening's corner.
+      scene.style.translate = `calc(-50% + ${(w / 2 - held).toFixed(2)}px) calc(-50% + ${(h / 2 + lift).toFixed(2)}px)`;
       host.style.setProperty("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
       host.style.setProperty("--grow", grow.toFixed(4));
+      // How far inside the courtyard the visitor stands: the frame, the doors and the wall are gone at 1.
+      host.style.setProperty("--inside", inside.toFixed(4));
+      host.style.setProperty("--standing", standingIn.toFixed(4));
+      host.dataset.inside = String(inside > .98);
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
       host.style.setProperty("--caption-top", `${frameY + frameHeight / 2}px`);
-      setOpen(grow > .5);
+      setOpen(grow > .5 || inside > .5);
     };
     const request = () => { if (!raf) raf = requestAnimationFrame(update); };
     const observer = new ResizeObserver(request);
@@ -93,7 +114,25 @@ export function FrescoThreshold() {
     if (!track || !host) return;
     // With Reduce Motion the journey is shorter, so the resting place stays inside the part that holds still.
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.scrollTo({ top: track.getBoundingClientRect().top + scrollY + host.clientHeight * (reduce ? 2.4 : rest), behavior: reduce ? "instant" : "smooth" });
+    const start = track.getBoundingClientRect().top + scrollY;
+    if (reduce) { window.scrollTo({ top: start + host.clientHeight * 2.4, behavior: "instant" }); return; }
+    // The doors open and the visitor walks through in one paced move, coming to a stop standing in the courtyard.
+    // A second press while walking changes nothing: the walk already under way carries on.
+    if (walking.current) return;
+    walking.current = true;
+    const from = scrollY, to = start + host.clientHeight * (standing[0] + .05);
+    const began = performance.now();
+    // Paced by the clock, not by frames: a frame the browser holds back (a window behind another) is made up at the next step, and a timer carries the walk if frames stop coming.
+    let timer = 0, frame = 0;
+    const step = () => {
+      cancelAnimationFrame(frame); clearTimeout(timer);
+      const t = Math.max(0, Math.min(1, (performance.now() - began) / walkTime));
+      window.scrollTo({ top: from + (to - from) * (1 - Math.pow(1 - t, 3)), behavior: "instant" });
+      if (t >= 1) { walking.current = false; return; }
+      frame = requestAnimationFrame(step);
+      timer = window.setTimeout(step, 50);
+    };
+    step();
   };
 
   return <div ref={journey} className="fresco-journey">
@@ -118,6 +157,7 @@ export function FrescoThreshold() {
         </div>
         <div className="fresco-doors" aria-hidden="true"><i /><i /></div>
       </div>
+      <p className="fresco-standing" aria-hidden="true">Faith, <em>lived out.</em></p>
       <p className="fresco-caption" aria-hidden={!open}>Faith, <em>lived out.</em></p>
     </section>
   </div>;

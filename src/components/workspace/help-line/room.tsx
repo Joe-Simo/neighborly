@@ -28,7 +28,7 @@ export function HelpLoading({ label }: { label?: string }) {
   );
 }
 
-/** The room's own relief picture, small and round, beside an empty state. */
+/** The room's own relief picture, laid as a small card beside an empty state. */
 function Vignette() {
   const { area } = useWorkspace();
   const { picture, focus } = headings[area].art;
