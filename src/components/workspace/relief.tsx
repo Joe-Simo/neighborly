@@ -41,8 +41,10 @@ export const reliefMoves: Partial<Record<ReliefName, { x?: number; y?: number; t
   week: { y: -6 },
   // The key is hung on its hook and swings to rest; it turns about the hook. Short, so the paper under the hand stays clean.
   commitment: { y: -2, turn: 1.5, about: "46% 39%" },
-  // The receiver is lifted. Short, so the cord stays joined to it.
-  call: { y: 4 },
+  // The receiver is lifted. The cord runs on under the earpiece, so it stays joined to it.
+  call: { y: 7 },
+  // The door comes to rest. Short: past 3px the edge of the cut shows at the sleeves.
+  visit: { x: -3, front: true },
 };
 
 const usual: readonly number[] = [640, 1024, 1536];
