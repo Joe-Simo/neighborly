@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { useSystemTextSize } from "@/components/system-text-size";
 import { Button } from "@/components/ui/button";
 import { languageNames, languages } from "@/lib/words";
 import { cn } from "@/lib/utils";
@@ -52,30 +53,8 @@ export function EntrySheet({
       root.removeProperty("--live-pan");
     };
   }, []);
-  // On iPhone and iPad the sheet follows the system's text size (Settings, Larger Text) up to 130%, by the
-  // same measure the workspace shell uses once someone is signed in: the system's body size is 17px at
-  // the standard setting, and every size is scaled by the same share. Elsewhere nothing changes.
-  useEffect(() => {
-    if (!CSS.supports("font", "-apple-system-body")) return;
-    const probe = document.createElement("span");
-    probe.style.cssText = "position:absolute;visibility:hidden;font:-apple-system-body;-webkit-text-size-adjust:100%";
-    document.body.append(probe);
-    const root = document.documentElement.style;
-    const fit = () => {
-      const share = Math.min(1.3, Math.max(1, parseFloat(getComputedStyle(probe).fontSize) / 17));
-      root.setProperty("-webkit-text-size-adjust", `${Math.round(share * 100)}%`);
-      // Larger words need a line each: the sheet stops setting two things side by side (`data-entry-large`).
-      document.documentElement.toggleAttribute("data-entry-large", share > 1.1);
-    };
-    fit();
-    document.addEventListener("visibilitychange", fit);
-    return () => {
-      document.removeEventListener("visibilitychange", fit);
-      root.removeProperty("-webkit-text-size-adjust");
-      document.documentElement.removeAttribute("data-entry-large");
-      probe.remove();
-    };
-  }, []);
+  // The sheet follows the system's text size by the same measure as the rooms; larger words take a line each (`data-entry-large`).
+  useSystemTextSize("data-entry-large");
   // A keyboard covers the foot of the screen. The page is given that much more room below (`--entry-keys`),
   // so it can truly scroll, and the form is moved by the least needed for its button to stand whole above
   // the keys while the field being typed in stays in view under the status area.

@@ -37,6 +37,7 @@ import {
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { AsideSlot, useWideScreen } from "@/components/workspace/aside";
+import { useSystemTextSize } from "@/components/system-text-size";
 import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
 import { ArrivingRelief, fetchAhead } from "@/components/workspace/relief-arrival";
@@ -790,33 +791,6 @@ function useKeysInUse() {
       window.removeEventListener("keydown", keys, true);
       window.removeEventListener("pointerdown", pointer, true);
       pointer();
-    };
-  }, []);
-}
-
-/**
- * On iPhone and iPad the app follows the system's text size (Settings, Larger Text), up to 130%.
- * The system's body size is read from a probe set in `-apple-system-body`, which is 17px at the
- * standard setting, and every size in the app is scaled by the same share. Elsewhere nothing changes.
- */
-function useSystemTextSize() {
-  useEffect(() => {
-    if (!CSS.supports("font", "-apple-system-body")) return;
-    const probe = document.createElement("span");
-    probe.style.cssText = "position:absolute;visibility:hidden;font:-apple-system-body;-webkit-text-size-adjust:100%";
-    document.body.append(probe);
-    const root = document.documentElement.style;
-    const fit = () => {
-      const share = Math.min(1.3, Math.max(1, parseFloat(getComputedStyle(probe).fontSize) / 17));
-      root.setProperty("-webkit-text-size-adjust", `${Math.round(share * 100)}%`);
-    };
-    fit();
-    // The setting can change while the app is in the background.
-    document.addEventListener("visibilitychange", fit);
-    return () => {
-      document.removeEventListener("visibilitychange", fit);
-      root.removeProperty("-webkit-text-size-adjust");
-      probe.remove();
     };
   }, []);
 }
