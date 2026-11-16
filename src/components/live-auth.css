@@ -378,7 +378,9 @@
 }
 /* The welcome's two choices are equal halves of one row. A long one wraps inside its half; they never stack. */
 .entry .entry-halves { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; align-items: stretch; }
+/* Both halves are set in the same weight, so a press never moves a line break; ink and the green rule mark the chosen one. */
 .live-app .entry-halves button {
+  font-weight: 600;
   justify-content: flex-start;
   height: auto;
   min-height: 46px;
