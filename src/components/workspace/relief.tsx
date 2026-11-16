@@ -26,8 +26,18 @@ export type ReliefName = (typeof reliefNames)[number];
  */
 export const reliefReady: readonly ReliefName[] = ["call", "help", "year", "week", "visit", "people", "commitment", "tasks", "files", "rest", "neighbors", "mine", "teams"];
 
+/**
+ * The one small move a room's picture makes on the first arrival in a visit: where its moving piece starts,
+ * in screen pixels and degrees from where it rests (6 to 10px). A picture is listed here only when its two
+ * layers are in `public/assets/relief/`, cut on the same canvas as the flat picture and levelled the same way:
+ * `relief-<name>-base-<width>` (the picture without the piece, the paper behind it painted in) and
+ * `relief-<name>-piece-<width>` (the piece alone on a clear ground), each at 640, 1024 and 1536 in AVIF and WebP.
+ * Base and piece together, at rest, must be the flat picture. `relief-arrival.tsx` plays it.
+ */
+export const reliefMoves: Partial<Record<ReliefName, { x?: number; y?: number; turn?: number }>> = {};
+
 const usual: readonly number[] = [640, 1024, 1536];
-const sources = (name: ReliefName, type: "avif" | "webp", widths: readonly number[]) =>
+export const reliefSources = (name: string, type: "avif" | "webp", widths: readonly number[] = usual) =>
   widths.map((width) => `/assets/relief/relief-${name}-${width}.${type} ${width}w`).join(", ");
 
 /**
@@ -55,8 +65,8 @@ export function ReliefPicture({
     return <ReliefPlaceholder name={name} vignette={vignette} className={className} />;
   return (
     <picture className={cn("relief", className)}>
-      <source type="image/avif" srcSet={sources(name, "avif", widths)} sizes={vignette ? "96px" : sizes} />
-      <source type="image/webp" srcSet={sources(name, "webp", widths)} sizes={vignette ? "96px" : sizes} />
+      <source type="image/avif" srcSet={reliefSources(name, "avif", widths)} sizes={vignette ? "96px" : sizes} />
+      <source type="image/webp" srcSet={reliefSources(name, "webp", widths)} sizes={vignette ? "96px" : sizes} />
       <img
         src={`/assets/relief/relief-${name}-1024.webp`}
         alt=""

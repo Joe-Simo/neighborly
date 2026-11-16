@@ -49,8 +49,10 @@ export function MonthAway() {
                 if (!day) return <td key={column} />;
                 const key = day.toFormat("yyyy-MM-dd");
                 const mark = within(key, away) ? "away" : within(key, offered) ? "offered" : undefined;
+                const offeredOn = (other: DateTime) => other.month === day.month && !within(other.toFormat("yyyy-MM-dd"), away) && within(other.toFormat("yyyy-MM-dd"), offered);
+                const run = mark !== "offered" ? undefined : `${column > 0 && offeredOn(day.minus({ days: 1 })) ? "" : "first"} ${column < 6 && offeredOn(day.plus({ days: 1 })) ? "" : "last"}`.trim() || "middle";
                 return (
-                  <td key={column} data-mark={mark} data-today={day.hasSame(today, "day") || undefined} aria-current={day.hasSame(today, "day") ? "date" : undefined}>
+                  <td key={column} data-mark={mark} data-run={run} data-today={day.hasSame(today, "day") || undefined} aria-current={day.hasSame(today, "day") ? "date" : undefined}>
                     <span>{day.day}</span>
                     {mark && <span className="sr-only"> {mark === "away" ? text.away : text.canHelp}</span>}
                   </td>
@@ -106,7 +108,7 @@ export function WeekByTeam() {
             <tr>
               <th scope="rowgroup" colSpan={7}>
                 <span>{team.name}</span>
-                {open > 0 && <small>{text.placesOpen(open)}</small>}
+                {open > 0 && <small><i data-mark="open" aria-hidden="true" />{text.placesOpen(open)}</small>}
               </th>
             </tr>
             <tr>

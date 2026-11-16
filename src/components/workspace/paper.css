@@ -241,6 +241,12 @@
 .live-head-actions:empty { display: none; }
 .relief { display: block; width: 100%; height: 100%; }
 .relief img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* A picture in two layers: the piece lies exactly over the base, waits at its start, and makes one small move home. */
+.relief-layers { position: relative; }
+.relief-layers > picture { position: absolute; inset: 0; }
+.relief-piece { transform: translate(var(--piece-x), var(--piece-y)) rotate(var(--piece-turn)); }
+.relief-layers[data-moving] > .relief-piece { transform: none; transition: transform 520ms var(--paper-ease) calc(var(--paper-wait, 0ms) + 380ms); }
+@media (prefers-reduced-motion: reduce) { .relief-piece { transform: none !important; transition: none !important; } }
 .live-head-art { pointer-events: none; overflow: hidden; isolation: isolate; }
 /*
   Up to 699px: a band across the top that is the desktop head in miniature. The picture
@@ -278,6 +284,7 @@
     margin: 0;
   }
   .live-head-art > .relief, .live-head-under > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
+  .live-head-art > .relief-layers { position: relative; }
   .live-head-words,
   .live-head-actions {
     position: relative;
@@ -744,3 +751,8 @@
 [tabindex="-1"]:not(a, button, input, select, textarea, summary, [role="button"], [role="gridcell"], [role="tab"], [role="option"], [role="radio"], [role="checkbox"], [role="menuitem"], [role="switch"]):is(:focus, :focus-visible) {
   outline: none;
 }
+
+/* A dialog or sheet never changes the page's width: the scrollbar's place is kept while the page is locked
+   behind it, so nothing shifts sideways when one opens or closes. The lock's own compensation is then not needed. */
+html:has(.live-app) { scrollbar-gutter: stable; }
+html:has(.live-app) > body[data-scroll-locked] { margin-right: 0 !important; padding-right: 0 !important; }

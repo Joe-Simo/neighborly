@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LiveEmpty, LiveField } from "@/components/workspace/primitives";
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
-import { formatDays } from "@/lib/words";
+import { readDays } from "@/components/workspace/volunteer/days";
 import { MonthAway } from "@/components/workspace/volunteer/asides";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -25,7 +25,7 @@ export function TimeOffSection() {
               <div className="live-row" key={item.id}>
                 <div>
                   <h3>
-                    {formatDays(words.locale, item.start, item.end)}
+                    {readDays(words, item.start, item.end)}
                   </h3>
                   {item.note && <p>{item.note}</p>}
                 </div>
@@ -96,7 +96,7 @@ function LiveAvailability({
           .map((item) => (
             <div className="live-row" key={item.id}>
               <span>
-                {formatDays(words.locale, item.start, item.end)}
+                {readDays(words, item.start, item.end)}
               </span>
               <Button
                 variant="ghost"

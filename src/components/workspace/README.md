@@ -149,6 +149,21 @@ name to nothing: add it to `reliefReady` in `relief.tsx` yourself. The script le
 the pixel is paper and fading out 70 levels of colour away, so the subject keeps its own colour and no tan cloud shows
 where a head fades into the page. Any page that shows a relief picture on #f7f4ed should use files cut this way.
 
+## A picture's one move on arrival
+
+A room's head picture makes one small move the first time the room is opened in a visit (the cup is set down, the
+key goes on its hook), then never again until the tab is closed; Reduce Motion always shows it at rest. The shell
+plays it (`relief-arrival.tsx`); a room does nothing. A picture moves only when it is listed in `reliefMoves` in
+`relief.tsx`, and it is listed only when its two layers are in `public/assets/relief/`:
+
+- `relief-<name>-base-<width>`: the picture without the moving piece, the paper behind it painted in.
+- `relief-<name>-piece-<width>`: the piece alone, with its shadow, on a clear ground.
+
+Both on the flat picture's canvas, levelled the same way, at 640, 1024 and 1536 in AVIF and WebP, so that base and
+piece at rest are the flat picture. The entry gives where the piece starts, in screen pixels and degrees from rest,
+6 to 10px: `week: { y: -8 }`, `commitment: { y: -8, turn: -2 }`. The piece waits there until both layers are in,
+then travels home in 520ms. Never fake a layer from the flat file.
+
 ## Dialogs
 
 Every dialog is a `LiveDialog`: paper sheet, title and a 44px way out held at the top, the form's button held at the

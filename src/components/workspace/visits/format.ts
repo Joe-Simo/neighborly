@@ -66,5 +66,5 @@ export function standing(visit: Visit) {
 export function useEnglishDates(): Workspace["format"] {
   const { data } = useWorkspace();
   return (time, options) =>
-    formatDate("en", time, { timeZone: data.church.timeZone, month: "short", day: "numeric", ...options });
+    formatDate("en", time, { timeZone: data.church.timeZone, month: "long", day: "numeric", ...options });
 }

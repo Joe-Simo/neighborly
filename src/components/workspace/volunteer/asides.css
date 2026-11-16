@@ -10,21 +10,25 @@
 .live-aside-sheet .volunteer-month tbody tr:first-child td { padding-top: 6px; }
 .live-aside-sheet .volunteer-month td > span:first-child { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid transparent; }
 .live-aside-sheet .volunteer-month td[data-mark="away"] > span:first-child { background: var(--live-ink); color: var(--live-paper, #f7f4ed); }
+/* Days offered read as one quiet band from first day to last, never a mark on every day. */
+.live-aside-sheet .volunteer-month td[data-mark="offered"] { position: relative; }
 .live-aside-sheet .volunteer-month td[data-mark="offered"] > span:first-child { position: relative; }
-.live-aside-sheet .volunteer-month td[data-mark="offered"] > span:first-child::after { content: ""; position: absolute; left: 50%; bottom: -1px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: #365c46; }
+.live-aside-sheet .volunteer-month td[data-mark="offered"]::before { content: ""; position: absolute; left: 0; right: 0; bottom: 3px; height: 30px; background: #e9eddf; }
+.live-aside-sheet .volunteer-month td[data-run~="first"]::before { left: calc(50% - 15px); border-radius: 15px 0 0 15px; }
+.live-aside-sheet .volunteer-month td[data-run~="last"]::before { right: calc(50% - 15px); border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
 .live-aside-sheet .volunteer-month td[data-today] > span:first-child { font-weight: 700; border-color: var(--live-ink); }
 
 .live-aside-sheet .volunteer-key { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 16px 0 0; padding: 14px 0 0; list-style: none; border-top: 1px solid var(--live-line); font-size: 15px; color: var(--live-muted); }
 .live-aside-sheet .volunteer-key li { display: inline-flex; align-items: center; gap: 8px; }
 .live-aside-sheet i[data-mark] { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; }
 .live-aside-sheet i[data-mark="away"], .live-aside-sheet i[data-mark="covered"] { background: var(--live-ink); }
-.live-aside-sheet i[data-mark="offered"] { width: 6px; height: 6px; background: #365c46; }
+.live-aside-sheet i[data-mark="offered"] { width: 18px; height: 10px; border-radius: 5px; background: #e9eddf; box-shadow: inset 0 0 0 1px #c9d2b8; }
 .live-aside-sheet i[data-mark="today"] { border: 1px solid var(--live-ink); }
 .live-aside-sheet i[data-mark="open"] { border: 2px solid #c8962e; }
 
 .live-aside-sheet .volunteer-teams-week tbody th { padding: 14px 0 2px; text-align: left; font-weight: 400; }
 .live-aside-sheet .volunteer-teams-week tbody th span { display: block; font-size: 15px; font-weight: 600; color: var(--live-ink); overflow-wrap: anywhere; }
-.live-aside-sheet .volunteer-teams-week tbody th small { display: block; font-size: 14px; color: var(--live-muted); }
+.live-aside-sheet .volunteer-teams-week tbody th small { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--live-muted); }
 .live-aside-sheet .volunteer-teams-week tbody td { height: 26px; padding: 4px 0 10px; text-align: center; vertical-align: top; line-height: 0; }
 .live-aside-sheet .volunteer-teams-week tbody td i { display: block; margin: 0 auto 3px; }
 
