@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { LiveFrame } from "@/components/live-frame";
+import { protect } from "@/lib/sample-ticket";
 import { LiveProviders } from "@/components/live-providers";
 import Loading from "./loading";
 import { PaperArrival } from "@/components/paper-arrival";
@@ -24,6 +25,8 @@ export default function LiveAppLayout({
           (the same answer as deviceLanguage in live-auth-words.ts). The app corrects it once it knows the member's own. */}
       <script dangerouslySetInnerHTML={{ __html: firstLanguage }} />
       {/* The menu's words are set in these faces from the first frame, so no label wraps and then jumps. */}
+      {/* Clerk's bot check, which every sign-in waits on, loads from here; the connection is opened with the page. */}
+      <link rel="preconnect" href={protect} />
       {["source-sans-3-latin-variable", "newsreader-display-regular"].map((face) => (
         <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
       ))}
