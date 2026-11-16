@@ -10,6 +10,14 @@ export function ClosingBand() {
       <source media="(max-width:700px) and (orientation:portrait)" srcSet="/assets/living-relief-mobile-accepted.webp" width={780} height={1688} />
       <img src="/assets/living-relief-accepted.webp" width={1440} height={1024} alt="" loading="lazy" decoding="async" />
     </picture>
+    {/* The open hand before the card comes back to it, cut from the opening picture, and the place the card lands. */}
+    <span className="neighborly-close-hand" aria-hidden="true">
+      <picture className="thread-empty">
+        <source media="(max-width:700px) and (orientation:portrait)" srcSet="/assets/home/hand-empty-mobile.webp" width={170} height={165} />
+        <img src="/assets/home/hand-empty.webp" width={360} height={295} alt="" loading="lazy" decoding="async" />
+      </picture>
+      <span className="card-station" data-station="end" data-turn={7} />
+    </span>
     <div className="neighborly-close-words">
       <h2 id="together-title">Bring this to<br /><em>your people.</em></h2>
       <div className="neighborly-final-actions">

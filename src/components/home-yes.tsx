@@ -17,6 +17,13 @@ export function HomeYes() {
       <h2 id="home-yes-title">Your turn.</h2>
       <p>The assistant drafted this request from a call note. Nothing is saved until a person says yes. Here, that person is you.</p>
     </div>
-    <div className="home-yes-desk">{settled && <HomeYesCard />}</div>
+    <div className="home-yes-desk">
+      {/* The call note this draft was made from: the card that has come down the page, tucked behind the sheet's corner. */}
+      <span className="card-station" data-station="sheet" data-turn={-7} data-tuck="-.2,-.5" aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/assets/home/card-480.webp" width={480} height={320} alt="" loading="lazy" decoding="async" />
+      </span>
+      {settled && <HomeYesCard />}
+    </div>
   </section>;
 }

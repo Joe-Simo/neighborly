@@ -80,16 +80,20 @@
 .relief-piece picture,.relief-piece .relief-shadow{position:absolute;inset:0}
 /* The piece's own shadow on the plate, a small soft picture made from the piece's outline: close where the paper lies flat, longer and fainter the higher it is held. */
 .relief-shadow{--up:var(--q);opacity:calc(.34 - var(--up) * .14);translate:calc(4px + var(--up) * 18px) calc(6px + var(--up) * 26px)}
-/* The call: the receiver lies on its cradle and is lifted, turning about the cord's joint so the cord never tears. Its shadow grows as it rises. */
-[data-picture=call] .relief-piece[data-moves]{transform-origin:82% 61.8%;transform:rotate(calc(var(--q) * -9deg))}
+/* The call: the receiver lies on its cradle and is lifted, turning about the cord's joint. Its shadow grows as it rises, and the cord swings once from the same joint and comes to rest. */
+[data-picture=call] [data-piece=piece]{transform-origin:82% 61.8%;transform:rotate(calc(var(--q) * -9deg))}
 [data-picture=call] .relief-shadow{--up:var(--h)}
-/* The visit: the door is shut and opens a hand's width onto the light; the two who came bring their hands up. */
-[data-picture=visit] .relief-piece[data-moves]{transform-origin:12.3% 50%;transform:scaleX(calc(1 + var(--q) * .135))}
-[data-picture=visit] .relief-piece:not([data-moves]){transform:translate(calc(var(--q) * -30px),calc(var(--q) * 26px))}
-/* The help: the envelope comes down sixty pixels to the open hand. */
-[data-picture=help] .relief-piece[data-moves]{transform:translate(calc(var(--q) * 14px),calc(var(--q) * -7.2cqw))}
-/* The year: the page turns over about the spine and lies down, the ribbon on it. */
-[data-picture=year] .relief-piece[data-moves]{transform-origin:45.6% 50%;transform:rotateY(calc(var(--q) * -98deg));backface-visibility:visible}
+[data-picture=call] [data-piece=cord]{transform-origin:86.5% 58%;transform:rotate(calc(sin(var(--h) * 180deg) * 4deg + var(--q) * -1.5deg))}
+/* The visit: the door is shut and opens a hand's width; the light comes up behind it; the two who came bring their hands up. */
+[data-picture=visit] [data-piece=light]{opacity:var(--h)}
+[data-picture=visit] [data-piece=leaf]{transform-origin:12.3% 50%;transform:scaleX(calc(1 + var(--q) * .135))}
+[data-picture=visit] [data-piece=hands]{transform:translate(calc(var(--q) * -30px),calc(var(--q) * 26px))}
+/* The help: the envelope comes down sixty pixels to the open hand, its flap with it. */
+[data-picture=help] .relief-piece{transform:translate(calc(var(--q) * 14px),calc(var(--q) * -7.2cqw))}
+/* The year: the page turns over about the spine and lies down; the ribbon follows a little behind it. */
+[data-picture=year] .relief-piece{transform-origin:45.6% 50%;backface-visibility:visible}
+[data-picture=year] [data-piece=page]{transform:rotateY(calc(var(--q) * -98deg))}
+[data-picture=year] [data-piece=ribbon]{transform:rotateY(calc(min(1,var(--q) * 1.35) * -98deg))}
 @media(max-width:820px){
   .relief-story{margin-top:-9vw;padding:2svh 0 48px}
   .relief-story::before,.relief-story::after{height:10vw}
