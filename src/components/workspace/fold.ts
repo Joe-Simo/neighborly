@@ -7,6 +7,7 @@ import { useEffect, useState, type RefObject } from "react";
 export const FOLD_HOLD = 1800;
 
 const LEAVE = 360;
+const OPENING = "paper-open-up";
 
 /**
  * After the hold, whatever is marked `data-fold-leaves` goes: it fades and closes up over 360ms, so what
@@ -29,18 +30,53 @@ export async function closeUp(sheet: HTMLElement) {
     // Wholly above the window: nobody sees it go, so it goes at once, and what the person is looking at
     // stays where it is. Browsers that anchor the scroll do that themselves; the others are told.
     const before = document.body.offsetHeight;
-    sheet.style.display = "none";
+    sheet.style.position = "absolute";
+    sheet.style.opacity = "0";
     if (!CSS.supports("overflow-anchor", "auto")) window.scrollBy(0, document.body.offsetHeight - before);
     return;
   }
+  // What the page will lose when the sheet is gone, measured, so the close ends exactly there. A closed
+  // sheet still keeps its neighbours' margins apart, which its absence does not; the last margin makes up for it.
+  // (Taken out of the flow for the measure, not hidden, so a line that has focus keeps it.)
+  const page = document.body.offsetHeight;
+  sheet.style.position = "absolute";
+  const lost = page - document.body.offsetHeight;
+  sheet.style.position = "";
+  const own = sheet.offsetHeight + parseFloat(marginTop) + parseFloat(marginBottom);
+  const timing = { duration: LEAVE, fill: "forwards" } as const;
+  // It stays readable to the end: the fade runs the whole length and is slow to start.
+  sheet.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, easing: "cubic-bezier(0.6, 0, 0.9, 0.6)" });
   await sheet.animate(
     [
-      { height, opacity: 1, marginTop, marginBottom, paddingTop, paddingBottom },
-      { opacity: 0, offset: 0.85 },
-      { height: "0px", opacity: 0, marginTop: "0px", marginBottom: "0px", paddingTop: "0px", paddingBottom: "0px" },
+      { height, marginTop, marginBottom, paddingTop, paddingBottom },
+      { height: "0px", marginTop: "0px", marginBottom: `${own - lost}px`, paddingTop: "0px", paddingBottom: "0px" },
     ],
-    { duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "forwards" },
+    { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   ).finished;
+}
+
+/**
+ * The other way: a piece of paper just laid into the page opens its own room over the same 360ms, so what
+ * is under it is moved aside and never jumps. Nothing happens for anyone who asks for less motion.
+ */
+export function openUp(sheet: HTMLElement) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // Asked twice, it opens once: an opening already under way is dropped before the paper is measured.
+  sheet.getAnimations().forEach((move) => move.id === OPENING && move.cancel());
+  const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
+  const page = document.body.offsetHeight;
+  sheet.style.position = "absolute";
+  const gained = page - document.body.offsetHeight;
+  sheet.style.position = "";
+  const own = sheet.offsetHeight + parseFloat(marginTop) + parseFloat(marginBottom);
+  const closed = { overflow: "hidden", boxSizing: "border-box" };
+  sheet.animate(
+    [
+      { ...closed, height: "0px", marginTop: "0px", marginBottom: `${own - gained}px`, paddingTop: "0px", paddingBottom: "0px" },
+      { ...closed, height: `${sheet.offsetHeight}px`, marginTop, marginBottom, paddingTop, paddingBottom },
+    ],
+    { id: OPENING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+  );
 }
 
 /**
@@ -73,7 +109,8 @@ function openFlat(sheet: HTMLElement) {
   sheet.getAnimations().forEach((move) => move.cancel());
   sheet.style.overflow = "";
   sheet.style.boxSizing = "";
-  sheet.style.display = "";
+  sheet.style.position = "";
+  sheet.style.opacity = "";
 }
 
 const never = Symbol("never");
@@ -92,7 +129,10 @@ export function useSavedLine(
   const [left, setLeft] = useState<unknown>(never);
   useEffect(() => {
     // A line that closed up before is opened flat again for its new words.
-    if (line.current) openFlat(line.current);
+    if (line.current) {
+      openFlat(line.current);
+      openUp(line.current);
+    }
     const stay = action ? 12000 : 6000;
     const step = 250;
     let shown = 0;

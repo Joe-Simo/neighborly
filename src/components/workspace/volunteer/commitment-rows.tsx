@@ -151,21 +151,28 @@ export function IncomingRequests({
     const beat = new Promise((settle) => setTimeout(settle, accept ? FOLD_HOLD : 0));
     setSaid(undefined);
     const saved = await perform({ type: "respondCover", requestId: request.id, accept });
-    if (accept && saved) {
-      await beat;
-      await foldLeaves();
+    if (!saved) {
+      setGiven(undefined);
+      onGiven?.(undefined);
+      return;
     }
-    setGiven(undefined);
-    onGiven?.(undefined);
-    if (!saved) return;
     if (!accept) return setSaid({ words: words.requests.declined, of: request.id });
-    // The page never moves after a yes. When the row has landed out of view, the line says where it is.
-    flushSync(() => onAccepted?.(request.commitmentId));
+    await beat;
+    // The page never moves after a yes. The row enters its list while the sheet is still there; where it
+    // will rest once the sheet has closed and the green line is laid is worked out from that, and when
+    // that is not wholly inside the window the line says where it is.
+    const leaving = document.querySelector<HTMLElement>("[data-fold-leaves]")?.offsetHeight ?? 0;
+    flushSync(() => {
+      onGiven?.(undefined);
+      onAccepted?.(request.commitmentId);
+    });
     const row = document.querySelector(".live-row.volunteer-filed")?.getBoundingClientRect();
-    // Measured before the green line is laid above it and while the row is still 26px up on its way in,
-    // so it counts as seen only if the whole row will still be inside the window after both.
-    const hidden = row && (row.top < 0 || row.bottom + LINE_ROOM > window.innerHeight);
+    const top = row ? row.top - leaving + LINE_ROOM : 0;
+    const hidden = row && (top < 0 || top + row.height > window.innerHeight);
+    // The line opens as the sheet closes, in one move.
     setSaid({ words: hidden && place ? words.requests.acceptedUnder(place) : words.requests.accepted, of: request.id });
+    await foldLeaves();
+    setGiven(undefined);
   };
   const line = said && <Said key={said.of}>{said.words}</Said>;
   const waiting = shown.filter((request) => request.id !== given?.id).length;
