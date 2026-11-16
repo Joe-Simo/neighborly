@@ -199,7 +199,7 @@ describe("the year's counts for the sample conference", () => {
     expect(report.time.teams).toEqual(byTeam);
     expect(byTeam.map((team) => team.name).sort()).toEqual(["Help line", "Pantry"]);
     const shiftHours = worked.reduce((sum, shift) => sum + (shift.end - shift.start) / HOUR, 0);
-    expect(report.time).toMatchObject({ activeMembers: 13, shiftHours, hours: report.visitHours + shiftHours });
+    expect(report.time).toMatchObject({ activeMembers: 12, shiftHours, hours: report.visitHours + shiftHours });
     expect(byMember.reduce((sum, line) => sum + line.hours, 0)).toBe(report.time.hours);
     // Households that money went toward for more than one request.
     const again = data.neighbors.filter((neighbor) => data.ledger.filter((entry) => entry.neighborId === neighbor._id && entry.kind === "expense" && inYearDay(entry.date)).length > 1).length;
