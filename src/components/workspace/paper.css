@@ -133,7 +133,9 @@
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
 .live-head-art[data-laid] > .relief { animation: paper-lay 560ms var(--paper-ease) backwards; animation-delay: 40ms; }
 .live-head-under { position: absolute; inset: 0; z-index: -1; animation: paper-under 560ms var(--paper-ease) forwards; }
-.live-room { animation: paper-show 240ms ease backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
+/* The room's body is one sheet laid on the desk under the head; its rows then arrive on it in order. */
+@keyframes paper-desk { from { opacity: 0; transform: translateY(10px); } 60% { opacity: 1; } }
+.live-room { animation: paper-desk 380ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
 
 /* Once a session, after sign-in or the sample link: three sheets sweep up and the last one settles as the page. */
 .paper-wave { position: fixed; inset: 0; z-index: 80; display: none; overflow: hidden; pointer-events: none; }

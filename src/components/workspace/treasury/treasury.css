@@ -450,14 +450,7 @@
 .treasury-lately .live-date-leaf span {
   font-size: 13px;
 }
-/* The paid sheet goes down into its ledger row, and the row holds the mark for a moment. */
-.help-sheet.treasury-leaving {
-  opacity: 0;
-  transform: translateY(18px) scale(0.985);
-  transition:
-    opacity 300ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)),
-    transform 300ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1));
-}
+/* The paid sheet closes up (foldLeaves) and its ledger row holds the mark for a moment. */
 .help-ledger tbody tr {
   transition: background-color 400ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1));
 }
@@ -466,7 +459,6 @@
   background-color: color-mix(in srgb, #c8962e 16%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
-  .help-sheet.treasury-leaving,
   .help-ledger tbody tr {
     transition: none;
   }

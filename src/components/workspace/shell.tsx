@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type Ref } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, LogOut, Menu, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ import {
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
+import { closeUp } from "@/components/workspace/fold";
 import { ReliefPicture } from "@/components/workspace/relief";
 import { sections } from "@/components/workspace/sections";
 import type {
@@ -620,14 +621,19 @@ function useNavMarker(area: LiveArea) {
  * The green line that says what was done. It is seen for six seconds, then leaves the page and
  * stays as a message for screen readers. Each new outcome is a new line (the old one is cleared first).
  */
-function Outcome({ children, ref }: { children: string; ref: Ref<HTMLDivElement> }) {
+function Outcome({ children, ref }: { children: string; ref: RefObject<HTMLDivElement | null> }) {
   const [seen, setSeen] = useState(true);
   useEffect(() => {
-    const leave = window.setTimeout(() => setSeen(false), 6000);
+    // It is laid down like a slip, and after six seconds it closes up so the page below does not jump.
+    const leave = window.setTimeout(() => {
+      const line = ref.current;
+      if (line) void closeUp(line).then(() => setSeen(false));
+      else setSeen(false);
+    }, 6000);
     return () => window.clearTimeout(leave);
-  }, []);
+  }, [ref]);
   return (
-    <div className={seen ? "live-success" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
+    <div className={seen ? "live-success paper-settle" : "sr-only"} role="status" tabIndex={-1} ref={ref}>
       {children}
     </div>
   );

@@ -160,11 +160,8 @@ export function LedgerView({
       {first && (
         <section
           key={first.requestId}
-          className={
-            paid
-              ? `help-sheet treasury-sheet paper-fold${paid.leaving ? " treasury-leaving" : ""}`
-              : "help-sheet treasury-sheet"
-          }
+          className={paid ? "help-sheet treasury-sheet paper-fold" : "help-sheet treasury-sheet"}
+          data-fold-leaves={paid ? "" : undefined}
           aria-labelledby="treasury-waiting-title"
         >
           <p className="help-sheet-label" data-paid={paid ? "" : undefined}>
