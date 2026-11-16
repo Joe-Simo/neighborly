@@ -72,7 +72,9 @@ final class ShellViewController: CAPBridgeViewController {
         // The page can tell it is inside the app: `:root[data-shell="ios"]`,
         // set before its first paint. The way in leaves its own status strip
         // out under that mark, and says here when it is the page shown, so the
-        // app's strip holds the status area for as long as it is.
+        // app's strip holds the status area for as long as it is. The door's
+        // sweep (`data-door="sweeping"`) counts as having left: its colour
+        // covers the status area as one sheet, so the strip is gone at once.
         scripts.addUserScript(WKUserScript(
             source: "document.documentElement.dataset.shell = 'ios';",
             injectionTime: .atDocumentStart,
@@ -83,12 +85,12 @@ final class ShellViewController: CAPBridgeViewController {
             (() => {
               let shown = null;
               const tell = () => {
-                const now = !!document.querySelector(".entry");
+                const now = !!document.querySelector(".entry") && document.documentElement.dataset.door !== "sweeping";
                 if (now === shown) return;
                 shown = now;
                 window.webkit.messageHandlers.kindHelpsSignIn.postMessage(now);
               };
-              new MutationObserver(tell).observe(document.documentElement, { childList: true, subtree: true });
+              new MutationObserver(tell).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-door"] });
               tell();
             })();
             """,
@@ -166,8 +168,9 @@ final class ShellViewController: CAPBridgeViewController {
     }
 
     /// On the way in the strip is there from the first frame, so nothing has
-    /// to arrive when the keyboard does. Leaving for a room, it lifts: a room
-    /// draws its own bar there at rest.
+    /// to arrive when the keyboard does. Leaving for a room, it is gone in the
+    /// same frame, out of the way of the door's sweep: a room draws its own
+    /// bar there at rest.
     private func signIn(shown: Bool) {
         guard shown != onSignIn else { return }
         onSignIn = shown
@@ -176,7 +179,7 @@ final class ShellViewController: CAPBridgeViewController {
             statusStrip = nil
             layStrip(barPaper)
         } else {
-            lift([statusStrip])
+            statusStrip?.removeFromSuperview()
             statusStrip = nil
         }
     }
