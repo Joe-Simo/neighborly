@@ -195,7 +195,7 @@ describe("removing a record", () => {
     expect((await owner.query(api.neighbors.list, { churchId, search: "Record" })).rows).toEqual([]);
     expect(await owner.query(api.neighbors.matches, { churchId, name: "Record removed", phone: "(100) 555-0104" })).toEqual([]);
     expect((await owner.query(api.assistance.requests, { churchId })).map((request) => request.summary)).toEqual([]);
-    const helpLine = await owner.query(api.assistance.calls, { churchId });
+    const helpLine = await owner.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId });
     expect([...helpLine.waiting, ...helpLine.returned].map((call) => call.callerName)).toEqual([]);
     for (const attempt of [
       () => owner.query(api.neighbors.record, { churchId, neighborId }),
@@ -226,8 +226,8 @@ describe("removing a record", () => {
     });
     const year = new Date().getUTCFullYear();
     const books = async () => ({
-      thisYear: await owner.query(api.reports.year, { churchId, year }),
-      nextYear: await owner.query(api.reports.year, { churchId, year: year + 1 }),
+      thisYear: await owner.query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year }),
+      nextYear: await owner.query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId, year: year + 1 }),
       shelf: await owner.query(api.treasury.voucherShelf, { churchId }),
     });
     const before = await books();

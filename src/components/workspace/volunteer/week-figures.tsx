@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@/components/workspace/query";
+import { useHour, useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
 import { CountUp } from "@/components/workspace/primitives";
@@ -15,7 +15,8 @@ export function WeekFigures({ noted = false }: { noted?: boolean }) {
   const { data, words } = useWorkspace();
   const churchId = data.church.id;
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
-  const counts = useQuery(api.drafts.weekNote, allowed ? { churchId } : "skip");
+  const at = useHour();
+  const counts = useQuery(api.drafts.weekNote, allowed && at ? { churchId, at } : "skip");
   // Still on their way: the door's paper (door.tsx) waits for them, so it lifts off a room with its figures in.
   if (!counts) return allowed === false ? null : <span hidden data-room-pending="" />;
   // Under a figure, one short line of why it matters today. Only what is waiting gets one.

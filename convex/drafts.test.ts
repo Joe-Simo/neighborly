@@ -233,7 +233,8 @@ describe("a call note drafted into a request", () => {
     const day = 86_400_000, now = Date.now();
     await t.run(async ctx => {
       const neighbor = (await ctx.db.query("neighbors").first())!;
-      await ctx.db.patch("calls", ids.callId, { takenAt: now - 3 * day - 1000 });
+      // Well past three days: the note is asked by the hour, so an age turns over up to an hour late.
+      await ctx.db.patch("calls", ids.callId, { takenAt: now - 3 * day - 7_200_000 });
       await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Earl Jennings", phone: "(239) 555-0178", note: "Power shut-off notice for the 21st. Lives alone.", callback: "needed", takenBy: ids.coordinator.memberId, takenAt: now - day, urgent: { reasons: ["shutoff"], day: 21, by: "assistant" } });
       await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Mai Tran", phone: "(239) 555-0119", note: "No food today.", callback: "done", takenBy: ids.coordinator.memberId, takenAt: now - day });
       await ctx.db.insert("visits", { churchId: ids.churchId, neighborId: neighbor._id, scheduledAt: now + 2 * day, status: "scheduled", visitors: [], notes: "", createdBy: ids.coordinator.memberId, createdAt: now });
@@ -246,10 +247,12 @@ describe("a call note drafted into a request", () => {
       const iso = (time: number) => new Date(time).toISOString().slice(0, 10);
       await ctx.db.insert("timeOff", { churchId: ids.churchId, memberId: ids.member.memberId, start: iso(now - 2 * day), end: iso(now + 3 * day), note: "" });
     });
-    const note = await coordinator.query(api.drafts.weekNote, { churchId: ids.churchId });
+    const note = await coordinator.query(api.drafts.weekNote, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId });
     expect(note).toEqual({ callsWaiting: 2, callsFirstByAssistant: 1, callsFirstByPerson: 0, oldestWaitingDays: 3, visitsPlanned: 1, requestsOpen: 0, approvedUnpaid: 1, approvedUnpaidCents: 25000, openPlaces: 1, away: 1 });
+    // The hour asked about began before a call taken within it: its age reads zero, never less.
+    expect((await coordinator.query(api.drafts.weekNote, { at: Math.floor(Date.now() / 3600000) * 3600000 - 96 * 3600000, churchId: ids.churchId })).oldestWaitingDays).toBe(0);
     expect(fetch).not.toHaveBeenCalled();
-    await expect(member.query(api.drafts.weekNote, { churchId: ids.churchId })).rejects.toThrow("coordinators and owners only");
+    await expect(member.query(api.drafts.weekNote, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId })).rejects.toThrow("coordinators and owners only");
   });
 
   test("scores from the live runs: 0.9 stands, 0.89 and below leave the field blank for a person", async () => {
