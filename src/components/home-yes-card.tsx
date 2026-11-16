@@ -53,28 +53,31 @@ export function HomeYesCard() {
     if (step !== "filed" || !root || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const find = (selector: string) => root.querySelector<HTMLElement>(selector);
     const moves: Animation[] = [];
-    const travel = (from: HTMLElement | null, to: HTMLElement | null) => {
+    // The sheet's small words are gone within 100ms; only then does anything set off.
+    const travel = (from: HTMLElement | null, to: HTMLElement | null, resized: boolean) => {
       if (!from || !to) return;
       const start = from.getBoundingClientRect();
       const end = to.getBoundingClientRect();
-      // Words keep their shape: they are sized by their letters, not stretched to the other's box.
+      const move = `translate(${start.left - end.left}px, ${start.top - end.top}px)`;
+      // The name keeps its shape, sized by its letters. The request is never stretched: its small setting
+      // comes up in the place of the large one as that fades, and is carried to its line.
       const scale = parseFloat(getComputedStyle(from).fontSize) / parseFloat(getComputedStyle(to).fontSize);
       moves.push(to.animate(
-        [{ transform: `translate(${start.left - end.left}px, ${start.top - end.top}px) scale(${scale})` }, { transform: "none" }],
-        { duration: 520, easing: PAPER_EASE, fill: "backwards" },
+        resized ? [{ transform: `${move} scale(${scale})` }, { transform: "none" }] : [{ transform: move, opacity: 0 }, { opacity: 0, offset: 0.2 }, { opacity: 1, offset: 0.55 }, { transform: "none", opacity: 1 }],
+        { duration: 420, delay: 100, easing: PAPER_EASE, fill: "backwards" },
       ));
     };
-    travel(find(".help-from strong"), find("[data-new] strong"));
-    travel(find("#draft-title"), find("[data-new] span"));
+    travel(find(".help-from strong"), find("[data-new] strong"), true);
+    travel(find("#draft-title"), find("[data-new] span"), false);
     const arrive = (part: HTMLElement | null, delay: number, rise = 0, duration = 260) => {
       if (part) moves.push(part.animate([{ opacity: 0, transform: `translateY(${rise}px)` }, { opacity: 1, transform: "none" }], { duration, delay, easing: PAPER_EASE, fill: "backwards" }));
     };
-    arrive(find(".home-yes-filed .help-sheet-label"), 260);
+    arrive(find(".home-yes-filed .help-sheet-label"), 180);
     arrive(find("[data-new] small"), 360, 0, 160);
     // The tick is set down at the head of the line as the words reach it. Carried straight from the foot of the sheet it would cross them.
     const tick = find("[data-new] i");
     if (tick) moves.push(tick.animate([{ opacity: 0, transform: "scale(1.5)" }, { opacity: 1, transform: "none" }], { duration: 220, delay: 300, easing: PAPER_EASE, fill: "backwards" }));
-    root.querySelectorAll<HTMLElement>(".home-yes-filed li:not([data-new])").forEach((row, order) => arrive(row, 260 + order * 40, 12));
+    root.querySelectorAll<HTMLElement>(".home-yes-filed li:not([data-new])").forEach((row, order) => arrive(row, 180 + order * 40, 12));
     arrive(find(".home-yes-after"), 520, 8, 80);
     return () => moves.forEach(move => move.cancel());
   }, [step]);

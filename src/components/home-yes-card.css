@@ -20,11 +20,13 @@
 .home-yes-stage .help-seal{animation-duration:200ms;animation-delay:0ms}
 .home-yes-stage .help-seal path{animation-duration:200ms;animation-delay:80ms}
 
-/* Filed: the sheet's words give way within 160ms, and the list's words travel from them (home-yes-card.tsx). Back to rest is one 200ms cross-fade. */
+/* Filed: the sheet's small words give way within 100ms, and the list's words travel from them (home-yes-card.tsx). Back to rest is one 200ms cross-fade. */
 .home-yes-sheet .help-sheet>*{transition:opacity 200ms linear}
-[data-step=filed] .help-sheet>*{opacity:0;transition-duration:160ms}
-/* The two things that travel are never seen twice: the sheet's own leave at once as the list's set off from their place. */
-[data-step=filed] .help-sheet :is(.help-from strong,h2){opacity:0}
+[data-step=filed] .help-sheet>*{opacity:0;transition-duration:100ms}
+/* The name is never seen twice: the sheet's own leaves at once as the list's stands in its place. The request's large setting fades as its small one comes up. */
+[data-step=filed] .help-sheet .help-from strong{opacity:0}
+[data-step=filed] .help-sheet .help-sheet-body{transition-duration:150ms}
+[data-step=filed] .help-sheet .help-sheet-body :is(.help-from,.help-quote,.help-why,.help-seal){opacity:0;transition:opacity 100ms linear}
 .home-yes-filed{position:relative;padding:31px 35px 27px;opacity:0;pointer-events:none;transition:opacity 200ms linear}
 [data-step=filed]>.home-yes-filed{opacity:1;pointer-events:auto;transition:none}
 .home-yes-filed .help-sheet-label{color:#52644f;margin:0;padding-bottom:14px;border-bottom:1px solid var(--live-line)}
@@ -51,7 +53,7 @@
   .home-yes-after .home-yes-again{margin-left:0}
 }
 @media(prefers-reduced-motion:reduce){
-  [data-step=filed] .help-sheet :is(.help-from strong,h2){opacity:1}
+  [data-step=filed] .help-sheet .help-from strong{opacity:1}
   [data-step=filed] .help-sheet>*{transition-duration:200ms}
   [data-step=filed]>.home-yes-filed{transition:opacity 200ms linear}
 }
