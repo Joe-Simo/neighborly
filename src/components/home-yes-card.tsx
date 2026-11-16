@@ -6,6 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraftSheet } from "@/components/workspace/help-line/draft-sheet";
 import { formatDate, words } from "@/lib/words";
+import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
 import "@/components/workspace/help.css";
 import "@/components/workspace/paper.css";
 import "@/components/workspace/help-line/help-line.css";
@@ -78,12 +79,18 @@ export function HomeYesCard() {
     const tick = find("[data-new] i");
     if (tick) moves.push(tick.animate([{ opacity: 0, transform: "scale(1.5)" }, { opacity: 1, transform: "none" }], { duration: 220, delay: 300, easing: PAPER_EASE, fill: "backwards" }));
     root.querySelectorAll<HTMLElement>(".home-yes-filed li:not([data-new])").forEach((row, order) => arrive(row, 180 + order * 40, 12));
+    arrive(find(".home-yes-year"), 440, 0, 160);
     arrive(find(".home-yes-after"), 520, 8, 80);
     return () => moves.forEach(move => move.cancel());
   }, [step]);
   useEffect(() => {
     // The press leaves with the button, so the keyboard is handed to what came of it; the page itself never moves.
     if (step === "filed") way.current?.focus({ preventScroll: true });
+    // The year in the book above counts this request too. It is said on the page only; nothing is sent or kept.
+    if (step === "filed" && document.documentElement.dataset.yesGiven !== "true") {
+      document.documentElement.dataset.yesGiven = "true";
+      window.dispatchEvent(new Event(YES_GIVEN));
+    }
     if (step !== "waiting" || !again.current) return;
     // The sheet's button can take the keyboard only once the browser has drawn the sheet as let back in: the frame after next.
     let frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => stage.current?.querySelector<HTMLElement>(".help-actions button")?.focus({ preventScroll: true })); });
@@ -115,6 +122,7 @@ export function HomeYesCard() {
           <small>Received {format(takenAt - one.days * DAY, { weekday: "long", month: "long" })}</small>
         </li>)}
       </ol>
+      <p className="home-yes-year">{(sampleYear.requests + 1).toLocaleString("en-US")} requests for help in the sample’s year. One more than a minute ago.</p>
       <p className="home-yes-after">
         <span>That is the whole idea.</span>
         <Button asChild variant="link" className="home-yes-in"><Link ref={way} href="/app?intent=sample">Look around a sample conference<ArrowUpRight aria-hidden="true" /></Link></Button>

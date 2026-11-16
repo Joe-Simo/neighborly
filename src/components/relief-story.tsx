@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
+import { HomeYear } from "./home-year";
 import "./relief-journey.css";
 
 // Each picture is a plate with loose paper lying on it, listed from the lowest sheet up. A piece that names a shadow casts one on the plate.
@@ -57,7 +58,7 @@ export function ReliefStory() {
   return <section ref={root} className="relief-story" aria-label="What a conference does with Kind Helps">
     {story.map((part, index) => <article key={part.picture} className="relief-panel" data-side={index % 2 ? "left" : "right"}>
       <div className="relief-hold">
-      <div className="relief-words"><h2>{part.title}</h2><p>{part.copy}</p></div>
+      <div className="relief-words"><h2>{part.title}</h2><p>{part.copy}</p>{part.picture === "year" && <HomeYear />}</div>
       <div className="relief-picture" data-picture={part.picture}>
         <div className="relief-layers">
           <picture>
