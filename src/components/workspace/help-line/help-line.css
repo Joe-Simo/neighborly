@@ -97,25 +97,23 @@
 @keyframes help-dot-fill { from { background: transparent; box-shadow: inset 0 0 0 1.5px currentColor; } }
 /* The travelling row passes under the heading it is going to. */
 .help-lists .live-section-head { position: relative; z-index: 1; background: var(--live-paper); }
-/* A neighbor's name opens the record; on a phone the whole row does, and the button goes. */
+/* The whole row opens the record through its one link, the name; a quiet arrow at the end darkens when the row is under the hand. */
 .help-row-open { color: inherit; text-decoration: none; }
-/* The name is one line of type; its target is taller than it looks. */
-@media (min-width: 701px) {
-  .help-row-open { position: relative; }
-  .help-row-open::after { content: ""; position: absolute; inset: -12px -8px; }
-}
+.help-row:has(.help-row-open) { position: relative; cursor: pointer; }
+.help-row-open::after { content: ""; position: absolute; inset: 0; }
+.help-row-open:focus-visible { outline: none; }
+.help-row:has(.help-row-open:focus-visible) { outline: 2px solid var(--live-green); outline-offset: -2px; border-radius: 6px; }
+.help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
+.help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { color: var(--live-ink); transform: translateX(4px); }
 @media (max-width: 850px) {
   .help-sealed .help-actions { display: none; }
   .help-sealed .help-sheet-body { row-gap: 24px; }
   .help-seal { position: static; }
 }
-@media (max-width: 700px) {
-  .help-row:has(.help-row-open) { position: relative; }
-  .help-row-open::after { content: ""; position: absolute; inset: 0; }
-  .live-app .help-row .help-row-button { display: none; }
-}
 @media (prefers-reduced-motion: reduce) {
   .help-sheet.help-sealed, .help-seal, .help-seal path, .help-row[data-arrived] .live-status:before { animation: none; }
+  .help-row-arrow { transition: none; }
+  .help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { transform: none; }
 }
 /* The neighbor list reads under letter heads that stay in view while their households pass. */
 .live-app .help-letter-head {
@@ -180,3 +178,8 @@
 /* "Reach them" stands first in At home: four columns on a wide desk, two by two on a narrower one. */
 @media (min-width: 851px) { .help-home { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 34px; } }
 @media (min-width: 1180px) { .help-home { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* On a phone the row itself is the sign; the arrow would only dangle under the text. */
+@media (max-width: 700px) {
+  .help-row-arrow { display: none; }
+  .help-neighbor .live-row-actions:not(:has(.live-status)) { display: none; }
+}

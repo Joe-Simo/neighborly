@@ -4,7 +4,7 @@ import { useCallback, useDeferredValue, useLayoutEffect, useState } from "react"
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@/components/workspace/query";
-import { Lock, Search } from "lucide-react";
+import { ArrowRight, Lock, Search } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ const FIRST = 30;
 
 type Row = NeighborList["rows"][number];
 
-/** One household in the list. On a phone the whole row opens the record. */
+/** One household in the list. The whole row opens the record through its one link, the name. */
 function NeighborRow({
   neighbor,
   format,
@@ -153,11 +153,7 @@ function NeighborRow({
                     {format(neighbor.visitAt, { weekday: "short" })}
                   </span>
                 )}
-                <Button variant="outline" asChild className="help-row-button">
-                  <Link href={recordHref(neighbor.id)} tabIndex={-1} aria-hidden="true">
-                    Open record
-                  </Link>
-                </Button>
+                <ArrowRight className="help-row-arrow" size={20} aria-hidden="true" />
               </div>
             </div>
   );
