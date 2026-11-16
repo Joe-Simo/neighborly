@@ -88,6 +88,10 @@
 [data-picture=visit] [data-piece=light]{opacity:var(--h)}
 [data-picture=visit] [data-piece=leaf]{transform-origin:12.3% 50%;transform:scaleX(calc(1 + var(--q) * .135))}
 [data-picture=visit] [data-piece=hands]{transform:translate(calc(var(--q) * -30px),calc(var(--q) * 26px))}
+/* No ground is drawn under the door, so nothing is cast below its foot: the shadows end there, not at the picture's cut edge. */
+/* The leaf's cut left a faint strip beyond its own edge, which showed beside the post while the door stood open wider. */
+[data-picture=visit] [data-piece=leaf] picture{-webkit-mask-image:linear-gradient(90deg,#000 47.35%,#0000 47.5%);mask-image:linear-gradient(90deg,#000 47.35%,#0000 47.5%)}
+[data-picture=visit] .relief-shadow{-webkit-mask-image:linear-gradient(#000 89.6%,#0000 91.2%);mask-image:linear-gradient(#000 89.6%,#0000 91.2%)}
 /* The help: the envelope comes down sixty pixels to the open hand, its flap with it. */
 [data-picture=help] .relief-piece{transform:translate(calc(var(--q) * 14px),calc(var(--q) * -7.2cqw))}
 /* The year: the page turns over about the spine and lies down; the ribbon follows a little behind it. */
