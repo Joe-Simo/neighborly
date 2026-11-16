@@ -125,8 +125,8 @@
   transform-origin: 0 50%;
   transition: transform 260ms var(--paper-ease);
 }
-.live-app .entry-tabs button[aria-pressed="true"] { color: var(--paper-ink); font-weight: 600; opacity: 1; }
-.entry-tabs button[aria-pressed="true"]::after { transform: none; }
+.live-app .entry-tabs button:is([aria-pressed="true"], [data-state="on"]) { background: none; color: var(--paper-ink); font-weight: 600; opacity: 1; }
+.entry-tabs button:is([aria-pressed="true"], [data-state="on"])::after { transform: none; }
 @media (hover: hover) {
   .live-app .entry-tabs button:hover { background: none; color: var(--paper-ink); }
 }
@@ -349,3 +349,27 @@
 
 /* While a field says what is wrong with it, its standing hint steps aside: one sentence, not two. */
 .entry .live-field:has(.live-field-needed) small:not(.live-field-needed) { display: none; }
+
+/* ── The first welcome, written on the same sheet ─────────────────────── */
+.entry .live-wordmark { display: inline-block; margin-bottom: 22px; color: var(--paper-ink); font-size: 30px; line-height: 1; }
+.entry .entry-tabs { justify-content: flex-start; width: 100%; border-radius: 0; }
+.live-app .entry .live-field select { min-height: 50px; padding-inline: 14px; background-color: #fffdf7; font-size: 17px; }
+/* What a conference is, said once, in the sheet's own small print between two hairlines. */
+.entry-note {
+  margin: 0;
+  padding-block: 12px;
+  border-block: 1px solid var(--live-line);
+  color: var(--live-muted);
+  font-size: 15px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.live-app .entry .entry-leave { margin: 14px 0 0; }
+@media (max-width: 699px) {
+  .entry .live-wordmark { margin-bottom: 14px; font-size: 26px; }
+}
+/* Two long choices, as in Spanish, take a line each on a narrow sheet. */
+.entry .entry-tabs { flex-wrap: wrap; column-gap: 26px; }
+.live-app .entry-tabs button { flex: none; white-space: nowrap; }
+.entry [data-slot="native-select-wrapper"],
+.live-app .entry .live-field select { width: 100%; }

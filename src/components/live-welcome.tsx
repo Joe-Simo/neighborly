@@ -3,6 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { readFailure } from "@/components/workspace/failure";
 import Link from "next/link";
+import { words } from "@/lib/words";
+import { EntrySheet } from "./entry-sheet";
+import { useEntryLanguage } from "./live-auth-words";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +34,12 @@ export function LiveWelcome({
     initialToken ? "join" : initialMode,
   );
   const [pending, setPending] = useState(false);
+  /** The conference is made or joined: the corner turns green while the workspace opens. */
+  const [given, setGiven] = useState(false);
+  const [language] = useEntryLanguage();
+  const book = words(language);
+  const w = book.welcome.first;
+  const { needed } = book.states;
   const [error, setError] = useState("");
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -54,72 +63,53 @@ export function LiveWelcome({
           token: value("token"),
           displayName: value("displayName"),
         });
+      setGiven(true);
     } catch (cause) {
       setError(
-        readFailure(cause, "We couldn’t save that. Please try again."),
+        readFailure(cause, w.notSaved),
       );
     } finally {
       setPending(false);
     }
   }
+  const busy = pending || given;
   return (
-    <main className="live-auth live-welcome">
-      <div className="live-auth-art" aria-hidden="true" />
+    <EntrySheet page={mode} corner={given ? "given" : "rest"}>
       <Link href="/" className="live-wordmark">
         kind helps
       </Link>
-      <p className="live-kicker">
-        {mode === "create" ? "A small beginning" : "An invitation to belong"}
-      </p>
-      <h1>{mode === "create" ? "Make room for your people." : "Your people are here."}</h1>
+      <p className="live-kicker">{mode === "create" ? w.createKicker : w.joinKicker}</p>
+      <h1>{mode === "create" ? w.createTitle : w.joinTitle}</h1>
       <p className="live-deck">
-        {mode === "create"
-          ? "Give your conference a private place to organize its people, plans and acts of care."
-          : "Use your invitation to join your conference. You’ll choose the commitments you accept."}
+        {mode === "create" ? w.createDeck : w.joinDeck}
       </p>
       <ToggleGroup
         type="single"
         value={mode}
-        disabled={pending}
+        disabled={busy}
         onValueChange={(value) => {
           if (value !== "create" && value !== "join") return;
           setMode(value);
           setError("");
         }}
-        className="live-welcome-modes"
-        aria-label="Choose how to begin"
+        className="entry-tabs"
+        aria-label={w.choose}
       >
-        <ToggleGroupItem value="create">Start a conference</ToggleGroupItem>
-        <ToggleGroupItem value="join">I have an invitation</ToggleGroupItem>
+        <ToggleGroupItem value="create">{w.start}</ToggleGroupItem>
+        <ToggleGroupItem value="join">{w.invited}</ToggleGroupItem>
       </ToggleGroup>
       <form className="live-form" onSubmit={submit} aria-busy={pending}>
-        <LiveField label="Your name">
-          <Input
-            name="displayName"
-            autoComplete="name"
-            required
-            maxLength={100}
-            disabled={pending}
-          />
+        <LiveField label={w.yourName} said={{ needed }}>
+          <Input name="displayName" autoComplete="name" required maxLength={100} disabled={busy} />
         </LiveField>
         {mode === "create" ? (
           <>
-            <LiveField label="Conference name">
-              <Input name="name" required maxLength={120} disabled={pending} />
+            <LiveField label={w.conferenceName} said={{ needed }}>
+              <Input name="name" required maxLength={120} disabled={busy} />
             </LiveField>
-            <LiveField
-              label="Conference time zone"
-              help="Commitments and meeting times use this time zone."
-            >
-              <NativeSelect
-                name="timeZone"
-                defaultValue={timeZone}
-                disabled={pending}
-                required
-              >
-                {!zones.includes(timeZone) && (
-                  <option value={timeZone}>{timeZone}</option>
-                )}
+            <LiveField label={w.timeZone} help={w.timeZoneHelp} said={{ neededChoice: book.states.neededChoice }}>
+              <NativeSelect name="timeZone" defaultValue={timeZone} disabled={busy} required>
+                {!zones.includes(timeZone) && <option value={timeZone}>{timeZone}</option>}
                 {zones.map((zone) => (
                   <option key={zone} value={zone}>
                     {zone.replaceAll("_", " ")}
@@ -127,51 +117,44 @@ export function LiveWelcome({
                 ))}
               </NativeSelect>
             </LiveField>
-            <div className="live-note">
-              A conference is the parish team that answers the help line and
-              visits in pairs. Only invited members can open yours. You can add
-              teams and invite people after creating it.
-            </div>
+            <p className="entry-note">
+              {w.what} {w.note}
+            </p>
           </>
         ) : (
           <LiveField
-            label="Invitation code"
-            help="Use the code supplied by your coordinator. Joining does not accept a commitment."
+            label={w.code}
+            help={w.codeHelp}
+            said={{ needed }}
           >
-            <Input
-              name="token"
-              defaultValue={initialToken}
-              required
-              maxLength={500}
-              autoComplete="off"
-              disabled={pending}
-            />
+            <Input name="token" defaultValue={initialToken} required maxLength={500} autoComplete="off" disabled={busy} />
           </LiveField>
         )}
         {error && (
-          <div className="live-error" role="alert">
+          <div
+            className="live-error live-failure"
+            role="alert"
+            ref={(notice) => notice?.scrollIntoView({ block: "nearest" })}
+          >
             <p>{error}</p>
-            <p className="live-error-recovery">Your entries are still here. Check the details and try again.</p>
+            <p className="live-error-recovery">{w.kept}</p>
           </div>
         )}
-        <Button type="submit" disabled={pending}>
-          {pending ? <LoaderCircle size={17} aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}{" "}
-          {pending
-            ? mode === "create" ? "Creating your conference…" : "Joining your conference…"
-            : mode === "create"
-              ? "Create conference"
-              : "Join conference"}
+        <Button type="submit" disabled={busy}>
+          {pending ? (
+            <LoaderCircle size={17} aria-hidden="true" className="live-auth-spin" />
+          ) : (
+            <ArrowRight size={17} aria-hidden="true" />
+          )}
+          {pending ? (mode === "create" ? w.creating : w.joining) : mode === "create" ? w.create : w.join}
         </Button>
-        <span className="sr-only" role="status">{pending ? mode === "create" ? "Creating your conference." : "Joining your conference." : ""}</span>
+        <span className="sr-only" role="status">
+          {pending ? (mode === "create" ? w.creating : w.joining) : ""}
+        </span>
       </form>
-      <Button
-        variant="link"
-        className="live-welcome-signout"
-        disabled={pending}
-        onClick={() => void signOut()}
-      >
-        Sign out
+      <Button variant="link" className="entry-quiet entry-leave" disabled={busy} onClick={() => void signOut()}>
+        {book.shell.signOut}
       </Button>
-    </main>
+    </EntrySheet>
   );
 }
