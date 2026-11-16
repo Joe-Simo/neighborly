@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ComponentProps, MouseEvent, MouseEventHandler, PointerEvent } from "react";
-import { askSampleTicket, warmSignIn } from "@/lib/sample-ticket";
+import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
 
 /**
  * What every way into the sample does before the visitor arrives: pointing at it or reaching it by keyboard fetches
@@ -14,11 +14,15 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
     onFocus: warmSignIn,
     onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
       if (event.button !== 0) return;
-      warmSignIn();
       askSampleTicket();
+      warmSignIn();
+      startSignIn();
     },
     onClick: (event: MouseEvent<HTMLAnchorElement>) => {
-      if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) askSampleTicket();
+      if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+        askSampleTicket();
+        startSignIn();
+      }
       onClick?.(event);
     },
   };
