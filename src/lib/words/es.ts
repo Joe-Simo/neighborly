@@ -26,6 +26,7 @@ const terms: Record<WordSet, Terms> = {
 /** Spanish. Written without a native speaker's review; one is still owed. */
 export function es(set: WordSet): Words {
   const t = terms[set];
+  const place = set === "vincentian" ? "conferencia" : "espacio";
   return {
     locale: "es",
     terms: t,
@@ -46,13 +47,13 @@ export function es(set: WordSet): Words {
     },
     shell: {
       menu: "Menú",
-      menuTitle: "Tu espacio",
-      menuLabel: "Menú de tu espacio",
-      menuCurrent: (section) => `Menú de tu espacio, estás en: ${section}`,
+      menuTitle: `Tu ${place}`,
+      menuLabel: `Menú de tu ${place}`,
+      menuCurrent: (section) => `Menú de tu ${place}, estás en: ${section}`,
       allSections: "Todas las secciones",
-      workspace: "Tu espacio",
+      workspace: `Tu ${place}`,
       current: "Aquí",
-      skip: "Ir a tu espacio",
+      skip: `Ir a tu ${place}`,
       signOut: "Salir",
       leaveSample: "Salir de la muestra",
       close: "Cerrar",
@@ -64,6 +65,11 @@ export function es(set: WordSet): Words {
       typedStays: "Lo que escriben las personas queda como lo escribieron.",
       member: "Miembro",
       team: "Equipo",
+      more: {
+        load: (what) => `Cargar más ${what}`,
+        loading: (what) => `Cargando ${what}…`,
+        what: { commitments: "compromisos", people: "personas", invitations: "invitaciones", teams: "equipos", announcements: "avisos", cover: "pedidos de reemplazo", timeOff: "días libres", availability: "disponibilidad", tasks: "tareas", meetings: "reuniones" },
+      },
       limited: "Algunas listas muestran solo una parte. Usa Cargar más en la sección correspondiente para ver el resto.",
     },
     headings: {
@@ -99,6 +105,14 @@ export function es(set: WordSet): Words {
     actions: {
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
+      commitment: "Agregar un compromiso",
+      commitmentTimes: (zone: string) => `Las horas son ${zone}.`,
+      commitmentForm: {
+        title: "Título", team: "Equipo", chooseTeam: "Elige un equipo…", starts: "Empieza", ends: "Termina", where: "Dónde reunirse",
+        preparation: "Preparación", preparationHelp: "¿Qué debe saber o hacer la persona de antemano?",
+        repeats: "Se repite", everyWeek: "Cada semana", everyWeeks: (count: number) => `Cada ${count} semanas`,
+        times: "Cuántas veces", timesHelp: "1 es una sola fecha. Hasta 52 en un año.", save: "Guardar", saving: "Guardando…",
+      },
       announcementSees: `Todos en ${t.group === "grupo" ? "el grupo" : "la conferencia"} lo ven en Esta semana.`,
       announcementForm: { title: "Título", message: "Mensaje", save: "Compartir aviso", saving: "Compartiendo…" },
     },
@@ -265,13 +279,13 @@ export function es(set: WordSet): Words {
       offlineTitle: "Ahora no hay conexión.",
       offlineDeck: "Lo que ves en pantalla se conserva. Los cambios se enviarán cuando este dispositivo vuelva a tener conexión.",
       errorTitle: "Esta sala no se abrió.",
-      errorDeck: "No se perdió nada. Inténtalo de nuevo; si sigue sin abrirse, el resto de tu espacio está en el menú.",
+      errorDeck: `No se perdió nada. Inténtalo de nuevo; si sigue sin abrirse, el resto de tu ${place} está en el menú.`,
       privateTitle: "Se mantiene en privado.",
       privateDeck: `Esta sala nombra a los ${t.neighbors} que ayudamos, así que solo la abren los coordinadores. Tus compromisos y tu equipo están donde siempre.`,
       privateAction: "Mis compromisos",
       missingTitle: "Esta página no está aquí.",
-      missingDeck: "Puede que la dirección sea antigua o esté mal escrita. Tu espacio está como lo dejaste.",
-      missingAction: "Ir a tu espacio",
+      missingDeck: `Puede que la dirección sea antigua o esté mal escrita. Tu ${place} está como ${set === "vincentian" ? "la" : "lo"} dejaste.`,
+      missingAction: `Ir a tu ${place}`,
     },
     notices: {
       saved: "Guardado.",

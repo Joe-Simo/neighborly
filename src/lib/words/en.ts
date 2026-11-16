@@ -25,6 +25,9 @@ const terms: Record<WordSet, Terms> = {
 /** English is the source: its text is what the screens show today, word for word. */
 export function en(set: WordSet) {
   const t = terms[set];
+  // What a person calls the whole place they signed in to: a Vincentian's is their conference.
+  const place = set === "vincentian" ? "conference" : "workspace";
+  const Place = place.charAt(0).toUpperCase() + place.slice(1);
   return {
     locale: "en" as Language,
     terms: t,
@@ -45,13 +48,13 @@ export function en(set: WordSet) {
     },
     shell: {
       menu: "Menu",
-      menuTitle: "Your workspace",
-      menuLabel: "Workspace menu",
-      menuCurrent: (section: string) => `Workspace menu, current section: ${section}`,
-      allSections: "All workspace sections",
-      workspace: "Workspace",
+      menuTitle: `Your ${place}`,
+      menuLabel: `${Place} menu`,
+      menuCurrent: (section: string) => `${Place} menu, current section: ${section}`,
+      allSections: `All ${place} sections`,
+      workspace: Place,
       current: "Current",
-      skip: "Skip to your workspace",
+      skip: `Skip to your ${place}`,
       signOut: "Sign out",
       leaveSample: "Leave the sample",
       close: "Close",
@@ -63,6 +66,12 @@ export function en(set: WordSet) {
       typedStays: "Words people typed stay as they wrote them.",
       member: "Member",
       team: "Team",
+      /** The button under a long list, and what each list holds. */
+      more: {
+        load: (what: string) => `Load more ${what}`,
+        loading: (what: string) => `Loading ${what}…`,
+        what: { commitments: "commitments", people: "people", invitations: "invitations", teams: "teams", announcements: "announcements", cover: "cover requests", timeOff: "time off", availability: "availability", tasks: "tasks", meetings: "meetings" },
+      },
       limited: "Some overview lists show a limited set of records. Use Load more in the matching section to see additional records.",
     },
     headings: {
@@ -98,6 +107,14 @@ export function en(set: WordSet) {
     actions: {
       timeOff: "Plan time off",
       announcement: "Share an announcement",
+      commitment: "Add a commitment",
+      commitmentTimes: (zone: string) => `Times are ${zone}.`,
+      commitmentForm: {
+        title: "Title", team: "Team", chooseTeam: "Choose a team…", starts: "Starts", ends: "Ends", where: "Where to meet",
+        preparation: "Preparation", preparationHelp: "What should the person know or do beforehand?",
+        repeats: "Repeats", everyWeek: "Every week", everyWeeks: (count: number) => `Every ${count} weeks`,
+        times: "How many times", timesHelp: "1 is a single date. Up to 52 within one year.", save: "Save", saving: "Saving…",
+      },
       announcementSees: `Everyone in the ${t.group} sees this on This week.`,
       announcementForm: { title: "Title", message: "Message", save: "Share announcement", saving: "Sharing…" },
     },
@@ -264,13 +281,13 @@ export function en(set: WordSet) {
       offlineTitle: "No connection right now.",
       offlineDeck: "What is on screen is kept. Changes will be sent when this device is back online.",
       errorTitle: "This room didn’t open.",
-      errorDeck: "Nothing is lost. Try again; if it still won’t open, the rest of your workspace is in the menu.",
+      errorDeck: `Nothing is lost. Try again; if it still won’t open, the rest of your ${place} is in the menu.`,
       privateTitle: "Kept private.",
       privateDeck: `This room names the ${t.neighbors} we help, so it is open to coordinators only. Your commitments and your team are where they always are.`,
       privateAction: "My commitments",
       missingTitle: "This page isn’t here.",
-      missingDeck: "The address may be old or mistyped. Your workspace is where you left it.",
-      missingAction: "Go to your workspace",
+      missingDeck: `The address may be old or mistyped. Your ${place} is where you left it.`,
+      missingAction: `Go to your ${place}`,
     },
     notices: {
       saved: "Saved.",

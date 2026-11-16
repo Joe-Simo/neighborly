@@ -28,7 +28,10 @@ export function LiveCreateForm({
   onSubmit: (command: LiveCommand) => Promise<void>;
 }) {
   // The announcement is a member's screen, so it speaks their language; the leaders' forms stay English.
-  const form = useWorkspace().words.actions.announcementForm;
+  const actions = useWorkspace().words.actions;
+  const form = actions.announcementForm;
+  // Adding a commitment opens from Commitments, a member's room, so its form speaks the reader's language too.
+  const own = kind === "commitment" ? actions.commitmentForm : null;
   const suggest = useAction(api.drafts.suggestTeam);
   const [draftDescription, setDraftDescription] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -223,7 +226,7 @@ export function LiveCreateForm({
         kind === "task" ||
         kind === "meeting" ||
         kind === "announcement") && (
-        <LiveField label={kind === "announcement" ? form.title : "Title"}>
+        <LiveField label={kind === "announcement" ? form.title : (own?.title ?? "Title")}>
           <Input name="title" required maxLength={180} />
         </LiveField>
       )}
@@ -234,10 +237,10 @@ export function LiveCreateForm({
         </div>
       )}
       {kind === "commitment" && (
-        <LiveField label="Team">
+        <LiveField label={actions.commitmentForm.team}>
           <NativeSelect name="teamId" required defaultValue="">
             <option value="" disabled>
-              Choose a team…
+              {actions.commitmentForm.chooseTeam}
             </option>
             {data.teams
               .filter((team) => team.canCoordinate)
@@ -251,40 +254,40 @@ export function LiveCreateForm({
       )}
       {(kind === "commitment" || kind === "meeting" || kind === "timeOff") && (
         <div className="live-form-grid">
-          <LiveField label={kind === "timeOff" ? "First day" : "Starts"}>
+          <LiveField label={kind === "timeOff" ? "First day" : (own?.starts ?? "Starts")}>
             {kind === "timeOff" ? <DateField name="start" required /> : <WhenField name="start" required />}
           </LiveField>
-          <LiveField label={kind === "timeOff" ? "Last day" : "Ends"}>
+          <LiveField label={kind === "timeOff" ? "Last day" : (own?.ends ?? "Ends")}>
             {kind === "timeOff" ? <DateField name="end" required /> : <WhenField name="end" required />}
           </LiveField>
         </div>
       )}
       {(kind === "commitment" || kind === "meeting") && (
-        <LiveField label="Where to meet">
+        <LiveField label={own?.where ?? "Where to meet"}>
           <Input name="location" maxLength={300} required />
         </LiveField>
       )}
       {kind === "commitment" && (
         <LiveField
-          label="Preparation"
-          help="What should the person know or do beforehand?"
+          label={actions.commitmentForm.preparation}
+          help={actions.commitmentForm.preparationHelp}
         >
           <Textarea name="preparation" rows={4} maxLength={5000} />
         </LiveField>
       )}
       {kind === "commitment" && (
         <div className="live-form-grid">
-          <LiveField label="Repeats">
+          <LiveField label={actions.commitmentForm.repeats}>
             <NativeSelect name="intervalWeeks" defaultValue="1" required>
-              <option value="1">Every week</option>
-              <option value="2">Every 2 weeks</option>
-              <option value="3">Every 3 weeks</option>
-              <option value="4">Every 4 weeks</option>
+              <option value="1">{actions.commitmentForm.everyWeek}</option>
+              {[2, 3, 4].map((weeks) => (
+                <option value={weeks} key={weeks}>{actions.commitmentForm.everyWeeks(weeks)}</option>
+              ))}
             </NativeSelect>
           </LiveField>
           <LiveField
-            label="How many times"
-            help="1 is a single date. Up to 52 within one year."
+            label={actions.commitmentForm.times}
+            help={actions.commitmentForm.timesHelp}
           >
             <Input
               type="number"
@@ -337,14 +340,14 @@ export function LiveCreateForm({
           {pending ? (
             <>
               <LoaderCircle size={16} />
-              {kind === "announcement" ? form.saving : "Saving…"}
+              {kind === "announcement" ? form.saving : (own?.saving ?? "Saving…")}
             </>
           ) : kind === "invite" ? (
             "Create invitation"
           ) : kind === "announcement" ? (
             form.save
           ) : (
-            "Save"
+            (own?.save ?? "Save")
           )}
         </Button>
       </div>
