@@ -1,0 +1,42 @@
+/* The workspace's sheet on the home page. These are the few things the workspace's own shell gives a sheet
+   (live-workspace.css, .live-app): its inks, its faces and its button sizes. The sheet's look is not redrawn here. */
+.home-yes-stage{
+  --live-muted:#656d61;--live-line:#dcded2;--live-ink:#283c32;--live-paper:#eee7d7;--live-accent:#365c46;--live-green:#365c46;
+  --primary:#365c46;--primary-foreground:#fffdf5;--background:#fffdf7;--muted:#eeeee3;--border:#d4dacb;--ring:#526f56;
+  --help-plum:#6a557f;--help-plum-wash:#ece7f0;--help-ochre:#b98a2f;--help-ochre-ink:#7d5a17;--help-ochre-wash:#f6ecd3;--help-sage-wash:#e9eddf;--help-sheet:#fffdf7;--help-ease:cubic-bezier(.2,.7,.2,1);
+  --paper-ease:cubic-bezier(.2,.7,.2,1);--paper:#f7f4ed;--paper-green:#365c46;--paper-ink:#283c32;
+  display:grid;align-items:start;color:#283c32;font-family:"Source Sans 3",sans-serif;font-size:17px;text-align:left}
+.home-yes-stage *{box-sizing:border-box}
+.home-yes-stage>*{grid-area:1/1;min-width:0}
+.home-yes-stage h2{font:30px/1.12 "Newsreader",Georgia,serif;letter-spacing:-.7px;margin:0 0 22px}
+.home-yes-stage .help-sheet{margin-bottom:0}
+.home-yes-stage .help-actions [data-slot=button]{min-height:44px;padding-inline:18px;font-size:16px}
+.home-yes-stage [data-slot=button]:focus-visible{outline:2px solid #365c46;outline-offset:2px}
+
+/* Filed: the sheet lifts off the desk and is gone; the list it went into is laid down in its place, the new line first. */
+.home-yes-sheet{transition:opacity 360ms cubic-bezier(.6,0,.9,.6),transform 360ms var(--paper-ease)}
+[data-step=filed]>.home-yes-sheet{opacity:0;transform:translateY(-14px) scale(.985);pointer-events:none}
+.home-yes-filed{position:relative;padding:30px 34px 26px;background:var(--help-sheet);border:1px solid #e0dccb;border-radius:3px;box-shadow:0 1px 0 #fff inset,0 18px 34px -26px #3b3a2466,0 2px 5px -3px #3b3a2440;opacity:0;transform:translateY(14px);pointer-events:none;outline:0}
+[data-step=filed]>.home-yes-filed{opacity:1;transform:none;pointer-events:auto;transition:opacity 320ms var(--paper-ease) 200ms,transform 420ms var(--paper-ease) 200ms}
+.home-yes-filed .help-sheet-label{color:#52644f}
+.home-yes-filed ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--live-line)}
+.home-yes-filed li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 24px;padding:16px 0 16px 30px;border-bottom:1px solid var(--live-line)}
+.home-yes-filed li strong{grid-column:1/-1;font:400 24px/1.2 "Newsreader",Georgia,serif;letter-spacing:-.02em}
+.home-yes-filed li span{font-size:17px;line-height:1.5}
+.home-yes-filed li small{font-size:15px;line-height:1.5;color:var(--live-muted)}
+.home-yes-filed li::before{content:"";position:absolute;left:4px;top:25px;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #c8962e}
+.home-yes-filed li[data-new] small{color:#365c46}
+.home-yes-filed li[data-new]::before{left:0;top:21px;width:18px;height:18px;border-radius:0;box-shadow:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23365c46' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 12.5l5 5L19.5 7'/%3E%3C/svg%3E") center/contain no-repeat}
+.home-yes-after{display:flex;flex-wrap:wrap;align-items:center;gap:0 22px;margin:14px 0 0;font-size:17px}
+.home-yes-after>span{font:400 24px/1.2 "Newsreader",Georgia,serif;letter-spacing:-.02em;margin-right:6px}
+.home-yes-after [data-slot=button]{height:auto;border:0;background:none;box-shadow:none;min-height:44px;padding:0;gap:8px;border-radius:0;font-size:17px;font-weight:400;color:#283c32;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.home-yes-after .home-yes-again{margin-left:auto;font-size:16px;color:var(--live-muted)}
+@media(max-width:850px){
+  .home-yes-filed{padding:26px 22px 20px}
+  .home-yes-filed li{grid-template-columns:minmax(0,1fr)}
+  .home-yes-after .home-yes-again{margin-left:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .home-yes-sheet,[data-step=filed]>.home-yes-filed{transition:none}
+  [data-step=filed]>.home-yes-sheet,.home-yes-filed{transform:none}
+}
