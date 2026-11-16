@@ -273,6 +273,8 @@ export function es(set: WordSet): Words {
       needed: "Completa esto.",
       neededChoice: "Elige una opción.",
       neededCheck: "Revisa esto.",
+      launchTitle: `No pudimos abrir tu ${place}.`,
+      launchDeck: "No se perdió nada. Inténtalo de nuevo en un momento.",
       notSaved: "No se pudo guardar. Inténtalo de nuevo.",
       offlineSave: "Ahora no hay conexión, así que esto no se guardó.",
       kept: "No se guardó nada, y lo que escribiste sigue aquí.",

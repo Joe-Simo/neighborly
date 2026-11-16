@@ -269,6 +269,8 @@ export function ht(set: WordSet): Words {
       needed: "Ranpli sa a.",
       neededChoice: "Chwazi youn.",
       neededCheck: "Verifye sa a.",
+      launchTitle: `Nou pa t kapab louvri ${place} ou a.`,
+      launchDeck: "Anyen pa pèdi. Eseye ankò nan yon ti moman.",
       notSaved: "Sa pa t anrejistre. Tanpri eseye ankò.",
       offlineSave: "Pa gen koneksyon kounye a, kidonk sa pa t anrejistre.",
       kept: "Anyen pa t anrejistre, e sa ou te ekri a la toujou.",

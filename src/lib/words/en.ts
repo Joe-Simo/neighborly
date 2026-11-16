@@ -275,6 +275,8 @@ export function en(set: WordSet) {
       needed: "Fill this in.",
       neededChoice: "Choose one.",
       neededCheck: "Look at this again.",
+      launchTitle: `We couldn’t open your ${place}.`,
+      launchDeck: "Nothing was lost. Try again in a moment.",
       notSaved: "That couldn’t be saved. Please try again.",
       offlineSave: "There is no connection right now, so this was not saved.",
       kept: "Nothing was saved, and what you typed is still here.",
