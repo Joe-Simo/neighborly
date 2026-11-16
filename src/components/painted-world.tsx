@@ -4,12 +4,10 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PaintedScoreControl } from "@/components/painted-score-control";
 import { getPaintedScrollState } from "@/lib/painted-world-scroll";
 import { isPaintedPortrait, openingKeptAbove } from "@/lib/painted-world-framing";
 import type { PaintedScene, PaintedWorldOptions, createPaintedWorldController } from "@/lib/painted-world-controller";
 import "./painted-world.css";
-import { useExperienceSound } from "./experience-sound-context";
 
 const chapters = {
   opening: { number: "01", name: "An open hand", title: <>Good things begin<br />with <em>an open hand.</em></>, copy: "A little care can go a long way." },
@@ -42,7 +40,6 @@ const cardPath = {
 /** Native scrolling owns the narrative; the artwork never traps wheel or touch input. */
 export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = false, passed = false, onPass, onContinue, children }: { scenes?: PaintedWorldOptions["scenes"]; heroOnly?: boolean; suspendOffscreen?: boolean; passed?: boolean; onPass?: () => void; onContinue?: () => void; children?: ReactNode }) {
   const openingOutcome: "rest" | "accepted" = passed ? "accepted" : "rest";
-  const sound = useExperienceSound();
   const outcomeRef = useRef(openingOutcome);
   useEffect(() => { outcomeRef.current = openingOutcome; controller.current?.setOpeningOutcome(openingOutcome); }, [openingOutcome]);
   const track = useRef<HTMLElement>(null);
@@ -223,7 +220,6 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
   return <main className="painted-world" id="story-start" data-scene={visibleScene} data-hero-only={heroOnly} data-passed={passed} data-ready={ready} data-failed={failed} tabIndex={-1}>
     <a className="painted-world-skip" href={heroOnly ? "#how-neighborly-works" : "#your-community"}>Skip to how Kind Helps works</a>
     {/* Fixed to the screen, and early in the page so a keyboard reaches it before the journey. */}
-    {heroOnly && <div className="paper-sound-dock"><PaintedScoreControl scene={sound?.scene ?? visibleScene} className="painted-world-sound" /></div>}
     <section className="painted-world-track" ref={track} aria-label={heroOnly ? "An open hand" : "A story of care"}>
       <div className="painted-world-viewport" ref={viewport}>
         <div className="painted-world-art" ref={host} aria-hidden="true" />
@@ -262,7 +258,6 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           </nav>}
         </div>
         <footer className="painted-world-tools">
-          {!heroOnly && <PaintedScoreControl scene={visibleScene} className="painted-world-sound" />}
           <div className="painted-world-scroll-cue" aria-hidden="true"><span>{loading ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
           {!heroOnly && <div className="painted-world-progress" aria-hidden="true"><span>{chapter.number}</span><div><i /></div><span>04</span></div>}
         </footer>

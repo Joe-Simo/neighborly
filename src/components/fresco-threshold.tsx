@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
-import { useExperienceSound } from "./experience-sound-context";
 import { useSettled } from "@/lib/use-settled";
 import "./relief-journey.css";
 
@@ -23,7 +22,6 @@ const rest = 2.9;
 const LivingCourtyard = dynamic(() => import("./living-courtyard").then(module => module.LivingCourtyard), { ssr: false });
 
 export function FrescoThreshold() {
-  const sound = useExperienceSound();
   const journey = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLElement>(null);
   const frame = useRef<HTMLDivElement>(null);
@@ -32,7 +30,6 @@ export function FrescoThreshold() {
   const [near, setNear] = useState(false);
   const settled = useSettled();
 
-  useEffect(() => { sound?.setScene(open ? "welcome" : "opening"); }, [open, sound]);
   useEffect(() => {
     // The living courtyard waits for the first sign that the visitor is on their way to it.
     const arrive = () => setNear(true);

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { PaintedWorld } from "./painted-world";
-import { ExperienceSoundProvider } from "./experience-sound-context";
 
 /** A short, wide screen: the opening cannot be pinned there, so the page simply scrolls. Keep in step with the same query in painted-world.css. */
 const sidewaysPhone = "(max-height:500px) and (min-aspect-ratio:10/11)";
@@ -54,18 +53,6 @@ export function NeighborlyExperience() {
     element.addEventListener("click", carryIn, true);
     return () => { clearTimeout(release); rise?.cancel(); element.removeEventListener("click", carryIn, true); };
   }, [router]);
-  useEffect(() => {
-    // Sound belongs to the painted scenes. Once the visitor is reading the story, its control steps aside.
-    const element = root.current;
-    if (!element || !("IntersectionObserver" in window)) return;
-    const seen = new Set<Element>();
-    const observer = new IntersectionObserver(entries => {
-      for (const entry of entries) if (entry.isIntersecting) seen.add(entry.target); else seen.delete(entry.target);
-      element.dataset.reading = String(seen.size > 0);
-    }, { rootMargin: "0px 0px -45% 0px" });
-    element.querySelectorAll(".relief-story,.neighborly-together").forEach(part => observer.observe(part));
-    return () => observer.disconnect();
-  }, []);
   // The doors stand one screen below the top of the journey, once the opening has given way.
   const goToDoors = () => {
     const doors = root.current?.querySelector<HTMLElement>(".fresco-journey");
@@ -129,11 +116,11 @@ export function NeighborlyExperience() {
     update();
     return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.classList.remove("is-connected"); };
   }, []);
-  return <div className="neighborly-connected-world is-connected" ref={root}><ExperienceSoundProvider><PaintedWorld heroOnly suspendOffscreen passed={passed} onContinue={goToDoors} onPass={() => {
+  return <div className="neighborly-connected-world is-connected" ref={root}><PaintedWorld heroOnly suspendOffscreen passed={passed} onContinue={goToDoors} onPass={() => {
     // The card crosses to the open hand and rests there a beat, long enough to see it settle and be held,
     // and then the journey begins by itself. Any scroll of the visitor's own takes over.
     setPassed(true);
     clearTimeout(transitionTimer.current);
     transitionTimer.current = setTimeout(goToDoors, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 2100);
-  }}><NeighborlyContinuation /></PaintedWorld></ExperienceSoundProvider><div ref={carry} className="neighborly-paper-carry" aria-hidden="true"><span>kind helps</span></div></div>;
+  }}><NeighborlyContinuation /></PaintedWorld><div ref={carry} className="neighborly-paper-carry" aria-hidden="true"><span>kind helps</span></div></div>;
 }
