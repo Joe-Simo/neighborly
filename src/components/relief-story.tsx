@@ -33,7 +33,7 @@ export function ReliefStory() {
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("resize", request);
     update();
-    // Once a picture is mostly on screen its loose piece makes its one small move: the receiver lifts, the door opens a crack, the envelope passes, the page lies down.
+    // Once a picture is mostly on screen its loose piece makes its one small move: the receiver lifts off its cradle, the door opens a crack, the envelope passes, the page lies flat.
     element.classList.add("is-live");
     const arrive = "IntersectionObserver" in window ? new IntersectionObserver(entries => {
       for (const entry of entries) if (entry.isIntersecting) { entry.target.closest(".relief-panel")?.classList.add("is-in"); arrive?.unobserve(entry.target); }
