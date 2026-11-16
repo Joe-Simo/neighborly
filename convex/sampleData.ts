@@ -171,6 +171,7 @@ export const load = internalMutation({
       if (memberId !== owner && index % 3 !== 2) await ctx.db.insert("meetingResponses", { churchId, meetingId, memberId, response: index % 5 === 4 ? "declined" : "accepted" });
     }
     await ctx.db.insert("tasks", { churchId, title: "Restock the food pantry shelf", dueAt: now + 4 * DAY, assigneeId: others[4], complete: false });
+    await ctx.db.insert("tasks", { churchId, title: "Bring the visit sheets to Tuesday's meeting", dueAt: now + 6 * DAY, assigneeId: others[4], complete: false });
     await ctx.db.insert("tasks", { churchId, title: "Send thank-you notes for the fall collection", dueAt: null, assigneeId: others[2], complete: true });
     await ctx.db.insert("announcements", { churchId, title: "Winter coat drive starts next week", body: "Bring coats to the parish office. Home visitors, ask each family for sizes.", authorId: owner, createdAt: now - 2 * DAY });
 
