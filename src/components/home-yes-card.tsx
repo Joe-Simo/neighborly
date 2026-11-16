@@ -122,7 +122,7 @@ export function HomeYesCard() {
           <small>Received {format(takenAt - one.days * DAY, { weekday: "long", month: "long" })}</small>
         </li>)}
       </ol>
-      <p className="home-yes-year">{(sampleYear.requests + 1).toLocaleString("en-US")} requests for help in the sample’s year. One more than a minute ago.</p>
+      <p className="home-yes-year">{(sampleYear.requests + 1).toLocaleString("en-US")} requests for help in the sample’s year. <em>One more than a minute ago.</em></p>
       <p className="home-yes-after">
         <span>That is the whole idea.</span>
         <Button asChild variant="link" className="home-yes-in"><Link ref={way} href="/app?intent=sample">Look around a sample conference<ArrowUpRight aria-hidden="true" /></Link></Button>
