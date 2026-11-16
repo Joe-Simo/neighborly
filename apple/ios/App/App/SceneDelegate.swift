@@ -37,6 +37,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 final class ShellViewController: CAPBridgeViewController {
     private let paper = UIColor(red: 0.9608, green: 0.9529, blue: 0.9255, alpha: 1)
     private var cover: UIView?
+    private var statusStrip: UIView?
     private var slowPage: WKWebView?
     private var slowPageEvents: SlowPageEvents?
     private var loading: NSKeyValueObservation?
@@ -111,6 +112,31 @@ final class ShellViewController: CAPBridgeViewController {
         }
         startSlowTimer()
         watchForFirstScreen()
+        let keyboard = NotificationCenter.default
+        keyboard.addObserver(self, selector: #selector(keyboardComing), name: UIResponder.keyboardWillShowNotification, object: nil)
+        keyboard.addObserver(self, selector: #selector(keyboardGone), name: UIResponder.keyboardDidHideNotification, object: nil)
+    }
+
+    /// While the keyboard slides, iOS moves the page under the clock for a few
+    /// frames before the page's own top bar can follow. In a room, a strip of
+    /// the bar's paper covers the status area for as long as the keyboard is up.
+    /// Not over a sheet: there the page behind is dimmed, and the strip would glare.
+    @objc private func keyboardComing() {
+        guard statusStrip == nil, view.safeAreaInsets.top > 0, let webView else { return }
+        webView.evaluateJavaScript("!!document.querySelector('.live-header') && !document.querySelector('[role=dialog], dialog[open]')") { [weak self] result, _ in
+            guard let self, result as? Bool == true, self.statusStrip == nil else { return }
+            let strip = UIView(frame: CGRect(x: 0, y: 0, width: self.view.bounds.width, height: self.view.safeAreaInsets.top))
+            strip.backgroundColor = UIColor(red: 0.9686, green: 0.9569, blue: 0.9294, alpha: 1)
+            strip.autoresizingMask = [.flexibleWidth]
+            strip.isUserInteractionEnabled = false
+            self.view.addSubview(strip)
+            self.statusStrip = strip
+        }
+    }
+
+    @objc private func keyboardGone() {
+        lift([statusStrip])
+        statusStrip = nil
     }
 
     /// Asks the page whether its first screen is whole. A room says so itself
