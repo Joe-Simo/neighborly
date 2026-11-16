@@ -5,7 +5,7 @@ import { internal } from "./_generated/api";
 import { accountEmailConfiguration } from "./notifications";
 import { queueCoverRequest, cancelPendingNotification } from "./notificationEvents";
 import { query, mutation, type QueryCtx, type MutationCtx } from "./_generated/server";
-import { user, membership } from "./access";
+import { user, membership, firstMembership } from "./access";
 import { isSampleVisitor } from "./demo";
 import type { Id } from "./_generated/dataModel";
 
@@ -80,8 +80,10 @@ const dashboardReturn = v.object({
   announcements:v.array(v.object({id:v.id("announcements"),title:text,body:text,authorName:text,createdAt:v.number()})),
   invitations:v.array(v.object({id:v.id("invitations"),email:text,role:text,status:text})),
 });
-export const dashboard = query({ args:{churchId},returns:dashboardReturn,handler:async(ctx,args)=>{
-  const me=await membership(ctx,args.churchId); const church=await ctx.db.get("churches",args.churchId); if(!church) throw new ConvexError("Workspace not found.");
+// Without a conference named, the first one the account belongs to: the sample door asks this way, so the room's
+// question goes out with the sign-in check instead of after it. The same one memberships read either way.
+export const dashboard = query({ args:{churchId:v.optional(churchId)},returns:dashboardReturn,handler:async(ctx,{churchId:named})=>{
+  const me=named?await membership(ctx,named):await firstMembership(ctx); const args={churchId:me.churchId}; const church=await ctx.db.get("churches",args.churchId); if(!church) throw new ConvexError("Workspace not found.");
   const [members,teams,teamMembers,commitments,requests,availability,timeOff,tasks,meetings,announcements,invitations,myMeetingInvitations,ownRelations] = await Promise.all([
     ctx.db.query("memberships").withIndex("by_church",q=>q.eq("churchId",args.churchId)).take(201),
     ctx.db.query("teams").withIndex("by_church",q=>q.eq("churchId",args.churchId)).take(201),
