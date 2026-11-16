@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { CardOfferGrow } from "./card-offer-grow";
 import "./neighborly-continuation.css";
+import "./thread-card.css";
 
 /** The picture every public page closes on: the same two people, the open hand holding the card out as the way in. */
 export function ClosingBand() {

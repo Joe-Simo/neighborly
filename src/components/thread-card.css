@@ -34,7 +34,7 @@
 .painted-world-hand .card-station{left:calc(var(--card-x,-200px) + var(--card-dx,0px) * var(--pass,0));top:calc(var(--card-y,0px) + var(--card-dy,0px) * var(--pass,0));width:var(--hand-card,96px)}
 @media print{.thread-card{display:none}}
 /* The ending: the card is no longer painted in the hand. The hand is open, and holds out the card that is the way into the sample. */
-.neighborly-close-hand .thread-empty,.thread-live .neighborly-close-hand:has(.is-here) .thread-empty{opacity:1}
+:root .neighborly-close .neighborly-close-hand .thread-empty{opacity:1}
 .neighborly-close-offer{position:absolute;z-index:2;left:0;width:100%;top:calc(28% - 19.911cqw);height:71.111cqw;pointer-events:none}
 .card-offer{position:absolute;left:69%;top:77.6%;width:max(20.8%,240px);aspect-ratio:1.5;translate:-50% -50%;rotate:-4deg;display:block;min-height:56px;pointer-events:auto;color:#253e31;text-decoration:none;background:url(/assets/home/card-blank-480.webp) center/100% 100%;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s}
 .card-offer>i{position:absolute;left:8%;top:14%;width:8%;aspect-ratio:1;background:#c8962e}
