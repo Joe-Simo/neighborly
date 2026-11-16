@@ -1,7 +1,7 @@
 "use client";
 
 import "@/components/workspace/for-good.css";
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
@@ -875,9 +875,7 @@ export function NeighborForm({
             <div className="live-row" key={match.id}>
               <div>
                 <h3>{match.name}</h3>
-                <p>
-                  {[match.phone, match.address].filter(Boolean).join(" · ")}
-                </p>
+                {match.address && <p>{match.address}</p>}
               </div>
               {useLabel ? (
                 <Button
@@ -920,6 +918,53 @@ const nameKey = (name: string) =>
     .trim();
 
 /**
+ * The box where a name is typed to confirm an act that cannot be undone. While the person types, nothing is
+ * said. When they leave the box or press Enter with something in it that is not the name, one quiet line
+ * gives the name as it is written; it goes as soon as they type again.
+ */
+export function NameToConfirm({
+  label,
+  name,
+  typed,
+  onTyped,
+}: {
+  label: string;
+  name: string;
+  typed: string;
+  onTyped: (typed: string) => void;
+}) {
+  const note = useId();
+  const [left, setLeft] = useState(false);
+  const off = left && typed.trim() !== "" && nameKey(typed) !== nameKey(name);
+  return (
+    <LiveField label={label}>
+      <Input
+        value={typed}
+        onChange={(event) => {
+          setLeft(false);
+          onTyped(event.target.value);
+        }}
+        onBlur={() => setLeft(true)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") setLeft(true);
+        }}
+        autoComplete="off"
+        autoCapitalize="words"
+        spellCheck={false}
+        aria-describedby={off ? note : undefined}
+        required
+      />
+      {off && (
+        <small id={note} className="live-field-needed" role="status">
+          That does not match. The name is{" "}
+          <span className={name.length <= 28 ? "help-name-whole" : undefined}>{name}.</span>
+        </small>
+      )}
+    </LiveField>
+  );
+}
+
+/**
  * Removes a neighbor's record for good: says what goes and what stays, and asks for the
  * neighbor's name before the button will work. `onBegin` lets the screen stop reading the
  * record before it is gone; `onRefused` lets it read again.
@@ -943,7 +988,7 @@ export function RemoveForm({
   const agrees = nameKey(typed) === nameKey(neighbor.name);
   return (
     <form
-      className="live-form help-form"
+      className="live-form help-form help-for-good"
       onSubmit={async (event) => {
         event.preventDefault();
         if (!agrees) return;
@@ -973,18 +1018,14 @@ export function RemoveForm({
           </dd>
         </div>
       </dl>
-      <LiveField label={`Type ${neighbor.name} to remove the record`}>
-        <Input
-          value={typed}
-          onChange={(event) => setTyped(event.target.value)}
-          autoComplete="off"
-          autoCapitalize="words"
-          spellCheck={false}
-          required
-        />
-      </LiveField>
+      <NameToConfirm
+        label={`Type ${neighbor.name} to remove the record`}
+        name={neighbor.name}
+        typed={typed}
+        onTyped={setTyped}
+      />
       <p className="help-form-note">This cannot be undone.</p>
-      {error && <LiveFailure message={error} />}
+      {error && <LiveFailure message={error} kept="Nothing was removed." />}
       <div className="live-form-actions">
         <LiveWaiting when={pending} />
         <Button

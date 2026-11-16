@@ -345,6 +345,11 @@ describe("adding and finding neighbors", () => {
     expect(await find()).toEqual(["Darnell Joseph", "Esperanza Montoya"]);
     expect(await find("esp")).toEqual(["Esperanza Montoya"]);
     expect(await find("(100) 555-0103")).toEqual(["Darnell Joseph"]);
+    // A list row, also one found by its phone number, carries the name and the street and nothing more private:
+    // the phone, email, notes and alert stay inside the record, where the opening is logged.
+    const byPhone = await as(ids.coordinator).query(api.neighbors.list, { churchId: ids.church, search: "(100) 555-0103" });
+    expect(Object.keys(byPhone.rows[0]).sort()).toEqual(["address", "adults", "children", "createdAt", "id", "lastHelpedAt", "name", "openRequest", "visitAt"]);
+    expect(JSON.stringify([byPhone, await as(ids.coordinator).query(api.neighbors.list, { churchId: ids.church }), await as(ids.coordinator).query(api.neighbors.matches, { churchId: ids.church, name: "", phone: "(100) 555-0103" })])).not.toContain("555");
     expect(await find("Example")).toEqual(["Darnell Joseph"]);
     expect(await find("Celeste")).toEqual([]);
     expect(await find("Demo")).toEqual([]);

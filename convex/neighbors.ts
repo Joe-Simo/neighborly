@@ -68,13 +68,28 @@ function clean(args: Infer<ReturnType<typeof v.object<typeof details>>>) {
 }
 
 /**
+ * What a list shows of a household, and all of it that leaves the server for a list: the name, the street,
+ * how many live there and since when it is on file. The phone, email, notes and alert are inside the record,
+ * where every opening is written down. A search may match a phone number typed in; the row it finds says no more.
+ */
+const listRow = v.object({ id: v.id("neighbors"), name: v.string(), address: v.string(), adults: v.number(), children: v.number(), createdAt: v.number() });
+const toListRow = (neighbor: Doc<"neighbors">): Infer<typeof listRow> => ({
+  id: neighbor._id,
+  name: neighbor.name,
+  address: neighbor.address,
+  adults: neighbor.adults,
+  children: neighbor.children,
+  createdAt: neighbor.createdAt,
+});
+
+/**
  * The neighbor list, by name. `search` finds names that start with the words typed, streets and
  * addresses that contain them, or phone numbers that start with the digits typed.
  */
 export const list = query({
   args: { churchId: v.id("churches"), search: v.optional(v.string()) },
   returns: v.object({
-    rows: v.array(v.object({ ...neighborRow.fields, openRequest: v.union(v.object({ kind: schema.tables.assistanceRequests.validator.fields.kind, amount: v.number() }), v.null()), visitAt: v.union(v.number(), v.null()), lastHelpedAt: v.union(v.number(), v.null()) })),
+    rows: v.array(v.object({ ...listRow.fields, openRequest: v.union(v.object({ kind: schema.tables.assistanceRequests.validator.fields.kind, amount: v.number() }), v.null()), visitAt: v.union(v.number(), v.null()), lastHelpedAt: v.union(v.number(), v.null()) })),
     more: v.boolean(),
   }),
   handler: async (ctx, { churchId, search = "" }) => {
@@ -95,7 +110,7 @@ export const list = query({
       const open = requests.find((request) => request.status === "open" || request.status === "approved");
       const planned = visits.filter((visit) => visit.status === "scheduled").map((visit) => visit.scheduledAt);
       return {
-        ...toRow(neighbor),
+        ...toListRow(neighbor),
         openRequest: open ? { kind: open.kind, amount: open.amountApproved ?? open.amountRequested } : null,
         visitAt: planned.length ? Math.min(...planned) : null,
         lastHelpedAt: helped.length ? Math.max(...helped) : null,
@@ -111,15 +126,15 @@ const broughtOver = (request: Pick<Doc<"assistanceRequests">, "source" | "status
 /** Before adding someone: neighbors already on file with the same phone number or the same name. */
 export const matches = query({
   args: { churchId: v.id("churches"), name: v.string(), phone: v.string() },
-  returns: v.array(v.object({ ...neighborRow.fields, same: v.union(v.literal("phone"), v.literal("name")) })),
+  returns: v.array(v.object({ ...listRow.fields, same: v.union(v.literal("phone"), v.literal("name")) })),
   handler: async (ctx, { churchId, name, phone }) => {
     await neighborAccess(ctx, churchId);
     const digits = phoneKey(phone), words = nameKey(name);
     const samePhone = digits ? await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", digits)).take(5) : [];
     const sameName = words ? await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).eq("nameKey", words)).take(5) : [];
     return [
-      ...samePhone.map((neighbor) => ({ ...toRow(neighbor), same: "phone" as const })),
-      ...sameName.filter((neighbor) => !samePhone.some((other) => other._id === neighbor._id)).map((neighbor) => ({ ...toRow(neighbor), same: "name" as const })),
+      ...samePhone.map((neighbor) => ({ ...toListRow(neighbor), same: "phone" as const })),
+      ...sameName.filter((neighbor) => !samePhone.some((other) => other._id === neighbor._id)).map((neighbor) => ({ ...toListRow(neighbor), same: "name" as const })),
     ];
   },
 });
