@@ -51,7 +51,7 @@ describe("who may use the help line and requests", () => {
         () => caller.query(api.assistance.requests, { churchId }),
         () => caller.query(api.assistance.requestsForNeighbor, { churchId, neighborId: ids.rosa }),
         () => caller.query(api.assistance.request, { churchId, requestId }),
-        () => caller.query(api.assistance.calls, { churchId }),
+        () => caller.query(api.assistance.calls, { at: Date.now(), churchId }),
         () => caller.query(api.assistance.agencies, { churchId }),
         () => caller.mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Called back.", callback: "none" }),
         () => caller.mutation(api.assistance.linkCall, { churchId, callId, neighborId: ids.earl }),
@@ -93,17 +93,17 @@ describe("who may use the help line and requests", () => {
     const churchId = ids.church, caller = as(ids.coordinator);
     const log = async (note: string) => (await caller.mutation(api.assistance.recordCall, { churchId, callerName: "Caller", phone: "", note, callback: "needed" })).callId;
     const rent = await log("Behind on rent."), power = await log("Shut-off notice for the 21st."), food = await log("Asked about the pantry.");
-    const order = async () => (await caller.query(api.assistance.calls, { churchId })).waiting.map((call) => call.id);
+    const order = async () => (await caller.query(api.assistance.calls, { at: Date.now(), churchId })).waiting.map((call) => call.id);
     expect(await order()).toEqual([rent, power, food]);
     await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: ["shutoff", "elder"], day: 21, by: "assistant" });
     expect(await order()).toEqual([power, rent, food]);
-    expect((await caller.query(api.assistance.calls, { churchId })).waiting[0].urgent).toEqual({ reasons: ["shutoff", "elder"], day: 21, by: "assistant", byName: null });
+    expect((await caller.query(api.assistance.calls, { at: Date.now(), churchId })).waiting[0].urgent).toEqual({ reasons: ["shutoff", "elder"], day: 21, by: "assistant", byName: null });
     // A person moves one up and the other back; the assistant cannot undo either.
     await caller.mutation(api.assistance.setUrgency, { churchId, callId: food, reasons: ["marked"], by: "person" });
     await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: [], by: "person" });
     await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: ["shutoff"], day: 21, by: "assistant" });
     expect(await order()).toEqual([food, rent, power]);
-    expect((await caller.query(api.assistance.calls, { churchId })).waiting.map((call) => call.urgent?.byName ?? null)).toEqual(["Thomas Okafor", null, "Thomas Okafor"]);
+    expect((await caller.query(api.assistance.calls, { at: Date.now(), churchId })).waiting.map((call) => call.urgent?.byName ?? null)).toEqual(["Thomas Okafor", null, "Thomas Okafor"]);
     await expect(caller.mutation(api.assistance.setUrgency, { churchId, callId: rent, reasons: ["shutoff"], day: 45, by: "assistant" })).rejects.toThrow("day of the month");
     await expect(as(ids.stranger).mutation(api.assistance.setUrgency, { churchId: ids.other, callId: rent, reasons: [], by: "person" })).rejects.toThrow("Call not found.");
   });
@@ -124,7 +124,7 @@ describe("the help line", () => {
     const unknown = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "(100) 555-0119", note: "Food for five.", callback: "needed" });
     expect(known.neighborId).toBe(ids.rosa);
     expect(unknown.neighborId).toBeNull();
-    const { waiting } = await as(ids.owner).query(api.assistance.calls, { churchId: ids.church });
+    const { waiting } = await as(ids.owner).query(api.assistance.calls, { at: Date.now(), churchId: ids.church });
     expect(waiting).toMatchObject([{ neighborName: "Esperanza Montoya", takenByName: "Thomas Okafor", ownerName: "Marisol Vega", openRequest: false }, { neighborName: null, ownerName: null }]);
     await expect(as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "", note: "Silence.", callback: "none" })).rejects.toThrow("A name or a phone number is needed.");
   });
@@ -134,7 +134,7 @@ describe("the help line", () => {
     const churchId = ids.church, hour = 3600000, now = Date.now();
     const leave = async () => {
       const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Shut-off notice.", callback: "needed" });
-      return (await as(ids.owner).query(api.assistance.calls, { churchId })).waiting.find((call) => call.id === callId)?.ownerName;
+      return (await as(ids.owner).query(api.assistance.calls, { at: Date.now(), churchId })).waiting.find((call) => call.id === callId)?.ownerName;
     };
     expect(await leave()).toBeNull();
     await t.run(async (ctx) => {
@@ -156,11 +156,27 @@ describe("the help line", () => {
     const { ids, as } = await setup();
     const { callId } = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Darnell Joseph", phone: "(100) 555-0103", note: "Shut-off notice.", callback: "needed" });
     await as(ids.owner).mutation(api.assistance.markReturned, { churchId: ids.church, callId, outcome: "Home visit planned for Thursday." });
-    const { waiting, returned } = await as(ids.owner).query(api.assistance.calls, { churchId: ids.church });
+    const { waiting, returned } = await as(ids.owner).query(api.assistance.calls, { at: Date.now(), churchId: ids.church });
     expect(waiting).toEqual([]);
     expect(returned).toMatchObject([{ id: callId, callback: "done", returnedByName: "Marisol Vega", outcome: "Home visit planned for Thursday." }]);
     expect(returned[0].returnedAt).toBeGreaterThan(0);
     await expect(as(ids.owner).mutation(api.assistance.markReturned, { churchId: ids.church, callId })).rejects.toThrow("not waiting");
+  });
+
+  test("the returned list holds this week only: by when a call was returned, or taken if it was settled on the spot", async () => {
+    const { t, ids, as } = await setup();
+    const DAY = 86400000, at = Date.UTC(2026, 10, 16, 15);
+    const call = (callerName: string, takenAt: number, returnedAt?: number) => ({ churchId: ids.church, callerName, phone: "(100) 555-0190", note: "", callback: "done" as const, takenBy: ids.owner.memberId, takenAt, ...(returnedAt ? { returnedAt, returnedBy: ids.owner.memberId } : {}) });
+    await t.run(async (ctx) => {
+      await ctx.db.insert("calls", call("Taken long ago, returned yesterday", at - 40 * DAY, at - DAY));
+      await ctx.db.insert("calls", call("Settled on the spot two days ago", at - 2 * DAY));
+      await ctx.db.insert("calls", call("Returned a month ago", at - 40 * DAY, at - 30 * DAY));
+      await ctx.db.insert("calls", call("Settled on the spot a month ago", at - 30 * DAY));
+      await ctx.db.insert("calls", { ...call("Taken yesterday, still waiting", at - DAY), callback: "needed" });
+    });
+    const { waiting, returned } = await as(ids.owner).query(api.assistance.calls, { churchId: ids.church, at });
+    expect(returned.map((row) => row.callerName)).toEqual(["Taken long ago, returned yesterday", "Settled on the spot two days ago"]);
+    expect(waiting.map((row) => row.callerName)).toEqual(["Taken yesterday, still waiting"]);
   });
 });
 
@@ -174,7 +190,7 @@ describe("a request for help", () => {
       status: "open", payeeKind: "landlord", payeeName: "Sample Property Co.", source: "person", createdByName: "Thomas Okafor", decidedByName: null, referral: "",
     });
     // The call from an unknown number now belongs to the neighbor it was about.
-    expect((await as(ids.owner).query(api.assistance.calls, { churchId: ids.church })).waiting[0]).toMatchObject({ neighborId: ids.rosa, openRequest: true });
+    expect((await as(ids.owner).query(api.assistance.calls, { at: Date.now(), churchId: ids.church })).waiting[0]).toMatchObject({ neighborId: ids.rosa, openRequest: true });
     await expect(as(ids.owner).mutation(api.assistance.createRequest, { churchId: ids.church, neighborId: ids.earl, callId, ...rent })).rejects.toThrow("another neighbor");
   });
 

@@ -2,7 +2,7 @@
 
 import { Component, useCallback, useLayoutEffect, useState, type ReactNode } from "react";
 import { useAction } from "convex/react";
-import { useQuery } from "@/components/workspace/query";
+import { useHour, useQuery } from "@/components/workspace/query";
 import { DateTime } from "luxon";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,8 @@ class ReportBoundary extends Component<{ children: ReactNode }, { failed: string
 function Report() {
   const { data, now, setHeadAction, words } = useWorkspace();
   const churchId = data.church.id;
-  const onRecord = useQuery(api.reports.years, { churchId });
+  const at = useHour();
+  const onRecord = useQuery(api.reports.years, at ? { churchId, at } : "skip");
   const [chosen, setChosen] = useState<number>();
   const [quarter, setQuarter] = useState<Quarter>();
   const [done, setDone] = useState("");
@@ -62,7 +63,7 @@ function Report() {
     chosen ??
     (onRecord &&
       (fall && onRecord.years.includes(onRecord.current - 1) ? onRecord.current - 1 : onRecord.current));
-  const report = useQuery(api.reports.year, year === undefined ? "skip" : { churchId, year, quarter });
+  const report = useQuery(api.reports.year, year === undefined || !at ? "skip" : { churchId, at, year, quarter });
   // The year last shown stays on screen while the next one is added up.
   const [shown, setShown] = useState(report);
   if (report && report !== shown) setShown(report);

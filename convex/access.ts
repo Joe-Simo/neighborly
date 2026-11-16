@@ -52,6 +52,13 @@ export async function neighborRecord(ctx: QueryCtx | MutationCtx, church: Id<"ch
 export async function logNeighborOpening(ctx: MutationCtx, member: Doc<"memberships">, neighborId: Id<"neighbors">) {
   await ctx.db.insert("auditEvents", { churchId: member.churchId, actorId: member.userId, action: "neighbor.opened", targetId: neighborId, at: Date.now() });
 }
+/**
+ * The time a screen is asking about: the start of the hour on the reader's clock. A query that needs "now"
+ * takes it as this argument and never reads the clock itself. Convex keeps an answer for everyone who asks
+ * the same question, and a query that reads the clock loses that: it is run again and again while a page
+ * sits open. With the hour as an argument, one answer serves the whole hour, or until a record changes.
+ */
+export const hour = v.number();
 /** For the screens: whether to offer neighbor records at all. The backend check above is the real gate. */
 export const canOpenNeighborRecords = query({
   args: { churchId: v.id("churches") },

@@ -69,7 +69,7 @@ describe("who may see and plan home visits", () => {
     for (const person of [ids.daniel, ids.coordinator]) {
       const caller = as(person);
       const attempts = [
-        () => caller.query(api.visits.board, { churchId }),
+        () => caller.query(api.visits.board, { at: Date.now(), churchId }),
         () => caller.query(api.visits.visitors, { churchId }),
         () => caller.query(api.visits.sheet, { churchId, visitId: first }),
         () => caller.mutation(api.visits.openSheet, { churchId, visitId: first }),
@@ -94,7 +94,7 @@ describe("who may see and plan home visits", () => {
     const pair = [ids.daniel.memberId, ids.colleen.memberId];
     const visitId = await as(ids.owner).mutation(api.visits.plan, { churchId: ids.church, neighborId: ids.rosa, at: morning(3).at, visitorIds: pair });
     const stranger = as(ids.stranger);
-    await expect(stranger.query(api.visits.board, { churchId: ids.church })).rejects.toThrow("Workspace access required.");
+    await expect(stranger.query(api.visits.board, { at: Date.now(), churchId: ids.church })).rejects.toThrow("Workspace access required.");
     await expect(stranger.query(api.visits.sheet, { churchId: ids.other, visitId })).rejects.toThrow("Visit not found.");
     await expect(stranger.mutation(api.visits.cancel, { churchId: ids.other, visitId })).rejects.toThrow("Visit not found.");
     await expect(stranger.mutation(api.visits.plan, { churchId: ids.other, neighborId: ids.rosa, at: morning(3).at, visitorIds: pair })).rejects.toThrow("Record not found.");
@@ -117,7 +117,7 @@ describe("planning a visit by hand", () => {
     await plan([ids.daniel.memberId, ids.graciela.memberId]);
     await expect(plan([ids.daniel.memberId, ids.graciela.memberId], morning(6).at)).rejects.toThrow("A visit for this request is already planned.");
 
-    const board = await owner.query(api.visits.board, { churchId: ids.church });
+    const board = await owner.query(api.visits.board, { at: Date.now(), churchId: ids.church });
     expect(board.suggested).toBeNull();
     expect(board.scheduled).toHaveLength(1);
     expect(board.scheduled[0]).toMatchObject({ neighborName: "Benito Desrosiers", address: "214 Orchard St, Apt 2", kind: "rent", amount: 45000, scheduledAt: morning(3).start });
@@ -132,7 +132,7 @@ describe("planning a visit by hand", () => {
     await expect(owner.mutation(api.visits.writeUp, { churchId, visitId, notes: "Reviewed the bill.", hours: 0, miles: 12 })).rejects.toThrow("Enter the hours");
     await expect(owner.mutation(api.visits.writeUp, { churchId, visitId, notes: "Reviewed the bill.", hours: 1.5, miles: -1 })).rejects.toThrow("Enter the miles");
     await owner.mutation(api.visits.writeUp, { churchId, visitId, notes: "Reviewed the bill together. The amount is right.", hours: 1.5, miles: 12 });
-    const board = await owner.query(api.visits.board, { churchId });
+    const board = await owner.query(api.visits.board, { at: Date.now(), churchId });
     expect(board.scheduled).toHaveLength(0);
     expect(board.writtenUp[0]).toMatchObject({ status: "completed", notes: "Reviewed the bill together. The amount is right." });
     expect(board.writtenUp[0].visitors.map(({ hours, miles }) => ({ hours, miles }))).toEqual([{ hours: 1.5, miles: 12 }, { hours: 1.5, miles: 12 }]);
@@ -144,7 +144,7 @@ describe("planning a visit by hand", () => {
     expect((await owner.query(api.visits.sheet, { churchId, visitId })).lastVisit).toBeNull();
     await expect(owner.mutation(api.visits.writeUp, { churchId, visitId: next, notes: "Follow-up.", hours: 1, miles: 8, driverId: ids.colleen.memberId })).rejects.toThrow("The driver must be one of the two visitors.");
     await owner.mutation(api.visits.writeUp, { churchId, visitId: next, notes: "Follow-up.", hours: 1, miles: 8, driverId: ids.graciela.memberId });
-    const after = await owner.query(api.visits.board, { churchId });
+    const after = await owner.query(api.visits.board, { at: Date.now(), churchId });
     expect(after.writtenUp.find((row) => row.id === next)?.visitors.map(({ name, miles }) => ({ name, miles }))).toEqual([{ name: "Daniel Whitcombe", miles: 0 }, { name: "Graciela Fuentes", miles: 8 }]);
     await expect(owner.mutation(api.visits.cancel, { churchId, visitId })).rejects.toThrow("Only a planned visit can be called off.");
   });
@@ -154,7 +154,7 @@ describe("planning a visit by hand", () => {
     const owner = as(ids.owner), churchId = ids.church;
     const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
     await owner.mutation(api.visits.cancel, { churchId, visitId });
-    const board = await owner.query(api.visits.board, { churchId });
+    const board = await owner.query(api.visits.board, { at: Date.now(), churchId });
     expect(board.scheduled).toHaveLength(0);
     expect(board.suggested?.request.requestId).toBe(ids.request);
   });
@@ -177,11 +177,11 @@ describe("each visitor accepts or declines", () => {
     const { ids, as } = await setup();
     const churchId = ids.church;
     const visitId = await as(ids.owner).mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
-    const own = await as(ids.daniel).query(api.visits.mine, { churchId });
+    const own = await as(ids.daniel).query(api.visits.mine, { at: Date.now(), churchId });
     expect(own).toEqual([{ id: visitId, scheduledAt: morning(3).start, street: "Orchard St", partner: "Graciela Fuentes", response: "pending" }]);
     expect(JSON.stringify(own)).not.toMatch(/Benito|Desrosiers|rent|214/);
     // Someone not on the visit sees nothing of it and cannot answer for it.
-    expect(await as(ids.coordinator).query(api.visits.mine, { churchId })).toEqual([]);
+    expect(await as(ids.coordinator).query(api.visits.mine, { at: Date.now(), churchId })).toEqual([]);
     await expect(as(ids.coordinator).mutation(api.visits.respond, { churchId, visitId, response: "accepted" })).rejects.toThrow("Visit not found.");
     await expect(as(ids.stranger).mutation(api.visits.respond, { churchId, visitId, response: "accepted" })).rejects.toThrow("Workspace access required.");
   });
@@ -190,7 +190,7 @@ describe("each visitor accepts or declines", () => {
     const { ids, as, away, now } = await setup();
     const churchId = ids.church, owner = as(ids.owner);
     const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
-    const answers = async () => (await owner.query(api.visits.board, { churchId })).scheduled[0].visitors.map((visitor) => [visitor.name, visitor.response]);
+    const answers = async () => (await owner.query(api.visits.board, { at: Date.now(), churchId })).scheduled[0].visitors.map((visitor) => [visitor.name, visitor.response]);
     expect(await answers()).toEqual([["Daniel Whitcombe", "pending"], ["Graciela Fuentes", "pending"]]);
     await as(ids.daniel).mutation(api.visits.respond, { churchId, visitId, response: "accepted" });
     expect(await answers()).toEqual([["Daniel Whitcombe", "accepted"], ["Graciela Fuentes", "pending"]]);
@@ -203,7 +203,7 @@ describe("each visitor accepts or declines", () => {
     await expect(replace(ids.coordinator.memberId, ids.colleen.memberId)).rejects.toThrow("Choose which of the two is being replaced.");
     await replace(ids.coordinator.memberId);
     expect(await answers()).toEqual([["Daniel Whitcombe", "accepted"], ["Thomas Okafor", "pending"]]);
-    expect(await as(ids.coordinator).query(api.visits.mine, { churchId })).toHaveLength(1);
+    expect(await as(ids.coordinator).query(api.visits.mine, { at: Date.now(), churchId })).toHaveLength(1);
   });
 });
 
@@ -218,10 +218,10 @@ describe("a visitor removed from the conference for good", () => {
       await owner.mutation(api.people.remove, { churchId, personId: ids.graciela.memberId, typedName: "Graciela Fuentes" });
       await t.finishAllScheduledFunctions(vi.runAllTimers);
 
-      const seats = async () => (await owner.query(api.visits.board, { churchId })).scheduled[0].visitors.map((visitor) => [visitor.name, visitor.removed, visitor.response]);
+      const seats = async () => (await owner.query(api.visits.board, { at: Date.now(), churchId })).scheduled[0].visitors.map((visitor) => [visitor.name, visitor.removed, visitor.response]);
       expect(await seats()).toEqual([["Daniel Whitcombe", false, "accepted"], ["A former member", true, "pending"]]);
       expect((await owner.query(api.visits.sheet, { churchId, visitId })).visitors).toEqual(["Daniel Whitcombe"]);
-      expect((await as(ids.daniel).query(api.visits.mine, { churchId }))[0].partner).toBe("");
+      expect((await as(ids.daniel).query(api.visits.mine, { at: Date.now(), churchId }))[0].partner).toBe("");
       expect((await owner.query(api.visits.visitors, { churchId })).map((person) => person.name)).not.toContain("A former member");
 
       await expect(owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(4).at })).rejects.toThrow("no longer in the conference");
@@ -242,10 +242,10 @@ describe("a visitor removed from the conference for good", () => {
       await owner.mutation(api.people.remove, { churchId, personId: ids.colleen.memberId, typedName: "Colleen Marsh" });
       await owner.mutation(api.people.remove, { churchId, personId: ids.graciela.memberId, typedName: "Graciela Fuentes" });
       await t.finishAllScheduledFunctions(vi.runAllTimers);
-      expect((await owner.query(api.visits.board, { churchId })).scheduled[0].visitors.map((visitor) => visitor.removed)).toEqual([true, true]);
+      expect((await owner.query(api.visits.board, { at: Date.now(), churchId })).scheduled[0].visitors.map((visitor) => visitor.removed)).toEqual([true, true]);
       expect((await owner.query(api.visits.sheet, { churchId, visitId })).visitors).toEqual([]);
       await owner.mutation(api.visits.cancel, { churchId, visitId });
-      const board = await owner.query(api.visits.board, { churchId });
+      const board = await owner.query(api.visits.board, { at: Date.now(), churchId });
       expect(board.scheduled).toEqual([]);
       expect(board.suggested?.request.requestId).toBe(ids.request);
     } finally {
@@ -261,7 +261,7 @@ describe("a visitor removed from the conference for good", () => {
       const done = await t.run((ctx) => ctx.db.insert("visits", { churchId, neighborId: ids.rosa, scheduledAt: Date.now() - 5 * DAY, status: "completed", visitors: [{ memberId: ids.daniel.memberId, hours: 1, miles: 4, response: "accepted" }, { memberId: ids.colleen.memberId, hours: 1, miles: 0, response: "accepted" }], notes: "Rent is one month behind.", completedAt: Date.now() - 5 * DAY, createdBy: ids.owner.memberId, createdAt: Date.now() - 6 * DAY }));
       await owner.mutation(api.people.remove, { churchId, personId: ids.daniel.memberId, typedName: "Daniel Whitcombe" });
       await t.finishAllScheduledFunctions(vi.runAllTimers);
-      const board = await owner.query(api.visits.board, { churchId });
+      const board = await owner.query(api.visits.board, { at: Date.now(), churchId });
       expect(board.suggested?.pair?.map((person) => person.name)).toEqual(["Colleen Marsh", "Graciela Fuentes"]);
       expect(board.writtenUp.find((visit) => visit.id === done)?.visitors.map((visitor) => [visitor.name, visitor.hours])).toEqual([["A former member", 1], ["Colleen Marsh", 1]]);
     } finally {
@@ -277,11 +277,11 @@ describe("a neighbor's record removed for good", () => {
     const visitors = (hours: number) => [{ memberId: ids.daniel.memberId, hours, miles: hours * 4, response: "accepted" as const }, { memberId: ids.colleen.memberId, hours, miles: 0, response: "accepted" as const }];
     const made = await t.run((ctx) => ctx.db.insert("visits", { churchId, neighborId: ids.rosa, requestId: ids.request, scheduledAt: Date.now() - 5 * DAY, status: "completed", visitors: visitors(1.5), notes: "Rent is one month behind.", completedAt: Date.now() - 5 * DAY, createdBy: ids.owner.memberId, createdAt: Date.now() - 6 * DAY }));
     const planned = await t.run((ctx) => ctx.db.insert("visits", { churchId, neighborId: ids.rosa, scheduledAt: morning(3).start, status: "scheduled", visitors: visitors(0), notes: "", createdBy: ids.owner.memberId, createdAt: Date.now() }));
-    expect(await as(ids.daniel).query(api.visits.mine, { churchId })).toHaveLength(1);
+    expect(await as(ids.daniel).query(api.visits.mine, { at: Date.now(), churchId })).toHaveLength(1);
     // The skeleton the removal leaves: no name key, no words.
     await t.run((ctx) => ctx.db.patch("neighbors", ids.rosa, { name: "Record removed", nameKey: "", phone: "", phoneKey: "", address: "", notes: "" }));
 
-    const board = await owner.query(api.visits.board, { churchId });
+    const board = await owner.query(api.visits.board, { at: Date.now(), churchId });
     expect(board.suggested).toBeNull();
     expect(board.toArrange).toEqual([]);
     expect(board.scheduled).toEqual([]);
@@ -289,7 +289,7 @@ describe("a neighbor's record removed for good", () => {
     expect(board.writtenUp[0]).toMatchObject({ id: made, neighborName: "Record removed", address: "", notes: "", requestId: null, kind: null, amount: null, recordRemoved: true });
     expect(board.writtenUp[0].visitors.map((visitor) => [visitor.name, visitor.hours, visitor.miles])).toEqual([["Daniel Whitcombe", 1.5, 6], ["Colleen Marsh", 1.5, 0]]);
     expect(JSON.stringify(board)).not.toMatch(/Benito|Orchard|Rent is/);
-    expect(await as(ids.daniel).query(api.visits.mine, { churchId })).toEqual([]);
+    expect(await as(ids.daniel).query(api.visits.mine, { at: Date.now(), churchId })).toEqual([]);
 
     for (const visitId of [made, planned]) {
       await expect(owner.query(api.visits.sheet, { churchId, visitId })).rejects.toThrow("Record not found.");
@@ -311,7 +311,7 @@ describe("a visit written up long after it was made", () => {
       return ctx.db.insert("visits", { churchId, neighborId: ids.rosa, scheduledAt: Date.now() - 73 * DAY, status: "scheduled", visitors: pair(0), notes: "", createdBy: ids.owner.memberId, createdAt: 0 });
     });
     await owner.mutation(api.visits.writeUp, { churchId, visitId: old, notes: "Gave the pantry hours.", hours: 1.5, miles: 12, driverId: ids.daniel.memberId });
-    const first = (await owner.query(api.visits.board, { churchId })).writtenUp[0];
+    const first = (await owner.query(api.visits.board, { at: Date.now(), churchId })).writtenUp[0];
     expect(first.id).toBe(old);
     expect(first.visitors.map((visitor) => [visitor.hours, visitor.miles])).toEqual([[1.5, 12], [1.5, 0]]);
   });
@@ -327,7 +327,7 @@ describe("changing the time of a planned visit", () => {
     await expect(owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(8).at })).rejects.toThrow("Graciela Fuentes is away that day.");
     await expect(owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(-1).at })).rejects.toThrow("Choose a time that is still to come.");
     await owner.mutation(api.visits.reschedule, { churchId, visitId, at: morning(5).at });
-    const [visit] = (await owner.query(api.visits.board, { churchId })).scheduled;
+    const [visit] = (await owner.query(api.visits.board, { at: Date.now(), churchId })).scheduled;
     expect(visit.scheduledAt).toBe(morning(5).start);
     expect(visit.visitors.map((visitor) => visitor.response)).toEqual(["pending", "pending"]);
     await owner.mutation(api.visits.writeUp, { churchId, visitId, notes: "Reviewed the bill.", hours: 1, miles: 3 });
@@ -380,7 +380,7 @@ describe("the suggested pair", () => {
   test("on the board it is drawn from the Home visitors team, availability and time off", async () => {
     const { ids, as, away, now } = await setup();
     const owner = as(ids.owner), churchId = ids.church;
-    const first = await owner.query(api.visits.board, { churchId });
+    const first = await owner.query(api.visits.board, { at: Date.now(), churchId });
     // Samuel is on the team but not approved; the owner and coordinator are not home visitors.
     expect(first.suggested?.request).toMatchObject({ neighborName: "Benito Desrosiers", kind: "rent", amount: 45000 });
     expect(first.suggested?.pair?.map((person) => person.name)).toEqual(["Colleen Marsh", "Graciela Fuentes"]);
@@ -388,18 +388,18 @@ describe("the suggested pair", () => {
     expect(DateTime.fromMillis(first.suggested?.scheduledAt ?? 0, { zone }).hour).toBe(10);
 
     await away(ids.colleen, now, now + 20 * DAY);
-    const second = await owner.query(api.visits.board, { churchId });
+    const second = await owner.query(api.visits.board, { at: Date.now(), churchId });
     expect(second.suggested?.pair?.map((person) => person.name)).toEqual(["Daniel Whitcombe", "Graciela Fuentes"]);
 
     await away(ids.daniel, now, now + 20 * DAY);
-    const third = await owner.query(api.visits.board, { churchId });
+    const third = await owner.query(api.visits.board, { at: Date.now(), churchId });
     expect(third.suggested?.pair).toBeNull();
     expect(third.suggested?.reason).toContain("No two home visitors are free");
 
     // Asking the suggested pair plans the visit at the suggested time.
     if (!second.suggested?.pair) throw new Error("Expected a pair.");
     await planFor(owner, churchId, ids, second.suggested.at, [ids.graciela.memberId, ids.coordinator.memberId]);
-    expect((await owner.query(api.visits.board, { churchId })).suggested).toBeNull();
+    expect((await owner.query(api.visits.board, { at: Date.now(), churchId })).suggested).toBeNull();
   });
 });
 

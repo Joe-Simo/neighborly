@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from "react";
+import { useContext, useSyncExternalStore } from "react";
 import * as live from "convex/react";
 import type { OptionalRestArgsOrSkip, PaginatedQueryArgs, PaginatedQueryReference, UsePaginatedQueryReturnType } from "convex/react";
 import type { FunctionReference, FunctionReturnType } from "convex/server";
@@ -29,4 +29,34 @@ export function usePaginatedQuery<Query extends PaginatedQueryReference>(
 ): UsePaginatedQueryReturnType<Query> {
   const source = useContext(ConvexQueryCacheContext).registry ? kept : live;
   return source.usePaginatedQuery(query, args, options);
+}
+
+const HOUR = 3_600_000;
+const thisHour = () => Math.floor(Date.now() / HOUR) * HOUR;
+function onTheHour(changed: () => void) {
+  // A page left in the background asks nothing new; it catches up the moment it is looked at again.
+  const seen = () => document.visibilityState === "visible" && changed();
+  let timer: ReturnType<typeof setTimeout>;
+  const wait = () => {
+    timer = setTimeout(() => {
+      seen();
+      wait();
+    }, thisHour() + HOUR - Date.now());
+  };
+  wait();
+  document.addEventListener("visibilitychange", seen);
+  return () => {
+    clearTimeout(timer);
+    document.removeEventListener("visibilitychange", seen);
+  };
+}
+
+/**
+ * The start of the present hour, for a reading that depends on the time. The backend never reads the
+ * clock in a query (see `hour` in convex/access.ts): the room hands it this, so everyone looking in
+ * the same hour shares one answer and a page left open is not added up again every minute.
+ * 0 on the server, where there is no present hour: ask nothing until it is known.
+ */
+export function useHour() {
+  return useSyncExternalStore(onTheHour, thisHour, () => 0);
 }

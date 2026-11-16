@@ -114,4 +114,38 @@ describe("the sample conference a visitor looks around", () => {
     await refreshed(t);
     expect(await t.run((ctx) => ctx.db.query("churches").collect())).toHaveLength(0);
   });
+
+  // Convex keeps one answer for everyone who asks the same question, and the sample is one conference
+  // shared by every visitor. A query that reads the clock loses that and is run again while a page sits
+  // open, which is what spent a month's allowance in two days. So the time comes in as an argument.
+  test("no room's query reads the clock, and none but the year's report reads more than a room needs", async () => {
+    const t = start();
+    await refreshed(t);
+    const guest = t.withIdentity(visitor);
+    await guest.mutation(api.users.enter, {});
+    const [{ id: churchId }] = (await guest.query(api.workspace.viewer, {})).churches;
+    const at = Math.floor(Date.now() / 3600000) * 3600000;
+    const read = (ask: (ctx: Parameters<Parameters<typeof guest.run>[0]>[0]) => Promise<unknown>) =>
+      guest.run(async (ctx) => {
+        const clock = vi.spyOn(Date, "now");
+        await ask(ctx);
+        const looked = clock.mock.calls.length;
+        clock.mockRestore();
+        return { looked, bytes: (await ctx.meta.getTransactionMetrics()).bytesRead.used };
+      });
+    const rooms = {
+      helpLine: await read((ctx) => ctx.runQuery(api.assistance.calls, { churchId, at })),
+      weekNote: await read((ctx) => ctx.runQuery(api.drafts.weekNote, { churchId, at })),
+      board: await read((ctx) => ctx.runQuery(api.visits.board, { churchId, at })),
+      mine: await read((ctx) => ctx.runQuery(api.visits.mine, { churchId, at })),
+      years: await read((ctx) => ctx.runQuery(api.reports.years, { churchId, at })),
+      year: await read((ctx) => ctx.runQuery(api.reports.year, { churchId, at, year: 2026 })),
+    };
+    for (const [room, { looked }] of Object.entries(rooms)) expect(looked, room).toBe(0);
+    // The help line read 74 KB when it took the last 200 returned calls to find a week of them.
+    expect(rooms.helpLine.bytes).toBeLessThan(40_000);
+    for (const room of [rooms.weekNote, rooms.board, rooms.mine, rooms.years]) expect(room.bytes).toBeLessThan(100_000);
+    // A whole year added up is the one large read, and it is asked only in the Reports room.
+    expect(rooms.year.bytes).toBeLessThan(1_000_000);
+  });
 });

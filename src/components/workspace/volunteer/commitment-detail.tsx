@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePaginatedQuery } from "@/components/workspace/query";
+import { useHour, usePaginatedQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -147,11 +147,12 @@ function LiveCoverChooser({
     (request) =>
       request.commitmentId === commitment.id && request.status === "pending",
   );
+  const at = useHour();
   const candidates = usePaginatedQuery(
     api.pages.coverCandidates,
-    waiting.length
+    waiting.length || !at
       ? "skip"
-      : { churchId: data.church.id, commitmentId: commitment.id },
+      : { churchId: data.church.id, at, commitmentId: commitment.id },
     { initialNumItems: 10 },
   );
   const [recipient, setRecipient] = useState<Id<"memberships"> | "">("");

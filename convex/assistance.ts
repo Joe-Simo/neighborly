@@ -1,7 +1,7 @@
 import { ConvexError, v, type Infer } from "convex/values";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { neighborAccess, neighborRecord } from "./access";
+import { hour, neighborAccess, neighborRecord } from "./access";
 import { voucherGiven } from "./treasury";
 import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
@@ -348,9 +348,9 @@ export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Inf
 
 /** The help line: messages still to call back, oldest first, and the calls returned in the last seven days. */
 export const calls = query({
-  args: { churchId: v.id("churches") },
+  args: { churchId: v.id("churches"), at: hour },
   returns: v.object({ waiting: v.array(callRow), returned: v.array(callRow) }),
-  handler: async (ctx, { churchId }) => {
+  handler: async (ctx, { churchId, at }) => {
     await neighborAccess(ctx, churchId);
     const needed = await ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "needed")).take(100);
     // Calls to return first lead the list; within each group the one that has waited longest is first.
@@ -358,9 +358,15 @@ export const calls = query({
     // A call kept only for the year's count, after its neighbor's record was removed, has no name and no phone.
     const kept = (call: Doc<"calls">) => !call.callerName && !call.phone;
     const waiting = needed.filter((call) => !kept(call)).sort((a, b) => first(a) - first(b) || a.takenAt - b.takenAt);
-    const done = await ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "done")).order("desc").take(200);
-    const since = Date.now() - WEEK;
-    const returned = done.filter((call) => !kept(call) && (call.returnedAt ?? call.takenAt) >= since).sort((a, b) => (b.returnedAt ?? b.takenAt) - (a.returnedAt ?? a.takenAt));
+    // Only the week is read, never the year behind it: the calls returned since then, and the calls taken
+    // since then that were settled on the spot and so carry no time of return.
+    const since = at - WEEK;
+    const [returnedSince, takenSince] = await Promise.all([
+      ctx.db.query("calls").withIndex("by_church_callback_returned", (q) => q.eq("churchId", churchId).eq("callback", "done").gte("returnedAt", since)).order("desc").take(200),
+      ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("takenAt", since)).order("desc").take(200),
+    ]);
+    const done = [...returnedSince, ...takenSince.filter((call) => call.callback === "done" && call.returnedAt === undefined)];
+    const returned = done.filter((call) => !kept(call)).sort((a, b) => (b.returnedAt ?? b.takenAt) - (a.returnedAt ?? a.takenAt));
     const found = lookups(ctx);
     return {
       waiting: await Promise.all(waiting.map((call) => toCallRow(found, call))),

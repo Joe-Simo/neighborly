@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@/components/workspace/query";
+import { useHour, useQuery } from "@/components/workspace/query";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
@@ -88,7 +88,8 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   const week = `${churchId}:${new Intl.DateTimeFormat("en-CA", { timeZone: data.church.timeZone }).format(monday)}`;
   const away = useSyncExternalStore(subscribe, () => stored(put) === week, () => true);
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
-  const counts = useQuery(api.drafts.weekNote, allowed && !away ? { churchId } : "skip");
+  const at = useHour();
+  const counts = useQuery(api.drafts.weekNote, allowed && !away && at ? { churchId, at } : "skip");
   const last = useSyncExternalStore(subscribe, () => stored(kept), () => null);
   useEffect(() => {
     if (!counts) return;
