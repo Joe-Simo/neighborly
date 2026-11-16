@@ -786,6 +786,16 @@ export function DraftSheet({
       </p>
       <div className="help-sheet-body">
         <div>
+          {/* The card leads with the call it was made from, so the line under it is never taken for a ledger entry.
+              The name is read from the call row for display only; it is not part of the draft or of what the assistant saw. */}
+          <p className="help-from">
+            {call.neighborName || call.callerName ? (
+              <strong>{caller(call)}</strong>
+            ) : (
+              "A caller who gave no name"
+            )}{" "}
+            called on {format(call.takenAt, { weekday: "long", month: "long" })}
+          </p>
           <h2 id="draft-title">
             {title}
             {draft.payeeName && ` to ${draft.payeeName}`}
@@ -801,16 +811,9 @@ export function DraftSheet({
           )}
           <p className="help-quote">“{draft.quote || call.note}”</p>
           <p className="help-why">
-            For {call.neighborId ? caller(call) : "a new caller"}, from the
-            message on{" "}
-            {format(call.takenAt, {
-              month: undefined,
-              day: undefined,
-              weekday: "long",
-              hour: "numeric",
-              minute: "2-digit",
-            })}
-            .
+            From the message taken at{" "}
+            {format(call.takenAt, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}
+            .{!call.neighborId && " Not yet on file as a neighbor."}
           </p>
           {/* What to do about a blank reads with the text, at its measure, never beside the buttons. */}
           {!complete && !call.neighborId && (

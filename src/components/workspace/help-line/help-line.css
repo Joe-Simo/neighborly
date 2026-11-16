@@ -201,3 +201,6 @@
   .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] { display: block; }
   .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] .help-assistant-line { margin: 18px 0 0; padding: 16px 0 0; border-top: 1px solid #e6e0ee; border-left: 0; }
 }
+/* The draft card's first line: who called and when. The name is never broken across lines. */
+.help-sheet .help-from { margin: 0 0 8px; font-size: 19px; line-height: 1.4; color: var(--live-ink); }
+.help-sheet .help-from strong { font-weight: 600; white-space: nowrap; }
