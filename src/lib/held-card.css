@@ -1,0 +1,12 @@
+/* Laid out as the sweep's last sheet (workspace/door.css), so the sweep can take it over without a seam. */
+#card-held{position:fixed;inset:0;z-index:80;overflow:hidden;pointer-events:none}
+#card-held .door-card{position:absolute;left:50%;top:50%;width:max(106vw,159vh);aspect-ratio:1.5;margin:calc(max(106vw,159vh) / -3) 0 0 calc(max(106vw,159vh) / -2);border-radius:40px;background:#f7f4ed;box-shadow:0 18px 44px rgb(40 60 50 / .3),0 1px 0 rgb(40 60 50 / .18)}
+#card-held .door-card>*{position:absolute;opacity:.4}
+#card-held .door-card>i{left:30%;top:36%;width:7%;aspect-ratio:1;background:#c8962e}
+#card-held .door-card>b{left:41%;top:39%;width:30%;height:3%;background:#8f8a78}
+#card-held .door-card>b+b{left:39%;top:53%;width:22%}
+@media(max-aspect-ratio:1/1){
+  #card-held .door-card>i{left:38.5%;top:38%;width:3.6%}
+  #card-held .door-card>b{left:44%;top:39.5%;width:16%;height:2.6%}
+  #card-held .door-card>b+b{left:43%;top:50%;width:11%}
+}

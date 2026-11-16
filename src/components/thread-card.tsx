@@ -89,11 +89,11 @@ export function ThreadCard() {
       // The ending: the card comes in over the cloth at the right, clear of the faces and the words, and down into the open hand.
       const band = end.closest<HTMLElement>(".neighborly-close")?.getBoundingClientRect();
       if (band && band.top < height * .6) {
-        const to = poseOf(end), down = clamp((height * .6 - band.top) / (height * .6));
+        const to = poseOf(end), down = clamp((height * .6 - band.top) / (height * .52));
         pose = between({ x: Math.min(innerWidth - to.w, to.x + to.w * 1.6), y: to.y - to.w * 1.1, w: to.w * 1.1, r: to.r + 16, o: 0 }, to, down);
         pose.o = clamp(down * 5);
         if (down > .82 && down < 1) pose.y += Math.sin((down - .82) / .18 * Math.PI) * 5;
-        lift = Math.sin(down * Math.PI); tone = 1 - clamp((down - .5) / .5); landed = down >= 1 ? end : null;
+        lift = Math.sin(down * Math.PI); tone = 1; landed = down >= 1 ? end : null;
       }
       // It never crosses the line under the fresco: it comes out onto the paper below it.
       const caption = world.querySelector<HTMLElement>(".fresco-caption")?.getBoundingClientRect();
