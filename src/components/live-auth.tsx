@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from "react";
+import { takeSampleTicket } from "@/lib/sample-ticket";
 import Link from "next/link";
 import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
@@ -216,7 +217,7 @@ export function LiveAuth({
     setOpening(true);
     carryTheCard();
     try {
-      const response = await fetch("/app/look-around", { method: "POST" });
+      const response = await takeSampleTicket();
       if (response.status === 429) {
         carryTheCard(false);
         return setSampleError("sampleBusy");

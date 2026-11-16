@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SampleLink } from "@/components/sample-link";
 import "./neighborly-continuation.css";
 
 /** The picture every public page closes on: the same two people, the card now resting in the open hand. */
@@ -13,7 +14,7 @@ export function ClosingBand() {
     <div className="neighborly-close-words">
       <h2 id="together-title">Bring this to<br /><em>your people.</em></h2>
       <div className="neighborly-final-actions">
-        <Button asChild className="neighborly-begin"><Link href="/app?intent=sample">Look around a sample conference<ArrowUpRight aria-hidden="true" /></Link></Button>
+        <Button asChild className="neighborly-begin"><SampleLink>Look around a sample conference<ArrowUpRight aria-hidden="true" /></SampleLink></Button>
         <nav className="neighborly-final-links" aria-label="Your own conference">
           <Link href="/app?intent=start">Start your conference<ArrowUpRight size={16} aria-hidden="true" /></Link>
           <Link href="/app?intent=signin">Sign in<ArrowUpRight size={16} aria-hidden="true" /></Link>
