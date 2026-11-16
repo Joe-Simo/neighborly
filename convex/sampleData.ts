@@ -93,7 +93,7 @@ export const load = internalMutation({
     if (args.owner) members.push(await ctx.db.insert("memberships", { churchId, userId: args.owner.userId, name: args.owner.name, email: args.owner.email, role: "owner", active: true, approved: true, coverOptIn: true }));
     for (const [index, name] of volunteerNames.entries()) {
       const role = members.length === 0 ? "owner" : index < 3 ? "coordinator" : "member";
-      members.push(await ctx.db.insert("memberships", { churchId, userId: await ctx.db.insert("users", {}), name, email: `${key(name).replaceAll(" ", ".")}@${emailDomain}`, role, active: true, approved: true, coverOptIn: index % 2 === 0, language: index % 4 === 1 ? "es" : index % 6 === 2 ? "ht" : "en" }));
+      members.push(await ctx.db.insert("memberships", { churchId, userId: await ctx.db.insert("users", {}), name, email: `${key(name).replaceAll(" ", ".")}@${emailDomain}`, role, active: true, approved: true, coverOptIn: index % 2 === 0, language: index % 4 === 1 ? "es" : "en" }));
     }
     const [owner, ...others] = members;
     const staff = members.slice(0, 4);
