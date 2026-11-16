@@ -35,10 +35,12 @@
   .public-page-header{height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .public-page-brand{font-size:30px}
   .public-words{padding-inline:20px}
+}
+/* Under 1024px the page is one column: each heading over its own words, about 62 letters to a line, centred on the paper. */
+@media(max-width:1023px){
+  .public-words h1,.public-words section{max-width:496px;margin-inline:auto}
   .public-words section{grid-template-columns:minmax(0,1fr)}
   .public-words h2{max-width:none}
-  /* In one column, as on a tablet held upright, a line holds about 62 letters. */
-  .public-words section>div{max-width:27em}
 }
 @media(prefers-reduced-motion:reduce){.paper-rise,.public-state .paper-rise>*{animation:none}}
 /* After a state page, whose paper is lighter, the ending begins in that paper. */
