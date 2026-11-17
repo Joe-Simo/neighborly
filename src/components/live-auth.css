@@ -242,8 +242,8 @@
   flex-wrap: wrap;
   column-gap: 20px;
 }
-.live-app .entry-foot-line button { color: var(--live-muted); font-size: 14px; text-decoration: none; }
-.live-app .entry-foot-line > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--live-muted); font-size: 14px; }
+.live-app .entry-foot-line button { color: var(--live-muted); font-size: 15px; text-decoration: none; }
+.live-app .entry-foot-line > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--live-muted); font-size: 15px; }
 .live-app .entry-languages button[aria-pressed="true"] { color: var(--paper-ink); font-weight: 600; }
 @media (hover: hover) {
   .live-app .entry-foot-line :is(button, a):hover { color: var(--paper-ink); text-decoration: underline; text-underline-offset: 5px; }
