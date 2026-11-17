@@ -399,7 +399,9 @@
 .entry .live-field:has(.live-field-needed) small:not(.live-field-needed) { display: none; }
 
 /* ── The first welcome, written on the same sheet ─────────────────────── */
-.entry .live-wordmark { display: inline-block; margin-bottom: 16px; color: var(--paper-ink); font-size: 30px; line-height: 1; }
+.entry .live-wordmark { position: relative; display: inline-block; margin-bottom: 16px; color: var(--paper-ink); font-size: 30px; line-height: 1; }
+/* A finger needs 44 points. The word stays its size; only the area that answers a touch grows. */
+.entry .live-wordmark::after { content: ""; position: absolute; inset: 50% 0 auto; height: 44px; transform: translateY(-50%); }
 .entry .entry-tabs { justify-content: flex-start; width: 100%; border-radius: 0; }
 .live-app .entry .live-field select { min-height: 50px; padding-inline: 14px; background-color: #fffdf7; font-size: 17px; }
 /* What a conference is, said once, in the sheet's own small print between two hairlines. */
