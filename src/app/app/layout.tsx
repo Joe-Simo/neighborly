@@ -45,6 +45,8 @@ export default function LiveAppLayout({
           reader is told so on the same paper, under the same mark, and shown the way back. Which language they read
           is not known without scripts, so both are set. */}
       <noscript>
+        {/* The launch sheet beneath is taken out of the page, not only covered, so a screen reader does not read its "Opening…". */}
+        <style>{".live-main.paper-loading{display:none!important}"}</style>
         <main className="paper-noscript">
           {/* eslint-disable-next-line @next/next/no-img-element -- the launch mark, as the launch sheet draws it */}
           <img src="/launch/mark-240.png" srcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x" width={240} height={240} alt="kind helps" />
