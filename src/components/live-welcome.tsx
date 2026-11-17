@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { readFailure } from "@/components/workspace/failure";
 import Link from "next/link";
 import { words, type Language } from "@/lib/words";
@@ -64,6 +64,15 @@ export function LiveWelcome({
   const book = words(language);
   const w = book.welcome.first;
   const [error, setError] = useState("");
+  // The tab names this page, in the reader's language, as the sign-in sheet does. Nobody is in a workspace yet.
+  const pageTitle = `${mode === "create" ? w.start : w.invited} · Kind Helps`;
+  useEffect(() => {
+    const found = document.title;
+    document.title = pageTitle;
+    return () => {
+      document.title = found;
+    };
+  }, [pageTitle]);
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
