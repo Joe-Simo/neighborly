@@ -494,7 +494,9 @@ export function ReportView({
                   {!ahead && line.visits > 0 && <i style={share(line.visits, mostVisits)} />}
                   {!ahead && line.paid > 0 && <span style={share(line.paid, largestMonth)} />}
                 </div>
-                <h3>
+                {/* A month that has passed is said once, by its button below ("May 2026: $1,630 paid, 11 visits."): the label
+                    and the two figures are for the eye, so a screen reader meets one line a month, in the order it is drawn. */}
+                <h3 aria-hidden={ahead ? undefined : true}>
                   {monthLabel(line.month, true, words)}
                   <span className="report-sr"> {line.month.slice(0, 4)}</span>
                 </h3>
@@ -503,8 +505,8 @@ export function ReportView({
                 ) : (
                   <>
                     {/* Whole dollars here; the cents are in the tip, the table and the ledger. */}
-                    <p className="help-amount">{wholeDollars(line.paid)}</p>
-                    <p>{w.months.visits(line.visits)}</p>
+                    <p className="help-amount" aria-hidden="true">{wholeDollars(line.paid)}</p>
+                    <p aria-hidden="true">{w.months.visits(line.visits)}</p>
                     <Popover open={tip === line.month} onOpenChange={(open) => setTip(open ? line.month : undefined)}>
                       <PopoverTrigger asChild>
                         <button
