@@ -39,6 +39,7 @@ export function LiveWelcome({
   joinChurch,
   signOut,
   initialToken = "",
+  conference = "",
   initialMode = "create",
   badInvite = false,
 }: {
@@ -52,6 +53,8 @@ export function LiveWelcome({
   joinChurch: (value: { token: string; displayName: string }) => Promise<void>;
   signOut: () => Promise<void>;
   initialToken?: string;
+  /** The conference the invitation link leads to, when the backend has said. Shown as words, never as a link. */
+  conference?: string;
   initialMode?: "create" | "join";
 }) {
   const [mode, setMode] = useState<"create" | "join">(
@@ -132,28 +135,32 @@ export function LiveWelcome({
       <p className="live-kicker">{mode === "create" ? w.createKicker : w.joinKicker}</p>
       <h1>{mode === "create" ? w.createTitle : w.joinTitle}</h1>
       <p className="live-deck">
-        {mode === "create" ? w.createDeck : w.joinDeck}
+        {mode === "create" ? w.createDeck : conference && !codeShown ? <>{w.joinNamedBefore} <strong>{conference}</strong>{w.joinNamedAfter}</> : w.joinDeck}
       </p>
       {badInvite && (
         <div className="live-error live-failure" role="alert">
           <p>{authWords[language].badInvite}</p>
         </div>
       )}
-      <ToggleGroup
-        type="single"
-        value={mode}
-        disabled={busy}
-        onValueChange={(value) => {
-          if (value !== "create" && value !== "join") return;
-          setMode(value);
-          setError("");
-        }}
-        className="entry-tabs entry-halves"
-        aria-label={w.choose}
-      >
-        <ToggleGroupItem value="create">{w.start}</ToggleGroupItem>
-        <ToggleGroupItem value="join">{w.invited}</ToggleGroupItem>
-      </ToggleGroup>
+      {/* Someone who came by a link came to join: the sheet is the invitation's page alone. If joining is refused,
+          both ways to begin are offered. */}
+      {codeShown && (
+        <ToggleGroup
+          type="single"
+          value={mode}
+          disabled={busy}
+          onValueChange={(value) => {
+            if (value !== "create" && value !== "join") return;
+            setMode(value);
+            setError("");
+          }}
+          className="entry-tabs entry-halves"
+          aria-label={w.choose}
+        >
+          <ToggleGroupItem value="create">{w.start}</ToggleGroupItem>
+          <ToggleGroupItem value="join">{w.invited}</ToggleGroupItem>
+        </ToggleGroup>
+      )}
       <form className="live-form" onSubmit={submit} aria-busy={pending}>
         <LiveField label={w.yourName} said={{ needed: w.addName }}>
           <Input name="displayName" autoComplete="name" required maxLength={100} disabled={busy} />
