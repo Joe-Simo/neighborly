@@ -58,7 +58,7 @@ export function CardOfferGrow() {
     // As the words give way, the grown card's own marks come up in the same moment, where the door's card has them: the card is never blank paper.
     const marks = document.createElement("div");
     marks.className = "card-held-marks";
-    marks.append(document.createElement("i"), document.createElement("b"), document.createElement("b"));
+    marks.append(document.createElement("i"));
     // The name written on the card is lettered on the grown paper too, where the door's card will be, so it is still the visitor's card.
     const written = offer.querySelector(".card-offer-for span")?.textContent?.trim();
     // On the card the name is lettered on its paper, so it grows with the card and keeps its place over the square; the grown card letters it again over its own square, as the door does.
