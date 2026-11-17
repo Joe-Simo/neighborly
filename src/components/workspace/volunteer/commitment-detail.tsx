@@ -30,6 +30,7 @@ export function CommitmentDetail({
 }) {
   const { data, pending, perform, when, personName, teamName, confirm, words } =
     useWorkspace();
+  const text = words.rooms.peopleRoom.commitment;
   return (
     <>
       <p className="live-kicker">{selected && teamName(selected.teamId)}</p>
@@ -49,16 +50,16 @@ export function CommitmentDetail({
                   size="sm"
                   onClick={() => onEdit(selected)}
                 >
-                  Edit details
+                  {text.edit}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
                     confirm({
-                      title: "Cancel this commitment?",
-                      action: "Cancel commitment",
-                      body: "This cancels this date, releases its accepted person and withdraws pending cover requests. The record is kept in the history. Other dates and team memberships stay unchanged.",
+                      title: text.cancelTitle,
+                      action: text.cancel,
+                      body: text.cancelBody,
                       command: {
                         type: "cancelCommitment",
                         commitmentId: selected.id,
@@ -68,7 +69,7 @@ export function CommitmentDetail({
                     onClose();
                   }}
                 >
-                  Cancel commitment
+                  {text.cancel}
                 </Button>
               </div>
             )}
@@ -78,7 +79,7 @@ export function CommitmentDetail({
               <dd>
                 {when(selected.start, selected.end)}
                 <br />
-                <small>{zoneName(data.church.timeZone).replace(/^./, (first) => first.toUpperCase())}</small>
+                <small>{zoneName(data.church.timeZone, words.locale).replace(/^./, (first) => first.toUpperCase())}</small>
               </dd>
             </div>
             <div>
@@ -155,19 +156,18 @@ function LiveCoverChooser({
     { initialNumItems: 10 },
   );
   const [recipient, setRecipient] = useState<Id<"memberships"> | "">("");
+  const text = useWorkspace().words.rooms.peopleRoom.commitment;
   return (
     <section>
-      <h3>Ask someone to help</h3>
+      <h3>{text.askTitle}</h3>
       <p>
-        These people have opted in, confirmed availability and are approved for
-        this team. Each person can accept or decline.
+        {text.askDeck}
       </p>
       {waiting.map((request) => (
         <div className="live-note" key={request.id}>
-          Awaiting a reply from{" "}
-          {data.people.find((person) => person.id === request.recipientId)
-            ?.name ?? "the invited member"}
-          .{" "}
+          {((name: string | undefined) => (name ? text.awaiting(name) : text.awaitingMember))(
+            data.people.find((person) => person.id === request.recipientId)?.name,
+          )}{" "}
           <Button
             variant="ghost"
             size="sm"
@@ -175,17 +175,17 @@ function LiveCoverChooser({
             onClick={() =>
               void run(
                 { type: "withdrawCover", requestId: request.id },
-                "Request withdrawn.",
+                text.withdrawn,
               )
             }
           >
-            Withdraw request
+            {text.withdraw}
           </Button>
         </div>
       ))}
       {!waiting.length && (
         <>
-          <LiveField label="Person">
+          <LiveField label={text.person}>
             <NativeSelect
               value={recipient}
               onChange={(event) =>
@@ -196,7 +196,7 @@ function LiveCoverChooser({
                 )
               }
             >
-              <option value="">Choose a person…</option>
+              <option value="">{text.choosePerson}</option>
               {candidates.results.map((person) => (
                 <option key={person.id} value={person.id}>
                   {person.name}
@@ -205,7 +205,7 @@ function LiveCoverChooser({
             </NativeSelect>
           </LiveField>
           {candidates.status === "Exhausted" && !candidates.results.length && (
-            <p>No eligible people are available for this date.</p>
+            <p>{text.nobody}</p>
           )}
           {candidates.status !== "Exhausted" && (
             <Button
@@ -215,8 +215,8 @@ function LiveCoverChooser({
               onClick={() => candidates.loadMore(10)}
             >
               {candidates.status === "CanLoadMore"
-                ? "Load more eligible people"
-                : "Checking availability…"}
+                ? text.loadMore
+                : text.checking}
             </Button>
           )}
           <Button
@@ -232,13 +232,13 @@ function LiveCoverChooser({
                     expectedVersion: commitment.version,
                     recipientId: recipient,
                   },
-                  "Cover request saved. It is awaiting their reply.",
+                  text.asked,
                 )
               )
                 setRecipient("");
             }}
           >
-            Ask for cover
+            {text.ask}
           </Button>
         </>
       )}
