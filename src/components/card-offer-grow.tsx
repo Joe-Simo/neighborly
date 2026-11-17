@@ -50,8 +50,8 @@ export function CardOfferGrow() {
       ? [{ transform: `rotate(${turn}deg)`, easing: EASE }, { transform: `translate(${dx}px,${dy}px) rotate(0deg) scale(${innerWidth * .92 / width})`, offset: rest, easing: "cubic-bezier(.5,0,.3,1)" }, end]
       : [{ transform: `rotate(${turn}deg)` }, end], { ...timing, duration: narrow ? GROW + 200 : GROW, easing: narrow ? "linear" : WIDE });
     // Its words give way to the bare paper before any edge of them could leave the window.
-    // On a narrow window the words go as soon as it starts to fill it, before any edge of them is cut.
-    const fade = narrow ? rest : .42;
+    // On a narrow window the words go just after it starts to fill it, once its paper is under where the grown card letters the name, before any edge of them is cut.
+    const fade = narrow ? rest + .1 : .42;
     // A clean swap in one frame: the card's own words, square and name go as the grown card's marks and name come, so the two are never seen together.
     const swap = (from: number, to: number) => [{ opacity: from }, { opacity: from, offset: fade }, { opacity: to, offset: Math.min(1, fade + .001) }, { opacity: to }];
     for (const mark of sheet.children) mark.animate(swap(1, 0), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
