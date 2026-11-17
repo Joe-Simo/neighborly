@@ -1,16 +1,21 @@
 /* Whole-page states outside the workspace's rooms (not found, no connection, a page that did not open).
    On wide screens the tall painting runs the full height at the left edge, anchored to its top so both
-   heads are whole and the hands stay in view, and only its right side fades into the page's paper. */
+   heads are whole and the hands stay in view. Paper does not fade: the page lies over the painting's right side
+   at a hand-cut edge, its shadow on the relief, and the open hand reaches out from under it. */
 @media (min-width: 1280px) {
   .public-state .live-auth-art {
     inset: 0 auto 0 0;
     width: 61svh;
     border: 0;
     background: url("/assets/living-relief-mobile.webp") 50% 0 / cover no-repeat;
-    -webkit-mask-image: linear-gradient(90deg, #000 90%, transparent);
-    mask-image: linear-gradient(90deg, #000 90%, transparent);
   }
-  .public-state .live-auth-art:after { content: none; }
+  .public-state .live-auth-art:after {
+    content: "";
+    position: absolute;
+    inset: 0 -1px 0 auto;
+    width: 9%;
+    background: var(--public-state-cut) 0 0 / 100% 100% no-repeat;
+  }
   .public-state .live-auth {
     display: flex;
     flex-direction: column;
@@ -31,3 +36,14 @@
 :root:not(:lang(es)) .public-state [lang="es"] { display: none; }
 /* The name is only ever the lowercase wordmark. */
 .public-state .public-state-mark { margin: 0 0 18px; font: 400 30px/1 "Newsreader", Georgia, serif; letter-spacing: -0.065em; color: var(--live-ink, #24382d); }
+
+/* The cut: the page's own paper, one slow curve down its left side, with the shadow it casts on the painting. */
+.public-state{--public-state-cut:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 1000' preserveAspectRatio='none'%3E%3Cfilter id='s' x='-60%25' y='-5%25' width='170%25' height='110%25'%3E%3CfeDropShadow dx='-5' dy='3' stdDeviation='7 5' flood-color='%232e2416' flood-opacity='.34'/%3E%3C/filter%3E%3Cpath d='M110 -20L58 -20C74 140 44 270 60 430S78 690 52 840 62 960 56 1020L110 1020Z' fill='%23f7f4ed' filter='url%28%23s%29'/%3E%3C/svg%3E")}
+/* On a page that opened wrong the wordmark is also the way home. */
+.public-state .public-state-mark:has(a){margin-bottom:6px}
+.public-state .public-state-mark a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:none}
+/* One solid button, and beside it the quiet way back. */
+.public-state-ways{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;margin-top:24px}
+.public-state-ways a{display:inline-flex;align-items:center;min-height:44px;font-size:17px;color:#283c32;text-decoration:none;border-bottom:1px solid #253e3166}
+.public-state-ways a:hover{border-bottom-color:currentColor}
+.public-state :is(.public-state-mark a,.public-state-ways a):focus-visible{outline:2px solid #283c32;outline-offset:3px;border-radius:2px}
