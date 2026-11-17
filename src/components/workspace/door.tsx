@@ -13,7 +13,7 @@ import "@/components/workspace/door.css";
  * It adds no wait: the paper lifts as soon as it has landed and the room under it is whole (heading, picture
  * and the head button in its final style). If the room is not ready yet the sheet holds and lifts when the room
  * is. Plain paper holds with the one quiet opening line on it. The card holds as the card: its marks stay, its
- * ochre square breathes (ochre is waiting), the line is only spoken, and the moment the room is whole the card
+ * ochre square holds at one colour (ochre is waiting), the line is only spoken, and the moment the room is whole the card
  * lifts and its marks go to their places. Only a wait past LATE draws the line, low on the card. Never between rooms, and never for someone already signed
  * in, who goes from the launch mark straight to their room.
  */
