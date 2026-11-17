@@ -57,30 +57,24 @@
   :root[data-shell="ios"] .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; font-family: inherit; font-weight: 650; line-height: 1.5; }
 }
 
-/* An iPad held upright (or too narrow for both): the column waits at the right edge under its title and slides
+/* An iPad held upright (or too narrow for both): the column waits behind a quiet link under the head, named by its title, and slides
    over the room as a sheet; the room stays in view, dimmed, behind it. */
 @media (min-width: 700px) and (min-height: 700px) and (max-width: 1279px) and (orientation: portrait),
   (min-width: 700px) and (min-height: 700px) and (max-width: 1023px) {
   :root[data-shell="ios"] .live-aside-pull {
-    display: block;
-    position: fixed;
-    z-index: 30;
-    right: 0;
-    top: 50%;
-    translate: 0 -50%;
-    writing-mode: vertical-rl;
-    rotate: 180deg;
-    padding: 18px 10px;
-    border: 1px solid var(--live-line);
-    border-left: 0;
-    border-radius: 0 10px 10px 0;
-    background: #fbfaf5;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
     color: #283c32;
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 8px 22px -14px rgb(40 60 50 / 0.5);
+    font-size: 16px;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 5px;
+    text-decoration-color: rgb(40 60 50 / 0.4);
   }
-  :root[data-shell="ios"] .live-aside-pull[aria-expanded="true"] { visibility: hidden; }
   :root[data-shell="ios"] .live-aside-scrim {
     display: block;
     position: fixed;

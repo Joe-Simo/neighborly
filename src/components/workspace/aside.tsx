@@ -49,14 +49,16 @@ const Slot = createContext<Place | null>(null);
 
 /**
  * Where a room's side column is drawn; the shell gives the place, a room never draws it. On a desk, and on an
- * iPad in landscape, it stands beside the room. On an iPad held upright it waits at the right edge under its own
- * title and slides over the room when that is tapped; a tap on the room behind, or Escape, puts it back.
+ * iPad in landscape, it stands beside the room. On an iPad held upright it waits behind a quiet link under the head,
+ * named by its title, and slides over the room when that is tapped; a tap on the room behind, or Escape, puts it back.
  */
 export function AsidePlace({ on, children }: { on: boolean; children: ReactNode }) {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
   const panel = useId();
+  // The tab that opens the column is a quiet link in the head's row of actions, beside the room's own button.
+  const head = slot?.closest(".live-app")?.querySelector(".live-head-actions");
   useEffect(() => {
     if (!open) return;
     const away = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
@@ -65,11 +67,15 @@ export function AsidePlace({ on, children }: { on: boolean; children: ReactNode 
   }, [open]);
   return (
     <>
-      {on && name && (
-        <button type="button" className="live-aside-pull" aria-expanded={open} aria-controls={panel} onClick={() => setOpen(!open)}>
-          {name}
-        </button>
-      )}
+      {on &&
+        name &&
+        head &&
+        createPortal(
+          <button type="button" className="live-aside-pull" aria-expanded={open} aria-controls={panel} onClick={() => setOpen(!open)}>
+            {name}
+          </button>,
+          head,
+        )}
       {on && open && <div className="live-aside-scrim" aria-hidden="true" onClick={() => setOpen(false)} />}
       {on && <div className="live-aside" id={panel} ref={setSlot} data-open={open ? "" : undefined} />}
       <Slot.Provider value={{ slot: on ? slot : null, name: setName }}>{children}</Slot.Provider>
