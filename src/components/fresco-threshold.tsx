@@ -48,15 +48,19 @@ export function FrescoThreshold() {
   useEffect(() => {
     const host = stage.current;
     if (!host || !("IntersectionObserver" in window)) return;
+    // On a phone the courtyard's living layers are a megabyte and a half: they wait for the visitor to set out down the page, below.
+    if (matchMedia("(max-width: 700px)").matches) return;
     const observer = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) { setNear(true); observer.disconnect(); } }, { rootMargin: "100% 0px" });
     observer.observe(host);
     return () => observer.disconnect();
   }, []);
   useEffect(() => {
     // The living courtyard waits for the first sign that the visitor is on their way to it.
-    const arrive = () => setNear(true);
-    const timer = setTimeout(arrive, 6000);
-    window.addEventListener("scroll", arrive, { once: true, passive: true });
+    // A wide window warms it after a moment of quiet, or at the first scroll. A phone waits until the visitor is half a screen down the page.
+    const phone = matchMedia("(max-width: 700px)").matches;
+    const arrive = () => { if (!phone || scrollY > innerHeight / 2) { setNear(true); window.removeEventListener("scroll", arrive); } };
+    const timer = phone ? 0 : window.setTimeout(arrive, 6000);
+    window.addEventListener("scroll", arrive, { passive: true });
     return () => { clearTimeout(timer); window.removeEventListener("scroll", arrive); };
   }, []);
   useEffect(() => {
