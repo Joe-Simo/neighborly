@@ -46,7 +46,7 @@ export function NeighborlyExperience() {
       router.prefetch(href);
       try { sessionStorage.setItem("neighborly-paper", "1"); } catch { /* Without storage the workspace simply opens without the sheet. */ }
       sheet.dataset.carrying = "true";
-      rise = sheet.animate([{ transform: "translateY(100%)" }, { transform: "none" }], { duration: 620, easing: "cubic-bezier(.2,.65,.2,1)", fill: "forwards" });
+      rise = sheet.animate([{ transform: "translateY(100%)" }, { transform: "none" }], { duration: 380, easing: "cubic-bezier(.2,.65,.2,1)", fill: "forwards" });
       void rise.finished.then(() => {
         router.push(href);
         release = setTimeout(() => { delete sheet.dataset.carrying; rise?.cancel(); }, 6000);
