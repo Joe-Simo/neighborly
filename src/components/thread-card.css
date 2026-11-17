@@ -68,5 +68,5 @@
 .card-for-line>span{visibility:hidden}
 .card-for-line input{flex:1;min-width:0;min-height:44px;margin:-12px 0;padding:0 0 1px;border:0;background:transparent;font:inherit;color:transparent;caret-color:#253e31;outline:none}
 .card-for-line:has(input:focus-visible){outline:2px solid #263b30;outline-offset:3px;border-radius:3px 1px 4px 2px/2px 4px 1px 3px}
-.card-for-note{position:absolute;left:0;right:0;top:calc(100% + 10px);font:400 15px/1.35 'Source Sans 3',sans-serif;color:#3d4f43;text-align:center;rotate:4deg;pointer-events:none}
+.card-for-note{position:absolute;left:0;right:0;top:calc(100% + 26px);font:400 15px/1.35 'Source Sans 3',sans-serif;color:#3d4f43;text-align:center;rotate:4deg;pointer-events:none}
 .card-offer[data-given]~.card-for{opacity:0}
