@@ -50,7 +50,7 @@
 .neighborly-close-words{position:absolute;left:6%;top:36%;width:60%}
 .neighborly-close .neighborly-final-actions{flex-direction:row;flex-wrap:wrap;align-items:center;gap:14px 28px;max-width:none;margin-top:clamp(20px,2.4cqw,32px)}
 .neighborly-close .neighborly-begin[data-slot=button]{min-height:56px;padding:14px 24px}
-.neighborly-close .neighborly-final-actions small{flex-basis:100%;font-size:14px}
+.neighborly-close .neighborly-final-actions small{flex-basis:100%;font-size:15px}
 @media(max-width:1279px),(max-height:444px){
   /* Narrower screens: the picture whole, the words beneath it on the paper. */
   .neighborly-close{height:auto}
