@@ -930,3 +930,6 @@ nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row
 :is(.live-app, .live-dialog) :is(.help-row:has(.help-row-open:focus-visible), .people-row[data-opens]:has(.people-row-open:focus-visible), .live-commitment-row:has(.live-row-opens:focus-visible)) {
   outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px;
 }
+/* The card the visitor wrote on, handed back: the week opens addressed to the name on it, in the card's own lettering. */
+.card-greeting{margin:0 0 18px;font:400 clamp(24px,3vw,32px)/1.2 "Newsreader",Georgia,serif;letter-spacing:-.02em;color:#283c32;text-wrap:balance}
+.card-greeting em{font-style:italic}

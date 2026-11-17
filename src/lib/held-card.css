@@ -1,6 +1,9 @@
 /* The home page's card, grown to the window: the card's own paper and grain, never a plain fill. */
-#card-held{position:fixed;inset:0;z-index:80;overflow:hidden;pointer-events:none;contain:strict}
+#card-held{position:fixed;inset:0;z-index:81;overflow:hidden;pointer-events:none;contain:strict}
 #card-held .card-held-sheet{position:absolute;translate:none;rotate:none;transform-origin:50% 50%;will-change:transform;filter:none}
+/* Once the card fills the window its grain is one fixed paper: the door's card image at the door's card size, centred on
+   the window, so the door's own card (the same image, box and centre) takes over with not one pixel of grain moving. */
+#card-held .card-held-paper{position:absolute;inset:0;background:url(/assets/home/card-blank-480.webp) center/max(106vw,159vh) calc(max(106vw,159vh) / 1.5) no-repeat #f7f2e6}
 /* The grown card's marks, at the door card's size and places, so the door takes over the same marks. */
 #card-held .card-held-marks{position:absolute;left:50%;top:50%;width:max(106vw,159vh);aspect-ratio:1.5;margin:calc(max(106vw,159vh) / -3) 0 0 calc(max(106vw,159vh) / -2)}
 #card-held .card-held-marks>*{position:absolute;opacity:.4}
@@ -16,3 +19,8 @@
 #card-held .card-held-opening{position:fixed;inset:auto 24px 14vh;margin:0;text-align:center;font:400 17px/1.5 "Source Sans 3",sans-serif;color:#68715f;animation:card-held-line 200ms ease backwards}
 @keyframes card-held-line{from{opacity:0}}
 @media(prefers-reduced-motion:reduce){#card-held .card-held-opening{animation:none}}
+/* The name the visitor wrote, lettered on the grown card exactly as the door's card letters it: italic 400, clamp(17px,2.4vw,30px)/1.1, ink #2b2a26, its foot 10px above its square. */
+/* Over the door's card until the door's line is drawn, the held card is on top and is the identical paper, marks and
+   name; the door's are under it, covered, so nothing is ever drawn twice and no frame is without the line. */
+#card-held .card-held-marks>em{position:absolute;left:30%;bottom:calc(64% + 10px);opacity:1;font:italic 400 clamp(17px,2.4vw,30px)/1.1 "Newsreader",Georgia,serif;font-synthesis:none;-webkit-font-smoothing:antialiased;color:#2b2a26;white-space:nowrap}
+@media(max-aspect-ratio:1/1){#card-held .card-held-marks>em{left:38.5%;bottom:calc(62% + 10px)}}

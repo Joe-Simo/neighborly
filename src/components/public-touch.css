@@ -17,3 +17,4 @@
   :is(.neighborly-final-links a,.public-page :is(p,li) a,.lost-door a:not([data-slot])):is(:hover,:focus-visible){background-position:0 100%,0 100%}
   .neighborly-give:is(:hover,:focus-visible){background-position:0 calc(50% + .75em),0 calc(50% + .75em)}
 }
+.card-for[data-leaning]{transform:perspective(900px) rotateX(var(--lean-x,0deg)) rotateY(var(--lean-y,0deg));transition:translate .2s cubic-bezier(.2,.7,.2,1),transform 600ms cubic-bezier(.2,.7,.2,1)}
