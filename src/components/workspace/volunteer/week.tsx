@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { WeeklyRota } from "@/components/workspace/tools/weekly-rota";
 import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-visibility";
+import { isBrandNew } from "@/lib/first-days";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { StartHere } from "@/components/workspace/start-here";
@@ -20,6 +21,9 @@ import {
 
 export function WeekSection() {
   const { data, now, format, words, isOwner } = useWorkspace();
+  // The owner alone, nothing made yet: one first-week state stands in for the empty lists, and the head carries "Invite someone".
+  const firstDays = isBrandNew(data);
+  const first = words.rooms.firstDays.week;
   const [printing, setPrinting] = useState(false);
   const weekEnd = now + 7 * 86400000;
   const upcoming = upcomingCommitments(data.commitments, now);
@@ -35,7 +39,12 @@ export function WeekSection() {
       <StartHere />
       <WeekNote brief={briefed || incoming.length > 0} />
       <IncomingRequests {...requests} place={words.week.comingUp} />
-      {/* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */}
+      {firstDays ? (
+        <LiveEmpty title={first.title}>
+          {first.detail}
+        </LiveEmpty>
+      ) : (
+      /* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */
       <div className="min-[1100px]:grid min-[1100px]:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)] min-[1100px]:items-start min-[1100px]:gap-x-14">
       <section className="live-section">
         <div className="live-section-head">
@@ -76,6 +85,7 @@ export function WeekSection() {
         )}
       </section>
       </div>
+      )}
       <p className="!mt-14 !mb-0 border-t border-[var(--live-line)] pt-3">
         <AssistantGuide />
       </p>

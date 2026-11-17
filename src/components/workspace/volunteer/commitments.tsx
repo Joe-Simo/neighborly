@@ -14,7 +14,8 @@ export function CommitmentsSection() {
     <>
       <WeekByTeam />
       <h2 className="sr-only">{words.menu.commitments}</h2>
-      <div className="live-filter">
+      {/* A filter over nothing filters nothing: it comes with the first upcoming commitment. */}
+      {datedCommitments.length > 0 && <div className="live-filter">
         <NativeSelect
           aria-label={text.filterLabel}
           value={teamFilter}
@@ -27,13 +28,13 @@ export function CommitmentsSection() {
             </option>
           ))}
         </NativeSelect>
-      </div>
+      </div>}
       <CommitmentRows
         items={datedCommitments.filter(
           (item) => !teamFilter || item.teamId === teamFilter,
         )}
         empty={
-          teamFilter
+          teamFilter && datedCommitments.length > 0
           ? { title: text.noneForTeamTitle, detail: text.noneForTeamDetail }
           : undefined
         }

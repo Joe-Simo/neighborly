@@ -2,13 +2,11 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { useWorkspace, useWorkspaceIfAny } from "@/components/workspace/context";
+import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords, wrongControl } from "@/components/workspace/failure";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
-import { headings } from "@/components/workspace/navigation";
 import { cameThroughTheDoor } from "@/components/workspace/door";
-import { ReliefPicture } from "@/components/workspace/relief";
 import { useLaunchCarried, useRoomShown } from "@/components/workspace/room-sheet";
 
 /** "Opening…" in the reader's language: the room's own words inside the workspace, the door's language before it. */
@@ -79,7 +77,17 @@ export function LiveRoomLoading({
   );
 }
 
-/** Nothing here yet: a line in the serif, what to do about it, and a small piece of the room's own picture. */
+/** The first element inside `room` that takes up room on the page and holds no drawn element before it. */
+function firstDrawn(room: Element): Element | null {
+  for (const child of room.children) {
+    // A heading kept for screen readers alone is one pixel high and draws nothing.
+    if (!(child instanceof HTMLElement) || child.offsetHeight <= 1) continue;
+    return child.matches(".live-empty") ? child : firstDrawn(child) ?? child;
+  }
+  return null;
+}
+
+/** Nothing here yet: a line in the serif, its sentence and the one act, on the room's own measure. The room's picture is in its head, once. */
 export function LiveEmpty({
   title,
   children,
@@ -90,17 +98,15 @@ export function LiveEmpty({
   /** The one act that fills this place, named as the act. */
   action?: { label: string; run: () => void };
 }) {
-  const { area } = useWorkspace();
-  const { picture, focus } = headings[area].art;
   return (
     <div
       className="live-empty"
-      // Only the first empty state of a room carries the picture; a second one beside it is words alone.
       ref={(element) => {
-        if (element && element.closest(".live-room")?.querySelector(".live-empty") === element) element.dataset.lead = "";
+        // The first thing drawn under the page head, which already ends in a rule: this one draws none of its own.
+        const room = element?.closest(".live-room");
+        if (element && room && firstDrawn(room) === element) element.dataset.first = "";
       }}
     >
-      <ReliefPicture name={picture} focus={focus} vignette className="paper-vignette" />
       <div>
         <FollowingHeading>{title}</FollowingHeading>
         <p>{children}</p>

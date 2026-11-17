@@ -29,7 +29,6 @@ import {
   type TreasuryWords,
 } from "@/components/workspace/treasury/labels";
 
-const art = { backgroundImage: "url(/assets/painted-world/meal.webp)" };
 /** "$214.60 to Demo Power & Light", the way a statement line reads. */
 const line = (words: TreasuryWords, entry: BankEntry) => amountLine(words, entry, formatFigure(entry.amount));
 const under = (words: TreasuryWords, entry: BankEntry) =>
@@ -226,11 +225,14 @@ export function BankView({
       <section className="treasury-waiting treasury-uncleared" aria-labelledby="treasury-uncleared-title">
         <div className="live-section-head">
           <h2 id="treasury-uncleared-title">{w.waiting.title}</h2>
-          <span className="live-count">
-            {bank.waitingCount > bank.waiting.length + deposits.length
-              ? fill(w.waiting.oldest, { shown: bank.waiting.length + deposits.length, count: bank.waitingCount })
-              : w.entries(bank.waitingCount)}
-          </span>
+          {/* With nothing waiting the section says so itself, in words; no count of zero stands over it. */}
+          {(bank.waitingCount > 0 || deposits.length > 0) && (
+            <span className="live-count">
+              {bank.waitingCount > bank.waiting.length + deposits.length
+                ? fill(w.waiting.oldest, { shown: bank.waiting.length + deposits.length, count: bank.waitingCount })
+                : w.entries(bank.waitingCount)}
+            </span>
+          )}
         </div>
         {bank.waiting.length || deposits.length ? (
           <>
@@ -318,7 +320,6 @@ export function BankView({
           </>
         ) : (
           <div className="help-empty">
-            <div className="help-empty-art" style={art} aria-hidden="true" />
             <div>
               <h3>{w.waiting.emptyTitle}</h3>
               <p>

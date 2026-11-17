@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ReaderLanguage } from "@/components/reader-language";
 import { PublicEnding } from "@/components/public-ending";
+import { edgeWords } from "@/lib/edge-words";
 import { linkPreviewIn } from "@/lib/link-preview";
 import { privacyWords } from "@/lib/privacy-words";
 import { languages, type Language } from "@/lib/words";
@@ -24,7 +25,7 @@ export function PrivacyPage({ language }: { language: Language }) {
   return <div className="public-page" lang={language}>
     {language !== "en" && <ReaderLanguage page={language} />}
     <header className="public-page-header">
-      <Link className="public-page-brand" href="/" lang="en">kind helps</Link>
+      <Link className="public-page-brand" href="/" aria-label={edgeWords[language].home}><span lang="en">kind helps</span></Link>
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
     <main className="public-words paper-rise">

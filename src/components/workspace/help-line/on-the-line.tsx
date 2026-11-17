@@ -23,6 +23,12 @@ export function turnsToday({ data, now, format }: Pick<Workspace, "data" | "now"
     }));
 }
 
+/** Whether anyone was ever set for the line: a help-line team with a commitment that stands, on any day the workspace holds. */
+export function lineIsSet({ data }: Pick<Workspace, "data">): boolean {
+  const team = data.teams.find((one) => one.name.trim().toLowerCase() === "help line");
+  return !!team && data.commitments.some((turn) => turn.teamId === team.id && turn.status !== "cancelled");
+}
+
 /** Who holds the calls still to return, most first; a call nobody holds yet comes last. */
 export function owners(waiting: Calls["waiting"]): Owner[] {
   const held = new Map<string | null, number>();

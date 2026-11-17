@@ -11,7 +11,7 @@ import { readFailure } from "@/components/workspace/failure";
 import type { Words } from "@/lib/words";
 import { HelpRoom } from "@/components/workspace/help-line/room";
 import { LiveFailure, LiveState } from "@/components/workspace/states";
-import { csvFileName, reportCsv } from "@/components/workspace/reports/lines";
+import { csvFileName, isBlank, reportCsv } from "@/components/workspace/reports/lines";
 import { YearCheck, YearChecking, type YearCheckResult } from "@/components/workspace/reports/year-check";
 import {
   ReportLoading,
@@ -96,13 +96,17 @@ function Report() {
   }, [checkYear, churchId, year, w, words]);
   // The check reads a whole year, so it steps aside while a quarter is shown.
   // It does not wait for the figures: the button arrives with the heading (frame thread, on the coordinator's word).
-  const canCheck = year !== undefined && !quarter && !found?.result;
+  // A whole year with nothing recorded in it has nothing to check and no quarter to turn to.
+  const blankYear = Boolean(shown && !shown.quarter && isBlank(shown));
+  const canCheck = year !== undefined && !quarter && !found?.result && !blankYear;
+  // A conference in its first year may have nothing yet: the button keeps its place unseen until the figures say.
+  const maybeBlank = !shown && (onRecord?.years.length ?? 0) <= 1;
   useLayoutEffect(() => {
     if (!canCheck) return;
     // Once the sheet is open the button has done its work, so it leaves the head.
-    setHeadAction({ label: checking ? w.check.checking : w.check.button, run: () => void (checking || lookOver()), quiet: checking });
+    setHeadAction({ label: checking ? w.check.checking : w.check.button, run: () => void (checking || lookOver()), quiet: checking, unsettled: maybeBlank });
     return () => setHeadAction(null);
-  }, [canCheck, checking, lookOver, setHeadAction, w]);
+  }, [canCheck, checking, lookOver, maybeBlank, setHeadAction, w]);
 
   if (!onRecord || !shown || year === undefined) return <ReportLoading />;
 
@@ -124,6 +128,8 @@ function Report() {
       printed={now}
       done={done}
       years={
+        // Over a blank year the quarters go, and with one year on record nothing is left to switch.
+        (!blankYear || onRecord.years.length > 1) && (
         <div className="report-switches">
           <YearSwitch
             years={onRecord.years}
@@ -134,14 +140,17 @@ function Report() {
               setChosen(next);
             }}
           />
-          <QuarterSwitch
-            quarter={quarter}
-            onQuarter={(next) => {
-              setDone("");
-              setQuarter(next);
-            }}
-          />
+          {!blankYear && (
+            <QuarterSwitch
+              quarter={quarter}
+              onQuarter={(next) => {
+                setDone("");
+                setQuarter(next);
+              }}
+            />
+          )}
         </div>
+        )
       }
       sheet={
         checking && !quarter ? (

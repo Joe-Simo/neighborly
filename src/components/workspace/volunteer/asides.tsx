@@ -62,10 +62,11 @@ export function MonthAway() {
           ))}
         </tbody>
       </table>
-      <ul className="volunteer-key">
-        <li><i data-mark="away" aria-hidden="true" />{text.away}</li>
+      {/* A key only for marks that are on the calendar. */}
+      {(away.length > 0 || offered.length > 0) && <ul className="volunteer-key">
+        {away.length > 0 && <li><i data-mark="away" aria-hidden="true" />{text.away}</li>}
         {offered.length > 0 && <li><i data-mark="offered" aria-hidden="true" />{text.canHelp}</li>}
-      </ul>
+      </ul>}
     </RoomAside>
   );
 }

@@ -9,7 +9,7 @@ import { MonthAway } from "@/components/workspace/volunteer/asides";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TimeOffSection() {
-  const { data, pending, ownPerson, perform, words, openAction } = useWorkspace();
+  const { data, pending, ownPerson, perform, words } = useWorkspace();
   return (
     <>
       <MonthAway />
@@ -47,7 +47,8 @@ export function TimeOffSection() {
               </div>
             ))
         ) : (
-          <LiveEmpty title={words.timeOff.emptyTitle} action={{ label: words.actions.timeOff, run: () => openAction("timeOff") }}>
+          // The head carries "Plan time off": the empty state does not ask twice.
+          <LiveEmpty title={words.timeOff.emptyTitle}>
             {words.timeOff.emptyDetail}
           </LiveEmpty>
         )}

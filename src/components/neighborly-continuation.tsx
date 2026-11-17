@@ -55,10 +55,11 @@ export function NeighborlyContinuation() {
     <HomeYes />
     <section id="how-neighborly-works" tabIndex={-1} className="neighborly-together" aria-labelledby="together-title">
       <div className="neighborly-together-paper" data-settled={settled} aria-hidden="true" />
-      <div className="neighborly-rooms" data-reveal>
+      {/* The rooms are a part of their own, named by their sentence, which is their heading: the six room names are read under it, not under "Your turn." */}
+      <div className="neighborly-rooms" data-reveal role="region" aria-labelledby="rooms-title">
         <div>
           <p className="neighborly-rooms-kicker">The rooms</p>
-          <p className="neighborly-together-statement">One place to answer every call for help, from the first message to the visit, the bill and the year’s report.</p>
+          <p className="neighborly-together-statement" id="rooms-title" role="heading" aria-level={2}>One place to answer every call for help, from the first message to the visit, the bill and the year’s report.</p>
         </div>
         <ul aria-label="What your conference gets">
           {rooms.map(([picture, title, line, turn], index) => <li key={title} style={{ "--turn": `${turn}deg`, "--i": index } as CSSProperties}>

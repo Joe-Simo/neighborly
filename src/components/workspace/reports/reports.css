@@ -765,7 +765,7 @@
 /* On a phone the switches already name the year and the first figure's small line gives the months,
    so the period sentence is kept for screen readers only and the first count sits on the first screen. */
 @media screen and (max-width: 600px) {
-  .report-period > p { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .report-period:has(.report-switches) > p { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 
 /* On a phone the year leads: the figure, its sentence and the slips stand before the year switch and the
