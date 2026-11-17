@@ -59,6 +59,8 @@ export function en(set: WordSet) {
     },
     shell: {
       menu: "Menu",
+      /** Home visits in the app's foot bar, where every name keeps one line. */
+      tabVisits: "Home visits",
       menuTitle: `Your ${place}`,
       menuLabel: `${Place} menu`,
       menuCurrent: (section: string) => `${Place} menu, current section: ${section}`,
