@@ -12,6 +12,15 @@
   font-display: swap;
   src: url("/fonts/newsreader-display-italic.woff2") format("woff2");
 }
+/* The text face's stand-in while it loads: a face the device already has, set to Source Sans 3's own width and line, so the words do not move when the real face arrives. */
+@font-face {
+  font-family: "Source Sans 3 Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Roboto"), local("Liberation Sans");
+  size-adjust: 90.5%;
+  ascent-override: 113.1%;
+  descent-override: 44.2%;
+  line-gap-override: 0%;
+}
 @font-face {
   font-family: "Source Sans 3";
   font-style: normal;

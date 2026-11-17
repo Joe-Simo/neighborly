@@ -159,12 +159,14 @@
 .neighborly-connected-world.is-connected .fresco-stage{background-color:transparent}
 /* Never fully absent: the courtyard is painted once, unseen, behind the portrait, so revealing it costs nothing. */
 .neighborly-connected-world.is-connected .fresco-stage{opacity:var(--entry-door)}
-.neighborly-connected-world.is-connected .fresco-stage[aria-hidden=true]{pointer-events:none}
+/* The opening and the doors take each other's place for the eye only: a part that has given way is marked data-away and can no longer be seen or touched,
+   but it is never hidden from a screen reader, which meets both in order wherever the page is scrolled. */
+.neighborly-connected-world.is-connected :is(.painted-world-track,.fresco-stage)[data-away],.neighborly-connected-world.is-connected :is(.painted-world-track,.fresco-stage)[data-away] *{pointer-events:none!important}
 .neighborly-connected-world.is-connected #neighborly-courtyard{scroll-margin-top:-100svh}
 .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] .painted-world-caption,
 .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] .painted-world-header,
 .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] .painted-world-tools{visibility:hidden}
-.neighborly-connected-world.is-connected .fresco-stage[aria-hidden=true] .fresco-header{visibility:hidden}
+.neighborly-connected-world.is-connected .fresco-stage[data-away] .fresco-header{visibility:hidden}
 .painted-world-opening-actions a{background:#eee7d7e8;padding:0 10px}
 
 
@@ -311,9 +313,25 @@
   .neighborly-connected-world.is-connected::before{--sheet:inherit;content:"";position:fixed;z-index:1;left:0;right:0;top:calc(var(--sheet) - var(--edge));height:var(--edge);pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-40%25' width='140%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 36C200 24 380 44 560 32S860 26 1000 40L1000 -10L0 -10Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
   .neighborly-connected-world.is-connected .fresco-stage{opacity:1}
   .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-caption{opacity:1}
-  /* The words and the header are printed on the sheet: they stay on it until the edge has passed them, though they can no longer be reached. */
-  .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] :is(.painted-world-caption,.painted-world-header,.painted-world-tools){visibility:visible}
+  /* The words and the header are printed on the sheet: they stay on it until the edge has passed them, though they can no longer be touched. */
   .neighborly-connected-world[data-lifting] .painted-world[data-hero-only=true] .painted-world-scroll-cue{visibility:hidden}
   /* The empty hand shows the moment the card sets out, as one cut. */
   .thread-live .thread-empty{transition:none}
 }
+
+/* Where the two ways on do not fit side by side, the second goes under the first; neither is ever cut by the window's edge.
+   Sideways, the words stand in the page beside the picture, not over it, so a window too short for them grows by what they need and nothing is cut at its foot. */
+@media(max-height:500px) and (min-aspect-ratio:10/11){
+  .painted-world[data-hero-only=true] .painted-world-opening-actions{flex-wrap:wrap;row-gap:8px}
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{height:auto;min-height:max(100svh,300px);padding-top:56px}
+  .painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{position:relative;top:auto;left:auto;right:auto;margin:13svh max(20px,env(safe-area-inset-right)) 24px calc(var(--side-art) + 24px)}
+}
+/* Enlarged four times over, or in any window that small, the sideways page has no room for words beside its picture: it is a plain page. The picture stands across the top, the heading runs the full width under it, and the sentence and both ways on follow, all reached by scrolling. */
+@media(max-height:500px) and (min-aspect-ratio:10/11) and (max-width:520px){
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{min-height:0}
+  .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:56px;bottom:auto;width:100%;height:calc(100vw / 1.406);-webkit-mask-image:none;mask-image:none}
+  .painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{margin:calc(100vw / 1.406) 0 0;padding:16px 20px 28px}
+  .painted-world[data-hero-only=true] .painted-world-tools{display:none}
+}
+/* With less motion no scene opens, so nothing is said to be opening. */
+@media(prefers-reduced-motion:reduce){.painted-world-scroll-cue[data-waiting]{visibility:hidden}}

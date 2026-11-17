@@ -216,7 +216,8 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     {/* Fixed to the screen, and early in the page so a keyboard reaches it before the journey. */}
     <section className="painted-world-track" ref={track} aria-label={heroOnly ? "An open hand" : "A story of care"}>
       <div className="painted-world-viewport" ref={viewport}>
-        <div className="painted-world-art" ref={host} aria-hidden="true" />
+        {/* The first screen's painting is described once, here; the stills that stand in for it stay silent. */}
+        <div className="painted-world-art" ref={host} {...(heroOnly ? { role: "img", "aria-label": "Two people stand side by side. Below them, one hand passes a small card to another's open palm." } : { "aria-hidden": true })} />
         {(!ready || failed) && <picture className="painted-world-fallback">
           {/* The first picture a visitor sees: the lightest file their screen can use, asked for before anything else. */}
           {heroOnly && openingOutcome !== "accepted" && <source media="(max-width:700px)" type="image/avif" srcSet="/assets/living-relief-mobile-480.avif 480w, /assets/living-relief-mobile-780.avif 780w" sizes="100vw" />}
@@ -259,7 +260,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
           </nav>}
         </div>
         <footer className="painted-world-tools">
-          <div className="painted-world-scroll-cue" aria-hidden="true"><span>{/* One line until the scene is whole, then one change: the cue never swaps its words twice. */}{(loading || (!ready && !failed)) ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
+          <div className="painted-world-scroll-cue" aria-hidden="true" data-waiting={(loading || (!ready && !failed)) || undefined}><span>{/* One line until the scene is whole, then one change: the cue never swaps its words twice. */}{(loading || (!ready && !failed)) ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
           {!heroOnly && <div className="painted-world-progress" aria-hidden="true"><span>{chapter.number}</span><div><i /></div><span>04</span></div>}
         </footer>
       </div>

@@ -31,8 +31,10 @@ export const metadata: Metadata = {
     startupImage: launchScreens,
   },
 };
-// The three faces on the first screen are asked for with the page, so the first paint is already in them and nothing swaps in view.
-const firstFaces = ["newsreader-display-regular", "newsreader-display-italic", "source-sans-3-latin-variable"];
+// The headline's two faces are asked for with the page, so the first paint is already in them. The text face is left to the stylesheet:
+// its stand-in (fonts.css) has its width and line, so its arrival moves nothing, and on a slow line it does not hold back the first picture.
+// The app asks for it with its own layout.
+const firstFaces = ["newsreader-display-regular", "newsreader-display-italic"];
 
 export default function RootLayout({
   children,
