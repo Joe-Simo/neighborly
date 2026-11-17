@@ -27,7 +27,8 @@ export const caller = (call: Pick<Call, "neighborName" | "callerName">, words?: 
 /**
  * The one thing waiting for a yes: what the assistant drafted from a call note. Plum marks its words.
  * It is a file of its own, with no backend in it, because the home page lays down this same sheet
- * (src/components/home-yes-card.tsx): whatever changes here changes there.
+ * (src/components/home-yes-card.tsx): whatever changes here changes there. Its still copy for readers without scripts
+ * (src/components/home-yes.tsx, .home-yes-still) does not follow by itself: change it by hand.
  */
 export function DraftSheet({
   drafted: { call, draft },

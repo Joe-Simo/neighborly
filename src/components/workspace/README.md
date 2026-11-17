@@ -226,3 +226,5 @@ frame alone, before anyone's workspace has arrived.
   head picture is loaded and decoded. A cover that lifts on this never shows a room still coming up under the mark.
 - `.live-app[data-room-shown]` is set in the frame each room is shown whole (the door's paper lifts on it), and
   `.live-app[data-room-whole]` once the room is at rest: its figures have landed and its picture's piece is set down.
+
+- The draft sheet has a still copy on the home page for readers without scripts (`src/components/home-yes.tsx`, drawn by `.home-yes-still` in `home-yes.css`). When the sheet's look or words change in `help-line/draft-sheet.tsx`, `help.css` or `paper.css`, change the still copy with it.
