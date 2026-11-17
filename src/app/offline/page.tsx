@@ -6,6 +6,7 @@ import { languages, words } from "@/lib/words";
 import { TryAgain } from "./try-again";
 
 export const metadata: Metadata = {
+  title: words("en").states.offlinePageTab,
   description: "This device is offline. What is on screen is kept, and Kind Helps opens again when the connection returns.",
   robots: { index: false, follow: false },
 };

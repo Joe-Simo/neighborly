@@ -28,7 +28,7 @@ export function EntrySheet({
   children,
 }: {
   corner?: "rest" | "waits" | "given";
-  /** Names the page written on the sheet; when it changes, the new lines arrive one after another. */
+  /** Names the page written on the sheet. A new page is written whole: the sheet is laid down once, and no line arrives after another. */
   page: string;
   /** A quiet way out, set at the right of the language line. */
   foot?: ReactNode;
@@ -111,7 +111,7 @@ export function EntrySheet({
       </div>
       <main ref={sheet} className="entry-sheet paper-settle">
         <div className={cn("entry-paper paper-corner", corner === "given" ? "paper-fold" : corner === "waits" && "paper-waits")}>
-          <div key={page} className="entry-page paper-rows">
+          <div key={page} className="entry-page">
             {children}
           </div>
           <div className="entry-foot-line">
