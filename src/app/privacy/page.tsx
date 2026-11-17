@@ -1,5 +1,6 @@
-import { PrivacyPage, privacyMetadata } from "@/components/privacy-page";
+import { PrivacyPage, privacyMetadata, privacyViewport } from "@/components/privacy-page";
 
+export const viewport = privacyViewport;
 export const metadata = privacyMetadata("en");
 
 export default function Privacy() {
