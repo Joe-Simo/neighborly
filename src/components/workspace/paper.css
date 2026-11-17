@@ -1001,3 +1001,34 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .live-app [data-kept] { opacity: 0.5; cursor: default; }
 .live-app [data-kept="waits"] > svg:first-child { visibility: hidden; }
 .kept-ring { position: absolute; z-index: 5; width: 10px; height: 10px; margin: -5px 0 0 -5px; box-sizing: border-box; border: 2px solid #a8791f; border-radius: 50%; pointer-events: none; }
+
+/* Rows of one list are one height. Above a phone a list of commitments is one grid: the date, the words, the
+   state and the press each keep one column down the whole list, so a longer press ("View preparation") takes its
+   room from every row alike and never sends one row's time to a second line. The presses share a width and an edge.
+   Where the list itself is narrow (beside another column), the state and the press take a line of their own under
+   the words in every row, so the words keep the row's width. */
+@media (min-width: 721px) {
+  .live-app .live-list:has(> .live-commitment-row) { container-type: inline-size; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; column-gap: 22px; }
+  .live-app .live-list > :not(.live-commitment-row) { grid-column: 1 / -1; }
+  .live-app .live-list > .live-commitment-row { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-column: 1 / -1; align-items: start; gap: 0 22px; }
+  .live-app .live-list > .live-commitment-row .live-row-actions { grid-column: 2; justify-content: space-between; margin-top: 6px; }
+  .live-app .live-list > .live-commitment-row .live-date-leaf { grid-row: 1 / span 2; }
+  @container (min-width: 680px) {
+    .live-app .live-list > .live-commitment-row { grid-template-columns: subgrid; align-items: center; }
+    .live-app .live-list > .live-commitment-row .live-row-actions { display: contents; }
+    .live-app .live-list > .live-commitment-row .live-date-leaf { grid-row: auto; }
+    .live-app .live-list > .live-commitment-row .live-row-opens { justify-self: stretch; justify-content: space-between; }
+    /* Between the two, the team and the time each take a line in every row, so no one row breaks alone. */
+    .live-app .live-list > .live-commitment-row .live-meta { display: grid; gap: 0; }
+  }
+  @container (min-width: 860px) {
+    .live-app .live-list > .live-commitment-row .live-meta { display: flex; gap: 10px; white-space: nowrap; }
+  }
+}
+
+/* A name in a line of words is a link as tall as its letters. Under a finger it answers over 44px: the place to
+   touch reaches above and below the word, and the line itself does not move. */
+@media (max-width: 850px), (pointer: coarse) {
+  .live-main a.live-link { position: relative; }
+  .live-main a.live-link::after { content: ""; position: absolute; inset: -10px -4px; }
+}
