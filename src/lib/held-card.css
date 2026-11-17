@@ -8,12 +8,8 @@
 #card-held .card-held-marks{position:absolute;left:50%;top:50%;width:max(106vw,159vh);aspect-ratio:1.5;margin:calc(max(106vw,159vh) / -3) 0 0 calc(max(106vw,159vh) / -2)}
 #card-held .card-held-marks>*{position:absolute;opacity:.4}
 #card-held .card-held-marks>i{left:30%;top:36%;width:7%;aspect-ratio:1;background:#c8962e}
-#card-held .card-held-marks>b{left:41%;top:39%;width:30%;height:3%;background:#8f8a78}
-#card-held .card-held-marks>b+b{left:39%;top:53%;width:22%}
 @media(max-aspect-ratio:1/1){
   #card-held .card-held-marks>i{left:38.5%;top:38%;width:3.6%}
-  #card-held .card-held-marks>b{left:44%;top:39.5%;width:16%;height:2.6%}
-  #card-held .card-held-marks>b+b{left:43%;top:50%;width:11%}
 }
 /* The one quiet line, low, where the door's card has it, if the room is not on its way yet. */
 #card-held .card-held-opening{position:fixed;inset:auto 24px 14vh;margin:0;text-align:center;font:400 17px/1.5 "Source Sans 3",sans-serif;color:#68715f;animation:card-held-line 200ms ease backwards}

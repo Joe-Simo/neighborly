@@ -191,7 +191,7 @@ export function DoorSweep() {
         </svg>
       ))}
       {/* The card passed on the home page, grown to the size of the page: its mark and two lines thin away as it becomes the paper. */}
-      {card ? <div className="door-card"><i /><b /><b />{cardFor && <span className="door-card-for"><em>For {cardFor}</em></span>}</div> : <div className="door-paper" />}
+      {card ? <div className="door-card"><i />{cardFor && <span className="door-card-for"><em>For {cardFor}</em></span>}</div> : <div className="door-paper" />}
       {holding && (
         <p className="door-opening" role="status" data-spoken={holding === "spoken" ? "" : undefined} data-low={card ? "" : undefined}>
           <span>{wordsFor(language).states.opening}</span>
