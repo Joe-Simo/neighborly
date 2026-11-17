@@ -30,3 +30,16 @@ export function forgetThisBrowser() {
     }
   }
 }
+
+/**
+ * For a session that ended without the app's sign-out (it ran out, or was ended elsewhere): when nobody is signed in
+ * and the browser still holds what a signed-in visit leaves, that goes too. A visitor who was never signed in
+ * holds none of it, and the name they wrote on the home page's card is left for the door to read.
+ */
+export function forgetWhoWasHere() {
+  try {
+    if (local.some((key) => window.localStorage.getItem(key) !== null)) forgetThisBrowser();
+  } catch {
+    // Storage is closed to the page: nothing was kept.
+  }
+}

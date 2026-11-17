@@ -1,6 +1,6 @@
 import { GlobalRegistrator } from "@happy-dom/global-registrator";
 import { afterAll, beforeAll, expect, test } from "bun:test";
-import { forgetThisBrowser } from "./forget-browser";
+import { forgetThisBrowser, forgetWhoWasHere } from "./forget-browser";
 
 beforeAll(() => GlobalRegistrator.register());
 afterAll(() => GlobalRegistrator.unregister());
@@ -11,4 +11,17 @@ test("sign-out leaves nothing of a conference, a person or a note; the language 
   forgetThisBrowser();
   expect(Object.keys(window.localStorage).sort()).toEqual(["__clerk_environment", "kind-helps:language"]);
   expect(Object.keys(window.sessionStorage)).toEqual(["kind-helps:left"]);
+});
+
+test("a session that ended by itself is cleared too, and a visitor who never signed in keeps the name on their card", () => {
+  window.localStorage.clear();
+  window.sessionStorage.clear();
+  window.sessionStorage.setItem("kh-card-for", "Ana");
+  forgetWhoWasHere();
+  expect(window.sessionStorage.getItem("kh-card-for")).toBe("Ana");
+  window.localStorage.setItem("kindhelps.church", "x");
+  window.localStorage.setItem("kind-helps:language", "es");
+  forgetWhoWasHere();
+  expect(Object.keys(window.localStorage)).toEqual(["kind-helps:language"]);
+  expect(window.sessionStorage.getItem("kh-card-for")).toBeNull();
 });
