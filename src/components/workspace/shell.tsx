@@ -356,6 +356,16 @@ export function LiveWorkspace({
       delete frame.dataset.roomIn;
     };
   }, [roomIn]);
+  // Arriving by keyboard from the home page's card, the card that held focus is gone and the browser has lost its
+  // place: the first Tab would be spent finding it. Focus rests on the page itself once the room is in, so the
+  // first Tab is "Skip to your conference". No ring is drawn and nothing new joins the Tab order.
+  useEffect(() => {
+    if (!roomIn || (document.activeElement && document.activeElement !== document.body)) return;
+    const page = document.body;
+    page.tabIndex = -1;
+    page.focus({ preventScroll: true });
+    page.removeAttribute("tabindex");
+  }, [roomIn]);
   const shellHeld = !roomIn && !lost;
   // Shown in that same frame: a button that eases everything it changes would otherwise come a frame or two late.
   useLayoutEffect(() => {
