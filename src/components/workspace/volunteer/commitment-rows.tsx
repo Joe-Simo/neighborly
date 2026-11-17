@@ -29,7 +29,7 @@ export function CommitmentRows({
   /** The commitment just accepted: its row is laid in. */
   fresh?: string;
 }) {
-  const { data, format, when, personName, teamName, showCommitment, words } =
+  const { data, format, when, personName, teamName, showCommitment, words, sampleSaid } =
     useWorkspace();
   const statuses: Partial<Record<string, string>> = words.commitments.status;
   // The accepted row opens its own room in the list, once, before it is painted.
@@ -57,12 +57,12 @@ export function CommitmentRows({
                 <span>{teamName(item.teamId)}</span>
                 <span className="live-commitment-time">{when(item.start, item.end)}</span>
               </div>
-              <h3>{item.title}</h3>
+              <h3>{sampleSaid(item.title)}</h3>
               <p>
                 {item.assigneeId
                   ? personName(item.assigneeId)
                   : words.commitments.placeOpen}
-                {item.location ? ` · ${item.location}` : ""}
+                {item.location ? ` · ${sampleSaid(item.location)}` : ""}
               </p>
             </div>
             <div className="live-row-actions">
@@ -72,7 +72,7 @@ export function CommitmentRows({
               <Button
                 variant="outline"
                 className="live-row-opens"
-                aria-label={`${opens(item)}: ${item.title}, ${when(item.start, item.end)}`}
+                aria-label={`${opens(item)}: ${sampleSaid(item.title)}, ${when(item.start, item.end)}`}
                 data-opens=""
                 onClick={(event) => showCommitment(item, event.currentTarget)}
               >
@@ -214,6 +214,7 @@ export function IncomingRequests({
     when,
     showCommitment,
     words,
+    sampleSaid,
   } = useWorkspace();
   // `given` is the request whose yes was pressed: it is kept on the sheet from the press to the end of the beat.
   // It is not green for that. Green is `taken`: the same request, once its save has truly gone through.
@@ -297,13 +298,13 @@ export function IncomingRequests({
             return (
               <div className="volunteer-choice-row" data-fold-leaves={request.id === taken?.id && shown.length > 1 ? "" : undefined} key={request.id}>
                 <div>
-                  <h3>{item?.title ?? words.requests.fallbackTitle}</h3>
+                  <h3>{item ? sampleSaid(item.title) : words.requests.fallbackTitle}</h3>
                   <p className="volunteer-choice-when">
                     {item
                       ? when(item.start, item.end)
                       : words.requests.unavailable}
                   </p>
-                  {item?.location && <p>{item.location}</p>}
+                  {item?.location && <p>{sampleSaid(item.location)}</p>}
                   <WaitsToGo when={pending && request.id === sent} />
                 </div>
                 {request.id === taken?.id ? (
@@ -316,7 +317,7 @@ export function IncomingRequests({
                   <div className="live-row-actions">
                     <Button
                       disabled={pending || !item}
-                      aria-label={`${words.requests.accept}: ${item?.title ?? words.requests.fallbackTitle}`}
+                      aria-label={`${words.requests.accept}: ${item ? sampleSaid(item.title) : words.requests.fallbackTitle}`}
                       onClick={(event) => void respond(request, true, event.currentTarget)}
                     >
                       {words.requests.accept}
@@ -324,7 +325,7 @@ export function IncomingRequests({
                     <Button
                       disabled={pending}
                       variant="outline"
-                      aria-label={`${words.requests.decline}: ${item?.title ?? words.requests.fallbackTitle}`}
+                      aria-label={`${words.requests.decline}: ${item ? sampleSaid(item.title) : words.requests.fallbackTitle}`}
                       onClick={(event) => void respond(request, false, event.currentTarget)}
                     >
                       {words.requests.decline}
@@ -333,7 +334,7 @@ export function IncomingRequests({
                       <Button
                         variant="link"
                         className="tools-quiet"
-                        aria-label={`${words.commitments.details}: ${item.title}`}
+                        aria-label={`${words.commitments.details}: ${sampleSaid(item.title)}`}
                         data-opens=""
                 onClick={(event) => showCommitment(item, event.currentTarget)}
                       >

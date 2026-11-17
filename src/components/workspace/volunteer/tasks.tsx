@@ -41,6 +41,7 @@ export function TasksSection() {
     personName,
     openAction: open,
     words,
+    sampleSaid,
   } = useWorkspace();
   // The task just ticked and the meeting just answered: each gets its one move.
   const [ticked, setTicked] = useState<string>();
@@ -64,7 +65,7 @@ export function TasksSection() {
                   key={task.id}
                 >
                   <div>
-                    <h3><span>{task.title}</span></h3>
+                    <h3><span>{sampleSaid(task.title)}</span></h3>
                     <p>
                       <span className="volunteer-who">{personName(task.assigneeId)}</span>
                       {task.dueAt && <span className="volunteer-due"> · {words.tasks.due(format(task.dueAt))}</span>}
@@ -80,7 +81,7 @@ export function TasksSection() {
                       )}
                       <Button
                         variant="outline"
-                        aria-label={task.complete ? words.tasks.reopenTask(task.title) : `${words.tasks.markDone}: ${task.title}`}
+                        aria-label={task.complete ? words.tasks.reopenTask(sampleSaid(task.title)) : `${words.tasks.markDone}: ${task.title}`}
                         disabled={pending}
                         onClick={async (event) => {
                           const pressed = event.currentTarget;
@@ -149,9 +150,9 @@ export function TasksSection() {
                   {!response && <p className="help-sheet-label">{words.tasks.waiting}</p>}
                   <div className="help-sheet-body">
                     <div>
-                      <h3>{meeting.title}</h3>
+                      <h3>{sampleSaid(meeting.title)}</h3>
                       <p className="volunteer-choice-when">{when(meeting.start, meeting.end)}</p>
-                      {meeting.location && <p>{meeting.location}</p>}
+                      {meeting.location && <p>{sampleSaid(meeting.location)}</p>}
                     </div>
                     {response && changing !== meeting.id ? (
                       <div className="live-row-actions">
@@ -162,7 +163,7 @@ export function TasksSection() {
                         <Button
                           variant="link"
                           className="tools-quiet"
-                          aria-label={`${words.tasks.changeReply}: ${meeting.title}`}
+                          aria-label={`${words.tasks.changeReply}: ${sampleSaid(meeting.title)}`}
                           onClick={() => setChanging(meeting.id)}
                         >
                           {words.tasks.changeReply}
@@ -170,10 +171,10 @@ export function TasksSection() {
                       </div>
                     ) : (
                       <div className="live-row-actions">
-                        <Button disabled={pending} aria-label={`${words.tasks.attend}: ${meeting.title}`} onClick={() => void reply("accepted")}>
+                        <Button disabled={pending} aria-label={`${words.tasks.attend}: ${sampleSaid(meeting.title)}`} onClick={() => void reply("accepted")}>
                           {words.tasks.attend}
                         </Button>
-                        <Button variant="outline" disabled={pending} aria-label={`${words.tasks.decline}: ${meeting.title}`} onClick={() => void reply("declined")}>
+                        <Button variant="outline" disabled={pending} aria-label={`${words.tasks.decline}: ${sampleSaid(meeting.title)}`} onClick={() => void reply("declined")}>
                           {words.tasks.decline}
                         </Button>
                       </div>

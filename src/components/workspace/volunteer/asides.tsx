@@ -73,7 +73,7 @@ export function MonthAway() {
 
 /** Commitments: this week, one line for each team, a mark for every place that is covered or still open. */
 export function WeekByTeam() {
-  const { data, now, words } = useWorkspace();
+  const { data, now, words, sampleSaid } = useWorkspace();
   const text = words.commitments;
   const today = DateTime.fromMillis(now, { zone: data.church.timeZone, locale: "en-US" });
   const sunday = today.startOf("week", { useLocaleWeeks: true });
@@ -108,7 +108,7 @@ export function WeekByTeam() {
           <tbody key={team.id}>
             <tr>
               <th scope="rowgroup" colSpan={7}>
-                <span>{team.name}</span>
+                <span>{sampleSaid(team.name)}</span>
                 {open > 0 && <small><i data-mark="open" aria-hidden="true" />{text.placesOpen(open)}</small>}
               </th>
             </tr>
@@ -138,7 +138,7 @@ export function WeekByTeam() {
 
 /** Tasks: the meeting that comes next, and what you answered. */
 export function NextMeeting() {
-  const { data, now, format, words } = useWorkspace();
+  const { data, now, format, words, sampleSaid } = useWorkspace();
   const meeting = data.meetings.filter((item) => item.end > now).sort((a, b) => a.start - b.start)[0];
   if (!meeting) return null;
   const response = meeting.responses.find((item) => item.personId === data.user.id)?.response;
@@ -147,9 +147,9 @@ export function NextMeeting() {
     <RoomAside title={words.tasks.nextMeeting}>
       <div className="volunteer-next">
         <p className="volunteer-next-day">{capital(format(meeting.start, { weekday: "long", month: "long" }))}</p>
-        <p className="volunteer-next-title">{meeting.title}</p>
+        <p className="volunteer-next-title">{sampleSaid(meeting.title)}</p>
         <p>{clock(meeting.start)}–{clock(meeting.end)}</p>
-        {meeting.location && <p>{meeting.location}</p>}
+        {meeting.location && <p>{sampleSaid(meeting.location)}</p>}
         <p className="volunteer-next-reply" data-reply={response ?? "none"}>
           {response === "accepted" ? words.tasks.going : response ? words.tasks.notGoing : words.tasks.waiting}
         </p>

@@ -164,7 +164,7 @@ export function ReportView({
   /** The check came back clear, so printing is the next step and takes the one filled button. */
   printNext?: boolean;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const w = words.rooms.reports;
   const kinds = kindLabels(words);
   const [everyLine, setEveryLine] = useState(false);
@@ -257,7 +257,7 @@ export function ReportView({
   const serving = [
     { name: w.time.visits, detail: w.time.visitsInPairs(report.visits), hours: report.visitHours },
     ...report.time.teams.map((team) => ({
-      name: team.name,
+      name: sampleSaid(team.name),
       detail: `${w.time.shifts(team.shifts)} · ${w.kinds.people(team.people)}`,
       hours: team.hours,
     })),
