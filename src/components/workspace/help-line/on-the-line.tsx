@@ -1,7 +1,7 @@
 "use client";
 
 import { RoomAside } from "@/components/workspace/aside";
-import type { Workspace } from "@/components/workspace/context";
+import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import type { Calls } from "@/components/workspace/help-line/format";
 
 type Turn = { id: string; when: string; name: string | null };
@@ -34,28 +34,29 @@ export function owners(waiting: Calls["waiting"]): Owner[] {
 
 /** The Help line's side column on a wide screen: who is on the line today, and who is calling back. */
 export function OnTheLine({ turns, calling }: { turns: Turn[]; calling: Owner[] }) {
+  const text = useWorkspace().words.rooms.helpLine.aside;
   return (
-    <RoomAside title="On the line today">
+    <RoomAside title={text.title}>
       {turns.length ? (
         <ul className="help-aside-list">
           {turns.map((turn) => (
             <li key={turn.id}>
-              <strong data-open={turn.name ? undefined : ""}>{turn.name ?? "No one yet"}</strong>
+              <strong data-open={turn.name ? undefined : ""}>{turn.name ?? text.noOne}</strong>
               <span>{turn.when}</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="help-aside-none">No one is set for the line today.</p>
+        <p className="help-aside-none">{text.none}</p>
       )}
       {calling.length > 0 && (
         <>
-          <h3 className="live-kicker">Calling back</h3>
+          <h3 className="live-kicker">{text.callingBack}</h3>
           <ul className="help-aside-list">
             {calling.map((owner) => (
               <li key={owner.name ?? ""}>
-                <strong data-open={owner.name ? undefined : ""}>{owner.name ?? "No one yet"}</strong>
-                <span>{owner.calls === 1 ? "1 call" : `${owner.calls} calls`}</span>
+                <strong data-open={owner.name ? undefined : ""}>{owner.name ?? text.noOne}</strong>
+                <span>{text.calls(owner.calls)}</span>
               </li>
             ))}
           </ul>

@@ -119,7 +119,7 @@ export function TasksSection() {
           <h2>{words.tasks.meetings}</h2>
           {isOwner && (
             <Button variant="outline" onClick={() => open("meeting")}>
-              <Plus size={15} aria-hidden="true" /> Plan meeting
+              <Plus size={15} aria-hidden="true" /> {words.actions.meeting}
             </Button>
           )}
         </div>
@@ -190,7 +190,6 @@ export function TasksSection() {
                         <Button
                           variant="link"
                           className="tools-quiet"
-                          lang="en"
                           disabled={pending}
                           onClick={() =>
                             void perform(
@@ -198,11 +197,11 @@ export function TasksSection() {
                                 type: "retryMeetingFanout",
                                 meetingId: meeting.id,
                               },
-                              "Preparing the invitations again.",
+                              words.rooms.sheets.meeting.againSaid,
                             )
                           }
                         >
-                          Prepare the invitations again
+                          {words.rooms.sheets.meeting.again}
                         </Button>
                       )}
                       {isOwner && (
@@ -240,11 +239,11 @@ function LiveMeetingResponses({
     open ? { churchId, meetingId } : "skip",
     { initialNumItems: 20 },
   );
+  const text = useWorkspace().words.rooms.sheets.meeting;
   return (
-    // The owner's view of who replied stays English, as the owner's tools do.
-    <div className="volunteer-replies" lang="en">
+    <div className="volunteer-replies">
       <Button variant="link" className="tools-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {open ? "Hide replies" : "Show replies"}
+        {open ? text.hide : text.show}
       </Button>
       {open && (
         <>
@@ -253,13 +252,13 @@ function LiveMeetingResponses({
               <div className="live-row" key={item.personId}>
                 <span>{item.name}</span>
                 <span className="live-status" data-state={item.response}>
-                  {item.response}
+                  {text.replied[item.response]}
                 </span>
               </div>
             ))}
           </div>
           {responses.status === "Exhausted" && !responses.results.length && (
-            <p>No replies yet.</p>
+            <p>{text.none}</p>
           )}
           {responses.status !== "Exhausted" && (
             <Button
@@ -267,9 +266,7 @@ function LiveMeetingResponses({
               disabled={responses.status !== "CanLoadMore"}
               onClick={() => responses.loadMore(20)}
             >
-              {responses.status === "CanLoadMore"
-                ? "Load more replies"
-                : "Loading replies…"}
+              {responses.status === "CanLoadMore" ? text.more : text.loading}
             </Button>
           )}
         </>

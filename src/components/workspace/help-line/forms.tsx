@@ -16,19 +16,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LiveField } from "@/components/workspace/primitives";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
+import { useWorkspaceIfAny } from "@/components/workspace/context";
 import {
   cents,
-  kindLabels,
-  languageLabels,
-  payeeLabels,
   shortMoney,
   recordHref,
   type Call,
   type HelpRequest,
-  vouchers,
   type Neighbor,
 } from "@/components/workspace/help-line/format";
 import { useSave } from "@/components/workspace/help-line/use-save";
+import { words as wordsFor } from "@/lib/words";
+import { fill } from "@/lib/words/fill";
+
+/** English, for a sheet laid outside the workspace shell. */
+const english = wordsFor();
+/** The person's words inside the shell, English outside it. Never throws. */
+const useWords = () => useWorkspaceIfAny()?.words ?? english;
+type PayeeKind = keyof typeof english.rooms.helpLineForms.request.payees;
 
 type ChurchId = Id<"churches">;
 const pick = <Key extends string>(labels: Record<Key, string>, value: string) =>
@@ -71,12 +76,9 @@ function usePayees(churchId: ChurchId) {
 }
 const onShelf = (shelf: Shelf, item: string) =>
   shelf.find((line) => line.item.toLowerCase() === item.trim().toLowerCase());
-const onHand = (line: Shelf[number] | undefined) =>
-  !line
-    ? "not on the shelf yet"
-    : line.onHand > 0
-      ? `${line.onHand} on hand`
-      : "none on hand";
+/** The shelf's name for a voucher as a sentence carries it: lower case, and "voucher" said once, by the sentence. */
+const itemOf = (voucher: { item: string }) =>
+  voucher.item.toLowerCase().replace(/\s+vouchers?$/, "");
 
 export function FormEnd({
   error,
@@ -123,6 +125,7 @@ export function CallForm({
   const readUrgency = useAction(api.drafts.readUrgency);
   const setUrgency = useMutation(api.assistance.setUrgency);
   const { pending, error, save } = useSave();
+  const w = useWords().rooms.helpLineForms.call;
   // With words to draft from and a call back owed, going on to the draft is the main way forward.
   const [said, setSaid] = useState(false);
   const [owed, setOwed] = useState(true);
@@ -172,14 +175,14 @@ export function CallForm({
       }}
     >
       <div className="live-form-grid">
-        <LiveField label="Name">
+        <LiveField label={w.name}>
           <Input
             name="callerName"
             defaultValue={neighbor?.name}
             autoComplete="off"
           />
         </LiveField>
-        <LiveField label="Phone">
+        <LiveField label={w.phone}>
           <Input
             name="phone"
             type="tel"
@@ -188,7 +191,7 @@ export function CallForm({
           />
         </LiveField>
       </div>
-      <LiveField label="What they said">
+      <LiveField label={w.said}>
         <Textarea
           name="note"
           rows={4}
@@ -196,30 +199,30 @@ export function CallForm({
           onChange={(event) => setSaid(!!event.target.value.trim())}
         />
       </LiveField>
-      <LiveField label="Next step">
+      <LiveField label={w.next}>
         <NativeSelect
           name="callback"
           className="w-full"
           defaultValue="needed"
           onChange={(event) => setOwed(event.target.value !== "none")}
         >
-          <option value="needed">Call them back</option>
-          <option value="none">Nothing more to do</option>
+          <option value="needed">{w.callBack}</option>
+          <option value="none">{w.nothing}</option>
         </NativeSelect>
       </LiveField>
       {lead ? (
         <FormEnd
           error={error}
           pending={pending}
-          submit="Save and draft a request"
+          submit={w.saveAndDraft}
           value="draft"
         >
           <Button type="submit" variant="outline" disabled={pending}>
-            Save call
+            {w.save}
           </Button>
         </FormEnd>
       ) : (
-        <FormEnd error={error} pending={pending} submit="Save call">
+        <FormEnd error={error} pending={pending} submit={w.save}>
           {draftable && owed && (
             <Button
               type="submit"
@@ -227,8 +230,7 @@ export function CallForm({
               value="draft"
               disabled={pending}
             >
-              <Sparkles size={17} aria-hidden="true" /> Save and draft a
-              request
+              <Sparkles size={17} aria-hidden="true" /> {w.saveAndDraft}
             </Button>
           )}
         </FormEnd>
@@ -248,6 +250,7 @@ export function ReturnForm({
 }) {
   const markReturned = useMutation(api.assistance.markReturned);
   const { pending, error, save } = useSave("decided");
+  const w = useWords().rooms.helpLineForms.call;
   return (
     <form
       className="live-form help-form"
@@ -264,12 +267,12 @@ export function ReturnForm({
       }}
     >
       <LiveField
-        label="What came of it"
-        help="For example: home visit planned for Thursday, or referred to 211."
+        label={w.outcome}
+        help={w.outcomeHelp}
       >
         <Textarea name="outcome" rows={3} />
       </LiveField>
-      <FormEnd error={error} pending={pending} submit="Mark returned" />
+      <FormEnd error={error} pending={pending} submit={w.markReturned} />
     </form>
   );
 }
@@ -300,15 +303,17 @@ export function RequestForm({
   const create = useMutation(api.assistance.createRequest);
   const update = useMutation(api.assistance.updateRequest);
   const { pending, error, save } = useSave();
+  const words = useWords();
+  const w = words.rooms.helpLineForms.request;
   const [amountError, setAmountError] = useState("");
   const [kind, setKind] = useState(start?.kind ?? "rent");
   // The shelf's kind that is chosen; null means a kind the shelf does not hold yet, named by hand.
   const [choice, setChoice] = useState<string | null>();
   const shelf = useShelf(churchId, true);
   const payees = usePayees(churchId);
-  const [payeeKind, setPayeeKind] = useState<keyof typeof payeeLabels>(
+  const [payeeKind, setPayeeKind] = useState<PayeeKind>(
     start?.payeeKind &&
-      start.payeeKind in payeeLabels &&
+      start.payeeKind in w.payees &&
       start.payeeKind !== "neighbor"
       ? start.payeeKind
       : "landlord",
@@ -327,7 +332,7 @@ export function RequestForm({
         const value = fieldsOf(event);
         const amountRequested = fromShelf ? 0 : cents(value("amount"));
         if (amountRequested === null)
-          return setAmountError("Enter the amount in dollars, such as 450.");
+          return setAmountError(w.amountNeeded);
         setAmountError("");
         const details = {
           churchId,
@@ -352,16 +357,16 @@ export function RequestForm({
       }}
     >
       <div className="live-form-grid">
-        <LiveField label="Kind of help">
+        <LiveField label={w.kind}>
           <NativeSelect
             name="kind"
             className="w-full"
             value={kind}
             onChange={(event) =>
-              setKind(pick(kindLabels, event.target.value) ?? "other")
+              setKind(pick(words.kinds, event.target.value) ?? "other")
             }
           >
-            {Object.entries(kindLabels).map(([kind, label]) => (
+            {Object.entries(words.kinds).map(([kind, label]) => (
               <option key={kind} value={kind}>
                 {label}
               </option>
@@ -369,7 +374,7 @@ export function RequestForm({
           </NativeSelect>
         </LiveField>
         {fromShelf ? (
-          <LiveField label="How many">
+          <LiveField label={w.howMany}>
             <Input
               name="quantity"
               type="number"
@@ -381,7 +386,7 @@ export function RequestForm({
             />
           </LiveField>
         ) : (
-          <LiveField label="Amount asked, in dollars">
+          <LiveField label={w.amount}>
             <Input
               name="amount"
               inputMode="decimal"
@@ -398,7 +403,7 @@ export function RequestForm({
         )}
       </div>
       {fromShelf && fromShelf.length > 0 && (
-        <LiveField label="Voucher for">
+        <LiveField label={w.voucherFor}>
           <NativeSelect
             className="w-full"
             value={chosen ?? ""}
@@ -406,17 +411,17 @@ export function RequestForm({
           >
             {fromShelf.map((line) => (
               <option key={line.item} value={line.item}>
-                {line.item}, {onHand(line)}
+                {fill(w.onShelf(line.onHand), { item: line.item })}
               </option>
             ))}
-            <option value="">Something else</option>
+            <option value="">{w.somethingElse}</option>
           </NativeSelect>
         </LiveField>
       )}
       {fromShelf && chosen === null && (
         <LiveField
-          label={fromShelf.length ? "Name the voucher" : "Voucher for"}
-          help="The treasurer adds it to the shelf when vouchers arrive."
+          label={fromShelf.length ? w.nameVoucher : w.voucherFor}
+          help={w.nameVoucherHelp}
         >
           <Input
             name="item"
@@ -426,7 +431,7 @@ export function RequestForm({
           />
         </LiveField>
       )}
-      <LiveField label="What they need">
+      <LiveField label={w.need}>
         <Textarea
           name="summary"
           rows={3}
@@ -436,31 +441,30 @@ export function RequestForm({
       </LiveField>
       {fromShelf ? (
         <p className="help-form-note">
-          Vouchers come off the shelf when the request is approved. Nobody is
-          paid.
+          {w.shelfNote}
         </p>
       ) : (
         <>
           <div className="live-form-grid">
-            <LiveField label="Who is paid">
+            <LiveField label={w.payee}>
               <NativeSelect
                 name="payeeKind"
                 className="w-full"
                 value={payeeKind}
                 onChange={(event) =>
                   setPayeeKind(
-                    pick(payeeLabels, event.target.value) ?? "vendor",
+                    pick(w.payees, event.target.value) ?? "vendor",
                   )
                 }
               >
-                {Object.entries(payeeLabels).map(([kind, label]) => (
+                {Object.entries(w.payees).map(([kind, label]) => (
                   <option key={kind} value={kind}>
                     {label}
                   </option>
                 ))}
               </NativeSelect>
             </LiveField>
-            <LiveField label="Their name">
+            <LiveField label={w.payeeName}>
               <Input
                 name="payeeName"
                 list="help-payees"
@@ -483,8 +487,7 @@ export function RequestForm({
             </LiveField>
           </div>
           <p className="help-form-note">
-            Payments go to the landlord, utility or store, never to the
-            neighbor.
+            {w.payeeNote}
           </p>
         </>
       )}
@@ -493,10 +496,10 @@ export function RequestForm({
         pending={pending}
         submit={
           request
-            ? "Save changes"
+            ? w.saveChanges
             : start?.source === "ai_draft"
-              ? "Save this request"
-              : "Save request"
+              ? w.saveDraft
+              : w.save
         }
       />
     </form>
@@ -530,6 +533,10 @@ export function DecideForm({
   const [amountError, setAmountError] = useState("");
   const voucher = approving ? request.voucher : null;
   const shelf = useShelf(churchId, !!voucher);
+  const w = useWords().rooms.helpLineForms.decide;
+  // What the shelf holds of the voucher asked for, as its own whole sentence after what was asked.
+  const held = voucher && shelf ? onShelf(shelf, voucher.item) : null;
+  const shelfLine = !voucher || !shelf ? "" : held ? w.shelfHas(held.onHand) : w.notOnShelf;
   return (
     <form
       className="live-form help-form"
@@ -538,10 +545,10 @@ export function DecideForm({
         const amountApproved =
           approving && !voucher ? cents(value("amount")) : null;
         if (approving && !voucher && !amountApproved)
-          return setAmountError("Enter the amount to approve, in dollars.");
+          return setAmountError(w.amountNeeded);
         const places = [...referred, value("elsewhere")].filter(Boolean);
         if (places.length > 4)
-          return setAmountError("Name at most four places.");
+          return setAmountError(w.tooManyPlaces);
         setAmountError("");
         const outcome = await save(() =>
           decide({
@@ -562,8 +569,8 @@ export function DecideForm({
     >
       {voucher && (
         <LiveField
-          label="How many to give"
-          help={`They asked for ${vouchers(voucher)}.${shelf ? ` The shelf has ${onHand(onShelf(shelf, voucher.item))}.` : ""}`}
+          label={w.give}
+          help={[fill(w.askedVouchers(voucher.quantity), { item: itemOf(voucher) }), shelfLine].filter(Boolean).join(" ")}
         >
           <Input
             name="quantity"
@@ -578,8 +585,12 @@ export function DecideForm({
       )}
       {approving && !voucher && (
         <LiveField
-          label="Amount to approve, in dollars"
-          help={`They asked for ${shortMoney(request.amountRequested)}${request.payeeName ? `, paid to ${request.payeeName.replace(/\.$/, "")}` : ""}.`}
+          label={w.amount}
+          help={
+            request.payeeName
+              ? fill(w.askedPaidTo, { amount: shortMoney(request.amountRequested), name: request.payeeName.replace(/\.$/, "") })
+              : fill(w.asked, { amount: shortMoney(request.amountRequested) })
+          }
         >
           <Input
             name="amount"
@@ -591,19 +602,19 @@ export function DecideForm({
       )}
       <LiveField
         label={
-          approving ? "Note on the decision (optional)" : "Why it was declined"
+          approving ? w.note : w.why
         }
       >
         <Textarea name="note" rows={3} />
       </LiveField>
       <fieldset className="help-lines">
-        <legend>Also referred to</legend>
+        <legend>{w.referred}</legend>
         {agencies && agencies.length > 0 && (
           <ToggleGroup
             type="multiple"
             variant="outline"
             className="help-places"
-            aria-label="Places we refer people to"
+            aria-label={w.places}
             value={referred}
             onValueChange={setReferred}
           >
@@ -616,11 +627,11 @@ export function DecideForm({
           </ToggleGroup>
         )}
         <LiveField
-          label={agencies?.length ? "Somewhere else" : "Where"}
+          label={agencies?.length ? w.elsewhere : w.where}
           help={
             agencies?.length
-              ? "A place not listed. It is offered here next time."
-              : "Such as 211 or the county rent program. It is offered here next time."
+              ? w.elsewhereHelp
+              : w.whereHelp
           }
         >
           <Input
@@ -633,7 +644,7 @@ export function DecideForm({
       <FormEnd
         error={amountError || error}
         pending={pending}
-        submit={approving ? "Approve this request" : "Decline this request"}
+        submit={approving ? w.approve : w.decline}
       />
     </form>
   );
@@ -659,17 +670,18 @@ export function CloseForm({
     request.voucher ? "skip" : { churchId },
   );
   const { pending, error, save } = useSave();
+  const w = useWords().rooms.helpLineForms.close;
   const paid = payable?.find((row) => row.requestId === request.id)?.paid ?? 0;
   const back = takingBack(request);
   const effect = request.voucher
     ? request.status === "paid"
-      ? `${vouchers(request.voucher)} ${request.voucher.quantity === 1 ? "goes" : "go"} back on the shelf. No money has moved.`
-      : "Nothing was given. No money has moved."
+      ? fill(w.goesBack(request.voucher.quantity), { item: itemOf(request.voucher) })
+      : w.nothingGiven
     : !payable
       ? ""
       : paid > 0
-        ? `${shortMoney(paid)} of ${shortMoney(request.amountApproved ?? 0)} was paid and stays in the ledger. The rest is not paid.`
-        : "No money has moved.";
+        ? fill(w.partPaid, { paid: shortMoney(paid), approved: shortMoney(request.amountApproved ?? 0) })
+        : w.noMoney;
   return (
     <form
       className="live-form help-form"
@@ -682,7 +694,7 @@ export function CloseForm({
       }}
     >
       <LiveField
-        label={back ? "Why it is being taken back" : "Why it is being closed"}
+        label={back ? w.whyBack : w.why}
       >
         <Textarea name="note" rows={3} required maxLength={500} />
       </LiveField>
@@ -690,7 +702,7 @@ export function CloseForm({
       <FormEnd
         error={error}
         pending={pending}
-        submit={back ? "Take back this voucher" : "Close this request"}
+        submit={back ? w.takeBack : w.close}
       />
     </form>
   );
@@ -720,6 +732,7 @@ export function NeighborForm({
   const create = useMutation(api.neighbors.create);
   const update = useMutation(api.neighbors.update);
   const { pending, error, save } = useSave();
+  const w = useWords().rooms.helpLineForms.neighbor;
   const [typed, setTyped] = useState({
     name: neighbor?.name ?? call?.callerName ?? "",
     phone: neighbor?.phone ?? call?.phone ?? "",
@@ -747,7 +760,7 @@ export function NeighborForm({
           address: value("address"),
           adults: Number(value("adults")),
           children: Number(value("children")),
-          language: pick(languageLabels, value("language")) ?? "en",
+          language: pick(w.languages, value("language")) ?? "en",
           ...(value("language") === "other" ? { languageName: value("languageName") } : {}),
           notes: value("notes"),
         };
@@ -774,7 +787,7 @@ export function NeighborForm({
       }}
     >
       <div className="live-form-grid">
-        <LiveField label="Name">
+        <LiveField label={w.name}>
           <Input
             name="name"
             required
@@ -785,7 +798,7 @@ export function NeighborForm({
             }
           />
         </LiveField>
-        <LiveField label="Phone">
+        <LiveField label={w.phone}>
           <Input
             name="phone"
             type="tel"
@@ -797,7 +810,7 @@ export function NeighborForm({
           />
         </LiveField>
       </div>
-      <LiveField label="Address">
+      <LiveField label={w.address}>
         <Input
           name="address"
           defaultValue={neighbor?.address}
@@ -805,7 +818,7 @@ export function NeighborForm({
         />
       </LiveField>
       <div className="live-form-grid">
-        <LiveField label="Adults at home">
+        <LiveField label={w.adults}>
           <Input
             name="adults"
             type="number"
@@ -815,7 +828,7 @@ export function NeighborForm({
             defaultValue={neighbor?.adults ?? 1}
           />
         </LiveField>
-        <LiveField label="Children at home">
+        <LiveField label={w.children}>
           <Input
             name="children"
             type="number"
@@ -827,14 +840,14 @@ export function NeighborForm({
         </LiveField>
       </div>
       <div className="live-form-grid">
-        <LiveField label="Speaks">
+        <LiveField label={w.speaks}>
           <NativeSelect
             name="language"
             className="w-full"
             value={speaks}
             onChange={(event) => setSpeaks(event.target.value)}
           >
-            {Object.entries(languageLabels).map(([code, label]) => (
+            {Object.entries(w.languages).map(([code, label]) => (
               <option key={code} value={code}>
                 {label}
               </option>
@@ -842,7 +855,7 @@ export function NeighborForm({
           </NativeSelect>
         </LiveField>
         {speaks === "other" && (
-          <LiveField label="Language">
+          <LiveField label={w.language}>
             <Input
               name="languageName"
               required
@@ -852,7 +865,7 @@ export function NeighborForm({
             />
           </LiveField>
         )}
-        <LiveField label="Email">
+        <LiveField label={w.email}>
           <Input
             name="email"
             type="email"
@@ -862,15 +875,15 @@ export function NeighborForm({
         </LiveField>
       </div>
       <LiveField
-        label="Good to know"
-        help="Best time to call, who lives at home, anything the next visitor should know."
+        label={w.notes}
+        help={w.notesHelp}
       >
         <Textarea name="notes" rows={3} defaultValue={neighbor?.notes} />
       </LiveField>
       {neighbor && hasAlert && (
         <LiveField
-          label="Alert"
-          help="One line shown at the top of the record, such as “Call before visiting.” Leave empty for none."
+          label={w.alert}
+          help={w.alertHelp}
         >
           <Input name="alert" maxLength={160} defaultValue={neighbor.alert} />
         </LiveField>
@@ -878,13 +891,10 @@ export function NeighborForm({
       {duplicates.length > 0 && (
         <div className="live-error help-matches" role="alert">
           <p>
-            {duplicates[0].name} is already on file with this{" "}
-            {duplicates[0].same === "phone" ? "phone number" : "name"}.
+            {fill(w.onFile[duplicates[0].same === "phone" ? "phone" : "name"], { name: duplicates[0].name })}
           </p>
           <p className="live-error-recovery">
-            {useLabel ? "Use that record" : "Open the record"}, or change the{" "}
-            {duplicates[0].same === "phone" ? "number" : "name"}. What you typed
-            is still here. If this is someone else, save as a new neighbor.
+            {w.recovery[useLabel ? "use" : "open"][duplicates[0].same === "phone" ? "phone" : "name"]}
           </p>
           {duplicates.map((match) => (
             <div className="live-row" key={match.id}>
@@ -903,7 +913,7 @@ export function NeighborForm({
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={recordHref(match.id)}>Open record</Link>
+                  <Link href={recordHref(match.id)}>{w.openRecord}</Link>
                 </Button>
               )}
             </div>
@@ -915,10 +925,10 @@ export function NeighborForm({
         pending={pending}
         submit={
           neighbor
-            ? "Save changes"
+            ? w.saveChanges
             : duplicates.length
-              ? (submitNew ?? "Save as a new neighbor")
-              : (submit ?? "Add neighbor")
+              ? (submitNew ?? w.saveNew)
+              : (submit ?? w.add)
         }
       />
     </form>
@@ -949,6 +959,7 @@ export function NameToConfirm({
   onTyped: (typed: string) => void;
 }) {
   const note = useId();
+  const w = useWords().rooms.helpLineForms.confirm;
   const [left, setLeft] = useState(false);
   const off = left && typed.trim() !== "" && nameKey(typed) !== nameKey(name);
   return (
@@ -971,7 +982,7 @@ export function NameToConfirm({
       />
       {off && (
         <small id={note} className="live-field-needed" role="status">
-          That does not match. The name is{" "}
+          {w.noMatch}{" "}
           <span className={name.length <= 28 ? "help-name-whole" : undefined}>{name}.</span>
         </small>
       )}
@@ -999,6 +1010,7 @@ export function RemoveForm({
 }) {
   const remove = useMutation(api.neighbors.remove);
   const { pending, error, save } = useSave();
+  const w = useWords().rooms.helpLineForms.remove;
   const [typed, setTyped] = useState("");
   const agrees = nameKey(typed) === nameKey(neighbor.name);
   return (
@@ -1017,30 +1029,26 @@ export function RemoveForm({
     >
       <dl className="for-good-terms">
         <div>
-          <dt>What goes</dt>
+          <dt>{w.goes}</dt>
           <dd>
-            The name, address, phones, household, money, accounts and notes,
-            and every word of its calls, requests and home visits.
+            {w.goesDetail}
           </dd>
         </div>
         <div>
-          <dt>What stays</dt>
+          <dt>{w.stays}</dt>
           <dd>
-            The money, the dates and the counts, so the year’s totals do not
-            change. Nothing left says who they were. Their name written by
-            hand somewhere else, such as a note on another record, a task or
-            an announcement, is not searched for.
+            {w.staysDetail}
           </dd>
         </div>
       </dl>
       <NameToConfirm
-        label={`Type ${neighbor.name} to remove the record`}
+        label={w.type(neighbor.name)}
         name={neighbor.name}
         typed={typed}
         onTyped={setTyped}
       />
-      <p className="help-form-note">This cannot be undone.</p>
-      {error && <LiveFailure message={error} kept="Nothing was removed." />}
+      <p className="help-form-note">{w.final}</p>
+      {error && <LiveFailure message={error} kept={w.kept} />}
       <div className="live-form-actions">
         <LiveWaiting when={pending} />
         <Button
@@ -1048,7 +1056,7 @@ export function RemoveForm({
           className="for-good-confirm"
           disabled={pending || !agrees}
         >
-          Remove this record
+          {w.remove}
         </Button>
       </div>
     </form>

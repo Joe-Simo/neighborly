@@ -7,6 +7,11 @@ import { useEffect, useRef, type ReactNode } from "react";
 import Papa from "papaparse";
 import { CircleCheck, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWorkspace } from "@/components/workspace/context";
+import { words as wordsFor, type Language, type Words } from "@/lib/words";
+import { fill } from "@/lib/words/fill";
+
+type ToolsWords = Words["rooms"]["tools"];
 
 export type LeftOut = { line: number; name: string; reason: string };
 export type SheetStep =
@@ -27,8 +32,23 @@ export type SheetWords = {
   promise: string;
   done: (count: number) => string;
   nothingDone: string;
-  another: string;
 };
+
+/** A count written the way the reader's language writes it. */
+const numberForms: Record<Language, string> = { en: "en-US", es: "es-US" };
+export const counted = (amount: number, language: Language) => amount.toLocaleString(numberForms[language]);
+
+/**
+ * What a file itself has wrong is said by the readers (the *-rows files) in English. Here each is said in the
+ * person's own language: the sentence is found by its English, and one this table does not know is shown as it came.
+ */
+const englishFile = wordsFor("en").rooms.tools.file;
+export function fileProblem(error: string, file: ToolsWords["file"]) {
+  const known = (Object.keys(englishFile) as (keyof typeof englishFile)[]).find((key) => englishFile[key] === error);
+  if (known) return file[known];
+  const many = /^This file has (\d+) (lines|people)\. Bring in up to (\d+) at a time\.$/.exec(error);
+  return many ? fill(many[2] === "people" ? file.tooManyPeople : file.tooManyLines, { count: many[1] ?? "", most: many[3] ?? "" }) : error;
+}
 
 /**
  * A long file goes to the backend a batch at a time, in order. Each batch is saved whole or not at all.
@@ -47,34 +67,37 @@ export async function inBatches<Row, Result>(rows: Row[], size: number, run: (ba
   return { results, finished: true };
 }
 /** The first lines of a file, shown rising while the rest is checked. */
-export const readSoFar = (rows: { line: number; name: string }[]) => ({ names: rows.slice(0, 6).map((row) => row.name || `Line ${row.line}`), lines: rows.length });
-export const linesOf = (done: number, all: number) => `${done.toLocaleString("en-US")} of ${all.toLocaleString("en-US")} lines`;
+export const readSoFar = (rows: { line: number; name: string }[], sheet: ToolsWords["sheet"]) => ({ names: rows.slice(0, 6).map((row) => row.name || sheet.lineNumber(row.line)), lines: rows.length });
+export const linesOf = (done: number, all: number, words: Words) => fill(words.rooms.tools.sheet.linesOf, { done: counted(done, words.locale), all: counted(all, words.locale) });
+/** Said when the connection drops partway through a long file: how far it came, and that the rest can be finished. */
+export const droppedAt = (done: number, all: number, words: Words) => fill(words.rooms.tools.sheet.dropped, { done: counted(done, words.locale), all: counted(all, words.locale) });
 
 function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }) {
+  const text = useWorkspace().words.rooms.tools.sheet;
   if (!rows.length) return null;
   return (
     <div className="tools-problems">
       <div className="live-section-head">
-        <h3>Left out</h3>
-        <span className="live-count">{rows.length === 1 ? "1 line of the file" : `${rows.length} lines of the file`}</span>
+        <h3>{text.leftOut}</h3>
+        <span className="live-count">{text.leftOutLines(rows.length)}</span>
       </div>
       <div className="live-list">
         {rows.map((row) => (
           <div className="help-row" data-quiet key={row.line}>
             <div className="live-date-leaf">
-              <span>Line</span>
+              <span>{text.line}</span>
               <strong>{row.line}</strong>
             </div>
             <div>
-              <h3>{row.name || `Line ${row.line}`}</h3>
+              <h3>{row.name || text.lineNumber(row.line)}</h3>
               <p>{row.reason}</p>
             </div>
           </div>
         ))}
       </div>
       {download && (
-        <a className="tools-sample" download="left-out-lines.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(Papa.unparse({ fields: ["Line", "Name", "Why it was left out"], data: rows.map((row) => [row.line, row.name, row.reason]) }))}`}>
-          Download the left-out lines
+        <a className="tools-sample" download="left-out-lines.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(Papa.unparse({ fields: [text.columns.line, text.columns.name, text.columns.why], data: rows.map((row) => [row.line, row.name, row.reason]) }))}`}>
+          {text.downloadLeftOut}
         </a>
       )}
     </div>
@@ -86,6 +109,8 @@ function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }
  * The file waiting for a yes is the one sheet on the screen; nothing is saved before that yes.
  */
 export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, onReset }: { words: SheetWords; state: SheetStep; icon: ReactNode; afterDone?: ReactNode; onFile: (file: File) => void; onYes: () => void; onReset: () => void }) {
+  const { words: book } = useWorkspace();
+  const text = book.rooms.tools.sheet;
   const chooser = useRef<HTMLInputElement>(null);
   // The sheet that waits for a yes stays the same sheet while the yes is being saved: still ochre, its buttons
   // at rest, its label saying what is being done. Green is for the line that comes after the save has answered.
@@ -122,18 +147,18 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
             }}
           />
           <div className="help-actions">
-            <Button variant="outline" onClick={() => chooser.current?.click()}><FileUp size={18} aria-hidden="true" /> Choose a CSV file</Button>
+            <Button variant="outline" onClick={() => chooser.current?.click()}><FileUp size={18} aria-hidden="true" /> {text.chooseFile}</Button>
             {state.fileName && <span className="tools-file-name">{state.fileName}</span>}
           </div>
           <p className="tools-small">{words.fileHelp}</p>
-          <a className="tools-sample" download={words.sample.fileName} href={`data:text/csv;charset=utf-8,${encodeURIComponent(words.sample.text)}`}>Download a sample file</a>
+          <a className="tools-sample" download={words.sample.fileName} href={`data:text/csv;charset=utf-8,${encodeURIComponent(words.sample.text)}`}>{text.sampleFile}</a>
         </div>
       )}
       {state.step === "working" && !state.saving && (
         state.read ? (
           <ol className="tools-reading paper-rows" aria-hidden="true">
             {state.read.names.map((name, index) => <li key={index}><span>{index + 2}</span>{name}</li>)}
-            {state.read.lines > state.read.names.length && <li className="tools-reading-more">and {(state.read.lines - state.read.names.length).toLocaleString("en-US")} more</li>}
+            {state.read.lines > state.read.names.length && <li className="tools-reading-more">{text.more(state.read.lines - state.read.names.length)}</li>}
           </ol>
         ) : (
           // Hidden from a screen reader here because the status line below says the same.
@@ -143,26 +168,25 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
         )
       )}
       {/* While a yes is being saved the sheet's own label carries these words, so this line is for a screen reader only and nothing below the sheet moves. */}
-      {state.step === "working" && <p role="status" className={state.progress && !saving ? "tools-progress" : "sr-only"}>{state.label}{state.progress && `. ${state.progress}.`}</p>}
+      {state.step === "working" && <p role="status" className={state.progress && !saving ? "tools-progress" : "sr-only"}>{state.progress ? fill(text.progress, { label: state.label, progress: state.progress }) : state.label}</p>}
       {waiting && (
         <>
           {/* The focus that leaves the pressed button when it goes to rest lands on the sheet and not on the page (the effect above). */}
           <section className="help-sheet tools-sheet tools-done" aria-labelledby={`${words.id}-title`} aria-busy={saving || undefined} tabIndex={-1} ref={sheet}>
             <p className="help-sheet-label">
-              {state.step === "working" ? `${state.label}${state.progress ? `. ${state.progress}.` : "…"}` : waiting.ready ? "Waiting for your yes" : "Nothing to bring in"}
+              {state.step === "working" ? (state.progress ? fill(text.progress, { label: state.label, progress: state.progress }) : `${state.label}…`) : waiting.ready ? text.waitingForYes : text.nothingToBring}
             </p>
             <div className="help-sheet-body">
               <div>
                 <h2 id={`${words.id}-title`}>{waiting.ready ? words.yes(waiting.ready) : words.nothingReady}</h2>
                 <p className="help-why">
-                  From {waiting.fileName}.
-                  {waiting.leftOut.length > 0 && ` ${waiting.leftOut.length === 1 ? "1 line is" : `${waiting.leftOut.length} lines are`} left out, listed below.`}
+                  {waiting.leftOut.length === 0 ? text.from(waiting.fileName) : waiting.leftOut.length === 1 ? text.fromOneLeftOut(waiting.fileName) : fill(text.fromLeftOut, { name: waiting.fileName, count: waiting.leftOut.length })}
                 </p>
                 {waiting.ready > 0 && <p>{words.promise}</p>}
               </div>
               <div className="help-actions">
                 {waiting.ready > 0 && <Button disabled={saving} onClick={onYes}>{icon} {words.yes(waiting.ready)}</Button>}
-                <Button variant={waiting.ready ? "ghost" : "outline"} disabled={saving} onClick={onReset}>Choose another file</Button>
+                <Button variant={waiting.ready ? "ghost" : "outline"} disabled={saving} onClick={onReset}>{text.another}</Button>
               </div>
             </div>
           </section>
@@ -177,7 +201,7 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
           </div>
           <div className="help-actions tools-after">
             {state.done > 0 && afterDone}
-            <Button variant="outline" onClick={onReset}>{words.another}</Button>
+            <Button variant="outline" onClick={onReset}>{text.another}</Button>
           </div>
           <LeftOutRows rows={state.leftOut} download />
         </>

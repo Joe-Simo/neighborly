@@ -7,7 +7,8 @@ import { DateTime } from "luxon";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { readFailure, stateWords } from "@/components/workspace/failure";
+import { readFailure } from "@/components/workspace/failure";
+import type { Words } from "@/lib/words";
 import { HelpRoom } from "@/components/workspace/help-line/room";
 import { LiveFailure, LiveState } from "@/components/workspace/states";
 import { csvFileName, reportCsv } from "@/components/workspace/reports/lines";
@@ -21,25 +22,26 @@ import {
 } from "@/components/workspace/reports/report-view";
 
 /** Says what happened and what to do when the year cannot be read, and leaves the rest of the workspace standing. */
-class ReportBoundary extends Component<{ children: ReactNode }, { failed: string }> {
-  state = { failed: "" };
+class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { failed: boolean; cause: unknown }> {
+  state = { failed: false, cause: undefined as unknown };
   static getDerivedStateFromError(cause: unknown) {
-    // The backend's own sentence when it refused (a year too large to add up), calm words otherwise.
-    return { failed: readFailure(cause, "Your records are safe and nothing was changed. Check your connection, then try again.") };
+    return { failed: true, cause };
   }
   render() {
     if (!this.state.failed) return this.props.children;
+    const { words } = this.props;
     return (
       <LiveState
         kind="error"
-        title="The year couldn’t be added up."
+        title={words.rooms.reports.failed.title}
         action={
-          <Button variant="outline" onClick={() => this.setState({ failed: "" })}>
-            {stateWords.tryAgain}
+          <Button variant="outline" onClick={() => this.setState({ failed: false, cause: undefined })}>
+            {words.states.tryAgain}
           </Button>
         }
       >
-        {this.state.failed}
+        {/* The backend's own sentence when it refused (a year too large to add up), calm words otherwise. */}
+        {readFailure(this.state.cause, words.rooms.reports.failed.safe, words.states.offlineSave)}
       </LiveState>
     );
   }
@@ -47,6 +49,7 @@ class ReportBoundary extends Component<{ children: ReactNode }, { failed: string
 
 function Report() {
   const { data, now, setHeadAction, words } = useWorkspace();
+  const w = words.rooms.reports;
   const churchId = data.church.id;
   const at = useHour();
   const onRecord = useQuery(api.reports.years, at ? { churchId, at } : "skip");
@@ -88,28 +91,28 @@ function Report() {
     try {
       setCheck({ year, result: await checkYear({ churchId, year }), at: Date.now() });
     } catch (cause) {
-      setCheck({ year, failed: readFailure(cause, "The check couldn’t run just now.") });
+      setCheck({ year, failed: readFailure(cause, w.check.failed, words.states.offlineSave) });
     }
-  }, [checkYear, churchId, year]);
+  }, [checkYear, churchId, year, w, words]);
   // The check reads a whole year, so it steps aside while a quarter is shown.
   // It does not wait for the figures: the button arrives with the heading (frame thread, on the coordinator's word).
   const canCheck = year !== undefined && !quarter && !found?.result;
   useLayoutEffect(() => {
     if (!canCheck) return;
     // Once the sheet is open the button has done its work, so it leaves the head.
-    setHeadAction({ label: checking ? "Checking…" : "Check before you send", run: () => void (checking || lookOver()), quiet: checking });
+    setHeadAction({ label: checking ? w.check.checking : w.check.button, run: () => void (checking || lookOver()), quiet: checking });
     return () => setHeadAction(null);
-  }, [canCheck, checking, lookOver, setHeadAction]);
+  }, [canCheck, checking, lookOver, setHeadAction, w]);
 
   if (!onRecord || !shown || year === undefined) return <ReportLoading />;
 
   function saveSpreadsheet(saved: NonNullable<typeof shown>) {
     const name = csvFileName(saved, data.church.name);
-    const address = URL.createObjectURL(new Blob([reportCsv(saved, data.church.name, data.church.sample)], { type: "text/csv;charset=utf-8" }));
+    const address = URL.createObjectURL(new Blob([reportCsv(saved, data.church.name, data.church.sample, words)], { type: "text/csv;charset=utf-8" }));
     const link = Object.assign(document.createElement("a"), { href: address, download: name });
     link.click();
     URL.revokeObjectURL(address);
-    setDone(`Saved ${name} to your downloads. It opens in Excel, Numbers or Google Sheets.`);
+    setDone(w.saved(name));
   }
 
   return (
@@ -142,9 +145,9 @@ function Report() {
       }
       sheet={
         checking && !quarter ? (
-          <YearChecking requests={shown.requests.received} visits={shown.visits} />
+          <YearChecking words={words} requests={shown.requests.received} visits={shown.visits} />
         ) : found?.failed ? (
-          <LiveFailure message={found.failed} kept="The report itself is not affected. You can still print or save the year." />
+          <LiveFailure message={found.failed} kept={w.check.kept} />
         ) : (
           found?.result &&
           !quarter && (
@@ -167,9 +170,10 @@ function Report() {
 }
 
 export function ReportsSection() {
+  const { words } = useWorkspace();
   return (
-    <HelpRoom loading="Opening the reports">
-      <ReportBoundary>
+    <HelpRoom loading={words.rooms.reports.opening}>
+      <ReportBoundary words={words}>
         <Report />
       </ReportBoundary>
     </HelpRoom>

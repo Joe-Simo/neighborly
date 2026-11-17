@@ -8,7 +8,7 @@ import { useWorkspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { draftNotes, monthlyAllowance } from "@/lib/request-draft";
 import { measured } from "@/lib/jev-set";
-import { formatDay, words as book } from "@/lib/words";
+import { formatDay } from "@/lib/words";
 
 const noteKeys = Object.keys(draftNotes) as (keyof typeof draftNotes)[];
 const quiet = "inline-flex min-h-11 cursor-pointer items-center border-0 bg-transparent p-0 underline underline-offset-4 hover:decoration-current";
@@ -32,12 +32,11 @@ export function useOpenedIntoView<Part extends HTMLElement>(open: boolean) {
 }
 
 /**
- * The help line is a leaders' room and reads in English throughout, so what stands inside it does too.
- * The Spanish phrases are in the tables for the day the room is translated: use the person's words then.
+ * The help line reads in the person's own language, so what stands inside it does too: the assistant's lines
+ * come from the person's words, English or Spanish.
  */
 function useRoomWords() {
-  const { data } = useWorkspace();
-  return book("en", data.church.wordSet).assistant;
+  return useWorkspace().words.assistant;
 }
 /** Each line the backend wrote about a blank field, as why it is blank and what the person does about it. */
 function useDraftNotes(notes: string[]) {

@@ -5,14 +5,16 @@ import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { DateField } from "@/components/workspace/date-field";
 import { Toggle } from "@/components/ui/toggle";
+import { useWorkspace } from "@/components/workspace/context";
 import { LiveField } from "@/components/workspace/primitives";
+import { fill } from "@/lib/words/fill";
 import { formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   FormActions,
   FormError,
   type Refusal,
 } from "@/components/workspace/treasury/form-parts";
-import { dayLabel, type Gift } from "@/components/workspace/treasury/labels";
+import { categoryLabel, dayLabel, type Gift } from "@/components/workspace/treasury/labels";
 
 export type Deposit = { entryIds: Gift["id"][]; date: string; memo: string };
 
@@ -28,6 +30,9 @@ export function DepositForm({
   onSubmit: (deposit: Deposit, total: number) => Promise<Refusal>;
   onCancel: () => void;
 }) {
+  const { words } = useWorkspace();
+  const room = words.rooms.treasury;
+  const w = room.deposit;
   const [left, setLeft] = useState<Gift["id"][]>([]);
   const [date, setDate] = useState(today);
   const [memo, setMemo] = useState("");
@@ -41,7 +46,7 @@ export function DepositForm({
       onSubmit={async (event) => {
         event.preventDefault();
         if (!going.length)
-          return setError("Choose at least one gift that went to the bank.");
+          return setError(w.none);
         setError("");
         setSaving(true);
         const refusal = await onSubmit(
@@ -52,7 +57,7 @@ export function DepositForm({
         if (refusal) setError(refusal);
       }}
     >
-      <div className="treasury-gifts" role="group" aria-label="Gifts in this deposit">
+      <div className="treasury-gifts" role="group" aria-label={w.group}>
         {gifts.map((gift) => (
           <Toggle
             key={gift.id}
@@ -69,9 +74,9 @@ export function DepositForm({
               <Check size={16} />
             </span>
             <span>
-              <strong>{gift.memo || gift.category}</strong>
+              <strong>{gift.memo || categoryLabel(room, gift.category)}</strong>
               <small>
-                {dayLabel(gift.date)} · From {gift.from}
+                {dayLabel(words.locale, gift.date)} · {room.lines.from(gift.from)}
               </small>
             </span>
             <span className="treasury-gift-amount">{formatCents(gift.amount)}</span>
@@ -80,19 +85,19 @@ export function DepositForm({
       </div>
       <p className="treasury-gift-total" aria-live="polite">
         <span>
-          {going.length} of {gifts.length} going to the bank
+          {fill(w.going, { going: going.length, count: gifts.length })}
         </span>
         <strong>{formatFigure(total)}</strong>
       </p>
       <div className="live-form-grid treasury-form-grid">
-        <LiveField label="Day deposited">
+        <LiveField label={w.day}>
           <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
-        <LiveField label="Note (optional)">
+        <LiveField label={room.money.note}>
           <Input
             name="memo"
             maxLength={200}
-            placeholder="Night drop, teller…"
+            placeholder={w.noteExample}
             value={memo}
             onChange={(event) => setMemo(event.target.value)}
           />
@@ -100,7 +105,7 @@ export function DepositForm({
       </div>
       {error && <FormError message={error} />}
       <FormActions saving={saving} onCancel={onCancel}>
-        Record deposit{going.length ? ` of ${formatFigure(total)}` : ""}
+        {going.length ? w.submitOf(formatFigure(total)) : w.submit}
       </FormActions>
     </form>
   );

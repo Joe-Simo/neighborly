@@ -32,15 +32,10 @@ import {
   type Accounts,
   type HomeStep,
 } from "@/components/workspace/help-line/household";
+import { fill } from "@/lib/words/fill";
+import type { Words } from "@/lib/words";
 import {
-  count,
-  household,
-  householdDetail,
-  kindLabels,
-  spokenLabel,
   money,
-  requestTitle,
-  vouchers,
   shortMoney,
   type HelpRequest,
   type NeighborRecord as Record,
@@ -55,11 +50,36 @@ type Step =
   | { kind: "request" | "details" | "note" | "remove" | HomeStep }
   | { kind: "approve" | "decline" | "change" | "close"; request: HelpRequest };
 
-const back = (
-  <Link className="help-back" href="/app/neighbors">
-    <ArrowLeft size={16} aria-hidden="true" /> All neighbors
-  </Link>
-);
+function Back() {
+  const { words } = useWorkspace();
+  return (
+    <Link className="help-back" href="/app/neighbors">
+      <ArrowLeft size={16} aria-hidden="true" /> {words.rooms.neighbors.all}
+    </Link>
+  );
+}
+
+/**
+ * A request in a few words, in the person's language: a helper cannot ask for the person's words itself, so the
+ * component that has them passes them here.
+ */
+function requestWords(words: Words) {
+  const text = words.rooms.neighbors.request;
+  const vouchers = (voucher: { item: string; quantity: number }) => {
+    // The shelf may name its item "Clothing voucher" already; it is said once. The item stays as it was typed.
+    const item = voucher.item.toLowerCase().replace(/\s+vouchers?$/, "");
+    return { item, quantity: voucher.quantity, said: fill(text.vouchers(voucher.quantity), { item }) };
+  };
+  return {
+    vouchers,
+    title: (request: HelpRequest) => {
+      if (request.voucher) return vouchers(request.voucher).said;
+      const kind = words.kinds[request.kind];
+      const amount = shortMoney(request.amountApproved ?? request.amountRequested);
+      return request.payeeName ? fill(text.amountTo, { kind, amount, payee: request.payeeName }) : fill(text.amount, { kind, amount });
+    },
+  };
+}
 
 /** A reveal of the account numbers that was refused: the sentence to show, and which try it was. */
 type Covered = { why: string; tries: number };
@@ -118,7 +138,9 @@ export function NeighborRecord({
   /** From a link to one request: that request is the one on the sheet. */
   requestId?: string | null;
 }) {
-  const { data, format, now, setHeading } = useWorkspace();
+  const { data, format, now, setHeading, words } = useWorkspace();
+  const text = words.rooms.neighbors.record;
+  const { title: requestTitle } = requestWords(words);
   const churchId = data.church.id;
   const open = useMutation(api.neighbors.open);
   const asked = useRef(false);
@@ -160,15 +182,19 @@ export function NeighborRecord({
     ),
   };
   const title = record?.neighbor.name;
+  const size = record ? record.neighbor.adults + record.neighbor.children : 0;
   const deck =
     record &&
     [
       // One quiet line under the name: where they live, who lives there, the language. The phone and the
       // email stay under At home, where they are changed.
       record.neighbor.address,
-      household(record.neighbor.adults, record.neighbor.children).toLowerCase(),
-      `speaks ${spokenLabel(record.neighbor)}`,
-      `on file since ${format(record.since, { day: undefined, month: "long", year: "numeric" })}`,
+      size === 1 ? text.deck.livesAlone : text.deck.householdOf(size),
+      // The name recorded for another language stays as it was typed.
+      record.neighbor.language === "other" && record.neighbor.languageName
+        ? text.deck.speaksNamed(record.neighbor.languageName)
+        : text.deck.speaks[record.neighbor.language],
+      text.deck.since(format(record.since, { day: undefined, month: "long", year: "numeric" })),
     ]
       .filter(Boolean)
       .join(" · ");
@@ -215,8 +241,8 @@ export function NeighborRecord({
         setCovered((before) => ({
           why: readFailure(
             cause,
-            "The account numbers couldn’t be shown. Please try again.",
-            "There is no connection right now, so the account numbers couldn’t be shown.",
+            text.numbers.refused,
+            text.numbers.offline,
           ),
           tries: (before?.tries ?? 0) + 1,
         }));
@@ -228,30 +254,28 @@ export function NeighborRecord({
     return (
       <HelpEmpty
         first
-        title="We couldn’t find that record."
+        title={text.missing.title}
         action={
           <Button variant="outline" asChild>
-            <Link href="/app/neighbors">All neighbors</Link>
+            <Link href="/app/neighbors">{words.rooms.neighbors.all}</Link>
           </Button>
         }
       >
-        It may belong to another group, or the link may be incomplete. Nothing
-        was opened.
+        {text.missing.body}
       </HelpEmpty>
     );
   if (removed)
     return (
       <LiveState
         kind="empty"
-        title="The record is removed."
+        title={text.removed.title}
         action={
           <Button variant="outline" asChild>
-            <Link href="/app/neighbors">All neighbors</Link>
+            <Link href="/app/neighbors">{words.rooms.neighbors.all}</Link>
           </Button>
         }
       >
-        The year’s totals stay as they were, with no name. Everything that
-        said who this household was is gone.
+        {text.removed.body}
       </LiveState>
     );
   if (!record) return <HelpLoading />;
@@ -276,41 +300,41 @@ export function NeighborRecord({
       />
       {step?.kind === "people" && (
         <LiveDialog
-          title="Who lives here"
-          description={`${neighbor.name}’s household, as they told us.`}
+          title={text.sheets.people.title}
+          description={text.sheets.people.about(neighbor.name)}
           onClose={close}
         >
           <PeopleForm
             target={target}
             household={record.household}
-            onSaved={() => finish("Household saved.")}
+            onSaved={() => finish(text.done.household)}
           />
         </LiveDialog>
       )}
       {step?.kind === "money" && (
         <LiveDialog
-          title="Money each month"
-          description="What comes in and what goes out, in round numbers."
+          title={text.sheets.money.title}
+          description={text.sheets.money.about}
           onClose={close}
         >
           <MoneyForm
             target={target}
             money={record.money}
-            onSaved={() => finish("The month is saved.")}
+            onSaved={() => finish(text.done.month)}
           />
         </LiveDialog>
       )}
       {step?.kind === "accounts" && (
         <LiveDialog
-          title="Accounts"
-          description="Where a bill is paid, so the treasurer does not have to ask twice."
+          title={text.sheets.accounts.title}
+          description={text.sheets.accounts.about}
           onClose={close}
         >
           {/* Above the form: under it, the form's pinned buttons would lie over the notice. It is brought into view. */}
           {covered && (
             <StillCovered
               covered={covered}
-              kept="The numbers on file are still covered, and what you typed is still here."
+              kept={text.numbers.keptInForm}
             />
           )}
           <AccountsForm
@@ -320,53 +344,53 @@ export function NeighborRecord({
             onShowNumbers={() => void reveal()}
             onSaved={() => {
               setNumbers(null);
-              finish("Accounts saved.");
+              finish(text.done.accounts);
             }}
           />
         </LiveDialog>
       )}
       {step?.kind === "note" && (
         <LiveDialog
-          title="Add a note"
-          description={`On ${neighbor.name}’s record, for whoever helps next.`}
+          title={text.sheets.note.title}
+          description={text.sheets.note.about(neighbor.name)}
           onClose={close}
         >
-          <NoteForm target={target} onSaved={() => finish("Note added.")} />
+          <NoteForm target={target} onSaved={() => finish(text.done.note)} />
         </LiveDialog>
       )}
       {step?.kind === "request" && (
         <LiveDialog
-          title="Add a request"
-          description={`For ${neighbor.name}. Nothing is paid or given until it is approved.`}
+          title={text.sheets.request.title}
+          description={text.sheets.request.about(neighbor.name)}
           onClose={close}
         >
           <RequestForm
             churchId={churchId}
             neighborId={neighbor.id}
             onSaved={() =>
-              finish("Request saved. It is waiting for a decision.")
+              finish(text.done.request)
             }
           />
         </LiveDialog>
       )}
       {step?.kind === "change" && (
         <LiveDialog
-          title="Change the request"
-          description="You can change a request until it is decided."
+          title={text.sheets.change.title}
+          description={text.sheets.change.about}
           onClose={close}
         >
           <RequestForm
             churchId={churchId}
             neighborId={neighbor.id}
             request={step.request}
-            onSaved={() => finish("Request changed.")}
+            onSaved={() => finish(text.done.changed)}
           />
         </LiveDialog>
       )}
       {(step?.kind === "approve" || step?.kind === "decline") && (
         <LiveDialog
           title={
-            step.kind === "approve" ? "Approve this request" : "Decline this request"
+            step.kind === "approve" ? text.sheets.approve : text.sheets.decline
           }
           description={`${requestTitle(step.request)}. ${step.request.summary}`}
           onClose={close}
@@ -376,9 +400,7 @@ export function NeighborRecord({
             request={step.request}
             decision={step.kind === "approve" ? "approved" : "declined"}
             onSaved={() =>
-              finish(
-                `Request ${step.kind === "approve" ? "approved" : "declined"}. ${neighbor.name}’s record is up to date.`,
-              )
+              finish(step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name))
             }
           />
         </LiveDialog>
@@ -386,7 +408,7 @@ export function NeighborRecord({
       {step?.kind === "close" && (
         <LiveDialog
           title={
-            takingBack(step.request) ? "Take back this voucher" : "Close this request"
+            takingBack(step.request) ? text.sheets.takeBack : text.sheets.close
           }
           description={`${requestTitle(step.request)}. ${step.request.summary}`}
           onClose={close}
@@ -395,17 +417,15 @@ export function NeighborRecord({
             churchId={churchId}
             request={step.request}
             onSaved={() =>
-              finish(
-                `${takingBack(step.request) ? "Voucher taken back" : "Request closed"}. ${neighbor.name}’s record is up to date.`,
-              )
+              finish(takingBack(step.request) ? text.done.takenBack(neighbor.name) : text.done.closed(neighbor.name))
             }
           />
         </LiveDialog>
       )}
       {step?.kind === "remove" && (
         <LiveDialog
-          title="Remove this record"
-          description={`Everything we keep about ${neighbor.name}, for good.`}
+          title={text.sheets.remove.title}
+          description={text.sheets.remove.about(neighbor.name)}
           onClose={close}
         >
           <RemoveForm
@@ -425,14 +445,14 @@ export function NeighborRecord({
       )}
       {step?.kind === "details" && (
         <LiveDialog
-          title="Change details"
-          description={`What we keep about ${neighbor.name}.`}
+          title={text.sheets.details.title}
+          description={text.sheets.details.about(neighbor.name)}
           onClose={close}
         >
           <NeighborForm
             churchId={churchId}
             neighbor={neighbor}
-            onSaved={() => finish("Details saved.")}
+            onSaved={() => finish(text.done.details)}
           />
         </LiveDialog>
       )}
@@ -440,44 +460,49 @@ export function NeighborRecord({
   );
 }
 
-function happened(event: Record["history"][number], now: number) {
+function happened(event: Record["history"][number], now: number, words: Words) {
+  const text = words.rooms.neighbors.record.history;
+  const kinds: { [kind: string]: string | undefined } = words.kinds;
   switch (event.type) {
     case "payment":
       return {
         kind: "money",
-        what: `${event.category in kindLabels ? kindLabels[event.category as keyof typeof kindLabels] : event.category} paid to ${event.payee}`,
-        who: `Recorded by ${event.who}`,
+        // A category that is not one of the kinds of help is said as it was written down.
+        what: fill(text.paidTo, { kind: kinds[event.category] ?? event.category, payee: event.payee }),
+        who: text.recordedBy(event.who),
         paid: shortMoney(event.amount),
       };
     case "visit":
       return {
         kind: "visit",
-        what: "Home visit",
-        who: event.who.join(" and "),
+        what: text.visit,
+        // Each name whole, as it was written; no one went means nothing is said.
+        who: event.who.length ? event.who.reduce((first, second) => fill(text.pair, { first, second })) : "",
         found: event.note,
       };
     case "call":
       return {
         kind: "call",
-        what: event.note || "Called the help line",
-        who: `Call taken by ${event.who}`,
+        what: event.note || text.called,
+        who: text.callTakenBy(event.who),
       };
     case "note":
-      return { kind: "note", what: event.note, who: `Note by ${event.who}` };
+      return { kind: "note", what: event.note, who: text.noteBy(event.who) };
     case "brought":
       return {
         kind: "money",
-        what: `${kindLabels[event.kind]}${event.payee ? ` paid to ${event.payee}` : ""}`,
-        who: "Brought over from earlier records",
+        what: event.payee ? fill(text.paidTo, { kind: words.kinds[event.kind], payee: event.payee }) : words.kinds[event.kind],
+        who: text.broughtOver,
         paid: event.amount ? shortMoney(event.amount) : undefined,
       };
-    case "voucher":
+    case "voucher": {
+      const { item, quantity } = requestWords(words).vouchers(event);
       return {
         kind: event.takenBack ? "closed" : "money",
-        what: `${vouchers(event)} ${event.takenBack ? "taken back" : "given"}`,
+        what: fill(event.takenBack ? text.vouchersTakenBack(quantity) : text.vouchersGiven(quantity), { item }),
         who: [
-          event.closedBy && `Taken back by ${event.closedBy}`,
-          `Approved by ${event.who}`,
+          event.closedBy && text.takenBackBy(event.closedBy),
+          text.approvedBy(event.who),
         ]
           .filter(Boolean)
           .join(" · "),
@@ -485,15 +510,18 @@ function happened(event: Record["history"][number], now: number) {
         // The backend says until when and never reads the clock in a query; taking it back is checked there by the real one.
         takeBack: event.takeBackUntil !== null && now <= event.takeBackUntil ? event.requestId : undefined,
       };
+    }
     case "decision":
       if (event.status === "closed")
         return {
           kind: "closed",
           // Never "without help" once money went out; each payment keeps its own line.
-          what: `${kindLabels[event.kind]} request closed ${event.paid ? `after ${shortMoney(event.paid)} of ${shortMoney(event.approved)}` : "without help"}`,
+          what: event.paid
+            ? fill(text.closedAfter, { kind: words.kinds[event.kind], paid: shortMoney(event.paid), approved: shortMoney(event.approved) })
+            : fill(text.closedWithout, { kind: words.kinds[event.kind] }),
           who: [
-            event.who && `Closed by ${event.who}`,
-            event.approvedBy && `Approved by ${event.approvedBy}`,
+            event.who && text.closedBy(event.who),
+            event.approvedBy && text.approvedBy(event.approvedBy),
           ]
             .filter(Boolean)
             .join(" · "),
@@ -501,8 +529,8 @@ function happened(event: Record["history"][number], now: number) {
         };
       return {
         kind: "call",
-        what: `${kindLabels[event.kind]} request declined`,
-        who: [event.note, `Decided by ${event.who}`].filter(Boolean).join(" "),
+        what: fill(text.declined, { kind: words.kinds[event.kind] }),
+        who: [event.note, text.decidedBy(event.who)].filter(Boolean).join(" "),
       };
   }
 }
@@ -528,6 +556,10 @@ export function NeighborRecordView({
   onShowNumbers?: () => void;
   onStep: (step: Step) => void;
 }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.neighbors.record;
+  const homeText = words.rooms.neighbors.home;
+  const { title: requestTitle } = requestWords(words);
   const { neighbor, open } = record;
   const [first, ...alsoOpen] = open;
   const year = (at: number) =>
@@ -537,12 +569,17 @@ export function NeighborRecordView({
   )?.payeeName;
   const asked = (request: HelpRequest) =>
     request.source === "import"
-      ? `Brought over from earlier records, asked on ${format(request.createdAt, { weekday: undefined, year: "numeric" })}.`
-      : `Asked ${format(request.createdAt, { weekday: "long", month: "long", day: "numeric" })}. Taken by ${request.createdByName}.`;
+      ? fill(text.sheet.brought, { date: format(request.createdAt, { weekday: undefined, year: "numeric" }) })
+      : fill(text.sheet.asked, {
+          date: format(request.createdAt, { weekday: "long", month: "long", day: "numeric" }),
+          name: request.createdByName,
+        });
   const years = [...new Set(record.history.map((event) => year(event.at)))];
   return (
     <>
-      <p className="help-record-head">{back}</p>
+      <p className="help-record-head">
+        <Back />
+      </p>
       {neighbor.alert && (
         <p className="help-alert" role="note">
           <TriangleAlert size={18} aria-hidden="true" /> {neighbor.alert}
@@ -551,37 +588,37 @@ export function NeighborRecordView({
 
       <dl className="help-figures">
         <div>
-          <dt>Help this year</dt>
+          <dt>{text.figures.year}</dt>
           <dd>
             <CountUp
               value={record.paidThisYear}
               format={(cents) => shortMoney(Math.round(cents / 100) * 100)}
             />
-            <small>
-              {count(record.requestsThisYear, "request", "requests")}, paid
-              direct
-            </small>
+            <small>{text.figures.requests(record.requestsThisYear)}</small>
           </dd>
         </div>
         <div>
-          <dt>Home visits</dt>
+          <dt>{text.figures.visits}</dt>
           <dd>
             {record.visitsDone}
             <small>
               {record.lastVisitAt
-                ? `Last on ${format(record.lastVisitAt)}`
-                : "None yet"}
+                ? text.figures.lastVisit(format(record.lastVisitAt))
+                : text.figures.noVisits}
             </small>
           </dd>
         </div>
         <div>
-          <dt>Open now</dt>
+          <dt>{text.figures.open}</dt>
           <dd>
             {open.length}
             <small>
               {first
-                ? `${kindLabels[first.kind]}, ${shortMoney(first.amountApproved ?? first.amountRequested)}`
-                : "Nothing waiting"}
+                ? fill(words.rooms.neighbors.request.amount, {
+                    kind: words.kinds[first.kind],
+                    amount: shortMoney(first.amountApproved ?? first.amountRequested),
+                  })
+                : text.figures.nothingOpen}
             </small>
           </dd>
         </div>
@@ -591,20 +628,28 @@ export function NeighborRecordView({
         <>
           <dl className="help-record-facts" data-few="">
             <div>
-              <dt>Phone</dt>
-              <dd className="help-tel">{neighbor.phone || "None on file"}</dd>
+              <dt>{text.facts.phone}</dt>
+              <dd className="help-tel">{neighbor.phone || text.facts.none}</dd>
             </div>
             <div>
-              <dt>Speaks</dt>
-              <dd>{spokenLabel(neighbor)}</dd>
+              <dt>{text.facts.speaks}</dt>
+              <dd>
+                {neighbor.language === "other"
+                  ? neighbor.languageName || words.rooms.neighbors.languages.other
+                  : words.rooms.neighbors.languages[neighbor.language]}
+              </dd>
             </div>
             <div>
-              <dt>Household</dt>
-              <dd>{householdDetail(neighbor.adults, neighbor.children)}</dd>
+              <dt>{text.facts.household}</dt>
+              <dd>
+                {neighbor.children
+                  ? fill(homeText.adultsAndChildren, { adults: homeText.adults(neighbor.adults), children: homeText.children(neighbor.children) })
+                  : homeText.adults(neighbor.adults)}
+              </dd>
             </div>
             <div>
-              <dt>{landlord ? "Landlord" : "Email"}</dt>
-              <dd>{landlord ?? (neighbor.email || "None on file")}</dd>
+              <dt>{landlord ? text.facts.landlord : text.facts.email}</dt>
+              <dd>{landlord ?? (neighbor.email || text.facts.none)}</dd>
             </div>
           </dl>
           <p className="help-note">
@@ -614,7 +659,7 @@ export function NeighborRecordView({
               className="help-text-action"
               onClick={() => onStep({ kind: "details" })}
             >
-              Change details
+              {text.facts.change}
             </Button>
           </p>
         </>
@@ -624,7 +669,7 @@ export function NeighborRecordView({
       {first && (
         <section className="help-sheet" aria-labelledby="open-title">
           <p className="help-sheet-label" data-waiting="">
-            {first.status === "open" ? "Open request" : "Approved, to be paid"}
+            {first.status === "open" ? text.sheet.open : text.sheet.approved}
           </p>
           <div className="help-sheet-body">
             <div>
@@ -633,7 +678,7 @@ export function NeighborRecordView({
               <p>
                 {asked(first)}
                 {first.status === "approved" &&
-                  ` Approved by ${first.decidedByName} for ${money(first.amountApproved ?? 0)}. The treasurer pays ${first.payeeName} directly.`}
+                  ` ${fill(text.sheet.approvedBy, { name: first.decidedByName ?? "", amount: money(first.amountApproved ?? 0), payee: first.payeeName })}`}
               </p>
             </div>
             {first.status === "approved" && (
@@ -643,7 +688,7 @@ export function NeighborRecordView({
                   className="help-text-action"
                   onClick={() => onStep({ kind: "close", request: first })}
                 >
-                  Close this request
+                  {text.sheet.close}
                 </Button>
               </div>
             )}
@@ -652,20 +697,20 @@ export function NeighborRecordView({
                 <Button
                   onClick={() => onStep({ kind: "approve", request: first })}
                 >
-                  Approve request
+                  {text.sheet.approve}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => onStep({ kind: "decline", request: first })}
                 >
-                  Decline
+                  {text.sheet.decline}
                 </Button>
                 <Button
                   variant="link"
                   className="help-text-action"
                   onClick={() => onStep({ kind: "change", request: first })}
                 >
-                  Change
+                  {text.sheet.change}
                 </Button>
               </div>
             )}
@@ -675,10 +720,8 @@ export function NeighborRecordView({
       {alsoOpen.length > 0 && (
         <section className="live-section">
           <div className="live-section-head">
-            <h2>Also open</h2>
-            <span className="live-count">
-              {count(alsoOpen.length, "request", "requests")}
-            </span>
+            <h2>{text.also.title}</h2>
+            <span className="live-count">{text.also.count(alsoOpen.length)}</span>
           </div>
           <div className="live-list">
             {alsoOpen.map((request) => (
@@ -693,21 +736,20 @@ export function NeighborRecordView({
                   <h3>{requestTitle(request)}</h3>
                   <p>
                     {request.summary}
-                    {request.source === "import" &&
-                      " Brought over from earlier records."}
+                    {request.source === "import" && ` ${text.also.brought}`}
                   </p>
                 </div>
                 <div className="live-row-actions">
                   {request.status === "open" ? (
                     <Button
                       variant="outline"
-                      aria-label={`Approve request: ${requestTitle(request)}`}
+                      aria-label={text.also.approveThis(requestTitle(request))}
                       onClick={() => onStep({ kind: "approve", request })}
                     >
-                      Approve request
+                      {text.sheet.approve}
                     </Button>
                   ) : (
-                    <span className="live-status">Approved, to be paid</span>
+                    <span className="live-status">{text.sheet.approved}</span>
                   )}
                 </div>
               </div>
@@ -720,7 +762,7 @@ export function NeighborRecordView({
       {home && covered && (
         <StillCovered
           covered={covered}
-          kept="The numbers on file are still covered. Nothing on the record was changed."
+          kept={text.numbers.keptOnPage}
           onPage
         />
       )}
@@ -738,7 +780,7 @@ export function NeighborRecordView({
         className={first || alsoOpen.length ? "live-section" : undefined}
       >
         <div className="live-section-head">
-          <h2>History</h2>
+          <h2>{text.history.title}</h2>
           <span className="help-head-actions">
             {home && (
               <Button
@@ -746,7 +788,7 @@ export function NeighborRecordView({
                 className="help-text-action"
                 onClick={() => onStep({ kind: "note" })}
               >
-                Add a note
+                {text.history.note}
               </Button>
             )}
             {!first && (
@@ -754,7 +796,7 @@ export function NeighborRecordView({
                 variant="outline"
                 onClick={() => onStep({ kind: "request" })}
               >
-                Add a request
+                {text.history.request}
               </Button>
             )}
           </span>
@@ -767,7 +809,7 @@ export function NeighborRecordView({
                 {record.history
                   .filter((event) => year(event.at) === label)
                   .map((event, index) => {
-                    const line = happened(event, now);
+                    const line = happened(event, now, words);
                     const given =
                       "takeBack" in line &&
                       record.requests.find(
@@ -790,12 +832,12 @@ export function NeighborRecordView({
                                 <Button
                                   variant="link"
                                   className="help-text-action"
-                                  aria-label={`Take it back: ${line.what}`}
+                                  aria-label={text.history.takeBackThis(line.what)}
                                   onClick={() =>
                                     onStep({ kind: "close", request: given })
                                   }
                                 >
-                                  Take it back
+                                  {text.history.takeBack}
                                 </Button>
                               </>
                             )}
@@ -811,17 +853,17 @@ export function NeighborRecordView({
             </div>
           ))
         ) : (
-          <HelpEmpty title="Nothing here yet.">
-            Calls, home visits and payments will gather here as they happen.
+          <HelpEmpty title={text.history.empty.title}>
+            {text.history.empty.body}
           </HelpEmpty>
         )}
       </section>
 
       <section className="live-section">
         <div className="live-section-head">
-          <h2>Who has opened this record</h2>
+          <h2>{text.openings.title}</h2>
           <span className="live-count help-private">
-            <Lock size={14} aria-hidden="true" /> Coordinators and owners only
+            <Lock size={14} aria-hidden="true" /> {text.openings.who}
           </span>
         </div>
         <div className="help-opened">
@@ -845,10 +887,10 @@ export function NeighborRecordView({
             className="for-good-open"
             onClick={() => onStep({ kind: "remove" })}
           >
-            Remove this record
+            {text.remove.open}
           </Button>
           <span className="live-count help-private">
-            <Lock size={14} aria-hidden="true" /> Owners only
+            <Lock size={14} aria-hidden="true" /> {text.remove.who}
           </span>
         </p>
       )}

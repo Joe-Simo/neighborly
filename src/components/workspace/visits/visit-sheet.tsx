@@ -12,13 +12,14 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { count, spokenLabel } from "@/components/workspace/help-line/format";
 import { readFailure } from "@/components/workspace/failure";
 import { HelpLoading } from "@/components/workspace/help-line/room";
 import { LiveFailure } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
 import { TimeForm } from "@/components/workspace/visits/forms";
-import { need, useEnglishDates, type Sheet } from "@/components/workspace/visits/format";
+import { fill } from "@/lib/words/fill";
+import type { Words } from "@/lib/words";
+import { capital, firstName, need, spoken, together, useVisitDates, type Sheet } from "@/components/workspace/visits/format";
 
 /**
  * What the pair carries to the door, made to be printed.
@@ -26,16 +27,15 @@ import { need, useEnglishDates, type Sheet } from "@/components/workspace/visits
  */
 export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   const { data, now, setHeading, words } = useWorkspace();
-  const format = useEnglishDates();
+  const text = words.rooms.visitsRoom.sheet;
+  const format = useVisitDates();
   const churchId = data.church.id;
   // One neighbor's details: a plain head, with no painting.
+  const { title, deck, didNotOpen } = text;
   useLayoutEffect(() => {
-    setHeading({
-      title: "For the two at the door.",
-      deck: "The visit sheet, to print and carry. It has room to write and to pray.",
-    });
+    setHeading({ title, deck });
     return () => setHeading(null);
-  }, [setHeading]);
+  }, [setHeading, title, deck]);
   const router = useRouter();
   const openSheet = useMutation(api.visits.openSheet);
   const cancel = useMutation(api.visits.cancel);
@@ -58,13 +58,13 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       },
       // Without this the quiet "Opening…" line would stay for ever, saying something is on its way when nothing is.
       (cause: unknown) => {
-        if (current) setRefused({ sentence: readFailure(cause, "The visit sheet didn’t open."), attempt });
+        if (current) setRefused({ sentence: readFailure(cause, didNotOpen), attempt });
       },
     );
     return () => {
       current = false;
     };
-  }, [openSheet, churchId, visitId, attempt]);
+  }, [openSheet, churchId, visitId, attempt, didNotOpen]);
   const sheet = useQuery(
     api.visits.sheet,
     opened ? { churchId, visitId } : "skip",
@@ -95,7 +95,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
         <div className="visits-sheet-bar">
           <div className="visits-sheet-links">
             <Link className="visits-back" href="/app/visits">
-              <ArrowLeft size={17} aria-hidden="true" /> Home visits
+              <ArrowLeft size={17} aria-hidden="true" /> {words.rooms.visitsRoom.name}
             </Link>
           </div>
         </div>
@@ -104,15 +104,18 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
           sentence={refused.sentence}
           trying={refused.attempt !== attempt}
           tryAgain={words.states.tryAgain}
+          recovery={text.recovery}
+          opening={text.openingAgain}
         />
       </form>
     );
-  if (!sheet) return <HelpLoading label="Opening the visit sheet" />;
+  if (!sheet) return <HelpLoading label={text.opening} />;
   return (
     <>
       <VisitSheetView
         sheet={sheet}
         format={format}
+        words={words}
         printed={format(now, { month: "long", day: "numeric", year: "numeric" })}
         sample={data.church.sample}
         onPrint={() => window.print()}
@@ -121,8 +124,14 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       />
       {step === "time" && (
         <LiveDialog
-          title="Change the time"
-          description={sheet.visitors.length ? `${sheet.visitors.join(" and ")} will be asked again, since the yes was for the old time.` : "Choose the new time."}
+          title={text.changeTime}
+          description={
+            sheet.visitors.length > 1
+              ? fill(text.askedAgainTwo, { first: sheet.visitors[0], second: sheet.visitors[1] })
+              : sheet.visitors.length
+                ? text.askedAgainOne(sheet.visitors[0])
+                : text.newTime
+          }
           onClose={() => setStep(null)}
         >
           <TimeForm
@@ -137,14 +146,21 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       )}
       {confirming && (
         <LiveDialog
-          title="Call off this visit?"
-          description={`${sheet.neighbor.name} goes back to waiting for a pair.`}
+          title={text.callOffTitle}
+          description={text.callOffDeck(sheet.neighbor.name)}
           onClose={() => setConfirming(false)}
         >
           <p className="visits-consequence">
-            {sheet.visitors.length
-              ? `${sheet.visitors.join(" and ")} will see the visit gone from My commitments. No message is sent, so please tell ${sheet.visitors.map((name) => name.split(/\s+/)[0]).join(" and ")} yourself.`
-              : "No visitor is on this visit now, so no one needs to be told."}
+            {sheet.visitors.length > 1
+              ? fill(text.tellTwo, {
+                  first: sheet.visitors[0],
+                  second: sheet.visitors[1],
+                  firstShort: firstName(sheet.visitors[0]),
+                  secondShort: firstName(sheet.visitors[1]),
+                })
+              : sheet.visitors.length
+                ? fill(text.tellOne, { name: sheet.visitors[0], short: firstName(sheet.visitors[0]) })
+                : text.tellNoOne}
           </p>
           {error && <LiveFailure message={error} kept="" />}
           <div className="live-form-actions">
@@ -155,7 +171,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
                 if (outcome.saved) router.push("/app/visits");
               }}
             >
-              Call off the visit
+              {text.callOff}
             </Button>
           </div>
         </LiveDialog>
@@ -168,7 +184,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
  * The sheet did not open. The same plum notice a form shows (LiveFailure), written out here because its
  * Try again must rest while a new try is already on its way: marked off, not removed, so the focus stays on it.
  */
-function DidNotOpen({ sentence, trying, tryAgain }: { sentence: string; trying: boolean; tryAgain: string }) {
+function DidNotOpen({ sentence, trying, tryAgain, recovery, opening }: { sentence: string; trying: boolean; tryAgain: string; recovery: string; opening: string }) {
   const notice = useRef<HTMLDivElement>(null);
   useEffect(() => {
     notice.current?.focus({ preventScroll: true });
@@ -179,7 +195,7 @@ function DidNotOpen({ sentence, trying, tryAgain }: { sentence: string; trying: 
       <div className="live-error live-failure" role="alert" tabIndex={-1} ref={notice}>
         <div>
           <p>{sentence}</p>
-          <p className="live-error-recovery">Nothing was changed. Try again, or go back to Home visits.</p>
+          <p className="live-error-recovery">{recovery}</p>
         </div>
         <Button type="submit" variant="outline" className="aria-disabled:opacity-50" aria-disabled={trying || undefined}>
           {tryAgain}
@@ -187,7 +203,7 @@ function DidNotOpen({ sentence, trying, tryAgain }: { sentence: string; trying: 
       </div>
       {trying && (
         <p className="live-waiting" role="status" style={{ marginTop: 12 }}>
-          Opening the visit sheet…
+          {opening}
         </p>
       )}
     </>
@@ -200,6 +216,7 @@ const lines = (n: number) =>
 export function VisitSheetView({
   sheet,
   format,
+  words,
   printed,
   sample,
   onPrint,
@@ -208,6 +225,8 @@ export function VisitSheetView({
 }: {
   sheet: Sheet;
   format: Workspace["format"];
+  /** The person's own words: the view asks for nothing itself. */
+  words: Words;
   onPrint: () => void;
   /** Today's date, for the foot of the printed page. */
   printed: string;
@@ -217,18 +236,17 @@ export function VisitSheetView({
   onChangeTime: () => void;
 }) {
   const { neighbor, request } = sheet;
-  const household = [
-    count(neighbor.adults, "adult", "adults"),
-    neighbor.children ? count(neighbor.children, "child", "children") : "",
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const room = words.rooms.visitsRoom;
+  const text = room.sheet;
+  const household = neighbor.children
+    ? fill(text.adultsAndChildren, { adults: text.adults(neighbor.adults), children: text.children(neighbor.children) })
+    : text.adults(neighbor.adults);
   return (
     <>
       <div className="visits-sheet-bar">
         <div className="visits-sheet-links">
           <Link className="visits-back" href="/app/visits">
-            <ArrowLeft size={17} aria-hidden="true" /> Home visits
+            <ArrowLeft size={17} aria-hidden="true" /> {room.name}
           </Link>
           {sheet.status === "scheduled" && (
             <>
@@ -237,125 +255,125 @@ export function VisitSheetView({
                 className="visits-quiet-link"
                 onClick={onChangeTime}
               >
-                Change the time
+                {text.changeTime}
               </Button>
               <Button
                 variant="link"
                 className="visits-quiet-link"
                 onClick={onCallOff}
               >
-                Call off the visit
+                {text.callOff}
               </Button>
             </>
           )}
         </div>
         <Button onClick={onPrint}>
-          <Printer size={18} aria-hidden="true" /> Print this sheet
+          <Printer size={18} aria-hidden="true" /> {text.print}
         </Button>
       </div>
       <article
         className="visits-paper"
-        aria-label={`Visit sheet for ${neighbor.name}`}
+        aria-label={text.label(neighbor.name)}
       >
         <header>
-          <p className="visits-paper-label">Home visit · {sheet.group}{sample ? " · Sample" : ""}</p>
+          <p className="visits-paper-label">{sample ? text.kickerSample(sheet.group) : text.kicker(sheet.group)}</p>
           <h2>{neighbor.name}</h2>
           <p className="visits-paper-when">
-            {format(sheet.scheduledAt, {
+            {capital(format(sheet.scheduledAt, {
               weekday: "long",
               month: "long",
               day: "numeric",
               hour: "numeric",
               minute: "2-digit",
-            })}
+            }))}
           </p>
         </header>
         <dl className="visits-paper-facts">
           <div>
-            <dt>Address</dt>
+            <dt>{text.address}</dt>
             <dd>{neighbor.address}</dd>
           </div>
           <div>
-            <dt>Phone</dt>
-            <dd>{neighbor.phone || "None on file"}</dd>
+            <dt>{text.phone}</dt>
+            <dd>{neighbor.phone || text.noPhone}</dd>
           </div>
           <div>
-            <dt>Household</dt>
+            <dt>{text.household}</dt>
             <dd>{household}</dd>
           </div>
           <div>
-            <dt>Speaks</dt>
-            <dd>{spokenLabel(neighbor)}</dd>
+            <dt>{text.speaks}</dt>
+            <dd>{spoken(room, neighbor)}</dd>
           </div>
           <div>
-            <dt>Going together</dt>
+            <dt>{text.going}</dt>
             <dd className="visits-paper-pair">{sheet.status !== "scheduled" || sheet.visitors.length === 2
-              ? sheet.visitors.join(" and ")
+              ? together(room, sheet.visitors)
               : sheet.visitors.length
-                ? `${sheet.visitors[0]}, and a second visitor still to be asked`
-                : "Two visitors still to be asked"}</dd>
+                ? text.secondToAsk(sheet.visitors[0])
+                : text.twoToAsk}</dd>
           </div>
           {request && (
             <div>
-              <dt>Asked for</dt>
+              <dt>{text.askedFor}</dt>
               <dd>
-                {need(request.kind, request.amount)}
-                {request.payeeName ? `, owed to ${request.payeeName}` : ""}
+                {request.payeeName
+                  ? fill(text.owedTo, { need: need(words, request.kind, request.amount), payee: request.payeeName })
+                  : need(words, request.kind, request.amount)}
               </dd>
             </div>
           )}
         </dl>
         {request?.summary && (
           <p className="visits-paper-words">
-            <span>In their words</span>
+            <span>{text.theirWords}</span>
             {request.summary}
           </p>
         )}
         {neighbor.notes && (
           <p className="visits-paper-words">
-            <span>Good to know</span>
+            <span>{text.goodToKnow}</span>
             {neighbor.notes}
           </p>
         )}
         {sheet.lastVisit && (
           <p className="visits-paper-words">
             <span>
-              Last visit, {format(sheet.lastVisit.at)}, by{" "}
-              {sheet.lastVisit.visitors.join(" and ")}
+              {fill(text.lastVisit, { date: format(sheet.lastVisit.at), visitors: together(room, sheet.lastVisit.visitors) })}
             </span>
             <em className="visits-paper-last">{sheet.lastVisit.notes}</em>
           </p>
         )}
         <section className="visits-paper-write">
-          <h3>Prayer before the visit</h3>
+          <h3>{text.prayerBefore}</h3>
           <div className="visits-lines">{lines(3)}</div>
         </section>
         <section className="visits-paper-write">
-          <h3>What we found</h3>
+          <h3>{text.found}</h3>
           <div className="visits-lines">{lines(sheet.lastVisit ? 4 : 7)}</div>
         </section>
         <section className="visits-paper-write">
-          <h3>Prayer after the visit</h3>
+          <h3>{text.prayerAfter}</h3>
           <div className="visits-lines">{lines(3)}</div>
         </section>
         <dl className="visits-paper-blanks">
           <div>
-            <dt>Hours</dt>
+            <dt>{text.hours}</dt>
             <dd />
           </div>
           <div>
-            <dt>Miles</dt>
+            <dt>{text.miles}</dt>
             <dd />
           </div>
         </dl>
         <footer>
           <Lock size={15} aria-hidden="true" />
-          Private. After the write-up, hand this sheet back or shred it.
+          {text.private}
         </footer>
         <p className="visits-paper-foot">
           <span>kind helps</span>
           <span>
-            {sample ? "Sample · " : ""}Printed {printed}
+            {sample ? text.printedSample(printed) : text.printed(printed)}
           </span>
         </p>
       </article>

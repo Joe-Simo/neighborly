@@ -331,6 +331,8 @@
 .report-month-open { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 2px; transition: background-color 160ms var(--paper-ease); }
 .report-month-open:focus-visible { outline: 2px solid #283c32; outline-offset: -2px; }
 .report-tip { min-width: 148px; padding: 12px 16px 13px; border: 1px solid #d9ddce; border-radius: 4px; background: #f7f4ed; color: #283c32; font-family: "Source Sans 3", sans-serif; text-align: center; box-shadow: -5px -9px 22px -12px rgb(40 60 50 / 0.22), 0 18px 40px -18px rgb(40 60 50 / 0.4); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
+/* The card is as wide as its longest line (Spanish runs longer), never wider than the screen. */
+.report-tip { width: max-content; max-width: calc(100vw - 24px); }
 .report-tip p { margin: 0; font-size: 15px; color: #52644f; }
 .report-tip .report-tip-month { margin-bottom: 4px; font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
 .report-tip .help-amount { font-family: "Newsreader", Georgia, serif; font-size: 26px; line-height: 1.15; color: #283c32; }
@@ -534,7 +536,8 @@
   .report-actions [data-slot="button"] { flex: 1 1 auto; }
   .report-switches { width: 100%; }
   .live-app .report-quarters { width: 100%; }
-  .live-app .report-quarters [data-slot="toggle-group-item"] { flex: 1 1 0; padding: 0 4px; font-size: 15px; }
+  /* Each part is as wide as its words and they share what is left: "Todo el año" is longer than a quarter's name. */
+  .live-app .report-quarters [data-slot="toggle-group-item"] { flex: 1 1 auto; padding: 0 3px; font-size: 15px; }
   /* On a phone the year is two rows of six small bars. */
   .report-months { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .report-months li { padding: 16px 2px 14px; }

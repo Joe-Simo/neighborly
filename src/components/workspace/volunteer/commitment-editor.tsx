@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { LiveField } from "@/components/workspace/primitives";
 import { LiveWaiting } from "@/components/workspace/states";
 import type { LiveCommand, LiveCommitment } from "@/components/workspace/types";
+import { useWorkspace } from "@/components/workspace/context";
+import { formatDate } from "@/lib/words";
 
 export function LiveCommitmentEditor({
   item,
@@ -29,6 +31,11 @@ export function LiveCommitmentEditor({
     command: Extract<LiveCommand, { type: "reviseCommitment" }>,
   ) => Promise<void>;
 }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.sheets.edit;
+  // The day and hour as the person's language writes them, in the group's own time zone.
+  const said = (value: string) =>
+    formatDate(words.locale, DateTime.fromISO(value, { zone: timeZone }).toMillis(), { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone });
   const [review, setReview] = useState<Extract<
     LiveCommand,
     { type: "reviseCommitment" }
@@ -50,24 +57,21 @@ export function LiveCommitmentEditor({
         <h3>{review.title}</h3>
         <dl className="live-detail">
           <div>
-            <dt>Starts</dt>
-            <dd>{review.start.replace("T", " ")}</dd>
+            <dt>{text.starts}</dt>
+            <dd>{said(review.start)}</dd>
           </div>
           <div>
-            <dt>Ends</dt>
-            <dd>{review.end.replace("T", " ")}</dd>
+            <dt>{text.ends}</dt>
+            <dd>{said(review.end)}</dd>
           </div>
           <div>
-            <dt>Where</dt>
+            <dt>{text.where}</dt>
             <dd>{review.location}</dd>
           </div>
         </dl>
         <p className="live-prep">{review.preparation}</p>
         <div className="live-note">
-          Changing the date, time, role, location or preparation releases an
-          accepted person and withdraws pending cover requests. Someone must
-          explicitly accept the updated commitment. Saving unchanged details
-          preserves acceptance.
+          {text.releases}
         </div>
         {error && (
           <div className="live-error" role="alert">
@@ -82,10 +86,10 @@ export function LiveCommitmentEditor({
             disabled={pending}
             onClick={() => setReview(null)}
           >
-            Back
+            {text.back}
           </Button>
           <Button disabled={pending} onClick={() => void save(review)}>
-            {saving ? "Saving…" : "Confirm changes"}
+            {saving ? text.saving : text.confirm}
           </Button>
         </div>
       </div>
@@ -113,7 +117,7 @@ export function LiveCommitmentEditor({
         });
       }}
     >
-      <LiveField label="Role / title">
+      <LiveField label={text.role}>
         <Input
           name="title"
           defaultValue={draft.title}
@@ -122,14 +126,14 @@ export function LiveCommitmentEditor({
         />
       </LiveField>
       <div className="live-form-grid">
-        <LiveField label="Starts">
+        <LiveField label={text.starts}>
           <WhenField name="start" defaultValue={draft.start} required />
         </LiveField>
-        <LiveField label="Ends">
+        <LiveField label={text.ends}>
           <WhenField name="end" defaultValue={draft.end} required />
         </LiveField>
       </div>
-      <LiveField label="Where">
+      <LiveField label={text.where}>
         <Input
           name="location"
           defaultValue={draft.location}
@@ -137,7 +141,7 @@ export function LiveCommitmentEditor({
           maxLength={300}
         />
       </LiveField>
-      <LiveField label="Preparation">
+      <LiveField label={text.preparation}>
         <Textarea
           name="preparation"
           defaultValue={draft.preparation}
@@ -145,7 +149,7 @@ export function LiveCommitmentEditor({
           rows={4}
         />
       </LiveField>
-      <Button type="submit">Review changes</Button>
+      <Button type="submit">{text.review}</Button>
     </form>
   );
 }

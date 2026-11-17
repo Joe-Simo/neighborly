@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useWorkspace } from "@/components/workspace/context";
 import { LiveField } from "@/components/workspace/primitives";
 import { formatFigure } from "@/components/workspace/treasury/money";
 import {
@@ -19,6 +20,7 @@ export function EntryDetail({
   entry: LedgerEntry;
   onReverse: (reason: string) => Promise<Refusal>;
 }) {
+  const w = useWorkspace().words.rooms.treasury.entry;
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -36,9 +38,7 @@ export function EntryDetail({
       <div className="live-form">
         {amount}
         <p className="live-detail">
-          {entry.reversed
-            ? "This entry was taken back by a later one. Both stay in the ledger."
-            : "This entry takes back an earlier one. Both stay in the ledger."}
+          {entry.reversed ? w.takenBack : w.takesBack}
         </p>
       </div>
     );
@@ -56,13 +56,13 @@ export function EntryDetail({
     >
       {amount}
       <LiveField
-        label="Why this entry is being reversed"
-        help="Nothing is erased. A new entry for the same amount the other way is added today, and both stay in the ledger."
+        label={w.why}
+        help={w.whyHelp}
       >
         <Input
           name="reason"
           maxLength={200}
-          placeholder="Entered twice, check never cashed…"
+          placeholder={w.whyExample}
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           required
@@ -71,7 +71,7 @@ export function EntryDetail({
       {error && <FormError message={error} />}
       <div className="live-form-actions">
         <Button type="submit" variant="outline" disabled={saving}>
-          {saving ? "Reversing…" : "Reverse this entry"}
+          {saving ? w.reversing : w.reverse}
         </Button>
       </div>
     </form>
