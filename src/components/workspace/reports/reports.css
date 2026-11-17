@@ -806,7 +806,11 @@
   .report .report-lines > .live-section-head { border-top: 1.5pt solid #000; padding-top: 6pt; }
 
   .report-sheet-figures { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 4pt 0 12pt; border-top: 1.5pt solid #000; border-bottom: 1px solid #000; break-inside: avoid; }
+  /* The four kickers share one row, so a kicker that wraps in a longer language keeps every figure on one line. */
+  .report-sheet-figures { grid-template-rows: auto auto auto; }
   .report-sheet-figures > div { padding: 9pt 12pt 10pt 0; }
+  .report-sheet-figures > div:not(:first-child) { display: grid; grid-row: 2 / span 2; grid-template-rows: subgrid; }
+  .report-sheet-figures > div:not(:first-child) dt { align-self: end; }
   .report-sheet-figures > div + div:not(:nth-child(2)) { padding-left: 12pt; border-left: 1px solid var(--print-line); }
   .report-sheet-figures dt { margin-bottom: 4pt; font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
   .report-sheet-figures dd { margin: 0; font: 400 24pt/1 "Newsreader", Georgia, serif; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; }
