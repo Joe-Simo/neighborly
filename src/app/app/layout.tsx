@@ -31,7 +31,9 @@ export default function LiveAppLayout({
         <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
       ))}
       <Suspense fallback={<Loading />}>
-        <ClerkProvider signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
+        {/* `prefetchUI={false}`: every sheet here is our own, so Clerk's ready-made components are never drawn. Clerk does not
+            answer who is here until that second script has arrived; without it the answer comes as soon as Clerk's own has. */}
+        <ClerkProvider prefetchUI={false} signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
           <LiveProviders>
             <LiveFrame sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}>{children}</LiveFrame>
           </LiveProviders>
