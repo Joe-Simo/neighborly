@@ -912,3 +912,10 @@ nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row
 @media (max-width: 429px) {
   .live-app :is(.visits-room, .live-commitment-row) .live-status:is(:not([data-state]), [data-state="accepted"])::before { width: 12px; height: 12px; }
 }
+
+/* A commitment row opens as the neighbor record's rows do: anywhere on it opens its details, through its one button. */
+.live-app .live-commitment-row:has(.live-row-opens) { position: relative; cursor: pointer; }
+.live-app .live-commitment-row .live-row-opens { position: static; }
+.live-app .live-commitment-row .live-row-opens::after { content: ""; position: absolute; inset: 0; }
+.live-app .live-commitment-row:has(.live-row-opens) :is(a, button):not(.live-row-opens) { position: relative; z-index: 1; }
+@media (hover: hover) { .live-app .live-commitment-row:has(.live-row-opens):hover h3 { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; } }
