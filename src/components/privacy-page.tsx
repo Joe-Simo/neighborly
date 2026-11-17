@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ReaderLanguage } from "@/components/reader-language";
 import { PublicEnding } from "@/components/public-ending";
-import { linkPreview } from "@/lib/link-preview";
+import { linkPreviewIn } from "@/lib/link-preview";
 import { privacyWords } from "@/lib/privacy-words";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
@@ -15,7 +15,7 @@ export function privacyMetadata(language: Language): Metadata {
     title: said.tab,
     description: said.description,
     alternates: { canonical: said.path, languages: Object.fromEntries(languages.map((other) => [other, privacyWords[other].path])) },
-    openGraph: { ...linkPreview, url: said.path, title: said.tab, description: said.preview, locale: language },
+    openGraph: { ...linkPreviewIn(language), url: said.path, title: said.tab, description: said.preview },
   };
 }
 

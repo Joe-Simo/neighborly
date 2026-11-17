@@ -3,13 +3,17 @@ import Link from "next/link";
 import { ReaderLanguage } from "@/components/reader-language";
 import { edgeWords } from "@/lib/edge-words";
 import { readersLanguage } from "@/lib/first-language";
+import { linkPreview } from "@/lib/link-preview";
 import { languages } from "@/lib/words";
 import "@/components/not-found.css";
 import "@/components/public-touch.css";
 
+const lost = "The address may be old or mistyped. Kind Helps is at kindhelps.com.";
 export const metadata: Metadata = {
   title: edgeWords.en.lostTab,
-  description: "The address may be old or mistyped. Kind Helps is at kindhelps.com.",
+  description: lost,
+  // A dead link pasted into a chat says so, with the site's picture and name, and does not pass as the home page.
+  openGraph: { ...linkPreview, title: edgeWords.en.lostTab, description: lost },
   robots: { index: false, follow: false },
 };
 
