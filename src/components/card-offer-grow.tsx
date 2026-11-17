@@ -14,6 +14,8 @@ const LONGEST = 12000;
 const EASE = "cubic-bezier(.3,.6,.2,1)";
 /** On a wide window the card starts slowly, so it is seen as the card, words and all, before it fills the window; a fast start covered the window in about 120ms. */
 const WIDE = "cubic-bezier(.55,0,.25,1)";
+/** The gold square's travel on a wide window: it stays on the card while the card is still a card, and is at rest this far past the paper's cut. */
+const TRAVEL = "cubic-bezier(.65,0,.6,1)", SETTLE = .12;
 
 /** Pressed, the card is not left behind: the same card, words and all, grows to the window and becomes the first sheet of the room. */
 export function CardOfferGrow() {
@@ -84,7 +86,12 @@ export function CardOfferGrow() {
       const start = { transform: pose(from.left + from.width / 2, from.top + from.height / 2, side, turn), opacity: 1 }, last = { transform: pose(to.left + to.width / 2, to.top + to.height / 2, to.width, 0), opacity: .4 };
       // On a narrow window it stays in its place on the card while the card rises whole, and travels only as the card fills the window.
       const whole = innerWidth * .92 / width, risen = { transform: pose(innerWidth / 2 + (own.offsetLeft + own.offsetWidth / 2 - sheet.offsetWidth / 2) * width / sheet.offsetWidth * whole, innerHeight / 2 + (own.offsetTop + own.offsetHeight / 2 - sheet.offsetHeight / 2) * width / sheet.offsetWidth * whole, side * whole, 0), opacity: 1 };
-      square.animate(narrow ? [{ ...start, easing: EASE }, { ...risen, offset: rest, easing: "cubic-bezier(.5,0,.3,1)" }, last] : [start, last], { ...timing, duration: narrow ? GROW + 200 : GROW, easing: narrow ? "linear" : WIDE });
+      // Nothing moves on still paper. On a narrow window the square is in its place and at the paper's tone in the frame the paper
+      // covers the card. On a wide one its place is still outside the card then, so it arrives just as the card's edge has passed it.
+      const landed = narrow ? fade : fade + SETTLE;
+      square.animate(narrow
+        ? [{ ...start, easing: EASE }, { ...risen, offset: rest, easing: "ease-in-out" }, { ...last, offset: landed }, last]
+        : [{ ...start, easing: TRAVEL }, { ...last, offset: landed }, last], { ...timing, duration: span, easing: "linear" });
     }
     // The room is asked for in the first frame the paper covers the window, not at the grow's end: it is laid and drawn whole under the
     // paper while the card goes on growing, and it is never seen round a half-grown card.
