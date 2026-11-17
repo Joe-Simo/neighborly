@@ -6,7 +6,7 @@ import { useAction, useMutation, useQueries, type RequestForQueries } from "conv
 import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";
 import { FirstLookProvider, firstLookData, useAfterLook, useFirstRoom, useKeptPress } from "@/components/workspace/first-look";
 import { useClerk } from "@clerk/nextjs";
-import { useAccount } from "@/components/live-providers";
+import { forgetEntered, useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useDashboard } from "@/components/workspace/dashboard";
@@ -82,6 +82,7 @@ function LiveRooms({
     } catch {
       // Without it the sign-in sheet opens as usual, without its "signed out" line.
     }
+    forgetEntered();
     return clerk.signOut({ redirectUrl: "/app" });
   };
   const viewer = useQuery(api.workspace.viewer, asking ? {} : "skip");
@@ -95,6 +96,7 @@ function LiveRooms({
   useEffect(() => {
     if (!leavingForSample || leftForSample.current) return;
     leftForSample.current = true;
+    forgetEntered();
     void clerk.signOut({ redirectUrl: "/app?intent=sample" });
   }, [leavingForSample, clerk]);
   const churchPage = usePaginatedQuery(

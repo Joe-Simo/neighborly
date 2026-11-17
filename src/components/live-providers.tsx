@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexQueryCacheProvider } from "convex-helpers/react/cache/provider";
 import { api } from "../../convex/_generated/api";
+import { AskedTooSoon, NoteTrusted } from "./asked-too-soon";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -14,7 +15,9 @@ export function LiveProviders({ children }: { children: ReactNode }) {
   return (
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
       {/* What a room last showed is kept for five minutes after it is left, so going back shows it at once while it refreshes. */}
-      <ConvexQueryCacheProvider>{children}</ConvexQueryCacheProvider>
+      <ConvexQueryCacheProvider>
+        <AskedTooSoon>{children}</AskedTooSoon>
+      </ConvexQueryCacheProvider>
     </ConvexProviderWithClerk>
   );
 }
@@ -49,14 +52,16 @@ const hasEnteredBefore = (userId: string) => {
   }
   return asked.before;
 };
-const noteEntered = (userId: string | null) => {
+/** Sign-out, and leaving the sample: the next person at this browser is met as a first-time one. */
+export const forgetEntered = () => noteEntered(null);
+function noteEntered(userId: string | null) {
   try {
     if (userId) window.localStorage.setItem(enteredKey, userId);
     else window.localStorage.removeItem(enteredKey);
   } catch {
     // Without it the rooms are asked for after the account check, as on a first visit.
   }
-};
+}
 
 /**
  * Signed in, and the backend has found or made this person's account.
@@ -66,6 +71,7 @@ export function useAccount() {
   const { isLoading, isAuthenticated } = useConvexAuth();
   const { sessionId, userId, isLoaded, isSignedIn } = useAuth();
   const enter = useMutation(api.users.enter);
+  const noteTrusted = useContext(NoteTrusted);
   // Remembered beyond this component, so a frame that is ever mounted again does not ask a second time.
   const [entered, setEntered] = useState<string | null>(enteredSession);
   const [failure, setFailure] = useState<Error | null>(null);
@@ -96,7 +102,7 @@ export function useAccount() {
     isAuthenticated,
     ready: isAuthenticated && entered === sessionId,
     /** Signed in as someone whose account the backend has found before: their rooms need not wait for `ready`. */
-    returning: isAuthenticated && !!userId && hasEnteredBefore(userId),
+    returning: noteTrusted && isAuthenticated && !!userId && hasEnteredBefore(userId),
     // Only once Clerk itself has answered "nobody is signed in". While Clerk knows a session and the
     // backend is still confirming it, the answer is "not yet", never "signed out".
     // Before Clerk has answered, a browser with no session cookie at all is already known to be signed out, so the
