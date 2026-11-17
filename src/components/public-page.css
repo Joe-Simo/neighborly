@@ -84,3 +84,10 @@
 @media(prefers-reduced-motion:reduce){.paper-rise,.public-state .paper-rise>*{animation:none}}
 /* The closing band meets the page of words with its cut edge only: above that edge lies the desk, not a strip of another paper. */
 .public-page>.neighborly-continuation{background:#e6decb}
+/* A window 320 wide (a wide screen at 400 percent): the name and the way in each keep to one line, and the title keeps the paper's margin. */
+.public-page-brand,.public-page-header>a:last-child{white-space:nowrap}
+@media(max-width:359px){
+  .public-page-header{gap:8px;padding-inline:16px}
+  .public-page-header>a:last-child{gap:6px}
+  .public-words h1{font-size:17.5vw}
+}
