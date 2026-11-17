@@ -44,16 +44,20 @@ const stored: Record<string, (words: TreasuryWords) => string> = {
 };
 const said = new Map(Object.entries(stored));
 /** Payments carry the request's kind as their category; money in carries its source as written. */
-export const categoryLabel = (words: TreasuryWords, category: string) => said.get(category)?.(words) ?? category;
+/** A name the conference typed itself is said as typed; `say` is the sample's own (sample-names.ts). */
+type Say = (typed: string) => string;
+const asTyped: Say = (typed) => typed;
+export const categoryLabel = (words: TreasuryWords, category: string, say: Say = asTyped) => said.get(category)?.(words) ?? say(category);
 
 const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
 
 /** "$214.60 to Demo Power & Light", the way a statement line reads. `amount` is already written as money. */
-export const amountLine = (words: TreasuryWords, entry: Pick<BankEntry, "kind" | "payee">, amount: string) =>
-  fill(entry.kind === "income" ? words.lines.amountFrom : words.lines.amountTo, { amount, name: entry.payee });
+export const amountLine = (words: TreasuryWords, entry: Pick<BankEntry, "kind" | "payee">, amount: string, typed: Say = asTyped) =>
+  fill(entry.kind === "income" ? words.lines.amountFrom : words.lines.amountTo, { amount, name: typed(entry.payee) });
 
 /** The two lines a ledger row reads as: what it was, then who was paid or where it came from. */
-export function entryLines(words: TreasuryWords, entry: BankEntry) {
+export function entryLines(words: TreasuryWords, given: BankEntry, typed: Say = asTyped) {
+  const entry = { ...given, payee: typed(given.payee), memo: typed(given.memo) };
   const say = words.lines;
   const check = entry.checkNumber ? say.check(entry.checkNumber) : "";
   const note = [check, entry.memo]
@@ -62,7 +66,7 @@ export function entryLines(words: TreasuryWords, entry: BankEntry) {
     .join("");
   if (entry.reverses)
     return {
-      title: fill(say.reversedTitle, { what: lowerFirst(entry.summary ?? categoryLabel(words, entry.category)), why: lowerFirst(entry.memo) }),
+      title: fill(say.reversedTitle, { what: lowerFirst(entry.summary ?? categoryLabel(words, entry.category, typed)), why: lowerFirst(entry.memo) }),
       detail: entry.kind === "income" ? say.backFrom(entry.payee) : say.takenBackFrom(entry.payee),
     };
   if (entry.summary)
@@ -70,7 +74,7 @@ export function entryLines(words: TreasuryWords, entry: BankEntry) {
   if (entry.category === TWINNING_GIFT)
     return { title: words.twinningGift, detail: `${say.to(entry.payee)}${note}` };
   const who = `${entry.kind === "income" ? say.from(entry.payee) : say.paidTo(entry.payee)}${check ? ` · ${check}` : ""}`;
-  const category = categoryLabel(words, entry.category);
+  const category = categoryLabel(words, entry.category, typed);
   return entry.memo
     ? { title: entry.memo, detail: `${category} · ${who}` }
     : { title: category, detail: who };

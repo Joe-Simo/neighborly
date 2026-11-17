@@ -43,7 +43,7 @@ function NeighborLink({ id, name }: { id: string; name: string }) {
  * closes up and is kept for screen readers.
  */
 function PaidLine({ paid }: { paid: Paid }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const room = words.rooms.treasury;
   const w = room.ledger.paid;
   const line = useRef<HTMLDivElement>(null);
@@ -57,7 +57,7 @@ function PaidLine({ paid }: { paid: Paid }) {
   useEffect(() => line.current?.focus({ preventScroll: true }), []);
   const kind = categoryLabel(room, paid.request.kind);
   const day = dayLabel(words.locale, paid.date);
-  const to = [paid.request.payeeName, paid.checkNumber && room.lines.check(paid.checkNumber)].filter(Boolean).join(" · ");
+  const to = [sampleSaid(paid.request.payeeName), paid.checkNumber && room.lines.check(paid.checkNumber)].filter(Boolean).join(" · ");
   return (
     <div
       ref={line}
@@ -128,7 +128,7 @@ export function LedgerView({
   /** The request whose payment is being sent; its sheet holds its place until the answer comes. */
   paying?: Payable | null;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const room = words.rooms.treasury;
   const w = room.ledger;
   // A new row lands in the ledger by growing into it; the request after a paid one opens its own room, once.
@@ -202,7 +202,7 @@ export function LedgerView({
           <dd>
             <CountUp value={ledger.moneyIn} format={formatDollars} />
             <small>
-              {ledger.incomeSources.map((source) => categoryLabel(room, source)).join(", ") || w.figures.nothingIn}
+              {ledger.incomeSources.map((source) => categoryLabel(room, source, sampleSaid)).join(", ") || w.figures.nothingIn}
             </small>
           </dd>
         </div>
@@ -231,7 +231,7 @@ export function LedgerView({
           <div className="help-sheet-body">
             <div>
               <h2 id="treasury-waiting-title">
-                {fill(w.sheet.title, { kind: categoryLabel(room, first.kind), amount: formatFigure(first.remaining), payee: first.payeeName })}
+                {fill(w.sheet.title, { kind: categoryLabel(room, first.kind), amount: formatFigure(first.remaining), payee: sampleSaid(first.payeeName) })}
               </h2>
               <p className="help-why">
                 {w.sheet.for} <NeighborLink id={first.neighborId} name={first.neighborName} />
@@ -241,7 +241,7 @@ export function LedgerView({
                 {first.paid > 0
                   ? `${fill(w.sheet.partPaid, { paid: formatFigure(first.paid), approved: formatFigure(first.amountApproved) })} `
                   : ""}
-                {fill(w.sheet.goesTo, { payee: first.payeeName })}
+                {fill(w.sheet.goesTo, { payee: sampleSaid(first.payeeName) })}
               </p>
             </div>
             <div className="help-actions">
@@ -265,7 +265,7 @@ export function LedgerView({
               <div className="help-row" key={request.requestId}>
                 <div>
                   <h3>
-                    {fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: request.payeeName })}
+                    {fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: sampleSaid(request.payeeName) })}
                   </h3>
                   <p>
                     {room.lines.kindFor(categoryLabel(room, request.kind))}{" "}
@@ -278,7 +278,7 @@ export function LedgerView({
                       `. ${w.also.alreadyPaid(formatFigure(request.paid))}`}
                   </p>
                 </div>
-                <Button variant="outline" aria-label={fill(w.sheet.payLabel, { amount: formatFigure(request.remaining), payee: request.payeeName })} onClick={() => onPay(request)}>
+                <Button variant="outline" aria-label={fill(w.sheet.payLabel, { amount: formatFigure(request.remaining), payee: sampleSaid(request.payeeName) })} onClick={() => onPay(request)}>
                   {w.sheet.pay}
                 </Button>
               </div>
@@ -326,7 +326,7 @@ export function LedgerView({
             </thead>
             <tbody>
               {ledger.entries.map((entry) => {
-                const { title, detail } = entryLines(room, entry);
+                const { title, detail } = entryLines(room, entry, sampleSaid);
                 return (
                   <tr
                     key={entry.id}

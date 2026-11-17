@@ -4,8 +4,8 @@ import type { Language } from "./sets";
  * The sample conference's own names, titles and places, as its seed types them (convex/sampleData.ts), in Spanish.
  * A Spanish reader of the sample meets them in their language; a real conference's typed words are never touched,
  * and nothing here is read from or written to the database: the seed's exact English is the key, on the screen only.
- * People's names, businesses and agencies are proper names and stay. Notes, descriptions and what a caller said
- * stay as typed.
+ * People's names, businesses and agencies are proper names and stay. These are the seed's own lines; a call's notes,
+ * what a caller said and a visit's findings stay as typed.
  */
 const es: Readonly<Record<string, string>> = {
   // Teams
@@ -27,6 +27,21 @@ const es: Readonly<Record<string, string>> = {
   "Bring the visit sheets to Tuesday's meeting": "Llevar las hojas de visita a la reunión del martes",
   "Send thank-you notes for the fall collection": "Enviar notas de agradecimiento por la colecta de otoño",
   "Winter coat drive starts next week": "La colecta de abrigos de invierno empieza la próxima semana",
+  "Bring coats to the parish office. Home visitors, ask each family for sizes.":
+    "Lleven los abrigos a la oficina parroquial. Visitadores a domicilio, pregunten a cada familia las tallas.",
+  // What each team does
+  "Answers the conference phone and returns calls the next morning.": "Atiende el teléfono de la conferencia y devuelve las llamadas a la mañana siguiente.",
+  "Visits neighbors at home, always in pairs.": "Visita a los vecinos en su casa, siempre de dos en dos.",
+  "Sorts donations and packs food bags on Saturday mornings.": "Ordena las donaciones y prepara las bolsas de comida los sábados por la mañana.",
+  // Treasury: the conference's own kinds, the voucher shelf, and who they came from
+  "Bake sale": "Venta de pasteles",
+  "Bus tokens": "Fichas de autobús",
+  "Furniture voucher": "Vale de muebles",
+  "Clothing voucher": "Vale de ropa",
+  "Conference thrift store": "Tienda de segunda mano de la conferencia",
+  "Parish hall table": "Mesa del salón parroquial",
+  "Spring bake sale after the 10 o'clock Mass": "Venta de pasteles de primavera después de la misa de las 10",
+  "Forty tokens for the help line to hand out": "Cuarenta fichas para que la línea de ayuda las reparta",
 };
 
 /** A title the seed writes around a person's name: the words are put in Spanish, the name is kept whole. */

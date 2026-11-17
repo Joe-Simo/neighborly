@@ -30,11 +30,11 @@ import {
 } from "@/components/workspace/treasury/labels";
 
 /** "$214.60 to Demo Power & Light", the way a statement line reads. */
-const line = (words: TreasuryWords, entry: BankEntry) => amountLine(words, entry, formatFigure(entry.amount));
-const under = (words: TreasuryWords, entry: BankEntry) =>
+const line = (words: TreasuryWords, entry: BankEntry, typed?: (typed: string) => string) => amountLine(words, entry, formatFigure(entry.amount), typed);
+const under = (words: TreasuryWords, entry: BankEntry, typed?: (typed: string) => string) =>
   [
     entry.checkNumber && words.lines.check(entry.checkNumber),
-    entry.reverses ? words.lines.reversal : categoryLabel(words, entry.category),
+    entry.reverses ? words.lines.reversal : categoryLabel(words, entry.category, typed),
   ]
     .filter(Boolean)
     .join(" · ");
@@ -81,7 +81,7 @@ export function BankView({
   onUndo: (entry: BankEntry) => void;
   onClearAll: () => void;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const room = words.rooms.treasury;
   const w = room.bank;
   const day = (date: string) => dayLabel(words.locale, date);
@@ -300,16 +300,16 @@ export function BankView({
                 <div className="help-row" key={entry.id}>
                   <DateLeaf day={entry.date} />
                   <div>
-                    <h3>{line(room, entry)}</h3>
+                    <h3>{line(room, entry, sampleSaid)}</h3>
                     <p>
                       <span className="treasury-day">{day(entry.date)} · </span>
-                      {under(room, entry)}
+                      {under(room, entry, sampleSaid)}
                     </p>
                   </div>
                   <Button
                     variant="outline"
                     disabled={busy !== null}
-                    aria-label={w.waiting.markLabel(line(room, entry))}
+                    aria-label={w.waiting.markLabel(line(room, entry, sampleSaid))}
                     onClick={() => onClear(entry)}
                   >
                     {busy === entry.id ? w.waiting.marking : w.waiting.mark}
@@ -341,10 +341,10 @@ export function BankView({
               <div className="help-row" data-quiet="" key={entry.id}>
                 <DateLeaf day={entry.date} />
                 <div>
-                  <h3>{line(room, entry)}</h3>
+                  <h3>{line(room, entry, sampleSaid)}</h3>
                   <p>
                     <span className="treasury-day">{day(entry.date)} · </span>
-                    {under(room, entry)}
+                    {under(room, entry, sampleSaid)}
                     {entry.clearedOn &&
                       ` · ${w.lately.onStatement(day(entry.clearedOn))}`}
                   </p>
@@ -353,7 +353,7 @@ export function BankView({
                   variant="link"
                   className="treasury-take-back"
                   disabled={busy !== null}
-                  aria-label={w.lately.undoLabel(line(room, entry))}
+                  aria-label={w.lately.undoLabel(line(room, entry, sampleSaid))}
                   onClick={() => onUndo(entry)}
                 >
                   {w.lately.undo}
@@ -396,7 +396,7 @@ export function BankRoom({
   churchId: Id<"churches">;
   onBack: () => void;
 }) {
-  const { setHeading, words } = useWorkspace();
+  const { setHeading, words, sampleSaid } = useWorkspace();
   const room = words.rooms.treasury;
   const w = room.bank;
   const day = (date: string) => dayLabel(words.locale, date);
@@ -470,13 +470,13 @@ export function BankRoom({
       onClear={(entry) =>
         change(entry.id, async () => {
           await setCleared({ churchId, entryId: entry.id, clearedOn: shown.asOf });
-          return w.done.cleared(line(room, entry));
+          return w.done.cleared(line(room, entry, sampleSaid));
         })
       }
       onUndo={(entry) =>
         change(entry.id, async () => {
           await setCleared({ churchId, entryId: entry.id, clearedOn: null });
-          return w.done.undone(line(room, entry));
+          return w.done.undone(line(room, entry, sampleSaid));
         })
       }
       onClearAll={() =>

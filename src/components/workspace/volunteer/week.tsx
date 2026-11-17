@@ -70,7 +70,7 @@ export function WeekSection() {
               <article className="live-row" key={item.id}>
                 <div>
                   <h3>{sampleSaid(item.title)}</h3>
-                  <p className="live-prep">{item.body}</p>
+                  <p className="live-prep">{sampleSaid(item.body)}</p>
                   <div className="live-meta">
                     {item.authorName} · {format(item.createdAt)}
                   </div>
