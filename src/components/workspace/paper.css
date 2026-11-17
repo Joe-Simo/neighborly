@@ -289,10 +289,11 @@
     --aside-wide: clamp(264px, 22vw, 340px);
     --aside-gap: clamp(40px, 4vw, 64px);
     display: flow-root;
+    /* The room's own column beside it. The column's parts read this width; were they found through the :has()
+       above, the browser would work out every element's style again each time anything in the room came or went. */
+    --room-wide: min(1040px, calc(100% - var(--aside-wide) - var(--aside-gap)));
   }
-  .live-main:has(> .live-aside:not(:empty)) > :not(.live-page-head, .live-aside) {
-    max-width: min(1040px, calc(100% - var(--aside-wide) - var(--aside-gap)));
-  }
+  .live-main > :not(.live-page-head, .live-aside) { max-width: var(--room-wide, 1040px); }
   .live-aside:not(:empty) {
     display: block;
     float: right;
@@ -540,7 +541,7 @@
 .live-team-line .live-meta { margin-right: auto; }
 .live-app .live-team p { margin-bottom: 14px; }
 @media (min-width: 1500px) {
-  .live-main > .live-room:has(> .live-teams) { max-width: 1400px; }
+  .live-main > .live-room:has(> .live-teams) { max-width: var(--room-wide, 1400px); }
   .live-teams { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 /* People: name, role, approval and the one button each start at the same place on every row. */
@@ -887,7 +888,7 @@ nav.week-figures a > span:nth-child(2) { align-self: end; }
 nav.week-figures a > small { align-self: start; min-height: 0; margin: 0; color: var(--live-ink); display: inline-flex; align-items: center; gap: 8px; }
 nav.week-figures a > small:empty { display: none; }
 nav.week-figures a > small::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #a8791f; }
-nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row: 1 / span 2; align-self: center; }
+nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2; align-self: center; }
 @media (max-width: 560px) {
   nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   nav.week-figures a, nav.week-figures a + a { padding: 10px 16px; column-gap: 16px; }
@@ -918,7 +919,7 @@ nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row
 .live-app .live-commitment-row:has(.live-row-opens) { position: relative; cursor: pointer; }
 .live-app .live-commitment-row .live-row-opens { position: static; }
 .live-app .live-commitment-row .live-row-opens::after { content: ""; position: absolute; inset: 0; }
-.live-app .live-commitment-row:has(.live-row-opens) :is(a, button):not(.live-row-opens) { position: relative; z-index: 1; }
+.live-app .live-commitment-row :is(a, button):not(.live-row-opens) { position: relative; z-index: 1; }
 @media (hover: hover) { .live-app .live-commitment-row:has(.live-row-opens):hover h3 { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; } }
 
 /* ── One focus ring, for keys only ────────────────────────────────────────────────────────

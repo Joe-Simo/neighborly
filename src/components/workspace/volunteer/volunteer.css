@@ -112,5 +112,7 @@
   .volunteer-task-act [data-slot="button"] { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .volunteer-given, .live-row.volunteer-filed, .volunteer-ticked h3 span, .volunteer-ticked [data-slot="button"] svg { animation: none; }
+  /* Said as strongly as the rule that gives the word its rise, or that rise still runs: in no time, but from nothing,
+     so for one frame the buttons had gone and the word was not yet there. */
+  .live-app .volunteer-given, .volunteer-given, .live-row.volunteer-filed, .volunteer-ticked h3 span, .volunteer-ticked [data-slot="button"] svg { animation: none; }
 }

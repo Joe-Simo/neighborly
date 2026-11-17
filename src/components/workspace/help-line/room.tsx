@@ -119,8 +119,55 @@ export function readSealedSheet() {
 export async function letSheetWordsGo() {
   const sheet = document.querySelector<HTMLElement>(".help-sheet.help-sealed");
   if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  keepSheetWords(sheet);
   const going = [...sheet.children].map((part) => part.animate([{ opacity: 1 }, { opacity: 0 }], { duration: WORDS_GONE, easing: "ease-out", fill: "forwards" }));
   await Promise.allSettled(going.map((move) => move.finished));
+}
+
+/** The pace of every word that is carried to the line, and of the sheet's own setting of it giving way. */
+const CARRY = "cubic-bezier(0.2, 0.7, 0.2, 1)";
+/** How much of the whole yes the two settings of a carried word take to change places. */
+const CHANGE = 0.25;
+let kept: { copy: HTMLElement; word: HTMLElement }[] = [];
+/**
+ * The two words the line will carry, the name and the request, do not go with the rest: they stay on the paper,
+ * each as a copy laid exactly over itself, until the line's setting of them comes up in their place. So the card
+ * is never bare: the sheet's setting gives way as the line's comes, in the same time and at the same pace.
+ */
+function keepSheetWords(sheet: HTMLElement) {
+  dropSheetWords();
+  kept = [...sheet.querySelectorAll<HTMLElement>(".help-from strong, #draft-title")].map((word) => {
+    const at = word.getBoundingClientRect();
+    const look = getComputedStyle(word);
+    const copy = document.createElement("span");
+    copy.textContent = word.textContent;
+    copy.setAttribute("aria-hidden", "true");
+    Object.assign(copy.style, {
+      position: "fixed", left: `${at.left}px`, top: `${at.top}px`, width: `${at.width}px`, zIndex: "30", margin: "0", pointerEvents: "none",
+      font: look.font, letterSpacing: look.letterSpacing, color: look.color, textWrap: look.textWrap, fontVariationSettings: look.fontVariationSettings,
+      fontFeatureSettings: look.fontFeatureSettings,
+    });
+    return { copy, word };
+  });
+  // The copy is the word from here on, so the word is never drawn twice, one over the other.
+  for (const { copy, word } of kept) {
+    document.body.append(copy);
+    word.style.visibility = "hidden";
+  }
+}
+/** The sheet's kept words give way: at once when nothing takes their place, or as the line's setting comes up. */
+export function dropSheetWords(over = 0) {
+  const going = kept;
+  kept = [];
+  for (const { copy, word } of going) {
+    const gone = () => copy.remove();
+    if (over) copy.animate([{ opacity: 1 }, { opacity: 0 }], { duration: over, easing: CARRY, fill: "forwards" }).finished.then(gone, gone);
+    else {
+      // Nothing takes its place: the sheet has its own word back.
+      word.style.visibility = "";
+      gone();
+    }
+  }
 }
 
 /** A shadow as the browser gives it back (`rgba(…) x y blur spread [inset]`), to be drawn again a frame at a time. */
@@ -134,9 +181,9 @@ function shadesOf(shadow: string): Shade[] {
 
 function fileAway(line: HTMLElement) {
   const sheet = document.querySelector<HTMLElement>(".help-sheet.help-sealed");
-  if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Once for a line, however often its effects are run.
   if (line.dataset.filedFrom !== undefined) return;
+  if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return dropSheetWords();
   line.dataset.filedFrom = "";
   // Measured where the line will rest: its own arriving move is put aside for the measure (nothing has been painted yet).
   line.style.animation = "none";
@@ -145,7 +192,7 @@ function fileAway(line: HTMLElement) {
   const ends = new Map([...line.querySelectorAll<HTMLElement>("[data-filed]")].map((part) => [part, rest(part)]));
   line.style.animation = "";
   // In view, and laid in its place: a line held under the top edge (fold.ts openUp) is not where the sheet was.
-  if (heldWhenLaid(line) || place.top < 0 || place.bottom > window.innerHeight) return;
+  if (heldWhenLaid(line) || place.top < 0 || place.bottom > window.innerHeight) return dropSheetWords();
   // The yes: the sheet becomes its saved line. Its words have gone already (letSheetWordsGo); its paper is carried
   // here as a card. The line opens where the sheet's top was while the sheet closes in its place under it, both from
   // the same frame and at the same pace (fold.ts, 360ms); the card is the two together, so it only shortens, never
@@ -241,12 +288,13 @@ function fileAway(line: HTMLElement) {
       to.style.opacity = "";
       copy.remove();
     };
-    // Each sets off on the close's first frame: the sheet's own setting of it has already gone.
+    // Each sets off on the close's first frame, and comes up as the sheet's own setting of it gives way (below).
     copy.animate(
-      [{ transform: resized ? `${move} scale(${scale})` : move, opacity: 0 }, { opacity: 1, offset: 0.25 }, { transform: "none", opacity: 1 }],
-      { duration: WHOLE - 16, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "both" },
+      [{ transform: resized ? `${move} scale(${scale})` : move, opacity: 0 }, { opacity: 1, offset: CHANGE }, { transform: "none", opacity: 1 }],
+      { duration: WHOLE - 16, easing: CARRY, fill: "both" },
     ).finished.then(landed, landed);
   };
+  dropSheetWords((WHOLE - 16) * CHANGE);
   travel(sheet.querySelector<HTMLElement>(".help-from strong"), line.querySelector<HTMLElement>("[data-filed=name]"), setOff.name, true);
   travel(sheet.querySelector<HTMLElement>("#draft-title"), line.querySelector<HTMLElement>("[data-filed=asks]"), setOff.asks, false);
 }

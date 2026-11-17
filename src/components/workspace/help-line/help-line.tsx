@@ -41,6 +41,7 @@ import { useSave } from "@/components/workspace/help-line/use-save";
 import { DraftSheet, caller } from "@/components/workspace/help-line/draft-sheet";
 import {
   HelpDone,
+  dropSheetWords,
   letSheetWordsGo,
   readSealedSheet,
   HelpEmpty,
@@ -138,7 +139,7 @@ function HelpLine() {
       const asks = readSealedSheet();
       // They go from the sheet where they stand, the seal with them, before anything moves (room.tsx).
       void letSheetWordsGo().then(() => {
-        if (left) return;
+        if (left) return dropSheetWords();
         // The line opens as the sheet closes, in one move: it is laid first, so the close knows it is there, and the
         // close, the line and the line's words all start on the same frame, so the room only ever gets shorter. The
         // sheet is taken out the moment its close ends, before anything is drawn; for less motion the close is a plain

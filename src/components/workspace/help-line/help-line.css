@@ -280,7 +280,7 @@
 /* To call back: a row is a person. Its name opens the record (the whole row); its acts sit above that link.
    The oldest wait is said in the head with the small ochre ring, and a call two days old or more keeps the
    ring by its time. Nothing here turns plum. */
-.help-row:has(.help-row-open) :is(a:not(.help-row-open), button) { position: relative; z-index: 1; }
+.help-row :is(a:not(.help-row-open), button) { position: relative; z-index: 1; }
 .help-oldest { white-space: nowrap; }
 .help-oldest::before, .help-row[data-old] .live-date-leaf > span:first-child::before {
   content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;

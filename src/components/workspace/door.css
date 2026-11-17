@@ -50,8 +50,10 @@
   .door-sweep > svg:not(:last-of-type), .door-sweep:has(.door-card) > svg { display: none; }
   .door-opening { animation: none; }
 }
-/* For someone from the door the sweep takes the place of the waiting screen's mark and line. */
-body:has(.door-sweep) :is(.paper-loading > *, .live-opening) { visibility: hidden; }
+/* For someone from the door the sweep takes the place of the waiting screen's mark and line. They are named one by
+   one: a rule that ends in "anything under the body" makes the browser work out every element's style again each
+   time anything on the page is added or taken away. */
+body:has(.door-sweep) :is(.paper-loading-mark, .paper-loading-words, .live-opening) { visibility: hidden; }
 /* Under the paper the first room is finished, not still rising: the lift shows a whole room. The mark stays
    until the next room is opened, so nothing starts over when the paper has gone. */
 :root[data-from-door] .live-app :is(.paper-rows > *, .live-list > *) { animation: none; }

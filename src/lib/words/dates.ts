@@ -22,9 +22,21 @@ const calendars: Record<Exclude<Language, "en">, { weekday: Names; month: Names;
   },
 };
 
+/**
+ * One formatter for each way of writing a date, made once. Making one is slow, and a room writes hundreds of dates
+ * each time it is drawn (every shift's year, every row's day), so a new one for every date held up the page.
+ */
+const formatters = new Map<string, Intl.DateTimeFormat>();
+function formatter(options: Intl.DateTimeFormatOptions) {
+  const key = JSON.stringify(options);
+  let made = formatters.get(key);
+  if (!made) formatters.set(key, (made = new Intl.DateTimeFormat("en-US", options)));
+  return made;
+}
+
 /** The plain numbers of a moment in a time zone. Only digits and English day codes are read, which every machine writes alike. */
 function numbers(time: number, timeZone: string | undefined) {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit", hourCycle: "h23" }).formatToParts(time);
+  const parts = formatter({ timeZone, weekday: "short", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit", hourCycle: "h23" }).formatToParts(time);
   const read = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
   return {
     weekday: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(read("weekday")),
@@ -51,7 +63,7 @@ function fields(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatOptions
  * a twelve-hour clock, and the words from the tables above.
  */
 export function formatDate(language: Language, time: number, options: Intl.DateTimeFormatOptions): string {
-  if (language === "en") return new Intl.DateTimeFormat("en-US", options).format(time);
+  if (language === "en") return formatter(options).format(time);
   const calendar = calendars[language];
   const wanted = fields(options);
   const at = numbers(time, options.timeZone);
