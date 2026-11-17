@@ -5,6 +5,7 @@ import { hour, hourAsked, neighborAccess, neighborRecord } from "./access";
 import { voucherGiven } from "./treasury";
 import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
+import { tally } from "./counts";
 
 /**
  * The help line and requests for help.
@@ -209,6 +210,7 @@ export const createRequest = mutation({
     }
     // The request takes the place of any draft the assistant left waiting on this call.
     if (callId) await dropDrafts(ctx, callId);
+    await tally(ctx, churchId, { waiting: 1, opened: neighborId });
     return ctx.db.insert("assistanceRequests", { churchId, neighborId, callId, ...cleanDetails(details), status: "open", decisionNote: "", source: source ?? "person", createdBy: member._id, createdAt: Date.now() });
   },
 });
@@ -264,18 +266,18 @@ export const decide = mutation({
     const places = referrals === undefined ? existing.referrals : await referredTo(ctx, churchId, referrals);
     const decided = { decisionNote: text(note, "The note", 500), referrals: places, referral: referral === undefined ? existing.referral : text(referral, "The referral", 500), decidedBy: member._id, decidedAt: Date.now() };
     if (decision === "declined") {
-      await ctx.db.patch("assistanceRequests", requestId, { status: "declined", ...decided });
+      await ctx.db.patch("assistanceRequests", requestId, { status: "declined", ...decided }); await tally(ctx, churchId, { waiting: -1, settled: existing.neighborId });
       return null;
     }
     if (existing.voucher) {
       const voucher = { item: existing.voucher.item, quantity: howMany(quantity ?? existing.voucher.quantity) };
       await voucherGiven(ctx, member, { requestId, ...voucher });
-      await ctx.db.patch("assistanceRequests", requestId, { status: "paid", amountApproved: 0, voucher, ...decided });
+      await ctx.db.patch("assistanceRequests", requestId, { status: "paid", amountApproved: 0, voucher, ...decided }); await tally(ctx, churchId, { waiting: -1, settled: existing.neighborId });
       return null;
     }
     if (existing.payeeKind === "neighbor" || !existing.payeeName) throw new ConvexError("Add who is paid before approving. Payments go to the landlord, utility or store.");
     if (amountApproved === undefined) throw new ConvexError("The approved amount is needed.");
-    await ctx.db.patch("assistanceRequests", requestId, { status: "approved", amountApproved: wholeCents(amountApproved, "The approved amount", 1), ...decided });
+    await ctx.db.patch("assistanceRequests", requestId, { status: "approved", amountApproved: wholeCents(amountApproved, "The approved amount", 1), ...decided }); await tally(ctx, churchId, { waiting: -1, settled: existing.neighborId });
     return null;
   },
 });
@@ -291,6 +293,7 @@ export const closeRequest = mutation({
     if (existing.status !== "open" && existing.status !== "approved" && !given) throw new ConvexError("This request is already finished.");
     if (given && Date.now() - (existing.decidedAt ?? 0) > TAKE_BACK_DAYS * DAY) throw new ConvexError(`A voucher can be taken back for ${TAKE_BACK_DAYS} days after it was given.`);
     if (given) await voucherGiven(ctx, member, { requestId, item: given.item, quantity: 0 });
+    if (existing.status === "open") await tally(ctx, churchId, { waiting: -1, settled: existing.neighborId });
     await ctx.db.patch("assistanceRequests", requestId, { status: "closed", decisionNote: text(note, "The note", 500), decidedBy: existing.decidedBy ?? member._id, decidedAt: existing.decidedAt ?? Date.now(), closedBy: member._id, closedAt: Date.now() });
     return null;
   },

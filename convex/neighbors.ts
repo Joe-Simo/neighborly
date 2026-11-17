@@ -7,6 +7,7 @@ import { TAKE_BACK_DAYS, callRow, lookups, nameKey, phoneKey, requestRow, toCall
 import { paidTowardRequest } from "./treasury";
 import schema from "./schema";
 import { longestLanguageName, spokenName } from "./spoken";
+import { tally } from "./counts";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
@@ -97,12 +98,17 @@ const toListRow = (neighbor: Doc<"neighbors">): Infer<typeof listRow> => ({
  * addresses that contain them, or phone numbers that start with the digits typed.
  */
 export const list = query({
-  args: { churchId: v.id("churches"), search: v.optional(v.string()) },
+  args: { churchId: v.id("churches"), search: v.optional(v.string()), /** The neighbor room: waiting households lead, apart from the rest. */ leading: v.optional(v.boolean()) },
   returns: v.object({
-    rows: v.array(v.object({ ...listRow.fields, openRequest: v.union(v.object({ kind: schema.tables.assistanceRequests.validator.fields.kind, amount: v.number() }), v.null()), visitAt: v.union(v.number(), v.null()), lastHelpedAt: v.union(v.number(), v.null()) })),
+    rows: v.array(v.object({ ...listRow.fields, openRequest: v.union(v.object({ kind: schema.tables.assistanceRequests.validator.fields.kind, amount: v.number(), waiting: v.boolean() }), v.null()), visitAt: v.union(v.number(), v.null()), lastHelpedAt: v.union(v.number(), v.null()) })),
     more: v.boolean(),
+    /** Households with a request waiting for a decision, from the conference's own list of them; they lead the list and are left out of `rows`. Empty while searching. */
+    waitingRows: v.array(v.object({ ...listRow.fields, openRequest: v.union(v.object({ kind: schema.tables.assistanceRequests.validator.fields.kind, amount: v.number(), waiting: v.boolean() }), v.null()), visitAt: v.union(v.number(), v.null()), lastHelpedAt: v.union(v.number(), v.null()) })),
+    /** The conference's running figures (convex/counts.ts); null until they have been counted once. */
+    households: v.union(v.number(), v.null()),
+    waiting: v.union(v.number(), v.null()),
   }),
-  handler: async (ctx, { churchId, search = "" }) => {
+  handler: async (ctx, { churchId, search = "", leading: lead = false }) => {
     await neighborAccess(ctx, churchId);
     const digits = phoneKey(search), words = nameKey(search);
     const byPhone = digits.length >= 3 && !/[a-z]/i.test(search);
@@ -112,21 +118,29 @@ export const list = query({
       : words
         ? await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gte("nameKey", words).lt("nameKey", `${words}￿`)).take(PAGE + 1)
         : await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gt("nameKey", "")).take(PAGE + 1);
+    const church = await ctx.db.get("churches", churchId);
+    const waitingIds = search || !lead ? [] : [...new Set(church?.waitingHouseholdIds ?? [])];
+    const waitingHouseholds = (await Promise.all(waitingIds.map((id) => ctx.db.get("neighbors", id)))).filter(
+      (neighbor): neighbor is Doc<"neighbors"> => neighbor !== null && neighbor.churchId === churchId && neighbor.nameKey !== "",
+    ).sort((a, b) => a.nameKey.localeCompare(b.nameKey));
     const found = [...listed, ...byAddress.filter((neighbor) => !listed.some((other) => other._id === neighbor._id))];
-    const rows = await Promise.all(found.slice(0, PAGE).map(async (neighbor) => {
+    const row = async (neighbor: Doc<"neighbors">) => {
       const requests = await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).order("desc").take(50);
       const visits = await ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).order("desc").take(20);
       const helped = requests.filter((request) => request.status === "paid" || request.status === "approved" || broughtOver(request)).map((request) => request.decidedAt ?? request.createdAt);
-      const open = requests.find((request) => request.status === "open" || request.status === "approved");
+      const open = requests.find((request) => request.status === "open") ?? requests.find((request) => request.status === "approved");
       const planned = visits.filter((visit) => visit.status === "scheduled").map((visit) => visit.scheduledAt);
       return {
         ...toListRow(neighbor),
-        openRequest: open ? { kind: open.kind, amount: open.amountApproved ?? open.amountRequested } : null,
+        openRequest: open ? { kind: open.kind, amount: open.amountApproved ?? open.amountRequested, waiting: open.status === "open" } : null,
         visitAt: planned.length ? Math.min(...planned) : null,
         lastHelpedAt: helped.length ? Math.max(...helped) : null,
       };
-    }));
-    return { rows, more: found.length > PAGE };
+    };
+    const leading = new Set(waitingHouseholds.map((neighbor) => neighbor._id));
+    const rows = await Promise.all(found.slice(0, PAGE).filter((neighbor) => !leading.has(neighbor._id)).map(row));
+    const waitingRows = await Promise.all(waitingHouseholds.map(row));
+    return { rows, waitingRows, more: found.length > PAGE, households: church?.householdCount ?? null, waiting: church?.waitingCount ?? null };
   },
 });
 
@@ -166,6 +180,7 @@ export const create = mutation({
       if (existing) throw new ConvexError(`${existing.name} is already on file with this ${samePhone ? "phone number" : "name"}.`);
     }
     const neighborId = await ctx.db.insert("neighbors", { churchId, ...record, createdBy: member._id, createdAt: Date.now() });
+    await tally(ctx, churchId, { households: 1 });
     if (callId) {
       const call = await ctx.db.get("calls", callId);
       if (!call || call.churchId !== churchId) throw new ConvexError("Call not found.");
@@ -258,6 +273,7 @@ export const remove = mutation({
     for (const call of calls) await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });
     for (const visit of visits) await ctx.db.patch("visits", visit._id, { notes: "" });
     for (const request of requests) await ctx.db.patch("assistanceRequests", request._id, { summary: REMOVED, decisionNote: "", payeeName: "", referral: undefined, referrals: undefined });
+    await tally(ctx, churchId, { households: -1, waiting: -requests.filter((request) => request.status === "open").length, gone: neighborId });
     await ctx.db.patch("neighbors", neighborId, { name: REMOVED, nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", alert: undefined, household: undefined, money: undefined, accounts: undefined });
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.removed", targetId: neighborId, at: Date.now() });
     return null;

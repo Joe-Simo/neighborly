@@ -60,6 +60,7 @@ function Neighbors() {
   const list = useQuery(api.neighbors.list, {
     churchId,
     search: useDeferredValue(search).trim() || undefined,
+    leading: true,
   });
   return (
     <>
@@ -140,7 +141,7 @@ function NeighborRow({
               </div>
               <div className="live-row-actions">
                 {neighbor.openRequest && (
-                  <span className="live-status" data-state="waiting">
+                  <span className="live-status help-asks" data-state="waiting">
                     {kindLabels[neighbor.openRequest.kind]}
                     {neighbor.openRequest.amount > 0 &&
                       `, ${shortMoney(neighbor.openRequest.amount)}`}
@@ -177,10 +178,12 @@ export function NeighborListView({
       Add a neighbor
     </Button>
   );
-  const shown = list.rows.length;
+  const shown = list.rows.length + list.waitingRows.length;
   const [open, setOpen] = useState(FIRST);
   // By name the list is in order, so it reads under letter heads; search results stay as found.
-  const groups: [string, Row[]][] = [];
+  // Those waiting for a decision come first, under their own head; the rest read under letter heads.
+  const waiting = searching ? [] : list.waitingRows;
+  const groups: [string, Row[]][] = waiting.length ? [["waiting", waiting]] : [];
   for (const neighbor of list.rows.slice(0, open)) {
     const letter = searching
       ? ""
@@ -195,20 +198,32 @@ export function NeighborListView({
         <h2>Neighbors</h2>
         <span className="live-count help-private">
             <Lock size={14} aria-hidden="true" />
-            {list.more
-              ? `First ${shown} households`
-              : `${shown} ${shown === 1 ? "household" : "households"}`}{" "}
+            {(() => {
+              // The whole conference, from its running figures; before they are first counted, what is shown.
+              const households = list.households ?? shown;
+              const waitingAll = list.waiting ?? waiting.length;
+              return `${households} ${households === 1 ? "household" : "households"}${waitingAll ? ` · ${waitingAll} waiting for a decision` : ""}`;
+            })()}{" "}
             · each opening is logged
         </span>
       </div>
       {shown ? (
         <>
           {groups.map(([letter, rows]) => (
-            <section className="help-letter" key={letter} aria-label={letter || undefined}>
-              {letter && (
-                <h3 className="help-letter-head" aria-hidden="true">
-                  {letter}
-                </h3>
+            <section
+              className="help-letter"
+              key={letter}
+              data-waiting={letter === "waiting" ? "" : undefined}
+              aria-label={letter === "waiting" ? "Waiting for a decision" : letter || undefined}
+            >
+              {letter === "waiting" ? (
+                <h3 className="help-waiting-head">Waiting for a decision</h3>
+              ) : (
+                letter && (
+                  <h3 className="help-letter-head" aria-hidden="true">
+                    {letter}
+                  </h3>
+                )
               )}
               <div className="live-list">
                 {rows.map((neighbor) => (

@@ -6,6 +6,7 @@ import type { Id } from "./_generated/dataModel";
 import { membership, neighborAccess } from "./access";
 import { nameKey, phoneKey } from "./assistance";
 import { longestLanguageName, readSpoken, spokenName, type Spoken } from "./spoken";
+import { tally } from "./counts";
 
 /**
  * Bringing a members list in from a spreadsheet. Nobody is added on their behalf: every good row
@@ -156,6 +157,7 @@ export const importNeighbors = mutation({
       results.push({ line: row.line, name: row.name, outcome: row.outcome === "ready" ? "added" : row.outcome });
     }
     const added = results.filter((row) => row.outcome === "added").length;
+    await tally(ctx, args.churchId, { households: added });
     if (added) await ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: member.userId, action: "neighbors_imported", targetId: String(added), at: now });
     return results;
   },
@@ -240,6 +242,7 @@ export const importRequests = mutation({
     const results: Infer<typeof requestImported>[] = [];
     for (const row of await reviewRequests(ctx, args.churchId, args.rows)) {
       if (row.record) await ctx.db.insert("assistanceRequests", { churchId: args.churchId, ...row.record, amountRequested: row.record.importedAmount, decisionNote: "", source: "import", createdBy: member._id });
+      if (row.record?.status === "open") await tally(ctx, args.churchId, { waiting: 1, opened: row.record.neighborId });
       results.push({ line: row.line, name: row.name, outcome: row.outcome === "ready" ? "added" : row.outcome });
     }
     const added = results.filter((row) => row.outcome === "added").length;
