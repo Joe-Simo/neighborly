@@ -45,6 +45,7 @@ const en = {
   privacy: "Privacy",
   sampleFailed: "The sample conference did not open. Try again.",
   sampleBusy: "The sample conference is busy. Try again in a minute.",
+  workspaceTab: "Your workspace · Kind Helps",
   foot: "Your workspace is private. Joining a team does not accept any commitment on your behalf.",
   differentEmail: "Use a different email",
   codeKicker: "One more step",
@@ -132,6 +133,7 @@ const es: AuthWords = {
   privacy: "Privacidad",
   sampleFailed: "La conferencia de muestra no se abrió. Inténtalo de nuevo.",
   sampleBusy: "La conferencia de muestra está ocupada. Inténtalo en un minuto.",
+  workspaceTab: "Tu espacio · Kind Helps",
   foot: "Tu espacio es privado. Unirte a un equipo no acepta ningún compromiso en tu nombre.",
   differentEmail: "Usar otro correo",
   codeKicker: "Un paso más",
@@ -263,3 +265,10 @@ const never = () => () => {};
 export function useJustLeft(): boolean {
   return useSyncExternalStore(never, () => (leftNow ??= readLeft()), () => false);
 }
+
+/**
+ * The server names the workspace's tab in English, the only language it knows. Given that title (in either
+ * language) this answers it in the reader's own; any other title, a room's or a sheet's, is left as it is.
+ */
+export const tabInReadersLanguage = (title: string) =>
+  languages.some((language) => authWords[language].workspaceTab === title) ? authWords[entryLanguageNow()].workspaceTab : title;
