@@ -546,6 +546,7 @@ export function es(set: WordSet): Words {
         yourName: "Tu nombre", conferenceName: "Nombre de la conferencia", timeZone: "Zona horaria para todas las horas",
         what: "Una conferencia es el equipo de la parroquia que atiende la línea de ayuda y visita en parejas.",
         note: "Solo los miembros invitados pueden abrir la tuya.",
+        fromLink: "Tu invitación venía en el enlace que abriste. Unirte no acepta ningún compromiso.",
         code: "Código de invitación", codeHelp: "Usa el código que te dio tu coordinador. Unirte no acepta ningún compromiso.",
         creating: "Creando tu conferencia…", joining: "Uniéndote a tu conferencia…", create: "Crear conferencia", join: "Unirme a la conferencia",
         notSaved: "No pudimos guardar eso. Lo que escribiste sigue aquí. Presiona Crear conferencia otra vez.",
