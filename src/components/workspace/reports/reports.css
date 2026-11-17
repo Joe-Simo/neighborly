@@ -870,3 +870,7 @@
   .report-actions { gap: 0 22px; }
   .live-app .report-actions [data-slot="button"][data-variant="outline"] { flex: 0 0 auto; padding-inline: 0; border-color: transparent; background: none; box-shadow: none; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 }
+
+/* The year is drawn whole in the first frame Reports is shown: no sheet fades in or drops, no bar or month grows.
+   Figures stand at their value, so the paper that pictures them stands too. Opening a list on request still rises. */
+.report :is(.report-year-figure, .report-stack i, .report-year dd b, .report-month-bar span, .report-month-bar i, .report-key, .report-outcomes, .help-bar span, .report-tip) { animation: none; }
