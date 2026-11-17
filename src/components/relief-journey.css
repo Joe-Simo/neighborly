@@ -174,3 +174,13 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .fresco-invitation p{display:none}
   .fresco-caption{top:calc(var(--caption-top,70%) + 12px);font-size:28px}
 }
+/* On the widest screens the pictures stop at the window's height and at their own pixels, so the words take up the room instead:
+   each chapter's headline and sentence grow with the window, held to its height, and the page stays one composition rather than a picture with air beside it. */
+@media(min-width:1600px) and (min-height:760px){
+  .relief-words h2{font-size:min(9.45vw,17svh)}
+  .relief-panel[data-chapter=visit] .relief-words h2{font-size:min(12.5vw,22svh)}
+  /* Beside the door the words stand in the middle of the paper that is left, not against the door. */
+  .relief-panel[data-chapter=visit] .relief-words{justify-self:center}
+  .relief-words p{font-size:min(1.45vw,2.6svh)}
+  .relief-words .home-year dd{font-size:min(4.45vw,8svh)}
+}
