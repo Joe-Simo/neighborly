@@ -378,7 +378,8 @@
    the deck steps aside and the sample's note is said in a few words. */
 @media (max-width: 699px) and (max-height: 680px) {
   .entry { --entry-band: 76px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
-  .live-app .entry .live-deck,
+  .live-app .entry .live-deck:not(.entry-deck-kept),
+  .entry-deck-kept > span,
   .entry-sample > small:not(.entry-sample-short) { display: none; }
   .entry-sample > .entry-sample-short { display: block; }
   .live-app .entry .live-form { gap: 12px; margin-top: 16px; }

@@ -345,8 +345,8 @@ export function LiveAuth({
         </Button>
         <p className="live-kicker">{w.codeKicker}</p>
         <h1>{w.codeHeading}</h1>
-        <p className="live-deck">
-          {w.codeSent} <strong>{email}</strong>. {w.codeFor[flow]}
+        <p className="live-deck entry-deck-kept">
+          {w.codeSent} <strong>{email}</strong>. <span>{w.codeFor[flow]}</span>
         </p>
         <form className="live-form" onSubmit={submitCode}>
           <LiveField label={w.codeLabel} help={w.codeHint} said={{ needed, neededCheck: w.errors.code }}>
@@ -377,7 +377,7 @@ export function LiveAuth({
       <>
         <p className="live-kicker">{w.freshKicker}</p>
         <h1>{w.freshHeading}</h1>
-        <p className="live-deck">
+        <p className="live-deck entry-deck-kept">
           {w.freshDeck} <strong>{email}</strong>.
         </p>
         <form className="live-form" onSubmit={submitNewPassword}>
