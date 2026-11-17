@@ -1,0 +1,32 @@
+import { afterAll, beforeAll, expect, mock, spyOn, test } from "bun:test";
+
+const said = spyOn(console, "error");
+const warned = spyOn(console, "warn");
+let asked = 0;
+
+beforeAll(() => {
+  process.env.NEXT_PUBLIC_CONVEX_URL = "https://example.convex.cloud";
+  // The backend rations the public answer: the request is refused, as a 429 is.
+  mock.module("convex/browser", () => ({
+    ConvexHttpClient: class {
+      query() {
+        asked += 1;
+        return Promise.reject(new Error("429 Too Many Requests"));
+      }
+    },
+  }));
+});
+afterAll(() => mock.restore());
+
+test("a refused first-room request gives no look, says nothing and is not asked again: the sample opens the ordinary way", async () => {
+  const { askFirstRoom, firstRoom } = await import("./first-room");
+  expect(firstRoom()).toBeUndefined();
+  askFirstRoom();
+  // No answer is no room: LiveRooms then takes the door's ordinary entry (`noLook` in live-app.tsx), with nothing of a look drawn.
+  expect(await firstRoom()).toBeNull();
+  askFirstRoom();
+  expect(await firstRoom()).toBeNull();
+  expect(asked).toBe(1);
+  expect(said).not.toHaveBeenCalled();
+  expect(warned).not.toHaveBeenCalled();
+});

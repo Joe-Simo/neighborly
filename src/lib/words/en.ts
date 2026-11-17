@@ -499,7 +499,7 @@ export function en(set: WordSet) {
         kindMissing: { why: "The note does not say what kind of help is asked for.", act: "Choose the kind of help." },
         amountSeveral: { why: "The note gives more than one amount.", act: "Enter the amount asked for." },
         amountMissing: { why: "The note does not give an amount.", act: "Enter the amount asked for." },
-        payee: { why: "The note does not say plainly who is paid.", act: `Confirm who is paid: the landlord, utility or store, never the ${t.neighbor}.` },
+        payee: { why: "Who is paid is not filled in yet.", act: `Confirm who is paid: the landlord, utility or store, never the ${t.neighbor}.` },
         doubtful: { why: "Part of the note is a question or is unsure, so it was left out.", act: "Read the whole note before you save." },
         confirmKind: { why: "The assistant was not sure of the kind of help.", act: "Confirm the kind of help." },
         confirmPayee: { why: "The assistant was not sure who is paid.", act: "Confirm who is paid." },

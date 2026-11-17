@@ -392,7 +392,7 @@ async function callbackOwner(ctx: QueryCtx, churchId: Id<"churches">, now: numbe
   return upcoming.find((commitment) => !commitment.cancelled && commitment.end > now)?.assigneeId ?? undefined;
 }
 
-/** Writes down a call or a voicemail. A call to return goes to whoever holds the help line next, unless `ownerId` names someone. A caller whose phone is on file for exactly one neighbor is matched to that neighbor. */
+/** Writes down a call or a voicemail. A call to return goes to whoever holds the help line next, unless `ownerId` names someone. A caller whose phone is on file for exactly one neighbor is matched to that neighbor, unless the name typed is someone else's. */
 export const recordCall = mutation({
   args: { churchId: v.id("churches"), callerName: v.string(), phone: v.string(), note: v.string(), callback: callFields.callback, neighborId: v.optional(v.id("neighbors")), ownerId: v.optional(v.id("memberships")) },
   returns: v.object({ callId: v.id("calls"), neighborId: v.union(v.id("neighbors"), v.null()) }),
@@ -404,7 +404,11 @@ export const recordCall = mutation({
     let matched = neighborId;
     if (!matched && key) {
       const sameNumber = await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", key)).take(2);
-      if (sameNumber.length === 1) matched = sameNumber[0]._id;
+      // A typed name always wins: the number alone places the call on a record only when no name was typed or the
+      // typed name is that record's (a household shares a phone, and a wrong record would take the request).
+      const typed = nameKey(callerName).split(" ").filter(Boolean);
+      const onFile = sameNumber.length === 1 ? nameKey(sameNumber[0].name).split(" ") : [];
+      if (sameNumber.length === 1 && typed.every((word) => onFile.includes(word))) matched = sameNumber[0]._id;
     }
     const callId = await ctx.db.insert("calls", { churchId, neighborId: matched, callerName: text(callerName, "The name", 120), phone: text(phone, "The phone number", 40), note: text(note, "The note", 2000), callback, ownerId: ownerId ?? (callback === "needed" ? await callbackOwner(ctx, churchId, now) : undefined), takenBy: member._id, takenAt: now });
     return { callId, neighborId: matched ?? null };

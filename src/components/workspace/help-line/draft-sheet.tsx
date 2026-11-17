@@ -20,8 +20,9 @@ type Sheet = {
   draft: Pick<Draft, "kind" | "amountRequested" | "payeeKind" | "payeeName" | "quote">;
 };
 
+/** The name the person typed when they took the call leads; a record's name stands in only when none was typed. */
 export const caller = (call: Pick<Call, "neighborName" | "callerName">) =>
-  call.neighborName ?? (call.callerName || "New caller");
+  call.callerName || call.neighborName || "New caller";
 
 /**
  * The one thing waiting for a yes: what the assistant drafted from a call note. Plum marks its words.
@@ -72,8 +73,9 @@ export function DraftSheet({
   const missing = [
     !draft.kind && "the kind of help",
     draft.amountRequested === null && "the amount",
-    (!draft.payeeKind || !draft.payeeName) && "who is paid",
   ].filter((part) => part !== false);
+  // Who is paid is never claimed about the note: the note may name them in words the draft could not read.
+  const unpaid = !draft.payeeKind || !draft.payeeName;
   const empty =
     !draft.kind && draft.amountRequested === null && !draft.payeeName;
   const title = empty
@@ -99,7 +101,7 @@ export function DraftSheet({
           ? "Saved, waiting for a decision"
           : complete
             ? text.waiting(waiting)
-            : "A draft with blanks"}
+            : `A draft with blanks${waiting > 1 ? `. ${text.waiting(waiting)}` : ""}`}
       </p>
       <div className="help-sheet-body">
         <div>
@@ -119,11 +121,9 @@ export function DraftSheet({
           </h2>
           {!complete && (
             <p className="help-assistant help-blank">
-              The note does not say{" "}
-              {missing.length > 1
-                ? `${missing.slice(0, -1).join(", ")} or ${missing.at(-1)}`
-                : missing[0]}
-              . That is yours to add.
+              {missing.length > 0 && `The note does not say ${missing.join(" or ")}. `}
+              {unpaid && "Who is paid is not filled in yet. "}
+              {missing.length + Number(unpaid) > 1 ? "Those are yours to add." : "That is yours to add."}
             </p>
           )}
           <p className="help-quote">“{draft.quote || call.note}”</p>

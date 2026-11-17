@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { prepareRequestDraft, withoutIdentity } from "./request-draft";
+import { draftNotes, prepareRequestDraft, withoutIdentity } from "./request-draft";
 
 const rosa = "I’m behind on November rent. The landlord says four hundred fifty by Friday.";
 
@@ -33,6 +33,16 @@ describe("a call note becomes a proposed request", () => {
   test("copies a payee's name only from a plain statement", () => {
     expect(prepareRequestDraft("Rent is late, 600 dollars. The landlord is Sample Property Co.").payeeName).toBe("Sample Property Co");
     expect(prepareRequestDraft("Rent is late, 600 dollars. She thinks the landlord might be Sample Property Co.").payeeName).toBe("");
+  });
+
+  test("reads who is paid from the ways a volunteer writes it, and shows that sentence beside the draft", () => {
+    for (const note of ["Needs $450 for rent. Pay Mill Road Rentals.", "Rent $450, landlord Mill Road Rentals.", "Rent is $450. Her landlord's name is Mill Road Rentals.", "Rent is $450. Make the check out to Mill Road Rentals."]) {
+      const draft = prepareRequestDraft(note);
+      expect(draft).toMatchObject({ payeeKind: "landlord", payeeName: "Mill Road Rentals", quote: note });
+      expect(draft.notes).not.toContain(draftNotes.payee);
+    }
+    // "Pay Jordan" may be the neighbor: nothing is proposed, and the quote stays the sentence with the amount.
+    expect(prepareRequestDraft("Rent is $450. Pay Jordan.")).toMatchObject({ payeeKind: null, payeeName: "", quote: "Rent is $450." });
   });
 
   test("a count of people is not money", () => {
