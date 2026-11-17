@@ -277,6 +277,7 @@ function HelpLine() {
       <OnTheLine turns={turnsToday({ data, now, format })} calling={owners(calls.waiting)} />
       <HelpLineView
         calls={calls}
+        at={at}
         format={format}
         busy={drafting.pending}
         reading={reading}
@@ -493,7 +494,10 @@ export function HelpLineView({
   reading = null,
   draftedCallIds = [],
   onFirst,
+  at,
 }: {
+  /** The whole hour the room was asked at, for how long a call has waited. */
+  at?: number;
   /** Moves a call to the front or back again. Left out while the backend cannot keep it. */
   onFirst?: (call: Call, first: boolean) => void;
   /** Calls with a draft waiting for a yes, which are not offered a second draft. */
@@ -509,6 +513,12 @@ export function HelpLineView({
   sheet?: ReactNode;
 }) {
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
+  // How long a call has waited, from the room's hour: "5 hours", "2 days". Two days and more is old.
+  const DAY = 24 * 60 * 60 * 1000;
+  const waited = (call: Call) => (at === undefined ? 0 : Math.max(0, at - call.takenAt));
+  const ageLabel = (ms: number) =>
+    ms >= DAY ? count(Math.floor(ms / DAY), "day", "days") : ms >= 3600000 ? count(Math.floor(ms / 3600000), "hour", "hours") : "under an hour";
+  const oldest = calls.waiting.reduce<Call | undefined>((old, call) => (!old || call.takenAt < old.takenAt ? call : old), undefined);
   // A call marked returned leaves where it waited and is laid into "Returned this week". Everything else in
   // the lists that the change moves (the rows under it, the next heading) glides to its new place in the same
   // move, and the page keeps its place: nothing the person is looking at jumps.
@@ -589,6 +599,12 @@ export function HelpLineView({
           <h2>To call back</h2>
           <span className="live-count">
             {count(calls.waiting.length, "message", "messages")}
+            {oldest && at !== undefined && (
+              <>
+                {" · "}
+                <span className="help-oldest">oldest waiting {ageLabel(waited(oldest))}</span>
+              </>
+            )}
           </span>
         </div>
         {calls.waiting.some(
@@ -601,11 +617,23 @@ export function HelpLineView({
         {calls.waiting.length ? (
           <div className="live-list">
             {calls.waiting.map((call) => (
-              <div className="help-row" data-call={call.id} key={call.id}>
+              <div
+                className="help-row"
+                data-call={call.id}
+                data-old={waited(call) >= 2 * DAY ? "" : undefined}
+                key={call.id}
+              >
                 {leaf(call.takenAt)}
                 <div>
                   <h3>
-                    {caller(call)}
+                    {call.neighborId ? (
+                      // The whole row opens the record, through its one link, the name.
+                      <Link className="help-row-open" href={recordHref(call.neighborId)}>
+                        {caller(call)}
+                      </Link>
+                    ) : (
+                      caller(call)
+                    )}
                     {call.phone && (
                       <span className="help-phone">{call.phone}</span>
                     )}
@@ -635,14 +663,6 @@ export function HelpLineView({
                         {call.ownerName} is calling back
                       </span>
                     )}
-                    {call.neighborId && (
-                      <Link
-                        className="live-link"
-                        href={recordHref(call.neighborId)}
-                      >
-                        Open record
-                      </Link>
-                    )}
                     {!call.openRequest && !draftedCallIds.includes(call.id) && (
                       <Button
                         variant="link"
@@ -662,7 +682,8 @@ export function HelpLineView({
                         Add as a neighbor
                       </Button>
                     )}
-                    {onFirst && (
+                    {/* Offered once, on the call that has waited longest, and on a call already put first. */}
+                    {onFirst && (isFirst(call) || (call === oldest && !calls.waiting.some(isFirst))) && (
                       <Button
                         variant="link"
                         className="help-text-action"
@@ -678,6 +699,7 @@ export function HelpLineView({
                 <div className="live-row-actions">
                   <Button
                     variant="outline"
+                    aria-label={`Mark returned: ${caller(call)}`}
                     onClick={() => onStep({ kind: "return", call })}
                   >
                     Mark returned

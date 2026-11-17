@@ -275,7 +275,8 @@ async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
       const need = random.pick(kinds);
       const summary = random.pick(need.summaries);
       const asksForHelp = call === 0 || recent !== undefined || random.next() < 0.7;
-      const callId = await db.insert("calls", { churchId, neighborId, callerName: name, phone, note: asksForHelp ? `${summary}.` : "Called to say thank you and give an update.", callback: recent !== undefined && age < 3 * DAY ? "needed" : asksForHelp ? "done" : "none", takenBy: random.pick(staff), takenAt });
+      const taker = random.pick(staff);
+      const callId = await db.insert("calls", { churchId, neighborId, callerName: name, phone, note: asksForHelp ? `${summary}.` : "Called to say thank you and give an update.", callback: recent !== undefined && age < 3 * DAY ? "needed" : asksForHelp ? "done" : "none", takenBy: taker, takenAt });
       if (!asksForHelp) continue;
       // A voucher request names what comes off the shelf; nobody is paid, so it carries no amount and no payee.
       const voucher = need.kind === "voucher" ? { item: summary.startsWith("Furniture") ? "Furniture voucher" : "Clothing voucher", quantity: 1 } : undefined;
@@ -292,7 +293,9 @@ async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
       const decidedAt = outcome === "open" ? undefined : takenAt + random.between(3, 5) * DAY;
       const paidTo = random.pick(need.payees);
       const payeeName = voucher ? "" : paidTo;
-      const requestId = await db.insert("assistanceRequests", { churchId, neighborId, callId, kind: need.kind, summary, amountRequested, amountApproved, ...(voucher ? { voucher } : {}), status: outcome, decisionNote: outcome === "declined" ? "Referred to the county program, which covers this in full." : outcome === "closed" ? "Neighbor resolved it before the visit." : granted ? "Approved after the home visit." : "", decidedBy: decidedAt ? owner : undefined, decidedAt, payeeKind: need.payeeKind, payeeName, source: index % 8 === 3 ? "ai_draft" : "person", createdBy: random.pick(staff), createdAt: takenAt });
+      // The one who took the call files its request. The draw stays, so every number after it is as pinned.
+      random.pick(staff);
+      const requestId = await db.insert("assistanceRequests", { churchId, neighborId, callId, kind: need.kind, summary, amountRequested, amountApproved, ...(voucher ? { voucher } : {}), status: outcome, decisionNote: outcome === "declined" ? "Referred to the county program, which covers this in full." : outcome === "closed" ? "Neighbor resolved it before the visit." : granted ? "Approved after the home visit." : "", decidedBy: decidedAt ? owner : undefined, decidedAt, payeeKind: need.payeeKind, payeeName, source: index % 8 === 3 ? "ai_draft" : "person", createdBy: taker, createdAt: takenAt });
       if (voucher && outcome === "paid") vouchersGiven.push({ requestId, time: decidedAt ?? takenAt, item: voucher.item });
       if (outcome !== "closed") {
         const first = random.between(0, visitors.length - 1);
