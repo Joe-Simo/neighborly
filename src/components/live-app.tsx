@@ -114,8 +114,13 @@ function LiveRooms({
   // said so on the sheet and then dropped, so nobody signs up for nothing. A question that fails is asked twice
   // more; if it still fails, or no answer comes in six seconds, the link is left to stand and joining checks it.
   const askInvitation = useAction(api.invitations.good);
-  const [invitationGood, setInvitationGood] = useState<boolean | undefined>(invitationToken ? undefined : true);
-  const invitationAnswered = useRef(!invitationToken);
+  // A link whose token is not sixty-four hex digits was cut short or mistyped and can never be good: that is
+  // said at once, with no question asked (the backend holds the same test before it reads anything).
+  const couldBeAnInvitation = /^[0-9a-f]{64}$/.test(invitationToken);
+  const [invitationGood, setInvitationGood] = useState<boolean | undefined>(
+    !invitationToken ? true : couldBeAnInvitation ? undefined : false,
+  );
+  const invitationAnswered = useRef(!invitationToken || !couldBeAnInvitation);
   const whoIsKnown = signedOut || isAuthenticated;
   useEffect(() => {
     if (invitationAnswered.current || !whoIsKnown) return;
