@@ -20,7 +20,7 @@ test("the home page's four figures are the sample's own yearly report", async ()
   const churchId = await t.mutation(internal.sampleData.load, {});
   const owner = await t.run(async (ctx) => (await ctx.db.query("memberships").collect()).find((member) => member.role === "owner"));
   if (!owner) throw new Error("The sample has no owner.");
-  const report = await signedIn(t, owner.userId).query(api.reports.year, { churchId, year: sampleYear.year });
+  const report = await signedIn(t, owner.userId).query(api.reports.year, { churchId, year: sampleYear.year, at: Date.parse(sampleYear.asOf) });
   expect(report.closed).toBe(true);
   expect({ calls: report.calls.taken, requests: report.requests.received, visits: report.visits, helpPaid: report.helpPaid }).toEqual({
     calls: sampleYear.calls,
