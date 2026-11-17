@@ -59,8 +59,8 @@ export function HomeYear() {
     <dl className="home-year" ref={root}>
       {figures.map(figure => <div key={figure.key}>
         <dt>{figure.label}</dt>
-        {/* The finished figure keeps the place, so nothing beside it moves while the count climbs; a reader hears the finished one. */}
-        <dd aria-label={figure.say(figure.total)}><span aria-hidden="true">{figure.say(figure.total)}</span><span data-count aria-hidden="true">{figure.say(figure.total)}</span></dd>
+        {/* The finished figure keeps the place, so nothing beside it moves while the count climbs; a screen reader is given the finished one as plain text, once, after its label. */}
+        <dd><span aria-hidden="true">{figure.say(figure.total)}</span><span data-count aria-hidden="true">{figure.say(figure.total)}</span><span className="sr-only">{figure.say(figure.total)}</span></dd>
       </div>)}
     </dl>
     <p className="home-year-note">From the sample conference. Every person in it is made up.</p>

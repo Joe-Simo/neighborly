@@ -21,7 +21,7 @@ const format = (time: number, options?: Intl.DateTimeFormatOptions) => formatDat
 // The same made-up call the sample conference holds, so what is seen here is what waits behind the door.
 // Nothing here is fetched or sent: no backend, no assistant, only this sheet and the visitor's press.
 const drafted = {
-  call: { neighborId: null, neighborName: null, callerName: "Rosa Fontaine", note: "Behind on November rent, $450. The landlord is Mill Road Rentals." },
+  call: { neighborId: null, neighborName: null, callerName: "Rosa Fontaine", note: "Behind on November rent, $450. The landlord is Mill\u00a0Road\u00a0Rentals." },
   draft: { kind: "rent", amountRequested: 45000, payeeKind: "landlord", payeeName: "Mill Road Rentals", quote: "" },
 } as const;
 const others = [

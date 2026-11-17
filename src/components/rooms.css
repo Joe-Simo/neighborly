@@ -16,8 +16,17 @@
 .has-reveal .neighborly-rooms[data-reveal]{translate:none}
 .has-reveal .neighborly-rooms li{opacity:0;transition:opacity .36s linear calc(var(--i) * 60ms)}
 .has-reveal .neighborly-rooms.is-visible li{opacity:1}
-@media(max-width:1100px){
+/* Until a card is wide enough for words beside its picture (about 30 letters to a line), the words lie under it. */
+@media(max-width:1599px){
   .neighborly-rooms li{grid-template-columns:minmax(0,1fr);gap:14px}
+}
+/* From 1101 to 1599 the six cards lie three to a row, so each picture stays near the size it was painted for and its line runs about 32 letters. The middle card of a row sits a little lower. */
+@media(min-width:1101px) and (max-width:1599px){
+  .neighborly-rooms ul{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(24px,2.6vw,40px)}
+  .neighborly-rooms li:nth-child(2n){margin-top:0}
+  .neighborly-rooms li:nth-child(3n+2){margin-top:clamp(12px,1.6vw,28px)}
+  .neighborly-rooms li>div{padding:2px 4px 6px}
+  .neighborly-rooms li p{max-width:16em;text-wrap:balance}
 }
 @media(max-width:700px){
   /* One column: each picture at the column's width, its name and line beneath it. */

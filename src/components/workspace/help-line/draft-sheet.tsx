@@ -114,7 +114,8 @@ export function DraftSheet({
           </p>
           <h2 id={arriving ? undefined : "draft-title"}>
             {title}
-            {draft.payeeName && sheet.to(draft.payeeName)}
+            {/* Who is paid is a name, and a name is never broken across lines: its spaces do not break. */}
+            {draft.payeeName && sheet.to(draft.payeeName.replaceAll(" ", "\u00a0"))}
           </h2>
           {!complete && (
             <p className="help-assistant help-blank">
