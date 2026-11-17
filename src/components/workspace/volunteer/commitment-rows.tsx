@@ -3,11 +3,12 @@
 import { SavedWords } from "@/components/workspace/saved-words";
 import { FOLD_HOLD, arriving, foldLeaves, openUp, useSavedLine, viewTop } from "@/components/workspace/fold";
 import "./volunteer.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { ArrowRight, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LiveEmpty } from "@/components/workspace/primitives";
+import { useConnectionLost } from "@/components/workspace/states";
 import { useWorkspace } from "@/components/workspace/context";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -109,6 +110,70 @@ function Said({ children }: { children: string }) {
 
 type CoverRequest = LiveWorkspaceData["requests"][number];
 
+/**
+ * The one quiet line under a request whose answer cannot leave yet, the connection being down. It says the
+ * answer is kept (nothing was typed here, so the family's line about typing would be wrong). Other requests lie
+ * under it, so its room is opened as it is laid and closed as it leaves: nothing under it jumps. Empty, it takes
+ * no room at all.
+ */
+function WaitsToGo({ when }: { when: boolean }) {
+  const { words } = useWorkspace();
+  // Only once the connection has been down two seconds, as everywhere: a blink shows nothing.
+  const lost = useConnectionLost();
+  const shown = when && lost;
+  const box = useRef<HTMLDivElement>(null);
+  const tall = useRef(0);
+  // Before the browser paints, so the line is never drawn at full height first.
+  useLayoutEffect(() => {
+    const line = box.current?.firstElementChild;
+    if (line instanceof HTMLElement) {
+      tall.current = line.offsetHeight;
+      // The line stays for as long as the connection is down, so it is never held fixed over the rows: laid above
+      // the window it goes straight into the page, and the window keeps what the person is looking at.
+      openUp(line, { stays: true });
+    } else if (tall.current && box.current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // The line is already out of the page, so there is nothing to hand to closeUp: its place gives up the room
+      // the line really took, in the same 360ms.
+      box.current.animate([{ height: `${tall.current}px` }, { height: "0px" }], { duration: 360, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" });
+      tall.current = 0;
+    } else {
+      tall.current = 0;
+    }
+  }, [shown]);
+  return (
+    <div className="volunteer-choice-waits" ref={box}>
+      {shown && (
+        <p className="live-waiting" role="status">
+          {words.states.answerKept}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The word that takes the buttons' place takes the focus they had, once, and only when focus has fallen to the
+ * page with them: a person who has moved on to something else keeps their place.
+ */
+const takeFocus = (word: HTMLElement | null) => {
+  if (word && document.activeElement === document.body) word.focus({ preventScroll: true });
+};
+
+/**
+ * Focus goes back to the button that was pressed when its answer was refused. The button is still asleep
+ * (disabled) at that moment, so this waits for it; focus is never left to fall to the page. The wait can be
+ * long (a whole outage), so the same rule as takeFocus holds at the end of it: a person who has moved on to
+ * something else keeps their place.
+ */
+function focusOnceAwake(button: HTMLButtonElement, tries = 90) {
+  if (!button.isConnected) return;
+  requestAnimationFrame(() => {
+    if (button.disabled && tries > 0) return focusOnceAwake(button, tries - 1);
+    const now = document.activeElement;
+    if (now === button || now === document.body) button.focus({ preventScroll: true });
+  });
+}
+
 /** The green line with its margin, and the row's own travel: what pushes the row down after it is measured. */
 const LINE_ROOM = 120;
 
@@ -124,9 +189,10 @@ export function useAcceptedArrival() {
 }
 
 /**
- * The sheet of what waits for this person's yes. Its corner is ochre while it waits.
- * On Accept the corner folds green and the line reads accepted for a beat; then the
- * sheet leaves and `onAccepted` names the commitment, so the list below can lay it in.
+ * The sheet of what waits for this person's yes. Its corner is ochre while it waits, and it
+ * stays ochre, its buttons in place, while the yes is on its way. Only once the yes is saved does
+ * the corner fold green and the line read accepted for a beat; then the sheet leaves and
+ * `onAccepted` names the commitment, so the list below can lay it in.
  */
 export function IncomingRequests({
   onGiven,
@@ -135,7 +201,7 @@ export function IncomingRequests({
 }: {
   /** The heading of the list the accepted commitment goes into, said in the green line when that row is out of view. */
   place?: string;
-  /** The commitment whose yes was just pressed, while its sheet is held; undefined once the hold is over. */
+  /** The commitment whose yes was just pressed, while it is on its way and while its sheet is held; undefined once the hold is over or the yes was refused. */
   onGiven?: (commitmentId: string | undefined) => void;
   onAccepted?: (commitmentId: string) => void;
 }) {
@@ -148,30 +214,45 @@ export function IncomingRequests({
     showCommitment,
     words,
   } = useWorkspace();
+  // `given` is the request whose yes was pressed: it is kept on the sheet from the press to the end of the beat.
+  // It is not green for that. Green is `taken`: the same request, once its save has truly gone through.
   const [given, setGiven] = useState<CoverRequest>();
+  const [saved, setSaved] = useState<string>();
+  const taken = given && saved === given.id ? given : undefined;
+  // The request whose answer, yes or no, is on its way: its row is the one that says so when the connection is lost.
+  const [sent, setSent] = useState<string>();
   const [said, setSaid] = useState<{ words: string; of: string }>();
   const incoming = incomingRequests(data);
-  // The request just accepted leaves the data at once; the sheet keeps it for the beat.
+  // The request just accepted leaves the data the moment it is saved; the sheet keeps it for the beat.
   const shown =
     given && !incoming.some((request) => request.id === given.id)
       ? [given, ...incoming]
       : incoming;
   const statuses: Partial<Record<string, string>> = words.commitments.status;
-  const respond = async (request: CoverRequest, accept: boolean) => {
+  const respond = async (request: CoverRequest, accept: boolean, pressed: HTMLButtonElement) => {
+    // Nothing here is green yet. The request and its commitment are only held where they are, so that when the
+    // save lands (the data changes a moment before `perform` answers) the row does not leave the sheet or show up
+    // in the list below ahead of the beat. Offline the save is only queued and `perform` does not answer: the
+    // buttons stay, asleep, and the row says it is waiting.
     if (accept) {
       setGiven(request);
       onGiven?.(request.commitmentId);
     }
-    const beat = new Promise((settle) => setTimeout(settle, accept ? FOLD_HOLD : 0));
+    setSent(request.id);
     setSaid(undefined);
-    const saved = await perform({ type: "respondCover", requestId: request.id, accept });
-    if (!saved) {
+    const done = await perform({ type: "respondCover", requestId: request.id, accept });
+    setSent(undefined);
+    if (!done) {
       setGiven(undefined);
       onGiven?.(undefined);
+      // The buttons never left; the one that was pressed has focus again once it wakes.
+      focusOnceAwake(pressed);
       return;
     }
     if (!accept) return setSaid({ words: words.requests.declined, of: request.id });
-    await beat;
+    // Saved: now the corner folds green and the word reads accepted, and the beat starts from this moment.
+    setSaved(request.id);
+    await new Promise((settle) => setTimeout(settle, FOLD_HOLD));
     // The page never moves after a yes. The row enters its list while the sheet is still there; where it
     // will rest once the sheet has closed and the green line is laid is worked out from that, and when
     // that is not wholly inside the window the line says where it is.
@@ -194,14 +275,14 @@ export function IncomingRequests({
     flushSync(() => setGiven(undefined));
   };
   const line = said && <Said key={said.of}>{said.words}</Said>;
-  const waiting = shown.filter((request) => request.id !== given?.id).length;
+  const waiting = shown.filter((request) => request.id !== taken?.id).length;
   return shown.length ? (
     <>
       {line}
       <section
-        className={`help-sheet volunteer-choice${given ? " paper-fold" : ""}`}
+        className={`help-sheet volunteer-choice${taken ? " paper-fold" : ""}`}
         // The last request takes the sheet with it; otherwise only its own line leaves.
-        data-fold-leaves={given && shown.length === 1 ? "" : undefined}
+        data-fold-leaves={taken && shown.length === 1 ? "" : undefined}
         aria-labelledby="live-requests-title">
         <p className="help-sheet-label">{waiting ? words.requests.awaiting(waiting) : statuses.accepted}</p>
         <h2 id="live-requests-title">{words.requests.title}</h2>
@@ -213,7 +294,7 @@ export function IncomingRequests({
               (commitment) => commitment.id === request.commitmentId,
             );
             return (
-              <div className="volunteer-choice-row" data-fold-leaves={request.id === given?.id && shown.length > 1 ? "" : undefined} key={request.id}>
+              <div className="volunteer-choice-row" data-fold-leaves={request.id === taken?.id && shown.length > 1 ? "" : undefined} key={request.id}>
                 <div>
                   <h3>{item?.title ?? words.requests.fallbackTitle}</h3>
                   <p className="volunteer-choice-when">
@@ -222,9 +303,11 @@ export function IncomingRequests({
                       : words.requests.unavailable}
                   </p>
                   {item?.location && <p>{item.location}</p>}
+                  <WaitsToGo when={pending && request.id === sent} />
                 </div>
-                {request.id === given?.id ? (
-                  <p className="volunteer-given" role="status">
+                {request.id === taken?.id ? (
+                  // The buttons it replaces are gone, so the word takes focus: it is never left to fall to the page.
+                  <p className="volunteer-given" role="status" tabIndex={-1} ref={takeFocus}>
                     <CircleCheck size={22} aria-hidden="true" />
                     {statuses.accepted}
                   </p>
@@ -233,7 +316,7 @@ export function IncomingRequests({
                     <Button
                       disabled={pending || !item}
                       aria-label={`${words.requests.accept}: ${item?.title ?? words.requests.fallbackTitle}`}
-                      onClick={() => void respond(request, true)}
+                      onClick={(event) => void respond(request, true, event.currentTarget)}
                     >
                       {words.requests.accept}
                     </Button>
@@ -241,7 +324,7 @@ export function IncomingRequests({
                       disabled={pending}
                       variant="outline"
                       aria-label={`${words.requests.decline}: ${item?.title ?? words.requests.fallbackTitle}`}
-                      onClick={() => void respond(request, false)}
+                      onClick={(event) => void respond(request, false, event.currentTarget)}
                     >
                       {words.requests.decline}
                     </Button>

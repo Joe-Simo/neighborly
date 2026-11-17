@@ -20,7 +20,7 @@ import {
 import type { LiveArea } from "@/components/workspace/areas";
 import { readFailure } from "@/components/workspace/failure";
 import { LiveLoading } from "@/components/workspace/primitives";
-import { LiveConnection, RoomBoundary } from "@/components/workspace/states";
+import { LiveConnection, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
 import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
@@ -98,6 +98,10 @@ export function LiveWorkspace({
   >(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  // The dialog the save now on its way (or the last one) was sent from; null when it was sent from the page, or
+  // when its dialog has been left since. Only that dialog says it is saving and shows what came of it: a dialog
+  // opened later sent nothing, so it claims nothing.
+  const [saveFrom, setSaveFrom] = useState<DialogName | null>(null);
   const [notice, setNotice] = useState("");
   // The way back offered on the saved line, when the act has one.
   const [undo, setUndo] = useState<{ command: LiveCommand; said: string; returnTo?: HTMLElement }>();
@@ -121,6 +125,8 @@ export function LiveWorkspace({
   const ownPerson = data.people.find((person) => person.id === data.user.id);
   const isOwner = ownPerson?.role === "owner";
   const selected = selectedCommitment;
+  // At most one of the shell's dialogs is open at a time.
+  const openDialog: DialogName | null = dialog !== null ? "create" : selectedCommitment ? "detail" : editingCommitment ? "editor" : confirmation ? "confirmation" : release ? "release" : null;
   const format = (time: number, options?: Intl.DateTimeFormatOptions) =>
     formatDate(words.locale, time, {
       timeZone: data.church.timeZone,
@@ -140,6 +146,7 @@ export function LiveWorkspace({
   const churchName = data.church.sample ? data.church.name.replace(/\s*\(sample\)\s*$/i, "") : data.church.name;
   async function perform(command: LiveCommand, success?: string, back?: { command: LiveCommand; said: string; returnTo?: HTMLElement }) {
     setPending(true);
+    setSaveFrom(openDialog);
     setError("");
     setNotice("");
     setUndo(undefined);
@@ -173,6 +180,31 @@ export function LiveWorkspace({
   function open(kind: ActionKind) {
     setError("");
     setDialog(kind);
+  }
+  // A save sent while the connection is down is held and goes by itself when the connection returns, and nobody
+  // can say how long that will be. So a dialog that is waiting on such a save can still be left, by its cross,
+  // by Escape or by its quiet button; with the connection up a save answers at once and the dialog stays put
+  // until it has. (The connection is read here a second time only for `hasEverConnected`: a page that has never
+  // connected is opening, not cut off.)
+  const link = useConvexConnectionState();
+  const cutOff = link.hasEverConnected && !link.isWebSocketConnected;
+  const held = pending && !cutOff;
+  // Counts the dialogs left while their save was still on its way. A save that lands after its dialog was left
+  // has nothing to close, and must not close whatever dialog the person has opened since.
+  const left = useRef(0);
+  function leaveDialog(close: () => void) {
+    if (held) return;
+    if (pending) {
+      left.current += 1;
+      // The save goes on without its dialog: what comes of it is said on the page, not in the next dialog opened.
+      setSaveFrom(null);
+    }
+    close();
+  }
+  /** Sends the save and, when it has gone through, closes the dialog it was sent from, if the person is still in it. */
+  async function performThenClose(close: () => void, ...save: Parameters<typeof perform>) {
+    const at = left.current;
+    if ((await perform(...save)) && at === left.current) close();
   }
   // An act's name, in the reader's language where the tables have it. Tasks keep theirs with the room's words.
   const actName = (kind: ActionKind) => (kind === "task" ? words.tasks.add : (actions[kind] ?? actionTitles[kind]));
@@ -284,7 +316,7 @@ export function LiveWorkspace({
   // iPhone app's launch cover waits for `.live-app[data-room-in]`, set once with the first room shown.
   const app = useRef<HTMLDivElement>(null);
   const column = useRef<HTMLElement>(null);
-  const { shown, opening, settled } = useWholeRoom(area, column);
+  const { shown, opening, lost, settled } = useWholeRoom(area, column);
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
   const [roomIn, setRoomIn] = useState(false);
   if (shown && !roomIn) setRoomIn(true);
@@ -358,6 +390,7 @@ export function LiveWorkspace({
             <span className="live-account">
               {data.user.name || data.user.email}
             </span>
+            {/* At rest while a save is on its way: leaving then would drop a save the person was told is kept. */}
             <Button variant="ghost" size="sm" disabled={pending} onClick={() => void signOut()}>
               <LogOut size={16} aria-hidden="true" /> {leaveLabel}
             </Button>
@@ -420,7 +453,9 @@ export function LiveWorkspace({
           {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. */}
           {opening && (
             <p className="live-opening" role="status">
-              <span className="text-balance">{roomWords.states.opening}</span>
+              {/* A room held because the connection is down says that, not that it is opening: the strip that
+                  would say so is inside the column that is not seen yet. The same status line, so it is read out. */}
+              <span className="text-balance">{lost ? roomWords.states.offlineTitle : roomWords.states.opening}</span>
             </p>
           )}
           <div className="live-page-head" data-rested={rested ? "" : undefined}>
@@ -536,9 +571,7 @@ export function LiveWorkspace({
       <WorkspaceProvider value={roomWorkspace}>
           <LiveDialog
             open={dialog !== null}
-            onClose={() => {
-              if (!pending) setDialog(null);
-            }}
+            onClose={() => leaveDialog(() => setDialog(null))}
             title={dialog && actName(dialog)}
             description={
               dialog === "invite"
@@ -570,10 +603,11 @@ export function LiveWorkspace({
                     kind={dialog}
                     data={data}
                     pending={pending}
-                    error={error}
-                    onSubmit={async (command) => {
-                      if (await perform(command, command.type === "createTask" ? words.tasks.added(command.title) : "Saved.")) setDialog(null);
-                    }}
+                    saving={pending && saveFrom === "create"}
+                    error={saveFrom === "create" ? error : ""}
+                    onSubmit={(command) =>
+                      performThenClose(() => setDialog(null), command, command.type === "createTask" ? words.tasks.added(command.title) : "Saved.")
+                    }
                   />
                 )
               )}
@@ -582,13 +616,11 @@ export function LiveWorkspace({
             title={selected?.title ?? words.detail.fallbackTitle}
             className="live-detail-dialog"
             open={!!selected}
-            onClose={() => {
-              if (!pending) setSelectedCommitment(null);
-            }}
+            onClose={() => leaveDialog(() => setSelectedCommitment(null))}
           >
         <CommitmentDetail
           selected={selected}
-          error={error}
+          error={saveFrom === "detail" ? error : ""}
           onEdit={(item) => {
             setEditingCommitment(item);
             setSelectedCommitment(null);
@@ -603,9 +635,7 @@ export function LiveWorkspace({
           </LiveDialog>
         <LiveDialog
           open={editingCommitment !== null}
-          onClose={() => {
-            if (!pending) setEditingCommitment(null);
-          }}
+          onClose={() => leaveDialog(() => setEditingCommitment(null))}
           title={<>Edit commitment</>}
           description={<>Times are {zoneName(data.church.timeZone)}. You’ll review the changes before
                 saving.</>}
@@ -616,48 +646,42 @@ export function LiveWorkspace({
                 item={editingCommitment}
                 timeZone={data.church.timeZone}
                 pending={pending}
-                error={error}
-                save={async (command) => {
-                  if (
-                    await perform(
-                      command,
-                      "Commitment updated. Material changes require a new acceptance.",
-                    )
+                saving={pending && saveFrom === "editor"}
+                error={saveFrom === "editor" ? error : ""}
+                save={(command) =>
+                  performThenClose(
+                    () => setEditingCommitment(null),
+                    command,
+                    "Commitment updated. Material changes require a new acceptance.",
                   )
-                    setEditingCommitment(null);
-                }}
+                }
               />
             )}
         </LiveDialog>
         <LiveDialog
           open={confirmation !== null}
-          onClose={() => {
-            if (!pending) setConfirmation(null);
-          }}
+          onClose={() => leaveDialog(() => setConfirmation(null))}
           title={confirmation?.title}
           description={confirmation?.body}
         >
-            {error && (
+            {saveFrom === "confirmation" && error && (
               <div className="live-error" role="alert">
                 {error}
               </div>
             )}
+            <LiveWaiting when={pending && saveFrom === "confirmation"} />
             <div className="live-form-actions">
               <Button
                 variant="outline"
-                onClick={() => setConfirmation(null)}
-                disabled={pending}
+                onClick={() => leaveDialog(() => setConfirmation(null))}
+                disabled={held}
               >
                 Go back
               </Button>
               <Button
                 disabled={pending}
-                onClick={async () => {
-                  if (
-                    confirmation &&
-                    (await perform(confirmation.command, "Updated."))
-                  )
-                    setConfirmation(null);
+                onClick={() => {
+                  if (confirmation) void performThenClose(() => setConfirmation(null), confirmation.command, "Updated.");
                 }}
               >
                 {confirmation?.action}
@@ -666,9 +690,7 @@ export function LiveWorkspace({
         </LiveDialog>
         <LiveDialog
           open={!!release}
-          onClose={() => {
-            if (!pending) setRelease(null);
-          }}
+          onClose={() => leaveDialog(() => setRelease(null))}
           title={words.detail.changeTitle}
           description={<>{release &&
                   `${release.title} · ${when(release.start, release.end)}`}</>}
@@ -677,34 +699,29 @@ export function LiveWorkspace({
               This releases this date only. Your other commitments and your place
               on the team stay the same. The date will need cover.
             </p>
-            {error && (
+            {saveFrom === "release" && error && (
               <div className="live-error" role="alert">
                 {error}
               </div>
             )}
+            <LiveWaiting when={pending && saveFrom === "release"} />
             <div className="live-form-actions">
               <Button
                 variant="outline"
-                disabled={pending}
-                onClick={() => setRelease(null)}
+                disabled={held}
+                onClick={() => leaveDialog(() => setRelease(null))}
               >
                 Keep commitment
               </Button>
               <Button
                 disabled={pending}
-                onClick={async () => {
-                  if (
-                    release &&
-                    (await perform(
-                      {
-                        type: "release",
-                        commitmentId: release.id,
-                        expectedVersion: release.version,
-                      },
+                onClick={() => {
+                  if (release)
+                    void performThenClose(
+                      () => setRelease(null),
+                      { type: "release", commitmentId: release.id, expectedVersion: release.version },
                       words.detail.released,
-                    ))
-                  )
-                    setRelease(null);
+                    );
                 }}
               >
                 Confirm change
@@ -716,6 +733,9 @@ export function LiveWorkspace({
     </WorkspaceProvider>
   );
 }
+
+/** The shell's own dialogs: the form an act opens, a commitment's details, its editor, a yes-or-no, and giving a date back. */
+type DialogName = "create" | "detail" | "editor" | "confirmation" | "release";
 
 /** Where the menu's marker last sat, so it can slide from the room just left even though the page is new. */
 let lastMarker: Record<string, string> | null = null;

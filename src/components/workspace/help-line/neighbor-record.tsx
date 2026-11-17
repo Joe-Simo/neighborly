@@ -18,6 +18,8 @@ import {
   RemoveForm,
   RequestForm,
 } from "@/components/workspace/help-line/forms";
+import { readFailure } from "@/components/workspace/failure";
+import { openUp } from "@/components/workspace/fold";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveState } from "@/components/workspace/states";
 import { CountUp } from "@/components/workspace/primitives";
@@ -58,6 +60,54 @@ const back = (
     <ArrowLeft size={16} aria-hidden="true" /> All neighbors
   </Link>
 );
+
+/** A reveal of the account numbers that was refused: the sentence to show, and which try it was. */
+type Covered = { why: string; tries: number };
+
+/**
+ * The account numbers were asked for and did not come. Said in plum, where the person asked: on the
+ * record above "At home", or inside the Accounts dialog when that is open (never behind it). It is not
+ * a saved line, so it carries no tick and does not go away by itself. It opens its own room (fold.ts),
+ * so what is under it is moved aside and does not jump. Because it stays, it is never held fixed over the
+ * record: laid above the window it takes its place in the page at once. It takes focus, so a screen reader says it
+ * and the keyboard is never left on a button that did nothing. A second refusal changes no words, so
+ * it is the focus coming back that says it again.
+ */
+function StillCovered({
+  covered,
+  kept,
+  onPage = false,
+}: {
+  covered: Covered;
+  /** The second line: what is still as it was. */
+  kept: string;
+  /** On the record itself the notice stands clear of what is above it; a dialog spaces its own pieces. */
+  onPage?: boolean;
+}) {
+  const notice = useRef<HTMLDivElement>(null);
+  // Before it is first painted, so it is never seen at full height first.
+  useLayoutEffect(() => {
+    if (notice.current) openUp(notice.current, { stays: true });
+  }, []);
+  useEffect(() => {
+    notice.current?.focus({ preventScroll: true });
+    notice.current?.scrollIntoView({ block: "nearest" });
+  }, [covered.tries]);
+  return (
+    <div
+      className="live-error live-failure"
+      role="alert"
+      tabIndex={-1}
+      ref={notice}
+      style={onPage ? { marginTop: 24 } : undefined}
+    >
+      <div>
+        <p>{covered.why}</p>
+        <p className="live-error-recovery">{kept}</p>
+      </div>
+    </div>
+  );
+}
 
 /** Opens one record: the opening is written down first, and only then is the record read. */
 export function NeighborRecord({
@@ -130,17 +180,49 @@ export function NeighborRecord({
   }, [setHeading, title, deck]);
   const [step, setStep] = useState<Step | null>(null);
   const [done, setDone] = useState("");
-  const finish = (message: string) => {
-    setStep(null);
-    setDone(message);
-  };
-  const close = () => setStep(null);
   const showAccounts = useMutation(api.neighbors.showAccounts);
   const [numbers, setNumbers] = useState<Accounts | null>(null);
-  const reveal = () =>
-    showAccounts({ churchId, neighborId }).then(setNumbers, () =>
-      setDone("The account numbers couldn’t be shown. Please try again."),
+  // A refused reveal is its own plum notice, never the green saved line: nothing was done. It is said where
+  // the person asked, and it is taken down when they move on (a dialog opened, closed or saved), so it is
+  // never carried from the dialog onto the page behind it, or the other way.
+  const [covered, setCovered] = useState<Covered | null>(null);
+  // Counts each time the person moves on. A refusal that arrives after that belongs to a place they have left
+  // (the dialog, or the page behind it), so it is dropped and never said somewhere it was not asked.
+  const place = useRef(0);
+  const moveOn = () => {
+    place.current += 1;
+    setCovered(null);
+  };
+  const finish = (message: string) => {
+    setStep(null);
+    moveOn();
+    setDone(message);
+  };
+  const close = () => {
+    setStep(null);
+    moveOn();
+  };
+  const reveal = () => {
+    const askedAt = place.current;
+    return showAccounts({ churchId, neighborId }).then(
+      (shown) => {
+        setCovered(null);
+        setNumbers(shown);
+      },
+      (cause: unknown) => {
+        if (place.current !== askedAt) return;
+        // The backend's own sentence when it gives one. The notice stays up while a second try is on its way.
+        setCovered((before) => ({
+          why: readFailure(
+            cause,
+            "The account numbers couldn’t be shown. Please try again.",
+            "There is no connection right now, so the account numbers couldn’t be shown.",
+          ),
+          tries: (before?.tries ?? 0) + 1,
+        }));
+      },
     );
+  };
   const target = { churchId, neighborId };
   if (opened === "missing")
     return (
@@ -183,9 +265,12 @@ export function NeighborRecord({
         now={now}
         home={homeReady}
         numbers={numbers}
+        // Under an open dialog the page says nothing: the dialog says it.
+        covered={step ? null : covered}
         onShowNumbers={() => void reveal()}
         onStep={(next) => {
           setDone("");
+          moveOn();
           setStep(next);
         }}
       />
@@ -221,6 +306,13 @@ export function NeighborRecord({
           description="Where a bill is paid, so the treasurer does not have to ask twice."
           onClose={close}
         >
+          {/* Above the form: under it, the form's pinned buttons would lie over the notice. It is brought into view. */}
+          {covered && (
+            <StillCovered
+              covered={covered}
+              kept="The numbers on file are still covered, and what you typed is still here."
+            />
+          )}
           <AccountsForm
             target={target}
             accounts={record.accounts}
@@ -421,6 +513,7 @@ export function NeighborRecordView({
   now,
   home = true,
   numbers = null,
+  covered = null,
   onShowNumbers = () => {},
   onStep,
 }: {
@@ -430,6 +523,8 @@ export function NeighborRecordView({
   now: number;
   home?: boolean;
   numbers?: Accounts | null;
+  /** "Show numbers" was refused: said in plum just above "At home", where it was asked. */
+  covered?: Covered | null;
   onShowNumbers?: () => void;
   onStep: (step: Step) => void;
 }) {
@@ -622,6 +717,13 @@ export function NeighborRecordView({
       )}
 
       {/* What is open leads, under the figures; the home's details follow it, then the thread. */}
+      {home && covered && (
+        <StillCovered
+          covered={covered}
+          kept="The numbers on file are still covered. Nothing on the record was changed."
+          onPage
+        />
+      )}
       {home && (
         <AtHome
           record={record}

@@ -302,8 +302,11 @@ export function es(set: WordSet): Words {
       kept: "No se guardó nada, y lo que escribiste sigue aquí.",
       tryAgain: "Intentar de nuevo",
       waiting: "Esperando la conexión. Lo que escribiste está guardado aquí y se enviará cuando vuelva.",
+      /** Under a yes or a no that was pressed, not typed, while the connection is down. */
+      answerKept: "Tu respuesta está guardada. Se enviará cuando vuelva la conexión.",
       offlineTitle: "Ahora no hay conexión.",
       offlineDeck: "Lo que ves en pantalla se conserva. Los cambios se enviarán cuando este dispositivo vuelva a tener conexión.",
+      back: "Volvió la conexión.",
       errorTitle: "Esta sala no se abrió.",
       errorDeck: `No se perdió nada. Inténtalo de nuevo; si sigue sin abrirse, el resto de tu ${place} está en el menú.`,
       privateTitle: "Se mantiene en privado.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf, openUp } from "@/components/workspace/fold";
 import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
   useCallback,
@@ -30,6 +30,7 @@ import {
 } from "@/components/workspace/help-line/forms";
 import { OnTheLine, owners, turnsToday } from "@/components/workspace/help-line/on-the-line";
 import { LiveDialog } from "@/components/workspace/live-dialog";
+import { LiveWaiting } from "@/components/workspace/states";
 import {
   count,
   initials,
@@ -75,6 +76,11 @@ export function HelpLineSection() {
   );
 }
 
+/** A refusal opens its own room as it is laid, so the sheet under it is moved aside and never jumps; it stays while it is true. */
+const laidToStay = (notice: HTMLElement | null) => {
+  if (notice) openUp(notice, { stays: true });
+};
+
 function HelpLine() {
   const { data, format, now, setHeadAction } = useWorkspace();
   const churchId = data.church.id;
@@ -100,6 +106,11 @@ function HelpLine() {
   const kept = answer instanceof Error ? undefined : answer;
   const keepDraft = useMutation(api.assistance.keepDraft);
   const discardDraft = useMutation(api.assistance.discardDraft);
+  // The draft whose discard was refused, so the plum notice speaks of the discard and not of a request. It is
+  // set in the same breath as the refusal's sentence, and dropped as soon as anything else is being saved, so
+  // a later refusal (of a yes, say) is never given the discard's words.
+  const [undiscarded, setUndiscarded] = useState<Call["id"] | null>(null);
+  if (undiscarded && approving.pending) setUndiscarded(null);
   const [here, setDrafts] = useState<Drafted[]>([]);
   const drafts = kept ?? here;
   const newest = drafts.at(0) ?? null;
@@ -236,6 +247,9 @@ function HelpLine() {
     if (!neighborId)
       return setStep({ kind: "join", drafted: asked, then: "approve" });
     setStep(null);
+    // The button that was pressed rests while the request is saved and sealed, and a resting button lets focus fall to
+    // the page. The sheet takes it, so the next key starts from here; the saved line takes it from the sheet.
+    document.querySelector<HTMLElement>(".help-sheet:not([data-arriving])")?.focus({ preventScroll: true });
     const outcome = await approving.save(() =>
       createRequest({
         churchId,
@@ -297,15 +311,20 @@ function HelpLine() {
         </HelpDone>
       )}
       {(approving.error || drafting.error) && (
-        <div className="live-error" role="alert">
+        <div className="live-error" role="alert" ref={laidToStay}>
           <p>
-            {approving.error ||
-              "The assistant couldn’t draft this request. Nothing was saved."}
+            {approving.error && undiscarded
+              ? "The draft couldn’t be discarded."
+              : approving.error ||
+                "The assistant couldn’t draft this request. Nothing was saved."}
           </p>
           <p className="live-error-recovery">
-            {approving.error
-              ? "The draft is still here. Choose Change to correct it."
-              : "You can write the request yourself in the form."}
+            {approving.error && undiscarded
+              ? // The reason as the backend gave it, then what is true now: the draft was not thrown away.
+                `${approving.error} The draft is still on its sheet.`
+              : approving.error
+                ? "The draft is still here. Choose Change to correct it."
+                : "You can write the request yourself in the form."}
           </p>
         </div>
       )}
@@ -351,7 +370,13 @@ function HelpLine() {
                     // Once saved, its buttons stay as they were while saving and fade from there with the seal,
                     // never back to full ink first.
                     pending={approving.pending || one === sealed}
-                    toDo={<DraftToDo notes={one.draft.notes} />}
+                    toDo={
+                      <>
+                        <DraftToDo notes={one.draft.notes} />
+                        {/* A discard (or a yes) held by a lost connection: one quiet line above the resting buttons. */}
+                        <LiveWaiting when={approving.pending && one === onSheet} />
+                      </>
+                    }
                     limits={
                       <AssistantLimits
                         callId={one.call.id}
@@ -367,12 +392,25 @@ function HelpLine() {
                           : { kind: "join", drafted: one, then: "change" },
                       )
                     }
-                    onDiscard={() => {
+                    onDiscard={async () => {
+                      // An earlier green line would stand beside this draft's own answer; it is taken down first.
+                      setDone(null);
+                      // A draft the group keeps is only gone once the backend says so. Until then it stays on its
+                      // sheet, its buttons resting (the sheet's `pending`), and nothing is said to be done. If the
+                      // discard is refused the draft is left where it is and the notice says so in plum.
+                      if (kept) {
+                        const outcome = await approving.save(async () => {
+                          try {
+                            await discardDraft({ churchId, callId: one.call.id });
+                          } catch (cause) {
+                            setUndiscarded(one.call.id);
+                            throw cause;
+                          }
+                        });
+                        if (!outcome.saved) return;
+                      }
+                      // A draft kept on this page only has nothing to wait for.
                       settle(one.call);
-                      if (kept)
-                        void approving.save(() =>
-                          discardDraft({ churchId, callId: one.call.id }),
-                        );
                       setDone({ message: "Draft discarded. Nothing was saved." });
                     }}
                   />

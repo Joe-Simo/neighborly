@@ -700,6 +700,8 @@
   color: var(--paper-ink, #283c32);
 }
 .live-connection strong { font-weight: 600; }
+/* The connection is back: the same strip, its plum edge turned green, for the moment before it closes up. */
+.live-connection[data-back] { border-color: color-mix(in srgb, var(--paper-green, #365c46) 26%, #f7f4ed); border-left-color: var(--paper-green, #365c46); }
 .live-app .live-state { border-top: 0; padding-top: 8px; }
 .live-state:not([data-kind="empty"]) > .paper-vignette { border-color: #fffdf7; box-shadow: 0 0 0 1px #6f5f93, 0 14px 22px -12px rgb(40 60 50 / 0.42); }
 .live-app .live-state [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }

@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves, useSavedLine } from "@/components/workspace/fold";
+import { FOLD_HOLD, closeUp, foldLeaves, openUp, useSavedLine } from "@/components/workspace/fold";
 import "./visits.css";
 import {
   Fragment,
@@ -9,6 +9,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type ReactNode,
 } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -27,7 +28,7 @@ import {
   HelpLoading,
   HelpRoom,
 } from "@/components/workspace/help-line/room";
-import { LiveFailure } from "@/components/workspace/states";
+import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
 import {
   PlanForm,
@@ -74,11 +75,27 @@ function Visits() {
   const [done, setDone] = useState("");
   // The visit just planned or written up, so its row can show the paper moving into place.
   const [fresh, setFresh] = useState<Fresh | null>(null);
-  // The pair sheet whose yes was just given: it stays a beat with its corner turned green, then leaves.
+  // The pair sheet whose ask is on its way: it is kept on the page as it is, its buttons off, until the save answers.
+  const [asking, setAsking] = useState<Suggestion | null>(null);
+  // The pair sheet whose ask has been saved: it stays a beat with its corner turned green, then leaves.
   const [asked, setAsked] = useState<Suggestion | null>(null);
+  // The sentence of an ask that was refused. useSave forgets its own the moment a second try starts; this one
+  // stays up while that try is on its way, so the notice does not go and come back and nothing under it jumps.
+  const [refused, setRefused] = useState("");
+  if (error && error !== refused) setRefused(error);
+  const room = useRef<HTMLDivElement>(null);
+  const refusal = () => room.current?.querySelector<HTMLElement>(":scope > .live-failure");
+  const isRefused = Boolean(refused);
+  // The notice is laid above the whole room, so before it is first painted it opens its own room (fold.ts).
+  // It stays until the person moves on, so it is never held fixed over the pair sheet.
+  useLayoutEffect(() => {
+    const notice = isRefused && room.current?.querySelector<HTMLElement>(":scope > .live-failure");
+    if (notice) openUp(notice, { stays: true });
+  }, [isRefused]);
   const start = (next: Step) => {
     setDone("");
     clear();
+    setRefused("");
     setStep(next);
   };
   const planVisit = useCallback(() => {
@@ -121,27 +138,33 @@ function Visits() {
   if (sheetId) return <VisitSheet visitId={sheetId as Id<"visits">} />;
   if (!board) return <HelpLoading label="Opening home visits" />;
   return (
-    <div className="visits-room">
+    <div className="visits-room" ref={room}>
       {done && (
         <VisitsDone key={done} pair={fresh?.pair}>
           {done}
         </VisitsDone>
       )}
-      {error && (
-        <LiveFailure message={error} kept="Nothing was changed. Try again, or choose the pair yourself." />
+      {refused && (
+        <LiveFailure message={refused} kept="Nothing was changed. Try again, or choose the pair yourself." />
       )}
       <VisitsView
         board={board}
         now={now}
         format={format}
-        busy={pending}
+        busy={pending || Boolean(asking)}
         fresh={fresh?.id}
+        asking={asking}
         asked={asked}
+        // With the connection down the ask is kept and goes by itself; the sheet says so beside its resting buttons.
+        waits={<LiveWaiting when={Boolean(asking)} />}
         onPlan={(requestId) => start({ kind: "plan", requestId })}
         onAsk={async (suggested, pair) => {
+          // One ask at a time: the buttons are off, but a second press can land before that is drawn.
+          if (asking || asked) return;
           setDone("");
-          setAsked(suggested);
-          const beat = new Promise((settle) => setTimeout(settle, FOLD_HOLD));
+          // Nothing turns green yet. The sheet is held as it is, because the board may move on to the next
+          // request a moment before the save answers here, and this sheet must not blink away and back.
+          setAsking(suggested);
           const outcome = await save(() =>
             plan({
               churchId,
@@ -151,11 +174,19 @@ function Visits() {
               visitorIds: pair.map((person) => person.memberId),
             }),
           );
-          await beat;
-          if (outcome.saved) await foldLeaves();
+          // Refused: the sheet is as it was, its buttons back on, and the plum notice above it says why.
+          if (!outcome.saved) return setAsking(null);
+          // Saved after an earlier refusal: the plum notice closes up first, so it is never beside the green.
+          const notice = refusal();
+          if (notice) await closeUp(notice);
+          setRefused("");
+          // Only now is it done, so only now does the corner turn green. It is read for a beat, then leaves.
+          setAsked(suggested);
+          setAsking(null);
+          await new Promise((settle) => setTimeout(settle, FOLD_HOLD));
+          await foldLeaves();
           setAsked(null);
-          if (outcome.saved)
-            finish(
+          finish(
               `${firstName(pair[0].name)} and ${firstName(pair[1].name)} have been asked to visit ${suggested.request.neighborName} on ${day(suggested.scheduledAt)} at ${time(suggested.scheduledAt)}.`,
               { id: outcome.result, pair: pair.map((person) => person.name) },
             );
@@ -291,6 +322,25 @@ export function VisitsDone({
   );
 }
 
+/**
+ * The green words on a pair sheet once the ask is saved. They stand where the two buttons were, and the
+ * button that was pressed is gone with them, so the words take the focus it would otherwise drop to the
+ * page: a screen reader says them and the keyboard keeps its place. Someone who moved on while waiting
+ * is left where they went.
+ */
+function BothAsked() {
+  const words = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const at = document.activeElement;
+    if (!at || at === document.body) words.current?.focus({ preventScroll: true });
+  }, []);
+  return (
+    <span className="live-status" tabIndex={-1} ref={words}>
+      Both asked
+    </span>
+  );
+}
+
 /** The screen itself, given its records: no fetching here, so it can be shown with made-up data. */
 export function VisitsView({
   board,
@@ -298,7 +348,9 @@ export function VisitsView({
   format,
   busy,
   fresh,
+  asking,
   asked,
+  waits,
   onPlan,
   onAsk,
   onWriteUp,
@@ -310,14 +362,18 @@ export function VisitsView({
   busy: boolean;
   /** The visit just planned or written up: its pair joins, or its row settles into Written up. */
   fresh?: Id<"visits">;
-  /** The suggestion whose pair was just asked: shown a beat longer with its corner green. */
+  /** The suggestion whose ask is being saved: kept on the page as it was, whatever the board says meanwhile. */
+  asking?: Suggestion | null;
+  /** The suggestion whose pair has been asked and saved: shown a beat longer with its corner green. */
   asked?: Suggestion | null;
+  /** The quiet line shown on the pair sheet while its ask waits for the connection. Passed in, so the view fetches nothing. */
+  waits?: ReactNode;
   onPlan: (requestId?: Id<"assistanceRequests">) => void;
   onAsk: (suggested: Suggestion, pair: NonNullable<Suggestion["pair"]>) => void;
   onWriteUp: (visit: Visit) => void;
   onReplace: (visit: Visit, leaving: Visit["visitors"][number]) => void;
 }) {
-  const suggested = asked ?? board.suggested;
+  const suggested = asked ?? asking ?? board.suggested;
   const coming = board.scheduled.filter((visit) => visit.scheduledAt >= now);
   const toWriteUp = board.scheduled.filter((visit) => visit.scheduledAt < now);
   const short = coming.filter((visit) =>
@@ -370,6 +426,7 @@ export function VisitsView({
           className={asked ? "help-sheet paper-fold" : "help-sheet"}
           data-fold-leaves={asked ? "" : undefined}
           aria-label={`Visit to arrange for ${suggested.request.neighborName}`}
+          aria-busy={(Boolean(asking) && !asked) || undefined}
         >
           <p className="help-sheet-label">
             {asked
@@ -391,10 +448,11 @@ export function VisitsView({
                 </p>
               )}
               <p>{suggested.reason}</p>
+              {!asked && waits}
             </div>
             <div className="help-actions">
               {asked ? (
-                <span className="live-status">Both asked</span>
+                <BothAsked />
               ) : suggested.pair ? (
                 <>
                   <Button
@@ -408,6 +466,8 @@ export function VisitsView({
                   </Button>
                   <Button
                     variant="outline"
+                    // While the ask is on its way the pair cannot be changed under it.
+                    disabled={busy}
                     aria-label={`Choose others: ${suggested.request.neighborName}`}
                     onClick={() => onPlan(suggested.request.requestId)}
                   >

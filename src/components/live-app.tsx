@@ -400,7 +400,9 @@ function PageMore({
   label: string;
   count?: number;
 }) {
-  if (page.status === "Exhausted") return null;
+  // Until its first page is in there is nothing more to ask for, so no button is drawn: a disabled "Loading…"
+  // button under a list that has not arrived is half a room, and with no connection it would stand there for good.
+  if (page.status === "Exhausted" || page.status === "LoadingFirstPage") return null;
   return (
     <div className="live-section">
       <Button
