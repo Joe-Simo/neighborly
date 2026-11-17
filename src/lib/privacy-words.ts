@@ -103,7 +103,7 @@ const es: typeof en = {
   questions: {
     title: "Preguntas",
     newTab: "(se abre en una pestaña nueva)",
-    before: "Sobre el programa en sí, o si no puedes comunicarte con un responsable, abre un reporte (“issue”) en la página pública del proyecto: ",
+    before: "Sobre el programa en sí, o si no puedes comunicarte con un responsable, abre un reporte («issue») en la página pública del proyecto: ",
     after: ". Por favor, no pongas datos personales en un reporte público.",
     independent: "Kind Helps es un proyecto independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo.",
   },

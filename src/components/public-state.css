@@ -84,4 +84,6 @@
   .public-state .live-auth-art { left: 50%; width: 100vw; margin-left: -50vw; margin-right: 0; background-size: cover; background-position: 50% 80%; }
 }
 /* The sentence under the headline never ends on one word alone. */
+/* A heading never ends on one word alone ("…no se / abrió."). */
+.public-state .live-auth h1{text-wrap:balance}
 .public-state .live-auth .live-deck{text-wrap:balance}

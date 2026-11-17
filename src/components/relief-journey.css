@@ -109,34 +109,35 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 [data-picture=year] [data-piece=ribbon]{transform:rotateY(calc(min(1,var(--q) * 1.35) * -98deg))}
 /* Each chapter is its own page: one window of scroll, and its own crop and scale of its picture. */
 @media(min-width:821px){
-  .relief-panel{min-height:118svh}
-  /* The call: close in on the receiver, the picture large and off the top and right of the window; the words sit low on the paper under it. */
-  .relief-panel[data-chapter=call] .relief-hold{grid-template-columns:minmax(0,1fr) auto;align-items:end;padding-bottom:7svh}
-  .relief-panel[data-chapter=call] .relief-picture{align-self:start;width:min(64vw,104svh);aspect-ratio:16/10;margin-top:-4svh}
+  .relief-panel{min-height:108svh}
+  /* The call: close in on the receiver, the picture as large as the window allows and off its top and right; the heading and its sentence share one line on the paper under it.
+     The picture's width leaves that line its room: the window's height less the heading, at the picture's 16/10. */
+  .relief-panel[data-chapter=call] .relief-hold{grid-template-columns:minmax(0,1fr);align-items:end;padding-bottom:5svh}
+  .relief-panel[data-chapter=call] .relief-picture{grid-area:1/1;align-self:start;width:min(80vw,calc((94svh - min(8.5vw,135px)) * 1.6));aspect-ratio:16/10;margin-top:-6svh}
   .relief-panel[data-chapter=call] .relief-layers{width:112%;height:126%;margin:-7% 0 0 -6%}
-  .relief-panel[data-chapter=call] .relief-hold{gap:0 3vw}
-  .relief-panel[data-chapter=call] .relief-words{--drop:0px;align-self:end}
-  /* The visit: an upright crop on the door, small and low at the left; the heading stands tall across the paper beside it. */
-  .relief-panel[data-chapter=visit] .relief-hold{grid-template-columns:auto minmax(0,1fr);gap:0 6vw;padding-left:9vw;padding-right:7%}
-  .relief-panel[data-chapter=visit] .relief-picture{order:-1;justify-self:start;align-self:end;margin-bottom:8svh;width:min(38vw,70svh);aspect-ratio:4/5;-webkit-mask:none;mask:none;clip-path:polygon(0 3%,30% 0,62% 2%,100% 0,100% 97%,70% 100%,36% 98%,0 100%)}
-  .relief-panel[data-chapter=visit] .relief-layers{width:187.5%;margin-left:-23%}
+  .relief-panel[data-chapter=call] .relief-words{--drop:0px;grid-area:1/1;align-self:end;display:flex;align-items:last baseline;gap:4vw}
+  .relief-panel[data-chapter=call] .relief-words p{margin:0}
+  /* The visit: the door whole with both members' sleeves, as tall as the window allows and never drawn past the picture's own 1536 pixels; the heading stands tall across the paper beside it. */
+  .relief-panel[data-chapter=visit] .relief-hold{grid-template-columns:auto minmax(0,1fr);gap:0 4vw;padding-left:0;padding-right:7%}
+  .relief-panel[data-chapter=visit] .relief-picture{order:-1;justify-self:start;align-self:center;margin-bottom:0;width:min(43vw,76svh,825px);aspect-ratio:4/5;-webkit-mask:linear-gradient(to right,#000 95%,#0000);mask:linear-gradient(to right,#000 95%,#0000);clip-path:polygon(0 3%,30% 0,62% 2%,100% 0,100% 97%,70% 100%,36% 98%,0 100%)}
+  /* Right of the door the picture is bare paper with one pale arc; the arc thins out at the picture's edge where it would otherwise be cut straight. */
+  .relief-panel[data-chapter=visit] .relief-layers{width:186%;margin-left:-7.5%}
   .relief-panel[data-chapter=visit] .relief-words{margin-left:0;align-self:center}
   .relief-panel[data-chapter=visit] .relief-words h2{font-size:clamp(80px,12.5vw,200px)}
-  /* The help: set in the middle, the words above and the envelope passing hand to hand in a wide strip below. */
-  .relief-panel[data-chapter=help] .relief-hold{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;justify-items:center;align-content:center;gap:2svh;padding:0 7%}
-  .relief-panel[data-chapter=help] .relief-words{--drop:0px;display:flex;align-items:last baseline;gap:4vw;text-align:left}
-  /* The sentence's last line sits on the heading's baseline. */
-  .relief-panel[data-chapter=help] .relief-words p{margin:0;max-width:16em}
-  .relief-panel[data-chapter=help] .relief-picture{justify-self:center;width:min(76vw,128svh);aspect-ratio:2.4/1}
-  .relief-panel[data-chapter=help] .relief-layers{height:160%;margin-top:-13%}
+  /* The help: the envelope passing hand to hand across the whole window, off its right and its foot; the words stand on the picture's own bare paper at the upper left. */
+  .relief-panel[data-chapter=help] .relief-hold{grid-template-columns:minmax(0,1fr);padding:0}
+  .relief-panel[data-chapter=help] .relief-words{--drop:0px;grid-area:1/1;align-self:start;margin:9svh 0 0 7vw;text-align:left}
+  .relief-panel[data-chapter=help] .relief-words p{max-width:13em}
+  .relief-panel[data-chapter=help] .relief-picture{grid-area:1/1;align-self:end;justify-self:end;width:min(100vw,172svh);aspect-ratio:2/1}
+  .relief-panel[data-chapter=help] .relief-layers{width:125%;height:166.7%;margin:-16% 0 0 -25%}
   /* The year: the open book large at the left, close enough to read the page; the figures beside it. */
-  .relief-panel[data-chapter=year] .relief-hold{gap:0 4vw}
+  .relief-panel[data-chapter=year] .relief-hold{gap:0 4vw;padding-right:3vw}
   .relief-panel[data-chapter=year] .relief-words{margin-left:0}
-  .relief-panel[data-chapter=year] .relief-picture{width:min(56vw,96svh);aspect-ratio:5/4}
-  .relief-panel[data-chapter=year] .relief-layers{width:136%;height:116%;margin:-8% 0 0 -12%}
+  .relief-panel[data-chapter=year] .relief-picture{width:min(60vw,100svh);aspect-ratio:5/4}
+  .relief-panel[data-chapter=year] .relief-layers{width:133%;height:116%;margin:-8% 0 0 -11%}
 }
 /* Beside its picture a chapter's sentence is a sentence, not a caption: at least 32 letters to a line. */
-@media(min-width:821px){.relief-words p{max-width:17.5em}.relief-panel[data-chapter=help] .relief-words p{max-width:17.5em}}
+@media(min-width:821px){.relief-words p{max-width:17.5em}}
 @media(max-width:820px){
   .relief-story{margin-top:-9vw;padding:2svh 0 48px}
   .relief-story::before,.relief-story::after{height:10vw}
@@ -147,8 +148,18 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-side=left] .relief-words{margin-left:0}
   .relief-words h2{font-size:clamp(60px,17.5vw,76px)}
   .relief-words p{font-size:19px;max-width:20em}
+  /* On a phone each picture is a taller cut of itself, closer in, with less paper around it. The call's cut still holds the card and the whole receiver. */
+  .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:14px;padding:28px 0}
+  .relief-panel[data-chapter=visit] .relief-picture{aspect-ratio:1/1}
+  .relief-panel[data-chapter=visit] .relief-layers{width:150%;margin-left:-8%}
+  .relief-panel[data-chapter=help] .relief-picture{aspect-ratio:5/4}
+  .relief-panel[data-chapter=help] .relief-layers{width:125%;margin-left:-25%}
+  .relief-panel[data-chapter=call] .relief-picture{aspect-ratio:9/7}
+  .relief-panel[data-chapter=call] .relief-layers{width:116.6%;margin-left:-10.5%}
 }
 @media(prefers-reduced-motion:reduce){.relief-panel{--e:1!important;--h:1!important;min-height:0}.relief-hold{position:static;height:auto;padding-block:clamp(48px,9svh,96px)}}
+/* The call's words lie under its picture in the same cell, so with less motion it still takes the window's height, unpinned. */
+@media(prefers-reduced-motion:reduce) and (min-width:821px){.relief-panel[data-chapter=call] .relief-hold{height:100svh;padding-top:0}}
 
 /* A phone on its side: the wide layout, set smaller, with room for the caption under a lower fresco. */
 @media(max-height:500px) and (min-aspect-ratio:10/11){
