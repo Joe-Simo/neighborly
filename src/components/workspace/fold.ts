@@ -178,7 +178,14 @@ export function heldWhenLaid(sheet: HTMLElement, place = home(sheet)) {
  * from exactly the height the page had before it, so what is under it is moved aside and never jumps.
  * Call it before the browser paints (a layout effect or a ref). Nothing happens for anyone who asks for less motion.
  */
-export function openUp(sheet: HTMLElement) {
+export function openUp(sheet: HTMLElement, { stays = false }: { stays?: boolean } = {}) {
+  // A piece that stays for as long as it is true (no connection, a refusal) is never held over the page: laid above
+  // the window, it takes its place in the page at once and the window is moved down by its room, so what the
+  // person is looking at keeps still and the piece is where it belongs when they go back up. For less motion too.
+  if (stays && heldWhenLaid(sheet)) {
+    window.scrollBy({ top: document.body.offsetHeight - pageWithout(sheet, "put away"), behavior: "instant" });
+    return;
+  }
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Asked twice, it opens once: an opening already under way is dropped before the paper is measured.
   sheet.getAnimations().forEach((move) => move.id === OPENING && move.cancel());

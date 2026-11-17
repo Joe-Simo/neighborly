@@ -306,8 +306,14 @@ export function en(set: WordSet) {
       kept: "Nothing was saved, and what you typed is still here.",
       tryAgain: "Try again",
       waiting: "Waiting for the connection. What you typed is kept and will be sent when it returns.",
+      /** Under a yes or a no that was pressed, not typed, while the connection is down. */
+      answerKept: "Your answer is kept. It will be sent when the connection returns.",
       offlineTitle: "No connection right now.",
+      /** After the title, where a room that was never opened is waiting for the connection. */
+      offlineRoom: "This room opens when it returns.",
       offlineDeck: "What is on screen is kept. Changes will be sent when this device is back online.",
+      /** Said in green in the same strip for a moment once the connection returns. */
+      back: "The connection is back.",
       errorTitle: "This room didn’t open.",
       errorDeck: `Nothing is lost. Try again; if it still won’t open, the rest of your ${place} is in the menu.`,
       privateTitle: "Kept private.",

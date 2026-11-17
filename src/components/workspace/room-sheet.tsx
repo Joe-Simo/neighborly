@@ -2,6 +2,7 @@
 
 import { Component, createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
 import { flushSync } from "react-dom";
+import { useConvex, useConvexConnectionState } from "convex/react";
 
 /**
  * A room is drawn whole or not at all. When the room changes, a still copy of the column just left (its head,
@@ -13,8 +14,15 @@ import { flushSync } from "react-dom";
 
 /** The longest the last room is held while the next is not yet whole. */
 const HOLD = 400;
-/** A room that never says it is whole is shown as it stands after this long: it is never kept from the reader. */
+/**
+ * A room that never says it is whole is shown as it stands after this long: it is never kept from the reader.
+ * Time without a connection is not counted. A room opened with no connection cannot become whole (its questions are
+ * not answered until the connection returns), and shown as it stands it would be half a room; so it waits, the line
+ * names the connection (`lost`), and the count starts again when the connection is back.
+ */
 const LONGEST = 8000;
+/** How long the connection must be down before the waiting line says so: a blink is never named (as states.tsx). */
+const LOST = 2000;
 
 /** The still copy of the column just left, while it lies on the page. */
 let still: HTMLElement | null = null;
@@ -197,9 +205,20 @@ export function useRoomShown() {
  * Watches the room being opened, every frame, until it is whole, and then shows it: the copy of the last room goes,
  * the room is drawn, and whatever of its own arrival ran while it was unseen is finished, all before that frame is
  * painted. `shown` is the room in view; `opening` says the column has waited long enough to say "Opening…";
+ * `lost` says that wait is for the connection, which has been down two seconds, so the line names it instead;
  * `settled` says the room shown has come to rest.
  */
 export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>) {
+  // Asked of the client itself each frame, so the watch below never acts on a stale answer or starts over for a new one.
+  const convex = useConvex();
+  // For the words only: the connection has been down two seconds while a room is held, so the line can say so.
+  const { isWebSocketConnected, hasEverConnected } = useConvexConnectionState();
+  const down = hasEverConnected && !isWebSocketConnected;
+  const [lost, setLost] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setLost(down), down ? LOST : 0);
+    return () => clearTimeout(timer);
+  }, [down]);
   const [shown, setShown] = useState<string | null>(null);
   const [opening, setOpening] = useState(false);
   // The launch screen this workspace takes the place of, if one is on the page as it is first drawn.
@@ -217,9 +236,13 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     // frame was begun while the room was being drawn), so waiting for one would leave the column bare for a frame.
     let said = began >= quiet;
     if (said) setOpening(true);
+    // The longest wait is counted only while there is a connection: every frame without one starts it again.
+    let counted = began;
     let frame = requestAnimationFrame(function look(now) {
       const element = column.current;
-      if (element && (isWhole(element) || now - began >= LONGEST)) {
+      const link = convex.connectionState();
+      if (link.hasEverConnected && !link.isWebSocketConnected) counted = now;
+      if (element && (isWhole(element) || now - counted >= LONGEST)) {
         flushSync(() => {
           setShown(area);
           setOpening(false);
@@ -240,7 +263,7 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
       frame = requestAnimationFrame(look);
     });
     return () => cancelAnimationFrame(frame);
-  }, [area, held, first, launch, column]);
+  }, [area, held, first, launch, column, convex]);
   // Once shown, the room is watched until it is at rest: `settled` (data-room-whole) is the room as it will stay.
   const [settled, setSettled] = useState<string | null>(null);
   useEffect(() => {
@@ -253,5 +276,5 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     });
     return () => cancelAnimationFrame(frame);
   }, [area, held, column]);
-  return { shown: !held, opening: held && opening, settled: !held && settled === area };
+  return { shown: !held, opening: held && opening, lost: held && opening && lost, settled: !held && settled === area };
 }

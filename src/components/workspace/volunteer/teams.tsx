@@ -8,6 +8,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
+import { LiveFailure, useConnectionLost } from "@/components/workspace/states";
 import { useWorkspace } from "@/components/workspace/context";
 import { words as wordsFor } from "@/lib/words";
 import { initials } from "@/components/workspace/volunteer/people";
@@ -18,10 +19,21 @@ export function TeamsSection() {
   // These lines are the leaders' and stay English, so they name the place in English: a conference, or a group.
   const group = wordsFor("en", data.church.wordSet).terms.group;
   const t = words.teams;
-  const [addingTo, setAddingTo] = useState<LiveWorkspaceData["teams"][number] | null>(null);
+  // Each opening of the dialog is its own object, so an answer that comes late can tell whether the person is
+  // still in the opening it was asked from, even if the same team's dialog has been opened again since.
+  const [addingTo, setAddingTo] = useState<{ team: LiveWorkspaceData["teams"][number] } | null>(null);
+  // The opening an add now on its way was sent from: only there is the wait for the connection said.
+  const [sentFrom, setSentFrom] = useState<typeof addingTo>(null);
+  const lost = useConnectionLost();
   // Teams joined in this visit: their slip stays, folded green, so the yes is seen to land.
   const [joined, setJoined] = useState<string[]>([]);
-  const candidates = addingTo ? data.people.filter((person) => person.active && !addingTo.memberIds.includes(person.id)) : [];
+  // A failed add is said inside the dialog, where the person is looking: the page's own line sits behind the
+  // dialog, unseen and unannounced. The dialog stays open with its list as it was, and the notice takes the focus
+  // the pressed button gave up while it was at rest. It is taken away as the next try starts, so a second
+  // failure is a new notice and is announced again.
+  // It is kept with the opening it happened in, so it is never shown in a dialog opened afterwards.
+  const [failedIn, setFailedIn] = useState<typeof addingTo>(null);
+  const candidates = addingTo ? data.people.filter((person) => person.active && !addingTo.team.memberIds.includes(person.id)) : [];
   return (
     <div className="live-grid live-teams paper-rows">
       {data.teams.length ? (
@@ -72,7 +84,7 @@ export function TeamsSection() {
               isOwner={isOwner}
               run={perform}
               pending={pending}
-              add={() => setAddingTo(team)}
+              add={() => setAddingTo({ team })}
             />
           </section>
         ))
@@ -84,7 +96,7 @@ export function TeamsSection() {
       )}
       {addingTo && (
         <LiveDialog
-          title={`Add a member to ${addingTo.name}`}
+          title={`Add a member to ${addingTo.team.name}`}
           description="They get an invitation to the team. Joining never accepts a commitment for them."
           onClose={() => setAddingTo(null)}
         >
@@ -102,8 +114,15 @@ export function TeamsSection() {
                     disabled={pending}
                     aria-label={`Add ${person.name}`}
                     onClick={async () => {
-                      if (await perform({ type: "setTeamMember", teamId: addingTo.id, personId: person.id, member: true }))
-                        setAddingTo(null);
+                      const from = addingTo;
+                      setFailedIn(null);
+                      setSentFrom(from);
+                      const added = await perform({ type: "setTeamMember", teamId: from.team.id, personId: person.id, member: true });
+                      setSentFrom((now) => (now === from ? null : now));
+                      // The answer may come long after (a held save): it closes only the opening it was sent
+                      // from, and a failure is said only there.
+                      if (added) setAddingTo((now) => (now === from ? null : now));
+                      else setFailedIn(from);
                     }}
                   >
                     Add
@@ -113,6 +132,15 @@ export function TeamsSection() {
             </div>
           ) : (
             <p>Everyone in your {group} is already on this team.</p>
+          )}
+          {/* Below the list, so nothing above it moves when it comes. Nothing was typed here, so there is no second line about what was kept. */}
+          {failedIn === addingTo && <LiveFailure message={words.states.notSaved} kept="" />}
+          {/* With the connection lost the add is held, not failed. Nothing was typed here, so the line is the one
+              about changes being sent, not the one about what was typed. */}
+          {sentFrom === addingTo && pending && lost && (
+            <p className="live-waiting" role="status">
+              {words.states.offlineDeck}
+            </p>
           )}
         </LiveDialog>
       )}
