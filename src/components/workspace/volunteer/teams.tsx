@@ -39,7 +39,7 @@ export function TeamsSection() {
           <section className="live-team team-card" key={team.id}>
             <h2>{sampleSaid(team.name)}</h2>
             <p>
-              {team.description || t.noDescription}
+              {sampleSaid(team.description) || t.noDescription}
             </p>
             {joined.includes(team.id) ? (
               <div className="team-asked paper-corner paper-fold" role="status">
