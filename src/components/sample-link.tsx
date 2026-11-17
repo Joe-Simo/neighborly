@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ComponentProps, MouseEvent, MouseEventHandler, PointerEvent } from "react";
-import { askSampleTicket, startSignIn, wakeTheDoor, warmSignIn } from "@/lib/sample-ticket";
+import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
 
 /**
  * What every way into the sample does before the visitor arrives: pointing at it or reaching it by keyboard fetches
@@ -39,7 +39,6 @@ export function warmWhenNear(link: HTMLElement | null) {
   const near = new IntersectionObserver((seen) => {
     if (!seen.some((entry) => entry.isIntersecting)) return;
     warmSignIn();
-    wakeTheDoor();
     near.disconnect();
   }, { rootMargin: "600px 0px" });
   near.observe(link);

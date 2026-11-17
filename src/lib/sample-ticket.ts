@@ -54,11 +54,3 @@ export function startSignIn() {
   void loadClerkJSScript({ publishableKey }).catch(() => undefined);
   void loadClerkUIScript({ publishableKey }).catch(() => undefined);
 }
-
-let woken = false;
-/** Wakes the ticket's server function once per page view, without asking for a ticket (see GET in look-around). */
-export function wakeTheDoor() {
-  if (woken) return;
-  woken = true;
-  void fetch("/app/look-around", { cache: "no-store" }).catch(() => undefined);
-}

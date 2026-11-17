@@ -1,5 +1,4 @@
 import { clerkClient } from "@clerk/nextjs/server";
-import { connection } from "next/server";
 import { fetchMutation } from "convex/nextjs";
 import { api } from "../../../../convex/_generated/api";
 
@@ -27,14 +26,4 @@ export async function POST(request: Request) {
     ? ticket
     : clerkClient().then((client) => client.signInTokens.createSignInToken({ userId, expiresInSeconds: 60 })));
   return Response.json({ ticket: token }, { headers: { "Cache-Control": "no-store" } });
-}
-
-/**
- * A wake-up only: sent once when the sample card first comes into view, so this function is already running when the
- * card is pressed. It signs nobody in, asks nothing of the backend, reads nothing and sets no cookie.
- */
-export async function GET() {
-  // Answered at request time by this function, never from a build-time copy, or it would wake nothing.
-  await connection();
-  return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 }
