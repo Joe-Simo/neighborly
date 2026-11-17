@@ -34,14 +34,14 @@ export function ClosingBand({ language = "en" }: { language?: Language }) {
   useCutHold(band, true, { art: ".neighborly-close-art", words: ".neighborly-close-words", pieces: "h2, nav a", when: "(min-width:1280px) and (min-height:445px)" });
   return <div className="neighborly-close" ref={band}>
     <picture className="neighborly-close-art">
-      <source media="(max-width:700px) and (orientation:portrait)" srcSet="/assets/living-relief-mobile-accepted.webp" width={780} height={1688} />
+      <source media="(max-width:700px) and (orientation:portrait), (max-width:480px)" srcSet="/assets/living-relief-mobile-accepted.webp" width={780} height={1688} />
       <source type="image/avif" srcSet="/assets/living-relief-accepted-1440.avif 1440w, /assets/living-relief-accepted-2880.avif 2880w" sizes="100vw" width={1440} height={1024} />
       <img src="/assets/living-relief-accepted.webp" width={1440} height={1024} alt="" loading="lazy" decoding="async" />
     </picture>
     {/* The open hand before the card comes back to it, cut from the opening picture, and the place the card lands. */}
     <span className="neighborly-close-hand" aria-hidden="true">
       <picture className="thread-empty">
-        <source media="(max-width:700px) and (orientation:portrait)" srcSet="/assets/home/hand-empty-mobile.webp" width={170} height={165} />
+        <source media="(max-width:700px) and (orientation:portrait), (max-width:480px)" srcSet="/assets/home/hand-empty-mobile.webp" width={170} height={165} />
         <img src="/assets/home/hand-empty.webp" width={360} height={295} alt="" loading="lazy" decoding="async" />
       </picture>
     </span>

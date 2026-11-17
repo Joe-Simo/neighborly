@@ -29,6 +29,21 @@ export function useWideScreen() {
   return useSyncExternalStore(watchWide, () => wideQuery().matches, () => false);
 }
 
+const FAR = "(min-width: 1728px)";
+const watchFar = (changed: () => void) => {
+  const query = window.matchMedia(FAR);
+  query.addEventListener("change", changed);
+  return () => query.removeEventListener("change", changed);
+};
+
+/**
+ * True from 1728px up, where the right third under the head's picture is wide enough to carry a second column
+ * of the room's own: there a room may move one of its sections into the side column. False on the server and below.
+ */
+export function useFarScreen() {
+  return useSyncExternalStore(watchFar, () => window.matchMedia(FAR).matches, () => false);
+}
+
 type Place = { slot: HTMLElement | null; name: Dispatch<SetStateAction<string>> };
 const Slot = createContext<Place | null>(null);
 

@@ -61,7 +61,7 @@
   .neighborly-together h2{font-size:clamp(48px,7.4vw,76px)}
 }
 @media(max-width:900px){.neighborly-close-words{padding-inline:20px}}
-@media(max-width:700px) and (orientation:portrait){
+@media(max-width:700px) and (orientation:portrait),(max-width:480px){
   /* A phone held upright: the tall picture, the words on its open paper as on the first screen. */
   .neighborly-close-art{-webkit-mask-image:linear-gradient(transparent,#000 5%,#000 96%,transparent);mask-image:linear-gradient(transparent,#000 5%,#000 96%,transparent)}
   .neighborly-close-words{position:absolute;left:20px;right:20px;top:calc(216.4cqw * .328);padding:0}

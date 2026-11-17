@@ -20,7 +20,7 @@
 .neighborly-close-hand .thread-empty{left:61.111%;top:63.086%;width:25%;height:28.809%}
 .neighborly-close-hand .card-station{left:72.7%;top:76%;width:11.8%}
 @media(max-width:1279px),(max-height:444px){.neighborly-close-hand{top:0}}
-@media(max-width:700px) and (orientation:portrait){
+@media(max-width:700px) and (orientation:portrait),(max-width:480px){
   .neighborly-close-hand{height:216.41cqw}
   .neighborly-close-hand .thread-empty{left:78.205%;top:63.448%;width:21.795%;height:9.775%}
   .neighborly-close-hand .card-station{left:90.3%;top:69.4%;width:22%}
@@ -50,7 +50,7 @@
 .thread-live .card-offer:not(.is-here):not(:focus-visible) .card-offer-words{opacity:0;transition:none}
 .card-offer[data-given]{opacity:0}
 @media(max-width:1279px),(max-height:444px){.neighborly-close-offer{top:0}}
-@media(max-width:700px) and (orientation:portrait){
+@media(max-width:700px) and (orientation:portrait),(max-width:480px){
   .neighborly-close-offer{height:216.41cqw}
   .card-offer,.card-for{left:58%;top:78.8%;width:68%}
   .card-offer-for,.card-for-line{font-size:clamp(17px,5cqw,22px)}
@@ -82,3 +82,5 @@
 .thread-card-words{position:absolute;left:9%;right:8%;bottom:13%;display:flex;flex-direction:column;gap:6px}
 .thread-card-words strong{font:400 22px/1.08 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:balance}
 .thread-card-words small{font:400 15px/1.35 'Source Sans 3',sans-serif;color:#3d4f43}
+/* A window 320 wide: the card is a little larger on the band, so its headline clears the "For" line and the gold square. */
+@media(max-width:359px){.card-offer,.card-for{left:56%;width:78%}}
