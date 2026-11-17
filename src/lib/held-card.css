@@ -1,5 +1,7 @@
 /* The home page's card, grown to the window: the card's own paper and grain, never a plain fill. */
 #card-held{position:fixed;inset:0;z-index:81;overflow:hidden;pointer-events:none;contain:strict}
+/* Lifting off the room, it is a sheet with an edge: its shadow falls on what it leaves. */
+#card-held[data-dropping]{box-shadow:0 6px 16px rgb(40 60 50 / .26);will-change:transform}
 #card-held .card-held-sheet{position:absolute;translate:none;rotate:none;transform-origin:50% 50%;will-change:transform;filter:none}
 /* Once the card fills the window its grain is one fixed paper: the door's card image at the door's card size, centred on
    the window, so the door's own card (the same image, box and centre) takes over with not one pixel of grain moving. */

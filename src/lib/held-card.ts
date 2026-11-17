@@ -8,11 +8,11 @@ export function dropTheHeldCard() {
   const held = document.getElementById(HELD_CARD);
   if (!held || held.dataset.dropping !== undefined) return;
   held.dataset.dropping = "";
-  const sheet = held.firstElementChild;
   const plain = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const leave = sheet instanceof HTMLElement && !plain
-    ? sheet.animate([{ transform: "none" }, { transform: `translateY(${-(sheet.getBoundingClientRect().bottom + 70)}px)` }], { duration: 220, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" })
-    : held.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, fill: "forwards" });
+  // The whole grown card lifts as one sheet, its paper, square and name together, so what is under it is seen from the first frame of the lift.
+  const leave = plain
+    ? held.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, fill: "forwards" })
+    : held.animate([{ transform: "none" }, { transform: `translateY(${-(held.getBoundingClientRect().height + 70)}px)` }], { duration: 220, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" });
   leave.finished.then(() => held.remove(), () => held.remove());
 }
 
