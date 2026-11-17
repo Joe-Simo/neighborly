@@ -160,7 +160,7 @@ function NeighborRow({
   const size = neighbor.adults + neighbor.children;
   // A row says the name and the street, never the phone: that is inside the record, where each opening is logged.
   return (
-            <div className="help-row help-neighbor">
+            <div className="help-row help-neighbor" data-row-menu="">
               <span className="help-avatar" aria-hidden="true">
                 {initials(neighbor.name)}
               </span>

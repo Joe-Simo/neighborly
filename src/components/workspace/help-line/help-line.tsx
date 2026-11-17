@@ -719,6 +719,7 @@ export function HelpLineView({
             {calls.waiting.map((call) => (
               <div
                 className="help-row"
+                data-row-menu=""
                 data-call={call.id}
                 data-old={waited(call) >= 2 * DAY ? "" : undefined}
                 key={call.id}
@@ -757,6 +758,7 @@ export function HelpLineView({
                 <div className="live-row-actions">
                   <Button
                     variant="outline"
+                    data-row-action=""
                     aria-label={text.markReturnedFor(caller(call, words))}
                     onClick={() => onStep({ kind: "return", call })}
                   >

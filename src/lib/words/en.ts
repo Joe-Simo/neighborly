@@ -59,6 +59,8 @@ export function en(set: WordSet) {
     },
     shell: {
       menu: "Menu",
+      /** The long-press sheet on a row in the iOS app: the row's own ways, under these names. */
+      rowMenu: { open: "Open", call: "Call" },
       /** Home visits in the app's foot bar, where every name keeps one line. */
       tabVisits: "Home visits",
       /** My commitments in a member's foot bar, for the same reason; the menu keeps the whole name. */

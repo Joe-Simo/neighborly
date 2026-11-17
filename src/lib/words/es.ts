@@ -58,6 +58,7 @@ export function es(set: WordSet): Words {
     },
     shell: {
       menu: "Menú",
+      rowMenu: { open: "Abrir", call: "Llamar" },
       /** Home visits in the app's foot bar, where every name keeps one line. */
       tabVisits: "Visitas",
       /** My commitments in a member's foot bar, for the same reason; the menu keeps the whole name. */

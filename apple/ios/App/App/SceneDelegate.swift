@@ -102,7 +102,8 @@ final class ShellViewController: CAPBridgeViewController {
             forMainFrameOnly: true
         ))
         scripts.add(SignInShown { [weak self] shown in self?.signIn(shown: shown) }, name: "kindHelpsSignIn")
-        // A save the page makes is felt here: it says "saved" or "decided" (use-save.ts). Nothing else is felt.
+        // A save the page makes is felt here: it says "saved" or "decided" (use-save.ts), and a row's long press
+        // says "touch" (row-menu.tsx). Nothing else is felt.
         scripts.add(Felt { [weak self] what in self?.tap(for: what) }, name: "kindHelpsFelt")
         // In the app a long press brings up no web callout, a tap leaves no
         // grey flash, a button's words are not selected by accident, and what is
@@ -200,7 +201,7 @@ final class ShellViewController: CAPBridgeViewController {
     private func tap(for what: String) {
         guard cover == nil else { return }
         if what == "decided" { UINotificationFeedbackGenerator().notificationOccurred(.success) }
-        else if what == "saved" { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
+        else if what == "saved" || what == "touch" { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
     }
 
     override func viewSafeAreaInsetsDidChange() {
