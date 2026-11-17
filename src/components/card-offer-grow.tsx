@@ -63,7 +63,11 @@ export function CardOfferGrow() {
     const written = offer.querySelector(".card-offer-for span")?.textContent?.trim();
     // On the card the name is lettered on its paper, so it grows with the card and keeps its place over the square; the grown card letters it again over its own square, as the door does.
     if (written) { const line = document.createElement("em"); line.textContent = `For ${written}`; marks.append(line); }
-    held.append(marks);
+    // Under the marks, from the same frame, the paper they sit on is the door's fixed paper: the grain stops growing with the card.
+    const paper = document.createElement("div");
+    paper.className = "card-held-paper";
+    held.append(paper, marks);
+    paper.animate(swap(0, 1), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     marks.animate(swap(0, 1), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     const since = performance.now();
     const keep = () => {
