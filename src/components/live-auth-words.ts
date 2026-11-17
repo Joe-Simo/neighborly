@@ -43,6 +43,8 @@ const en = {
   sampleNoteShort: "Made-up people, cleared nightly.",
   /** The quiet link to the privacy page, at the end of the language line. */
   privacy: "Privacy",
+  /** The privacy page has an address in each language. */
+  privacyPath: "/privacy",
   sampleFailed: "The sample conference did not open. Try again.",
   sampleBusy: "The sample conference is busy. Try again in a minute.",
   workspaceTab: "Your workspace · Kind Helps",
@@ -131,6 +133,7 @@ const es: AuthWords = {
   sampleNoteShort: "Personas inventadas, se borra cada noche.",
   /** The quiet link to the privacy page, at the end of the language line. */
   privacy: "Privacidad",
+  privacyPath: "/privacidad",
   sampleFailed: "La conferencia de muestra no se abrió. Inténtalo de nuevo.",
   sampleBusy: "La conferencia de muestra está ocupada. Inténtalo en un minuto.",
   workspaceTab: "Tu espacio · Kind Helps",

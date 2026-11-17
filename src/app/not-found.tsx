@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ReaderLanguage } from "@/components/reader-language";
+import { edgeWords } from "@/lib/edge-words";
+import { readersLanguage } from "@/lib/first-language";
+import { languages } from "@/lib/words";
 import "@/components/not-found.css";
 import "@/components/public-touch.css";
 
 export const metadata: Metadata = {
-  title: "Page not found — Kind Helps",
+  title: edgeWords.en.lostTab,
   description: "The address may be old or mistyped. Kind Helps is at kindhelps.com.",
   robots: { index: false, follow: false },
 };
 
-/** The courtyard's doors, closed: the one place on the site they do not open onto anything. */
+/**
+ * The courtyard's doors, closed: the one place on the site they do not open onto anything. It can stand at any
+ * address, so it carries both languages and shows the reader's own (not-found.css), chosen before its words are drawn.
+ */
 export default function NotFound() {
   return <main className="lost-door">
-    <Link className="lost-door-brand" href="/" aria-label="Kind Helps home">kind helps</Link>
-    <div className="lost-door-words">
-      <h1>This door doesn’t lead anywhere.</h1>
-      <Link href="/">Back to kind helps</Link>
-    </div>
+    <script dangerouslySetInnerHTML={{ __html: readersLanguage }} />
+    <ReaderLanguage tabs={{ en: edgeWords.en.lostTab, es: edgeWords.es.lostTab }} />
+    {languages.map((language) => <Link key={language} lang={language} className="lost-door-brand" href="/" aria-label={edgeWords[language].home}>kind helps</Link>)}
+    {languages.map((language) => <div key={language} lang={language} className="lost-door-words">
+      <h1>{edgeWords[language].lost}</h1>
+      <Link href="/">{edgeWords[language].back}</Link>
+    </div>)}
     <div className="lost-door-frame" aria-hidden="true">
       <div className="lost-door-light" />
       <div className="lost-door-leaves"><i /><i /></div>
