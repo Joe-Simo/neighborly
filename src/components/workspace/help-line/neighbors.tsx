@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { NeighborForm } from "@/components/workspace/help-line/forms";
 import { LiveDialog } from "@/components/workspace/live-dialog";
+import { RoomAside, useFarScreen } from "@/components/workspace/aside";
 import { fill } from "@/lib/words/fill";
 import {
   initials,
@@ -122,6 +123,31 @@ const FIRST = 30;
 type Row = NeighborList["rows"][number];
 
 /** One household in the list. The whole row opens the record through its one link, the name. */
+/** What a household is waiting on: its open request, and the visit set for it. */
+function Asks({ neighbor, format }: { neighbor: Row; format: Workspace["format"] }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.neighbors;
+  return (
+    <>
+      {neighbor.openRequest && (
+        <span className="live-status help-asks" data-state="waiting">
+          {neighbor.openRequest.amount > 0
+            ? fill(text.request.amount, {
+                kind: words.kinds[neighbor.openRequest.kind],
+                amount: shortMoney(neighbor.openRequest.amount),
+              })
+            : words.kinds[neighbor.openRequest.kind]}
+        </span>
+      )}
+      {neighbor.visitAt && (
+        <span className="live-status">
+          {text.list.visitOn(format(neighbor.visitAt, { weekday: "short" }))}
+        </span>
+      )}
+    </>
+  );
+}
+
 function NeighborRow({
   neighbor,
   format,
@@ -158,21 +184,7 @@ function NeighborRow({
                 </p>
               </div>
               <div className="live-row-actions">
-                {neighbor.openRequest && (
-                  <span className="live-status help-asks" data-state="waiting">
-                    {neighbor.openRequest.amount > 0
-                      ? fill(text.request.amount, {
-                          kind: words.kinds[neighbor.openRequest.kind],
-                          amount: shortMoney(neighbor.openRequest.amount),
-                        })
-                      : words.kinds[neighbor.openRequest.kind]}
-                  </span>
-                )}
-                {neighbor.visitAt && (
-                  <span className="live-status">
-                    {text.list.visitOn(format(neighbor.visitAt, { weekday: "short" }))}
-                  </span>
-                )}
+                <Asks neighbor={neighbor} format={format} />
                 <ArrowRight className="help-row-arrow" size={20} aria-hidden="true" />
               </div>
             </div>
@@ -205,7 +217,9 @@ export function NeighborListView({
   // By name the list is in order, so it reads under letter heads; search results stay as found.
   // Those waiting for a decision come first, under their own head; the rest read under letter heads.
   const waiting = searching ? [] : list.waitingRows;
-  const groups: [string, Row[]][] = waiting.length ? [["waiting", waiting]] : [];
+  // From 1728px those waiting stand in the room's side column, and the list beside them is by name alone.
+  const beside = useFarScreen();
+  const groups: [string, Row[]][] = waiting.length && !beside ? [["waiting", waiting]] : [];
   for (const neighbor of list.rows.slice(0, open)) {
     const letter = searching
       ? ""
@@ -249,6 +263,18 @@ export function NeighborListView({
             })()}
         </span>
       </div>
+      {beside && waiting.length > 0 && (
+        <RoomAside title={text.list.waiting}>
+          <ul className="help-waiting-beside">
+            {waiting.map((neighbor) => (
+              <li key={neighbor.id}>
+                <Link className="help-row-open" href={recordHref(neighbor.id)}>{neighbor.name}</Link>
+                <Asks neighbor={neighbor} format={format} />
+              </li>
+            ))}
+          </ul>
+        </RoomAside>
+      )}
       {shown ? (
         <>
           {groups.map(([letter, rows]) => (

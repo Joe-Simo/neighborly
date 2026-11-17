@@ -302,3 +302,8 @@
 }
 .live-app .visits-written > p { margin: 0 !important; }
 .visits-written-who .help-initials { display: none; }
+
+/* On a phone a visit's state has a line of its own in every row, and its presses come under it. */
+@media (max-width: 560px) {
+  .visits-room .help-row > .live-row-actions > .live-status { flex-basis: 100%; }
+}
