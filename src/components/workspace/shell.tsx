@@ -598,7 +598,7 @@ export function LiveWorkspace({
           {tabs.map(({ id, label, icon: Icon }) => (
             <Link key={id} className="live-tab" href={`/app/${id}`} aria-current={area === id ? "page" : undefined}>
               <Icon aria-hidden="true" />
-              <span>{id === "visits" ? words.shell.tabVisits : (menu[id] ?? label)}</span>
+              <span>{id === "visits" ? words.shell.tabVisits : id === "mine" ? words.shell.tabMine : (menu[id] ?? label)}</span>
             </Link>
           ))}
           <Button ref={tabMenu} variant="ghost" className="live-tab" aria-haspopup="dialog" aria-expanded={mobileMenuOpen} aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel} onClick={() => setMobileMenuOpen(true)}>

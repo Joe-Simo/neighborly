@@ -46,7 +46,9 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
       // Only between rooms: the way in from sign-in, and every address that is not a room, stay with the router.
       if (!areaOf(link.pathname) || !areaOf(window.location.pathname) || link.search || link.hash) return;
       event.preventDefault();
-      if (link.pathname === window.location.pathname) return;
+      // The room already in view stays as it is, unless it stands on something inside itself (a neighbor's
+      // record at ?neighbor=…): then the plain link is the way back to the room.
+      if (link.pathname === window.location.pathname && !window.location.search) return;
       window.history.pushState(null, "", link.pathname);
       window.scrollTo(0, 0);
     };
