@@ -299,3 +299,17 @@
   .painted-world[data-hero-only=true] .painted-world-opening-actions{margin-top:14px}
   .painted-world[data-hero-only=true] .painted-world-opening-actions .painted-world-primary-invitation{height:44px;min-height:44px}
 }
+
+/* The opening leaves as one sheet of paper, lifted off from the foot with its own wavy cut: whole above the edge and gone below it, never half there.
+   The doors stand whole beneath it, the headline leaves on the sheet, and the sheet's shadow lies on the doors under its edge. With less motion the value steps, so it is one cut. */
+@media not ((max-height:500px) and (min-aspect-ratio:10/11)){
+  .neighborly-connected-world.is-connected{--edge:clamp(52px,7.5vw,120px);--sheet:calc((100svh + var(--edge)) * var(--entry-portrait))}
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{opacity:1;-webkit-mask:linear-gradient(#000,#000) 0 0/100% max(0px,calc(var(--sheet) - var(--edge) + 1px)) no-repeat,var(--cut-open-bottom) 0 calc(var(--sheet) - var(--edge))/100% var(--edge) no-repeat;mask:linear-gradient(#000,#000) 0 0/100% max(0px,calc(var(--sheet) - var(--edge) + 1px)) no-repeat,var(--cut-open-bottom) 0 calc(var(--sheet) - var(--edge))/100% var(--edge) no-repeat}
+  .neighborly-connected-world.is-connected::before{content:"";position:fixed;z-index:1;left:0;right:0;top:calc(var(--sheet) - var(--edge));height:var(--edge);pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-40%25' width='140%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 36C200 24 380 44 560 32S860 26 1000 40L1000 -10L0 -10Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+  .neighborly-connected-world.is-connected .fresco-stage{opacity:1}
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-caption{opacity:1}
+  /* The words and the header are printed on the sheet: they stay on it until the edge has passed them, though they can no longer be reached. */
+  .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] :is(.painted-world-caption,.painted-world-header,.painted-world-tools){visibility:visible}
+  /* The empty hand shows the moment the card sets out, as one cut. */
+  .thread-live .thread-empty{transition:none}
+}
