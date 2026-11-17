@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { words } from "@/lib/words";
 import type { Workspace } from "@/components/workspace/context";
 import {
-  kindLabels,
   shortMoney,
   type Call,
 } from "@/components/workspace/help-line/format";
@@ -22,7 +21,7 @@ type Sheet = {
 
 /** The name the person typed when they took the call leads; a record's name stands in only when none was typed. */
 export const caller = (call: Pick<Call, "neighborName" | "callerName">) =>
-  call.callerName || call.neighborName || "New caller";
+  call.callerName || call.neighborName || words().assistant.sheet.newCaller;
 
 /**
  * The one thing waiting for a yes: what the assistant drafted from a call note. Plum marks its words.
@@ -64,24 +63,22 @@ export function DraftSheet({
   onDiscard?: () => void;
 }) {
   const text = words().assistant;
+  const sheet = text.sheet;
   const complete =
     !!draft.kind &&
     draft.amountRequested !== null &&
     !!draft.payeeKind &&
     !!draft.payeeName;
   // What the note did not say stays blank, and the sheet says so in plain words.
-  const missing = [
-    !draft.kind && "the kind of help",
-    draft.amountRequested === null && "the amount",
-  ].filter((part) => part !== false);
+  const missing = !draft.kind && draft.amountRequested === null ? sheet.notSaid.both : !draft.kind ? sheet.notSaid.kind : draft.amountRequested === null ? sheet.notSaid.amount : "";
   // Who is paid is never claimed about the note: the note may name them in words the draft could not read.
   const unpaid = !draft.payeeKind || !draft.payeeName;
   const empty =
     !draft.kind && draft.amountRequested === null && !draft.payeeName;
   const title = empty
-    ? "Nothing to draft from this note yet"
+    ? sheet.nothingYet
     : [
-        draft.kind ? kindLabels[draft.kind] : "A request",
+        draft.kind ? words().kinds[draft.kind] : sheet.aRequest,
         draft.amountRequested !== null && shortMoney(draft.amountRequested),
       ]
         .filter((part) => part !== false)
@@ -98,10 +95,10 @@ export function DraftSheet({
     >
       <p className="help-sheet-label">
         {sealed
-          ? "Saved, waiting for a decision"
+          ? text.approved
           : complete
             ? text.waiting(waiting)
-            : `A draft with blanks${waiting > 1 ? `. ${text.waiting(waiting)}` : ""}`}
+            : `${sheet.blanks}${waiting > 1 ? `. ${text.waiting(waiting)}` : ""}`}
       </p>
       <div className="help-sheet-body">
         <div>
@@ -111,31 +108,28 @@ export function DraftSheet({
             {call.neighborName || call.callerName ? (
               <strong>{caller(call)}</strong>
             ) : (
-              "A caller who gave no name"
+              sheet.noName
             )}{" "}
-            called on {format(call.takenAt, { weekday: "long", month: "long" })}
+            {sheet.calledOn(format(call.takenAt, { weekday: "long", month: "long" }))}
           </p>
           <h2 id={arriving ? undefined : "draft-title"}>
             {title}
-            {draft.payeeName && ` to ${draft.payeeName}`}
+            {draft.payeeName && sheet.to(draft.payeeName)}
           </h2>
           {!complete && (
             <p className="help-assistant help-blank">
-              {missing.length > 0 && `The note does not say ${missing.join(" or ")}. `}
-              {unpaid && "Who is paid is not filled in yet. "}
-              {missing.length + Number(unpaid) > 1 ? "Those are yours to add." : "That is yours to add."}
+              {[missing && sheet.noteDoesNotSay(missing), unpaid && sheet.unpaid, sheet.yours(Number(!draft.kind) + Number(draft.amountRequested === null) + Number(unpaid))].filter(Boolean).join(" ")}
             </p>
           )}
           <p className="help-quote">“{draft.quote || call.note}”</p>
           <p className="help-why">
-            From the message taken at{" "}
-            {format(call.takenAt, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}
-            .{!call.neighborId && " Not yet on file as a neighbor."}
+            {sheet.takenAt(format(call.takenAt, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" }))}
+            {!call.neighborId && ` ${sheet.notOnFile}`}
           </p>
           {/* What to do about a blank reads with the text, at its measure, never beside the buttons. */}
           {!complete && !call.neighborId && (
             <p className="help-why">
-              First, add {call.callerName || "the caller"} as a neighbor.
+              {sheet.addFirst(call.callerName)}
             </p>
           )}
           {toDo}
@@ -145,7 +139,7 @@ export function DraftSheet({
             <>
               <Button disabled={pending} onClick={onApprove}>
                 <Check size={18} aria-hidden="true" />{" "}
-                {call.neighborId ? "Save this request" : "Add neighbor and save"}
+                {call.neighborId ? text.approve : sheet.addAndSave}
               </Button>
               {onChange && (
                 <Button variant="outline" disabled={pending} onClick={onChange}>
@@ -155,7 +149,7 @@ export function DraftSheet({
             </>
           ) : (
             <Button onClick={onChange}>
-              {empty ? "Write the request" : "Fill in what is missing"}
+              {empty ? sheet.write : sheet.fill}
             </Button>
           )}
           {onDiscard && (

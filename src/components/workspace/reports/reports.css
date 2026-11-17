@@ -507,30 +507,6 @@
   flex-shrink: 0;
   transform: translateY(3px);
 }
-.report-skeleton-figures {
-  display: grid;
-  grid-template-columns: 1.25fr 1fr 1fr;
-  margin-bottom: 46px;
-  border-top: 2px solid #596e51;
-  border-bottom: 1px solid var(--live-line);
-}
-.report-skeleton-figures > div {
-  padding: 26px 28px 30px 0;
-}
-.report-skeleton-figures > div + div {
-  padding-left: 28px;
-  border-left: 1px solid var(--live-line);
-}
-.report-skeleton-figures b,
-.report-skeleton-figures i {
-  display: block;
-  border-radius: 2px;
-  background: #e9e7da;
-  animation: help-breathe 1.6s ease-in-out infinite;
-}
-.report-skeleton-figures b { width: 96px; height: 12px; }
-.report-skeleton-figures i { width: 58%; height: 52px; margin: 16px 0 18px; animation-delay: 120ms; }
-.report-skeleton-figures i + b { width: 70%; height: 14px; animation-delay: 240ms; }
 .live-app .report-error .live-error-recovery { font-size: 16px; }
 .live-app .report-error [data-slot="button"] {
   min-height: 44px;
@@ -574,12 +550,9 @@
   .report-legend { display: grid; gap: 10px; }
   .report-form { columns: 1; }
   .report-teams li { grid-template-columns: minmax(0, 1fr) auto; }
-  .report-skeleton-figures { grid-template-columns: 1fr 1fr; }
-  .report-skeleton-figures > div:first-child { grid-column: 1 / -1; border-bottom: 1px solid var(--live-line); }
-  .report-skeleton-figures > div:nth-child(2) { padding-left: 0; border-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .report-month-bar span, .report-month-bar i, .report-key, .report-outcomes, .report .help-bar span, .report-skeleton-figures b, .report-skeleton-figures i, .report-tip { animation: none; }
+  .report-month-bar span, .report-month-bar i, .report-key, .report-outcomes, .report .help-bar span, .report-tip { animation: none; }
   .report-month-open { transition: none; }
   .live-app .report-years [data-slot="toggle-group-item"], .report-every-line svg { transition: none; }
   .report-lines[data-open] > .report-form { animation: none; }
@@ -704,12 +677,9 @@
 .report-check[data-clear="true"] .help-sheet-label { color: var(--live-accent); }
 .report-check p { font-size: 17px; }
 /* While the year is read: three marks that take ink one after another. Still under Reduce Motion. */
-.report-reading { display: inline-flex; gap: 7px; margin-left: 14px; vertical-align: middle; }
-.report-reading i { width: 7px; height: 7px; border-radius: 50%; background: var(--live-accent); opacity: 0.22; animation: report-reading 1200ms var(--paper-ease) infinite; }
-.report-reading i:nth-child(2) { animation-delay: 200ms; }
-.report-reading i:nth-child(3) { animation-delay: 400ms; }
-@keyframes report-reading { 0%, 60%, 100% { opacity: 0.22; } 30% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .report-reading i { animation: none; opacity: 0.6; } }
+/* The year is being read: after 400ms the still ochre ring says so beside the heading. Its place is kept from the start, so the heading never moves. */
+.report-reading { display: inline-block; width: 10px; height: 10px; margin-left: 14px; vertical-align: middle; box-sizing: border-box; border: 2px solid #a8791f; border-radius: 50%; }
+.report-reading:not([data-waited]) { visibility: hidden; }
 .report-check[data-reading] > p:last-child { margin-bottom: 0; }
 /* The title takes focus so a screen reader says the verdict; it is not a control, so it draws no ring. */
 .report-check h2:focus { outline: none; }
