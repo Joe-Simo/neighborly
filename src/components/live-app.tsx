@@ -49,7 +49,10 @@ function LiveRooms({
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
-  const { ready, signedOut } = useAccount();
+  const { ready, isAuthenticated, signedOut } = useAccount();
+  // Through the sample door the account is always the one made-up visitor, whose row the nightly reset keeps, so its
+  // rooms are asked for as soon as the backend accepts the token, beside the account check instead of after it.
+  const asking = ready || (enterSample && isAuthenticated);
   const clerk = useClerk();
   // The sweep starts in the frame the sign-in sheet (or the sample's) leaves.
   useDoor(signedOut);
@@ -61,8 +64,8 @@ function LiveRooms({
     }
     return clerk.signOut({ redirectUrl: "/app" });
   };
-  const viewer = useQuery(api.workspace.viewer, ready ? {} : "skip");
-  const sampleVisitor = useQuery(api.demo.visiting, ready ? {} : "skip");
+  const viewer = useQuery(api.workspace.viewer, asking ? {} : "skip");
+  const sampleVisitor = useQuery(api.demo.visiting, asking ? {} : "skip");
   // Sample visitors share one made-up member, so each reads the rooms in their own device's language, never a saved one.
   const [deviceLanguage] = useEntryLanguage();
   // The sample link always opens the sample. Someone already signed in as themselves is signed out
@@ -76,7 +79,7 @@ function LiveRooms({
   }, [leavingForSample, clerk]);
   const churchPage = usePaginatedQuery(
     api.pages.churchesPage,
-    ready ? {} : "skip",
+    asking ? {} : "skip",
     { initialNumItems: 30 },
   );
   const createChurch = useMutation(api.workspace.createChurch);
@@ -101,7 +104,7 @@ function LiveRooms({
   const churchId =
     churches.find((church) => church.id === selectedChurch)?.id ??
     churches[0]?.id;
-  const dashboard = useDashboard({ churchId, enterSample, ready, listing: viewer === undefined, sampleVisitor });
+  const dashboard = useDashboard({ churchId, enterSample, ready: asking, listing: viewer === undefined, sampleVisitor });
   // The page says which language it is showing, so a screen reader speaks Spanish as Spanish, in the rooms and in
   // every dialog (dialogs are drawn outside the rooms, straight under <body>). Before the rooms it is the door's.
   const shown = dashboard && !sampleVisitor ? dashboard.user.language : deviceLanguage;
@@ -185,7 +188,7 @@ function LiveRooms({
   const roomWaiting = (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
   // Waiting to learn who is here, or for their workspace to arrive. A wait that outlasts ten seconds
   // (a session the backend will not accept, no connection) is said plainly, with a way on and a way out.
-  const waiting = !leavingForSample && !signedOut && (!ready || !viewer || sampleVisitor === undefined);
+  const waiting = !leavingForSample && !signedOut && (!asking || !viewer || sampleVisitor === undefined);
   const [waitedLong, setWaitedLong] = useState(false);
   useEffect(() => {
     if (!waiting) return;

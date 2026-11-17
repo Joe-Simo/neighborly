@@ -39,3 +39,8 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
   main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){-webkit-mask:linear-gradient(#000,#000) 0 0/calc(100% - 39px) 100% no-repeat,var(--cut-open-right) 100% 0/40px 100% no-repeat;-webkit-mask-composite:source-over;mask-composite:add;mask:linear-gradient(#000,#000) 0 0/calc(100% - 39px) 100% no-repeat,var(--cut-open-right) 100% 0/40px 100% no-repeat}
   main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback)::after{left:auto;right:0;width:40px;background-image:var(--shade-open-right)}
 }
+/* The close, on a wide window: a sheet of the page's paper laid over the picture holds the words, cut by hand, its shadow on the picture. It stops below the faces. */
+@media(min-width:1280px) and (min-height:445px){
+  .neighborly-together .neighborly-close::before{content:"";position:absolute;z-index:1;left:calc(var(--hold-x,0px) - var(--hold-w,0px) * .037);top:calc(var(--hold-y,0px) - var(--hold-h,0px) * .054);width:calc(var(--hold-w,0px) * 1.08);height:calc(var(--hold-h,0px) * 1.12);background:var(--paper-open-hold) 0 0/100% 100% no-repeat;pointer-events:none}
+  .neighborly-together .neighborly-close-words{z-index:2}
+}
