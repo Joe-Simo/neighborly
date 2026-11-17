@@ -41,7 +41,7 @@ export function PrivacyPage({ language }: { language: Language }) {
       <section>
         <h2>{said.questions.title}</h2>
         <div>
-          <p>{said.questions.before}<a href="https://github.com/Joe-Simo/neighborly" target="_blank" rel="noopener noreferrer">github.com/Joe-Simo/neighborly</a>{said.questions.after}</p>
+          <p>{said.questions.before}<a className="public-words-address" href="https://github.com/Joe-Simo/neighborly" target="_blank" rel="noopener noreferrer">github.com/Joe-Simo/neighborly<span className="sr-only"> {said.questions.newTab}</span></a>{said.questions.after}</p>
           <p className="public-words-last">{said.questions.independent}</p>
         </div>
       </section>

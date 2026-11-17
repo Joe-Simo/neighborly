@@ -35,6 +35,8 @@
 .public-words strong{font-weight:600}
 .public-words a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#293f3266}
 .public-words a:hover{text-decoration-color:currentColor}
+/* A web address is one word, and this one holds a name: it is never broken across lines. */
+.public-words .public-words-address{white-space:nowrap}
 .public-words-last{max-width:30em;font-size:15px;color:#3d4f43}
 /* What is kept, tied and closed: the page's one picture, a piece cut along one wavy line with its own shadow, lying on the name's sheet and running off the screen's edge so the hand leaves whole. Never drawn wider than it was painted. */
 .public-words-relief{position:absolute;z-index:12;right:0;top:clamp(150px,41vw,196px);width:min(78vw,320px);aspect-ratio:3/2;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 6px 8px #3b2a121c)}

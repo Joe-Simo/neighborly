@@ -83,3 +83,5 @@
 @media (max-width: 850px) and (orientation: landscape) {
   .public-state .live-auth-art { left: 50%; width: 100vw; margin-left: -50vw; margin-right: 0; background-size: cover; background-position: 50% 80%; }
 }
+/* The sentence under the headline never ends on one word alone. */
+.public-state .live-auth .live-deck{text-wrap:balance}

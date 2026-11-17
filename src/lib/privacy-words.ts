@@ -49,6 +49,8 @@ const en = {
   ] satisfies { title: string; blocks: Block[] }[],
   questions: {
     title: "Questions",
+    /** Said only to a screen reader, after the address. */
+    newTab: "(opens in a new tab)",
     /** The project's address stands between these two. */
     before: "For the software itself, or if you cannot reach an owner, open an issue on the project’s public page: ",
     after: ". Please do not put personal details in a public issue.",
@@ -100,6 +102,7 @@ const es: typeof en = {
   ],
   questions: {
     title: "Preguntas",
+    newTab: "(se abre en una pestaña nueva)",
     before: "Sobre el programa en sí, o si no puedes comunicarte con un responsable, abre un reporte (“issue”) en la página pública del proyecto: ",
     after: ". Por favor, no pongas datos personales en un reporte público.",
     independent: "Kind Helps es un proyecto independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo.",
