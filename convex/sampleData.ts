@@ -102,7 +102,7 @@ const isoDay = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("y
 const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
 /** Writes the whole made-up year through `db`: the real database, or the plan `renew` compares with what is there. */
-async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
+async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id<"churches">> {
   // The conference's running figures (convex/counts.ts) are counted as the sample is laid, and written last.
   const figures = { households: 0, waiting: [] as Id<"neighbors">[] };
   const laying = db;
@@ -140,7 +140,6 @@ async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
   const households: Id<"neighbors">[] = [];
   const familyNames = Array.from({ length: HOUSEHOLDS }, (_, index) => lastNames[index % lastNames.length]);
   for (let index = familyNames.length - 1; index > 0; index--) { const other = look.between(0, index); [familyNames[index], familyNames[other]] = [familyNames[other], familyNames[index]]; }
-  const now = Date.now();
   const churchId = await db.insert("churches", { name: "St. Example Conference", timeZone: zone, sample: true, wordSet: "vincentian" });
 
   // People. Without a real owner account, the first volunteer owns the group.
@@ -512,6 +511,45 @@ async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
   return churchId;
 }
 
+/**
+ * The made-up year as a plan: every row `fill` would write, held in memory under stand-in ids ("plan:0",
+ * "plan:1", in the order written) that the database never sees. Nothing is read and nothing is written.
+ */
+async function plan(visitor?: Owner, now?: number) {
+  const planned: { table: TableName; id: string; doc: Record<string, unknown> }[] = [];
+  const byId = new Map<string, Record<string, unknown>>();
+  const db = {
+    insert: async (table: TableName, doc: Record<string, unknown>) => {
+      const id = `plan:${planned.length}`;
+      const row = { ...doc };
+      planned.push({ table, id, doc: row });
+      byId.set(id, row);
+      return id;
+    },
+    get: async (_table: TableName, id: string) => {
+      const row = byId.get(id);
+      return row ? { ...row, _id: id } : null;
+    },
+    patch: async (_table: TableName, id: string, change: Record<string, unknown>) => {
+      const row = byId.get(id);
+      if (!row) throw new Error("A planned row was patched before it was planned.");
+      Object.assign(row, change);
+    },
+  } as unknown as SampleDb;
+  await fill(db, visitor, now);
+  return planned;
+}
+
+/**
+ * The sample conference as the seed alone makes it at `now`, for the one public read (demo.firstRoom): rows by
+ * table, each with its stand-in id, as the visitor account would own them. No database row is read, so nothing
+ * a visitor typed can be in it and it costs none of the month's database allowance.
+ */
+export async function seeded(now: number, visitor: { name: string; email: string }) {
+  const planned = await plan({ userId: "plan:visitor" as Id<"users">, ...visitor }, now);
+  return <Table extends TableName>(table: Table) => planned.filter((row) => row.table === table).map((row) => ({ ...row.doc, _id: row.id }) as unknown as Doc<Table>);
+}
+
 export const load = internalMutation({
   args: { owner: v.optional(owner) },
   returns: v.id("churches"),
@@ -579,27 +617,7 @@ export const renew = internalMutation({
   handler: async (ctx, { churchId, owner: visitor }) => {
     const there = await sampleRows(ctx, churchId);
     // The plan: rows held in memory under stand-in ids, which the database never sees.
-    const planned: { table: TableName; id: string; doc: Record<string, unknown> }[] = [];
-    const byId = new Map<string, Record<string, unknown>>();
-    const plan: SampleDb = {
-      insert: async (table: TableName, doc: Record<string, unknown>) => {
-        const id = `plan:${planned.length}`;
-        const row = { ...doc };
-        planned.push({ table, id, doc: row });
-        byId.set(id, row);
-        return id;
-      },
-      get: async (_table: TableName, id: string) => {
-        const row = byId.get(id);
-        return row ? { ...row, _id: id } : null;
-      },
-      patch: async (_table: TableName, id: string, change: Record<string, unknown>) => {
-        const row = byId.get(id);
-        if (!row) throw new Error("A planned row was patched before it was planned.");
-        Object.assign(row, change);
-      },
-    } as unknown as SampleDb;
-    await fill(plan, visitor);
+    const planned = await plan(visitor);
 
     // Rows of the sample that are there, by table and content, each to be claimed at most once.
     const unclaimed = new Map<string, string[]>();
