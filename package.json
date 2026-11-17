@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit --incremental false",
     "test": "bun run test:unit && bun run test:backend",
     "test:unit": "bun test src",
-    "test:backend": "vitest run convex"
+    "test:backend": "vitest run convex",
+    "a11y": "bun scripts/a11y.mts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.10.0",
@@ -54,6 +55,7 @@
     "esbuild": "^0.28.2",
     "eslint": "^10.14.0",
     "eslint-config-next": "16.4.5",
+    "playwright-core": "1.56.1",
     "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "typescript": "^5",
