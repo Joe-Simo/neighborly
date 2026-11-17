@@ -172,7 +172,7 @@
 }
 .live-app .entry .live-form > button[type="submit"] svg { transition: transform 200ms var(--paper-ease); }
 @media (hover: hover) {
-  .live-app .entry .live-form > button[type="submit"]:hover svg:not(.live-auth-spin) { transform: translateX(3px); }
+  .live-app .entry .live-form > button[type="submit"]:hover svg { transform: translateX(3px); }
 }
 /* The second thing a form offers is a line of text, never another box. */
 .live-app .entry .entry-quiet,
@@ -218,11 +218,7 @@
 }
 .live-app .entry-sample button { gap: 8px; font-size: 16px; font-weight: 500; }
 .live-app .entry-sample button:disabled { opacity: 1; color: var(--live-muted); }
-.live-app .entry-sample[data-opening] button {
-  color: var(--paper-ink);
-  text-decoration: none;
-  animation: paper-breathe 1.6s ease-in-out infinite;
-}
+.live-app .entry-sample[data-opening] button { color: var(--paper-ink); text-decoration: none; }
 .entry-sample .live-error { justify-self: stretch; margin: 4px 0 12px; }
 .entry .live-field small,
 .entry-sample small,
@@ -253,7 +249,10 @@
   .live-app .entry-foot-line :is(button, a):hover { color: var(--paper-ink); text-decoration: underline; text-underline-offset: 5px; }
 }
 
-.live-auth-spin { animation: live-spin 1s linear infinite; }
+/* Waiting, here as everywhere: the ochre ring, still, beside the one line that says so. */
+.entry-waits { flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
+/* On the green of the one solid button the ring is the lighter ochre, so it reads. */
+.live-app .entry .live-form > button[type="submit"] .entry-waits { border-color: var(--paper-ochre, #c8962e); }
 
 /* A short desktop window: the whole sheet still shows without scrolling. */
 @media (min-width: 851px) and (max-height: 920px) {
@@ -389,9 +388,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .entry-art > .relief,
-  .entry :is(.live-success, .live-error),
-  .live-auth-spin,
-  .live-app .entry-sample[data-opening] button { animation: none; }
+  .entry :is(.live-success, .live-error) { animation: none; }
   .entry-tabs button::after,
   .live-app .entry .live-back svg,
   .live-app .entry .live-form > button[type="submit"] svg { transition: none; }
