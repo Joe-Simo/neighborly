@@ -113,15 +113,10 @@
 .count-up-room { visibility: hidden; }
 .count-up-roll { position: absolute; top: 0; left: 0; }
 
-/* Rows and links answer a pointer the same way everywhere: the paper lifts a little, the line under a link thickens. */
-:is(.live-row, .help-row, .live-team) {
-  transition: transform 200ms var(--paper-ease), box-shadow 200ms var(--paper-ease), background-color 200ms ease;
-}
+/* Rows and links answer a pointer the same way everywhere: a row takes one flat tone, standing 12px past its
+   words on either side, and the line under a link thickens. A row is part of its sheet: nothing lifts. */
 @media (hover: hover) {
-  :is(.live-row, .help-row):hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 18px -18px #283c3266;
-  }
+  :is(.live-row, .help-row):hover { background: #f1efe2; box-shadow: -12px 0 0 #f1efe2, 12px 0 0 #f1efe2; }
 }
 .live-app .live-link,
 .live-dialog .live-link { text-decoration-thickness: 1px; transition: text-decoration-thickness 160ms ease; }

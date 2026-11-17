@@ -414,7 +414,6 @@
 .live-loading {
   padding: 36px 28px;
   border-top: 1px solid var(--live-line);
-  background: linear-gradient(120deg, #eeeee2, transparent);
   min-height: 110px;
   color: var(--live-muted);
   display: flex;
