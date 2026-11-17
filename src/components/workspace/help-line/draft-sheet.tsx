@@ -32,6 +32,7 @@ export function DraftSheet({
   drafted: { call, draft },
   waiting = 1,
   sealed = false,
+  arriving = false,
   format,
   pending,
   toDo,
@@ -45,6 +46,11 @@ export function DraftSheet({
   waiting?: number;
   /** The yes was given and the request is on the record: the corner folds to green. */
   sealed?: boolean;
+  /**
+   * Laid where the saved sheet before it is closing: unseen, its title not yet named, until that sheet has gone.
+   * Then it is laid down whole, as any sheet is.
+   */
+  arriving?: boolean;
   format: Workspace["format"];
   pending: boolean;
   /** What the person must do before the yes, in ink above the buttons. */
@@ -82,7 +88,8 @@ export function DraftSheet({
     <section
       className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
       data-fold-leaves={sealed ? "" : undefined}
-      aria-labelledby="draft-title"
+      data-arriving={arriving ? "" : undefined}
+      aria-labelledby={arriving ? undefined : "draft-title"}
       data-blank={complete ? undefined : ""}
     >
       <p className="help-sheet-label">
@@ -104,7 +111,7 @@ export function DraftSheet({
             )}{" "}
             called on {format(call.takenAt, { weekday: "long", month: "long" })}
           </p>
-          <h2 id="draft-title">
+          <h2 id={arriving ? undefined : "draft-title"}>
             {title}
             {draft.payeeName && ` to ${draft.payeeName}`}
           </h2>

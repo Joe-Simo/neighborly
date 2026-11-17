@@ -94,6 +94,9 @@
 .help-seal svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .help-seal path { stroke-dasharray: 1; animation: help-seal-draw 320ms var(--paper-ease) 260ms backwards; }
 @keyframes help-seal-draw { from { stroke-dashoffset: 1; } }
+/* The next draft under a yes is laid where the saved sheet is closing, and its room opens in the same move
+   (fold.ts openInPlaceOf). It is unseen until the saved sheet has gone, then laid down whole (paper-settle). */
+.help-sheet[data-arriving] { visibility: hidden; animation: none; }
 /* A call that has just been returned: its dot fills as the row lands. */
 .help-row[data-arrived] .live-status:before { animation: help-dot-fill 300ms var(--paper-ease) 640ms backwards; }
 @keyframes help-dot-fill { from { background: transparent; box-shadow: inset 0 0 0 1.5px currentColor; } }
