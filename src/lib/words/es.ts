@@ -541,6 +541,7 @@ export function es(set: WordSet): Words {
         createKicker: "Un pequeño comienzo", joinKicker: "Una invitación a pertenecer",
         createTitle: "Haz lugar para tu gente.", joinTitle: "Tu gente está aquí.",
         createDeck: "Dale a tu conferencia un lugar privado para organizar a su gente, sus planes y sus obras de caridad.",
+        joinNamedBefore: "Te invitaron a unirte a", joinNamedAfter: ". Tú eliges los compromisos que aceptas.",
         joinDeck: "Usa tu invitación para unirte a tu conferencia. Tú eliges los compromisos que aceptas.",
         choose: "Elige cómo empezar", start: "Crear conferencia", invited: "Tengo invitación",
         yourName: "Tu nombre", conferenceName: "Nombre de la conferencia", timeZone: "Zona horaria para todas las horas",

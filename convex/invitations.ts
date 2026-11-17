@@ -87,6 +87,31 @@ export const pendingUntil = internalQuery({
     return invite?.status === "pending" ? invite.expiresAt : null;
   },
 });
+/**
+ * The name of the conference an invitation link leads to, asked by the door in place of `good` (one question, as before),
+ * so the welcome can say whom the person is joining. It says the name and nothing else, and only while the link can
+ * still be used: unknown, used, revoked and expired are one null, the same "no" `good` gives, and a token of the
+ * wrong shape is refused without a read. A good link costs two rows: the invitation by its index and the conference.
+ */
+export const conference = action({
+  args: { token: v.string() },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, args): Promise<string | null> => {
+    if (!/^[0-9a-f]{64}$/.test(args.token)) return null;
+    const pending = await ctx.runQuery(internal.invitations.pendingConference, { tokenHash: await digest(args.token) });
+    return pending && pending.expiresAt > Date.now() ? pending.name : null;
+  },
+});
+/** A pending invitation's end and its conference's name, or null when there is none. The clock is read by the caller, never here. */
+export const pendingConference = internalQuery({
+  args: { tokenHash: v.string() }, returns: v.union(v.object({ expiresAt: v.number(), name: v.string() }), v.null()),
+  handler: async (ctx, args) => {
+    const invite = await ctx.db.query("invitations").withIndex("by_token", q => q.eq("tokenHash", args.tokenHash)).unique();
+    if (invite?.status !== "pending") return null;
+    const church = await ctx.db.get("churches", invite.churchId);
+    return church ? { expiresAt: invite.expiresAt, name: church.name } : null;
+  },
+});
 /** Retry enqueue after sender configuration using the retained private invitation token. */
 export const queueEmail = action({
   args: { invitationId: v.id("invitations"), token: v.string() }, returns: delivery,

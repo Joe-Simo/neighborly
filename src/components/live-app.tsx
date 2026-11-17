@@ -109,11 +109,13 @@ function LiveRooms({
   const invitationRequest = useRef<{ key: string; id: string } | null>(null);
   const execute = useMutation(api.workspace.execute);
   const [invitationConsumed, setInvitationConsumed] = useState(false);
-  // An invitation link is asked about once, yes or no and nothing else, as soon as it is known who is here. Not
+  // An invitation link is asked about once, for the name of its conference and nothing else (no name is a no), as soon as it is known who is here. Not
   // before: Convex drops an action in flight when the session is handed to it. A link that is no longer good is
   // said so on the sheet and then dropped, so nobody signs up for nothing. A question that fails is asked twice
   // more; if it still fails, or no answer comes in six seconds, the link is left to stand and joining checks it.
-  const askInvitation = useAction(api.invitations.good);
+  const askInvitation = useAction(api.invitations.conference);
+  /** The conference the link leads to, said on the welcome. Unknown if the question could not be asked. */
+  const [invitedTo, setInvitedTo] = useState("");
   // A link whose token is not sixty-four hex digits was cut short or mistyped and can never be good: that is
   // said at once, with no question asked (the backend holds the same test before it reads anything).
   const couldBeAnInvitation = /^[0-9a-f]{64}$/.test(invitationToken);
@@ -126,13 +128,14 @@ function LiveRooms({
     if (invitationAnswered.current || !whoIsKnown) return;
     let current = true;
     let again: ReturnType<typeof setTimeout> | undefined;
-    const answer = (good: boolean) => {
+    const answer = (good: boolean, name = "") => {
       if (!current || invitationAnswered.current) return;
       invitationAnswered.current = true;
+      setInvitedTo(name);
       setInvitationGood(good);
     };
     const ask = (left: number) =>
-      void askInvitation({ token: invitationToken }).then(answer, (cause: unknown) => {
+      void askInvitation({ token: invitationToken }).then((name) => answer(name !== null, name ?? ""), (cause: unknown) => {
         if (!current) return;
         if (left > 0) again = setTimeout(() => ask(left - 1), 600);
         else {
@@ -338,6 +341,7 @@ function LiveRooms({
     return (
       <LiveWelcome
         initialToken={liveToken}
+        conference={invitedTo}
         initialMode={!badInvite && (intent === "join" || invitationToken) ? "join" : "create"}
         badInvite={badInvite}
         signOut={signOut}
