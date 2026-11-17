@@ -81,9 +81,9 @@ export function NeighborlyExperience() {
       const progress = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight)));
       element.style.setProperty("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4))));
       element.style.setProperty("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (progress - .3) / .5))));
-      // Three lines pass through the same place and never share it: the headline is gone by .38, the line between stands alone from .54 and has left by .73, before the doors are fully in at .8, and the doors' words begin at .84.
+      // Three lines pass through the same place and never share it: the headline holds at full ink until the picture begins to leave at .4 and is gone by .5, the line between stands alone from .54 and has left by .73, before the doors are fully in at .8, and the doors' words begin at .84.
       const share = (from: number, to: number) => Math.max(0, Math.min(1, (progress - from) / (to - from)));
-      element.style.setProperty("--entry-caption", String(reduce ? Number(progress < .5) : 1 - share(.25, .38)));
+      element.style.setProperty("--entry-caption", String(reduce ? Number(progress < .5) : 1 - share(.4, .5)));
       element.style.setProperty("--entry-line", String(reduce ? 0 : Math.min(share(.54, .62), 1 - share(.66, .73))));
       element.style.setProperty("--entry-words", String(reduce ? Number(progress >= .5) : share(.84, .95)));
       const portrait = element.querySelector<HTMLElement>(".painted-world-track");
@@ -119,8 +119,28 @@ export function NeighborlyExperience() {
       request();
     };
     element.addEventListener("click", enter);
+    // The keyboard walks the same way the eye does: Tab from the opening's last control goes on into the courtyard and its doors,
+    // and Shift+Tab from the courtyard's first control comes back to the opening. Each is brought into view first, as scrolling would.
+    const reachable = (part: HTMLElement) => [...part.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), [tabindex]")].filter(control => control.tabIndex >= 0 && !control.closest("[aria-hidden=true]:not(.painted-world-track, .fresco-stage)"));
+    const walk = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey || sideways.matches) return;
+      const portrait = element.querySelector<HTMLElement>(".painted-world-track"), courtyard = element.querySelector<HTMLElement>(".fresco-stage"), stage = element.querySelector<HTMLElement>(".painted-world-viewport");
+      if (!portrait || !courtyard || !stage) return;
+      const at = document.activeElement, top = element.getBoundingClientRect().top + scrollY, height = stage.getBoundingClientRect().height;
+      const go = (from: HTMLElement, to: HTMLElement, y: number, pick: (controls: HTMLElement[]) => HTMLElement | undefined) => {
+        event.preventDefault();
+        window.scrollTo({ top: y, behavior: "instant" });
+        from.inert = true; from.setAttribute("aria-hidden", "true");
+        to.inert = false; to.setAttribute("aria-hidden", "false");
+        pick(reachable(to))?.focus({ preventScroll: true });
+        request();
+      };
+      if (!event.shiftKey && courtyard.inert && at === reachable(portrait).at(-1)) go(portrait, courtyard, top + height * (media.matches ? .5 : .62), controls => controls[0]);
+      else if (event.shiftKey && portrait.inert && at === reachable(courtyard)[0]) go(courtyard, portrait, top, controls => controls.at(-1));
+    };
+    element.addEventListener("keydown", walk);
     update();
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.classList.remove("is-connected"); };
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.removeEventListener("keydown", walk); element.classList.remove("is-connected"); };
   }, []);
   return <div className="neighborly-connected-world is-connected" ref={root}><PaintedWorld heroOnly suspendOffscreen passed={passed} onContinue={goToDoors} onPass={() => {
     // The card crosses to the open hand and rests there a beat, long enough to see it settle and be held,

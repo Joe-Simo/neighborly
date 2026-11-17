@@ -5,7 +5,8 @@ import { SerwistProvider } from "@serwist/turbopack/react";
 import { launchScreens } from "@/lib/launch-screens";
 export const viewport: Viewport = {
   colorScheme: "light",
-  themeColor: "#f5f3ec",
+  // The page is paper in either mode, so the browser's bar is paper too.
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#f5f3ec" }, { media: "(prefers-color-scheme: dark)", color: "#f5f3ec" }],
   viewportFit: "cover",
 };
 export const metadata: Metadata = {

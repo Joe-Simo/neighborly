@@ -90,6 +90,8 @@ export function KeptPrivate() {
  * page (the line is still opening, and clips what is inside it); the line's own words take over when they land.
  * Transforms and opacity only. Nothing moves for anyone who asks for less motion, or if the line is out of view.
  */
+/** The whole yes, from the sheet to its saved line, in this long: the line is whole and still by its end. */
+const WHOLE = 400;
 let setOff: { name?: DOMRect; asks?: DOMRect; sheet?: DOMRect } = {};
 /**
  * Call just before the saved line is laid: where the sealed sheet's name and request stand now. The line opens
@@ -146,24 +148,31 @@ function fileAway(line: HTMLElement) {
   // Inside the room's frame, so it keeps the room's own setting of its words.
   (sheet.closest(".live-app") ?? document.body).append(card);
   sheet.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 1, fill: "forwards" });
-  [...card.children].forEach((part) => (part as HTMLElement).animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100, easing: "ease-out", fill: "forwards" }));
+  [...card.children].forEach((part) => (part as HTMLElement).animate([{ opacity: 1 }, { opacity: 0 }], { duration: 90, easing: "ease-out", fill: "forwards" }));
   const lineLook = getComputedStyle(line);
   const paper = getComputedStyle(sheet).backgroundColor;
   const done = () => card.remove();
-  const close = "cubic-bezier(0.2, 0.7, 0.2, 1)";
-  card.animate([{ height: `${from.height}px` }, { height: `${place.height}px` }], { duration: 360, easing: close, fill: "forwards" });
+  // Its foot is read off the room itself each frame: the sheet closing in its place below the opening line ends
+  // exactly where the list now begins, so the card is always as tall as the space it leaves and never lies on a row.
+  const follow = () => {
+    if (!card.isConnected) return;
+    const foot = sheet.getBoundingClientRect().bottom;
+    card.style.height = `${Math.max(place.height, Math.min(from.height, foot - from.top))}px`;
+    requestAnimationFrame(follow);
+  };
+  follow();
   card.animate(
     [
       { backgroundColor: paper, borderRadius: getComputedStyle(sheet).borderRadius, boxShadow: getComputedStyle(sheet).boxShadow, opacity: 1 },
-      { backgroundColor: paper, offset: 0.35 },
-      { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, boxShadow: "0 0 0 #0000", opacity: 1, offset: 0.7 },
+      { backgroundColor: paper, offset: 0.2 },
+      { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, boxShadow: "0 0 0 #0000", opacity: 1, offset: 0.55 },
       { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, boxShadow: "0 0 0 #0000", opacity: 0 },
     ],
-    { duration: 520, fill: "forwards" },
+    { duration: WHOLE, fill: "forwards" },
   ).finished.then(done, done);
   const corner = `${window.innerWidth < 700 ? 48 : 64}px`;
   card.animate([{ width: "38px", height: "38px", opacity: 1 }, { width: corner, height: corner, opacity: 1, offset: 0.23 }, { width: corner, height: corner, opacity: 0, offset: 0.7 }, { opacity: 0 }], {
-    duration: 520, easing: "cubic-bezier(0.3, 0, 0.2, 1)", fill: "forwards", pseudoElement: "::after",
+    duration: WHOLE, easing: "cubic-bezier(0.3, 0, 0.2, 1)", fill: "forwards", pseudoElement: "::after",
   });
   const travel = (from: HTMLElement | null, to: HTMLElement | null, start: DOMRect | undefined, resized: boolean) => {
     if (!from || !to || !start) return;
@@ -191,7 +200,7 @@ function fileAway(line: HTMLElement) {
       resized
         ? [{ transform: `${move} scale(${scale})`, opacity: 0 }, { opacity: 1, offset: 0.25 }, { transform: "none", opacity: 1 }]
         : [{ transform: move, opacity: 0 }, { opacity: 0, offset: 0.15 }, { opacity: 1, offset: 0.5 }, { transform: "none", opacity: 1 }],
-      { duration: 460, delay: 60, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "both" },
+      { duration: 340, delay: 40, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "both" },
     ).finished.then(landed, landed);
   };
   travel(sheet.querySelector<HTMLElement>(".help-from strong"), line.querySelector<HTMLElement>("[data-filed=name]"), setOff.name, true);

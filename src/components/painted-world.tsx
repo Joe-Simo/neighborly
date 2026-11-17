@@ -19,6 +19,8 @@ const chapters = {
   welcome: { number: "04", name: "A welcome offered", title: <>A place<br /><em>for everyone.</em></>, copy: "Small acts of care become a community." },
   complete: { number: "04", name: "Good work, together", title: <>Good work,<br /><em>together.</em></>, copy: "Organize the next act of care with your church or community." },
 } as const;
+/** The open hand holding the card, for wide screens: 1440 for one pixel per point, 2880 for two. */
+const acceptedStill = "/assets/living-relief-accepted-1440.avif 1440w, /assets/living-relief-accepted-2880.avif 2880w";
 function fallbackSource(scene: PaintedScene, mobile: boolean, accepted = false) {
   if (scene === "opening" && accepted) return mobile ? "/assets/living-relief-mobile-accepted.webp" : "/assets/living-relief-accepted.webp";
   if (scene === "opening") return mobile ? "/assets/living-relief-mobile.webp" : "/assets/living-relief-poster.webp";
@@ -236,11 +238,13 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           {/* The first picture a visitor sees: the lightest file their screen can use, asked for before anything else. */}
           {heroOnly && openingOutcome !== "accepted" && <source media="(max-width:700px)" type="image/avif" srcSet="/assets/living-relief-mobile-480.avif 480w, /assets/living-relief-mobile-780.avif 780w" sizes="100vw" />}
           <source media={heroOnly ? "(max-width:700px)" : "(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)"} srcSet={fallbackSource(visibleScene, true, openingOutcome === "accepted")} />
-          {heroOnly && openingOutcome !== "accepted" && <source type="image/avif" srcSet="/assets/living-relief-poster-960.avif 960w, /assets/living-relief-poster-1440.avif 1440w" sizes="100vw" />}
+          {heroOnly && openingOutcome !== "accepted" && <source type="image/avif" srcSet="/assets/living-relief-poster-960.avif 960w, /assets/living-relief-poster-1440.avif 1440w, /assets/living-relief-poster-2880.avif 2880w" sizes="100vw" />}
+          {heroOnly && openingOutcome === "accepted" && <source type="image/avif" srcSet={acceptedStill} sizes="100vw" />}
           <img crossOrigin="anonymous" fetchPriority="high" decoding="sync" src={fallbackSource(visibleScene, false, openingOutcome === "accepted")} alt="" />
         </picture>}
         {heroOnly && reached && !passed && (!ready || failed || !canRender) && <picture className="painted-world-fallback painted-world-fallback-passed">
           <source media="(max-width:700px)" srcSet={fallbackSource("opening", true, true)} />
+          <source type="image/avif" srcSet={acceptedStill} sizes="100vw" />
           <img src={fallbackSource("opening", false, true)} alt="" />
         </picture>}
         {heroOnly && onPass && !passed && <div className="painted-world-card" aria-hidden="true" onPointerDown={takeCard} onPointerMove={carryCard} onPointerUp={event => releaseCard(event)} onPointerCancel={event => releaseCard(event, true)} />}

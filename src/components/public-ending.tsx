@@ -8,6 +8,7 @@ import { CardOfferGrow } from "./card-offer-grow";
 import "./neighborly-continuation.css";
 import "./thread-card.css";
 import "./public-touch.css";
+import "./cut-edges.css";
 
 /** The picture every public page closes on: the same two people, the open hand holding the card out as the way in. */
 export function ClosingBand() {
@@ -17,6 +18,7 @@ export function ClosingBand() {
   return <div className="neighborly-close" ref={band}>
     <picture className="neighborly-close-art">
       <source media="(max-width:700px) and (orientation:portrait)" srcSet="/assets/living-relief-mobile-accepted.webp" width={780} height={1688} />
+      <source type="image/avif" srcSet="/assets/living-relief-accepted-1440.avif 1440w, /assets/living-relief-accepted-2880.avif 2880w" sizes="100vw" width={1440} height={1024} />
       <img src="/assets/living-relief-accepted.webp" width={1440} height={1024} alt="" loading="lazy" decoding="async" />
     </picture>
     {/* The open hand before the card comes back to it, cut from the opening picture, and the place the card lands. */}

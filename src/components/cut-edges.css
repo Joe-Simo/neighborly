@@ -44,3 +44,8 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
   .neighborly-together .neighborly-close::before{content:"";position:absolute;z-index:1;left:calc(var(--hold-x,0px) - var(--hold-w,0px) * .037);top:calc(var(--hold-y,0px) - var(--hold-h,0px) * .054);width:calc(var(--hold-w,0px) * 1.08);height:calc(var(--hold-h,0px) * 1.12);background:var(--paper-open-hold) 0 0/100% 100% no-repeat;pointer-events:none}
   .neighborly-together .neighborly-close-words{z-index:2}
 }
+/* The close, on a phone or tablet: the painted paper behind the band runs dark under it, so the foot lies on a piece of the page's own paper, cut by hand like the opening. */
+@media(max-width:900px){
+  .neighborly-together .neighborly-colophon{position:relative;isolation:isolate}
+  .neighborly-together .neighborly-colophon::before{content:"";position:absolute;z-index:-1;left:-20px;right:-20px;top:-24px;bottom:0;background:var(--background);-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
+}
