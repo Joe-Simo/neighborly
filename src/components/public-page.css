@@ -68,5 +68,5 @@
   .public-words section{margin:0;break-inside:avoid;border-top:1px solid #293f3224}
 }
 @media(prefers-reduced-motion:reduce){.paper-rise,.public-state .paper-rise>*{animation:none}}
-/* After a state page, whose paper is lighter, the ending begins in that paper. */
-.public-state+.neighborly-continuation{background:linear-gradient(#f7f4ed,#eee7d7 240px)}
+/* The closing band meets the page of words with its cut edge only: above that edge lies the desk, not a strip of another paper. */
+.public-page>.neighborly-continuation{background:#e6decb}
