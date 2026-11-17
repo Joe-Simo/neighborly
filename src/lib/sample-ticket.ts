@@ -12,10 +12,12 @@ const fresh = 40_000;
 export const protect = "https://cdn.protect.clerk.com";
 let asked: { at: number; reply: Promise<Response> } | null = null;
 /**
- * A request that has had no answer in fifteen seconds is given up, so a hung one ends as any refusal does (the
- * sheet says the sample did not open) instead of leaving the visitor waiting on nothing.
+ * A request that has had no answer in ten seconds is given up, so a hung one ends as any refusal does (the sheet
+ * says the sample did not open) instead of leaving the visitor waiting on nothing. Ten, because the home page's card
+ * lets go of the screen twelve seconds after the press (card-offer-grow.tsx): the refusal comes first, so the sheet
+ * is seen once, with its sentence already in it.
  */
-const ask = () => fetch("/app/look-around", { method: "POST", signal: AbortSignal.timeout(15_000) });
+const ask = () => fetch("/app/look-around", { method: "POST", signal: AbortSignal.timeout(10_000) });
 
 /** Clerk's own cookie says whether someone is signed in before its script has loaded. */
 const signedIn = () => /(?:^|;\s*)__client_uat(?:_[\w-]+)?=[1-9]/.test(document.cookie);
