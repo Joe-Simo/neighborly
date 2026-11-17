@@ -15,7 +15,8 @@
 .fresco-invitation h2{margin:0 0 24px;font:400 clamp(44px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.065em}
 .fresco-invitation h2 em{font-weight:400}
 .fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
-.fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none}
+/* Only its colour eases. Were everything to ease, the button would still be hidden for a moment after its place is shown, and the keyboard could not land on it. */
+.fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none;transition-property:background-color}
 .fresco-open[data-slot=button]:hover{background:#3a5040}
 
 /* One opening in the wall. It is the doorway first, then the frame of the fresco. */

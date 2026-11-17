@@ -28,7 +28,6 @@ export function ClosingBand() {
         <img src="/assets/home/hand-empty.webp" width={360} height={295} alt="" loading="lazy" decoding="async" />
       </picture>
     </span>
-    <CardOfferGrow />
     <div className="neighborly-close-words">
       <h2 id="together-title">Bring this to<br /><em>your people.</em></h2>
       <div className="neighborly-final-actions">
@@ -38,18 +37,21 @@ export function ClosingBand() {
         </nav>
       </div>
     </div>
+    {/* After the words, as the eye and the keyboard meet them: the invitation, then the card that answers it. */}
+    <CardOfferGrow />
   </div>;
 }
 
 /** The foot of every public page: the name set across the paper, and the two quiet links. */
 export function Colophon({ home = "/" }: { home?: string }) {
   return <footer className="neighborly-colophon">
-    <a href={home}>kind helps</a>
     <span>Made for the good we can do.</span>
     <nav aria-label="About Kind Helps">
       <Link className="neighborly-give" href="/privacy">Privacy</Link>
       <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">Give a gift</a>
     </nav>
+    {/* Last, as it is set: the name is the page's final line for the eye, the keyboard and a screen reader alike. */}
+    <a href={home}>kind helps</a>
   </footer>;
 }
 
