@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DateTime } from "luxon";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { count, spokenLabel } from "@/components/workspace/help-line/format";
+import { readFailure } from "@/components/workspace/failure";
 import { HelpLoading } from "@/components/workspace/help-line/room";
 import { LiveFailure } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
@@ -24,7 +25,7 @@ import { need, useEnglishDates, type Sheet } from "@/components/workspace/visits
  * Opening it shows a neighbor's details, so it is written down first, like opening the record.
  */
 export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
-  const { data, now, setHeading } = useWorkspace();
+  const { data, now, setHeading, words } = useWorkspace();
   const format = useEnglishDates();
   const churchId = data.church.id;
   // One neighbor's details: a plain head, with no painting.
@@ -43,19 +44,69 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   const confirming = step === "callOff";
   const setConfirming = (open: boolean) => setStep(open ? "callOff" : null);
   const { pending, error, save } = useSave();
+  // Each try at opening has a number. A refusal keeps the number of the try it answers, so the room knows
+  // whether the notice on the page is the last word or a new try is already on its way.
+  const [attempt, setAttempt] = useState(0);
+  const [refused, setRefused] = useState<{ sentence: string; attempt: number } | null>(null);
   useEffect(() => {
     let current = true;
     void openSheet({ churchId, visitId }).then(
-      () => current && setOpened(true),
+      () => {
+        if (!current) return;
+        setRefused(null);
+        setOpened(true);
+      },
+      // Without this the quiet "Opening…" line would stay for ever, saying something is on its way when nothing is.
+      (cause: unknown) => {
+        if (current) setRefused({ sentence: readFailure(cause, "The visit sheet didn’t open."), attempt });
+      },
     );
     return () => {
       current = false;
     };
-  }, [openSheet, churchId, visitId]);
+  }, [openSheet, churchId, visitId, attempt]);
   const sheet = useQuery(
     api.visits.sheet,
     opened ? { churchId, visitId } : "skip",
   );
+  // The sheet that opens on a second try takes the place of the notice, and of the Try again that had the
+  // focus. The focus goes to the first thing on the sheet, the way back, and not to the page.
+  const arrived = Boolean(sheet);
+  const afterRefusal = useRef(false);
+  useEffect(() => {
+    if (refused) afterRefusal.current = true;
+    if (!arrived || !afterRefusal.current) return;
+    afterRefusal.current = false;
+    const at = document.activeElement;
+    if (!at || at === document.body) document.querySelector<HTMLElement>(".visits-back")?.focus({ preventScroll: true });
+  }, [arrived, refused]);
+  // The sheet is drawn whole or not at all. When it did not open, its place says so in plum, with the way back
+  // and one Try again. The notice stays while a second try is on its way (a press during it is not a third try),
+  // and a second refusal lays it afresh, so it takes the focus and is said again even when the words are the same.
+  // While that try is on its way one quiet line says so and Try again is marked at rest, so it never looks broken.
+  if (!sheet && refused)
+    return (
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (refused.attempt === attempt) setAttempt(attempt + 1);
+        }}
+      >
+        <div className="visits-sheet-bar">
+          <div className="visits-sheet-links">
+            <Link className="visits-back" href="/app/visits">
+              <ArrowLeft size={17} aria-hidden="true" /> Home visits
+            </Link>
+          </div>
+        </div>
+        <DidNotOpen
+          key={refused.attempt}
+          sentence={refused.sentence}
+          trying={refused.attempt !== attempt}
+          tryAgain={words.states.tryAgain}
+        />
+      </form>
+    );
   if (!sheet) return <HelpLoading label="Opening the visit sheet" />;
   return (
     <>
@@ -108,6 +159,36 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
             </Button>
           </div>
         </LiveDialog>
+      )}
+    </>
+  );
+}
+
+/**
+ * The sheet did not open. The same plum notice a form shows (LiveFailure), written out here because its
+ * Try again must rest while a new try is already on its way: marked off, not removed, so the focus stays on it.
+ */
+function DidNotOpen({ sentence, trying, tryAgain }: { sentence: string; trying: boolean; tryAgain: string }) {
+  const notice = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    notice.current?.focus({ preventScroll: true });
+    notice.current?.scrollIntoView({ block: "nearest" });
+  }, []);
+  return (
+    <>
+      <div className="live-error live-failure" role="alert" tabIndex={-1} ref={notice}>
+        <div>
+          <p>{sentence}</p>
+          <p className="live-error-recovery">Nothing was changed. Try again, or go back to Home visits.</p>
+        </div>
+        <Button type="submit" variant="outline" className="aria-disabled:opacity-50" aria-disabled={trying || undefined}>
+          {tryAgain}
+        </Button>
+      </div>
+      {trying && (
+        <p className="live-waiting" role="status" style={{ marginTop: 12 }}>
+          Opening the visit sheet…
+        </p>
       )}
     </>
   );

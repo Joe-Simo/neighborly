@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 import { useAction } from "convex/react";
-import { LoaderCircle } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { DateField, WhenField } from "@/components/workspace/date-field";
@@ -12,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
 import { LiveField } from "@/components/workspace/primitives";
+import { LiveWaiting } from "@/components/workspace/states";
 import type { ActionKind } from "@/components/workspace/navigation";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -19,12 +19,16 @@ export function LiveCreateForm({
   kind,
   data,
   pending,
+  saving,
   error,
   onSubmit,
 }: {
   kind: ActionKind;
   data: LiveWorkspaceData;
+  /** Some save is on its way, this form's or another: the button rests. */
   pending: boolean;
+  /** This form's own save is on its way: only then does it say so. */
+  saving: boolean;
   error: string;
   onSubmit: (command: LiveCommand) => Promise<void>;
 }) {
@@ -345,13 +349,13 @@ export function LiveCreateForm({
           {error}
         </div>
       )}
+      {/* With the connection lost the save is held, not failed: one line says the entry is kept and will go by itself. */}
+      <LiveWaiting when={saving} />
       <div className="live-form-actions">
         <Button type="submit" disabled={pending}>
-          {pending ? (
-            <>
-              <LoaderCircle size={16} />
-              {kind === "announcement" ? form.saving : (own?.saving ?? "Saving…")}
-            </>
+          {/* Waiting is said in words alone: nothing turns beside them. */}
+          {saving ? (
+            kind === "announcement" ? form.saving : (own?.saving ?? "Saving…")
           ) : kind === "invite" ? (
             "Create the meeting invitation"
           ) : kind === "announcement" ? (

@@ -3,7 +3,7 @@
 import { LiveLoading } from "@/components/workspace/primitives";
 import "./tools.css";
 import { LiveFailure } from "@/components/workspace/states";
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import Papa from "papaparse";
 import { CircleCheck, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 export type LeftOut = { line: number; name: string; reason: string };
 export type SheetStep =
   | { step: "choose"; error?: string; fileName?: string }
-  | { step: "working"; label: string; progress?: string; read?: { names: string[]; lines: number }; saving?: { fileName: string; ready: number } }
+  | { step: "working"; label: string; progress?: string; read?: { names: string[]; lines: number }; saving?: { fileName: string; ready: number; leftOut: LeftOut[] } }
   | { step: "review"; fileName: string; ready: number; leftOut: LeftOut[]; error?: string }
   | { step: "done"; done: number; leftOut: LeftOut[]; error?: string };
 export type SheetWords = {
@@ -87,6 +87,22 @@ function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }
  */
 export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, onReset }: { words: SheetWords; state: SheetStep; icon: ReactNode; afterDone?: ReactNode; onFile: (file: File) => void; onYes: () => void; onReset: () => void }) {
   const chooser = useRef<HTMLInputElement>(null);
+  // The sheet that waits for a yes stays the same sheet while the yes is being saved: still ochre, its buttons
+  // at rest, its label saying what is being done. Green is for the line that comes after the save has answered.
+  // If the save fails the sheet has not moved, so nothing turns back from done to waiting.
+  const saving = state.step === "working" && state.saving !== undefined;
+  const waiting = state.step === "review" ? state : state.step === "working" ? state.saving : undefined;
+  // The sheet takes focus once when it arrives and once when its yes starts saving, never on each line of
+  // progress, and only when the focus has nowhere to be: on the page itself, or on a button of the sheet that
+  // has just gone to rest. Someone who has tabbed or scrolled elsewhere keeps their place.
+  const sheet = useRef<HTMLElement>(null);
+  const step = state.step;
+  useEffect(() => {
+    const paper = sheet.current;
+    if (!paper) return;
+    const at = document.activeElement;
+    if (!at || at === document.body || (paper.contains(at) && at.matches(":disabled"))) paper.focus({ preventScroll: saving });
+  }, [step, saving]);
   return (
     <section className="tools-leaf" data-open={state.step === "choose" ? undefined : ""} aria-labelledby={`${words.id}-name`}>
       <h2 id={`${words.id}-name`}>{words.title}</h2>
@@ -113,17 +129,6 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
           <a className="tools-sample" download={words.sample.fileName} href={`data:text/csv;charset=utf-8,${encodeURIComponent(words.sample.text)}`}>Download a sample file</a>
         </div>
       )}
-      {state.step === "working" && state.saving && (
-        <section className="help-sheet tools-sheet paper-fold" aria-busy="true">
-          <p className="help-sheet-label">Yes given</p>
-          <div className="help-sheet-body">
-            <div>
-              <h2>{words.yes(state.saving.ready)}</h2>
-              <p className="help-why">From {state.saving.fileName}.</p>
-            </div>
-          </div>
-        </section>
-      )}
       {state.step === "working" && !state.saving && (
         state.read ? (
           <ol className="tools-reading paper-rows" aria-hidden="true">
@@ -137,27 +142,31 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
           </div>
         )
       )}
-      {state.step === "working" && <p role="status" className={state.progress ? "tools-progress" : "sr-only"}>{state.label}{state.progress && `. ${state.progress}.`}</p>}
-      {state.step === "review" && (
+      {/* While a yes is being saved the sheet's own label carries these words, so this line is for a screen reader only and nothing below the sheet moves. */}
+      {state.step === "working" && <p role="status" className={state.progress && !saving ? "tools-progress" : "sr-only"}>{state.label}{state.progress && `. ${state.progress}.`}</p>}
+      {waiting && (
         <>
-          <section className="help-sheet tools-sheet tools-done" aria-labelledby={`${words.id}-title`} tabIndex={-1} ref={(node) => node?.focus()}>
-            <p className="help-sheet-label">{state.ready ? "Waiting for your yes" : "Nothing to bring in"}</p>
+          {/* The focus that leaves the pressed button when it goes to rest lands on the sheet and not on the page (the effect above). */}
+          <section className="help-sheet tools-sheet tools-done" aria-labelledby={`${words.id}-title`} aria-busy={saving || undefined} tabIndex={-1} ref={sheet}>
+            <p className="help-sheet-label">
+              {state.step === "working" ? `${state.label}${state.progress ? `. ${state.progress}.` : "…"}` : waiting.ready ? "Waiting for your yes" : "Nothing to bring in"}
+            </p>
             <div className="help-sheet-body">
               <div>
-                <h2 id={`${words.id}-title`}>{state.ready ? words.yes(state.ready) : words.nothingReady}</h2>
+                <h2 id={`${words.id}-title`}>{waiting.ready ? words.yes(waiting.ready) : words.nothingReady}</h2>
                 <p className="help-why">
-                  From {state.fileName}.
-                  {state.leftOut.length > 0 && ` ${state.leftOut.length === 1 ? "1 line is" : `${state.leftOut.length} lines are`} left out, listed below.`}
+                  From {waiting.fileName}.
+                  {waiting.leftOut.length > 0 && ` ${waiting.leftOut.length === 1 ? "1 line is" : `${waiting.leftOut.length} lines are`} left out, listed below.`}
                 </p>
-                {state.ready > 0 && <p>{words.promise}</p>}
+                {waiting.ready > 0 && <p>{words.promise}</p>}
               </div>
               <div className="help-actions">
-                {state.ready > 0 && <Button onClick={onYes}>{icon} {words.yes(state.ready)}</Button>}
-                <Button variant={state.ready ? "ghost" : "outline"} onClick={onReset}>Choose another file</Button>
+                {waiting.ready > 0 && <Button disabled={saving} onClick={onYes}>{icon} {words.yes(waiting.ready)}</Button>}
+                <Button variant={waiting.ready ? "ghost" : "outline"} disabled={saving} onClick={onReset}>Choose another file</Button>
               </div>
             </div>
           </section>
-          <LeftOutRows rows={state.leftOut} />
+          <LeftOutRows rows={waiting.leftOut} />
         </>
       )}
       {state.step === "done" && (

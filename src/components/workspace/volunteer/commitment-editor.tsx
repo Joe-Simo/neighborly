@@ -7,18 +7,23 @@ import { WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveField } from "@/components/workspace/primitives";
+import { LiveWaiting } from "@/components/workspace/states";
 import type { LiveCommand, LiveCommitment } from "@/components/workspace/types";
 
 export function LiveCommitmentEditor({
   item,
   timeZone,
   pending,
+  saving,
   error,
   save,
 }: {
   item: LiveCommitment;
   timeZone: string;
+  /** Some save is on its way, this editor's or another: the buttons rest. */
   pending: boolean;
+  /** This editor's own save is on its way: only then does it say so. */
+  saving: boolean;
   error: string;
   save: (
     command: Extract<LiveCommand, { type: "reviseCommitment" }>,
@@ -69,6 +74,8 @@ export function LiveCommitmentEditor({
             {error}
           </div>
         )}
+        {/* With the connection lost the save is held, not failed: one line says so, above the buttons. */}
+        <LiveWaiting when={saving} />
         <div className="live-form-actions">
           <Button
             variant="outline"
@@ -78,7 +85,7 @@ export function LiveCommitmentEditor({
             Back
           </Button>
           <Button disabled={pending} onClick={() => void save(review)}>
-            {pending ? "Saving…" : "Confirm changes"}
+            {saving ? "Saving…" : "Confirm changes"}
           </Button>
         </div>
       </div>

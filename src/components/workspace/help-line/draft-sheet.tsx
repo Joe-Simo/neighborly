@@ -91,6 +91,8 @@ export function DraftSheet({
       data-arriving={arriving ? "" : undefined}
       aria-labelledby={arriving ? undefined : "draft-title"}
       data-blank={complete ? undefined : ""}
+      // The sheet can hold focus itself: when its button rests after a yes, focus stays on the sheet, not on nothing.
+      tabIndex={-1}
     >
       <p className="help-sheet-label">
         {sealed
