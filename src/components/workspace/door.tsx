@@ -70,39 +70,6 @@ export function arriveFromTheDoor() {
   document.documentElement.dataset.door = "sweeping";
   for (const watch of watchers) watch();
 }
-/**
- * The card becomes the page: its two grey lines travel to the two lines of the headline and its ochre square to
- * the ring of "Start here", thinning as the words under them come up. Only what is in the window is aimed at.
- */
-function marksBecomeThePage(card: HTMLElement, timing: KeyframeAnimationOptions, lifted: number) {
-  const [square, ...bars] = [...card.children].filter((mark): mark is HTMLElement => mark instanceof HTMLElement && !mark.classList.contains("door-card-for"));
-  const heading = document.querySelector(".live-app .live-head-words h1");
-  const lines: DOMRect[] = [];
-  if (heading) {
-    const range = document.createRange();
-    range.selectNodeContents(heading);
-    for (const rect of range.getClientRects()) if (rect.width > 1 && !lines.some((line) => Math.abs(line.top - rect.top) < rect.height / 2)) lines.push(rect);
-  }
-  const start = document.querySelector(".live-app .start-here")?.getBoundingClientRect();
-  const ring = start && new DOMRect(start.left, start.top + start.height / 2 - 5, 10, 10);
-  const pairs: [HTMLElement | undefined, DOMRect | undefined][] = [[square, ring], [bars[0], lines[0]], [bars[1], lines[1] ?? lines[0]]];
-  for (const [mark, to] of pairs) {
-    if (!mark) continue;
-    const from = mark.getBoundingClientRect();
-    const opacity = getComputedStyle(mark).opacity;
-    const seen = to && to.bottom > 0 && to.top < window.innerHeight;
-    mark.style.transformOrigin = "0 0";
-    mark.animate(
-      [
-        { opacity, transform: "none" },
-        // The card under them is rising by `lifted`; the marks are carried back down by as much, so they stay on the page.
-        { opacity: 0, transform: `translate(${seen ? to.left - from.left : 0}px, ${(seen ? to.top - from.top : 0) + lifted}px) scale(${seen ? to.width / from.width : 1}, ${seen ? to.height / from.height : 1})` },
-      ],
-      timing,
-    );
-  }
-}
-
 const watch = (watcher: () => void) => {
   watchers.add(watcher);
   return () => void watchers.delete(watcher);
@@ -167,8 +134,9 @@ export function DoorSweep() {
         // The sheets behind are long covered; they go at once, so the one sheet is all that is over the room.
         for (const behind of paper.current?.querySelectorAll<SVGElement>(":scope > svg") ?? []) behind.style.display = "none";
         sheet.style.visibility = "visible";
-        // The card leaves its marks behind: they go to their places on the page as it lifts off them.
-        if (sheet.matches(".door-card:not([data-waits])")) marksBecomeThePage(sheet, away, -far);
+        // The card's marks are on the card: they ride up with it, and nothing is left over the room.
+        // The name goes first, before the paper's edge can pass the room's own greeting, so it is never read twice.
+        sheet.querySelector(".door-card-for")?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: LIFT * 0.3, easing: "linear", fill: "forwards" });
       }
       const over = () => {
         setHolding(false);
