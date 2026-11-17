@@ -5,6 +5,7 @@ import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
 import { HomeYes } from "./home-yes";
 import { ThreadCard } from "./thread-card";
+import { ChapterSheets } from "./chapter-sheets";
 import { ReliefLean } from "./relief-lean";
 import { ClosingBand, Colophon } from "./public-ending";
 import { useSettled } from "@/lib/use-settled";
@@ -50,6 +51,7 @@ export function NeighborlyContinuation() {
       </section>
     </noscript>
     <ThreadCard />
+    <ChapterSheets />
     <ReliefStory />
     <ReliefLean />
     <HomeYes />
