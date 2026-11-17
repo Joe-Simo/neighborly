@@ -4,7 +4,7 @@ import { RoomLeaving, useSheetBetweenRooms } from "@/components/workspace/room-s
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useConvexConnectionState } from "convex/react";
-import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, CircleCheck, LogOut, Menu, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,7 @@ import { useSystemTextSize } from "@/components/system-text-size";
 import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
 import { ArrivingRelief, fetchAhead } from "@/components/workspace/relief-arrival";
-import { sections } from "@/components/workspace/sections";
+import { fetchRoomsAhead, sections } from "@/components/workspace/sections";
 import type {
   LiveCommand,
   LiveConfirmation,
@@ -220,6 +220,8 @@ export function LiveWorkspace({
   // head is the arrival, and an arrival happens once. Decided as the room is entered, so nothing below ever jumps.
   const [rested, setRested] = useState(false);
   useEffect(() => void roomsOpened.add(area), [area]);
+  // Once the first room is in, the others are fetched while nothing else is happening.
+  useEffect(() => fetchRoomsAhead(), []);
   // The first room after the door is drawn finished under the sweep's paper (door.css). The next room arrives as rooms do.
   const firstArea = useRef(area);
   useLayoutEffect(() => {
@@ -533,7 +535,7 @@ export function LiveWorkspace({
           <div className="live-room" key={area}>
             <RoomLeaving />
             <RoomBoundary key={area}>
-              {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Section />}
+              {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Suspense fallback={<LiveLoading label={roomWords.states.opening} />}><Section /></Suspense>}
               {pagination}
             </RoomBoundary>
           </div>
