@@ -186,10 +186,12 @@ export function IncomingRequests({
     const row = document.querySelector(".live-row.volunteer-filed");
     const top = row ? row.getBoundingClientRect().top - leaving + LINE_ROOM : 0;
     const hidden = row && (top < viewTop() || top + row.scrollHeight > window.innerHeight);
-    // The line opens as the sheet closes, in one move. It is laid first, so the close knows it is there.
+    // The line opens as the sheet closes, in one move. It is laid first, so the close knows it is there. The sheet is
+    // taken out the moment its close ends, before anything is drawn; for less motion the close is a plain cut, so
+    // the line and the cut are one change and the line is never drawn over the whole sheet.
     flushSync(() => setSaid({ words: hidden && place ? words.requests.acceptedUnder(place) : words.requests.accepted, of: request.id }));
     await foldLeaves();
-    setGiven(undefined);
+    flushSync(() => setGiven(undefined));
   };
   const line = said && <Said key={said.of}>{said.words}</Said>;
   const waiting = shown.filter((request) => request.id !== given?.id).length;
