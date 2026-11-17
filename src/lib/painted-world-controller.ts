@@ -84,10 +84,12 @@ vec3 towardStill(vec3 c) {
   #ifdef STILL_OCHRE
   lab += vec3(0., 3.8, 3.3);
   #else
-  float skin = stillBand(hue, 45., 75.) * smoothstep(12., 20., chroma) * smoothstep(40., 48., lab.x);
+  // Skin stops short of the mustard fold, which shares its hue at a higher chroma; the fold takes its own measured shift.
+  float skin = stillBand(hue, 45., 75.) * smoothstep(12., 20., chroma) * smoothstep(40., 48., lab.x) * (1. - smoothstep(38., 44., chroma));
+  float fold = stillBand(hue, 56., 74.) * smoothstep(38., 44., chroma);
   float sleeve = stillBand(hue, 290., 345.) * smoothstep(5., 9., chroma);
   float hair = stillBand(hue, 130., 200.) * smoothstep(4., 7., chroma) * (1. - smoothstep(52., 58., lab.x));
-  lab += skin * vec3(-3.2, 0., -1.4) + sleeve * vec3(-1.3, 0., -1.7) + hair * vec3(2.5, 1.6, 0.);
+  lab += skin * vec3(-4.6, 3.2, -.8) + sleeve * vec3(-1.4, .1, -2.1) + hair * vec3(5.7, 3.9, -1.2) + fold * vec3(-3.2, -3.7, -1.2);
   #endif
   return stillRgb(lab);
 }
