@@ -14,7 +14,7 @@ import { initials } from "@/components/workspace/volunteer/people";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TeamsSection() {
-  const { data, pending, isOwner, perform, words } = useWorkspace();
+  const { data, pending, isOwner, perform, words, sampleSaid } = useWorkspace();
   const t = words.teams;
   const text = words.rooms.peopleRoom.teams;
   // Each opening of the dialog is its own object, so an answer that comes late can tell whether the person is
@@ -37,9 +37,9 @@ export function TeamsSection() {
       {data.teams.length ? (
         data.teams.map((team) => (
           <section className="live-team team-card" key={team.id}>
-            <h2>{team.name}</h2>
+            <h2>{sampleSaid(team.name)}</h2>
             <p>
-              {team.description || t.noDescription}
+              {sampleSaid(team.description) || t.noDescription}
             </p>
             {joined.includes(team.id) ? (
               <div className="team-asked paper-corner paper-fold" role="status">
@@ -55,7 +55,7 @@ export function TeamsSection() {
                     <Button
                       disabled={pending}
                       size="sm"
-                      aria-label={`${t.join}: ${team.name}`}
+                      aria-label={`${t.join}: ${sampleSaid(team.name)}`}
                       onClick={async () => {
                         if (await perform({ type: "respondTeam", teamId: team.id, accept: true }))
                           setJoined((teams) => [...teams, team.id]);
@@ -67,7 +67,7 @@ export function TeamsSection() {
                       disabled={pending}
                       size="sm"
                       variant="ghost"
-                      aria-label={`${t.decline}: ${team.name}`}
+                      aria-label={`${t.decline}: ${sampleSaid(team.name)}`}
                       onClick={() => void perform({ type: "respondTeam", teamId: team.id, accept: false })}
                     >
                       {t.decline}
@@ -93,7 +93,7 @@ export function TeamsSection() {
       )}
       {addingTo && (
         <LiveDialog
-          title={text.addTo(addingTo.team.name)}
+          title={text.addTo(sampleSaid(addingTo.team.name))}
           description={text.addDeck}
           onClose={() => setAddingTo(null)}
         >
@@ -160,7 +160,7 @@ function LiveTeamRoster({
   pending: boolean;
   add: () => void;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const t = words.teams;
   const text = words.rooms.peopleRoom.teams;
   const [open, setOpen] = useState(false);
@@ -204,7 +204,7 @@ function LiveTeamRoster({
       {managing && (
         <LiveDialog
           title={managing.name}
-          description={<>{team.name} · {managing.role === "coordinator" ? t.coordinator : t.member}</>}
+          description={<>{sampleSaid(team.name)} · {managing.role === "coordinator" ? t.coordinator : t.member}</>}
           onClose={() => setManagingId(null)}
         >
           <div className="live-manage">

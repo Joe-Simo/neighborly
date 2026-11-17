@@ -72,12 +72,12 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
 
 /** titled is false inside a dialog, where the dialog carries the heading. */
 export function WeeklyRota({ titled = true }: { titled?: boolean }) {
-  const { data, now, format, personName, teamName, words } = useWorkspace();
+  const { data, now, format, personName, teamName, words, sampleSaid } = useWorkspace();
   const [weeksAhead, setWeeksAhead] = useState(0);
   const start = weekStart(now, data.church.timeZone, weeksAhead);
   const shifts = data.commitments
     .filter((item) => item.status !== "cancelled")
-    .map((item) => ({ id: item.id, title: item.title, start: item.start, end: item.end, location: item.location, team: teamName(item.teamId), who: item.assigneeId ? personName(item.assigneeId) : null }));
+    .map((item) => ({ id: item.id, title: sampleSaid(item.title), start: item.start, end: item.end, location: sampleSaid(item.location), team: teamName(item.teamId), who: item.assigneeId ? personName(item.assigneeId) : null }));
   return (
     <WeeklyRotaView
       group={data.church.name}

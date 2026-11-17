@@ -46,7 +46,7 @@ const answered = <T,>(value: T | Error | undefined) =>
   value instanceof Error ? undefined : value;
 
 export function TreasurySection() {
-  const { data, setHeadAction, words } = useWorkspace();
+  const { data, setHeadAction, words, sampleSaid } = useWorkspace();
   const w = words.rooms.treasury;
   const churchId = data.church.id;
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
@@ -163,12 +163,12 @@ export function TreasurySection() {
   };
   const empty = isUntouched(shown);
 
-  const lines = view?.is === "entry" ? entryLines(w, view.entry) : null;
+  const lines = view?.is === "entry" ? entryLines(w, view.entry, sampleSaid) : null;
   const sheet =
     view?.is === "payment"
       ? {
           title: w.sheets.payment.title,
-          description: `${sentence(view.request.summary)} ${w.sheets.payment.paidTo(view.request.payeeName)}`,
+          description: `${sentence(sampleSaid(view.request.summary))} ${w.sheets.payment.paidTo(sampleSaid(view.request.payeeName))}`,
         }
       : view?.is === "money"
         ? moneyOut

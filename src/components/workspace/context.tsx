@@ -44,6 +44,8 @@ export type Workspace = {
   showCommitment: (item: LiveCommitment, trigger: HTMLButtonElement) => void;
   confirm: (confirmation: LiveConfirmation) => void;
   focusOutcome: () => void;
+  /** One of the sample conference's own names, titles or places, said in this reader's language; anyone else's typed words come back as typed. For the screen only, never for a form's value. */
+  sampleSaid: (typed: string) => string;
   /** Every phrase the screens show, in this person's language and this group's word set. */
   words: Words;
   /**

@@ -170,3 +170,52 @@
 :root[data-shell="ios"][data-text-large] .live-app :has(> [data-slot="button"]) { flex-wrap: wrap; }
 :root[data-shell="ios"][data-text-large] .live-app .live-row { flex-wrap: wrap; }
 :root[data-shell="ios"][data-text-large] .live-app .live-row > * { max-width: 100%; }
+
+/* ── Sheets and menus in the iOS app move as paper (A4): each is whole from its first frame and only travels, and
+   leaves the way it came. Nothing fades or zooms; the page behind is laid under its scrim in one cut. Radix keeps a
+   closing piece until its closing animation ends, so every leave is drawn. With Reduce Motion each is one cut. ── */
+@keyframes ios-sheet-up { from { transform: translateY(100%); } }
+@keyframes ios-sheet-down { to { transform: translateY(100%); } }
+@keyframes ios-menu-down { from { transform: translateY(calc(-100% - 60px)); } }
+@keyframes ios-menu-up { to { transform: translateY(calc(-100% - 60px)); } }
+@keyframes ios-set-down { from { transform: translateY(-6px); } }
+@keyframes ios-lift-off { to { transform: translateY(-6px); visibility: hidden; } }
+@keyframes ios-card-set { from { transform: translateY(-10px); } }
+@keyframes ios-card-lift { to { transform: translateY(-10px); visibility: hidden; } }
+/* The page behind a sheet or the menu stays sharp: no blur, one flat ink shade that cuts in and out with the
+   sheet. The sheet's own contact shadow does the lifting. */
+:root[data-shell="ios"] [data-slot="dialog-overlay"] { animation: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: rgb(40 60 50 / 0.16) !important; }
+@media (max-width: 699px) {
+  /* Bottom sheets: every LiveDialog on a phone, and the date sheet, rise from the foot and go back down. */
+  :root[data-shell="ios"] :is(.live-dialog.live-dialog-fixed:not(.tools-rota-dialog), .live-date-sheet.live-date-bottom)[data-state="open"] { animation: ios-sheet-up 280ms cubic-bezier(0.3, 0.6, 0.25, 1) both; }
+  :root[data-shell="ios"] :is(.live-dialog.live-dialog-fixed:not(.tools-rota-dialog), .live-date-sheet.live-date-bottom)[data-state="closed"] { animation: ios-sheet-down 220ms cubic-bezier(0.4, 0, 0.7, 0.4) both; }
+}
+@media (max-width: 899px) {
+  /* The menu is laid down from the top edge as a whole sheet, its foot the site's knife cut with its shadow, and is
+     lifted back up to leave. */
+  :root[data-shell="ios"] .live-mobile-menu[data-slot="dialog-content"] { overflow: visible; filter: drop-shadow(0 8px 10px rgb(46 36 22 / 0.3)); }
+  :root[data-shell="ios"] .live-mobile-menu[data-slot="dialog-content"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 52px;
+    background: inherit;
+    -webkit-mask: var(--ios-knife-cut) 0 0 / 100% 100% no-repeat;
+    mask: var(--ios-knife-cut) 0 0 / 100% 100% no-repeat;
+    pointer-events: none;
+  }
+  :root[data-shell="ios"] .live-mobile-menu[data-state="open"] { animation: ios-menu-down 320ms cubic-bezier(0.3, 0.6, 0.25, 1) both; }
+  :root[data-shell="ios"] .live-mobile-menu[data-state="closed"] { animation: ios-menu-up 280ms cubic-bezier(0.4, 0, 0.7, 0.4) both; }
+}
+:root[data-shell="ios"] { --ios-knife-cut: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30C200 18 380 38 560 26S860 20 1000 34L1000 -10L0 -10Z' fill='%23fff'/%3E%3C/svg%3E"); }
+/* Small menus and the popover are set down from just above and lifted off. */
+:root[data-shell="ios"] :is([data-slot="dropdown-menu-content"], [data-slot="popover-content"]:not(.live-date-sheet))[data-state="open"] { animation: ios-set-down 180ms cubic-bezier(0.3, 0.6, 0.25, 1) both; }
+:root[data-shell="ios"] :is([data-slot="dropdown-menu-content"], [data-slot="popover-content"]:not(.live-date-sheet))[data-state="closed"] { animation: ios-lift-off 140ms ease-in both; }
+/* A centred dialog (the sample's welcome) is set down like the site's opening sheet, and lifted off. */
+:root[data-shell="ios"] [data-slot="dialog-content"]:not(.live-dialog, .live-mobile-menu, .live-date-sheet)[data-state="open"] { animation: ios-card-set 420ms cubic-bezier(0.3, 0.6, 0.25, 1) both; }
+:root[data-shell="ios"] [data-slot="dialog-content"]:not(.live-dialog, .live-mobile-menu, .live-date-sheet)[data-state="closed"] { animation: ios-card-lift 200ms ease-in both; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-shell="ios"] :is([data-slot="dialog-content"], [data-slot="dropdown-menu-content"], [data-slot="popover-content"]) { animation: none !important; }
+}

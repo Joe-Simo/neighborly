@@ -31,7 +31,7 @@ let enteredSession: string | null = null;
 /**
  * The Clerk account this browser last saw the backend find. A returning person's row is already there, so their
  * rooms can be asked for beside the account check instead of after it. It is a hint and nothing more: the backend
- * checks the token and looks the row up on every call, whatever this says.
+ * checks the token and looks the row up on every call, whatever this says. Sign-out removes it (lib/forget-browser.ts).
  */
 const enteredKey = "kind-helps-entered";
 let asked: { userId: string; before: boolean } | null = null;
@@ -48,8 +48,6 @@ const hasEnteredBefore = (userId: string) => {
   }
   return asked.before;
 };
-/** Sign-out, and leaving the sample: the next person at this browser is met as a first-time one. */
-export const forgetEntered = () => noteEntered(null);
 function noteEntered(userId: string | null) {
   try {
     if (userId) window.localStorage.setItem(enteredKey, userId);

@@ -28,7 +28,7 @@ export function CommitmentDetail({
   onRelease: (item: LiveCommitment) => void;
   onClose: () => void;
 }) {
-  const { data, pending, perform, when, personName, teamName, confirm, words } =
+  const { data, pending, perform, when, personName, teamName, confirm, words, sampleSaid } =
     useWorkspace();
   const text = words.rooms.peopleRoom.commitment;
   return (
@@ -84,7 +84,7 @@ export function CommitmentDetail({
             </div>
             <div>
               <dt>{words.detail.where}</dt>
-              <dd>{selected.location || words.detail.whereUnknown}</dd>
+              <dd>{selected.location ? sampleSaid(selected.location) : words.detail.whereUnknown}</dd>
             </div>
             <div>
               <dt>{words.detail.person}</dt>

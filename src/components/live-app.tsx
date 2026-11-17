@@ -6,7 +6,8 @@ import { useAction, useMutation, useQueries, type RequestForQueries } from "conv
 import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";
 import { FirstLookProvider, firstLookData, useAfterLook, useFirstRoom, useKeptPress } from "@/components/workspace/first-look";
 import { useClerk } from "@clerk/nextjs";
-import { forgetEntered, useAccount } from "@/components/live-providers";
+import { forgetThisBrowser } from "@/lib/forget-browser";
+import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useDashboard } from "@/components/workspace/dashboard";
@@ -77,6 +78,7 @@ function LiveRooms({
     if (noLook && signedOut) carryTheCard();
   }, [noLook, signedOut]);
   const signOut = () => {
+    forgetThisBrowser();
     try {
       window.sessionStorage.setItem(leftKey, "1");
     } catch {
@@ -96,7 +98,7 @@ function LiveRooms({
   useEffect(() => {
     if (!leavingForSample || leftForSample.current) return;
     leftForSample.current = true;
-    forgetEntered();
+    forgetThisBrowser();
     void clerk.signOut({ redirectUrl: "/app?intent=sample" });
   }, [leavingForSample, clerk]);
   const churchPage = usePaginatedQuery(

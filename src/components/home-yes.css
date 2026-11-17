@@ -53,7 +53,7 @@
 /* Without script: the sheet at rest, drawn here because the workspace's own styles arrive only by script. It fills the room the desk keeps, its link at the foot of the request. */
 .home-yes-still{--up:inherit;--primary:#365c46;--primary-foreground:#fffdf5;position:relative;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;padding:calc(30px*var(--up,1)) calc(34px*var(--up,1));background:#fffdf7;border:1px solid #e0dccb;border-radius:3px;box-shadow:0 1px 0 #fff inset,0 18px 34px -26px #3b3a2466,0 2px 5px -3px #3b3a2440;color:#283c32;font:calc(17px*var(--up,1))/1.55 "Source Sans 3",sans-serif;text-align:left}
 .home-yes-desk>noscript{display:grid;min-height:inherit}
-.home-yes-still::after{content:"";position:absolute;top:-1px;right:-1px;width:38px;height:38px;border-bottom-left-radius:3px;box-shadow:-3px 3px 6px -4px #3b3a2466;background:linear-gradient(225deg,#eee7d7 50%,#c8962e 50%,color-mix(in srgb,#c8962e,#fff 22%) 100%)}
+.home-yes-still::after{content:"";position:absolute;top:-1px;right:-1px;width:38px;height:38px;border-bottom-left-radius:3px;box-shadow:-3px 3px 6px -4px #3b3a2466;background:linear-gradient(225deg,#eee7d7 50%,#c8962e calc(50% + 1px),color-mix(in srgb,#c8962e,#fff 22%) 100%)}
 .home-yes-still p{margin:0 0 8px;max-width:58ch}
 .home-yes-still .home-yes-still-label{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:calc(15px*var(--up,1));font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:#7d5a17}
 .home-yes-still-label::before{content:"";width:22px;height:1px;background:currentColor}

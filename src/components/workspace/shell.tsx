@@ -1,6 +1,7 @@
 "use client";
 
 import { isBrandNew } from "@/lib/first-days";
+import { sampleSayer } from "@/lib/words/sample-names";
 import { RoomShown, RoomStill, useWholeRoom } from "@/components/workspace/room-sheet";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
@@ -143,8 +144,11 @@ export function LiveWorkspace({
   const personName = (id: string | null) =>
     data.people.find((person) => person.id === id)?.name ??
     (id ? words.shell.member : words.detail.unassigned);
-  const teamName = (id: string) =>
-    data.teams.find((team) => team.id === id)?.name ?? words.shell.team;
+  const sampleSaid = sampleSayer(data.church.sample, words.locale);
+  const teamName = (id: string) => {
+    const team = data.teams.find((one) => one.id === id);
+    return team ? sampleSaid(team.name) : words.shell.team;
+  };
   const now = useSyncExternalStore(noChange, openedAt, () => 0);
   // The sample says so once, in its mark, not also in its name.
   const churchName = data.church.sample ? data.church.name.replace(/\s*\(sample\)\s*$/i, "") : data.church.name;
@@ -366,6 +370,7 @@ export function LiveWorkspace({
     when,
     personName,
     teamName,
+    sampleSaid,
     perform,
     openAction: open,
     showCommitment: (item, trigger) => {
@@ -621,7 +626,7 @@ export function LiveWorkspace({
               )}
           </LiveDialog>
           <LiveDialog
-            title={selected?.title ?? words.detail.fallbackTitle}
+            title={selected ? sampleSaid(selected.title) : words.detail.fallbackTitle}
             className="live-detail-dialog"
             open={!!selected}
             onClose={() => leaveDialog(() => setSelectedCommitment(null))}
@@ -700,7 +705,7 @@ export function LiveWorkspace({
           onClose={() => leaveDialog(() => setRelease(null))}
           title={words.detail.changeTitle}
           description={<>{release &&
-                  `${release.title} · ${when(release.start, release.end)}`}</>}
+                  `${sampleSaid(release.title)} · ${when(release.start, release.end)}`}</>}
         >
             <p>{sheets.release.body}</p>
             {saveFrom === "release" && error && (

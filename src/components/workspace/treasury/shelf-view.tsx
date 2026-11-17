@@ -126,7 +126,7 @@ export function ShelfView({
   done: string;
   onAdd: () => void;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const w = words.rooms.treasury.shelf;
   return (
     <>
@@ -159,7 +159,7 @@ export function ShelfView({
                 {shelf.items.map((row) => (
                   <tr key={row.item}>
                     <td className="help-what">
-                      {row.item}
+                      {sampleSaid(row.item)}
                       {row.onHand < 0 && (
                         <small>
                           {w.short}
@@ -205,7 +205,7 @@ export function ShelfView({
                       ? w.backOnShelf
                       : row.forRequest && (!row.note || row.note === "Given on a request")
                         ? w.givenOnRequest
-                        : row.note || w.received}
+                        : sampleSaid(row.note ?? "") || w.received}
                   </span>
                 </li>
               ))}

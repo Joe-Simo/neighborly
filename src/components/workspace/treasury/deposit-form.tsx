@@ -30,7 +30,7 @@ export function DepositForm({
   onSubmit: (deposit: Deposit, total: number) => Promise<Refusal>;
   onCancel: () => void;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const room = words.rooms.treasury;
   const w = room.deposit;
   const [left, setLeft] = useState<Gift["id"][]>([]);
@@ -74,7 +74,7 @@ export function DepositForm({
               <Check size={16} />
             </span>
             <span>
-              <strong>{gift.memo || categoryLabel(room, gift.category)}</strong>
+              <strong>{sampleSaid(gift.memo) || categoryLabel(room, gift.category, sampleSaid)}</strong>
               <small>
                 {dayLabel(words.locale, gift.date)} · {room.lines.from(gift.from)}
               </small>

@@ -86,7 +86,7 @@
 }
 .paper-corner::after,
 .help-sheet::after {
-  background: linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%);
+  background: linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) calc(50% + 1px), color-mix(in srgb, var(--paper-corner), #fff 22%) 100%);
   transform-origin: 100% 0;
   transition: --paper-corner 400ms var(--paper-ease);
 }
@@ -97,7 +97,7 @@
 .paper-fold::after {
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23f7f4ed' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.2 6.4 4.9 9 9.8 3.2'/%3E%3C/svg%3E") 6px 21px / 11px 11px no-repeat,
-    linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%);
+    linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) calc(50% + 1px), color-mix(in srgb, var(--paper-corner), #fff 22%) 100%);
   animation: paper-press 520ms var(--paper-ease), paper-mark 620ms ease-out;
 }
 
@@ -431,8 +431,8 @@
 .live-mobile-menu .live-sample-mark { margin: 0; }
 .live-mobile-menu .live-menu-rooms nav a { min-height: 48px; padding-block: 10px; }
 .live-mobile-menu :is([data-slot="dialog-close"], .live-menu-close) { top: 8px; right: 10px; width: 44px; height: 44px; }
-/* The list fades out at the foot while there is more of it below. */
-.live-menu-rooms { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px 24px; border-top: 1px solid #d9ddce; scrollbar-width: thin; -webkit-mask-image: linear-gradient(#000 calc(100% - 24px), transparent); mask-image: linear-gradient(#000 calc(100% - 24px), transparent); }
+/* A list longer than the screen passes under the foot bar's cut edge in full ink: paper is cut, never faded. */
+.live-menu-rooms { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px 24px; border-top: 1px solid #d9ddce; scrollbar-width: thin; }
 .live-mobile-menu .live-menu-rooms nav { margin-top: 0; border-top: 0; }
 .live-mobile-menu nav a { font-size: 17px; }
 .live-mobile-menu .live-menu-current { font-size: 13px; }
@@ -823,6 +823,18 @@
 /* A dialog or sheet never changes the page's width: the scrollbar's place is kept while the page is locked
    behind it, so nothing shifts sideways when one opens or closes. The lock's own compensation is then not needed. */
 html:has(.live-app) { scrollbar-gutter: stable; }
+/* The shade behind a sheet or the menu is cut, like everything of paper: whole in the sheet's first frame, gone
+   after its last, never faded (the home page's own sheet keeps its own, .paper-overlay). While the sheet leaves,
+   the shade is held for as long as the sheet takes. The scrollbar's room is no part of the window a fixed shade
+   can cover, so for as long as a shade is up the page behind takes the shaded paper's colour there. */
+[data-slot="dialog-overlay"]:not(.paper-overlay) { animation: none; }
+[data-slot="dialog-overlay"]:not(.paper-overlay)[data-state="closed"] { animation: paper-shade-held 100ms step-end; }
+@keyframes paper-shade-held { from, to { opacity: 1; } }
+@media (max-width: 699px) and (prefers-reduced-motion: no-preference) {
+  [data-slot="dialog-overlay"]:has(+ .live-dialog.live-dialog-fixed:not(.tools-rota-dialog))[data-state="closed"] { animation-duration: 280ms; }
+}
+@media (prefers-reduced-motion: reduce) { [data-slot="dialog-overlay"]:not(.paper-overlay)[data-state="closed"] { animation: none; } }
+html:has(.live-app):has([data-slot="dialog-overlay"]:not(.paper-overlay)) { background: rgb(212 214 206); }
 html:has(.live-app) > body[data-scroll-locked] { margin-right: 0 !important; padding-right: 0 !important; }
 
 /* The ring is for keys. Without keys in use (the shell marks the page while they are), a control that is not a box
