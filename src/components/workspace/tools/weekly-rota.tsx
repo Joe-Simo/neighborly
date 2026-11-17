@@ -9,7 +9,9 @@ import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/works
 
 export function WeeklyRotaView({ group, week, days, printed, sample, titled = true, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; titled?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
   const planned = days.some((day) => day.shifts.length > 0);
-  const text = useWorkspace().words.rota;
+  const { words } = useWorkspace();
+  const text = words.rota;
+  const foot = words.rooms.tools.rota;
   return (
     <section className={titled ? "live-section" : undefined}>
       {titled && (
@@ -59,7 +61,7 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
             </div>
           </div>
         )}
-        <footer className="tools-rota-foot"><span>kind helps</span><span>{sample && `${text.sample} · `}{text.printed} {printed}</span></footer>
+        <footer className="tools-rota-foot"><span>kind helps</span><span>{sample ? foot.printedSample(printed) : foot.printed(printed)}</span></footer>
       </div>
     </section>
   );
