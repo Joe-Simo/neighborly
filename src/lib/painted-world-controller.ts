@@ -62,7 +62,13 @@ const imagePath = (scene: PaintedScene, portrait: boolean) => scene === "opening
 const stillGrade = `
   float stillLuma = dot(gl_FragColor.rgb, vec3(.2126, .7152, .0722));
   gl_FragColor.rgb = pow(max(vec3(1e-5), mix(vec3(stillLuma), gl_FragColor.rgb, .956)), vec3(1.114, .979, .914)) * vec3(.89, .819, .751);
-  gl_FragColor.rgb = towardStill(gl_FragColor.rgb);`;
+  #ifndef STILL_PHONE
+  gl_FragColor.rgb = towardStill(gl_FragColor.rgb);
+  #else
+  // The phone's still was rendered lighter than the wide one, so it takes its own fit at 390 in place of the wide families: saturation, a per-channel curve and gain.
+  float phoneLuma = dot(gl_FragColor.rgb, vec3(.2126, .7152, .0722));
+  gl_FragColor.rgb = pow(max(vec3(1e-5), mix(vec3(phoneLuma), gl_FragColor.rgb, 1.054)), vec3(.915, 1.03, 1.107)) * vec3(1.096, 1.23, 1.374);
+  #endif`;
 // Then each colour family is moved by what a 1920 film measured against the still, in CIELAB: skin, sleeves and hair are
 // picked out by hue, the card's ochre square by its material. Each shift is the measured difference taken back.
 const stillShifts = `
@@ -94,16 +100,16 @@ vec3 towardStill(vec3 c) {
   return stillRgb(lab);
 }
 `;
-function gradeToStill(surface: T.Material) {
+function gradeToStill(surface: T.Material, phone: boolean) {
   const before = surface.onBeforeCompile.bind(surface);
   const ochre = /ochre/i.test(surface.name);
   surface.onBeforeCompile = (shader, renderer) => {
     before(shader, renderer);
-    shader.fragmentShader = (ochre ? "#define STILL_OCHRE\n" : "") + shader.fragmentShader
+    shader.fragmentShader = (ochre ? "#define STILL_OCHRE\n" : "") + (phone ? "#define STILL_PHONE\n" : "") + shader.fragmentShader
       .replace("void main()", `${stillShifts}\nvoid main()`)
       .replace("#include <tonemapping_fragment>", `#include <tonemapping_fragment>${stillGrade}`);
   };
-  surface.customProgramCacheKey = () => ochre ? "still-grade-ochre" : "still-grade";
+  surface.customProgramCacheKey = () => `still-grade${ochre ? "-ochre" : ""}${phone ? "-phone" : ""}`;
 }
 
 /** One renderer owns the continuous painted journey. No account state is read or changed. */
@@ -917,6 +923,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   function loadOpening() {
     const framing = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly);
     const asset = `/assets/living-relief-opening-${framing.mobile ? framing.narrow ? "narrow" : "mobile" : "desktop"}.glb`;
+    // The phone's still was taken from the scene with the card already large and tucked, so there the first frame starts tucked.
+    if (framing.mobile) introduced = 1;
     if (asset === openingAsset) return;
     openingAsset = asset;
     const revision = ++openingLoadRevision;
@@ -982,7 +990,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       for (const surface of Array.isArray(object.material) ? object.material : [object.material]) {
         if (!openingMaterials.has(surface)) {
           openingMaterials.set(surface, { opacity: surface.opacity, transparent: surface.transparent, depthWrite: surface.depthWrite });
-          gradeToStill(surface);
+          gradeToStill(surface, framing.mobile && !framing.narrow);
         }
       }
     });

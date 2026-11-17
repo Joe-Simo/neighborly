@@ -76,7 +76,7 @@ export function AssistantLimits({ callId, verification, notes }: { callId: Id<"c
     <span className="block min-w-0">
       {/* Once the yes is given, "nothing is saved" is no longer true: the sealed sheet fades it where it stands. */}
       {text.made[verification]} {whys.join(" ")} {!whys.length && <span className="help-unsaved">{text.unsaved}</span>}{" "}
-      <button type="button" className={`${quiet} -my-2.5 text-inherit decoration-[#cfc5dc]`} aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>
+      <button type="button" className={`${quiet} -my-2.5 text-inherit decoration-[#cfc5dc]`} aria-expanded={open} aria-controls={id} data-opens="" onClick={() => setOpen(!open)}>
         {open ? text.hide : text.show}
       </button>
       {open && (
@@ -119,7 +119,7 @@ export function AssistantGuide() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button type="button" className={`${quiet} text-[15px] !text-[var(--live-muted)] decoration-[#b9c4b0]`} onClick={() => setOpen(true)}>
+      <button type="button" className={`${quiet} text-[15px] !text-[var(--live-muted)] decoration-[#b9c4b0]`} data-opens="" onClick={() => setOpen(true)}>
         {text.link}
       </button>
       {open && (

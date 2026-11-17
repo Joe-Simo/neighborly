@@ -417,9 +417,6 @@
   gap: 12px;
   align-items: center;
 }
-.live-loading svg {
-  animation: live-spin 1s linear infinite;
-}
 .live-auth {
   width: min(100% - 40px, 460px);
   margin: clamp(55px, 10vh, 110px) auto;
@@ -492,16 +489,6 @@
 .live-app td {
   padding: 20px 10px;
   border-bottom: 1px solid var(--live-line);
-}
-@keyframes live-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .live-loading svg {
-    animation: none;
-  }
 }
 @media (max-width: 850px) {
   .live-header {

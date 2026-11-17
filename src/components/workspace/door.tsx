@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import { createPortal } from "react-dom";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
-import { dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
+import { HELD_CARD, dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
 import "@/components/workspace/door.css";
 
 /**
@@ -114,8 +114,12 @@ export function DoorSweep() {
     let saidAt = 0;
     let goOnSaying = heldSaying;
     heldSaying = false;
+    // Taken over from the home page's card, the paper is down already: there is no sweep to wait out.
+    const down = paper.current?.hasAttribute("data-held") ?? false;
     const lift = () => {
       lifting = true;
+      // The home page's card may still lie over this one, identical to it, for a few frames: it goes now, so the lift is seen from its first frame.
+      document.getElementById(HELD_CARD)?.remove();
       // The line leaves first, in this same frame, so it is never read over the room.
       paper.current?.querySelector<HTMLElement>(".door-opening")?.style.setProperty("visibility", "hidden");
       setHolding(false);
@@ -156,7 +160,7 @@ export function DoorSweep() {
         setHolding("shown");
       }
       const waited = performance.now() - arrivedAt;
-      const landed = plain || waited >= SWEEP;
+      const landed = plain || down || waited >= SWEEP;
       const read = saidAt === 0 || performance.now() - saidAt >= READ;
       if (landed && read && (underneathIsReady() || waited > LONGEST)) return lift();
       const held = plain ? null : paper.current?.querySelector<HTMLElement>(".door-card");
@@ -191,7 +195,7 @@ export function DoorSweep() {
         </svg>
       ))}
       {/* The card passed on the home page, grown to the size of the page: its mark and two lines thin away as it becomes the paper. */}
-      {card ? <div className="door-card"><i /><b /><b />{cardFor && <span className="door-card-for"><em>For {cardFor}</em></span>}</div> : <div className="door-paper" />}
+      {card ? <div className="door-card"><i />{cardFor && <span className="door-card-for"><em>For {cardFor}</em></span>}</div> : <div className="door-paper" />}
       {holding && (
         <p className="door-opening" role="status" data-spoken={holding === "spoken" ? "" : undefined} data-low={card ? "" : undefined}>
           <span>{wordsFor(language).states.opening}</span>

@@ -38,7 +38,8 @@ export function NeighborlyExperience() {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
       const link = event.target.closest<HTMLAnchorElement>('a[href^="/app"]');
       const sheet = carry.current;
-      if (!link || link.target || !sheet || sheet.dataset.carrying === "true" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // The sample card carries itself in: when it is pressed, it is the only paper that moves.
+      if (!link || link.matches(".card-offer") || link.target || !sheet || sheet.dataset.carrying === "true" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       event.preventDefault();
       const href = link.getAttribute("href") ?? "/app";
       router.prefetch(href);

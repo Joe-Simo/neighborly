@@ -10,7 +10,7 @@ export interface RequestDraft {
   amountRequested: number | null;
   payeeKind: DraftPayeeKind | null;
   payeeName: string;
-  /** The sentence of the note the amount or kind came from, for the person to read beside the draft. */
+  /** The sentence of the note the amount or kind came from, and the one that names who is paid, for the person to read beside the draft. */
   quote: string;
   notes: string[];
 }
@@ -40,6 +40,20 @@ const properNamePattern = /^(?:\p{Lu}[\p{L}\p{N}&'.]*)(?:\s+(?:\p{Lu}[\p{L}\p{N}
 function statedPayee(clause: string): string | undefined {
   const intro = payeeIntroPattern.exec(clause);
   return intro ? properNamePattern.exec(clause.slice(intro.index + intro[0].length))?.[0] : undefined;
+}
+/** Ways a note names who is paid without saying what they are: "Pay Mill Road Rentals", "check out to …", "her landlord, Mill Road Rentals". */
+const looseIntroPattern = /\b(?:pay(?:\s+to)?|(?:check|cheque)(?:\s+(?:is\s+)?(?:made\s+)?out)?\s+to|(?:landlord|property manager|leasing office|electric company|power company|water company|gas company|utility company)(?:['’]s\s+name\s+is|,)?)\s+/gi;
+/**
+ * A name after one of those counts only when the name says what it is ("Rentals") or the sentence does ("landlord").
+ * "Pay Jordan" may be anyone, the neighbor included, so it gives nothing; a kind of help ("Pay Rent") is no name.
+ */
+function namedPayee(clause: string): string | undefined {
+  for (const intro of clause.matchAll(looseIntroPattern)) {
+    const name = properNamePattern.exec(clause.slice(intro.index + intro[0].length))?.[0];
+    if (!name || (!name.includes(" ") && Object.values(kindWords).some((kind) => kind.test(name)))) continue;
+    if (draftPayeeKinds.some((kind) => nameKinds[kind].test(name) || payeeWords[kind].test(clause))) return name;
+  }
+  return undefined;
 }
 const amountToPattern = /(?:\$\s?[\d,.]*\d|\b(?:dollars|bucks))\s+to\s+/i;
 /**
@@ -137,6 +151,7 @@ export function prepareRequestDraft(note: string): RequestDraft {
   const names: string[] = [];
   let quote = "";
   let amountQuote = "";
+  let payeeQuote = "";
   let doubtful = false;
   for (const clause of clauses(note)) {
     const stated = amounts(clause);
@@ -149,10 +164,12 @@ export function prepareRequestDraft(note: string): RequestDraft {
     kinds.push(...mentioned);
     sums.push(...stated);
     payees.push(...draftPayeeKinds.filter((payee) => payeeWords[payee].test(clause)));
-    const payee = statedPayee(clause) ?? amountPayee(clause);
+    const payee = statedPayee(clause) ?? amountPayee(clause) ?? namedPayee(clause);
     if (payee) payees.push(...draftPayeeKinds.filter((kind) => nameKinds[kind].test(payee)));
     const name = payee ?? utilityNames.exec(clause)?.[1];
     if (name) names.push(name.replace(/[.,]$/, ""));
+    // The sentence that names who is paid is read beside the draft too, so the name in its title can be checked.
+    if (name && !payeeQuote) payeeQuote = clause;
     // The sentence with the amount is the one a person most needs to read; a sentence naming the kind is second best.
     if (stated.length && !amountQuote) amountQuote = clause;
     else if (mentioned.length && !quote) quote = clause;
@@ -162,7 +179,7 @@ export function prepareRequestDraft(note: string): RequestDraft {
     amountRequested: only(sums),
     payeeKind: only(payees),
     payeeName: only(names) ?? "",
-    quote: amountQuote || quote,
+    quote: [...new Set([amountQuote || quote, only(names) ? payeeQuote : ""])].filter(Boolean).join(" "),
     notes: [],
   };
   if (draft.kind === null) draft.notes.push(new Set(kinds).size > 1 ? kindNotes.several : kindNotes.missing);

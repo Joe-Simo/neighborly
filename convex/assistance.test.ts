@@ -124,6 +124,9 @@ describe("the help line", () => {
     const unknown = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "(100) 555-0119", note: "Food for five.", callback: "needed" });
     expect(known.neighborId).toBe(ids.rosa);
     expect(unknown.neighborId).toBeNull();
+    // A typed name always wins: someone else calling from that number is not placed on Esperanza's record.
+    const other = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Vladimir Pemberton", phone: "100.555.0104", note: "Called about a visit.", callback: "none" });
+    expect(other.neighborId).toBeNull();
     const { waiting } = await as(ids.owner).query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.church });
     expect(waiting).toMatchObject([{ neighborName: "Esperanza Montoya", takenByName: "Thomas Okafor", ownerName: "Marisol Vega", openRequest: false }, { neighborName: null, ownerName: null }]);
     await expect(as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "", phone: "", note: "Silence.", callback: "none" })).rejects.toThrow("A name or a phone number is needed.");

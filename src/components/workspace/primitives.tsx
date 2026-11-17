@@ -142,33 +142,35 @@ export function CountUp({
   className?: string;
   delay?: number;
 }) {
+  // It rolls once, the first time its room is shown. A figure that changes after that changes at once, in the commit
+  // that brought it, with no values in between.
+  // Under the door's paper the figure is already at its value, so the sheet lifts off a finished room.
+  const [roll, setRoll] = useState<"waiting" | { to: number; at: number } | null>(() =>
+    cameThroughTheDoor() || typeof window === "undefined" || matchMedia("(prefers-reduced-motion: reduce)").matches ? null : "waiting",
+  );
   // It starts where the roll starts. Starting at the value showed the figure whole for a frame, then dropped it
   // to nothing and rolled it back up, which read as the figure stepping back.
-  // Under the door's paper the figure is already at its value, so the sheet lifts off a finished room.
-  const [still] = useState(cameThroughTheDoor);
-  const [shown, setShown] = useState(() => (!still && typeof window !== "undefined" && !matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : value));
-  const from = useRef(still ? value : 0);
-  const waited = useRef(false);
+  const shown = roll === "waiting" ? 0 : roll && roll.to === value ? roll.at : value;
+  const latest = useRef(value);
+  useEffect(() => {
+    latest.current = value;
+  });
+  const done = useRef(roll === null);
   // A roll drawn while the room is still unseen would be over before anyone saw it.
   const seen = useRoomShown();
   useEffect(() => {
-    if (!seen) return;
-    const start = from.current;
-    from.current = value;
-    if (start === value || matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const frame = requestAnimationFrame(() => setShown(value));
-      return () => cancelAnimationFrame(frame);
-    }
-    const began = performance.now() + (waited.current ? 0 : delay);
-    waited.current = true;
-    let frame = requestAnimationFrame(function roll(now) {
+    if (!seen || done.current) return;
+    const to = latest.current;
+    const began = performance.now() + delay;
+    let frame = requestAnimationFrame(function step(now) {
       const part = Math.min(1, Math.max(0, now - began) / 400);
-      // It lands on the value itself, not on a sum that may miss it by a hair.
-      setShown(part < 1 ? start + (value - start) * (1 - (1 - part) ** 3) : value);
-      if (part < 1) frame = requestAnimationFrame(roll);
+      // It lands on the value itself, not on a sum that may miss it by a hair. Once landed, nothing starts it again.
+      if (part === 1) done.current = true;
+      setRoll(part < 1 ? { to, at: to * (1 - (1 - part) ** 3) } : null);
+      if (part < 1) frame = requestAnimationFrame(step);
     });
     return () => cancelAnimationFrame(frame);
-  }, [value, seen, delay]);
+  }, [seen, delay]);
   return (
     // While it rolls it says so, and the room is not at rest until it has landed (room-sheet.tsx).
     <span className={className ? `count-up ${className}` : "count-up"} data-moving={shown === value ? undefined : ""}>

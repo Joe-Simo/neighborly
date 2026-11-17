@@ -42,7 +42,7 @@ export function WeekSection() {
           <h2>{words.week.comingUp}</h2>
           <span className="live-count">{words.week.nextSevenDays}</span>
           {(isOwner || data.canCoordinate) && (
-            <Button variant="link" className="tools-quiet" onClick={() => setPrinting(true)}>{words.week.printWeek}</Button>
+            <Button variant="link" className="tools-quiet" data-opens="" onClick={() => setPrinting(true)}>{words.week.printWeek}</Button>
           )}
         </div>
         <CommitmentRows

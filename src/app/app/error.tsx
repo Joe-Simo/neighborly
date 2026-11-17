@@ -17,7 +17,7 @@ export default function WorkspaceError({
     <div className="public-state">
       <main className="live-auth" lang={said.locale}>
         <div className="live-auth-art" aria-hidden="true" />
-        <p className="live-kicker">Kind Helps</p>
+        <p className="public-state-mark">kind helps</p>
         <h1>{said.states.launchTitle}</h1>
         <p className="live-deck">{said.states.launchDeck}</p>
         <Button onClick={reset} style={{ marginTop: 24 }}>

@@ -230,13 +230,6 @@ td.help-money[data-balance] { color: var(--live-muted); }
 .help-empty-art { height: 150px; border-radius: 75px 75px 3px 3px; background-size: cover; background-position: 50% 30%; }
 .help-empty h3 { font: 400 30px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 10px; }
 .help-empty p { margin: 0 0 18px; color: var(--live-muted); font-size: 18px; line-height: 1.5; max-width: 44ch; }
-.help-skeleton { border-top: 1px solid var(--live-line); }
-.help-skeleton > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 28px; padding: 28px 0; border-bottom: 1px solid var(--live-line); }
-.help-skeleton i, .help-skeleton b { display: block; border-radius: 2px; background: #e9e7da; animation: help-breathe 1.6s ease-in-out infinite; }
-.help-skeleton i { height: 78px; }
-.help-skeleton b { height: 22px; width: 42%; margin: 8px 0 14px; }
-.help-skeleton b + b { height: 14px; width: 68%; margin: 0; animation-delay: 200ms; }
-@keyframes help-breathe { 50% { opacity: 0.5; } }
 .help-done { display: flex; gap: 14px; align-items: center; }
 .help-done svg { color: #3f6a45; flex-shrink: 0; }
 .help-state-label { font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: #52644f; margin: 56px 0 18px; }
