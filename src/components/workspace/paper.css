@@ -29,7 +29,6 @@
 /* ── Motion ───────────────────────────────────────────────────────────── */
 @keyframes paper-rise { from { opacity: 0; transform: translateY(12px); } }
 @keyframes paper-settle { from { opacity: 0; transform: translateY(14px) rotate(-0.4deg); } }
-@keyframes paper-unveil { from { opacity: 0; transform: translateX(12px); } }
 @keyframes paper-show { from { opacity: 0; } }
 /* The yes: the corner lifts off the sheet, takes its green, and is pressed flat with a thumb. */
 @keyframes paper-press {
@@ -108,7 +107,11 @@
 /* Paper that is closing up (fold.ts) has finished arriving: none of its own moves may start again. */
 [data-paper-closing], [data-paper-closing]::before, [data-paper-closing]::after { animation: none !important; }
 
-.count-up { font-variant-numeric: lining-nums tabular-nums; }
+/* A rolling figure keeps its value's width from the first frame, and its first digit never moves: the digits roll
+   in the place the value will stand, so nothing beside it or under it shifts. */
+.count-up { position: relative; display: inline-block; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.count-up-room { visibility: hidden; }
+.count-up-roll { position: absolute; top: 0; left: 0; }
 
 /* Rows and links answer a pointer the same way everywhere: the paper lifts a little, the line under a link thickens. */
 :is(.live-row, .help-row, .live-team) {
@@ -125,40 +128,19 @@
 .live-app .live-link:is(:hover, :active),
 .live-dialog .live-link:is(:hover, :active) { text-decoration-thickness: 2px; }
 
-/* ── A room arrives ───────────────────────────────────────────────────── */
-.live-head-words > * {
-  animation: paper-rise 320ms var(--paper-ease) backwards;
-  animation-delay: var(--paper-wait, 0ms);
-}
-.live-head-words > :nth-child(2) { animation-delay: calc(var(--paper-wait, 0ms) + 40ms); }
-.live-head-words > :nth-child(n + 3) { animation: paper-rise 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
-/* The room's filled button is whole or not drawn: no fade. It is hidden through the wait, then there in one
-   frame, fill and label together, and only its 12px rise carries on. The same in every room. */
-@keyframes paper-set { from { visibility: hidden; transform: translateY(12px); } }
-.live-head-actions { animation: paper-set 320ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
+/* ── A room is drawn whole or not at all (room-sheet.tsx) ─────────────────
+   Its head, picture, button, rows and side column are drawn unseen and shown together in one frame. Until then
+   the room just left stands still over the page (a copy, which cannot move), and once the wait has lasted 400ms
+   the column is the one quiet "Opening…" line, where the room's title will be. */
+.live-app .live-main[data-room-held] { visibility: hidden; }
+[data-room-still], [data-room-still] *, [data-room-still] *::before, [data-room-still] *::after { animation: none !important; transition: none !important; }
+/* The copy's frame only lets the rules see it as they saw the room: it draws nothing of its own (the band under
+   the phone's clock is the real frame's). */
+[data-room-frame]::before, [data-room-frame]::after { content: none !important; }
+/* The line takes no height, so the room under it is laid out as it will be shown. */
+.live-app .live-opening { position: relative; height: 0; margin: 0; visibility: visible; }
 /* A saved line's sentences each stay whole where there is room, so the line breaks between them. */
 .live-said { display: inline-block; white-space: pre-wrap; }
-/* Between rooms the last room's words hold until the new ones are there: the new words and the room's button are whole from their
-   first frame and only rise into place, so the paper never stands with a picture and no heading. */
-@keyframes paper-turn { from { transform: translateY(10px); } }
-.live-page-head:has(.live-head-art[data-laid]) :is(.live-head-words > *, .live-head-actions) { animation-name: paper-turn; }
-/* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
-.live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
-/* Between rooms the picture swaps whole, with no blend: the last one stays whole until the new one is decoded, and
-   in the same frame the new one is there and the last is gone, so bare paper never shows through. */
-.live-head-art[data-laid] > .relief { animation: paper-show 1ms step-end backwards; }
-.live-head-art > .relief.live-head-under { z-index: -1; animation: paper-gone 1ms step-end forwards; }
-@keyframes paper-gone { to { opacity: 0; } }
-/* Neither begins until the new picture is in: the last room's picture stays whole under an empty band, never a blank one. */
-.live-head-art:not([data-ready]) > .relief,
-.live-head-art:not([data-ready]) > .live-head-under { animation-play-state: paused; }
-/* The iPhone app's first room comes up under its launch cover, which lifts once the picture is decoded (or after
-   800ms). Painting and words are then already in their final place: nothing settles or fades after the cover goes. */
-html[data-shell="ios"] .live-head-art:not([data-laid]) > .relief,
-html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(.live-head-words > *, .live-head-actions) { animation: none; }
-/* The room's body is one sheet laid on the desk under the head; its rows then arrive on it in order. */
-@keyframes paper-desk { from { opacity: 0; transform: translateY(10px); } 60% { opacity: 1; } }
-.live-room { animation: paper-desk 380ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }
 
 /* ── The frame ────────────────────────────────────────────────────────── */
 .live-app .live-layout { max-width: none; }
@@ -287,7 +269,6 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
     margin: 0;
   }
   .live-head-art > .relief { position: static; width: 100%; height: 100%; aspect-ratio: auto; }
-  .live-head-art > .relief.live-head-under { position: absolute; inset: 0; }
   .live-head-words,
   .live-head-actions {
     position: relative;
@@ -318,15 +299,12 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
     position: sticky;
     top: 32px;
     width: var(--aside-wide);
-    animation: paper-desk 380ms var(--paper-ease) backwards;
-    animation-delay: calc(var(--paper-wait, 0ms) + 140ms);
   }
   .live-aside-sheet { padding-left: 28px; border-left: 1px solid var(--live-line); font-size: 15px; line-height: 1.5; }
   /* The column's title is a kicker like every other: the room's h2 face does not reach it. */
   .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; font-family: inherit; font-weight: 650; line-height: 1.5; }
 }
 @media print { .live-aside { display: none !important; } }
-@media (prefers-reduced-motion: reduce) { .live-aside { animation: none !important; } }
 
 /* ── Up to 899px there is no side menu ────────────────────────────────── */
 @media (max-width: 899px) {
@@ -501,16 +479,36 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 /* The mark is the app's launch picture, 240px square on the true centre of the screen (vw and vh, no insets),
    so the app's cover gives way to this page without a step. The same in every browser. */
 .paper-loading-mark { position: fixed; left: calc(50vw - 120px); top: calc(50vh - 120px); width: 240px; height: 240px; max-width: none; user-select: none; pointer-events: none; }
-.paper-loading-words { position: fixed; inset: calc(50vh + 64px) 24px auto; display: grid; justify-items: center; text-align: center; }
-.paper-loading-label {
+/* The line stands where the room's title will be: the reading column's first line, beside the menu from 900px up,
+   under the held bar below that. A room that is still on its way says it in the same place (`.live-opening`), so a
+   fresh page waits with one line that never moves, and the title takes its place. */
+.paper-loading-words {
+  position: fixed;
+  top: calc(86px + var(--live-top, 48px));
+  left: calc(230px + var(--live-pad, 24px));
+  right: var(--live-pad, 24px);
+  display: grid;
+  justify-items: start;
+}
+@media (max-width: 899px) {
+  .paper-loading-words {
+    top: calc(var(--live-bar, 60px) + 1px + var(--live-top, 36px));
+    left: max(var(--live-pad, 24px), env(safe-area-inset-left));
+    right: max(var(--live-pad, 24px), env(safe-area-inset-right));
+  }
+}
+.paper-loading-label,
+.live-app .live-opening {
   display: flex;
   gap: 12px;
   align-items: center;
   margin: 0;
   font-size: 17px;
+  line-height: 1.5;
   color: var(--live-muted);
-  animation: paper-show 300ms ease 400ms backwards;
 }
+.paper-loading-label { animation: paper-show 300ms ease 400ms backwards; }
+.live-app .live-opening > span { position: absolute; top: 0; left: 0; right: 0; }
 /* A short wait inside a form or a dialog: just the line. */
 /* The one way to wait, everywhere: a quiet line, and only once the wait has lasted 400ms, so a quick
    answer never flashes it. No grey rows standing in for content. */
@@ -603,10 +601,8 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 /* ── Stillness for those who ask for it ───────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .paper-rise, .paper-rows > *, .live-list > *, .help-row, .help-timeline li, .help-ledger tbody tr,
-  .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-head-words > *, .live-head-actions, .live-head-art > .relief,
-  .live-room, .live-mobile-menu { animation: none; }
+  .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-mobile-menu { animation: none; }
   .paper-loading-label { animation-duration: 1ms; }
-  .live-head-art[data-ready] > .live-head-under { display: none !important; }
   .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
   .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }
   :is(.live-row, .help-row):hover { transform: none; }
@@ -839,8 +835,7 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
    anchored right with paper to its left. Phone: the whole picture above the heading, edge to edge. */
 @media (min-width: 700px) {
   .live-head-art { width: calc(var(--head-wide) * 0.5); }
-  .live-head-art > .relief:not(.live-head-under),
-  .live-head-art > .relief.live-head-under {
+  .live-head-art > .relief {
     position: absolute; inset: 0 0 auto auto; width: auto; height: calc(100% - 48px); aspect-ratio: 3 / 2;
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%);
     mask-image: linear-gradient(90deg, transparent, #000 22%);

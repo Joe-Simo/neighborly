@@ -224,3 +224,5 @@ frame alone, before anyone's workspace has arrived.
 - `.paper-loading` is on screen while the whole workspace is still on its way (`LiveRoomLoading`).
 - `.live-app[data-room-in]` is set once, when the first room is whole: its sheet has finished arriving and its
   head picture is loaded and decoded. A cover that lifts on this never shows a room still coming up under the mark.
+- `.live-app[data-room-shown]` is set in the frame each room is shown whole (the door's paper lifts on it), and
+  `.live-app[data-room-whole]` once the room is at rest: its figures have landed and its picture's piece is set down.

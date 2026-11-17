@@ -1,6 +1,6 @@
 "use client";
 
-import { RoomLeaving, useSheetBetweenRooms } from "@/components/workspace/room-sheet";
+import { RoomShown, RoomStill, useWholeRoom } from "@/components/workspace/room-sheet";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useConvexConnectionState } from "convex/react";
@@ -34,7 +34,6 @@ import {
   navigation,
   primaryActions,
   type ActionKind,
-  type LiveHeading,
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
@@ -43,7 +42,7 @@ import { useSystemTextSize } from "@/components/system-text-size";
 import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
 import { ArrivingRelief, fetchAhead } from "@/components/workspace/relief-arrival";
-import { fetchRoomsAhead, sections } from "@/components/workspace/sections";
+import { fetchRoomsAhead, roomSection } from "@/components/workspace/sections";
 import type {
   LiveCommand,
   LiveConfirmation,
@@ -210,11 +209,9 @@ export function LiveWorkspace({
     };
   }, []);
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
-  const Section = sections[area];
   const heading = headingOverride
     ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
     : { ...headings[area], ...translatedHeadings[area] };
-  // Between rooms the picture of the room just left lies under the new one for a moment, so one sheet is laid on another.
   // A room opened before in this visit comes back with its head at rest (phones only, in paper.css): the full
   // head is the arrival, and an arrival happens once. Decided as the room is entered, so nothing below ever jumps.
   const [rested, setRested] = useState(false);
@@ -226,18 +223,15 @@ export function LiveWorkspace({
   useLayoutEffect(() => {
     if (area !== firstArea.current) delete document.documentElement.dataset.fromDoor;
   }, [area]);
-  // `laid` stays for the life of the head, so the picture's entrance is never swapped (and so run again) when
-  // the last room's picture is taken away from under it.
-  const [headArt, setHeadArt] = useState<{ area: LiveArea; under: LiveHeading["art"] | null; laid: boolean }>({ area, under: null, laid: false });
-  if (headArt.area !== area) {
+  // The room's code is chosen as the room is entered and kept while it stands, so the room is never drawn afresh.
+  const [entered, setEntered] = useState(() => ({ area, Section: roomSection(area) }));
+  if (entered.area !== area) {
+    setEntered({ area, Section: roomSection(area) });
     setRested(roomsOpened.has(area));
-    const last = headings[headArt.area].art;
-    const differs = !!last && last.picture !== heading.art?.picture;
-    setHeadArt({ area, under: differs ? last : null, laid: differs });
   }
-  const under = headArt.under;
-  // The room whose picture is in and can be painted. Until then the head's moves wait, so one picture is never
-  // let go before the next can be seen.
+  // (A render in which the room has just changed is drawn again at once with the room entered, before anything is shown.)
+  const { Section } = entered;
+  // The room whose picture is in and can be painted: the room is not shown before it.
   const [pictured, setPictured] = useState<LiveArea>();
   const picturedNow = useCallback(() => setPictured(area), [area]);
   // The held bar (under 900px) draws its hairline only once the page has moved, and names the room once the
@@ -284,23 +278,16 @@ export function LiveWorkspace({
       root.removeProperty("--live-pan");
     };
   }, []);
-  // `data-room-whole` is for the door's sweep (door.tsx): heading, picture and head button are in, so its paper may lift.
-  // The first room is whole: its sheet has arrived and its picture is in. The iPhone app's launch cover may wait
-  // for `.live-app[data-room-in]`, so the mark never lifts on a room that is still coming up under it.
-  useSheetBetweenRooms(area);
+  // A room is drawn whole or not at all (room-sheet.tsx): until it is, the room just left stands, or after 400ms
+  // the one "Opening…" line. `data-room-shown` (for the door's sweep, door.tsx) is set in the frame the room is
+  // shown, and `data-room-whole` once it is at rest: its figures landed and its picture's piece set down. The
+  // iPhone app's launch cover waits for `.live-app[data-room-in]`, set once with the first room shown.
   const app = useRef<HTMLDivElement>(null);
-  const whole = pictured !== undefined && !roomWaiting;
+  const column = useRef<HTMLElement>(null);
+  const { shown, opening, settled } = useWholeRoom(area, column);
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
   const [roomIn, setRoomIn] = useState(false);
-  useEffect(() => {
-    const room = app.current?.querySelector(".live-room");
-    if (!whole || !room || roomIn) return;
-    let waiting = true;
-    void Promise.allSettled(room.getAnimations().map((move) => move.finished)).then(() => waiting && setRoomIn(true));
-    return () => {
-      waiting = false;
-    };
-  }, [whole, roomIn]);
+  if (shown && !roomIn) setRoomIn(true);
   // The page's layout wraps the shell in a `.live-app` of its own, and that is the first one a cover finds:
   // it carries the same mark for as long as the shell does.
   useEffect(() => {
@@ -311,14 +298,13 @@ export function LiveWorkspace({
       delete frame.dataset.roomIn;
     };
   }, [roomIn]);
-  // Once the first room's picture is in, the other rooms' pictures are fetched quietly behind it.
-  const settled = pictured !== undefined;
+  // Once the first room is shown, the other rooms' pictures are fetched quietly behind it.
   const others = menuItems.map((item) => headings[item.id].art.picture).join(" ");
   useEffect(() => {
-    if (!settled) return;
+    if (!roomIn) return;
     const later = window.setTimeout(() => fetchAhead(others.split(" ") as ReliefName[]), 900);
     return () => window.clearTimeout(later);
-  }, [settled, others]);
+  }, [roomIn, others]);
   const workspace: Workspace = {
     area,
     data,
@@ -352,7 +338,7 @@ export function LiveWorkspace({
   const roomWorkspace = english ? { ...workspace, words: roomWords } : workspace;
   return (
     <WorkspaceProvider value={workspace}>
-    <div className="live-app" lang={words.locale} ref={app} data-room-in={roomIn ? "" : undefined} data-room-whole={whole && !headAction?.unsettled ? "" : undefined}>
+    <div className="live-app" lang={words.locale} ref={app} data-room-in={roomIn ? "" : undefined} data-room-shown={shown ? "" : undefined} data-room-whole={settled ? "" : undefined}>
       <a className="live-skip" href="#workspace-content">{words.shell.skip}</a>
       <header className="live-header" ref={bar} data-scrolled={barNow.scrolled ? "" : undefined}>
         <Link href="/" className="live-wordmark">
@@ -418,33 +404,29 @@ export function LiveWorkspace({
           ))}
         </nav>
         <WorkspaceProvider value={roomWorkspace}>
+        <RoomStill area={area} column={column}>
+        <RoomShown value={shown}>
         <main
           className="live-main"
           id="workspace-content"
           tabIndex={-1}
+          ref={column}
           data-room={heading.room}
+          data-room-held={shown ? undefined : ""}
+          aria-busy={shown ? undefined : true}
           lang={roomWords.locale}
           style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
         >
+          {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. */}
+          {opening && (
+            <p className="live-opening" role="status">
+              <span className="text-balance">{roomWords.states.opening}</span>
+            </p>
+          )}
           <div className="live-page-head" data-rested={rested ? "" : undefined}>
             {heading.art && (
-              // The band stands across rooms and each picture is known by its name, so the last room's picture
-              // is the very one that was on screen (never a fresh copy that has to load and decode again).
-              <div className="live-head-art" data-laid={headArt.laid ? "" : undefined} data-ready={pictured === area ? "" : undefined}>
+              <div className="live-head-art" data-ready={pictured === area ? "" : undefined}>
                 <ArrivingRelief key={heading.art.picture} name={heading.art.picture} focus={heading.art.focus} band={heading.art.band} onReady={picturedNow} />
-                {under && (
-                  <ArrivingRelief
-                    key={under.picture}
-                    name={under.picture}
-                    focus={under.focus}
-                    band={under.band}
-                    onReady={nothing}
-                    className="live-head-under"
-                    onAnimationEnd={(event) => {
-                      if (event.target === event.currentTarget) setHeadArt((now) => ({ ...now, under: null }));
-                    }}
-                  />
-                )}
               </div>
             )}
             <div className="live-head-words" key={`words-${area}`}>
@@ -479,6 +461,7 @@ export function LiveWorkspace({
               {headAction && (
                 <Button
                   variant="outline"
+                  data-unsettled={headAction.unsettled ? "" : undefined}
                   style={headAction.unsettled ? { visibility: "hidden" } : undefined}
                   onClick={headAction.run}
                 >
@@ -539,7 +522,6 @@ export function LiveWorkspace({
           <LiveConnection />
           <AsidePlace key={`aside-${area}`} on={wide}>
           <div className="live-room" key={area}>
-            <RoomLeaving />
             <RoomBoundary key={area}>
               {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Suspense fallback={<LiveLoading label={roomWords.states.opening} />}><Section /></Suspense>}
               {pagination}
@@ -547,6 +529,8 @@ export function LiveWorkspace({
           </div>
           </AsidePlace>
         </main>
+        </RoomShown>
+        </RoomStill>
         </WorkspaceProvider>
       </div>
       <WorkspaceProvider value={roomWorkspace}>
@@ -841,6 +825,5 @@ function useKeysInUse() {
 let opened: number | undefined;
 const openedAt = () => (opened ??= Date.now());
 const noChange = () => () => {};
-const nothing = () => {};
 /** The rooms opened since the page was loaded. */
 const roomsOpened = new Set<LiveArea>();

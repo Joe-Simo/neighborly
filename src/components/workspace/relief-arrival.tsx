@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type AnimationEventHandler, type CSSProperties } from "react";
 import { ReliefPicture, reliefMoves, reliefSources, whenDecoded, type ReliefName } from "@/components/workspace/relief";
+import { useRoomShown } from "@/components/workspace/room-sheet";
 
 const ARRIVED = "kind-helps-arrived";
 const arrived = () => (sessionStorage.getItem(ARRIVED) ?? "").split(" ").filter(Boolean);
@@ -79,30 +80,28 @@ export function ArrivingRelief({
       // No storage: the move plays on each first laying of the picture, which is harmless.
     }
   }, [moving, name]);
-  // The piece lies at its start from the moment it is laid. Once every layer is in, it is given its one move
-  // home, which holds the start until it begins and the rest once it ends: there is no moment in between
-  // where the piece could be painted anywhere else.
+  // The piece lies at its start from the moment it is laid. Once every layer is in and the room is shown, it is
+  // given its one move home, which holds the start until it begins and the rest once it ends: there is no moment
+  // in between where the piece could be painted anywhere else.
   const stack = useRef<HTMLSpanElement>(null);
   const count = move?.front ? 3 : 2;
+  const seen = useRoomShown();
   useLayoutEffect(() => {
     const piece = stack.current?.querySelector<HTMLElement>(".relief-piece");
-    if (!piece || loaded < count || piece.getAnimations().length) return;
+    if (!seen || !piece || loaded < count || piece.getAnimations().length) return;
     const style = getComputedStyle(piece);
     piece.animate([{ transform: style.transform }, { transform: "none" }], {
       duration: 520,
-      // After the head has settled, and after the paper wave where there is one.
+      // A moment after the room is shown, and after the paper wave where there is one.
       delay: 380 + (parseFloat(style.getPropertyValue("--paper-wait")) || 0),
       easing: style.getPropertyValue("--paper-ease").trim() || "ease-out",
       fill: "both",
     });
-  }, [loaded, count]);
-  // The head waits for its picture before it lets the last room's go (and the iPhone app its launch cover); a picture
-  // that is not in after 800ms must not hold either.
+  }, [seen, loaded, count]);
+  // The room is not shown before its picture can be painted (room-sheet.tsx): every layer is in, or could not be had.
   const layersIn = moving && loaded >= count;
   useEffect(() => {
-    if (layersIn) return onReady();
-    const late = window.setTimeout(onReady, 800);
-    return () => window.clearTimeout(late);
+    if (layersIn) onReady();
   }, [layersIn, onReady]);
   const placed = band === undefined ? undefined : ({ "--relief-y": band } as CSSProperties);
   if (!move || !moving)
