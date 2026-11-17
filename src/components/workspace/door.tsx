@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import { createPortal } from "react-dom";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
+import { readCardWord } from "@/lib/card-for";
 import { HELD_CARD, dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
 import { ROOM_WHOLE } from "@/components/workspace/room-sheet";
 import "@/components/workspace/door.css";
@@ -101,6 +102,8 @@ export function DoorSweep() {
   /** A wait: "spoken" is the line for screen readers only (the card holds as itself), "shown" draws it. */
   const [holding, setHolding] = useState<false | "spoken" | "shown">(false);
   const [cardFor] = useState(readCardFor);
+  // The word the card itself was lettered with, so it is the same word from the hand to the room.
+  const [cardWord] = useState(readCardWord);
   const paper = useRef<HTMLDivElement>(null);
   const [language] = useEntryLanguage();
   const playing = arrival > done;
@@ -210,7 +213,7 @@ export function DoorSweep() {
         </svg>
       ))}
       {/* The card passed on the home page, grown to the size of the page: its mark and two lines thin away as it becomes the paper. */}
-      {card ? <div className="door-card"><i />{cardFor && <span className="door-card-for"><em>For {cardFor}</em></span>}</div> : <div className="door-paper" />}
+      {card ? <div className="door-card"><i />{cardFor && <span className="door-card-for"><em>{cardWord} {cardFor}</em></span>}</div> : <div className="door-paper" />}
       {holding && (
         <p className="door-opening" role="status" data-spoken={holding === "spoken" ? "" : undefined} data-low={card ? "" : undefined}>
           <span>{wordsFor(language).states.opening}</span>

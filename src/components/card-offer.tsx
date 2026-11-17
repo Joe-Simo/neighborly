@@ -16,7 +16,7 @@ export function CardOffer({ door, said }: { door: ReturnType<typeof useSampleDoo
       <i aria-hidden="true" />
       <ArrowUpRight aria-hidden="true" />
       {/* The line as lettered on the card: what is written here goes with the card through the grow. */}
-      <em className="card-offer-for" aria-hidden="true">For <span data-blank={name ? undefined : ""}>{name}</span></em>
+      <em className="card-offer-for" aria-hidden="true">{said.for} <span data-blank={name ? undefined : ""}>{name}</span></em>
       <span className="card-offer-words"><strong>{said.look}</strong><small>{said.madeUp}</small></span>
     </Link>
     <CardFor said={said} />

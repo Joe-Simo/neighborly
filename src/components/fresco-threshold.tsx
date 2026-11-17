@@ -131,6 +131,8 @@ export function FrescoThreshold() {
       host.style.setProperty("--inside", inside.toFixed(4));
       host.style.setProperty("--standing", standingIn.toFixed(4));
       host.dataset.inside = String(inside > .98);
+      // Once the visitor has walked in, the wall they came through is behind them: its words do not come back with the frame.
+      host.dataset.walked = String(inside > .98 || grow > 0);
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
       host.style.setProperty("--caption-top", `${frameY + frameHeight / 2}px`);
       setOpen(grow > .5 || inside > .5);
@@ -200,6 +202,8 @@ export function FrescoThreshold() {
         <Link href="/app" tabIndex={-1}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </header>
       <div className="fresco-invitation" aria-hidden={open}>
+        {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
+        <p className="fresco-kicker">Small acts. Shared purpose.</p>
         <h2>There is room<br /><em>for you.</em></h2>
         <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>

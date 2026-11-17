@@ -5,6 +5,7 @@ import { useEffect, type MouseEvent } from "react";
 import { CardOffer } from "./card-offer";
 import type { CardWords } from "./public-ending";
 import { useSampleDoor } from "./sample-link";
+import { writeCardWord } from "@/lib/card-for";
 import { HELD_CARD, dropTheHeldCard } from "@/lib/held-card";
 import { ROOM_WHOLE } from "@/lib/room-whole";
 
@@ -23,6 +24,8 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
   const router = useRouter();
   function open(event: MouseEvent<HTMLAnchorElement>) {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    // The word lettered on this card goes with it, whether or not it grows: the door letters the same one.
+    writeCardWord(said.for);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || document.getElementById(HELD_CARD)) return;
     event.preventDefault();
     const offer = event.currentTarget, href = offer.getAttribute("href") ?? "/app";
@@ -70,7 +73,7 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
     const written = offer.querySelector(".card-offer-for span")?.textContent?.trim();
     // On the card the name is lettered on its paper, so it grows with the card and keeps its place over the square; the grown card letters it again over its own square, as the door does.
     const line = written ? document.createElement("em") : null;
-    if (line) { line.textContent = `For ${written}`; marks.append(line); }
+    if (line) { line.textContent = `${said.for} ${written}`; marks.append(line); }
     // Under the marks, from the same frame, the paper they sit on is the door's fixed paper: the grain stops growing with the card.
     const paper = document.createElement("div");
     paper.className = "card-held-paper";
@@ -123,7 +126,7 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
         const line = document.createElement("p");
         line.className = "card-held-opening";
         line.setAttribute("role", "status");
-        line.textContent = "Opening…";
+        line.textContent = said.opening;
         held.append(line);
         held.dataset.saying = "";
       }, 400);
