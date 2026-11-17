@@ -73,6 +73,7 @@ export function CommitmentRows({
                 variant="outline"
                 className="live-row-opens"
                 aria-label={`${opens(item)}: ${item.title}, ${when(item.start, item.end)}`}
+                data-opens=""
                 onClick={(event) => showCommitment(item, event.currentTarget)}
               >
                 {opens(item)} <ArrowRight size={15} aria-hidden="true" />
@@ -333,7 +334,8 @@ export function IncomingRequests({
                         variant="link"
                         className="tools-quiet"
                         aria-label={`${words.commitments.details}: ${item.title}`}
-                        onClick={(event) => showCommitment(item, event.currentTarget)}
+                        data-opens=""
+                onClick={(event) => showCommitment(item, event.currentTarget)}
                       >
                         {words.commitments.details}
                       </Button>

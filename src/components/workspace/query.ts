@@ -6,8 +6,10 @@ import type { OptionalRestArgsOrSkip, PaginatedQueryArgs, PaginatedQueryReferenc
 import type { FunctionReference, FunctionReturnType } from "convex/server";
 import * as kept from "convex-helpers/react/cache/hooks";
 import { ConvexQueryCacheContext } from "convex-helpers/react/cache/provider";
+import { useFirstLook } from "@/components/workspace/first-look";
 
 /**
+ * In a first look at the sample (first-look.tsx) nothing is asked at all: the rows there carry seed keys, not ids.
  * How every room reads. Inside the app (LiveProviders) a reading is kept for five minutes after its
  * room is left, so going back shows the room at once while it refreshes. Anywhere the keeping
  * provider is absent, a picture harness or a test, the same call reads straight from Convex, so a
@@ -19,7 +21,8 @@ export function useQuery<Query extends FunctionReference<"query">>(
   ...args: OptionalRestArgsOrSkip<Query>
 ): FunctionReturnType<Query> | undefined {
   const source = useContext(ConvexQueryCacheContext).registry ? kept : live;
-  return source.useQuery(query, ...args);
+  const looking = useFirstLook() !== null;
+  return source.useQuery(query, ...(looking ? (["skip"] as OptionalRestArgsOrSkip<Query>) : args));
 }
 
 export function usePaginatedQuery<Query extends PaginatedQueryReference>(
@@ -28,7 +31,8 @@ export function usePaginatedQuery<Query extends PaginatedQueryReference>(
   options: { initialNumItems: number },
 ): UsePaginatedQueryReturnType<Query> {
   const source = useContext(ConvexQueryCacheContext).registry ? kept : live;
-  return source.usePaginatedQuery(query, args, options);
+  const looking = useFirstLook() !== null;
+  return source.usePaginatedQuery(query, looking ? "skip" : args, options);
 }
 
 const HOUR = 3_600_000;

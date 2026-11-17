@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
+import { useFirstLook } from "@/components/workspace/first-look";
 import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +31,8 @@ function useLanguage() {
   const churchId = data.church.id;
   // Visitors to the sample share one made-up member, so their language is kept on their own device and never
   // saved: the rooms read the door's language for them (live-app.tsx), and choosing here changes that.
-  const visiting = useQuery(api.demo.visiting, {});
+  const look = useFirstLook();
+  const visiting = useQuery(api.demo.visiting, {}) ?? (look ? true : undefined);
   const [, setOnDevice] = useEntryLanguage();
   // The door and the rooms speak one language: what the person pressed on the entry sheet is saved here, and
   // the device's own language fills in for someone who has never chosen. Once per conference and visit.

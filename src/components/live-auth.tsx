@@ -61,6 +61,8 @@ export function LiveAuth({
   sampleEntry = false,
   enterSample = false,
   badInvite = false,
+  behind = false,
+  onSampleRefused,
 }: {
   intent?: LiveEntryIntent;
   /** The invitation link that led here is unknown, used or run out: the sheet says so, and is plain sign-in. */
@@ -69,6 +71,10 @@ export function LiveAuth({
   sampleEntry?: boolean;
   /** Arrived by the home page's sample door: the sample opens once, without a second press. */
   enterSample?: boolean;
+  /** The sample's first room is already drawn (first-look.tsx): the way in runs as ever, and the sheet is not drawn. */
+  behind?: boolean;
+  /** The sample did not open, or is rationed: whoever drew a room over this sheet takes it away, and the notice is read. */
+  onSampleRefused?: () => void;
 }) {
   const { signIn } = useSignIn();
   const { signUp } = useSignUp();
@@ -100,12 +106,13 @@ export function LiveAuth({
   // behind it. When the sheet leaves, the title it found is put back, so the room that opens is named as before.
   const pageTitle = `${flow === "signUp" ? w.create : w.signIn} · Kind Helps`;
   useEffect(() => {
+    if (behind) return;
     const found = document.title;
     document.title = pageTitle;
     return () => {
       document.title = found;
     };
-  }, [pageTitle]);
+  }, [pageTitle, behind]);
 
   function choose(next: Flow) {
     setFlow(next);
@@ -219,11 +226,13 @@ export function LiveAuth({
     setSampleError("");
     setLeftRead(true);
     setOpening(true);
-    carryTheCard();
+    // Behind a first look nothing sweeps, so there is no sweep to hand the card to.
+    if (!behind) carryTheCard();
     try {
       const response = await takeSampleTicket();
       if (response.status === 429) {
         carryTheCard(false);
+        onSampleRefused?.();
         return setSampleError("sampleBusy");
       }
       if (!response.ok) throw new Error("No ticket.");
@@ -233,6 +242,7 @@ export function LiveAuth({
       await finish(() => signIn.finalize());
     } catch {
       carryTheCard(false);
+      onSampleRefused?.();
       setSampleError("sampleFailed");
     } finally {
       setOpening(false);
@@ -443,6 +453,7 @@ export function LiveAuth({
       </>
     );
 
+  if (behind) return null;
   return (
     <EntrySheet
       page={`${flow}:${step}`}

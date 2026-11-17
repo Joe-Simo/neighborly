@@ -1,13 +1,13 @@
 "use client";
 
 import { useHour, useQuery } from "@/components/workspace/query";
+import { useFirstLook } from "@/components/workspace/first-look";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { api } from "../../../../convex/_generated/api";
 import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspace } from "@/components/workspace/context";
-import { CountUp } from "@/components/workspace/primitives";
 import { WeekFigures } from "@/components/workspace/volunteer/week-figures";
 import { formatDate, type Words } from "@/lib/words";
 
@@ -85,11 +85,14 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   const { data, now, isOwner } = useWorkspace();
   const churchId = data.church.id;
   const monday = mondayOf(now, data.church.timeZone);
-  const week = `${churchId}:${new Intl.DateTimeFormat("en-CA", { timeZone: data.church.timeZone }).format(monday)}`;
+  // The sample is laid anew each night under a new id, and is first drawn before any id is known (first-look.tsx):
+  // its note is put away under one name, so it stays away for the week through both.
+  const week = `${data.church.sample ? "sample" : churchId}:${new Intl.DateTimeFormat("en-CA", { timeZone: data.church.timeZone }).format(monday)}`;
   const away = useSyncExternalStore(subscribe, () => stored(put) === week, () => true);
-  const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
+  const look = useFirstLook();
+  const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId }) ?? (look ? true : undefined);
   const at = useHour();
-  const counts = useQuery(api.drafts.weekNote, allowed && !away && at ? { churchId, at } : "skip");
+  const counts = useQuery(api.drafts.weekNote, allowed && !away && at ? { churchId, at } : "skip") ?? (away ? undefined : look?.weekNote);
   const last = useSyncExternalStore(subscribe, () => stored(kept), () => null);
   useEffect(() => {
     if (!counts) return;
@@ -154,7 +157,7 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
           <span>
             <strong className="font-[650] text-[var(--live-ink)]">{text.brief.label}{rest.length ? ":" : ""}</strong>{rest.length ? ` ${rest.map((line) => line.brief).join(", ")}.` : ""}
           </span>
-          <button type="button" className={quietLink} onClick={() => setOpen(true)}>
+          <button type="button" className={quietLink} data-opens="" onClick={() => setOpen(true)}>
             {text.read}
           </button>
         </p>
@@ -183,7 +186,7 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
           <div className={`week-figures !mt-6 !mb-0 !border-y-0 gap-y-4 ${waiting ? "" : "paper-rows"}`}>
             {figures.map(({ area, label, value }) => (
               <Link key={area} href={`/app/${area}`} className={`!py-0 ${waiting ? held : ""}`}>
-                <CountUp value={value} />
+                <span className="count-up">{value}</span>
                 <span>{label}</span>
               </Link>
             ))}

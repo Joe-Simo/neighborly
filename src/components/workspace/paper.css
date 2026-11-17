@@ -949,3 +949,10 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 /* An open request's sheet carries the small ochre ring in place of the rule before its label: waiting. */
 .live-app .help-sheet-label[data-waiting]::before { width: 9px; height: 9px; border-radius: 50%; background: none; box-shadow: inset 0 0 0 2px #a8791f; }
+
+/* A press made in the sample's first look, kept until the signed-in room is in (first-look.tsx). The control rests
+   as a pressed one does; once the wait has lasted 400ms its own icon is the small still ochre ring, in the icon's
+   box, so the label does not move. A control with no icon has the ring just before its words. Nothing is outlined. */
+.live-app [data-kept] { opacity: 0.5; cursor: default; }
+.live-app [data-kept="waits"] > svg:first-child { visibility: hidden; }
+.kept-ring { position: absolute; z-index: 5; width: 10px; height: 10px; margin: -5px 0 0 -5px; box-sizing: border-box; border: 2px solid #a8791f; border-radius: 50%; pointer-events: none; }

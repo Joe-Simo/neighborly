@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAction, useMutation } from "convex/react";
-import { usePaginatedQuery, useQuery } from "@/components/workspace/query";
+import { useAction, useMutation, useQueries, type RequestForQueries } from "convex/react";
+import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";
+import { FirstLookProvider, firstLookData, useAfterLook, useFirstRoom, useKeptPress } from "@/components/workspace/first-look";
 import { useClerk } from "@clerk/nextjs";
 import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
@@ -18,7 +19,7 @@ import { LiveRoomLoading } from "@/components/workspace/primitives";
 import "@/components/public-state.css";
 import { LiveWorkspace } from "@/components/workspace/shell";
 import { RoomsAhead } from "@/components/workspace/rooms-ahead";
-import { DoorSweep, useDoor } from "@/components/workspace/door";
+import { DoorSweep, carryTheCard, useDoor } from "@/components/workspace/door";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -50,12 +51,30 @@ function LiveRooms({
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
   const { ready, isAuthenticated, signedOut } = useAccount();
+  // Through the sample door, This week is first drawn from the seed's public answer while the session is being made
+  // (first-look.tsx). The look ends when the signed-in room is whole in hand, or when the sample will not open.
+  const [viaSample] = useState(enterSample && sampleEntry);
+  const firstRoom = useFirstRoom(viaSample);
+  const [lookOver, setLookOver] = useState(false);
+  const [signedInRoom, setSignedInRoom] = useState(false);
+  const look = firstRoom && !lookOver && !signedInRoom ? firstRoom : null;
+  // Whether there will be a look is not known yet: until it is, neither the sheet nor the door stands in its place.
+  const lookComing = firstRoom === undefined && !lookOver && !signedInRoom;
+  const afterLook = useAfterLook(look !== null);
+  useKeptPress(look !== null);
   // Through the sample door the account is always the one made-up visitor, whose row the nightly reset keeps, so its
   // rooms are asked for as soon as the backend accepts the token, beside the account check instead of after it.
   const asking = ready || (enterSample && isAuthenticated);
   const clerk = useClerk();
   // The sweep starts in the frame the sign-in sheet (or the sample's) leaves.
-  useDoor(signedOut);
+  // A first look is no door: the home page's card lifts off it by itself, and the session arriving behind it sweeps nothing.
+  useDoor(signedOut && !look && !lookComing);
+  // With no seed answer the sample opens through the door as before, and the door's last sheet is the home page's card.
+  // (The way in does not say so itself when it starts behind a look, where no sweep would ever take the card.)
+  const noLook = viaSample && firstRoom === null;
+  useEffect(() => {
+    if (noLook && signedOut) carryTheCard();
+  }, [noLook, signedOut]);
   const signOut = () => {
     try {
       window.sessionStorage.setItem(leftKey, "1");
@@ -222,6 +241,36 @@ function LiveRooms({
     team: [teamPage],
   };
   const roomWaiting = (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
+  // Behind a first look the week's own three readings are asked for too, so the signed-in room has every answer on
+  // its first frame. They are let go a moment after the change, once the room itself is asking them.
+  const [aheadOfWeek, setAheadOfWeek] = useState(viaSample);
+  const hour = useHour();
+  const week = useQueries(
+    useMemo(
+      (): RequestForQueries =>
+        aheadOfWeek && firstRoom && churchId && hour
+          ? {
+              allowed: { query: api.access.canOpenNeighborRecords, args: { churchId } },
+              note: { query: api.drafts.weekNote, args: { churchId, at: hour } },
+              drafts: { query: api.assistance.drafts, args: { churchId } },
+            }
+          : {},
+      [aheadOfWeek, firstRoom, churchId, hour],
+    ),
+  );
+  const looking = look !== null;
+  useEffect(() => {
+    // Still to be learned whether there is a look, or one is on the page: the readings stay.
+    if (lookComing || looking) return;
+    const later = setTimeout(() => setAheadOfWeek(false), 2000);
+    return () => clearTimeout(later);
+  }, [lookComing, looking]);
+  // The change is one commit: the look's rows and the signed-in room's are never on the page together.
+  const weekInHand = !roomWaiting && week.allowed !== undefined && week.note !== undefined && week.drafts !== undefined;
+  if (look && dashboard && sampleVisitor === true && (area !== "week" || weekInHand)) setSignedInRoom(true);
+  // The signed-in room is in hand with no look on the page (the seed's answer is late, or the visitor was already
+  // inside): the moment for a look has passed, and a late answer starts none.
+  if (viaSample && !look && !signedInRoom && dashboard && sampleVisitor === true) setSignedInRoom(true);
   // Waiting to learn who is here, or for their workspace to arrive. A wait that outlasts ten seconds
   // (a session the backend will not accept, no connection) is said plainly, with a way on and a way out.
   const waiting = !leavingForSample && !signedOut && (!asking || !viewer || sampleVisitor === undefined);
@@ -234,16 +283,44 @@ function LiveRooms({
       setWaitedLong(false);
     };
   }, [waiting]);
-  if (leavingForSample) return <LiveRoomLoading label={authWords[deviceLanguage].sampleOpening} />;
   // The sign-in sheet is for someone known to be signed out. Until that is known, and from then until
   // the workspace has arrived, there is one waiting screen and nothing else: a signed-in person goes
-  // from it straight to their room.
-  if (signedOut) {
+  // from it straight to their room. In a first look the sheet is not drawn, and the way in runs behind the room;
+  // the sheet and the room keep their places here and below, so neither is ever made a second time.
+  // A look is no way round a wait or a reset: a session the backend has not confirmed in ten seconds, or a sample
+  // that is being laid anew, ends it, and what is said below is said as it always was.
+  if (look && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
+  if (look || signedOut) {
+    const first = look && firstLookData(look, deviceLanguage);
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
-    if (invitationGood === undefined) return <LiveRoomLoading />;
+    const sheetKnown = invitationGood !== undefined;
     const entry = badInvite ? "signin" : intent;
-    return <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry} enterSample={enterSample} badInvite={badInvite} />;
+    return (
+      <>
+        {signedOut && sheetKnown && (
+          <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing} onSampleRefused={() => setLookOver(true)} />
+        )}
+        {/* Nor is the sheet drawn before it is known whether a room will be: the launch line stands until then. */}
+        {!first && (lookComing || !sheetKnown) && <LiveRoomLoading key="wait" />}
+        {first && (
+          <FirstLookProvider key="room" value={first.look}>
+            <LiveWorkspace
+              area={area}
+              // Any other room waits for the session, on This week's head, as a room does while its lists load.
+              roomWaiting={area !== "week"}
+              requestCommitments={first.requestCommitments}
+              data={first.data}
+              sampleVisitor
+              signOut={() => afterLook(signOut)}
+              // Nothing in a first look can ask for a write: every press in the room is kept until the look is over.
+              run={() => Promise.reject(new Error(stateWords.kept))}
+            />
+          </FirstLookProvider>
+        )}
+      </>
+    );
   }
+  if (leavingForSample) return <LiveRoomLoading label={authWords[deviceLanguage].sampleOpening} />;
   // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
   if (waiting) return waitedLong ? <LaunchFailure language={deviceLanguage} leave={signOut} /> : <LiveRoomLoading />;
   if (sampleVisitor && !churchId) return <SampleResetting leave={signOut} />;
@@ -280,7 +357,8 @@ function LiveRooms({
   const more = shell.more;
   return (
     <>
-    <RoomsAhead data={dashboard} />
+    <RoomsAhead key="ahead" data={dashboard} />
+    <FirstLookProvider key="room" value={null}>
     <LiveWorkspace
       area={area}
       roomWaiting={roomWaiting}
@@ -421,6 +499,7 @@ function LiveRooms({
         ) : undefined
       }
     />
+    </FirstLookProvider>
     </>
   );
 }
@@ -465,7 +544,7 @@ function LaunchFailure({ language, leave }: { language: Language; leave: () => v
     <div className="public-state">
       <main className="live-auth" lang={said.locale}>
         <div className="live-auth-art" aria-hidden="true" />
-        <p className="live-kicker">Kind Helps</p>
+        <p className="public-state-mark">kind helps</p>
         <h1 role="alert">{states.launchTitle ?? stateWords.launchTitle}</h1>
         <p className="live-deck">{states.launchDeck ?? stateWords.launchDeck}</p>
         <Button onClick={() => window.location.reload()} style={{ marginTop: 24 }}>
