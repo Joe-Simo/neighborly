@@ -34,7 +34,7 @@
 .people-address > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .people-row .live-avatar { width: 44px; height: 44px; letter-spacing: 0.02em; }
 .people-row .live-meta > span { font-size: 16px; }
-.people-row .live-meta > span[data-waits] { color: var(--help-ochre-ink, #88642c); }
+.people-row .live-meta > span[data-waits] { color: var(--live-ink); }
 .people-row[data-away] .live-person,
 .people-row[data-away] .live-meta > span { opacity: 0.62; }
 
@@ -121,7 +121,7 @@
 .team-roster h3 { font-size: 19px; }
 /* A line that must wrap on a phone breaks into two even parts, never one word left alone. */
 .team-roster p { margin: 2px 0 0; font-size: 16px; text-wrap: balance; }
-.team-roster p[data-waits] { color: var(--help-ochre-ink, #88642c); }
+.team-roster p[data-waits] { color: var(--live-ink); }
 .team-more { margin-top: 16px; }
 /* The last choice ends a place on the team, so a hairline sets it apart from the two above. */
 .team-apart { width: 100%; height: 1px; margin: 6px 0; border: 0; background: color-mix(in srgb, #283c32 16%, transparent); }
