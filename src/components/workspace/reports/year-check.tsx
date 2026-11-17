@@ -1,5 +1,6 @@
 "use client";
 
+import { useWaited } from "@/lib/use-waited";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { FunctionReturnType } from "convex/server";
@@ -36,13 +37,15 @@ const english = {
 /** The sheet while the year is being read: it lies where the verdict will, so nothing moves when the verdict arrives. */
 export function YearChecking({ requests, visits }: { requests: number; visits: number }) {
   const sheet = useRef<HTMLElement>(null);
+  // A wait is one still ochre ring after 400ms: nothing turns or pulses.
+  const waited = useWaited(true);
   useEffect(() => {
     sheet.current?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }, []);
   return (
     <section ref={sheet} className="help-sheet report-check paper-rest" aria-busy="true" role="status" data-reading="">
       <p className="help-sheet-label">Before you send it</p>
-      <h2>{english.reading}<span className="report-reading" aria-hidden="true"><i /><i /><i /></span></h2>
+      <h2>{english.reading}<span className="report-reading" aria-hidden="true" data-waited={waited ? "" : undefined} /></h2>
       <p>{english.readingWhat.replace("{requests}", english.requests(requests)).replace("{visits}", english.visits(visits))}</p>
     </section>
   );
