@@ -52,7 +52,8 @@ export function HomeYear() {
       frame = near && reached.some((value, index) => value < figures[index].total) ? requestAnimationFrame(follow) : 0;
     };
     const watch = new IntersectionObserver(entries => { near = entries.some(entry => entry.isIntersecting); if (near && !frame) frame = requestAnimationFrame(follow); });
-    watch.observe(panel);
+    // The figures themselves are watched, not their chapter: held under a turned page, they can be in the window while the chapter's own box is not.
+    watch.observe(list);
     return () => { cancelAnimationFrame(frame); watch.disconnect(); window.removeEventListener(YES_GIVEN, given); };
   }, []);
   return <>
