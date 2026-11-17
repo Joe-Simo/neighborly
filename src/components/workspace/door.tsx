@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
 import { HELD_CARD, dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
+import { ROOM_WHOLE } from "@/components/workspace/room-sheet";
 import "@/components/workspace/door.css";
 
 /**
@@ -183,7 +184,17 @@ export function DoorSweep() {
       frame = requestAnimationFrame(look);
     };
     frame = requestAnimationFrame(look);
-    return () => cancelAnimationFrame(frame);
+    // The room says the frame it is whole (room-sheet.tsx), before that frame is painted: the paper is looked at then,
+    // not a frame later. The look each frame goes on beside it, for the line's own clock and a part that arrives late.
+    const whole = () => {
+      cancelAnimationFrame(frame);
+      look();
+    };
+    window.addEventListener(ROOM_WHOLE, whole);
+    return () => {
+      window.removeEventListener(ROOM_WHOLE, whole);
+      cancelAnimationFrame(frame);
+    };
   }, [playing, arrival]);
 
   if (!playing) return null;
