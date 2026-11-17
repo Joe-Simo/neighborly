@@ -6,6 +6,7 @@ import * as treasuryWords from "./rooms/treasury";
 import * as reportsWords from "./rooms/reports";
 import * as toolsWords from "./rooms/tools";
 import * as peopleRoomWords from "./rooms/people";
+import * as sheetsWords from "./rooms/sheets";
 import { measured as m } from "../jev-set";
 import type { Words } from "./en";
 import { refusals } from "../refusals";
@@ -72,8 +73,6 @@ export function es(set: WordSet): Words {
       /** After the conference's name in a room's kicker: "St. Example Conference · Sample". */
       sample: "Muestra",
       language: "Idioma",
-      roomInEnglish: "Esta sala todavía está en inglés.",
-      partInEnglish: "Esta parte está en inglés.",
       typedStays: "Lo que escriben las personas queda como lo escribieron.",
       member: "Miembro",
       team: "Equipo",
@@ -85,6 +84,12 @@ export function es(set: WordSet): Words {
       limited: "Algunas listas muestran solo una parte. Usa Cargar más en la sección correspondiente para ver el resto.",
     },
     headings: {
+      "help-line": { title: "Cada llamada, devuelta.", deck: "Los mensajes de la línea de ayuda y quién devuelve cada llamada." },
+      neighbors: { title: "Vecinos, por su nombre.", deck: "Cada hogar y la ayuda que ha recibido, en privado." },
+      treasury: { title: "Cada donativo, bien cuidado.", deck: "Lo que entró, lo que salió y lo que se pagó con ello." },
+      reports: { title: "El año, sumado.", deck: "Las cuentas para el informe anual de tu consejo, listas para imprimir." },
+      visits: { title: "De dos en dos.", deck: "Las visitas domiciliarias, la pareja que va y lo que encontró." },
+      tools: { title: "Trae tus registros. Llévatelos cuando quieras.", deck: "Desde ServWare o una hoja de cálculo, y de vuelta cuando tú quieras." },
       team: {
         title: "Un lugar en el equipo.",
         deck: "Aquí cada persona tiene su lugar, aunque sus planes cambien.",
@@ -115,6 +120,9 @@ export function es(set: WordSet): Words {
       },
     },
     actions: {
+      team: "Crear un equipo",
+      invite: "Invitar a alguien",
+      meeting: "Planear una reunión",
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
       commitment: "Agregar un compromiso",
@@ -444,7 +452,7 @@ export function es(set: WordSet): Words {
       byAssistant: "El asistente leyó la nota. Léela tú también.",
       open: "Abrir el registro",
       putAway: "Guardar esto",
-      checked: "Se revisaron {requests}, {visits} y el libro, hoy a las {time}.",
+      checked: "Revisado hoy ({time}): {requests}, {visits} y el libro.",
       requests: (count) => (count === 1 ? "1 petición" : `${count} peticiones`),
       visits: (count) => (count === 1 ? "1 visita" : `${count} visitas`),
       show: (count) => `Mostrar los ${count} registros`,
@@ -534,7 +542,8 @@ export function es(set: WordSet): Words {
         noteDoesNotSay: (what) => `La nota no dice ${what}.`,
         unpaid: "Aún no está anotado a quién se le paga.",
         yours: (count) => (count > 1 ? "Te toca a ti anotarlos." : "Te toca a ti anotarlo."),
-        takenAt: (time) => `Del mensaje tomado a las ${time}.`,
+        // The hour sits in brackets: "a las" is wrong at one o'clock, and "a.m." would end the sentence with two points.
+        takenAt: (time) => `Tomado del mensaje (${time}).`,
         notOnFile: `Aún no está en el registro como ${t.neighbor}.`,
         addFirst: (name) => `Primero, agrega a ${name || "quien llamó"} como ${t.neighbor}.`,
         addAndSave: `Agregar ${t.neighbor} y guardar`,
@@ -573,6 +582,7 @@ export function es(set: WordSet): Words {
       reports: reportsWords.es(t, place),
       tools: toolsWords.es(t, place),
       peopleRoom: peopleRoomWords.es(t, place),
+      sheets: sheetsWords.es(t, place),
     },
   };
 }

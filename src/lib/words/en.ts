@@ -8,6 +8,7 @@ import * as treasuryWords from "./rooms/treasury";
 import * as reportsWords from "./rooms/reports";
 import * as toolsWords from "./rooms/tools";
 import * as peopleRoomWords from "./rooms/people";
+import * as sheetsWords from "./rooms/sheets";
 import type { Language, Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
@@ -73,8 +74,6 @@ export function en(set: WordSet) {
       /** After the conference's name in a room's kicker: "St. Example Conference · Sample". */
       sample: "Sample",
       language: "Language",
-      roomInEnglish: "This room is in English.",
-      partInEnglish: "This part is in English.",
       typedStays: "Words people typed stay as they wrote them.",
       member: "Member",
       team: "Team",
@@ -87,6 +86,12 @@ export function en(set: WordSet) {
       limited: "Some overview lists show a limited set of records. Use Load more in the matching section to see additional records.",
     },
     headings: {
+      "help-line": { title: "Every call, returned.", deck: "Messages from the help line, and who is calling back." },
+      neighbors: { title: "Neighbors, by name.", deck: "Each household and the help it has received, kept private." },
+      treasury: { title: "Every gift, cared for.", deck: "What came in, what went out, and what it paid for." },
+      reports: { title: "The year, added up.", deck: "Counts for your council's yearly report, ready to print." },
+      visits: { title: "Two by two.", deck: "Home visits, the pair who are going, and what they found." },
+      tools: { title: "Bring records in. Take them with you.", deck: "From ServWare or a spreadsheet, and back out again whenever you like." },
       team: {
         title: "A place on the team.",
         deck: "People belong here, even when their plans change.",
@@ -117,6 +122,9 @@ export function en(set: WordSet) {
       },
     },
     actions: {
+      team: "Create a team",
+      invite: "Invite someone",
+      meeting: "Plan a meeting",
       timeOff: "Plan time off",
       announcement: "Share an announcement",
       commitment: "Add a commitment",
@@ -576,6 +584,7 @@ export function en(set: WordSet) {
       reports: reportsWords.en(t, place),
       tools: toolsWords.en(t, place),
       peopleRoom: peopleRoomWords.en(t, place),
+      sheets: sheetsWords.en(t, place),
     },
   };
 }
