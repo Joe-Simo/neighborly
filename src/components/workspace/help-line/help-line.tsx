@@ -20,7 +20,8 @@ import { Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { words } from "@/lib/words";
+import type { Words } from "@/lib/words";
+import { fill } from "@/lib/words/fill";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import {
   CallForm,
@@ -32,7 +33,6 @@ import { OnTheLine, owners, turnsToday } from "@/components/workspace/help-line/
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveWaiting } from "@/components/workspace/states";
 import {
-  count,
   initials,
   recordHref,
   type Call,
@@ -82,7 +82,13 @@ const laidToStay = (notice: HTMLElement | null) => {
 };
 
 function HelpLine() {
-  const { data, format, now, setHeadAction } = useWorkspace();
+  const { data, format, now, setHeadAction, words } = useWorkspace();
+  const text = words.rooms.helpLine;
+  // The person's words as they stand now, for the saved line that is said after a wait (the sealed sheet's effect).
+  const spoken = useRef(words);
+  useEffect(() => {
+    spoken.current = words;
+  }, [words]);
   const churchId = data.church.id;
   const at = useHour();
   const calls = useQuery(api.assistance.calls, at ? { churchId, at } : "skip");
@@ -156,10 +162,12 @@ function HelpLine() {
         // sheet is taken out the moment its close ends, before anything is drawn; for less motion the close is a plain
         // cut, so the line and the cut are one change.
         flushSync(() => {
+          const words = spoken.current;
+          const said = words.rooms.helpLine.done;
           setDone({
-            message: asks ? "Request saved. It waits for the conference to decide." : `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
+            message: asks ? said.savedToDecide : fill(said.savedOnRecord, { name: caller(sealed.call, words) }),
             record: sealed.neighborId,
-            filed: asks ? { name: caller(sealed.call), asks } : undefined,
+            filed: asks ? { name: caller(sealed.call, words), asks } : undefined,
           });
           setHanding(true);
         });
@@ -192,7 +200,7 @@ function HelpLine() {
   const draftsUnknown = answer === undefined;
   useLayoutEffect(() => {
     setHeadAction({
-      label: "Log a call",
+      label: text.log,
       run: log,
       quiet: sheetOpen,
       // Until the drafts have arrived the room cannot know whether a sheet will hold the filled button.
@@ -200,11 +208,11 @@ function HelpLine() {
       plus: true,
     });
     return () => setHeadAction(null);
-  }, [setHeadAction, log, sheetOpen, draftsUnknown]);
+  }, [setHeadAction, log, sheetOpen, draftsUnknown, text.log]);
   const saved = (call: Call) => {
     settle(call);
     finish(
-      `Request saved. It is waiting for a decision on ${caller(call)}’s record.`,
+      fill(text.done.savedOnRecord, { name: caller(call, words) }),
     );
   };
   function onStep(next: Step) {
@@ -293,7 +301,7 @@ function HelpLine() {
           action={
             done.record ? (
               <Link className="live-link" href={recordHref(done.record)}>
-                Open the record
+                {text.done.openRecord}
               </Link>
             ) : offer ? (
               <Button
@@ -302,7 +310,7 @@ function HelpLine() {
                 disabled={drafting.pending}
                 onClick={() => void draftFor(offer.id)}
               >
-                <Sparkles size={15} aria-hidden="true" /> Draft a request
+                <Sparkles size={15} aria-hidden="true" /> {text.done.draft}
               </Button>
             ) : undefined
           }
@@ -314,17 +322,17 @@ function HelpLine() {
         <div className="live-error" role="alert" ref={laidToStay}>
           <p>
             {approving.error && undiscarded
-              ? "The draft couldn’t be discarded."
+              ? text.refused.discard
               : approving.error ||
-                "The assistant couldn’t draft this request. Nothing was saved."}
+                text.refused.draft}
           </p>
           <p className="live-error-recovery">
             {approving.error && undiscarded
               ? // The reason as the backend gave it, then what is true now: the draft was not thrown away.
-                `${approving.error} The draft is still on its sheet.`
+                fill(text.refused.stillOnSheet, { reason: approving.error })
               : approving.error
-                ? "The draft is still here. Choose Change to correct it."
-                : "You can write the request yourself in the form."}
+                ? text.refused.stillHere
+                : text.refused.writeYourself}
           </p>
         </div>
       )}
@@ -367,6 +375,7 @@ function HelpLine() {
                     arriving={one === next}
                     waiting={drafts.length}
                     format={format}
+                    words={words}
                     // Once saved, its buttons stay as they were while saving and fade from there with the seal,
                     // never back to full ink first.
                     pending={approving.pending || one === sealed}
@@ -412,7 +421,7 @@ function HelpLine() {
                       }
                       // A draft kept on this page only has nothing to wait for.
                       settle(one.call);
-                      setDone({ message: "Draft discarded. Nothing was saved." });
+                      setDone({ message: text.done.discarded });
                     }}
                   />
                 ),
@@ -422,8 +431,8 @@ function HelpLine() {
       />
       {step?.kind === "join" && (
         <LiveDialog
-          title="Add a neighbor"
-          description="This call and its request will be kept on their record."
+          title={text.sheets.join.title}
+          description={text.sheets.join.deck}
           onClose={close}
         >
           <NeighborForm
@@ -431,18 +440,18 @@ function HelpLine() {
             call={step.drafted.call}
             submit={
               step.then === "approve"
-                ? "Save neighbor and request"
-                : "Save neighbor and continue"
+                ? text.sheets.join.saveAndRequest
+                : text.sheets.join.saveAndContinue
             }
             submitNew={
               step.then === "approve"
-                ? "Save as new neighbor and request"
-                : "Save as new neighbor and continue"
+                ? text.sheets.join.saveNewAndRequest
+                : text.sheets.join.saveNewAndContinue
             }
             useLabel={
               step.then === "approve"
-                ? "Use this neighbor and save"
-                : "Use this neighbor"
+                ? text.sheets.join.useAndSave
+                : text.sheets.join.use
             }
             onSaved={(neighborId) =>
               step.then === "approve"
@@ -454,8 +463,8 @@ function HelpLine() {
       )}
       {step?.kind === "change" && changeFor && (
         <LiveDialog
-          title="Change the draft"
-          description={`For ${caller(step.drafted.call)}. Nothing is saved until you save it here.`}
+          title={text.sheets.change.title}
+          description={text.sheets.change.deck(caller(step.drafted.call, words))}
           onClose={close}
         >
           <RequestForm
@@ -474,8 +483,8 @@ function HelpLine() {
       )}
       {step?.kind === "log" && (
         <LiveDialog
-          title="Log a call"
-          description="Write down every call, even a wrong number."
+          title={text.log}
+          description={text.sheets.log.deck}
           onClose={close}
         >
           <CallForm
@@ -486,8 +495,8 @@ function HelpLine() {
                 ? void draftFor(callId)
                 : finish(
                     matched
-                      ? "Call saved, and added to the neighbor’s record."
-                      : "Call saved. It is waiting below until someone calls back.",
+                      ? text.done.callMatched
+                      : text.done.callWaiting,
                     { draft: callId },
                   )
             }
@@ -496,8 +505,8 @@ function HelpLine() {
       )}
       {step?.kind === "return" && (
         <LiveDialog
-          title="Mark returned"
-          description={`${caller(step.call)}${step.call.phone ? `, ${step.call.phone}` : ""}`}
+          title={text.sheets.returned.title}
+          description={`${caller(step.call, words)}${step.call.phone ? `, ${step.call.phone}` : ""}`}
           onClose={close}
         >
           <ReturnForm
@@ -505,7 +514,7 @@ function HelpLine() {
             call={step.call}
             onSaved={() =>
               finish(
-                `Marked returned. ${caller(step.call)} has been called back.`,
+                text.done.returned(caller(step.call, words)),
               )
             }
           />
@@ -513,8 +522,8 @@ function HelpLine() {
       )}
       {step?.kind === "request" && step.call.neighborId && (
         <LiveDialog
-          title="Add a request"
-          description={`For ${caller(step.call)}. Nothing is paid until it is approved.`}
+          title={text.sheets.request.title}
+          description={text.sheets.request.deck(caller(step.call, words))}
           onClose={close}
         >
           <RequestForm
@@ -528,11 +537,11 @@ function HelpLine() {
       )}
       {step?.kind === "neighbor" && (
         <LiveDialog
-          title="Add a neighbor"
+          title={text.sheets.neighbor.title}
           description={
             step.undrafted
-              ? "The assistant could not draft from this note. Add the neighbor, then write the request yourself."
-              : "This call will be kept on their record."
+              ? text.sheets.neighbor.undrafted
+              : text.sheets.neighbor.deck
           }
           onClose={close}
         >
@@ -540,7 +549,7 @@ function HelpLine() {
             churchId={churchId}
             call={step.call}
             onSaved={() =>
-              finish("Neighbor added. This call is now on their record.")
+              finish(text.done.neighborAdded)
             }
           />
         </LiveDialog>
@@ -550,8 +559,8 @@ function HelpLine() {
 }
 
 /** Why a call is first, in the reader's language. An unknown reason from a newer backend is left out. */
-function whyFirst(urgent: NonNullable<Call["urgent"]>) {
-  const text = words().urgent;
+function whyFirst(urgent: NonNullable<Call["urgent"]>, words: Words) {
+  const text = words.urgent;
   const day = urgent.day ?? 0;
   const known = new Map<string, string | ((day: number) => string)>(
     Object.entries(text),
@@ -591,12 +600,14 @@ export function HelpLineView({
   /** The one thing waiting for a yes, when there is one. */
   sheet?: ReactNode;
 }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.helpLine.calls;
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
   // How long a call has waited, from the room's hour: "5 hours", "2 days". Two days and more is old.
   const DAY = 24 * 60 * 60 * 1000;
   const waited = (call: Call) => (at === undefined ? 0 : Math.max(0, at - call.takenAt));
-  const ageLabel = (ms: number) =>
-    ms >= DAY ? count(Math.floor(ms / DAY), "day", "days") : ms >= 3600000 ? count(Math.floor(ms / 3600000), "hour", "hours") : "under an hour";
+  const oldestWaiting = (ms: number) =>
+    ms >= DAY ? text.oldestDays(Math.floor(ms / DAY)) : ms >= 3600000 ? text.oldestHours(Math.floor(ms / 3600000)) : text.oldestUnderHour;
   const oldest = calls.waiting.reduce<Call | undefined>((old, call) => (!old || call.takenAt < old.takenAt ? call : old), undefined);
   // A call marked returned leaves where it waited and is laid into "Returned this week". Everything else in
   // the lists that the change moves (the rows under it, the next heading) glides to its new place in the same
@@ -675,13 +686,13 @@ export function HelpLineView({
       {sheet}
       <section>
         <div className="live-section-head">
-          <h2>To call back</h2>
+          <h2>{text.toCallBack}</h2>
           <span className="live-count">
-            {count(calls.waiting.length, "message", "messages")}
+            {text.messages(calls.waiting.length)}
             {oldest && at !== undefined && (
               <>
                 {" · "}
-                <span className="help-oldest">oldest waiting {ageLabel(waited(oldest))}</span>
+                <span className="help-oldest">{oldestWaiting(waited(oldest))}</span>
               </>
             )}
           </span>
@@ -690,7 +701,7 @@ export function HelpLineView({
           (call) => isFirst(call) && call.urgent?.by === "assistant",
         ) && (
           <p className="help-assistant help-first-origin">
-            <Sparkles size={15} aria-hidden="true" /> {words().urgent.origin}
+            <Sparkles size={15} aria-hidden="true" /> {words.urgent.origin}
           </p>
         )}
         {calls.waiting.length ? (
@@ -708,10 +719,10 @@ export function HelpLineView({
                     {call.neighborId ? (
                       // The whole row opens the record, through its one link, the name.
                       <Link className="help-row-open" href={recordHref(call.neighborId)}>
-                        {caller(call)}
+                        {caller(call, words)}
                       </Link>
                     ) : (
-                      caller(call)
+                      caller(call, words)
                     )}
                     {call.phone && (
                       <span className="help-phone">{call.phone}</span>
@@ -722,15 +733,14 @@ export function HelpLineView({
                     <p className="help-assistant help-first paper-rise">
                       <Sparkles size={15} aria-hidden="true" />
                       <strong>
-                        {whyFirst(call.urgent).join(" · ") ||
-                          words().urgent.label}
+                        {whyFirst(call.urgent, words).join(" · ") ||
+                          words.urgent.label}
                       </strong>
                     </p>
                   )}
                   {call.urgent?.by === "person" && call.urgent.byName && (
                     <p className="help-first help-moved paper-rise">
-                      {isFirst(call) ? "Put first" : "Marked not urgent"} by{" "}
-                      {call.urgent.byName}
+                      {isFirst(call) ? text.putFirstBy(call.urgent.byName) : text.notUrgentBy(call.urgent.byName)}
                     </p>
                   )}
                   <p className="help-facts help-row-more">
@@ -739,7 +749,7 @@ export function HelpLineView({
                         <span className="help-initials" aria-hidden="true">
                           {initials(call.ownerName)}
                         </span>
-                        {call.ownerName} is calling back
+                        {text.callingBack(call.ownerName)}
                       </span>
                     )}
                     {!call.openRequest && !draftedCallIds.includes(call.id) && (
@@ -749,7 +759,7 @@ export function HelpLineView({
                         disabled={busy}
                         onClick={() => onStep({ kind: "draft", call })}
                       >
-                        {reading === call.id ? "Drafting…" : "Draft a request"}
+                        {reading === call.id ? text.drafting : text.draft}
                       </Button>
                     )}
                     {!call.neighborId && (
@@ -758,7 +768,7 @@ export function HelpLineView({
                         className="help-text-action"
                         onClick={() => onStep({ kind: "neighbor", call })}
                       >
-                        Add as a neighbor
+                        {text.addNeighbor}
                       </Button>
                     )}
                     {/* Offered once, on the call that has waited longest, and on a call already put first. */}
@@ -769,8 +779,8 @@ export function HelpLineView({
                         onClick={() => onFirst(call, !isFirst(call))}
                       >
                         {isFirst(call)
-                          ? words().urgent.notUrgent
-                          : words().urgent.label}
+                          ? words.urgent.notUrgent
+                          : words.urgent.label}
                       </Button>
                     )}
                   </p>
@@ -778,10 +788,10 @@ export function HelpLineView({
                 <div className="live-row-actions">
                   <Button
                     variant="outline"
-                    aria-label={`Mark returned: ${caller(call)}`}
+                    aria-label={text.markReturnedFor(caller(call, words))}
                     onClick={() => onStep({ kind: "return", call })}
                   >
-                    Mark returned
+                    {text.markReturned}
                   </Button>
                 </div>
               </div>
@@ -789,24 +799,23 @@ export function HelpLineView({
           </div>
         ) : (
           <HelpEmpty
-            title="A quiet morning."
+            title={text.quietTitle}
             action={
               <Button variant="outline" onClick={() => onStep({ kind: "log" })}>
-                Log a call
+                {words.rooms.helpLine.log}
               </Button>
             }
           >
-            No one is waiting for a call back. New messages from the help line
-            will appear here.
+            {text.quiet}
           </HelpEmpty>
         )}
       </section>
       {calls.returned.length > 0 && (
         <section className="live-section">
           <div className="live-section-head">
-            <h2>Returned this week</h2>
+            <h2>{text.returnedThisWeek}</h2>
             <span className="live-count">
-              {count(calls.returned.length, "call", "calls")}
+              {text.count(calls.returned.length)}
             </span>
           </div>
           <div className="live-list">
@@ -819,12 +828,11 @@ export function HelpLineView({
               >
                 {leaf(call.returnedAt ?? call.takenAt)}
                 <div>
-                  <h3>{caller(call)}</h3>
+                  <h3>{caller(call, words)}</h3>
                   <p>{call.outcome || call.note}</p>
                 </div>
                 <span className="live-status">
-                  Returned
-                  {call.returnedByName ? ` by ${call.returnedByName}` : ""}
+                  {call.returnedByName ? text.returnedBy(call.returnedByName) : text.returned}
                 </span>
               </div>
             ))}
@@ -837,6 +845,7 @@ export function HelpLineView({
 
 /** While the assistant reads: the sheet is already laid down with the caller's words on it, and the rest arrives. */
 function ReadingSheet({ note }: { note?: string }) {
+  const text = useWorkspace().words.rooms.helpLine.reading;
   const sheet = useRef<HTMLElement>(null);
   useEffect(() => {
     sheet.current?.scrollIntoView({
@@ -852,18 +861,17 @@ function ReadingSheet({ note }: { note?: string }) {
       role="status"
       ref={sheet}
     >
-      <p className="help-sheet-label">The assistant is reading the note</p>
+      <p className="help-sheet-label">{text.label}</p>
       <div className="help-sheet-body">
         <div>
-          <p className="help-reading-title">Reading what was written.</p>
+          <p className="help-reading-title">{text.title}</p>
           {note && <p className="help-quote">“{note}”</p>}
         </div>
       </div>
       <p className="help-assistant help-assistant-line">
         <Sparkles size={16} aria-hidden="true" />
         <span>
-          It fills in only what the note says, and leaves blank what it does
-          not. Nothing is saved until you say so.
+          {text.limits}
         </span>
       </p>
     </section>

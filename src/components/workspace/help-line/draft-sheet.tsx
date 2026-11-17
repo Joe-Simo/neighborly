@@ -5,7 +5,8 @@ import type { FunctionReturnType } from "convex/server";
 import { Check, Sparkles } from "lucide-react";
 import type { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { words } from "@/lib/words";
+import { words as book, type Words } from "@/lib/words";
+import { fill } from "@/lib/words/fill";
 import type { Workspace } from "@/components/workspace/context";
 import {
   shortMoney,
@@ -20,8 +21,8 @@ type Sheet = {
 };
 
 /** The name the person typed when they took the call leads; a record's name stands in only when none was typed. */
-export const caller = (call: Pick<Call, "neighborName" | "callerName">) =>
-  call.callerName || call.neighborName || words().assistant.sheet.newCaller;
+export const caller = (call: Pick<Call, "neighborName" | "callerName">, words?: Words) =>
+  call.callerName || call.neighborName || (words ?? book()).assistant.sheet.newCaller;
 
 /**
  * The one thing waiting for a yes: what the assistant drafted from a call note. Plum marks its words.
@@ -40,6 +41,7 @@ export function DraftSheet({
   onApprove,
   onChange,
   onDiscard,
+  words = book(),
 }: {
   drafted: Sheet;
   /** How many drafts wait for a yes, this one included. */
@@ -61,9 +63,12 @@ export function DraftSheet({
   /** Where there is no way to change or discard, the sheet shows neither. */
   onChange?: () => void;
   onDiscard?: () => void;
+  /** The person's own words. The home page lays this sheet down outside a workspace, and it reads in English there. */
+  words?: Words;
 }) {
-  const text = words().assistant;
+  const text = words.assistant;
   const sheet = text.sheet;
+  const room = words.rooms.helpLine.draft;
   const complete =
     !!draft.kind &&
     draft.amountRequested !== null &&
@@ -75,14 +80,20 @@ export function DraftSheet({
   const unpaid = !draft.payeeKind || !draft.payeeName;
   const empty =
     !draft.kind && draft.amountRequested === null && !draft.payeeName;
+  // The title is one whole line in each language: what is asked, how much, and to whom, as far as the note said.
+  const what = draft.kind ? words.kinds[draft.kind] : sheet.aRequest;
+  const amount = draft.amountRequested === null ? null : shortMoney(draft.amountRequested);
+  // A payee's name is never broken across lines: the headline breaks before it, not inside it.
+  const payee = draft.payeeName?.replaceAll(" ", "\u00a0");
   const title = empty
     ? sheet.nothingYet
-    : [
-        draft.kind ? words().kinds[draft.kind] : sheet.aRequest,
-        draft.amountRequested !== null && shortMoney(draft.amountRequested),
-      ]
-        .filter((part) => part !== false)
-        .join(", ");
+    : amount !== null && payee
+      ? fill(room.amountPayee, { what, amount, payee })
+      : amount !== null
+        ? fill(room.amount, { what, amount })
+        : payee
+          ? fill(room.payee, { what, payee })
+          : what;
   return (
     <section
       className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
@@ -98,7 +109,9 @@ export function DraftSheet({
           ? text.approved
           : complete
             ? text.waiting(waiting)
-            : `${sheet.blanks}${waiting > 1 ? `. ${text.waiting(waiting)}` : ""}`}
+            : waiting > 1
+              ? room.blanksWaiting(waiting)
+              : sheet.blanks}
       </p>
       <div className="help-sheet-body">
         <div>
@@ -106,7 +119,7 @@ export function DraftSheet({
               The name is read from the call row for display only; it is not part of the draft or of what the assistant saw. */}
           <p className="help-from">
             {call.neighborName || call.callerName ? (
-              <strong>{caller(call)}</strong>
+              <strong>{caller(call, words)}</strong>
             ) : (
               sheet.noName
             )}{" "}
@@ -114,8 +127,6 @@ export function DraftSheet({
           </p>
           <h2 id={arriving ? undefined : "draft-title"}>
             {title}
-            {/* Who is paid is a name, and a name is never broken across lines: its spaces do not break. */}
-            {draft.payeeName && sheet.to(draft.payeeName.replaceAll(" ", "\u00a0"))}
           </h2>
           {!complete && (
             <p className="help-assistant help-blank">
