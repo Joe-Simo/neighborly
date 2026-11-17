@@ -34,7 +34,7 @@ export function MineSection() {
       <IncomingRequests {...requests} place={words.mine.accepted} />
       <MyVisits />
       <section className="live-section">
-        <h2>{words.mine.accepted}</h2>
+        <h2 className={mine.length ? undefined : "sr-only"}>{words.mine.accepted}</h2>
         <CommitmentRows items={mine} fresh={fresh} empty={{ title: words.mine.emptyTitle, detail: words.mine.emptyDetail }} />
         {accepted && <p className="tools-quiet">
           <Button variant="link" onClick={() => setCalendar(true)}>{words.mine.addToCalendar}</Button>

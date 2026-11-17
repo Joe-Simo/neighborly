@@ -206,7 +206,7 @@ export function PeopleSection() {
       )}
       {isOwner && (
         <section className="live-section">
-          <h2>{text.invitations.title}</h2>
+          <h2 className={data.invitations.length ? undefined : "sr-only"}>{text.invitations.title}</h2>
           {/* With none open, the empty state below says what an invitation is: the deck would say it twice. */}
           {data.invitations.length > 0 && <p className="live-deck people-deck">
             {text.invitations.deck}
