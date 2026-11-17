@@ -177,9 +177,10 @@ export function FrescoThreshold() {
 
   return <div ref={journey} className="fresco-journey">
     <section ref={stage} className="fresco-stage" id="your-community" tabIndex={-1} aria-label="The doors and the courtyard" data-open={open} data-settled={settled} data-destination="1">
-      <header className="fresco-header">
-        <a href="#story-start" className="fresco-brand" aria-label="Kind Helps home">kind helps</a>
-        <Link href="/app">Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
+      {/* The same name and way in as the opening's bar, drawn again over the courtyard for the eye; a keyboard or a screen reader meets them once, above. */}
+      <header className="fresco-header" aria-hidden="true">
+        <a href="#story-start" className="fresco-brand" tabIndex={-1}>kind helps</a>
+        <Link href="/app" tabIndex={-1}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </header>
       <div className="fresco-invitation" aria-hidden={open}>
         <h2>There is room<br /><em>for you.</em></h2>
