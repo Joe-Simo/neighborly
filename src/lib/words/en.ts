@@ -548,6 +548,7 @@ export function en(set: WordSet) {
         yourName: "Your name", conferenceName: "Conference name", timeZone: "Time zone for all times",
         what: "A conference is the parish team that answers the help line and visits in pairs.",
         note: "Only invited members can open yours.",
+        fromLink: "Your invitation came with the link you opened. Joining does not accept a commitment.",
         code: "Invitation code", codeHelp: "Use the code supplied by your coordinator. Joining does not accept a commitment.",
         creating: "Creating your conference…", joining: "Joining your conference…", create: "Create conference", join: "Join conference",
         // The button named in each line is `create` or `join` word for word.
