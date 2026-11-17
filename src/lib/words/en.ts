@@ -59,6 +59,8 @@ export function en(set: WordSet) {
     },
     shell: {
       menu: "Menu",
+      /** Home visits in the app's foot bar, where every name keeps one line. */
+      tabVisits: "Home visits",
       menuTitle: `Your ${place}`,
       menuLabel: `${Place} menu`,
       menuCurrent: (section: string) => `${Place} menu, current section: ${section}`,
@@ -377,6 +379,7 @@ export function en(set: WordSet) {
       outlook: "Add to Outlook",
       addressLabel: "Your private calendar address",
       copy: "Copy address",
+      share: "Share address",
       copied: "Copied",
       copiedStatus: "Address copied.",
       privacy: "This address is yours alone; anyone who has it can see when and where you serve. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands, make a new one and the old one stops working.",

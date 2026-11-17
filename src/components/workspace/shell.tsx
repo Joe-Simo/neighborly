@@ -224,6 +224,12 @@ export function LiveWorkspace({
   // On a phone the menu button says "Menu" and tells a screen reader which room this is.
   const menuLabel = menu[area] ?? navigation.find((item) => item.id === area)?.label;
   const navRef = useNavMarker(area);
+  // In the iPhone app a phone keeps three rooms and the menu in a bar at its foot (shell-ios.css draws it; the
+  // website never has it). Leaders get the rooms they work in; a member, who has no Help line, their own.
+  const inApp = useSyncExternalStore(noChange, () => document.documentElement.dataset.shell === "ios", () => false);
+  const tabRooms = leads ? ["week", "help-line", "visits"] : ["week", "mine", "time-off"];
+  const tabs = menuItems.filter((item) => tabRooms.includes(item.id));
+  const tabMenu = useRef<HTMLButtonElement>(null);
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
   useSystemTextSize("data-text-large");
@@ -418,7 +424,13 @@ export function LiveWorkspace({
           </div>
           <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <DialogTrigger asChild><Button variant="ghost" className="live-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu aria-hidden="true" />{words.shell.menu}</Button></DialogTrigger>
-            <DialogContent className="live-mobile-menu" aria-modal="true" showCloseButton={false} onOpenAutoFocus={(event) => {
+            <DialogContent className="live-mobile-menu" aria-modal="true" showCloseButton={false} onCloseAutoFocus={(event) => {
+              // Where the foot bar stands the header has no Menu button: focus goes back to the bar's, once it is drawn again.
+              const tab = tabMenu.current;
+              if (!tab || !window.matchMedia("(max-width: 699px)").matches) return;
+              event.preventDefault();
+              requestAnimationFrame(() => tab.focus());
+            }} onOpenAutoFocus={(event) => {
               // Opening the menu lands on the sheet itself, not on its first control.
               event.preventDefault();
               if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
@@ -581,6 +593,20 @@ export function LiveWorkspace({
         </RoomStill>
         </WorkspaceProvider>
       </div>
+      {inApp && (
+        <nav className="live-tab-bar" aria-label={words.shell.workspace}>
+          {tabs.map(({ id, label, icon: Icon }) => (
+            <Link key={id} className="live-tab" href={`/app/${id}`} aria-current={area === id ? "page" : undefined}>
+              <Icon aria-hidden="true" />
+              <span>{id === "visits" ? words.shell.tabVisits : (menu[id] ?? label)}</span>
+            </Link>
+          ))}
+          <Button ref={tabMenu} variant="ghost" className="live-tab" aria-haspopup="dialog" aria-expanded={mobileMenuOpen} aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel} onClick={() => setMobileMenuOpen(true)}>
+            <Menu aria-hidden="true" />
+            <span>{words.shell.menu}</span>
+          </Button>
+        </nav>
+      )}
       <WorkspaceProvider value={workspace}>
           <LiveDialog
             open={dialog !== null}

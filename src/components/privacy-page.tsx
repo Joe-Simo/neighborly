@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ReaderLanguage } from "@/components/reader-language";
@@ -8,6 +8,9 @@ import { linkPreviewIn } from "@/lib/link-preview";
 import { privacyWords } from "@/lib/privacy-words";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
+
+/** The browser's own bar takes the colour of the desk the page opens on, so no lighter band stands over it. */
+export const privacyViewport: Viewport = { colorScheme: "light", themeColor: "#e6decb", viewportFit: "cover" };
 
 /** Each language's page has its own address and names the other, so it can be linked and found in the language it is read in. */
 export function privacyMetadata(language: Language): Metadata {

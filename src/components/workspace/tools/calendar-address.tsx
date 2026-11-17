@@ -4,7 +4,7 @@ import "./tools.css";
 import { useState, useSyncExternalStore } from "react";
 import { useAction } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
-import { CalendarPlus, Check, Copy } from "lucide-react";
+import { CalendarPlus, Check, Copy, Share } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,7 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
   const [replacing, setReplacing] = useState(false);
   const text = useWorkspace().words.calendar;
   const device = useSyncExternalStore(noChange, () => likelyCalendar(navigator.userAgent), () => "google" as const);
+  const sharing = useSyncExternalStore(noChange, () => document.documentElement.dataset.shell === "ios" && typeof navigator.share === "function", () => false);
   return (
     <section>
       {titled && (
@@ -59,12 +60,19 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
           </div>
           <div className="tools-address paper-settle" key={address}>
             <Input readOnly aria-label={text.addressLabel} value={address} onFocus={(event) => event.currentTarget.select()} />
-            <Button
-              variant="outline"
-              onClick={() => void navigator.clipboard.writeText(address).then(() => setCopied(true))}
-            >
-              {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />} {copied ? text.copied : text.copy}
-            </Button>
+            {sharing ? (
+              // In the iOS app the address goes out through the system's share sheet: Messages, Mail, AirDrop, Copy.
+              <Button variant="outline" onClick={() => void navigator.share({ title: text.addressLabel, url: address }).catch(() => {})}>
+                <Share size={16} aria-hidden="true" /> {text.share}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => void navigator.clipboard.writeText(address).then(() => setCopied(true))}
+              >
+                {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />} {copied ? text.copied : text.copy}
+              </Button>
+            )}
           </div>
           <span className="sr-only" role="status">{copied ? text.copiedStatus : ""}</span>
           <p className="tools-small">
