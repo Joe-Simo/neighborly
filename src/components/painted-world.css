@@ -147,6 +147,13 @@
 @media(max-width:700px){.painted-world-opening-actions{gap:20px;margin-top:16px}.painted-world-opening-actions a{font-size:12px}}
 
 /* One pinned frame carries the portrait into the paper doorway. */
+/* The scroll's values belong to the element they are written on and are not handed down: a value handed down from the page's root has every element beneath it styled again each time it changes. */
+@property --entry-portrait{syntax:"<number>";inherits:false;initial-value:1}
+@property --entry-door{syntax:"<number>";inherits:false;initial-value:0}
+@property --entry-caption{syntax:"<number>";inherits:false;initial-value:1}
+@property --entry-line{syntax:"<number>";inherits:false;initial-value:0}
+@property --entry-words{syntax:"<number>";inherits:false;initial-value:1}
+@property --sheet{syntax:"<length>";inherits:false;initial-value:0px}
 .neighborly-connected-world.is-connected{--entry-portrait:1;--entry-door:0;background:#eee7d7}
 .neighborly-connected-world.is-connected .painted-world[data-hero-only=true]>.painted-world-track{height:200svh;pointer-events:none}
 .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{position:sticky;top:0;z-index:2;opacity:var(--entry-portrait);pointer-events:auto}
@@ -173,7 +180,7 @@
 /* One line leaves before the next arrives: the headline, then this line alone, then the doors' own words. All three stand in the same place, on the paper at the left. Each has its own share of the scroll (neighborly-experience.tsx). */
 .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-caption{opacity:var(--entry-caption,1)}
 .neighborly-connected-world.is-connected .fresco-invitation{opacity:calc((1 - var(--door) * 1.8) * var(--entry-words,1))}
-.neighborly-connected-world.is-connected::after{content:"Small acts.\A Shared purpose.";white-space:pre-line;position:fixed;z-index:5;left:7%;top:50%;width:min(40%,620px);font:italic 400 clamp(44px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.05em;color:#293f32;pointer-events:none;opacity:var(--entry-line,0);transform:translateY(calc(-50% - var(--entry-door) * 24px))}
+.neighborly-connected-world.is-connected::after{--entry-line:inherit;content:"Small acts.\A Shared purpose.";white-space:pre-line;position:fixed;z-index:5;left:7%;top:50%;width:min(40%,620px);font:italic 400 clamp(44px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.05em;color:#293f32;pointer-events:none;opacity:var(--entry-line,0);transform:translateY(calc(-50% - var(--entry-door) * 24px))}
 /* On a phone it stands where the doors' own words will: on the paper above the doors. */
 @media(max-width:899px) and (min-height:501px){.neighborly-connected-world.is-connected::after{left:max(20px,4%);top:calc(72px + env(safe-area-inset-top));width:auto;font-size:clamp(40px,12vw,64px);transform:none}}
 /* The promise waits until the opening headline has all but left the paper, so the two lines never cross. */
@@ -303,9 +310,10 @@
 /* The opening leaves as one sheet of paper, lifted off from the foot with its own wavy cut: whole above the edge and gone below it, never half there.
    The doors stand whole beneath it, the headline leaves on the sheet, and the sheet's shadow lies on the doors under its edge. With less motion the value steps, so it is one cut. */
 @media not ((max-height:500px) and (min-aspect-ratio:10/11)){
-  .neighborly-connected-world.is-connected{--edge:clamp(52px,7.5vw,120px);--sheet:calc((100svh + var(--edge)) * var(--entry-portrait))}
+  .neighborly-connected-world.is-connected{--edge:clamp(52px,7.5vw,120px)}
+  .neighborly-connected-world.is-connected,.neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{--sheet:calc((100svh + var(--edge)) * var(--entry-portrait))}
   .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{opacity:1;-webkit-mask:linear-gradient(#000,#000) 0 0/100% max(0px,calc(var(--sheet) - var(--edge) + 1px)) no-repeat,var(--cut-open-bottom) 0 calc(var(--sheet) - var(--edge))/100% var(--edge) no-repeat;mask:linear-gradient(#000,#000) 0 0/100% max(0px,calc(var(--sheet) - var(--edge) + 1px)) no-repeat,var(--cut-open-bottom) 0 calc(var(--sheet) - var(--edge))/100% var(--edge) no-repeat}
-  .neighborly-connected-world.is-connected::before{content:"";position:fixed;z-index:1;left:0;right:0;top:calc(var(--sheet) - var(--edge));height:var(--edge);pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-40%25' width='140%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 36C200 24 380 44 560 32S860 26 1000 40L1000 -10L0 -10Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+  .neighborly-connected-world.is-connected::before{--sheet:inherit;content:"";position:fixed;z-index:1;left:0;right:0;top:calc(var(--sheet) - var(--edge));height:var(--edge);pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-40%25' width='140%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 36C200 24 380 44 560 32S860 26 1000 40L1000 -10L0 -10Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
   .neighborly-connected-world.is-connected .fresco-stage{opacity:1}
   .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-caption{opacity:1}
   /* The words and the header are printed on the sheet: they stay on it until the edge has passed them, though they can no longer be reached. */

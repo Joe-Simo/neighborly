@@ -68,14 +68,26 @@ export function NeighborlyExperience() {
     element.classList.add("is-connected");
     let frame = 0;
     let entryRequested = false;
+    // Each value is written only on the few elements that draw with it, and only when it has changed: written on the whole page's root,
+    // one changed value had every element of the page styled again on every frame of the scroll.
+    const drawnBy: Record<string, string | null> = { "--entry-portrait": ".painted-world-viewport", "--entry-door": ".fresco-stage", "--entry-caption": ".painted-world-caption", "--entry-line": null, "--entry-words": ".fresco-invitation" };
+    const written = new Map<string, string>();
+    const write = (name: string, value: string) => {
+      const selector = drawnBy[name];
+      // A part drawn again by the page since the last write has lost its value, so the part itself is asked, not only the record.
+      if (written.get(name) === value && (!selector || element.querySelector<HTMLElement>(selector)?.style.getPropertyValue(name) === value)) return;
+      written.set(name, value);
+      element.style.setProperty(name, value);
+      if (selector) for (const part of element.querySelectorAll<HTMLElement>(selector)) part.style.setProperty(name, value);
+    };
     const update = () => {
       frame = 0;
       const reduce = media.matches;
       // A phone on its side reads as a plain page: nothing is pinned, nothing gives way, and everything stays reachable.
       if (sideways.matches) {
-        element.style.setProperty("--entry-portrait", "1");
-        element.style.setProperty("--entry-door", "1");
-        for (const [name, value] of [["--entry-caption", "1"], ["--entry-line", "0"], ["--entry-words", "1"]]) element.style.setProperty(name, value);
+        write("--entry-portrait", "1");
+        write("--entry-door", "1");
+        for (const [name, value] of [["--entry-caption", "1"], ["--entry-line", "0"], ["--entry-words", "1"]]) write(name, value);
         for (const part of element.querySelectorAll<HTMLElement>(".painted-world-track,.fresco-stage")) { part.inert = false; part.setAttribute("aria-hidden", "false"); }
         return;
       }
@@ -85,16 +97,16 @@ export function NeighborlyExperience() {
       const progress = reduce ? scrolled : paceOpening(scrolled);
       // The foot's "Scroll" has been answered once the page has moved: it leaves in one cut, before the edge reaches it.
       element.toggleAttribute("data-lifting", scrolled > .004);
-      element.style.setProperty("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4))));
-      element.style.setProperty("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (scrolled - .3) / .5))));
+      write("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4))));
+      write("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (scrolled - .3) / .5))));
       // Three lines pass through the same place and never share it: the headline holds at full ink until the picture begins to leave at .4 and is gone by .5, the line between stands alone from .54 and has left by .73, before the doors are fully in at .8, and the doors' words begin at .84.
       const share = (from: number, to: number) => Math.max(0, Math.min(1, (progress - from) / (to - from)));
-      element.style.setProperty("--entry-caption", String(reduce ? Number(progress < .5) : 1 - share(.4, .5)));
+      write("--entry-caption", String(reduce ? Number(progress < .5) : 1 - share(.4, .5)));
       // The opening leaves as a sheet lifted from the foot, so the line between waits until the sheet's edge has cleared its box:
       // mid-screen on a wide window, and at the top on a phone, where that is only once the sheet has gone. The doors' words follow it.
       const high = matchMedia("(max-width:899px) and (min-height:501px)").matches;
-      element.style.setProperty("--entry-line", String(reduce ? 0 : high ? Math.min(share(.8, .84), 1 - share(.87, .91)) : Math.min(share(.64, .68), 1 - share(.72, .77))));
-      element.style.setProperty("--entry-words", String(reduce ? Number(progress >= .5) : high ? share(.92, .99) : share(.84, .95)));
+      write("--entry-line", String(reduce ? 0 : high ? Math.min(share(.8, .84), 1 - share(.87, .91)) : Math.min(share(.64, .68), 1 - share(.72, .77))));
+      write("--entry-words", String(reduce ? Number(progress >= .5) : high ? share(.92, .99) : share(.84, .95)));
       const portrait = element.querySelector<HTMLElement>(".painted-world-track");
       const courtyard = element.querySelector<HTMLElement>(".fresco-stage");
       const entered = progress >= (reduce ? .5 : .6);

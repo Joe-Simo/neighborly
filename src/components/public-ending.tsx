@@ -48,7 +48,7 @@ export function Colophon({ home = "/" }: { home?: string }) {
     <span>Made for the good we can do.</span>
     <nav aria-label="About Kind Helps">
       <Link className="neighborly-give" href="/privacy">Privacy</Link>
-      <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">Give a gift</a>
+      <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">Give a gift<span className="sr-only"> (opens in a new tab)</span></a>
     </nav>
     {/* Last, as it is set: the name is the page's final line for the eye, the keyboard and a screen reader alike. */}
     <a href={home}>kind helps</a>

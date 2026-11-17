@@ -217,7 +217,7 @@ export function LiveWorkspace({
   const navRef = useNavMarker(area);
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
-  useSystemTextSize();
+  useSystemTextSize("data-text-large");
   useKeysInUse();
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
   const leave = () => setMobileMenuOpen(false);

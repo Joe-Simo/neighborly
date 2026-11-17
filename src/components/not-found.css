@@ -26,3 +26,10 @@
   .lost-door-words h1{margin-bottom:18px;font-size:clamp(34px,9.5vw,52px)}
   .lost-door-frame{order:-1}
 }
+/* The door is tried once on arrival, by whoever came and on any device: the leaves give a hand's breadth, the light shows between them, and they shut. */
+@keyframes lost-door-tried-left{45%{translate:-6px 0}}
+@keyframes lost-door-tried-right{45%{translate:6px 0}}
+@media(prefers-reduced-motion:no-preference){
+  .lost-door-leaves i:first-child{animation:lost-door-tried-left .5s .35s cubic-bezier(.3,0,.3,1)}
+  .lost-door-leaves i:last-child{animation:lost-door-tried-right .5s .35s cubic-bezier(.3,0,.3,1)}
+}

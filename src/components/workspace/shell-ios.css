@@ -116,3 +116,48 @@
   :root[data-shell="ios"] .live-aside { transition: none; }
   :root[data-shell="ios"] .live-aside-scrim { animation: none; }
 }
+
+/* Larger Text past 110% in the iOS app (data-text-large, from useSystemTextSize). The words grow up to twice their
+   size; the headline, the bar and big figures grow less, so a room still opens on its name and one figure fits a line.
+   Whatever sat side by side takes a line each, and nothing runs past the screen's edge. */
+:root[data-shell="ios"][data-text-large] :is(.live-page-head h1, .live-mobile-menu [data-slot="dialog-title"]) { -webkit-text-size-adjust: 115% !important; }
+/* The bar's words (the wordmark, the room's name, Menu) and a search box's words grow to 130%, no further, so they keep one line. */
+:root[data-shell="ios"][data-text-large] :is(.live-header, .live-app input[type="search"], .live-app [role="searchbox"]) { -webkit-text-size-adjust: 130% !important; }
+/* Figures are already set to the width they have; they do not grow at all. */
+:root[data-shell="ios"][data-text-large] :is(.report-year-pile, .count-up-room) { -webkit-text-size-adjust: 100% !important; }
+:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] { height: auto; min-height: 44px; max-width: 100%; white-space: normal; text-align: start; padding-block: 10px; align-items: flex-start; }
+/* A label that wraps keeps its sign level with its first line. */
+:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] > svg { margin-top: calc((1lh - 1em) / 2); }
+:root[data-shell="ios"][data-text-large] :is(.visits-name, .volunteer-due, .volunteer-who) { white-space: normal; }
+/* Running words and addresses may break inside a word that cannot fit; a person's name only between its words. */
+:root[data-shell="ios"][data-text-large] .live-app :is(p, li, dd, dt, td) { overflow-wrap: break-word; }
+:root[data-shell="ios"][data-text-large] .live-app :is(h3, .visits-name, .help-row-open, .help-person) { overflow-wrap: normal; }
+:root[data-shell="ios"][data-text-large] .people-row, :root[data-shell="ios"][data-text-large] .live-person { flex-wrap: wrap; }
+:root[data-shell="ios"][data-text-large] .people-role { white-space: normal; }
+/* The initials grow with the name beside them. */
+:root[data-shell="ios"][data-text-large] .live-app .help-initials { width: 2.3em; height: 2.3em; flex: none; }
+:root[data-shell="ios"][data-text-large] .live-app :is(.help-avatar, .live-avatar) { width: 2.6em; height: 2.6em; flex: none; }
+:root[data-shell="ios"][data-text-large] .live-app .help-neighbor { grid-template-columns: auto minmax(0, 1fr); }
+:root[data-shell="ios"][data-text-large] .live-app .help-neighbor > :nth-child(n + 3) { grid-column: 2; }
+:root[data-shell="ios"][data-text-large] .live-app .help-neighbor :is(.help-asks, p, span) { white-space: normal; }
+:root[data-shell="ios"][data-text-large] .live-app :has(> .live-avatar) { flex-wrap: wrap; row-gap: 6px; }
+:root[data-shell="ios"][data-text-large] .live-app .help-initials + .help-initials { width: 2.9em; margin-left: -1.1em; padding-left: 0.6em; }
+:root[data-shell="ios"][data-text-large] .help-figures { display: grid; grid-template-columns: minmax(0, 1fr); }
+:root[data-shell="ios"][data-text-large] .help-figures > * { border-left: 0; padding-left: 0; }
+
+/* A mark set beside a line of words grows with them. */
+:root[data-shell="ios"][data-text-large] .live-app .live-count > svg { width: 1.1em; height: 1.1em; flex: none; }
+
+/* ── An iPad held upright in the app (700–1023 wide, tall): a page of its own, not a phone stretched. Wider
+   margins, a headline at the desk's size, a taller picture, and every room's column set to one comfortable
+   measure in the middle of the paper, the bar's edges lined up with it. ── */
+@media (min-width: 700px) and (max-width: 1023px) and (min-height: 900px) {
+  :root[data-shell="ios"] .live-app { --ipad-measure: 680px; }
+  :root[data-shell="ios"] .live-app .live-main { --live-pad: max(56px, calc((100vw - var(--ipad-measure)) / 2)); --live-top: 48px; padding-left: var(--live-pad); }
+  :root[data-shell="ios"] .live-app .live-header { padding-inline: max(56px, calc((100vw - var(--ipad-measure)) / 2)); }
+  :root[data-shell="ios"] .live-app .live-page-head h1 { font-size: 64px; }
+  :root[data-shell="ios"] .live-app .live-page-head .live-deck { font-size: 19px; }
+  :root[data-shell="ios"] .live-app .live-page-head { margin-bottom: 40px; padding-bottom: 36px; }
+  /* The picture keeps the right half of the screen, flush to its edge; the words wrap before it. */
+  :root[data-shell="ios"] .live-app :is(.live-head-words, .live-head-actions) { max-width: calc(50vw - var(--live-pad) - 24px); }
+}

@@ -10,11 +10,23 @@
 /* On a state page the painting stays where it is and only the words rise. */
 .public-state .paper-rise{animation:none}
 .public-state .paper-rise>:not(.live-auth-art){animation:paper-rise .5s cubic-bezier(.2,.7,.2,1)}
-.public-words{padding:clamp(40px,7vw,104px) 7% clamp(56px,7vw,110px)}
-.public-words h1{margin:0 0 clamp(36px,5vw,80px);font:400 clamp(64px,9vw,144px)/.92 'Newsreader',Georgia,serif;letter-spacing:-.065em}
-.public-words section{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px clamp(40px,6vw,110px);padding:clamp(28px,3.2vw,48px) 0;border-top:1px solid #293f3224}
+/* The page lies on a desk a shade darker than its paper. Its name and each part are sheets of that paper, laid one on the next: a sheet's lower edge is one cut line and its shadow falls on the sheet below. No rule lines and no fades. */
+.public-page{background:#e6decb}
+.public-words{position:relative;padding:clamp(12px,2vw,32px) max(12px,3%) clamp(64px,7vw,110px);
+  --cut-a:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V5C86 9 70 2 52 6S20 10 0 4Z'/%3E%3C/svg%3E");
+  --cut-b:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V7C90 3 78 4 63 8S38 3 24 5S8 9 0 6Z'/%3E%3C/svg%3E");
+  --cut-c:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V3C82 4 71 9 49 8S16 2 0 7Z'/%3E%3C/svg%3E")}
+.public-words h1,.public-words section{position:relative;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 5px 7px #3b2a1218)}
+.public-words h1::before,.public-words section::before{content:"";position:absolute;inset:0;z-index:-1;background:#f7f4ed;-webkit-mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,linear-gradient(#000,#000) top/100% calc(100% - 29px) no-repeat;mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,linear-gradient(#000,#000) top/100% calc(100% - 29px) no-repeat}
+.public-words h1{z-index:11;margin:0;padding:clamp(40px,5.6vw,104px) clamp(20px,5.4vw,104px) clamp(250px,62vw,300px);font:400 clamp(64px,9vw,144px)/.92 'Newsreader',Georgia,serif;letter-spacing:-.065em}
+.public-words section{display:grid;grid-template-columns:minmax(0,.62fr) minmax(0,1fr);gap:12px clamp(40px,6vw,110px);margin-top:-30px;padding:clamp(64px,6vw,104px) clamp(20px,5.4vw,104px) clamp(56px,5.4vw,92px)}
+.public-words section:nth-of-type(3n+2){--cut:var(--cut-b)}
+.public-words section:nth-of-type(3n){--cut:var(--cut-c)}
+.public-words section:nth-of-type(3n)::before{background:#f4efe4}
+.public-words section:nth-of-type(even)::before{background:#f1ebde;scale:-1 1}
+.public-words section:nth-of-type(1){z-index:10}.public-words section:nth-of-type(2){z-index:9}.public-words section:nth-of-type(3){z-index:8}.public-words section:nth-of-type(4){z-index:7}.public-words section:nth-of-type(5){z-index:6}.public-words section:nth-of-type(6){z-index:5}.public-words section:nth-of-type(7){z-index:4}.public-words section:nth-of-type(8){z-index:3}.public-words section:nth-of-type(9){z-index:2}.public-words section:nth-of-type(10){z-index:1}
 .public-words h2{margin:0;max-width:14ch;font:400 clamp(28px,2.7vw,44px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em;text-wrap:balance}
-.public-words section>div{max-width:47ch;font-size:17px;line-height:1.6}
+.public-words section>div{max-width:28em;font-size:17px;line-height:1.6}
 .public-words p,.public-words ul{margin:0 0 1em;text-wrap:pretty}
 .public-words section>div>:last-child{margin-bottom:0}
 .public-words ul{padding:0;list-style:none}
@@ -23,26 +35,38 @@
 .public-words strong{font-weight:600}
 .public-words a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#293f3266}
 .public-words a:hover{text-decoration-color:currentColor}
-.public-words-last{font-size:15px;color:#3d4f43}
+.public-words-last{max-width:30em;font-size:15px;color:#3d4f43}
+/* What is kept, tied and closed: the page's one picture, a piece cut along one wavy line with its own shadow, lying on the name's sheet and running off the screen's edge so the hand leaves whole. Never drawn wider than it was painted. */
+.public-words-relief{position:absolute;z-index:12;right:0;top:clamp(150px,41vw,196px);width:min(78vw,320px);aspect-ratio:3/2;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 6px 8px #3b2a121c)}
+.public-words-relief::before{content:"";position:absolute;inset:0;background:url(/assets/home/relief-kept-640.webp) center/cover no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+@media(min-width:1024px){
+  /* Laid by hand: each sheet sits a little in or out of the last, never turned, so the lines stay level. */
+  .public-words section:nth-of-type(odd){margin-left:2.2%;margin-right:-.6%}
+  .public-words section:nth-of-type(3n){margin-left:.8%;margin-right:1.6%}
+  .public-words h1{padding-bottom:clamp(60px,7vw,130px)}
+  .public-words h1,.public-words section{filter:drop-shadow(0 1px .5px #3b2a1238) drop-shadow(0 9px 12px #3b2a1220)}
+  .public-words-relief{top:clamp(48px,5.6vw,104px);width:clamp(340px,27vw,420px)}
+}
 @media(min-width:1280px){.public-words section>div{font-size:19px}.public-words-last{font-size:16px}}
-/* Beside the page's name on a wide screen: what is kept, tied and closed. Cut from the page's paper like the story's pictures, and running off the screen's edge. Phones do not fetch it. */
-.public-words-relief{display:none}
-@media(min-width:1280px){
-  .public-words{position:relative}
-  .public-words-relief{display:block;position:absolute;right:0;top:clamp(8px,2vw,40px);width:340px;aspect-ratio:3/2;background:url(/assets/home/relief-kept-640.webp) center/cover no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
-  /* The relief is cut from its sheet along one wavy line, never faded into the page. */
-}
 @media(max-width:900px){
-  .public-page-header{height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
+  .public-page-header{height:calc(64px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .public-page-brand{font-size:30px}
-  .public-words{padding-inline:20px}
 }
-/* Under 1024px the page is one column: each heading over its own words, about 62 letters to a line, centred on the paper. */
+/* Under 1024px the page is one column: each heading over its own words, about 65 letters to a line, centred on its sheet. */
 @media(max-width:1023px){
-  .public-words h1,.public-words section{max-width:496px;margin-inline:auto}
-  .public-words section{grid-template-columns:minmax(0,1fr)}
-  .public-words h2{max-width:none}
+  .public-words section{grid-template-columns:minmax(0,1fr);justify-items:center}
+  .public-words section>*{width:100%;max-width:476px}
+  .public-words h1{font-size:clamp(64px,19vw,96px)}
+}
+/* Between a phone and a desk the picture has room beside the name, and still crosses the sheet's cut edge. */
+@media(min-width:600px) and (max-width:1023px){.public-words h1{padding-inline:max(20px,calc((100% - 476px) / 2));padding-bottom:176px}.public-words-relief{top:104px}}
+/* On a printed page the sheets are flat: no desk, no shadows, and a part is not split where it can be kept whole. */
+@media print{
+  .public-page{background:none}
+  .public-words h1,.public-words section,.public-words-relief{filter:none}
+  .public-words h1::before,.public-words section::before{display:none}
+  .public-words section{margin:0;break-inside:avoid;border-top:1px solid #293f3224}
 }
 @media(prefers-reduced-motion:reduce){.paper-rise,.public-state .paper-rise>*{animation:none}}
-/* After a state page, whose paper is lighter, the ending begins in that paper. */
-.public-state+.neighborly-continuation{background:linear-gradient(#f7f4ed,#eee7d7 240px)}
+/* The closing band meets the page of words with its cut edge only: above that edge lies the desk, not a strip of another paper. */
+.public-page>.neighborly-continuation{background:#e6decb}

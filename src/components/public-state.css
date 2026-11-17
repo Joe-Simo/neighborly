@@ -56,3 +56,30 @@
   .public-state .public-state-mark { margin-bottom: 26px; font-size: 36px; }
   .public-state .public-state-mark:has(a) { margin-bottom: 12px; }
 }
+/* Below 1280 the painting is a band over the words or a narrower side beside them. Neither ends in a ruled line:
+   the page's paper lies over the painting at a hand-cut edge with its shadow, as on the wide screen.
+   Over the words, the band is 22px taller and the paper covers only that added strip, so the cut never reaches a hand. */
+.public-state{--public-state-cut-under:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 100' preserveAspectRatio='none'%3E%3Cfilter id='s' x='-5%25' y='-80%25' width='110%25' height='200%25'%3E%3CfeDropShadow dx='0' dy='-4' stdDeviation='4 7' flood-color='%232e2416' flood-opacity='.3'/%3E%3C/filter%3E%3Cpath d='M-20 130V62C80 78 170 46 300 58S520 84 660 60S860 40 1020 66V130Z' fill='%23f7f4ed' filter='url%28%23s%29'/%3E%3C/svg%3E")}
+@media (max-width: 850px), (min-width: 700px) and (max-width: 1279px) and (orientation: portrait) {
+  .public-state .live-auth-art { box-sizing: content-box; padding-bottom: 22px; border-bottom: 0; }
+  .public-state .live-auth-art:after { inset: auto 0 -1px 0; height: 44px; background: var(--public-state-cut-under) 0 0 / 100% 100% no-repeat; }
+}
+@media (min-width: 851px) and (max-width: 1279px) and (orientation: landscape) {
+  /* Beside the words: the same painting and the same cut as on the wide screen, so the open hand reaches out from under the paper whole. */
+  .public-state .live-auth-art { border-right: 0; background: url("/assets/living-relief-mobile.webp") 50% 0 / cover no-repeat; }
+  .public-state .live-auth-art:after { inset: 0 -1px 0 auto; width: 9%; background: var(--public-state-cut) 0 0 / 100% 100% no-repeat; }
+}
+/* A tall window between 1101 and 1279 wide had no layout of its own and showed a corner of the painting. It takes the band, as a tablet held upright does. */
+@media (min-width: 1101px) and (max-width: 1279px) and (orientation: portrait) {
+  .public-state .live-auth { width: min(100% - 44px, 520px); margin: 0 auto; padding-top: 0; padding-bottom: calc(50px + env(safe-area-inset-bottom)); min-height: 100svh; }
+  .public-state .live-auth-art { position: relative; inset: auto; left: 50%; width: 100vw; height: calc(min(44svh, 62vw) + env(safe-area-inset-top)); margin: 0 0 44px -50vw; background-size: cover; background-position: 50% 0; }
+}
+/* A short phone's sign-in needs a low band; these pages hold a few lines and one button, so they keep the whole painting:
+   both faces and both hands, with the cut below them. */
+@media (max-width: 699px) and (orientation: portrait) and (max-height: 700px) {
+  .public-state .live-auth-art { height: 61vw; background-position: 50% 0; }
+}
+/* A phone on its side: the band runs the whole width and shows the hands and the card, whole, with no face at its top edge. */
+@media (max-width: 850px) and (orientation: landscape) {
+  .public-state .live-auth-art { left: 50%; width: 100vw; margin-left: -50vw; margin-right: 0; background-size: cover; background-position: 50% 80%; }
+}
