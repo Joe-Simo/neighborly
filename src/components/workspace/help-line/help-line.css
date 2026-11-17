@@ -273,3 +273,9 @@
   content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
   box-shadow: inset 0 0 0 2px #a8791f; margin-right: 6px; vertical-align: 0;
 }
+/* A sheet reads down whenever it is itself narrow, whatever the window: its words never share a row with its
+   acts below 880px of sheet, so they are never squeezed to a word a line (a tablet beside the side column). */
+.live-app .help-sheet { container: help-sheet / inline-size; }
+@container help-sheet (max-width: 880px) {
+  .help-sheet-body { grid-template-columns: minmax(0, 1fr); align-items: start; row-gap: 22px; }
+}
