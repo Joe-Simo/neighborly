@@ -90,7 +90,7 @@ export function es(set: WordSet): Words {
       treasury: { title: "Cada donativo, bien cuidado.", deck: "Lo que entró, lo que salió y lo que se pagó con ello." },
       reports: { title: "El año, sumado.", deck: "Las cuentas para el informe anual de tu consejo, listas para imprimir." },
       visits: { title: "De dos en dos.", deck: "Las visitas domiciliarias, la pareja que va y lo que encontró." },
-      tools: { title: "Trae tus registros. Llévatelos cuando quieras.", deck: "Desde ServWare o una hoja de cálculo, y de vuelta cuando tú quieras." },
+      tools: { title: "Trae tus registros. Llévatelos.", deck: "Desde ServWare o una hoja de cálculo, y de vuelta cuando tú quieras." },
       team: {
         title: "Un lugar en el equipo.",
         deck: "Aquí cada persona tiene su lugar, aunque sus planes cambien.",

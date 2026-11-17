@@ -92,7 +92,7 @@ export function en(set: WordSet) {
       treasury: { title: "Every gift, cared for.", deck: "What came in, what went out, and what it paid for." },
       reports: { title: "The year, added up.", deck: "Counts for your council's yearly report, ready to print." },
       visits: { title: "Two by two.", deck: "Home visits, the pair who are going, and what they found." },
-      tools: { title: "Bring records in. Take them with you.", deck: "From ServWare or a spreadsheet, and back out again whenever you like." },
+      tools: { title: "Your records, in and out.", deck: "From ServWare or a spreadsheet, and back out again whenever you like." },
       team: {
         title: "A place on the team.",
         deck: "People belong here, even when their plans change.",

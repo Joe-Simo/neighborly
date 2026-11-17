@@ -144,7 +144,7 @@ export const headings: Record<LiveArea, LiveHeading> = {
     room: "help",
   },
   tools: {
-    title: "Bring records in. Take them with you.",
+    title: "Your records, in and out.",
     deck: "From ServWare or a spreadsheet, and back out again whenever you like.",
     art: { picture: "files" },
     room: "help",
