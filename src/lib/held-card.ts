@@ -20,6 +20,13 @@ export function dropTheHeldCard() {
 export function takeTheHeldCard() {
   const held = document.getElementById(HELD_CARD);
   if (!held || held.dataset.dropping !== undefined) return false;
-  held.remove();
+  // It stays over the door's card, identical to it, until the door has drawn its own "Opening…" (or a few frames have
+  // passed), so no frame is ever without the paper's line.
+  let frames = 0;
+  const leave = () => {
+    if (document.querySelector(".door-sweep .door-opening") || ++frames > 6) return held.remove();
+    requestAnimationFrame(leave);
+  };
+  requestAnimationFrame(leave);
   return true;
 }
