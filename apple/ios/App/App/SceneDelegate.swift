@@ -43,6 +43,7 @@ final class ShellViewController: CAPBridgeViewController {
     private let sheetPaper = UIColor(red: 0.9843, green: 0.9804, blue: 0.9647, alpha: 1)
     /// True while the page shown is the way in (`.entry`).
     private var onSignIn = false
+    private let refresh = UIRefreshControl()
     private var slowPage: WKWebView?
     private var slowPageEvents: SlowPageEvents?
     private var loading: NSKeyValueObservation?
@@ -98,6 +99,8 @@ final class ShellViewController: CAPBridgeViewController {
             forMainFrameOnly: true
         ))
         scripts.add(SignInShown { [weak self] shown in self?.signIn(shown: shown) }, name: "kindHelpsSignIn")
+        // A save the page makes is felt here: it says "saved" or "decided" (use-save.ts). Nothing else is felt.
+        scripts.add(Felt { [weak self] what in self?.tap(for: what) }, name: "kindHelpsFelt")
         // In the app a long press brings up no web callout, a tap leaves no
         // grey flash, and a button's words are not selected by accident.
         // Giving stays on the web: the App Store does not allow it in an
@@ -134,6 +137,11 @@ final class ShellViewController: CAPBridgeViewController {
         // Paper, not white or black, when a page is pulled past its end.
         webView.underPageBackgroundColor = paper
         webView.scrollView.backgroundColor = paper
+        refresh.tintColor = UIColor(red: 0.157, green: 0.235, blue: 0.196, alpha: 1)
+        refresh.addTarget(self, action: #selector(pulled), for: .valueChanged)
+        // Capacitor turns bouncing off; without it a page cannot be pulled down to refresh.
+        webView.scrollView.bounces = true
+        webView.scrollView.refreshControl = refresh
         if let launch = UIStoryboard(name: "LaunchScreen", bundle: nil).instantiateInitialViewController()?.view {
             place(launch)
             cover = launch
@@ -150,6 +158,26 @@ final class ShellViewController: CAPBridgeViewController {
         keyboard.addObserver(self, selector: #selector(keyboardComing), name: UIResponder.keyboardWillShowNotification, object: nil)
         keyboard.addObserver(self, selector: #selector(keyboardGoing), name: UIResponder.keyboardWillHideNotification, object: nil)
         keyboard.addObserver(self, selector: #selector(keyboardGone), name: UIResponder.keyboardDidHideNotification, object: nil)
+    }
+
+    @objc private func pulled() {
+        // Under the launch cover or the slow page there is nothing to refresh yet.
+        guard let webView, cover == nil, slowPage == nil, !onSignIn else { return refresh.endRefreshing() }
+        webView.callAsyncJavaScript("return typeof window.kindHelpsPulled === 'function' && (await window.kindHelpsPulled()) === true", arguments: [:], in: nil, in: .page) { [weak self] result in
+            guard let self else { return }
+            self.refresh.endRefreshing()
+            if case .success(let current) = result, current as? Bool == true {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                return
+            }
+            webView.reload()
+        }
+    }
+
+    private func tap(for what: String) {
+        guard cover == nil else { return }
+        if what == "decided" { UINotificationFeedbackGenerator().notificationOccurred(.success) }
+        else if what == "saved" { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
     }
 
     override func viewSafeAreaInsetsDidChange() {
@@ -174,6 +202,7 @@ final class ShellViewController: CAPBridgeViewController {
     private func signIn(shown: Bool) {
         guard shown != onSignIn else { return }
         onSignIn = shown
+        webView?.scrollView.refreshControl = shown ? nil : refresh
         if shown {
             statusStrip?.removeFromSuperview()
             statusStrip = nil
@@ -281,13 +310,60 @@ final class ShellViewController: CAPBridgeViewController {
         slowPageEvents = nil
     }
 
+    /// The cover leaves as the site's opening does: a sheet of paper lifted up off the page, whole from the first
+    /// frame, its knife-cut edge (the site's) casting a shadow on the room beneath until it is gone. Nothing fades. With Reduce Motion
+    /// it is one cut.
     private func lift(_ layers: [UIView?]) {
         let layers = layers.compactMap { $0 }
-        UIView.animate(withDuration: 0.3, animations: {
-            layers.forEach { $0.alpha = 0 }
-        }, completion: { _ in
-            layers.forEach { $0.removeFromSuperview() }
-        })
+        guard !UIAccessibility.isReduceMotionEnabled else { return layers.forEach { $0.removeFromSuperview() } }
+        var shades: [UIView] = []
+        for sheet in layers {
+            // The sheet runs on below the screen by the depth of its cut, as the site's does, so the cut is never seen
+            // until the sheet moves: a strip of the same paper hangs under it, and the mask is the site's knife cut.
+            let wide = sheet.bounds.width, tall = sheet.bounds.height
+            let edge = min(120, max(52, wide * 0.075))
+            let strip = UIView(frame: CGRect(x: 0, y: tall, width: wide, height: edge))
+            strip.backgroundColor = sheet.backgroundColor ?? paper
+            sheet.addSubview(strip)
+            sheet.clipsToBounds = false
+            let cut = Self.knifeCut(wide: wide, tall: tall, edge: edge)
+            let mask = CAShapeLayer()
+            mask.path = cut.cgPath
+            sheet.layer.mask = mask
+            // The shadow follows the cut, laid on the room under the sheet's edge.
+            let shade = UIView(frame: sheet.frame)
+            shade.isUserInteractionEnabled = false
+            shade.layer.shadowPath = cut.cgPath
+            shade.layer.shadowColor = UIColor(red: 0.18, green: 0.141, blue: 0.086, alpha: 1).cgColor
+            shade.layer.shadowOpacity = 0.42
+            shade.layer.shadowRadius = 9
+            shade.layer.shadowOffset = CGSize(width: 0, height: 6)
+            sheet.superview?.insertSubview(shade, belowSubview: sheet)
+            shades.append(shade)
+        }
+        let away = UIViewPropertyAnimator(
+            duration: 0.6,
+            timingParameters: UICubicTimingParameters(controlPoint1: CGPoint(x: 0.3, y: 0.6), controlPoint2: CGPoint(x: 0.25, y: 1))
+        )
+        away.addAnimations {
+            for sheet in layers + shades { sheet.transform = CGAffineTransform(translationX: 0, y: -(sheet.bounds.height + 140)) }
+        }
+        away.addCompletion { _ in (layers + shades).forEach { $0.removeFromSuperview() } }
+        away.startAnimation()
+    }
+
+    /// The site's knife cut (cut-edges.css, viewBox 1000×60): the sheet is whole down to a wavy edge in its last
+    /// `edge` points, below `tall`.
+    private static func knifeCut(wide: CGFloat, tall: CGFloat, edge: CGFloat) -> UIBezierPath {
+        let at = { (x: CGFloat, y: CGFloat) in CGPoint(x: x / 1000 * wide, y: tall + y / 60 * edge) }
+        let cut = UIBezierPath()
+        cut.move(to: CGPoint(x: 0, y: 0))
+        cut.addLine(to: at(0, 30))
+        cut.addCurve(to: at(560, 26), controlPoint1: at(200, 18), controlPoint2: at(380, 38))
+        cut.addCurve(to: at(1000, 34), controlPoint1: at(740, 14), controlPoint2: at(860, 20))
+        cut.addLine(to: CGPoint(x: wide, y: 0))
+        cut.close()
+        return cut
     }
 
     private func showSlowPage() {
@@ -366,6 +442,14 @@ private final class SlowPageEvents: NSObject, WKNavigationDelegate {
 }
 
 /// Hears from the page when the way in is shown, and when it is left.
+private final class Felt: NSObject, WKScriptMessageHandler {
+    private let felt: (String) -> Void
+    init(felt: @escaping (String) -> Void) { self.felt = felt }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if let what = message.body as? String { felt(what) }
+    }
+}
+
 private final class SignInShown: NSObject, WKScriptMessageHandler {
     private let changed: (Bool) -> Void
 

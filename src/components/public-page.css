@@ -62,6 +62,16 @@
 }
 /* Between a phone and a desk the picture has room beside the name, and still crosses the sheet's cut edge. */
 @media(min-width:600px) and (max-width:1023px){.public-words h1{padding-inline:max(20px,calc((100% - 476px) / 2));padding-bottom:176px}.public-words-relief{top:104px}}
+/* A line under the title, on the title's sheet (the Spanish page says it is a translation). It takes no room of its own: it lies in the sheet's foot. Under 1024px the foot is made deeper for it and the picture lies below it, clear of a longer title. */
+.public-words .public-words-note{position:relative;z-index:12;height:0;max-width:none;margin:calc(14px - (var(--foot))) 0 calc((var(--foot)) - 14px);padding-inline:clamp(20px,5.4vw,104px);font-size:15px;line-height:1.5;color:#3d4f43;--foot:clamp(60px,7vw,130px)}
+@media(max-width:1023px){
+  .public-words:has(.public-words-note) h1{padding-bottom:calc(clamp(250px,62vw,300px) + 72px)}
+  .public-words:has(.public-words-note) .public-words-relief{top:calc(clamp(150px,41vw,196px) + 72px)}
+  .public-words .public-words-note{--foot:clamp(250px,62vw,300px) + 72px}
+}
+@media(min-width:600px) and (max-width:1023px){.public-words .public-words-note{padding-inline:max(20px,calc((100% - 476px) / 2))}}
+@media(min-width:1280px){.public-words .public-words-note{font-size:16px}}
+@media(min-width:1600px){.public-words .public-words-note{font-size:17px}}
 /* On a printed page the sheets are flat: no desk, no shadows, and a part is not split where it can be kept whole. */
 @media print{
   .public-page{background:none}

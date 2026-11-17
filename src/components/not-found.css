@@ -33,3 +33,5 @@
   .lost-door-leaves i:first-child{animation:lost-door-tried-left .5s .35s cubic-bezier(.3,0,.3,1)}
   .lost-door-leaves i:last-child{animation:lost-door-tried-right .5s .35s cubic-bezier(.3,0,.3,1)}
 }
+/* The page carries both languages and shows the reader's own (first-language.ts sets it on the root before the words are drawn). */
+:root:lang(es) .lost-door [lang="en"],:root:not(:lang(es)) .lost-door [lang="es"]{display:none}
