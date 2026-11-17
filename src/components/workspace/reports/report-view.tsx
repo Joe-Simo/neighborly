@@ -263,7 +263,7 @@ export function ReportView({
   const footLine = `${groupName} · ${periodLabel(report, words)}, ${span}`;
   const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(footLine)}; font: 9pt "Source Sans 3", sans-serif; color: #000; } @bottom-right { content: ${pageCount}; font: 9pt "Source Sans 3", sans-serif; color: #000; } } }`;
   const sections = new Map<string, ReportLine[]>();
-  for (const line of reportLines(report, words))
+  for (const line of reportLines(report, words, sampleSaid))
     sections.set(line.section, [...(sections.get(line.section) ?? []), line]);
 
   return (

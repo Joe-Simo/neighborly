@@ -3,6 +3,7 @@ import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../../convex/_generated/api";
 import { formatDate, words as book, type Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
+import { categoryLabel } from "@/components/workspace/treasury/labels";
 
 export type YearReport = FunctionReturnType<typeof api.reports.year>;
 export type Kind = YearReport["kinds"][number]["kind"];
@@ -69,7 +70,8 @@ export type ReportLine = {
 };
 
 /** Every line of the year's report, in the order it is printed. The spreadsheet download is these rows. */
-export function reportLines(report: YearReport, words: Words = english): ReportLine[] {
+/** `said` gives the sample's own names (its teams, its money's sources) in the reader's language, as the rooms do. */
+export function reportLines(report: YearReport, words: Words = english, said: (name: string) => string = (name) => name): ReportLine[] {
   const w = words.rooms.reports.rows;
   const kinds = kindLabels(words);
   const rows: ReportLine[] = [];
@@ -149,7 +151,7 @@ export function reportLines(report: YearReport, words: Words = english): ReportL
 
   const time = section(w.time.section);
   time.count(w.time.visits, report.visitHours);
-  for (const team of report.time.teams) time.count(w.time.shifts(team.name), team.hours);
+  for (const team of report.time.teams) time.count(w.time.shifts(said(team.name)), team.hours);
   time.count(w.time.all, report.time.hours);
   time.count(w.time.miles, report.visitMiles);
   time.count(w.time.served, report.time.membersServing);
@@ -157,10 +159,10 @@ export function reportLines(report: YearReport, words: Words = english): ReportL
 
   const funds = section(w.funds.section);
   funds.money(w.funds.beginning, report.money.beginningBalance);
-  for (const source of report.money.sources) funds.money(w.funds.received(source.label), source.amount);
+  for (const source of report.money.sources) funds.money(w.funds.received(categoryLabel(words.rooms.treasury, source.label, said)), source.amount);
   funds.money(w.funds.allReceived, report.money.received);
   funds.money(w.funds.helpPaid, report.helpPaid);
-  for (const other of report.money.otherSpending) funds.money(w.funds.spent(other.label), other.amount);
+  for (const other of report.money.otherSpending) funds.money(w.funds.spent(categoryLabel(words.rooms.treasury, other.label, said)), other.amount);
   funds.money(w.funds.allSpent, report.money.spent);
   funds.money(w.funds.ending, report.money.endingBalance, true);
   return rows;
@@ -185,9 +187,9 @@ export function memberLines(report: YearReport, words: Words = english) {
 }
 
 /** The year as one CSV file: every line, then the months, then the members. No neighbor is named anywhere in it. */
-export function reportCsv(report: YearReport, groupName: string, sample = false, words: Words = english) {
+export function reportCsv(report: YearReport, groupName: string, sample = false, words: Words = english, said?: (name: string) => string) {
   const w = words.rooms.reports.rows.csv;
-  const lines = reportLines(report, words).map(({ section, line, number }) => [section, line, number]);
+  const lines = reportLines(report, words, said).map(({ section, line, number }) => [section, line, number]);
   const members = memberLines(report, words);
   return Papa.unparse([
     [groupName, periodLabel(report, words), longSpanLabel(report, words)],
