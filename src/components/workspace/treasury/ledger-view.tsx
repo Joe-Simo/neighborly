@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, CircleCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
+import { RoomAside, useFarScreen } from "@/components/workspace/aside";
 import { CountUp, LiveLoading } from "@/components/workspace/primitives";
 import { openUp, useGrowsSmoothly, useSavedLine } from "@/components/workspace/fold";
 import { SavedWords } from "@/components/workspace/saved-words";
@@ -129,6 +130,7 @@ export function LedgerView({
   paying?: Payable | null;
 }) {
   const { words, sampleSaid } = useWorkspace();
+  const far = useFarScreen();
   const room = words.rooms.treasury;
   const w = room.ledger;
   // A new row lands in the ledger by growing into it; the request after a paid one opens its own room, once.
@@ -397,8 +399,9 @@ export function LedgerView({
         </div>
       )}
 
-      {(uncleared !== undefined || onHand || shelf !== undefined) && (
-        <section className="treasury-foot" aria-label={w.foot.label}>
+      {(uncleared !== undefined || onHand || shelf !== undefined) && (() => {
+        const also = (
+          <>
           {onHand && onHand.count > 0 && (
             <div>
               <div>
@@ -444,8 +447,15 @@ export function LedgerView({
               </Button>
             </div>
           )}
-        </section>
-      )}
+          </>
+        );
+        // From 1728px the ways on from the ledger stand beside it, under the picture, instead of after its last line.
+        return far ? (
+          <RoomAside title={w.foot.label}><div className="treasury-foot" data-beside="">{also}</div></RoomAside>
+        ) : (
+          <section className="treasury-foot" aria-label={w.foot.label}>{also}</section>
+        );
+      })()}
     </>
   );
 }
