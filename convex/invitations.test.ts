@@ -154,6 +154,24 @@ describe("church invitations", () => {
     await as(ids.recipient).action(api.invitations.accept, { token: used.token!, displayName: "Person" });
     expect(await good(used.token!)).toBe(false);
   });
+  test("a good link names its conference and nothing else; every bad case is the same null", async () => {
+    const { t, ids, as } = await setup();
+    const create = (requestId: string) => as(ids.owner).action(api.invitations.create, { churchId: ids.church, email: "person@example.org", role: "member", requestId });
+    const conference = (token: string) => t.action(api.invitations.conference, { token });
+    const name = await t.run(async ctx => (await ctx.db.get("churches", ids.church))!.name);
+    const pending = await create("request_pending_1234");
+    expect(await conference(pending.token!)).toBe(name);
+    expect(await conference("0000000000")).toBeNull();
+    expect(await conference("0".repeat(64))).toBeNull();
+    const revoked = await create("request_revoked_1234");
+    await as(ids.owner).mutation(api.invitations.revoke, { invitationId: revoked.invitationId });
+    expect(await conference(revoked.token!)).toBeNull();
+    await t.run(async ctx => { await ctx.db.patch("invitations", pending.invitationId, { expiresAt: Date.now() - 1 }); });
+    expect(await conference(pending.token!)).toBeNull();
+    const used = await create("request_used_12345678");
+    await as(ids.recipient).action(api.invitations.accept, { token: used.token!, displayName: "Person" });
+    expect(await conference(used.token!)).toBeNull();
+  });
   test("disabled delivery retains notifications and cancels stale events on retry", async () => {
     const { t, ids, as } = await setup();
     const { queueCoverRequest, queueMeetingInvitation } = await import("./notificationEvents");
