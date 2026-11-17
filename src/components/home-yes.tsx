@@ -33,7 +33,7 @@ export function HomeYes() {
     <div className="relief-words home-yes-words">
       <p className="home-yes-kicker">The help line · Sample</p>
       <h2 id="home-yes-title">Your turn.</h2>
-      <p>The assistant drafted this request from a call note. Nothing is saved until a person says yes. Here, that person is you.</p>
+      <p>On the help line, a request waits for a person. Here, that person is you.</p>
     </div>
     <div className="home-yes-desk" ref={desk}>
       {/* The call note this draft was made from: the card that has come down the page, tucked behind the sheet's corner. */}
