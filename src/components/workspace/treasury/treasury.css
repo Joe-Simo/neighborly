@@ -565,3 +565,12 @@
 .treasury-handed::after {
   animation: none !important;
 }
+
+/* From 1728px the ways on from the ledger are the room's side column: each a short line, its deck and its press. */
+.treasury-foot[data-beside] { margin-top: 0; border-top: 0; }
+.treasury-foot[data-beside] > div { display: block; padding: 0 0 22px; border-bottom: 0; }
+.treasury-foot[data-beside] > div + div { padding-top: 22px; border-top: 1px solid var(--live-line); }
+.treasury-foot[data-beside] > div:last-child { padding-bottom: 0; }
+.treasury-foot[data-beside] h2 { font-size: 22px; line-height: 1.2; margin-bottom: 6px; }
+.treasury-foot[data-beside] p { font-size: 15px; }
+.live-app .treasury-foot[data-beside] [data-slot="button"] { margin-top: 14px; }
