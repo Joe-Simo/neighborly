@@ -60,34 +60,8 @@ export function CardOfferGrow() {
     marks.append(document.createElement("i"), document.createElement("b"), document.createElement("b"));
     // The name written on the card is lettered on the grown paper too, where the door's card will be, so it is still the visitor's card.
     const written = offer.querySelector(".card-offer-for span")?.textContent?.trim();
-    if (written) {
-      // One line, never faded: it leaves the card where it is lettered and settles where the door's card letters it, at the same pace as the grow.
-      const source = offer.querySelector(".card-offer-for")?.getBoundingClientRect();
-      sheet.querySelector<HTMLElement>(".card-offer-for")?.style.setProperty("visibility", "hidden");
-      const place = document.createElement("div");
-      place.className = "card-held-marks card-held-name";
-      const line = document.createElement("em");
-      line.textContent = `For ${written}`;
-      place.append(line);
-      held.append(place);
-      const target = line.getBoundingClientRect();
-      const lettered = offer.querySelector<HTMLElement>(".card-offer-for");
-      if (source && lettered && target.height) {
-        // The line is moved by its middle. It starts where it is on the card, at the card's turn and size; on a narrow window it rests with the card at the window's width, then settles in its place.
-        const size = parseFloat(getComputedStyle(lettered).fontSize) / parseFloat(getComputedStyle(line).fontSize);
-        const end = { x: target.left + target.width / 2, y: target.top + target.height / 2 };
-        const middle = { x: box.left + box.width / 2, y: box.top + box.height / 2 }, from = { x: source.left + source.width / 2, y: source.top + source.height / 2 };
-        const pose = (x: number, y: number, turned: number, scale: number) => `translate(${(x - end.x).toFixed(1)}px,${(y - end.y).toFixed(1)}px) rotate(${turned}deg) scale(${scale.toFixed(3)})`;
-        const frames: Keyframe[] = [{ transform: pose(from.x, from.y, turn, size), easing: narrow ? EASE : "linear" }];
-        if (narrow) {
-          const spin = -turn * Math.PI / 180, dx = from.x - middle.x, dy = from.y - middle.y, k = innerWidth * .92 / width;
-          frames.push({ transform: pose(innerWidth / 2 + (dx * Math.cos(spin) - dy * Math.sin(spin)) * k, innerHeight / 2 + (dx * Math.sin(spin) + dy * Math.cos(spin)) * k, 0, size * k), offset: rest, easing: "cubic-bezier(.5,0,.3,1)" });
-        }
-        frames.push({ transform: "none" });
-        line.style.transformOrigin = "50% 50%";
-        line.animate(frames, { ...timing, duration: narrow ? GROW + 200 : GROW, easing: narrow ? "linear" : WIDE });
-      }
-    }
+    // On the card the name is lettered on its paper, so it grows with the card and keeps its place over the square; the grown card letters it again over its own square, as the door does.
+    if (written) { const line = document.createElement("em"); line.textContent = `For ${written}`; marks.append(line); }
     held.append(marks);
     marks.animate(swap(0, 1), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     const since = performance.now();
