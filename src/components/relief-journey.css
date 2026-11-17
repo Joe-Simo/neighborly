@@ -119,7 +119,8 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-chapter=call] .relief-words p{margin:0}
   /* The visit: the door whole with both members' sleeves, as tall as the window allows and never drawn past the picture's own 1536 pixels; the heading stands tall across the paper beside it. */
   .relief-panel[data-chapter=visit] .relief-hold{grid-template-columns:auto minmax(0,1fr);gap:0 4vw;padding-left:0;padding-right:7%}
-  .relief-panel[data-chapter=visit] .relief-picture{order:-1;justify-self:start;align-self:center;margin-bottom:0;width:min(43vw,76svh,825px);aspect-ratio:4/5;-webkit-mask:none;mask:none;clip-path:polygon(0 3%,30% 0,62% 2%,100% 0,100% 97%,70% 100%,36% 98%,0 100%)}
+  .relief-panel[data-chapter=visit] .relief-picture{order:-1;justify-self:start;align-self:center;margin-bottom:0;width:min(43vw,76svh,825px);aspect-ratio:4/5;-webkit-mask:linear-gradient(to right,#000 95%,#0000);mask:linear-gradient(to right,#000 95%,#0000);clip-path:polygon(0 3%,30% 0,62% 2%,100% 0,100% 97%,70% 100%,36% 98%,0 100%)}
+  /* Right of the door the picture is bare paper with one pale arc; the arc thins out at the picture's edge where it would otherwise be cut straight. */
   .relief-panel[data-chapter=visit] .relief-layers{width:186%;margin-left:-7.5%}
   .relief-panel[data-chapter=visit] .relief-words{margin-left:0;align-self:center}
   .relief-panel[data-chapter=visit] .relief-words h2{font-size:clamp(80px,12.5vw,200px)}
