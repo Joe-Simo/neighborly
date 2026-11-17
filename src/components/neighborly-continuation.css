@@ -78,19 +78,22 @@
 .neighborly-static-story p{margin:32px 7% 0;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em}
 /* On the widest screens the foot's small line and the band's links go up a step with everything else. */
 @media(min-width:1600px){.neighborly-colophon{font-size:16px}.neighborly-close .neighborly-final-links a{font-size:17px}}
-/* On a printed page: the sheet, each room and the ending are kept whole, flat and unturned. The card, the hand and the ways in are for a screen and are left off, the closing
-   picture is not printed a second time, and the name at the foot is set small beside the site's address. */
+/* On paper the home page does not try to print the walk. It is one sheet: the name, the headline and its sentence, the four chapters each with its sentence, the rooms' one
+   line, and the site's address. Everything else is for a screen and is hidden; what is kept is only taken off its pins and set at a reading size. */
+@page home{margin:20mm 18mm}
 @media print{
-  .home-yes,.neighborly-rooms li,.neighborly-close-words,.neighborly-colophon{break-inside:avoid}
-  .neighborly-rooms li{rotate:none!important;translate:none!important;margin-top:0!important;box-shadow:none!important;filter:none!important;outline:1px solid #293f3224}
-  .neighborly-rooms>div{break-inside:avoid;break-after:avoid}
-  .has-reveal [data-reveal]{translate:none}
-  .home-yes .help-sheet,.home-yes-still{box-shadow:none}
-  .home-yes-desk .card-station,.neighborly-close-art,.neighborly-close-hand,.neighborly-close-offer,.neighborly-close .neighborly-final-actions,.neighborly-colophon nav,.neighborly-together-paper{display:none}
-  .neighborly-together .neighborly-close{height:auto;margin-inline:0}
-  .neighborly-together .neighborly-close::before,.neighborly-together :is(.neighborly-close-words,.neighborly-colophon)::before{display:none}
-  .neighborly-together .neighborly-close-words{position:static;width:auto;padding:10mm 0 4mm}
-  .neighborly-colophon{padding:0;border-top:1px solid #293f3224}
-  .neighborly-colophon>a{flex-basis:auto;margin:0;font-size:22pt;line-height:1.4}
-  .neighborly-colophon::after{content:"kindhelps.com";font-size:10pt}
+  .neighborly-connected-world{page:home}
+  html:has(.neighborly-connected-world),html:has(.neighborly-connected-world) body{min-height:0!important;height:auto!important;background:#fff!important}
+  .neighborly-connected-world::before,.neighborly-connected-world::after,.neighborly-connected-world .neighborly-colophon::before{content:none!important}
+  .neighborly-connected-world :is(.painted-world-skip,.painted-world-art,.painted-world-fallback,.painted-world-card,.painted-world-hand,.painted-world-shade,.painted-world-enter,.painted-world-kicker,.painted-world-opening-actions,.painted-world-tools,.fresco-journey,.neighborly-static-story,.thread-card,.chapter-sheet,.relief-picture,.home-year,.home-year-note,.home-yes,.neighborly-rooms ul,.neighborly-rooms-kicker,.neighborly-free,.neighborly-close,.neighborly-together-paper,.neighborly-paper-carry,.neighborly-colophon>*){display:none!important}
+  .neighborly-connected-world,.neighborly-connected-world :is(.painted-world,.painted-world-track,.painted-world-viewport,.painted-world-header,.painted-world-caption,.painted-world-caption>div,.neighborly-continuation,.relief-story,.relief-panel,.relief-hold,.relief-words,.neighborly-together,.neighborly-rooms,.neighborly-rooms>div,.neighborly-colophon){position:static!important;display:block!important;inset:auto!important;width:auto!important;max-width:none!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;opacity:1!important;visibility:visible!important;transform:none!important;translate:none!important;scale:none!important;rotate:none!important;filter:none!important;-webkit-mask:none!important;mask:none!important;background:none!important;box-shadow:none!important;animation:none!important}
+  .neighborly-connected-world :is(.painted-world,.painted-world-track,.painted-world-viewport,.painted-world-header,.painted-world-caption,.neighborly-continuation,.relief-story,.relief-panel,.relief-hold,.relief-words,.neighborly-together,.neighborly-rooms)::before,.neighborly-connected-world :is(.painted-world,.painted-world-track,.painted-world-viewport,.painted-world-header,.painted-world-caption,.neighborly-continuation,.relief-story,.relief-panel,.relief-hold,.relief-words,.neighborly-together,.neighborly-rooms)::after{content:none!important}
+  .neighborly-connected-world :is(.painted-world-brand,.painted-world-caption h1,.painted-world-description,.relief-words h2,.relief-words p,.neighborly-together-statement){position:static!important;opacity:1!important;visibility:visible!important;transform:none!important;translate:none!important;animation:none!important;color:#253e31!important;text-shadow:none!important;break-inside:avoid}
+  .neighborly-connected-world .painted-world-brand{display:block!important;margin:0 0 16mm!important;font-size:24pt!important;line-height:1!important}
+  .neighborly-connected-world .painted-world-caption h1{margin:0 0 4mm!important;max-width:none!important;font-size:32pt!important;line-height:1.02!important}
+  .neighborly-connected-world .painted-world-description{margin:0 0 12mm!important;max-width:30em!important;font-size:13pt!important;line-height:1.45!important}
+  .neighborly-connected-world .relief-words h2{margin:7mm 0 1.5mm!important;font-size:18pt!important;line-height:1.1!important;break-after:avoid}
+  .neighborly-connected-world .relief-words p{margin:0!important;max-width:32em!important;font-size:11.5pt!important;line-height:1.45!important}
+  .neighborly-connected-world .neighborly-together-statement{margin:12mm 0 0!important;max-width:28em!important;font-size:14pt!important;line-height:1.3!important}
+  .neighborly-connected-world .neighborly-colophon::after{content:"kindhelps.com";display:block;margin-top:12mm;padding-top:3mm;border-top:1px solid #293f3224;font:10pt/1.4 "Source Sans 3",sans-serif;color:#253e31}
 }
