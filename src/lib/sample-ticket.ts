@@ -11,6 +11,11 @@ const fresh = 40_000;
 /** Where Clerk Protect, the bot check that every sign-in waits on, is served from. */
 export const protect = "https://cdn.protect.clerk.com";
 let asked: { at: number; reply: Promise<Response> } | null = null;
+/**
+ * A request that has had no answer in fifteen seconds is given up, so a hung one ends as any refusal does (the
+ * sheet says the sample did not open) instead of leaving the visitor waiting on nothing.
+ */
+const ask = () => fetch("/app/look-around", { method: "POST", signal: AbortSignal.timeout(15_000) });
 
 /** Clerk's own cookie says whether someone is signed in before its script has loaded. */
 const signedIn = () => /(?:^|;\s*)__client_uat(?:_[\w-]+)?=[1-9]/.test(document.cookie);
@@ -18,7 +23,7 @@ const signedIn = () => /(?:^|;\s*)__client_uat(?:_[\w-]+)?=[1-9]/.test(document.
 /** Starts the ticket request, once. A person signed in as themselves is signed out first, so nothing is asked for them. */
 export function askSampleTicket() {
   if ((asked && Date.now() - asked.at < fresh) || signedIn()) return;
-  const reply = fetch("/app/look-around", { method: "POST" });
+  const reply = ask();
   reply.catch(() => undefined);
   asked = { at: Date.now(), reply };
 }
@@ -27,7 +32,7 @@ export function askSampleTicket() {
 export function takeSampleTicket() {
   const early = asked && Date.now() - asked.at < fresh ? asked.reply : null;
   asked = null;
-  return early ?? fetch("/app/look-around", { method: "POST" });
+  return early ?? ask();
 }
 
 /** Fetches Clerk's two scripts, at the same addresses and in the same mode the workspace asks for them, so they come from the cache. */
