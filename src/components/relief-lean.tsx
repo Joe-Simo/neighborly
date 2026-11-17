@@ -4,10 +4,11 @@ import { useEffect } from "react";
 import "./relief-lean.css";
 
 /** The story's loose paper leans with the pointer while the pointer is over a chapter, and comes back to rest when it leaves. On a touch screen and with Reduce Motion the pictures rest. Nothing runs while the story is off the screen. */
-export function ReliefLean() {
+export function ReliefLean({ within = ".relief-story" }: { within?: string }) {
   useEffect(() => {
-    const story = document.querySelector<HTMLElement>(".relief-story");
+    const story = document.querySelector<HTMLElement>(within);
     if (!story || matchMedia("(prefers-reduced-motion: reduce)").matches || matchMedia("(hover: none)").matches) return;
+    story.dataset.leans = "";
     document.documentElement.dataset.lean = "";
     const aim = { x: 0, y: 0 }, at = { x: 0, y: 0 }, set = { x: NaN, y: NaN };
     let raf = 0, last = 0, seen = false;
@@ -33,7 +34,7 @@ export function ReliefLean() {
     watcher.observe(story);
     story.addEventListener("pointermove", move, { passive: true });
     story.addEventListener("pointerleave", rest);
-    return () => { cancelAnimationFrame(raf); watcher.disconnect(); story.removeEventListener("pointermove", move); story.removeEventListener("pointerleave", rest); delete document.documentElement.dataset.lean; story.style.removeProperty("--lean-x"); story.style.removeProperty("--lean-y"); };
-  }, []);
+    return () => { cancelAnimationFrame(raf); watcher.disconnect(); story.removeEventListener("pointermove", move); story.removeEventListener("pointerleave", rest); delete story.dataset.leans; if (!document.querySelector("[data-leans]")) delete document.documentElement.dataset.lean; story.style.removeProperty("--lean-x"); story.style.removeProperty("--lean-y"); };
+  }, [within]);
   return null;
 }

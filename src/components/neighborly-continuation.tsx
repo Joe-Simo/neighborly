@@ -16,12 +16,12 @@ import "./cut-edges.css";
 // What a conference has on its first day, in the order the work happens. Each line lies under its room's own picture,
 // set at the small angle it was put down at.
 const rooms = [
-  ["call", "The help line", "Every call is written down once, and the urgent ones rise to the top.", -2.4],
-  ["visit", "Visits in pairs", "What the two members saw, and what was asked, stays with the request.", 1.6],
-  ["help", "The ledger", "Every bill paid is on one page: to whom, for whom, and how much.", -1.2],
-  ["year", "The yearly report", "The totals are kept as the work is done. Check them, then print.", 2.2],
-  ["people", "Your people", "Each member sees what they said yes to, in English or Spanish.", -1.8],
-  ["files", "The assistant", "It drafts a request from the call note. A person checks every one.", 1.3],
+  ["call", "The help line", "Every call is written down once, and the urgent ones rise to the top.", -1],
+  ["visit", "Visits in pairs", "What the two members saw, and what was asked, stays with the request.", .9],
+  ["help", "The ledger", "Every bill paid is on one page: to whom, for whom, and how much.", -.8],
+  ["year", "The yearly report", "The totals are kept as the work is done. Check them, then print.", 1.1],
+  ["people", "Your people", "Each member sees what they said yes to, in English or Spanish.", -1.1],
+  ["files", "The assistant", "It drafts a request from the call note. A person checks every one.", .8],
 ] as const;
 
 export function NeighborlyContinuation() {
@@ -63,15 +63,19 @@ export function NeighborlyContinuation() {
         <ul aria-label="What your conference gets">
           {rooms.map(([picture, title, line, turn], index) => <li key={title} style={{ "--turn": `${turn}deg`, "--i": index } as CSSProperties}>
             <picture>
-              <source type="image/avif" srcSet={`/assets/relief/relief-${picture}-640.avif`} />
-              <img src={`/assets/relief/relief-${picture}-640.webp`} width={640} height={427} alt="" loading="lazy" decoding="async" />
+              {/* A close detail of the room's relief, hand and object only, so no card repeats the story's pictures above it. */}
+              <source type="image/avif" srcSet={`/assets/relief/relief-${picture}-detail-728.avif`} />
+              <img src={`/assets/relief/relief-${picture}-detail-728.webp`} width={728} height={485} alt="" loading="lazy" decoding="async" />
             </picture>
-            <h3>{title}</h3>
-            <p>{line}</p>
+            <div>
+              <h3>{title}</h3>
+              <p>{line}</p>
+            </div>
           </li>)}
         </ul>
         <p className="neighborly-free"><em>Free.</em> For every conference. There is nothing to buy.</p>
       </div>
+      <ReliefLean within=".neighborly-rooms" />
       <ClosingBand />
       <Colophon home="#story-start" />
     </section>

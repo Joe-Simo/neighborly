@@ -246,3 +246,13 @@
    and 48px on a phone, which stays inside the sheet's top margin and so never over a word. */
 .help-handed { background-image: none !important; will-change: left, top, width, height, transform; }
 .help-handed::after { animation: none !important; }
+
+/* To call back: a row is a person. Its name opens the record (the whole row); its acts sit above that link.
+   The oldest wait is said in the head with the small ochre ring, and a call two days old or more keeps the
+   ring by its time. Nothing here turns plum. */
+.help-row:has(.help-row-open) :is(a:not(.help-row-open), button) { position: relative; z-index: 1; }
+.help-oldest { white-space: nowrap; }
+.help-oldest::before, .help-row[data-old] .live-date-leaf > span:first-child::before {
+  content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  box-shadow: inset 0 0 0 2px #c8962e; margin-right: 6px; vertical-align: 0;
+}
