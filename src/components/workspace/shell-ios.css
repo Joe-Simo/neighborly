@@ -1,15 +1,14 @@
 /* ── The iOS app only (`:root[data-shell="ios"]`, set by the app before the first paint). The website never
    matches any of this. ── */
 
-/* A room's headline goes up under the held bar as the room scrolls: it shrinks from its foot and fades as it
-   goes, and the room's name in the bar comes up in its place over the last half of the way (--head-gone,
-   0 to 1, from shell.tsx). The bar keeps its own words and face; nothing of iOS is copied. */
+/* A room's headline goes up under the held bar as the room scrolls: it shrinks from its foot as it goes, in full
+   ink (nothing fades), and the room's name in the bar comes up in its place over the last half of the way
+   (--head-gone, 0 to 1, from shell.tsx). The bar keeps its own words and face; nothing of iOS is copied. */
 .live-aside-pull, .live-aside-scrim { display: none; }
 @media (max-width: 899px) {
   :root[data-shell="ios"] .live-page-head h1 {
     transform-origin: 0 100%;
     scale: calc(1 - var(--head-gone, 0) * 0.18);
-    opacity: calc(1 - var(--head-gone, 0) * 0.85);
   }
   :root[data-shell="ios"] .live-app .live-bar-room {
     transition: none;
@@ -124,7 +123,7 @@
 /* The bar's words (the wordmark, the room's name, Menu) and a search box's words grow to 130%, no further, so they keep one line. */
 :root[data-shell="ios"][data-text-large] :is(.live-header, .live-app input[type="search"], .live-app [role="searchbox"]) { -webkit-text-size-adjust: 130% !important; }
 /* Figures are already set to the width they have; they do not grow at all. */
-:root[data-shell="ios"][data-text-large] :is(.report-year-pile, .count-up-room) { -webkit-text-size-adjust: 100% !important; }
+:root[data-shell="ios"][data-text-large] :is(.report-year-pile, .count-up) { -webkit-text-size-adjust: 100% !important; }
 :root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] { height: auto; min-height: 44px; max-width: 100%; white-space: normal; text-align: start; padding-block: 10px; align-items: flex-start; }
 /* A label that wraps keeps its sign level with its first line. */
 :root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] > svg { margin-top: calc((1lh - 1em) / 2); }

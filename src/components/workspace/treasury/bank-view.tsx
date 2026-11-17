@@ -13,8 +13,8 @@ import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
 import { readFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
-import { CountUp, LiveField } from "@/components/workspace/primitives";
-import { figureRoll, parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
+import { LiveField } from "@/components/workspace/primitives";
+import { parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import { formatDate, type Language } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import {
@@ -112,7 +112,7 @@ export function BankView({
         <div>
           <dt>{w.figures.cleared}</dt>
           <dd>
-            <CountUp value={bank.cleared} format={figureRoll(bank.cleared)} />
+            <span className="count-up">{formatFigure(bank.cleared)}</span>
             <small>{w.figures.clearedDeck}</small>
           </dd>
         </div>
@@ -120,7 +120,7 @@ export function BankView({
           <dt>{w.figures.onItsWay}</dt>
           <dd>
             {onItsWay < 0 ? "− " : ""}
-            <CountUp value={Math.abs(onItsWay)} format={figureRoll(Math.abs(onItsWay))} />
+            <span className="count-up">{formatFigure(Math.abs(onItsWay))}</span>
             <small>
               {bank.waitingCount
                 ? fill(w.figures.inOut, { in: formatFigure(bank.onItsWayIn), out: formatFigure(bank.onItsWayOut) })
@@ -131,7 +131,7 @@ export function BankView({
         <div>
           <dt>{w.figures.books}</dt>
           <dd>
-            <CountUp value={bank.books} format={figureRoll(bank.books)} />
+            <span className="count-up">{formatFigure(bank.books)}</span>
             <small>{w.figures.on(weekDayLabel(words.locale, bank.asOf))}</small>
           </dd>
         </div>

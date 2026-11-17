@@ -35,7 +35,7 @@ export function WeekFigures({ noted = false }: { noted?: boolean }) {
     <nav className="week-figures paper-rows" aria-label={words.monday.title}>
       {figures.map(({ area, label, value, reason }) => (
         <Link key={area} href={`/app/${area}`}>
-          {/* The figure itself, at once: a count-up belongs to Reports only, and a figure that changes changes once. */}
+          {/* The figure itself, at once: nothing in the workspace counts up, and a figure that changes changes once. */}
           <span className="count-up">{value}</span>
           <span>{label}</span>
           {/* Always there, so the row keeps its height when a reason comes or goes. */}

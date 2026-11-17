@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, CircleCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { RoomAside, useFarScreen } from "@/components/workspace/aside";
-import { CountUp, LiveLoading } from "@/components/workspace/primitives";
+import { LiveLoading } from "@/components/workspace/primitives";
 import { openUp, useGrowsSmoothly, useSavedLine } from "@/components/workspace/fold";
 import { SavedWords } from "@/components/workspace/saved-words";
 import { LiveState } from "@/components/workspace/states";
@@ -195,14 +195,14 @@ export function LedgerView({
         <div>
           <dt>{w.figures.balance}</dt>
           <dd>
-            <CountUp value={ledger.balance} format={formatDollars} />
+            <span className="count-up">{formatDollars(ledger.balance)}</span>
             <small>{w.figures.asOf(weekDayLabel(words.locale, ledger.today))}</small>
           </dd>
         </div>
         <div>
           <dt>{w.figures.in(month)}</dt>
           <dd>
-            <CountUp value={ledger.moneyIn} format={formatDollars} />
+            <span className="count-up">{formatDollars(ledger.moneyIn)}</span>
             <small>
               {ledger.incomeSources.map((source) => categoryLabel(room, source, sampleSaid)).join(", ") || w.figures.nothingIn}
             </small>
@@ -211,7 +211,7 @@ export function LedgerView({
         <div>
           <dt>{w.figures.out(month)}</dt>
           <dd>
-            <CountUp value={ledger.moneyOut} format={formatDollars} />
+            <span className="count-up">{formatDollars(ledger.moneyOut)}</span>
             <small>{paidFor.join(", ") || w.figures.nothingOut}</small>
           </dd>
         </div>

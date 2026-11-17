@@ -181,7 +181,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       goes: "Lo que se va",
       goesDetail: `Su nombre y su correo electrónico, sus lugares en los equipos, sus días libres y su entrada a ${thisGroup}. Lo que había prometido hacer de ahora en adelante queda libre otra vez. Las visitas planeadas en las que participaba necesitarán un nuevo segundo visitante.`,
       stays: "Lo que se queda",
-      staysDetail: "Las visitas y las horas que anotó se quedan en las cuentas del año bajo el nombre “A former member”.",
+      staysDetail: "Las visitas y las horas que anotó se quedan en las cuentas del año bajo el nombre “Un miembro anterior”.",
       typeName: (name) => `Escribe ${name} para quitar a esta persona`,
       last: "Esto no se puede deshacer.",
       failed: "No se pudo quitar a esta persona en este momento.",

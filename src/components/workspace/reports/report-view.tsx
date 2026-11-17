@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
-import { CountUp, LiveLoading } from "@/components/workspace/primitives";
+import { LiveLoading } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
@@ -31,30 +31,6 @@ const share = (part: number, of: number): CSSProperties =>
   ({ "--share": `${of > 0 ? Math.max(0, Math.round((part / of) * 1000) / 10) : 0}%` }) as CSSProperties;
 
 const wholeDollars = (cents: number) => money(Math.round(cents / 100) * 100);
-
-/**
- * One of the year's figures. Once the room is shown they count up once, 60ms apart; a change of year rolls on from there.
- * `step` is the smallest amount shown on the way (100 for money, which is kept in cents). Still under Reduce Motion.
- */
-function Figure({
-  value,
-  order,
-  step = 1,
-  format = count,
-}: {
-  value: number;
-  order: number;
-  step?: number;
-  format?: (amount: number) => string;
-}) {
-  return (
-    <CountUp
-      value={value}
-      delay={90 + order * 60}
-      format={(amount) => format(amount === value ? value : Math.max(0, Math.round(amount / step) * step))}
-    />
-  );
-}
 
 /** The year is being added up: the one quiet line every room waits with. */
 export function ReportLoading() {
@@ -326,7 +302,7 @@ export function ReportView({
               {/* The pile is as wide as the year's whole figure from the first frame, so nothing moves while it counts up. */}
               <span className="report-year-measure" aria-hidden="true">{money(Math.round(report.helpPaid / 100) * 100)}</span>
               <span className="report-year-figure">
-                <Figure value={Math.round(report.helpPaid / 100) * 100} order={0} step={100} format={money} />
+                <span className="count-up">{money(Math.round(report.helpPaid / 100) * 100)}</span>
               </span>
               <span className="report-stack" aria-hidden="true">
                 {report.months.map((line) => (
@@ -340,13 +316,13 @@ export function ReportView({
           { label: w.year.calls, value: report.calls.taken },
           { label: w.year.requests, value: report.requests.received },
           { label: w.year.visitsInPairs, value: report.visits },
-        ].map((figure, order) => (
+        ].map((figure) => (
           <div key={figure.label}>
             <dt>{figure.label}</dt>
             <dd>
               <span>
                 <b>
-                  <Figure value={figure.value} order={order + 1} />
+                  <span className="count-up">{count(figure.value)}</span>
                 </b>
               </span>
             </dd>
@@ -601,11 +577,11 @@ export function ReportView({
           <div>
             <dt>{w.time.hours}</dt>
             <dd>
-              <Figure value={report.time.hours} order={3} />
+              <span className="count-up">{count(report.time.hours)}</span>
               <small>
                 {serving
                   .filter((line) => line.hours > 0)
-                  .map((line) => `${line.name} ${count(line.hours)}`)
+                  .map((line) => `${sampleSaid(line.name)} ${count(line.hours)}`)
                   .join(" · ") || w.time.noHours}
               </small>
             </dd>
@@ -613,14 +589,14 @@ export function ReportView({
           <div>
             <dt>{w.time.miles}</dt>
             <dd>
-              <Figure value={report.visitMiles} order={4} />
+              <span className="count-up">{count(report.visitMiles)}</span>
               <small>{w.time.driven}</small>
             </dd>
           </div>
           <div>
             <dt>{w.time.returned}</dt>
             <dd>
-              <Figure value={report.calls.returned} order={5} />
+              <span className="count-up">{count(report.calls.returned)}</span>
               <small>
                 {w.time.ofCalls(report.calls.taken)}
                 {noCallBack > 0 && <span className="report-own-line">{w.time.noCallBack(noCallBack)}</span>}
@@ -633,7 +609,7 @@ export function ReportView({
             {serving.map((line) => (
               <li key={line.name}>
                 <div>
-                  <h3>{line.name}</h3>
+                  <h3>{sampleSaid(line.name)}</h3>
                   <p>{line.detail}</p>
                 </div>
                 <div className="help-bar" aria-hidden="true">
@@ -684,7 +660,7 @@ export function ReportView({
                 {report.time.members.map((line) => (
                   <tr key={line.memberId}>
                     <th scope="row">
-                      {line.name}
+                      {sampleSaid(line.name)}
                       <small>
                         {[
                           line.visits > 0 && w.months.visits(line.visits),
