@@ -117,12 +117,30 @@ export function useConnectionLost() {
  * While a form is being sent and the connection is down: one line that says the entry
  * is kept and will go by itself. Convex holds the save and sends it on return.
  */
-export function LiveWaiting({ when }: { when: boolean }) {
+const laidInRoom = (line: HTMLElement | null) => {
+  if (line) openUp(line, { stays: true });
+};
+
+export function LiveWaiting({
+  when,
+  keep,
+}: {
+  when: boolean;
+  /**
+   * For a line laid in a room's own page, not a dialog: it opens its own room as it comes (fold.ts), and once laid its
+   * place is kept, its words unseen, for as long as this holds, so what lies below does not move when the wait ends.
+   */
+  keep?: boolean;
+}) {
   const words = useStateWords();
   const lost = useConnectionLost();
-  if (!when || !lost) return null;
+  const saying = when && lost;
+  const [laid, setLaid] = useState(false);
+  // Laid by a lost connection; from then its place lasts as long as the save, and through `keep`.
+  if (laid !== (saying || (laid && (when || keep)))) setLaid(!laid);
+  if (!laid) return null;
   return (
-    <p className="live-waiting" role="status">
+    <p className="live-waiting" ref={keep === undefined ? undefined : laidInRoom} role={saying ? "status" : undefined} aria-hidden={saying ? undefined : true} style={saying ? undefined : { visibility: "hidden" }}>
       {words.waiting}
     </p>
   );
