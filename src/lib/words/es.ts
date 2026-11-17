@@ -1,3 +1,11 @@
+import * as helpLineWords from "./rooms/help-line";
+import * as helpLineFormsWords from "./rooms/help-line-forms";
+import * as neighborsWords from "./rooms/neighbors";
+import * as visitsRoomWords from "./rooms/visits";
+import * as treasuryWords from "./rooms/treasury";
+import * as reportsWords from "./rooms/reports";
+import * as toolsWords from "./rooms/tools";
+import * as peopleRoomWords from "./rooms/people";
 import { measured as m } from "../jev-set";
 import type { Words } from "./en";
 import { refusals } from "../refusals";
@@ -554,6 +562,17 @@ export function es(set: WordSet): Words {
         notSavedJoin: "No pudimos guardar eso. Lo que escribiste sigue aquí. Presiona Unirme a la conferencia otra vez.",
         addName: "Escribe tu nombre.", addConferenceName: "Escribe el nombre de la conferencia.", addCode: "Escribe tu código de invitación.",
       },
+    },
+    /** Each room that keeps its own table (./rooms): the rooms a leader works in. */
+    rooms: {
+      helpLine: helpLineWords.es(t, place),
+      helpLineForms: helpLineFormsWords.es(t, place),
+      neighbors: neighborsWords.es(t, place),
+      visitsRoom: visitsRoomWords.es(t, place),
+      treasury: treasuryWords.es(t, place),
+      reports: reportsWords.es(t, place),
+      tools: toolsWords.es(t, place),
+      peopleRoom: peopleRoomWords.es(t, place),
     },
   };
 }

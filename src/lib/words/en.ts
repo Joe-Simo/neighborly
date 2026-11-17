@@ -1,5 +1,13 @@
 import { measured as m } from "../jev-set";
 import { refusals } from "../refusals";
+import * as helpLineWords from "./rooms/help-line";
+import * as helpLineFormsWords from "./rooms/help-line-forms";
+import * as neighborsWords from "./rooms/neighbors";
+import * as visitsRoomWords from "./rooms/visits";
+import * as treasuryWords from "./rooms/treasury";
+import * as reportsWords from "./rooms/reports";
+import * as toolsWords from "./rooms/tools";
+import * as peopleRoomWords from "./rooms/people";
 import type { Language, Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
@@ -557,6 +565,17 @@ export function en(set: WordSet) {
         notSavedJoin: "We couldn’t save that. Your entries are still here. Press Join conference again.",
         addName: "Add your name.", addConferenceName: "Add the conference’s name.", addCode: "Add your invitation code.",
       },
+    },
+    /** Each room that keeps its own table (./rooms): the rooms a leader works in. */
+    rooms: {
+      helpLine: helpLineWords.en(t, place),
+      helpLineForms: helpLineFormsWords.en(t, place),
+      neighbors: neighborsWords.en(t, place),
+      visitsRoom: visitsRoomWords.en(t, place),
+      treasury: treasuryWords.en(t, place),
+      reports: reportsWords.en(t, place),
+      tools: toolsWords.en(t, place),
+      peopleRoom: peopleRoomWords.en(t, place),
     },
   };
 }
