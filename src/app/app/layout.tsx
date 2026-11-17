@@ -33,9 +33,7 @@ export default function LiveAppLayout({
       {/* The launch mark is asked for with the page itself, ahead of the styles, so the first paint already holds it. */}
       <link rel="preload" as="image" href="/launch/mark-240.png" imageSrcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x" fetchPriority="high" />
       <Suspense fallback={<Loading />}>
-        {/* `prefetchUI={false}`: every sheet here is our own, so Clerk's ready-made components are never drawn. Clerk does not
-            answer who is here until that second script has arrived; without it the answer comes as soon as Clerk's own has. */}
-        <ClerkProvider prefetchUI={false} signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
+        <ClerkProvider signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
           <LiveProviders>
             <LiveFrame sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}>{children}</LiveFrame>
           </LiveProviders>
