@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ComponentProps, MouseEvent, MouseEventHandler, PointerEvent } from "react";
-import { askSampleTicket, warmSignIn } from "@/lib/sample-ticket";
+import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
 
 /**
  * What every way into the sample does before the visitor arrives: pointing at it or reaching it by keyboard fetches
@@ -14,11 +14,15 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
     onFocus: warmSignIn,
     onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
       if (event.button !== 0) return;
-      warmSignIn();
       askSampleTicket();
+      warmSignIn();
+      startSignIn();
     },
     onClick: (event: MouseEvent<HTMLAnchorElement>) => {
-      if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) askSampleTicket();
+      if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+        askSampleTicket();
+        startSignIn();
+      }
       onClick?.(event);
     },
   };
@@ -27,4 +31,16 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
 /** The link into the sample conference. */
 export function SampleLink(props: Omit<ComponentProps<typeof Link>, "href">) {
   return <Link {...props} href="/app?intent=sample" {...useSampleDoor()} />;
+}
+
+/** A phone has no pointing: as a ref, fetches Clerk's scripts once the way in comes near the window, before the tap. */
+export function warmWhenNear(link: HTMLElement | null) {
+  if (!link) return;
+  const near = new IntersectionObserver((seen) => {
+    if (!seen.some((entry) => entry.isIntersecting)) return;
+    warmSignIn();
+    near.disconnect();
+  }, { rootMargin: "600px 0px" });
+  near.observe(link);
+  return () => near.disconnect();
 }
