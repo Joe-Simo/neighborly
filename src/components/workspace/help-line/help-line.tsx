@@ -1,6 +1,6 @@
 "use client";
 
-import { FOLD_HOLD, foldLeaves, holdThePage } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf } from "@/components/workspace/fold";
 import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
   useCallback,
@@ -128,6 +128,8 @@ function HelpLine() {
   const [sealed, setSealed] = useState<
     (Drafted & { neighborId: Id<"neighbors"> }) | null
   >(null);
+  // From the moment the saved draft starts to close, the next one waiting is laid in its place.
+  const [handing, setHanding] = useState(false);
   useEffect(() => {
     if (!sealed) return;
     let left = false;
@@ -141,14 +143,25 @@ function HelpLine() {
         // close, the line and the line's words all start on the same frame, so the room only ever gets shorter. The
         // sheet is taken out the moment its close ends, before anything is drawn; for less motion the close is a plain
         // cut, so the line and the cut are one change.
-        flushSync(() =>
+        flushSync(() => {
           setDone({
             message: asks ? "Request saved. It waits for the conference to decide." : `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
             record: sealed.neighborId,
             filed: asks ? { name: caller(sealed.call), asks } : undefined,
+          });
+          setHanding(true);
+        });
+        // A next draft is laid under the closing sheet, and its room opens as the other's closes, so what is under
+        // them moves once and never jumps. It is drawn, whole, once the saved sheet has gone.
+        const next = document.querySelector<HTMLElement>(".help-sheet[data-arriving]");
+        const going = document.querySelector<HTMLElement>(".help-sheet.help-sealed");
+        if (next && going) openInPlaceOf(next, going);
+        void foldLeaves().then(() =>
+          flushSync(() => {
+            setSealed(null);
+            setHanding(false);
           }),
         );
-        void foldLeaves().then(() => flushSync(() => setSealed(null)));
       });
     }, FOLD_HOLD);
     return () => {
@@ -157,6 +170,8 @@ function HelpLine() {
     };
   }, [sealed]);
   const onSheet = sealed ?? drafted;
+  // The draft that waits next, laid under the saved one while it closes.
+  const next = sealed && handing && drafted && drafted.call.id !== sealed.call.id ? drafted : null;
   const sheetOpen = onSheet !== null;
   const log = useCallback(() => {
     setDone(null);
@@ -322,41 +337,45 @@ function HelpLine() {
           drafting.pending && !sealed ? (
             <ReadingSheet note={read?.note} />
           ) : (
-            onSheet && (
-            <DraftSheet
-              key={onSheet.call.id}
-              drafted={onSheet}
-              sealed={onSheet === sealed}
-              waiting={drafts.length + (sealed ? 1 : 0)}
-              format={format}
-              // Once saved, its buttons stay as they were while saving and fade from there with the seal,
-              // never back to full ink first.
-              pending={approving.pending || onSheet === sealed}
-              toDo={<DraftToDo notes={onSheet.draft.notes} />}
-              limits={
-                <AssistantLimits
-                  callId={onSheet.call.id}
-                  verification={onSheet.draft.verification}
-                  notes={onSheet.draft.notes}
-                />
-              }
-              onApprove={() => void approve(onSheet)}
-              onChange={() =>
-                setStep(
-                  onSheet.call.neighborId
-                    ? { kind: "change", drafted: onSheet }
-                    : { kind: "join", drafted: onSheet, then: "change" },
-                )
-              }
-              onDiscard={() => {
-                settle(onSheet.call);
-                if (kept)
-                  void approving.save(() =>
-                    discardDraft({ churchId, callId: onSheet.call.id }),
-                  );
-                setDone({ message: "Draft discarded. Nothing was saved." });
-              }}
-            />
+            [onSheet, next].map(
+              (one) =>
+                one && (
+                  <DraftSheet
+                    key={one.call.id}
+                    drafted={one}
+                    sealed={one === sealed}
+                    arriving={one === next}
+                    waiting={drafts.length}
+                    format={format}
+                    // Once saved, its buttons stay as they were while saving and fade from there with the seal,
+                    // never back to full ink first.
+                    pending={approving.pending || one === sealed}
+                    toDo={<DraftToDo notes={one.draft.notes} />}
+                    limits={
+                      <AssistantLimits
+                        callId={one.call.id}
+                        verification={one.draft.verification}
+                        notes={one.draft.notes}
+                      />
+                    }
+                    onApprove={() => void approve(one)}
+                    onChange={() =>
+                      setStep(
+                        one.call.neighborId
+                          ? { kind: "change", drafted: one }
+                          : { kind: "join", drafted: one, then: "change" },
+                      )
+                    }
+                    onDiscard={() => {
+                      settle(one.call);
+                      if (kept)
+                        void approving.save(() =>
+                          discardDraft({ churchId, callId: one.call.id }),
+                        );
+                      setDone({ message: "Draft discarded. Nothing was saved." });
+                    }}
+                  />
+                ),
             )
           )
         }

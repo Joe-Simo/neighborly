@@ -89,7 +89,8 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
     sheet.style.pointerEvents = "none";
     return;
   }
-  const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
+  const style = getComputedStyle(sheet);
+  const { marginTop, marginBottom, paddingTop, paddingBottom } = style;
   const height = sheet.offsetHeight;
   sheet.style.boxSizing = "border-box";
   sheet.style.overflow = "hidden";
@@ -115,10 +116,19 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   await sheet.animate(
     [
       { height: `${height}px`, minHeight: "0px", marginTop, marginBottom, paddingTop, paddingBottom },
-      { height: "0px", minHeight: "0px", marginTop: "0px", marginBottom: closed, paddingTop: "0px", paddingBottom: "0px" },
+      { height: edge(style), minHeight: "0px", marginTop: "0px", marginBottom: closed, paddingTop: "0px", paddingBottom: "0px" },
     ],
     { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   ).finished;
+}
+
+/**
+ * How thin a piece of paper is when it is shut: its own edge. No height takes its borders away, so it shuts to them
+ * and not to nothing. Its room then shrinks or grows evenly to the end, and a sheet that opens while another shuts
+ * takes, on every frame, exactly the room the other gives up.
+ */
+function edge(style: CSSStyleDeclaration) {
+  return `${parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth)}px`;
 }
 
 /** Whether the browser itself keeps the view in place around this paper: it can, and no room it lies in says not to. */
@@ -191,14 +201,33 @@ export function openUp(sheet: HTMLElement) {
     sheet.animate([{ transform: HELD_AWAY }, { transform: "none" }], { duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" });
     return;
   }
-  const { marginTop, marginBottom, paddingTop, paddingBottom } = getComputedStyle(sheet);
+  openRoom(sheet);
+}
+
+/**
+ * The next sheet, laid where another is closing (the next draft under a yes): its room opens over the same 360ms
+ * as the other's closes, so what is under the two moves once, from the one height to the other, and never jumps.
+ * The room keeps it unseen while its room opens and lays it down whole once the other has gone. Should the sheet
+ * it follows lie wholly above the window, nobody sees either go or come: it is laid at once, and the window keeps
+ * what the person is looking at. Call it before the browser paints. Nothing moves for anyone who asks for less motion.
+ */
+export function openInPlaceOf(sheet: HTMLElement, going: HTMLElement) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (home(going).bottom > viewTop()) return openRoom(sheet);
+  if (!anchored(sheet)) window.scrollBy(0, document.body.offsetHeight - pageWithout(sheet, "gone"));
+}
+
+/** Opens the room of a piece of paper just laid in the page, from exactly the page as it was without it. */
+function openRoom(sheet: HTMLElement) {
+  const style = getComputedStyle(sheet);
+  const { marginTop, marginBottom, paddingTop, paddingBottom } = style;
   const height = sheet.offsetHeight;
   holdThePage();
   const shut = { overflow: "hidden", boxSizing: "border-box", minHeight: "0px" };
   const from = closedMargin(sheet, pageBefore ?? pageWithout(sheet, "gone"));
   sheet.animate(
     [
-      { ...shut, height: "0px", marginTop: "0px", marginBottom: from, paddingTop: "0px", paddingBottom: "0px" },
+      { ...shut, height: edge(style), marginTop: "0px", marginBottom: from, paddingTop: "0px", paddingBottom: "0px" },
       { ...shut, height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
     ],
     { id: OPENING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
