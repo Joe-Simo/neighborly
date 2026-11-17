@@ -10,6 +10,8 @@ const local = [
   // The week note: the week it was put away, and the figures it last showed (workspace/week-note/week-note.tsx).
   "week-note-put-away",
   "week-note-last",
+  // The account the backend last found here (components/live-providers.tsx).
+  "kind-helps-entered",
 ];
 const session = [
   // The name written on the home page's card (lib/card-for.ts).
