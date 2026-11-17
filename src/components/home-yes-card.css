@@ -66,3 +66,7 @@
 
 /* On the public page the sheet labels keep the public minimum of 15px; the workspace keeps its own 13px. */
 .home-yes .help-sheet-label{font-size:15px}
+/* The unsaved line fades in place with the buttons, so the sheet keeps its height at the seal. */
+.home-yes-stage .help-unsaved{transition:opacity 120ms ease-out,visibility 0s linear 120ms}
+.home-yes-stage .help-sealed .help-unsaved{visibility:hidden;opacity:0}
+@media (prefers-reduced-motion:reduce){.home-yes-stage .help-unsaved{transition:none}}

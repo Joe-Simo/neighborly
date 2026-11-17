@@ -61,7 +61,7 @@ export function DraftToDo({ notes }: { notes: string[] }) {
  *
  * The note is fetched only when the sheet is opened. A draft the assistant could not check was made by rules alone, and the sheet says so.
  */
-export function AssistantLimits({ callId, verification, notes, sealed = false }: { callId: Id<"calls">; verification: "checked" | "review"; notes: string[]; sealed?: boolean }) {
+export function AssistantLimits({ callId, verification, notes }: { callId: Id<"calls">; verification: "checked" | "review"; notes: string[] }) {
   const { data } = useWorkspace();
   const text = useRoomWords();
   const [open, setOpen] = useState(false);
@@ -74,7 +74,8 @@ export function AssistantLimits({ callId, verification, notes, sealed = false }:
   const read = sent?.replace(/\[(name|phone|email|address|date)\]/g, (_: string, kind: string) => `[${removed[kind]}]`);
   return (
     <span className="block min-w-0">
-      {text.made[verification]} {whys.join(" ")} {!sealed && !whys.length && text.unsaved}{" "}
+      {/* Once the yes is given, "nothing is saved" is no longer true: the sealed sheet fades it where it stands. */}
+      {text.made[verification]} {whys.join(" ")} {!whys.length && <span className="help-unsaved">{text.unsaved}</span>}{" "}
       <button type="button" className={`${quiet} -my-2.5 text-inherit decoration-[#cfc5dc]`} aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>
         {open ? text.hide : text.show}
       </button>

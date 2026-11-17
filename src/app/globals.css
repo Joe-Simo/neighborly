@@ -934,11 +934,14 @@ select:focus-visible {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  /* Nothing eases. A change is made at once rather than by a transition, however short: a transition paints its
+     first value in the frame it starts, and a change that is inherited (a room shown or hidden) would start one at
+     every level below it, so the change would go down the page a level a frame. */
   *,
   *:before,
   *:after {
     animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
     scroll-behavior: auto !important;
   }
 }

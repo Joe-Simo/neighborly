@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import { components, internal } from "./_generated/api";
 import { internalMutation, mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
+import { hour, hourAsked } from "./access";
+import { seeded } from "./sampleData";
 
 /** The made-up owner every visitor shares. It exists in Clerk with no password and belongs only to the sample conference. */
 export const sampleOwner = { name: "Sample Owner", email: "demo@kindhelps.com" };
@@ -87,5 +89,80 @@ export const nightly = internalMutation({
   handler: async (ctx) => {
     if (process.env.SAMPLE_NIGHTLY !== "off") await ctx.runMutation(internal.demo.refresh, {});
     return null;
+  },
+});
+
+const HOUR = 3_600_000, DAY = 24 * HOUR;
+const seedKey = v.string();
+const firstRoomCommitment = v.object({ id: seedKey, teamId: seedKey, title: v.string(), start: v.number(), end: v.number(), location: v.string(), preparation: v.string(), assigneeId: v.union(seedKey, v.null()), version: v.number(), status: v.string(), coordinatorName: v.string() });
+const firstRoomAnnouncement = v.object({ id: seedKey, title: v.string(), body: v.string(), authorName: v.string(), createdAt: v.number() });
+/**
+ * This week of the sample conference, for anyone, before any sign-in: what the room draws while the visitor's
+ * session is still being made. It is built from the seed alone for the hour asked (see sampleData.seeded):
+ * it reads no database row, takes no id, and can be pointed at no conference. So it holds only made-up data,
+ * never what a visitor typed, and costs no database allowance however many visitors ask. Each row carries a
+ * seed key where the signed-in room has an id: a key opens nothing, and every act still needs the session.
+ * The fields are those of workspace.dashboard as the sample's owner sees it, with the first requests and
+ * announcements as pages.requestsPage and pages.announcementsPage give them, newest first.
+ */
+export const firstRoom = query({
+  args: { at: hour },
+  returns: v.union(v.null(), v.object({
+    church: v.object({ id: seedKey, name: v.string(), timeZone: v.string(), sample: v.boolean(), wordSet: v.union(v.literal("general"), v.literal("vincentian")) }),
+    user: v.object({ id: seedKey, name: v.string(), email: v.string(), language: v.union(v.literal("en"), v.literal("es")) }),
+    canCoordinate: v.boolean(),
+    truncated: v.array(v.string()),
+    teams: v.array(v.object({ id: seedKey, name: v.string(), description: v.string(), memberIds: v.array(seedKey), approvedMemberIds: v.array(seedKey), myInvitation: v.boolean(), canCoordinate: v.boolean(), memberRoles: v.array(v.object({ personId: seedKey, role: v.union(v.literal("coordinator"), v.literal("member")) })) })),
+    people: v.array(v.object({ id: seedKey, name: v.string(), email: v.string(), role: v.string(), active: v.boolean(), approved: v.boolean(), coverOptIn: v.boolean() })),
+    commitments: v.array(firstRoomCommitment),
+    requests: v.array(v.object({ id: seedKey, commitmentId: seedKey, recipientId: seedKey, status: v.string() })),
+    availability: v.array(v.object({ id: seedKey, personId: seedKey, start: v.string(), end: v.string() })),
+    timeOff: v.array(v.object({ id: seedKey, personId: seedKey, start: v.string(), end: v.string(), note: v.string() })),
+    tasks: v.array(v.object({ id: seedKey, title: v.string(), dueAt: v.union(v.number(), v.null()), assigneeId: v.union(seedKey, v.null()), complete: v.boolean() })),
+    meetings: v.array(v.object({ id: seedKey, title: v.string(), start: v.number(), end: v.number(), location: v.string(), fanoutStatus: v.union(v.literal("processing"), v.literal("complete")), responsesLimitedToSelf: v.boolean(), responses: v.array(v.object({ personId: seedKey, response: v.string() })) })),
+    announcements: v.array(firstRoomAnnouncement),
+    invitations: v.array(v.object({ id: seedKey, email: v.string(), role: v.string(), status: v.string() })),
+    firstRequests: v.array(v.object({ id: seedKey, commitmentId: seedKey, recipientId: seedKey, status: v.string(), commitment: v.union(firstRoomCommitment, v.null()) })),
+    firstAnnouncements: v.array(firstRoomAnnouncement),
+  })),
+  handler: async (_ctx, { at }) => {
+    if (!process.env.DEMO_CLERK_USER_ID) return null;
+    // The sample was last made at the nightly reset, 09:00 UTC, so the seed is asked for that moment and
+    // matches the rows a visitor meets once signed in.
+    const asked = hourAsked(at), reset = Math.floor((asked - 9 * HOUR) / DAY) * DAY + 9 * HOUR;
+    const rows = await seeded(reset, sampleOwner);
+    const [church] = rows("churches"), members = rows("memberships"), [me] = members;
+    const teamMembers = rows("teamMembers").filter((relation) => relation.status === "active");
+    const name = (id: string) => members.find((member) => member._id === id)?.name ?? "A former member";
+    const most = <Row>(table: string, found: Row[]) => ({ table, rows: found.slice(0, 200), over: found.length > 200 });
+    const shown = { commitments: most("commitments", rows("commitments")), requests: most("requests", rows("requests")), announcements: most("announcements", rows("announcements")) };
+    const commitment = (shift: (typeof shown.commitments.rows)[number]) => ({ id: shift._id, teamId: shift.teamId, title: shift.title, start: shift.start, end: shift.end, location: shift.location, preparation: shift.preparation, assigneeId: shift.assigneeId, version: shift.version, status: shift.cancelled ? "cancelled" : shift.assigneeId ? "accepted" : "open", coordinatorName: name(shift.coordinatorId) });
+    const announcement = (note: (typeof shown.announcements.rows)[number]) => ({ id: note._id, title: note.title, body: note.body, authorName: name(note.authorId), createdAt: note.createdAt });
+    const request = (asking: (typeof shown.requests.rows)[number]) => ({ id: asking._id, commitmentId: asking.commitmentId, recipientId: asking.recipientId, status: asking.status });
+    const responses = rows("meetingResponses");
+    return {
+      church: { id: church._id, name: church.name, timeZone: church.timeZone, sample: true, wordSet: church.wordSet ?? "general" },
+      user: { id: me._id, name: me.name, email: me.email, language: me.language === "es" ? "es" as const : "en" as const },
+      canCoordinate: true,
+      truncated: Object.values(shown).filter((kind) => kind.over).map((kind) => kind.table),
+      teams: rows("teams").map((team) => {
+        const on = teamMembers.filter((relation) => relation.teamId === team._id);
+        return { id: team._id, name: team.name, description: team.description, memberIds: on.map((relation) => relation.memberId), approvedMemberIds: on.filter((relation) => relation.approved).map((relation) => relation.memberId), myInvitation: false, canCoordinate: true, memberRoles: on.map((relation) => ({ personId: relation.memberId, role: relation.teamRole })) };
+      }),
+      people: members.map((member) => ({ id: member._id, name: member.name, email: member.email, role: member.role, active: member.active, approved: member.approved, coverOptIn: member.coverOptIn })),
+      commitments: shown.commitments.rows.map(commitment),
+      requests: shown.requests.rows.map(request),
+      availability: rows("availability").map((free) => ({ id: free._id, personId: free.memberId, start: free.start, end: free.end })),
+      timeOff: rows("timeOff").map((away) => ({ id: away._id, personId: away.memberId, start: away.start, end: away.end, note: away.memberId === me._id ? away.note : "" })),
+      tasks: rows("tasks").map((task) => ({ id: task._id, title: task.title, dueAt: task.dueAt, assigneeId: task.assigneeId, complete: task.complete })),
+      meetings: rows("meetings").map((meeting) => ({ id: meeting._id, title: meeting.title, start: meeting.start, end: meeting.end, location: meeting.location, fanoutStatus: meeting.fanoutStatus, responsesLimitedToSelf: true, responses: responses.filter((response) => response.meetingId === meeting._id && response.memberId === me._id).map((response) => ({ personId: response.memberId, response: response.response })) })),
+      announcements: shown.announcements.rows.map(announcement),
+      invitations: rows("invitations").map((invitation) => ({ id: invitation._id, email: invitation.email, role: invitation.role, status: invitation.status })),
+      firstRequests: rows("requests").reverse().slice(0, 25).map((asking) => {
+        const shift = rows("commitments").find((found) => found._id === asking.commitmentId);
+        return { ...request(asking), commitment: shift ? commitment(shift) : null };
+      }),
+      firstAnnouncements: rows("announcements").reverse().slice(0, 25).map(announcement),
+    };
   },
 });
