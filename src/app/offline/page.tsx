@@ -21,7 +21,7 @@ export default function Offline() {
     <div className="live-app public-state">
       <main className="live-auth paper-rise">
         <div className="live-auth-art" aria-hidden="true" />
-        <p className="live-kicker">Kind Helps</p>
+        <p className="public-state-mark">kind helps</p>
         {said.map(({ language, offlineTitle, offlinePageDeck }) => (
           <div key={language} lang={language}>
             <h1>{offlineTitle}</h1>

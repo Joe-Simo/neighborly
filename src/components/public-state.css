@@ -29,3 +29,5 @@
 /* A page that carries both languages shows the reader's own (first-language.ts sets it on the root before paint). */
 :root:lang(es) .public-state [lang="en"],
 :root:not(:lang(es)) .public-state [lang="es"] { display: none; }
+/* The name is only ever the lowercase wordmark. */
+.public-state .public-state-mark { margin: 0 0 18px; font: 400 30px/1 "Newsreader", Georgia, serif; letter-spacing: -0.065em; color: var(--live-ink, #24382d); }
