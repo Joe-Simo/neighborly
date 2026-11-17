@@ -21,3 +21,32 @@
 }
 @media(max-width:850px){.home-yes-desk{min-height:459px}}
 @media(max-width:480px){.home-yes-desk{min-height:583px}}
+/* On the widest screens the deck is a sentence beside the sheet, about 38 letters to a line, and the small words go up a step. */
+@media(min-width:1600px){
+  .home-yes .home-yes-words p:last-child{max-width:17.5em;text-wrap:pretty}
+  .home-yes-kicker.home-yes-kicker{font-size:16px}
+  /* The sheet's type steps up with the page (--up), so the sheet fills the room beside the words and is itself filled: sentence and sheet are a pair, the page's own gap between them. Its request is one line. Sizes are the sheet's own, times the step. */
+  .home-yes-desk{--up:1.1;width:100%;max-width:calc(780px*var(--up));min-height:calc(420px*var(--up))}
+  .home-yes .home-yes-stage{font-size:calc(17px*var(--up))}
+  .home-yes .home-yes-stage :is(.help-sheet-label,.home-yes-filed li small,.home-yes-year){font-size:calc(15px*var(--up))}
+  .home-yes .home-yes-stage :is(.help-assistant-line,.help-actions [data-slot=button],.home-yes-again){font-size:calc(16px*var(--up))}
+  .home-yes .home-yes-stage :is(.home-yes-filed li span,.home-yes-after,.home-yes-in){font-size:calc(17px*var(--up))}
+  .home-yes .help-sheet .help-from{font-size:calc(19px*var(--up))}
+  .home-yes .home-yes-stage .home-yes-year em{font-size:calc(20px*var(--up))}
+  .home-yes .help-sheet .help-quote{font-size:calc(21px*var(--up))}
+  .home-yes .home-yes-stage :is(.home-yes-filed li strong,.home-yes-after>span){font-size:calc(24px*var(--up))}
+  .home-yes .help-sheet h2{font-size:calc(34px*var(--up))!important;white-space:nowrap}
+  .home-yes .help-sheet{display:flex;flex-direction:column;padding:calc(30px*var(--up)) calc(34px*var(--up))}
+  /* The list the sheet becomes is the taller of the two, so the draft's foot line stands at the foot of the paper and the room is given to the request above it. */
+  .home-yes .help-sheet .help-sheet-body{flex:1}
+  .home-yes .help-sheet .help-sheet-body>:first-child{align-self:start}
+  .home-yes .home-yes-filed{padding:calc(31px*var(--up)) calc(35px*var(--up)) calc(27px*var(--up))}
+}
+/* Up to here the sheet's words need its whole width: they run across, and the button has its own row. */
+@media(min-width:1600px) and (max-width:1849px){
+  .home-yes .help-sheet .help-sheet-body{grid-template-columns:minmax(0,1fr)}
+  .home-yes .home-yes-after{column-gap:12px}
+  .home-yes .home-yes-after>span{margin-right:0}
+}
+@media(min-width:1700px){.home-yes-desk{--up:1.16}}
+@media(min-width:1850px){.home-yes-desk{--up:1.3}}

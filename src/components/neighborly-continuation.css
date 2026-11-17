@@ -76,3 +76,5 @@
 .neighborly-static-story{position:relative;background:#eee7d7;padding:0 0 60px}
 .neighborly-static-story img{display:block;width:100%;height:auto}
 .neighborly-static-story p{margin:32px 7% 0;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em}
+/* On the widest screens the foot's small line and the band's links go up a step with everything else. */
+@media(min-width:1600px){.neighborly-colophon{font-size:16px}.neighborly-close .neighborly-final-links a{font-size:17px}}
