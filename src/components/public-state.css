@@ -74,3 +74,12 @@
   .public-state .live-auth { width: min(100% - 44px, 520px); margin: 0 auto; padding-top: 0; padding-bottom: calc(50px + env(safe-area-inset-bottom)); min-height: 100svh; }
   .public-state .live-auth-art { position: relative; inset: auto; left: 50%; width: 100vw; height: calc(min(44svh, 62vw) + env(safe-area-inset-top)); margin: 0 0 44px -50vw; background-size: cover; background-position: 50% 0; }
 }
+/* A short phone's sign-in needs a low band; these pages hold a few lines and one button, so they keep the whole painting:
+   both faces and both hands, with the cut below them. */
+@media (max-width: 699px) and (orientation: portrait) and (max-height: 700px) {
+  .public-state .live-auth-art { height: 61vw; background-position: 50% 0; }
+}
+/* A phone on its side: the band runs the whole width and shows the hands and the card, whole, with no face at its top edge. */
+@media (max-width: 850px) and (orientation: landscape) {
+  .public-state .live-auth-art { left: 50%; width: 100vw; margin-left: -50vw; margin-right: 0; background-size: cover; background-position: 50% 80%; }
+}
