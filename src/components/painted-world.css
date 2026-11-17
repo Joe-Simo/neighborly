@@ -310,6 +310,7 @@
   .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-caption{opacity:1}
   /* The words and the header are printed on the sheet: they stay on it until the edge has passed them, though they can no longer be reached. */
   .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] :is(.painted-world-caption,.painted-world-header,.painted-world-tools){visibility:visible}
+  .neighborly-connected-world[data-lifting] .painted-world[data-hero-only=true] .painted-world-scroll-cue{visibility:hidden}
   /* The empty hand shows the moment the card sets out, as one cut. */
   .thread-live .thread-empty{transition:none}
 }
