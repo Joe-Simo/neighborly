@@ -64,8 +64,10 @@ const reading = new Map<LiveArea, Reading>();
 const faultKeptMs = 1000;
 const room = (area: LiveArea): ComponentType =>
   function Room() {
-    const code = arrived.get(area);
-    if (code) return createElement(code);
+    // Once this room has waited, every later drawing of it reads the same fetch through `use`, also after the code
+    // has arrived: React holds a component to the way it waited (a drawing that skipped `use` was reported as a fault
+    // in the console), and a fetch that has been read answers at once. A room entered after its code arrived never
+    // comes here (roomSection).
     let read = reading.get(area);
     if (!read) {
       const next: Reading = { wait: fetchRoom(area) };

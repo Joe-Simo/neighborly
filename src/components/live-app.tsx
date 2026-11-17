@@ -90,6 +90,24 @@ function LiveRooms({
   const invitationRequest = useRef<{ key: string; id: string } | null>(null);
   const execute = useMutation(api.workspace.execute);
   const [invitationConsumed, setInvitationConsumed] = useState(false);
+  // An invitation link is asked about once, as the page opens and beside Clerk's own start: yes or no, nothing else.
+  // A link that is no longer good is said so on the sheet and then dropped, so nobody signs up for nothing. If the
+  // question itself fails the link is left to stand; joining still checks it.
+  const askInvitation = useAction(api.invitations.good);
+  const [invitationGood, setInvitationGood] = useState<boolean | undefined>(invitationToken ? undefined : true);
+  useEffect(() => {
+    if (!invitationToken) return;
+    let current = true;
+    askInvitation({ token: invitationToken }).then(
+      (good) => current && setInvitationGood(good),
+      () => current && setInvitationGood(true),
+    );
+    return () => {
+      current = false;
+    };
+  }, [askInvitation, invitationToken]);
+  const badInvite = invitationGood === false;
+  const liveToken = badInvite ? "" : invitationToken;
   const [selectedChurch, setSelectedChurch] = useState<Id<"churches"> | null>(
     null,
   );
@@ -202,22 +220,25 @@ function LiveRooms({
   // The sign-in sheet is for someone known to be signed out. Until that is known, and from then until
   // the workspace has arrived, there is one waiting screen and nothing else: a signed-in person goes
   // from it straight to their room.
-  if (signedOut)
-    return (
-      <LiveAuth key={intent} intent={intent} sampleEntry={sampleEntry} enterSample={enterSample} />
-    );
+  if (signedOut) {
+    // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
+    if (invitationGood === undefined) return <LiveRoomLoading />;
+    const entry = badInvite ? "signin" : intent;
+    return <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry} enterSample={enterSample} badInvite={badInvite} />;
+  }
   // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
   if (waiting) return waitedLong ? <LaunchFailure language={deviceLanguage} leave={signOut} /> : <LiveRoomLoading />;
   if (sampleVisitor && !churchId) return <SampleResetting leave={signOut} />;
   if (
     !churchId ||
-    (invitationToken && !invitationConsumed) ||
-    (!entryHandled && (intent === "start" || intent === "join"))
+    (liveToken && !invitationConsumed) ||
+    (!entryHandled && !badInvite && (intent === "start" || intent === "join"))
   )
     return (
       <LiveWelcome
-        initialToken={invitationToken}
-        initialMode={intent === "join" || invitationToken ? "join" : "create"}
+        initialToken={liveToken}
+        initialMode={!badInvite && (intent === "join" || invitationToken) ? "join" : "create"}
+        badInvite={badInvite}
         signOut={signOut}
         createChurch={async (value) => {
           setSelectedChurch(await createChurch(value));

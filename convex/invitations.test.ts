@@ -137,6 +137,23 @@ describe("church invitations", () => {
     await t.run(async ctx => { await ctx.db.patch("invitations", expired.invitationId, { expiresAt: Date.now() - 1 }); });
     await expect(as(ids.recipient).action(api.invitations.accept, { token: expired.token!, displayName: "Person" })).rejects.toThrow("invalid or expired");
   });
+  test("anyone may ask whether a link is still good, and every bad case is the same no", async () => {
+    const { t, ids, as } = await setup();
+    const create = (requestId: string) => as(ids.owner).action(api.invitations.create, { churchId: ids.church, email: "person@example.org", role: "member", requestId });
+    const good = (token: string) => t.action(api.invitations.good, { token });
+    const pending = await create("request_pending_1234");
+    expect(await good(pending.token!)).toBe(true);
+    expect(await good("0000000000")).toBe(false);
+    expect(await good("0".repeat(64))).toBe(false);
+    const revoked = await create("request_revoked_1234");
+    await as(ids.owner).mutation(api.invitations.revoke, { invitationId: revoked.invitationId });
+    expect(await good(revoked.token!)).toBe(false);
+    await t.run(async ctx => { await ctx.db.patch("invitations", pending.invitationId, { expiresAt: Date.now() - 1 }); });
+    expect(await good(pending.token!)).toBe(false);
+    const used = await create("request_used_12345678");
+    await as(ids.recipient).action(api.invitations.accept, { token: used.token!, displayName: "Person" });
+    expect(await good(used.token!)).toBe(false);
+  });
   test("disabled delivery retains notifications and cancels stale events on retry", async () => {
     const { t, ids, as } = await setup();
     const { queueCoverRequest, queueMeetingInvitation } = await import("./notificationEvents");

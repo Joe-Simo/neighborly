@@ -15,7 +15,8 @@
 .fresco-invitation h2{margin:0 0 24px;font:400 clamp(44px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.065em}
 .fresco-invitation h2 em{font-weight:400}
 .fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
-.fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none}
+/* Only its colour eases. Were everything to ease, the button would still be hidden for a moment after its place is shown, and the keyboard could not land on it. */
+.fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none;transition-property:background-color}
 .fresco-open[data-slot=button]:hover{background:#3a5040}
 
 /* One opening in the wall. It is the doorway first, then the frame of the fresco. */
@@ -34,6 +35,8 @@
 .fresco-stage[data-settled=true] .fresco-doors i{background-image:url(/assets/threshold/doors-1000.webp)}
 .fresco-doors i:first-child{left:0;transform-origin:left center;border-radius:100% 0 0 0/30% 0 0 0;background-position:left center;transform:rotateY(calc(var(--door) * 88deg + var(--inside) * 40deg))}
 .fresco-doors i:last-child{left:0;translate:99.4% 0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;background-position:right center;transform:rotateY(calc(var(--door) * -88deg - var(--inside) * 40deg))}
+/* The line the keyboard is set down on inside the courtyard is words, not a control: it takes no ring. */
+main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .fresco-caption{position:absolute;z-index:2;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;opacity:calc(var(--grow) * 2.5 - 1.5);translate:0 calc((1 - var(--grow)) * 20px)}
 .fresco-caption em{font-weight:400}
 /* Standing in the courtyard: the words are set large on the paving, and the wordmark steps aside so nothing sits over the picture. */

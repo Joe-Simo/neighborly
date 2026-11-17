@@ -132,10 +132,11 @@ export function NeighborlyExperience() {
         window.scrollTo({ top: y, behavior: "instant" });
         from.inert = true; from.setAttribute("aria-hidden", "true");
         to.inert = false; to.setAttribute("aria-hidden", "false");
+        // The place arrived at is drawn before its control is asked to take the keyboard: a control still hidden by the last place's drawing cannot.
+        update();
         pick(reachable(to))?.focus({ preventScroll: true });
-        request();
       };
-      if (!event.shiftKey && courtyard.inert && at === reachable(portrait).at(-1)) go(portrait, courtyard, top + height * (media.matches ? .5 : .62), controls => controls[0]);
+      if (!event.shiftKey && courtyard.inert && at === reachable(portrait).at(-1)) go(portrait, courtyard, top + height * (media.matches ? .5 : 1), controls => controls[0]);
       else if (event.shiftKey && portrait.inert && at === reachable(courtyard)[0]) go(courtyard, portrait, top, controls => controls.at(-1));
     };
     element.addEventListener("keydown", walk);
