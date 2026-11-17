@@ -332,33 +332,47 @@ export function ReportView({
         ))}
       </dl>
 
-      <dl className="help-figures report-figures-print">
+      {/* On paper the year is one sheet a council can file: the year's total over four figures, then each kind of
+          help as a table. Set as plain words, since a printed page does not count up. */}
+      <dl className="report-sheet-figures">
+        <div className="report-sheet-total">
+          <dt>Help given</dt>
+          <dd>
+            {money(report.helpPaid)}
+            <small>
+              {voucherMoney ? "Paid direct or given as vouchers, never in cash" : "Paid direct, never in cash"}, {spanLabel(report)}
+              {soFar}.{moved && ` ${money(report.history.amount)} more is in ServWare history.`}
+            </small>
+          </dd>
+        </div>
         <div>
           <dt>Neighbors helped</dt>
           <dd>
-            <Figure value={report.history.householdsInAll} order={0} />
+            {count(report.history.householdsInAll)}
             <small>
-              Households, {spanLabel(report)}
-              {soFar}. {plural(report.history.peopleInAll, "person", "people")} in all.
-              {moved && ` ${count(report.history.households)} are from ServWare history.`}
+              Households, {plural(report.history.peopleInAll, "person", "people")} in all
             </small>
           </dd>
         </div>
         <div>
           <dt>Home visits</dt>
           <dd>
-            <Figure value={report.visits} order={1} />
+            {count(report.visits)}
             <small>Always in pairs</small>
           </dd>
         </div>
         <div>
-          <dt>Help given</dt>
+          <dt>Calls taken</dt>
           <dd>
-            <Figure value={report.helpPaid} order={2} step={100} format={money} />
-            <small>
-              {voucherMoney ? "Paid direct or given as vouchers, never in cash" : "Paid direct, never in cash"}
-              {moved && `. ${money(report.history.amount)} more is in ServWare history.`}
-            </small>
+            {count(report.calls.taken)}
+            <small>{count(report.calls.returned)} returned</small>
+          </dd>
+        </div>
+        <div>
+          <dt>Hours given</dt>
+          <dd>
+            {count(report.time.hours)}
+            <small>{plural(report.visitMiles, "mile")} driven to visits</small>
           </dd>
         </div>
       </dl>
@@ -395,6 +409,37 @@ export function ReportView({
           );
         })}
       </ol>
+      <table className="report-kinds-print">
+        <thead>
+          <tr>
+            <th scope="col">Kind of help</th>
+            <th scope="col">Requests paid</th>
+            <th scope="col">People</th>
+            <th scope="col">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {report.kinds.map((line) => {
+            const counted = line.kind === "voucher" && line.paid <= 0 && report.vouchers.given > 0;
+            return (
+              <tr key={line.kind}>
+                <th scope="row">{kindLabels[line.kind]}</th>
+                <td>{counted ? "Given from the shelf" : count(line.requestsPaid)}</td>
+                <td>{count(line.people)}</td>
+                <td>{counted ? plural(report.vouchers.given, "voucher") : money(line.paid)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">All help</th>
+            <td>{count(report.kinds.reduce((all, line) => all + line.requestsPaid, 0))}</td>
+            <td />
+            <td>{money(report.helpPaid)}</td>
+          </tr>
+        </tfoot>
+      </table>
       {moved && (
         <p className="report-history">
           <span>From ServWare history</span>

@@ -102,7 +102,7 @@
 /* The year as one cut piece. The amount paid is cut from green paper and stands on a ledge; beside it stand three
    small slips for the calls, requests and visits that led to it. Captions sit under the ledge. On paper the plain
    figures print instead. */
-@media screen { .report-figures-print { display: none; } }
+@media screen { .report-sheet-figures, .report-kinds-print { display: none; } }
 .report-year {
   display: grid;
   grid-template-columns: minmax(0, 1fr) repeat(3, auto);
@@ -766,4 +766,44 @@
 }
 @media (max-width: 370px) {
   .report-months:not([data-months="3"]) p.help-amount { font-size: 13px; }
+}
+
+/* On paper "Print this year" is one sheet a council can file: the year's total over its four figures, each kind
+   of help as a table, the months, what became of each request, and where the counts come from. Ink on white, no
+   colour, nothing to press. Every line follows on later pages only when "Show every line" is open on screen. */
+@media print {
+  .report .help-bars:not(.report-teams), .report .live-section:has(> .report-teams), .report .report-lines:not([data-open]),
+  .report .report-outcomes, .report .report-legend li::before { display: none !important; }
+  .report .report-lines[data-open] { break-before: page; margin-top: 0; }
+  .report .report-lines > .live-section-head { border-top: 1.5pt solid #000; padding-top: 6pt; }
+
+  .report-sheet-figures { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 4pt 0 12pt; border-top: 1.5pt solid #000; border-bottom: 1px solid #000; break-inside: avoid; }
+  .report-sheet-figures > div { padding: 9pt 12pt 10pt 0; }
+  .report-sheet-figures > div + div:not(:nth-child(2)) { padding-left: 12pt; border-left: 1px solid var(--print-line); }
+  .report-sheet-figures dt { margin-bottom: 4pt; font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+  .report-sheet-figures dd { margin: 0; font: 400 24pt/1 "Newsreader", Georgia, serif; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; }
+  .report-sheet-figures dd small { display: block; margin-top: 5pt; font: 400 10pt/1.35 "Source Sans 3", sans-serif; letter-spacing: 0; }
+  .report-sheet-total { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 18pt; border-bottom: 1px solid var(--print-line); padding-bottom: 8pt !important; }
+  .report-sheet-total dt { font-size: 11pt; }
+  .report-sheet-total dd { display: flex; flex-direction: row-reverse; align-items: baseline; gap: 18pt; font-size: 40pt; }
+  .report-sheet-total dd small { margin: 0; font-size: 11pt; text-align: right; }
+
+  .report-kinds-print { display: table; width: 100%; border-collapse: collapse; font-size: 11pt; break-inside: avoid; }
+  .report-kinds-print th, .report-kinds-print td { padding: 3.5pt 0; border-bottom: 1px solid var(--print-line); text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
+  .report-kinds-print :is(th, td):first-child { text-align: left; }
+  .report-kinds-print thead th { padding-top: 0; font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; border-bottom-color: #000; }
+  .report-kinds-print tbody th { font-weight: 600; }
+  .report-kinds-print td:last-child { width: 26%; }
+  .report-kinds-print td:nth-child(2), .report-kinds-print td:nth-child(3) { width: 18%; }
+  .report-kinds-print tfoot :is(th, td) { font-weight: 650; border-top: 1.5pt solid #000; border-bottom: 0; }
+  .report-kinds-print tbody th { text-transform: none; letter-spacing: 0; font-size: 11pt; }
+  .report-kinds-print td { white-space: nowrap; }
+  .report .live-section { margin-top: 11pt; }
+  .report .help-footnote { margin-top: 10pt; }
+  .report .report-legend { gap: 2pt 16pt; }
+  /* The key's swatches belong to the bars, which paper does not draw; the words stay as one phrase. */
+  .report .report-key { display: none !important; }
+  .report .report-key-pair { margin: 0 !important; padding: 0 !important; }
+  /* The page's own margin carries whose year it is, the date and the page number, so the sheet ends with its last line. */
+  .report-print-foot { display: none !important; }
 }
