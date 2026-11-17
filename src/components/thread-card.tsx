@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowUpRight } from "lucide-react";
 import { useCardFor } from "@/lib/card-for";
+import { paceOpening } from "@/lib/painted-world-scroll";
 import "./thread-card.css";
 
 type Pose = { x: number; y: number; w: number; r: number; o: number };
@@ -45,7 +46,7 @@ export function ThreadCard() {
       // From the open hand to the doors, and through them as they open.
       // It sets out in one cut, as the opening sheet's edge passes the hand: the card is never half there.
       if (hand && frame && journey && stage) {
-        const entered = clamp(-world.getBoundingClientRect().top / Math.max(1, stage.getBoundingClientRect().height));
+        const entered = paceOpening(-world.getBoundingClientRect().top / Math.max(1, stage.getBoundingClientRect().height));
         const doors = frame.getBoundingClientRect(), from = poseOf(hand);
         // It rests on the doors where they meet, under the rings, and goes in ahead of the visitor as they open.
         const seam: Pose = { x: doors.left + doors.width / 2, y: doors.top + doors.height * .69, w: from.w * .62, r: -5, o: 1 };

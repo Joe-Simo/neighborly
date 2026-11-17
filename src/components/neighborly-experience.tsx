@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { paceOpening } from "@/lib/painted-world-scroll";
 import { PaintedWorld } from "./painted-world";
 
 /** A short, wide screen: the opening cannot be pinned there, so the page simply scrolls. Keep in step with the same query in painted-world.css. */
@@ -79,9 +80,13 @@ export function NeighborlyExperience() {
         return;
       }
       const stage = element.querySelector<HTMLElement>(".painted-world-viewport");
-      const progress = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight)));
+      const scrolled = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight)));
+      // The sheet begins to lift with the first pixel. With less motion nothing lifts, so the scroll is read as it is.
+      const progress = reduce ? scrolled : paceOpening(scrolled);
+      // The foot's "Scroll" has been answered once the page has moved: it leaves in one cut, before the edge reaches it.
+      element.toggleAttribute("data-lifting", scrolled > .004);
       element.style.setProperty("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4))));
-      element.style.setProperty("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (progress - .3) / .5))));
+      element.style.setProperty("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (scrolled - .3) / .5))));
       // Three lines pass through the same place and never share it: the headline holds at full ink until the picture begins to leave at .4 and is gone by .5, the line between stands alone from .54 and has left by .73, before the doors are fully in at .8, and the doors' words begin at .84.
       const share = (from: number, to: number) => Math.max(0, Math.min(1, (progress - from) / (to - from)));
       element.style.setProperty("--entry-caption", String(reduce ? Number(progress < .5) : 1 - share(.4, .5)));
