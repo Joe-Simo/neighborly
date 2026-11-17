@@ -147,6 +147,15 @@
 /* A mark set beside a line of words grows with them. */
 :root[data-shell="ios"][data-text-large] .live-app .live-count > svg { width: 1.1em; height: 1.1em; flex: none; }
 
+/* ── A two-thirds iPad window in the app (600–1023 wide, not tall enough or not wide enough for the upright page
+   below): the room's column sits on the same 680px measure with the bar lined up to it, but the headline and the
+   head keep the room's own size and width, so the head stays on one line and the first decision stays in view. ── */
+@media (min-width: 600px) and (max-width: 1023px) and (min-height: 600px) {
+  :root[data-shell="ios"] .live-app { --ipad-measure: 680px; }
+  :root[data-shell="ios"] .live-app .live-main { --live-pad: max(40px, calc((100vw - var(--ipad-measure)) / 2)); padding-left: var(--live-pad); }
+  :root[data-shell="ios"] .live-app .live-header { padding-inline: max(40px, calc((100vw - var(--ipad-measure)) / 2)); }
+}
+
 /* ── An iPad held upright in the app (700–1023 wide, tall): a page of its own, not a phone stretched. Wider
    margins, a headline at the desk's size, a taller picture, and every room's column set to one comfortable
    measure in the middle of the paper, the bar's edges lined up with it. ── */
