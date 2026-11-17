@@ -304,6 +304,8 @@ export function es(set: WordSet): Words {
       waiting: "Esperando la conexión. Lo que escribiste está guardado aquí y se enviará cuando vuelva.",
       offlineTitle: "Ahora no hay conexión.",
       offlineDeck: "Lo que ves en pantalla se conserva. Los cambios se enviarán cuando este dispositivo vuelva a tener conexión.",
+      offlinePageDeck: "No se perdió nada. La semana de tu equipo estará aquí en cuanto este dispositivo vuelva a tener conexión.",
+      offlinePageTab: "Sin conexión — Kind Helps",
       errorTitle: "Esta sala no se abrió.",
       errorDeck: `No se perdió nada. Inténtalo de nuevo; si sigue sin abrirse, el resto de tu ${place} está en el menú.`,
       privateTitle: "Se mantiene en privado.",

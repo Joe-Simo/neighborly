@@ -195,6 +195,8 @@ function deviceLanguage(): Language {
   return "en";
 }
 let chosenNow: Language | undefined;
+/** The door's language as the device answers it now, for what must be right before the page has woken. */
+export const entryLanguageNow = () => (chosenNow ??= deviceLanguage());
 
 /** The sheet's language. The server writes English; the device's own answer takes over as the page wakes. */
 export function useEntryLanguage(): [Language, (language: Language) => void] {
@@ -203,7 +205,7 @@ export function useEntryLanguage(): [Language, (language: Language) => void] {
       watchers.add(watch);
       return () => void watchers.delete(watch);
     },
-    () => (chosenNow ??= deviceLanguage()),
+    entryLanguageNow,
     () => "en" as Language,
   );
   return [
