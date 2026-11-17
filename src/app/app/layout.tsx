@@ -26,7 +26,7 @@ export default function LiveAppLayout({
       <script dangerouslySetInnerHTML={{ __html: firstLanguage }} />
       {/* The menu's words are set in these faces from the first frame, so no label wraps and then jumps. */}
       {/* Clerk's bot check, which every sign-in waits on, loads from here; the connection is opened with the page. */}
-      <link rel="preconnect" href={protect} />
+      <link rel="preconnect" href={protect} crossOrigin="anonymous" />
       {["source-sans-3-latin-variable", "newsreader-display-regular"].map((face) => (
         <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
       ))}
