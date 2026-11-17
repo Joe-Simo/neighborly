@@ -144,10 +144,10 @@
 .live-page-head:has(.live-head-art[data-laid]) :is(.live-head-words > *, .live-head-actions) { animation-name: paper-turn; }
 /* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
-/* Between rooms: one cross-fade of 200ms. The new picture comes up over the last one, which stays whole under it
-   and is taken away only when the new one is fully there, so bare paper never shows through. */
-.live-head-art[data-laid] > .relief { animation: paper-show 200ms ease-out backwards; }
-.live-head-art > .relief.live-head-under { z-index: -1; animation: paper-gone 200ms step-end forwards; }
+/* Between rooms the picture swaps whole, with no blend: the last one stays whole until the new one is decoded, and
+   in the same frame the new one is there and the last is gone, so bare paper never shows through. */
+.live-head-art[data-laid] > .relief { animation: paper-show 1ms step-end backwards; }
+.live-head-art > .relief.live-head-under { z-index: -1; animation: paper-gone 1ms step-end forwards; }
 @keyframes paper-gone { to { opacity: 0; } }
 /* Neither begins until the new picture is in: the last room's picture stays whole under an empty band, never a blank one. */
 .live-head-art:not([data-ready]) > .relief,
@@ -183,7 +183,8 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-header-actions .live-account { font-size: 15px; }
 .live-app .live-nav a { font-size: 15px; }
 
-/* The menu down the side stays put while a long room scrolls, and its marker slides to the room in view. */
+/* The menu down the side stays put while a long room scrolls, and its marker goes straight to the room chosen:
+   it never passes over the rooms between. */
 .live-nav { position: relative; }
 .live-nav-marker {
   position: absolute;
@@ -197,7 +198,6 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
   box-shadow: inset 3px 0 #55714c;
   pointer-events: none;
 }
-.live-nav-marker[data-sliding] { transition: transform 320ms var(--paper-ease), width 320ms var(--paper-ease), height 320ms var(--paper-ease); }
 .live-nav a { position: relative; }
 .live-app .live-nav a[aria-current="page"] { background: none; box-shadow: none; }
 @media (min-width: 900px) {

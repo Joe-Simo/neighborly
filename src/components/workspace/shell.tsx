@@ -1,5 +1,6 @@
 "use client";
 
+import { RoomLeaving, useSheetBetweenRooms } from "@/components/workspace/room-sheet";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useConvexConnectionState } from "convex/react";
@@ -278,6 +279,7 @@ export function LiveWorkspace({
   // `data-room-whole` is for the door's sweep (door.tsx): heading, picture and head button are in, so its paper may lift.
   // The first room is whole: its sheet has arrived and its picture is in. The iPhone app's launch cover may wait
   // for `.live-app[data-room-in]`, so the mark never lifts on a room that is still coming up under it.
+  useSheetBetweenRooms(area);
   const app = useRef<HTMLDivElement>(null);
   const whole = pictured !== undefined && !roomWaiting;
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
@@ -529,6 +531,7 @@ export function LiveWorkspace({
           {wide && <div className="live-aside" key={`aside-${area}`} ref={setAside} />}
           <AsideSlot value={aside}>
           <div className="live-room" key={area}>
+            <RoomLeaving />
             <RoomBoundary key={area}>
               {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Section />}
               {pagination}
