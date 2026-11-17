@@ -59,6 +59,20 @@ const imagePath = (scene: PaintedScene, portrait: boolean) => scene === "opening
   : `/assets/painted-world/${imageScene(scene)}${portrait ? "-mobile" : ""}.webp`;
 
 /** One renderer owns the continuous painted journey. No account state is read or changed. */
+// The live opening is graded to Joe's accepted still, so the hand-off from picture to scene shows no change of colour.
+// Measured at 1920 against living-relief-accepted: the lit scene came out a touch bright, warm and saturated after tone mapping.
+const stillGrade = `
+  float stillLuma = dot(gl_FragColor.rgb, vec3(.2126, .7152, .0722));
+  gl_FragColor.rgb = pow(max(vec3(1e-5), mix(vec3(stillLuma), gl_FragColor.rgb, .956)), vec3(1.114, .979, .914)) * vec3(.89, .819, .751);`;
+function gradeToStill(surface: T.Material) {
+  const before = surface.onBeforeCompile.bind(surface);
+  surface.onBeforeCompile = (shader, renderer) => {
+    before(shader, renderer);
+    shader.fragmentShader = shader.fragmentShader.replace("#include <tonemapping_fragment>", `#include <tonemapping_fragment>${stillGrade}`);
+  };
+  surface.customProgramCacheKey = () => "still-grade";
+}
+
 export function createPaintedWorldController(host: HTMLElement, options: PaintedWorldOptions = {}) {
   const renderer = new T.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -923,7 +937,10 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       if (!(object instanceof T.Mesh) || object === cardShadow) return;
       if (/^Role[ _]guide[ _]/.test(object.name)) openingPickTargets.push(object);
       for (const surface of Array.isArray(object.material) ? object.material : [object.material]) {
-        if (!openingMaterials.has(surface)) openingMaterials.set(surface, { opacity: surface.opacity, transparent: surface.transparent, depthWrite: surface.depthWrite });
+        if (!openingMaterials.has(surface)) {
+          openingMaterials.set(surface, { opacity: surface.opacity, transparent: surface.transparent, depthWrite: surface.depthWrite });
+          gradeToStill(surface);
+        }
       }
     });
     // The first frame used to send every picture to the graphics card and build every shader in one long task.
