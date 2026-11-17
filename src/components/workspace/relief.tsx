@@ -79,8 +79,11 @@ export function ReliefPicture({
   className,
   style,
   onAnimationEnd,
+  priority = false,
 }: {
   style?: CSSProperties;
+  /** A room's head picture: fetched first, before anything else on the page. */
+  priority?: boolean;
   onAnimationEnd?: AnimationEventHandler<HTMLElement>;
   /** Called once the picture can be painted (or cannot be had), so whoever lays it can wait for it. */
   onReady?: () => void;
@@ -105,6 +108,7 @@ export function ReliefPicture({
         width={1536}
         height={1024}
         decoding="async"
+        fetchPriority={priority ? "high" : undefined}
         style={{ objectPosition: focus }}
         ref={onReady && ((image) => void (image?.complete && whenDecoded(image, onReady)))}
         onLoad={onReady && (({ currentTarget }) => whenDecoded(currentTarget, onReady))}

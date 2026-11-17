@@ -152,6 +152,10 @@
 /* Neither begins until the new picture is in: the last room's picture stays whole under an empty band, never a blank one. */
 .live-head-art:not([data-ready]) > .relief,
 .live-head-art:not([data-ready]) > .live-head-under { animation-play-state: paused; }
+/* The iPhone app's first room comes up under its launch cover, which lifts once the picture is decoded (or after
+   800ms). Painting and words are then already in their final place: nothing settles or fades after the cover goes. */
+html[data-shell="ios"] .live-head-art:not([data-laid]) > .relief,
+html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(.live-head-words > *, .live-head-actions) { animation: none; }
 /* The room's body is one sheet laid on the desk under the head; its rows then arrive on it in order. */
 @keyframes paper-desk { from { opacity: 0; transform: translateY(10px); } 60% { opacity: 1; } }
 .live-room { animation: paper-desk 380ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 80ms); }

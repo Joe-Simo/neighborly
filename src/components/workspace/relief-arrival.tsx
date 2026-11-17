@@ -5,10 +5,12 @@ import { ReliefPicture, reliefMoves, reliefSources, whenDecoded, type ReliefName
 
 const ARRIVED = "kind-helps-arrived";
 const arrived = () => (sessionStorage.getItem(ARRIVED) ?? "").split(" ").filter(Boolean);
+/** The iPhone app's first room, still under its launch cover: its picture is shown already in place. */
+const underLaunchCover = () => document.documentElement.dataset.shell === "ios" && !document.querySelector(".live-app[data-room-in]");
 /** True until this picture has made its move in this visit (a browser tab's life); never for anyone who asks for less motion. */
 function unseen(name: ReliefName) {
   try {
-    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches && !arrived().includes(name);
+    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches && !underLaunchCover() && !arrived().includes(name);
   } catch {
     return false;
   }
@@ -94,16 +96,17 @@ export function ArrivingRelief({
       fill: "both",
     });
   }, [loaded, count]);
-  // The head waits for its picture before it lets the last room's go; a picture that never comes must not hold it.
+  // The head waits for its picture before it lets the last room's go (and the iPhone app its launch cover); a picture
+  // that is not in after 800ms must not hold either.
   const layersIn = moving && loaded >= count;
   useEffect(() => {
     if (layersIn) return onReady();
-    const late = window.setTimeout(onReady, 1500);
+    const late = window.setTimeout(onReady, 800);
     return () => window.clearTimeout(late);
   }, [layersIn, onReady]);
   const placed = band === undefined ? undefined : ({ "--relief-y": band } as CSSProperties);
   if (!move || !moving)
-    return <ReliefPicture name={name} focus={focus} onReady={onReady} className={className} style={placed} onAnimationEnd={onAnimationEnd} />;
+    return <ReliefPicture priority name={name} focus={focus} onReady={onReady} className={className} style={placed} onAnimationEnd={onAnimationEnd} />;
   const layerIn = (image: HTMLImageElement) => {
     if (image.dataset.in !== undefined) return;
     image.dataset.in = "";
@@ -126,6 +129,7 @@ export function ArrivingRelief({
           <img
             src={`/assets/relief/relief-${name}-${layer}-1024.webp`}
             alt=""
+            fetchPriority="high"
             width={1536}
             height={1024}
             style={{ objectPosition: focus }}
