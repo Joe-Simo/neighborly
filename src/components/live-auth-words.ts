@@ -66,6 +66,7 @@ const en = {
   freshDeck: "Choose a new password for",
   save: "Save and sign in",
   left: "You’re signed out.",
+  badInvite: "This invitation is no longer good. Ask the person who invited you to send a new one.",
   language: "Language",
   errors: {
     email: "That email address doesn’t look right.",
@@ -152,6 +153,7 @@ const es: AuthWords = {
   freshDeck: "Elige una contraseña nueva para",
   save: "Guardar e iniciar sesión",
   left: "Cerraste tu sesión.",
+  badInvite: "Esta invitación ya no es válida. Pídele a quien te invitó que te envíe una nueva.",
   language: "Idioma",
   errors: {
     email: "Ese correo electrónico no parece correcto.",
