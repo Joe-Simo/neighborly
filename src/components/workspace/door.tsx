@@ -134,9 +134,7 @@ export function DoorSweep() {
         // The sheets behind are long covered; they go at once, so the one sheet is all that is over the room.
         for (const behind of paper.current?.querySelectorAll<SVGElement>(":scope > svg") ?? []) behind.style.display = "none";
         sheet.style.visibility = "visible";
-        // The card's marks are on the card: they ride up with it, and nothing is left over the room.
-        // The name goes first, before the paper's edge can pass the room's own greeting, so it is never read twice.
-        sheet.querySelector(".door-card-for")?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: LIFT * 0.3, easing: "linear", fill: "forwards" });
+        // The card's marks and the name are on the paper: they ride up and leave with it, and nothing is left over the room.
       }
       const over = () => {
         setHolding(false);
