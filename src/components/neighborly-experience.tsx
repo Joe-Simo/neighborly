@@ -119,8 +119,28 @@ export function NeighborlyExperience() {
       request();
     };
     element.addEventListener("click", enter);
+    // The keyboard walks the same way the eye does: Tab from the opening's last control goes on into the courtyard and its doors,
+    // and Shift+Tab from the courtyard's first control comes back to the opening. Each is brought into view first, as scrolling would.
+    const reachable = (part: HTMLElement) => [...part.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), [tabindex]")].filter(control => control.tabIndex >= 0 && !control.closest("[aria-hidden=true]:not(.painted-world-track, .fresco-stage)"));
+    const walk = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey || sideways.matches) return;
+      const portrait = element.querySelector<HTMLElement>(".painted-world-track"), courtyard = element.querySelector<HTMLElement>(".fresco-stage"), stage = element.querySelector<HTMLElement>(".painted-world-viewport");
+      if (!portrait || !courtyard || !stage) return;
+      const at = document.activeElement, top = element.getBoundingClientRect().top + scrollY, height = stage.getBoundingClientRect().height;
+      const go = (from: HTMLElement, to: HTMLElement, y: number, pick: (controls: HTMLElement[]) => HTMLElement | undefined) => {
+        event.preventDefault();
+        window.scrollTo({ top: y, behavior: "instant" });
+        from.inert = true; from.setAttribute("aria-hidden", "true");
+        to.inert = false; to.setAttribute("aria-hidden", "false");
+        pick(reachable(to))?.focus({ preventScroll: true });
+        request();
+      };
+      if (!event.shiftKey && courtyard.inert && at === reachable(portrait).at(-1)) go(portrait, courtyard, top + height * (media.matches ? .5 : .62), controls => controls[0]);
+      else if (event.shiftKey && portrait.inert && at === reachable(courtyard)[0]) go(courtyard, portrait, top, controls => controls.at(-1));
+    };
+    element.addEventListener("keydown", walk);
     update();
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.classList.remove("is-connected"); };
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.removeEventListener("keydown", walk); element.classList.remove("is-connected"); };
   }, []);
   return <div className="neighborly-connected-world is-connected" ref={root}><PaintedWorld heroOnly suspendOffscreen passed={passed} onContinue={goToDoors} onPass={() => {
     // The card crosses to the open hand and rests there a beat, long enough to see it settle and be held,
