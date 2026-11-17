@@ -36,6 +36,7 @@ const others = [
  */
 export function HomeYesCard() {
   const text = words().assistant;
+  const saved = "Saved just now. It waits for the conference to decide.";
   const [step, setStep] = useState<"waiting" | "sealed" | "filed">("waiting");
   // Yesterday, mid-morning, as in the sample.
   const [takenAt] = useState(() => new Date(Date.now() - DAY).setHours(10, 20, 0, 0));
@@ -115,7 +116,9 @@ export function HomeYesCard() {
           <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5L19.5 7" /></svg></i>
           <strong>{drafted.call.callerName}</strong>
           <span>Rent, $450 to Mill Road Rentals</span>
-          <small role="status">{step === "filed" && "Saved just now. It waits for the conference to decide."}</small>
+          {/* The line always holds its place, so the paper never changes height; the status is spoken once it is filed. */}
+          <small aria-hidden="true">{saved}</small>
+          <span role="status" className="sr-only">{step === "filed" && saved}</span>
         </li>
         {others.map(one => <li key={one.name}>
           <strong>{one.name}</strong>
