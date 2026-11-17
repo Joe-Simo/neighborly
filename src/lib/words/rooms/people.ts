@@ -53,7 +53,7 @@ export const en = (t: Terms, place: string) => ({
     waiting: "Waiting for them to join",
     joined: "Joined",
     revoke: "Revoke invitation",
-    revokeLabel: (email: string) => `Revoke the invitation to ${email}`,
+    revokeLabel: (email: string) => `Revoke invitation to ${email}`,
     revokeTitle: "Revoke this invitation?",
     revokeBody: "The link will stop working. This does not remove anyone who has already joined.",
     emptyTitle: "No open invitations.",

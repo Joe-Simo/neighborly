@@ -24,6 +24,8 @@ bun run test
 bun run build
 ```
 
+`bun run a11y` runs axe (WCAG 2.1 A and AA) and a Tab walk on the sign-in page and every room of the sample conference at 1440, 390 and 1440 at 200% zoom, against a running `bun run dev` (`A11Y_URL` to point elsewhere; it uses your installed Chrome, or `A11Y_BROWSER`).
+
 `test` runs both the Bun unit suite and the Vitest/convex-test backend suite.
 Those backend tests simulate authentication; they do not prove real email or
 browser sign-in. Clerk sends the sign-up and password codes itself.
