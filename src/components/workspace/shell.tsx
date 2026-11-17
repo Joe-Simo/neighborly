@@ -459,16 +459,15 @@ export function LiveWorkspace({
                 ((isOwner && area !== "mine") ||
                 (data.canCoordinate && area === "commitments") ||
                 area === "time-off") && (
-                <Button onClick={() => open(primary)}>
+                // A room's head button is always outline: the solid fill belongs to the decision on a sheet.
+                <Button variant="outline" onClick={() => open(primary)}>
                   <Plus size={17} aria-hidden="true" />
                   {actName(primary)}
                 </Button>
               )}
               {headAction && (
                 <Button
-                  // A new style is a new button: it never fades from one fill to the other with its label lost between.
-                  key={headAction.quiet ? "quiet" : "filled"}
-                  variant={headAction.quiet ? "outline" : "default"}
+                  variant="outline"
                   style={headAction.unsettled ? { visibility: "hidden" } : undefined}
                   onClick={headAction.run}
                 >

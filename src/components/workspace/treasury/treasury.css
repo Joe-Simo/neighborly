@@ -436,10 +436,7 @@
   color: var(--live-ink);
 }
 
-/* Paper relief: a paid sheet says so in green, and nothing in these rooms is set under 13px. */
-.help-sheet-label[data-paid] {
-  color: #365c46;
-}
+/* Paper relief: nothing in these rooms is set under 13px. */
 .treasury-uncleared .live-date-leaf span,
 .treasury-lately .live-date-leaf span {
   font-size: 13px;
@@ -463,11 +460,11 @@
 /* From 600px up a button is a button: its own width, at the row's right. */
 @media (min-width: 600px) and (max-width: 850px) {
   .treasury-waiting .help-row {
-    grid-template-columns: 66px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
   }
-  .treasury-waiting .help-row > :nth-child(3) {
-    grid-column: 3;
+  .treasury-waiting .help-row > :nth-child(2) {
+    grid-column: 2;
   }
   .treasury-sheet .help-actions {
     justify-content: flex-end;
@@ -491,4 +488,80 @@
   .treasury-statement .live-field {
     width: 100%;
   }
+}
+
+/* Also waiting: the payee and the neighbor's name say whose each row is, so no monogram stands before them. */
+.treasury-waiting .help-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+@media (max-width: 599px) {
+  .treasury-waiting .help-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .treasury-waiting .help-row > :nth-child(2) {
+    grid-column: 1;
+  }
+}
+
+/* A recorded payment: the sheet becomes its ledger line (paid-moment.ts), which stays as the saved line, in the
+   sheet's own place. The line reads as the ledger does: the day, what and for whom, who was paid, the amount. */
+.live-app .treasury-paid {
+  align-items: start;
+  margin-bottom: 52px;
+}
+.treasury-paid > svg {
+  margin-top: 4px;
+}
+.treasury-paid-words {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+/* Line one: the day and whose it was, the amount at its right; line two: who was paid, and the check. */
+.treasury-paid-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 18px;
+  color: var(--live-ink);
+  font-size: 17px;
+  line-height: 1.4;
+}
+.treasury-paid-line strong {
+  font: 400 24px/1.1 "Newsreader", Georgia, serif;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.treasury-paid-line > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.treasury-paid-line > span:last-child {
+  grid-column: 1 / -1;
+  color: var(--live-muted);
+  font-size: 15px;
+}
+@media (max-width: 599px) {
+  .treasury-paid-kind {
+    display: none;
+  }
+  .treasury-paid-line {
+    column-gap: 10px;
+    font-size: 16px;
+  }
+  .treasury-paid-line strong {
+    font-size: 22px;
+  }
+}
+.treasury-paid-words > span:last-child {
+  font-size: 15px;
+  line-height: 1.45;
+}
+.treasury-handed {
+  will-change: left, top, width, height, transform;
+}
+.treasury-handed::after {
+  animation: none !important;
 }

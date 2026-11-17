@@ -1,4 +1,4 @@
-import { preconnect, preload } from "react-dom";
+import { preconnect, prefetchDNS, preload } from "react-dom";
 import { clerkJSScriptUrl, clerkUIScriptUrl, loadClerkJSScript, loadClerkUIScript } from "@clerk/shared/loadClerkJsScript";
 
 /**
@@ -36,8 +36,9 @@ export function warmSignIn() {
   if (!publishableKey) return;
   preload(clerkJSScriptUrl({ publishableKey }), { as: "script", crossOrigin: "anonymous" });
   preload(clerkUIScriptUrl({ publishableKey }), { as: "script", crossOrigin: "anonymous" });
-  // Clerk's bot check loads its script from here before any sign-in is sent; on a phone the connection alone was 0.34 s.
-  preconnect(protect);
+  // Clerk's bot check loads its script from here before any sign-in is sent. Only its address is looked up now (0.65 s on a
+  // phone): an opened connection left unused is closed by the browser after about ten seconds, so that waits for the press.
+  prefetchDNS(protect);
 }
 
 /**
@@ -47,6 +48,9 @@ export function warmSignIn() {
 export function startSignIn() {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   if (!publishableKey) return;
+  // The bot check's script is fetched in CORS mode, so only an anonymous connection is one it can use; it is asked for
+  // about 1.3 s after the press, time enough for the connection (0.9 s on a phone, measured live).
+  preconnect(protect, { crossOrigin: "anonymous" });
   void loadClerkJSScript({ publishableKey }).catch(() => undefined);
   void loadClerkUIScript({ publishableKey }).catch(() => undefined);
 }

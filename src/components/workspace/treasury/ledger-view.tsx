@@ -1,15 +1,16 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, CircleCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { CountUp, LiveLoading } from "@/components/workspace/primitives";
-import { openUp, settleFrom, useGrowsSmoothly } from "@/components/workspace/fold";
+import { openUp, useGrowsSmoothly, useSavedLine } from "@/components/workspace/fold";
+import { SavedWords } from "@/components/workspace/saved-words";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
-import { figureRoll, formatCents, formatFigure } from "@/components/workspace/treasury/money";
+import { formatCents, formatDollars, formatFigure } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
   dayLabel,
@@ -21,19 +22,13 @@ import {
   type LedgerEntry,
   type Payable,
 } from "@/components/workspace/treasury/labels";
-import type { Paid } from "@/components/workspace/treasury/paid-moment";
+import { handOver, type Paid } from "@/components/workspace/treasury/paid-moment";
 import "./treasury.css";
 
 const neighborHref = (id: string) =>
   `/app/neighbors?neighbor=${encodeURIComponent(id)}`;
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
-const initials = (name: string) =>
-  name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2);
 const art = { backgroundImage: "url(/assets/painted-world/meal.webp)" };
 
 function NeighborLink({ id, name }: { id: string; name: string }) {
@@ -41,6 +36,50 @@ function NeighborLink({ id, name }: { id: string; name: string }) {
     <Link className="live-link" href={neighborHref(id)}>
       {name}
     </Link>
+  );
+}
+
+/**
+ * A paid request, as the ledger line its sheet became. It stays as the room's saved line, with the tick, then
+ * closes up and is kept for screen readers.
+ */
+function PaidLine({ paid }: { paid: Paid }) {
+  const line = useRef<HTMLDivElement>(null);
+  const left = paid.request.remaining - paid.amount;
+  const said = `Paid. It is in the ledger.${left > 0 ? ` ${formatFigure(left)} of the approved amount is still to pay.` : ""}`;
+  const seen = useSavedLine(line, { of: paid.entryId });
+  // After the saved line's own opening is set up, so the hand-over takes its place.
+  useLayoutEffect(() => {
+    if (line.current) handOver(line.current);
+  }, []);
+  useEffect(() => line.current?.focus({ preventScroll: true }), []);
+  const kind = categoryLabel(paid.request.kind);
+  const to = [paid.request.payeeName, paid.checkNumber && `Check ${paid.checkNumber}`].filter(Boolean).join(" · ");
+  const entry = `${dayLabel(paid.date)} · ${kind} for ${paid.request.neighborName} · ${to}`;
+  return (
+    <div
+      ref={line}
+      className={seen ? "live-success help-done treasury-paid" : "sr-only"}
+      role="status"
+      tabIndex={-1}
+    >
+      {seen && <CircleCheck size={22} aria-hidden="true" />}
+      {seen ? (
+        <span className="treasury-paid-words">
+          <span className="treasury-paid-line">
+            <span>
+              {dayLabel(paid.date)} · <span className="treasury-paid-kind">{kind} for </span>
+              {paid.request.neighborName}
+            </span>
+            <strong>{formatFigure(paid.amount)}</strong>
+            <span>{to}</span>
+          </span>
+          <SavedWords>{said}</SavedWords>
+        </span>
+      ) : (
+        `${entry}, ${formatFigure(paid.amount)}. ${said}`
+      )}
+    </div>
   );
 }
 
@@ -80,7 +119,7 @@ export function LedgerView({
   /** Vouchers on hand across every kind; undefined until the backend answers. */
   shelf?: number;
   onShelf: () => void;
-  /** The request a payment was just recorded for. Its sheet stays a moment, corner folded, before the next one rises. */
+  /** The request a payment was just recorded for. Its sheet becomes its ledger line, then the next one rises. */
   paid?: Paid | null;
   /** The entry a paid sheet has just settled into; its row holds a highlight for a moment. */
   landed?: string | null;
@@ -96,15 +135,6 @@ export function LedgerView({
     risen.current = sheet.dataset.request;
     openUp(sheet);
   };
-  // When the sheet turns to "Paid" its buttons go and it is shorter; it settles to that height, it does not snap.
-  const sheet = useRef<HTMLElement | null>(null);
-  const before = useRef({ tall: 0, paid: false });
-  useLayoutEffect(() => {
-    const now = sheet.current;
-    if (!now) return;
-    if (paid && !before.current.paid && before.current.tall) settleFrom(now, before.current.tall);
-    before.current = { tall: now.offsetHeight, paid: !!paid };
-  });
   const month = monthLabel(ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
   // Months are listed newest first.
@@ -128,13 +158,13 @@ export function LedgerView({
     gifts > 0 && count(gifts, "twinning gift", "twinning gifts"),
     other > 0 && count(other, "other payment", "other payments"),
   ].filter(Boolean);
-  // The sheet stays on the request being paid, then on the paid one, whatever the list says meanwhile.
-  const kept = paid?.request ?? paying;
-  const others = kept
-    ? payable.filter((row) => row.requestId !== kept.requestId)
-    : payable;
-  const [first, ...waiting] = kept ? [kept, ...others] : others;
-  const left = paid ? paid.request.remaining - paid.amount : 0;
+  // The sheet stays on the request being paid, whatever the list says meanwhile. Once paid, it is its ledger
+  // line; while it becomes that line no other sheet is laid, and the next request rises after.
+  const gone = paying?.requestId ?? paid?.request.requestId;
+  const others = gone ? payable.filter((row) => row.requestId !== gone) : payable;
+  const [first, ...rest] = paying ? [paying, ...others] : others;
+  const handing = Boolean(paid?.handing && !paying);
+  const waiting = handing ? others : rest;
   const untouched = isUntouched(ledger) && !payable.length;
 
   if (untouched)
@@ -160,14 +190,14 @@ export function LedgerView({
         <div>
           <dt>Balance today</dt>
           <dd>
-            <CountUp value={ledger.balance} format={figureRoll(ledger.balance)} />
+            <CountUp value={ledger.balance} format={formatDollars} />
             <small>As of {weekDayLabel(ledger.today)}</small>
           </dd>
         </div>
         <div>
           <dt>In, {month}</dt>
           <dd>
-            <CountUp value={ledger.moneyIn} format={figureRoll(ledger.moneyIn)} />
+            <CountUp value={ledger.moneyIn} format={formatDollars} />
             <small>
               {ledger.incomeSources.join(", ") || "Nothing received yet"}
             </small>
@@ -176,27 +206,25 @@ export function LedgerView({
         <div>
           <dt>Out, {month}</dt>
           <dd>
-            <CountUp value={ledger.moneyOut} format={figureRoll(ledger.moneyOut)} />
+            <CountUp value={ledger.moneyOut} format={formatDollars} />
             <small>{paidFor.join(", ") || "Nothing paid yet"}</small>
           </dd>
         </div>
       </dl>
 
-      {first && (
+      {paid && !paying && <PaidLine key={paid.entryId} paid={paid} />}
+
+      {first && !handing && (
         <section
           key={first.requestId}
           ref={(node) => {
-            sheet.current = node;
-            if (landed && !paid) rise(node);
+            if (landed) rise(node);
           }}
           data-request={first.requestId}
-          className={paid ? "help-sheet treasury-sheet paper-fold" : "help-sheet treasury-sheet"}
-          data-fold-leaves={paid ? "" : undefined}
+          className="help-sheet treasury-sheet"
           aria-labelledby="treasury-waiting-title"
         >
-          <p className="help-sheet-label" data-paid={paid ? "" : undefined}>
-            {paid ? "Paid" : "Approved, waiting to be paid"}
-          </p>
+          <p className="help-sheet-label">Approved, waiting to be paid</p>
           <div className="help-sheet-body">
             <div>
               <h2 id="treasury-waiting-title">
@@ -207,27 +235,16 @@ export function LedgerView({
                 For <NeighborLink id={first.neighborId} name={first.neighborName} />
                 . {sentence(first.summary)}
               </p>
-              {paid ? (
-                <p>
-                  {formatFigure(paid.amount)} is in the ledger.{" "}
-                  {left > 0
-                    ? `${formatFigure(left)} of the approved amount is still to pay.`
-                    : "This request is paid in full."}
-                </p>
-              ) : (
-                <p>
-                  {first.paid > 0
-                    ? `${formatFigure(first.paid)} of the ${formatFigure(first.amountApproved)} approved is already paid. `
-                    : ""}
-                  The payment goes to {first.payeeName}, never to the neighbor.
-                </p>
-              )}
+              <p>
+                {first.paid > 0
+                  ? `${formatFigure(first.paid)} of the ${formatFigure(first.amountApproved)} approved is already paid. `
+                  : ""}
+                The payment goes to {first.payeeName}, never to the neighbor.
+              </p>
             </div>
-            {!paid && (
-              <div className="help-actions">
-                <Button onClick={() => onPay(first)}>Record payment</Button>
-              </div>
-            )}
+            <div className="help-actions">
+              <Button onClick={() => onPay(first)}>Record payment</Button>
+            </div>
           </div>
         </section>
       )}
@@ -244,9 +261,6 @@ export function LedgerView({
           <div className="live-list">
             {waiting.map((request) => (
               <div className="help-row" key={request.requestId}>
-                <div className="help-avatar" aria-hidden="true">
-                  {initials(request.neighborName)}
-                </div>
                 <div>
                   <h3>
                     {formatFigure(request.remaining)} to {request.payeeName}

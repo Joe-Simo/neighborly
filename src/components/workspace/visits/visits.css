@@ -283,3 +283,22 @@
   .live-main:has(> .live-aside:not(:empty)) .visits-room .help-row { row-gap: 14px; }
   .live-main:has(> .live-aside:not(:empty)) .visits-room .help-row > .live-row-actions { grid-column: 2; justify-content: flex-start; }
 }
+
+/* Written up: two lines a visit. Who was visited and who went; what they found, and the hours and miles it gave.
+   The whole row opens the request it was for. */
+.live-app .help-row.visits-written { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 20px; row-gap: 2px !important; align-items: center; padding-block: 14px; min-height: 0; }
+.visits-written > p { grid-column: 1; margin: 0; min-width: 0; }
+.visits-written > .help-row-arrow { grid-column: 2; grid-row: 1 / span 2; }
+.visits-written-who { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.visits-written-who strong { font: 400 21px/1.25 "Newsreader", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); white-space: nowrap; }
+.visits-written-who > span { font-size: 15px; color: var(--live-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.visits-written-found { display: flex; gap: 16px; font-size: 16px; line-height: 1.45; color: var(--live-muted); }
+.visits-written-found > span:last-child { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.visits-written-found .visits-given { flex: none; color: var(--live-ink); }
+@media (max-width: 699px) {
+  .visits-written-who { flex-wrap: wrap; row-gap: 0; }
+  .visits-written-found { flex-wrap: wrap; row-gap: 2px; }
+  .visits-written-found > span:last-child { flex-basis: 100%; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+}
+.live-app .visits-written > p { margin: 0 !important; }
+.visits-written-who .help-initials { display: none; }
