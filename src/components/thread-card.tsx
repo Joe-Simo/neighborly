@@ -43,13 +43,14 @@ export function ThreadCard() {
       const height = innerHeight;
       let pose: Pose | null = null, landed: HTMLElement | null = null, lift = 0, tone = 1;
       // From the open hand to the doors, and through them as they open.
+      // It sets out in one cut, as the opening sheet's edge passes the hand: the card is never half there.
       if (hand && frame && journey && stage) {
         const entered = clamp(-world.getBoundingClientRect().top / Math.max(1, stage.getBoundingClientRect().height));
         const doors = frame.getBoundingClientRect(), from = poseOf(hand);
         // It rests on the doors where they meet, under the rings, and goes in ahead of the visitor as they open.
         const seam: Pose = { x: doors.left + doors.width / 2, y: doors.top + doors.height * .69, w: from.w * .62, r: -5, o: 1 };
-        const out = clamp((entered - .45) / .5), through = smooth(clamp((-journey.getBoundingClientRect().top / height - 1.15) / .6));
-        if (out > 0) { pose = between({ ...from, o: 0 }, seam, out); pose.o = clamp(out * 5) * (1 - through); pose.w *= 1 - through * .6; pose.y -= through * doors.height * .12; lift = Math.sin(out * Math.PI); tone = clamp(out * 2.5); }
+        const sets = innerWidth <= 700 ? .5 : .45, out = clamp((entered - sets) / (.95 - sets)), through = smooth(clamp((-journey.getBoundingClientRect().top / height - 1.15) / .6));
+        if (out > 0) { pose = between({ ...from, o: 0 }, seam, out); pose.o = 1 - through; pose.w *= 1 - through * .6; pose.y -= through * doors.height * .12; lift = Math.sin(out * Math.PI); tone = clamp(out * 2.5); }
         hand.parentElement?.toggleAttribute("data-away", out > 0);
       }
       // Chapter by chapter: the card leaves one picture as the next comes into the window.
