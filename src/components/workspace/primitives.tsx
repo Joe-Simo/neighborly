@@ -37,6 +37,23 @@ export function LiveLoading({
  * follows the other without a seam. One quiet line joins it only after 400ms, so a quick load never flashes it.
  * No bars stand in for the room. The iPhone app's cover watches for `.paper-loading`; keep that class.
  */
+/** The app's own launch mark (apple/…/Splash.imageset), the same file at the same place: the true centre of the screen. */
+export function LaunchMark() {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- a fixed 240px mark that must be there in the first paint, not optimised or lazy
+    <img
+      className="paper-loading-mark"
+      src="/launch/mark-240.png"
+      srcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x"
+      width={240}
+      height={240}
+      alt=""
+      // Drawn in the frame it is laid: the shell lays a second one where the launch screen's stood, with no bare frame between.
+      decoding="sync"
+    />
+  );
+}
+
 export function LiveRoomLoading({
   label,
   children,
@@ -51,16 +68,7 @@ export function LiveRoomLoading({
   useLaunchCarried(line);
   return (
     <main className="live-main paper-loading">
-      {/* The app's own launch mark (apple/…/Splash.imageset), the same file at the same place: the true centre of the screen. */}
-      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed 240px mark that must be there in the first paint, not optimised or lazy */}
-      <img
-        className="paper-loading-mark"
-        src="/launch/mark-240.png"
-        srcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x"
-        width={240}
-        height={240}
-        alt=""
-      />
+      <LaunchMark />
       <div className="paper-loading-words">
         <p className="paper-loading-label" role="status" ref={line}>
           <span className="text-balance">{label ?? opening}</span>

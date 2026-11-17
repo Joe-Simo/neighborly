@@ -133,6 +133,10 @@
    the room just left stands still over the page (a copy, which cannot move), and once the wait has lasted 400ms
    the column is the one quiet "Opening…" line, where the room's title will be. */
 .live-app .live-main[data-room-held] { visibility: hidden; }
+/* The first room of a visit brings its bar and its menu with it, in the same frame: nothing of the workspace is
+   seen before then but the "Opening…" line. Later rooms change under a bar and menu that stay. */
+.live-app[data-shell-held] > .live-header,
+.live-app[data-shell-held] .live-nav { visibility: hidden; }
 [data-room-still], [data-room-still] *, [data-room-still] *::before, [data-room-still] *::after { animation: none !important; transition: none !important; }
 /* The copy's frame only lets the rules see it as they saw the room: it draws nothing of its own (the band under
    the phone's clock is the real frame's). */
