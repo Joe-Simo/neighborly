@@ -38,7 +38,7 @@ import {
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
-import { AsideSlot, useWideScreen } from "@/components/workspace/aside";
+import { AsidePlace, useWideScreen } from "@/components/workspace/aside";
 import { useSystemTextSize } from "@/components/system-text-size";
 import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
@@ -186,7 +186,6 @@ export function LiveWorkspace({
   const navRef = useNavMarker(area);
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
-  const [aside, setAside] = useState<HTMLElement | null>(null);
   useSystemTextSize();
   useKeysInUse();
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
@@ -251,6 +250,13 @@ export function LiveWorkspace({
       const under = bar.current?.getBoundingClientRect().bottom ?? 0;
       const next = { scrolled: window.scrollY > 0, named: !!headline && headline.getBoundingClientRect().bottom < under };
       setBarNow((now) => (now.scrolled === next.scrolled && now.named === next.named ? now : next));
+      // In the iOS app the headline goes under the bar as the room scrolls: how far, 0 to 1, for shell-ios.css.
+      if (headline && document.documentElement.dataset.shell === "ios") {
+        // Measured from its foot and its laid-out height, which its own shrinking (from the foot) does not change.
+        const tall = (headline as HTMLElement).offsetHeight;
+        const top = headline.getBoundingClientRect().bottom - tall;
+        app.current?.style.setProperty("--head-gone", `${Math.min(1, Math.max(0, (under - top) / tall))}`);
+      }
     };
     const first = requestAnimationFrame(read);
     window.addEventListener("scroll", read, { passive: true });
@@ -530,8 +536,7 @@ export function LiveWorkspace({
             </Outcome>
           )}
           <LiveConnection />
-          {wide && <div className="live-aside" key={`aside-${area}`} ref={setAside} />}
-          <AsideSlot value={aside}>
+          <AsidePlace key={`aside-${area}`} on={wide}>
           <div className="live-room" key={area}>
             <RoomLeaving />
             <RoomBoundary key={area}>
@@ -539,7 +544,7 @@ export function LiveWorkspace({
               {pagination}
             </RoomBoundary>
           </div>
-          </AsideSlot>
+          </AsidePlace>
         </main>
         </WorkspaceProvider>
       </div>
