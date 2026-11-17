@@ -25,7 +25,7 @@
 .painted-world-caption h1{font:400 clamp(45px,4.8vw,72px)/1.02 'Newsreader',Georgia,serif;letter-spacing:-.045em;margin:0}
 .painted-world[data-scene=opening] .painted-world-caption h1{font-size:clamp(50px,5.4vw,84px)}
 .painted-world-caption h1 em,.painted-world-end h2 em{font-weight:400}
-.painted-world-description{font-size:14px;line-height:1.6;max-width:31ch;margin:22px 0 0;color:inherit;opacity:.88}
+.painted-world-description{font-size:15px;line-height:1.6;max-width:31ch;margin:22px 0 0;color:inherit;opacity:.88}
 .painted-world-tools{position:absolute;z-index:3;bottom:22px;left:4%;right:4%;display:flex;justify-content:space-between;align-items:center;gap:20px;color:#fff8e9}
 .painted-world[data-scene=opening] .painted-world-tools{color:#253e31}
 .painted-world-tools [data-slot=button]{min-height:44px;padding:0 2px;background:transparent;border-radius:0;color:inherit;font-size:12px;font-weight:400;gap:8px;box-shadow:none}
@@ -242,7 +242,7 @@
   .painted-world[data-hero-only=true] .painted-world-opening-actions .painted-world-primary-invitation{height:48px;padding:0 16px;gap:12px}
 }
 /* The cue sits on its own paper, since the cloth runs beneath it. */
-.painted-world[data-hero-only=true] .painted-world-scroll-cue{min-height:44px;gap:8px;font-size:14px}
+.painted-world[data-hero-only=true] .painted-world-scroll-cue{min-height:44px;gap:8px;font-size:15px}
 /* Below 400px the cue is one word and its arrow, inside the margin. */
 @media(max-width:400px){.painted-world-scroll-cue .painted-world-cue-more{display:none}}
 /* Upright tablets: the whole painting across the top, the words on the paper beneath it. */
