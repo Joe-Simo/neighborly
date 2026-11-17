@@ -308,6 +308,8 @@ export function es(set: WordSet): Words {
       offlineRoom: "Esta sala se abre cuando vuelva.",
       offlineDeck: "Lo que ves en pantalla se conserva. Los cambios se enviarán cuando este dispositivo vuelva a tener conexión.",
       back: "Volvió la conexión.",
+      offlinePageDeck: "No se perdió nada. La semana de tu equipo estará aquí en cuanto este dispositivo vuelva a tener conexión.",
+      offlinePageTab: "Sin conexión — Kind Helps",
       errorTitle: "Esta sala no se abrió.",
       errorDeck: `No se perdió nada. Inténtalo de nuevo; si sigue sin abrirse, el resto de tu ${place} está en el menú.`,
       privateTitle: "Se mantiene en privado.",
