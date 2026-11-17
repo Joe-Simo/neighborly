@@ -7,6 +7,7 @@ import * as reportsWords from "./rooms/reports";
 import * as toolsWords from "./rooms/tools";
 import * as peopleRoomWords from "./rooms/people";
 import * as sheetsWords from "./rooms/sheets";
+import * as firstDaysWords from "./rooms/first-days";
 import { measured as m } from "../jev-set";
 import type { Words } from "./en";
 import { refusals } from "../refusals";
@@ -268,7 +269,7 @@ export function es(set: WordSet): Words {
       reopenTask: (title: string) => `Dejar pendiente de nuevo: ${title}`,
       done: "Hecha",
       open: "Pendiente",
-      emptyTitle: "La lista está al día, por ahora.",
+      emptyTitle: "Todavía no hay tareas.",
       emptyDetail: "Las tareas compartidas aparecerán aquí con su responsable y su fecha.",
       meetings: "Reuniones",
       going: "Vas a ir",
@@ -279,7 +280,7 @@ export function es(set: WordSet): Words {
       attend: "Asistir",
       decline: "No puedo",
       noMeetingsTitle: "No hay reuniones planeadas.",
-      noMeetingsDetail: "Responder a una reunión no marca ninguna tarea como hecha.",
+      noMeetingsDetail: "Las reuniones planeadas se guardarán aquí con la respuesta de cada persona.",
       preparing: "Preparando las invitaciones…",
     },
     people: {
@@ -583,6 +584,7 @@ export function es(set: WordSet): Words {
       tools: toolsWords.es(t, place),
       peopleRoom: peopleRoomWords.es(t, place),
       sheets: sheetsWords.es(t, place),
+      firstDays: firstDaysWords.es(t, place),
     },
   };
 }

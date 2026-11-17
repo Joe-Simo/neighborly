@@ -1,5 +1,6 @@
 "use client";
 
+import { isBrandNew } from "@/lib/first-days";
 import { RoomShown, RoomStill, useWholeRoom } from "@/components/workspace/room-sheet";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
@@ -211,7 +212,8 @@ export function LiveWorkspace({
   }
   // An act's name, in the reader's language where the tables have it. Tasks keep theirs with the room's words.
   const actName = (kind: ActionKind) => (kind === "task" ? words.tasks.add : (actions[kind] ?? actionTitles[kind]));
-  const primary = primaryActions[area];
+  // A brand-new conference has no one to tell yet: This week's one press is the invitation.
+  const primary = area === "week" && isBrandNew(data) ? "invite" : primaryActions[area];
   // A menu line marked for leaders is shown only to coordinators and owners of the group.
   const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
   const menuItems = navigation.filter((item) => leads || !("leadersOnly" in item));

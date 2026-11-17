@@ -79,6 +79,16 @@ export function LiveRoomLoading({
   );
 }
 
+/** The first element inside `room` that takes up room on the page and holds no drawn element before it. */
+function firstDrawn(room: Element): Element | null {
+  for (const child of room.children) {
+    // A heading kept for screen readers alone is one pixel high and draws nothing.
+    if (!(child instanceof HTMLElement) || child.offsetHeight <= 1) continue;
+    return child.matches(".live-empty") ? child : firstDrawn(child) ?? child;
+  }
+  return null;
+}
+
 /** Nothing here yet: a line in the serif, what to do about it, and a small piece of the room's own picture. */
 export function LiveEmpty({
   title,
@@ -97,7 +107,11 @@ export function LiveEmpty({
       className="live-empty"
       // Only the first empty state of a room carries the picture; a second one beside it is words alone.
       ref={(element) => {
-        if (element && element.closest(".live-room")?.querySelector(".live-empty") === element) element.dataset.lead = "";
+        if (!element) return;
+        const room = element.closest(".live-room");
+        if (room?.querySelector(".live-empty") === element) element.dataset.lead = "";
+        // The first thing drawn under the page head, which already ends in a rule: this one draws none of its own.
+        if (room && firstDrawn(room) === element) element.dataset.first = "";
       }}
     >
       <ReliefPicture name={picture} focus={focus} vignette className="paper-vignette" />

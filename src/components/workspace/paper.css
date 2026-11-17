@@ -453,6 +453,7 @@
   border-top: 1px solid var(--live-line);
   border-radius: 0;
 }
+.live-app .live-empty[data-first] { border-top: 0; padding-top: 6px; }
 .live-app .live-empty:not([data-lead]) { grid-template-columns: minmax(0, 1fr); }
 .live-empty:not([data-lead]) > .paper-vignette { display: none; }
 /* An empty place holds the room's picture as a small card laid on the page: 3 to 2, a paper edge, a turn of

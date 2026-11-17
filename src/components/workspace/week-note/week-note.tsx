@@ -9,6 +9,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspace } from "@/components/workspace/context";
 import { WeekFigures } from "@/components/workspace/volunteer/week-figures";
+import { isBrandNew } from "@/lib/first-days";
 import { formatDate, type Words } from "@/lib/words";
 
 type Counts = FunctionReturnType<typeof api.drafts.weekNote>;
@@ -108,7 +109,8 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   // Counts on their way: for those who lead, the note's place is kept in paper at the size it last had,
   // so nothing below it moves when it arrives. No remembered number is shown, only its shape.
   // The door's paper (door.tsx) waits for them too: `data-room-pending`.
-  if (!counts) return isOwner || data.canCoordinate ? <><span hidden data-room-pending="" /><WeekNoteView key="waiting" counts={remembered(last)} monday={monday} brief={brief} waiting onDone={() => {}} /></> : <span hidden data-room-pending="" />;
+  // A brand-new group has had no note: no place is kept for one, so the first-week state does not move when the counts arrive.
+  if (!counts) return (isOwner || data.canCoordinate) && !isBrandNew(data) ? <><span hidden data-room-pending="" /><WeekNoteView key="waiting" counts={remembered(last)} monday={monday} brief={brief} waiting onDone={() => {}} /></> : <span hidden data-room-pending="" />;
   // An older backend answers without saying who put a call first; the note waits for the one that does.
   if (!("callsFirstByAssistant" in counts)) return null;
   return (

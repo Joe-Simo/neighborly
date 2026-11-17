@@ -547,7 +547,7 @@ export function VisitsView({
         </RoomAside>
       )}
       {nothing ? (
-        <HelpEmpty title={text.empty.title}>
+        <HelpEmpty first title={text.empty.title}>
           {text.empty.body}
         </HelpEmpty>
       ) : (
