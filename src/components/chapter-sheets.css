@@ -6,4 +6,14 @@
 /* Its leading edge is the page's own knife cut, stood on end, with the shade it throws on the courtyard. */
 .chapter-sheet::before{content:"";position:absolute;top:0;bottom:0;left:0;width:var(--edge);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 900' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-30%25' y='-5%25' width='160%25' height='110%25'%3E%3CfeGaussianBlur stdDeviation='9 6'/%3E%3C/filter%3E%3Cpath d='M150 0C120 120 175 230 140 360S100 560 150 690 120 840 135 900L240 900L240 0Z' transform='translate(-16 6)' fill='%232e2416' fill-opacity='.4' filter='url(%23b)'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
 .chapter-sheet::after{content:"";position:absolute;inset:0;background:#eee7d7;-webkit-mask:var(--cut-open-left) 0 0/var(--edge) 100% no-repeat,linear-gradient(#000,#000) calc(var(--edge) - 1px) 0/100% 100% no-repeat;mask:var(--cut-open-left) 0 0/var(--edge) 100% no-repeat,linear-gradient(#000,#000) calc(var(--edge) - 1px) 0/100% 100% no-repeat}
+/* The close's sheet is the opening's, returned: laid down from the top, its foot the same knife cut.
+   It is the rooms' own paper carried on above their first edge, so it travels with the page and its grain is theirs; it lies beneath that edge, and only how much of it is shown changes (--lie, the foot's place in the sheet). */
+.chapter-sheet-close{--edge:clamp(36px,4.4vw,64px);--lie:-200px;position:absolute;z-index:-2;left:0;bottom:calc(100% - 57px);width:100%;height:100lvh;pointer-events:none}
+.chapter-sheet-close::before,.chapter-sheet-close::after{content:"";position:absolute;left:0;width:100%}
+.chapter-sheet-close::before{top:0;height:calc(var(--edge) * 1.5);transform:translateY(var(--lie));background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 90' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-5%25' y='-60%25' width='110%25' height='260%25'%3E%3CfeGaussianBlur stdDeviation='3 2.4'/%3E%3C/filter%3E%3Cpath d='M0 30C200 18 380 38 560 26S860 20 1000 34L1000 14L0 14Z' transform='translate(0 4)' fill='%232e2416' fill-opacity='.36' filter='url(%23b)'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+.chapter-sheet-close::after{top:0;height:100%;background:#d8c3aa center top/auto var(--paper-h,300svh) no-repeat;-webkit-mask:linear-gradient(#000,#000) 0 0/100% max(0px,calc(var(--lie) + 1px)) no-repeat,var(--cut-open-bottom) 0 var(--lie)/100% var(--edge) no-repeat;mask:linear-gradient(#000,#000) 0 0/100% max(0px,calc(var(--lie) + 1px)) no-repeat,var(--cut-open-bottom) 0 var(--lie)/100% var(--edge) no-repeat}
+.neighborly-together-paper[data-settled=true]~.chapter-sheet-close::after{background-image:url(/assets/paper-world/continuation.webp)}
+/* Put away, the sheet shows nothing and so throws no shade. */
+.chapter-sheet-close[data-away]::before{visibility:hidden}
+@media print{.chapter-sheet-close{display:none}}
 @media print{.chapter-sheet{display:none}}

@@ -5,7 +5,7 @@ import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
 import { HomeYes } from "./home-yes";
 import { ThreadCard } from "./thread-card";
-import { ChapterSheets } from "./chapter-sheets";
+import { ChapterSheet } from "./chapter-sheets";
 import { ReliefLean } from "./relief-lean";
 import { ClosingBand, Colophon } from "./public-ending";
 import { useSettled } from "@/lib/use-settled";
@@ -51,12 +51,13 @@ export function NeighborlyContinuation() {
       </section>
     </noscript>
     <ThreadCard />
-    <ChapterSheets />
+    <ChapterSheet to="story" />
     <ReliefStory />
     <ReliefLean />
     <HomeYes />
     <section id="how-neighborly-works" tabIndex={-1} className="neighborly-together" aria-labelledby="together-title">
       <div className="neighborly-together-paper" data-settled={settled} aria-hidden="true" />
+      <ChapterSheet to="close" />
       {/* The rooms are a part of their own, named by their sentence, which is their heading: the six room names are read under it, not under "Your turn." */}
       <div className="neighborly-rooms" data-reveal role="region" aria-labelledby="rooms-title">
         <div>
