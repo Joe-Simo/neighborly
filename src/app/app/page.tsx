@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Your workspace — Kind Helps",
+  // The same words as `workspaceTab` in live-auth-words.ts, which says them in Spanish once the page wakes.
+  title: "Your workspace · Kind Helps",
   robots: { index: false, follow: false },
 };
 
