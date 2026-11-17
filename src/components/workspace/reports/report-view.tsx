@@ -217,7 +217,7 @@ export function ReportView({
         <span>{periodLabel(report, words)}</span>
         {longSpanLabel(report, words, soFar)}
       </p>
-      <div className="report-controls">
+      {(years || !blank) && <div className="report-controls">
         {years}
         {!blank && (
           <div className="live-row-actions report-actions">
@@ -229,7 +229,7 @@ export function ReportView({
             </Button>
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 

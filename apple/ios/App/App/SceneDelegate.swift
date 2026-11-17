@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import CoreText
 import Capacitor
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -28,12 +29,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 
 /// Keeps the launch view (paper, the small k) over the web view until the
-/// first page has loaded, so the app never shows blank paper. If the page has
-/// not arrived after twelve seconds it shows the "taking a while" page instead,
-/// while the same load carries on underneath, and fades to the page when it
-/// arrives. Thirty seconds after that the load is stopped and the page offers
-/// "Try again", which starts a fresh one. A load that fails outright ends on
-/// the no-connection page, which Capacitor loads from `server.errorPath`.
+/// room is whole, so the app never shows a half-drawn room. It follows the wait
+/// rule: after 400ms one still line, "Opening…", sits under the k; at ten seconds
+/// it says the wait is longer than usual and offers one "Try again", which starts
+/// a fresh load. There is no ceiling that lifts the sheet early. A load that fails
+/// outright ends on the no-connection page, which Capacitor loads from
+/// `server.errorPath`.
 final class ShellViewController: CAPBridgeViewController {
     private let paper = UIColor(red: 0.9608, green: 0.9529, blue: 0.9255, alpha: 1)
     private var cover: UIView?
@@ -44,20 +45,21 @@ final class ShellViewController: CAPBridgeViewController {
     /// True while the page shown is the way in (`.entry`).
     private var onSignIn = false
     private let refresh = UIRefreshControl()
-    private var slowPage: WKWebView?
-    private var slowPageEvents: SlowPageEvents?
+    /// The one still line under the k, and the one act once the wait is long.
+    private var waitLine: UILabel?
+    private var tryAgain: UIButton?
+    private var lineTimer: Timer?
     private var loading: NSKeyValueObservation?
     private var slowTimer: Timer?
-    private var stopTimer: Timer?
-    /// True once the slow load has been stopped and the person is offered "Try again".
-    private var stopped = false
 
-    /// Seconds to wait for the first page. `-slowAfter 1` on the launch
-    /// command shortens it so the slow page can be checked in a simulator.
+    /// Seconds before the wait counts as long. `-slowAfter 1` on the launch
+    /// command shortens it so the long wait can be checked in a simulator.
     private var patience: TimeInterval {
         let asked = UserDefaults.standard.double(forKey: "slowAfter")
-        return asked > 0 ? asked : 12
+        return asked > 0 ? asked : 10
     }
+    /// The wait's words, in the device's language: Spanish or English.
+    private var spanish: Bool { Locale.preferredLanguages.first?.hasPrefix("es") == true }
 
     /// A web view ignores the page's own print command, so the shell answers
     /// it: `window.print()` asks here, and iOS shows its print sheet for the page.
@@ -162,7 +164,7 @@ final class ShellViewController: CAPBridgeViewController {
 
     @objc private func pulled() {
         // Under the launch cover or the slow page there is nothing to refresh yet.
-        guard let webView, cover == nil, slowPage == nil, !onSignIn else { return refresh.endRefreshing() }
+        guard let webView, cover == nil, !onSignIn else { return refresh.endRefreshing() }
         webView.callAsyncJavaScript("return typeof window.kindHelpsPulled === 'function' && (await window.kindHelpsPulled()) === true", arguments: [:], in: nil, in: .page) { [weak self] result in
             guard let self else { return }
             self.refresh.endRefreshing()
@@ -259,7 +261,7 @@ final class ShellViewController: CAPBridgeViewController {
     /// and the page counts as loaded. So the page is asked ten times a second,
     /// and the cover lifts the moment it says yes.
     private func watchForFirstScreen() {
-        guard cover != nil, !stopped, let webView else { return }
+        guard cover != nil, let webView else { return }
         webView.evaluateJavaScript(Self.firstScreenWhole) { [weak self] result, _ in
             if result as? Bool == true { self?.reveal(whileLoading: true); return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self?.watchForFirstScreen() }
@@ -283,16 +285,88 @@ final class ShellViewController: CAPBridgeViewController {
 
     private func startSlowTimer() {
         slowTimer?.invalidate()
-        slowTimer = Timer.scheduledTimer(withTimeInterval: patience, repeats: false) { [weak self] _ in
-            self?.showSlowPage()
+        lineTimer?.invalidate()
+        lineTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: false) { [weak self] _ in self?.sayOpening() }
+        slowTimer = Timer.scheduledTimer(withTimeInterval: patience, repeats: false) { [weak self] _ in self?.sayLongWait() }
+    }
+
+    /// The site's text face, Source Sans 3 (OFL), from the font file the app already carries for its own pages
+    /// (public/fonts). The system's face stands in only if the file cannot be read.
+    private static let sourceSans: CTFontDescriptor? = {
+        guard let file = Bundle.main.url(forResource: "source-sans-3-latin-variable", withExtension: "woff2", subdirectory: "public/fonts"),
+              let data = try? Data(contentsOf: file),
+              let faces = CTFontManagerCreateFontDescriptorsFromData(data as CFData) as? [CTFontDescriptor]
+        else { return nil }
+        return faces.first
+    }()
+
+    private static func textFace(_ size: CGFloat, weight: CGFloat = 400) -> UIFont {
+        guard let face = sourceSans else { return UIFont.systemFont(ofSize: size, weight: weight > 500 ? .semibold : .regular) }
+        // The file is a variable font: its weight is chosen on the 'wght' axis.
+        let wght = NSNumber(value: 0x7767_6874)
+        let weighted = CTFontDescriptorCreateCopyWithAttributes(face, [kCTFontVariationAttribute: [wght: weight]] as CFDictionary)
+        return CTFontCreateWithFontDescriptor(weighted, size, nil) as UIFont
+    }
+
+    /// After 400ms: one still line under the k. It does not move, pulse or count.
+    private func sayOpening() {
+        guard let cover else { return }
+        tryAgain?.removeFromSuperview()
+        tryAgain = nil
+        let line = waitLine ?? {
+            let line = UILabel()
+            line.translatesAutoresizingMaskIntoConstraints = false
+            line.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: Self.textFace(17))
+            line.adjustsFontForContentSizeCategory = true
+            line.textColor = UIColor(red: 0.408, green: 0.443, blue: 0.373, alpha: 1)
+            line.textAlignment = .center
+            line.numberOfLines = 0
+            cover.addSubview(line)
+            NSLayoutConstraint.activate([
+                line.centerXAnchor.constraint(equalTo: cover.centerXAnchor),
+                line.topAnchor.constraint(equalTo: cover.centerYAnchor, constant: 64),
+                line.widthAnchor.constraint(lessThanOrEqualTo: cover.widthAnchor, constant: -64),
+            ])
+            waitLine = line
+            return line
+        }()
+        line.text = spanish ? "Abriendo…" : "Opening…"
+        UIAccessibility.post(notification: .announcement, argument: line.text)
+    }
+
+    /// At ten seconds: the line says the wait is long, and one act, "Try again", in ochre, starts a fresh load.
+    private func sayLongWait() {
+        guard let cover, let webView, webView.isLoading else { return }
+        sayOpening()
+        guard let line = waitLine else { return }
+        line.text = spanish ? "Esto está tardando más de lo normal." : "This is taking longer than usual."
+        var look = UIButton.Configuration.plain()
+        look.title = spanish ? "Intentar de nuevo" : "Try again"
+        look.baseForegroundColor = UIColor(red: 0.553, green: 0.388, blue: 0.106, alpha: 1)
+        look.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
+        look.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { words in
+            var words = words
+            words.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: Self.textFace(17, weight: 600))
+            words.underlineStyle = .single
+            return words
         }
+        let act = UIButton(configuration: look, primaryAction: UIAction { [weak self] _ in self?.loadAfresh() })
+        act.translatesAutoresizingMaskIntoConstraints = false
+        cover.addSubview(act)
+        NSLayoutConstraint.activate([
+            act.centerXAnchor.constraint(equalTo: cover.centerXAnchor),
+            act.topAnchor.constraint(equalTo: line.bottomAnchor, constant: 12),
+            act.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
+        ])
+        tryAgain = act
+        UIAccessibility.post(notification: .layoutChanged, argument: line)
     }
 
     /// The page counts as loaded before its first screen is whole. The cover
     /// stays for up to four seconds more, then lifts whatever the page says. The
     /// no-connection page cannot answer and is shown at once.
     private func revealIfLoaded(waited: TimeInterval = 0) {
-        guard let webView, !webView.isLoading, !stopped else { return }
+        guard let webView, !webView.isLoading else { return }
         guard cover != nil, waited < 4 else { reveal(); return }
         webView.evaluateJavaScript("!!document.querySelector('.live-app') && !(\(Self.firstScreenWhole))") { [weak self] result, _ in
             guard result as? Bool == true else { self?.reveal(); return }
@@ -301,13 +375,13 @@ final class ShellViewController: CAPBridgeViewController {
     }
 
     private func reveal(whileLoading: Bool = false) {
-        guard let webView, whileLoading || !webView.isLoading, !stopped, cover != nil || slowPage != nil else { return }
+        guard let webView, whileLoading || !webView.isLoading, cover != nil else { return }
         slowTimer?.invalidate()
-        stopTimer?.invalidate()
-        lift([cover, slowPage])
+        lineTimer?.invalidate()
+        lift([cover])
         cover = nil
-        slowPage = nil
-        slowPageEvents = nil
+        waitLine = nil
+        tryAgain = nil
     }
 
     /// The cover leaves as the site's opening does: a sheet of paper lifted up off the page, whole from the first
@@ -366,78 +440,11 @@ final class ShellViewController: CAPBridgeViewController {
         return cut
     }
 
-    private func showSlowPage() {
-        guard slowPage == nil, cover != nil, let webView, webView.isLoading,
-              let page = Bundle.main.url(forResource: "slow", withExtension: "html", subdirectory: "public")
-        else { return }
-        let slow = WKWebView(frame: .zero)
-        slow.isOpaque = false
-        slow.backgroundColor = paper
-        slow.scrollView.backgroundColor = paper
-        slow.scrollView.contentInsetAdjustmentBehavior = .never
-        // The scroll bar flashes when a scroll view first appears; this page does not scroll.
-        slow.scrollView.showsVerticalScrollIndicator = false
-        slow.scrollView.showsHorizontalScrollIndicator = false
-        clearTopEdge(of: slow)
-        slow.alpha = 0
-        let events = SlowPageEvents(
-            shown: { [weak self] in
-                UIView.animate(withDuration: 0.3) { self?.slowPage?.alpha = 1 }
-                self?.startStopTimer()
-            },
-            tryAgain: { [weak self] in self?.loadAfresh() }
-        )
-        slow.navigationDelegate = events
-        slowPageEvents = events
-        slowPage = slow
-        place(slow)
-        slow.loadFileURL(page, allowingReadAccessTo: page.deletingLastPathComponent())
-    }
-
-    private func startStopTimer() {
-        stopTimer?.invalidate()
-        stopTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: false) { [weak self] _ in
-            self?.stopWaiting()
-        }
-    }
-
-    /// Stopping the load makes Capacitor put the no-connection page in the web
-    /// view underneath; `stopped` keeps the slow page on top of it, now with a
-    /// "Try again" that does start a load.
-    private func stopWaiting() {
-        guard let webView, webView.isLoading, slowPage != nil else { return }
-        stopped = true
-        webView.stopLoading()
-        slowPage?.evaluateJavaScript("document.body.classList.add('stopped')")
-    }
-
     private func loadAfresh() {
-        guard stopped, let webView, let bridge else { return }
-        stopped = false
-        slowPage?.evaluateJavaScript("document.body.classList.remove('stopped')")
+        guard cover != nil, let webView, let bridge else { return }
+        webView.stopLoading()
         webView.load(URLRequest(url: bridge.config.appStartServerURL))
-        startStopTimer()
-    }
-}
-
-/// Listens to the slow page: when it has drawn, and when "Try again" is tapped.
-private final class SlowPageEvents: NSObject, WKNavigationDelegate {
-    private let shown: () -> Void
-    private let tryAgain: () -> Void
-
-    init(shown: @escaping () -> Void, tryAgain: @escaping () -> Void) {
-        self.shown = shown
-        self.tryAgain = tryAgain
-    }
-
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        shown()
-    }
-
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        guard navigationAction.navigationType == .linkActivated else { return decisionHandler(.allow) }
-        decisionHandler(.cancel)
-        tryAgain()
+        startSlowTimer()
     }
 }
 

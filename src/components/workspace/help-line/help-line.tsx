@@ -29,7 +29,7 @@ import {
   RequestForm,
   ReturnForm,
 } from "@/components/workspace/help-line/forms";
-import { OnTheLine, owners, turnsToday } from "@/components/workspace/help-line/on-the-line";
+import { OnTheLine, lineIsSet, owners, turnsToday } from "@/components/workspace/help-line/on-the-line";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveWaiting } from "@/components/workspace/states";
 import {
@@ -336,7 +336,10 @@ function HelpLine() {
           </p>
         </div>
       )}
-      <OnTheLine turns={turnsToday({ data, now, format })} calling={owners(calls.waiting)} />
+      {/* A conference with no call and no turn on the line has nothing for the side column to say. */}
+      {(calls.waiting.length > 0 || calls.returned.length > 0 || lineIsSet({ data })) && (
+        <OnTheLine turns={turnsToday({ data, now, format })} calling={owners(calls.waiting)} />
+      )}
       <HelpLineView
         calls={calls}
         at={at}
@@ -681,9 +684,16 @@ export function HelpLineView({
       </div>
     );
   };
+  // No call waiting and none returned: the room says what belongs here, once, and the head carries "Log a call".
+  const none = calls.waiting.length === 0 && calls.returned.length === 0;
   return (
     <div className="help-lists" ref={lists}>
       {sheet}
+      {none ? (
+        <HelpEmpty first title={text.noneTitle}>
+          {text.none}
+        </HelpEmpty>
+      ) : (
       <section>
         <div className="live-section-head">
           <h2>{text.toCallBack}</h2>
@@ -798,18 +808,13 @@ export function HelpLineView({
             ))}
           </div>
         ) : (
-          <HelpEmpty
-            title={text.quietTitle}
-            action={
-              <Button variant="outline" onClick={() => onStep({ kind: "log" })}>
-                {words.rooms.helpLine.log}
-              </Button>
-            }
-          >
+          // The head carries "Log a call": the quiet state does not ask twice.
+          <HelpEmpty title={text.quietTitle}>
             {text.quiet}
           </HelpEmpty>
         )}
       </section>
+      )}
       {calls.returned.length > 0 && (
         <section className="live-section">
           <div className="live-section-head">

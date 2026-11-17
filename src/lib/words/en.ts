@@ -9,6 +9,7 @@ import * as reportsWords from "./rooms/reports";
 import * as toolsWords from "./rooms/tools";
 import * as peopleRoomWords from "./rooms/people";
 import * as sheetsWords from "./rooms/sheets";
+import * as firstDaysWords from "./rooms/first-days";
 import type { Language, Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
@@ -91,7 +92,7 @@ export function en(set: WordSet) {
       treasury: { title: "Every gift, cared for.", deck: "What came in, what went out, and what it paid for." },
       reports: { title: "The year, added up.", deck: "Counts for your council's yearly report, ready to print." },
       visits: { title: "Two by two.", deck: "Home visits, the pair who are going, and what they found." },
-      tools: { title: "Bring records in. Take them with you.", deck: "From ServWare or a spreadsheet, and back out again whenever you like." },
+      tools: { title: "Your records, in and out.", deck: "From ServWare or a spreadsheet, and back out again whenever you like." },
       team: {
         title: "A place on the team.",
         deck: "People belong here, even when their plans change.",
@@ -269,7 +270,7 @@ export function en(set: WordSet) {
       reopenTask: (title: string) => `Open again: ${title}`,
       done: "Done",
       open: "Open",
-      emptyTitle: "A clear list, for now.",
+      emptyTitle: "No tasks yet.",
       emptyDetail: "Shared tasks will appear here with their owner and due date.",
       meetings: "Meetings",
       going: "You are going",
@@ -280,7 +281,7 @@ export function en(set: WordSet) {
       attend: "Attend",
       decline: "Decline",
       noMeetingsTitle: "No meetings planned.",
-      noMeetingsDetail: "Meeting replies are separate from task completion.",
+      noMeetingsDetail: "Planned meetings will be kept here with each person’s reply.",
       preparing: "Preparing invitations…",
     },
     /** People, as a member sees it. Managing access and invitations are the owner's tools and stay English. */
@@ -585,6 +586,7 @@ export function en(set: WordSet) {
       tools: toolsWords.en(t, place),
       peopleRoom: peopleRoomWords.en(t, place),
       sheets: sheetsWords.en(t, place),
+      firstDays: firstDaysWords.en(t, place),
     },
   };
 }

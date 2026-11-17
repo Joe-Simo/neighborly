@@ -29,15 +29,14 @@ xcodebuild -project apple/ios/App/App.xcodeproj -scheme App -sdk iphonesimulator
 ## While the first page loads
 
 `ShellViewController` (in `ios/App/App/SceneDelegate.swift`) keeps the launch
-view, paper with the small k, over the web view until the first page has
-loaded, then fades it away. After twelve seconds without the page it shows
-`web/slow.html` ("This is taking a while.") while the same load carries on
-underneath, with a spinner and no button. Thirty seconds later the load is
-stopped and the page offers "Try again", which starts a fresh one. A load that
-fails outright ends on `web/offline.html`. Both pages
-share `web/shell.css`.
+view, paper with the small k, over the web view until the room is whole, then
+lifts it off as a sheet with the site's knife-cut edge. It follows the wait rule:
+after 400ms one still line, "Opening…", sits under the k; at ten seconds it reads
+"This is taking longer than usual." with one "Try again", which starts a fresh
+load. Nothing lifts the sheet early. A load that fails outright ends on
+`web/offline.html`, which uses `web/shell.css`.
 
-To see the slow page in a simulator, shorten the wait on the launch command:
+To see the long wait in a simulator, shorten the wait on the launch command:
 `xcrun simctl launch booted com.kindhelps.app -slowAfter 0.3`.
 
 The simulator draws the launch screen only for a signed app. For a test build,

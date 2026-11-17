@@ -39,7 +39,12 @@ export const en = (t: Terms, place: string) => ({
     more: "Show more",
     shownOf: "{shown} of {all}",
     noMatch: { title: "No one by that name.", body: "Try the start of a name, a phone number or a street. If they are new to you, add them." },
-    none: { title: `No ${t.neighbors} yet.`, body: "The first person who calls the help line starts the list." },
+    /** A conference with no household at all. `bring` is the one quiet link under it, for whoever may bring files in. */
+    none: {
+      title: `No ${t.neighbors} yet.`,
+      body: `Each household your ${t.group} helps has its record here, starting with the first one you add.`,
+      bring: "Moving over from ServWare or paper? Bring in a file.",
+    },
     first: (count: number) => `Showing the first ${count}. Search to find anyone else.`,
     bring: "Bring in a file",
   },
@@ -257,7 +262,11 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     more: "Mostrar más",
     shownOf: "{shown} de {all}",
     noMatch: { title: "No hay nadie con ese nombre.", body: "Prueba con el comienzo de un nombre, un número de teléfono o una calle. Si es alguien nuevo para ti, agrégalo." },
-    none: { title: `Todavía no hay ${t.neighbors}.`, body: "La primera persona que llame a la línea de ayuda empieza la lista." },
+    none: {
+      title: `Todavía no hay ${t.neighbors}.`,
+      body: `Cada hogar al que tu ${t.group} ayuda tiene aquí su registro, empezando por el primero que agregues.`,
+      bring: "¿Vienes de ServWare o del papel? Trae un archivo.",
+    },
     first: (count) => (count === 1 ? "Se muestra solo el primero. Busca para encontrar a alguien más." : `Se muestran los primeros ${count}. Busca para encontrar a alguien más.`),
     bring: "Traer un archivo",
   },

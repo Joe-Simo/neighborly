@@ -22,9 +22,6 @@ import {
 } from "@/components/workspace/treasury/form-parts";
 import { dayLabel, type Shelf } from "@/components/workspace/treasury/labels";
 
-const art = {
-  backgroundImage: "url(/assets/painted-world/meal.webp)",
-};
 export type Vouchers = {
   item: string;
   change: number;
@@ -217,7 +214,6 @@ export function ShelfView({
         </>
       ) : (
         <div className="help-empty" data-first>
-          <div className="help-empty-art" style={art} aria-hidden="true" />
           <div>
             <h3>{w.empty.title}</h3>
             <p>

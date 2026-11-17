@@ -207,9 +207,10 @@ export function PeopleSection() {
       {isOwner && (
         <section className="live-section">
           <h2>{text.invitations.title}</h2>
-          <p className="live-deck people-deck">
+          {/* With none open, the empty state below says what an invitation is: the deck would say it twice. */}
+          {data.invitations.length > 0 && <p className="live-deck people-deck">
             {text.invitations.deck}
-          </p>
+          </p>}
           {data.invitations.length ? (
             // Rows like the people above, in the same columns. No folded corner: this wait is on someone else.
             <div className="live-list people-invitations">

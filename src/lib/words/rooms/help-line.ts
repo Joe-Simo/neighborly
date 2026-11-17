@@ -79,6 +79,9 @@ export const en = (t: Terms, place: string) => ({
     markReturnedFor: (name: string) => `Mark returned: ${name}`,
     quietTitle: "A quiet morning.",
     quiet: "No one is waiting for a call back. New messages from the help line will appear here.",
+    /** No call waiting and none returned: the room has nothing to show, and the head carries "Log a call". */
+    noneTitle: "Calls are written down here.",
+    none: "When someone calls the help line, log the call. It waits here until someone calls them back.",
     returnedThisWeek: "Returned this week",
     count: (count: number) => (count === 1 ? "1 call" : `${count} calls`),
     returned: "Returned",
@@ -193,6 +196,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     markReturnedFor: (name) => `Marcar como devuelta: ${name}`,
     quietTitle: "Una mañana tranquila.",
     quiet: "Nadie espera que le devuelvan la llamada. Los mensajes nuevos de la línea de ayuda aparecerán aquí.",
+    noneTitle: "Aquí se anotan las llamadas.",
+    none: "Cuando alguien llame a la línea de ayuda, anota la llamada. Se queda aquí hasta que alguien la devuelva.",
     returnedThisWeek: "Devueltas esta semana",
     count: (count) => (count === 1 ? "1 llamada" : `${count} llamadas`),
     returned: "Devuelta",

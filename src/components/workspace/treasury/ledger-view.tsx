@@ -29,7 +29,6 @@ import "./treasury.css";
 
 const neighborHref = (id: string) =>
   `/app/neighbors?neighbor=${encodeURIComponent(id)}`;
-const art = { backgroundImage: "url(/assets/painted-world/meal.webp)" };
 
 function NeighborLink({ id, name }: { id: string; name: string }) {
   return (
@@ -176,7 +175,6 @@ export function LedgerView({
   if (untouched)
     return (
       <div className="help-empty" data-first>
-        <div className="help-empty-art" style={art} aria-hidden="true" />
         <div>
           <h3>{w.first.title}</h3>
           <p>
@@ -390,7 +388,6 @@ export function LedgerView({
         </div>
       ) : (
         <div className="help-empty">
-          <div className="help-empty-art" style={art} aria-hidden="true" />
           <div>
             <h3>{w.quiet.title}</h3>
             <p>

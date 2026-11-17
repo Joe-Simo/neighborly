@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/workspace/tools/rota";
 
-export function WeeklyRotaView({ group, week, days, printed, sample, titled = true, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; titled?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
+export function WeeklyRotaView({ group, week, days, printed, sample, titled = true, none, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; titled?: boolean; /** True when no commitment exists in any week: there is no other week to turn to. */ none?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
   const planned = days.some((day) => day.shifts.length > 0);
   const { words } = useWorkspace();
   const text = words.rota;
@@ -20,11 +20,15 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
         </div>
       )}
       <p className="live-deck">{text.deck}</p>
-      <div className="tools-week">
-        <Button variant="outline" className="tools-week-step" aria-label={text.before} onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
-        <Button variant="outline" className="tools-week-step" aria-label={text.after} onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
-        <Button disabled={!planned} onClick={onPrint}><Printer size={16} aria-hidden="true" /> {text.print}</Button>
-      </div>
+      {!none && (
+        <div className="tools-week">
+          <Button variant="outline" className="tools-week-step" aria-label={text.before} onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
+          <Button variant="outline" className="tools-week-step" aria-label={text.after} onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
+          {/* A week with nothing planned has nothing to print: the sheet below says so, and the button steps aside. */}
+          {/* The empty place keeps the two steps their own width on a phone, where the last thing in the row stretches. */}
+          {planned ? <Button onClick={onPrint}><Printer size={16} aria-hidden="true" /> {text.print}</Button> : <span aria-hidden="true" />}
+        </div>
+      )}
       <div className="tools-rota paper-settle" key={week}>
         <header>
           <p>{group}</p>
@@ -54,7 +58,6 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
           </div>
         ) : (
           <div className="help-empty">
-            <div className="help-empty-art" aria-hidden="true" />
             <div>
               <h3>{text.quietTitle}</h3>
               <p>{text.quietDetail}</p>
@@ -83,6 +86,7 @@ export function WeeklyRota({ titled = true }: { titled?: boolean }) {
       printed={format(now, { year: "numeric", month: "long", day: undefined })}
       sample={data.church.sample}
       titled={titled}
+      none={shifts.length === 0}
       onEarlier={() => setWeeksAhead((value) => value - 1)}
       onLater={() => setWeeksAhead((value) => value + 1)}
       onPrint={() => window.print()}

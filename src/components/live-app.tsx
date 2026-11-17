@@ -50,7 +50,7 @@ function LiveRooms({
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
-  const { ready, isAuthenticated, signedOut, clerkAnswered } = useAccount();
+  const { ready, returning, isAuthenticated, signedOut, clerkAnswered } = useAccount();
   // Through the sample door, This week is first drawn from the seed's public answer while the session is being made
   // (first-look.tsx). The look ends when the signed-in room is whole in hand, or when the sample will not open.
   const [viaSample] = useState(enterSample && sampleEntry);
@@ -64,7 +64,8 @@ function LiveRooms({
   useKeptPress(look !== null);
   // Through the sample door the account is always the one made-up visitor, whose row the nightly reset keeps, so its
   // rooms are asked for as soon as the backend accepts the token, beside the account check instead of after it.
-  const asking = ready || (enterSample && isAuthenticated);
+  // So are the rooms of anyone this browser has seen the backend find before: their row is there too.
+  const asking = ready || returning || (enterSample && isAuthenticated);
   const clerk = useClerk();
   // The sweep starts in the frame the sign-in sheet (or the sample's) leaves.
   // A first look is no door: the home page's card lifts off it by itself, and the session arriving behind it sweeps nothing.
