@@ -6,6 +6,7 @@ import Link from "next/link";
 import { words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
 import { useWaited } from "@/lib/use-waited";
+import { useFocusBack } from "@/lib/use-focus-back";
 import { authWords, useEntryLanguage } from "./live-auth-words";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -71,8 +72,10 @@ export function LiveWelcome({
     const known = Intl.supportedValuesOf("timeZone");
     return (known.includes(timeZone) ? known : [timeZone, ...known]).map((zone) => ({ zone, label: zoneLabel(language, zone) }));
   }, [language, timeZone]);
+  const focus = useFocusBack();
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    focus.note();
     setPending(true);
     setError("");
     const form = new FormData(event.currentTarget);
@@ -96,6 +99,7 @@ export function LiveWelcome({
       );
     } finally {
       setPending(false);
+      focus.back();
     }
   }
   const busy = pending || given;
