@@ -66,7 +66,8 @@ body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
 .door-sweep[data-held] > svg { display: none; }
 .door-sweep[data-held] .door-card, .door-sweep[data-held] .door-card > * { animation: none; }
 /* It is the same paper the card was, its grain and straight cut edge, with the same marks in the same places. */
-.door-sweep[data-held] .door-card { border-radius: 0; background: url(/assets/home/card-blank-480.webp) center / 100% 100%; }
+/* The paper's deckled edge sits inside its box, so its shadow follows the paper itself, not the box. */
+.door-sweep[data-held] .door-card { border-radius: 0; background: url(/assets/home/card-blank-480.webp) center / 100% 100%; box-shadow: none; filter: drop-shadow(0 2px 5px rgb(40 60 50 / 0.26)); }
 /* Held from the home page the line is drawn low from the first, so it never moves. */
 .door-sweep[data-held] .door-opening:not([data-spoken]) { inset: auto 24px 14vh; animation: none; }
 .door-sweep[data-held] .door-opening svg { display: none; }
