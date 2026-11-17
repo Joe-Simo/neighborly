@@ -175,6 +175,10 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const cardRest = [.8, -.06, .2, -.85] as const;
   // The card is drawn a little larger than it was authored, so it reads in the giving hand.
   const cardScale = 1.3;
+  // The first frame shows the card exactly as the still was rendered; only once the still has gone does it ease
+  // into the larger card tucked under the thumb, so the hand-off itself shows no movement.
+  let introduced = 0;
+  const introTime = .6;
   // On a phone the hands are drawn smaller than on the wide painting, and sit in the open paper under the words.
   const phoneRig = { scale: .76, lift: 3.48 };
   // The landing: how long the hand takes to receive the card, and how far the card drops onto it, in screen pixels.
@@ -682,8 +686,10 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
         // Larger while it waits in the giving hand; it lands at the size that suits the palm on this screen.
         // On a phone the whole scene is small, so the card keeps its larger size all the way into the palm, where the eye can still read it.
         const rest = openingFrame.mobile ? cardScale : 1;
-        cardSeat.scale.setScalar(cardScale + (rest - cardScale) * arrived);
-        const waiting = 1 - smooth(Math.min(1, (openingPlayback?.passed() ?? 0) * 4));
+        const shown = smooth(introduced);
+        const waitingScale = 1 + (cardScale - 1) * shown;
+        cardSeat.scale.setScalar(waitingScale + (rest - waitingScale) * arrived);
+        const waiting = (1 - smooth(Math.min(1, (openingPlayback?.passed() ?? 0) * 4))) * shown;
         cardSeat.position.x += cardTuck[0] * waiting; cardSeat.position.y += cardTuck[1] * waiting;
         // Landing: the card drops the last little way onto the palm and its shadow gathers under it.
         const down = (openingPlayback?.passed() ?? 0) >= 1;
@@ -732,6 +738,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     camera.updateProjectionMatrix();
     renderer.render(scene, camera);
     if (!ready && artwork.has(current) && openingLoaded) { ready = true; options.onReady?.(); }
+    else if (ready && introduced < 1) { introduced = reduce ? 1 : Math.min(1, introduced + dt / introTime); wake(); }
     if ((!scrollMode && phase === "transitioning" && transitionReady) || interaction !== interactionTarget || !pointer.equals(pointerTarget) || openingPlayback?.isRunning() || ((openingPlayback?.passed() ?? 0) >= 1 && (landed < 1 || taken < 1))) wake();
   }
   function wake() {
