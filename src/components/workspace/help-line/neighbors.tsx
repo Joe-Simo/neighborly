@@ -57,13 +57,17 @@ function Neighbors() {
     setHeadAction({ label: text.add, run: add, plus: true });
     return () => setHeadAction(null);
   }, [setHeadAction, add, text.add]);
+  const asked = useDeferredValue(search).trim();
   const list = useQuery(api.neighbors.list, {
     churchId,
-    search: useDeferredValue(search).trim() || undefined,
+    search: asked || undefined,
     leading: true,
   });
+  // Nothing was searched for and the conference has no household: there is nothing to search yet.
+  const none = !!list && !search.trim() && !asked && noNeighbors(list);
   return (
     <>
+      {!none && (
       <div className="help-search">
         <Search size={20} aria-hidden="true" />
         <Input
@@ -74,6 +78,7 @@ function Neighbors() {
           onChange={(event) => setSearch(event.target.value)}
         />
       </div>
+      )}
       {list ? (
         <NeighborListView
           list={list}
@@ -99,6 +104,11 @@ function Neighbors() {
       )}
     </>
   );
+}
+
+/** True of a conference with no household on file at all, by its running figure and by what was found. */
+function noNeighbors(list: NeighborList) {
+  return list.rows.length + list.waitingRows.length === 0 && !list.households;
 }
 
 /** How many households show before "Show more". */
@@ -199,6 +209,24 @@ export function NeighborListView({
     if (last?.[0] === letter) last[1].push(neighbor);
     else groups.push([letter, [neighbor]]);
   }
+  // A conference with no household yet: one empty state, no heading and no count. The head carries "Add a neighbor";
+  // whoever may bring files in is shown the one quiet way to start from ServWare or paper.
+  if (!searching && noNeighbors(list))
+    return (
+      <HelpEmpty
+        first
+        title={text.list.none.title}
+        action={
+          bring ? (
+            <Button asChild variant="link" className="help-text-action whitespace-normal text-left">
+              <Link href="/app/tools">{text.list.none.bring}</Link>
+            </Button>
+          ) : undefined
+        }
+      >
+        {text.list.none.body}
+      </HelpEmpty>
+    );
   return (
     <>
       <div className="live-section-head">
@@ -259,7 +287,8 @@ export function NeighborListView({
           {text.list.noMatch.body}
         </HelpEmpty>
       ) : (
-        <HelpEmpty title={text.list.none.title} action={add}>
+        // The running figure says households exist but none was found: the head still carries "Add a neighbor".
+        <HelpEmpty title={text.list.none.title}>
           {text.list.none.body}
         </HelpEmpty>
       )}
