@@ -50,7 +50,7 @@ function LiveRooms({
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
-  const { ready, isAuthenticated, signedOut } = useAccount();
+  const { ready, isAuthenticated, signedOut, clerkAnswered } = useAccount();
   // Through the sample door, This week is first drawn from the seed's public answer while the session is being made
   // (first-look.tsx). The look ends when the signed-in room is whole in hand, or when the sample will not open.
   const [viaSample] = useState(enterSample && sampleEntry);
@@ -123,7 +123,7 @@ function LiveRooms({
     !invitationToken ? true : couldBeAnInvitation ? undefined : false,
   );
   const invitationAnswered = useRef(!invitationToken || !couldBeAnInvitation);
-  const whoIsKnown = signedOut || isAuthenticated;
+  const whoIsKnown = (signedOut && clerkAnswered) || isAuthenticated;
   useEffect(() => {
     if (invitationAnswered.current || !whoIsKnown) return;
     let current = true;
