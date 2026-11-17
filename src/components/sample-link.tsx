@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ComponentProps, MouseEvent, MouseEventHandler, PointerEvent } from "react";
+import { askFirstRoom } from "@/lib/first-room";
 import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
 
 /**
@@ -15,6 +16,7 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
     onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
       if (event.button !== 0) return;
       askSampleTicket();
+      askFirstRoom();
       warmSignIn();
       startSignIn();
     },
@@ -39,6 +41,7 @@ export function warmWhenNear(link: HTMLElement | null) {
   const near = new IntersectionObserver((seen) => {
     if (!seen.some((entry) => entry.isIntersecting)) return;
     warmSignIn();
+    askFirstRoom();
     near.disconnect();
   }, { rootMargin: "600px 0px" });
   near.observe(link);

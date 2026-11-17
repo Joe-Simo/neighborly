@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
 import { useQuery } from "@/components/workspace/query";
+import { useFirstLook } from "@/components/workspace/first-look";
 
 /**
  * For a visitor to the sample only: one quiet line at the top of This week that leads to the draft waiting
@@ -14,12 +15,14 @@ import { useQuery } from "@/components/workspace/query";
 export function StartHere() {
   const { data, words } = useWorkspace();
   // Already being read above the rooms, so this answers at once.
-  const visiting = useQuery(api.demo.visiting, data.church.sample ? {} : "skip");
+  // A first look at the sample is always a visitor's, and the seed says how many drafts wait.
+  const look = useFirstLook();
+  const visiting = useQuery(api.demo.visiting, data.church.sample ? {} : "skip") ?? (look ? true : undefined);
   const show = visiting === true;
-  const drafts = useQuery(api.assistance.drafts, show ? { churchId: data.church.id } : "skip");
-  if (!show || drafts?.length === 0) return null;
+  const waiting = useQuery(api.assistance.drafts, show ? { churchId: data.church.id } : "skip")?.length ?? look?.draftsWaiting;
+  if (!show || waiting === 0) return null;
   // Until the answer is in, the line's place is kept, so nothing under it moves when it is drawn.
-  return <StartHereLine {...words.week.startHere} waiting={drafts === undefined} />;
+  return <StartHereLine {...words.week.startHere} waiting={waiting === undefined} />;
 }
 
 export function StartHereLine({ lead, rest, waiting = false }: { lead: string; rest: string; waiting?: boolean }) {
