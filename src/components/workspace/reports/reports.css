@@ -757,7 +757,8 @@
 @media (max-width: 850px) {
 }
 @media print {
-  .report .report-check, .report .report-error { display: none !important; }
+  /* The check and its notices belong to the screen: a check that could not finish never prints on the sheet. */
+  .report .report-check, .report .report-error, .report .live-failure { display: none !important; }
 }
 
 /* Room for the longest small line ("21 vouchers given, worth $810 · 78 people") on one line, in every bar row alike. */
@@ -824,7 +825,9 @@
      most surely; and the app's frame keeps no screen-tall height that could carry a page of its own. */
   .live-app .report { display: block; }
   .live-app:has(.report) { min-height: 0; }
-  .report .help-bars:not(.report-teams), .report .live-section:has(> .report-teams), .report .report-lines:not([data-open]),
+  /* Time given is left to the screen, with or without shift teams: its hours, miles and calls returned are already in
+     the sheet's figures, and without teams it would otherwise print alone on a page of its own. */
+  .report .help-bars:not(.report-teams), .report .live-section:has(> .help-figures), .report .report-lines:not([data-open]),
   .report .report-outcomes, .report .report-legend li::before { display: none !important; }
   .report .report-lines[data-open] { break-before: page; margin-top: 0; }
   .report .report-lines > .live-section-head { border-top: 1.5pt solid #000; padding-top: 6pt; }
@@ -836,9 +839,10 @@
   .report-sheet-figures dd { margin: 0; font: 400 24pt/1 "Newsreader", Georgia, serif; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; }
   .report-sheet-figures dd small { display: block; margin-top: 5pt; font: 400 10pt/1.35 "Source Sans 3", sans-serif; letter-spacing: 0; }
   .report-sheet-total { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 18pt; border-bottom: 1px solid var(--print-line); padding-bottom: 8pt !important; }
-  .report-sheet-total dt { font-size: 11pt; }
+  /* "Help given" is never split: a long caption (vouchers, ServWare history, cents) wraps beside the figure, evenly. */
+  .report-sheet-total dt { flex: none; font-size: 11pt; white-space: nowrap; }
   .report-sheet-total dd { display: flex; flex-direction: row-reverse; align-items: baseline; gap: 18pt; font-size: 40pt; }
-  .report-sheet-total dd small { margin: 0; font-size: 11pt; text-align: right; }
+  .report-sheet-total dd small { margin: 0; font-size: 11pt; text-align: right; text-wrap: balance; }
 
   .report-kinds-print { display: table; width: 100%; border-collapse: collapse; font-size: 11pt; break-inside: avoid; }
   .report-kinds-print th, .report-kinds-print td { padding: 3.5pt 0; border-bottom: 1px solid var(--print-line); text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
@@ -861,8 +865,9 @@
   .report-print-foot { display: none !important; }
   /* Room for one sheet whatever the year holds: the head, the figures and the months a step tighter. */
   .report-print-head h1 { font-size: 21pt; }
-  .report-sheet-total dd { font-size: 34pt; }
+  /* The total sits inside the figures' list, so its size comes after theirs; in the other order it printed at theirs. */
   .report-sheet-figures dd { font-size: 21pt; }
+  .report-sheet-total dd { font-size: 34pt; }
   .report-sheet-figures > div { padding-block: 6pt 7pt; }
   .report-kinds-print th, .report-kinds-print td { padding-block: 3pt; }
   .report .live-section { margin-top: 9pt; }
@@ -871,5 +876,9 @@
   .report .report-months li { padding: 5pt 2pt; }
   .report .report-months p.help-amount { font-size: 10.5pt; }
   .report .report-aside, .report .report-history { margin-top: 5pt; font-size: 10pt; }
+  /* ServWare history is one quiet note under the table, as the paid-later note is: no screen padding or rule, its
+     label run in. Set as on screen it stood 100px tall, and one more line of the year sent the footnote to a second sheet. */
+  .report .report-history { padding: 0; border: 0; max-width: none; line-height: 1.4; }
+  .report .report-history span { display: inline; margin: 0 6pt 0 0; font-size: 9pt; }
   .report .help-footnote { margin-top: 8pt; font-size: 9pt; }
 }
