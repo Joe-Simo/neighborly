@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexQueryCacheProvider } from "convex-helpers/react/cache/provider";
 import { api } from "../../convex/_generated/api";
+import { AskedTooSoon, NoteTrusted } from "./asked-too-soon";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -14,7 +15,9 @@ export function LiveProviders({ children }: { children: ReactNode }) {
   return (
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
       {/* What a room last showed is kept for five minutes after it is left, so going back shows it at once while it refreshes. */}
-      <ConvexQueryCacheProvider>{children}</ConvexQueryCacheProvider>
+      <ConvexQueryCacheProvider>
+        <AskedTooSoon>{children}</AskedTooSoon>
+      </ConvexQueryCacheProvider>
     </ConvexProviderWithClerk>
   );
 }
@@ -30,24 +33,61 @@ const never = () => () => {};
 let enteredSession: string | null = null;
 
 /**
+ * The Clerk account this browser last saw the backend find. A returning person's row is already there, so their
+ * rooms can be asked for beside the account check instead of after it. It is a hint and nothing more: the backend
+ * checks the token and looks the row up on every call, whatever this says.
+ */
+const enteredKey = "kind-helps-entered";
+let asked: { userId: string; before: boolean } | null = null;
+/** Read once for each account, so the answer stays the same after the check below takes the note back. */
+const hasEnteredBefore = (userId: string) => {
+  if (asked?.userId !== userId) {
+    let before = false;
+    try {
+      before = window.localStorage.getItem(enteredKey) === userId;
+    } catch {
+      // Not known: the rooms wait for the account check.
+    }
+    asked = { userId, before };
+  }
+  return asked.before;
+};
+/** Sign-out, and leaving the sample: the next person at this browser is met as a first-time one. */
+export const forgetEntered = () => noteEntered(null);
+function noteEntered(userId: string | null) {
+  try {
+    if (userId) window.localStorage.setItem(enteredKey, userId);
+    else window.localStorage.removeItem(enteredKey);
+  } catch {
+    // Without it the rooms are asked for after the account check, as on a first visit.
+  }
+}
+
+/**
  * Signed in, and the backend has found or made this person's account.
  * Nothing else is asked of the backend until `ready`, because every other function looks that account up.
  */
 export function useAccount() {
   const { isLoading, isAuthenticated } = useConvexAuth();
-  const { sessionId, isLoaded, isSignedIn } = useAuth();
+  const { sessionId, userId, isLoaded, isSignedIn } = useAuth();
   const enter = useMutation(api.users.enter);
+  const noteTrusted = useContext(NoteTrusted);
   // Remembered beyond this component, so a frame that is ever mounted again does not ask a second time.
   const [entered, setEntered] = useState<string | null>(enteredSession);
   const [failure, setFailure] = useState<Error | null>(null);
   // The server cannot read the browser, so the page it sends says "not known"; the browser's own answer takes over as it wakes.
   const cannotBeSignedIn = useSyncExternalStore(never, noSessionKept, () => false);
   useEffect(() => {
-    if (!isAuthenticated || !sessionId) return;
+    if (!isAuthenticated || !sessionId || !userId) return;
     let current = true;
+    hasEnteredBefore(userId);
+    // The note is taken back while the check is out and written again when it returns. Should the row be gone after
+    // all (the rooms then fail), the next load finds no note and waits for the check, as on a first visit.
+    noteEntered(null);
     enter({}).then(
       () => {
         enteredSession = sessionId;
+        noteEntered(userId);
         if (current) setEntered(sessionId);
       },
       (error: unknown) => current && setFailure(error instanceof Error ? error : new Error("Account unavailable.")),
@@ -55,12 +95,14 @@ export function useAccount() {
     return () => {
       current = false;
     };
-  }, [isAuthenticated, sessionId, enter]);
+  }, [isAuthenticated, sessionId, userId, enter]);
   if (failure) throw failure;
   return {
     isLoading,
     isAuthenticated,
     ready: isAuthenticated && entered === sessionId,
+    /** Signed in as someone whose account the backend has found before: their rooms need not wait for `ready`. */
+    returning: noteTrusted && isAuthenticated && !!userId && hasEnteredBefore(userId),
     // Only once Clerk itself has answered "nobody is signed in". While Clerk knows a session and the
     // backend is still confirming it, the answer is "not yet", never "signed out".
     // Before Clerk has answered, a browser with no session cookie at all is already known to be signed out, so the
