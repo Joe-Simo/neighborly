@@ -498,6 +498,39 @@
     right: max(var(--live-pad, 24px), env(safe-area-inset-right));
   }
 }
+/* Scripts off: the same paper and mark, the reason in a sentence, and the way home. It lies over the launch sheet,
+   whose line would never change. In the page's flow, so a short screen scrolls instead of cutting it. */
+.paper-noscript {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  align-content: safe center;
+  justify-items: center;
+  gap: 28px;
+  overflow: auto;
+  padding: 32px max(24px, env(safe-area-inset-right)) 48px max(24px, env(safe-area-inset-left));
+  background: #f5f3ec;
+  color: var(--paper-ink);
+  text-align: center;
+}
+/* The picture is the launch mark's whole 240px square; only the letter at its middle is ink, so the square's bare
+   margin is taken back and the words sit under the letter. */
+.paper-noscript img { width: 240px; height: 240px; max-width: none; margin: -72px 0 -64px; user-select: none; }
+.paper-noscript div { display: grid; justify-items: center; gap: 2px; max-width: 30ch; }
+.paper-noscript p { margin: 0; font-size: 19px; line-height: 1.45; text-wrap: balance; }
+.paper-noscript a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--paper-ink);
+  font-size: 17px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
+.paper-noscript a:hover { text-decoration-thickness: 2px; }
+.paper-noscript a:focus-visible { outline: 2px solid var(--paper-ink); outline-offset: 4px; border-radius: 4px; }
 .paper-loading-label,
 .live-app .live-opening {
   display: flex;
