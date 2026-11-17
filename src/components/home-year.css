@@ -16,3 +16,4 @@
 }
 /* Between a phone and a desk the four figures stand together at the left, as one small table, not at the two edges of the paper. */
 @media(min-width:600px) and (max-width:820px){.relief-words .home-year{justify-content:start;column-gap:clamp(56px,11vw,96px)}}
+@media(min-width:1600px){.home-year dt,.relief-words p.home-year-note{font-size:16px}}
