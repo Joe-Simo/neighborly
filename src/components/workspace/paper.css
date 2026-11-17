@@ -619,7 +619,7 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-date { position: relative; display: flex; align-items: center; width: 100%; height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; transition: border-color 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
 .live-date:hover { border-color: #365c46; }
 .live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
-.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #283c32; outline-offset: 2px; }
 .live-date:has(:disabled) { opacity: 0.55; }
 .live-date[data-missing] { border-color: #6f5f93; box-shadow: 0 0 0 1px #6f5f93; }
 /* The frame around the field carries the plum; the words inside never draw a second one. */
@@ -635,7 +635,7 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-date-words::placeholder { color: #66705f; opacity: 1; }
 .live-date-words:read-only { cursor: pointer; }
 .live-date-open { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 0; border-radius: 5px; background: none; color: #52644f; cursor: pointer; }
-.live-date-open:focus-visible { outline: 2px solid #365c46; outline-offset: -3px; }
+.live-date-open:focus-visible { outline: 2px solid #283c32; outline-offset: -3px; }
 .live-date-open svg { width: 16px; height: 16px; transition: transform 200ms var(--paper-ease); }
 .live-date[data-open] .live-date-open svg { transform: rotate(180deg); }
 .live-date-value { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
@@ -653,7 +653,7 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-date-sheet .rdp-day_button { width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; color: inherit; font: inherit; font-size: 16px; cursor: pointer; transition: background-color 120ms var(--paper-ease); }
 .live-date-sheet .rdp-day_button:hover { background: #e7ecdc; }
 .live-date-sheet .rdp-day_button:focus-visible,
-.live-date-sheet .rdp-nav button:focus-visible { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date-sheet .rdp-nav button:focus-visible { outline: 2px solid #283c32; outline-offset: 2px; }
 .live-date-sheet .rdp-today .rdp-day_button { box-shadow: inset 0 0 0 1px #6f5f93; }
 .live-date-sheet .rdp-selected .rdp-day_button { background: #365c46; color: #f7f4ed; font-weight: 600; }
 .live-date-sheet .rdp-outside .rdp-day_button { color: #8b9384; }
@@ -662,7 +662,7 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-date-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 308px; padding-left: 8px; }
 .live-date-bar h2 { margin: 0; font-family: "Source Sans 3", sans-serif; font-size: 16px; font-weight: 600; color: #283c32; }
 .live-date-done { min-width: 44px; min-height: 44px; padding: 0 8px; border: 0; border-radius: 6px; background: none; color: #365c46; font: inherit; font-size: 16px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
-.live-date-done:focus-visible { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date-done:focus-visible { outline: 2px solid #283c32; outline-offset: 2px; }
 @keyframes paper-sheet-up { from { transform: translateY(100%); } }
 @media (max-width: 359px) { .live-date-sheet .rdp-day_button, .live-date-sheet .rdp-weekday { width: 44px; } .live-date-sheet.live-date-bottom { padding-inline: 4px; } }
 @media (prefers-reduced-motion: reduce) { .live-date-sheet, .live-date-sheet.live-date-bottom { animation: none; } }
@@ -919,3 +919,14 @@ nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row
 .live-app .live-commitment-row .live-row-opens::after { content: ""; position: absolute; inset: 0; }
 .live-app .live-commitment-row:has(.live-row-opens) :is(a, button):not(.live-row-opens) { position: relative; z-index: 1; }
 @media (hover: hover) { .live-app .live-commitment-row:has(.live-row-opens):hover h3 { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; } }
+
+/* ── One focus ring, for keys only ────────────────────────────────────────────────────────
+   2px of ink. A control carries it 3px outside, its corners following the control's own; a row that opens as a
+   whole carries it 2px inside with 6px corners, since rows lie edge to edge and inside cards that clip. Its own link
+   or button inside draws nothing. A tap or a click never shows it (see the keys rule above). */
+.live-date-words:focus-visible { outline: none; }
+:is(.live-app, .live-dialog) .live-field :is(input, textarea, select)[aria-invalid="true"]:focus-visible { outline-color: #6f5f93; }
+:is(.live-app, .live-dialog) :is(.help-row-open, .people-row-open, .live-row-opens):focus-visible { outline: none; }
+:is(.live-app, .live-dialog) :is(.help-row:has(.help-row-open:focus-visible), .people-row[data-opens]:has(.people-row-open:focus-visible), .live-commitment-row:has(.live-row-opens:focus-visible)) {
+  outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px;
+}

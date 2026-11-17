@@ -28,18 +28,19 @@
   font: inherit;
 }
 /*
-  Keyboard focus, the same on every button, link, tab, menu line and choice: a 2px ring in the
-  button green with a 2px gap, so it shows on a filled green button too. Only for the keyboard
-  (focus-visible), never on a press. Text fields carry the same green ring.
+  Keyboard focus, the same on every button, link, tab, menu line, choice and field: a 2px ring of ink
+  with a 3px gap, its corners following the control's own, so it shows on a filled green button too.
+  Only for the keyboard (focus-visible), never on a press. A row that opens as a whole is ringed 2px
+  inside instead (paper.css), since rows lie edge to edge.
 */
 :is(.live-app, .live-dialog, .live-mobile-menu) :is(a, button, input, select, textarea, summary, [role], [tabindex]):focus-visible {
-  outline: 2px solid #365c46;
-  outline-offset: 2px;
+  outline: 2px solid #283c32;
+  outline-offset: 3px;
   --tw-ring-shadow: 0 0 #0000;
 }
 /* A text link: a little more room and a soft corner. A menu line is a control, so it keeps the control's ring. */
 :is(.live-app, .live-dialog, .live-mobile-menu) a:is(a, [href]):focus-visible { outline-offset: 3px; border-radius: 2px; }
-:is(.live-nav, .live-mobile-nav, .live-mobile-menu nav) a:is(a, [href]):focus-visible { outline-offset: 2px; border-radius: 4px; }
+:is(.live-nav, .live-mobile-nav, .live-mobile-menu nav) a:is(a, [href]):focus-visible { outline-offset: 3px; border-radius: 4px; }
 /* A text link with a 44px tap height: the ring gets about 8px at the sides so the box looks even. Nothing moves. */
 :is(.live-back, .live-link):is(a, [href]):focus-visible { padding-inline: 5px; margin-inline: -5px; }
 .live-header {

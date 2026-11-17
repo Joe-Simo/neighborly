@@ -100,7 +100,7 @@
 .help-row:has(.help-row-open) { position: relative; cursor: pointer; }
 .help-row-open::after { content: ""; position: absolute; inset: 0; }
 .help-row-open:focus-visible { outline: none; }
-.help-row:has(.help-row-open:focus-visible) { outline: 2px solid var(--live-green); outline-offset: -2px; border-radius: 6px; }
+.help-row:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px; }
 .help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
 .help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { color: var(--live-ink); transform: translateX(4px); }
 @media (max-width: 850px) {
