@@ -39,18 +39,50 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
 
   // Any link from one room to another, in the menu or inside a room, is taken here.
   useEffect(() => {
+    let kept: { path: string; y: number } | null = null;
     const step = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const link = event.target instanceof Element ? event.target.closest("a") : null;
       if (!link || link.target || link.hasAttribute("download") || link.origin !== window.location.origin) return;
       // Only between rooms: the way in from sign-in, and every address that is not a room, stay with the router.
-      if (!areaOf(link.pathname) || !areaOf(window.location.pathname) || link.search || link.hash) return;
+      const here = window.location;
+      if (!areaOf(link.pathname) || !areaOf(here.pathname) || link.hash) return;
+      // A link that takes its own step (`data-step-own`, on it or around it) is left whole to whoever marked it.
+      if (link.closest("[data-step-own]")) return;
+      const sameRoom = link.pathname === here.pathname;
+      if (link.search) {
+        // Into something inside the room (a neighbor's record, a visit's sheet): the router takes it. It keeps
+        // the page where it was, so the frame remembers the list's place for the way back and, once the address
+        // has changed, sets what was opened at its top.
+        if (!sameRoom) return;
+        if (!here.search) kept = { path: here.pathname, y: window.scrollY };
+        const opened = link.search;
+        let tries = 120;
+        const top = () => {
+          if (window.location.pathname !== link.pathname) return;
+          if (window.location.search === opened) window.scrollTo(0, 0);
+          else if (--tries) requestAnimationFrame(top);
+        };
+        requestAnimationFrame(top);
+        return;
+      }
       event.preventDefault();
       // The room already in view stays as it is, unless it stands on something inside itself (a neighbor's
       // record at ?neighbor=…): then the plain link is the way back to the room.
-      if (link.pathname === window.location.pathname && !window.location.search) return;
+      if (sameRoom && !here.search) return;
+      // Only the room's own way back (a link inside the room) returns to the list's place; the menu opens a room at its top.
+      const back = sameRoom && kept?.path === link.pathname && link.closest("main") ? kept.y : 0;
+      kept = null;
       window.history.pushState(null, "", link.pathname);
-      window.scrollTo(0, 0);
+      if (!back) return window.scrollTo(0, 0);
+      // Back in the list where it was left: once the list is long enough to stand there again, or after a second.
+      let tries = 60;
+      const settle = () => {
+        if (window.location.pathname !== link.pathname || window.location.search) return;
+        if (document.documentElement.scrollHeight - window.innerHeight >= back || --tries === 0) window.scrollTo(0, back);
+        else requestAnimationFrame(settle);
+      };
+      requestAnimationFrame(settle);
     };
     document.addEventListener("click", step, true);
     return () => document.removeEventListener("click", step, true);
