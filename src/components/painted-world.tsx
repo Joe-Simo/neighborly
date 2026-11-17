@@ -260,7 +260,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
           </nav>}
         </div>
         <footer className="painted-world-tools">
-          <div className="painted-world-scroll-cue" aria-hidden="true"><span>{/* One line until the scene is whole, then one change: the cue never swaps its words twice. */}{(loading || (!ready && !failed)) ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
+          <div className="painted-world-scroll-cue" aria-hidden="true" data-waiting={(loading || (!ready && !failed)) || undefined}><span>{/* One line until the scene is whole, then one change: the cue never swaps its words twice. */}{(loading || (!ready && !failed)) ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
           {!heroOnly && <div className="painted-world-progress" aria-hidden="true"><span>{chapter.number}</span><div><i /></div><span>04</span></div>}
         </footer>
       </div>

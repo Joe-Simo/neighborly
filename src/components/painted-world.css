@@ -318,3 +318,20 @@
   /* The empty hand shows the moment the card sets out, as one cut. */
   .thread-live .thread-empty{transition:none}
 }
+
+/* Where the two ways on do not fit side by side, the second goes under the first; neither is ever cut by the window's edge.
+   Sideways, the words stand in the page beside the picture, not over it, so a window too short for them grows by what they need and nothing is cut at its foot. */
+@media(max-height:500px) and (min-aspect-ratio:10/11){
+  .painted-world[data-hero-only=true] .painted-world-opening-actions{flex-wrap:wrap;row-gap:8px}
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{height:auto;min-height:max(100svh,300px);padding-top:56px}
+  .painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{position:relative;top:auto;left:auto;right:auto;margin:13svh max(20px,env(safe-area-inset-right)) 24px calc(var(--side-art) + 24px)}
+}
+/* Enlarged four times over, or in any window that small, the sideways page has no room for words beside its picture: it is a plain page. The picture stands across the top, the heading runs the full width under it, and the sentence and both ways on follow, all reached by scrolling. */
+@media(max-height:500px) and (min-aspect-ratio:10/11) and (max-width:520px){
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{min-height:0}
+  .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:56px;bottom:auto;width:100%;height:calc(100vw / 1.406);-webkit-mask-image:none;mask-image:none}
+  .painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{margin:calc(100vw / 1.406) 0 0;padding:16px 20px 28px}
+  .painted-world[data-hero-only=true] .painted-world-tools{display:none}
+}
+/* With less motion no scene opens, so nothing is said to be opening. */
+@media(prefers-reduced-motion:reduce){.painted-world-scroll-cue[data-waiting]{visibility:hidden}}
