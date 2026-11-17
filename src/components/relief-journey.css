@@ -71,8 +71,9 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 /* Two pictures carry their weight in their upper half; they are set lower so what is painted, not the box, sits on the window's middle. */
 .relief-panel:has([data-picture=call]){--drop:min(2.2vw,4svh)}
 .relief-panel:has([data-picture=help]){--drop:min(.8vw,1.5svh)}
-.relief-words h2{margin:0;font:400 clamp(64px,9.45vw,150px)/.9 'Newsreader',Georgia,serif;letter-spacing:-.07em;white-space:nowrap;opacity:var(--e);translate:0 calc((1 - var(--e)) * 56px + var(--q) * 22px)}
-.relief-words p{margin:clamp(20px,2.2vw,36px) 0 0;max-width:12.4em;font-size:clamp(19px,1.6vw,24px);line-height:1.42;text-wrap:pretty;opacity:calc(var(--e) * 2 - 1);translate:0 calc((1 - var(--e)) * 80px + var(--q) * 10px)}
+.relief-words h2{margin:0;font:400 clamp(64px,9.45vw,150px)/.9 'Newsreader',Georgia,serif;letter-spacing:-.07em;white-space:nowrap;translate:0 calc((1 - var(--e)) * 56px + var(--q) * 22px)}
+.relief-words p{margin:clamp(20px,2.2vw,36px) 0 0;max-width:12.4em;font-size:clamp(19px,1.6vw,24px);line-height:1.42;text-wrap:pretty;translate:0 calc((1 - var(--e)) * 80px + var(--q) * 10px)}
+/* A chapter's words come up into the window in full ink; they are never faded in. */
 /* The heading is set against its picture: it reaches a little way over the picture's own paper. */
 .relief-panel[data-side=left] .relief-words{margin-left:-4vw}
 /* Each picture is cut from the page's own paper and runs off the nearest edge of the screen. Its waves are its only border. */
