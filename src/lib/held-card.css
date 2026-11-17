@@ -1,6 +1,6 @@
 /* The home page's card, grown to the window: the card's own paper and grain, never a plain fill. */
 #card-held{position:fixed;inset:0;z-index:80;overflow:hidden;pointer-events:none;contain:strict}
-#card-held .card-held-sheet{position:absolute;translate:none;rotate:none;transform-origin:50% 50%;will-change:transform}
+#card-held .card-held-sheet{position:absolute;translate:none;rotate:none;transform-origin:50% 50%;will-change:transform;filter:none}
 /* The grown card's marks, at the door card's size and places, so the door takes over the same marks. */
 #card-held .card-held-marks{position:absolute;left:50%;top:50%;width:max(106vw,159vh);aspect-ratio:1.5;margin:calc(max(106vw,159vh) / -3) 0 0 calc(max(106vw,159vh) / -2)}
 #card-held .card-held-marks>*{position:absolute;opacity:.4}
