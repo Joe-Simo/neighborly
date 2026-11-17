@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAction, useMutation, useQueries, type RequestForQueries } from "convex/react";
 import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";
 import { FirstLookProvider, firstLookData, useAfterLook, useFirstRoom, useKeptPress } from "@/components/workspace/first-look";
 import { useClerk } from "@clerk/nextjs";
+import { forgetThisBrowser, forgetWhoWasHere } from "@/lib/forget-browser";
 import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -75,7 +76,12 @@ function LiveRooms({
   useEffect(() => {
     if (noLook && signedOut) carryTheCard();
   }, [noLook, signedOut]);
+  // A session that ended without the app's sign-out leaves the last visit's traces; they go before the sheet is seen.
+  useLayoutEffect(() => {
+    if (signedOut) forgetWhoWasHere();
+  }, [signedOut]);
   const signOut = () => {
+    forgetThisBrowser();
     try {
       window.sessionStorage.setItem(leftKey, "1");
     } catch {
@@ -94,6 +100,7 @@ function LiveRooms({
   useEffect(() => {
     if (!leavingForSample || leftForSample.current) return;
     leftForSample.current = true;
+    forgetThisBrowser();
     void clerk.signOut({ redirectUrl: "/app?intent=sample" });
   }, [leavingForSample, clerk]);
   const churchPage = usePaginatedQuery(
