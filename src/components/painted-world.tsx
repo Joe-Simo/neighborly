@@ -42,7 +42,7 @@ const cardPath = {
 } as const;
 
 /** Native scrolling owns the narrative; the artwork never traps wheel or touch input. */
-export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = false, passed = false, onPass, onContinue, children }: { scenes?: PaintedWorldOptions["scenes"]; heroOnly?: boolean; suspendOffscreen?: boolean; passed?: boolean; onPass?: () => void; onContinue?: () => void; children?: ReactNode }) {
+export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass, onContinue, children }: { scenes?: PaintedWorldOptions["scenes"]; heroOnly?: boolean; passed?: boolean; onPass?: () => void; onContinue?: () => void; children?: ReactNode }) {
   const openingOutcome: "rest" | "accepted" = passed ? "accepted" : "rest";
   const outcomeRef = useRef(openingOutcome);
   useEffect(() => { outcomeRef.current = openingOutcome; controller.current?.setOpeningOutcome(openingOutcome); }, [openingOutcome]);
@@ -57,27 +57,10 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [onscreen, setOnscreen] = useState(true);
-  const canRender = !heroOnly || !suspendOffscreen || onscreen;
-  useEffect(() => {
-    if (!heroOnly || !suspendOffscreen || !viewport.current || !("IntersectionObserver" in window)) return;
-    let previous: boolean | undefined;
-    const observer = new IntersectionObserver(([entry]) => {
-      const visible = entry.isIntersecting;
-      if (visible === previous) return;
-      previous = visible;
-      setOnscreen(visible);
-      if (!visible) setReady(false);
-      if (!visible) { controller.current?.dispose(); controller.current = null; setLoading(false); }
-    });
-    observer.observe(viewport.current);
-    return () => observer.disconnect();
-  }, [heroOnly, suspendOffscreen]);
   const visibleScene = heroOnly ? "opening" : scene;
   const chapter = chapters[visibleScene];
 
   useEffect(() => {
-    if (!canRender) return;
     let disposed = false;
     let active: Controller | undefined;
     let idle: number | undefined;
@@ -128,7 +111,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
       if (idle !== undefined) window.cancelIdleCallback(idle);
       active?.dispose(); controller.current = null;
     };
-  }, [scenes, heroOnly, canRender]);
+  }, [scenes, heroOnly]);
 
   useEffect(() => {
     if (heroOnly) {
@@ -234,7 +217,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
     <section className="painted-world-track" ref={track} aria-label={heroOnly ? "An open hand" : "A story of care"}>
       <div className="painted-world-viewport" ref={viewport}>
         <div className="painted-world-art" ref={host} aria-hidden="true" />
-        {(!ready || failed || !canRender) && <picture className="painted-world-fallback">
+        {(!ready || failed) && <picture className="painted-world-fallback">
           {/* The first picture a visitor sees: the lightest file their screen can use, asked for before anything else. */}
           {heroOnly && openingOutcome !== "accepted" && <source media="(max-width:700px)" type="image/avif" srcSet="/assets/living-relief-mobile-480.avif 480w, /assets/living-relief-mobile-780.avif 780w" sizes="100vw" />}
           <source media={heroOnly ? "(max-width:700px)" : "(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)"} srcSet={fallbackSource(visibleScene, true, openingOutcome === "accepted")} />
@@ -242,7 +225,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           {heroOnly && openingOutcome === "accepted" && <source type="image/avif" srcSet={acceptedStill} sizes="100vw" />}
           <img crossOrigin="anonymous" fetchPriority="high" decoding="sync" src={fallbackSource(visibleScene, false, openingOutcome === "accepted")} alt="" />
         </picture>}
-        {heroOnly && reached && !passed && (!ready || failed || !canRender) && <picture className="painted-world-fallback painted-world-fallback-passed">
+        {heroOnly && reached && !passed && (!ready || failed) && <picture className="painted-world-fallback painted-world-fallback-passed">
           <source media="(max-width:700px)" srcSet={fallbackSource("opening", true, true)} />
           <source type="image/avif" srcSet={acceptedStill} sizes="100vw" />
           <img src={fallbackSource("opening", false, true)} alt="" />
@@ -276,7 +259,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           </nav>}
         </div>
         <footer className="painted-world-tools">
-          <div className="painted-world-scroll-cue" aria-hidden="true"><span>{/* One line until the scene is whole, then one change: the cue never swaps its words twice. */}{(loading || (!ready && !failed && canRender)) ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
+          <div className="painted-world-scroll-cue" aria-hidden="true"><span>{/* One line until the scene is whole, then one change: the cue never swaps its words twice. */}{(loading || (!ready && !failed)) ? "Opening the scene" : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
           {!heroOnly && <div className="painted-world-progress" aria-hidden="true"><span>{chapter.number}</span><div><i /></div><span>04</span></div>}
         </footer>
       </div>
