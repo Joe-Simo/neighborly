@@ -39,6 +39,8 @@ export function FrescoThreshold() {
   const walking = useRef(false);
   const [near, setNear] = useState(false);
   const settled = useSettled();
+  // A wide window counts as near as soon as the page is quiet; settled is only ever true in the browser, so the server's drawing is unchanged.
+  const living = near || (settled && matchMedia("(min-width: 1200px)").matches);
 
   // The courtyard is fetched and drawn before anyone can walk into it: when the doors come near, or a pointer or the keyboard reaches their button.
   const warm = () => {
@@ -54,6 +56,12 @@ export function FrescoThreshold() {
     observer.observe(host);
     return () => observer.disconnect();
   }, []);
+  useEffect(() => {
+    // A wide window prepares the courtyard while the opening is being read: once the page is quiet its painting is decoded
+    // and its living layers are drawn once out of sight, so the first walk in never meets a picture still arriving.
+    if (!settled || !matchMedia("(min-width: 1200px)").matches) return;
+    void stage.current?.querySelector<HTMLImageElement>(".fresco-painting")?.decode().catch(() => undefined);
+  }, [settled]);
   useEffect(() => {
     // The living courtyard waits for the first sign that the visitor is on their way to it.
     // A wide window warms it after a moment of quiet, or at the first scroll. A phone waits until the visitor is half a screen down the page.
@@ -193,7 +201,7 @@ export function FrescoThreshold() {
             {/* The courtyard is one painting, seen once. A native image keeps it whole without the living layers. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {settled && <img className="fresco-painting" src="/assets/threshold/courtyard-fresco.webp" width="1774" height="887" decoding="async" alt="A sunlit church courtyard painted on the wall: a woman prepares food at a long shared table, under arches hung with wisteria." />}
-            {near && settled && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
+            {living && settled && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
           </div>
         </div>
         <div className="fresco-doors" aria-hidden="true"><i /><i /></div>

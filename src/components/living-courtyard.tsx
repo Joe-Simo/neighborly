@@ -291,6 +291,12 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       for (const texture of textures) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.initTexture(texture); }
       await renderer.compileAsync(scene, camera);
       if (disposed) return;
+      // One frame is drawn before the layers are shown, so the program's first use and the textures' first sampling happen now, not on the walk.
+      await new Promise(requestAnimationFrame);
+      if (disposed) return;
+      renderer.render(scene, camera);
+      await new Promise(requestAnimationFrame);
+      if (disposed) return;
       host.setAttribute("data-living", "true");
       raf = requestAnimationFrame(tick);
     }).catch(() => { /* Without the living layers the painted courtyard shows exactly as it always has. */ });
