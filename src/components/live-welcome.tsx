@@ -139,21 +139,25 @@ export function LiveWelcome({
           <p>{authWords[language].badInvite}</p>
         </div>
       )}
-      <ToggleGroup
-        type="single"
-        value={mode}
-        disabled={busy}
-        onValueChange={(value) => {
-          if (value !== "create" && value !== "join") return;
-          setMode(value);
-          setError("");
-        }}
-        className="entry-tabs entry-halves"
-        aria-label={w.choose}
-      >
-        <ToggleGroupItem value="create">{w.start}</ToggleGroupItem>
-        <ToggleGroupItem value="join">{w.invited}</ToggleGroupItem>
-      </ToggleGroup>
+      {/* Someone who came by a link came to join: the sheet is the invitation's page alone. If joining is refused,
+          both ways to begin are offered. */}
+      {codeShown && (
+        <ToggleGroup
+          type="single"
+          value={mode}
+          disabled={busy}
+          onValueChange={(value) => {
+            if (value !== "create" && value !== "join") return;
+            setMode(value);
+            setError("");
+          }}
+          className="entry-tabs entry-halves"
+          aria-label={w.choose}
+        >
+          <ToggleGroupItem value="create">{w.start}</ToggleGroupItem>
+          <ToggleGroupItem value="join">{w.invited}</ToggleGroupItem>
+        </ToggleGroup>
+      )}
       <form className="live-form" onSubmit={submit} aria-busy={pending}>
         <LiveField label={w.yourName} said={{ needed: w.addName }}>
           <Input name="displayName" autoComplete="name" required maxLength={100} disabled={busy} />
