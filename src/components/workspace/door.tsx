@@ -43,7 +43,7 @@ let heldSaying = false;
 /** The name the visitor wrote on the home page's card, if any: read here only, so it stays on the card through the handover. */
 function readCardFor() {
   try {
-    return window.sessionStorage.getItem("kh-card-for")?.trim().slice(0, 40) || "";
+    return window.sessionStorage.getItem("kh-card-for")?.trim().slice(0, 24) || "";
   } catch {
     return "";
   }
