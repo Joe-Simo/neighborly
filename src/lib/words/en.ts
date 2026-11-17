@@ -66,6 +66,7 @@ export function en(set: WordSet) {
       sample: "Sample",
       language: "Language",
       roomInEnglish: "This room is in English.",
+      partInEnglish: "This part is in English.",
       typedStays: "Words people typed stay as they wrote them.",
       member: "Member",
       team: "Team",
@@ -262,6 +263,7 @@ export function en(set: WordSet) {
       decline: "Decline",
       noMeetingsTitle: "No meetings planned.",
       noMeetingsDetail: "Meeting replies are separate from task completion.",
+      preparing: "Preparing invitations…",
     },
     /** People, as a member sees it. Managing access and invitations are the owner's tools and stay English. */
     people: {

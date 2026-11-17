@@ -470,7 +470,8 @@ export function LiveWorkspace({
                 (data.canCoordinate && area === "commitments") ||
                 area === "time-off") && (
                 // A room's head button is always outline: the solid fill belongs to the decision on a sheet.
-                <Button variant="outline" onClick={() => open(primary)}>
+                // An owner's tool that is not in this language yet says so to a screen reader, as its room would.
+                <Button variant="outline" lang={words.locale !== "en" && primary !== "task" && !actions[primary] ? "en" : undefined} onClick={() => open(primary)}>
                   <Plus size={17} aria-hidden="true" />
                   {actName(primary)}
                 </Button>
