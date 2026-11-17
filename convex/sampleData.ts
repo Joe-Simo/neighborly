@@ -200,12 +200,27 @@ async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
   // The newcomer has asked for a place on the pantry team and waits for its coordinator.
   await db.insert("teamMembers", { churchId, teamId: pantry, memberId: newcomer, teamRole: "member", approved: false, status: "active" });
   const helpLineCrew = others.filter((_, index) => index % 2 === 1);
-  for (let week = 1; week <= 52; week++) {
+  // The closed fiscal year's shifts are every week of that year, counted from its own first Monday, so its
+  // hours read the same whatever day the sample is loaded. This year keeps only its last twelve weeks, so the
+  // whole stays under the 200 commitments the overview reads.
+  const fiscalStart = DateTime.fromMillis(now, { zone }).set({ month: 10, day: 1 }).startOf("day");
+  const closedStart = (DateTime.fromMillis(now, { zone }).month >= 10 ? fiscalStart : fiscalStart.minus({ years: 1 })).minus({ years: 1 });
+  const openStart = closedStart.plus({ years: 1 });
+  const firstWeek = closedStart.startOf("week");
+  for (let week = 0, monday0 = firstWeek; monday0 < monday; week++, monday0 = firstWeek.plus({ weeks: week })) {
+    const closed = monday0 < openStart;
+    if (!closed && monday0 < monday.minus({ weeks: 12 })) continue;
+    const day = (offset: number, hour: number) => monday0.plus({ days: offset, hours: hour });
     for (const [slot, weekday] of [2, 4].entries()) {
-      const start = monday.minus({ weeks: week }).plus({ days: weekday - 1, hours: 9 }).toMillis();
+      const at = day(weekday - 1, 9);
+      // A shift on the far side of the year's first day belongs to the year before, which the sample does not hold.
+      if (at < closedStart) continue;
+      const start = at.toMillis();
       await db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start, end: start + 3 * 3600000, location: "Parish office", preparation: "", assigneeId: helpLineCrew[(week * 2 + slot) % helpLineCrew.length], coordinatorId: others[1], version: 1 });
     }
-    const saturday = monday.minus({ weeks: week }).plus({ days: 5, hours: 10 }).toMillis();
+    const saturdayAt = day(5, 10);
+    if (saturdayAt < closedStart) continue;
+    const saturday = saturdayAt.toMillis();
     await db.insert("commitments", { churchId, teamId: pantry, title: "Pantry morning", start: saturday, end: saturday + 2 * 3600000, location: "Parish hall", preparation: "", assigneeId: pantryCrew[week % pantryCrew.length], coordinatorId: pantryCrew[0], version: 1 });
   }
   // One shift nobody has taken yet, on the next Saturday still ahead, so the week has a place waiting for a name.
