@@ -80,11 +80,19 @@ const watch = (watcher: () => void) => {
  * What is under the paper is ready to be seen: the room is shown whole, or the door led somewhere that
  * is not a room and not the waiting screen (a first welcome, a plain notice).
  */
-function underneathIsReady() {
+export function underneathIsReady() {
   const room = document.querySelector(".live-app .live-room");
   // A part of the room that is still on its way says so (`data-room-pending`), and the paper waits for it too.
   if (room) return document.querySelector(".live-app[data-room-shown]") !== null && document.querySelector(".live-app [data-room-pending]") === null;
   return document.querySelector(".paper-loading") === null;
+}
+
+/** Whatever under the paper is still arriving is finished now: a sheet comes off a room at rest. */
+export function restWhatIsUnderneath() {
+  for (const move of document.getAnimations()) {
+    const on = move.effect instanceof KeyframeEffect ? move.effect.target : null;
+    if (on?.closest(".live-app") && move.effect?.getComputedTiming().iterations !== Infinity) move.finish();
+  }
 }
 
 export function DoorSweep() {
@@ -124,11 +132,7 @@ export function DoorSweep() {
       // The line leaves first, in this same frame, so it is never read over the room.
       paper.current?.querySelector<HTMLElement>(".door-opening")?.style.setProperty("visibility", "hidden");
       setHolding(false);
-      // Whatever in the room is still arriving is finished now: the sheet comes off a room at rest.
-      for (const move of document.getAnimations()) {
-        const on = move.effect instanceof KeyframeEffect ? move.effect.target : null;
-        if (on?.closest(".live-app") && move.effect?.getComputedTiming().iterations !== Infinity) move.finish();
-      }
+      restWhatIsUnderneath();
       const sheet = paper.current?.querySelector<HTMLElement>(".door-card, .door-paper");
       const far = -((sheet?.getBoundingClientRect().bottom ?? window.innerHeight) + 70);
       const away = { duration: LIFT, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" } as const;

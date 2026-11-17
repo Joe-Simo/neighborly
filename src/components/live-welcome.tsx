@@ -7,7 +7,7 @@ import { words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
 import { useWaited } from "@/lib/use-waited";
 import { useFocusBack } from "@/lib/use-focus-back";
-import { authWords, useEntryLanguage } from "./live-auth-words";
+import { authWords, tabInReadersLanguage, useEntryLanguage } from "./live-auth-words";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +70,7 @@ export function LiveWelcome({
     const found = document.title;
     document.title = pageTitle;
     return () => {
-      document.title = found;
+      document.title = tabInReadersLanguage(found);
     };
   }, [pageTitle]);
   const [timeZone] = useState(
