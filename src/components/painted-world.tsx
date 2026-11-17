@@ -9,6 +9,7 @@ import { isPaintedPortrait, openingKeptAbove } from "@/lib/painted-world-framing
 import type { PaintedScene, PaintedWorldOptions, createPaintedWorldController } from "@/lib/painted-world-controller";
 import "./painted-world.css";
 import "./cut-edges.css";
+import "./public-touch.css";
 import { useCutHold } from "./cut-hold";
 
 const chapters = {

@@ -1,0 +1,19 @@
+/* Details a hand finds on the public pages. Paper, not effects: a link's line is a thin tab that lifts off the page, the card turns a little toward the pointer, and keyboard focus is a cut outline in ink. */
+
+/* The card at rest: a slight turn toward a mouse or pen, eased like a sheet settling. The mark is taken away on a press, so the grow starts from the card lying flat. */
+.card-offer[data-leaning]{transform:perspective(900px) rotateX(var(--lean-x,0deg)) rotateY(var(--lean-y,0deg));transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s,transform 600ms cubic-bezier(.2,.7,.2,1)}
+
+/* A link's line is a tab of ink paper: on hover or focus it lifts 2px off the page and its 1px shadow stays on the page beneath. */
+:is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot])){background-image:linear-gradient(currentColor,currentColor),linear-gradient(#2e241630,#2e241630);background-repeat:no-repeat;background-size:0 1px,0 1px;background-position:0 100%,0 100%;transition:background-size 160ms cubic-bezier(.2,.7,.2,1),background-position 160ms cubic-bezier(.2,.7,.2,1)}
+.neighborly-give{background-position:0 calc(50% + .75em),0 calc(50% + .75em)}
+:is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot])):is(:hover,:focus-visible){border-bottom-color:transparent;background-size:100% 1px,100% 1px;background-position:0 calc(100% - 2px),0 calc(100% - 1px)}
+.neighborly-give:is(:hover,:focus-visible){text-decoration-color:transparent;background-position:0 calc(50% + .75em - 2px),0 calc(50% + .75em - 1px)}
+
+/* Keyboard focus on a public page: a 2px outline in ink, its corners cut a little unevenly by hand. Never the browser's blue. */
+:is(.neighborly-continuation,.public-page,.lost-door,main.painted-world) :is(a,button,[tabindex]):focus-visible{outline:2px solid #263b30;outline-offset:3px;border-radius:3px 1px 4px 2px/2px 4px 1px 3px}
+
+@media(prefers-reduced-motion:reduce){
+  :is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot])){transition:none}
+  :is(.neighborly-final-links a,.public-page :is(p,li) a,.lost-door a:not([data-slot])):is(:hover,:focus-visible){background-position:0 100%,0 100%}
+  .neighborly-give:is(:hover,:focus-visible){background-position:0 calc(50% + .75em),0 calc(50% + .75em)}
+}
