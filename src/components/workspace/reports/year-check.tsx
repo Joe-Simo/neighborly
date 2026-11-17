@@ -7,35 +7,17 @@ import type { FunctionReturnType } from "convex/server";
 import { ChevronDown, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { formatDate, type Language, type Words } from "@/lib/words";
-import { kindLabels, money } from "@/components/workspace/reports/lines";
+import { formatDate, type Words } from "@/lib/words";
+import { fill } from "@/lib/words/fill";
+import { money } from "@/components/workspace/reports/lines";
 
 export type YearCheckResult = FunctionReturnType<typeof api.drafts.checkYear>;
 export type FlaggedRecords = FunctionReturnType<typeof api.reports.flagged>;
 type Flag = YearCheckResult["flags"][number];
 
-/** The sheet's own English words, used until the shared words carry them; the shared ones win when they do. */
-const english = {
-  putAway: "Hide the check",
-  checked: "Checked {requests}, {visits} and the ledger, today at {time}.",
-  requests: (count: number) => (count === 1 ? "1 request" : `${count} requests`),
-  visits: (count: number) => (count === 1 ? "1 visit" : `${count} visits`),
-  show: (count: number) => `Show the ${count} records`,
-  hide: (count: number) => `Hide the ${count} records`,
-  openShort: "Open",
-  happened: { open: "received", approved: "approved", paid: "marked paid", declined: "declined", closed: "closed" },
-  visit: "Home visit",
-  reading: "Reading the year",
-  readingWhat: "{requests}, {visits} and the ledger.",
-  /** Said when the assistant could not read the notes: nothing was read, so nothing is claimed about what they say. */
-  unread: "The assistant could not read the notes this time. The counting was done; the notes below are for you to read.",
-  notRead: "Not read by the assistant. Please read the note yourself.",
-  noteMaySayPaid: "The note may say this was paid, and no payment is recorded.",
-  visitMayBeDone: "The note may say this visit happened, and it is not marked done.",
-};
-
 /** The sheet while the year is being read: it lies where the verdict will, so nothing moves when the verdict arrives. */
-export function YearChecking({ requests, visits }: { requests: number; visits: number }) {
+export function YearChecking({ words, requests, visits }: { words: Words; requests: number; visits: number }) {
+  const text = { ...words.yearCheck, ...words.rooms.reports.check };
   const sheet = useRef<HTMLElement>(null);
   // A wait is one still ochre ring after 400ms: nothing turns or pulses.
   const waited = useWaited(true);
@@ -44,9 +26,9 @@ export function YearChecking({ requests, visits }: { requests: number; visits: n
   }, []);
   return (
     <section ref={sheet} className="help-sheet report-check paper-rest" aria-busy="true" role="status" data-reading="">
-      <p className="help-sheet-label">Before you send it</p>
-      <h2>{english.reading}<span className="report-reading" aria-hidden="true" data-waited={waited ? "" : undefined} /></h2>
-      <p>{english.readingWhat.replace("{requests}", english.requests(requests)).replace("{visits}", english.visits(visits))}</p>
+      <p className="help-sheet-label">{text.title}</p>
+      <h2>{text.reading}<span className="report-reading" aria-hidden="true" data-waited={waited ? "" : undefined} /></h2>
+      <p>{fill(text.readingWhat, { requests: text.requests(requests), visits: text.visits(visits) })}</p>
     </section>
   );
 }
@@ -76,20 +58,21 @@ export function YearCheck({
   const [open, setOpen] = useState<string[]>([]);
   const groups = new Map<string, Flag[]>();
   for (const flag of result.flags) groups.set(`${flag.kind}-${flag.source}`, [...(groups.get(`${flag.kind}-${flag.source}`) ?? []), flag]);
-  const text = { ...english, ...words.yearCheck };
-  const happened: Record<string, string> = text.happened;
-  // The kinds of help in the reader's language, once the shared words carry them.
-  const { kinds = kindLabels }: { locale: Language; kinds?: typeof kindLabels } = words;
+  const text = { ...words.yearCheck, ...words.rooms.reports.check };
+  // One record said in a line, whole for each thing that can have happened to a request.
+  const happened: Record<string, string> = text.requestOn;
+  // The kinds of help in the reader's language.
+  const { kinds } = words;
   const day = (at: number) => formatDate(words.locale, at, { month: "short", day: "numeric", timeZone });
 
   const line = ({ record }: Flag) => {
     if (record.table === "visits") {
       const visit = records?.visits.find((candidate) => candidate.id === record.id);
-      return visit && { is: `${text.visit}, ${day(visit.at)}`, href: `/app/visits?sheet=${visit.id}` };
+      return visit && { is: fill(text.visitOn, { day: day(visit.at) }), href: `/app/visits?sheet=${visit.id}` };
     }
     const request = records?.requests.find((candidate) => candidate.id === record.id);
     return request && {
-      is: `${kinds[request.kind]}, ${money(request.amount)}, ${happened[request.status] ?? request.status} ${day(request.at)}`,
+      is: fill(happened[request.status] ?? text.requestOn.other, { kind: kinds[request.kind], amount: money(request.amount), status: request.status, day: day(request.at) }),
       href: request.neighborId ? `/app/neighbors?neighbor=${request.neighborId}` : null,
     };
   };
@@ -100,7 +83,7 @@ export function YearCheck({
       <p key={flag.record.id} className="report-check-record">
         {said.is}
         {said.href && (
-          <Link className="live-link" href={said.href} aria-label={`${text.open}: ${said.is}`}>
+          <Link className="live-link" href={said.href} aria-label={text.openRecord(said.is)}>
             {text.openShort}
           </Link>
         )}
@@ -136,10 +119,11 @@ export function YearCheck({
         {result.flags.length ? text.count(result.flags.length) : text.clear}
       </h2>
       <p>
-        {text.checked
-          .replace("{requests}", text.requests(checked.requests))
-          .replace("{visits}", text.visits(checked.visits))
-          .replace("{time}", formatDate(words.locale, checked.at, { hour: "numeric", minute: "2-digit", timeZone }))}
+        {fill(text.checked, {
+          requests: text.requests(checked.requests),
+          visits: text.visits(checked.visits),
+          time: formatDate(words.locale, checked.at, { hour: "numeric", minute: "2-digit", timeZone }),
+        })}
       </p>
       {unsure && !clear && <p className="report-check-unsure">{text.unread}</p>}
       {groups.size > 0 && (

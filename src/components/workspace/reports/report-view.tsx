@@ -9,6 +9,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
 import { CountUp, LiveLoading } from "@/components/workspace/primitives";
+import { useWorkspace } from "@/components/workspace/context";
+import { formatDate } from "@/lib/words";
+import { fill } from "@/lib/words/fill";
 import {
   count,
   dayLabel,
@@ -18,8 +21,6 @@ import {
   money,
   monthLabel,
   periodLabel,
-  periodNoun,
-  plural,
   reportLines,
   spanLabel,
   type ReportLine,
@@ -71,31 +72,33 @@ export function YearSwitch({
   year: number;
   onYear: (year: number) => void;
 }) {
+  const w = useWorkspace().words.rooms.reports.period;
   if (years.length < 2) return null;
   return (
     <ToggleGroup
       type="single"
       className="report-years"
-      aria-label="Fiscal year"
+      aria-label={w.label}
       value={String(year)}
       onValueChange={(value) => value && onYear(Number(value))}
     >
       {[...years].reverse().map((option) => (
         <ToggleGroupItem key={option} value={String(option)}>
           {option}
-          {option === current && <span>so far</span>}
+          {option === current && <span>{w.soFar}</span>}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
   );
 }
 
+/** The whole year, then each quarter with its first and last month: "Oct–Dec". The months' names come from the date formatter. */
 const quarters = [
-  { value: "year", label: "All year" },
-  { value: "1", label: "Oct–Dec" },
-  { value: "2", label: "Jan–Mar" },
-  { value: "3", label: "Apr–Jun" },
-  { value: "4", label: "Jul–Sep" },
+  { value: "year", months: null },
+  { value: "1", months: ["2000-10", "2000-12"] },
+  { value: "2", months: ["2000-01", "2000-03"] },
+  { value: "3", months: ["2000-04", "2000-06"] },
+  { value: "4", months: ["2000-07", "2000-09"] },
 ] as const;
 export type Quarter = 1 | 2 | 3 | 4;
 
@@ -107,11 +110,13 @@ export function QuarterSwitch({
   quarter: Quarter | undefined;
   onQuarter: (quarter: Quarter | undefined) => void;
 }) {
+  const { words } = useWorkspace();
+  const w = words.rooms.reports.period;
   return (
     <ToggleGroup
       type="single"
       className="report-years report-quarters"
-      aria-label="Part of the year"
+      aria-label={w.part}
       value={quarter ? String(quarter) : "year"}
       onValueChange={(value) => {
         const chosen = quarters.find((option) => option.value === value);
@@ -120,7 +125,7 @@ export function QuarterSwitch({
     >
       {quarters.map((option) => (
         <ToggleGroupItem key={option.value} value={option.value}>
-          {option.label}
+          {option.months ? `${monthLabel(option.months[0], true, words)}–${monthLabel(option.months[1], true, words)}` : w.allYear}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
@@ -159,6 +164,9 @@ export function ReportView({
   /** The check came back clear, so printing is the next step and takes the one filled button. */
   printNext?: boolean;
 }) {
+  const { words } = useWorkspace();
+  const w = words.rooms.reports;
+  const kinds = kindLabels(words);
   const [everyLine, setEveryLine] = useState(false);
   // The sheets are laid once a visit: coming back to Reports in the same tab, the pile is already standing.
   const pile = useRef<HTMLSpanElement>(null);
@@ -188,7 +196,9 @@ export function ReportView({
       const found = [...chart.querySelectorAll<HTMLElement>(".report-month-open")].flatMap((month) => {
         const cell = month.getBoundingClientRect();
         const middle = cell.left + cell.width / 2;
-        return cell.top - 150 < kept.bottom && middle + 128 > kept.left && month.dataset.month ? [month.dataset.month] : [];
+        // Only where the tip has room at the month's left: on a phone it has none there, and a tip cut by the
+        // screen's edge is worse than one that lies over the caption for a moment.
+        return cell.top - 150 < kept.bottom && middle + 128 > kept.left && cell.left >= 252 && month.dataset.month ? [month.dataset.month] : [];
       });
       setCrowded((before) => (before.size === found.length && found.every((month) => before.has(month)) ? before : new Set(found)));
     };
@@ -197,26 +207,25 @@ export function ReportView({
     watch.observe(chart);
     return () => watch.disconnect();
   }, [report]);
-  const soFar = report.closed ? "" : " so far";
-  const noun = periodNoun(report);
+  const soFar = !report.closed;
+  const span = spanLabel(report, words);
   const blank = isBlank(report);
   const noCallBack = report.calls.taken - report.calls.returned - report.calls.waiting;
   const period = (
     <div className="report-period">
       <p>
-        <span>{periodLabel(report)}</span>
-        {longSpanLabel(report)}
-        {soFar && ", so far"}
+        <span>{periodLabel(report, words)}</span>
+        {longSpanLabel(report, words, soFar)}
       </p>
       <div className="report-controls">
         {years}
         {!blank && (
           <div className="live-row-actions report-actions">
             <Button variant={printNext ? "default" : "outline"} onClick={onPrint}>
-              <Printer size={17} aria-hidden="true" /> Print this {noun}
+              <Printer size={17} aria-hidden="true" /> {report.quarter ? w.actions.printQuarter : w.actions.printYear}
             </Button>
             <Button variant="outline" onClick={onSpreadsheet}>
-              <Download size={17} aria-hidden="true" /> Download as a spreadsheet
+              <Download size={17} aria-hidden="true" /> {w.actions.spreadsheet}
             </Button>
           </div>
         )}
@@ -229,15 +238,14 @@ export function ReportView({
       <div className="report">
         {period}
         <HelpEmpty
-          title="Nothing to add up yet."
+          title={w.empty.title}
           action={
             <Button variant="outline" asChild>
-              <Link href="/app/help-line">Open the help line</Link>
+              <Link href="/app/help-line">{w.empty.open}</Link>
             </Button>
           }
         >
-          As calls, visits and payments are recorded, this {noun}’s counts
-          appear here on their own.
+          {report.quarter ? w.empty.quarter : w.empty.year}
         </HelpEmpty>
       </div>
     );
@@ -247,10 +255,10 @@ export function ReportView({
   const largestMonth = Math.max(...report.months.map((line) => line.paid));
   const mostVisits = Math.max(...report.months.map((line) => line.visits));
   const serving = [
-    { name: "Home visits", detail: `${plural(report.visits, "visit")}, always in pairs`, hours: report.visitHours },
+    { name: w.time.visits, detail: w.time.visitsInPairs(report.visits), hours: report.visitHours },
     ...report.time.teams.map((team) => ({
       name: team.name,
-      detail: `${plural(team.shifts, "shift")} · ${plural(team.people, "person", "people")}`,
+      detail: `${w.time.shifts(team.shifts)} · ${w.kinds.people(team.people)}`,
       hours: team.hours,
     })),
   ];
@@ -261,21 +269,25 @@ export function ReportView({
   const outcomes = [
     {
       is: "paid",
-      label: inPart > 0 ? `Paid, ${count(inPart)} of them in part` : "Paid",
+      label: inPart > 0 ? w.outcomes.paidInPart(inPart) : w.outcomes.paid(report.requests.paid),
       value: report.requests.paid + inPart,
     },
-    { is: "approved", label: "Approved, waiting to be paid", value: report.requests.approved },
-    { is: "open", label: "Waiting for a decision", value: report.requests.open },
-    { is: "declined", label: "Declined", value: report.requests.declined },
-    { is: "closed", label: "Closed without help", value: report.requests.closed - report.requests.closedAfterPart.requests },
+    { is: "approved", label: w.outcomes.approved(report.requests.approved), value: report.requests.approved },
+    { is: "open", label: w.outcomes.open(report.requests.open), value: report.requests.open },
+    { is: "declined", label: w.outcomes.declined(report.requests.declined), value: report.requests.declined },
+    { is: "closed", label: w.outcomes.closed(report.requests.closed - report.requests.closedAfterPart.requests), value: report.requests.closed - report.requests.closedAfterPart.requests },
   ].filter((outcome) => outcome.value > 0);
-  const printedOn = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: report.timeZone }).format(printed);
+  const printedOn = formatDate(words.locale, printed, { dateStyle: "long", timeZone: report.timeZone });
   // The foot of every printed page, set in the page margin so it never covers a line.
   const quoted = (text: string) => `"${text.replace(/[\\"]/g, "\\$&").replace(/\s+/g, " ")}"`;
-  const printedLine = `${sample ? "Sample · " : ""}Printed ${printedOn}`;
-  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(`${groupName} · ${periodLabel(report)}, ${spanLabel(report)}`)}; font: 9pt "Source Sans 3", sans-serif; color: #000; } @bottom-right { content: ${quoted(`${printedLine} · page `)} counter(page) " of " counter(pages); font: 9pt "Source Sans 3", sans-serif; color: #000; } } }`;
+  const printedLine = fill(sample ? w.foot.printedSample : w.foot.printed, { date: printedOn });
+  // "page 2 of 5" is one sentence in the words; the printer puts its own two counters where the places are.
+  const [pageBefore = "", pageBetween = "", pageAfter = ""] = w.foot.page.split(/\{pages?\}/);
+  const pageCount = `${quoted(`${printedLine} · ${pageBefore}`)} counter(page) ${quoted(pageBetween)} counter(pages)${pageAfter ? ` ${quoted(pageAfter)}` : ""}`;
+  const footLine = `${groupName} · ${periodLabel(report, words)}, ${span}`;
+  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(footLine)}; font: 9pt "Source Sans 3", sans-serif; color: #000; } @bottom-right { content: ${pageCount}; font: 9pt "Source Sans 3", sans-serif; color: #000; } } }`;
   const sections = new Map<string, ReportLine[]>();
-  for (const line of reportLines(report))
+  for (const line of reportLines(report, words))
     sections.set(line.section, [...(sections.get(line.section) ?? []), line]);
 
   return (
@@ -284,10 +296,9 @@ export function ReportView({
       <header className="report-print-head">
         <div>
           <p>{groupName}</p>
-          <h1>The year, added up.</h1>
+          <h1>{w.year.title}</h1>
           <p>
-            {periodLabel(report)}: {longSpanLabel(report)}
-            {soFar && ", so far"}
+            {periodLabel(report, words)}: {longSpanLabel(report, words, soFar)}
           </p>
         </div>
         <strong>kind helps</strong>
@@ -300,11 +311,13 @@ export function ReportView({
       <dl className="report-year">
         <div>
           <dt>
-            <strong>{voucherMoney ? "Paid direct or given as vouchers" : "Paid direct"}</strong>, never in cash.{" "}
-            {report.helpPaid % 100 !== 0 && `${money(report.helpPaid)} to the cent. `}
-            {plural(report.history.householdsInAll, "household")} helped, {plural(report.history.peopleInAll, "person", "people")} in
-            all, {spanLabel(report)}
-            {soFar}.
+            <strong>{voucherMoney ? w.year.paidDirectOrVouchers : w.year.paidDirect}</strong>{w.year.neverCash}{" "}
+            {report.helpPaid % 100 !== 0 && `${fill(w.year.toCent, { amount: money(report.helpPaid) })} `}
+            {fill(soFar ? w.year.reachSoFar : w.year.reach, {
+              households: w.year.householdsHelped(report.history.householdsInAll),
+              people: w.year.peopleInAll(report.history.peopleInAll),
+              span,
+            })}
           </dt>
           <dd className="report-year-paid">
             {/* The year's figure stands on its months: twelve thin sheets, each as thick as that month's share of
@@ -324,9 +337,9 @@ export function ReportView({
           </dd>
         </div>
         {[
-          { label: "Calls taken", value: report.calls.taken },
-          { label: "Requests received", value: report.requests.received },
-          { label: "Home visits, in pairs", value: report.visits },
+          { label: w.year.calls, value: report.calls.taken },
+          { label: w.year.requests, value: report.requests.received },
+          { label: w.year.visitsInPairs, value: report.visits },
         ].map((figure, order) => (
           <div key={figure.label}>
             <dt>{figure.label}</dt>
@@ -345,75 +358,75 @@ export function ReportView({
           help as a table. Set as plain words, since a printed page does not count up. */}
       <dl className="report-sheet-figures">
         <div className="report-sheet-total">
-          <dt>Help given</dt>
+          <dt>{w.sheet.helpGiven}</dt>
           <dd>
             {money(report.helpPaid)}
             <small>
-              {voucherMoney ? "Paid direct or given as vouchers, never in cash" : "Paid direct, never in cash"}, {spanLabel(report)}
-              {soFar}.{moved && ` ${money(report.history.amount)} more is in ServWare history.`}
+              {fill(voucherMoney ? (soFar ? w.sheet.vouchersSoFar : w.sheet.vouchers) : soFar ? w.sheet.directSoFar : w.sheet.direct, { span })}
+              {moved && ` ${fill(w.sheet.more, { amount: money(report.history.amount) })}`}
             </small>
           </dd>
         </div>
         <div>
-          <dt>Neighbors helped</dt>
+          <dt>{w.sheet.neighbors}</dt>
           <dd>
             {count(report.history.householdsInAll)}
             <small>
-              Households, {plural(report.history.peopleInAll, "person", "people")} in all
+              {w.sheet.households(report.history.peopleInAll)}
             </small>
           </dd>
         </div>
         <div>
-          <dt>Home visits</dt>
+          <dt>{w.sheet.visits}</dt>
           <dd>
             {count(report.visits)}
-            <small>Always in pairs</small>
+            <small>{w.sheet.pairs}</small>
           </dd>
         </div>
         <div>
-          <dt>Calls taken</dt>
+          <dt>{w.sheet.calls}</dt>
           <dd>
             {count(report.calls.taken)}
-            <small>{count(report.calls.returned)} returned</small>
+            <small>{w.sheet.returned(report.calls.returned)}</small>
           </dd>
         </div>
         <div>
-          <dt>Hours given</dt>
+          <dt>{w.sheet.hours}</dt>
           <dd>
             {count(report.time.hours)}
-            <small>{plural(report.visitMiles, "mile")} driven to visits</small>
+            <small>{w.sheet.miles(report.visitMiles)}</small>
           </dd>
         </div>
       </dl>
 
       <div className="live-section-head">
-        <h2>By kind of help</h2>
+        <h2>{w.kinds.title}</h2>
       </div>
       <ol className="help-bars">
         {report.kinds.map((line) => {
           // Vouchers with no money paid are a count: no bar and no dollar figure, since a count is not on the dollar scale.
           const counted = line.kind === "voucher" && line.paid <= 0 && report.vouchers.given > 0;
-          const people = plural(line.people, "person", "people");
+          const people = w.kinds.people(line.people);
           return (
             <li key={line.kind} data-counted={counted ? "" : undefined}>
               <div>
-                <h3>{kindLabels[line.kind]}</h3>
+                <h3>{kinds[line.kind]}</h3>
                 <p>
                   {counted
-                    ? `Given from the shelf · ${people}`
+                    ? w.kinds.fromShelfPeople(line.people)
                     : line.kind === "voucher" && report.vouchers.given > 0
-                      ? `${plural(report.vouchers.given, "voucher")} given · ${money(line.paid)} paid · ${people}`
+                      ? `${w.kinds.vouchersGiven(report.vouchers.given)} · ${fill(w.kinds.amountPaid, { amount: money(line.paid) })} · ${people}`
                       : line.requestsPaid > 0
-                        ? `${plural(line.requestsPaid, "request")} paid · ${people}`
+                        ? `${w.kinds.requestsPaid(line.requestsPaid)} · ${people}`
                         : report.closed
-                          ? `None this ${noun}`
-                          : `None yet this ${noun}`}
+                          ? report.quarter ? w.kinds.noneQuarter : w.kinds.noneYear
+                          : report.quarter ? w.kinds.noneYetQuarter : w.kinds.noneYetYear}
                 </p>
               </div>
               <div className="help-bar" aria-hidden="true">
                 {!counted && <span style={share(line.paid, largestKind)} />}
               </div>
-              <span className="help-amount">{counted ? plural(report.vouchers.given, "voucher") : wholeDollars(line.paid)}</span>
+              <span className="help-amount">{counted ? w.kinds.vouchers(report.vouchers.given) : wholeDollars(line.paid)}</span>
             </li>
           );
         })}
@@ -421,10 +434,10 @@ export function ReportView({
       <table className="report-kinds-print">
         <thead>
           <tr>
-            <th scope="col">Kind of help</th>
-            <th scope="col">Requests paid</th>
-            <th scope="col">People</th>
-            <th scope="col">Amount</th>
+            <th scope="col">{w.kinds.table.kind}</th>
+            <th scope="col">{w.kinds.table.requests}</th>
+            <th scope="col">{w.kinds.table.people}</th>
+            <th scope="col">{w.kinds.table.amount}</th>
           </tr>
         </thead>
         <tbody>
@@ -432,17 +445,17 @@ export function ReportView({
             const counted = line.kind === "voucher" && line.paid <= 0 && report.vouchers.given > 0;
             return (
               <tr key={line.kind}>
-                <th scope="row">{kindLabels[line.kind]}</th>
-                <td>{counted ? "Given from the shelf" : count(line.requestsPaid)}</td>
+                <th scope="row">{kinds[line.kind]}</th>
+                <td>{counted ? w.kinds.fromShelf : count(line.requestsPaid)}</td>
                 <td>{count(line.people)}</td>
-                <td>{counted ? plural(report.vouchers.given, "voucher") : money(line.paid)}</td>
+                <td>{counted ? w.kinds.vouchers(report.vouchers.given) : money(line.paid)}</td>
               </tr>
             );
           })}
           {/* The total is the table's last row, not a footer: a printed footer is a part some browsers carry over
               to a page of its own. */}
           <tr className="report-kinds-total">
-            <th scope="row">All help</th>
+            <th scope="row">{w.kinds.table.all}</th>
             <td>{count(report.kinds.reduce((all, line) => all + line.requestsPaid, 0))}</td>
             <td />
             <td>{money(report.helpPaid)}</td>
@@ -451,18 +464,20 @@ export function ReportView({
       </table>
       {moved && (
         <p className="report-history">
-          <span>From ServWare history</span>
-          {plural(report.history.requests, "request")} for{" "}
-          {plural(report.history.households, "household")}, {money(report.history.amount)} in help
-          recorded before you moved here. It is counted apart from the money in your ledger.
+          <span>{w.history.title}</span>
+          {fill(w.history.line, {
+            requests: w.history.requests(report.history.requests),
+            households: w.history.households(report.history.households),
+            amount: money(report.history.amount),
+          })}
         </p>
       )}
 
       <section className="live-section">
         <div className="live-section-head">
-          <h2>Month by month</h2>
+          <h2>{w.months.title}</h2>
           <span className="live-count">
-            <i className="report-key" aria-hidden="true" />Help paid, and <span className="report-key-pair"><i className="report-key" data-of="visits" aria-hidden="true" />the visits behind it</span>
+            <i className="report-key" aria-hidden="true" />{w.months.keyPaid} <span className="report-key-pair"><i className="report-key" data-of="visits" aria-hidden="true" />{w.months.keyVisits}</span>
           </span>
         </div>
         <ol className="report-months" data-months={report.months.length} ref={months}>
@@ -480,16 +495,16 @@ export function ReportView({
                   {!ahead && line.paid > 0 && <span style={share(line.paid, largestMonth)} />}
                 </div>
                 <h3>
-                  {monthLabel(line.month, true)}
+                  {monthLabel(line.month, true, words)}
                   <span className="report-sr"> {line.month.slice(0, 4)}</span>
                 </h3>
                 {ahead ? (
-                  <p>Still to come</p>
+                  <p>{w.months.toCome}</p>
                 ) : (
                   <>
                     {/* Whole dollars here; the cents are in the tip, the table and the ledger. */}
                     <p className="help-amount">{wholeDollars(line.paid)}</p>
-                    <p>{plural(line.visits, "visit")}</p>
+                    <p>{w.months.visits(line.visits)}</p>
                     <Popover open={tip === line.month} onOpenChange={(open) => setTip(open ? line.month : undefined)}>
                       <PopoverTrigger asChild>
                         <button
@@ -497,7 +512,7 @@ export function ReportView({
                           className="report-month-open"
                           data-month={line.month}
                           // The month read as one sentence: "May 2026: $1,630 paid, 11 visits."
-                          aria-label={`${monthLabel(line.month)}: ${wholeDollars(line.paid)} paid, ${plural(line.visits, "visit")}.`}
+                          aria-label={fill(w.months.said, { month: monthLabel(line.month, false, words), amount: wholeDollars(line.paid), visits: w.months.visits(line.visits) })}
                           onFocus={(event) => {
                             if (event.currentTarget.matches(":focus-visible")) setTip(line.month);
                           }}
@@ -523,10 +538,10 @@ export function ReportView({
                         onOpenAutoFocus={(event) => event.preventDefault()}
                         onCloseAutoFocus={(event) => event.preventDefault()}
                       >
-                        <p className="report-tip-month">{monthLabel(line.month)}</p>
+                        <p className="report-tip-month">{monthLabel(line.month, false, words)}</p>
                         <p className="help-amount">{money(line.paid)}</p>
                         <p>
-                          in help paid, {plural(line.visits, "visit")}
+                          {w.months.tip(line.visits)}
                         </p>
                       </PopoverContent>
                     </Popover>
@@ -541,9 +556,9 @@ export function ReportView({
       {report.requests.received > 0 && (
         <section className="live-section">
           <div className="live-section-head">
-            <h2>What became of each request</h2>
+            <h2>{w.outcomes.title}</h2>
             <span className="live-count">
-              {plural(report.requests.received, "request")} received
+              {w.outcomes.received(report.requests.received)}
             </span>
           </div>
           <div className="report-outcomes" aria-hidden="true">
@@ -561,9 +576,13 @@ export function ReportView({
           {report.requests.paidLater.amount > 0 && (
             <p className="report-aside">
               {report.requests.paidLater.requests > 0
-                ? `${count(report.requests.paidLater.requests)} of the paid requests, ${money(report.requests.paidLater.amount)} in all, ${report.requests.paidLater.requests === 1 ? "was" : "were"} paid after ${dayLabel(report.lastDay)}.`
-                : `${money(report.requests.paidLater.amount)} of what was approved was paid after ${dayLabel(report.lastDay)}.`}{" "}
-              That money counts in the period it was paid, so it is not in help paid here.
+                ? fill(report.requests.paidLater.requests === 1 ? w.outcomes.laterOne : w.outcomes.laterMany, {
+                    count: count(report.requests.paidLater.requests),
+                    amount: money(report.requests.paidLater.amount),
+                    day: dayLabel(report.lastDay, words),
+                  })
+                : fill(w.outcomes.laterAmount, { amount: money(report.requests.paidLater.amount), day: dayLabel(report.lastDay, words) })}{" "}
+              {w.outcomes.laterNote}
             </p>
           )}
         </section>
@@ -571,38 +590,38 @@ export function ReportView({
 
       <section className="live-section">
         <div className="live-section-head">
-          <h2>Time given</h2>
+          <h2>{w.time.title}</h2>
           <span className="live-count">
-            {plural(report.time.activeMembers, "active member")}
+            {w.time.activeMembers(report.time.activeMembers)}
           </span>
         </div>
         <dl className="help-figures">
           <div>
-            <dt>Hours</dt>
+            <dt>{w.time.hours}</dt>
             <dd>
               <Figure value={report.time.hours} order={3} />
               <small>
                 {serving
                   .filter((line) => line.hours > 0)
                   .map((line) => `${line.name} ${count(line.hours)}`)
-                  .join(" · ") || "No hours recorded yet"}
+                  .join(" · ") || w.time.noHours}
               </small>
             </dd>
           </div>
           <div>
-            <dt>Miles</dt>
+            <dt>{w.time.miles}</dt>
             <dd>
               <Figure value={report.visitMiles} order={4} />
-              <small>Driven to home visits</small>
+              <small>{w.time.driven}</small>
             </dd>
           </div>
           <div>
-            <dt>Calls returned</dt>
+            <dt>{w.time.returned}</dt>
             <dd>
               <Figure value={report.calls.returned} order={5} />
               <small>
-                Of {plural(report.calls.taken, "call")} taken
-                {noCallBack > 0 && <span className="report-own-line">{count(noCallBack)} needed no call back</span>}
+                {w.time.ofCalls(report.calls.taken)}
+                {noCallBack > 0 && <span className="report-own-line">{w.time.noCallBack(noCallBack)}</span>}
               </small>
             </dd>
           </div>
@@ -618,7 +637,7 @@ export function ReportView({
                 <div className="help-bar" aria-hidden="true">
                   <span style={share(line.hours, mostHours)} />
                 </div>
-                <span className="help-amount">{plural(line.hours, "hour")}</span>
+                <span className="help-amount">{w.time.hoursCount(line.hours)}</span>
               </li>
             ))}
           </ol>
@@ -633,12 +652,12 @@ export function ReportView({
           aria-controls="report-every-line"
           onClick={() => setEveryLine(!everyLine)}
         >
-          {everyLine ? "Hide the lines" : "Show every line"}
+          {everyLine ? w.lines.hide : w.lines.show}
           <ChevronDown size={17} aria-hidden="true" />
         </Button>
         <div className="live-section-head">
-          <h2>Line by line</h2>
-          <span className="live-count">For your council’s {report.quarter ? "quarterly" : "yearly"} report</span>
+          <h2>{w.lines.title}</h2>
+          <span className="live-count">{report.quarter ? w.lines.quarterly : w.lines.yearly}</span>
         </div>
         <div className="report-form" id="report-every-line">
           {[...sections].map(([name, lines]) => (
@@ -658,7 +677,7 @@ export function ReportView({
         {report.time.members.length > 0 && (
           <div className="report-form report-members">
             <table>
-              <caption>Each member’s time</caption>
+              <caption>{w.lines.memberTime}</caption>
               <tbody>
                 {report.time.members.map((line) => (
                   <tr key={line.memberId}>
@@ -666,15 +685,15 @@ export function ReportView({
                       {line.name}
                       <small>
                         {[
-                          line.visits > 0 && plural(line.visits, "visit"),
-                          line.shifts > 0 && plural(line.shifts, "shift"),
-                          line.miles > 0 && plural(line.miles, "mile"),
+                          line.visits > 0 && w.months.visits(line.visits),
+                          line.shifts > 0 && w.time.shifts(line.shifts),
+                          line.miles > 0 && w.time.milesCount(line.miles),
                         ]
                           .filter(Boolean)
                           .join(" · ")}
                       </small>
                     </th>
-                    <td>{plural(line.hours, "hour")}</td>
+                    <td>{w.time.hoursCount(line.hours)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -686,17 +705,13 @@ export function ReportView({
       <p className="help-footnote">
         <CircleCheck size={17} aria-hidden="true" />
         <span>
-          These counts come from your own records. Nothing is typed in twice,
-          and no neighbor is named. The labels are plain words, not yet the
-          line names of the Society’s official form. Visits to prisons,
-          hospitals and care homes, and goods given in kind, are not recorded
-          here yet.
+          {w.footnote}
         </span>
       </p>
       <footer className="report-print-foot">
         <strong>kind helps</strong>
         <span>
-          {groupName} · {periodLabel(report)}, {spanLabel(report)} · {printedLine}
+          {footLine} · {printedLine}
         </span>
       </footer>
     </div>
