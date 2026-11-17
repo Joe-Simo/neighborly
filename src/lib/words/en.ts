@@ -61,6 +61,8 @@ export function en(set: WordSet) {
       menu: "Menu",
       /** Home visits in the app's foot bar, where every name keeps one line. */
       tabVisits: "Home visits",
+      /** My commitments in a member's foot bar, for the same reason; the menu keeps the whole name. */
+      tabMine: "Commitments",
       menuTitle: `Your ${place}`,
       menuLabel: `${Place} menu`,
       menuCurrent: (section: string) => `${Place} menu, current section: ${section}`,
