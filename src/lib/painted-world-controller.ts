@@ -58,9 +58,7 @@ const imagePath = (scene: PaintedScene, portrait: boolean) => scene === "opening
   ? portrait ? "/assets/living-relief-narrow.webp" : "/assets/living-relief-poster.webp"
   : `/assets/painted-world/${imageScene(scene)}${portrait ? "-mobile" : ""}.webp`;
 
-/** One renderer owns the continuous painted journey. No account state is read or changed. */
-// The live opening is graded to Joe's accepted still, so the hand-off from picture to scene shows no change of colour.
-// Measured at 1920 against living-relief-accepted: the lit scene came out a touch bright, warm and saturated after tone mapping.
+/** The live opening graded to Joe's accepted still (measured at 1920), so the hand-off from picture to scene keeps its colour. */
 const stillGrade = `
   float stillLuma = dot(gl_FragColor.rgb, vec3(.2126, .7152, .0722));
   gl_FragColor.rgb = pow(max(vec3(1e-5), mix(vec3(stillLuma), gl_FragColor.rgb, .956)), vec3(1.114, .979, .914)) * vec3(.89, .819, .751);`;
@@ -73,6 +71,7 @@ function gradeToStill(surface: T.Material) {
   surface.customProgramCacheKey = () => "still-grade";
 }
 
+/** One renderer owns the continuous painted journey. No account state is read or changed. */
 export function createPaintedWorldController(host: HTMLElement, options: PaintedWorldOptions = {}) {
   const renderer = new T.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
