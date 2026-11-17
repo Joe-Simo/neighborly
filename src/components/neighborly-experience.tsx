@@ -88,7 +88,7 @@ export function NeighborlyExperience() {
         write("--entry-portrait", "1");
         write("--entry-door", "1");
         write("--entry-caption", "1");
-        for (const part of element.querySelectorAll<HTMLElement>(".painted-world-track,.fresco-stage")) { part.inert = false; part.setAttribute("aria-hidden", "false"); }
+        for (const part of element.querySelectorAll<HTMLElement>(".painted-world-track,.fresco-stage")) part.removeAttribute("data-away");
         return;
       }
       const stage = element.querySelector<HTMLElement>(".painted-world-viewport");
@@ -107,21 +107,21 @@ export function NeighborlyExperience() {
       const portraitVisible = progress < (reduce ? .5 : .45);
       if (portrait && courtyard && entered && (entryRequested || portrait.contains(document.activeElement))) {
         courtyard.tabIndex = -1;
-        courtyard.inert = false;
+        courtyard.removeAttribute("data-away");
         courtyard.focus({ preventScroll: true });
         entryRequested = false;
       }
       if (portrait && courtyard && portraitVisible && courtyard.contains(document.activeElement)) {
-        portrait.inert = false;
-        portrait.setAttribute("aria-hidden", "false");
+        portrait.removeAttribute("data-away");
         portrait.querySelector<HTMLElement>(".painted-world-enter")?.focus({ preventScroll: true });
       }
       if (!portraitVisible && !entered && (portrait?.contains(document.activeElement) || courtyard?.contains(document.activeElement))) {
         entryRequested = true;
         element.querySelector<HTMLElement>(".painted-world")?.focus({ preventScroll: true });
       }
-      if (portrait) { portrait.inert = !portraitVisible; portrait.setAttribute("aria-hidden", String(!portraitVisible)); }
-      if (courtyard) { courtyard.inert = !entered; courtyard.setAttribute("aria-hidden", String(!entered)); }
+      // A part that has given way is only marked: it stays in what a screen reader is given, in its place in the order.
+      portrait?.toggleAttribute("data-away", !portraitVisible);
+      courtyard?.toggleAttribute("data-away", !entered);
     };
     const request = () => { if (!frame) frame = requestAnimationFrame(update); };
     window.addEventListener("scroll", request, { passive: true });
@@ -136,7 +136,7 @@ export function NeighborlyExperience() {
     element.addEventListener("click", enter);
     // The keyboard walks the same way the eye does: Tab from the opening's last control goes on into the courtyard and its doors,
     // and Shift+Tab from the courtyard's first control comes back to the opening. Each is brought into view first, as scrolling would.
-    const reachable = (part: HTMLElement) => [...part.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), [tabindex]")].filter(control => control.tabIndex >= 0 && !control.closest("[aria-hidden=true]:not(.painted-world-track, .fresco-stage)"));
+    const reachable = (part: HTMLElement) => [...part.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), [tabindex]")].filter(control => control.tabIndex >= 0 && !control.closest("[aria-hidden=true]"));
     const walk = (event: KeyboardEvent) => {
       if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey || sideways.matches) return;
       const portrait = element.querySelector<HTMLElement>(".painted-world-track"), courtyard = element.querySelector<HTMLElement>(".fresco-stage"), stage = element.querySelector<HTMLElement>(".painted-world-viewport");
@@ -145,18 +145,29 @@ export function NeighborlyExperience() {
       const go = (from: HTMLElement, to: HTMLElement, y: number, pick: (controls: HTMLElement[]) => HTMLElement | undefined) => {
         event.preventDefault();
         window.scrollTo({ top: y, behavior: "instant" });
-        from.inert = true; from.setAttribute("aria-hidden", "true");
-        to.inert = false; to.setAttribute("aria-hidden", "false");
+        from.toggleAttribute("data-away", true);
+        to.removeAttribute("data-away");
         // The place arrived at is drawn before its control is asked to take the keyboard: a control still hidden by the last place's drawing cannot.
         update();
         pick(reachable(to))?.focus({ preventScroll: true });
       };
-      if (!event.shiftKey && courtyard.inert && at === reachable(portrait).at(-1)) go(portrait, courtyard, top + height * (media.matches ? .5 : 1), controls => controls[0]);
-      else if (event.shiftKey && portrait.inert && at === reachable(courtyard)[0]) go(courtyard, portrait, top, controls => controls.at(-1));
+      if (!event.shiftKey && courtyard.hasAttribute("data-away") && at === reachable(portrait).at(-1)) go(portrait, courtyard, top + height * (media.matches ? .5 : 1), controls => controls[0]);
+      else if (event.shiftKey && portrait.hasAttribute("data-away") && at === reachable(courtyard)[0]) go(courtyard, portrait, top, controls => controls.at(-1));
     };
     element.addEventListener("keydown", walk);
+    // A screen reader can move to a control in the part that has given way. The page is brought to that part first, as scrolling would, so what holds the keyboard is always what is shown.
+    const follow = (event: FocusEvent) => {
+      if (sideways.matches || !(event.target instanceof Element)) return;
+      const part = event.target.closest<HTMLElement>(".painted-world-track[data-away], .fresco-stage[data-away]"), stage = element.querySelector<HTMLElement>(".painted-world-viewport");
+      if (!part || !stage || part === event.target) return;
+      const top = element.getBoundingClientRect().top + scrollY;
+      window.scrollTo({ top: part.classList.contains("fresco-stage") ? top + stage.getBoundingClientRect().height * (media.matches ? .5 : 1) : top, behavior: "instant" });
+      part.removeAttribute("data-away");
+      update();
+    };
+    element.addEventListener("focusin", follow);
     update();
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.removeEventListener("keydown", walk); element.classList.remove("is-connected"); };
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.removeEventListener("keydown", walk); element.removeEventListener("focusin", follow); element.classList.remove("is-connected"); };
   }, []);
   return <div className="neighborly-connected-world is-connected" ref={root}><PaintedWorld heroOnly passed={passed} onContinue={goToDoors} onPass={() => {
     // The card crosses to the open hand and rests there a beat, long enough to see it settle and be held,

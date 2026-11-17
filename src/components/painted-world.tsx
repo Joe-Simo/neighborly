@@ -216,7 +216,8 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     {/* Fixed to the screen, and early in the page so a keyboard reaches it before the journey. */}
     <section className="painted-world-track" ref={track} aria-label={heroOnly ? "An open hand" : "A story of care"}>
       <div className="painted-world-viewport" ref={viewport}>
-        <div className="painted-world-art" ref={host} aria-hidden="true" />
+        {/* The first screen's painting is described once, here; the stills that stand in for it stay silent. */}
+        <div className="painted-world-art" ref={host} {...(heroOnly ? { role: "img", "aria-label": "Two people stand side by side. Below them, one hand passes a small card to another's open palm." } : { "aria-hidden": true })} />
         {(!ready || failed) && <picture className="painted-world-fallback">
           {/* The first picture a visitor sees: the lightest file their screen can use, asked for before anything else. */}
           {heroOnly && openingOutcome !== "accepted" && <source media="(max-width:700px)" type="image/avif" srcSet="/assets/living-relief-mobile-480.avif 480w, /assets/living-relief-mobile-780.avif 780w" sizes="100vw" />}
