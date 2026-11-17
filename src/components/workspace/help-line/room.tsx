@@ -11,9 +11,7 @@ import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { headings } from "@/components/workspace/navigation";
 import { LiveLoading } from "@/components/workspace/primitives";
-import { ReliefPicture } from "@/components/workspace/relief";
 import { LiveState } from "@/components/workspace/states";
 
 /**
@@ -25,20 +23,6 @@ export function HelpLoading({ label }: { label?: string }) {
     <div className="help-opening" data-awaits={label}>
       <LiveLoading />
     </div>
-  );
-}
-
-/** The room's own relief picture, laid as a small card beside an empty state. */
-function Vignette() {
-  const { area } = useWorkspace();
-  const { picture, focus } = headings[area].art;
-  return (
-    <ReliefPicture
-      name={picture}
-      focus={focus}
-      vignette
-      className="paper-vignette"
-    />
   );
 }
 
@@ -56,7 +40,6 @@ export function HelpEmpty({
 }) {
   return (
     <div className="help-empty" data-first={first ? "" : undefined}>
-      <Vignette />
       <div>
         <h3>{title}</h3>
         <p>{children}</p>

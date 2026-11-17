@@ -441,10 +441,11 @@
 .live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
 .live-mobile-menu .live-menu-leave[data-slot="button"] { height: 44px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
 
-/* ── Empty: a serif line, the action, and a small piece of the room's picture ── */
+/* ── Empty: a serif line, its sentence and the one act. The room's picture is in its head, once; only a state
+   that stands for the whole room (private, lost, failed: `.live-state`) lays the small card beside its words. ── */
 .live-app .live-empty {
   display: grid;
-  grid-template-columns: 180px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 32px;
   align-items: center;
   max-width: 760px;
@@ -454,11 +455,10 @@
   border-radius: 0;
 }
 .live-app .live-empty[data-first] { border-top: 0; padding-top: 6px; }
-.live-app .live-empty:not([data-lead]) { grid-template-columns: minmax(0, 1fr); }
-.live-empty:not([data-lead]) > .paper-vignette { display: none; }
-/* An empty place holds the room's picture as a small card laid on the page: 3 to 2, a paper edge, a turn of
+.live-app .live-state[data-lead] { grid-template-columns: 180px minmax(0, 1fr); }
+/* Such a state holds the room's picture as a small card laid on the page: 3 to 2, a paper edge, a turn of
    three degrees and its shadow, the same card the home page passes. It settles once; under Reduce Motion it is simply there. */
-.paper-vignette, .live-app .help-empty-art {
+.paper-vignette {
   width: 180px; height: 120px; overflow: hidden; box-sizing: border-box;
   border: 6px solid #fffdf7; border-radius: 2px; background-color: var(--paper-shade);
   box-shadow: 0 1px 0 #283c3214, 0 14px 22px -12px rgb(40 60 50 / 0.42);
@@ -467,18 +467,13 @@
 }
 .paper-vignette img { width: 100%; height: 100%; object-fit: cover; }
 @keyframes paper-card-settle { from { opacity: 0; transform: translateY(16px) rotate(-6deg); } }
-@media (prefers-reduced-motion: reduce) { .paper-vignette, .live-app .help-empty-art { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .paper-vignette { animation: none; } }
 .live-app .live-empty :is(h2, h3) { font: 400 26px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0; color: var(--live-ink); }
 .live-app .live-empty p { margin: 8px 0 0; font-size: 17px; line-height: 1.5; }
 .live-app .live-empty p:empty { display: none; }
 .live-app .live-empty [data-slot="button"] { margin-top: 14px; }
-/* The help rooms' own empty state takes the same vignette; a storybook picture given inline is not shown. */
-.live-app .help-empty { grid-template-columns: 180px minmax(0, 1fr); gap: 32px; }
-.live-app .help-empty-art {
-  /* Cut from the room's own picture, which the shell names on the main column. */
-  background: #f7f4ed var(--room-relief, none) 78% 50% / auto 150% no-repeat !important;
-  box-shadow: inset 0 0 0 1px #283c3214;
-}
+/* The help rooms' own empty state is words alone too. */
+.live-app .help-empty { grid-template-columns: minmax(0, 1fr); }
 
 /* ── Loading: plain paper with the mark, where the app's launch screen has it. One quiet line after 400ms ── */
 .live-main.paper-loading { position: fixed; inset: 0; z-index: 30; max-width: none; margin: 0; padding: 0; background: #f5f3ec; }
@@ -768,7 +763,7 @@
 /* An act that takes something away is ink inside the same hairline as its neighbours: no colour, no fill. */
 .live-dialog .live-manage [data-slot="button"][data-danger] { color: #283c32; }
 @media (max-width: 699px) {
-  .live-app .live-state, .live-app .live-empty[data-lead] { grid-template-columns: minmax(0, 1fr); gap: 18px; justify-items: start; }
+  .live-app .live-state, .live-app .live-state[data-lead] { grid-template-columns: minmax(0, 1fr); gap: 18px; justify-items: start; }
 }
 
 /* A phone with the keyboard up: the dialog's title gives its place to the boxes. */
@@ -841,7 +836,7 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
    of paper, as at the desk, and the words take the whole measure beneath it. */
 @media (max-width: 899px) {
   .live-app :is(.live-empty, .help-empty) { grid-template-columns: minmax(0, 1fr); gap: 20px; justify-items: start; align-items: start; }
-  .live-app :is(.live-empty, .help-empty) > .paper-vignette, .live-app .help-empty-art { width: 132px; height: 88px; border-width: 5px; margin-left: 4px; }
+  .live-app :is(.live-empty, .help-empty) > .paper-vignette { width: 132px; height: 88px; border-width: 5px; margin-left: 4px; }
 }
 
 /* ── Room heads at true size, as the home page lays its pictures ──────────────────────────────

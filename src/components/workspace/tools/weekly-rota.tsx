@@ -58,7 +58,6 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
           </div>
         ) : (
           <div className="help-empty">
-            <div className="help-empty-art" aria-hidden="true" />
             <div>
               <h3>{text.quietTitle}</h3>
               <p>{text.quietDetail}</p>

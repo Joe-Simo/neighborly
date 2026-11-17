@@ -227,7 +227,6 @@ td.help-money[data-balance] { color: var(--live-muted); }
   display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 34px; align-items: center;
   padding: 34px 0; border-top: 1px solid var(--live-line); border-bottom: 1px solid var(--live-line); max-width: 760px;
 }
-.help-empty-art { height: 150px; border-radius: 75px 75px 3px 3px; background-size: cover; background-position: 50% 30%; }
 .help-empty h3 { font: 400 30px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 10px; }
 .help-empty p { margin: 0 0 18px; color: var(--live-muted); font-size: 18px; line-height: 1.5; max-width: 44ch; }
 .help-done { display: flex; gap: 14px; align-items: center; }

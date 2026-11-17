@@ -5,7 +5,7 @@ import { RoomShown, RoomStill, useWholeRoom } from "@/components/workspace/room-
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useConvexConnectionState } from "convex/react";
-import { Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, CircleCheck, LogOut, Menu, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -464,7 +464,6 @@ export function LiveWorkspace({
           data-room-held={shown ? undefined : ""}
           aria-busy={shown ? undefined : true}
           lang={words.locale}
-          style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
         >
           {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. */}
           {opening && (
