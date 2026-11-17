@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../../public/fonts/fonts.css";
 import { SerwistProvider } from "@serwist/turbopack/react";
+import { OfflineWorker } from "@/components/offline-worker";
 import { launchScreens } from "@/lib/launch-screens";
 export const viewport: Viewport = {
   colorScheme: "light",
@@ -44,7 +45,8 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: "try{var s=sessionStorage;if(s.getItem('arrived'))document.documentElement.dataset.arrived='';s.setItem('arrived','1')}catch(e){}" }} />
       </head>
       <body>
-        <SerwistProvider swUrl="/serwist/sw.js" reloadOnOnline={false}>
+        <SerwistProvider swUrl="/serwist/sw.js" register={false} reloadOnOnline={false}>
+          <OfflineWorker />
           {children}
         </SerwistProvider>
       </body>
