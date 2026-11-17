@@ -10,10 +10,9 @@ import { protect } from "@/lib/sample-ticket";
 import { LiveProviders } from "@/components/live-providers";
 import Loading from "./loading";
 import { PaperArrival } from "@/components/paper-arrival";
+import { PageLanguage } from "@/components/page-language";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
-
-const firstLanguage = `(function(){try{var k=["en","es"],c=null;try{c=localStorage.getItem("kind-helps:language")}catch(e){}var l=k.indexOf(c)>-1?c:null;if(!l){var n=navigator.languages||[];for(var i=0;i<n.length&&!l;i++){for(var j=0;j<k.length;j++){if(n[i].toLowerCase().indexOf(k[j])===0){l=k[j];break}}}}document.documentElement.lang=l||"en"}catch(e){}})()`;
 
 export default function LiveAppLayout({
   children,
@@ -22,9 +21,9 @@ export default function LiveAppLayout({
 }) {
   return (
     <div className="live-app">
-      {/* Before anything is drawn the page already says its language: the one chosen at the door, else the device's
-          (the same answer as deviceLanguage in live-auth-words.ts). The app corrects it once it knows the member's own. */}
-      <script dangerouslySetInnerHTML={{ __html: firstLanguage }} />
+      {/* The page says its language before the first paint: on a fresh load the root layout's script has, and on
+          arriving from the home page this does. The app corrects it once it knows the member's own. */}
+      <PageLanguage />
       {/* The menu's words are set in these faces from the first frame, so no label wraps and then jumps. */}
       {/* Clerk's bot check, which every sign-in waits on, loads from here; the connection is opened with the page. */}
       <link rel="preconnect" href={protect} crossOrigin="anonymous" />

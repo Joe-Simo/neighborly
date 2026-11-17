@@ -4,6 +4,7 @@ import "../../public/fonts/fonts.css";
 import { SerwistProvider } from "@serwist/turbopack/react";
 import { OfflineWorker } from "@/components/offline-worker";
 import { launchScreens } from "@/lib/launch-screens";
+import { firstLanguage } from "@/lib/first-language";
 export const viewport: Viewport = {
   colorScheme: "light",
   // The page is paper in either mode, so the browser's bar is paper too.
@@ -42,6 +43,7 @@ export default function RootLayout({
       <head>
         {firstFaces.map((face) => <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />)}
         {/* The opening is set down once a visit: a later page load in the same visit finds it already in place. */}
+        <script dangerouslySetInnerHTML={{ __html: firstLanguage }} />
         <script dangerouslySetInnerHTML={{ __html: "try{var s=sessionStorage;if(s.getItem('arrived'))document.documentElement.dataset.arrived='';s.setItem('arrived','1')}catch(e){}" }} />
       </head>
       <body>
