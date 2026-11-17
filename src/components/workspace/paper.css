@@ -5,8 +5,8 @@
   layout, after live-workspace.css and help.css.
 
   For the rooms, four shared classes:
-    paper-rise    a thing arrives: up 12px and in, 320ms. On a list's parent,
-                  paper-rows does the same for its first eight children, 30ms apart.
+    paper-rise    a single line answering an act arrives: up 12px and in, 320ms.
+                  A room's rows never rise: they are in place when the room is shown.
     paper-settle  a sheet is laid down: up, a hair of turn, then flat. 420ms.
     paper-fold    on a sheet with a folded corner (help-sheet or paper-corner):
                   the corner turns from ochre to green and presses flat. 400ms.
@@ -44,24 +44,12 @@
 /* Between rooms one picture is laid over the other: the old sheet slides back under, the new one comes to rest on it. */
 @keyframes paper-breathe { 50% { opacity: 0.55; } }
 
-.paper-rise,
-.paper-rows > *,
-.live-list > *,
-.help-row,
-.help-timeline li,
-.help-ledger tbody tr {
+/* A room's rows are in place when the room is shown, on every arrival, the way back to a list included: a room is
+   drawn whole, and nothing rises or fades in. Only a single line that answers what a person just did rises once. */
+.paper-rise {
   animation: paper-rise 320ms var(--paper-ease) backwards;
-  animation-delay: calc(var(--paper-wait, 0ms) + 90ms + var(--paper-order, 8) * 30ms);
+  animation-delay: calc(var(--paper-wait, 0ms) + 90ms);
 }
-:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(1), .help-row:nth-child(1) { --paper-order: 0; }
-:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(2), .help-row:nth-child(2) { --paper-order: 1; }
-:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(3), .help-row:nth-child(3) { --paper-order: 2; }
-:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(4), .help-row:nth-child(4) { --paper-order: 3; }
-:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(5), .help-row:nth-child(5) { --paper-order: 4; }
-:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(6), .help-row:nth-child(6) { --paper-order: 5; }
-:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(7), .help-row:nth-child(7) { --paper-order: 6; }
-:is(.paper-rows, .live-list, .help-timeline, .help-ledger tbody) > :nth-child(8), .help-row:nth-child(8) { --paper-order: 7; }
-.paper-rise { --paper-order: 0; }
 
 .paper-settle,
 .help-sheet {
@@ -628,8 +616,7 @@
 
 /* ── Stillness for those who ask for it ───────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .paper-rise, .paper-rows > *, .live-list > *, .help-row, .help-timeline li, .help-ledger tbody tr,
-  .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-mobile-menu { animation: none; }
+  .paper-rise, .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-mobile-menu { animation: none; }
   .paper-loading-label { animation-duration: 1ms; }
   .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
   .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }
