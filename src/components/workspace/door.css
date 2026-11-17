@@ -22,7 +22,7 @@
 .door-card > b { left: 41%; top: 39%; width: 30%; height: 3%; background: #8f8a78; }
 .door-card > b + b { left: 39%; top: 53%; width: 22%; }
 /* The name the visitor wrote on the home card, carried in the same hand: set in the display face, never broken. */
-.door-card > .door-card-for { left: 39%; top: 60%; font: italic 400 clamp(17px, 2.4vw, 30px)/1.1 "Newsreader", Georgia, serif; color: #2b2a26; white-space: nowrap; background: none; opacity: 1; }
+.door-card > .door-card-for { left: 30%; top: 36%; translate: 0 calc(-100% - 10px); font: italic 400 clamp(17px, 2.4vw, 30px)/1.1 "Newsreader", Georgia, serif; color: #2b2a26; white-space: nowrap; background: none; opacity: 1; }
 /* Transform and opacity only, so the card never waits on the page being drawn under it. */
 @keyframes door-card-grow {
   from { opacity: 0; transform: translate(4vw, 30vh) rotate(8deg) scale(0.14); }
@@ -59,7 +59,7 @@ body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
   .door-card > i { left: 38.5%; top: 38%; width: 3.6%; }
   .door-card > b { left: 44%; top: 39.5%; width: 16%; height: 2.6%; }
   .door-card > b + b { left: 43%; top: 50%; width: 11%; }
-  .door-card > .door-card-for { left: 43%; top: 57%; }
+  .door-card > .door-card-for { left: 38.5%; top: 38%; }
 }
 /* The card grown on the home page was held over the window until now: the sweep starts at rest, with nothing to sweep. */
 .door-sweep[data-held] > svg { display: none; }
