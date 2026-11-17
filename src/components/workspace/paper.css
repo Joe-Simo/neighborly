@@ -818,7 +818,7 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
   display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; min-height: 44px; margin: -8px 0 20px;
   font-size: 17px; line-height: 1.4; color: var(--paper-ink); text-decoration: none;
 }
-.live-app .start-here::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--paper-ochre); }
+.live-app .start-here::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
 .live-app .start-here { transition: opacity 200ms linear; }
 .live-app .start-here[data-waiting] { opacity: 0; }
 .live-app .start-here strong { font-weight: 650; }
@@ -885,7 +885,7 @@ nav.week-figures .count-up { grid-row: 1 / span 2; align-self: center; }
 nav.week-figures a > span:nth-child(2) { align-self: end; }
 nav.week-figures a > small { align-self: start; min-height: 0; margin: 0; color: var(--live-ink); display: inline-flex; align-items: center; gap: 8px; }
 nav.week-figures a > small:empty { display: none; }
-nav.week-figures a > small::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #c8962e; }
+nav.week-figures a > small::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #a8791f; }
 nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row: 1 / span 2; align-self: center; }
 @media (max-width: 560px) {
   nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: 10px; }

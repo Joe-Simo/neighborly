@@ -40,7 +40,7 @@
 
 /* A wait carries one mark everywhere: the small ochre ring. */
 .people-row .live-meta > span[data-waits]:not(:empty)::before, .team-roster p[data-waits]::before {
-  content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; box-sizing: border-box; border: 2px solid #c8962e;
+  content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f;
 }
 /* A second line of the wait starts under its first word, not under the ring. */
 .people-row .live-meta > span[data-waits]:not(:empty) { display: flex; align-items: flex-start; }
