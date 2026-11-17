@@ -59,8 +59,11 @@ export function householdDetail(adults: number, children: number) {
     : count(adults, "adult", "adults");
 }
 /** "2 winter coat vouchers": what a voucher request takes from the shelf. */
-export const vouchers = (voucher: { item: string; quantity: number }) =>
-  `${voucher.quantity} ${voucher.item.toLowerCase()} ${voucher.quantity === 1 ? "voucher" : "vouchers"}`;
+export const vouchers = (voucher: { item: string; quantity: number }) => {
+  // The shelf may name its item "Clothing voucher" already; it is said once.
+  const item = voucher.item.toLowerCase().replace(/\s+vouchers?$/, "");
+  return `${voucher.quantity} ${item} ${voucher.quantity === 1 ? "voucher" : "vouchers"}`;
+};
 export const requestTitle = (request: HelpRequest) =>
   request.voucher
     ? vouchers(request.voucher)

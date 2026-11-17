@@ -113,9 +113,11 @@ export function NeighborRecord({
   const deck =
     record &&
     [
-      // The address stands in "Reach them" under At home, at reading size, not in this small line.
-      !homeReady && record.neighbor.address,
+      // One quiet line under the name: where they live, who lives there, the language. The phone and the
+      // email stay under At home, where they are changed.
+      record.neighbor.address,
       household(record.neighbor.adults, record.neighbor.children).toLowerCase(),
+      `speaks ${spokenLabel(record.neighbor)}`,
       `on file since ${format(record.since, { day: undefined, month: "long", year: "numeric" })}`,
     ]
       .filter(Boolean)
@@ -524,19 +526,9 @@ export function NeighborRecordView({
       )}
       {home && neighbor.notes && <p className="help-note">{neighbor.notes}</p>}
 
-      {home && (
-        <AtHome
-          record={record}
-          format={format}
-          numbers={numbers}
-          onShowNumbers={onShowNumbers}
-          onStep={(kind) => onStep({ kind })}
-        />
-      )}
-
       {first && (
         <section className="help-sheet" aria-labelledby="open-title">
-          <p className="help-sheet-label">
+          <p className="help-sheet-label" data-waiting="">
             {first.status === "open" ? "Open request" : "Approved, to be paid"}
           </p>
           <div className="help-sheet-body">
@@ -627,6 +619,17 @@ export function NeighborRecordView({
             ))}
           </div>
         </section>
+      )}
+
+      {/* What is open leads, under the figures; the home's details follow it, then the thread. */}
+      {home && (
+        <AtHome
+          record={record}
+          format={format}
+          numbers={numbers}
+          onShowNumbers={onShowNumbers}
+          onStep={(kind) => onStep({ kind })}
+        />
       )}
 
       <section

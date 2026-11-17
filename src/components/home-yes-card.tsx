@@ -6,6 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraftSheet } from "@/components/workspace/help-line/draft-sheet";
 import { formatDate, words } from "@/lib/words";
+import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
 import "@/components/workspace/help.css";
 import "@/components/workspace/paper.css";
 import "@/components/workspace/help-line/help-line.css";
@@ -72,18 +73,25 @@ export function HomeYesCard() {
     const arrive = (part: HTMLElement | null, delay: number, rise = 0, duration = 260) => {
       if (part) moves.push(part.animate([{ opacity: 0, transform: `translateY(${rise}px)` }, { opacity: 1, transform: "none" }], { duration, delay, easing: PAPER_EASE, fill: "backwards" }));
     };
-    arrive(find(".home-yes-filed .help-sheet-label"), 180);
+    // The list begins to form about 120ms before the draft has finished leaving, so the paper is never seen bare.
+    arrive(find(".home-yes-filed .help-sheet-label"), 30);
     arrive(find("[data-new] small"), 360, 0, 160);
     // The tick is set down at the head of the line as the words reach it. Carried straight from the foot of the sheet it would cross them.
     const tick = find("[data-new] i");
     if (tick) moves.push(tick.animate([{ opacity: 0, transform: "scale(1.5)" }, { opacity: 1, transform: "none" }], { duration: 220, delay: 300, easing: PAPER_EASE, fill: "backwards" }));
-    root.querySelectorAll<HTMLElement>(".home-yes-filed li:not([data-new])").forEach((row, order) => arrive(row, 180 + order * 40, 12));
+    root.querySelectorAll<HTMLElement>(".home-yes-filed li:not([data-new])").forEach((row, order) => arrive(row, 90 + order * 40, 12));
+    arrive(find(".home-yes-year"), 440, 0, 160);
     arrive(find(".home-yes-after"), 520, 8, 80);
     return () => moves.forEach(move => move.cancel());
   }, [step]);
   useEffect(() => {
     // The press leaves with the button, so the keyboard is handed to what came of it; the page itself never moves.
     if (step === "filed") way.current?.focus({ preventScroll: true });
+    // The year in the book above counts this request too. It is said on the page only; nothing is sent or kept.
+    if (step === "filed" && document.documentElement.dataset.yesGiven !== "true") {
+      document.documentElement.dataset.yesGiven = "true";
+      window.dispatchEvent(new Event(YES_GIVEN));
+    }
     if (step !== "waiting" || !again.current) return;
     // The sheet's button can take the keyboard only once the browser has drawn the sheet as let back in: the frame after next.
     let frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => stage.current?.querySelector<HTMLElement>(".help-actions button")?.focus({ preventScroll: true })); });
@@ -115,6 +123,7 @@ export function HomeYesCard() {
           <small>Received {format(takenAt - one.days * DAY, { weekday: "long", month: "long" })}</small>
         </li>)}
       </ol>
+      <p className="home-yes-year">{(sampleYear.requests + 1).toLocaleString("en-US")} requests for help in the sample’s year. <em>One more than a minute ago.</em></p>
       <p className="home-yes-after">
         <span>That is the whole idea.</span>
         <Button asChild variant="link" className="home-yes-in"><SampleLink ref={way}>Look around a sample conference<ArrowUpRight aria-hidden="true" /></SampleLink></Button>
