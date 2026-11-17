@@ -30,6 +30,8 @@ export default function LiveAppLayout({
       {["source-sans-3-latin-variable", "newsreader-display-regular"].map((face) => (
         <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
       ))}
+      {/* The launch mark is asked for with the page itself, ahead of the styles, so the first paint already holds it. */}
+      <link rel="preload" as="image" href="/launch/mark-240.png" imageSrcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x" fetchPriority="high" />
       <Suspense fallback={<Loading />}>
         <ClerkProvider signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
           <LiveProviders>

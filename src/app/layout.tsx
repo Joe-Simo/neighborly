@@ -40,6 +40,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* The paper's colour is in the document itself, so the page is paper from its first frame, before any stylesheet arrives. */}
+        <style dangerouslySetInnerHTML={{ __html: "html{background:#f5f3ec}" }} />
         {firstFaces.map((face) => <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />)}
         {/* The opening is set down once a visit: a later page load in the same visit finds it already in place. */}
         <script dangerouslySetInnerHTML={{ __html: firstLanguage }} />

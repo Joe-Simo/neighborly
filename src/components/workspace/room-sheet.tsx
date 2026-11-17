@@ -172,14 +172,16 @@ function atRest(column: HTMLElement) {
 }
 
 /**
- * The launch screen's line on the page (`LiveRoomLoading`), and when its wait began on the page's clock: null once
- * the line is already said. It is read while the next screen is drawn, before the commit that takes the line away.
+ * The launch screen's line on the page (`LiveRoomLoading`), whether it has been said, and when its wait began on the page's clock
+ * (null while it has not begun or once it is said). It is read while the next screen is drawn, before the commit that takes the line away.
  */
 function launchLine() {
   const line = typeof document === "undefined" ? null : document.querySelector(".paper-loading-label");
   if (!line) return null;
-  const began = line.getAnimations()[0]?.startTime;
-  return { line, began: typeof began === "number" ? began : null };
+  const coming = line.getAnimations()[0];
+  // No animation left on the line means it has been said. One that has not begun yet (a screen replaced within its
+  // first frame) has no start time: that line is still to come, and is not taken for one already said.
+  return { line, said: !coming, began: typeof coming?.startTime === "number" ? coming.startTime : null };
 }
 
 /**
@@ -192,8 +194,8 @@ export function useLaunchCarried(own: RefObject<HTMLElement | null>) {
     const line = own.current?.getAnimations()[0];
     // Carried on only from a line that went in this commit: one still on the page, or none, is not this screen's.
     if (!before || before.line.isConnected || !line) return;
-    if (before.began === null) line.finish();
-    else line.startTime = before.began;
+    if (before.said) line.finish();
+    else if (before.began !== null) line.startTime = before.began;
   }, [before, own]);
 }
 
@@ -234,7 +236,7 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     // The line is said 400ms into the wait: from now when the last room is held, or for the first room after a
     // launch screen, when that screen would have said it (at once if it already had).
     const carried = first && launch && !launch.line.isConnected ? launch : null;
-    const quiet = carried ? (carried.began ?? began - HOLD) + HOLD : began + HOLD;
+    const quiet = carried ? (carried.said ? began : (carried.began ?? began) + HOLD) : began + HOLD;
     // A line already due is said in the room's very first frame. A frame's own time can be earlier than now (the
     // frame was begun while the room was being drawn), so waiting for one would leave the column bare for a frame.
     let said = began >= quiet;

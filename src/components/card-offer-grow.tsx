@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, type MouseEvent } from "react";
 import { CardOffer } from "./card-offer";
+import type { CardWords } from "./public-ending";
 import { useSampleDoor } from "./sample-link";
 import { HELD_CARD, dropTheHeldCard } from "@/lib/held-card";
 import { ROOM_WHOLE } from "@/lib/room-whole";
@@ -18,7 +19,7 @@ const WIDE = "cubic-bezier(.55,0,.25,1)";
 const TRAVEL = "cubic-bezier(.65,0,.6,1)", SETTLE = .12;
 
 /** Pressed, the card is not left behind: the same card, words and all, grows to the window and becomes the first sheet of the room. */
-export function CardOfferGrow() {
+export function CardOfferGrow({ said }: { said: CardWords }) {
   const router = useRouter();
   function open(event: MouseEvent<HTMLAnchorElement>) {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -135,7 +136,7 @@ export function CardOfferGrow() {
     grow.finished.then(grown, grown);
   }
   useCardLean();
-  return <CardOffer door={useSampleDoor(open)} />;
+  return <CardOffer said={said} door={useSampleDoor(open)} />;
 }
 
 /** At rest the card turns a little toward a mouse or pen, at most 1.5 degrees, and settles when it leaves the window. Not for touch, not for reduced motion. */

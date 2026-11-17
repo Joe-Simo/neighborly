@@ -9,9 +9,26 @@ import "./neighborly-continuation.css";
 import "./thread-card.css";
 import "./public-touch.css";
 import "./cut-edges.css";
+import type { Language } from "@/lib/words";
+
+/** The closing band and the foot, in each language. The home page is English; a public page of words closes in its own. */
+export const endingWords = {
+  en: {
+    bring: ["Bring this to", "your people."], own: "Your own conference", start: "Start your conference", signIn: "Sign in",
+    made: "Made for the good we can do.", about: "About Kind Helps", privacy: "Privacy", privacyPath: "/privacy", give: "Give a gift", newTab: "(opens in a new tab)",
+    card: { look: "Look around a sample conference", madeUp: "Every person in the sample is made up.", who: "Who this card is for (optional)", stays: "Stays on this device." },
+  },
+  es: {
+    bring: ["Lleva esto a", "tu gente."], own: "Tu propia conferencia", start: "Empieza tu conferencia", signIn: "Iniciar sesión",
+    made: "Hecho por el bien que podemos hacer.", about: "Acerca de Kind Helps", privacy: "Privacidad", privacyPath: "/privacidad", give: "Hacer un donativo", newTab: "(se abre en una pestaña nueva)",
+    card: { look: "Mira una conferencia de muestra", madeUp: "Todas las personas son inventadas.", who: "Para quién es esta tarjeta (opcional)", stays: "Se queda en este dispositivo." },
+  },
+} satisfies Record<Language, unknown>;
+export type CardWords = (typeof endingWords)[Language]["card"];
 
 /** The picture every public page closes on: the same two people, the open hand holding the card out as the way in. */
-export function ClosingBand() {
+export function ClosingBand({ language = "en" }: { language?: Language }) {
+  const said = endingWords[language];
   const band = useRef<HTMLDivElement>(null);
   // Where the words lie over the picture, a sheet of the page's paper holds them, as on the first screen.
   useCutHold(band, true, { art: ".neighborly-close-art", words: ".neighborly-close-words", pieces: "h2, nav a", when: "(min-width:1280px) and (min-height:445px)" });
@@ -29,39 +46,40 @@ export function ClosingBand() {
       </picture>
     </span>
     <div className="neighborly-close-words">
-      <h2 id="together-title">Bring this to<br /><em>your people.</em></h2>
+      <h2 id="together-title">{said.bring[0]}<br /><em>{said.bring[1]}</em></h2>
       <div className="neighborly-final-actions">
-        <nav className="neighborly-final-links" aria-label="Your own conference">
-          <Link href="/app?intent=start">Start your conference<ArrowUpRight size={16} aria-hidden="true" /></Link>
-          <Link href="/app?intent=signin">Sign in<ArrowUpRight size={16} aria-hidden="true" /></Link>
+        <nav className="neighborly-final-links" aria-label={said.own}>
+          <Link href="/app?intent=start">{said.start}<ArrowUpRight size={16} aria-hidden="true" /></Link>
+          <Link href="/app?intent=signin">{said.signIn}<ArrowUpRight size={16} aria-hidden="true" /></Link>
         </nav>
       </div>
     </div>
     {/* After the words, as the eye and the keyboard meet them: the invitation, then the card that answers it. */}
-    <CardOfferGrow />
+    <CardOfferGrow said={said.card} />
   </div>;
 }
 
 /** The foot of every public page: the name set across the paper, and the two quiet links. */
-export function Colophon({ home = "/" }: { home?: string }) {
+export function Colophon({ home = "/", language = "en" }: { home?: string; language?: Language }) {
+  const said = endingWords[language];
   return <footer className="neighborly-colophon">
-    <span>Made for the good we can do.</span>
-    <nav aria-label="About Kind Helps">
-      <Link className="neighborly-give" href="/privacy">Privacy</Link>
-      <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">Give a gift<span className="sr-only"> (opens in a new tab)</span></a>
+    <span>{said.made}</span>
+    <nav aria-label={said.about}>
+      <Link className="neighborly-give" href={said.privacyPath}>{said.privacy}</Link>
+      <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">{said.give}<span className="sr-only"> {said.newTab}</span></a>
     </nav>
     {/* Last, as it is set: the name is the page's final line for the eye, the keyboard and a screen reader alike. */}
-    <a href={home}>kind helps</a>
+    <a href={home} lang="en">kind helps</a>
   </footer>;
 }
 
 /** How a public page other than the home page ends: the closing band, then the foot. */
-export function PublicEnding() {
+export function PublicEnding({ language = "en" }: { language?: Language }) {
   return <div className="neighborly-continuation">
     <section className="neighborly-together" aria-labelledby="together-title">
       <div className="neighborly-together-paper" data-settled="true" aria-hidden="true" />
-      <ClosingBand />
-      <Colophon />
+      <ClosingBand language={language} />
+      <Colophon language={language} />
     </section>
   </div>;
 }

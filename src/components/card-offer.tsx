@@ -5,10 +5,11 @@ import { ArrowUpRight } from "lucide-react";
 
 import { CardFor } from "./card-for";
 import { useCardFor } from "@/lib/card-for";
+import type { CardWords } from "./public-ending";
 import { warmWhenNear, type useSampleDoor } from "./sample-link";
 
 /** The open hand holds the card out: it is the way into the sample. */
-export function CardOffer({ door }: { door: ReturnType<typeof useSampleDoor> }) {
+export function CardOffer({ door, said }: { door: ReturnType<typeof useSampleDoor>; said: CardWords }) {
   const name = useCardFor().trim();
   return <span className="neighborly-close-offer">
     <Link href="/app?intent=sample" className="card-offer" data-station="end" data-turn={-4} ref={warmWhenNear} {...door}>
@@ -16,8 +17,8 @@ export function CardOffer({ door }: { door: ReturnType<typeof useSampleDoor> }) 
       <ArrowUpRight aria-hidden="true" />
       {/* The line as lettered on the card: what is written here goes with the card through the grow. */}
       <em className="card-offer-for" aria-hidden="true">For <span data-blank={name ? undefined : ""}>{name}</span></em>
-      <span className="card-offer-words"><strong>Look around a sample conference</strong><small>Every person in the sample is made up.</small></span>
+      <span className="card-offer-words"><strong>{said.look}</strong><small>{said.madeUp}</small></span>
     </Link>
-    <CardFor />
+    <CardFor said={said} />
   </span>;
 }

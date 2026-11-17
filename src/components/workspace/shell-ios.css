@@ -161,3 +161,12 @@
   /* The picture keeps the right half of the screen, flush to its edge; the words wrap before it. */
   :root[data-shell="ios"] .live-app :is(.live-head-words, .live-head-actions) { max-width: calc(50vw - var(--live-pad) - 24px); }
 }
+
+/* Spanish runs longer: at the largest sizes a sheet's or a section's title (h2) grows to 130% and breaks only
+   between words, a count's tail may wrap, and a button in a row may give up width rather than run off the screen. */
+:root[data-shell="ios"][data-text-large] .live-app h2 { -webkit-text-size-adjust: 130% !important; overflow-wrap: normal; }
+:root[data-shell="ios"][data-text-large] .live-app .help-oldest { white-space: normal; }
+:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] { flex-shrink: 1; min-width: 0; }
+:root[data-shell="ios"][data-text-large] .live-app :has(> [data-slot="button"]) { flex-wrap: wrap; }
+:root[data-shell="ios"][data-text-large] .live-app .live-row { flex-wrap: wrap; }
+:root[data-shell="ios"][data-text-large] .live-app .live-row > * { max-width: 100%; }
