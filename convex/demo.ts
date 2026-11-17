@@ -124,6 +124,14 @@ export const firstRoom = query({
     invitations: v.array(v.object({ id: seedKey, email: v.string(), role: v.string(), status: v.string() })),
     firstRequests: v.array(v.object({ id: seedKey, commitmentId: seedKey, recipientId: seedKey, status: v.string(), commitment: v.union(firstRoomCommitment, v.null()) })),
     firstAnnouncements: v.array(firstRoomAnnouncement),
+    /** What drafts.weekNote answers the sample's owner for the hour asked. */
+    weekNote: v.object({
+      callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
+      visitsPlanned: v.number(), requestsOpen: v.number(), approvedUnpaid: v.number(), approvedUnpaidCents: v.number(),
+      openPlaces: v.number(), away: v.number(),
+    }),
+    /** How many drafts wait for a yes: the number of rows assistance.drafts answers. */
+    draftsWaiting: v.number(),
   })),
   handler: async (_ctx, { at }) => {
     if (!process.env.DEMO_CLERK_USER_ID) return null;
@@ -140,6 +148,14 @@ export const firstRoom = query({
     const announcement = (note: (typeof shown.announcements.rows)[number]) => ({ id: note._id, title: note.title, body: note.body, authorName: name(note.authorId), createdAt: note.createdAt });
     const request = (asking: (typeof shown.requests.rows)[number]) => ({ id: asking._id, commitmentId: asking.commitmentId, recipientId: asking.recipientId, status: asking.status });
     const responses = rows("meetingResponses");
+    // The week note, worked out as drafts.weekNote does, from the hour asked to seven days on.
+    const weekEnd = asked + 7 * DAY;
+    const day = (time: number) => new Intl.DateTimeFormat("en-CA", { timeZone: church.timeZone }).format(time);
+    const waiting = rows("calls").filter((call) => call.callback === "needed");
+    const approved = rows("assistanceRequests").filter((asking) => asking.status === "approved");
+    const ledger = rows("ledgerEntries");
+    const paidToward = (requestId: string) => ledger.filter((entry) => entry.requestId === requestId).reduce((paid, entry) => paid + (entry.kind === "expense" ? entry.amount : -entry.amount), 0);
+    const callIds = new Set(rows("calls").map((call) => call._id as string));
     return {
       church: { id: church._id, name: church.name, timeZone: church.timeZone, sample: true, wordSet: church.wordSet ?? "general" },
       user: { id: me._id, name: me.name, email: me.email, language: me.language === "es" ? "es" as const : "en" as const },
@@ -163,6 +179,19 @@ export const firstRoom = query({
         return { ...request(asking), commitment: shift ? commitment(shift) : null };
       }),
       firstAnnouncements: rows("announcements").reverse().slice(0, 25).map(announcement),
+      weekNote: {
+        callsWaiting: waiting.length,
+        callsFirstByAssistant: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
+        callsFirstByPerson: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "person").length,
+        oldestWaitingDays: waiting.length ? Math.max(0, Math.floor((asked - Math.min(...waiting.map((call) => call.takenAt))) / DAY)) : 0,
+        visitsPlanned: rows("visits").filter((visit) => visit.status === "scheduled" && visit.scheduledAt >= asked && visit.scheduledAt < weekEnd).length,
+        requestsOpen: rows("assistanceRequests").filter((asking) => asking.status === "open").length,
+        approvedUnpaid: approved.length,
+        approvedUnpaidCents: approved.reduce((owed, asking) => owed + Math.max(0, (asking.amountApproved ?? asking.amountRequested) - paidToward(asking._id)), 0),
+        openPlaces: rows("commitments").filter((shift) => !shift.cancelled && !shift.assigneeId && shift.start >= asked && shift.start < weekEnd).length,
+        away: new Set(rows("timeOff").filter((away) => away.start <= day(weekEnd) && away.end >= day(asked)).map((away) => away.memberId)).size,
+      },
+      draftsWaiting: rows("requestDrafts").filter((draft) => callIds.has(draft.callId)).length,
     };
   },
 });
