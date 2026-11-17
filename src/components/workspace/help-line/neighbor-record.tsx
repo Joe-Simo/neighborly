@@ -138,7 +138,7 @@ export function NeighborRecord({
   /** From a link to one request: that request is the one on the sheet. */
   requestId?: string | null;
 }) {
-  const { data, format, now, setHeading, words } = useWorkspace();
+  const { data, format, now, setHeading, words, sampleSaid } = useWorkspace();
   const text = words.rooms.neighbors.record;
   const { title: requestTitle } = requestWords(words);
   const churchId = data.church.id;
@@ -392,7 +392,7 @@ export function NeighborRecord({
           title={
             step.kind === "approve" ? text.sheets.approve : text.sheets.decline
           }
-          description={`${requestTitle(step.request)}. ${step.request.summary}`}
+          description={`${requestTitle(step.request)}. ${sampleSaid(step.request.summary)}`}
           onClose={close}
         >
           <DecideForm
@@ -410,7 +410,7 @@ export function NeighborRecord({
           title={
             takingBack(step.request) ? text.sheets.takeBack : text.sheets.close
           }
-          description={`${requestTitle(step.request)}. ${step.request.summary}`}
+          description={`${requestTitle(step.request)}. ${sampleSaid(step.request.summary)}`}
           onClose={close}
         >
           <CloseForm
@@ -556,7 +556,7 @@ export function NeighborRecordView({
   onShowNumbers?: () => void;
   onStep: (step: Step) => void;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const text = words.rooms.neighbors.record;
   const homeText = words.rooms.neighbors.home;
   const { title: requestTitle } = requestWords(words);
@@ -674,7 +674,7 @@ export function NeighborRecordView({
           <div className="help-sheet-body">
             <div>
               <h2 id="open-title">{requestTitle(first)}</h2>
-              <p className="help-why">{first.summary}</p>
+              <p className="help-why">{sampleSaid(first.summary)}</p>
               <p>
                 {asked(first)}
                 {first.status === "approved" &&
@@ -735,7 +735,7 @@ export function NeighborRecordView({
                 <div>
                   <h3>{requestTitle(request)}</h3>
                   <p>
-                    {request.summary}
+                    {sampleSaid(request.summary)}
                     {request.source === "import" && ` ${text.also.brought}`}
                   </p>
                 </div>

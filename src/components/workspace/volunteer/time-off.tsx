@@ -9,7 +9,7 @@ import { MonthAway } from "@/components/workspace/volunteer/asides";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TimeOffSection() {
-  const { data, pending, ownPerson, perform, words } = useWorkspace();
+  const { data, pending, ownPerson, perform, words, sampleSaid } = useWorkspace();
   return (
     <>
       <MonthAway />
@@ -28,7 +28,7 @@ export function TimeOffSection() {
                   <h3>
                     {readDays(words, item.start, item.end)}
                   </h3>
-                  {item.note && <p>{item.note}</p>}
+                  {item.note && <p>{sampleSaid(item.note)}</p>}
                 </div>
                 <Button
                   variant="outline"
