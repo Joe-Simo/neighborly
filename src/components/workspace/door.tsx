@@ -4,7 +4,8 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import { createPortal } from "react-dom";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
-import { dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
+import { HELD_CARD, dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
+import { ROOM_WHOLE } from "@/components/workspace/room-sheet";
 import "@/components/workspace/door.css";
 
 /**
@@ -114,8 +115,12 @@ export function DoorSweep() {
     let saidAt = 0;
     let goOnSaying = heldSaying;
     heldSaying = false;
+    // Taken over from the home page's card, the paper is down already: there is no sweep to wait out.
+    const down = paper.current?.hasAttribute("data-held") ?? false;
     const lift = () => {
       lifting = true;
+      // The home page's card may still lie over this one, identical to it, for a few frames: it goes now, so the lift is seen from its first frame.
+      document.getElementById(HELD_CARD)?.remove();
       // The line leaves first, in this same frame, so it is never read over the room.
       paper.current?.querySelector<HTMLElement>(".door-opening")?.style.setProperty("visibility", "hidden");
       setHolding(false);
@@ -156,7 +161,7 @@ export function DoorSweep() {
         setHolding("shown");
       }
       const waited = performance.now() - arrivedAt;
-      const landed = plain || waited >= SWEEP;
+      const landed = plain || down || waited >= SWEEP;
       const read = saidAt === 0 || performance.now() - saidAt >= READ;
       if (landed && read && (underneathIsReady() || waited > LONGEST)) return lift();
       const held = plain ? null : paper.current?.querySelector<HTMLElement>(".door-card");
@@ -179,7 +184,17 @@ export function DoorSweep() {
       frame = requestAnimationFrame(look);
     };
     frame = requestAnimationFrame(look);
-    return () => cancelAnimationFrame(frame);
+    // The room says the frame it is whole (room-sheet.tsx), before that frame is painted: the paper is looked at then,
+    // not a frame later. The look each frame goes on beside it, for the line's own clock and a part that arrives late.
+    const whole = () => {
+      cancelAnimationFrame(frame);
+      look();
+    };
+    window.addEventListener(ROOM_WHOLE, whole);
+    return () => {
+      window.removeEventListener(ROOM_WHOLE, whole);
+      cancelAnimationFrame(frame);
+    };
   }, [playing, arrival]);
 
   if (!playing) return null;

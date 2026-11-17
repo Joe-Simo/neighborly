@@ -1,12 +1,14 @@
 /* The home page's card, grown to the window: the card's own paper and grain, never a plain fill. */
 #card-held{position:fixed;inset:0;z-index:81;overflow:hidden;pointer-events:none;contain:strict}
+/* Lifting off the room, it is a sheet with an edge: its shadow falls on what it leaves. */
+#card-held[data-dropping]{box-shadow:0 6px 16px rgb(40 60 50 / .26);will-change:transform}
 #card-held .card-held-sheet{position:absolute;translate:none;rotate:none;transform-origin:50% 50%;will-change:transform;filter:none}
 /* Once the card fills the window its grain is one fixed paper: the door's card image at the door's card size, centred on
    the window, so the door's own card (the same image, box and centre) takes over with not one pixel of grain moving. */
 #card-held .card-held-paper{position:absolute;inset:0;background:url(/assets/home/card-blank-480.webp) center/max(106vw,159vh) calc(max(106vw,159vh) / 1.5) no-repeat #f7f2e6}
 /* The grown card's marks, at the door card's size and places, so the door takes over the same marks. */
 #card-held .card-held-marks{position:absolute;left:50%;top:50%;width:max(106vw,159vh);aspect-ratio:1.5;margin:calc(max(106vw,159vh) / -3) 0 0 calc(max(106vw,159vh) / -2)}
-#card-held .card-held-marks>*{position:absolute;opacity:.4}
+#card-held .card-held-marks>*{position:absolute;opacity:.4;transform-origin:50% 50%}
 #card-held .card-held-marks>i{left:30%;top:36%;width:7%;aspect-ratio:1;background:#c8962e}
 @media(max-aspect-ratio:1/1){
   #card-held .card-held-marks>i{left:38.5%;top:38%;width:3.6%}

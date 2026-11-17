@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState
 import { flushSync } from "react-dom";
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../convex/_generated/api";
-import { askFirstRoom, firstRoom, type FirstRoom } from "@/lib/first-room";
+import { askFirstRoom, firstRoom, firstRoomHere, type FirstRoom } from "@/lib/first-room";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 import type { Language } from "@/lib/words";
 import { useWaited } from "@/lib/use-waited";
@@ -29,20 +29,20 @@ export const useFirstLook = () => useContext(FirstLook);
 
 /** The seed's answer once it is here: undefined while on its way, null when there is none and the room waits for sign-in. */
 export function useFirstRoom(wanted: boolean) {
-  const [room, setRoom] = useState<FirstRoom | null>();
+  // Already here at the press (asked for as the card neared the window): the room is drawn from it in this first pass.
+  const [room, setRoom] = useState<FirstRoom | null | undefined>(() => (wanted ? firstRoomHere() : undefined));
+  // The room comes in under the home page's card, or straight after the launch mark: it is drawn finished, as
+  // a room under the door's paper is (door.css), and the shell lifts the mark at the next room.
+  // (Not when a room is already on the page: an answer that late starts no look.)
+  useLayoutEffect(() => {
+    if (room && !document.querySelector(".live-app[data-room-shown]")) document.documentElement.dataset.fromDoor = "";
+  }, [room]);
   useEffect(() => {
     if (!wanted) return;
     let current = true;
-    // Asked for already at the press or as the card neared the window; a fresh load of the address asks here.
+    // A fresh load of the address asks here; an answer still on its way is waited for. One already drawn changes nothing.
     askFirstRoom();
-    void (firstRoom() ?? Promise.resolve(null)).then((answer) => {
-      if (!current) return;
-      // The room comes in under the home page's card, or straight after the launch mark: it is drawn finished, as
-      // a room under the door's paper is (door.css), and the shell lifts the mark at the next room.
-      // (Not when a room is already on the page: an answer that late starts no look.)
-      if (answer && !document.querySelector(".live-app .live-room")) document.documentElement.dataset.fromDoor = "";
-      setRoom(answer);
-    });
+    void (firstRoom() ?? Promise.resolve(null)).then((answer) => current && setRoom(answer));
     return () => {
       current = false;
     };
