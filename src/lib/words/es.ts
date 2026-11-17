@@ -386,6 +386,7 @@ export function es(set: WordSet): Words {
       outlook: "Añadir a Outlook",
       addressLabel: "Tu dirección privada de calendario",
       copy: "Copiar dirección",
+      share: "Compartir dirección",
       copied: "Copiada",
       copiedStatus: "Dirección copiada.",
       privacy: "Esta dirección es solo tuya; quien la tenga puede ver cuándo y dónde sirves. Una visita muestra la hora y la calle, nunca el nombre ni la necesidad de un vecino. Si llega a manos equivocadas, crea una nueva y la anterior deja de funcionar.",

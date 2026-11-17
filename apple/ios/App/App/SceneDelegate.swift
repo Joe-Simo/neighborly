@@ -122,15 +122,32 @@ final class ShellViewController: CAPBridgeViewController {
         ))
     }
 
+    /// The page's print command opens the system's share sheet with the page as it prints (its print styles, on
+    /// US Letter) as a PDF named for it, so it can be printed, saved to Files, mailed or sent; Print is one of the
+    /// sheet's own actions.
     private func printPage() {
         guard let webView else { return }
-        let info = UIPrintInfo.printInfo()
-        info.outputType = .general
-        info.jobName = webView.title ?? "Kind Helps"
-        let printer = UIPrintInteractionController.shared
-        printer.printInfo = info
-        printer.printFormatter = webView.viewPrintFormatter()
-        printer.present(animated: true)
+        let name = (webView.title ?? "Kind Helps").replacingOccurrences(of: "/", with: "-")
+        let pages = UIPrintPageRenderer()
+        pages.addPrintFormatter(webView.viewPrintFormatter(), startingAtPageAt: 0)
+        let paper = CGRect(x: 0, y: 0, width: 612, height: 792)
+        pages.setValue(paper, forKey: "paperRect")
+        pages.setValue(paper.insetBy(dx: 36, dy: 36), forKey: "printableRect")
+        let pdf = NSMutableData()
+        UIGraphicsBeginPDFContextToData(pdf, paper, nil)
+        pages.prepare(forDrawingPages: NSRange(location: 0, length: pages.numberOfPages))
+        for page in 0..<pages.numberOfPages {
+            UIGraphicsBeginPDFPage()
+            pages.drawPage(at: page, in: UIGraphicsGetPDFContextBounds())
+        }
+        UIGraphicsEndPDFContext()
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(name).pdf")
+        guard (try? pdf.write(to: file, options: .atomic)) != nil else { return }
+        let sheet = UIActivityViewController(activityItems: [file], applicationActivities: nil)
+        sheet.popoverPresentationController?.sourceView = view
+        sheet.popoverPresentationController?.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+        sheet.popoverPresentationController?.permittedArrowDirections = []
+        present(sheet, animated: true)
     }
 
     override func viewDidLoad() {

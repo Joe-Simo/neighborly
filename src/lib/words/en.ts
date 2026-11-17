@@ -377,6 +377,7 @@ export function en(set: WordSet) {
       outlook: "Add to Outlook",
       addressLabel: "Your private calendar address",
       copy: "Copy address",
+      share: "Share address",
       copied: "Copied",
       copiedStatus: "Address copied.",
       privacy: "This address is yours alone; anyone who has it can see when and where you serve. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands, make a new one and the old one stops working.",
