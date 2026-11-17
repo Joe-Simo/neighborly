@@ -51,10 +51,10 @@
   .door-opening { animation: none; }
 }
 /* For someone from the door the sweep takes the place of the waiting screen's mark and line. */
-body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
+body:has(.door-sweep) :is(.paper-loading > *, .live-opening) { visibility: hidden; }
 /* Under the paper the first room is finished, not still rising: the lift shows a whole room. The mark stays
    until the next room is opened, so nothing starts over when the paper has gone. */
-:root[data-from-door] .live-app :is(.live-head-words > *, .live-head-actions, .live-head-art > .relief, .live-room, .paper-rows > *, .live-list > *) { animation: none; }
+:root[data-from-door] .live-app :is(.paper-rows > *, .live-list > *) { animation: none; }
 /* On an upright window only the middle of the grown card is in view, so its marks keep to the middle. */
 @media (max-aspect-ratio: 1/1) {
   .door-card > i { left: 38.5%; top: 38%; width: 3.6%; }

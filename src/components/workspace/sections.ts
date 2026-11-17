@@ -19,10 +19,18 @@ const loaders: Record<LiveArea, () => Promise<ComponentType>> = {
 };
 
 const asked = new Map<LiveArea, Promise<ComponentType>>();
+const arrived = new Map<LiveArea, ComponentType>();
 /** Fetches a room's code once; every later ask shares the same answer. */
 export function fetchRoom(area: LiveArea) {
   let room = asked.get(area);
-  if (!room) asked.set(area, (room = loaders[area]()));
+  if (!room)
+    asked.set(
+      area,
+      (room = loaders[area]().then((code) => {
+        arrived.set(area, code);
+        return code;
+      })),
+    );
   return room;
 }
 
@@ -34,7 +42,7 @@ export function fetchRoomsAhead() {
 }
 
 const room = (area: LiveArea) => lazy(() => fetchRoom(area).then((code) => ({ default: code })));
-export const sections: Record<LiveArea, ComponentType> = {
+const sections: Record<LiveArea, ComponentType> = {
   week: room("week"),
   team: room("team"),
   people: room("people"),
@@ -49,6 +57,12 @@ export const sections: Record<LiveArea, ComponentType> = {
   visits: room("visits"),
   tools: room("tools"),
 };
+
+/**
+ * The room to draw: its own code once that has arrived, so the room is drawn at once (a lazy room is first drawn
+ * as its wait, and React keeps a wait on screen at least 300ms); until then a lazy room that waits for its code.
+ */
+export const roomSection = (area: LiveArea) => arrived.get(area) ?? sections[area];
 
 // The room in the address is asked for the moment this file runs, alongside the frame's own code, not after it.
 if (typeof window !== "undefined" && window.location.pathname.startsWith("/app")) {

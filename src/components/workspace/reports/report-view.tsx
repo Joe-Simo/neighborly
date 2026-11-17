@@ -1,7 +1,7 @@
 "use client";
 
 import "./reports.css";
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,13 +31,8 @@ const share = (part: number, of: number): CSSProperties =>
 
 const wholeDollars = (cents: number) => money(Math.round(cents / 100) * 100);
 
-const watchMotion = (changed: () => void) => {
-  const motion = matchMedia("(prefers-reduced-motion: reduce)");
-  motion.addEventListener("change", changed);
-  return () => motion.removeEventListener("change", changed);
-};
 /**
- * One of the year's figures. On arrival they count up once, 60ms apart; a change of year rolls on from there.
+ * One of the year's figures. Once the room is shown they count up once, 60ms apart; a change of year rolls on from there.
  * `step` is the smallest amount shown on the way (100 for money, which is kept in cents). Still under Reduce Motion.
  */
 function Figure({
@@ -51,20 +46,10 @@ function Figure({
   step?: number;
   format?: (amount: number) => string;
 }) {
-  // Read after hydration, so the server and the first client render agree; under Reduce Motion the figure is simply there.
-  const still = useSyncExternalStore(watchMotion, () => matchMedia("(prefers-reduced-motion: reduce)").matches, () => false);
-  const [counted, setArrived] = useState(false);
-  const arrived = still || counted;
-  useEffect(() => {
-    // The same wave as the bars: after the frame's own arrival, if it is still sweeping in.
-    const frame = document.querySelector(".live-app");
-    const sweep = frame ? parseFloat(getComputedStyle(frame).getPropertyValue("--paper-wait")) || 0 : 0;
-    const wait = setTimeout(() => setArrived(true), sweep + 90 + order * 60);
-    return () => clearTimeout(wait);
-  }, [order]);
   return (
     <CountUp
-      value={arrived ? value : 0}
+      value={value}
+      delay={90 + order * 60}
       format={(amount) => format(amount === value ? value : Math.max(0, Math.round(amount / step) * step))}
     />
   );

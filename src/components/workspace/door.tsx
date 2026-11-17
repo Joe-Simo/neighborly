@@ -76,13 +76,13 @@ const watch = (watcher: () => void) => {
 };
 
 /**
- * What is under the paper is ready to be seen: the room says it is whole, or the door led somewhere that
+ * What is under the paper is ready to be seen: the room is shown whole, or the door led somewhere that
  * is not a room and not the waiting screen (a first welcome, a plain notice).
  */
 function underneathIsReady() {
   const room = document.querySelector(".live-app .live-room");
   // A part of the room that is still on its way says so (`data-room-pending`), and the paper waits for it too.
-  if (room) return document.querySelector(".live-app[data-room-whole]") !== null && document.querySelector(".live-app [data-room-pending]") === null;
+  if (room) return document.querySelector(".live-app[data-room-shown]") !== null && document.querySelector(".live-app [data-room-pending]") === null;
   return document.querySelector(".paper-loading") === null;
 }
 

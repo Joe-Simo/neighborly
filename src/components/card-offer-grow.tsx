@@ -73,7 +73,7 @@ export function CardOfferGrow() {
     const keep = () => {
       if (!held.isConnected) return;
       // A visitor already inside goes straight to a room without the sweep: the card lifts off it once it is whole.
-      const room = document.querySelector(".live-app[data-room-whole]") && !document.querySelector(".live-app [data-room-pending]") && !document.querySelector(".door-sweep");
+      const room = document.querySelector(".live-app[data-room-shown]") && !document.querySelector(".live-app [data-room-pending]") && !document.querySelector(".door-sweep");
       if (room || performance.now() - since > LONGEST) return dropTheHeldCard();
       requestAnimationFrame(keep);
     };
