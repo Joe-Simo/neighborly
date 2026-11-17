@@ -22,7 +22,7 @@ import {
 import type { LiveArea } from "@/components/workspace/areas";
 import { readFailure } from "@/components/workspace/failure";
 import { LaunchMark, LiveLoading } from "@/components/workspace/primitives";
-import { LiveConnection, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
+import { LiveConnection, LiveState, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
 import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import {
@@ -501,13 +501,21 @@ export function LiveWorkspace({
           lang={words.locale}
         >
           {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. */}
-          {opening && (
-            <p className="live-opening" role="status">
-              {/* A room held because the connection is down says that, not that it is opening: the strip that
-                  would say so is inside the column that is not seen yet. The same status line, so it is read out. */}
-              <span className="text-balance">{lost ? `${words.states.offlineTitle} ${words.states.offlineRoom}` : words.states.opening}</span>
-            </p>
-          )}
+          {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. A room
+              held because the connection is down says that instead, in the family every other room state uses: its
+              picture's card, one serif line and one sentence, as a room that did not open does. */}
+          {opening &&
+            (lost ? (
+              <div className="live-opening" data-lost="">
+                <LiveState kind="offline" title={words.states.offlineTitle}>
+                  {words.states.offlineRoom}
+                </LiveState>
+              </div>
+            ) : (
+              <p className="live-opening" role="status">
+                <span className="text-balance">{words.states.opening}</span>
+              </p>
+            ))}
           <div className="live-page-head" data-rested={rested ? "" : undefined}>
             {heading.art && (
               <div className="live-head-art" data-ready={pictured === area ? "" : undefined}>
