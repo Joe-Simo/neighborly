@@ -1,7 +1,7 @@
 "use client";
 
 import "./reports.css";
-import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -175,6 +175,19 @@ export function ReportView({
   printNext?: boolean;
 }) {
   const [everyLine, setEveryLine] = useState(false);
+  // The sheets are laid once a visit: coming back to Reports in the same tab, the pile is already standing.
+  const pile = useRef<HTMLSpanElement>(null);
+  const laidOnce = useRef(false);
+  useLayoutEffect(() => {
+    if (laidOnce.current || !pile.current) return;
+    laidOnce.current = true;
+    try {
+      if (sessionStorage.getItem("report-pile-laid")) pile.current.dataset.laid = "";
+      else sessionStorage.setItem("report-pile-laid", "1");
+    } catch {
+      // Without storage the pile is laid each time Reports opens.
+    }
+  }, []);
   /** The month whose exact figures are held up in a tip, as "yyyy-MM". */
   const [tip, setTip] = useState<string>();
   /** Months whose tip, held above them, would lie over the caption at the right of the heading: theirs is held to the left instead. */
@@ -309,8 +322,19 @@ export function ReportView({
             {soFar}.
           </dt>
           <dd className="report-year-paid">
-            <span>
-              <Figure value={Math.round(report.helpPaid / 100) * 100} order={0} step={100} format={money} />
+            {/* The year's figure stands on its months: twelve thin sheets, each as thick as that month's share of
+                the help paid, laid from the first month at the back to the last at the front. */}
+            <span className="report-year-pile" ref={pile}>
+              {/* The pile is as wide as the year's whole figure from the first frame, so nothing moves while it counts up. */}
+              <span className="report-year-measure" aria-hidden="true">{money(Math.round(report.helpPaid / 100) * 100)}</span>
+              <span className="report-year-figure">
+                <Figure value={Math.round(report.helpPaid / 100) * 100} order={0} step={100} format={money} />
+              </span>
+              <span className="report-stack" aria-hidden="true">
+                {report.months.map((line) => (
+                  <i key={line.month} style={{ "--share": report.helpPaid > 0 ? line.paid / report.helpPaid : 0 } as CSSProperties} />
+                ))}
+              </span>
             </span>
           </dd>
         </div>
