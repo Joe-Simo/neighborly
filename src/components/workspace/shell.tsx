@@ -40,6 +40,7 @@ import {
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { AsidePlace, useWideScreen } from "@/components/workspace/aside";
+import { RowMenu } from "@/components/workspace/row-menu";
 import { useSystemTextSize } from "@/components/system-text-size";
 import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
@@ -600,6 +601,7 @@ export function LiveWorkspace({
         </RoomStill>
         </WorkspaceProvider>
       </div>
+      <RowMenu />
       {inApp && (
         <nav className="live-tab-bar" aria-label={words.shell.workspace}>
           {tabs.map(({ id, label, icon: Icon }) => (
