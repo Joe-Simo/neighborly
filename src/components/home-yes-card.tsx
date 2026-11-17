@@ -104,7 +104,7 @@ export function HomeYesCard() {
         sealed={step !== "waiting"}
         format={format}
         pending={false}
-        limits={<span className="block min-w-0">{text.made.checked} {step === "waiting" && text.unsaved}</span>}
+        limits={<span className="block min-w-0">{text.made.checked} <span className="help-unsaved">{text.unsaved}</span></span>}
         onApprove={() => setStep("sealed")}
       />
     </div>
