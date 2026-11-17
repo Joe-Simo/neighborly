@@ -37,7 +37,7 @@
 .door-opening[data-spoken] { inset: auto; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .door-opening[data-low]:not([data-spoken]) { inset: auto 24px 14vh; }
 @media (prefers-reduced-motion: reduce) { .door-opening[data-low]:not([data-spoken]) { inset: calc(50vh + 64px) 24px auto; } }
-.door-opening svg { flex: none; animation: live-spin 1s linear infinite; }
+/* A wait is the one quiet line, never a turning wheel. */
 @keyframes door-opening-in { from { opacity: 0; } }
 /* Reduce Motion: no sweep. The paper is simply there, and gives way in one short fade. */
 @media (prefers-reduced-motion: reduce) {
@@ -45,7 +45,7 @@
   .door-card, .door-card > * { animation: none; }
   .door-card > * { display: none; }
   .door-sweep > svg:not(:last-of-type), .door-sweep:has(.door-card) > svg { display: none; }
-  .door-opening, .door-opening svg { animation: none; }
+  .door-opening { animation: none; }
 }
 /* For someone from the door the sweep takes the place of the waiting screen's mark and line. */
 body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
@@ -61,6 +61,9 @@ body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
 /* The card grown on the home page was held over the window until now: the sweep starts at rest, with nothing to sweep. */
 .door-sweep[data-held] > svg { display: none; }
 .door-sweep[data-held] .door-card, .door-sweep[data-held] .door-card > * { animation: none; }
-/* It is the same paper the card was: its grain, its straight cut edge, no marks. */
+/* It is the same paper the card was, its grain and straight cut edge, with the same marks in the same places. */
 .door-sweep[data-held] .door-card { border-radius: 0; background: url(/assets/home/card-blank-480.webp) center / 100% 100%; }
-.door-sweep[data-held] .door-card > * { display: none; }
+.door-sweep[data-held] .door-card[data-holds] > i { animation: door-card-holds 900ms ease-in-out infinite alternate; }
+/* Held from the home page the line is drawn low from the first, so it never moves. */
+.door-sweep[data-held] .door-opening:not([data-spoken]) { inset: auto 24px 14vh; animation: none; }
+.door-sweep[data-held] .door-opening svg { display: none; }

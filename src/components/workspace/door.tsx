@@ -2,7 +2,6 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { LoaderCircle } from "lucide-react";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
 import { dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
@@ -220,7 +219,6 @@ export function DoorSweep() {
       {card ? <div className="door-card"><i /><b /><b /></div> : <div className="door-paper" />}
       {holding && (
         <p className="door-opening" role="status" data-spoken={holding === "spoken" ? "" : undefined} data-low={card ? "" : undefined}>
-          <LoaderCircle size={20} aria-hidden="true" />
           <span>{wordsFor(language).states.opening}</span>
         </p>
       )}

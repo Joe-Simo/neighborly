@@ -8,6 +8,8 @@ import { getPaintedScrollState } from "@/lib/painted-world-scroll";
 import { isPaintedPortrait, openingKeptAbove } from "@/lib/painted-world-framing";
 import type { PaintedScene, PaintedWorldOptions, createPaintedWorldController } from "@/lib/painted-world-controller";
 import "./painted-world.css";
+import "./cut-edges.css";
+import { useCutHold } from "./cut-hold";
 
 const chapters = {
   opening: { number: "01", name: "An open hand", title: <>Good things begin<br />with <em>an open hand.</em></>, copy: "A little care can go a long way." },
@@ -43,6 +45,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
   useEffect(() => { outcomeRef.current = openingOutcome; controller.current?.setOpeningOutcome(openingOutcome); }, [openingOutcome]);
   const track = useRef<HTMLElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
+  useCutHold(viewport, heroOnly);
   const host = useRef<HTMLDivElement>(null);
   const controller = useRef<Controller | null>(null);
   const progress = useRef(0);
@@ -257,7 +260,7 @@ export function PaintedWorld({ scenes, heroOnly = false, suspendOffscreen = fals
           <p className="painted-world-description">{chapter.copy}{heroOnly && onPass && !passed && " Pass the card to begin."}</p>
           </div>
           {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Kind Helps">
-            <a className="painted-world-primary-invitation" href="#neighborly-courtyard" onClick={event => { if (passed && onContinue) { event.preventDefault(); onContinue(); } else if (!passed && onPass) { event.preventDefault(); onPass(); } }}>{passed || !onPass ? "Go through the doors" : "Pass the card"}<ArrowUpRight size={15} aria-hidden="true" /></a>
+            <a className="painted-world-primary-invitation" href="#neighborly-courtyard" onClick={event => { if (passed && onContinue) { event.preventDefault(); onContinue(); } else if (!passed && onPass) { event.preventDefault(); onPass(); } }}>{passed || !onPass ? "Go through the doors" : "Pass the card"}</a>
             <Link href="/app?intent=start">Start a conference <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </nav>}
           {!heroOnly && scene === "complete" && <nav className="painted-world-scene-actions" aria-label="Start with Kind Helps">

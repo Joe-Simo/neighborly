@@ -10,6 +10,7 @@ import { ClosingBand, Colophon } from "./public-ending";
 import { useSettled } from "@/lib/use-settled";
 import "./neighborly-continuation.css";
 import "./rooms.css";
+import "./cut-edges.css";
 
 /** Everything after the opening: through the doors, the story of the work, and the way in. */
 // What a conference has on its first day, in the order the work happens. Each line lies under its room's own picture,

@@ -507,7 +507,6 @@
   color: var(--live-muted);
   animation: paper-show 300ms ease 400ms backwards;
 }
-.paper-loading-label svg { animation: live-spin 1s linear infinite; flex: none; }
 /* A short wait inside a form or a dialog: just the line. */
 /* The one way to wait, everywhere: a quiet line, and only once the wait has lasted 400ms, so a quick
    answer never flashes it. No grey rows standing in for content. */
@@ -601,7 +600,7 @@
 @media (prefers-reduced-motion: reduce) {
   .paper-rise, .paper-rows > *, .live-list > *, .help-row, .help-timeline li, .help-ledger tbody tr,
   .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-head-words > *, .live-head-actions, .live-head-art > .relief,
-  .live-room, .live-mobile-menu, .paper-loading-label svg { animation: none; }
+  .live-room, .live-mobile-menu { animation: none; }
   .paper-loading-label { animation-duration: 1ms; }
   .live-head-art[data-ready] > .live-head-under { display: none !important; }
   .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
