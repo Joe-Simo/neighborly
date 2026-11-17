@@ -28,7 +28,7 @@ export function PrivacyPage({ language }: { language: Language }) {
       <Link className="public-page-brand" href="/" aria-label={edgeWords[language].home}><span lang="en">kind helps</span></Link>
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
-    <main className="public-words paper-rise">
+    <main className="public-words paper-rise" data-address={`kindhelps.com${said.path}`}>
       <h1>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={privacyWords.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />
