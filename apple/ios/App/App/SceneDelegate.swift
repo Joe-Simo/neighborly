@@ -105,7 +105,8 @@ final class ShellViewController: CAPBridgeViewController {
         // A save the page makes is felt here: it says "saved" or "decided" (use-save.ts). Nothing else is felt.
         scripts.add(Felt { [weak self] what in self?.tap(for: what) }, name: "kindHelpsFelt")
         // In the app a long press brings up no web callout, a tap leaves no
-        // grey flash, and a button's words are not selected by accident.
+        // grey flash, a button's words are not selected by accident, and what is
+        // pressed answers from touch-down.
         // Giving stays on the web: the App Store does not allow it in an
         // app, so the link to give is not shown here on any page.
         scripts.addUserScript(WKUserScript(
@@ -113,6 +114,8 @@ final class ShellViewController: CAPBridgeViewController {
             const appFeel = document.createElement("style");
             appFeel.textContent = "*{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}a,button,summary,label,nav,[role=button],[role=tab],[role=menuitem]{-webkit-user-select:none;user-select:none}a[href*='github.com/sponsors']{display:none!important}";
             document.documentElement.appendChild(appFeel);
+            // A touch listener makes WebKit hold :active from touch-down, so what is pressed answers at once.
+            document.addEventListener("touchstart", () => {}, { passive: true });
             """,
             injectionTime: .atDocumentEnd,
             forMainFrameOnly: true
