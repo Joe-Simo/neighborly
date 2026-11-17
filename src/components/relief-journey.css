@@ -46,8 +46,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
    They come up into the window from its foot in full ink over the last of the walk, and go down the same way when the courtyard draws back into its frame. */
 .fresco-standing{position:absolute;z-index:2;left:0;right:0;bottom:9svh;margin:0;text-align:center;color:#2b3d2f;font:400 clamp(64px,8.6vw,152px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.06em;text-shadow:0 1px 0 #f6eedb80,0 0 40px #f3e6c8a6;translate:0 calc(clamp(0,(1 - var(--inside)) / .45,1) * (100% + 9svh + 12px) + (1 - var(--standing)) * 14px);pointer-events:none}
 .fresco-standing em{font-weight:400}
-.fresco-header{opacity:calc(1 - var(--inside))}
-.fresco-stage[data-inside=true] .fresco-header{visibility:hidden}
+.fresco-stage[data-within=true] .fresco-header{visibility:hidden}
 @media(max-width:899px) and (min-height:501px){
   .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .fresco-brand{font-size:30px}

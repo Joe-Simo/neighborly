@@ -131,6 +131,8 @@ export function FrescoThreshold() {
       host.style.setProperty("--inside", inside.toFixed(4));
       host.style.setProperty("--standing", standingIn.toFixed(4));
       host.dataset.inside = String(inside > .98);
+      // The courtyard is all painting: the bar drawn over it leaves in one cut as the visitor steps in and returns in one as they step out.
+      host.dataset.within = String(inside > 0);
       // Once the visitor has walked in, the wall they came through is behind them: its words do not come back with the frame.
       host.dataset.walked = String(inside > .98 || grow > 0);
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
