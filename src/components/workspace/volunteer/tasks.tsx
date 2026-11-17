@@ -52,7 +52,7 @@ export function TasksSection() {
       <NextMeeting />
       <section>
         <div className="live-section-head">
-          <h2 tabIndex={-1} data-tasks-head>{words.tasks.tasks}</h2>
+          <h2 tabIndex={-1} data-tasks-head className={data.tasks.length ? undefined : "sr-only"}>{words.tasks.tasks}</h2>
         </div>
         {data.tasks.length ? (
           <div className="live-list">
@@ -117,7 +117,7 @@ export function TasksSection() {
       </section>
       <section className="live-section">
         <div className="live-section-head">
-          <h2>{words.tasks.meetings}</h2>
+          <h2 className={data.meetings.length ? undefined : "sr-only"}>{words.tasks.meetings}</h2>
           {isOwner && (
             <Button variant="outline" onClick={() => open("meeting")}>
               <Plus size={15} aria-hidden="true" /> {words.actions.meeting}
