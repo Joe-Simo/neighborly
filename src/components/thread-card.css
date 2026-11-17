@@ -52,7 +52,21 @@
 @media(max-width:1279px),(max-height:444px){.neighborly-close-offer{top:0}}
 @media(max-width:700px) and (orientation:portrait){
   .neighborly-close-offer{height:216.41cqw}
-  .card-offer{left:58%;top:78.8%;width:68%}
+  .card-offer,.card-for{left:58%;top:78.8%;width:68%}
+  .card-offer-for,.card-for-line{font-size:clamp(17px,5cqw,22px)}
   .card-offer strong{font-size:clamp(20px,6.2cqw,26px)}
 }
 @media(prefers-reduced-motion:reduce){.card-offer,.card-offer-words{transition:none}.card-offer:hover,.card-offer:active{translate:-50% -50%}}
+/* "For ____": lettered on the card in the page's italic. The blank is a pencil rule until a name is written on it. */
+.card-offer-for{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 clamp(17px,1.5cqw,22px)/1.2 'Newsreader',Georgia,serif;color:#3d4f43;white-space:nowrap;overflow:hidden;transition:opacity .24s linear .12s}
+.card-offer-for span{flex:1;min-width:0;overflow:hidden;text-overflow:clip;color:#253e31;border-bottom:1px solid #3d4f4366;padding-bottom:1px}
+.card-offer-for span:not([data-blank]){border-bottom-color:transparent}
+/* The field that writes the line lies exactly over it, on a layer cut to the card's own size and turn, and moves as the card does. Its own letters are clear: the card shows them. */
+.card-for{position:absolute;left:69%;top:77.6%;width:max(20.8%,240px);aspect-ratio:1.5;translate:-50% -50%;rotate:-4deg;pointer-events:none;z-index:1;transition:translate .2s cubic-bezier(.2,.7,.2,1)}
+.neighborly-close-offer:has(.card-offer:hover) .card-for{translate:-50% calc(-50% - 4px)}
+.card-for-line{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 clamp(17px,1.5cqw,22px)/1.2 'Newsreader',Georgia,serif;pointer-events:auto;cursor:text}
+.card-for-line>span{visibility:hidden}
+.card-for-line input{flex:1;min-width:0;min-height:44px;margin:-12px 0;padding:0 0 1px;border:0;background:transparent;font:inherit;color:transparent;caret-color:#253e31;outline:none}
+.card-for-line:has(input:focus-visible){outline:2px solid #263b30;outline-offset:3px;border-radius:3px 1px 4px 2px/2px 4px 1px 3px}
+.card-for-note{position:absolute;left:0;right:0;top:calc(100% + 10px);font:400 15px/1.35 'Source Sans 3',sans-serif;color:#3d4f43;text-align:center;rotate:4deg;pointer-events:none}
+.card-offer[data-given]~.card-for{opacity:0}

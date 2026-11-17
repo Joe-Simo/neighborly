@@ -58,6 +58,9 @@ export function CardOfferGrow() {
     const marks = document.createElement("div");
     marks.className = "card-held-marks";
     marks.append(document.createElement("i"), document.createElement("b"), document.createElement("b"));
+    // The name written on the card is lettered on the grown paper too, where the door's card will be, so it is still the visitor's card.
+    const written = offer.querySelector(".card-offer-for span")?.textContent?.trim();
+    if (written) { const line = document.createElement("em"); line.textContent = `For ${written}`; marks.append(line); }
     held.append(marks);
     marks.animate(swap(0, 1), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     const since = performance.now();
@@ -104,6 +107,9 @@ function useCardLean() {
         card.style.setProperty("--lean-y", `${(across * 1.5).toFixed(2)}deg`);
         card.style.setProperty("--lean-x", `${(-down * 1.5).toFixed(2)}deg`);
         card.dataset.leaning = "";
+        // The field that writes on the card lies over it and leans with it.
+        const field = card.nextElementSibling;
+        if (field instanceof HTMLElement && field.classList.contains("card-for")) { field.style.setProperty("--lean-y", card.style.getPropertyValue("--lean-y")); field.style.setProperty("--lean-x", card.style.getPropertyValue("--lean-x")); field.dataset.leaning = ""; }
       }
     };
     const move = (event: PointerEvent) => {
@@ -111,7 +117,7 @@ function useCardLean() {
       x = event.clientX; y = event.clientY;
       if (!frame) frame = requestAnimationFrame(lean);
     };
-    const rest = () => document.querySelectorAll<HTMLElement>(".card-offer[data-leaning]").forEach(card => { card.style.setProperty("--lean-x", "0deg"); card.style.setProperty("--lean-y", "0deg"); });
+    const rest = () => document.querySelectorAll<HTMLElement>(":is(.card-offer,.card-for)[data-leaning]").forEach(card => { card.style.setProperty("--lean-x", "0deg"); card.style.setProperty("--lean-y", "0deg"); });
     addEventListener("pointermove", move, { passive: true });
     document.documentElement.addEventListener("pointerleave", rest);
     return () => { cancelAnimationFrame(frame); removeEventListener("pointermove", move); document.documentElement.removeEventListener("pointerleave", rest); rest(); };
