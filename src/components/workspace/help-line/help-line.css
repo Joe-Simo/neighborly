@@ -317,3 +317,11 @@
   .live-app .help-row[data-call]:not([data-quiet]) { min-height: 171px; }
   .live-app .help-row[data-call]:not([data-quiet]) > :nth-child(2) { align-self: start; }
 }
+/* From 1728px the households waiting for a decision are the room's side column: a name, what it asks, its visit. */
+.help-waiting-beside { margin: 0; padding: 0; list-style: none; }
+.help-waiting-beside li { position: relative; display: grid; gap: 4px; padding: 14px 0; border-top: 1px solid var(--live-line); cursor: pointer; }
+.help-waiting-beside li:first-child { padding-top: 0; border-top: 0; }
+.help-waiting-beside .help-row-open { font: 400 22px/1.2 "Newsreader", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); }
+.help-waiting-beside li:hover .help-row-open { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.help-waiting-beside li:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: 4px; border-radius: 6px; }
+.live-app .help-waiting-beside .help-asks:before { width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #a8791f; }
