@@ -70,6 +70,8 @@ const es: Readonly<Record<string, string>> = {
   "From the conference thrift store": "De la tienda de segunda mano de la conferencia",
   "Anonymous gift": "un donativo anónimo",
   "Parish family": "una familia de la parroquia",
+  // Time off
+  "Away with family.": "Fuera con la familia.",
   "Walk pledges": "las promesas de la caminata",
 };
 
@@ -83,6 +85,9 @@ const asTyped = (typed: string) => typed;
 const inSpanish = (typed: string) => {
   const known = es[typed];
   if (known) return known;
+  // A call's note is the request's line with a full stop: the same line, said the same way everywhere.
+  const line = typed.endsWith(".") ? es[typed.slice(0, -1)] : undefined;
+  if (line) return `${line}.`;
   const around = withName.find(([start]) => typed.startsWith(start));
   return around ? around[1] + typed.slice(around[0].length) : typed;
 };

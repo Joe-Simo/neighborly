@@ -603,7 +603,7 @@ export function HelpLineView({
   /** The one thing waiting for a yes, when there is one. */
   sheet?: ReactNode;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const text = words.rooms.helpLine.calls;
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
   // How long a call has waited, from the room's hour: "5 hours", "2 days". Two days and more is old.
@@ -738,7 +738,7 @@ export function HelpLineView({
                       <span className="help-phone">{call.phone}</span>
                     )}
                   </h3>
-                  <p>{call.note}</p>
+                  <p>{sampleSaid(call.note)}</p>
                   {call.urgent?.by === "assistant" && isFirst(call) && (
                     <p className="help-assistant help-first paper-rise">
                       <Sparkles size={15} aria-hidden="true" />
@@ -835,7 +835,7 @@ export function HelpLineView({
                 {leaf(call.returnedAt ?? call.takenAt)}
                 <div>
                   <h3>{caller(call, words)}</h3>
-                  <p>{call.outcome || call.note}</p>
+                  <p>{call.outcome || sampleSaid(call.note)}</p>
                 </div>
                 <span className="live-status">
                   {call.returnedByName ? text.returnedBy(call.returnedByName) : text.returned}

@@ -11,6 +11,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
+import { sampleSayer } from "@/lib/words/sample-names";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { readFailure } from "@/components/workspace/failure";
 import { HelpLoading } from "@/components/workspace/help-line/room";
@@ -327,7 +328,7 @@ export function VisitSheetView({
         {request?.summary && (
           <p className="visits-paper-words">
             <span>{text.theirWords}</span>
-            {request.summary}
+            {sampleSayer(!!sample, words.locale)(request.summary)}
           </p>
         )}
         {neighbor.notes && (
