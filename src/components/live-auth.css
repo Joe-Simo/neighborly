@@ -429,3 +429,6 @@
 }
 .entry [data-slot="native-select-wrapper"],
 .live-app .entry .live-field select { width: 100%; }
+
+/* A notice that stands before the form (an invitation that is no longer good) keeps clear of the words above it. */
+.entry :is(h1, .live-deck) + .live-error { margin-top: 16px; }

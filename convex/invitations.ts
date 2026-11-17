@@ -1,7 +1,7 @@
 import { user as account } from "./access";
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, internalMutation, mutation, type MutationCtx } from "./_generated/server";
+import { action, internalMutation, internalQuery, mutation, type MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { enqueueInvitation, resend } from "./notifications";
 import { isSampleChurch } from "./demo";
@@ -63,6 +63,28 @@ export const accept = action({
   handler: async (ctx, args): Promise<Id<"churches">> => {
     if (!/^[0-9a-f]{64}$/.test(args.token)) throw new ConvexError("Invitation is invalid or expired.");
     return ctx.runMutation(internal.invitations.acceptRecord, { tokenHash: await digest(args.token), displayName: args.displayName });
+  },
+});
+/**
+ * Whether an invitation link can still be used, asked by the sign-in sheet before anyone types. It answers yes or no
+ * and nothing else: unknown, used, revoked and expired are one "no", and nothing about the conference is said.
+ * A token of the wrong shape is refused without a read; a well-formed one costs one row by its index.
+ */
+export const good = action({
+  args: { token: v.string() },
+  returns: v.boolean(),
+  handler: async (ctx, args): Promise<boolean> => {
+    if (!/^[0-9a-f]{64}$/.test(args.token)) return false;
+    const expiresAt = await ctx.runQuery(internal.invitations.pendingUntil, { tokenHash: await digest(args.token) });
+    return expiresAt !== null && expiresAt > Date.now();
+  },
+});
+/** When a pending invitation runs out, or null when there is none. The clock is read by the caller, never here. */
+export const pendingUntil = internalQuery({
+  args: { tokenHash: v.string() }, returns: v.union(v.number(), v.null()),
+  handler: async (ctx, args) => {
+    const invite = await ctx.db.query("invitations").withIndex("by_token", q => q.eq("tokenHash", args.tokenHash)).unique();
+    return invite?.status === "pending" ? invite.expiresAt : null;
   },
 });
 /** Retry enqueue after sender configuration using the retained private invitation token. */

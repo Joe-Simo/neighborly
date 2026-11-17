@@ -60,8 +60,11 @@ export function LiveAuth({
   intent = "signin",
   sampleEntry = false,
   enterSample = false,
+  badInvite = false,
 }: {
   intent?: LiveEntryIntent;
+  /** The invitation link that led here is unknown, used or run out: the sheet says so, and is plain sign-in. */
+  badInvite?: boolean;
   /** Shows the way into the sample conference. Off unless the deployment has a visitor account. */
   sampleEntry?: boolean;
   /** Arrived by the home page's sample door: the sample opens once, without a second press. */
@@ -385,6 +388,7 @@ export function LiveAuth({
             {w.left}
           </div>
         )}
+        {badInvite && failure(w.badInvite)}
         {flow !== "reset" && (
           <div className="entry-tabs" role="group" aria-label={w.options} data-flow={flow}>
             <Button variant="ghost" aria-label={`${w.signIn}: ${w.tabHint.signIn}`} aria-pressed={flow === "signIn"} disabled={busy} onClick={() => choose("signIn")}>
