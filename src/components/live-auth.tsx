@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { words } from "@/lib/words";
 import { LiveField } from "@/components/workspace/primitives";
 import { carryTheCard } from "@/components/workspace/door";
-import { authWords, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
+import { authWords, tabInReadersLanguage, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import { EntrySheet } from "./entry-sheet";
 
 export type LiveEntryIntent = "start" | "join" | "signin";
@@ -111,7 +111,7 @@ export function LiveAuth({
     const found = document.title;
     document.title = pageTitle;
     return () => {
-      document.title = found;
+      document.title = tabInReadersLanguage(found);
     };
   }, [pageTitle, behind]);
 
