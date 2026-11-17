@@ -194,7 +194,10 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const pointer = { x: 0, y: 0, seen: false };
     const look = { x: 0, y: 0 };
     const onPointer = (event: PointerEvent) => { if (event.pointerType === "touch") return; pointer.x = event.clientX / innerWidth - .5; pointer.y = event.clientY / innerHeight - .5; pointer.seen = true; };
+    // When the mouse leaves the window the courtyard settles back to rest instead of holding the last lean.
+    const rest = () => { pointer.x = 0; pointer.y = 0; };
     addEventListener("pointermove", onPointer, { passive: true });
+    document.documentElement.addEventListener("pointerleave", rest);
 
     const shown = (selector: string) => { const layer = host.querySelector(selector); return layer ? Number(getComputedStyle(layer).opacity) : 0; };
     // Left alone, the people notice you now and then: a look up, a turn of the head. An act of care is answered with a reach or a wave, and then they stay turned towards you.
@@ -306,6 +309,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       cancelAnimationFrame(raf);
       observer.disconnect();
       removeEventListener("pointermove", onPointer);
+      document.documentElement.removeEventListener("pointerleave", rest);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       renderer.domElement.removeEventListener("webglcontextrestored", restored);
       release();
