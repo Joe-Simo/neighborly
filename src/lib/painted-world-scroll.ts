@@ -35,12 +35,11 @@ export function getPaintedScrollState(value: number): PaintedScrollState {
 }
 
 /**
- * The opening's sheet answers the first pixel of scroll: its lift is spread over the whole of the pin, slow under the first touch and quicker after.
+ * The opening's sheet answers the first pixel of scroll and stays under the finger: its lift is spread evenly over the whole of the pin,
+ * so its edge rises a little faster than the page is scrolled from the first frame to the last.
  * Everything that follows the sheet's edge was timed against a lift that began at .4 of the pin, so the scroll is given back on that old scale.
  */
 export function paceOpening(value: number): number {
   const progress = clamp(value);
-  if (progress >= .8) return progress;
-  const part = progress / .8;
-  return .4 + .4 * part * (.35 + .65 * part);
+  return progress >= .8 ? progress : .4 + progress * .5;
 }
