@@ -10,12 +10,14 @@ import { openUp, useGrowsSmoothly, useSavedLine } from "@/components/workspace/f
 import { SavedWords } from "@/components/workspace/saved-words";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
+import { fill } from "@/lib/words/fill";
 import { formatCents, formatDollars, formatFigure } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
   dayLabel,
   entryLines,
   monthLabel,
+  monthTitle,
   TWINNING_GIFT,
   weekDayLabel,
   type Ledger,
@@ -27,8 +29,6 @@ import "./treasury.css";
 
 const neighborHref = (id: string) =>
   `/app/neighbors?neighbor=${encodeURIComponent(id)}`;
-const count = (n: number, one: string, many: string) =>
-  `${n} ${n === 1 ? one : many}`;
 const art = { backgroundImage: "url(/assets/painted-world/meal.webp)" };
 
 function NeighborLink({ id, name }: { id: string; name: string }) {
@@ -44,18 +44,21 @@ function NeighborLink({ id, name }: { id: string; name: string }) {
  * closes up and is kept for screen readers.
  */
 function PaidLine({ paid }: { paid: Paid }) {
+  const { words } = useWorkspace();
+  const room = words.rooms.treasury;
+  const w = room.ledger.paid;
   const line = useRef<HTMLDivElement>(null);
   const left = paid.request.remaining - paid.amount;
-  const said = `Paid. It is in the ledger.${left > 0 ? ` ${formatFigure(left)} of the approved amount is still to pay.` : ""}`;
+  const said = left > 0 ? w.saidLeft(formatFigure(left)) : w.said;
   const seen = useSavedLine(line, { of: paid.entryId });
   // After the saved line's own opening is set up, so the hand-over takes its place.
   useLayoutEffect(() => {
     if (line.current) handOver(line.current);
   }, []);
   useEffect(() => line.current?.focus({ preventScroll: true }), []);
-  const kind = categoryLabel(paid.request.kind);
-  const to = [paid.request.payeeName, paid.checkNumber && `Check ${paid.checkNumber}`].filter(Boolean).join(" · ");
-  const entry = `${dayLabel(paid.date)} · ${kind} for ${paid.request.neighborName} · ${to}`;
+  const kind = categoryLabel(room, paid.request.kind);
+  const day = dayLabel(words.locale, paid.date);
+  const to = [paid.request.payeeName, paid.checkNumber && room.lines.check(paid.checkNumber)].filter(Boolean).join(" · ");
   return (
     <div
       ref={line}
@@ -68,7 +71,7 @@ function PaidLine({ paid }: { paid: Paid }) {
         <span className="treasury-paid-words">
           <span className="treasury-paid-line">
             <span>
-              {dayLabel(paid.date)} · <span className="treasury-paid-kind">{kind} for </span>
+              {day} · <span className="treasury-paid-kind">{room.lines.kindFor(kind)}{" "}</span>
               {paid.request.neighborName}
             </span>
             <strong>{formatFigure(paid.amount)}</strong>
@@ -77,7 +80,7 @@ function PaidLine({ paid }: { paid: Paid }) {
           <SavedWords>{said}</SavedWords>
         </span>
       ) : (
-        `${entry}, ${formatFigure(paid.amount)}. ${said}`
+        `${fill(w.read, { day, kind, name: paid.request.neighborName, to, amount: formatFigure(paid.amount) })} ${said}`
       )}
     </div>
   );
@@ -126,6 +129,9 @@ export function LedgerView({
   /** The request whose payment is being sent; its sheet holds its place until the answer comes. */
   paying?: Payable | null;
 }) {
+  const { words } = useWorkspace();
+  const room = words.rooms.treasury;
+  const w = room.ledger;
   // A new row lands in the ledger by growing into it; the request after a paid one opens its own room, once.
   const table = useRef<HTMLDivElement>(null);
   useGrowsSmoothly(table);
@@ -135,7 +141,8 @@ export function LedgerView({
     risen.current = sheet.dataset.request;
     openUp(sheet);
   };
-  const month = monthLabel(ledger.month, ledger.today);
+  const month = monthLabel(words.locale, ledger.month, ledger.today);
+  const monthAlone = monthTitle(words.locale, ledger.month, ledger.today);
   const position = ledger.months.indexOf(ledger.month);
   // Months are listed newest first.
   const earlier = ledger.months[position + 1];
@@ -153,10 +160,9 @@ export function LedgerView({
       !entry.reversed,
   ).length;
   const paidFor = [
-    ledger.neighborsHelped > 0 &&
-      count(ledger.neighborsHelped, "neighbor", "neighbors"),
-    gifts > 0 && count(gifts, "twinning gift", "twinning gifts"),
-    other > 0 && count(other, "other payment", "other payments"),
+    ledger.neighborsHelped > 0 && w.figures.neighbors(ledger.neighborsHelped),
+    gifts > 0 && w.figures.gifts(gifts),
+    other > 0 && w.figures.others(other),
   ].filter(Boolean);
   // The sheet stays on the request being paid, whatever the list says meanwhile. Once paid, it is its ledger
   // line; while it becomes that line no other sheet is laid, and the next request rises after.
@@ -172,13 +178,12 @@ export function LedgerView({
       <div className="help-empty" data-first>
         <div className="help-empty-art" style={art} aria-hidden="true" />
         <div>
-          <h3>Start with what you have.</h3>
+          <h3>{w.first.title}</h3>
           <p>
-            Record the balance your conference holds today. Every gift and
-            every payment after it will add up from there.
+            {w.first.deck}
           </p>
           <Button onClick={onRecord}>
-            <Plus size={18} aria-hidden="true" /> Record the opening balance
+            <Plus size={18} aria-hidden="true" /> {w.first.action}
           </Button>
         </div>
       </div>
@@ -188,26 +193,26 @@ export function LedgerView({
     <>
       <dl className="help-figures treasury-figures">
         <div>
-          <dt>Balance today</dt>
+          <dt>{w.figures.balance}</dt>
           <dd>
             <CountUp value={ledger.balance} format={formatDollars} />
-            <small>As of {weekDayLabel(ledger.today)}</small>
+            <small>{w.figures.asOf(weekDayLabel(words.locale, ledger.today))}</small>
           </dd>
         </div>
         <div>
-          <dt>In, {month}</dt>
+          <dt>{w.figures.in(month)}</dt>
           <dd>
             <CountUp value={ledger.moneyIn} format={formatDollars} />
             <small>
-              {ledger.incomeSources.join(", ") || "Nothing received yet"}
+              {ledger.incomeSources.map((source) => categoryLabel(room, source)).join(", ") || w.figures.nothingIn}
             </small>
           </dd>
         </div>
         <div>
-          <dt>Out, {month}</dt>
+          <dt>{w.figures.out(month)}</dt>
           <dd>
             <CountUp value={ledger.moneyOut} format={formatDollars} />
-            <small>{paidFor.join(", ") || "Nothing paid yet"}</small>
+            <small>{paidFor.join(", ") || w.figures.nothingOut}</small>
           </dd>
         </div>
       </dl>
@@ -224,26 +229,25 @@ export function LedgerView({
           className="help-sheet treasury-sheet"
           aria-labelledby="treasury-waiting-title"
         >
-          <p className="help-sheet-label">Approved, waiting to be paid</p>
+          <p className="help-sheet-label">{w.sheet.label}</p>
           <div className="help-sheet-body">
             <div>
               <h2 id="treasury-waiting-title">
-                {categoryLabel(first.kind)}, {formatFigure(first.remaining)} to{" "}
-                {first.payeeName}
+                {fill(w.sheet.title, { kind: categoryLabel(room, first.kind), amount: formatFigure(first.remaining), payee: first.payeeName })}
               </h2>
               <p className="help-why">
-                For <NeighborLink id={first.neighborId} name={first.neighborName} />
+                {w.sheet.for} <NeighborLink id={first.neighborId} name={first.neighborName} />
                 . {sentence(first.summary)}
               </p>
               <p>
                 {first.paid > 0
-                  ? `${formatFigure(first.paid)} of the ${formatFigure(first.amountApproved)} approved is already paid. `
+                  ? `${fill(w.sheet.partPaid, { paid: formatFigure(first.paid), approved: formatFigure(first.amountApproved) })} `
                   : ""}
-                The payment goes to {first.payeeName}, never to the neighbor.
+                {fill(w.sheet.goesTo, { payee: first.payeeName })}
               </p>
             </div>
             <div className="help-actions">
-              <Button onClick={() => onPay(first)}>Record payment</Button>
+              <Button onClick={() => onPay(first)}>{w.sheet.pay}</Button>
             </div>
           </div>
         </section>
@@ -252,9 +256,9 @@ export function LedgerView({
       {waiting.length > 0 && (
         <section className="treasury-waiting" aria-labelledby="treasury-also-title">
           <div className="live-section-head">
-            <h2 id="treasury-also-title">Also waiting</h2>
+            <h2 id="treasury-also-title">{w.also.title}</h2>
             <span className="live-count">
-              {count(waiting.length, "request", "requests")},{" "}
+              {w.also.requests(waiting.length)},{" "}
               {formatFigure(waiting.reduce((sum, row) => sum + row.remaining, 0))}
             </span>
           </div>
@@ -263,21 +267,21 @@ export function LedgerView({
               <div className="help-row" key={request.requestId}>
                 <div>
                   <h3>
-                    {formatFigure(request.remaining)} to {request.payeeName}
+                    {fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: request.payeeName })}
                   </h3>
                   <p>
-                    {categoryLabel(request.kind)} for{" "}
+                    {room.lines.kindFor(categoryLabel(room, request.kind))}{" "}
                     <NeighborLink
                       id={request.neighborId}
                       name={request.neighborName}
                     />
                     . {request.summary}
                     {request.paid > 0 &&
-                      `. ${formatFigure(request.paid)} already paid`}
+                      `. ${w.also.alreadyPaid(formatFigure(request.paid))}`}
                   </p>
                 </div>
-                <Button variant="outline" aria-label={`Record payment: ${formatFigure(request.remaining)} to ${request.payeeName}`} onClick={() => onPay(request)}>
-                  Record payment
+                <Button variant="outline" aria-label={fill(w.sheet.payLabel, { amount: formatFigure(request.remaining), payee: request.payeeName })} onClick={() => onPay(request)}>
+                  {w.sheet.pay}
                 </Button>
               </div>
             ))}
@@ -287,11 +291,11 @@ export function LedgerView({
 
       <div className="live-section-head">
         <div className="treasury-month">
-          <h2 aria-live="polite">{month}</h2>
+          <h2 aria-live="polite">{monthAlone}</h2>
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Earlier month"
+            aria-label={w.earlier}
             disabled={!earlier}
             onClick={() => earlier && onMonth(earlier)}
           >
@@ -300,31 +304,31 @@ export function LedgerView({
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Later month"
+            aria-label={w.later}
             disabled={!later}
             onClick={() => later && onMonth(later)}
           >
             <ChevronRight aria-hidden="true" />
           </Button>
         </div>
-        <span className="live-count">Every payment for a neighbor is tied to a request</span>
+        <span className="live-count">{w.tied}</span>
       </div>
       {ledger.entries.length ? (
         <div className="live-table-scroll" ref={table}>
           <table className="help-ledger">
             <thead>
               <tr>
-                <th scope="col">Date</th>
-                <th scope="col">What</th>
-                <th scope="col">For</th>
-                <th scope="col" className="help-money">In</th>
-                <th scope="col" className="help-money">Out</th>
-                <th scope="col" className="help-money">Balance</th>
+                <th scope="col">{w.columns.date}</th>
+                <th scope="col">{w.columns.what}</th>
+                <th scope="col">{w.columns.for}</th>
+                <th scope="col" className="help-money">{w.columns.in}</th>
+                <th scope="col" className="help-money">{w.columns.out}</th>
+                <th scope="col" className="help-money">{w.columns.balance}</th>
               </tr>
             </thead>
             <tbody>
               {ledger.entries.map((entry) => {
-                const { title, detail } = entryLines(entry);
+                const { title, detail } = entryLines(room, entry);
                 return (
                   <tr
                     key={entry.id}
@@ -332,13 +336,13 @@ export function LedgerView({
                     data-quiet={entry.reverses ? "" : undefined}
                     data-landed={entry.id === landed ? "" : undefined}
                   >
-                    <td>{dayLabel(entry.date)}</td>
+                    <td>{dayLabel(words.locale, entry.date)}</td>
                     <td className="help-what">
                       <Button variant="ghost" onClick={() => onEntry(entry)}>
                         {title}
                       </Button>
                       <small>
-                        {entry.reversed ? `Reversed · ${detail}` : detail}
+                        {entry.reversed ? room.lines.reversed(detail) : detail}
                       </small>
                     </td>
                     <td data-for>
@@ -368,8 +372,8 @@ export function LedgerView({
                 <td />
                 <td>
                   {ledger.month === ledger.today.slice(0, 7)
-                    ? `${month} so far`
-                    : month}
+                    ? w.soFar(monthAlone)
+                    : monthAlone}
                 </td>
                 <td />
                 <td className="help-money" data-in>
@@ -377,7 +381,7 @@ export function LedgerView({
                 </td>
                 <td className="help-money">{formatCents(ledger.moneyOut)}</td>
                 <td className="help-money" data-total>
-                  <span>Balance </span>
+                  <span>{w.columns.balance} </span>
                   {formatCents(ledger.opening + ledger.moneyIn - ledger.moneyOut)}
                 </td>
               </tr>
@@ -388,31 +392,28 @@ export function LedgerView({
         <div className="help-empty">
           <div className="help-empty-art" style={art} aria-hidden="true" />
           <div>
-            <h3>A quiet month so far.</h3>
+            <h3>{w.quiet.title}</h3>
             <p>
-              Nothing is recorded in {month} yet. {formatFigure(ledger.opening)}{" "}
-              was carried in.
+              {fill(w.quiet.deck, { month, amount: formatFigure(ledger.opening) })}
             </p>
           </div>
         </div>
       )}
 
       {(uncleared !== undefined || onHand || shelf !== undefined) && (
-        <section className="treasury-foot" aria-label="Also in Treasury">
+        <section className="treasury-foot" aria-label={w.foot.label}>
           {onHand && onHand.count > 0 && (
             <div>
               <div>
                 <h2>
-                  {count(onHand.count, "gift is", "gifts are")} not deposited
-                  yet
+                  {w.foot.gifts(onHand.count)}
                 </h2>
                 <p>
-                  {formatFigure(onHand.total)} on hand. Record the trip to the
-                  bank as one deposit, the way the statement will show it.
+                  {w.foot.onHand(formatFigure(onHand.total))}
                 </p>
               </div>
               <Button variant="outline" onClick={onDeposit}>
-                Record a deposit
+                {w.foot.deposit}
               </Button>
             </div>
           )}
@@ -420,17 +421,14 @@ export function LedgerView({
             <div>
               <div>
                 <h2>
-                  {uncleared
-                    ? `${count(uncleared, "entry has", "entries have")} not cleared the bank yet`
-                    : "Everything has cleared the bank"}
+                  {w.foot.uncleared(uncleared)}
                 </h2>
                 <p>
-                  Set the ledger beside your bank statement and see that they
-                  agree.
+                  {w.foot.bankDeck}
                 </p>
               </div>
               <Button variant="outline" onClick={onBank}>
-                Match the bank
+                {w.foot.bank}
               </Button>
             </div>
           )}
@@ -438,17 +436,14 @@ export function LedgerView({
             <div>
               <div>
                 <h2>
-                  {shelf
-                    ? `${count(shelf, "voucher", "vouchers")} on the shelf`
-                    : "The voucher shelf"}
+                  {w.foot.shelf(shelf)}
                 </h2>
                 <p>
-                  Thrift store vouchers on hand. A count, kept apart from the
-                  money.
+                  {room.shelf.deck}
                 </p>
               </div>
               <Button variant="outline" onClick={onShelf}>
-                Open the shelf
+                {w.foot.openShelf}
               </Button>
             </div>
           )}

@@ -134,4 +134,3 @@
   .live-app .team-roster .live-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; }
   .live-app .team-roster .live-row-actions { width: auto; margin: 0; padding: 0; justify-self: end; }
 }
-.live-app .people-part-note { margin: 4px 0 10px; font-size: 15px; color: #68715f; }

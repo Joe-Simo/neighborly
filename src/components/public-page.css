@@ -48,6 +48,8 @@
   .public-words-relief{top:clamp(48px,5.6vw,104px);width:clamp(340px,27vw,420px)}
 }
 @media(min-width:1280px){.public-words section>div{font-size:19px}.public-words-last{font-size:16px}}
+/* Under the widest headline the words go up a step again; the measure in letters stays the same. */
+@media(min-width:1600px){.public-words section>div{font-size:21px}.public-words-last{font-size:17px}.public-page-header>a:last-child{font-size:16px}}
 @media(max-width:900px){
   .public-page-header{height:calc(64px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .public-page-brand{font-size:30px}

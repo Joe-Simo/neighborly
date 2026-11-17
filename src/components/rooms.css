@@ -12,12 +12,19 @@
 .neighborly-rooms li p{margin:8px 0 0;max-width:24em;font-size:17px;line-height:1.5;text-wrap:pretty;opacity:.84}
 .neighborly-free{margin:clamp(4px,1vw,16px) 0 0;font:400 clamp(34px,4.4vw,72px)/1.04 'Newsreader',Georgia,serif;letter-spacing:-.045em;text-wrap:balance}
 .neighborly-free em{color:#365c46}
-/* Set down one after another as the section comes into view. */
+/* The cards are on the desk before the section is reached: a fast drag never crosses bare paper, and nothing fades up from nothing in view. */
 .has-reveal .neighborly-rooms[data-reveal]{translate:none}
-.has-reveal .neighborly-rooms li{opacity:0;transition:opacity .36s linear calc(var(--i) * 60ms)}
-.has-reveal .neighborly-rooms.is-visible li{opacity:1}
-@media(max-width:1100px){
+/* Until a card is wide enough for words beside its picture (about 30 letters to a line), the words lie under it. */
+@media(max-width:1799px){
   .neighborly-rooms li{grid-template-columns:minmax(0,1fr);gap:14px}
+}
+/* From 1101 to 1799 the six cards lie three to a row, so each picture stays near the size it was painted for and its line runs about 32 letters. The middle card of a row sits a little lower. */
+@media(min-width:1101px) and (max-width:1799px){
+  .neighborly-rooms ul{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(24px,2.6vw,40px)}
+  .neighborly-rooms li:nth-child(2n){margin-top:0}
+  .neighborly-rooms li:nth-child(3n+2){margin-top:clamp(12px,1.6vw,28px)}
+  .neighborly-rooms li>div{padding:2px 4px 6px}
+  .neighborly-rooms li p{max-width:16em;text-wrap:balance}
 }
 @media(max-width:700px){
   /* One column: each picture at the column's width, its name and line beneath it. */
@@ -27,6 +34,13 @@
   .neighborly-rooms img{box-shadow:0 1px 2px #51433024,0 10px 24px -10px #51433052}
   .neighborly-free{font-size:clamp(34px,9.4vw,56px)}
 }
-@media(prefers-reduced-motion:reduce){
-  .has-reveal .neighborly-rooms li{opacity:1;transition:none}
+/* From 1600 the cards' words go up a step with the window and still run about 34 letters to a line. */
+@media(min-width:1600px){
+  .neighborly-rooms h3{font-size:27px}
+  .neighborly-rooms li p{max-width:16em;font-size:18px;text-wrap:balance}
+  .neighborly-rooms-kicker{font-size:16px}
+}
+/* From 1800 a card has room for words beside its picture, and the picture grows with the card (never past the 728px it was painted at) so the card is filled, not padded. */
+@media(min-width:1800px){
+  .neighborly-rooms li{grid-template-columns:min(728px,max(360px,56%)) minmax(0,1fr)}
 }

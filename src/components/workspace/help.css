@@ -86,7 +86,7 @@
   margin: 0 0 14px;
 }
 .help-sheet-label::before { content: ""; width: 22px; height: 1px; background: currentColor; }
-.help-sheet h2 { font-size: 34px !important; margin-bottom: 10px !important; }
+.help-sheet h2 { font-size: 34px !important; margin-bottom: 10px !important; overflow-wrap: anywhere; }
 .help-sheet-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 26px 40px; align-items: end; }
 .help-sheet p { margin: 0 0 8px; color: var(--live-muted); line-height: 1.55; max-width: 58ch; }
 .help-sheet .help-why { color: var(--live-ink); }

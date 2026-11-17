@@ -32,18 +32,19 @@ export function LiveCreateForm({
   error: string;
   onSubmit: (command: LiveCommand) => Promise<void>;
 }) {
-  // The announcement is a member's screen, so it speaks their language; the leaders' forms stay English.
-  const { actions, tasks } = useWorkspace().words;
+  // Every form here speaks the reader's language: the members' from the shared tables, the leaders' from this room's.
+  const { actions, tasks, rooms } = useWorkspace().words;
+  const text = rooms.peopleRoom.form;
   const form = actions.announcementForm;
   // Adding a commitment opens from Commitments, a member's room, so its form speaks the reader's language too.
   const own = kind === "commitment" ? actions.commitmentForm : null;
-  // The button names the act. Members' forms say it in their language; leaders' forms stay English.
+  // The button names the act.
   const acts = {
     commitment: actions.commitment,
     timeOff: actions.timeOff,
     task: tasks.add,
-    team: "Create team",
-    meeting: "Plan meeting",
+    team: text.createTeam,
+    meeting: text.planMeeting,
   };
   const suggest = useAction(api.drafts.suggestTeam);
   const [draftDescription, setDraftDescription] = useState("");
@@ -66,15 +67,13 @@ export function LiveCreateForm({
       // This dialog has one field to fill, so it speaks only of the name.
       setDraftNote(
         result.teamName
-          ? `Filled in by the assistant: “${result.teamName}”. Change it if it is not right.`
+          ? text.team.filled(result.teamName)
           : result.notes.includes("Please confirm the team name.")
-            ? "The assistant was not sure of a name in your words, so it left the name blank. Enter it below."
-            : "Your words do not name the team, so the name is blank. Enter it below.",
+            ? text.team.unsure
+            : text.team.unnamed,
       );
     } catch {
-      setDraftNote(
-        "No name could be drafted. Enter the team name below.",
-      );
+      setDraftNote(text.team.failed);
     } finally {
       setPreparing(false);
     }
@@ -157,8 +156,8 @@ export function LiveCreateForm({
       {kind === "team" && (
         <>
           <LiveField
-            label="Describe your team (optional)"
-            help="A name is drafted for you to check. Leave out members’ private details."
+            label={text.team.describe}
+            help={text.team.describeHelp}
           >
             <Textarea
               value={draftDescription}
@@ -172,7 +171,7 @@ export function LiveCreateForm({
             disabled={!draftDescription.trim() || preparing}
             onClick={() => void prepare()}
           >
-            {preparing ? "Preparing…" : "Draft a name"}
+            {preparing ? text.team.preparing : text.team.draft}
           </Button>
           {draftNote && (
             <div className="live-note" role="status">
@@ -187,17 +186,17 @@ export function LiveCreateForm({
                     aria-controls="team-draft-sent"
                     onClick={() => setShowSent(!showSent)}
                   >
-                    {showSent ? "Hide what the assistant saw" : "What the assistant saw"}
+                    {showSent ? text.team.hideSent : text.team.showSent}
                   </button>
                   {showSent && (
                     <span id="team-draft-sent" ref={sentPart} tabIndex={-1} className="paper-rise mt-3 grid scroll-my-24 gap-y-2 text-[15px] leading-snug outline-none">
                       {sent ? (
                         <>
                           <span className="block border-l-2 border-[#cfc5dc] pl-3 font-serif text-[17px]">{sent}</span>
-                          <span>Your words as they were sent, with names, phones, emails and addresses taken out. The assistant writes nothing: the name is copied from your words by fixed rules, and the assistant only says whether your words support it.</span>
+                          <span>{text.team.sent}</span>
                         </>
                       ) : (
-                        <span>Nothing was sent to the assistant. Fixed rules read your words on our own servers, and they copy a name only when a sentence states it plainly.</span>
+                        <span>{text.team.nothingSent}</span>
                       )}
                     </span>
                   )}
@@ -205,7 +204,7 @@ export function LiveCreateForm({
               )}
             </div>
           )}
-          <LiveField label="Team name">
+          <LiveField label={text.team.name}>
             <Input
               name="name"
               required
@@ -214,25 +213,24 @@ export function LiveCreateForm({
               onChange={(event) => setTeamName(event.target.value)}
             />
           </LiveField>
-          <LiveField label="What this team does">
+          <LiveField label={text.team.does}>
             <Textarea name="description" maxLength={1500} rows={3} />
           </LiveField>
         </>
       )}
       {kind === "invite" && (
         <>
-          <LiveField label="Email">
+          <LiveField label={text.invite.email}>
             <Input type="email" name="email" required maxLength={254} />
           </LiveField>
-          <LiveField label="Role">
+          <LiveField label={text.invite.role}>
             <NativeSelect name="role">
-              <option value="member">Member</option>
-              <option value="coordinator">Coordinator</option>
+              <option value="member">{text.invite.member}</option>
+              <option value="coordinator">{text.invite.coordinator}</option>
             </NativeSelect>
           </LiveField>
           <div className="live-note">
-            The invitation’s delivery status will be shown in People. A saved
-            invitation is not a confirmed email delivery.
+            {text.invite.note}
           </div>
         </>
       )}
@@ -240,14 +238,13 @@ export function LiveCreateForm({
         kind === "task" ||
         kind === "meeting" ||
         kind === "announcement") && (
-        <LiveField label={kind === "announcement" ? form.title : (own?.title ?? "Title")}>
+        <LiveField label={kind === "announcement" ? form.title : (own?.title ?? text.title)}>
           <Input name="title" required maxLength={180} />
         </LiveField>
       )}
       {kind === "meeting" && (
         <div className="live-note">
-          Everyone in the conference will be invited. Each person chooses whether
-          to attend.
+          {text.meetingNote}
         </div>
       )}
       {kind === "commitment" && (
@@ -268,16 +265,16 @@ export function LiveCreateForm({
       )}
       {(kind === "commitment" || kind === "meeting" || kind === "timeOff") && (
         <div className="live-form-grid">
-          <LiveField label={kind === "timeOff" ? "First day" : (own?.starts ?? "Starts")}>
+          <LiveField label={kind === "timeOff" ? text.firstDay : (own?.starts ?? text.starts)}>
             {kind === "timeOff" ? <DateField name="start" required /> : <WhenField name="start" required />}
           </LiveField>
-          <LiveField label={kind === "timeOff" ? "Last day" : (own?.ends ?? "Ends")}>
+          <LiveField label={kind === "timeOff" ? text.lastDay : (own?.ends ?? text.ends)}>
             {kind === "timeOff" ? <DateField name="end" required /> : <WhenField name="end" required />}
           </LiveField>
         </div>
       )}
       {(kind === "commitment" || kind === "meeting") && (
-        <LiveField label={own?.where ?? "Where to meet"}>
+        <LiveField label={own?.where ?? text.where}>
           <Input name="location" maxLength={300} required />
         </LiveField>
       )}
@@ -316,20 +313,20 @@ export function LiveCreateForm({
       )}
       {kind === "timeOff" && (
         <LiveField
-          label="Note (optional)"
-          help="Only include what your coordinators need to know."
+          label={text.timeOff.note}
+          help={text.timeOff.noteHelp}
         >
           <Textarea name="note" rows={3} maxLength={1000} />
         </LiveField>
       )}
       {kind === "task" && (
         <>
-          <LiveField label="Due (optional)">
+          <LiveField label={text.task.due}>
             <WhenField name="dueAt" />
           </LiveField>
-          <LiveField label="Owner">
+          <LiveField label={text.task.owner}>
             <NativeSelect name="assigneeId">
-              <option value="">Unassigned</option>
+              <option value="">{text.task.unassigned}</option>
               {data.people.map((person) => (
                 <option value={person.id} key={person.id}>
                   {person.name}
@@ -355,9 +352,9 @@ export function LiveCreateForm({
         <Button type="submit" disabled={pending}>
           {/* Waiting is said in words alone: nothing turns beside them. */}
           {saving ? (
-            kind === "announcement" ? form.saving : (own?.saving ?? "Saving…")
+            kind === "announcement" ? form.saving : (own?.saving ?? text.saving)
           ) : kind === "invite" ? (
-            "Create the meeting invitation"
+            text.createInvitation
           ) : kind === "announcement" ? (
             form.save
           ) : (

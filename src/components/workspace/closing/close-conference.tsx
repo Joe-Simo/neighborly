@@ -30,7 +30,8 @@ const nameKey = (name: string) =>
  * the person is an owner of a real conference, so a room mounts it with one line and no props.
  */
 export function CloseConference() {
-  const { data, isOwner } = useWorkspace();
+  const { data, isOwner, words } = useWorkspace();
+  const w = words.rooms.reports.closing;
   const [open, setOpen] = useState(false);
   if (!isOwner || data.church.sample) return null;
   return (
@@ -41,17 +42,17 @@ export function CloseConference() {
           className="for-good-open"
           onClick={() => setOpen(true)}
         >
-          Close this conference for good
+          {w.open}
         </Button>
         <span className="live-count help-private">
-          <Lock size={14} aria-hidden="true" /> Owners only
+          <Lock size={14} aria-hidden="true" /> {w.owners}
         </span>
       </p>
       {open && (
         <LiveDialog
           // "for good" stays together, so the title breaks as "Close this conference / for good".
-          title={"Close this conference for\u00a0good"}
-          description={`${data.church.name}, and everything in it.`}
+          title={w.title}
+          description={w.deck(data.church.name)}
           onClose={() => setOpen(false)}
         >
           <CloseConferenceForm
@@ -78,6 +79,7 @@ export function CloseConferenceForm({
   church: { id: Id<"churches">; name: string };
   onExport: () => void;
 }) {
+  const w = useWorkspace().words.rooms.reports.closing;
   const close = useMutation(api.closing.close);
   const router = useRouter();
   const { pending, error, save } = useSave();
@@ -98,34 +100,33 @@ export function CloseConferenceForm({
     >
       <dl className="for-good-terms">
         <div>
-          <dt>What goes</dt>
+          <dt>{w.goes}</dt>
           <dd>
-            Every record, call, visit, request, ledger line and file of this
-            conference, and every member’s place and invitation.
+            {w.goesAll}
           </dd>
         </div>
         <div>
-          <dt>What stays</dt>
+          <dt>{w.stays}</dt>
           <dd>
-            Nothing.
+            {w.staysNothing}
           </dd>
         </div>
       </dl>
       {/* A step offered before the last act, never required: the sheet closes and Your files shows the export. */}
       <div className="closing-first">
-        <p>First, if you may need any of it:</p>
+        <p>{w.first}</p>
         <Button type="button" variant="outline" onClick={onExport}>
-          <Download size={18} aria-hidden="true" /> Download your records
+          <Download size={18} aria-hidden="true" /> {w.download}
         </Button>
       </div>
       <NameToConfirm
-        label={`Type ${church.name} to close it`}
+        label={w.type(church.name)}
         name={church.name}
         typed={typed}
         onTyped={setTyped}
       />
-      <p className="for-good-last">This cannot be undone.</p>
-      {error && <LiveFailure message={error} kept="Nothing was closed." />}
+      <p className="for-good-last">{w.final}</p>
+      {error && <LiveFailure message={error} kept={w.kept} />}
       <div className="live-form-actions">
         <LiveWaiting when={pending} />
         <Button
@@ -133,7 +134,7 @@ export function CloseConferenceForm({
           className="for-good-confirm"
           disabled={pending || !agrees}
         >
-          Close this conference
+          {w.close}
         </Button>
       </div>
     </form>

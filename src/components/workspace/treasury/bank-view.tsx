@@ -15,32 +15,37 @@ import { readFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
 import { CountUp, LiveField } from "@/components/workspace/primitives";
 import { figureRoll, parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
+import { formatDate, type Language } from "@/lib/words";
+import { fill } from "@/lib/words/fill";
 import {
+  amountLine,
   categoryLabel,
   dayLabel,
+  dayParts,
   weekDayLabel,
   type Bank,
   type BankEntry,
   type Statement,
+  type TreasuryWords,
 } from "@/components/workspace/treasury/labels";
 
-const count = (n: number) => `${n} ${n === 1 ? "entry" : "entries"}`;
 const art = { backgroundImage: "url(/assets/painted-world/meal.webp)" };
 /** "$214.60 to Demo Power & Light", the way a statement line reads. */
-const line = (entry: BankEntry) =>
-  `${formatFigure(entry.amount)} ${entry.kind === "income" ? "from" : "to"} ${entry.payee}`;
-const under = (entry: BankEntry) =>
+const line = (words: TreasuryWords, entry: BankEntry) => amountLine(words, entry, formatFigure(entry.amount));
+const under = (words: TreasuryWords, entry: BankEntry) =>
   [
-    entry.checkNumber && `Check ${entry.checkNumber}`,
-    entry.reverses ? "Reversal" : categoryLabel(entry.category),
+    entry.checkNumber && words.lines.check(entry.checkNumber),
+    entry.reverses ? words.lines.reversal : categoryLabel(words, entry.category),
   ]
     .filter(Boolean)
     .join(" · ");
 
-const stamp = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+// The day a statement was matched is a moment, written in the reader's own time zone.
+const stamp = (locale: Language, time: number) => formatDate(locale, time, { month: "short", day: "numeric" });
 
 function DateLeaf({ day }: { day: string }) {
-  const [month, date] = dayLabel(day).split(" ");
+  const { words } = useWorkspace();
+  const { month, date } = dayParts(words.locale, day);
   return (
     <div className="live-date-leaf">
       <span>{month}</span>
@@ -77,6 +82,10 @@ export function BankView({
   onUndo: (entry: BankEntry) => void;
   onClearAll: () => void;
 }) {
+  const { words } = useWorkspace();
+  const room = words.rooms.treasury;
+  const w = room.bank;
+  const day = (date: string) => dayLabel(words.locale, date);
   const [statement, setStatement] = useState("");
   // The balance is judged after a pause in typing or on leaving the field, never mid-number.
   const [settled, setSettled] = useState("");
@@ -102,29 +111,29 @@ export function BankView({
     <>
       <dl className="help-figures treasury-figures">
         <div>
-          <dt>Cleared the bank</dt>
+          <dt>{w.figures.cleared}</dt>
           <dd>
             <CountUp value={bank.cleared} format={figureRoll(bank.cleared)} />
-            <small>Your statement should say the same</small>
+            <small>{w.figures.clearedDeck}</small>
           </dd>
         </div>
         <div>
-          <dt>Still on its way</dt>
+          <dt>{w.figures.onItsWay}</dt>
           <dd>
             {onItsWay < 0 ? "− " : ""}
             <CountUp value={Math.abs(onItsWay)} format={figureRoll(Math.abs(onItsWay))} />
             <small>
               {bank.waitingCount
-                ? `${formatFigure(bank.onItsWayIn)} in, ${formatFigure(bank.onItsWayOut)} out`
-                : "Nothing is waiting"}
+                ? fill(w.figures.inOut, { in: formatFigure(bank.onItsWayIn), out: formatFigure(bank.onItsWayOut) })
+                : w.figures.nothing}
             </small>
           </dd>
         </div>
         <div>
-          <dt>In the ledger</dt>
+          <dt>{w.figures.books}</dt>
           <dd>
             <CountUp value={bank.books} format={figureRoll(bank.books)} />
-            <small>On {weekDayLabel(bank.asOf)}</small>
+            <small>{w.figures.on(weekDayLabel(words.locale, bank.asOf))}</small>
           </dd>
         </div>
       </dl>
@@ -133,60 +142,53 @@ export function BankView({
         className={agrees ? "help-sheet paper-fold" : "help-sheet paper-rest"}
         aria-labelledby="treasury-statement-title"
       >
-        <p className="help-sheet-label">Your bank statement</p>
+        <p className="help-sheet-label">{w.statement.label}</p>
         <div className="help-sheet-body">
           <div aria-live="polite">
             {gap === null ? (
               <>
-                <h2 id="treasury-statement-title">What does the statement say?</h2>
+                <h2 id="treasury-statement-title">{w.statement.ask}</h2>
                 <p>
-                  Enter the day it ends and its ending balance. It should equal
-                  what has cleared here.
+                  {w.statement.askDeck}
                 </p>
               </>
             ) : gap === 0 ? (
               <>
                 <h2 id="treasury-statement-title" className="treasury-agree">
-                  <CircleCheck size={26} aria-hidden="true" /> The statement and
-                  the ledger agree.
+                  <CircleCheck size={26} aria-hidden="true" /> {w.statement.agree}
                 </h2>
                 <p className="help-why">
-                  {formatFigure(bank.cleared)} has cleared on both.{" "}
-                  {bank.waitingCount
-                    ? `${count(bank.waitingCount)} still on the way.`
-                    : "Nothing is waiting."}
+                  {w.statement.clearedBoth(formatFigure(bank.cleared))}{" "}
+                  {w.statement.onTheWay(bank.waitingCount)}
                 </p>
                 {kept ? (
-                  <p>Saved for the {dayLabel(bank.asOf)} statement.</p>
+                  <p>{w.statement.saved(day(bank.asOf))}</p>
                 ) : statements && says !== null ? (
                   <div className="help-actions treasury-keep">
                     <Button disabled={busy !== null} onClick={() => onKeep(says)}>
-                      {busy === "keep" ? "Keeping…" : "Keep this statement"}
+                      {busy === "keep" ? w.statement.keeping : w.statement.keep}
                     </Button>
                   </div>
                 ) : (
-                  <p>Your marks are saved for the {dayLabel(bank.asOf)} statement.</p>
+                  <p>{w.statement.marksSaved(day(bank.asOf))}</p>
                 )}
               </>
             ) : (
               <>
                 <h2 id="treasury-statement-title" data-waiting>
-                  Off by {formatFigure(Math.abs(gap))}.
+                  {w.statement.offBy(formatFigure(Math.abs(gap)))}
                 </h2>
                 <p className="help-why">
-                  The statement shows {formatFigure(Math.abs(gap))}{" "}
-                  {gap > 0 ? "more" : "less"} than what has cleared here.
+                  {(gap > 0 ? w.statement.more : w.statement.less)(formatFigure(Math.abs(gap)))}
                 </p>
                 <p>
-                  Mark each entry below that the statement lists. If they are
-                  all marked, look for a bank fee or a deposit that is not in
-                  the ledger yet.
+                  {w.statement.look}
                 </p>
               </>
             )}
           </div>
           <div className="help-inline treasury-statement">
-            <LiveField label="Statement ends">
+            <LiveField label={w.statement.ends}>
               <DateField
                 name="asOf"
                 max={bank.today}
@@ -198,7 +200,7 @@ export function BankView({
               />
             </LiveField>
             <label>
-              Ending balance
+              {w.statement.balance}
               <Input
                 name="statement"
                 inputMode="decimal"
@@ -216,18 +218,18 @@ export function BankView({
       {error && (
         <div className="live-error" role="alert">
           <p>{error}</p>
-          <p className="live-error-recovery">Nothing was changed.</p>
+          <p className="live-error-recovery">{w.unchanged}</p>
         </div>
       )}
       {done && <HelpDone className="treasury-notice" focus={false}>{done}</HelpDone>}
 
       <section className="treasury-waiting treasury-uncleared" aria-labelledby="treasury-uncleared-title">
         <div className="live-section-head">
-          <h2 id="treasury-uncleared-title">Not cleared yet</h2>
+          <h2 id="treasury-uncleared-title">{w.waiting.title}</h2>
           <span className="live-count">
             {bank.waitingCount > bank.waiting.length + deposits.length
-              ? `The oldest ${bank.waiting.length + deposits.length} of ${bank.waitingCount}`
-              : count(bank.waitingCount)}
+              ? fill(w.waiting.oldest, { shown: bank.waiting.length + deposits.length, count: bank.waitingCount })
+              : w.entries(bank.waitingCount)}
           </span>
         </div>
         {bank.waiting.length || deposits.length ? (
@@ -237,11 +239,7 @@ export function BankView({
                 {confirming ? (
                   <>
                     <p role="status">
-                      Mark {count(bank.waitingCount)} cleared:{" "}
-                      {formatFigure(bank.onItsWayIn)} in and{" "}
-                      {formatFigure(bank.onItsWayOut)} out, through{" "}
-                      {dayLabel(bank.asOf)}. You can take any of them back
-                      after.
+                      {fill(w.waiting.confirm(bank.waitingCount), { in: formatFigure(bank.onItsWayIn), out: formatFigure(bank.onItsWayOut), day: day(bank.asOf) })}
                     </p>
                     <div className="help-actions">
                       <Button
@@ -249,27 +247,26 @@ export function BankView({
                         disabled={busy !== null}
                         onClick={() => setConfirming(false)}
                       >
-                        Cancel
+                        {room.cancel}
                       </Button>
                       <Button disabled={busy !== null} onClick={onClearAll}>
                         {busy === "all"
-                          ? "Marking…"
-                          : `Mark ${count(bank.waitingCount)} cleared`}
+                          ? w.waiting.marking
+                          : w.waiting.markAll(bank.waitingCount)}
                       </Button>
                     </div>
                   </>
                 ) : (
                   <>
                     <p>
-                      Your first statement? Start with everything, then take
-                      back the few the bank has not shown.
+                      {w.waiting.first}
                     </p>
                     <Button
                       variant="outline"
                       disabled={busy !== null}
                       onClick={() => setConfirming(true)}
                     >
-                      Everything through {dayLabel(bank.asOf)} has cleared
+                      {w.waiting.everything(day(bank.asOf))}
                     </Button>
                   </>
                 )}
@@ -280,21 +277,20 @@ export function BankView({
                 <div className="help-row" key={deposit.id}>
                   <DateLeaf day={deposit.date} />
                   <div>
-                    <h3>{formatFigure(deposit.total)} deposit</h3>
+                    <h3>{w.waiting.deposit(formatFigure(deposit.total))}</h3>
                     <p>
-                      <span className="treasury-day">{dayLabel(deposit.date)} · </span>
-                      {deposit.count} {deposit.count === 1 ? "gift" : "gifts"} carried
-                      to the bank together
+                      <span className="treasury-day">{day(deposit.date)} · </span>
+                      {w.waiting.carried(deposit.count)}
                       {deposit.memo && ` · ${deposit.memo}`}
                     </p>
                   </div>
                   <Button
                     variant="outline"
                     disabled={busy !== null}
-                    aria-label={`Mark cleared: ${formatFigure(deposit.total)} deposit`}
+                    aria-label={w.waiting.markLabel(w.waiting.deposit(formatFigure(deposit.total)))}
                     onClick={() => onClearDeposit(deposit)}
                   >
-                    {busy === deposit.id ? "Marking…" : "Mark cleared"}
+                    {busy === deposit.id ? w.waiting.marking : w.waiting.mark}
                   </Button>
                 </div>
               ))}
@@ -302,19 +298,19 @@ export function BankView({
                 <div className="help-row" key={entry.id}>
                   <DateLeaf day={entry.date} />
                   <div>
-                    <h3>{line(entry)}</h3>
+                    <h3>{line(room, entry)}</h3>
                     <p>
-                      <span className="treasury-day">{dayLabel(entry.date)} · </span>
-                      {under(entry)}
+                      <span className="treasury-day">{day(entry.date)} · </span>
+                      {under(room, entry)}
                     </p>
                   </div>
                   <Button
                     variant="outline"
                     disabled={busy !== null}
-                    aria-label={`Mark cleared: ${line(entry)}`}
+                    aria-label={w.waiting.markLabel(line(room, entry))}
                     onClick={() => onClear(entry)}
                   >
-                    {busy === entry.id ? "Marking…" : "Mark cleared"}
+                    {busy === entry.id ? w.waiting.marking : w.waiting.mark}
                   </Button>
                 </div>
               ))}
@@ -324,11 +320,9 @@ export function BankView({
           <div className="help-empty">
             <div className="help-empty-art" style={art} aria-hidden="true" />
             <div>
-              <h3>Everything has cleared.</h3>
+              <h3>{w.waiting.emptyTitle}</h3>
               <p>
-                Every entry through {dayLabel(bank.asOf)} is marked against a
-                statement. New entries will wait here until the bank shows
-                them.
+                {w.waiting.emptyDeck(day(bank.asOf))}
               </p>
             </div>
           </div>
@@ -338,30 +332,30 @@ export function BankView({
       {bank.lately.length > 0 && (
         <section className="treasury-lately" aria-labelledby="treasury-lately-title">
           <div className="live-section-head">
-            <h2 id="treasury-lately-title">Cleared lately</h2>
-            <span className="live-count">The newest {bank.lately.length}</span>
+            <h2 id="treasury-lately-title">{w.lately.title}</h2>
+            <span className="live-count">{w.lately.newest(bank.lately.length)}</span>
           </div>
           <div className="live-list">
             {bank.lately.map((entry) => (
               <div className="help-row" data-quiet="" key={entry.id}>
                 <DateLeaf day={entry.date} />
                 <div>
-                  <h3>{line(entry)}</h3>
+                  <h3>{line(room, entry)}</h3>
                   <p>
-                    <span className="treasury-day">{dayLabel(entry.date)} · </span>
-                    {under(entry)}
+                    <span className="treasury-day">{day(entry.date)} · </span>
+                    {under(room, entry)}
                     {entry.clearedOn &&
-                      ` · On the ${dayLabel(entry.clearedOn)} statement`}
+                      ` · ${w.lately.onStatement(day(entry.clearedOn))}`}
                   </p>
                 </div>
                 <Button
                   variant="link"
                   className="treasury-take-back"
                   disabled={busy !== null}
-                  aria-label={`Mark not cleared: ${line(entry)}`}
+                  aria-label={w.lately.undoLabel(line(room, entry))}
                   onClick={() => onUndo(entry)}
                 >
-                  Mark not cleared
+                  {w.lately.undo}
                 </Button>
               </div>
             ))}
@@ -372,16 +366,16 @@ export function BankView({
       {statements && statements.length > 0 && (
         <section className="treasury-moves" aria-labelledby="treasury-statements-title">
           <div className="live-section-head">
-            <h2 id="treasury-statements-title">Statements matched</h2>
-            <span className="live-count">The newest {statements.length}</span>
+            <h2 id="treasury-statements-title">{w.matched.title}</h2>
+            <span className="live-count">{w.lately.newest(statements.length)}</span>
           </div>
           <ul className="treasury-lines">
             {statements.map((row) => (
               <li key={row.id}>
-                <span>{dayLabel(row.endsOn)}</span>
+                <span>{day(row.endsOn)}</span>
                 <span>{formatCents(row.balance)}</span>
                 <span>
-                  Matched by {row.agreedBy} on {stamp.format(row.agreedAt)}
+                  {fill(w.matched.by, { name: row.agreedBy, day: stamp(words.locale, row.agreedAt) })}
                 </span>
               </li>
             ))}
@@ -401,7 +395,10 @@ export function BankRoom({
   churchId: Id<"churches">;
   onBack: () => void;
 }) {
-  const { setHeading } = useWorkspace();
+  const { setHeading, words } = useWorkspace();
+  const room = words.rooms.treasury;
+  const w = room.bank;
+  const day = (date: string) => dayLabel(words.locale, date);
   // The head's way back always runs the newest onBack without redrawing the head.
   const back = useRef(onBack);
   useEffect(() => {
@@ -424,12 +421,12 @@ export function BankRoom({
   if (bank && bank !== shown) setShown(bank);
   useLayoutEffect(() => {
     setHeading({
-      title: "Match the bank",
-      deck: "Mark each entry your statement shows. What is left is still on its way.",
-      back: { label: "Ledger", run: () => back.current() },
+      title: w.title,
+      deck: w.deck,
+      back: { label: room.ledgerName, run: () => back.current() },
     });
     return () => setHeading(null);
-  }, [setHeading]);
+  }, [setHeading, w.title, w.deck, room.ledgerName]);
 
   if (!shown) return <LedgerLoading />;
 
@@ -456,7 +453,7 @@ export function BankRoom({
       onKeep={(balance) =>
         change("keep", async () => {
           await agreeStatement({ churchId, endsOn: shown.asOf, balance });
-          return `The ${dayLabel(shown.asOf)} statement is kept at ${formatFigure(balance)}.`;
+          return fill(w.done.kept, { day: day(shown.asOf), amount: formatFigure(balance) });
         })
       }
       onClearDeposit={(deposit) =>
@@ -466,19 +463,19 @@ export function BankRoom({
             depositId: deposit.id,
             clearedOn: shown.asOf,
           });
-          return `The ${formatFigure(deposit.total)} deposit is marked cleared.`;
+          return w.done.deposit(formatFigure(deposit.total));
         })
       }
       onClear={(entry) =>
         change(entry.id, async () => {
           await setCleared({ churchId, entryId: entry.id, clearedOn: shown.asOf });
-          return `${line(entry)} is marked cleared.`;
+          return w.done.cleared(line(room, entry));
         })
       }
       onUndo={(entry) =>
         change(entry.id, async () => {
           await setCleared({ churchId, entryId: entry.id, clearedOn: null });
-          return `${line(entry)} is back with the entries not cleared yet.`;
+          return w.done.undone(line(room, entry));
         })
       }
       onClearAll={() =>
@@ -489,7 +486,7 @@ export function BankRoom({
             marked += step.marked;
             if (!step.more) break;
           }
-          return `${count(marked)} through ${dayLabel(shown.asOf)} marked cleared.`;
+          return fill(w.done.through(marked), { day: day(shown.asOf) });
         })
       }
     />

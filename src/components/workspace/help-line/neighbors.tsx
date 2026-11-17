@@ -12,10 +12,9 @@ import { Input } from "@/components/ui/input";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { NeighborForm } from "@/components/workspace/help-line/forms";
 import { LiveDialog } from "@/components/workspace/live-dialog";
+import { fill } from "@/lib/words/fill";
 import {
-  household,
   initials,
-  kindLabels,
   recordHref,
   shortMoney,
   type NeighborList,
@@ -47,16 +46,17 @@ export function NeighborsSection() {
 }
 
 function Neighbors() {
-  const { data, format, setHeadAction } = useWorkspace();
+  const { data, format, setHeadAction, words } = useWorkspace();
+  const text = words.rooms.neighbors;
   const router = useRouter();
   const churchId = data.church.id;
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
   const add = useCallback(() => setAdding(true), []);
   useLayoutEffect(() => {
-    setHeadAction({ label: "Add a neighbor", run: add, plus: true });
+    setHeadAction({ label: text.add, run: add, plus: true });
     return () => setHeadAction(null);
-  }, [setHeadAction, add]);
+  }, [setHeadAction, add, text.add]);
   const list = useQuery(api.neighbors.list, {
     churchId,
     search: useDeferredValue(search).trim() || undefined,
@@ -68,8 +68,8 @@ function Neighbors() {
         <Search size={20} aria-hidden="true" />
         <Input
           type="search"
-          aria-label="Find a neighbor"
-          placeholder="Name, phone or street"
+          aria-label={text.list.find}
+          placeholder={text.list.findBy}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -87,8 +87,8 @@ function Neighbors() {
       )}
       {adding && (
         <LiveDialog
-          title="Add a neighbor"
-          description="We check first that they are not already on file."
+          title={text.add}
+          description={text.list.addHelp}
           onClose={() => setAdding(false)}
         >
           <NeighborForm
@@ -114,6 +114,9 @@ function NeighborRow({
   neighbor: Row;
   format: Workspace["format"];
 }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.neighbors;
+  const size = neighbor.adults + neighbor.children;
   // A row says the name and the street, never the phone: that is inside the record, where each opening is logged.
   return (
             <div className="help-row help-neighbor">
@@ -130,11 +133,11 @@ function NeighborRow({
                 <p className="help-facts">
                   <span>
                     {neighbor.address && <span>{neighbor.address}</span>}
-                    <span className="help-household">{household(neighbor.adults, neighbor.children)}</span>
+                    <span className="help-household">{size === 1 ? text.home.livesAlone : text.home.householdOf(size)}</span>
                     <span className="help-last">
                       {neighbor.lastHelpedAt
-                        ? `last helped ${format(neighbor.lastHelpedAt, { day: undefined, year: "numeric" })}`
-                        : "not helped yet"}
+                        ? text.list.lastHelped(format(neighbor.lastHelpedAt, { day: undefined, year: "numeric" }))
+                        : text.list.notHelped}
                     </span>
                   </span>
                 </p>
@@ -142,15 +145,17 @@ function NeighborRow({
               <div className="live-row-actions">
                 {neighbor.openRequest && (
                   <span className="live-status help-asks" data-state="waiting">
-                    {kindLabels[neighbor.openRequest.kind]}
-                    {neighbor.openRequest.amount > 0 &&
-                      `, ${shortMoney(neighbor.openRequest.amount)}`}
+                    {neighbor.openRequest.amount > 0
+                      ? fill(text.request.amount, {
+                          kind: words.kinds[neighbor.openRequest.kind],
+                          amount: shortMoney(neighbor.openRequest.amount),
+                        })
+                      : words.kinds[neighbor.openRequest.kind]}
                   </span>
                 )}
                 {neighbor.visitAt && (
                   <span className="live-status">
-                    Visit{" "}
-                    {format(neighbor.visitAt, { weekday: "short" })}
+                    {text.list.visitOn(format(neighbor.visitAt, { weekday: "short" }))}
                   </span>
                 )}
                 <ArrowRight className="help-row-arrow" size={20} aria-hidden="true" />
@@ -173,9 +178,11 @@ export function NeighborListView({
   bring?: boolean;
   onAdd: () => void;
 }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.neighbors;
   const add = (
     <Button variant="outline" onClick={onAdd}>
-      Add a neighbor
+      {text.add}
     </Button>
   );
   const shown = list.rows.length + list.waitingRows.length;
@@ -195,16 +202,18 @@ export function NeighborListView({
   return (
     <>
       <div className="live-section-head">
-        <h2>Neighbors</h2>
+        <h2>{text.list.title}</h2>
         <span className="live-count help-private">
             <Lock size={14} aria-hidden="true" />
             {(() => {
               // The whole conference, from its running figures; before they are first counted, what is shown.
               const households = list.households ?? shown;
               const waitingAll = list.waiting ?? waiting.length;
-              return `${households} ${households === 1 ? "household" : "households"}${waitingAll ? ` · ${waitingAll} waiting for a decision` : ""}`;
-            })()}{" "}
-            · each opening is logged
+              // Three facts in a row, each whole, with a dot between them.
+              return [text.list.households(households), waitingAll ? text.list.waitingCount(waitingAll) : "", text.list.logged]
+                .filter(Boolean)
+                .join(" · ");
+            })()}
         </span>
       </div>
       {shown ? (
@@ -214,10 +223,10 @@ export function NeighborListView({
               className="help-letter"
               key={letter}
               data-waiting={letter === "waiting" ? "" : undefined}
-              aria-label={letter === "waiting" ? "Waiting for a decision" : letter || undefined}
+              aria-label={letter === "waiting" ? text.list.waiting : letter || undefined}
             >
               {letter === "waiting" ? (
-                <h3 className="help-waiting-head">Waiting for a decision</h3>
+                <h3 className="help-waiting-head">{text.list.waiting}</h3>
               ) : (
                 letter && (
                   <h3 className="help-letter-head" aria-hidden="true">
@@ -239,33 +248,30 @@ export function NeighborListView({
           {shown > open && (
             <p className="help-more">
               <Button variant="outline" onClick={() => setOpen(open + FIRST)}>
-                Show more
+                {text.list.more}
               </Button>
-              <span>
-                {open} of {shown}
-              </span>
+              <span>{fill(text.list.shownOf, { shown: open, all: shown })}</span>
             </p>
           )}
         </>
       ) : searching ? (
-        <HelpEmpty title="No one by that name." action={add}>
-          Try the start of a name, a phone number or a street. If they are new
-          to you, add them.
+        <HelpEmpty title={text.list.noMatch.title} action={add}>
+          {text.list.noMatch.body}
         </HelpEmpty>
       ) : (
-        <HelpEmpty title="No neighbors yet." action={add}>
-          The first person who calls the help line starts the list.
+        <HelpEmpty title={text.list.none.title} action={add}>
+          {text.list.none.body}
         </HelpEmpty>
       )}
       {list.more && (
         <p className="help-footnote">
-          Showing the first {shown}. Search to find anyone else.
+          {text.list.first(shown)}
         </p>
       )}
       {bring && (
         <p className="help-bring">
           <Button asChild variant="link" className="help-text-action">
-            <Link href="/app/tools">Bring in a file</Link>
+            <Link href="/app/tools">{text.list.bring}</Link>
           </Button>
         </p>
       )}

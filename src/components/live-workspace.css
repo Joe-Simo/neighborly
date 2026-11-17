@@ -333,6 +333,8 @@
 }
 .live-field {
   display: grid;
+  /* Beside a field whose help runs to two lines (it does in Spanish), this one keeps its box at the same height. */
+  align-content: start;
   gap: 7px;
   font-size: 15px;
 }
@@ -360,6 +362,8 @@
 }
 .live-form-actions {
   display: flex;
+  /* Two presses whose words do not fit one line (Spanish runs longer) take a line each, never pushing the sheet wide. */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;

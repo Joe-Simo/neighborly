@@ -14,10 +14,6 @@ import { LiveEmpty } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 import { useWorkspace } from "@/components/workspace/context";
-import { words as wordsFor } from "@/lib/words";
-
-/** The owner's tools (invitations, managing access) stay English whole, role words included, so no line is half one language. */
-const ownerRoles: Record<string, string> = { owner: "Owner", coordinator: "Coordinator", member: "Member" };
 
 /** "Ana Lucía Prieto" as "AP": the first and last name, so two people with one first name still differ. */
 export const initials = (name: string) => {
@@ -38,6 +34,8 @@ function Address({ email, oneLine }: { email: string; oneLine?: boolean }) {
 /** The second step of removing someone for good: what goes, what stays, and their name typed before the button wakes. */
 function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceData["people"][number]; churchId: LiveWorkspaceData["church"]["id"]; onClose: () => void }) {
   const remove = useMutation(api.people.remove);
+  const { words } = useWorkspace();
+  const text = words.rooms.peopleRoom.remove;
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState("");
@@ -45,7 +43,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
   const key = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   const matches = key(typed) === key(person.name);
   return (
-    <LiveDialog title="Remove this person" description={`Everything we keep about ${person.name} in this conference, for good.`} onClose={onClose}>
+    <LiveDialog title={text.title} description={text.deck(person.name)} onClose={onClose}>
       <form
         className="people-remove"
         onSubmit={async (event) => {
@@ -57,27 +55,27 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
             await remove({ churchId, personId: person.id, typedName: typed });
             onClose();
           } catch (cause) {
-            setFailed(readFailure(cause, "They could not be removed just now."));
+            setFailed(readFailure(cause, text.failed, words.states.offlineSave));
             setBusy(false);
           }
         }}
       >
         <dl className="for-good-terms">
           <div>
-          <dt>What goes</dt>
-          <dd>Their name and email address, their places on teams, their time off, and their sign-in to this conference. What they had promised to do from now on is open again. Planned visits they were part of will need a new second visitor.</dd>
+          <dt>{text.goes}</dt>
+          <dd>{text.goesDetail}</dd>
           </div>
           <div>
-          <dt>What stays</dt>
-          <dd>The visits and hours they logged stay in the year’s counts under “A former member”.</dd>
+          <dt>{text.stays}</dt>
+          <dd>{text.staysDetail}</dd>
           </div>
         </dl>
-        <NameToConfirm label={`Type ${person.name} to remove them`} name={person.name} typed={typed} onTyped={setTyped} />
-        <p className="for-good-last">This cannot be undone.</p>
-        {failed && <LiveFailure message={failed} kept="Nothing was removed." />}
+        <NameToConfirm label={text.typeName(person.name)} name={person.name} typed={typed} onTyped={setTyped} />
+        <p className="for-good-last">{text.last}</p>
+        {failed && <LiveFailure message={failed} kept={text.kept} />}
         <div className="live-form-actions">
           <Button type="submit" className="for-good-confirm" disabled={!matches || busy}>
-            {busy ? "Removing…" : "Remove this person"}
+            {busy ? text.removing : text.confirm}
           </Button>
         </div>
       </form>
@@ -87,9 +85,9 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
 
 export function PeopleSection() {
   const { data, pending, isOwner, confirm: setConfirmation, words } = useWorkspace();
-  // The owner's tools here are English, so they name the place in English: a conference, or a group.
-  const group = wordsFor("en", data.church.wordSet).terms.group;
   const roles: Record<string, string> = words.people.roles;
+  const text = words.rooms.peopleRoom;
+  const invitedAs: Record<string, string> = text.invitations.invitedAs;
   const [managingId, setManagingId] = useState<string | null>(null);
   const managing = data.people.find((person) => person.id === managingId);
   const [removing, setRemoving] = useState(false);
@@ -111,7 +109,7 @@ export function PeopleSection() {
                 <h3>
                   {opens ? (
                     // The one control of the row: its target is the whole row (people.css).
-                    <button type="button" className="people-row-open" aria-label={`Manage ${person.name}`} onClick={() => setManagingId(person.id)}>
+                    <button type="button" className="people-row-open" aria-label={text.manage.open(person.name)} onClick={() => setManagingId(person.id)}>
                       {person.name}
                     </button>
                   ) : (
@@ -139,7 +137,7 @@ export function PeopleSection() {
         removing ? (
           <RemoveForGood person={managing} churchId={data.church.id} onClose={() => { setRemoving(false); setManagingId(null); }} />
         ) : (
-        <LiveDialog title={managing.name} description={<><span className="people-address-full">{managing.email.slice(0, managing.email.lastIndexOf("@"))}<wbr />{managing.email.slice(managing.email.lastIndexOf("@"))}</span>{managing.active ? (ownerRoles[managing.role] ?? managing.role) : "Access removed"} · {managing.approved ? "Ready to serve" : "Not yet ready to serve"}</>} onClose={() => setManagingId(null)}>
+        <LiveDialog title={managing.name} description={<><span className="people-address-full">{managing.email.slice(0, managing.email.lastIndexOf("@"))}<wbr />{managing.email.slice(managing.email.lastIndexOf("@"))}</span>{managing.active ? (roles[managing.role] ?? managing.role) : words.people.removed} · {managing.approved ? text.manage.ready : words.people.waiting}</>} onClose={() => setManagingId(null)}>
           <div className="live-manage">
                 <Button
                   variant="outline"
@@ -150,12 +148,12 @@ export function PeopleSection() {
                     setManagingId(null);
                     setConfirmation({
                       title: managing.approved
-                        ? `Mark ${managing.name} not ready to serve?`
-                        : `Mark ${managing.name} ready to serve?`,
+                        ? text.manage.markNotReadyTitle(managing.name)
+                        : text.manage.markReadyTitle(managing.name),
                       body: managing.approved
-                        ? "Open requests to cover are withdrawn. Commitments already accepted stay."
-                        : "They can be asked to cover and to serve on teams.",
-                      action: managing.approved ? "Mark not ready" : "Mark ready to serve",
+                        ? text.manage.markNotReadyBody
+                        : text.manage.markReadyBody,
+                      action: managing.approved ? text.manage.markNotReady : text.manage.markReady,
                       command: {
                         type: "setApproval",
                         personId: managing.id,
@@ -164,8 +162,8 @@ export function PeopleSection() {
                     });
                   }}
                 >
-                  {managing.approved ? "Mark not ready" : "Mark ready to serve"}
-                  <small>{managing.approved ? "They can no longer be asked to cover. Accepted commitments stay." : "They can be asked to cover and to serve on teams."}</small>
+                  {managing.approved ? text.manage.markNotReady : text.manage.markReady}
+                  <small>{managing.approved ? text.manage.markNotReadyNote : text.manage.markReadyNote}</small>
                 </Button>
                 <Button
                   variant="outline"
@@ -175,9 +173,9 @@ export function PeopleSection() {
                     {
                     setManagingId(null);
                     setConfirmation({
-                      title: `${managing.active ? "Remove" : "Restore"} ${group} access?`,
-                      action: managing.active ? "Remove access" : "Restore access",
-                      body: "This changes access to your conference. Accepted commitments remain recorded; pending cover requests are withdrawn when access is removed.",
+                      title: managing.active ? text.manage.removeAccessTitle : text.manage.restoreAccessTitle,
+                      action: managing.active ? text.manage.removeAccess : text.manage.restoreAccess,
+                      body: text.manage.accessBody,
                       command: {
                         type: "setMembership",
                         personId: managing.id,
@@ -190,36 +188,34 @@ export function PeopleSection() {
                     });
                   }}
                 >
-                  {managing.active ? "Remove access" : "Restore access"}
-                  <small>{managing.active ? "They can no longer sign in to this conference. Their record stays." : "They can sign in to this conference again."}</small>
+                  {managing.active ? text.manage.removeAccess : text.manage.restoreAccess}
+                  <small>{managing.active ? text.manage.removeAccessNote : text.manage.restoreAccessNote}</small>
                 </Button>
           </div>
           {/* The one act here that cannot be undone: a quiet link under a hairline, as on a neighbor's record. */}
           <p className="for-good">
             <Button variant="ghost" className="for-good-open" disabled={pending} onClick={() => setRemoving(true)}>
-              Remove this person for good
+              {text.manage.forGood}
             </Button>
             <span className="live-count help-private">
-              <Lock size={14} aria-hidden="true" /> Owners only
+              <Lock size={14} aria-hidden="true" /> {text.manage.ownersOnly}
             </span>
           </p>
         </LiveDialog>
         )
       )}
       {isOwner && (
-        <section className="live-section" lang="en">
-          <h2>Invitations</h2>
-          {words.locale !== "en" && <p className="people-part-note" lang={words.locale}>{words.shell.partInEnglish}</p>}
+        <section className="live-section">
+          <h2>{text.invitations.title}</h2>
           <p className="live-deck people-deck">
-            An invitation gives someone a way to join. It never accepts
-            work on their behalf.
+            {text.invitations.deck}
           </p>
           {data.invitations.length ? (
             // Rows like the people above, in the same columns. No folded corner: this wait is on someone else.
             <div className="live-list people-invitations">
               {data.invitations.map((invite) => {
                 const waits = invite.status === "pending";
-                const role = `Invited as ${(ownerRoles[invite.role] ?? invite.role).toLowerCase()}`;
+                const role = invitedAs[invite.role] ?? text.invitations.invitedAsOther(invite.role.toLowerCase());
                 return (
                   <div className="live-row live-person-row people-row people-invited" key={invite.id}>
                     <div className="live-person">
@@ -236,7 +232,7 @@ export function PeopleSection() {
                     <div className="live-meta">
                       <span className="people-role-wide">{role}</span>
                       <span data-waits={waits ? "" : undefined} data-joined={invite.status === "accepted" ? "" : undefined}>
-                        {waits ? "Waiting for them to join" : invite.status === "accepted" ? "Joined" : invite.status}
+                        {waits ? text.invitations.waiting : invite.status === "accepted" ? text.invitations.joined : invite.status}
                       </span>
                     </div>
                     <div className="live-row-actions">
@@ -245,12 +241,12 @@ export function PeopleSection() {
                           variant="ghost"
                           size="sm"
                           disabled={pending}
-                          aria-label={`Revoke the invitation to ${invite.email}`}
+                          aria-label={text.invitations.revokeLabel(invite.email)}
                           onClick={() =>
                             setConfirmation({
-                              title: "Revoke this invitation?",
-                              body: "The link will stop working. This does not remove anyone who has already joined.",
-                              action: "Revoke invitation",
+                              title: text.invitations.revokeTitle,
+                              body: text.invitations.revokeBody,
+                              action: text.invitations.revoke,
                               command: {
                                 type: "revokeInvitation",
                                 invitationId: invite.id,
@@ -258,7 +254,7 @@ export function PeopleSection() {
                             })
                           }
                         >
-                          Revoke invitation
+                          {text.invitations.revoke}
                         </Button>
                       )}
                     </div>
@@ -267,8 +263,8 @@ export function PeopleSection() {
               })}
             </div>
           ) : (
-            <LiveEmpty title="No open invitations.">
-              Invite people when you’re ready to bring them into this {group}.
+            <LiveEmpty title={text.invitations.emptyTitle}>
+              {text.invitations.emptyBody}
             </LiveEmpty>
           )}
         </section>

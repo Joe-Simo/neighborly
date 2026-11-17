@@ -1,5 +1,7 @@
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../../convex/_generated/api";
+import { formatDate, type Language, type Words } from "@/lib/words";
+import { fill } from "@/lib/words/fill";
 
 export type Ledger = FunctionReturnType<typeof api.treasury.ledger>;
 export type LedgerEntry = Ledger["entries"][number];
@@ -11,71 +13,86 @@ export type Gift = FunctionReturnType<typeof api.treasury.undeposited>[number];
 export type Kind = FunctionReturnType<typeof api.treasury.kinds>[number];
 export type Shelf = FunctionReturnType<typeof api.treasury.voucherShelf>;
 
+/** The category a twinning gift is stored under: read to tell one apart, never shown as written. */
 export const TWINNING_GIFT = "Twinning gift";
-export const incomeSources = [
-  ["collection", "Parish collection"],
-  ["walk", "Friends of the Poor Walk"],
-  ["donation", "Donation"],
-  ["twinning", "Twinning received"],
-  ["opening", "Opening balance"],
-] as const;
-export type IncomeSource = (typeof incomeSources)[number][0];
-export const spendingKinds = [
-  ["pantry", "Pantry purchase"],
-  ["supplies", "Supplies"],
-  ["dues", "Council dues"],
-  ["fee", "Bank fee"],
-  ["twinning", "Twinning gift to another conference"],
-  ["other", "Other spending"],
-] as const;
-export type SpendingKind = (typeof spendingKinds)[number][0];
+export const incomeSources = ["collection", "walk", "donation", "twinning", "opening"] as const;
+export type IncomeSource = (typeof incomeSources)[number];
+export const spendingKinds = ["pantry", "supplies", "dues", "fee", "twinning", "other"] as const;
+export type SpendingKind = (typeof spendingKinds)[number];
 
-const kinds: Record<string, string> = {
-  rent: "Rent",
-  utility: "Utilities",
-  food: "Food",
-  voucher: "Thrift store voucher",
-  other: "Other help",
+/** The treasury's own words, in the person's language. */
+export type TreasuryWords = Words["rooms"]["treasury"];
+
+/** The ledger stores its own kinds under these names; each is said in the person's language. A kind a person named is not here. */
+const stored: Record<string, (words: TreasuryWords) => string> = {
+  rent: (words) => words.kinds.rent,
+  utility: (words) => words.kinds.utility,
+  food: (words) => words.kinds.food,
+  voucher: (words) => words.kinds.voucher,
+  other: (words) => words.kinds.other,
+  "Parish collection": (words) => words.sources.collection,
+  "Friends of the Poor Walk": (words) => words.sources.walk,
+  Donation: (words) => words.sources.donation,
+  "Twinning received": (words) => words.sources.twinning,
+  "Opening balance": (words) => words.sources.opening,
+  "Pantry purchase": (words) => words.spending.pantry,
+  Supplies: (words) => words.spending.supplies,
+  "Council dues": (words) => words.spending.dues,
+  "Bank fee": (words) => words.spending.fee,
+  "Other spending": (words) => words.spending.other,
+  [TWINNING_GIFT]: (words) => words.twinningGift,
 };
+const said = new Map(Object.entries(stored));
 /** Payments carry the request's kind as their category; money in carries its source as written. */
-export const categoryLabel = (category: string) => kinds[category] ?? category;
+export const categoryLabel = (words: TreasuryWords, category: string) => said.get(category)?.(words) ?? category;
 
 const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
 
+/** "$214.60 to Demo Power & Light", the way a statement line reads. `amount` is already written as money. */
+export const amountLine = (words: TreasuryWords, entry: Pick<BankEntry, "kind" | "payee">, amount: string) =>
+  fill(entry.kind === "income" ? words.lines.amountFrom : words.lines.amountTo, { amount, name: entry.payee });
+
 /** The two lines a ledger row reads as: what it was, then who was paid or where it came from. */
-export function entryLines(entry: BankEntry) {
-  const note = [entry.checkNumber && `Check ${entry.checkNumber}`, entry.memo]
+export function entryLines(words: TreasuryWords, entry: BankEntry) {
+  const say = words.lines;
+  const check = entry.checkNumber ? say.check(entry.checkNumber) : "";
+  const note = [check, entry.memo]
     .filter(Boolean)
     .map((part) => ` · ${part}`)
     .join("");
   if (entry.reverses)
     return {
-      title: `Reversed: ${lowerFirst(entry.summary ?? categoryLabel(entry.category))}, ${lowerFirst(entry.memo)}`,
-      detail: `${entry.kind === "income" ? "Back from" : "Taken back from"} ${entry.payee}`,
+      title: fill(say.reversedTitle, { what: lowerFirst(entry.summary ?? categoryLabel(words, entry.category)), why: lowerFirst(entry.memo) }),
+      detail: entry.kind === "income" ? say.backFrom(entry.payee) : say.takenBackFrom(entry.payee),
     };
   if (entry.summary)
-    return { title: entry.summary, detail: `Paid to ${entry.payee}${note}` };
+    return { title: entry.summary, detail: `${say.paidTo(entry.payee)}${note}` };
   if (entry.category === TWINNING_GIFT)
-    return { title: TWINNING_GIFT, detail: `To ${entry.payee}${note}` };
-  const who = `${entry.kind === "income" ? "From" : "Paid to"} ${entry.payee}${entry.checkNumber ? ` · Check ${entry.checkNumber}` : ""}`;
+    return { title: words.twinningGift, detail: `${say.to(entry.payee)}${note}` };
+  const who = `${entry.kind === "income" ? say.from(entry.payee) : say.paidTo(entry.payee)}${check ? ` · ${check}` : ""}`;
+  const category = categoryLabel(words, entry.category);
   return entry.memo
-    ? { title: entry.memo, detail: `${entry.category} · ${who}` }
-    : { title: entry.category, detail: who };
+    ? { title: entry.memo, detail: `${category} · ${who}` }
+    : { title: category, detail: who };
 }
 
 // Ledger days are calendar days, not moments, so they are formatted at noon UTC and never shift.
-const at = (day: string) => new Date(`${day}T12:00:00Z`);
-const format = (options: Intl.DateTimeFormatOptions) =>
-  new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" });
-const shortDay = format({ month: "short", day: "numeric" });
-const weekDay = format({ weekday: "long", month: "short", day: "numeric" });
-const monthOnly = format({ month: "long" });
-const monthAndYear = format({ month: "long", year: "numeric" });
+const at = (day: string) => Date.parse(`${day}T12:00:00Z`);
+const write = (locale: Language, day: string, options: Intl.DateTimeFormatOptions) =>
+  formatDate(locale, at(day), { ...options, timeZone: "UTC" });
+/** Where a heading or a line begins with a month, which Spanish writes small. */
+const upperFirst = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-export const dayLabel = (day: string) => shortDay.format(at(day));
-export const weekDayLabel = (day: string) => weekDay.format(at(day));
+export const dayLabel = (locale: Language, day: string) => write(locale, day, { month: "short", day: "numeric" });
+/** The two pieces of a date leaf: the short month and the day's number. */
+export const dayParts = (locale: Language, day: string) => ({
+  month: write(locale, day, { month: "short" }),
+  date: write(locale, day, { day: "numeric" }),
+});
+export const weekDayLabel = (locale: Language, day: string) =>
+  write(locale, day, { weekday: "long", month: "short", day: "numeric" });
 /** "November", or "November 2025" when it is not this year. */
-export const monthLabel = (month: string, today: string) =>
-  (month.slice(0, 4) === today.slice(0, 4) ? monthOnly : monthAndYear).format(
-    at(`${month}-01`),
-  );
+export const monthLabel = (locale: Language, month: string, today: string) =>
+  write(locale, `${month}-01`, month.slice(0, 4) === today.slice(0, 4) ? { month: "long" } : { month: "long", year: "numeric" });
+/** The same month where it stands alone or opens a line: "Noviembre". */
+export const monthTitle = (locale: Language, month: string, today: string) => upperFirst(monthLabel(locale, month, today));

@@ -9,13 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Workspace } from "@/components/workspace/context";
+import { useWorkspace, type Workspace } from "@/components/workspace/context";
+import { fill } from "@/lib/words/fill";
 import { LiveField } from "@/components/workspace/primitives";
 import { FormEnd } from "@/components/workspace/help-line/forms";
 import {
   accountKinds,
   cents,
-  householdDetail,
   livesHere,
   shortMoney,
   total,
@@ -25,6 +25,8 @@ import { useSave } from "@/components/workspace/help-line/use-save";
 
 type Target = { churchId: Id<"churches">; neighborId: Id<"neighbors"> };
 export type HomeStep = "details" | "people" | "money" | "accounts";
+/** The kinds of account in the order the form offers them. */
+const kinds: (keyof typeof accountKinds)[] = ["landlord", "utility", "other"];
 export type Accounts = { kind: keyof typeof accountKinds; name: string; accountNumber: string; phone: string }[];
 
 /**
@@ -44,6 +46,9 @@ export function AtHome({
   onShowNumbers: () => void;
   onStep: (step: HomeStep) => void;
 }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.neighbors;
+  const at = text.atHome;
   const { household, money, accounts } = record;
   const change = (step: HomeStep, empty: boolean, add: string) => (
     <Button
@@ -52,53 +57,58 @@ export function AtHome({
       className="help-text-action"
       onClick={() => onStep(step)}
     >
-      {empty ? add : "Change"}
+      {empty ? add : at.change}
     </Button>
   );
   const left = money ? total(money.income) - total(money.expenses) : 0;
   return (
     <section className="live-section" aria-labelledby="at-home-title">
       <div className="live-section-head">
-        <h2 id="at-home-title">At home</h2>
+        <h2 id="at-home-title">{at.title}</h2>
       </div>
       <dl className="help-home">
         <div>
-          <dt>Reach them</dt>
+          <dt>{at.reach}</dt>
           <dd>
             {/* The address and the language stand in the quiet line under the name. */}
-            <span className="help-tel">{record.neighbor.phone || "No phone on file"}</span>
+            <span className="help-tel">{record.neighbor.phone || at.noPhone}</span>
             {record.neighbor.email && <small>{record.neighbor.email}</small>}
           </dd>
           {change("details", false, "")}
         </div>
         <div>
-          <dt>Lives here</dt>
+          <dt>{at.lives}</dt>
           <dd>
             {household.length
               ? livesHere(household)
-              : householdDetail(record.neighbor.adults, record.neighbor.children)}
+              : record.neighbor.children
+                ? fill(text.home.adultsAndChildren, {
+                    adults: text.home.adults(record.neighbor.adults),
+                    children: text.home.children(record.neighbor.children),
+                  })
+                : text.home.adults(record.neighbor.adults)}
           </dd>
-          {change("people", !household.length, "Say who lives here")}
+          {change("people", !household.length, at.sayWho)}
         </div>
         <div>
-          <dt>Each month</dt>
+          <dt>{at.month}</dt>
           {money ? (
             <dd>
-              {shortMoney(total(money.income))} in, {shortMoney(total(money.expenses))} out
+              {fill(at.flow, { in: shortMoney(total(money.income)), out: shortMoney(total(money.expenses)) })}
               <small data-short={left < 0 ? "" : undefined}>
-                {left < 0
-                  ? `${shortMoney(-left)} short`
-                  : `${shortMoney(left)} left over`}
-                , as of {format(money.updatedAt, { weekday: undefined, year: "numeric" })}
+                {fill(left < 0 ? at.shortAsOf : at.leftAsOf, {
+                  amount: shortMoney(Math.abs(left)),
+                  date: format(money.updatedAt, { weekday: undefined, year: "numeric" }),
+                })}
               </small>
             </dd>
           ) : (
-            <dd>Not written down yet.</dd>
+            <dd>{at.noMonth}</dd>
           )}
-          {change("money", !money, "Add income and expenses")}
+          {change("money", !money, at.addMonth)}
         </div>
         <div>
-          <dt>Accounts</dt>
+          <dt>{at.accounts}</dt>
           {accounts.length ? (
             <dd>
               <ul className="help-accounts">
@@ -109,7 +119,7 @@ export function AtHome({
                       <span>
                         {numbers?.[index]
                           ? numbers[index].accountNumber
-                          : `ending ${account.ending}`}
+                          : at.ending(account.ending)}
                       </span>
                     )}
                   </li>
@@ -117,10 +127,10 @@ export function AtHome({
               </ul>
             </dd>
           ) : (
-            <dd>None on file.</dd>
+            <dd>{at.noAccounts}</dd>
           )}
           <span className="help-home-actions">
-            {change("accounts", !accounts.length, "Add an account")}
+            {change("accounts", !accounts.length, at.addAccount)}
             {!numbers && accounts.some((account) => account.ending) && (
               <Button
                 type="button"
@@ -128,13 +138,13 @@ export function AtHome({
                 className="help-text-action"
                 onClick={onShowNumbers}
               >
-                Show numbers
+                {at.showNumbers}
               </Button>
             )}
           </span>
           {numbers && (
             <p className="help-noted" role="status">
-              Noted on the record that you looked.
+              {at.looked}
             </p>
           )}
         </div>
@@ -150,10 +160,13 @@ function Lines<Line>({
   lines,
   blank,
   add,
+  remove,
   onChange,
   children,
 }: {
   legend: string;
+  /** What the button that takes a line away is called, by the line's number. */
+  remove: (line: number) => string;
   /** How a line is laid out: two boxes side by side, three, or four in two rows. */
   shape: "pair" | "three" | "four";
   lines: Line[];
@@ -177,7 +190,7 @@ function Lines<Line>({
             type="button"
             variant="ghost"
             size="icon"
-            aria-label={`Remove line ${index + 1} of ${legend.toLowerCase()}`}
+            aria-label={remove(index + 1)}
             onClick={() => onChange(lines.filter((_, at) => at !== index))}
           >
             <X aria-hidden="true" />
@@ -207,6 +220,7 @@ export function PeopleForm({
 }) {
   const saveHousehold = useMutation(api.neighbors.saveHousehold);
   const { pending, error, save } = useSave();
+  const text = useWorkspace().words.rooms.neighbors.people;
   const [people, setPeople] = useState(
     household.length
       ? household.map((person) => ({
@@ -240,43 +254,44 @@ export function PeopleForm({
       }}
     >
       <Lines
-        legend="People"
+        legend={text.legend}
         shape="three"
         lines={people}
         blank={{ relationship: "", child: true, born: "" }}
-        add="Add a person"
+        add={text.add}
+        remove={text.removeLine}
         onChange={setPeople}
       >
         {(person, set, index) => (
           <>
-            <LiveField label="Who">
+            <LiveField label={text.who}>
               <Input
                 value={person.relationship}
-                placeholder={index ? "Son" : "Mother"}
+                placeholder={index ? text.next : text.first}
                 required
                 onChange={(event) => set({ relationship: event.target.value })}
               />
             </LiveField>
-            <LiveField label="Born">
+            <LiveField label={text.born}>
               <Input
                 value={person.born}
                 inputMode="numeric"
                 pattern="\d{4}"
-                placeholder="Year"
+                placeholder={text.year}
                 onChange={(event) => set({ born: event.target.value })}
               />
             </LiveField>
             {person.born.trim() ? (
               <span />
             ) : (
-              <LiveField label="Adult or child">
+              <LiveField label={text.age}>
                 <NativeSelect
                   className="w-full"
                   value={person.child ? "child" : "adult"}
                   onChange={(event) => set({ child: event.target.value === "child" })}
                 >
-                  <option value="adult">Adult</option>
-                  <option value="child">Child</option>
+                  <option value="adult">{text.adult}</option>
+                  <option value="child">{text.child}</option>
                 </NativeSelect>
               </LiveField>
             )}
@@ -284,9 +299,9 @@ export function PeopleForm({
         )}
       </Lines>
       <p className="help-form-note">
-        No names are kept for the rest of the household, and a birth year is enough to know an age.
+        {text.note}
       </p>
-      <FormEnd error={error} pending={pending} submit="Save household" />
+      <FormEnd error={error} pending={pending} submit={text.save} />
     </form>
   );
 }
@@ -305,16 +320,17 @@ export function MoneyForm({
 }) {
   const saveHousehold = useMutation(api.neighbors.saveHousehold);
   const { pending, error, save } = useSave();
+  const text = useWorkspace().words.rooms.neighbors.money;
   const [income, setIncome] = useState(
-    money ? typed(money.income) : [{ label: "Wages", amount: "" }],
+    money ? typed(money.income) : [{ label: text.starts.wages, amount: "" }],
   );
   const [expenses, setExpenses] = useState(
     money
       ? typed(money.expenses)
       : [
-          { label: "Rent", amount: "" },
-          { label: "Electric", amount: "" },
-          { label: "Food", amount: "" },
+          { label: text.starts.rent, amount: "" },
+          { label: text.starts.electric, amount: "" },
+          { label: text.starts.food, amount: "" },
         ],
   );
   const [amountError, setAmountError] = useState("");
@@ -327,14 +343,14 @@ export function MoneyForm({
   const left = sum(income) - sum(expenses);
   const rows = (line: (typeof income)[number], set: (next: Partial<typeof line>) => void) => (
     <>
-      <LiveField label="What">
+      <LiveField label={text.what}>
         <Input
           value={line.label}
           required
           onChange={(event) => set({ label: event.target.value })}
         />
       </LiveField>
-      <LiveField label="Dollars">
+      <LiveField label={text.dollars}>
         <Input
           value={line.amount}
           inputMode="decimal"
@@ -355,7 +371,7 @@ export function MoneyForm({
             line.amount === null ? [] : [{ label: line.label, amount: line.amount }],
           );
         if (whole(coming).length < coming.length || whole(going).length < going.length)
-          return setAmountError("Enter each amount in dollars, such as 450.");
+          return setAmountError(text.amountNeeded);
         setAmountError("");
         const outcome = await save(() =>
           saveHousehold({
@@ -367,33 +383,35 @@ export function MoneyForm({
       }}
     >
       <Lines
-        legend="Coming in"
+        legend={text.comingIn}
         shape="pair"
         lines={income}
         blank={{ label: "", amount: "" }}
-        add="Add income"
+        add={text.addIncome}
+        remove={text.removeComingIn}
         onChange={setIncome}
       >
         {rows}
       </Lines>
       <Lines
-        legend="Going out"
+        legend={text.goingOut}
         shape="pair"
         lines={expenses}
         blank={{ label: "", amount: "" }}
-        add="Add an expense"
+        add={text.addExpense}
+        remove={text.removeGoingOut}
         onChange={setExpenses}
       >
         {rows}
       </Lines>
       <p className="help-form-note" aria-live="polite">
-        {shortMoney(sum(income))} in, {shortMoney(sum(expenses))} out:{" "}
+        {fill(text.sum.lead, { in: shortMoney(sum(income)), out: shortMoney(sum(expenses)) })}{" "}
         <strong>
-          {left < 0 ? `${shortMoney(-left)} short` : `${shortMoney(left)} left over`}
+          {fill(left < 0 ? text.sum.short : text.sum.left, { amount: shortMoney(Math.abs(left)) })}
         </strong>{" "}
-        each month.
+        {text.sum.tail}
       </p>
-      <FormEnd error={amountError || error} pending={pending} submit="Save the month" />
+      <FormEnd error={amountError || error} pending={pending} submit={text.save} />
     </form>
   );
 }
@@ -417,6 +435,7 @@ export function AccountsForm({
 }) {
   const saveHousehold = useMutation(api.neighbors.saveHousehold);
   const { pending, error, save } = useSave();
+  const text = useWorkspace().words.rooms.neighbors.accounts;
   type Line = { kind: keyof typeof accountKinds; name: string; phone: string; from?: number; typedNumber: string | null };
   const blank: Line = { kind: "utility", name: "", phone: "", typedNumber: "" };
   const [lines, setLines] = useState<Line[]>(
@@ -442,16 +461,17 @@ export function AccountsForm({
       }}
     >
       <Lines
-        legend="Accounts"
+        legend={text.legend}
         shape="four"
         lines={lines}
         blank={blank}
-        add="Add an account"
+        add={text.add}
+        remove={text.removeLine}
         onChange={setLines}
       >
         {(account, set) => (
           <>
-            <LiveField label="Kind">
+            <LiveField label={text.kind}>
               <NativeSelect
                 className="w-full"
                 value={account.kind}
@@ -466,34 +486,34 @@ export function AccountsForm({
                   })
                 }
               >
-                {Object.entries(accountKinds).map(([kind, label]) => (
+                {kinds.map((kind) => (
                   <option key={kind} value={kind}>
-                    {label}
+                    {text.kinds[kind]}
                   </option>
                 ))}
               </NativeSelect>
             </LiveField>
-            <LiveField label="Who is paid">
+            <LiveField label={text.paid}>
               <Input
                 value={account.name}
                 required
                 onChange={(event) => set({ name: event.target.value })}
               />
             </LiveField>
-            <LiveField label="Account number">
+            <LiveField label={text.number}>
               <Input
                 value={
                   account.typedNumber ??
                   (account.from === undefined ? "" : (numbers?.[account.from]?.accountNumber ?? ""))
                 }
                 placeholder={
-                  !numbers && onFile(account)?.ending ? `Ending ${onFile(account)?.ending}` : undefined
+                  !numbers && onFile(account)?.ending ? text.ending(onFile(account)?.ending ?? "") : undefined
                 }
                 autoComplete="off"
                 onChange={(event) => set({ typedNumber: event.target.value })}
               />
             </LiveField>
-            <LiveField label="Their phone">
+            <LiveField label={text.phone}>
               <Input
                 value={account.phone}
                 type="tel"
@@ -505,10 +525,10 @@ export function AccountsForm({
       </Lines>
       <p className="help-form-note">
         {numbers
-          ? "Noted on the record that you looked."
-          : "Numbers on file stay covered and are kept as they are unless you type a new one."}
+          ? text.looked
+          : text.covered}
       </p>
-      <FormEnd error={error} pending={pending} submit="Save accounts">
+      <FormEnd error={error} pending={pending} submit={text.save}>
         {!numbers && accounts.some((account) => account.ending) && (
           <Button
             type="button"
@@ -516,7 +536,7 @@ export function AccountsForm({
             className="help-text-action"
             onClick={onShowNumbers}
           >
-            Show numbers
+            {text.showNumbers}
           </Button>
         )}
       </FormEnd>
@@ -527,6 +547,7 @@ export function AccountsForm({
 export function NoteForm({ target, onSaved }: { target: Target; onSaved: () => void }) {
   const addNote = useMutation(api.neighbors.addNote);
   const { pending, error, save } = useSave();
+  const text = useWorkspace().words.rooms.neighbors.note;
   return (
     <form
       className="live-form help-form"
@@ -537,13 +558,13 @@ export function NoteForm({ target, onSaved }: { target: Target; onSaved: () => v
         if (outcome.saved) onSaved();
       }}
     >
-      <LiveField label="Note">
+      <LiveField label={text.label}>
         <Textarea name="body" rows={5} required autoFocus />
       </LiveField>
       <p className="help-form-note">
-        It is signed with your name and today’s date, and it cannot be changed afterwards.
+        {text.signed}
       </p>
-      <FormEnd error={error} pending={pending} submit="Add note" />
+      <FormEnd error={error} pending={pending} submit={text.save} />
     </form>
   );
 }

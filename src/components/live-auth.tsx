@@ -441,6 +441,9 @@ export function LiveAuth({
               )}
             </div>
           )}
+          {/* Where Clerk draws its human check when it asks for one at sign-up: on the sheet, above the button it holds
+              back, and not in a window of Clerk's own over the page. Empty, and no taller than nothing, when it asks for none. */}
+          {flow === "signUp" && <div id="clerk-captcha" data-cl-language={language} data-cl-theme="light" data-cl-size="flexible" />}
           {messages}
           <Button type="submit" disabled={busy}>
             {submitIcon}

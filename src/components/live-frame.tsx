@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LiveApp } from "@/components/live-app";
 import type { LiveEntryIntent } from "@/components/live-auth";
@@ -54,8 +54,9 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
     return () => document.removeEventListener("click", step, true);
   }, []);
 
-  // The tab names the room; the server only does so on a fresh load.
-  useEffect(() => {
+  // The tab names the room; the server only does so on a fresh load. Set before paint, so the room's own
+  // effect (shell.tsx), which knows the person's language, has the last word.
+  useLayoutEffect(() => {
     if (area) document.title = `${areaTitles[area]} · Kind Helps`;
   }, [area]);
 

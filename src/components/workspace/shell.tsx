@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import type { LiveArea } from "@/components/workspace/areas";
 import { readFailure } from "@/components/workspace/failure";
-import { LiveLoading } from "@/components/workspace/primitives";
+import { LaunchMark, LiveLoading } from "@/components/workspace/primitives";
 import { LiveConnection, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
 import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -117,11 +117,14 @@ export function LiveWorkspace({
   // Areas the words do not cover yet keep their English line.
   const menu: Partial<Record<LiveArea, string>> = words.menu;
   const actions: Partial<Record<ActionKind, string>> = words.actions;
-  // A leaders' room is English throughout: its head, its dialogs, its notices and whatever shared piece
-  // reads the workspace's words inside it. The bar and the menu stay in the person's own language.
-  const english = navigation.some((item) => item.id === area && "leadersOnly" in item);
-  const roomWords = english ? wordsFor("en", data.church.wordSet) : words;
-  const translatedHeadings: Partial<Record<LiveArea, { title: string; deck: string }>> = roomWords.headings;
+  const sheets = words.rooms.sheets;
+  // The browser tab names the room in the person's language, in the menu's own words.
+  const tabTitle = menu[area];
+  useEffect(() => {
+    if (tabTitle) document.title = `${tabTitle} · Kind Helps`;
+  }, [tabTitle]);
+  // Every room reads in the person's own language, the leaders' rooms included (words/rooms).
+  const translatedHeadings: Partial<Record<LiveArea, { title: string; deck: string }>> = words.headings;
   const ownPerson = data.people.find((person) => person.id === data.user.id);
   const isOwner = ownPerson?.role === "owner";
   const selected = selectedCommitment;
@@ -161,8 +164,8 @@ export function LiveWorkspace({
       if (command.type === "invite")
         setNotice(
           result?.delivery === "queued"
-            ? "Invitation created and email queued. Delivery is not yet confirmed."
-            : "Invitation created. No email was sent.",
+            ? words.rooms.sheets.invite.queued
+            : words.rooms.sheets.invite.noEmail,
         );
       else if (success) {
         setNotice(success);
@@ -231,7 +234,7 @@ export function LiveWorkspace({
     if (!current) return false;
     setError("");
     setUndo(undefined);
-    setNotice(roomWords.states.upToDate);
+    setNotice(words.states.upToDate);
     return true;
   });
   useEffect(() => {
@@ -320,6 +323,9 @@ export function LiveWorkspace({
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
   const [roomIn, setRoomIn] = useState(false);
   if (shown && !roomIn) setRoomIn(true);
+  // Until then the bar and the menu are held with the room (`data-shell-held`, paper.css): on a visit straight to
+  // /app they were drawn at once, a few frames ahead of a room still on its way. Only a lost connection shows
+  // them early, so that someone with no room to wait for still has the menu and the way out.
   // The page's layout wraps the shell in a `.live-app` of its own, and that is the first one a cover finds:
   // it carries the same mark for as long as the shell does.
   useEffect(() => {
@@ -329,6 +335,13 @@ export function LiveWorkspace({
     return () => {
       delete frame.dataset.roomIn;
     };
+  }, [roomIn]);
+  const shellHeld = !roomIn && !lost;
+  // Shown in that same frame: a button that eases everything it changes would otherwise come a frame or two late.
+  useLayoutEffect(() => {
+    if (!roomIn) return;
+    for (const part of app.current?.querySelectorAll(":scope > .live-header, .live-nav") ?? [])
+      for (const move of part.getAnimations({ subtree: true })) if (move instanceof CSSTransition) move.finish();
   }, [roomIn]);
   // Once the first room is shown, the other rooms' pictures are fetched quietly behind it.
   const others = menuItems.map((item) => headings[item.id].art.picture).join(" ");
@@ -367,10 +380,11 @@ export function LiveWorkspace({
         outcomeNotice.current?.focus({ preventScroll: true }),
       ),
   };
-  const roomWorkspace = english ? { ...workspace, words: roomWords } : workspace;
   return (
     <WorkspaceProvider value={workspace}>
-    <div className="live-app" lang={words.locale} ref={app} data-room-in={roomIn ? "" : undefined} data-room-shown={shown ? "" : undefined} data-room-whole={settled ? "" : undefined}>
+    <div className="live-app" lang={words.locale} ref={app} data-room-in={roomIn ? "" : undefined} data-shell-held={shellHeld ? "" : undefined} data-room-shown={shown ? "" : undefined} data-room-whole={settled ? "" : undefined}>
+      {/* The launch screen's mark stays where it was until the room takes its place: one wait, one picture. */}
+      {shellHeld && <LaunchMark />}
       <a className="live-skip" href="#workspace-content">{words.shell.skip}</a>
       <header className="live-header" ref={bar} data-scrolled={barNow.scrolled ? "" : undefined}>
         <Link href="/" className="live-wordmark">
@@ -436,7 +450,7 @@ export function LiveWorkspace({
             </Link>
           ))}
         </nav>
-        <WorkspaceProvider value={roomWorkspace}>
+        <WorkspaceProvider value={workspace}>
         <RoomStill area={area} column={column}>
         <RoomShown value={shown}>
         <main
@@ -447,7 +461,7 @@ export function LiveWorkspace({
           data-room={heading.room}
           data-room-held={shown ? undefined : ""}
           aria-busy={shown ? undefined : true}
-          lang={roomWords.locale}
+          lang={words.locale}
           style={{ "--room-relief": `url(/assets/relief/relief-${heading.art.picture}-640.webp)` } as CSSProperties}
         >
           {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. */}
@@ -455,7 +469,7 @@ export function LiveWorkspace({
             <p className="live-opening" role="status">
               {/* A room held because the connection is down says that, not that it is opening: the strip that
                   would say so is inside the column that is not seen yet. The same status line, so it is read out. */}
-              <span className="text-balance">{lost ? `${roomWords.states.offlineTitle} ${roomWords.states.offlineRoom}` : roomWords.states.opening}</span>
+              <span className="text-balance">{lost ? `${words.states.offlineTitle} ${words.states.offlineRoom}` : words.states.opening}</span>
             </p>
           )}
           <div className="live-page-head" data-rested={rested ? "" : undefined}>
@@ -473,13 +487,10 @@ export function LiveWorkspace({
               )}
               <p className="live-kicker">
                 {churchName}
-                {data.church.sample ? ` · ${roomWords.shell.sample}` : ""}
+                {data.church.sample ? ` · ${words.shell.sample}` : ""}
               </p>
               <h1>{heading.title}</h1>
               <p className="live-deck">{heading.deck}</p>
-              {words.locale !== "en" && (english || !translatedHeadings[area]) && (
-                <p className="!mt-4 text-[15px] text-[#68715f]">{roomWords.shell.roomInEnglish}</p>
-              )}
             </div>
             <div className="live-head-actions" key={`actions-${area}`}>
               {primary &&
@@ -487,8 +498,7 @@ export function LiveWorkspace({
                 (data.canCoordinate && area === "commitments") ||
                 area === "time-off") && (
                 // A room's head button is always outline: the solid fill belongs to the decision on a sheet.
-                // An owner's tool that is not in this language yet says so to a screen reader, as its room would.
-                <Button variant="outline" lang={words.locale !== "en" && primary !== "task" && !actions[primary] ? "en" : undefined} data-opens="" onClick={() => open(primary)}>
+                <Button variant="outline" data-opens="" onClick={() => open(primary)}>
                   <Plus size={17} aria-hidden="true" />
                   {actName(primary)}
                 </Button>
@@ -519,14 +529,11 @@ export function LiveWorkspace({
           {invitationLink && (
             <div className="live-success">
               <p>
-                {invitationDelivery === "queued"
-                  ? "Invitation created and email queued."
-                  : "Invitation created. No email was sent."}{" "}
-                Share this private link with the invited person:
+                {invitationDelivery === "queued" ? sheets.invite.linkQueued : sheets.invite.linkNoEmail}
               </p>
               <Input
                 readOnly
-                aria-label="Private invitation link"
+                aria-label={sheets.invite.linkLabel}
                 value={invitationLink}
                 onFocus={(event) => event.currentTarget.select()}
               />
@@ -535,7 +542,7 @@ export function LiveWorkspace({
                 size="sm"
                 onClick={() => setInvitationLink("")}
               >
-                Dismiss
+                {sheets.invite.dismiss}
               </Button>
             </div>
           )}
@@ -558,7 +565,7 @@ export function LiveWorkspace({
           <AsidePlace key={`aside-${area}`} on={wide}>
           <div className="live-room" key={area}>
             <RoomBoundary key={area}>
-              {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Suspense fallback={<LiveLoading label={roomWords.states.opening} />}><Section /></Suspense>}
+              {roomWaiting ? <LiveLoading label={words.states.opening} /> : <Suspense fallback={<LiveLoading label={words.states.opening} />}><Section /></Suspense>}
               {pagination}
             </RoomBoundary>
           </div>
@@ -568,18 +575,18 @@ export function LiveWorkspace({
         </RoomStill>
         </WorkspaceProvider>
       </div>
-      <WorkspaceProvider value={roomWorkspace}>
+      <WorkspaceProvider value={workspace}>
           <LiveDialog
             open={dialog !== null}
             onClose={() => leaveDialog(() => setDialog(null))}
             title={dialog && actName(dialog)}
             description={
               dialog === "invite"
-                ? "They’ll choose to join your conference."
+                ? sheets.invite.deck
                 : dialog === "commitment"
                   ? words.actions.commitmentTimes(zoneName(data.church.timeZone, words.locale))
                   : dialog === "meeting"
-                  ? `Times are ${zoneName(data.church.timeZone)}.`
+                  ? words.actions.commitmentTimes(zoneName(data.church.timeZone, words.locale))
                   : dialog === "timeOff"
                     ? words.timeOffForm.teamSees
                     : dialog === "announcement"
@@ -606,7 +613,7 @@ export function LiveWorkspace({
                     saving={pending && saveFrom === "create"}
                     error={saveFrom === "create" ? error : ""}
                     onSubmit={(command) =>
-                      performThenClose(() => setDialog(null), command, command.type === "createTask" ? words.tasks.added(command.title) : "Saved.")
+                      performThenClose(() => setDialog(null), command, command.type === "createTask" ? words.tasks.added(command.title) : sheets.saved)
                     }
                   />
                 )
@@ -636,9 +643,8 @@ export function LiveWorkspace({
         <LiveDialog
           open={editingCommitment !== null}
           onClose={() => leaveDialog(() => setEditingCommitment(null))}
-          title={<>Edit commitment</>}
-          description={<>Times are {zoneName(data.church.timeZone)}. You’ll review the changes before
-                saving.</>}
+          title={sheets.edit.title}
+          description={sheets.edit.deck(zoneName(data.church.timeZone, words.locale))}
         >
             {editingCommitment && (
               <LiveCommitmentEditor
@@ -652,7 +658,7 @@ export function LiveWorkspace({
                   performThenClose(
                     () => setEditingCommitment(null),
                     command,
-                    "Commitment updated. Material changes require a new acceptance.",
+                    sheets.edit.done,
                   )
                 }
               />
@@ -676,12 +682,12 @@ export function LiveWorkspace({
                 onClick={() => leaveDialog(() => setConfirmation(null))}
                 disabled={held}
               >
-                Go back
+                {sheets.goBack}
               </Button>
               <Button
                 disabled={pending}
                 onClick={() => {
-                  if (confirmation) void performThenClose(() => setConfirmation(null), confirmation.command, "Updated.");
+                  if (confirmation) void performThenClose(() => setConfirmation(null), confirmation.command, sheets.updated);
                 }}
               >
                 {confirmation?.action}
@@ -695,10 +701,7 @@ export function LiveWorkspace({
           description={<>{release &&
                   `${release.title} · ${when(release.start, release.end)}`}</>}
         >
-            <p>
-              This releases this date only. Your other commitments and your place
-              on the team stay the same. The date will need cover.
-            </p>
+            <p>{sheets.release.body}</p>
             {saveFrom === "release" && error && (
               <div className="live-error" role="alert">
                 {error}
@@ -711,7 +714,7 @@ export function LiveWorkspace({
                 disabled={held}
                 onClick={() => leaveDialog(() => setRelease(null))}
               >
-                Keep commitment
+                {sheets.release.keep}
               </Button>
               <Button
                 disabled={pending}
@@ -724,7 +727,7 @@ export function LiveWorkspace({
                     );
                 }}
               >
-                Confirm change
+                {sheets.release.confirm}
               </Button>
             </div>
         </LiveDialog>

@@ -10,15 +10,13 @@ import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { LiveFailure, useConnectionLost } from "@/components/workspace/states";
 import { useWorkspace } from "@/components/workspace/context";
-import { words as wordsFor } from "@/lib/words";
 import { initials } from "@/components/workspace/volunteer/people";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
 export function TeamsSection() {
   const { data, pending, isOwner, perform, words } = useWorkspace();
-  // These lines are the leaders' and stay English, so they name the place in English: a conference, or a group.
-  const group = wordsFor("en", data.church.wordSet).terms.group;
   const t = words.teams;
+  const text = words.rooms.peopleRoom.teams;
   // Each opening of the dialog is its own object, so an answer that comes late can tell whether the person is
   // still in the opening it was asked from, even if the same team's dialog has been opened again since.
   const [addingTo, setAddingTo] = useState<{ team: LiveWorkspaceData["teams"][number] } | null>(null);
@@ -90,14 +88,13 @@ export function TeamsSection() {
         ))
       ) : (
         <LiveEmpty title={t.emptyTitle}>
-          Give your first team a name, then add people when they join
-          your {group}.
+          {text.emptyBody}
         </LiveEmpty>
       )}
       {addingTo && (
         <LiveDialog
-          title={`Add a member to ${addingTo.team.name}`}
-          description="They get an invitation to the team. Joining never accepts a commitment for them."
+          title={text.addTo(addingTo.team.name)}
+          description={text.addDeck}
           onClose={() => setAddingTo(null)}
         >
           {candidates.length ? (
@@ -112,7 +109,7 @@ export function TeamsSection() {
                     variant="outline"
                     size="sm"
                     disabled={pending}
-                    aria-label={`Add ${person.name}`}
+                    aria-label={text.addLabel(person.name)}
                     onClick={async () => {
                       const from = addingTo;
                       setFailedIn(null);
@@ -125,13 +122,13 @@ export function TeamsSection() {
                       else setFailedIn(from);
                     }}
                   >
-                    Add
+                    {text.add}
                   </Button>
                 </div>
               ))}
             </div>
           ) : (
-            <p>Everyone in your {group} is already on this team.</p>
+            <p>{text.everyone}</p>
           )}
           {/* Below the list, so nothing above it moves when it comes. Nothing was typed here, so there is no second line about what was kept. */}
           {failedIn === addingTo && <LiveFailure message={words.states.notSaved} kept="" />}
@@ -163,7 +160,9 @@ function LiveTeamRoster({
   pending: boolean;
   add: () => void;
 }) {
-  const t = useWorkspace().words.teams;
+  const { words } = useWorkspace();
+  const t = words.teams;
+  const text = words.rooms.peopleRoom.teams;
   const [open, setOpen] = useState(false);
   const roster = usePaginatedQuery(
     api.pages.teamRosterPage,
@@ -197,15 +196,15 @@ function LiveTeamRoster({
           </Button>
         )}
         {team.canCoordinate && (
-          <Button variant="outline" size="sm" lang="en" onClick={add}>
-            <Plus size={15} aria-hidden="true" /> Add a member
+          <Button variant="outline" size="sm" onClick={add}>
+            <Plus size={15} aria-hidden="true" /> {text.addMember}
           </Button>
         )}
       </div>
       {managing && (
         <LiveDialog
           title={managing.name}
-          description={<>{team.name} · {managing.role === "coordinator" ? "Coordinator" : "Member"}</>}
+          description={<>{team.name} · {managing.role === "coordinator" ? t.coordinator : t.member}</>}
           onClose={() => setManagingId(null)}
         >
           <div className="live-manage">
@@ -217,11 +216,11 @@ function LiveTeamRoster({
                   disabled={pending}
                   onClick={() => choose({ type: "setTeamApproval", teamId: team.id, personId: managing.personId, approved: !managing.approved })}
                 >
-                  {managing.approved ? "Mark not ready for this team" : "Mark ready for this team"}
+                  {managing.approved ? text.markNotReady : text.markReady}
                   <small>
                     {managing.approved
-                      ? "They stay on the team. Their open requests to cover for it are withdrawn."
-                      : "They can take this team’s commitments."}
+                      ? text.markNotReadyNote
+                      : text.markReadyNote}
                   </small>
                 </Button>
                 {isOwner && (
@@ -238,11 +237,11 @@ function LiveTeamRoster({
                       })
                     }
                   >
-                    {managing.role === "coordinator" ? "Make a member of this team" : "Make a coordinator of this team"}
+                    {managing.role === "coordinator" ? text.makeMember : text.makeCoordinator}
                     <small>
                       {managing.role === "coordinator"
-                        ? "They keep their place and no longer manage this team’s members."
-                        : "They can add and remove this team’s members and mark them ready, and become a coordinator of the conference."}
+                        ? text.makeMemberNote
+                        : text.makeCoordinatorNote}
                     </small>
                   </Button>
                 )}
@@ -255,11 +254,11 @@ function LiveTeamRoster({
               disabled={pending}
               onClick={() => choose({ type: "setTeamMember", teamId: team.id, personId: managing.personId, member: false })}
             >
-              {managing.status === "invited" ? "Withdraw the invitation" : "Remove from this team"}
+              {managing.status === "invited" ? text.withdrawInvitation : text.removeFromTeam}
               <small>
                 {managing.status === "invited"
-                  ? "They are not added. You can invite them again."
-                  : "Their place on this team ends. Their other teams and their account stay."}
+                  ? text.withdrawInvitationNote
+                  : text.removeFromTeamNote}
               </small>
             </Button>
           </div>
@@ -284,8 +283,8 @@ function LiveTeamRoster({
                 </div>
                 {team.canCoordinate && (
                   <div className="live-row-actions">
-                    <Button variant="outline" size="sm" aria-label={`Manage ${person.name}`} onClick={() => setManagingId(person.personId)}>
-                      Manage
+                    <Button variant="outline" size="sm" aria-label={text.manageLabel(person.name)} onClick={() => setManagingId(person.personId)}>
+                      {text.manage}
                     </Button>
                   </div>
                 )}
