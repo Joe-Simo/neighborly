@@ -8,10 +8,12 @@
 .fresco-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none}
 .fresco-header>a:last-child{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 2px;font-size:15px;text-decoration:none;border-bottom:1px solid #253e3140}
 
-.fresco-invitation{position:absolute;z-index:3;left:7%;top:50%;width:min(30%,520px);translate:0 calc(-50% - var(--door) * 24px);opacity:calc(1 - var(--door) * 1.8)}
-.fresco-stage[data-open=true] .fresco-invitation{visibility:hidden}
+/* The doors' words are printed on the wall, under the opening: they stand in full ink while the doors swing, and the opening's own edge covers them as the visitor walks in. They are never faded. */
+.fresco-invitation{position:absolute;z-index:0;left:7%;top:50%;width:min(30%,520px);translate:0 -50%}
+.fresco-stage[data-walked=true] .fresco-invitation{visibility:hidden}
 /* A button that can still take the keyboard is never invisible. */
 .fresco-stage:not([data-opening=true]) .fresco-invitation:has(:focus-visible){opacity:1}
+.fresco-invitation .fresco-kicker{display:block;margin:0 0 clamp(14px,1.4vw,22px);font-size:15px;font-weight:650;line-height:1.3;letter-spacing:.1em;text-transform:uppercase;color:#52644f}
 .fresco-invitation h2{margin:0 0 24px;font:400 clamp(44px,4.7vw,76px)/.97 'Newsreader',Georgia,serif;letter-spacing:-.065em}
 .fresco-invitation h2 em{font-weight:400}
 .fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
@@ -37,10 +39,12 @@
 .fresco-doors i:last-child{left:0;translate:99.4% 0;transform-origin:right center;border-radius:0 100% 0 0/0 30% 0 0;background-position:right center;transform:rotateY(calc(var(--door) * -88deg - var(--inside) * 40deg))}
 /* The line the keyboard is set down on inside the courtyard is words, not a control: it takes no ring. */
 main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
-.fresco-caption{position:absolute;z-index:2;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;opacity:calc(var(--grow) * 2.5 - 1.5);translate:0 calc((1 - var(--grow)) * 20px)}
+/* Under the framed fresco the line is drawn out from behind the frame's lower edge, in full ink, as the frame settles. */
+.fresco-caption{position:absolute;z-index:0;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;translate:0 calc(clamp(0,(1 - var(--grow)) * 2.5,1) * (-100% - 44px))}
 .fresco-caption em{font-weight:400}
-/* Standing in the courtyard: the words are set large on the paving, and the wordmark steps aside so nothing sits over the picture. */
-.fresco-standing{position:absolute;z-index:2;left:0;right:0;bottom:9svh;margin:0;text-align:center;color:#2b3d2f;font:400 clamp(64px,8.6vw,152px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.06em;text-shadow:0 1px 0 #f6eedb80,0 0 40px #f3e6c8a6;opacity:clamp(0,calc((var(--inside) - .8) * 5),1);translate:0 calc((1 - var(--standing)) * 14px);pointer-events:none}
+/* Standing in the courtyard: the words are set large on the paving, and the wordmark steps aside so nothing sits over the picture.
+   They come up into the window from its foot in full ink over the last of the walk, and go down the same way when the courtyard draws back into its frame. */
+.fresco-standing{position:absolute;z-index:2;left:0;right:0;bottom:9svh;margin:0;text-align:center;color:#2b3d2f;font:400 clamp(64px,8.6vw,152px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.06em;text-shadow:0 1px 0 #f6eedb80,0 0 40px #f3e6c8a6;translate:0 calc(clamp(0,(1 - var(--inside)) / .45,1) * (100% + 9svh + 12px) + (1 - var(--standing)) * 14px);pointer-events:none}
 .fresco-standing em{font-weight:400}
 .fresco-header{opacity:calc(1 - var(--inside))}
 .fresco-stage[data-inside=true] .fresco-header{visibility:hidden}
@@ -48,10 +52,11 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .fresco-brand{font-size:30px}
   .fresco-invitation{position:static;width:auto;translate:none}
-  .fresco-invitation h2{position:absolute;z-index:3;left:max(20px,4%);top:calc(72px + env(safe-area-inset-top));margin:0;font-size:clamp(40px,12vw,64px)}
+  .fresco-invitation .fresco-kicker{position:absolute;z-index:0;left:max(20px,4%);top:calc(68px + env(safe-area-inset-top));margin:0}
+  .fresco-invitation h2{position:absolute;z-index:0;left:max(20px,4%);top:calc(96px + env(safe-area-inset-top));margin:0;font-size:clamp(40px,12vw,64px)}
   .fresco-invitation p{display:none}
   /* The button stands on paper under the doors, clear of them. */
-  .fresco-open[data-slot=button]{position:absolute;z-index:3;left:50%;top:calc(79svh + 34px);translate:-50% 0;min-height:50px}
+  .fresco-open[data-slot=button]{position:absolute;z-index:0;left:50%;top:calc(79svh + 34px);translate:-50% 0;min-height:50px}
   .fresco-caption{top:calc(var(--caption-top,70%) + 34px);font-size:clamp(32px,9.5vw,44px)}
 }
 @media(prefers-reduced-motion:reduce){.fresco-journey{height:360svh}}
