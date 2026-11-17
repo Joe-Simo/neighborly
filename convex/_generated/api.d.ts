@@ -11,8 +11,8 @@
 import type * as access from "../access.js";
 import type * as assistance from "../assistance.js";
 import type * as calendar from "../calendar.js";
-import type * as counts from "../counts.js";
 import type * as closing from "../closing.js";
+import type * as counts from "../counts.js";
 import type * as crons from "../crons.js";
 import type * as demo from "../demo.js";
 import type * as drafts from "../drafts.js";
@@ -44,8 +44,8 @@ declare const fullApi: ApiFromModules<{
   access: typeof access;
   assistance: typeof assistance;
   calendar: typeof calendar;
-  counts: typeof counts;
   closing: typeof closing;
+  counts: typeof counts;
   crons: typeof crons;
   demo: typeof demo;
   drafts: typeof drafts;
