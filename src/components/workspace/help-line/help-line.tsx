@@ -753,47 +753,6 @@ export function HelpLineView({
                       {isFirst(call) ? text.putFirstBy(call.urgent.byName) : text.notUrgentBy(call.urgent.byName)}
                     </p>
                   )}
-                  <p className="help-facts help-row-more">
-                    {call.ownerName && (
-                      <span className="help-person">
-                        <span className="help-initials" aria-hidden="true">
-                          {initials(call.ownerName)}
-                        </span>
-                        {text.callingBack(call.ownerName)}
-                      </span>
-                    )}
-                    {!call.openRequest && !draftedCallIds.includes(call.id) && (
-                      <Button
-                        variant="link"
-                        className="help-text-action"
-                        disabled={busy}
-                        onClick={() => onStep({ kind: "draft", call })}
-                      >
-                        {reading === call.id ? text.drafting : text.draft}
-                      </Button>
-                    )}
-                    {!call.neighborId && (
-                      <Button
-                        variant="link"
-                        className="help-text-action"
-                        onClick={() => onStep({ kind: "neighbor", call })}
-                      >
-                        {text.addNeighbor}
-                      </Button>
-                    )}
-                    {/* Offered once, on the call that has waited longest, and on a call already put first. */}
-                    {onFirst && (isFirst(call) || (call === oldest && !calls.waiting.some(isFirst))) && (
-                      <Button
-                        variant="link"
-                        className="help-text-action"
-                        onClick={() => onFirst(call, !isFirst(call))}
-                      >
-                        {isFirst(call)
-                          ? words.urgent.notUrgent
-                          : words.urgent.label}
-                      </Button>
-                    )}
-                  </p>
                 </div>
                 <div className="live-row-actions">
                   <Button
@@ -804,6 +763,48 @@ export function HelpLineView({
                     {text.markReturned}
                   </Button>
                 </div>
+                {/* After "Mark returned" in the page itself, so a screen reader and the Tab key meet the row's main act first, as the eye does on a phone. */}
+                <p className="help-facts help-row-more">
+                  {call.ownerName && (
+                    <span className="help-person">
+                      <span className="help-initials" aria-hidden="true">
+                        {initials(call.ownerName)}
+                      </span>
+                      {text.callingBack(call.ownerName)}
+                    </span>
+                  )}
+                  {!call.openRequest && !draftedCallIds.includes(call.id) && (
+                    <Button
+                      variant="link"
+                      className="help-text-action"
+                      disabled={busy}
+                      onClick={() => onStep({ kind: "draft", call })}
+                    >
+                      {reading === call.id ? text.drafting : text.draft}
+                    </Button>
+                  )}
+                  {!call.neighborId && (
+                    <Button
+                      variant="link"
+                      className="help-text-action"
+                      onClick={() => onStep({ kind: "neighbor", call })}
+                    >
+                      {text.addNeighbor}
+                    </Button>
+                  )}
+                  {/* Offered once, on the call that has waited longest, and on a call already put first. */}
+                  {onFirst && (isFirst(call) || (call === oldest && !calls.waiting.some(isFirst))) && (
+                    <Button
+                      variant="link"
+                      className="help-text-action"
+                      onClick={() => onFirst(call, !isFirst(call))}
+                    >
+                      {isFirst(call)
+                        ? words.urgent.notUrgent
+                        : words.urgent.label}
+                    </Button>
+                  )}
+                </p>
               </div>
             ))}
           </div>
