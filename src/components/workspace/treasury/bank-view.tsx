@@ -226,11 +226,14 @@ export function BankView({
       <section className="treasury-waiting treasury-uncleared" aria-labelledby="treasury-uncleared-title">
         <div className="live-section-head">
           <h2 id="treasury-uncleared-title">{w.waiting.title}</h2>
-          <span className="live-count">
-            {bank.waitingCount > bank.waiting.length + deposits.length
-              ? fill(w.waiting.oldest, { shown: bank.waiting.length + deposits.length, count: bank.waitingCount })
-              : w.entries(bank.waitingCount)}
-          </span>
+          {/* With nothing waiting the section says so itself, in words; no count of zero stands over it. */}
+          {(bank.waitingCount > 0 || deposits.length > 0) && (
+            <span className="live-count">
+              {bank.waitingCount > bank.waiting.length + deposits.length
+                ? fill(w.waiting.oldest, { shown: bank.waiting.length + deposits.length, count: bank.waitingCount })
+                : w.entries(bank.waitingCount)}
+            </span>
+          )}
         </div>
         {bank.waiting.length || deposits.length ? (
           <>
