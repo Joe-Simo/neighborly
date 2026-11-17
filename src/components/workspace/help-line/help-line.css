@@ -82,7 +82,9 @@
   40% { transform: translateY(-6px); box-shadow: 0 18px 30px -18px #283c3240; }
 }
 .help-sealed .help-sheet-body { position: relative; }
-.help-sealed .help-actions { visibility: hidden; }
+/* The buttons go as the seal comes: they fade where they stand, and keep their room. So does the line that said
+   nothing was saved yet, so the sheet keeps its height until it closes. */
+.help-sealed .help-actions, .help-sealed .help-unsaved { visibility: hidden; opacity: 0; transition: opacity 120ms ease-out, visibility 0s linear 120ms; }
 .help-seal {
   position: absolute; right: 0; bottom: 0; margin: 0 !important; min-height: 44px;
   display: flex; align-items: center; gap: 12px;
@@ -104,12 +106,14 @@
 .help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
 .help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { color: var(--live-ink); transform: translateX(4px); }
 @media (max-width: 850px) {
-  .help-sealed .help-actions { display: none; }
-  .help-sealed .help-sheet-body { row-gap: 24px; }
-  .help-seal { position: static; }
+  /* The seal is set where the buttons were, in the very cell they keep, so the sheet keeps its height and nothing
+     under it moves. */
+  .help-sealed .help-actions, .help-seal { grid-area: 2 / 1; }
+  .help-seal { position: static; align-self: start; }
 }
 @media (prefers-reduced-motion: reduce) {
   .help-sheet.help-sealed, .help-seal, .help-seal path, .help-row[data-arrived] .live-status:before { animation: none; }
+  .help-sealed .help-actions, .help-sealed .help-unsaved { transition: none; }
   .help-row-arrow { transition: none; }
   .help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { transform: none; }
 }

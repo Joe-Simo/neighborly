@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,6 +85,12 @@ export function LiveDialog({
   const opener = useRef<HTMLElement | null>(null);
   const [sheet, setSheet] = useState<HTMLElement | null>(null);
   useEffect(() => (sheet ? dragDownToClose(sheet, onClose) : undefined), [sheet, onClose]);
+  // Taken away with its step (the room stops drawing it), the dialog still closes the way it opened.
+  const drawn = useRef<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    drawn.current = sheet;
+  }, [sheet]);
+  useLayoutEffect(() => () => leaving(drawn.current), []);
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent
@@ -219,3 +225,41 @@ function keepInView(target: Element | EventTarget | null) {
 }
 const ABOVE = 16;
 const BELOW = 12;
+
+/**
+ * A dialog that is taken away while open, rather than closed in place, goes the way it came: a still copy of it and
+ * of the shade behind it is laid where they stood and closes there (paper.css: back down on a phone, a quick fade
+ * and settle on a desk). Its words and what was typed stay as they were seen. For less motion there is no copy.
+ * Called as the dialog is taken away, while it is still on the page.
+ */
+function leaving(sheet: HTMLElement | null) {
+  if (!sheet?.isConnected || sheet.dataset.state !== "open") return;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const shade = sheet.parentElement?.querySelector<HTMLElement>(':scope > [data-slot="dialog-overlay"]');
+  const frame = document.createElement("div");
+  frame.setAttribute("aria-hidden", "true");
+  frame.inert = true;
+  for (const part of [shade, sheet]) {
+    if (!part) continue;
+    const copy = part.cloneNode(true) as HTMLElement;
+    const from = [part, ...part.querySelectorAll("*")];
+    [copy, ...copy.querySelectorAll("*")].forEach((twin, index) => {
+      const source = from[index];
+      if (source instanceof HTMLInputElement || source instanceof HTMLTextAreaElement || source instanceof HTMLSelectElement)
+        (twin as typeof source).value = source.value;
+      twin.removeAttribute("id");
+    });
+    copy.dataset.state = "closed";
+    copy.style.pointerEvents = "none";
+    // Each part stays where its own close leaves it until the last has finished: on a phone the shade's fade is
+    // shorter than the sheet's way down, and must not come back meanwhile.
+    copy.style.animationFillMode = "forwards";
+    frame.append(copy);
+  }
+  // Just before the shade and the dialog, beside them in the body, so it is set in the same type and a dialog
+  // opened in its stead is laid over it.
+  (shade ?? sheet).before(frame);
+  const moves = frame.getAnimations({ subtree: true });
+  if (!moves.length) return frame.remove();
+  void Promise.allSettled(moves.map((move) => move.finished)).then(() => frame.remove());
+}
