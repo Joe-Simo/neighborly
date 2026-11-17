@@ -48,7 +48,7 @@ class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { 
 }
 
 function Report() {
-  const { data, now, setHeadAction, words } = useWorkspace();
+  const { data, now, sampleSaid, setHeadAction, words } = useWorkspace();
   const w = words.rooms.reports;
   const churchId = data.church.id;
   const at = useHour();
@@ -112,7 +112,7 @@ function Report() {
 
   function saveSpreadsheet(saved: NonNullable<typeof shown>) {
     const name = csvFileName(saved, data.church.name);
-    const address = URL.createObjectURL(new Blob([reportCsv(saved, data.church.name, data.church.sample, words)], { type: "text/csv;charset=utf-8" }));
+    const address = URL.createObjectURL(new Blob([reportCsv(saved, data.church.name, data.church.sample, words, sampleSaid)], { type: "text/csv;charset=utf-8" }));
     const link = Object.assign(document.createElement("a"), { href: address, download: name });
     link.click();
     URL.revokeObjectURL(address);
