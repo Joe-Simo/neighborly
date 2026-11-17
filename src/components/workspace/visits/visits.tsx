@@ -571,7 +571,7 @@ export function VisitsView({
               {coming.map((visit) => {
                 const pair = standing(visit, text);
                 return (
-                  <div className="help-row" key={visit.id}>
+                  <div className="help-row" data-row-menu="" key={visit.id}>
                     {leaf(visit.scheduledAt)}
                     <div>
                       <p className="visits-who">
@@ -607,7 +607,7 @@ export function VisitsView({
                           {text.coming.askElse}
                         </Button>
                       )}
-                      <Button variant="outline" asChild>
+                      <Button variant="outline" asChild data-row-action="">
                         <Link href={sheetHref(visit.id)}>
                           <Printer size={17} aria-hidden="true" /> {text.coming.sheet}
                         </Link>
@@ -635,7 +635,7 @@ export function VisitsView({
           </div>
           <div className="live-list">
             {toWriteUp.map((visit) => (
-              <div className="help-row" key={visit.id}>
+              <div className="help-row" data-row-menu="" key={visit.id}>
                 {leaf(visit.scheduledAt)}
                 <div>
                   <p className="visits-who">
@@ -647,7 +647,7 @@ export function VisitsView({
                   {visit.address && <p>{visit.address}</p>}
                 </div>
                 <div className="live-row-actions">
-                  <Button variant="outline" aria-label={fill(text.toWriteUp.writeUpLabel, { neighbor: visit.neighborName, day: weekday(visit.scheduledAt) })} onClick={() => onWriteUp(visit)}>
+                  <Button variant="outline" data-row-action="" aria-label={fill(text.toWriteUp.writeUpLabel, { neighbor: visit.neighborName, day: weekday(visit.scheduledAt) })} onClick={() => onWriteUp(visit)}>
                     {text.toWriteUp.writeUp}
                   </Button>
                 </div>

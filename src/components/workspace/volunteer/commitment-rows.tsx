@@ -48,6 +48,7 @@ export function CommitmentRows({
         {items.map((item) => (
           <div
             className={`live-row live-commitment-row${item.id === fresh ? " volunteer-filed" : ""}`}
+            data-row-menu=""
             ref={item.id === fresh ? arrive : undefined}
             key={item.id}
           >
