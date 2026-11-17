@@ -525,6 +525,9 @@
 }
 .paper-loading-label { animation: paper-show 300ms ease 400ms backwards; }
 .live-app .live-opening > span { position: absolute; top: 0; left: 0; right: 0; }
+/* A room held by a lost connection shows the offline card in the same place, over the room that is not seen. */
+.live-app .live-opening[data-lost] { display: block; color: inherit; font-size: inherit; }
+.live-app .live-opening[data-lost] > .live-state { position: absolute; top: 0; left: 0; right: 0; }
 /* A short wait inside a form or a dialog: just the line. */
 /* The one way to wait, everywhere: a quiet line, and only once the wait has lasted 400ms, so a quick
    answer never flashes it. No grey rows standing in for content. */
