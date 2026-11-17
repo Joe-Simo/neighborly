@@ -1,11 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../convex/_generated/api";
 import { askFirstRoom, firstRoom, type FirstRoom } from "@/lib/first-room";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 import type { Language } from "@/lib/words";
+import { useWaited } from "@/lib/use-waited";
 
 /**
  * The first look at the sample: This week drawn from the seed's public answer (demo.firstRoom) while the visitor's
@@ -92,10 +94,26 @@ export function useKeptPress(looking: boolean) {
   const press = useRef<Kept | null>(null);
   const focus = useRef<Kept | null>(null);
   const was = useRef(false);
+  const [kept, setKept] = useState<Element | null>(null);
+  const waited = useWaited(looking && kept !== null);
+  useEffect(() => {
+    if (!waited || !kept?.hasAttribute("data-kept")) return;
+    kept.setAttribute("data-kept", "waits");
+    // The ring is drawn over the page, not in the control, so it stays the full ochre while the control rests at
+    // half strength: in the place of the control's own icon, or just before a control that has none.
+    const icon = kept.querySelector(":scope > svg:first-child");
+    const box = (icon ?? kept).getBoundingClientRect();
+    const ring = document.createElement("span");
+    ring.className = RING;
+    ring.setAttribute("aria-hidden", "true");
+    ring.style.left = `${(icon ? box.left + box.width / 2 : box.left - 11) + scrollX}px`;
+    ring.style.top = `${box.top + box.height / 2 + scrollY}px`;
+    document.body.append(ring);
+    return () => ring.remove();
+  }, [waited, kept]);
   useEffect(() => {
     if (!looking) return;
     const room = () => document.querySelector<HTMLElement>(".live-app main.live-main");
-    let said: ReturnType<typeof setTimeout> | undefined;
     const keep = (event: MouseEvent) => {
       const column = room();
       // The look is over in this very commit (the layout effect below runs before this listener is taken away):
@@ -109,22 +127,9 @@ export function useKeptPress(looking: boolean) {
       column.querySelector("[data-kept]")?.removeAttribute("data-kept");
       // It rests as pressed; a wait that lasts 400ms is then said by the still ochre ring where its icon is.
       control.setAttribute("data-kept", "");
-      clearTimeout(said);
-      document.querySelector(`.${RING}`)?.remove();
-      said = setTimeout(() => {
-        if (!control.hasAttribute("data-kept")) return;
-        control.setAttribute("data-kept", "waits");
-        // The ring is drawn over the page, not in the control, so it stays the full ochre while the control rests at
-        // half strength: in the place of the control's own icon, or just before a control that has none.
-        const icon = control.querySelector(":scope > svg:first-child");
-        const box = (icon ?? control).getBoundingClientRect();
-        const ring = document.createElement("span");
-        ring.className = RING;
-        ring.setAttribute("aria-hidden", "true");
-        ring.style.left = `${(icon ? box.left + box.width / 2 : box.left - 11) + scrollX}px`;
-        ring.style.top = `${box.top + box.height / 2 + scrollY}px`;
-        document.body.append(ring);
-      }, 400);
+      // A wait is said only once it has lasted the product's one hold (use-waited.ts), counted from this press.
+      flushSync(() => setKept(null));
+      setKept(control);
       // Only a press that opens something is made later. One that writes is never made for the person a moment
       // after the fact: its control rests, and at the change-over it is simply live for them to press.
       press.current = control.hasAttribute(OPENS) ? place(column, control) : null;
@@ -140,8 +145,6 @@ export function useKeptPress(looking: boolean) {
     document.addEventListener("focusin", where);
     document.addEventListener("focusout", left);
     return () => {
-      clearTimeout(said);
-      document.querySelector(`.${RING}`)?.remove();
       document.removeEventListener("click", keep, true);
       document.removeEventListener("focusin", where);
       document.removeEventListener("focusout", left);
