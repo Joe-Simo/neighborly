@@ -11,6 +11,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
 import { useHour, useQuery } from "@/components/workspace/query";
@@ -40,6 +41,7 @@ import { useSave } from "@/components/workspace/help-line/use-save";
 import { DraftSheet, caller } from "@/components/workspace/help-line/draft-sheet";
 import {
   HelpDone,
+  letSheetWordsGo,
   readSealedSheet,
   HelpEmpty,
   HelpLoading,
@@ -128,17 +130,31 @@ function HelpLine() {
   >(null);
   useEffect(() => {
     if (!sealed) return;
+    let left = false;
     const after = setTimeout(() => {
       // The sheet's own words, read off it, are what the saved line carries: they travel there as the sheet closes.
       const asks = readSealedSheet();
-      setDone({
-        message: asks ? "Request saved. It waits for the conference to decide." : `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
-        record: sealed.neighborId,
-        filed: asks ? { name: caller(sealed.call), asks } : undefined,
+      // They go from the sheet where they stand, the seal with them, before anything moves (room.tsx).
+      void letSheetWordsGo().then(() => {
+        if (left) return;
+        // The line opens as the sheet closes, in one move: it is laid first, so the close knows it is there, and the
+        // close, the line and the line's words all start on the same frame, so the room only ever gets shorter. The
+        // sheet is taken out the moment its close ends, before anything is drawn; for less motion the close is a plain
+        // cut, so the line and the cut are one change.
+        flushSync(() =>
+          setDone({
+            message: asks ? "Request saved. It waits for the conference to decide." : `Request saved. It is waiting for a decision on ${caller(sealed.call)}’s record.`,
+            record: sealed.neighborId,
+            filed: asks ? { name: caller(sealed.call), asks } : undefined,
+          }),
+        );
+        void foldLeaves().then(() => flushSync(() => setSealed(null)));
       });
-      void foldLeaves().then(() => setSealed(null));
     }, FOLD_HOLD);
-    return () => clearTimeout(after);
+    return () => {
+      left = true;
+      clearTimeout(after);
+    };
   }, [sealed]);
   const onSheet = sealed ?? drafted;
   const sheetOpen = onSheet !== null;
@@ -219,7 +235,10 @@ function HelpLine() {
     );
     if (!outcome.saved) return;
     settle(call);
-    setSealed({ ...asked, neighborId });
+    // The sheet is sealed as the call now stands: a caller just added as a neighbor is on file, so the sealed sheet
+    // (and the card it hands over) never goes back to "Add neighbor and save" or "Not yet on file".
+    const now = latest.current?.waiting.find((one) => one.id === call.id) ?? call;
+    setSealed({ ...asked, call: { ...now, neighborId }, neighborId });
   }
   const changeFor =
     step?.kind === "change"
@@ -310,14 +329,15 @@ function HelpLine() {
               sealed={onSheet === sealed}
               waiting={drafts.length + (sealed ? 1 : 0)}
               format={format}
-              pending={approving.pending}
+              // Once saved, its buttons stay as they were while saving and fade from there with the seal,
+              // never back to full ink first.
+              pending={approving.pending || onSheet === sealed}
               toDo={<DraftToDo notes={onSheet.draft.notes} />}
               limits={
                 <AssistantLimits
                   callId={onSheet.call.id}
                   verification={onSheet.draft.verification}
                   notes={onSheet.draft.notes}
-                  sealed={onSheet === sealed}
                 />
               }
               onApprove={() => void approve(onSheet)}

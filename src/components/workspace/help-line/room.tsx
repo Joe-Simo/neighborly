@@ -2,7 +2,7 @@
 
 import { SavedWords } from "@/components/workspace/saved-words";
 import { cn } from "@/lib/utils";
-import { useSavedLine } from "@/components/workspace/fold";
+import { heldWhenLaid, opened, useSavedLine } from "@/components/workspace/fold";
 import "./help-line.css";
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
@@ -92,6 +92,10 @@ export function KeptPrivate() {
  */
 /** The whole yes, from the sheet to its saved line, in this long: the line is whole and still by its end. */
 const WHOLE = 400;
+/** How long the sealed sheet's own words take to go, where they stand, before anything moves. */
+const WORDS_GONE = 64;
+/** How far above what follows the card's shadow ends, at its faintest. */
+const SHADOW_CLEAR = 4;
 let setOff: { name?: DOMRect; asks?: DOMRect; sheet?: DOMRect } = {};
 /**
  * Call just before the saved line is laid: where the sealed sheet's name and request stand now. The line opens
@@ -107,8 +111,29 @@ export function readSealedSheet() {
   return sheet?.querySelector("#draft-title")?.textContent ?? "";
 }
 
+/**
+ * The sealed sheet's words go where they stand, its seal with them, before anything moves: the close, the line and
+ * the line's own words then all start on one frame, and no word is ever on the page twice. Its paper and its green
+ * corner stay. At once for anyone who asks for less motion.
+ */
+export async function letSheetWordsGo() {
+  const sheet = document.querySelector<HTMLElement>(".help-sheet.help-sealed");
+  if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const going = [...sheet.children].map((part) => part.animate([{ opacity: 1 }, { opacity: 0 }], { duration: WORDS_GONE, easing: "ease-out", fill: "forwards" }));
+  await Promise.allSettled(going.map((move) => move.finished));
+}
+
+/** A shadow as the browser gives it back (`rgba(…) x y blur spread [inset]`), to be drawn again a frame at a time. */
+type Shade = { rgb: string; alpha: number; x: number; y: number; blur: number; spread: number; inset: boolean };
+function shadesOf(shadow: string): Shade[] {
+  return [...shadow.matchAll(/rgba?\(([^)]*)\)\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+(-?[\d.]+)px(\s+inset)?/g)].map((found) => {
+    const [r, g, b, a = "1"] = found[1].split(",").map((part) => part.trim());
+    return { rgb: `${r}, ${g}, ${b}`, alpha: parseFloat(a), x: parseFloat(found[2]), y: parseFloat(found[3]), blur: parseFloat(found[4]), spread: parseFloat(found[5]), inset: !!found[6] };
+  });
+}
+
 function fileAway(line: HTMLElement) {
-  const sheet = document.querySelector(".help-sheet.help-sealed");
+  const sheet = document.querySelector<HTMLElement>(".help-sheet.help-sealed");
   if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Once for a line, however often its effects are run.
   if (line.dataset.filedFrom !== undefined) return;
@@ -119,57 +144,78 @@ function fileAway(line: HTMLElement) {
   const rest = (part: HTMLElement) => part.getBoundingClientRect();
   const ends = new Map([...line.querySelectorAll<HTMLElement>("[data-filed]")].map((part) => [part, rest(part)]));
   line.style.animation = "";
-  if (place.top < 0 || place.bottom > window.innerHeight) return;
-  // The whole sheet, corner and all, is gone within 140ms, so its words are never seen twice and its green corner
-  // is never left hanging alone; the room it took closes under the line as the words rise.
-  // The yes: the sheet becomes its saved line. Its top edge stays where it is and it shortens upward to the line's
-  // height, at the very pace the room closes up beneath it (fold.ts closeUp, 360ms), so its foot is always the list's
-  // top and it never passes over a row. Its green corner turns further as it is taken; its words fade to the line's
-  // own two, which travel on their own; it takes the line's green as it lands, and gives way to the line.
-  // A copy does this above the page; the sheet itself is gone at once.
+  // In view, and laid in its place: a line held under the top edge (fold.ts openUp) is not where the sheet was.
+  if (heldWhenLaid(line) || place.top < 0 || place.bottom > window.innerHeight) return;
+  // The yes: the sheet becomes its saved line. Its words have gone already (letSheetWordsGo); its paper is carried
+  // here as a card. The line opens where the sheet's top was while the sheet closes in its place under it, both from
+  // the same frame and at the same pace (fold.ts, 360ms); the card is the two together, so it only shortens, never
+  // passes over a row, and lands exactly on the line. Its green corner turns further as it is taken, the line's two
+  // words travel up over it from where the sheet's stood, and it takes the line's green as it lands and gives way.
+  // The card is the bare paper above the page; the sheet itself is gone at once.
   const from = setOff.sheet ?? sheet.getBoundingClientRect();
-  const card = sheet.cloneNode(true) as HTMLElement;
+  const card = sheet.cloneNode(false) as HTMLElement;
   card.setAttribute("aria-hidden", "true");
   card.removeAttribute("id");
-  card.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
+  card.removeAttribute("aria-labelledby");
+  // A copy above the page, not a leaf of it: the room's close leaves it alone.
+  card.removeAttribute("data-fold-leaves");
   Object.assign(card.style, {
     position: "fixed", left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`,
     margin: "0", zIndex: "29", pointerEvents: "none", overflow: "hidden", boxSizing: "border-box", animation: "none",
   });
   card.classList.add("help-handed");
-  // Its words keep the sheet's measure and size until they fade: outside the room's column they would set anew.
-  const originals = [...sheet.querySelectorAll<HTMLElement>("*")];
-  card.querySelectorAll<HTMLElement>("*").forEach((part, index) => {
-    const source = originals[index];
-    if (!source) return;
-    const look = getComputedStyle(source);
-    Object.assign(part.style, { width: `${source.getBoundingClientRect().width}px`, fontSize: look.fontSize, lineHeight: look.lineHeight, boxSizing: "border-box" });
-  });
-  // Inside the room's frame, so it keeps the room's own setting of its words.
+  // Inside the room's frame, so it keeps the room's own look.
   (sheet.closest(".live-app") ?? document.body).append(card);
-  sheet.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 1, fill: "forwards" });
-  [...card.children].forEach((part) => (part as HTMLElement).animate([{ opacity: 1 }, { opacity: 0 }], { duration: 90, easing: "ease-out", fill: "forwards" }));
+  // Gone at once whatever else moves it: the room's close fades the sheet as well, and that must never show it again.
+  sheet.style.setProperty("opacity", "0", "important");
   const lineLook = getComputedStyle(line);
   const paper = getComputedStyle(sheet).backgroundColor;
-  const done = () => card.remove();
-  // Its foot is read off the room itself each frame: the sheet closing in its place below the opening line ends
-  // exactly where the list now begins, so the card is always as tall as the space it leaves and never lies on a row.
-  const follow = () => {
-    if (!card.isConnected) return;
-    const foot = sheet.getBoundingClientRect().bottom;
-    card.style.height = `${Math.max(place.height, Math.min(from.height, foot - from.top))}px`;
-    requestAnimationFrame(follow);
-  };
-  follow();
-  card.animate(
+  // Its shadow is the sheet's own. It fades as the card takes the line's green, its colour let go, so it thins away
+  // and never switches off; and it tightens under the card as the room closes, so its faintest edge never reaches
+  // what follows (the browser paints a blur out to one and a half times its radius).
+  const shades = shadesOf(getComputedStyle(sheet).boxShadow);
+  const reach = Math.max(0, ...shades.filter((shade) => !shade.inset).map((shade) => shade.y + shade.spread + 1.5 * shade.blur));
+  const turning = card.animate(
     [
-      { backgroundColor: paper, borderRadius: getComputedStyle(sheet).borderRadius, boxShadow: getComputedStyle(sheet).boxShadow, opacity: 1 },
+      { backgroundColor: paper, borderRadius: getComputedStyle(sheet).borderRadius, opacity: 1 },
       { backgroundColor: paper, offset: 0.2 },
-      { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, boxShadow: "0 0 0 #0000", opacity: 1, offset: 0.55 },
-      { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, boxShadow: "0 0 0 #0000", opacity: 0 },
+      { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, opacity: 1, offset: 0.55 },
+      { backgroundColor: lineLook.backgroundColor, borderRadius: lineLook.borderRadius, opacity: 0 },
     ],
     { duration: WHOLE, fill: "forwards" },
-  ).finished.then(done, done);
+  );
+  const done = () => card.remove();
+  turning.finished.then(done, done);
+  // Each frame the card is read off the room: its top is the line's top, and its foot is the line's foot with what is
+  // left of the sheet under it, the sheet's whole height at the start and nothing at the end. It never reaches past
+  // the top of what follows the sheet, so it never lies on a row, and its shadow falls only on the paper between.
+  let after = sheet.nextElementSibling as HTMLElement | null;
+  while (after && (after.offsetHeight === 0 || after.classList.contains("sr-only"))) after = after.nextElementSibling as HTMLElement | null;
+  // Should the line first stand a little below the sheet's top (held by its sticky top), that drop is let go as it
+  // opens: the card starts exactly on the sheet and still ends exactly on the line.
+  let drop: number | undefined;
+  const follow = () => {
+    if (!card.isConnected || !line.isConnected) return;
+    const now = line.getBoundingClientRect();
+    const left = 1 - opened(line);
+    drop ??= now.top - from.top;
+    const top = now.top - drop * left;
+    const next = after?.isConnected ? after.getBoundingClientRect().top : Number.POSITIVE_INFINITY;
+    const foot = Math.min(now.bottom + (from.height - drop) * left, next);
+    card.style.top = `${top}px`;
+    card.style.height = `${Math.max(0, Math.min(from.height, foot - top))}px`;
+    card.style.clipPath = `inset(-48px -48px ${Number.isFinite(next) ? -Math.max(0, next - foot) : -48}px -48px)`;
+    const fade = 1 - Math.min(1, (turning.effect?.getComputedTiming().progress ?? 1) / 0.55);
+    const tight = reach > 0 ? Math.max(0, Math.min(1, (next - foot - SHADOW_CLEAR) / reach)) : 1;
+    card.style.boxShadow = shades
+      .map(({ rgb, alpha, x, y, blur, spread, inset }) => {
+        const k = inset ? 1 : tight;
+        return `${inset ? "inset " : ""}${x * k}px ${y * k}px ${blur * k}px ${spread * k}px rgba(${rgb}, ${alpha * fade})`;
+      })
+      .join(", ");
+    requestAnimationFrame(follow);
+  };
+  requestAnimationFrame(follow);
   const corner = `${window.innerWidth < 700 ? 48 : 64}px`;
   card.animate([{ width: "38px", height: "38px", opacity: 1 }, { width: corner, height: corner, opacity: 1, offset: 0.23 }, { width: corner, height: corner, opacity: 0, offset: 0.7 }, { opacity: 0 }], {
     duration: WHOLE, easing: "cubic-bezier(0.3, 0, 0.2, 1)", fill: "forwards", pseudoElement: "::after",
@@ -189,18 +235,16 @@ function fileAway(line: HTMLElement) {
     to.style.opacity = "0";
     const move = `translate(${start.left - end.left}px, ${start.top - end.top}px)`;
     // The name keeps its shape, sized by its letters. The request is never stretched: its small setting comes up
-    // where the large one stood as that fades, and is carried to its line.
+    // where the large one stood, and is carried to its line.
     const scale = parseFloat(getComputedStyle(from).fontSize) / parseFloat(look.fontSize);
     const landed = () => {
       to.style.opacity = "";
       copy.remove();
     };
-    // Each sets off as the sheet's own setting of it fades, so the two are a cross-fade and never a double.
+    // Each sets off on the close's first frame: the sheet's own setting of it has already gone.
     copy.animate(
-      resized
-        ? [{ transform: `${move} scale(${scale})`, opacity: 0 }, { opacity: 1, offset: 0.25 }, { transform: "none", opacity: 1 }]
-        : [{ transform: move, opacity: 0 }, { opacity: 0, offset: 0.15 }, { opacity: 1, offset: 0.5 }, { transform: "none", opacity: 1 }],
-      { duration: 340, delay: 40, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "both" },
+      [{ transform: resized ? `${move} scale(${scale})` : move, opacity: 0 }, { opacity: 1, offset: 0.25 }, { transform: "none", opacity: 1 }],
+      { duration: WHOLE - 16, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "both" },
     ).finished.then(landed, landed);
   };
   travel(sheet.querySelector<HTMLElement>(".help-from strong"), line.querySelector<HTMLElement>("[data-filed=name]"), setOff.name, true);

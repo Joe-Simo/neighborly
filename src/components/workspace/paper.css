@@ -722,11 +722,17 @@
     /* The second shadow is the sheet's own paper carried on below its foot, so whatever the keyboard
        and its bar leave uncovered is paper, never the page behind. */
     box-shadow: 0 -18px 40px -22px rgb(40 60 50 / 0.45), 0 50vh 0 0 #f5f3ec;
-    animation: paper-sheet-up 280ms var(--paper-ease) both;
   }
   .live-dialog.live-dialog-fixed h2 { font-size: 28px; line-height: 1.12; }
   .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { border-radius: 14px 14px 0 0; }
 }
+/* It closes the way it opened: it goes back down the way it rose (live-dialog.tsx keeps a copy that does this when
+   the dialog is taken away with its step). For less motion it simply comes and goes. */
+@media (max-width: 699px) and (prefers-reduced-motion: no-preference) {
+  .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { animation: paper-sheet-up 280ms var(--paper-ease) both; }
+  .live-dialog.live-dialog-fixed:not(.tools-rota-dialog)[data-state="closed"] { animation: paper-sheet-down 280ms cubic-bezier(0.8, 0, 0.8, 0.3) both; }
+}
+@keyframes paper-sheet-down { to { transform: translateY(100%); } }
 @media (prefers-reduced-motion: reduce) { .live-dialog.live-dialog-fixed { animation: none; } }
 
 /* A day and a time side by side, one moment. */

@@ -158,6 +158,11 @@ function home(sheet: HTMLElement) {
   return place;
 }
 
+/** Whether paper laid here now is held under the top edge (openUp), its place being above the window or under the bar. */
+export function heldWhenLaid(sheet: HTMLElement, place = home(sheet)) {
+  return place.top < viewTop() && !sheet.closest(".live-dialog");
+}
+
 /**
  * The other way: a piece of paper just laid into the page opens its own room over the same 360ms, starting
  * from exactly the height the page had before it, so what is under it is moved aside and never jumps.
@@ -171,7 +176,7 @@ export function openUp(sheet: HTMLElement) {
   // the top edge, out of the page's flow, so nothing the person is looking at moves and there is nothing to
   // make up for in any browser. A dialog scrolls its own paper, so a line in one keeps its place there.
   const place = home(sheet);
-  if (place.top < viewTop() && !sheet.closest(".live-dialog")) {
+  if (heldWhenLaid(sheet, place)) {
     Object.assign(sheet.style, {
       position: "fixed",
       top: "calc(var(--live-bar, 0px) + var(--live-pan, 0px) + 8px)",
@@ -198,6 +203,12 @@ export function openUp(sheet: HTMLElement) {
     ],
     { id: OPENING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   );
+}
+
+/** How far a piece of paper laid with openUp has opened, as it is drawn now: 0 shut, 1 open, and 1 once it is still. */
+export function opened(sheet: HTMLElement) {
+  const move = sheet.getAnimations().find((one) => one.id === OPENING);
+  return move?.effect?.getComputedTiming().progress ?? 1;
 }
 
 /**
