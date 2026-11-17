@@ -71,7 +71,12 @@
   .public-words:has(.public-words-note) .public-words-relief{top:calc(clamp(150px,41vw,196px) + 72px)}
   .public-words .public-words-note{--foot:clamp(250px,62vw,300px) + 72px}
 }
-@media(min-width:600px) and (max-width:1023px){.public-words .public-words-note{padding-inline:max(20px,calc((100% - 476px) / 2))}}
+/* Between a phone and a desk the line is one line, so the picture rises to just under it and still crosses the sheet's cut edge: no bare quarter of sheet beside it. */
+@media(min-width:600px) and (max-width:1023px){
+  .public-words .public-words-note{--foot:250px;padding-inline:max(20px,calc((100% - 476px) / 2))}
+  .public-words:has(.public-words-note) h1{padding-bottom:250px}
+  .public-words:has(.public-words-note) .public-words-relief{top:calc(clamp(12px,2vw,32px) + clamp(40px,5.6vw,104px) + 144px)}
+}
 @media(min-width:1280px){.public-words .public-words-note{font-size:16px}}
 @media(min-width:1600px){.public-words .public-words-note{font-size:17px}}
 /* On a printed page (a board member prints this to read it): the name at the head, then the words in one column at a reading size. No desk, no shadows, no picture,

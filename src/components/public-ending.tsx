@@ -16,12 +16,12 @@ export const endingWords = {
   en: {
     bring: ["Bring this to", "your people."], own: "Your own conference", start: "Start your conference", signIn: "Sign in",
     made: "Made for the good we can do.", about: "About Kind Helps", privacy: "Privacy", privacyPath: "/privacy", give: "Give a gift", newTab: "(opens in a new tab)",
-    card: { look: "Look around a sample conference", madeUp: "Every person in the sample is made up.", who: "Who this card is for (optional)", stays: "Stays on this device." },
+    card: { for: "For", opening: "Opening…", look: "Look around a sample conference", madeUp: "Every person in the sample is made up.", who: "Who this card is for (optional)", stays: "Stays on this device." },
   },
   es: {
     bring: ["Lleva esto a", "tu gente."], own: "Tu propia conferencia", start: "Empieza tu conferencia", signIn: "Iniciar sesión",
     made: "Hecho por el bien que podemos hacer.", about: "Acerca de Kind Helps", privacy: "Privacidad", privacyPath: "/privacidad", give: "Hacer un donativo", newTab: "(se abre en una pestaña nueva)",
-    card: { look: "Mira una conferencia de muestra", madeUp: "Todas las personas son inventadas.", who: "Para quién es esta tarjeta (opcional)", stays: "Se queda en este dispositivo." },
+    card: { for: "Para", opening: "Abriendo…", look: "Mira una conferencia de muestra", madeUp: "Todas las personas son inventadas.", who: "Para quién es esta tarjeta (opcional)", stays: "Se queda en este dispositivo." },
   },
 } satisfies Record<Language, unknown>;
 export type CardWords = (typeof endingWords)[Language]["card"];
