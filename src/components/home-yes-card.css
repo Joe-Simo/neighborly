@@ -26,22 +26,27 @@
 /* The name is never seen twice: the sheet's own leaves at once as the list's stands in its place. The request's large setting fades as its small one comes up. */
 [data-step=filed] .help-sheet .help-from strong{opacity:0}
 [data-step=filed] .help-sheet .help-sheet-body{transition-duration:150ms}
+/* The request's large setting is out of the way in 80ms, before the first waiting row comes up through its place. */
+[data-step=filed] .help-sheet #draft-title{opacity:0;transition:opacity 80ms linear}
 [data-step=filed] .help-sheet .help-sheet-body :is(.help-from,.help-quote,.help-why,.help-seal){opacity:0;transition:opacity 100ms linear}
 .home-yes-filed{position:relative;padding:31px 35px 27px;opacity:0;pointer-events:none;transition:opacity 200ms linear}
 [data-step=filed]>.home-yes-filed{opacity:1;pointer-events:auto;transition:none}
 .home-yes-filed .help-sheet-label{color:#52644f;margin:0;padding-bottom:14px;border-bottom:1px solid var(--live-line)}
 .home-yes-filed ol{list-style:none;margin:0;padding:0}
-.home-yes-filed li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 24px;padding:14px 0 14px 30px}
+.home-yes-filed li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 24px;padding:11px 0 11px 30px}
 .home-yes-filed li+li{border-top:1px solid var(--live-line)}
 .home-yes-filed li>*{transform-origin:0 0}
 .home-yes-filed li>i{transform-origin:50% 50%}
 .home-yes-filed li strong{grid-column:1/-1;justify-self:start;font:400 24px/1.2 "Newsreader",Georgia,serif;letter-spacing:-.02em;white-space:nowrap}
 .home-yes-filed li span{justify-self:start;font-size:17px;line-height:1.5}
 .home-yes-filed li small{font-size:15px;line-height:1.5;color:var(--live-muted)}
-.home-yes-filed li:not([data-new])::before{content:"";position:absolute;left:4px;top:23px;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #a8791f}
+.home-yes-filed li:not([data-new])::before{content:"";position:absolute;left:4px;top:20px;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #a8791f}
+.home-yes-filed li[data-new] :is(span,small){grid-column:1/-1}
 .home-yes-filed li[data-new] small{color:#365c46}
-.home-yes-filed li i{position:absolute;left:0;top:19px;width:18px;height:18px;color:#365c46}
+.home-yes-filed li i{position:absolute;left:0;top:16px;width:18px;height:18px;color:#365c46}
 .home-yes-filed li i svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.home-yes-year{margin:0;padding:10px 0;border-top:1px solid var(--live-line);font-size:15px;line-height:1.5;color:#365c46}
+.home-yes-year em{margin-left:.2em;font:italic 400 20px/1.1 "Newsreader",Georgia,serif;letter-spacing:-.01em;white-space:nowrap}
 .home-yes-after{display:flex;flex-wrap:wrap;align-items:center;gap:0 22px;margin:0;padding-top:10px;border-top:1px solid var(--live-line);font-size:17px}
 .home-yes-after>span{font:400 24px/1.2 "Newsreader",Georgia,serif;letter-spacing:-.02em;margin-right:6px}
 .home-yes-after [data-slot=button]{height:auto;border:0;background:none;box-shadow:none;min-height:44px;padding:0;gap:8px;border-radius:0;font-size:17px;font-weight:400;color:#283c32;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
@@ -51,6 +56,7 @@
   .home-yes-filed .help-sheet-label{padding-right:30px}
   .home-yes-filed li{grid-template-columns:minmax(0,1fr)}
   .home-yes-after .home-yes-again{margin-left:0}
+  .home-yes-year em{display:block;margin:2px 0 0}
 }
 @media(prefers-reduced-motion:reduce){
   [data-step=filed] .help-sheet .help-from strong{opacity:1}
