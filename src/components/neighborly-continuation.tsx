@@ -20,7 +20,7 @@ const rooms = [
   ["call", "The help line", "Every call is written down once, and the urgent ones rise to the top.", -1],
   ["visit", "Visits in pairs", "What the two members saw, and what was asked, stays with the request.", .9],
   ["help", "The ledger", "Every bill paid is on one page: to whom, for whom, and how much.", -.8],
-  ["year", "The yearly report", "The totals are kept as the work is done. Check them, then print.", 1.1],
+  ["year", "The yearly report", "Ready when the year ends. Check the totals, then print.", 1.1],
   ["people", "Your people", "Each member sees what they said yes to, in English or Spanish.", -1.1],
   ["files", "The assistant", "It drafts a request from the call note. A person checks every one.", .8],
 ] as const;
@@ -77,7 +77,7 @@ export function NeighborlyContinuation() {
             </div>
           </li>)}
         </ul>
-        <p className="neighborly-free"><em>Free.</em> For every conference. There is nothing to buy.</p>
+        <p className="neighborly-free"><em>Free.</em> For every conference.</p>
       </div>
       <ReliefLean within=".neighborly-rooms" />
       <ClosingBand />
