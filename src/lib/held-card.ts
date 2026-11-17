@@ -20,6 +20,14 @@ export function dropTheHeldCard() {
 export function takeTheHeldCard() {
   const held = document.getElementById(HELD_CARD);
   if (!held || held.dataset.dropping !== undefined) return false;
+  // The two cards are laid out by the same rule, but a phone's bars can change the window between the pages by a few pixels.
+  // The sweep's card starts exactly where the held one's square was and settles into its own place, so the square and the name never jump.
+  const from = held.querySelector(".card-held-marks>i")?.getBoundingClientRect();
   held.remove();
+  const card = document.querySelector<HTMLElement>(".door-sweep .door-card"), to = card?.querySelector(":scope>i")?.getBoundingClientRect();
+  if (card && from && to && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const dx = from.left - to.left, dy = from.top - to.top;
+    if (Math.hypot(dx, dy) >= .5) card.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: 240, easing: "cubic-bezier(.2,.7,.2,1)" });
+  }
   return true;
 }
