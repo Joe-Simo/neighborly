@@ -57,3 +57,6 @@
   [data-step=filed] .help-sheet>*{transition-duration:200ms}
   [data-step=filed]>.home-yes-filed{transition:opacity 200ms linear}
 }
+
+/* On the public page the sheet labels keep the public minimum of 15px; the workspace keeps its own 13px. */
+.home-yes .help-sheet-label{font-size:15px}
