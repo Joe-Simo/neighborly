@@ -182,8 +182,10 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
 
     let detail = 1, pace = 1 / 60, strained = 0, calm = 0, recoveries = 0, drawn = false;
     const resize = () => {
-      // The scene is twice the window's height wide; on a wide window that is already more pixels than the graphics card can shade in a frame at 1.25, so it is drawn at 1 and the soft painting carries it.
-      renderer.setPixelRatio(Math.min(devicePixelRatio, frame.clientWidth >= 1600 ? 1 : 1.25) * detail);
+      // The scene is twice the window's height wide, so its cost is its area: it is drawn at up to 1.25, but never past the pixels a 1920 by 1080 window shades cleanly.
+      // A window just over that (1728 by 1117) would otherwise be caught by the pace check mid-walk, and its drawing buffer reallocated in one long frame.
+      const budget = Math.sqrt(2.36e6 / Math.max(1, frame.clientWidth * frame.clientHeight));
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25, budget) * detail);
       renderer.setSize(frame.clientWidth, frame.clientHeight, false);
       uniforms.uRes.value.set(frame.clientWidth, frame.clientHeight);
       host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => origins.delete(layer));
