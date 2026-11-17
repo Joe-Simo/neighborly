@@ -143,9 +143,18 @@ export function FrescoThreshold() {
     update();
     return () => { cancelAnimationFrame(raf); observer.disconnect(); window.removeEventListener("scroll", request); media.removeEventListener("change", request); };
   }, []);
+  // Through the doors, the keyboard and a screen reader are set down on the courtyard's own line, told where they now stand,
+  // and not left on a button that is gone.
+  const entering = useRef(false), caption = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (!open || !entering.current) return;
+    entering.current = false;
+    caption.current?.focus({ preventScroll: true });
+  }, [open]);
   const walkIn = () => {
     const track = journey.current, host = stage.current;
     if (!track || !host) return;
+    entering.current = true;
     // With Reduce Motion the journey is shorter, so the resting place stays inside the part that holds still.
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const start = track.getBoundingClientRect().top + scrollY;
@@ -207,7 +216,7 @@ export function FrescoThreshold() {
         <div className="fresco-doors" aria-hidden="true"><i /><i /></div>
       </div>
       <p className="fresco-standing" aria-hidden="true">Faith, <em>lived out.</em></p>
-      <p className="fresco-caption" aria-hidden={!open}>Faith, <em>lived out.</em></p>
+      <p className="fresco-caption" aria-hidden={!open} ref={caption} tabIndex={-1}>Faith, <em>lived out.</em></p>
     </section>
   </div>;
 }
