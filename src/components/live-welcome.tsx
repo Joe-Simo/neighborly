@@ -6,7 +6,7 @@ import Link from "next/link";
 import { words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
 import { useWaited } from "@/lib/use-waited";
-import { useEntryLanguage } from "./live-auth-words";
+import { authWords, useEntryLanguage } from "./live-auth-words";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,10 @@ export function LiveWelcome({
   signOut,
   initialToken = "",
   initialMode = "create",
+  badInvite = false,
 }: {
+  /** The invitation link that led here is no longer good; said once, above the choice. */
+  badInvite?: boolean;
   createChurch: (value: {
     name: string;
     timeZone: string;
@@ -115,6 +118,11 @@ export function LiveWelcome({
       <p className="live-deck">
         {mode === "create" ? w.createDeck : w.joinDeck}
       </p>
+      {badInvite && (
+        <div className="live-error live-failure" role="alert">
+          <p>{authWords[language].badInvite}</p>
+        </div>
+      )}
       <ToggleGroup
         type="single"
         value={mode}
