@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,12 +83,15 @@ export function LiveDialog({
   const words = useWorkspaceIfAny()?.words;
   const close = words?.shell.close ?? "Close";
   const opener = useRef<HTMLElement | null>(null);
+  const [sheet, setSheet] = useState<HTMLElement | null>(null);
+  useEffect(() => (sheet ? dragDownToClose(sheet, onClose) : undefined), [sheet, onClose]);
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent
         // A dialog is drawn under <body>, outside its room: it says its own language, so a leaders' English
         // form is not read aloud in the page's Spanish.
         lang={words?.locale}
+        ref={setSheet}
         className={cn("live-dialog live-dialog-fixed", className)}
         showCloseButton={false}
         onFocus={({ target }) => {
@@ -132,6 +135,52 @@ export function LiveDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+/**
+ * In the iOS app a phone's sheet goes the way a sheet goes on iOS: pulled down by its title (where its grabber is drawn), or by
+ * its paper once it is scrolled to the top, it follows the finger and lets go of the room when pulled far or fast
+ * enough; otherwise it settles back. Anywhere else nothing is listened to.
+ */
+function dragDownToClose(sheet: HTMLElement, close: () => void) {
+  if (document.documentElement.dataset.shell !== "ios" || !window.matchMedia("(max-width: 699px)").matches) return;
+  let from: { y: number; at: number; held: boolean } | null = null;
+  let pulled = 0;
+  const begin = (event: TouchEvent) => {
+    const held = event.target instanceof Element && !!event.target.closest('[data-slot="dialog-header"]');
+    from = held || sheet.scrollTop <= 0 ? { y: event.touches[0].clientY, at: event.timeStamp, held } : null;
+    pulled = 0;
+  };
+  const follow = (event: TouchEvent) => {
+    if (!from) return;
+    const down = event.touches[0].clientY - from.y;
+    // Upward, or a sheet with more to read above: the paper scrolls as before.
+    if (pulled === 0 && (down <= 0 || (!from.held && sheet.scrollTop > 0))) return void (from = null);
+    event.preventDefault();
+    pulled = Math.max(0, down);
+    sheet.style.transition = "none";
+    sheet.style.transform = `translateY(${pulled}px)`;
+  };
+  const end = (event: TouchEvent) => {
+    if (!from || pulled === 0) return void (from = null);
+    const fast = pulled / Math.max(1, event.timeStamp - from.at) > 0.5;
+    from = null;
+    sheet.style.transition = "transform 220ms cubic-bezier(0.32, 0.72, 0, 1)";
+    if (pulled > Math.min(140, sheet.offsetHeight / 3) || fast) {
+      sheet.style.transform = `translateY(${sheet.offsetHeight}px)`;
+      window.setTimeout(close, 200);
+    } else sheet.style.transform = "";
+  };
+  sheet.addEventListener("touchstart", begin, { passive: true });
+  sheet.addEventListener("touchmove", follow, { passive: false });
+  sheet.addEventListener("touchend", end);
+  sheet.addEventListener("touchcancel", end);
+  return () => {
+    sheet.removeEventListener("touchstart", begin);
+    sheet.removeEventListener("touchmove", follow);
+    sheet.removeEventListener("touchend", end);
+    sheet.removeEventListener("touchcancel", end);
+  };
 }
 
 /**

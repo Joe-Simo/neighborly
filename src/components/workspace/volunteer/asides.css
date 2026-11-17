@@ -24,7 +24,7 @@
 .live-aside-sheet i[data-mark="away"], .live-aside-sheet i[data-mark="covered"] { background: var(--live-ink); }
 .live-aside-sheet i[data-mark="offered"] { width: 18px; height: 10px; border-radius: 5px; background: #e9eddf; box-shadow: inset 0 0 0 1px #c9d2b8; }
 .live-aside-sheet i[data-mark="today"] { border: 1px solid var(--live-ink); }
-.live-aside-sheet i[data-mark="open"] { border: 2px solid #c8962e; }
+.live-aside-sheet i[data-mark="open"] { border: 2px solid #a8791f; }
 
 .live-aside-sheet .volunteer-teams-week tbody th { padding: 14px 0 2px; text-align: left; font-weight: 400; }
 .live-aside-sheet .volunteer-teams-week tbody th span { display: block; font-size: 15px; font-weight: 600; color: var(--live-ink); overflow-wrap: anywhere; }
@@ -36,6 +36,6 @@
 .live-aside-sheet .volunteer-next .volunteer-next-day { font-family: "Newsreader", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); text-wrap: balance; }
 .live-aside-sheet .volunteer-next .volunteer-next-title { margin: 10px 0 2px; font-weight: 600; color: var(--live-ink); }
 .live-aside-sheet .volunteer-next .volunteer-next-reply { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--live-line); color: var(--live-ink); }
-.live-aside-sheet .volunteer-next-reply::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #c8962e; }
+.live-aside-sheet .volunteer-next-reply::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
 .live-aside-sheet .volunteer-next-reply[data-reply="accepted"]::before { border: 0; background: #365c46; }
 .live-aside-sheet .volunteer-next-reply[data-reply="declined"]::before { border: 1px solid var(--live-ink); }

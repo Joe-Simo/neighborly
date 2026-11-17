@@ -70,6 +70,7 @@ export function CommitmentRows({
               </span>
               <Button
                 variant="outline"
+                className="live-row-opens"
                 aria-label={`${opens(item)}: ${item.title}, ${when(item.start, item.end)}`}
                 onClick={(event) => showCommitment(item, event.currentTarget)}
               >

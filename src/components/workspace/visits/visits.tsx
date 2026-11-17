@@ -484,7 +484,7 @@ export function VisitsView({
                           joining={visit.id === fresh}
                         />
                       </p>
-                      <h3>{visit.neighborName}</h3>
+                      <h3><VisitName visit={visit} /></h3>
                       <p>{visit.address}</p>
                     </div>
                     <div className="live-row-actions">
@@ -547,7 +547,8 @@ export function VisitsView({
                       names={visit.visitors.map((visitor) => visitor.name)}
                     />
                   </p>
-                  <h3>{visit.neighborName}</h3>
+                  <h3><VisitName visit={visit} /></h3>
+                  {visit.address && <p>{visit.address}</p>}
                 </div>
                 <div className="live-row-actions">
                   <Button variant="outline" aria-label={`Write up: ${visit.neighborName}, ${weekday(visit.scheduledAt)}`} onClick={() => onWriteUp(visit)}>
@@ -607,5 +608,15 @@ export function VisitsView({
         </section>
       )}
     </>
+  );
+}
+
+/** A visit's neighbor, named as the one link that opens the request the visit is for: the whole row opens it. */
+function VisitName({ visit }: { visit: { neighborId: Id<"neighbors">; requestId: Id<"assistanceRequests"> | null; neighborName: string } }) {
+  if (!visit.requestId) return visit.neighborName;
+  return (
+    <Link className="help-row-open" href={requestHref(visit.neighborId, visit.requestId)}>
+      {visit.neighborName}
+    </Link>
   );
 }

@@ -45,7 +45,7 @@
 .help-lines legend { padding: 0; margin-bottom: 4px; font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; color: #52644f; }
 .help-lines > [data-slot="button"] { justify-self: start; }
 .help-places[data-slot="toggle-group"] { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
-.help-places [data-slot="toggle-group-item"] { min-height: 44px; padding-inline: 16px; font-size: 16px; border: 1px solid #cdd3c5; border-radius: 4px; background: #fbfaf6; flex: 0 0 auto; }
+.help-places [data-slot="toggle-group-item"] { min-height: 44px; padding-inline: 16px; font-size: 16px; border: 1px solid #7d8874; border-radius: 4px; background: #fbfaf6; flex: 0 0 auto; }
 .help-places [data-slot="toggle-group-item"] svg { display: none; }
 .help-places [data-slot="toggle-group-item"][data-state="on"] svg { display: block; color: #3f6a45; }
 .help-places [data-slot="toggle-group-item"][data-state="on"] { background: var(--help-sage-wash); border-color: #596e51; color: var(--live-ink); box-shadow: inset 0 0 0 1px #596e51; }
@@ -100,7 +100,7 @@
 .help-row:has(.help-row-open) { position: relative; cursor: pointer; }
 .help-row-open::after { content: ""; position: absolute; inset: 0; }
 .help-row-open:focus-visible { outline: none; }
-.help-row:has(.help-row-open:focus-visible) { outline: 2px solid var(--live-green); outline-offset: -2px; border-radius: 6px; }
+.help-row:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px; }
 .help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
 .help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { color: var(--live-ink); transform: translateX(4px); }
 @media (max-width: 850px) {
@@ -205,7 +205,7 @@
 .help-aside-list strong { font-weight: 600; color: var(--live-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* A place nobody holds yet carries the same ochre ring as an open place in the Commitments column. */
 .help-aside-list strong[data-open] { display: flex; align-items: center; gap: 8px; font-weight: 400; }
-.help-aside-list strong[data-open]::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #c8962e; }
+.help-aside-list strong[data-open]::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
 .help-aside-list span, .help-aside-none { color: var(--live-muted); }
 .help-aside-none { margin: 0; }
 .live-app .live-aside-sheet h3.live-kicker { margin: 28px 0 14px; }
@@ -271,5 +271,11 @@
 .help-oldest { white-space: nowrap; }
 .help-oldest::before, .help-row[data-old] .live-date-leaf > span:first-child::before {
   content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
-  box-shadow: inset 0 0 0 2px #c8962e; margin-right: 6px; vertical-align: 0;
+  box-shadow: inset 0 0 0 2px #a8791f; margin-right: 6px; vertical-align: 0;
+}
+/* A sheet reads down whenever it is itself narrow, whatever the window: its words never share a row with its
+   acts below 880px of sheet, so they are never squeezed to a word a line (a tablet beside the side column). */
+.live-app .help-sheet { container: help-sheet / inline-size; }
+@container help-sheet (max-width: 880px) {
+  .help-sheet-body { grid-template-columns: minmax(0, 1fr); align-items: start; row-gap: 22px; }
 }

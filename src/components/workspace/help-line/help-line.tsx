@@ -81,7 +81,7 @@ function HelpLine() {
   const createRequest = useMutation(api.assistance.createRequest);
   const setUrgency = useMutation(api.assistance.setUrgency);
   const drafting = useSave();
-  const approving = useSave();
+  const approving = useSave("decided");
   // Every draft waits for its own yes; asking for another never drops one. The newest is on the sheet.
   // The group keeps them, so they are still here after leaving the page. Until the backend can
   // keep them they stay on this page only.

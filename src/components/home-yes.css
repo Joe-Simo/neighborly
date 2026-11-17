@@ -1,6 +1,6 @@
 /* Your turn: the words on the paper, the workspace's sheet beside them. The sheet's own look arrives with it (home-yes-card.css). */
 .home-yes{position:relative;z-index:1;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:0 5%;padding:clamp(48px,9svh,96px) 7% clamp(72px,12svh,128px);background:#eee7d7;color:#293f32}
-.home-yes-kicker.home-yes-kicker{margin:0 0 clamp(14px,1.4vw,22px);max-width:none;font-size:13px;font-weight:650;line-height:1.3;letter-spacing:.1em;text-transform:uppercase;color:#52644f}
+.home-yes-kicker.home-yes-kicker{margin:0 0 clamp(14px,1.4vw,22px);max-width:none;font-size:15px;font-weight:650;line-height:1.3;letter-spacing:.1em;text-transform:uppercase;color:#52644f}
 /* The desk keeps the sheet's room before the sheet is there, so nothing under it is ever pushed down. */
 .home-yes-desk{position:relative;isolation:isolate;min-height:420px}
 .home-yes-desk .card-station{z-index:-1;left:74px;top:-2px;width:clamp(120px,10.4vw,168px);rotate:-7deg}

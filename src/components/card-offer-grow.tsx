@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { MouseEvent } from "react";
+import { useEffect, type MouseEvent } from "react";
 import { CardOffer } from "./card-offer";
 import { useSampleDoor } from "./sample-link";
 import { HELD_CARD, dropTheHeldCard } from "@/lib/held-card";
@@ -22,6 +22,8 @@ export function CardOfferGrow() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || document.getElementById(HELD_CARD)) return;
     event.preventDefault();
     const offer = event.currentTarget, href = offer.getAttribute("href") ?? "/app";
+    // The grow starts from the card as it lies, not as it leans: without the mark it lies flat at once, with no easing back.
+    offer.removeAttribute("data-leaning");
     const turn = Number(offer.dataset.turn ?? 0), slant = Math.abs(turn) * Math.PI / 180, box = offer.getBoundingClientRect();
     // The turned card's own size, found back from the rectangle around it.
     const width = (box.width * Math.cos(slant) - box.height * Math.sin(slant)) / Math.max(.2, Math.cos(2 * slant)), height = width / 1.5;
@@ -82,5 +84,36 @@ export function CardOfferGrow() {
     };
     grow.finished.then(go, go);
   }
+  useCardLean();
   return <CardOffer door={useSampleDoor(open)} />;
+}
+
+/** At rest the card turns a little toward a mouse or pen, at most 1.5 degrees, and settles when it leaves the window. Not for touch, not for reduced motion. */
+function useCardLean() {
+  useEffect(() => {
+    const wanted = matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
+    if (!wanted.matches) return;
+    let frame = 0, x = 0, y = 0;
+    const lean = () => {
+      frame = 0;
+      for (const card of document.querySelectorAll<HTMLElement>(".card-offer:not([data-given])")) {
+        const box = card.getBoundingClientRect();
+        if (box.bottom < 0 || box.top > innerHeight) continue;
+        const across = Math.max(-1, Math.min(1, (x - (box.left + box.width / 2)) / (innerWidth / 2)));
+        const down = Math.max(-1, Math.min(1, (y - (box.top + box.height / 2)) / (innerHeight / 2)));
+        card.style.setProperty("--lean-y", `${(across * 1.5).toFixed(2)}deg`);
+        card.style.setProperty("--lean-x", `${(-down * 1.5).toFixed(2)}deg`);
+        card.dataset.leaning = "";
+      }
+    };
+    const move = (event: PointerEvent) => {
+      if (event.pointerType === "touch") return;
+      x = event.clientX; y = event.clientY;
+      if (!frame) frame = requestAnimationFrame(lean);
+    };
+    const rest = () => document.querySelectorAll<HTMLElement>(".card-offer[data-leaning]").forEach(card => { card.style.setProperty("--lean-x", "0deg"); card.style.setProperty("--lean-y", "0deg"); });
+    addEventListener("pointermove", move, { passive: true });
+    document.documentElement.addEventListener("pointerleave", rest);
+    return () => { cancelAnimationFrame(frame); removeEventListener("pointermove", move); document.documentElement.removeEventListener("pointerleave", rest); rest(); };
+  }, []);
 }

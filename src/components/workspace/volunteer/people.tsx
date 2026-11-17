@@ -16,6 +16,9 @@ import type { LiveWorkspaceData } from "@/components/workspace/types";
 import { useWorkspace } from "@/components/workspace/context";
 import { words as wordsFor } from "@/lib/words";
 
+/** The owner's tools (invitations, managing access) stay English whole, role words included, so no line is half one language. */
+const ownerRoles: Record<string, string> = { owner: "Owner", coordinator: "Coordinator", member: "Member" };
+
 /** "Ana Lucía Prieto" as "AP": the first and last name, so two people with one first name still differ. */
 export const initials = (name: string) => {
   const parts = name.trim().split(/\s+/);
@@ -136,7 +139,7 @@ export function PeopleSection() {
         removing ? (
           <RemoveForGood person={managing} churchId={data.church.id} onClose={() => { setRemoving(false); setManagingId(null); }} />
         ) : (
-        <LiveDialog title={managing.name} description={<><span className="people-address-full">{managing.email.slice(0, managing.email.lastIndexOf("@"))}<wbr />{managing.email.slice(managing.email.lastIndexOf("@"))}</span>{managing.active ? (roles[managing.role] ?? managing.role) : "Access removed"} · {managing.approved ? "Ready to serve" : "Not yet ready to serve"}</>} onClose={() => setManagingId(null)}>
+        <LiveDialog title={managing.name} description={<><span className="people-address-full">{managing.email.slice(0, managing.email.lastIndexOf("@"))}<wbr />{managing.email.slice(managing.email.lastIndexOf("@"))}</span>{managing.active ? (ownerRoles[managing.role] ?? managing.role) : "Access removed"} · {managing.approved ? "Ready to serve" : "Not yet ready to serve"}</>} onClose={() => setManagingId(null)}>
           <div className="live-manage">
                 <Button
                   variant="outline"
@@ -204,8 +207,9 @@ export function PeopleSection() {
         )
       )}
       {isOwner && (
-        <section className="live-section">
+        <section className="live-section" lang="en">
           <h2>Invitations</h2>
+          {words.locale !== "en" && <p className="people-part-note" lang={words.locale}>{words.shell.partInEnglish}</p>}
           <p className="live-deck people-deck">
             An invitation gives someone a way to join. It never accepts
             work on their behalf.
@@ -215,7 +219,7 @@ export function PeopleSection() {
             <div className="live-list people-invitations">
               {data.invitations.map((invite) => {
                 const waits = invite.status === "pending";
-                const role = `Invited as ${(roles[invite.role] ?? invite.role).toLowerCase()}`;
+                const role = `Invited as ${(ownerRoles[invite.role] ?? invite.role).toLowerCase()}`;
                 return (
                   <div className="live-row live-person-row people-row people-invited" key={invite.id}>
                     <div className="live-person">
