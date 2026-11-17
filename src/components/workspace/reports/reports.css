@@ -819,6 +819,11 @@
    of help as a table, the months, what became of each request, and where the counts come from. Ink on white, no
    colour, nothing to press. Every line follows on later pages only when "Show every line" is open on screen. */
 @media print {
+  /* Paper is narrower than the phone breakpoint, where the report is a flex column with its parts reordered (850px
+     above). On paper it is one plain column of blocks in reading order, the layout every browser breaks into pages
+     most surely; and the app's frame keeps no screen-tall height that could carry a page of its own. */
+  .live-app .report { display: block; }
+  .live-app:has(.report) { min-height: 0; }
   .report .help-bars:not(.report-teams), .report .live-section:has(> .report-teams), .report .report-lines:not([data-open]),
   .report .report-outcomes, .report .report-legend li::before { display: none !important; }
   .report .report-lines[data-open] { break-before: page; margin-top: 0; }
@@ -842,7 +847,8 @@
   .report-kinds-print tbody th { font-weight: 600; }
   .report-kinds-print td:last-child { width: 26%; }
   .report-kinds-print td:nth-child(2), .report-kinds-print td:nth-child(3) { width: 18%; }
-  .report-kinds-print tfoot :is(th, td) { font-weight: 650; border-top: 1.5pt solid #000; border-bottom: 0; }
+  .report-kinds-print .report-kinds-total :is(th, td) { font-weight: 650; border-top: 1.5pt solid #000; border-bottom: 0; }
+  .report-kinds-print .report-kinds-total th { font-size: 9.75pt; letter-spacing: 0.06em; text-transform: uppercase; }
   .report-kinds-print tbody th { text-transform: none; letter-spacing: 0; font-size: 11pt; }
   .report-kinds-print td { white-space: nowrap; }
   .report .live-section { margin-top: 11pt; }
@@ -853,4 +859,17 @@
   .report .report-key-pair { margin: 0 !important; padding: 0 !important; }
   /* The page's own margin carries whose year it is, the date and the page number, so the sheet ends with its last line. */
   .report-print-foot { display: none !important; }
+  /* Room for one sheet whatever the year holds: the head, the figures and the months a step tighter. */
+  .report-print-head h1 { font-size: 21pt; }
+  .report-sheet-total dd { font-size: 34pt; }
+  .report-sheet-figures dd { font-size: 21pt; }
+  .report-sheet-figures > div { padding-block: 6pt 7pt; }
+  .report-kinds-print th, .report-kinds-print td { padding-block: 3pt; }
+  .report .live-section { margin-top: 9pt; }
+  .report .live-section-head { margin-bottom: 4pt; }
+  .report .live-section-head h2 { font-size: 14pt; }
+  .report .report-months li { padding: 5pt 2pt; }
+  .report .report-months p.help-amount { font-size: 10.5pt; }
+  .report .report-aside, .report .report-history { margin-top: 5pt; font-size: 10pt; }
+  .report .help-footnote { margin-top: 8pt; font-size: 9pt; }
 }
