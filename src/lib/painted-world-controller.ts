@@ -61,14 +61,47 @@ const imagePath = (scene: PaintedScene, portrait: boolean) => scene === "opening
 /** The live opening graded to Joe's accepted still (measured at 1920), so the hand-off from picture to scene keeps its colour. */
 const stillGrade = `
   float stillLuma = dot(gl_FragColor.rgb, vec3(.2126, .7152, .0722));
-  gl_FragColor.rgb = pow(max(vec3(1e-5), mix(vec3(stillLuma), gl_FragColor.rgb, .956)), vec3(1.114, .979, .914)) * vec3(.89, .819, .751);`;
+  gl_FragColor.rgb = pow(max(vec3(1e-5), mix(vec3(stillLuma), gl_FragColor.rgb, .956)), vec3(1.114, .979, .914)) * vec3(.89, .819, .751);
+  gl_FragColor.rgb = towardStill(gl_FragColor.rgb);`;
+// Then each colour family is moved by what a 1920 film measured against the still, in CIELAB: skin, sleeves and hair are
+// picked out by hue, the card's ochre square by its material. Each shift is the measured difference taken back.
+const stillShifts = `
+vec3 stillLab(vec3 c) {
+  vec3 x = mat3(.4124, .2126, .0193, .3576, .7152, .1192, .1805, .0722, .9505) * c / vec3(.9505, 1., 1.089);
+  vec3 f = mix(x * 7.787 + 16. / 116., pow(max(x, vec3(0.)), vec3(1. / 3.)), step(vec3(.008856), x));
+  return vec3(116. * f.y - 16., 500. * (f.x - f.y), 200. * (f.y - f.z));
+}
+vec3 stillRgb(vec3 lab) {
+  float fy = (lab.x + 16.) / 116.;
+  vec3 f = vec3(fy + lab.y / 500., fy, fy - lab.z / 200.);
+  vec3 x = mix((f - 16. / 116.) / 7.787, f * f * f, step(vec3(.2069), f)) * vec3(.9505, 1., 1.089);
+  return max(vec3(0.), mat3(3.2406, -.9689, .0557, -1.5372, 1.8758, -.204, -.4986, .0415, 1.057) * x);
+}
+float stillBand(float h, float from, float to) { return smoothstep(from - 8., from + 4., h) * (1. - smoothstep(to - 4., to + 8., h)); }
+vec3 towardStill(vec3 c) {
+  vec3 lab = stillLab(c);
+  float chroma = length(lab.yz), hue = mod(degrees(atan(lab.z, lab.y)) + 360., 360.);
+  #ifdef STILL_OCHRE
+  lab += vec3(0., 3.8, 3.3);
+  #else
+  float skin = stillBand(hue, 45., 75.) * smoothstep(12., 20., chroma) * smoothstep(40., 48., lab.x);
+  float sleeve = stillBand(hue, 290., 345.) * smoothstep(5., 9., chroma);
+  float hair = stillBand(hue, 130., 200.) * smoothstep(4., 7., chroma) * (1. - smoothstep(52., 58., lab.x));
+  lab += skin * vec3(-3.2, 0., -1.4) + sleeve * vec3(-1.3, 0., -1.7) + hair * vec3(2.5, 1.6, 0.);
+  #endif
+  return stillRgb(lab);
+}
+`;
 function gradeToStill(surface: T.Material) {
   const before = surface.onBeforeCompile.bind(surface);
+  const ochre = /ochre/i.test(surface.name);
   surface.onBeforeCompile = (shader, renderer) => {
     before(shader, renderer);
-    shader.fragmentShader = shader.fragmentShader.replace("#include <tonemapping_fragment>", `#include <tonemapping_fragment>${stillGrade}`);
+    shader.fragmentShader = (ochre ? "#define STILL_OCHRE\n" : "") + shader.fragmentShader
+      .replace("void main()", `${stillShifts}\nvoid main()`)
+      .replace("#include <tonemapping_fragment>", `#include <tonemapping_fragment>${stillGrade}`);
   };
-  surface.customProgramCacheKey = () => "still-grade";
+  surface.customProgramCacheKey = () => ochre ? "still-grade-ochre" : "still-grade";
 }
 
 /** One renderer owns the continuous painted journey. No account state is read or changed. */
@@ -160,6 +193,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const thumbBox = new T.Box3();
   // How far up the giving hand the underside of its thumb runs, and how far the card leans in under it while it waits.
   const thumbFrom = .5;
+  // In the still only the upper finger lies over the card, and the card over the fingertip below it; the thumb's reach grows to the tuck after the hand-off.
+  const thumbStill = .7;
   const cardTuck = [-.11, .07] as const;
   let landed = 0;
   // The open hand takes the card: it gives 12px under the small weight and comes back, and its palm closes 6 degrees and keeps hold, the card sinking 3px deeper into it.
@@ -718,7 +753,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       openingModel.updateMatrixWorld(true);
       if (givingHand) {
         thumbBox.setFromObject(givingHand);
-        thumbLine.constant = -(thumbBox.min.y + (thumbBox.max.y - thumbBox.min.y) * thumbFrom);
+        thumbLine.constant = -(thumbBox.min.y + (thumbBox.max.y - thumbBox.min.y) * (thumbStill + (thumbFrom - thumbStill) * smooth(introduced)));
       }
       const fading = openingOpacity > 0 && openingOpacity < 1;
       for (const [surface, original] of openingMaterials) {
@@ -920,7 +955,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       openingModel.traverse((object) => {
         if (!(object instanceof T.Mesh) || !/^Role[ _]guide[ _]/.test(object.name)) return;
         object.renderOrder = 3;
-        for (const surface of Array.isArray(object.material) ? object.material : [object.material]) surface.transparent = true;
+        for (const surface of Array.isArray(object.material) ? object.material : [object.material]) { surface.transparent = true; }
       });
       cardSeat.parent?.add(cardShadow);
       givingHand = undefined;
