@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useRef } from "react";
 import { HomeYear } from "./home-year";
+import { PageTurn } from "./chapter-sheets";
 import "./relief-journey.css";
 
 // Each picture is a plate with loose paper lying on it, listed from the lowest sheet up. A piece that names a shadow casts one on the plate.
@@ -22,42 +23,8 @@ const station = ({ picture, card }: (typeof story)[number]) => <span className="
   <img src="/assets/home/card-light-480.webp" width={480} height={320} alt="" loading="lazy" decoding="async" />
 </span>;
 
-/** What a conference does with Kind Helps, one idea to a screen, each with its own cut-paper picture. */
-export function ReliefStory() {
-  const root = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const element = root.current;
-    if (!element) return;
-    const panels = [...element.querySelectorAll<HTMLElement>(".relief-panel")];
-    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (still) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const height = innerHeight;
-      const bounds = element.getBoundingClientRect();
-      if (bounds.bottom < -height || bounds.top > height * 2) return;
-      for (const panel of panels) {
-        const box = panel.getBoundingClientRect();
-        const holds = box.height > height * 1.2;
-        // Coming in: 0 as the chapter's top enters the window, 1 once it reaches the top (or, where nothing holds, once the chapter is centred).
-        const rest = holds ? 0 : (height - box.height) / 2;
-        const e = Math.max(0, Math.min(1, (height * .92 - box.top) / Math.max(1, height * .92 - rest)));
-        // Holding: the chapter's one act, done by 85% of the hold so the finished picture rests before the page moves on.
-        const h = holds ? Math.max(0, Math.min(1, -box.top / Math.max(1, (box.height - height) * .85))) : Math.max(0, Math.min(1, (e - .35) / .65));
-        panel.style.setProperty("--e", (1 - (1 - e) ** 3).toFixed(4));
-        panel.style.setProperty("--h", (h * h * (3 - 2 * h)).toFixed(4));
-      }
-    };
-    const request = () => { if (!raf) raf = requestAnimationFrame(update); };
-    window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request);
-    update();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
-  }, []);
-  return <section ref={root} className="relief-story" aria-label="What a conference does with Kind Helps">
-    {story.map((part, index) => <article key={part.picture} className="relief-panel" data-chapter={part.picture} data-side={index % 2 ? "left" : "right"}>
-      <div className="relief-hold">
+// One chapter: its words and its picture.
+const hold = (part: (typeof story)[number]) => <div className="relief-hold">
       <div className="relief-words"><h2>{part.title}</h2><p>{part.copy}</p>{part.picture === "year" && <HomeYear />}</div>
       <div className="relief-picture" data-picture={part.picture}>
         <div className="relief-layers">
@@ -81,6 +48,46 @@ export function ReliefStory() {
         </div>
       </div>
       </div>
+;
+
+/** What a conference does with Kind Helps, one idea to a screen, each with its own cut-paper picture. */
+export function ReliefStory() {
+  const root = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const element = root.current;
+    if (!element) return;
+    const panels = [...element.querySelectorAll<HTMLElement>(".relief-panel")];
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (still) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const height = innerHeight;
+      const bounds = element.getBoundingClientRect();
+      if (bounds.bottom < -height || bounds.top > height * 2) return;
+      for (const panel of panels) {
+        // The chapter found under a turned page is already lying in its place: the turn sets its act.
+        if (panel.dataset.turn === "to") continue;
+        const box = panel.getBoundingClientRect();
+        const holds = box.height > height * 1.2;
+        // Coming in: 0 as the chapter's top enters the window, 1 once it reaches the top (or, where nothing holds, once the chapter is centred).
+        const rest = holds ? 0 : (height - box.height) / 2;
+        const e = Math.max(0, Math.min(1, (height * .92 - box.top) / Math.max(1, height * .92 - rest)));
+        // Holding: the chapter's one act, done by 85% of the hold so the finished picture rests before the page moves on.
+        const h = holds ? Math.max(0, Math.min(1, -box.top / Math.max(1, (box.height - height) * .85))) : Math.max(0, Math.min(1, (e - .35) / .65));
+        panel.style.setProperty("--e", (1 - (1 - e) ** 3).toFixed(4));
+        panel.style.setProperty("--h", (h * h * (3 - 2 * h)).toFixed(4));
+      }
+    };
+    const request = () => { if (!raf) raf = requestAnimationFrame(update); };
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", request);
+    update();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
+  }, []);
+  return <section ref={root} className="relief-story" aria-label="What a conference does with Kind Helps">
+    {story.map((part, index) => <article key={part.picture} className="relief-panel" data-chapter={part.picture} data-side={index % 2 ? "left" : "right"}>
+      {part.picture === "help" ? <PageTurn>{hold(part)}</PageTurn> : hold(part)}
     </article>)}
   </section>;
 }
