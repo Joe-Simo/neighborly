@@ -257,8 +257,14 @@
   .help-done.help-filed > :is(a, button) { margin-left: 36px; }
 }
 /* While the name and the request are on their way up, the sentence under them waits, so nothing crosses it. */
-.help-filed[data-filed-from] .help-filed-words > span:last-child { animation: paper-show 180ms linear 400ms backwards; }
-@media (prefers-reduced-motion: reduce) { .help-filed[data-filed-from] .help-filed-words > span:last-child { animation: none; } }
+/* The yes lands in 400ms (room.tsx fileAway): the sentence comes up under the travelling words, and the green tick
+   is set down last, a touch large, and settles, so the eye ends on it. */
+/* The card becomes this line where it lies, so the line is not laid down again under it. */
+.help-done.help-filed[data-filed-from] { animation: none; }
+.help-filed[data-filed-from] .help-filed-words > span:last-child { animation: paper-show 140ms linear 240ms backwards; }
+.help-filed[data-filed-from] > svg { animation: help-tick-lands 180ms cubic-bezier(0.3, 1.4, 0.5, 1) 200ms backwards; }
+@keyframes help-tick-lands { from { opacity: 0; transform: scale(0.6); } }
+@media (prefers-reduced-motion: reduce) { .help-filed[data-filed-from] .help-filed-words > span:last-child, .help-filed[data-filed-from] > svg { animation: none; } }
 /* The sheet a yes hands over (room.tsx, fileAway): its green corner turns further as it is taken, to 64px on a desk
    and 48px on a phone, which stays inside the sheet's top margin and so never over a word. */
 .help-handed { background-image: none !important; will-change: left, top, width, height, transform; }
