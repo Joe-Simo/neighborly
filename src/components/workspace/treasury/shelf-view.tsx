@@ -205,7 +205,7 @@ export function ShelfView({
                       ? w.backOnShelf
                       : row.forRequest && (!row.note || row.note === "Given on a request")
                         ? w.givenOnRequest
-                        : row.note || w.received}
+                        : sampleSaid(row.note ?? "") || w.received}
                   </span>
                 </li>
               ))}

@@ -235,7 +235,7 @@ export function LedgerView({
               </h2>
               <p className="help-why">
                 {w.sheet.for} <NeighborLink id={first.neighborId} name={first.neighborName} />
-                . {sentence(first.summary)}
+                . {sentence(sampleSaid(first.summary))}
               </p>
               <p>
                 {first.paid > 0
@@ -273,7 +273,7 @@ export function LedgerView({
                       id={request.neighborId}
                       name={request.neighborName}
                     />
-                    . {request.summary}
+                    . {sampleSaid(request.summary)}
                     {request.paid > 0 &&
                       `. ${w.also.alreadyPaid(formatFigure(request.paid))}`}
                   </p>

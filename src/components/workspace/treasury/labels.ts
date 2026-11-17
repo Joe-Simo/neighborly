@@ -57,7 +57,7 @@ export const amountLine = (words: TreasuryWords, entry: Pick<BankEntry, "kind" |
 
 /** The two lines a ledger row reads as: what it was, then who was paid or where it came from. */
 export function entryLines(words: TreasuryWords, given: BankEntry, typed: Say = asTyped) {
-  const entry = { ...given, payee: typed(given.payee), memo: typed(given.memo) };
+  const entry = { ...given, payee: typed(given.payee), memo: typed(given.memo), summary: given.summary && typed(given.summary) };
   const say = words.lines;
   const check = entry.checkNumber ? say.check(entry.checkNumber) : "";
   const note = [check, entry.memo]
