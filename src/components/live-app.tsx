@@ -300,10 +300,11 @@ function LiveRooms({
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
     const sheetKnown = invitationGood !== undefined;
     const entry = badInvite ? "signin" : intent;
+    // Someone with an invitation in hand came to join their own people: the sample is not offered on the way.
     return (
       <>
         {signedOut && sheetKnown && (
-          <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing} onSampleRefused={() => setLookOver(true)} />
+          <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry && !liveToken} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing} onSampleRefused={() => setLookOver(true)} />
         )}
         {/* Nor is the sheet drawn before it is known whether a room will be: the launch line stands until then. */}
         {!first && (lookComing || !sheetKnown) && <LiveRoomLoading key="wait" />}
