@@ -74,12 +74,25 @@
 @media(min-width:600px) and (max-width:1023px){.public-words .public-words-note{padding-inline:max(20px,calc((100% - 476px) / 2))}}
 @media(min-width:1280px){.public-words .public-words-note{font-size:16px}}
 @media(min-width:1600px){.public-words .public-words-note{font-size:17px}}
-/* On a printed page the sheets are flat: no desk, no shadows, and a part is not split where it can be kept whole. */
+/* On a printed page (a board member prints this to read it): the name at the head, then the words in one column at a reading size. No desk, no shadows, no picture,
+   no closing band; a part is kept whole where it can be; the page's own address stands at the foot, and the link to the English page says where it leads. */
+@page public{margin:18mm 16mm}
 @media print{
-  .public-page{background:none}
-  .public-words h1,.public-words section,.public-words-relief{filter:none}
+  .public-page{page:public;background:none}
+  .public-page-header{height:auto;padding:0 0 9mm}
+  .public-page-header>a:last-child,.public-words-relief,.public-page>.neighborly-continuation{display:none}
+  .public-words{padding:0}
+  .public-words h1,.public-words section{filter:none}
   .public-words h1::before,.public-words section::before{display:none}
-  .public-words section{margin:0;break-inside:avoid;border-top:1px solid #293f3224}
+  .public-words h1,.public-words:has(.public-words-note) h1{padding:0 0 5mm;font-size:34pt}
+  .public-words .public-words-note{height:auto;margin:0 0 6mm;padding:0;max-width:none;font-size:10pt}
+  .public-words .public-words-note a::after{content:" (kindhelps.com/privacy)"}
+  .public-words section{grid-template-columns:minmax(0,1fr);justify-items:start;gap:2mm;margin:0;padding:5mm 0;break-inside:avoid;border-top:1px solid #293f3224}
+  .public-words section>*{width:auto;max-width:none}
+  .public-words h2{font-size:15pt;break-after:avoid}
+  .public-words section>div{max-width:36em;font-size:11pt;line-height:1.5}
+  .public-words .public-words-last{font-size:10pt}
+  .public-words::after{content:attr(data-address);display:block;padding-top:3mm;border-top:1px solid #293f3224;font-size:10pt}
 }
 @media(prefers-reduced-motion:reduce){.paper-rise,.public-state .paper-rise>*{animation:none}}
 /* The closing band meets the page of words with its cut edge only: above that edge lies the desk, not a strip of another paper. */

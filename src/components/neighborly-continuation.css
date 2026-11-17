@@ -78,3 +78,19 @@
 .neighborly-static-story p{margin:32px 7% 0;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em}
 /* On the widest screens the foot's small line and the band's links go up a step with everything else. */
 @media(min-width:1600px){.neighborly-colophon{font-size:16px}.neighborly-close .neighborly-final-links a{font-size:17px}}
+/* On a printed page: the sheet, each room and the ending are kept whole, flat and unturned. The card, the hand and the ways in are for a screen and are left off, the closing
+   picture is not printed a second time, and the name at the foot is set small beside the site's address. */
+@media print{
+  .home-yes,.neighborly-rooms li,.neighborly-close-words,.neighborly-colophon{break-inside:avoid}
+  .neighborly-rooms li{rotate:none!important;translate:none!important;margin-top:0!important;box-shadow:none!important;filter:none!important;outline:1px solid #293f3224}
+  .neighborly-rooms>div{break-inside:avoid;break-after:avoid}
+  .has-reveal [data-reveal]{translate:none}
+  .home-yes .help-sheet,.home-yes-still{box-shadow:none}
+  .home-yes-desk .card-station,.neighborly-close-art,.neighborly-close-hand,.neighborly-close-offer,.neighborly-close .neighborly-final-actions,.neighborly-colophon nav,.neighborly-together-paper{display:none}
+  .neighborly-together .neighborly-close{height:auto;margin-inline:0}
+  .neighborly-together .neighborly-close::before,.neighborly-together :is(.neighborly-close-words,.neighborly-colophon)::before{display:none}
+  .neighborly-together .neighborly-close-words{position:static;width:auto;padding:10mm 0 4mm}
+  .neighborly-colophon{padding:0;border-top:1px solid #293f3224}
+  .neighborly-colophon>a{flex-basis:auto;margin:0;font-size:22pt;line-height:1.4}
+  .neighborly-colophon::after{content:"kindhelps.com";font-size:10pt}
+}
