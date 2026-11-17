@@ -92,8 +92,15 @@ const inSpanish = (typed: string) => {
   return around ? around[1] + typed.slice(around[0].length) : typed;
 };
 
+/** The name the backend gives a removed member's visits and hours (convex/people.ts formerMember), as a Spanish reader is told it. */
+const formerMember = { typed: "A former member", es: "Un miembro anterior" };
+const formerInSpanish = (typed: string) => (typed === formerMember.typed ? formerMember.es : typed);
+const allInSpanish = (typed: string) => formerInSpanish(inSpanish(typed));
+
 /**
- * How one of the sample's names is said to this reader. Anything that is not the sample, not Spanish, or not one of
- * the seed's own names comes back as it was typed. The same function each time, so nothing that names it runs again.
+ * How a name the backend wrote is said to this reader. In Spanish a removed member is "Un miembro anterior" in any
+ * conference; the sample's own names are said in Spanish too. Anything else comes back as typed. The same function
+ * each time, so nothing that names it runs again.
  */
-export const sampleSayer = (sample: boolean, language: Language) => (sample && language === "es" ? inSpanish : asTyped);
+export const sampleSayer = (sample: boolean, language: Language) =>
+  language !== "es" ? asTyped : sample ? allInSpanish : formerInSpanish;

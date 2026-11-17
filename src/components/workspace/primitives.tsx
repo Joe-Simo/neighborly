@@ -6,8 +6,7 @@ import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords, wrongControl } from "@/components/workspace/failure";
 import { useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor } from "@/lib/words";
-import { cameThroughTheDoor } from "@/components/workspace/door";
-import { useLaunchCarried, useRoomShown } from "@/components/workspace/room-sheet";
+import { useLaunchCarried } from "@/components/workspace/room-sheet";
 
 /** "Opening…" in the reader's language: the room's own words inside the workspace, the door's language before it. */
 function useOpening() {
@@ -137,65 +136,6 @@ export function FollowingHeading({ children }: { children: ReactNode }) {
   }, []);
   const Heading = level === 2 ? "h2" : "h3";
   return <Heading ref={place}>{children}</Heading>;
-}
-
-/**
- * A figure that rolls to its value in 400ms whenever the value changes, and on arrival from nothing, once its room
- * is shown (`delay` later, the first time). It holds the width of its value throughout, so nothing beside it moves
- * while it rolls. `format` writes the number as the room shows it (money, a count). Still for anyone who asks for
- * less motion.
- */
-export function CountUp({
-  value,
-  format = (amount) => String(Math.round(amount)),
-  className,
-  delay = 0,
-}: {
-  value: number;
-  format?: (amount: number) => string;
-  className?: string;
-  delay?: number;
-}) {
-  // It rolls once, the first time its room is shown. A figure that changes after that changes at once, in the commit
-  // that brought it, with no values in between.
-  // Under the door's paper the figure is already at its value, so the sheet lifts off a finished room.
-  const [roll, setRoll] = useState<"waiting" | { to: number; at: number } | null>(() =>
-    cameThroughTheDoor() || typeof window === "undefined" || matchMedia("(prefers-reduced-motion: reduce)").matches ? null : "waiting",
-  );
-  // It starts where the roll starts. Starting at the value showed the figure whole for a frame, then dropped it
-  // to nothing and rolled it back up, which read as the figure stepping back.
-  const shown = roll === "waiting" ? 0 : roll && roll.to === value ? roll.at : value;
-  const latest = useRef(value);
-  useEffect(() => {
-    latest.current = value;
-  });
-  const done = useRef(roll === null);
-  // A roll drawn while the room is still unseen would be over before anyone saw it.
-  const seen = useRoomShown();
-  useEffect(() => {
-    if (!seen || done.current) return;
-    const to = latest.current;
-    const began = performance.now() + delay;
-    let frame = requestAnimationFrame(function step(now) {
-      const part = Math.min(1, Math.max(0, now - began) / 400);
-      // It lands on the value itself, not on a sum that may miss it by a hair. Once landed, nothing starts it again.
-      if (part === 1) done.current = true;
-      setRoll(part < 1 ? { to, at: to * (1 - (1 - part) ** 3) } : null);
-      if (part < 1) frame = requestAnimationFrame(step);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [seen, delay]);
-  return (
-    // While it rolls it says so, and the room is not at rest until it has landed (room-sheet.tsx).
-    <span className={className ? `count-up ${className}` : "count-up"} data-moving={shown === value ? undefined : ""}>
-      {/* A screen reader gets the figure itself, once; the rolling digits are for the eye. */}
-      <span className="sr-only">{format(value)}</span>
-      {/* The value, unseen, holds the figure's width; the rolling digits lie over it from its left edge, so the
-          figure's box and the text's start never move. */}
-      <span className="count-up-room" aria-hidden="true">{format(value)}</span>
-      <span className="count-up-roll" aria-hidden="true">{format(shown)}</span>
-    </span>
-  );
 }
 
 export function LiveField({

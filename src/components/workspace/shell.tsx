@@ -141,10 +141,11 @@ export function LiveWorkspace({
     });
   const when = (start: number, end: number) =>
     `${format(start, { weekday: "short" })} · ${format(start, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}–${format(end, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}`;
-  const personName = (id: string | null) =>
-    data.people.find((person) => person.id === id)?.name ??
-    (id ? words.shell.member : words.detail.unassigned);
   const sampleSaid = sampleSayer(data.church.sample, words.locale);
+  const personName = (id: string | null) => {
+    const name = data.people.find((person) => person.id === id)?.name;
+    return name ? sampleSaid(name) : id ? words.shell.member : words.detail.unassigned;
+  };
   const teamName = (id: string) => {
     const team = data.teams.find((one) => one.id === id);
     return team ? sampleSaid(team.name) : words.shell.team;
@@ -302,8 +303,14 @@ export function LiveWorkspace({
     const first = requestAnimationFrame(read);
     window.addEventListener("scroll", read, { passive: true });
     window.addEventListener("resize", read);
+    // A new headline in the same room (a neighbor's record opened over the list, and the list again) is read as it
+    // stands, not left at the last one's place under the bar.
+    const head = app.current?.querySelector(".live-page-head");
+    const changed = new MutationObserver(read);
+    if (head) changed.observe(head, { childList: true, subtree: true, characterData: true });
     return () => {
       cancelAnimationFrame(first);
+      changed.disconnect();
       window.removeEventListener("scroll", read);
       window.removeEventListener("resize", read);
     };

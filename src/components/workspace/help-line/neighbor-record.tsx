@@ -22,7 +22,6 @@ import { readFailure } from "@/components/workspace/failure";
 import { openUp } from "@/components/workspace/fold";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveState } from "@/components/workspace/states";
-import { CountUp } from "@/components/workspace/primitives";
 import {
   AccountsForm,
   AtHome,
@@ -53,7 +52,7 @@ type Step =
 function Back() {
   const { words } = useWorkspace();
   return (
-    <Link className="help-back" href="/app/neighbors">
+    <Link className="help-back" href="/app/neighbors" scroll={false} data-step-own="">
       <ArrowLeft size={16} aria-hidden="true" /> {words.rooms.neighbors.all}
     </Link>
   );
@@ -257,7 +256,7 @@ export function NeighborRecord({
         title={text.missing.title}
         action={
           <Button variant="outline" asChild>
-            <Link href="/app/neighbors">{words.rooms.neighbors.all}</Link>
+            <Link href="/app/neighbors" scroll={false} data-step-own="">{words.rooms.neighbors.all}</Link>
           </Button>
         }
       >
@@ -271,7 +270,7 @@ export function NeighborRecord({
         title={text.removed.title}
         action={
           <Button variant="outline" asChild>
-            <Link href="/app/neighbors">{words.rooms.neighbors.all}</Link>
+            <Link href="/app/neighbors" scroll={false} data-step-own="">{words.rooms.neighbors.all}</Link>
           </Button>
         }
       >
@@ -590,10 +589,7 @@ export function NeighborRecordView({
         <div>
           <dt>{text.figures.year}</dt>
           <dd>
-            <CountUp
-              value={record.paidThisYear}
-              format={(cents) => shortMoney(Math.round(cents / 100) * 100)}
-            />
+            <span className="count-up">{shortMoney(Math.round(record.paidThisYear / 100) * 100)}</span>
             <small>{text.figures.requests(record.requestsThisYear)}</small>
           </dd>
         </div>

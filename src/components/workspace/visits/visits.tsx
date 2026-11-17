@@ -69,7 +69,7 @@ export function VisitsSection() {
 }
 
 function Visits() {
-  const { data, now, setHeadAction, words } = useWorkspace();
+  const { data, now, setHeadAction, words, sampleSaid } = useWorkspace();
   const text = words.rooms.visitsRoom;
   const format = useVisitDates();
   const churchId = data.church.id;
@@ -256,7 +256,7 @@ function Visits() {
           description={capital(fill(text.dialogs.writeUpDeck, {
             day: day(step.visit.scheduledAt),
             time: time(step.visit.scheduledAt),
-            visitors: together(text, step.visit.visitors.map((visitor) => visitor.name)),
+            visitors: together(text, step.visit.visitors.map((visitor) => sampleSaid(visitor.name))),
           }))}
           onClose={() => setStep(null)}
         >
@@ -297,7 +297,7 @@ function Pair({
   joining?: boolean;
   bare?: boolean;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   // "{first} and {second}", written whole in each language: its words are laid around the two names.
   const [before, between, after] = words.rooms.visitsRoom.pair.split(/\{\w+\}/);
   return (
@@ -313,7 +313,7 @@ function Pair({
           {names.map((name, index) => (
             <Fragment key={name}>
               {index > 0 && between}
-              <span className="visits-name">{name}</span>
+              <span className="visits-name">{sampleSaid(name)}</span>
             </Fragment>
           ))}
           {names.length > 1 && after}

@@ -161,11 +161,9 @@ function isWhole(column: HTMLElement) {
 }
 
 /**
- * The room shown has come to rest: its figures have landed (`data-moving`, CountUp) and nothing in it is still
- * moving to its place (its picture's piece, a row easing in). What moves without end, if anything, does not count.
+ * The room shown has come to rest: nothing in it is still moving to its place (its picture's piece, a row easing in). What moves without end, if anything, does not count.
  */
 function atRest(column: HTMLElement) {
-  if (column.querySelector("[data-moving]")) return false;
   return !column
     .getAnimations({ subtree: true })
     .some((move) => move.playState === "running" && Number.isFinite(move.effect?.getComputedTiming().endTime));

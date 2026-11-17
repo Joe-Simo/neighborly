@@ -13,7 +13,7 @@ change to a file marked closed.
 | `shell.tsx` | Header, menus, notices, the shared dialogs. |
 | `context.tsx` | `useWorkspace()`: the group, the signed-in person, date helpers, `perform`, `confirm`. |
 | `help.css` | Every `help-*` class from the design reference. The layout loads it once; sections do not import it or keep a copy. |
-| `types.ts`, `primitives.tsx` | Shared types; `LiveLoading`, `LiveRoomLoading`, `LiveEmpty`, `LiveField`, `CountUp`. |
+| `types.ts`, `primitives.tsx` | Shared types; `LiveLoading`, `LiveRoomLoading`, `LiveEmpty`, `LiveField`. |
 | `paper.css` | The paper frame: page head, motion, empty and loading states, phone bar, measure. |
 | `aside.tsx` | `RoomAside`: the room's one side column from 1280px up, and `useWideScreen()`. |
 | `relief.tsx` | `ReliefPicture`: a room's relief picture, or its drawn placeholder until the files arrive (`reliefReady`). |
@@ -97,7 +97,7 @@ the head, the picture and the menu marker itself. Rooms use four classes:
 | `paper-fold` | Add to a `help-sheet` (or any `paper-corner`) when its yes is given: the corner lifts, turns from ochre to green and is pressed flat with a tick, about half a second. Keep the sheet on the page for `FOLD_HOLD` (`fold.ts`, 1.8 s, which reads as 1.6 s of green once the corner has turned) before it moves on, so the word can be read; then mark what goes with `data-fold-leaves` and `await foldLeaves()`, which closes it up over 360ms and holds the page so it never jumps. |
 | `paper-waits` | The corner is ochre: something here waits for a person's yes. `help-sheet` has it already. |
 | `paper-rest` | The corner is plain paper: add to a `help-sheet` that waits for nothing. `paper-corner` alone rests plain. |
-| `count-up` | A figure rolling to its value in 400ms: render `<CountUp value={n} format={...} />` from `primitives.tsx`. |
+| `count-up` | A large figure's digits. It stands at its value at once: nothing in the workspace counts up. |
 
 Set `--paper-order` (0 to 7) on an element to place it in a stagger by hand.
 Rows and links already lift on hover; do not add another hover of your own.

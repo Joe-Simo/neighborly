@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { LiveFailure } from "@/components/workspace/states";
 import { readFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
-import { CountUp } from "@/components/workspace/primitives";
 import { counted } from "@/components/workspace/tools/sheet-import";
 import { formatDate } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
@@ -34,7 +33,7 @@ function FileRows({ files, onDownload }: { files: GatheredFile[]; onDownload?: (
     <div className="help-row" data-quiet={file.lines ? undefined : ""} key={file.key}>
       <div className="live-date-leaf">
         <span>{text.lines(file.lines)}</span>
-        <strong><CountUp value={file.lines} format={count} /></strong>
+        <strong><span className="count-up">{count(file.lines)}</span></strong>
       </div>
       <div>
         <h3>{file.title}</h3>

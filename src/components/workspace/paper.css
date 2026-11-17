@@ -10,7 +10,7 @@
     paper-settle  a sheet is laid down: up, a hair of turn, then flat. 420ms.
     paper-fold    on a sheet with a folded corner (help-sheet or paper-corner):
                   the corner turns from ochre to green and presses flat. 400ms.
-    count-up      a figure that rolls to its value; use <CountUp> from primitives.
+    count-up      a large figure, at its value at once (the class sets its digits).
   All of them are still for anyone who asks for less motion.
 */
 @property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
@@ -109,9 +109,8 @@
 
 /* A rolling figure keeps its value's width from the first frame, and its first digit never moves: the digits roll
    in the place the value will stand, so nothing beside it or under it shifts. */
-.count-up { position: relative; display: inline-block; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
-.count-up-room { visibility: hidden; }
-.count-up-roll { position: absolute; top: 0; left: 0; }
+/* A large figure: lining, even-width digits on one line. It stands at its value at once; nothing counts up here. */
+.count-up { display: inline-block; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
 
 /* Rows and links answer a pointer the same way everywhere: a row takes one flat tone, standing 12px past its
    words on either side, and the line under a link thickens. A row is part of its sheet: nothing lifts. */
