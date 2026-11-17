@@ -454,15 +454,15 @@ export function ReportView({
               </tr>
             );
           })}
-        </tbody>
-        <tfoot>
-          <tr>
+          {/* The total is the table's last row, not a footer: a printed footer is a part some browsers carry over
+              to a page of its own. */}
+          <tr className="report-kinds-total">
             <th scope="row">All help</th>
             <td>{count(report.kinds.reduce((all, line) => all + line.requestsPaid, 0))}</td>
             <td />
             <td>{money(report.helpPaid)}</td>
           </tr>
-        </tfoot>
+        </tbody>
       </table>
       {moved && (
         <p className="report-history">
