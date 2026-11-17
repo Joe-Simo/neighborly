@@ -49,6 +49,7 @@ final class ShellViewController: CAPBridgeViewController {
     private var waitLine: UILabel?
     private var tryAgain: UIButton?
     private var lineTimer: Timer?
+    private var firstScreenWatch: Timer?
     private var loading: NSKeyValueObservation?
     private var slowTimer: Timer?
 
@@ -260,11 +261,16 @@ final class ShellViewController: CAPBridgeViewController {
     /// The first screen is often whole well before the last picture has arrived
     /// and the page counts as loaded. So the page is asked ten times a second,
     /// and the cover lifts the moment it says yes.
+    ///
+    /// The asking runs on its own clock, not from each answer: an answer that never comes (the page was replaced
+    /// while it was being asked, as when the first page takes over from the blank one) must not end the watch.
     private func watchForFirstScreen() {
-        guard cover != nil, let webView else { return }
-        webView.evaluateJavaScript(Self.firstScreenWhole) { [weak self] result, _ in
-            if result as? Bool == true { self?.reveal(whileLoading: true); return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self?.watchForFirstScreen() }
+        firstScreenWatch?.invalidate()
+        firstScreenWatch = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] watch in
+            guard let self, self.cover != nil, let webView = self.webView else { return watch.invalidate() }
+            webView.evaluateJavaScript(Self.firstScreenWhole) { [weak self] result, _ in
+                if result as? Bool == true { self?.reveal(whileLoading: true) }
+            }
         }
     }
 
@@ -378,6 +384,7 @@ final class ShellViewController: CAPBridgeViewController {
         guard let webView, whileLoading || !webView.isLoading, cover != nil else { return }
         slowTimer?.invalidate()
         lineTimer?.invalidate()
+        firstScreenWatch?.invalidate()
         lift([cover])
         cover = nil
         waitLine = nil
@@ -445,6 +452,7 @@ final class ShellViewController: CAPBridgeViewController {
         webView.stopLoading()
         webView.load(URLRequest(url: bridge.config.appStartServerURL))
         startSlowTimer()
+        watchForFirstScreen()
     }
 }
 

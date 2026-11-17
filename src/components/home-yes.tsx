@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useSettled } from "@/lib/use-settled";
 import "./home-yes.css";
 
@@ -39,6 +42,18 @@ export function HomeYes() {
         <img src="/assets/home/card-light-480.webp" width={480} height={320} alt="" loading="lazy" decoding="async" />
       </span>
       {due && <HomeYesCard />}
+      {/* Without script the sheet cannot be fetched or answered. It lies here at rest, whole, in the same words, and its one way on is a plain link. */}
+      <noscript>
+        <div className="home-yes-still">
+          <p className="home-yes-still-label">Waiting for your yes</p>
+          <p className="home-yes-still-from"><strong>Rosa Fontaine</strong> called yesterday</p>
+          <h3>Rent, $450 to Mill&nbsp;Road&nbsp;Rentals</h3>
+          <p className="home-yes-still-quote">“Behind on November rent, $450. The landlord is Mill&nbsp;Road&nbsp;Rentals.”</p>
+          <p>From the message taken at 10:20 AM. Not yet on file as a neighbor.</p>
+          <Button asChild className="home-yes-still-in"><Link href="/app?intent=sample" prefetch={false}>Look around a sample conference</Link></Button>
+          <p className="home-yes-still-foot"><Sparkles size={16} aria-hidden="true" />Filled in by the assistant from the call note and checked against it.</p>
+        </div>
+      </noscript>
     </div>
   </section>;
 }
