@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { RoomAside } from "@/components/workspace/aside";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { count, initials } from "@/components/workspace/help-line/format";
+import { initials } from "@/components/workspace/help-line/format";
 import {
   HelpEmpty,
   HelpLoading,
@@ -35,16 +35,21 @@ import {
   ReplaceForm,
   WriteUpForm,
 } from "@/components/workspace/visits/forms";
+import { fill } from "@/lib/words/fill";
+import type { Words } from "@/lib/words";
 import {
+  capital,
   firstName,
   need,
+  reasonIn,
   requestHref,
   sheetHref,
   standing,
+  together,
   type Board,
   type Suggestion,
   type Visit,
-  useEnglishDates,
+  useVisitDates,
 } from "@/components/workspace/visits/format";
 import { VisitSheet } from "@/components/workspace/visits/visit-sheet";
 
@@ -55,16 +60,18 @@ type Step =
   | { kind: "replace"; visit: Visit; leaving: Visit["visitors"][number] };
 
 export function VisitsSection() {
+  const { words } = useWorkspace();
   return (
-    <HelpRoom loading="Opening home visits">
+    <HelpRoom loading={words.rooms.visitsRoom.opening}>
       <Visits />
     </HelpRoom>
   );
 }
 
 function Visits() {
-  const { data, now, setHeadAction } = useWorkspace();
-  const format = useEnglishDates();
+  const { data, now, setHeadAction, words } = useWorkspace();
+  const text = words.rooms.visitsRoom;
+  const format = useVisitDates();
   const churchId = data.church.id;
   const sheetId = useSearchParams().get("sheet");
   const at = useHour();
@@ -102,13 +109,14 @@ function Visits() {
     setDone("");
     setStep({ kind: "plan" });
   }, []);
+  const planLabel = text.planVisit;
   const waitingOnYes = Boolean(board?.suggested);
   const boardUnknown = board === undefined;
   useLayoutEffect(() => {
     if (sheetId) return;
     // The pair sheet has the screen's one filled button, so the head button goes quiet beside it.
     setHeadAction({
-      label: "Plan a visit",
+      label: planLabel,
       run: planVisit,
       quiet: waitingOnYes,
       // Until the board has arrived the room cannot know whether a suggestion will hold the filled button.
@@ -116,7 +124,7 @@ function Visits() {
       plus: true,
     });
     return () => setHeadAction(null);
-  }, [sheetId, setHeadAction, planVisit, waitingOnYes, boardUnknown]);
+  }, [sheetId, setHeadAction, planVisit, planLabel, waitingOnYes, boardUnknown]);
   const finish = (message: string, moved: Fresh | null = null) => {
     setStep(null);
     setFresh(moved);
@@ -136,7 +144,7 @@ function Visits() {
     });
 
   if (sheetId) return <VisitSheet visitId={sheetId as Id<"visits">} />;
-  if (!board) return <HelpLoading label="Opening home visits" />;
+  if (!board) return <HelpLoading label={text.opening} />;
   return (
     <div className="visits-room" ref={room}>
       {done && (
@@ -145,12 +153,13 @@ function Visits() {
         </VisitsDone>
       )}
       {refused && (
-        <LiveFailure message={refused} kept="Nothing was changed. Try again, or choose the pair yourself." />
+        <LiveFailure message={refused} kept={text.refusedKept} />
       )}
       <VisitsView
         board={board}
         now={now}
         format={format}
+        words={words}
         busy={pending || Boolean(asking)}
         fresh={fresh?.id}
         asking={asking}
@@ -187,7 +196,13 @@ function Visits() {
           await foldLeaves();
           setAsked(null);
           finish(
-              `${firstName(pair[0].name)} and ${firstName(pair[1].name)} have been asked to visit ${suggested.request.neighborName} on ${day(suggested.scheduledAt)} at ${time(suggested.scheduledAt)}.`,
+              fill(text.done.askedOn, {
+                first: firstName(pair[0].name),
+                second: firstName(pair[1].name),
+                neighbor: suggested.request.neighborName,
+                day: day(suggested.scheduledAt),
+                time: time(suggested.scheduledAt),
+              }),
               { id: outcome.result, pair: pair.map((person) => person.name) },
             );
         }}
@@ -198,8 +213,8 @@ function Visits() {
       />
       {step?.kind === "plan" && (
         <LiveDialog
-          title="Plan a visit"
-          description="Two people go together, always."
+          title={text.planVisit}
+          description={text.dialogs.planDeck}
           onClose={() => setStep(null)}
         >
           <PlanForm
@@ -208,7 +223,7 @@ function Visits() {
             requestId={step.requestId}
             onSaved={(planned) =>
               finish(
-                `${firstName(planned.pair[0])} and ${firstName(planned.pair[1])} have been asked to visit ${planned.neighborName}. The visit is under Coming up.`,
+                fill(text.done.planned, { first: firstName(planned.pair[0]), second: firstName(planned.pair[1]), neighbor: planned.neighborName }),
                 { id: planned.visitId, pair: planned.pair },
               )
             }
@@ -217,8 +232,8 @@ function Visits() {
       )}
       {step?.kind === "replace" && (
         <LiveDialog
-          title={step.leaving.removed ? "A second visitor" : `${firstName(step.leaving.name)} can’t go`}
-          description={`Choose who goes to ${step.visit.neighborName} with ${step.visit.visitors.find((visitor) => visitor.memberId !== step.leaving.memberId)?.name ?? "the other visitor"}.`}
+          title={step.leaving.removed ? text.dialogs.secondTitle : text.dialogs.cannotTitle(firstName(step.leaving.name))}
+          description={replaceDeck(text, step.visit, step.leaving)}
           onClose={() => setStep(null)}
         >
           <ReplaceForm
@@ -228,8 +243,8 @@ function Visits() {
             onSaved={(joining) =>
               finish(
                 step.leaving.removed
-                  ? `${firstName(joining)} has been asked to visit ${step.visit.neighborName}.`
-                  : `${firstName(joining)} has been asked to visit ${step.visit.neighborName} in place of ${firstName(step.leaving.name)}.`,
+                  ? fill(text.done.second, { joining: firstName(joining), neighbor: step.visit.neighborName })
+                  : fill(text.done.replaced, { joining: firstName(joining), neighbor: step.visit.neighborName, leaving: firstName(step.leaving.name) }),
               )
             }
           />
@@ -237,8 +252,12 @@ function Visits() {
       )}
       {step?.kind === "writeUp" && (
         <LiveDialog
-          title={`The visit to ${step.visit.neighborName}`}
-          description={`${day(step.visit.scheduledAt)} at ${time(step.visit.scheduledAt)}, ${step.visit.visitors.map((visitor) => visitor.name).join(" and ")}.`}
+          title={text.dialogs.writeUpTitle(step.visit.neighborName)}
+          description={capital(fill(text.dialogs.writeUpDeck, {
+            day: day(step.visit.scheduledAt),
+            time: time(step.visit.scheduledAt),
+            visitors: together(text, step.visit.visitors.map((visitor) => visitor.name)),
+          }))}
           onClose={() => setStep(null)}
         >
           <WriteUpForm
@@ -246,7 +265,7 @@ function Visits() {
             visit={step.visit}
             onSaved={() =>
               finish(
-                `Written up. The visit to ${step.visit.neighborName} now counts toward the year’s hours and miles.`,
+                fill(text.done.writtenUp, { neighbor: step.visit.neighborName }),
                 { id: step.visit.id },
               )
             }
@@ -258,6 +277,15 @@ function Visits() {
 }
 
 type Fresh = { id: Id<"visits">; pair?: string[] };
+type VisitText = Words["rooms"]["visitsRoom"];
+
+/** Under "Renee can’t go": who the new visitor goes with, by name when the other seat is still held. */
+function replaceDeck(text: VisitText, visit: Visit, leaving: Visit["visitors"][number]) {
+  const other = visit.visitors.find((visitor) => visitor.memberId !== leaving.memberId)?.name;
+  return other
+    ? fill(text.dialogs.replaceDeck, { neighbor: visit.neighborName, other })
+    : text.dialogs.replaceDeckOther(visit.neighborName);
+}
 
 /** Two people as one pair. joining plays the two sets of initials sliding together, once. */
 function Pair({
@@ -269,6 +297,9 @@ function Pair({
   joining?: boolean;
   bare?: boolean;
 }) {
+  const { words } = useWorkspace();
+  // "{first} and {second}", written whole in each language: its words are laid around the two names.
+  const [before, between, after] = words.rooms.visitsRoom.pair.split(/\{\w+\}/);
   return (
     <span className={joining ? "help-person visits-join" : "help-person"}>
       {names.map((name) => (
@@ -278,12 +309,14 @@ function Pair({
       ))}
       {!bare && (
         <span>
+          {names.length > 1 && before}
           {names.map((name, index) => (
             <Fragment key={name}>
-              {index > 0 && " and "}
+              {index > 0 && between}
               <span className="visits-name">{name}</span>
             </Fragment>
           ))}
+          {names.length > 1 && after}
         </span>
       )}
     </span>
@@ -328,7 +361,7 @@ export function VisitsDone({
  * page: a screen reader says them and the keyboard keeps its place. Someone who moved on while waiting
  * is left where they went.
  */
-function BothAsked() {
+function BothAsked({ said }: { said: string }) {
   const words = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const at = document.activeElement;
@@ -336,7 +369,7 @@ function BothAsked() {
   }, []);
   return (
     <span className="live-status" tabIndex={-1} ref={words}>
-      Both asked
+      {said}
     </span>
   );
 }
@@ -346,6 +379,7 @@ export function VisitsView({
   board,
   now,
   format,
+  words,
   busy,
   fresh,
   asking,
@@ -359,6 +393,8 @@ export function VisitsView({
   board: Board;
   now: number;
   format: Workspace["format"];
+  /** The person's own words: the view asks for nothing itself. */
+  words: Words;
   busy: boolean;
   /** The visit just planned or written up: its pair joins, or its row settles into Written up. */
   fresh?: Id<"visits">;
@@ -373,6 +409,7 @@ export function VisitsView({
   onWriteUp: (visit: Visit) => void;
   onReplace: (visit: Visit, leaving: Visit["visitors"][number]) => void;
 }) {
+  const text = words.rooms.visitsRoom;
   const suggested = asked ?? asking ?? board.suggested;
   const coming = board.scheduled.filter((visit) => visit.scheduledAt >= now);
   const toWriteUp = board.scheduled.filter((visit) => visit.scheduledAt < now);
@@ -408,7 +445,7 @@ export function VisitsView({
   const goingOut = new Map<string, Visit[]>();
   for (const visit of suggested ? coming : []) {
     if (visit.scheduledAt >= now + WEEK) continue;
-    const day = format(visit.scheduledAt, { weekday: "long", month: "long", day: "numeric" });
+    const day = capital(format(visit.scheduledAt, { weekday: "long", month: "long", day: "numeric" }));
     goingOut.set(day, [...(goingOut.get(day) ?? []), visit]);
   }
   const nothing =
@@ -425,58 +462,58 @@ export function VisitsView({
           key={suggested.request.requestId}
           className={asked ? "help-sheet paper-fold" : "help-sheet"}
           data-fold-leaves={asked ? "" : undefined}
-          aria-label={`Visit to arrange for ${suggested.request.neighborName}`}
+          aria-label={text.suggested.label(suggested.request.neighborName)}
           aria-busy={(Boolean(asking) && !asked) || undefined}
         >
           <p className="help-sheet-label">
             {asked
-              ? `Asked for ${weekday(suggested.scheduledAt)}`
+              ? text.suggested.askedFor(weekday(suggested.scheduledAt))
               : suggested.pair
-                ? `A pair for ${weekday(suggested.scheduledAt)}`
-                : "Waiting for a pair"}
+                ? text.suggested.pairFor(weekday(suggested.scheduledAt))
+                : text.suggested.waiting}
           </p>
           <div className="help-sheet-body">
             <div>
               <h2>{suggested.request.neighborName}</h2>
               <p>
                 {suggested.request.address} ·{" "}
-                {need(suggested.request.kind, suggested.request.amount)}
+                {need(words, suggested.request.kind, suggested.request.amount)}
               </p>
               {suggested.pair && (
                 <p className="help-why visits-pair visits-who">
                   <Pair names={suggested.pair.map((person) => person.name)} />
                 </p>
               )}
-              <p>{suggested.reason}</p>
+              <p>{reasonIn(text, suggested, weekday(suggested.scheduledAt))}</p>
               {!asked && waits}
             </div>
             <div className="help-actions">
               {asked ? (
-                <BothAsked />
+                <BothAsked said={text.suggested.bothAsked} />
               ) : suggested.pair ? (
                 <>
                   <Button
                     disabled={busy}
-                    aria-label={`Ask this pair: ${suggested.request.neighborName}, ${weekday(suggested.scheduledAt)}`}
+                    aria-label={fill(text.suggested.askLabel, { neighbor: suggested.request.neighborName, day: weekday(suggested.scheduledAt) })}
                     onClick={() =>
                       suggested.pair && onAsk(suggested, suggested.pair)
                     }
                   >
-                    Ask this pair
+                    {text.suggested.ask}
                   </Button>
                   <Button
                     variant="outline"
                     // While the ask is on its way the pair cannot be changed under it.
                     disabled={busy}
-                    aria-label={`Choose others: ${suggested.request.neighborName}`}
+                    aria-label={text.suggested.othersLabel(suggested.request.neighborName)}
                     onClick={() => onPlan(suggested.request.requestId)}
                   >
-                    Choose others
+                    {text.suggested.others}
                   </Button>
                 </>
               ) : (
-                <Button aria-label={`Choose a pair: ${suggested.request.neighborName}`} onClick={() => onPlan(suggested.request.requestId)}>
-                  Choose a pair
+                <Button aria-label={text.suggested.chooseLabel(suggested.request.neighborName)} onClick={() => onPlan(suggested.request.requestId)}>
+                  {text.suggested.choose}
                 </Button>
               )}
             </div>
@@ -485,7 +522,7 @@ export function VisitsView({
       )}
 
       {goingOut.size > 0 && (
-        <RoomAside title="Going out this week">
+        <RoomAside title={text.aside}>
           {[...goingOut].map(([day, visits]) => (
             <section className="visits-aside-day" key={day}>
               <h3>{day}</h3>
@@ -499,7 +536,7 @@ export function VisitsView({
                         {going.map((visitor) => (
                           <strong key={visitor.memberId}>{visitor.name}</strong>
                         ))}
-                        {going.length < 2 && <em>{standing(visit).text}</em>}
+                        {going.length < 2 && <em>{standing(visit, text).text}</em>}
                       </span>
                     </li>
                   );
@@ -510,20 +547,19 @@ export function VisitsView({
         </RoomAside>
       )}
       {nothing ? (
-        <HelpEmpty title="No one is waiting on a visit.">
-          When a request for help comes in on the help line, it appears here
-          with two people who are free to go.
+        <HelpEmpty title={text.empty.title}>
+          {text.empty.body}
         </HelpEmpty>
       ) : (
         <section>
           <div className="live-section-head">
-            <h2>Coming up</h2>
+            <h2>{text.coming.title}</h2>
             <span className="live-count">
               {[
-                coming.length ? `${thisWeek} this week` : "",
-                short ? `${count(short, "is", "are")} short of a visitor` : "",
+                coming.length ? text.coming.thisWeek(thisWeek) : "",
+                short ? text.coming.short(short) : "",
                 board.toArrange.length
-                  ? `${count(board.toArrange.length, "more needs", "more need")} a pair`
+                  ? text.coming.toArrange(board.toArrange.length)
                   : "",
               ]
                 .filter(Boolean)
@@ -533,7 +569,7 @@ export function VisitsView({
           {coming.length ? (
             <div className="live-list">
               {coming.map((visit) => {
-                const pair = standing(visit);
+                const pair = standing(visit, text);
                 return (
                   <div className="help-row" key={visit.id}>
                     {leaf(visit.scheduledAt)}
@@ -560,7 +596,7 @@ export function VisitsView({
                       </span>
                       {pair.state === "short" && (
                         <Button onClick={() => onReplace(visit, pair.who)}>
-                          Ask a second visitor
+                          {text.coming.askSecond}
                         </Button>
                       )}
                       {pair.state === "declined" && (
@@ -568,12 +604,12 @@ export function VisitsView({
                           variant="outline"
                           onClick={() => onReplace(visit, pair.who)}
                         >
-                          Ask someone else
+                          {text.coming.askElse}
                         </Button>
                       )}
                       <Button variant="outline" asChild>
                         <Link href={sheetHref(visit.id)}>
-                          <Printer size={17} aria-hidden="true" /> Visit sheet
+                          <Printer size={17} aria-hidden="true" /> {text.coming.sheet}
                         </Link>
                       </Button>
                     </div>
@@ -583,7 +619,7 @@ export function VisitsView({
             </div>
           ) : (
             <p className="visits-quiet">
-              No visits are planned for the days ahead.
+              {text.coming.none}
             </p>
           )}
         </section>
@@ -592,9 +628,9 @@ export function VisitsView({
       {toWriteUp.length > 0 && (
         <section className="live-section">
           <div className="live-section-head">
-            <h2>Done, to write up</h2>
+            <h2>{text.toWriteUp.title}</h2>
             <span className="live-count">
-              {count(toWriteUp.length, "visit", "visits")}
+              {text.toWriteUp.count(toWriteUp.length)}
             </span>
           </div>
           <div className="live-list">
@@ -611,8 +647,8 @@ export function VisitsView({
                   {visit.address && <p>{visit.address}</p>}
                 </div>
                 <div className="live-row-actions">
-                  <Button variant="outline" aria-label={`Write up: ${visit.neighborName}, ${weekday(visit.scheduledAt)}`} onClick={() => onWriteUp(visit)}>
-                    Write up
+                  <Button variant="outline" aria-label={fill(text.toWriteUp.writeUpLabel, { neighbor: visit.neighborName, day: weekday(visit.scheduledAt) })} onClick={() => onWriteUp(visit)}>
+                    {text.toWriteUp.writeUp}
                   </Button>
                 </div>
               </div>
@@ -624,8 +660,8 @@ export function VisitsView({
       {board.writtenUp.length > 0 && (
         <section className="live-section">
           <div className="live-section-head">
-            <h2>Written up</h2>
-            <span className="live-count">The latest visits</span>
+            <h2>{text.written.title}</h2>
+            <span className="live-count">{text.written.latest}</span>
           </div>
           <div className="live-list">
             {board.writtenUp.map((visit) => {
@@ -655,10 +691,10 @@ export function VisitsView({
                   </p>
                   <p className="visits-written-found">
                     <span className="visits-given">
-                      {format(visit.scheduledAt, { month: "short" })} · {count(visit.visitors[0]?.hours ?? 0, "hour", "hours")} ·{" "}
-                      {count(miles, "mile", "miles")}
+                      {format(visit.scheduledAt, { month: "short" })} · {text.written.hours(visit.visitors[0]?.hours ?? 0)} ·{" "}
+                      {text.written.miles(miles)}
                     </span>
-                    <span>{visit.notes || "No notes written."}</span>
+                    <span>{visit.notes || text.written.noNotes}</span>
                   </p>
                   {href && <ArrowRight className="help-row-arrow" size={20} aria-hidden="true" />}
                 </div>

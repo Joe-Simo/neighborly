@@ -17,9 +17,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace } from "@/components/workspace/context";
 import { DateField, TimeField } from "@/components/workspace/date-field";
 import { LiveField } from "@/components/workspace/primitives";
-import { count, languageLabels } from "@/components/workspace/help-line/format";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
+import { fill } from "@/lib/words/fill";
 import {
   firstName,
   need,
@@ -35,12 +35,13 @@ const DAYS_AHEAD = 42;
  * bounded to the next six weeks and to the hours people visit. Read them back with whenOf().
  */
 function VisitWhen({ defaultValue }: { defaultValue?: string }) {
-  const { data, now } = useWorkspace();
+  const { data, now, words } = useWorkspace();
+  const text = words.rooms.visitsRoom.forms;
   const [day, time] = (defaultValue ?? "").split("T");
   const today = DateTime.fromMillis(now, { zone: data.church.timeZone });
   return (
     <div className="live-form-grid">
-      <LiveField label="Day">
+      <LiveField label={text.day}>
         <DateField
           name="day"
           required
@@ -49,7 +50,7 @@ function VisitWhen({ defaultValue }: { defaultValue?: string }) {
           max={today.plus({ days: DAYS_AHEAD }).toISODate() ?? undefined}
         />
       </LiveField>
-      <LiveField label="Time" said={{ neededChoice: "Choose a time." }}>
+      <LiveField label={text.time} said={{ neededChoice: text.chooseTime }}>
         <TimeField name="time" required defaultValue={time} />
       </LiveField>
     </div>
@@ -89,10 +90,14 @@ function VisitorSelect({
   people: Visitors;
   defaultValue?: string;
 }) {
+  const { words } = useWorkspace();
+  const room = words.rooms.visitsRoom;
+  const text = room.forms;
   const option = (person: Visitors[number]) => (
     <NativeSelectOption key={person.memberId} value={person.memberId}>
-      {person.name}
-      {person.language === "en" ? "" : ` · ${languageLabels[person.language]}`}
+      {person.language === "en"
+        ? person.name
+        : room.speakers[person.language](person.name)}
     </NativeSelectOption>
   );
   const team = people.filter((person) => person.homeVisitor);
@@ -105,14 +110,14 @@ function VisitorSelect({
       className="w-full"
     >
       <NativeSelectOption value="" disabled>
-        Choose a person
+        {text.choosePerson}
       </NativeSelectOption>
       {others.length ? (
         <>
-          <NativeSelectOptGroup label="Home visitors">
+          <NativeSelectOptGroup label={text.homeVisitors}>
             {team.map(option)}
           </NativeSelectOptGroup>
-          <NativeSelectOptGroup label="Other approved members">
+          <NativeSelectOptGroup label={text.otherMembers}>
             {others.map(option)}
           </NativeSelectOptGroup>
         </>
@@ -213,6 +218,8 @@ export function PlanFormView({
     ...(board.suggested ? [board.suggested.request] : []),
     ...board.toArrange,
   ];
+  const { words } = useWorkspace();
+  const text = words.rooms.visitsRoom.forms;
   const [chosen, setChosen] = useState<string>(
     requestId ?? waiting[0]?.requestId ?? withoutRequest,
   );
@@ -222,7 +229,7 @@ export function PlanFormView({
   if (!people)
     return (
       <p className="visits-quiet" role="status">
-        Finding who can go…
+        {text.finding}
       </p>
     );
   return (
@@ -251,41 +258,41 @@ export function PlanFormView({
       }}
     >
       {waiting.length > 0 && (
-        <LiveField label="Visit for">
+        <LiveField label={text.visitFor}>
           <NativeSelect
             value={chosen}
             onChange={(event) => setChosen(event.target.value)}
             className="w-full"
           >
             <NativeSelectOptGroup
-              label={`${count(waiting.length, "request", "requests")} waiting on a visit`}
+              label={text.waiting(waiting.length)}
             >
               {waiting.map((request) => (
                 <NativeSelectOption
                   key={request.requestId}
                   value={request.requestId}
                 >
-                  {request.neighborName} · {need(request.kind, request.amount)}
+                  {request.neighborName} · {need(words, request.kind, request.amount)}
                 </NativeSelectOption>
               ))}
             </NativeSelectOptGroup>
             <NativeSelectOption value={withoutRequest}>
-              A neighbor with no request, as a follow-up
+              {text.noRequest}
             </NativeSelectOption>
           </NativeSelect>
         </LiveField>
       )}
       {chosen === withoutRequest && (
         <div className="live-form-grid">
-          <LiveField label="Find the neighbor">
+          <LiveField label={text.findNeighbor}>
             <Input
               type="search"
               autoComplete="off"
-              placeholder="Name, phone or street"
+              placeholder={text.searchPlaceholder}
               onChange={(event) => onSearch(event.target.value)}
             />
           </LiveField>
-          <LiveField label="Neighbor" said={{ neededChoice: "Choose the neighbor." }}>
+          <LiveField label={text.neighbor} said={{ neededChoice: text.chooseNeighbor }}>
             <NativeSelect
               name="neighbor"
               required
@@ -301,7 +308,7 @@ export function PlanFormView({
                 ))
               ) : (
                 <NativeSelectOption value="" disabled>
-                  {neighbors ? "No one by that name" : "Looking…"}
+                  {neighbors ? text.noOne : text.looking}
                 </NativeSelectOption>
               )}
             </NativeSelect>
@@ -310,14 +317,14 @@ export function PlanFormView({
       )}
       <VisitWhen defaultValue={board.suggested?.at} />
       <div className="live-form-grid" key={chosen}>
-        <LiveField label="First visitor" said={{ neededChoice: "Choose the first visitor." }}>
+        <LiveField label={text.first} said={{ neededChoice: text.chooseFirst }}>
           <VisitorSelect
             name="first"
             people={people}
             defaultValue={suggested?.pair?.[0].memberId}
           />
         </LiveField>
-        <LiveField label="Second visitor" said={{ neededChoice: "Choose the second visitor." }}>
+        <LiveField label={text.second} said={{ neededChoice: text.chooseSecond }}>
           <VisitorSelect
             name="second"
             people={people}
@@ -326,9 +333,9 @@ export function PlanFormView({
         </LiveField>
       </div>
       <p className="visits-consequence">
-        Both are asked for their yes. Nothing is sent to the neighbor.
+        {text.consequence}
       </p>
-      <FormEnd error={error} pending={pending} submit="Plan this visit" />
+      <FormEnd error={error} pending={pending} submit={text.plan} />
     </form>
   );
 }
@@ -351,6 +358,8 @@ export function WriteUpForm({
   visit: Visit;
   onSaved: () => void;
 }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.visitsRoom.forms;
   const writeUp = useMutation(api.visits.writeUp);
   const { pending, error, save } = useSave();
   const [problem, setProblem] = useState<"hours" | "miles" | "driver" | null>(
@@ -396,15 +405,15 @@ export function WriteUpForm({
       }}
     >
       <LiveField
-        label="What we found"
-        help="A few plain sentences: who was home, what the need is, what you agreed."
+        label={text.found}
+        help={text.foundHelp}
       >
         <Textarea name="notes" rows={5} />
       </LiveField>
       <div className="live-form-grid">
         <LiveField
-          label="Hours"
-          help={`For each of you, ${firstName(visit.visitors[0]?.name ?? "")} and ${firstName(visit.visitors[1]?.name ?? "")}.`}
+          label={text.hours}
+          help={fill(text.hoursHelp, { first: firstName(visit.visitors[0]?.name ?? ""), second: firstName(visit.visitors[1]?.name ?? "") })}
         >
           <Input
             name="hours"
@@ -414,7 +423,7 @@ export function WriteUpForm({
             aria-invalid={problem === "hours" || undefined}
           />
         </LiveField>
-        <LiveField label="Miles" help="Driven there and back, or 0.">
+        <LiveField label={text.miles} help={text.milesHelp}>
           <Input
             name="miles"
             inputMode="decimal"
@@ -425,8 +434,8 @@ export function WriteUpForm({
         </LiveField>
       </div>
       <LiveField
-        label="Who drove"
-        help="The miles go to the driver, so one car is counted once."
+        label={text.drove}
+        help={text.droveHelp}
       >
         <NativeSelect
           name="drove"
@@ -435,7 +444,7 @@ export function WriteUpForm({
           aria-invalid={problem === "driver" || undefined}
         >
           <NativeSelectOption value="" disabled>
-            Choose who drove
+            {text.chooseDrove}
           </NativeSelectOption>
           {visit.visitors.map((visitor) => (
             <NativeSelectOption key={visitor.memberId} value={visitor.memberId}>
@@ -443,22 +452,22 @@ export function WriteUpForm({
             </NativeSelectOption>
           ))}
           <NativeSelectOption value="each">
-            Each drove their own car
+            {text.each}
           </NativeSelectOption>
         </NativeSelect>
       </LiveField>
       <FormEnd
         error={
           problem === "hours"
-            ? "Enter the hours the visit took, such as 1.5."
+            ? text.problems.hours
             : problem === "miles"
-              ? "Enter the miles driven, or 0."
+              ? text.problems.miles
               : problem === "driver"
-                ? "Choose who drove, so the miles go to the right person."
+                ? text.problems.driver
                 : error
         }
         pending={pending}
-        submit="Save the write-up"
+        submit={text.saveWriteUp}
       />
     </form>
   );
@@ -476,6 +485,7 @@ export function TimeForm({
   at: string;
   onSaved: () => void;
 }) {
+  const { words } = useWorkspace();
   const reschedule = useMutation(api.visits.reschedule);
   const { pending, error, save } = useSave();
   return (
@@ -491,7 +501,7 @@ export function TimeForm({
       }}
     >
       <VisitWhen defaultValue={at} />
-      <FormEnd error={error} pending={pending} submit="Change the time" />
+      <FormEnd error={error} pending={pending} submit={words.rooms.visitsRoom.forms.changeTime} />
     </form>
   );
 }
@@ -508,13 +518,15 @@ export function ReplaceForm({
   leaving: Visit["visitors"][number];
   onSaved: (joining: string) => void;
 }) {
+  const { words } = useWorkspace();
+  const text = words.rooms.visitsRoom.forms;
   const people = useQuery(api.visits.visitors, { churchId });
   const replace = useMutation(api.visits.replaceVisitor);
   const { pending, error, save } = useSave();
   if (!people)
     return (
       <p className="visits-quiet" role="status">
-        Finding who can go…
+        {text.finding}
       </p>
     );
   const others = people.filter(
@@ -544,13 +556,13 @@ export function ReplaceForm({
       }}
     >
       <LiveField
-        label={leaving.removed ? "Second visitor" : `In place of ${firstName(leaving.name)}`}
-        help="The new visitor is asked for a yes. The other visitor’s answer stays as it is."
-        said={{ neededChoice: "Choose who goes." }}
+        label={leaving.removed ? text.second : text.inPlaceOf(firstName(leaving.name))}
+        help={text.replaceHelp}
+        said={{ neededChoice: text.chooseWho }}
       >
         <VisitorSelect name="joining" people={others} />
       </LiveField>
-      <FormEnd error={error} pending={pending} submit="Ask this person" />
+      <FormEnd error={error} pending={pending} submit={text.askPerson} />
     </form>
   );
 }
