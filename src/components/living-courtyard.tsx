@@ -180,13 +180,14 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const scene = new Scene().add(new Mesh(geometry, material));
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    let detail = 1, pace = 1 / 60, strained = 0, calm = 0, recoveries = 0;
+    let detail = 1, pace = 1 / 60, strained = 0, calm = 0, recoveries = 0, drawn = false;
     const resize = () => {
       // The scene is twice the window's height wide; on a wide window that is already more pixels than the graphics card can shade in a frame at 1.25, so it is drawn at 1 and the soft painting carries it.
       renderer.setPixelRatio(Math.min(devicePixelRatio, frame.clientWidth >= 1600 ? 1 : 1.25) * detail);
       renderer.setSize(frame.clientWidth, frame.clientHeight, false);
       uniforms.uRes.value.set(frame.clientWidth, frame.clientHeight);
       host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => origins.delete(layer));
+      drawn = false;
     };
     const observer = new ResizeObserver(resize);
     observer.observe(frame);
@@ -223,7 +224,16 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       const seconds = (time - began) / 1000;
       const stage = frame.getBoundingClientRect();
       const painting = host.querySelector(paintingSelector)?.getBoundingClientRect();
-      if (!painting || stage.bottom < 0 || stage.top > innerHeight || renderer.getContext().isContextLost()) return;
+      // It goes on drawing for half a window beyond the screen's edges, so on a quick flick back it is already painted when it comes into view.
+      if (!painting || stage.bottom < -innerHeight * .5 || stage.top > innerHeight * 1.5 || renderer.getContext().isContextLost()) return;
+      // Behind shut doors nobody sees the courtyard: once it has been drawn at this size it rests, and the frame it holds is the one the doors open on.
+      if (drawn && host.dataset.opening !== "true" && host.dataset.inside !== "true") return;
+      // Only the columns of the painting that are on the screen are shaded, with a margin for a frame's movement: on a phone the painting is four times as wide as the window.
+      // Its whole height is always drawn, because a quick flick moves the page further in one frame than any margin, and a strip left undrawn would show bare.
+      const marginX = stage.width * .08;
+      const left = Math.max(0, (-marginX - stage.left) / stage.width), right = Math.min(1, (innerWidth + marginX - stage.left) / stage.width);
+      renderer.setScissorTest(drawn);
+      renderer.setScissor(left * frame.clientWidth, 0, Math.max(0, right - left) * frame.clientWidth, frame.clientHeight);
       // If the graphics card cannot keep pace, the painting is drawn a little smaller rather than letting the journey stutter.
       pace = mix(pace, Math.min(elapsed, .1), .06);
       strained = pace > .0195 ? strained + 1 : 0;
@@ -282,6 +292,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       uniforms.uResponse.value = mix(uniforms.uResponse.value, hall.answering, ease);
       uniforms.uTime.value = still ? 0 : seconds;
       renderer.render(scene, camera);
+      drawn = true;
     };
 
     // The opening picture comes first: on a slow connection the courtyard waits until the first screen has everything it needs.
