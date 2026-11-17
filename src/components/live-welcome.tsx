@@ -39,6 +39,7 @@ export function LiveWelcome({
   joinChurch,
   signOut,
   initialToken = "",
+  conference = "",
   initialMode = "create",
   badInvite = false,
 }: {
@@ -52,6 +53,8 @@ export function LiveWelcome({
   joinChurch: (value: { token: string; displayName: string }) => Promise<void>;
   signOut: () => Promise<void>;
   initialToken?: string;
+  /** The conference the invitation link leads to, when the backend has said. Shown as words, never as a link. */
+  conference?: string;
   initialMode?: "create" | "join";
 }) {
   const [mode, setMode] = useState<"create" | "join">(
@@ -64,6 +67,8 @@ export function LiveWelcome({
   const book = words(language);
   const w = book.welcome.first;
   const [error, setError] = useState("");
+  /** Someone who came by an invitation link has nothing to copy: the code rides along unseen. It is shown if joining is refused, so another can be pasted. */
+  const [codeShown, setCodeShown] = useState(!initialToken);
   // The tab names this page, in the reader's language, as the sign-in sheet does. Nobody is in a workspace yet.
   const pageTitle = `${mode === "create" ? w.start : w.invited} · Kind Helps`;
   useEffect(() => {
@@ -106,6 +111,7 @@ export function LiveWelcome({
       setError(
         readFailure(cause, mode === "create" ? w.notSaved : w.notSavedJoin),
       );
+      if (mode === "join") setCodeShown(true);
     } finally {
       setPending(false);
       focus.back();
@@ -129,28 +135,32 @@ export function LiveWelcome({
       <p className="live-kicker">{mode === "create" ? w.createKicker : w.joinKicker}</p>
       <h1>{mode === "create" ? w.createTitle : w.joinTitle}</h1>
       <p className="live-deck">
-        {mode === "create" ? w.createDeck : w.joinDeck}
+        {mode === "create" ? w.createDeck : conference && !codeShown ? <>{w.joinNamedBefore} <strong>{conference}</strong>{w.joinNamedAfter}</> : w.joinDeck}
       </p>
       {badInvite && (
         <div className="live-error live-failure" role="alert">
           <p>{authWords[language].badInvite}</p>
         </div>
       )}
-      <ToggleGroup
-        type="single"
-        value={mode}
-        disabled={busy}
-        onValueChange={(value) => {
-          if (value !== "create" && value !== "join") return;
-          setMode(value);
-          setError("");
-        }}
-        className="entry-tabs entry-halves"
-        aria-label={w.choose}
-      >
-        <ToggleGroupItem value="create">{w.start}</ToggleGroupItem>
-        <ToggleGroupItem value="join">{w.invited}</ToggleGroupItem>
-      </ToggleGroup>
+      {/* Someone who came by a link came to join: the sheet is the invitation's page alone. If joining is refused,
+          both ways to begin are offered. */}
+      {codeShown && (
+        <ToggleGroup
+          type="single"
+          value={mode}
+          disabled={busy}
+          onValueChange={(value) => {
+            if (value !== "create" && value !== "join") return;
+            setMode(value);
+            setError("");
+          }}
+          className="entry-tabs entry-halves"
+          aria-label={w.choose}
+        >
+          <ToggleGroupItem value="create">{w.start}</ToggleGroupItem>
+          <ToggleGroupItem value="join">{w.invited}</ToggleGroupItem>
+        </ToggleGroup>
+      )}
       <form className="live-form" onSubmit={submit} aria-busy={pending}>
         <LiveField label={w.yourName} said={{ needed: w.addName }}>
           <Input name="displayName" autoComplete="name" required maxLength={100} disabled={busy} />
@@ -172,6 +182,11 @@ export function LiveWelcome({
             <p className="entry-note">
               {w.what} {w.note}
             </p>
+          </>
+        ) : !codeShown ? (
+          <>
+            <input type="hidden" name="token" value={initialToken} />
+            <p className="entry-note">{w.fromLink}</p>
           </>
         ) : (
           <LiveField

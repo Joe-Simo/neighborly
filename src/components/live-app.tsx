@@ -50,7 +50,7 @@ function LiveRooms({
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
-  const { ready, isAuthenticated, signedOut } = useAccount();
+  const { ready, isAuthenticated, signedOut, clerkAnswered } = useAccount();
   // Through the sample door, This week is first drawn from the seed's public answer while the session is being made
   // (first-look.tsx). The look ends when the signed-in room is whole in hand, or when the sample will not open.
   const [viaSample] = useState(enterSample && sampleEntry);
@@ -109,25 +109,33 @@ function LiveRooms({
   const invitationRequest = useRef<{ key: string; id: string } | null>(null);
   const execute = useMutation(api.workspace.execute);
   const [invitationConsumed, setInvitationConsumed] = useState(false);
-  // An invitation link is asked about once, yes or no and nothing else, as soon as it is known who is here. Not
+  // An invitation link is asked about once, for the name of its conference and nothing else (no name is a no), as soon as it is known who is here. Not
   // before: Convex drops an action in flight when the session is handed to it. A link that is no longer good is
   // said so on the sheet and then dropped, so nobody signs up for nothing. A question that fails is asked twice
   // more; if it still fails, or no answer comes in six seconds, the link is left to stand and joining checks it.
-  const askInvitation = useAction(api.invitations.good);
-  const [invitationGood, setInvitationGood] = useState<boolean | undefined>(invitationToken ? undefined : true);
-  const invitationAnswered = useRef(!invitationToken);
-  const whoIsKnown = signedOut || isAuthenticated;
+  const askInvitation = useAction(api.invitations.conference);
+  /** The conference the link leads to, said on the welcome. Unknown if the question could not be asked. */
+  const [invitedTo, setInvitedTo] = useState("");
+  // A link whose token is not sixty-four hex digits was cut short or mistyped and can never be good: that is
+  // said at once, with no question asked (the backend holds the same test before it reads anything).
+  const couldBeAnInvitation = /^[0-9a-f]{64}$/.test(invitationToken);
+  const [invitationGood, setInvitationGood] = useState<boolean | undefined>(
+    !invitationToken ? true : couldBeAnInvitation ? undefined : false,
+  );
+  const invitationAnswered = useRef(!invitationToken || !couldBeAnInvitation);
+  const whoIsKnown = (signedOut && clerkAnswered) || isAuthenticated;
   useEffect(() => {
     if (invitationAnswered.current || !whoIsKnown) return;
     let current = true;
     let again: ReturnType<typeof setTimeout> | undefined;
-    const answer = (good: boolean) => {
+    const answer = (good: boolean, name = "") => {
       if (!current || invitationAnswered.current) return;
       invitationAnswered.current = true;
+      setInvitedTo(name);
       setInvitationGood(good);
     };
     const ask = (left: number) =>
-      void askInvitation({ token: invitationToken }).then(answer, (cause: unknown) => {
+      void askInvitation({ token: invitationToken }).then((name) => answer(name !== null, name ?? ""), (cause: unknown) => {
         if (!current) return;
         if (left > 0) again = setTimeout(() => ask(left - 1), 600);
         else {
@@ -295,10 +303,11 @@ function LiveRooms({
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
     const sheetKnown = invitationGood !== undefined;
     const entry = badInvite ? "signin" : intent;
+    // Someone with an invitation in hand came to join their own people: the sample is not offered on the way.
     return (
       <>
         {signedOut && sheetKnown && (
-          <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing} onSampleRefused={() => setLookOver(true)} />
+          <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry && !liveToken} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing} onSampleRefused={() => setLookOver(true)} />
         )}
         {/* Nor is the sheet drawn before it is known whether a room will be: the launch line stands until then. */}
         {!first && (lookComing || !sheetKnown) && <LiveRoomLoading key="wait" />}
@@ -332,6 +341,7 @@ function LiveRooms({
     return (
       <LiveWelcome
         initialToken={liveToken}
+        conference={invitedTo}
         initialMode={!badInvite && (intent === "join" || invitationToken) ? "join" : "create"}
         badInvite={badInvite}
         signOut={signOut}

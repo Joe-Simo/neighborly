@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import type { LiveArea } from "@/components/workspace/areas";
 import { readFailure } from "@/components/workspace/failure";
-import { LiveLoading } from "@/components/workspace/primitives";
+import { LaunchMark, LiveLoading } from "@/components/workspace/primitives";
 import { LiveConnection, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
 import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -320,6 +320,9 @@ export function LiveWorkspace({
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
   const [roomIn, setRoomIn] = useState(false);
   if (shown && !roomIn) setRoomIn(true);
+  // Until then the bar and the menu are held with the room (`data-shell-held`, paper.css): on a visit straight to
+  // /app they were drawn at once, a few frames ahead of a room still on its way. Only a lost connection shows
+  // them early, so that someone with no room to wait for still has the menu and the way out.
   // The page's layout wraps the shell in a `.live-app` of its own, and that is the first one a cover finds:
   // it carries the same mark for as long as the shell does.
   useEffect(() => {
@@ -329,6 +332,13 @@ export function LiveWorkspace({
     return () => {
       delete frame.dataset.roomIn;
     };
+  }, [roomIn]);
+  const shellHeld = !roomIn && !lost;
+  // Shown in that same frame: a button that eases everything it changes would otherwise come a frame or two late.
+  useLayoutEffect(() => {
+    if (!roomIn) return;
+    for (const part of app.current?.querySelectorAll(":scope > .live-header, .live-nav") ?? [])
+      for (const move of part.getAnimations({ subtree: true })) if (move instanceof CSSTransition) move.finish();
   }, [roomIn]);
   // Once the first room is shown, the other rooms' pictures are fetched quietly behind it.
   const others = menuItems.map((item) => headings[item.id].art.picture).join(" ");
@@ -370,7 +380,9 @@ export function LiveWorkspace({
   const roomWorkspace = english ? { ...workspace, words: roomWords } : workspace;
   return (
     <WorkspaceProvider value={workspace}>
-    <div className="live-app" lang={words.locale} ref={app} data-room-in={roomIn ? "" : undefined} data-room-shown={shown ? "" : undefined} data-room-whole={settled ? "" : undefined}>
+    <div className="live-app" lang={words.locale} ref={app} data-room-in={roomIn ? "" : undefined} data-shell-held={shellHeld ? "" : undefined} data-room-shown={shown ? "" : undefined} data-room-whole={settled ? "" : undefined}>
+      {/* The launch screen's mark stays where it was until the room takes its place: one wait, one picture. */}
+      {shellHeld && <LaunchMark />}
       <a className="live-skip" href="#workspace-content">{words.shell.skip}</a>
       <header className="live-header" ref={bar} data-scrolled={barNow.scrolled ? "" : undefined}>
         <Link href="/" className="live-wordmark">

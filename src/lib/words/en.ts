@@ -543,11 +543,13 @@ export function en(set: WordSet) {
         createKicker: "A small beginning", joinKicker: "An invitation to belong",
         createTitle: "Make room for your people.", joinTitle: "Your people are here.",
         createDeck: "Give your conference a private place to organize its people, plans and acts of care.",
+        joinNamedBefore: "You are invited to join", joinNamedAfter: ". You’ll choose the commitments you accept.",
         joinDeck: "Use your invitation to join your conference. You’ll choose the commitments you accept.",
         choose: "Choose how to begin", start: "Start a conference", invited: "I have an invitation",
         yourName: "Your name", conferenceName: "Conference name", timeZone: "Time zone for all times",
         what: "A conference is the parish team that answers the help line and visits in pairs.",
         note: "Only invited members can open yours.",
+        fromLink: "Your invitation came with the link you opened. Joining does not accept a commitment.",
         code: "Invitation code", codeHelp: "Use the code supplied by your coordinator. Joining does not accept a commitment.",
         creating: "Creating your conference…", joining: "Joining your conference…", create: "Create conference", join: "Join conference",
         // The button named in each line is `create` or `join` word for word.
