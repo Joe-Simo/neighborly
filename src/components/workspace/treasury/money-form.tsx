@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateField } from "@/components/workspace/date-field";
 import { NativeSelect } from "@/components/ui/native-select";
+import { useWorkspace } from "@/components/workspace/context";
 import { LiveField } from "@/components/workspace/primitives";
 import { parseCents } from "@/components/workspace/treasury/money";
 import {
@@ -35,8 +36,8 @@ export type Money = (
 };
 /** Every choice in the "Kind of money" list, keyed "in:collection", "out:pantry". */
 const choices = [
-  ...incomeSources.map(([kind]) => ({ direction: "in", kind }) as const),
-  ...spendingKinds.map(([kind]) => ({ direction: "out", kind }) as const),
+  ...incomeSources.map((kind) => ({ direction: "in", kind }) as const),
+  ...spendingKinds.map((kind) => ({ direction: "out", kind }) as const),
 ];
 type Choice =
   | (typeof choices)[number]
@@ -69,6 +70,8 @@ export function MoneyForm({
   onSubmit: (money: Money) => Promise<Refusal>;
   onCancel: () => void;
 }) {
+  const room = useWorkspace().words.rooms.treasury;
+  const w = room.money;
   const [choice, setChoice] = useState<Choice>({
     direction: "in",
     kind: start,
@@ -90,9 +93,7 @@ export function MoneyForm({
         event.preventDefault();
         const cents = parseCents(amount);
         if (cents === null)
-          return setError(
-            "Enter the amount in dollars and cents, like 640.00.",
-          );
+          return setError(w.amountWrong);
         setError("");
         setSaving(true);
         const refusal = await onSubmit({
@@ -108,12 +109,8 @@ export function MoneyForm({
       }}
     >
       <LiveField
-        label="Kind of money"
-        help={
-          out
-            ? "Help for a neighbor is not recorded here. It is paid from their approved request, so it stays tied to it."
-            : undefined
-        }
+        label={w.kind}
+        help={out ? w.outHelp : undefined}
       >
         <NativeSelect
           className="w-full"
@@ -133,10 +130,10 @@ export function MoneyForm({
             }
           }}
         >
-          <optgroup label="Money in">
-            {incomeSources.map(([kind, label]) => (
+          <optgroup label={w.in}>
+            {incomeSources.map((kind) => (
               <option key={kind} value={`in:${kind}`}>
-                {label}
+                {room.sources[kind]}
               </option>
             ))}
             {own
@@ -146,12 +143,12 @@ export function MoneyForm({
                   {kind.name}
                 </option>
               ))}
-            {own && <option value="in:new">Another kind of money in…</option>}
+            {own && <option value="in:new">{w.anotherIn}</option>}
           </optgroup>
-          <optgroup label="Money out">
-            {spendingKinds.map(([kind, label]) => (
+          <optgroup label={w.out}>
+            {spendingKinds.map((kind) => (
               <option key={kind} value={`out:${kind}`}>
-                {label}
+                {room.spending[kind]}
               </option>
             ))}
             {own
@@ -161,19 +158,19 @@ export function MoneyForm({
                   {kind.name}
                 </option>
               ))}
-            {own && <option value="out:new">Another kind of money out…</option>}
+            {own && <option value="out:new">{w.anotherOut}</option>}
           </optgroup>
         </NativeSelect>
       </LiveField>
       {choice.kind === "new" && (
         <LiveField
-          label="Name this kind"
-          help="It joins the list for next time, for everyone who keeps the ledger."
+          label={w.nameKind}
+          help={w.nameKindHelp}
         >
           <Input
             name="kindName"
             maxLength={120}
-            placeholder={out ? "Gas cards" : "Fall raffle"}
+            placeholder={out ? w.kindExampleOut : w.kindExampleIn}
             value={kindName}
             onChange={(event) => setKindName(event.target.value)}
             required
@@ -191,11 +188,11 @@ export function MoneyForm({
             onOut(false);
           }}
         >
-          Stop offering this kind
+          {w.stop}
         </Button>
       )}
       <div className="live-form-grid treasury-form-grid">
-        <LiveField label="Amount">
+        <LiveField label={w.amount}>
           <Input
             name="amount"
             inputMode="decimal"
@@ -206,18 +203,18 @@ export function MoneyForm({
             required
           />
         </LiveField>
-        <LiveField label={out ? "Day paid" : "Day received"}>
+        <LiveField label={out ? w.dayPaid : w.dayReceived}>
           <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
       </div>
       <LiveField
-        label={gift ? "To which conference" : out ? "Paid to" : "From"}
+        label={gift ? w.toConference : out ? w.paidTo : w.from}
       >
         <Input
           name="name"
           list={out && !gift && payees?.length ? "treasury-payees" : undefined}
           maxLength={120}
-          placeholder={out ? "" : "The parish, the Walk, an anonymous gift"}
+          placeholder={out ? "" : w.fromExample}
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
@@ -231,7 +228,7 @@ export function MoneyForm({
         )}
       </LiveField>
       {out && (
-        <LiveField label="Check number (optional)">
+        <LiveField label={w.check}>
           <Input
             name="checkNumber"
             inputMode="numeric"
@@ -242,7 +239,7 @@ export function MoneyForm({
           />
         </LiveField>
       )}
-      <LiveField label="Note (optional)">
+      <LiveField label={w.note}>
         <Input
           name="memo"
           maxLength={200}
@@ -252,7 +249,7 @@ export function MoneyForm({
       </LiveField>
       {error && <FormError message={error} />}
       <FormActions saving={saving} onCancel={onCancel}>
-        {gift ? "Record gift" : out ? "Record money out" : "Record money in"}
+        {gift ? w.submit.gift : out ? w.submit.out : w.submit.in}
       </FormActions>
     </form>
   );

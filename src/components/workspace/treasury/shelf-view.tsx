@@ -13,6 +13,7 @@ import { readFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
 import { LiveField } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
+import { fill } from "@/lib/words/fill";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
 import {
   FormActions,
@@ -21,8 +22,6 @@ import {
 } from "@/components/workspace/treasury/form-parts";
 import { dayLabel, type Shelf } from "@/components/workspace/treasury/labels";
 
-const many = (n: number) =>
-  `${n} ${Math.abs(n) === 1 ? "voucher" : "vouchers"}`;
 const art = {
   backgroundImage: "url(/assets/painted-world/meal.webp)",
 };
@@ -44,6 +43,7 @@ function VoucherForm({
   onSubmit: (vouchers: Vouchers) => Promise<Refusal>;
   onCancel: () => void;
 }) {
+  const w = useWorkspace().words.rooms.treasury.shelf.form;
   const [item, setItem] = useState(items[0] ?? "");
   const [count, setCount] = useState("");
   const [date, setDate] = useState(today);
@@ -58,11 +58,9 @@ function VoucherForm({
       onSubmit={async (event) => {
         event.preventDefault();
         if (!change)
-          return setError(
-            "Enter how many as a whole number, like 20. To take a miscount off, put a minus first, like -2.",
-          );
+          return setError(w.wrong);
         if (down && !note.trim())
-          return setError("Say why the count is going down.");
+          return setError(w.sayWhy);
         setError("");
         setSaving(true);
         const refusal = await onSubmit({ item, change, date, note });
@@ -70,12 +68,12 @@ function VoucherForm({
         if (refusal) setError(refusal);
       }}
     >
-      <LiveField label="What the voucher is for">
+      <LiveField label={w.item}>
         <Input
           name="item"
           list="treasury-voucher-items"
           maxLength={120}
-          placeholder="Winter coat, furniture, clothing…"
+          placeholder={w.itemExample}
           value={item}
           onChange={(event) => setItem(event.target.value)}
           required
@@ -87,7 +85,7 @@ function VoucherForm({
         </datalist>
       </LiveField>
       <div className="live-form-grid treasury-form-grid">
-        <LiveField label="How many">
+        <LiveField label={w.count}>
           <Input
             name="count"
             inputMode="numeric"
@@ -98,28 +96,24 @@ function VoucherForm({
             required
           />
         </LiveField>
-        <LiveField label="Day">
+        <LiveField label={w.day}>
           <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
       </div>
       <LiveField
-        label={down ? "Why the count is going down" : "Note (optional)"}
+        label={down ? w.why : w.note}
       >
         <Input
           name="note"
           maxLength={200}
-          placeholder={
-            down
-              ? "Counted by hand, two were missing"
-              : "From the thrift store, November"
-          }
+          placeholder={down ? w.whyExample : w.noteExample}
           value={note}
           onChange={(event) => setNote(event.target.value)}
         />
       </LiveField>
       {error && <FormError message={error} />}
       <FormActions saving={saving} onCancel={onCancel}>
-        {down ? "Correct the count" : "Put on the shelf"}
+        {down ? w.correct : w.put}
       </FormActions>
     </form>
   );
@@ -135,30 +129,32 @@ export function ShelfView({
   done: string;
   onAdd: () => void;
 }) {
+  const { words } = useWorkspace();
+  const w = words.rooms.treasury.shelf;
   return (
     <>
       {done && <HelpDone className="treasury-notice" focus={false}>{done}</HelpDone>}
       {shelf.items.length ? (
         <>
           <div className="live-section-head">
-            <h2>On hand</h2>
+            <h2>{w.onHand}</h2>
             <span className="live-count">
-              Counted from what came in and what was given
+              {w.counted}
             </span>
           </div>
           <div className="live-table-scroll">
             <table className="help-ledger treasury-shelf">
               <thead>
                 <tr>
-                  <th scope="col">Voucher</th>
+                  <th scope="col">{w.columns.voucher}</th>
                   <th scope="col" className="help-money">
-                    Received
+                    {w.columns.received}
                   </th>
                   <th scope="col" className="help-money">
-                    Given
+                    {w.columns.given}
                   </th>
                   <th scope="col" className="help-money">
-                    On hand
+                    {w.columns.onHand}
                   </th>
                 </tr>
               </thead>
@@ -169,19 +165,18 @@ export function ShelfView({
                       {row.item}
                       {row.onHand < 0 && (
                         <small>
-                          More were given than were put on the shelf. Record
-                          what you received.
+                          {w.short}
                         </small>
                       )}
                     </td>
-                    <td className="help-money" data-label="Received">
+                    <td className="help-money" data-label={w.columns.received}>
                       {row.received}
                     </td>
-                    <td className="help-money" data-label="Given">
+                    <td className="help-money" data-label={w.columns.given}>
                       {row.given}
                     </td>
-                    <td className="help-money" data-label="On hand" data-total>
-                      {row.onHand === 0 && <small>none left</small>}
+                    <td className="help-money" data-label={w.columns.onHand} data-total>
+                      {row.onHand === 0 && <small>{w.noneLeft}</small>}
                       {row.onHand}
                     </td>
                   </tr>
@@ -194,22 +189,26 @@ export function ShelfView({
             aria-labelledby="treasury-moves-title"
           >
             <div className="live-section-head">
-              <h2 id="treasury-moves-title">Lately</h2>
+              <h2 id="treasury-moves-title">{w.lately}</h2>
               <span className="live-count">
-                The newest {shelf.lately.length}
+                {w.newest(shelf.lately.length)}
               </span>
             </div>
             <ul className="treasury-lines">
               {shelf.lately.map((row) => (
                 <li key={row.id}>
-                  <span>{dayLabel(row.date)}</span>
+                  <span>{dayLabel(words.locale, row.date)}</span>
                   <span>
-                    {row.change > 0 ? "+" : "−"}
-                    {many(Math.abs(row.change))}, {row.item}
+                    {fill(row.change > 0 ? w.cameIn : w.wentOut, { vouchers: w.vouchers(Math.abs(row.change)), item: row.item })}
                   </span>
                   <span>
-                    {row.note ||
-                      (row.forRequest ? "Given on a request" : "Received")}
+                    {/* A request moves vouchers with one of two sentences the backend writes itself (treasury.ts): those are
+                        said in the person's language. Anything else is a note someone typed, shown as typed. */}
+                    {row.forRequest && row.note === "Back on the shelf"
+                      ? w.backOnShelf
+                      : row.forRequest && (!row.note || row.note === "Given on a request")
+                        ? w.givenOnRequest
+                        : row.note || w.received}
                   </span>
                 </li>
               ))}
@@ -220,12 +219,11 @@ export function ShelfView({
         <div className="help-empty" data-first>
           <div className="help-empty-art" style={art} aria-hidden="true" />
           <div>
-            <h3>Nothing on the shelf yet.</h3>
+            <h3>{w.empty.title}</h3>
             <p>
-              When the thrift store hands you vouchers, record how many. Each
-              one given on a request comes off the count by itself.
+              {w.empty.deck}
             </p>
-            <Button onClick={onAdd}>Record vouchers received</Button>
+            <Button onClick={onAdd}>{w.empty.action}</Button>
           </div>
         </div>
       )}
@@ -243,7 +241,9 @@ export function ShelfRoom({
   today: string;
   onBack: () => void;
 }) {
-  const { setHeading, setHeadAction } = useWorkspace();
+  const { setHeading, setHeadAction, words } = useWorkspace();
+  const room = words.rooms.treasury;
+  const w = room.shelf;
   // The head's way back always runs the newest onBack without redrawing the head.
   const back = useRef(onBack);
   useEffect(() => {
@@ -256,21 +256,21 @@ export function ShelfRoom({
   const stocked = Boolean(shelf?.items.length);
   useLayoutEffect(() => {
     setHeading({
-      title: "The voucher shelf",
-      deck: "Thrift store vouchers on hand. A count, kept apart from the money.",
-      back: { label: "Ledger", run: () => back.current() },
+      title: w.title,
+      deck: w.deck,
+      back: { label: room.ledgerName, run: () => back.current() },
     });
     return () => setHeading(null);
-  }, [setHeading]);
+  }, [setHeading, w.title, w.deck, room.ledgerName]);
   useLayoutEffect(() => {
     if (!stocked) return;
     setHeadAction({
-      label: "Record vouchers",
+      label: w.record,
       plus: true,
       run: () => setAdding(true),
     });
     return () => setHeadAction(null);
-  }, [stocked, setHeadAction]);
+  }, [stocked, setHeadAction, w.record]);
 
   if (!shelf) return <LedgerLoading />;
   return (
@@ -284,8 +284,8 @@ export function ShelfRoom({
         open={adding}
         onClose={() => setAdding(false)}
         className="treasury-dialog"
-        title="Record vouchers"
-        description="Vouchers the thrift store gave you, or a correction after counting them by hand."
+        title={w.record}
+        description={w.recordDeck}
       >
         <VoucherForm
           items={shelf.items.map((row) => row.item)}
@@ -295,13 +295,13 @@ export function ShelfRoom({
             try {
               await recordVouchers({ churchId, ...vouchers });
             } catch (cause) {
-              return readFailure(cause, "Nothing was recorded, and what you typed is still here. Try again.");
+              return readFailure(cause, room.refused);
             }
             setAdding(false);
             setDone(
               vouchers.change > 0
-                ? `${many(vouchers.change)} for ${vouchers.item.trim()} are on the shelf.`
-                : `The count for ${vouchers.item.trim()} is corrected.`,
+                ? fill(w.done.added(vouchers.change), { item: vouchers.item.trim() })
+                : w.done.corrected(vouchers.item.trim()),
             );
             return null;
           }}

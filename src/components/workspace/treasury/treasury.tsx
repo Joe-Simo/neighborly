@@ -23,6 +23,7 @@ import { DepositForm } from "@/components/workspace/treasury/deposit-form";
 import { usePaidMoment } from "@/components/workspace/treasury/paid-moment";
 import { formatFigure } from "@/components/workspace/treasury/money";
 import { sentence } from "@/lib/utils";
+import { fill } from "@/lib/words/fill";
 import type { Refusal } from "@/components/workspace/treasury/form-parts";
 import {
   dayLabel,
@@ -45,7 +46,8 @@ const answered = <T,>(value: T | Error | undefined) =>
   value instanceof Error ? undefined : value;
 
 export function TreasurySection() {
-  const { data, setHeadAction } = useWorkspace();
+  const { data, setHeadAction, words } = useWorkspace();
+  const w = words.rooms.treasury;
   const churchId = data.church.id;
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
   const [month, setMonth] = useState<string>();
@@ -112,7 +114,7 @@ export function TreasurySection() {
   useLayoutEffect(() => {
     if (!allowed || firstUse || atBank || atShelf) return;
     setHeadAction({
-      label: "Record money",
+      label: w.record,
       plus: true,
       run: () => {
         setDone("");
@@ -124,7 +126,7 @@ export function TreasurySection() {
       unsettled: payableUnknown,
     });
     return () => setHeadAction(null);
-  }, [allowed, firstUse, atBank, atShelf, quiet, payableUnknown, setHeadAction]);
+  }, [allowed, firstUse, atBank, atShelf, quiet, payableUnknown, setHeadAction, w.record]);
 
   if (allowed === false) return <LedgerPrivate />;
   if (!shown || !payable) return <LedgerLoading />;
@@ -148,7 +150,7 @@ export function TreasurySection() {
     try {
       await change();
     } catch (cause) {
-      return readFailure(cause, "Nothing was recorded, and what you typed is still here. Try again.");
+      return readFailure(cause, w.refused);
     }
     if (date) setMonth(date.slice(0, 7));
     setOpen(null);
@@ -161,34 +163,23 @@ export function TreasurySection() {
   };
   const empty = isUntouched(shown);
 
-  const lines = view?.is === "entry" ? entryLines(view.entry) : null;
+  const lines = view?.is === "entry" ? entryLines(w, view.entry) : null;
   const sheet =
     view?.is === "payment"
       ? {
-          title: "Record a payment",
-          description: `${sentence(view.request.summary)} Paid to ${view.request.payeeName}, never to the neighbor.`,
+          title: w.sheets.payment.title,
+          description: `${sentence(view.request.summary)} ${w.sheets.payment.paidTo(view.request.payeeName)}`,
         }
       : view?.is === "money"
         ? moneyOut
-          ? {
-              title: "Record money out",
-              description: "A purchase, dues or a fee the conference paid.",
-            }
-          : {
-              title: "Record money",
-              description:
-                "A collection, a gift, or what the conference holds today.",
-            }
+          ? { title: w.sheets.moneyOut.title, description: w.sheets.moneyOut.deck }
+          : { title: w.sheets.money.title, description: w.sheets.money.deck }
         : view?.is === "deposit"
-          ? {
-              title: "Record a deposit",
-              description:
-                "The gifts you carried to the bank together. Nothing about them changes; they become one line to match.",
-            }
+          ? { title: w.sheets.deposit.title, description: w.sheets.deposit.deck }
           : view?.is === "entry" && lines
             ? {
                 title: lines.title,
-                description: `${dayLabel(view.entry.date)} · ${lines.detail}`,
+                description: `${dayLabel(words.locale, view.entry.date)} · ${lines.detail}`,
               }
             : null;
 
@@ -295,9 +286,7 @@ export function TreasurySection() {
                             })
                           : kinds?.find((row) => row.id === what.id)?.id;
                       if (!kindId)
-                        throw new Error(
-                          "This kind is no longer offered. Choose another.",
-                        );
+                        throw new Error(w.kindGone);
                       return recordOwnKind({
                         churchId,
                         kindId,
@@ -327,7 +316,7 @@ export function TreasurySection() {
                           memo,
                         });
                   },
-                  `${formatFigure(amount)} ${what.direction === "out" ? "to" : "from"} ${name.trim()} is recorded in the ledger, and the balance is up to date.`,
+                  fill(what.direction === "out" ? w.done.moneyOut : w.done.moneyIn, { amount: formatFigure(amount), name: name.trim() }),
                   date,
                 )
               }
@@ -343,7 +332,7 @@ export function TreasurySection() {
               onSubmit={(deposit, total) =>
                 settle(
                   () => recordDeposit({ churchId, ...deposit }),
-                  `A deposit of ${formatFigure(total)} is recorded. It will wait in Match the bank until the statement shows it.`,
+                  w.done.deposit(formatFigure(total)),
                 )
               }
             />
@@ -362,7 +351,7 @@ export function TreasurySection() {
                       entryId: view.entry.id,
                       reason,
                     }),
-                  `${formatFigure(view.entry.amount)} is taken back with a new entry dated today. The first entry stays in the ledger.`,
+                  w.done.reversed(formatFigure(view.entry.amount)),
                   shown.today,
                 )
               }

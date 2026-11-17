@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DateField } from "@/components/workspace/date-field";
+import { useWorkspace } from "@/components/workspace/context";
 import { LiveField } from "@/components/workspace/primitives";
+import { fill } from "@/lib/words/fill";
 import { centsToInput, parseCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   FormActions,
@@ -30,6 +32,8 @@ export function PaymentForm({
   onSubmit: (payment: Payment) => Promise<Refusal>;
   onCancel: () => void;
 }) {
+  const room = useWorkspace().words.rooms.treasury;
+  const w = room.payment;
   const [amount, setAmount] = useState(centsToInput(request.remaining));
   const [date, setDate] = useState(today);
   const [memo, setMemo] = useState("");
@@ -45,11 +49,9 @@ export function PaymentForm({
         const cents = parseCents(amount);
         setAmountWrong(cents === null || cents > request.remaining);
         if (cents === null)
-          return setError("Enter the amount in dollars and cents, like 214.60.");
+          return setError(w.amountWrong);
         if (cents > request.remaining)
-          return setError(
-            `Enter ${formatFigure(request.remaining)} or less. That is what is left of the approved amount.`,
-          );
+          return setError(w.tooMuch(formatFigure(request.remaining)));
         setError("");
         setSaving(true);
         const refusal = await onSubmit({ amount: cents, date, memo, checkNumber });
@@ -59,8 +61,8 @@ export function PaymentForm({
     >
       <div className="live-form-grid treasury-form-grid">
         <LiveField
-          label="Amount"
-          help={`${formatFigure(request.remaining)} left of ${formatFigure(request.amountApproved)} approved.`}
+          label={room.money.amount}
+          help={fill(w.left, { left: formatFigure(request.remaining), approved: formatFigure(request.amountApproved) })}
         >
           <Input
             name="amount"
@@ -75,11 +77,11 @@ export function PaymentForm({
             required
           />
         </LiveField>
-        <LiveField label="Day paid">
+        <LiveField label={room.money.dayPaid}>
           <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
       </div>
-      <LiveField label="Check number (optional)">
+      <LiveField label={room.money.check}>
         <Input
           name="checkNumber"
           inputMode="numeric"
@@ -90,8 +92,8 @@ export function PaymentForm({
         />
       </LiveField>
       <LiveField
-        label="Note (optional)"
-        help="Leave the neighbor’s name out. The payment is already tied to their request."
+        label={room.money.note}
+        help={w.noteHelp}
       >
         <Input
           name="memo"
@@ -102,7 +104,7 @@ export function PaymentForm({
       </LiveField>
       {error && <FormError message={error} />}
       <FormActions saving={saving} onCancel={onCancel}>
-        Record payment
+        {w.submit}
       </FormActions>
     </form>
   );
