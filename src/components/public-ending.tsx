@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef } from "react";
+import { useCutHold } from "./cut-hold";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { CardOfferGrow } from "./card-offer-grow";
@@ -6,7 +10,10 @@ import "./thread-card.css";
 
 /** The picture every public page closes on: the same two people, the open hand holding the card out as the way in. */
 export function ClosingBand() {
-  return <div className="neighborly-close">
+  const band = useRef<HTMLDivElement>(null);
+  // Where the words lie over the picture, a sheet of the page's paper holds them, as on the first screen.
+  useCutHold(band, true, { art: ".neighborly-close-art", words: ".neighborly-close-words", pieces: "h2, nav a", when: "(min-width:1280px) and (min-height:445px)" });
+  return <div className="neighborly-close" ref={band}>
     <picture className="neighborly-close-art">
       <source media="(max-width:700px) and (orientation:portrait)" srcSet="/assets/living-relief-mobile-accepted.webp" width={780} height={1688} />
       <img src="/assets/living-relief-accepted.webp" width={1440} height={1024} alt="" loading="lazy" decoding="async" />

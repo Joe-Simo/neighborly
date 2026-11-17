@@ -3,17 +3,17 @@
 import { useEffect, type RefObject } from "react";
 
 /** Measures the opening's words against its painting, so the page's cut edge can swing out and hold them: past their longest line by 32px, from above the headline to below the buttons. Only where the words begin on the plain paper and run onto the painting. */
-export function useCutHold(viewport: RefObject<HTMLElement | null>, on: boolean) {
+export function useCutHold(viewport: RefObject<HTMLElement | null>, on: boolean, { art: artAt = ".painted-world-art", words = ".painted-world-caption", pieces = "h1, p, nav a", when = "(min-width:701px) and (min-aspect-ratio:10/11) and (min-height:501px)" } = {}) {
   useEffect(() => {
     const view = viewport.current;
     if (!on || !view) return;
     const measure = () => {
-      const art = view.querySelector<HTMLElement>(".painted-world-art"), caption = view.querySelector<HTMLElement>(".painted-world-caption");
+      const art = view.querySelector<HTMLElement>(artAt), caption = view.querySelector<HTMLElement>(words);
       const clear = () => ["--hold-x", "--hold-y", "--hold-w", "--hold-h"].forEach(name => view.style.removeProperty(name));
-      if (!art || !caption || !matchMedia("(min-width:701px) and (min-aspect-ratio:10/11) and (min-height:501px)").matches) return clear();
+      if (!art || !caption || !matchMedia(when).matches) return clear();
       const box = art.getBoundingClientRect();
       let right = 0, top = Infinity, bottom = 0;
-      for (const piece of caption.querySelectorAll<HTMLElement>("h1, p, nav a")) {
+      for (const piece of caption.querySelectorAll<HTMLElement>(pieces)) {
         const range = document.createRange(); range.selectNodeContents(piece);
         for (const line of range.getClientRects()) { if (!line.width) continue; right = Math.max(right, line.right); top = Math.min(top, line.top); bottom = Math.max(bottom, line.bottom); }
       }
@@ -30,5 +30,5 @@ export function useCutHold(viewport: RefObject<HTMLElement | null>, on: boolean)
     watch.observe(view);
     void document.fonts?.ready.then(measure);
     return () => watch.disconnect();
-  }, [viewport, on]);
+  }, [viewport, on, artAt, words, pieces, when]);
 }

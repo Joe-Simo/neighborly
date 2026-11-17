@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { DateTime } from "luxon";
 import { internalMutation, type MutationCtx } from "./_generated/server";
 import type { Doc, Id, TableNames } from "./_generated/dataModel";
+import { WAITING_KEPT } from "./counts";
 
 type TableName = TableNames;
 type Row = { table: TableName; doc: Doc<TableName> };
@@ -102,6 +103,20 @@ const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").t
 
 /** Writes the whole made-up year through `db`: the real database, or the plan `renew` compares with what is there. */
 async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
+  // The conference's running figures (convex/counts.ts) are counted as the sample is laid, and written last.
+  const figures = { households: 0, waiting: [] as Id<"neighbors">[] };
+  const laying = db;
+  db = {
+    ...laying,
+    insert: (async (table: string, doc: Record<string, unknown>) => {
+      if (table === "neighbors") figures.households++;
+      // Requests are laid with their final state; none is patched afterwards.
+      if (table === "assistanceRequests" && doc.status === "open") figures.waiting.push(doc.neighborId as Id<"neighbors">);
+      return laying.insert(table as never, doc as never);
+    }) as SampleDb["insert"],
+    get: laying.get.bind(laying),
+    patch: laying.patch.bind(laying),
+  };
   // The year that has closed holds still: whatever day the sample is loaded, the same households, calls,
   // requests, visits and payments come out for it, so its yearly report reads the same to the dollar.
   // Only what is recent moves with today. That is why every household draws from a stream of its own
@@ -477,6 +492,7 @@ async function fill(db: SampleDb, visitor?: Owner): Promise<Id<"churches">> {
   await shelf(start + DAY, 40, "Furniture voucher", "From the conference thrift store");
   await shelf(start + DAY, 40, "Clothing voucher", "From the conference thrift store");
   for (const given of vouchersGiven) await shelf(Math.min(given.time, now), -1, given.item, "Given on a request", given.requestId);
+  await laying.patch("churches", churchId, { householdCount: figures.households, waitingCount: figures.waiting.length, waitingHouseholdIds: figures.waiting.slice(0, WAITING_KEPT) });
 
   return churchId;
 }
@@ -592,8 +608,7 @@ export const renew = internalMutation({
     real.set(planned[0].id, churchId);
     const church = there[0].doc;
     let kept = 0, written = 0, left = planned.slice(1);
-    if (content(church) === content(planned[0].doc)) kept++;
-    else { written++; await ctx.db.replace("churches", churchId, planned[0].doc as never); }
+    // The conference row names its waiting households, so it is settled last, once they have their ids.
     // A row is settled once every row it names is. A row that names one planned after it (a gift names its
     // deposit) waits a round.
     while (left.length) {
@@ -610,6 +625,9 @@ export const renew = internalMutation({
       if (later.length === left.length) throw new Error("The sample's rows name each other in a circle.");
       left = later;
     }
+    const conference = swap(planned[0].doc) as Record<string, unknown>;
+    if (content(church) === content(conference)) kept++;
+    else { written++; await ctx.db.replace("churches", churchId, conference as never); }
     let deleted = 0;
     for (const { doc } of there.reverse()) if (!claimed.has(doc._id)) { deleted++; await ctx.db.delete(doc._id); }
     return { kept, written, deleted };
