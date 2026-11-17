@@ -4,6 +4,7 @@ import "../../public/fonts/fonts.css";
 import { SerwistProvider } from "@serwist/turbopack/react";
 import { OfflineWorker } from "@/components/offline-worker";
 import { launchScreens } from "@/lib/launch-screens";
+import { linkPreview } from "@/lib/link-preview";
 import { firstLanguage } from "@/lib/first-language";
 export const viewport: Viewport = {
   colorScheme: "light",
@@ -17,12 +18,10 @@ export const metadata: Metadata = {
   description:
     "Kind Helps keeps a conference’s help line, home visits, ledger and yearly report in one place, with the volunteers who do the work. Free for every conference.",
   openGraph: {
-    type: "website",
-    siteName: "Kind Helps",
+    ...linkPreview,
     url: "/",
     title: "Kind Helps — Good work, together.",
     description: "The help line, home visits in pairs, the ledger and the yearly report, with the volunteers who do the work. Free for every conference.",
-    images: [{ url: "/assets/link-preview.jpg", width: 1200, height: 630, alt: "Two hands in layered paper relief, a small card resting in the open palm, and the words kind helps." }],
   },
   twitter: { card: "summary_large_image", images: ["/assets/link-preview.jpg"] },
   appleWebApp: {

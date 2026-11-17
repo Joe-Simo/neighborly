@@ -1,3 +1,4 @@
+import { linkPreview } from "@/lib/link-preview";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
   title: "Privacy — Kind Helps",
   description: "What a conference keeps in Kind Helps, who can see it, what the assistant is sent, and how a record, a person or a whole conference is removed.",
   alternates: { canonical: "/privacy" },
-  openGraph: { url: "/privacy", title: "Privacy — Kind Helps", description: "What a conference keeps in Kind Helps, who can see it, and how it is removed." },
+  openGraph: { ...linkPreview, url: "/privacy", title: "Privacy — Kind Helps", description: "What a conference keeps in Kind Helps, who can see it, and how it is removed." },
 };
 
 export default function Privacy() {
