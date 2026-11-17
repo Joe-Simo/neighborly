@@ -16,3 +16,8 @@
 #card-held .card-held-opening{position:fixed;inset:auto 24px 14vh;margin:0;text-align:center;font:400 17px/1.5 "Source Sans 3",sans-serif;color:#68715f;animation:card-held-line 200ms ease backwards}
 @keyframes card-held-line{from{opacity:0}}
 @media(prefers-reduced-motion:reduce){#card-held .card-held-opening{animation:none}}
+/* The name the visitor wrote, lettered on the grown card exactly as the door's card letters it: italic 400, clamp(17px,2.4vw,30px)/1.1, ink #2b2a26, its foot 10px above its square. */
+/* Once the door's own card is drawn, it letters the name itself: the held one goes at once, so the name is never drawn twice. */
+body:has(.door-sweep) #card-held .card-held-marks>em{visibility:hidden}
+#card-held .card-held-marks>em{position:absolute;left:30%;bottom:calc(64% + 10px);opacity:1;font:italic 400 clamp(17px,2.4vw,30px)/1.1 "Newsreader",Georgia,serif;font-synthesis:none;-webkit-font-smoothing:antialiased;color:#2b2a26;white-space:nowrap}
+@media(max-aspect-ratio:1/1){#card-held .card-held-marks>em{left:38.5%;bottom:calc(62% + 10px)}}

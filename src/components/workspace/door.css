@@ -21,6 +21,11 @@
 .door-card > i { left: 30%; top: 36%; width: 7%; aspect-ratio: 1; background: #c8962e; }
 .door-card > b { left: 41%; top: 39%; width: 30%; height: 3%; background: #8f8a78; }
 .door-card > b + b { left: 39%; top: 53%; width: 22%; }
+/* The name the visitor wrote on the home card, carried in the same hand: set in the display face, never broken. */
+/* Its box is the ochre square's own box, so the name is pinned to the square and never to the marks' states: the marks'
+   fade, breathing and waiting rules do not reach it, and its face, weight and place are the same in every frame. */
+.door-card > .door-card-for { left: 30%; top: 36%; width: 7%; aspect-ratio: 1; opacity: 1; animation: none; transition: none; }
+.door-card > .door-card-for > em { position: absolute; left: 0; bottom: calc(100% + 10px); font: italic 400 clamp(17px, 2.4vw, 30px)/1.1 "Newsreader", Georgia, serif; font-synthesis: none; -webkit-font-smoothing: antialiased; color: #2b2a26; white-space: nowrap; }
 /* Transform and opacity only, so the card never waits on the page being drawn under it. */
 @keyframes door-card-grow {
   from { opacity: 0; transform: translate(4vw, 30vh) rotate(8deg) scale(0.14); }
@@ -57,6 +62,7 @@ body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
   .door-card > i { left: 38.5%; top: 38%; width: 3.6%; }
   .door-card > b { left: 44%; top: 39.5%; width: 16%; height: 2.6%; }
   .door-card > b + b { left: 43%; top: 50%; width: 11%; }
+  .door-card > .door-card-for { left: 38.5%; top: 38%; width: 3.6%; }
 }
 /* The card grown on the home page was held over the window until now: the sweep starts at rest, with nothing to sweep. */
 .door-sweep[data-held] > svg { display: none; }
@@ -67,3 +73,5 @@ body:has(.door-sweep) .paper-loading > * { visibility: hidden; }
 /* Held from the home page the line is drawn low from the first, so it never moves. */
 .door-sweep[data-held] .door-opening:not([data-spoken]) { inset: auto 24px 14vh; animation: none; }
 .door-sweep[data-held] .door-opening svg { display: none; }
+.door-card[data-waits] > .door-card-for, .door-card[data-holds] > .door-card-for { opacity: 1; animation: none; }
+@media (prefers-reduced-motion: reduce) { .door-card > .door-card-for { display: block; } }

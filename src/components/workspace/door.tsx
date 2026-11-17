@@ -40,6 +40,14 @@ let arrivedAt = 0;
 let carried = false;
 // The home page's card was already saying "Opening…" when the sweep took it over: the sweep goes on saying it, with no gap.
 let heldSaying = false;
+/** The name the visitor wrote on the home page's card, if any: read here only, so it stays on the card through the handover. */
+function readCardFor() {
+  try {
+    return window.sessionStorage.getItem("kh-card-for")?.trim().slice(0, 24) || "";
+  } catch {
+    return "";
+  }
+}
 let card = false;
 /** Called by the door when it starts opening the sample, and again with false if the sample did not open. */
 export function carryTheCard(carry = true) {
@@ -62,39 +70,6 @@ export function arriveFromTheDoor() {
   document.documentElement.dataset.door = "sweeping";
   for (const watch of watchers) watch();
 }
-/**
- * The card becomes the page: its two grey lines travel to the two lines of the headline and its ochre square to
- * the ring of "Start here", thinning as the words under them come up. Only what is in the window is aimed at.
- */
-function marksBecomeThePage(card: HTMLElement, timing: KeyframeAnimationOptions, lifted: number) {
-  const [square, ...bars] = [...card.children].filter((mark): mark is HTMLElement => mark instanceof HTMLElement);
-  const heading = document.querySelector(".live-app .live-head-words h1");
-  const lines: DOMRect[] = [];
-  if (heading) {
-    const range = document.createRange();
-    range.selectNodeContents(heading);
-    for (const rect of range.getClientRects()) if (rect.width > 1 && !lines.some((line) => Math.abs(line.top - rect.top) < rect.height / 2)) lines.push(rect);
-  }
-  const start = document.querySelector(".live-app .start-here")?.getBoundingClientRect();
-  const ring = start && new DOMRect(start.left, start.top + start.height / 2 - 5, 10, 10);
-  const pairs: [HTMLElement | undefined, DOMRect | undefined][] = [[square, ring], [bars[0], lines[0]], [bars[1], lines[1] ?? lines[0]]];
-  for (const [mark, to] of pairs) {
-    if (!mark) continue;
-    const from = mark.getBoundingClientRect();
-    const opacity = getComputedStyle(mark).opacity;
-    const seen = to && to.bottom > 0 && to.top < window.innerHeight;
-    mark.style.transformOrigin = "0 0";
-    mark.animate(
-      [
-        { opacity, transform: "none" },
-        // The card under them is rising by `lifted`; the marks are carried back down by as much, so they stay on the page.
-        { opacity: 0, transform: `translate(${seen ? to.left - from.left : 0}px, ${(seen ? to.top - from.top : 0) + lifted}px) scale(${seen ? to.width / from.width : 1}, ${seen ? to.height / from.height : 1})` },
-      ],
-      timing,
-    );
-  }
-}
-
 const watch = (watcher: () => void) => {
   watchers.add(watcher);
   return () => void watchers.delete(watcher);
@@ -116,6 +91,7 @@ export function DoorSweep() {
   const done = useSyncExternalStore(watch, () => finished, () => 0);
   /** A wait: "spoken" is the line for screen readers only (the card holds as itself), "shown" draws it. */
   const [holding, setHolding] = useState<false | "spoken" | "shown">(false);
+  const [cardFor] = useState(readCardFor);
   const paper = useRef<HTMLDivElement>(null);
   const [language] = useEntryLanguage();
   const playing = arrival > done;
@@ -158,8 +134,7 @@ export function DoorSweep() {
         // The sheets behind are long covered; they go at once, so the one sheet is all that is over the room.
         for (const behind of paper.current?.querySelectorAll<SVGElement>(":scope > svg") ?? []) behind.style.display = "none";
         sheet.style.visibility = "visible";
-        // The card leaves its marks behind: they go to their places on the page as it lifts off them.
-        if (sheet.matches(".door-card:not([data-waits])")) marksBecomeThePage(sheet, away, -far);
+        // The card's marks and the name are on the paper: they ride up and leave with it, and nothing is left over the room.
       }
       const over = () => {
         setHolding(false);
@@ -216,7 +191,7 @@ export function DoorSweep() {
         </svg>
       ))}
       {/* The card passed on the home page, grown to the size of the page: its mark and two lines thin away as it becomes the paper. */}
-      {card ? <div className="door-card"><i /><b /><b /></div> : <div className="door-paper" />}
+      {card ? <div className="door-card"><i /><b /><b />{cardFor && <span className="door-card-for"><em>For {cardFor}</em></span>}</div> : <div className="door-paper" />}
       {holding && (
         <p className="door-opening" role="status" data-spoken={holding === "spoken" ? "" : undefined} data-low={card ? "" : undefined}>
           <span>{wordsFor(language).states.opening}</span>

@@ -125,6 +125,8 @@ export function es(set: WordSet): Words {
       figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Peticiones que esperan un sí", oldest: (days) => (days === 1 ? "La más antigua, 1 día" : `La más antigua, ${days} días`), toPay: (count) => (count === 1 ? "1 aprobada, sin pagar" : `${count} aprobadas, sin pagar`) },
       startHere: { lead: "Empieza aquí", rest: "una llamada espera tu sí." },
       comingUp: "Lo que viene",
+      cardFor: "Para",
+      cardForRest: "buen trabajo esta semana.",
       nextSevenDays: "Próximos 7 días",
       printWeek: "Imprimir la semana",
       choiceAboveTitle: "Tu próxima decisión está arriba.",

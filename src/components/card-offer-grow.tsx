@@ -50,14 +50,19 @@ export function CardOfferGrow() {
       ? [{ transform: `rotate(${turn}deg)`, easing: EASE }, { transform: `translate(${dx}px,${dy}px) rotate(0deg) scale(${innerWidth * .92 / width})`, offset: rest, easing: "cubic-bezier(.5,0,.3,1)" }, end]
       : [{ transform: `rotate(${turn}deg)` }, end], { ...timing, duration: narrow ? GROW + 200 : GROW, easing: narrow ? "linear" : WIDE });
     // Its words give way to the bare paper before any edge of them could leave the window.
-    // On a narrow window the words go as soon as it starts to fill it, before any edge of them is cut.
-    const fade = narrow ? rest : .42;
-    const swap = (from: number, to: number) => [{ opacity: from }, { opacity: from, offset: fade }, { opacity: to, offset: fade + (narrow ? .08 : .12) }, { opacity: to }];
+    // On a narrow window the words go just after it starts to fill it, once its paper is under where the grown card letters the name, before any edge of them is cut.
+    const fade = narrow ? rest + .1 : .42;
+    // A clean swap in one frame: the card's own words, square and name go as the grown card's marks and name come, so the two are never seen together.
+    const swap = (from: number, to: number) => [{ opacity: from }, { opacity: from, offset: fade }, { opacity: to, offset: Math.min(1, fade + .001) }, { opacity: to }];
     for (const mark of sheet.children) mark.animate(swap(1, 0), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     // As the words give way, the grown card's own marks come up in the same moment, where the door's card has them: the card is never blank paper.
     const marks = document.createElement("div");
     marks.className = "card-held-marks";
     marks.append(document.createElement("i"), document.createElement("b"), document.createElement("b"));
+    // The name written on the card is lettered on the grown paper too, where the door's card will be, so it is still the visitor's card.
+    const written = offer.querySelector(".card-offer-for span")?.textContent?.trim();
+    // On the card the name is lettered on its paper, so it grows with the card and keeps its place over the square; the grown card letters it again over its own square, as the door does.
+    if (written) { const line = document.createElement("em"); line.textContent = `For ${written}`; marks.append(line); }
     held.append(marks);
     marks.animate(swap(0, 1), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     const since = performance.now();
@@ -104,6 +109,9 @@ function useCardLean() {
         card.style.setProperty("--lean-y", `${(across * 1.5).toFixed(2)}deg`);
         card.style.setProperty("--lean-x", `${(-down * 1.5).toFixed(2)}deg`);
         card.dataset.leaning = "";
+        // The field that writes on the card lies over it and leans with it.
+        const field = card.nextElementSibling;
+        if (field instanceof HTMLElement && field.classList.contains("card-for")) { field.style.setProperty("--lean-y", card.style.getPropertyValue("--lean-y")); field.style.setProperty("--lean-x", card.style.getPropertyValue("--lean-x")); field.dataset.leaning = ""; }
       }
     };
     const move = (event: PointerEvent) => {
@@ -111,7 +119,7 @@ function useCardLean() {
       x = event.clientX; y = event.clientY;
       if (!frame) frame = requestAnimationFrame(lean);
     };
-    const rest = () => document.querySelectorAll<HTMLElement>(".card-offer[data-leaning]").forEach(card => { card.style.setProperty("--lean-x", "0deg"); card.style.setProperty("--lean-y", "0deg"); });
+    const rest = () => document.querySelectorAll<HTMLElement>(":is(.card-offer,.card-for)[data-leaning]").forEach(card => { card.style.setProperty("--lean-x", "0deg"); card.style.setProperty("--lean-y", "0deg"); });
     addEventListener("pointermove", move, { passive: true });
     document.documentElement.addEventListener("pointerleave", rest);
     return () => { cancelAnimationFrame(frame); removeEventListener("pointermove", move); document.documentElement.removeEventListener("pointerleave", rest); rest(); };
