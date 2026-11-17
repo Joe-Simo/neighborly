@@ -736,7 +736,10 @@ export function HelpLineView({
                       caller(call, words)
                     )}
                     {call.phone && (
-                      <span className="help-phone">{call.phone}</span>
+                      // The number calls: on a phone a tap rings it, and the row's menu offers it first as Call.
+                      <a className="help-phone" href={`tel:${call.phone.replace(/[^\d+]/g, "")}`}>
+                        {call.phone}
+                      </a>
                     )}
                   </h3>
                   <p>{sampleSaid(call.note)}</p>
