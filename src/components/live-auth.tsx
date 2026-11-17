@@ -2,10 +2,11 @@
 
 import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from "react";
 import { takeSampleTicket } from "@/lib/sample-ticket";
+import { useWaited } from "@/lib/use-waited";
 import Link from "next/link";
 import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
-import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { words } from "@/lib/words";
@@ -277,11 +278,11 @@ export function LiveAuth({
       )}
     </>
   );
-  const submitIcon = pending ? (
-    <LoaderCircle size={17} aria-hidden="true" className="live-auth-spin" />
-  ) : (
-    <ArrowRight size={17} aria-hidden="true" />
-  );
+  // A wait is said once it has lasted: until then the button rests as it was pressed. Then one line, with the ochre
+  // ring that marks waiting everywhere else. Nothing turns and nothing pulses.
+  const waits = useWaited(pending);
+  const sampleWaits = useWaited(opening);
+  const submitIcon = waits ? <i className="entry-waits" aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />;
   const passwordField = (label: string, autoComplete: "current-password" | "new-password") => (
     <LiveField
       label={label}
@@ -342,7 +343,7 @@ export function LiveAuth({
           {messages}
           <Button type="submit" disabled={busy}>
             {submitIcon}
-            {pending ? w.wait : flow === "signUp" ? w.create : w.continue}
+            {waits ? w.wait : flow === "signUp" ? w.create : w.continue}
           </Button>
           <Button type="button" variant="link" className="entry-quiet" disabled={busy || resent} onClick={sendAgain}>
             {resent ? w.sentAgain : w.sendAgain}
@@ -361,7 +362,7 @@ export function LiveAuth({
           {messages}
           <Button type="submit" disabled={busy}>
             {submitIcon}
-            {pending ? w.wait : w.save}
+            {waits ? w.wait : w.save}
           </Button>
         </form>
       </>
@@ -419,14 +420,15 @@ export function LiveAuth({
           {messages}
           <Button type="submit" disabled={busy}>
             {submitIcon}
-            {pending ? w.wait : flow === "signIn" ? w.signIn : flow === "signUp" ? w.create : w.emailCode}
+            {waits ? w.wait : flow === "signIn" ? w.signIn : flow === "signUp" ? w.create : w.emailCode}
           </Button>
         </form>
         {sampleEntry && flow !== "reset" && (
-          <div className="entry-sample" data-opening={opening || undefined}>
+          <div className="entry-sample" data-opening={sampleWaits || undefined}>
             <Button type="button" variant="link" disabled={busy} onClick={() => void lookAround()}>
-              {opening ? w.sampleOpening : w.sample}
-              {!opening && <ArrowRight size={16} aria-hidden="true" />}
+              {sampleWaits && <i className="entry-waits" aria-hidden="true" />}
+              {sampleWaits ? w.sampleOpening : w.sample}
+              {!sampleWaits && <ArrowRight size={16} aria-hidden="true" />}
             </Button>
             {sampleError && failure(w[sampleError])}
             <small>{w.sampleNote}</small>

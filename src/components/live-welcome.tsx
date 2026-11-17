@@ -5,8 +5,9 @@ import { readFailure } from "@/components/workspace/failure";
 import Link from "next/link";
 import { words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
+import { useWaited } from "@/lib/use-waited";
 import { useEntryLanguage } from "./live-auth-words";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -95,6 +96,7 @@ export function LiveWelcome({
     }
   }
   const busy = pending || given;
+  const waits = useWaited(pending);
   return (
     <EntrySheet
       page={mode}
@@ -169,15 +171,11 @@ export function LiveWelcome({
           </div>
         )}
         <Button type="submit" disabled={busy}>
-          {pending ? (
-            <LoaderCircle size={17} aria-hidden="true" className="live-auth-spin" />
-          ) : (
-            <ArrowRight size={17} aria-hidden="true" />
-          )}
-          {pending ? (mode === "create" ? w.creating : w.joining) : mode === "create" ? w.create : w.join}
+          {waits ? <i className="entry-waits" aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}
+          {waits ? (mode === "create" ? w.creating : w.joining) : mode === "create" ? w.create : w.join}
         </Button>
         <span className="sr-only" role="status">
-          {pending ? (mode === "create" ? w.creating : w.joining) : ""}
+          {waits ? (mode === "create" ? w.creating : w.joining) : ""}
         </span>
       </form>
     </EntrySheet>
