@@ -31,7 +31,9 @@ export default function LiveAppLayout({
         <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
       ))}
       <Suspense fallback={<Loading />}>
-        <ClerkProvider signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
+        {/* `dynamic`: the server says who is here from the request itself, so the door's sheet is drawn for a signed-out
+            visitor at once (and sent in the page on a fresh load) instead of after Clerk's script has loaded and answered. */}
+        <ClerkProvider dynamic signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
           <LiveProviders>
             <LiveFrame sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}>{children}</LiveFrame>
           </LiveProviders>
