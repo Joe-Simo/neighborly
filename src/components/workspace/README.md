@@ -16,6 +16,7 @@ change to a file marked closed.
 | `types.ts`, `primitives.tsx` | Shared types; `LiveLoading`, `LiveRoomLoading`, `LiveEmpty`, `LiveField`. |
 | `paper.css` | The paper frame: page head, motion, empty and loading states, phone bar, measure. |
 | `aside.tsx` | `RoomAside`: the room's one side column from 1280px up, and `useWideScreen()`. |
+| `row-menu.tsx` | `RowMenu`: in the iOS app, a long press on a row marked `data-row-menu` brings that row's own actions on a small sheet. |
 | `relief.tsx` | `ReliefPicture`: a room's relief picture, or its drawn placeholder until the files arrive (`reliefReady`). |
 | `convex/schema.ts` | Every table, including `neighbors`, `calls`, `assistanceRequests`, `visits` and `ledgerEntries`. Money is whole cents. |
 | `convex/access.ts` | `user()` and `membership()`: the gate every backend function starts with. `neighborAccess()` and `neighborRecord()`: the gate for anything about a neighbor. |
@@ -83,6 +84,17 @@ import { RoomAside } from "@/components/workspace/aside";
   comes from the word tables. Inside, use the room's own quiet type: 15px text, 13px kickers, hairlines, no cards.
 - A room with a wide table (People, Neighbors, the ledger) leaves it out: at 1280px the room's column beside it
   is about 590px.
+
+## A row's long press in the app
+
+In the iOS app (`row-menu.tsx`, mounted once by the shell) a finger held 450ms on a row marked `data-row-menu`
+brings up a small sheet with at most three of that row's own actions: Call (the row's `tel:` link), Open (the
+row's link) and the room's one action (the row's button marked `data-row-action`, in its own words). The sheet
+only mirrors what is already there: an action appears in it only when the row, or the record it opens, already
+offers it, and no decision (Approve, Discard) is ever put in it. That is also its VoiceOver route: a web view
+cannot give a row native VoiceOver custom actions, and WebKit has no supported ARIA equivalent, so a VoiceOver
+user reaches every one of these actions where it already is, on the row or in the record. Do not add a visible
+button to a row only so that the sheet can offer it.
 
 ## Motion, shared by every room
 
