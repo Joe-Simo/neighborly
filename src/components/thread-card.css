@@ -70,3 +70,14 @@
 .card-for-line:has(input:focus-visible){outline:2px solid #263b30;outline-offset:3px;border-radius:3px 1px 4px 2px/2px 4px 1px 3px}
 .card-for-note{position:absolute;left:0;right:0;top:calc(100% + 26px);font:400 15px/1.35 'Source Sans 3',sans-serif;color:#3d4f43;text-align:center;rotate:4deg;pointer-events:none}
 .card-offer[data-given]~.card-for{opacity:0}
+/* The card's own face for its last flight, into the open hand: the same paper, square, words and line as the card it becomes, drawn at the travelling card's 240px. */
+.thread-card-face{position:absolute;inset:0;display:none;background:url(/assets/home/card-blank-480.webp) center/100% 100% #f7f2e6;color:#253e31}
+.thread-card[data-lettered] .thread-card-face{display:block}
+.thread-card-face>b{position:absolute;left:8%;top:14%;width:8%;aspect-ratio:1;background:#c8962e}
+.thread-card-face>svg{position:absolute;right:8%;top:12%;width:18px;height:18px}
+.thread-card-face>em{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 17px/1.2 'Newsreader',Georgia,serif;color:#3d4f43;white-space:nowrap;overflow:hidden}
+.thread-card-face>em span{flex:1;min-width:0;color:#253e31;border-bottom:1px solid #3d4f4366}
+.thread-card-face>em span:not([data-blank]){border-bottom-color:transparent}
+.thread-card-words{position:absolute;left:9%;right:8%;bottom:13%;display:flex;flex-direction:column;gap:6px}
+.thread-card-words strong{font:400 22px/1.08 'Newsreader',Georgia,serif;letter-spacing:-.025em;text-wrap:balance}
+.thread-card-words small{font:400 15px/1.35 'Source Sans 3',sans-serif;color:#3d4f43}

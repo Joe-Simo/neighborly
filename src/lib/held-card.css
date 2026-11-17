@@ -17,5 +17,6 @@
 @keyframes card-held-line{from{opacity:0}}
 @media(prefers-reduced-motion:reduce){#card-held .card-held-opening{animation:none}}
 /* The name the visitor wrote, lettered on the grown card in the card's italic, above the marks. */
+#card-held .card-held-name{z-index:1}
 #card-held .card-held-marks>em{position:absolute;left:30%;top:25%;opacity:1;font:italic 400 calc(max(106vw,159vh) * .024)/1.2 "Newsreader",Georgia,serif;color:#3d4f43;white-space:nowrap}
 @media(max-aspect-ratio:1/1){#card-held .card-held-marks>em{left:38.5%;top:31%;font-size:calc(max(106vw,159vh) * .014)}}
