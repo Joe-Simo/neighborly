@@ -90,22 +90,40 @@ function LiveRooms({
   const invitationRequest = useRef<{ key: string; id: string } | null>(null);
   const execute = useMutation(api.workspace.execute);
   const [invitationConsumed, setInvitationConsumed] = useState(false);
-  // An invitation link is asked about once, as the page opens and beside Clerk's own start: yes or no, nothing else.
-  // A link that is no longer good is said so on the sheet and then dropped, so nobody signs up for nothing. If the
-  // question itself fails the link is left to stand; joining still checks it.
+  // An invitation link is asked about once, yes or no and nothing else, as soon as it is known who is here. Not
+  // before: Convex drops an action in flight when the session is handed to it. A link that is no longer good is
+  // said so on the sheet and then dropped, so nobody signs up for nothing. A question that fails is asked twice
+  // more; if it still fails, or no answer comes in six seconds, the link is left to stand and joining checks it.
   const askInvitation = useAction(api.invitations.good);
   const [invitationGood, setInvitationGood] = useState<boolean | undefined>(invitationToken ? undefined : true);
+  const invitationAnswered = useRef(!invitationToken);
+  const whoIsKnown = signedOut || isAuthenticated;
   useEffect(() => {
-    if (!invitationToken) return;
+    if (invitationAnswered.current || !whoIsKnown) return;
     let current = true;
-    askInvitation({ token: invitationToken }).then(
-      (good) => current && setInvitationGood(good),
-      () => current && setInvitationGood(true),
-    );
+    let again: ReturnType<typeof setTimeout> | undefined;
+    const answer = (good: boolean) => {
+      if (!current || invitationAnswered.current) return;
+      invitationAnswered.current = true;
+      setInvitationGood(good);
+    };
+    const ask = (left: number) =>
+      void askInvitation({ token: invitationToken }).then(answer, (cause: unknown) => {
+        if (!current) return;
+        if (left > 0) again = setTimeout(() => ask(left - 1), 600);
+        else {
+          console.error("The invitation link could not be checked.", cause);
+          answer(true);
+        }
+      });
+    ask(2);
+    const limit = setTimeout(() => answer(true), 6000);
     return () => {
       current = false;
+      clearTimeout(again);
+      clearTimeout(limit);
     };
-  }, [askInvitation, invitationToken]);
+  }, [askInvitation, invitationToken, whoIsKnown]);
   const badInvite = invitationGood === false;
   const liveToken = badInvite ? "" : invitationToken;
   const [selectedChurch, setSelectedChurch] = useState<Id<"churches"> | null>(
