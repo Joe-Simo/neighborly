@@ -1,11 +1,6 @@
-import "@/components/live-workspace.css";
-import "@/components/public-state.css";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PublicEnding } from "@/components/public-ending";
-import "@/components/public-page.css";
-import { stateWords } from "@/components/workspace/state-words";
+import "@/components/not-found.css";
 
 export const metadata: Metadata = {
   title: "Page not found — Kind Helps",
@@ -13,21 +8,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/** The courtyard's doors, closed: the one place on the site they do not open onto anything. */
 export default function NotFound() {
-  return (
-    <>
-    <div className="live-app public-state">
-      <main className="live-auth paper-rise">
-        <div className="live-auth-art" aria-hidden="true" />
-        <p className="live-kicker">Kind Helps</p>
-        <h1>{stateWords.missingTitle}</h1>
-        <p className="live-deck">{stateWords.missingDeck}</p>
-        <Button asChild style={{ marginTop: 24 }}>
-          <Link href="/app">{stateWords.missingAction}</Link>
-        </Button>
-      </main>
+  return <main className="lost-door">
+    <Link className="lost-door-brand" href="/" aria-label="Kind Helps home">kind helps</Link>
+    <div className="lost-door-words">
+      <h1>This door doesn’t lead anywhere.</h1>
+      <Link href="/">Back to kind helps</Link>
     </div>
-    <PublicEnding />
-    </>
-  );
+    <div className="lost-door-frame" aria-hidden="true">
+      <div className="lost-door-light" />
+      <div className="lost-door-leaves"><i /><i /></div>
+    </div>
+  </main>;
 }
