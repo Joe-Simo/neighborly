@@ -69,7 +69,7 @@ function Neighbors() {
         <Input
           type="search"
           aria-label="Find a neighbor"
-          placeholder="Find by name, phone or street"
+          placeholder="Name, phone or street"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
