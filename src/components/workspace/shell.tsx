@@ -455,7 +455,7 @@ export function LiveWorkspace({
             <p className="live-opening" role="status">
               {/* A room held because the connection is down says that, not that it is opening: the strip that
                   would say so is inside the column that is not seen yet. The same status line, so it is read out. */}
-              <span className="text-balance">{lost ? roomWords.states.offlineTitle : roomWords.states.opening}</span>
+              <span className="text-balance">{lost ? `${roomWords.states.offlineTitle} ${roomWords.states.offlineRoom}` : roomWords.states.opening}</span>
             </p>
           )}
           <div className="live-page-head" data-rested={rested ? "" : undefined}>

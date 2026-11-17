@@ -305,6 +305,7 @@ export function es(set: WordSet): Words {
       /** Under a yes or a no that was pressed, not typed, while the connection is down. */
       answerKept: "Tu respuesta está guardada. Se enviará cuando vuelva la conexión.",
       offlineTitle: "Ahora no hay conexión.",
+      offlineRoom: "Esta sala se abre cuando vuelva.",
       offlineDeck: "Lo que ves en pantalla se conserva. Los cambios se enviarán cuando este dispositivo vuelva a tener conexión.",
       back: "Volvió la conexión.",
       errorTitle: "Esta sala no se abrió.",
