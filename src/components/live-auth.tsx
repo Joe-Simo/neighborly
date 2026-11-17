@@ -3,6 +3,7 @@
 import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from "react";
 import { takeSampleTicket } from "@/lib/sample-ticket";
 import { useWaited } from "@/lib/use-waited";
+import { useFocusBack } from "@/lib/use-focus-back";
 import Link from "next/link";
 import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
@@ -114,7 +115,12 @@ export function LiveAuth({
     };
   }, [pageTitle, behind]);
 
+  const focus = useFocusBack();
+
   function choose(next: Flow) {
+    // Another page is written on the sheet, and the pressed control goes with the old one.
+    focus.note();
+    focus.back();
     setFlow(next);
     setResent(false);
     setStep("details");
@@ -131,6 +137,7 @@ export function LiveAuth({
     setSampleError("");
     setNotice(false);
     setLeftRead(true);
+    focus.note();
     setPending(true);
     try {
       await steps();
@@ -138,6 +145,7 @@ export function LiveAuth({
       setError(errorKey(failure, flow));
     } finally {
       setPending(false);
+      focus.back();
     }
   }
   async function done(result: Promise<{ error: unknown }>) {
@@ -225,6 +233,7 @@ export function LiveAuth({
     setNotice(false);
     setSampleError("");
     setLeftRead(true);
+    focus.note();
     setOpening(true);
     // Behind a first look nothing sweeps, so there is no sweep to hand the card to.
     if (!behind) carryTheCard();
@@ -246,6 +255,7 @@ export function LiveAuth({
       setSampleError("sampleFailed");
     } finally {
       setOpening(false);
+      focus.back();
     }
   }
 
@@ -335,8 +345,8 @@ export function LiveAuth({
         </Button>
         <p className="live-kicker">{w.codeKicker}</p>
         <h1>{w.codeHeading}</h1>
-        <p className="live-deck">
-          {w.codeSent} <strong>{email}</strong>. {w.codeFor[flow]}
+        <p className="live-deck entry-deck-kept">
+          {w.codeSent} <strong>{email}</strong>. <span>{w.codeFor[flow]}</span>
         </p>
         <form className="live-form" onSubmit={submitCode}>
           <LiveField label={w.codeLabel} help={w.codeHint} said={{ needed, neededCheck: w.errors.code }}>
@@ -367,7 +377,7 @@ export function LiveAuth({
       <>
         <p className="live-kicker">{w.freshKicker}</p>
         <h1>{w.freshHeading}</h1>
-        <p className="live-deck">
+        <p className="live-deck entry-deck-kept">
           {w.freshDeck} <strong>{email}</strong>.
         </p>
         <form className="live-form" onSubmit={submitNewPassword}>

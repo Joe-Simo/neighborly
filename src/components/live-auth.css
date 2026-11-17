@@ -378,7 +378,8 @@
    the deck steps aside and the sample's note is said in a few words. */
 @media (max-width: 699px) and (max-height: 680px) {
   .entry { --entry-band: 76px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
-  .live-app .entry .live-deck,
+  .live-app .entry .live-deck:not(.entry-deck-kept),
+  .entry-deck-kept > span,
   .entry-sample > small:not(.entry-sample-short) { display: none; }
   .entry-sample > .entry-sample-short { display: block; }
   .live-app .entry .live-form { gap: 12px; margin-top: 16px; }
@@ -398,7 +399,9 @@
 .entry .live-field:has(.live-field-needed) small:not(.live-field-needed) { display: none; }
 
 /* ── The first welcome, written on the same sheet ─────────────────────── */
-.entry .live-wordmark { display: inline-block; margin-bottom: 16px; color: var(--paper-ink); font-size: 30px; line-height: 1; }
+.entry .live-wordmark { position: relative; display: inline-block; margin-bottom: 16px; color: var(--paper-ink); font-size: 30px; line-height: 1; }
+/* A finger needs 44 points. The word stays its size; only the area that answers a touch grows. */
+.entry .live-wordmark::after { content: ""; position: absolute; inset: 50% 0 auto; height: 44px; transform: translateY(-50%); }
 .entry .entry-tabs { justify-content: flex-start; width: 100%; border-radius: 0; }
 .live-app .entry .live-field select { min-height: 50px; padding-inline: 14px; background-color: #fffdf7; font-size: 17px; }
 /* What a conference is, said once, in the sheet's own small print between two hairlines. */

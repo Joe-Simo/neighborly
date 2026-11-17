@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
+import { ROOM_WHOLE } from "@/lib/room-whole";
 import { flushSync } from "react-dom";
 import { useConvex, useConvexConnectionState } from "convex/react";
 
@@ -12,11 +13,7 @@ import { useConvex, useConvexConnectionState } from "convex/react";
  * A fresh page has no room to hold: its wait carries on from the launch screen's, whose line stands in the same place.
  */
 
-/**
- * Sent on the window in the frame a room is shown whole, after the page says so (`.live-app[data-room-shown]`) and
- * before that frame is painted. A listener that arrives late reads the mark instead: the two never disagree.
- */
-export const ROOM_WHOLE = "kh-room-whole";
+export { ROOM_WHOLE };
 
 /** The longest the last room is held while the next is not yet whole. */
 const HOLD = 400;
