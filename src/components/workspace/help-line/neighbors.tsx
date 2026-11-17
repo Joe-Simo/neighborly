@@ -20,6 +20,7 @@ import {
   type NeighborList,
 } from "@/components/workspace/help-line/format";
 import { NeighborRecord } from "@/components/workspace/help-line/neighbor-record";
+import { RecordSlide } from "@/components/workspace/record-slide";
 import {
   HelpEmpty,
   HelpLoading,
@@ -33,13 +34,17 @@ export function NeighborsSection() {
     <HelpRoom>
       {neighborId ? (
         // The id comes from the address bar; the backend refuses anything that is not a record in this group.
-        <NeighborRecord
-          key={neighborId}
-          neighborId={neighborId as Id<"neighbors">}
-          requestId={address.get("request")}
-        />
+        <RecordSlide part="record">
+          <NeighborRecord
+            key={neighborId}
+            neighborId={neighborId as Id<"neighbors">}
+            requestId={address.get("request")}
+          />
+        </RecordSlide>
       ) : (
-        <Neighbors />
+        <RecordSlide part="list">
+          <Neighbors />
+        </RecordSlide>
       )}
     </HelpRoom>
   );

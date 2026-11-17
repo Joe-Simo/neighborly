@@ -52,7 +52,7 @@ type Step =
 function Back() {
   const { words } = useWorkspace();
   return (
-    <Link className="help-back" href="/app/neighbors">
+    <Link className="help-back" href="/app/neighbors" scroll={false} data-step-own="">
       <ArrowLeft size={16} aria-hidden="true" /> {words.rooms.neighbors.all}
     </Link>
   );
@@ -256,7 +256,7 @@ export function NeighborRecord({
         title={text.missing.title}
         action={
           <Button variant="outline" asChild>
-            <Link href="/app/neighbors">{words.rooms.neighbors.all}</Link>
+            <Link href="/app/neighbors" scroll={false} data-step-own="">{words.rooms.neighbors.all}</Link>
           </Button>
         }
       >
@@ -270,7 +270,7 @@ export function NeighborRecord({
         title={text.removed.title}
         action={
           <Button variant="outline" asChild>
-            <Link href="/app/neighbors">{words.rooms.neighbors.all}</Link>
+            <Link href="/app/neighbors" scroll={false} data-step-own="">{words.rooms.neighbors.all}</Link>
           </Button>
         }
       >

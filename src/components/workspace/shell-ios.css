@@ -300,3 +300,35 @@
   :root[data-shell="ios"]:has(:is(textarea, select, [contenteditable="true"], input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="file"], [type="range"])):focus) .live-tab-bar { display: none; }
 }
 @media print { .live-tab-bar { display: none !important; } }
+
+/* ── A7: a record is a sheet laid over its list (record-slide.tsx). A tap on a row opens it inside a view transition:
+   the list stays where it was, undimmed, and the record slides in from the right over it; its leading edge is a
+   hairline with the sheets' tight contact shade, which exists only during the slide (at rest the record is the
+   page); its way back is a plain step to the list at its place. The rest of the page (bar, head) changes in one cut.
+   Nothing fades. ── */
+/* The list is its own picture only while a record opens over it; going back, the list is simply the page beneath. */
+:root[data-shell="ios"][data-record-step="open"] [data-record-slide="list"] { view-transition-name: kh-list; }
+:root[data-shell="ios"] [data-record-slide="record"] { view-transition-name: kh-record; }
+@keyframes kh-record-in { from { transform: translateX(100%); } }
+@keyframes kh-hold { from { opacity: 1; } to { opacity: 1; } }
+:root[data-shell="ios"]::view-transition-old(root),
+:root[data-shell="ios"]::view-transition-new(root) { animation: none; }
+:root[data-shell="ios"]::view-transition-group(kh-list) { animation: none; }
+/* The list and the record are paper: their pictures carry the page's paper, so nothing of the page behind shows
+   through them while they move. */
+:root[data-shell="ios"]::view-transition-old(kh-list),
+:root[data-shell="ios"]::view-transition-new(kh-list),
+:root[data-shell="ios"]::view-transition-old(kh-record),
+:root[data-shell="ios"]::view-transition-new(kh-record) { background: #f5f3ec; }
+:root[data-shell="ios"]::view-transition-old(kh-list) { animation: kh-hold 340ms both; }
+:root[data-shell="ios"]::view-transition-group(kh-record) { z-index: 2; animation: none; }
+:root[data-shell="ios"]::view-transition-new(kh-record) {
+  animation: kh-record-in 340ms cubic-bezier(0.3, 0.6, 0.25, 1) both;
+  box-shadow: -1px 0 0 rgb(40 60 50 / 0.18), -6px 0 8px -5px rgb(46 36 22 / 0.3);
+}
+:root[data-shell="ios"]::view-transition-new(kh-list) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-shell="ios"]::view-transition-group(*),
+  :root[data-shell="ios"]::view-transition-old(*),
+  :root[data-shell="ios"]::view-transition-new(*) { animation: none !important; }
+}
