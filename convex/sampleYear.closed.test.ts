@@ -37,13 +37,18 @@ async function loadedOn(moment: string) {
 // The home page shows the closed year's totals and the Reports room adds them up from the records: they must
 // agree to the digit on whatever day the sample was last rebuilt. From two weeks after the year closes, when
 // its last requests have been settled, until the next year closes.
+/** All hours of service in the closed year, home visits and shifts. */
+const HOURS = 1589;
+
 test("the closed year reads the same whatever day the sample is loaded, and the rooms keep their open work", async () => {
   const days = ["2026-10-14T15:00:00Z", "2026-11-15T15:00:00Z", "2026-11-16T03:30:00Z", "2026-11-17T22:00:00Z", "2026-11-28T09:00:00Z", "2026-12-20T15:00:00Z", "2027-02-10T15:00:00Z", "2027-09-30T15:00:00Z"];
   const first = await loadedOn(days[0]);
   expect(first.report.closed).toBe(true);
   expect({ calls: first.report.calls.taken, requests: first.report.requests.received, visits: first.report.visits, helpPaid: first.report.helpPaid }).toEqual({ calls: 459, requests: 370, visits: 325, helpPaid: 5243500 });
-  // Members' hours are the one part still drawn back from today (the last 52 weeks of turns), so it is left out.
-  const still = (report: typeof first.report) => ({ ...report, time: null });
+  // Every hour of service holds too: home visits and the help-line and pantry shifts of the closed year.
+  expect(first.report.time.hours).toBe(HOURS);
+  // Rows are new on every load, so ids are left out and the rest compared.
+  const still = (report: typeof first.report) => JSON.parse(JSON.stringify(report, (name, value) => (name === "teamId" || name === "memberId" ? undefined : value)));
   for (const day of days.slice(1)) {
     const { report, held } = await loadedOn(day);
     expect(still(report), day).toEqual(still(first.report));
