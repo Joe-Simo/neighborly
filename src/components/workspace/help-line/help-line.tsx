@@ -373,8 +373,9 @@ function HelpLine() {
                     toDo={
                       <>
                         <DraftToDo notes={one.draft.notes} />
-                        {/* A discard (or a yes) held by a lost connection: one quiet line above the resting buttons. */}
-                        <LiveWaiting when={approving.pending && one === onSheet} />
+                        {/* A discard (or a yes) held by a lost connection: one quiet line above the resting buttons. Once the
+                            yes is saved the line's words go and its place stays until the sheet does, so the seal moves nothing below. */}
+                        <LiveWaiting when={approving.pending && one === onSheet} keep={one === sealed} />
                       </>
                     }
                     limits={
