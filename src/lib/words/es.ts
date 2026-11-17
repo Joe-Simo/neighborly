@@ -65,6 +65,7 @@ export function es(set: WordSet): Words {
       sample: "Muestra",
       language: "Idioma",
       roomInEnglish: "Esta sala todavía está en inglés.",
+      partInEnglish: "Esta parte está en inglés.",
       typedStays: "Lo que escriben las personas queda como lo escribieron.",
       member: "Miembro",
       team: "Equipo",
@@ -190,6 +191,7 @@ export function es(set: WordSet): Words {
       released: "Compromiso liberado. Tus otras fechas siguen igual.",
     },
     timeOff: {
+      yours: "Tu tiempo libre",
       thisMonth: "Este mes",
       away: "Día libre",
       canHelp: "Puedes ayudar",
@@ -260,6 +262,7 @@ export function es(set: WordSet): Words {
       decline: "No puedo",
       noMeetingsTitle: "No hay reuniones planeadas.",
       noMeetingsDetail: "Responder a una reunión no marca ninguna tarea como hecha.",
+      preparing: "Preparando las invitaciones…",
     },
     people: {
       roles: { owner: "Responsable", coordinator: "Coordinador", member: "Miembro" },

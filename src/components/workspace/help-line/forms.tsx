@@ -247,7 +247,7 @@ export function ReturnForm({
   onSaved: () => void;
 }) {
   const markReturned = useMutation(api.assistance.markReturned);
-  const { pending, error, save } = useSave();
+  const { pending, error, save } = useSave("decided");
   return (
     <form
       className="live-form help-form"
@@ -525,9 +525,9 @@ export function DecideForm({
   );
   const agencies = known ?? listed;
   const [referred, setReferred] = useState<string[]>(request.referrals ?? []);
-  const { pending, error, save } = useSave();
-  const [amountError, setAmountError] = useState("");
   const approving = decision === "approved";
+  const { pending, error, save } = useSave(approving ? "decided" : "saved");
+  const [amountError, setAmountError] = useState("");
   const voucher = approving ? request.voucher : null;
   const shelf = useShelf(churchId, !!voucher);
   return (

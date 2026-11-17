@@ -16,6 +16,7 @@ export function TimeOffSection() {
       <div className="live-note paper-rise">
         {words.timeOff.note}
       </div>
+      <h2 className="sr-only">{words.timeOff.yours}</h2>
       <div className="live-list">
         {data.timeOff.filter((item) => item.personId === data.user.id)
           .length ? (

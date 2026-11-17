@@ -102,7 +102,7 @@
 /* The year as one cut piece. The amount paid is cut from green paper and stands on a ledge; beside it stand three
    small slips for the calls, requests and visits that led to it. Captions sit under the ledge. On paper the plain
    figures print instead. */
-@media screen { .report-figures-print { display: none; } }
+@media screen { .report-sheet-figures, .report-kinds-print { display: none; } }
 .report-year {
   display: grid;
   grid-template-columns: minmax(0, 1fr) repeat(3, auto);
@@ -130,15 +130,62 @@
 .report-year > div:first-child dt { max-width: 520px; font-size: 16px; padding-right: 32px; }
 .report-year dt strong { font-weight: 650; color: var(--live-ink); }
 .report-year dd > span { display: block; filter: drop-shadow(1.5px 1px 0 rgb(40 60 50 / 0.26)) drop-shadow(7px 9px 9px rgb(40 60 50 / 0.17)); }
-.report-year-paid > span {
+.report-year-paid > .report-year-pile {
+  display: inline-grid;
   font: 400 min(124px, 20.5vw) / 0.78 "Newsreader", Georgia, serif;
   letter-spacing: -0.045em;
   font-variant-numeric: lining-nums;
   color: #335844;
-  padding-bottom: 0.035em;
-  animation: paper-rise 420ms var(--paper-ease) backwards;
-  animation-delay: calc(var(--paper-wait, 0ms) + 60ms);
 }
+.report-year-measure, .report-year-figure { grid-area: 1 / 1; }
+.report-year-measure { visibility: hidden; padding-bottom: 0.06em; }
+/* The figure is set down last, on top of its months: the whole year is laid within 900ms. */
+.report-year-figure {
+  display: block;
+  padding-bottom: 0.06em;
+  animation: report-sheet-set 380ms var(--paper-ease) backwards;
+  animation-delay: calc(var(--paper-wait, 0ms) + 520ms);
+}
+/* Twelve sheets, one a month, each as thick as its share of the year's help (the pile is the year: they add up to
+   it). The first month lies at the back, at the foot; each is set down 50ms after the one before, falling a little
+   way onto the pile. Their cut edges lean a hair each their own way, in the greens of help paid. */
+.report-stack { --pile: min(64px, 11vw); display: flex; margin-top: 4px; flex-direction: column-reverse; width: 100%; }
+.report-stack i {
+  display: block;
+  height: calc(var(--share) * var(--pile));
+  background: linear-gradient(180deg, #fdfbf6 0, #f3efe4 70%, #e3ddcd 100%);
+  box-shadow: 0 0.5px 0 rgb(40 60 50 / 0.28);
+  /* Paper is never half there: each sheet appears whole as it starts to fall. */
+  animation: report-sheet-drop 300ms var(--paper-ease) backwards, paper-show 1ms step-end backwards;
+  animation-delay: calc(var(--paper-wait, 0ms) + var(--sheet, 0) * 50ms);
+}
+.report-stack i:nth-child(3n + 2) { translate: 3px 0; width: calc(100% - 4px); rotate: 0.15deg; }
+.report-stack i:nth-child(3n) { translate: -1px 0; width: calc(100% - 7px); rotate: -0.2deg; }
+.report-stack i:nth-child(4n + 1) { width: calc(100% - 2px); }
+.report-stack i:nth-child(2) { --sheet: 1; } .report-stack i:nth-child(3) { --sheet: 2; } .report-stack i:nth-child(4) { --sheet: 3; }
+.report-stack i:nth-child(5) { --sheet: 4; } .report-stack i:nth-child(6) { --sheet: 5; } .report-stack i:nth-child(7) { --sheet: 6; }
+.report-stack i:nth-child(8) { --sheet: 7; } .report-stack i:nth-child(9) { --sheet: 8; } .report-stack i:nth-child(10) { --sheet: 9; }
+.report-stack i:nth-child(11) { --sheet: 10; } .report-stack i:nth-child(12) { --sheet: 11; }
+@keyframes report-sheet-drop { from { transform: translateY(-14px); } }
+@keyframes report-sheet-set { from { opacity: 0; transform: translateY(-14px); } 60% { opacity: 1; } }
+/* Once a visit: the pile is already standing when Reports is opened again. */
+.report-year-pile[data-laid] :is(.report-year-figure, .report-stack i) { animation: none; }
+/* A month under the pointer or the keyboard lifts its own sheet in the pile. */
+.report:has(.report-months li:nth-child(1):is(:hover, :focus-within)) .report-stack i:nth-child(1),
+.report:has(.report-months li:nth-child(2):is(:hover, :focus-within)) .report-stack i:nth-child(2),
+.report:has(.report-months li:nth-child(3):is(:hover, :focus-within)) .report-stack i:nth-child(3),
+.report:has(.report-months li:nth-child(4):is(:hover, :focus-within)) .report-stack i:nth-child(4),
+.report:has(.report-months li:nth-child(5):is(:hover, :focus-within)) .report-stack i:nth-child(5),
+.report:has(.report-months li:nth-child(6):is(:hover, :focus-within)) .report-stack i:nth-child(6),
+.report:has(.report-months li:nth-child(7):is(:hover, :focus-within)) .report-stack i:nth-child(7),
+.report:has(.report-months li:nth-child(8):is(:hover, :focus-within)) .report-stack i:nth-child(8),
+.report:has(.report-months li:nth-child(9):is(:hover, :focus-within)) .report-stack i:nth-child(9),
+.report:has(.report-months li:nth-child(10):is(:hover, :focus-within)) .report-stack i:nth-child(10),
+.report:has(.report-months li:nth-child(11):is(:hover, :focus-within)) .report-stack i:nth-child(11),
+.report:has(.report-months li:nth-child(12):is(:hover, :focus-within)) .report-stack i:nth-child(12) {
+  transform: translateY(-2px); box-shadow: 0 0.5px 0 rgb(40 60 50 / 0.28), 0 3px 4px -2px rgb(40 60 50 / 0.5);
+}
+.report-stack i { transition: transform 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
 .report-year dd b {
   display: block;
   min-width: 84px;
@@ -173,7 +220,7 @@
   .report-controls > .report-actions { order: 1; margin-bottom: 44px; }
   .report-year ~ * { order: 2; }
 }
-@media (prefers-reduced-motion: reduce) { .report-year-paid > span, .report-year dd b { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .report-year-figure, .report-stack i, .report-year dd b { animation: none; } .report-stack i { transition: none; } }
 @media print { .report .report-year { display: none; } }
 
 /* Twelve months standing side by side, each as tall as the help it paid. */
@@ -282,7 +329,7 @@
 /* The whole month is the button: it holds the exact figures up in a paper tip. */
 .report-months li { position: relative; }
 .report-month-open { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 2px; transition: background-color 160ms var(--paper-ease); }
-.report-month-open:focus-visible { outline: 2px solid #365c46; outline-offset: -2px; }
+.report-month-open:focus-visible { outline: 2px solid #283c32; outline-offset: -2px; }
 .report-tip { min-width: 148px; padding: 12px 16px 13px; border: 1px solid #d9ddce; border-radius: 4px; background: #f7f4ed; color: #283c32; font-family: "Source Sans 3", sans-serif; text-align: center; box-shadow: -5px -9px 22px -12px rgb(40 60 50 / 0.22), 0 18px 40px -18px rgb(40 60 50 / 0.4); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
 .report-tip p { margin: 0; font-size: 15px; color: #52644f; }
 .report-tip .report-tip-month { margin-bottom: 4px; font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -766,4 +813,44 @@
 }
 @media (max-width: 370px) {
   .report-months:not([data-months="3"]) p.help-amount { font-size: 13px; }
+}
+
+/* On paper "Print this year" is one sheet a council can file: the year's total over its four figures, each kind
+   of help as a table, the months, what became of each request, and where the counts come from. Ink on white, no
+   colour, nothing to press. Every line follows on later pages only when "Show every line" is open on screen. */
+@media print {
+  .report .help-bars:not(.report-teams), .report .live-section:has(> .report-teams), .report .report-lines:not([data-open]),
+  .report .report-outcomes, .report .report-legend li::before { display: none !important; }
+  .report .report-lines[data-open] { break-before: page; margin-top: 0; }
+  .report .report-lines > .live-section-head { border-top: 1.5pt solid #000; padding-top: 6pt; }
+
+  .report-sheet-figures { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 4pt 0 12pt; border-top: 1.5pt solid #000; border-bottom: 1px solid #000; break-inside: avoid; }
+  .report-sheet-figures > div { padding: 9pt 12pt 10pt 0; }
+  .report-sheet-figures > div + div:not(:nth-child(2)) { padding-left: 12pt; border-left: 1px solid var(--print-line); }
+  .report-sheet-figures dt { margin-bottom: 4pt; font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+  .report-sheet-figures dd { margin: 0; font: 400 24pt/1 "Newsreader", Georgia, serif; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; }
+  .report-sheet-figures dd small { display: block; margin-top: 5pt; font: 400 10pt/1.35 "Source Sans 3", sans-serif; letter-spacing: 0; }
+  .report-sheet-total { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 18pt; border-bottom: 1px solid var(--print-line); padding-bottom: 8pt !important; }
+  .report-sheet-total dt { font-size: 11pt; }
+  .report-sheet-total dd { display: flex; flex-direction: row-reverse; align-items: baseline; gap: 18pt; font-size: 40pt; }
+  .report-sheet-total dd small { margin: 0; font-size: 11pt; text-align: right; }
+
+  .report-kinds-print { display: table; width: 100%; border-collapse: collapse; font-size: 11pt; break-inside: avoid; }
+  .report-kinds-print th, .report-kinds-print td { padding: 3.5pt 0; border-bottom: 1px solid var(--print-line); text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
+  .report-kinds-print :is(th, td):first-child { text-align: left; }
+  .report-kinds-print thead th { padding-top: 0; font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; border-bottom-color: #000; }
+  .report-kinds-print tbody th { font-weight: 600; }
+  .report-kinds-print td:last-child { width: 26%; }
+  .report-kinds-print td:nth-child(2), .report-kinds-print td:nth-child(3) { width: 18%; }
+  .report-kinds-print tfoot :is(th, td) { font-weight: 650; border-top: 1.5pt solid #000; border-bottom: 0; }
+  .report-kinds-print tbody th { text-transform: none; letter-spacing: 0; font-size: 11pt; }
+  .report-kinds-print td { white-space: nowrap; }
+  .report .live-section { margin-top: 11pt; }
+  .report .help-footnote { margin-top: 10pt; }
+  .report .report-legend { gap: 2pt 16pt; }
+  /* The key's swatches belong to the bars, which paper does not draw; the words stay as one phrase. */
+  .report .report-key { display: none !important; }
+  .report .report-key-pair { margin: 0 !important; padding: 0 !important; }
+  /* The page's own margin carries whose year it is, the date and the page number, so the sheet ends with its last line. */
+  .report-print-foot { display: none !important; }
 }

@@ -1,6 +1,7 @@
 import "@/components/live-workspace.css";
 import "@/components/workspace/help.css";
 import "@/components/workspace/paper.css";
+import "@/components/workspace/shell-ios.css";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ClerkProvider } from "@clerk/nextjs";

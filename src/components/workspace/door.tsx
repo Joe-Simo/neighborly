@@ -40,6 +40,14 @@ let arrivedAt = 0;
 let carried = false;
 // The home page's card was already saying "Opening…" when the sweep took it over: the sweep goes on saying it, with no gap.
 let heldSaying = false;
+/** The name the visitor wrote on the home page's card, if any: read here only, so it stays on the card through the handover. */
+function readCardFor() {
+  try {
+    return window.sessionStorage.getItem("kh-card-for")?.trim().slice(0, 40) || "";
+  } catch {
+    return "";
+  }
+}
 let card = false;
 /** Called by the door when it starts opening the sample, and again with false if the sample did not open. */
 export function carryTheCard(carry = true) {
@@ -67,7 +75,7 @@ export function arriveFromTheDoor() {
  * the ring of "Start here", thinning as the words under them come up. Only what is in the window is aimed at.
  */
 function marksBecomeThePage(card: HTMLElement, timing: KeyframeAnimationOptions, lifted: number) {
-  const [square, ...bars] = [...card.children].filter((mark): mark is HTMLElement => mark instanceof HTMLElement);
+  const [square, ...bars] = [...card.children].filter((mark): mark is HTMLElement => mark instanceof HTMLElement && !mark.classList.contains("door-card-for"));
   const heading = document.querySelector(".live-app .live-head-words h1");
   const lines: DOMRect[] = [];
   if (heading) {
@@ -116,6 +124,7 @@ export function DoorSweep() {
   const done = useSyncExternalStore(watch, () => finished, () => 0);
   /** A wait: "spoken" is the line for screen readers only (the card holds as itself), "shown" draws it. */
   const [holding, setHolding] = useState<false | "spoken" | "shown">(false);
+  const [cardFor] = useState(readCardFor);
   const paper = useRef<HTMLDivElement>(null);
   const [language] = useEntryLanguage();
   const playing = arrival > done;
@@ -216,7 +225,7 @@ export function DoorSweep() {
         </svg>
       ))}
       {/* The card passed on the home page, grown to the size of the page: its mark and two lines thin away as it becomes the paper. */}
-      {card ? <div className="door-card"><i /><b /><b /></div> : <div className="door-paper" />}
+      {card ? <div className="door-card"><i /><b /><b />{cardFor && <em className="door-card-for">For {cardFor}</em>}</div> : <div className="door-paper" />}
       {holding && (
         <p className="door-opening" role="status" data-spoken={holding === "spoken" ? "" : undefined} data-low={card ? "" : undefined}>
           <span>{wordsFor(language).states.opening}</span>

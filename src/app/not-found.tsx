@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "@/components/not-found.css";
+import "@/components/public-touch.css";
 
 export const metadata: Metadata = {
   title: "Page not found — Kind Helps",

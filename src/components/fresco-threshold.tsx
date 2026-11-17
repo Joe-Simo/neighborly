@@ -39,6 +39,8 @@ export function FrescoThreshold() {
   const walking = useRef(false);
   const [near, setNear] = useState(false);
   const settled = useSettled();
+  // A wide window counts as near as soon as the page is quiet; settled is only ever true in the browser, so the server's drawing is unchanged.
+  const living = near || (settled && matchMedia("(min-width: 1200px)").matches);
 
   // The courtyard is fetched and drawn before anyone can walk into it: when the doors come near, or a pointer or the keyboard reaches their button.
   const warm = () => {
@@ -48,15 +50,25 @@ export function FrescoThreshold() {
   useEffect(() => {
     const host = stage.current;
     if (!host || !("IntersectionObserver" in window)) return;
+    // On a phone the courtyard's living layers are a megabyte and a half: they wait for the visitor to set out down the page, below.
+    if (matchMedia("(max-width: 700px)").matches) return;
     const observer = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) { setNear(true); observer.disconnect(); } }, { rootMargin: "100% 0px" });
     observer.observe(host);
     return () => observer.disconnect();
   }, []);
   useEffect(() => {
+    // A wide window prepares the courtyard while the opening is being read: once the page is quiet its painting is decoded
+    // and its living layers are drawn once out of sight, so the first walk in never meets a picture still arriving.
+    if (!settled || !matchMedia("(min-width: 1200px)").matches) return;
+    void stage.current?.querySelector<HTMLImageElement>(".fresco-painting")?.decode().catch(() => undefined);
+  }, [settled]);
+  useEffect(() => {
     // The living courtyard waits for the first sign that the visitor is on their way to it.
-    const arrive = () => setNear(true);
-    const timer = setTimeout(arrive, 6000);
-    window.addEventListener("scroll", arrive, { once: true, passive: true });
+    // A wide window warms it after a moment of quiet, or at the first scroll. A phone waits until the visitor is half a screen down the page.
+    const phone = matchMedia("(max-width: 700px)").matches;
+    const arrive = () => { if (!phone || scrollY > innerHeight / 2) { setNear(true); window.removeEventListener("scroll", arrive); } };
+    const timer = phone ? 0 : window.setTimeout(arrive, 6000);
+    window.addEventListener("scroll", arrive, { passive: true });
     return () => { clearTimeout(timer); window.removeEventListener("scroll", arrive); };
   }, []);
   useEffect(() => {
@@ -92,7 +104,9 @@ export function FrescoThreshold() {
       wall.style.width = `${w}px`; wall.style.height = `${h}px`;
       // Moved by translate only, from a box held at the stage's corner: its size changes, but nothing in the page's layout moves as it travels.
       wall.style.translate = `${(mix(mix(doorX, width / 2, grow), width / 2, inside) - w / 2).toFixed(2)}px ${(centreY - h / 2).toFixed(2)}px`;
-      wall.style.borderRadius = `${mix(50, corner / frameWidth * 100, grow)}% ${mix(50, corner / frameWidth * 100, grow)}% 0 0 / ${mix(30, corner / frameHeight * 100, grow)}% ${mix(30, corner / frameHeight * 100, grow)}% 0 0`;
+      // Once the opening is past every edge of the window its arch is out of sight: the wall drops its rounded clip, so the courtyard is no longer drawn twice through a mask on every frame of the walk.
+      const covers = centreY - h / 2 <= 0 && centreY + h / 2 >= height && w >= width;
+      wall.style.borderRadius = covers ? "0" : `${mix(50, corner / frameWidth * 100, grow)}% ${mix(50, corner / frameWidth * 100, grow)}% 0 0 / ${mix(30, corner / frameHeight * 100, grow)}% ${mix(30, corner / frameHeight * 100, grow)}% 0 0`;
       // The painting keeps one size and is only ever scaled, so the living scene is never redrawn at a new size mid-journey.
       const sceneHeight = Math.max(doorHeight, frameHeight, media.matches ? 0 : height);
       scene.style.width = `${sceneHeight * 2}px`; scene.style.height = `${sceneHeight}px`;
@@ -171,9 +185,10 @@ export function FrescoThreshold() {
 
   return <div ref={journey} className="fresco-journey">
     <section ref={stage} className="fresco-stage" id="your-community" tabIndex={-1} aria-label="The doors and the courtyard" data-open={open} data-settled={settled} data-destination="1">
-      <header className="fresco-header">
-        <a href="#story-start" className="fresco-brand" aria-label="Kind Helps home">kind helps</a>
-        <Link href="/app">Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
+      {/* The same name and way in as the opening's bar, drawn again over the courtyard for the eye; a keyboard or a screen reader meets them once, above. */}
+      <header className="fresco-header" aria-hidden="true">
+        <a href="#story-start" className="fresco-brand" tabIndex={-1}>kind helps</a>
+        <Link href="/app" tabIndex={-1}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </header>
       <div className="fresco-invitation" aria-hidden={open}>
         <h2>There is room<br /><em>for you.</em></h2>
@@ -186,7 +201,7 @@ export function FrescoThreshold() {
             {/* The courtyard is one painting, seen once. A native image keeps it whole without the living layers. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {settled && <img className="fresco-painting" src="/assets/threshold/courtyard-fresco.webp" width="1774" height="887" decoding="async" alt="A sunlit church courtyard painted on the wall: a woman prepares food at a long shared table, under arches hung with wisteria." />}
-            {near && settled && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
+            {living && settled && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
           </div>
         </div>
         <div className="fresco-doors" aria-hidden="true"><i /><i /></div>

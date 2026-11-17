@@ -182,7 +182,8 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
 
     let detail = 1, pace = 1 / 60, strained = 0, calm = 0, recoveries = 0;
     const resize = () => {
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25) * detail);
+      // The scene is twice the window's height wide; on a wide window that is already more pixels than the graphics card can shade in a frame at 1.25, so it is drawn at 1 and the soft painting carries it.
+      renderer.setPixelRatio(Math.min(devicePixelRatio, frame.clientWidth >= 1600 ? 1 : 1.25) * detail);
       renderer.setSize(frame.clientWidth, frame.clientHeight, false);
       uniforms.uRes.value.set(frame.clientWidth, frame.clientHeight);
       host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => origins.delete(layer));
@@ -289,6 +290,12 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       // Each painting is handed to the graphics card on its own frame, and the shader is prepared in the background, so arriving in the courtyard costs nothing.
       for (const texture of textures) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.initTexture(texture); }
       await renderer.compileAsync(scene, camera);
+      if (disposed) return;
+      // One frame is drawn before the layers are shown, so the program's first use and the textures' first sampling happen now, not on the walk.
+      await new Promise(requestAnimationFrame);
+      if (disposed) return;
+      renderer.render(scene, camera);
+      await new Promise(requestAnimationFrame);
       if (disposed) return;
       host.setAttribute("data-living", "true");
       raf = requestAnimationFrame(tick);

@@ -5,7 +5,8 @@ import { SerwistProvider } from "@serwist/turbopack/react";
 import { launchScreens } from "@/lib/launch-screens";
 export const viewport: Viewport = {
   colorScheme: "light",
-  themeColor: "#f5f3ec",
+  // The page is paper in either mode, so the browser's bar is paper too.
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#f5f3ec" }, { media: "(prefers-color-scheme: dark)", color: "#f5f3ec" }],
   viewportFit: "cover",
 };
 export const metadata: Metadata = {
@@ -39,6 +40,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {firstFaces.map((face) => <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />)}
+        {/* The opening is set down once a visit: a later page load in the same visit finds it already in place. */}
+        <script dangerouslySetInnerHTML={{ __html: "try{var s=sessionStorage;if(s.getItem('arrived'))document.documentElement.dataset.arrived='';s.setItem('arrived','1')}catch(e){}" }} />
       </head>
       <body>
         <SerwistProvider swUrl="/serwist/sw.js" reloadOnOnline={false}>

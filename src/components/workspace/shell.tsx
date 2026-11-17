@@ -1,9 +1,10 @@
 "use client";
 
+import { RoomLeaving, useSheetBetweenRooms } from "@/components/workspace/room-sheet";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useConvexConnectionState } from "convex/react";
-import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, CircleCheck, LogOut, Menu, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,12 +38,12 @@ import {
   type LiveHeadingOverride,
 } from "@/components/workspace/navigation";
 import { LanguageChooser } from "@/components/workspace/language-chooser";
-import { AsideSlot, useWideScreen } from "@/components/workspace/aside";
+import { AsidePlace, useWideScreen } from "@/components/workspace/aside";
 import { useSystemTextSize } from "@/components/system-text-size";
 import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
 import { ArrivingRelief, fetchAhead } from "@/components/workspace/relief-arrival";
-import { sections } from "@/components/workspace/sections";
+import { fetchRoomsAhead, sections } from "@/components/workspace/sections";
 import type {
   LiveCommand,
   LiveConfirmation,
@@ -185,7 +186,6 @@ export function LiveWorkspace({
   const navRef = useNavMarker(area);
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
-  const [aside, setAside] = useState<HTMLElement | null>(null);
   useSystemTextSize();
   useKeysInUse();
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
@@ -219,6 +219,8 @@ export function LiveWorkspace({
   // head is the arrival, and an arrival happens once. Decided as the room is entered, so nothing below ever jumps.
   const [rested, setRested] = useState(false);
   useEffect(() => void roomsOpened.add(area), [area]);
+  // Once the first room is in, the others are fetched while nothing else is happening.
+  useEffect(() => fetchRoomsAhead(), []);
   // The first room after the door is drawn finished under the sweep's paper (door.css). The next room arrives as rooms do.
   const firstArea = useRef(area);
   useLayoutEffect(() => {
@@ -248,6 +250,13 @@ export function LiveWorkspace({
       const under = bar.current?.getBoundingClientRect().bottom ?? 0;
       const next = { scrolled: window.scrollY > 0, named: !!headline && headline.getBoundingClientRect().bottom < under };
       setBarNow((now) => (now.scrolled === next.scrolled && now.named === next.named ? now : next));
+      // In the iOS app the headline goes under the bar as the room scrolls: how far, 0 to 1, for shell-ios.css.
+      if (headline && document.documentElement.dataset.shell === "ios") {
+        // Measured from its foot and its laid-out height, which its own shrinking (from the foot) does not change.
+        const tall = (headline as HTMLElement).offsetHeight;
+        const top = headline.getBoundingClientRect().bottom - tall;
+        app.current?.style.setProperty("--head-gone", `${Math.min(1, Math.max(0, (under - top) / tall))}`);
+      }
     };
     const first = requestAnimationFrame(read);
     window.addEventListener("scroll", read, { passive: true });
@@ -278,6 +287,7 @@ export function LiveWorkspace({
   // `data-room-whole` is for the door's sweep (door.tsx): heading, picture and head button are in, so its paper may lift.
   // The first room is whole: its sheet has arrived and its picture is in. The iPhone app's launch cover may wait
   // for `.live-app[data-room-in]`, so the mark never lifts on a room that is still coming up under it.
+  useSheetBetweenRooms(area);
   const app = useRef<HTMLDivElement>(null);
   const whole = pictured !== undefined && !roomWaiting;
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
@@ -460,7 +470,8 @@ export function LiveWorkspace({
                 (data.canCoordinate && area === "commitments") ||
                 area === "time-off") && (
                 // A room's head button is always outline: the solid fill belongs to the decision on a sheet.
-                <Button variant="outline" onClick={() => open(primary)}>
+                // An owner's tool that is not in this language yet says so to a screen reader, as its room would.
+                <Button variant="outline" lang={words.locale !== "en" && primary !== "task" && !actions[primary] ? "en" : undefined} onClick={() => open(primary)}>
                   <Plus size={17} aria-hidden="true" />
                   {actName(primary)}
                 </Button>
@@ -526,15 +537,15 @@ export function LiveWorkspace({
             </Outcome>
           )}
           <LiveConnection />
-          {wide && <div className="live-aside" key={`aside-${area}`} ref={setAside} />}
-          <AsideSlot value={aside}>
+          <AsidePlace key={`aside-${area}`} on={wide}>
           <div className="live-room" key={area}>
+            <RoomLeaving />
             <RoomBoundary key={area}>
-              {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Section />}
+              {roomWaiting ? <LiveLoading label={roomWords.states.opening} /> : <Suspense fallback={<LiveLoading label={roomWords.states.opening} />}><Section /></Suspense>}
               {pagination}
             </RoomBoundary>
           </div>
-          </AsideSlot>
+          </AsidePlace>
         </main>
         </WorkspaceProvider>
       </div>

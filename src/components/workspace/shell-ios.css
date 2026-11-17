@@ -1,0 +1,118 @@
+/* ── The iOS app only (`:root[data-shell="ios"]`, set by the app before the first paint). The website never
+   matches any of this. ── */
+
+/* A room's headline goes up under the held bar as the room scrolls: it shrinks from its foot and fades as it
+   goes, and the room's name in the bar comes up in its place over the last half of the way (--head-gone,
+   0 to 1, from shell.tsx). The bar keeps its own words and face; nothing of iOS is copied. */
+.live-aside-pull, .live-aside-scrim { display: none; }
+@media (max-width: 899px) {
+  :root[data-shell="ios"] .live-page-head h1 {
+    transform-origin: 0 100%;
+    scale: calc(1 - var(--head-gone, 0) * 0.18);
+    opacity: calc(1 - var(--head-gone, 0) * 0.85);
+  }
+  :root[data-shell="ios"] .live-app .live-bar-room {
+    transition: none;
+    opacity: clamp(0, calc(var(--head-gone, 0) * 2 - 1), 1);
+    translate: 0 calc((1 - clamp(0, calc(var(--head-gone, 0) * 2 - 1), 1)) * 6px);
+  }
+}
+
+/* A phone's sheet carries a grabber, and can be pulled down to let go (live-dialog.tsx). */
+@media (max-width: 699px) {
+  :root[data-shell="ios"] .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { overscroll-behavior: contain; }
+  /* The grabber is drawn on the held title, so it stays at the top of the sheet however far the form scrolls. */
+  :root[data-shell="ios"] .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { padding-top: 14px; }
+  :root[data-shell="ios"] .live-dialog.live-dialog-fixed [data-slot="dialog-header"]::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    translate: -50% 0;
+    width: 36px;
+    height: 5px;
+    border-radius: 3px;
+    background: #c9cfbd;
+  }
+  :root[data-shell="ios"] .live-dialog [data-slot="dialog-header"] { touch-action: none; }
+}
+
+/* An iPad in landscape keeps the room's column beside it, as a desk from 1280px does. */
+@media (min-width: 1024px) and (max-width: 1279px) and (orientation: landscape) and (min-height: 700px) {
+  :root[data-shell="ios"] .live-main:has(> .live-aside:not(:empty)) {
+    --aside-wide: clamp(248px, 24vw, 300px);
+    --aside-gap: 40px;
+    display: flow-root;
+  }
+  :root[data-shell="ios"] .live-main:has(> .live-aside:not(:empty)) > :not(.live-page-head, .live-aside, .live-aside-pull, .live-aside-scrim) {
+    max-width: calc(100% - var(--aside-wide) - var(--aside-gap));
+  }
+  :root[data-shell="ios"] .live-aside:not(:empty) {
+    display: block;
+    float: right;
+    position: sticky;
+    top: 32px;
+    width: var(--aside-wide);
+  }
+  :root[data-shell="ios"] .live-aside-sheet { padding-left: 24px; border-left: 1px solid var(--live-line); font-size: 15px; line-height: 1.5; }
+  :root[data-shell="ios"] .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; font-family: inherit; font-weight: 650; line-height: 1.5; }
+}
+
+/* An iPad held upright (or too narrow for both): the column waits at the right edge under its title and slides
+   over the room as a sheet; the room stays in view, dimmed, behind it. */
+@media (min-width: 700px) and (min-height: 700px) and (max-width: 1279px) and (orientation: portrait),
+  (min-width: 700px) and (min-height: 700px) and (max-width: 1023px) {
+  :root[data-shell="ios"] .live-aside-pull {
+    display: block;
+    position: fixed;
+    z-index: 30;
+    right: 0;
+    top: 50%;
+    translate: 0 -50%;
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+    padding: 18px 10px;
+    border: 1px solid var(--live-line);
+    border-left: 0;
+    border-radius: 0 10px 10px 0;
+    background: #fbfaf5;
+    color: #283c32;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 22px -14px rgb(40 60 50 / 0.5);
+  }
+  :root[data-shell="ios"] .live-aside-pull[aria-expanded="true"] { visibility: hidden; }
+  :root[data-shell="ios"] .live-aside-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 31;
+    background: rgb(40 60 50 / 0.18);
+    animation: paper-scrim-in 240ms ease both;
+  }
+  :root[data-shell="ios"] .live-aside {
+    display: block;
+    position: fixed;
+    z-index: 32;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(380px, 46vw);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: calc(28px + env(safe-area-inset-top)) calc(28px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) 28px;
+    background: #f5f3ec;
+    box-shadow: -18px 0 40px -24px rgb(40 60 50 / 0.45);
+    translate: 100% 0;
+    visibility: hidden;
+    transition: translate 320ms cubic-bezier(0.32, 0.72, 0, 1), visibility 0s 320ms;
+  }
+  :root[data-shell="ios"] .live-aside[data-open] { translate: 0 0; visibility: visible; transition: translate 320ms cubic-bezier(0.32, 0.72, 0, 1); }
+  :root[data-shell="ios"] .live-aside-sheet { font-size: 15px; line-height: 1.5; }
+  :root[data-shell="ios"] .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; font-family: inherit; font-weight: 650; line-height: 1.5; }
+}
+@keyframes paper-scrim-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-shell="ios"] .live-aside { transition: none; }
+  :root[data-shell="ios"] .live-aside-scrim { animation: none; }
+}

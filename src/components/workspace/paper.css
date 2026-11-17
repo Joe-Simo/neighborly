@@ -144,10 +144,10 @@
 .live-page-head:has(.live-head-art[data-laid]) :is(.live-head-words > *, .live-head-actions) { animation-name: paper-turn; }
 /* The picture settles 12px from the right after the headline, inside its own frame, so nothing ever pushes the page sideways. */
 .live-head-art > .relief { animation: paper-unveil 500ms var(--paper-ease) backwards; animation-delay: calc(var(--paper-wait, 0ms) + 120ms); }
-/* Between rooms: one cross-fade of 200ms. The new picture comes up over the last one, which stays whole under it
-   and is taken away only when the new one is fully there, so bare paper never shows through. */
-.live-head-art[data-laid] > .relief { animation: paper-show 200ms ease-out backwards; }
-.live-head-art > .relief.live-head-under { z-index: -1; animation: paper-gone 200ms step-end forwards; }
+/* Between rooms the picture swaps whole, with no blend: the last one stays whole until the new one is decoded, and
+   in the same frame the new one is there and the last is gone, so bare paper never shows through. */
+.live-head-art[data-laid] > .relief { animation: paper-show 1ms step-end backwards; }
+.live-head-art > .relief.live-head-under { z-index: -1; animation: paper-gone 1ms step-end forwards; }
 @keyframes paper-gone { to { opacity: 0; } }
 /* Neither begins until the new picture is in: the last room's picture stays whole under an empty band, never a blank one. */
 .live-head-art:not([data-ready]) > .relief,
@@ -183,7 +183,8 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-header-actions .live-account { font-size: 15px; }
 .live-app .live-nav a { font-size: 15px; }
 
-/* The menu down the side stays put while a long room scrolls, and its marker slides to the room in view. */
+/* The menu down the side stays put while a long room scrolls, and its marker goes straight to the room chosen:
+   it never passes over the rooms between. */
 .live-nav { position: relative; }
 .live-nav-marker {
   position: absolute;
@@ -197,7 +198,6 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
   box-shadow: inset 3px 0 #55714c;
   pointer-events: none;
 }
-.live-nav-marker[data-sliding] { transition: transform 320ms var(--paper-ease), width 320ms var(--paper-ease), height 320ms var(--paper-ease); }
 .live-nav a { position: relative; }
 .live-app .live-nav a[aria-current="page"] { background: none; box-shadow: none; }
 @media (min-width: 900px) {
@@ -619,7 +619,7 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-date { position: relative; display: flex; align-items: center; width: 100%; height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; transition: border-color 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
 .live-date:hover { border-color: #365c46; }
 .live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
-.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #283c32; outline-offset: 2px; }
 .live-date:has(:disabled) { opacity: 0.55; }
 .live-date[data-missing] { border-color: #6f5f93; box-shadow: 0 0 0 1px #6f5f93; }
 /* The frame around the field carries the plum; the words inside never draw a second one. */
@@ -635,7 +635,7 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-date-words::placeholder { color: #66705f; opacity: 1; }
 .live-date-words:read-only { cursor: pointer; }
 .live-date-open { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 0; border-radius: 5px; background: none; color: #52644f; cursor: pointer; }
-.live-date-open:focus-visible { outline: 2px solid #365c46; outline-offset: -3px; }
+.live-date-open:focus-visible { outline: 2px solid #283c32; outline-offset: -3px; }
 .live-date-open svg { width: 16px; height: 16px; transition: transform 200ms var(--paper-ease); }
 .live-date[data-open] .live-date-open svg { transform: rotate(180deg); }
 .live-date-value { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
@@ -653,7 +653,7 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-date-sheet .rdp-day_button { width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; color: inherit; font: inherit; font-size: 16px; cursor: pointer; transition: background-color 120ms var(--paper-ease); }
 .live-date-sheet .rdp-day_button:hover { background: #e7ecdc; }
 .live-date-sheet .rdp-day_button:focus-visible,
-.live-date-sheet .rdp-nav button:focus-visible { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date-sheet .rdp-nav button:focus-visible { outline: 2px solid #283c32; outline-offset: 2px; }
 .live-date-sheet .rdp-today .rdp-day_button { box-shadow: inset 0 0 0 1px #6f5f93; }
 .live-date-sheet .rdp-selected .rdp-day_button { background: #365c46; color: #f7f4ed; font-weight: 600; }
 .live-date-sheet .rdp-outside .rdp-day_button { color: #8b9384; }
@@ -662,7 +662,7 @@ html[data-shell="ios"] .live-page-head:not(:has(.live-head-art[data-laid])) :is(
 .live-date-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 308px; padding-left: 8px; }
 .live-date-bar h2 { margin: 0; font-family: "Source Sans 3", sans-serif; font-size: 16px; font-weight: 600; color: #283c32; }
 .live-date-done { min-width: 44px; min-height: 44px; padding: 0 8px; border: 0; border-radius: 6px; background: none; color: #365c46; font: inherit; font-size: 16px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
-.live-date-done:focus-visible { outline: 2px solid #365c46; outline-offset: 2px; }
+.live-date-done:focus-visible { outline: 2px solid #283c32; outline-offset: 2px; }
 @keyframes paper-sheet-up { from { transform: translateY(100%); } }
 @media (max-width: 359px) { .live-date-sheet .rdp-day_button, .live-date-sheet .rdp-weekday { width: 44px; } .live-date-sheet.live-date-bottom { padding-inline: 4px; } }
 @media (prefers-reduced-motion: reduce) { .live-date-sheet, .live-date-sheet.live-date-bottom { animation: none; } }
@@ -818,7 +818,7 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
   display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; min-height: 44px; margin: -8px 0 20px;
   font-size: 17px; line-height: 1.4; color: var(--paper-ink); text-decoration: none;
 }
-.live-app .start-here::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--paper-ochre); }
+.live-app .start-here::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
 .live-app .start-here { transition: opacity 200ms linear; }
 .live-app .start-here[data-waiting] { opacity: 0; }
 .live-app .start-here strong { font-weight: 650; }
@@ -885,7 +885,7 @@ nav.week-figures .count-up { grid-row: 1 / span 2; align-self: center; }
 nav.week-figures a > span:nth-child(2) { align-self: end; }
 nav.week-figures a > small { align-self: start; min-height: 0; margin: 0; color: var(--live-ink); display: inline-flex; align-items: center; gap: 8px; }
 nav.week-figures a > small:empty { display: none; }
-nav.week-figures a > small::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #c8962e; }
+nav.week-figures a > small::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #a8791f; }
 nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row: 1 / span 2; align-self: center; }
 @media (max-width: 560px) {
   nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: 10px; }
@@ -906,9 +906,27 @@ nav.week-figures a:not(:has(> small:not(:empty))) > span:nth-child(2) { grid-row
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.4 4.8 9 10 3' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 .live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="waiting"], [data-state="pending"], [data-state="open"])::before {
-  width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #c8962e;
+  width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #a8791f;
 }
 .live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="declined"], [data-state="released"]) { color: var(--live-muted); }
 @media (max-width: 429px) {
   .live-app :is(.visits-room, .live-commitment-row) .live-status:is(:not([data-state]), [data-state="accepted"])::before { width: 12px; height: 12px; }
+}
+
+/* A commitment row opens as the neighbor record's rows do: anywhere on it opens its details, through its one button. */
+.live-app .live-commitment-row:has(.live-row-opens) { position: relative; cursor: pointer; }
+.live-app .live-commitment-row .live-row-opens { position: static; }
+.live-app .live-commitment-row .live-row-opens::after { content: ""; position: absolute; inset: 0; }
+.live-app .live-commitment-row:has(.live-row-opens) :is(a, button):not(.live-row-opens) { position: relative; z-index: 1; }
+@media (hover: hover) { .live-app .live-commitment-row:has(.live-row-opens):hover h3 { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; } }
+
+/* ── One focus ring, for keys only ────────────────────────────────────────────────────────
+   2px of ink. A control carries it 3px outside, its corners following the control's own; a row that opens as a
+   whole carries it 2px inside with 6px corners, since rows lie edge to edge and inside cards that clip. Its own link
+   or button inside draws nothing. A tap or a click never shows it (see the keys rule above). */
+.live-date-words:focus-visible { outline: none; }
+:is(.live-app, .live-dialog) .live-field :is(input, textarea, select)[aria-invalid="true"]:focus-visible { outline-color: #6f5f93; }
+:is(.live-app, .live-dialog) :is(.help-row-open, .people-row-open, .live-row-opens):focus-visible { outline: none; }
+:is(.live-app, .live-dialog) :is(.help-row:has(.help-row-open:focus-visible), .people-row[data-opens]:has(.people-row-open:focus-visible), .live-commitment-row:has(.live-row-opens:focus-visible)) {
+  outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px;
 }

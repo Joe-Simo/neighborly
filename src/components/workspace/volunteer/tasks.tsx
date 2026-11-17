@@ -183,13 +183,14 @@ export function TasksSection() {
                     <div className="volunteer-meeting-desk">
                       {meeting.fanoutStatus === "processing" && (
                         <span className="live-status" data-state="pending">
-                          Preparing invitations…
+                          {words.tasks.preparing}
                         </span>
                       )}
                       {isOwner && meeting.fanoutStatus === "processing" && (
                         <Button
                           variant="link"
                           className="tools-quiet"
+                          lang="en"
                           disabled={pending}
                           onClick={() =>
                             void perform(
@@ -240,7 +241,8 @@ function LiveMeetingResponses({
     { initialNumItems: 20 },
   );
   return (
-    <div className="volunteer-replies">
+    // The owner's view of who replied stays English, as the owner's tools do.
+    <div className="volunteer-replies" lang="en">
       <Button variant="link" className="tools-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
         {open ? "Hide replies" : "Show replies"}
       </Button>

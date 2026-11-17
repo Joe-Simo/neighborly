@@ -13,7 +13,7 @@
 :is(.live-app, .live-dialog) .people-row-open { margin: 0; padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; text-align: left; cursor: pointer; }
 .people-row-open::after { content: ""; position: absolute; inset: 0; }
 .live-app .people-row-open:focus-visible { outline: none; }
-.people-row[data-opens]:has(.people-row-open:focus-visible) { outline: 2px solid #365c46; outline-offset: 2px; border-radius: 2px; }
+.people-row[data-opens]:has(.people-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px; }
 .people-row-go { flex: none; color: #9aa193; transition: color 160ms var(--paper-ease, ease), transform 160ms var(--paper-ease, ease); }
 .people-row[data-opens]:has(.people-row-open:focus-visible) .people-row-go { color: #283c32; }
 @media (hover: hover) {
@@ -34,13 +34,13 @@
 .people-address > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .people-row .live-avatar { width: 44px; height: 44px; letter-spacing: 0.02em; }
 .people-row .live-meta > span { font-size: 16px; }
-.people-row .live-meta > span[data-waits] { color: var(--help-ochre-ink, #88642c); }
+.people-row .live-meta > span[data-waits] { color: var(--live-ink); }
 .people-row[data-away] .live-person,
 .people-row[data-away] .live-meta > span { opacity: 0.62; }
 
 /* A wait carries one mark everywhere: the small ochre ring. */
 .people-row .live-meta > span[data-waits]:not(:empty)::before, .team-roster p[data-waits]::before {
-  content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; box-sizing: border-box; border: 2px solid #c8962e;
+  content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f;
 }
 /* A second line of the wait starts under its first word, not under the ring. */
 .people-row .live-meta > span[data-waits]:not(:empty) { display: flex; align-items: flex-start; }
@@ -58,13 +58,17 @@
 .people-invitations + .live-empty, .people-deck + .live-empty { margin-top: 22px; }
 .live-app .people-deck { margin-bottom: 0; }
 
-/* Between a phone and a desk the columns give the name room, so an address stays on one line. */
-@media (min-width: 701px) and (max-width: 1000px) {
-  .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
-  /* An address is longer than a name, so the invited role sits under it and the address takes both columns. */
-  .people-invited .live-person { grid-column: span 2; }
-  .people-invited .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0; color: var(--live-muted); }
-  .people-invited .live-meta > .people-role-wide { display: none; }
+/* Between a phone and a desk the columns give the name room, so an address stays on one line. The list's own
+   width decides, not the screen's: on an iPad the side column takes its share before the rows do. */
+.live-app .live-list:has(> .people-row) { container: people-list / inline-size; }
+@media (min-width: 701px) {
+  @container people-list (max-width: 939px) {
+    .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
+    /* An address is longer than a name, so the invited role sits under it and the address takes both columns. */
+    .people-invited .live-person { grid-column: span 2; }
+    .people-invited .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0; color: var(--live-muted); }
+    .people-invited .live-meta > .people-role-wide { display: none; }
+  }
 }
 /* The role sits in its own column on a wide screen and beside the name on a phone; never both. */
 .people-role { display: none; }
@@ -121,7 +125,7 @@
 .team-roster h3 { font-size: 19px; }
 /* A line that must wrap on a phone breaks into two even parts, never one word left alone. */
 .team-roster p { margin: 2px 0 0; font-size: 16px; text-wrap: balance; }
-.team-roster p[data-waits] { color: var(--help-ochre-ink, #88642c); }
+.team-roster p[data-waits] { color: var(--live-ink); }
 .team-more { margin-top: 16px; }
 /* The last choice ends a place on the team, so a hairline sets it apart from the two above. */
 .team-apart { width: 100%; height: 1px; margin: 6px 0; border: 0; background: color-mix(in srgb, #283c32 16%, transparent); }
@@ -130,3 +134,4 @@
   .live-app .team-roster .live-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; }
   .live-app .team-roster .live-row-actions { width: auto; margin: 0; padding: 0; justify-self: end; }
 }
+.live-app .people-part-note { margin: 4px 0 10px; font-size: 15px; color: #68715f; }
