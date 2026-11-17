@@ -33,6 +33,8 @@ describe("the one read that needs no sign-in", () => {
     await guest.mutation(api.users.enter, {});
     const at = Math.floor(Date.now() / HOUR) * HOUR;
     const live = await guest.query(api.workspace.dashboard, {});
+    const liveNote = await guest.query(api.drafts.weekNote, { churchId: live.church.id, at });
+    const liveDrafts = (await guest.query(api.assistance.drafts, { churchId: live.church.id })).length;
     // A visitor types into the sample after the reset.
     await t.run(async (ctx) => {
       const [note] = await ctx.db.query("announcements").take(1);
@@ -60,7 +62,15 @@ describe("the one read that needs no sign-in", () => {
       if (idLike(inner)) { if (!keyed.has(inner)) keyed.set(inner, keyed.size); return `#${keyed.get(inner)}`; }
       return inner;
     }));
-    const { firstRequests, firstAnnouncements, ...dashboard } = room!;
+    const { firstRequests, firstAnnouncements, weekNote, draftsWaiting, ...dashboard } = room!;
+    // The two other readings This week draws, and the member it draws them for: the owner the visitor signs in
+    // as, who may open neighbor records.
+    expect(weekNote).toEqual(liveNote);
+    expect(draftsWaiting).toBe(liveDrafts);
+    expect(draftsWaiting).toBe(1);
+    expect(dashboard.user).toMatchObject({ name: live.user.name, email: live.user.email });
+    expect(dashboard.people.find((person) => person.id === dashboard.user.id)).toMatchObject({ role: "owner", active: true });
+    expect(await guest.query(api.access.canOpenNeighborRecords, { churchId: live.church.id })).toBe(true);
     keyed.clear(); const seedShape = shape(dashboard);
     keyed.clear(); const liveShape = shape(live);
     expect(seedShape).toEqual(liveShape);
