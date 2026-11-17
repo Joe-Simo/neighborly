@@ -7,7 +7,7 @@ import { WeekByTeam } from "@/components/workspace/volunteer/asides";
 import { CommitmentRows } from "@/components/workspace/volunteer/commitment-rows";
 
 export function CommitmentsSection() {
-  const { data, now, teamFilter, setTeamFilter, words } = useWorkspace();
+  const { data, now, teamFilter, setTeamFilter, words, sampleSaid } = useWorkspace();
   const text = words.commitments;
   const datedCommitments = upcomingCommitments(data.commitments, now, true);
   return (
@@ -24,7 +24,7 @@ export function CommitmentsSection() {
           <option value="">{text.allTeams}</option>
           {data.teams.map((team) => (
             <option key={team.id} value={team.id}>
-              {team.name}
+              {sampleSaid(team.name)}
             </option>
           ))}
         </NativeSelect>

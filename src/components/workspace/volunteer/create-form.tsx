@@ -33,6 +33,7 @@ export function LiveCreateForm({
   onSubmit: (command: LiveCommand) => Promise<void>;
 }) {
   // Every form here speaks the reader's language: the members' from the shared tables, the leaders' from this room's.
+  const { sampleSaid } = useWorkspace();
   const { actions, tasks, rooms } = useWorkspace().words;
   const text = rooms.peopleRoom.form;
   const form = actions.announcementForm;
@@ -257,7 +258,7 @@ export function LiveCreateForm({
               .filter((team) => team.canCoordinate)
               .map((team) => (
                 <option value={team.id} key={team.id}>
-                  {team.name}
+                  {sampleSaid(team.name)}
                 </option>
               ))}
           </NativeSelect>
