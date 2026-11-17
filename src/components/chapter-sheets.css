@@ -1,0 +1,9 @@
+/* A chapter's paper drawn over the chapter before it. The sheet ends exactly where the story's own paper begins, so the two are one piece. */
+@property --across{syntax:"<number>";inherits:false;initial-value:0}
+.chapter-sheet{--edge:clamp(64px,9vw,150px);--across:0;--foot:0px;position:fixed;z-index:2;top:0;left:calc(-1 * var(--edge));width:calc(100% + var(--edge));height:100lvh;pointer-events:none;contain:layout style;will-change:transform;clip-path:inset(0 0 calc(100% - var(--foot)) 0);transform:translateX(calc((1 - var(--across)) * 100%))}
+/* Put away, it waits whole just off the right of the window, already drawn, so its first crossing costs no more than any other frame. */
+.chapter-sheet[data-away]{clip-path:none}
+/* Its leading edge is the page's own knife cut, stood on end, with the shade it throws on the courtyard. */
+.chapter-sheet::before{content:"";position:absolute;top:0;bottom:0;left:0;width:var(--edge);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 900' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-30%25' y='-5%25' width='160%25' height='110%25'%3E%3CfeGaussianBlur stdDeviation='9 6'/%3E%3C/filter%3E%3Cpath d='M150 0C120 120 175 230 140 360S100 560 150 690 120 840 135 900L240 900L240 0Z' transform='translate(-16 6)' fill='%232e2416' fill-opacity='.4' filter='url(%23b)'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+.chapter-sheet::after{content:"";position:absolute;inset:0;background:#eee7d7;-webkit-mask:var(--cut-open-left) 0 0/var(--edge) 100% no-repeat,linear-gradient(#000,#000) calc(var(--edge) - 1px) 0/100% 100% no-repeat;mask:var(--cut-open-left) 0 0/var(--edge) 100% no-repeat,linear-gradient(#000,#000) calc(var(--edge) - 1px) 0/100% 100% no-repeat}
+@media print{.chapter-sheet{display:none}}
