@@ -1032,3 +1032,20 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-main a.live-link { position: relative; }
   .live-main a.live-link::after { content: ""; position: absolute; inset: -10px -4px; }
 }
+
+/* This week: what is coming up and what the conference has said. From 1100px they stand side by side over one
+   gutter, their headings on one line and their rules on one line: each head is as tall as the taller of the two
+   needs and sets its words on its foot. From 1728px the second is the room's side column (week.tsx), and what is
+   coming up has the measure to itself. */
+@media (min-width: 1100px) {
+  .week-columns:not([data-far]) { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); align-items: start; column-gap: 56px; }
+  .week-columns:not([data-far]) > .live-section > .live-section-head { min-height: 44px; align-items: flex-end; margin-bottom: 14px; }
+  .week-columns:not([data-far]) > .live-section > .live-section-head > * { margin-block: 0; }
+}
+
+/* From 1728px a room with no second column of its own ends its head's rule with the room: the rule stops at the
+   room's measure and the picture stands past it, so no line runs on over bare paper. */
+@media (min-width: 1728px) {
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head { border-bottom-color: transparent; }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { content: ""; position: absolute; left: 0; bottom: -1px; width: min(1040px, 100%); border-bottom: 1px solid var(--live-line); }
+}
