@@ -283,7 +283,7 @@ export function BankView({
                     <p>
                       <span className="treasury-day">{day(deposit.date)} · </span>
                       {w.waiting.carried(deposit.count)}
-                      {deposit.memo && ` · ${deposit.memo}`}
+                      {deposit.memo && ` · ${sampleSaid(deposit.memo)}`}
                     </p>
                   </div>
                   <Button

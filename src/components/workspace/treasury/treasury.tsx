@@ -168,7 +168,7 @@ export function TreasurySection() {
     view?.is === "payment"
       ? {
           title: w.sheets.payment.title,
-          description: `${sentence(view.request.summary)} ${w.sheets.payment.paidTo(view.request.payeeName)}`,
+          description: `${sentence(sampleSaid(view.request.summary))} ${w.sheets.payment.paidTo(sampleSaid(view.request.payeeName))}`,
         }
       : view?.is === "money"
         ? moneyOut
