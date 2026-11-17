@@ -575,3 +575,8 @@
 .treasury-foot[data-beside] h2 { font-size: 22px; line-height: 1.2; margin-bottom: 6px; }
 .treasury-foot[data-beside] p { font-size: 15px; }
 .live-app .treasury-foot[data-beside] [data-slot="button"] { margin-top: 14px; }
+
+/* On a phone every request that waits keeps two lines for what it is for, so the presses fall on one beat. */
+@media (max-width: 560px) {
+  .treasury-waiting .help-row p { min-height: 2lh; }
+}

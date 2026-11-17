@@ -306,3 +306,14 @@
 @container help-sheet (max-width: 880px) {
   .help-sheet-body { grid-template-columns: minmax(0, 1fr); align-items: start; row-gap: 22px; }
 }
+
+/* Rows of one list keep one shape. On a phone a neighbor's street has the first line and the rest the second, in
+   every row, whatever the street's length. */
+@media (max-width: 700px) {
+  .live-app .help-neighbor .help-facts > span > span:first-child:not(:only-child) { flex-basis: 100%; }
+}
+/* On a desk a call that waits keeps room for its quiet acts whether it has any, so the list keeps one beat. */
+@media (min-width: 851px) {
+  .live-app .help-row[data-call]:not([data-quiet]) { min-height: 171px; }
+  .live-app .help-row[data-call]:not([data-quiet]) > :nth-child(2) { align-self: start; }
+}

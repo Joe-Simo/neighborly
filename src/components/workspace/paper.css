@@ -1030,3 +1030,11 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head { border-bottom-color: transparent; }
   .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { content: ""; position: absolute; left: 0; bottom: -1px; width: min(1040px, 100%); border-bottom: 1px solid var(--live-line); }
 }
+
+/* On a phone too, the rows of one list keep one shape, so they differ only where one truly says more.
+   A commitment's state and its press share one line in every row, the longer press ("View preparation") too. */
+@media (max-width: 720px) {
+  .live-app .live-commitment-row .live-row-actions { flex-wrap: nowrap; justify-content: space-between; gap: 10px; }
+  .live-app .live-commitment-row .live-row-actions > .live-status { min-width: 0; }
+  .live-app .live-commitment-row .live-row-actions [data-slot="button"] { flex: none; padding-inline: 14px; gap: 6px; }
+}
