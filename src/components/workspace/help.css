@@ -115,8 +115,6 @@
   padding: 26px 0;
   border-bottom: 1px solid var(--live-line);
 }
-/* Full tone to a cut edge: nothing of paper fades. */
-.help-row:hover { background: #f1efe2; }
 .help-row h3 { font: 400 27px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 7px; }
 .help-row p { margin: 0; color: var(--live-muted); line-height: 1.5; font-size: 17px; }
 .help-row .live-meta { font-size: 15px; margin-bottom: 6px; }

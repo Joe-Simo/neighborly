@@ -145,6 +145,7 @@
   font: 400 27px/1.15 "Newsreader", Georgia, serif;
   letter-spacing: -0.02em;
   margin: 0 0 7px;
+  text-wrap: balance;
 }
 .treasury-foot p {
   margin: 0;
