@@ -12,6 +12,12 @@ import { useConvex, useConvexConnectionState } from "convex/react";
  * A fresh page has no room to hold: its wait carries on from the launch screen's, whose line stands in the same place.
  */
 
+/**
+ * Sent on the window in the frame a room is shown whole, after the page says so (`.live-app[data-room-shown]`) and
+ * before that frame is painted. A listener that arrives late reads the mark instead: the two never disagree.
+ */
+export const ROOM_WHOLE = "kh-room-whole";
+
 /** The longest the last room is held while the next is not yet whole. */
 const HOLD = 400;
 /**
@@ -252,6 +258,9 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
         // so is any easing of the room's coming into view (a button that eases all it changes would be a frame late).
         for (const move of element.getAnimations({ subtree: true }))
           if ((move instanceof CSSAnimation || move instanceof CSSTransition) && Number.isFinite(move.effect?.getComputedTiming().endTime)) move.finish();
+        // Said to whatever lies over the room (the home page's card, card-offer-grow.tsx) in this same frame, before it
+        // is painted: the room is whole now, and what covers it can leave now, with no frame spent looking for it.
+        window.dispatchEvent(new Event(ROOM_WHOLE));
         return;
       }
       // The line is laid and the copy taken away in the same frame, so the column is never bare between them.
