@@ -190,6 +190,7 @@ export function es(set: WordSet): Words {
       released: "Compromiso liberado. Tus otras fechas siguen igual.",
     },
     timeOff: {
+      yours: "Tu tiempo libre",
       thisMonth: "Este mes",
       away: "Día libre",
       canHelp: "Puedes ayudar",

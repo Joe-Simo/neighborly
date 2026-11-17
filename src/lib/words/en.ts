@@ -191,6 +191,7 @@ export function en(set: WordSet) {
       released: "Commitment released. Your other dates are unchanged.",
     },
     timeOff: {
+      yours: "Your time off",
       thisMonth: "This month",
       away: "Away",
       canHelp: "Can help",

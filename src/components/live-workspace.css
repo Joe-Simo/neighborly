@@ -247,7 +247,7 @@
 }
 .live-status[data-state="declined"],
 .live-status[data-state="released"] {
-  color: #73776e;
+  color: #666a61;
 }
 .live-empty {
   padding: 32px 28px;
@@ -348,7 +348,8 @@
 .live-field select {
   background: #fbfaf6;
   min-height: 46px;
-  border-color: #cdd3c5;
+  /* A box to type in shows its edge at 3:1 or more against the paper (WCAG 1.4.11). */
+  border-color: #7d8874;
   font-size: 16px;
 }
 .live-form-grid {
