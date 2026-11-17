@@ -70,3 +70,5 @@
 .home-yes-stage .help-unsaved{transition:opacity 120ms ease-out,visibility 0s linear 120ms}
 .home-yes-stage .help-sealed .help-unsaved{visibility:hidden;opacity:0}
 @media (prefers-reduced-motion:reduce){.home-yes-stage .help-unsaved{transition:none}}
+/* The plum line never ends on one word alone. */
+.home-yes-stage .help-assistant-line>span{text-wrap:pretty}
