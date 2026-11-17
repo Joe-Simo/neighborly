@@ -3,7 +3,6 @@
 import { useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
-import { noSessionKept } from "@/lib/no-session-kept";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexQueryCacheProvider } from "convex-helpers/react/cache/provider";
 import { api } from "../../convex/_generated/api";
@@ -23,7 +22,12 @@ export function LiveProviders({ children }: { children: ReactNode }) {
   );
 }
 
-const cannotBeSignedInYet = () => noSessionKept(document.cookie);
+/**
+ * Clerk keeps a signed-in browser's session in cookies the page can read (`__session`, `__client_uat`, and on a
+ * development instance `__clerk_db_jwt`). A browser that holds none of them cannot be signed in, and that is known
+ * before Clerk's script has loaded. Any one of them, whatever it says, and the question is left to Clerk.
+ */
+const noSessionKept = () => !/(?:^|;\s*)__(?:session|client_uat|clerk)/.test(document.cookie);
 const never = () => () => {};
 
 let enteredSession: string | null = null;
@@ -70,7 +74,7 @@ export function useAccount() {
   const [entered, setEntered] = useState<string | null>(enteredSession);
   const [failure, setFailure] = useState<Error | null>(null);
   // The server cannot read the browser, so the page it sends says "not known"; the browser's own answer takes over as it wakes.
-  const cannotBeSignedIn = useSyncExternalStore(never, cannotBeSignedInYet, () => false);
+  const cannotBeSignedIn = useSyncExternalStore(never, noSessionKept, () => false);
   useEffect(() => {
     if (!isAuthenticated || !sessionId || !userId) return;
     let current = true;
@@ -99,7 +103,7 @@ export function useAccount() {
     returning: noteTrusted && isAuthenticated && !!userId && hasEnteredBefore(userId),
     // Only once Clerk itself has answered "nobody is signed in". While Clerk knows a session and the
     // backend is still confirming it, the answer is "not yet", never "signed out".
-    // Before Clerk has answered, a browser that holds no session (lib/no-session-kept.ts) is already known to be signed out, so the
+    // Before Clerk has answered, a browser with no session cookie at all is already known to be signed out, so the
     // door's sheet is drawn at once instead of after Clerk's script has loaded. Once Clerk answers, its answer rules.
     signedOut: isLoaded ? !isSignedIn && !isLoading && !isAuthenticated : cannotBeSignedIn,
     /** Clerk itself has said who is here. Asked for by what must not run on the early answer alone. */

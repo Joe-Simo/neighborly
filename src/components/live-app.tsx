@@ -84,7 +84,6 @@ function LiveRooms({
     } catch {
       // Without it the sign-in sheet opens as usual, without its "signed out" line.
     }
-    forgetEntered();
     return clerk.signOut({ redirectUrl: "/app" });
   };
   const viewer = useQuery(api.workspace.viewer, asking ? {} : "skip");
