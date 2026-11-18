@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { internalMutation, type MutationCtx } from "./_generated/server";
 import type { Doc, Id, TableNames } from "./_generated/dataModel";
 import { WAITING_KEPT } from "./counts";
+import { rebuildNames } from "./knownNames";
 
 type TableName = TableNames;
 type Row = { table: TableName; doc: Doc<TableName> };
@@ -599,7 +600,11 @@ export async function seeded(now: number, visitor: { name: string; email: string
 export const load = internalMutation({
   args: { owner: v.optional(owner) },
   returns: v.id("churches"),
-  handler: (ctx, args) => fill(ctx.db, args.owner),
+  handler: async (ctx, args) => {
+    const churchId = await fill(ctx.db, args.owner);
+    await rebuildNames(ctx, churchId);
+    return churchId;
+  },
 });
 
 /** The tables a conference's rows sit in, reached by their `by_church` index. */
@@ -637,6 +642,8 @@ export const clear = internalMutation({
   returns: v.null(),
   handler: async (ctx, { churchId }) => {
     for (const { doc } of (await sampleRows(ctx, churchId)).reverse()) await ctx.db.delete(doc._id);
+    const names = await ctx.db.query("knownNames").withIndex("by_church", (q) => q.eq("churchId", churchId)).unique();
+    if (names) await ctx.db.delete("knownNames", names._id);
     return null;
   },
 });
@@ -709,6 +716,7 @@ export const renew = internalMutation({
     else { written++; await ctx.db.replace("churches", churchId, conference as never); }
     let deleted = 0;
     for (const { doc } of there.reverse()) if (!claimed.has(doc._id)) { deleted++; await ctx.db.delete(doc._id); }
+    await rebuildNames(ctx, churchId);
     return { kept, written, deleted };
   },
 });

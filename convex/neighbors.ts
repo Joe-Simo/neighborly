@@ -9,6 +9,7 @@ import { paidTowardRequest } from "./treasury";
 import schema from "./schema";
 import { longestLanguageName, spokenName } from "./spoken";
 import { tally } from "./counts";
+import { addName, rebuildNames } from "./knownNames";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
@@ -181,6 +182,7 @@ export const create = mutation({
       if (existing) throw new ConvexError(`${existing.name} is already on file with this ${samePhone ? "phone number" : "name"}.`);
     }
     const neighborId = await ctx.db.insert("neighbors", { churchId, ...record, createdBy: member._id, createdAt: Date.now() });
+    await addName(ctx, churchId, record.name);
     await tally(ctx, churchId, { households: 1 });
     if (callId) {
       const call = await ctx.db.get("calls", callId);
@@ -195,8 +197,10 @@ export const update = mutation({
   args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), ...details },
   returns: v.null(),
   handler: async (ctx, { churchId, neighborId, ...input }) => {
-    await neighborRecord(ctx, churchId, neighborId);
-    await ctx.db.patch("neighbors", neighborId, clean(input));
+    const { neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    const record = clean(input);
+    await ctx.db.patch("neighbors", neighborId, record);
+    if (record.name !== neighbor.name) await rebuildNames(ctx, churchId);
     return null;
   },
 });
@@ -276,6 +280,7 @@ export const remove = mutation({
     for (const request of requests) await ctx.db.patch("assistanceRequests", request._id, { summary: REMOVED, decisionNote: "", payeeName: "", referral: undefined, referrals: undefined });
     await tally(ctx, churchId, { households: -1, waiting: -requests.filter((request) => request.status === "open").length, gone: neighborId });
     await ctx.db.patch("neighbors", neighborId, { name: REMOVED, nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", alert: undefined, household: undefined, money: undefined, accounts: undefined });
+    await rebuildNames(ctx, churchId);
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.removed", targetId: neighborId, at: Date.now() });
     return null;
   },

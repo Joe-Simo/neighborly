@@ -340,6 +340,31 @@ describe("a call note drafted into a request", () => {
     await expect(member.query(api.drafts.noteAsSent, { churchId: ids.churchId, callId: ids.callId })).rejects.toThrow();
   });
 
+  test("a neighbor added a moment ago is taken out of the very next note, and so is a new name after a rename", async () => {
+    const { t, ids, coordinator } = await helpLine();
+    // Before the backfill there is no list: the scrub reads the records themselves and still takes the names out.
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Marisol drove her here. Rent is $450." }));
+    const asNote = () => coordinator.query(api.drafts.noteAsSent, { churchId: ids.churchId, callId: ids.callId });
+    await t.mutation(internal.knownNames.backfill, {});
+    expect(await asNote()).toContain("Marisol drove");
+    const person = { phone: "", email: "", address: "", adults: 1, children: 0, language: "en" as const, notes: "" };
+    const marisol = await coordinator.mutation(api.neighbors.create, { churchId: ids.churchId, name: "Marisol Vega", ...person, confirmedNew: true });
+    expect(await asNote()).not.toMatch(/Marisol|Vega/);
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Ines drove her here. Rent is $450." }));
+    await coordinator.mutation(api.neighbors.update, { churchId: ids.churchId, neighborId: marisol, name: "Ines Brandt", ...person });
+    expect(await asNote()).not.toMatch(/Ines/);
+    expect(await asNote()).toContain("$450");
+  });
+
+  test("with no list yet the scrub reads every record, so a note is never sent unscrubbed", async () => {
+    const { ids, coordinator } = await helpLine();
+    await coordinator.run(async ctx => {
+      await ctx.db.insert("neighbors", { churchId: ids.churchId, name: "Marisol Vega", nameKey: "marisol vega", phone: "", phoneKey: "", email: "", address: "", adults: 1, children: 0, language: "en", notes: "", createdBy: ids.coordinator.memberId, createdAt: 0 });
+      await ctx.db.patch("calls", ids.callId, { note: "Marisol drove her here. Rent is $450." });
+    });
+    expect(await coordinator.query(api.drafts.noteAsSent, { churchId: ids.churchId, callId: ids.callId })).not.toMatch(/Marisol/);
+  });
+
   test("a field the model is not sure of comes back blank", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     vi.stubGlobal("fetch", answers({ kind: 0.99, payeeKind: 0.4 }));

@@ -3,6 +3,7 @@ import { internal } from "./_generated/api";
 import { internalMutation, mutation } from "./_generated/server";
 import { membership } from "./access";
 import { cancelPendingNotification } from "./notificationEvents";
+import { rebuildNames } from "./knownNames";
 
 /** The name left on the work a removed person did, so the year's counts still add up. */
 export const formerMember = "A former member";
@@ -58,6 +59,7 @@ export const remove = mutation({
     // The row that remains says nothing about who they were and no longer leads to their account.
     const nobody = await ctx.db.insert("users", {});
     await ctx.db.patch("memberships", personId, { userId: nobody, name: formerMember, email: "", role: "member", active: false, approved: false, coverOptIn: false, language: undefined, removedAt: now });
+    await rebuildNames(ctx, churchId);
     await ctx.db.insert("auditEvents", { churchId, actorId: me.userId, action: "removePerson", targetId: personId, at: now });
     await ctx.scheduler.runAfter(0, internal.people.sweep, { churchId, personId, was: person.userId, nobody, stage: "outbox", cursor: null });
     return null;

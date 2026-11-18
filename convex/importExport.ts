@@ -7,6 +7,7 @@ import { membership, neighborAccess } from "./access";
 import { nameKey, phoneKey } from "./assistance";
 import { longestLanguageName, readSpoken, spokenName, type Spoken } from "./spoken";
 import { tally } from "./counts";
+import { rebuildNames } from "./knownNames";
 
 /**
  * Bringing a members list in from a spreadsheet. Nobody is added on their behalf: every good row
@@ -158,6 +159,7 @@ export const importNeighbors = mutation({
     }
     const added = results.filter((row) => row.outcome === "added").length;
     await tally(ctx, args.churchId, { households: added });
+    if (added) await rebuildNames(ctx, args.churchId);
     if (added) await ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: member.userId, action: "neighbors_imported", targetId: String(added), at: now });
     return results;
   },

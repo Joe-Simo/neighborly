@@ -8,6 +8,7 @@ import { query, mutation, type QueryCtx, type MutationCtx } from "./_generated/s
 import { user, membership, firstMembership } from "./access";
 import { isSampleVisitor } from "./demo";
 import type { Id } from "./_generated/dataModel";
+import { addName } from "./knownNames";
 
 const churchId = v.id("churches");
 const text = v.string();
@@ -61,6 +62,7 @@ export const createChurch = mutation({ args: { name: text, timeZone: text, displ
   try { new Intl.DateTimeFormat("en", { timeZone: zone }).format(0); } catch { throw new ConvexError("Enter a valid time zone."); }
   const id = await ctx.db.insert("churches", { name, timeZone: zone, wordSet: "vincentian" });
   await ctx.db.insert("memberships", { churchId:id,userId:account.id,name:displayName,email:account.email,role:"owner",active:true,approved:true,coverOptIn:false });
+  await addName(ctx, id, displayName);
   await ctx.db.insert("auditEvents",{churchId:id,actorId:account.id,action:"church_created",at:Date.now()});
   return id;
 } });

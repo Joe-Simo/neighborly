@@ -6,6 +6,7 @@ import type { Id } from "./_generated/dataModel";
 import { enqueueInvitation, resend } from "./notifications";
 import { isSampleChurch } from "./demo";
 import type { EmailId } from "@convex-dev/resend";
+import { addName } from "./knownNames";
 
 const role = v.union(v.literal("member"), v.literal("coordinator"));
 const delivery = v.union(v.literal("not_sent"), v.literal("queued"));
@@ -146,7 +147,10 @@ export const acceptRecord = internalMutation({
     if (!name || name.length > 200) throw new ConvexError("Enter a valid name.");
     const existing = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", invite.churchId).eq("userId", user.id)).unique();
     if (existing && !existing.active) throw new ConvexError("Contact the church coordinator to restore access.");
-    if (!existing) await ctx.db.insert("memberships", { churchId: invite.churchId, userId: user.id, name, email: user.email, role: invite.role, active: true, approved: false, coverOptIn: false });
+    if (!existing) {
+      await ctx.db.insert("memberships", { churchId: invite.churchId, userId: user.id, name, email: user.email, role: invite.role, active: true, approved: false, coverOptIn: false });
+      await addName(ctx, invite.churchId, name);
+    }
     await ctx.db.patch("invitations", invite._id, { status: "accepted", acceptedBy: user.id });
     await ctx.db.insert("auditEvents", { churchId: invite.churchId, actorId: user.id, action: "invitation_accepted", invitationId: invite._id, at: Date.now() });
     return invite.churchId;

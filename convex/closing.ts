@@ -19,7 +19,7 @@ export const swept = [
   "requestDrafts", "calls", "neighborNotes", "visits", "ledgerEntries", "voucherStock", "assistanceRequests", "neighbors",
   "referralAgencies", "payees", "deposits", "ledgerKinds", "bankStatements",
   "outbox", "meetingResponses", "meetingInvitees", "meetings", "requests", "commitmentHistory", "commitments", "series",
-  "teamMembers", "teams", "availability", "timeOff", "tasks", "announcements", "aiUsageByChurch", "auditEvents",
+  "teamMembers", "teams", "availability", "timeOff", "tasks", "announcements", "aiUsageByChurch", "knownNames", "auditEvents",
 ] as const satisfies readonly TableNames[];
 type Swept = (typeof swept)[number];
 

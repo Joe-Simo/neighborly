@@ -19,6 +19,7 @@ import type * as drafts from "../drafts.js";
 import type * as http from "../http.js";
 import type * as importExport from "../importExport.js";
 import type * as invitations from "../invitations.js";
+import type * as knownNames from "../knownNames.js";
 import type * as language from "../language.js";
 import type * as meetingFanout from "../meetingFanout.js";
 import type * as neighbors from "../neighbors.js";
@@ -54,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   importExport: typeof importExport;
   invitations: typeof invitations;
+  knownNames: typeof knownNames;
   language: typeof language;
   meetingFanout: typeof meetingFanout;
   neighbors: typeof neighbors;
