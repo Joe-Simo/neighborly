@@ -4,6 +4,7 @@ import { Component, createContext, useContext, useEffect, useLayoutEffect, useRe
 import { ROOM_WHOLE } from "@/lib/room-whole";
 import { flushSync } from "react-dom";
 import { edgeTurn, roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
+import { drawn as drawnPart, markWayBack } from "@/components/workspace/record-slide";
 import { useConvex, useConvexConnectionState } from "convex/react";
 
 /**
@@ -63,7 +64,8 @@ const letGo = () => {
  * it chose on letting go (on to the room before, or back to the room it was on). `undoing` is a step back laid down
  * again: the room it left is coming back beneath the sheet, and the sheet then goes in one cut.
  */
-const finger: { on: boolean; progress: number; asked: "on" | "back" | null; turn: RoomTurn | null; undoing: boolean } = {
+const finger: { on: boolean; progress: number; asked: "on" | "back" | null; turn: RoomTurn | null; undoing: boolean; record: boolean } = {
+  record: false,
   on: false,
   progress: 0,
   asked: null,
@@ -100,7 +102,23 @@ function letFingerGo() {
   finger.turn = null;
   finger.asked = null;
   if (asked === "on") {
+    finger.record = false;
     void turn.glide(finger.progress, 1).then(() => holdArea(null));
+    return;
+  }
+  if (finger.record) {
+    // A record's page laid back down: the record comes back beneath it, and the sheet goes in one cut once it is drawn.
+    finger.record = false;
+    void turn
+      .glide(finger.progress, 0)
+      .then(() => {
+        window.history.forward();
+        return drawnPart("record");
+      })
+      .then(() => {
+        turn.end();
+        holdArea(null);
+      });
     return;
   }
   void turn.glide(finger.progress, 0).then(() => {
@@ -477,7 +495,22 @@ export function useEdgeTurn(inApp: boolean, inRoom: boolean, roomShown: boolean)
         finger.on = true;
         finger.asked = null;
         holdArea(window.location.pathname.split("/")[2] ?? null);
-        window.history.back();
+        const column = document.querySelector<HTMLElement>(".live-app main.live-main");
+        if (column && new URLSearchParams(window.location.search).has("neighbor")) {
+          // Inside a record the room stays the same: the record's own page is laid and turned back over the list,
+          // which comes back beneath it at its place (record-slide.tsx).
+          finger.record = true;
+          const turn = layBackSheet(column);
+          markWayBack();
+          window.history.back();
+          void drawnPart("list")
+            .then(() => new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled))))
+            .then(() => {
+              finger.turn = turn;
+              turn.drive(finger.progress);
+              letFingerGo();
+            });
+        } else window.history.back();
         // A step back that leads to no room (the way in, another page) brings no turn: the finger lets it be.
         window.clearTimeout(lost);
         lost = window.setTimeout(() => {
@@ -522,13 +555,18 @@ export function useEdgeTurn(inApp: boolean, inRoom: boolean, roomShown: boolean)
  * `step` makes the change beneath it (the list, back at its place), and once that is drawn the page before comes
  * back over from the left, as the finger's turn does, at the turn's own pace.
  */
-export async function turnBackOver(column: HTMLElement, step: () => Promise<void>) {
+/** The column as it stands, laid as a still sheet ready to be turned back from the left. */
+function layBackSheet(column: HTMLElement) {
   const place = column.getBoundingClientRect();
   const copy = stillCopy(column);
   Object.assign(copy.style, { position: "fixed", top: `${place.top}px`, left: `${place.left}px`, width: `${place.width}px`, height: `${sheetHeight(place.top)}px`, margin: "0", overflow: "hidden", zIndex: "19", pointerEvents: "none" });
   const frame = stillFrame(column, copy);
   document.body.append(frame);
-  const turn = edgeTurn(copy, frame);
+  return edgeTurn(copy, frame);
+}
+
+export async function turnBackOver(column: HTMLElement, step: () => Promise<void>) {
+  const turn = layBackSheet(column);
   try {
     await step();
   } catch {

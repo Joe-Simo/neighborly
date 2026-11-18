@@ -12,8 +12,14 @@ function useIosShell() {
 
 const KEPT = "kind-helps:list-place";
 
+/** The way back from a record is about to be taken: the list will be given back its place. */
+export function markWayBack() {
+  const [place] = (sessionStorage.getItem(KEPT) ?? "").split(":");
+  if (place) sessionStorage.setItem(KEPT, `${place}:back`);
+}
+
 /** Resolves once the list or the record is in the page, or after a second, whichever is first. */
-function drawn(part: "list" | "record") {
+export function drawn(part: "list" | "record") {
   // Whole: in the page, and the room no longer held back while it is drawn (the shell's "Opening…" wait).
   const whole = () => !!document.querySelector(`[data-record-slide="${part}"]`) && !document.querySelector("[data-room-held]");
   return new Promise<void>((done) => {
@@ -58,8 +64,7 @@ export function RecordSlide({ part, children }: { part: "list" | "record"; child
       if (to === "list") {
         // The way back turns the record's page back: the list comes back over from the left, at the place it was
         // left (only this way back gives the list its place again; the menu and other links open it at its top).
-        const [place] = (sessionStorage.getItem(KEPT) ?? "").split(":");
-        if (place) sessionStorage.setItem(KEPT, `${place}:back`);
+        markWayBack();
         const column = here.closest<HTMLElement>("main.live-main") ?? here;
         void turnBackOver(column, async () => {
           router.push(href, { scroll: false });
