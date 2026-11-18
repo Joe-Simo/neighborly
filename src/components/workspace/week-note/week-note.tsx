@@ -10,7 +10,7 @@ import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspace } from "@/components/workspace/context";
 import { WeekFigures } from "@/components/workspace/volunteer/week-figures";
 import { isBrandNew } from "@/lib/first-days";
-import { formatDate, type Words } from "@/lib/words";
+import { dateFormatter, formatDate, type Words } from "@/lib/words";
 
 type Counts = FunctionReturnType<typeof api.drafts.weekNote>;
 /** A line is said in parts so the one part that rests on the assistant's reading can be shown in plum. */
@@ -52,7 +52,7 @@ const stored = (key: string) => {
 
 /** The Monday that opens the week `now` falls in, on the group's own calendar. */
 export function mondayOf(now: number, timeZone: string) {
-  const name = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short" }).format(now);
+  const name = dateFormatter("en-US", { timeZone, weekday: "short" }).format(now);
   return now - ((["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(name) + 7) % 7) * day;
 }
 
@@ -88,7 +88,7 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   const monday = mondayOf(now, data.church.timeZone);
   // The sample is laid anew each night under a new id, and is first drawn before any id is known (first-look.tsx):
   // its note is put away under one name, so it stays away for the week through both.
-  const week = `${data.church.sample ? "sample" : churchId}:${new Intl.DateTimeFormat("en-CA", { timeZone: data.church.timeZone }).format(monday)}`;
+  const week = `${data.church.sample ? "sample" : churchId}:${dateFormatter("en-CA", { timeZone: data.church.timeZone }).format(monday)}`;
   const away = useSyncExternalStore(subscribe, () => stored(put) === week, () => true);
   const look = useFirstLook();
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId }) ?? (look ? (look.allowed ?? true) : undefined);

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { sayFailure } from "@/components/workspace/failure";
 import Link from "next/link";
-import { words, type Language } from "@/lib/words";
+import { dateFormatter, words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
 import { useWaited } from "@/lib/use-waited";
 import { useFocusBack } from "@/lib/use-focus-back";
@@ -24,7 +24,7 @@ function zoneLabel(language: Language, zone: string): string {
   const city = zone.slice(zone.lastIndexOf("/") + 1).replaceAll("_", " ");
   if (!Intl.DateTimeFormat.supportedLocalesOf(language).length) return city;
   try {
-    const name = new Intl.DateTimeFormat(language, { timeZone: zone, timeZoneName: "longGeneric" })
+    const name = dateFormatter(language === "es" ? "es-US" : "en-US", { timeZone: zone, timeZoneName: "longGeneric" })
       .formatToParts(0)
       .find((part) => part.type === "timeZoneName")?.value;
     if (!name || name.startsWith("GMT")) return city;

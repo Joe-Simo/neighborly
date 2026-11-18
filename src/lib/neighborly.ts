@@ -1,3 +1,4 @@
+import { dateFormatter } from "./words/dates";
 /** Account-free, in-memory synthetic example. No action sends a message. */
 export const sampleDates = [
   "2026-11-08",
@@ -142,7 +143,7 @@ export function formatDate(
   date: SampleDate,
   options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" },
 ): string {
-  return new Intl.DateTimeFormat("en-GB", {
+  return dateFormatter("en-US", {
     ...options,
     timeZone: "UTC",
   }).format(new Date(`${date}T12:00:00Z`));
