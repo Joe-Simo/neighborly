@@ -312,8 +312,12 @@ export function HelpDone({
   }, []);
   // Six seconds, or ten when it carries an action (an Undo); then it closes up and stays as a message for screen readers.
   const seen = useSavedLine(line, { action: !!action, of: children });
+  // In the line's first frame, not inside the save's own task: focusing there makes the browser work out the whole
+  // page's styles a second time before anything is drawn.
   useEffect(() => {
-    if (focus) line.current?.focus({ preventScroll: true });
+    if (!focus) return;
+    const frame = requestAnimationFrame(() => line.current?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(frame);
   }, [children, focus]);
   const said = filed ? `${filed.name}: ${filed.asks}. ${children}` : children;
   return (

@@ -69,9 +69,20 @@ function closedMargin(sheet: HTMLElement, target: number) {
   return `${margin}px`;
 }
 
+/**
+ * The openings under way, kept here as they start: asking the document for its animations would make the browser
+ * work out every style on the page first, inside the press.
+ */
+const openings = new Map<HTMLElement, Animation>();
+function openingOf(sheet: HTMLElement) {
+  const move = openings.get(sheet);
+  if (move && (move.playState === "finished" || move.playState === "idle")) openings.delete(sheet);
+  return openings.get(sheet);
+}
+
 /** Measures with every opening that is under way set to its end: the page as it will be once they are done. */
 function onceOpened<T>(measure: () => T) {
-  const moves = document.getAnimations().filter((move) => move.id === OPENING);
+  const moves = [...openings.keys()].flatMap((sheet) => openingOf(sheet) ?? []);
   const at = moves.map((move) => move.currentTime);
   moves.forEach((move) => (move.currentTime = LEAVE));
   const found = measure();
@@ -224,7 +235,8 @@ export function openUp(sheet: HTMLElement, { stays = false }: { stays?: boolean 
   }
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // Asked twice, it opens once: an opening already under way is dropped before the paper is measured.
-  sheet.getAnimations().forEach((move) => move.id === OPENING && move.cancel());
+  openingOf(sheet)?.cancel();
+  openings.delete(sheet);
   // Laid in above the window (or under the bar), it takes no room in the page at all: it is drawn held under
   // the top edge, out of the page's flow, so nothing the person is looking at moves and there is nothing to
   // make up for in any browser. A dialog scrolls its own paper, so a line in one keeps its place there.
@@ -268,18 +280,21 @@ function openRoom(sheet: HTMLElement) {
   holdThePage();
   const shut = { overflow: "hidden", boxSizing: "border-box", minHeight: "0px" };
   const from = closedMargin(sheet, pageBefore ?? pageWithout(sheet, "gone"));
-  sheet.animate(
+  const move = sheet.animate(
     [
       { ...shut, height: edge(style), marginTop: "0px", marginBottom: from, paddingTop: "0px", paddingBottom: "0px" },
       { ...shut, height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
     ],
     { id: OPENING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   );
+  openings.set(sheet, move);
+  const done = () => openings.get(sheet) === move && openings.delete(sheet);
+  move.finished.then(done, done);
 }
 
 /** How far a piece of paper laid with openUp has opened, as it is drawn now: 0 shut, 1 open, and 1 once it is still. */
 export function opened(sheet: HTMLElement) {
-  const move = sheet.getAnimations().find((one) => one.id === OPENING);
+  const move = openingOf(sheet);
   return move?.effect?.getComputedTiming().progress ?? 1;
 }
 
