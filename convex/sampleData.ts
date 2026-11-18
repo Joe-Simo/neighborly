@@ -321,7 +321,8 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
       const amountApproved = voucher && granted ? 0 : share;
       const decidedAt = outcome === "open" ? undefined : takenAt + random.between(3, 5) * DAY;
       const paidTo = random.pick(need.payees);
-      const payeeName = voucher ? "" : paidTo;
+      // A utility bill is paid to the company whose bill it is (each summary sits beside its company); the draw stays.
+      const payeeName = voucher ? "" : need.kind === "utility" ? need.payees[(need.summaries as readonly string[]).indexOf(summary)] ?? paidTo : paidTo;
       // The one who took the call files its request. The draw stays, so every number after it is as pinned.
       random.pick(staff);
       const requestId = await db.insert("assistanceRequests", { churchId, neighborId, callId, kind: need.kind, summary, amountRequested, amountApproved, ...(voucher ? { voucher } : {}), status: outcome, decisionNote: outcome === "declined" ? "Referred to the county program, which covers this in full." : outcome === "closed" ? "Neighbor resolved it before the visit." : granted ? "Approved after the home visit." : "", decidedBy: decidedAt ? owner : undefined, decidedAt, payeeKind: need.payeeKind, payeeName, source: index % 8 === 3 ? "ai_draft" : "person", createdBy: taker, createdAt: takenAt });
@@ -369,7 +370,30 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
     const neighbor = await db.get("neighbors", households[index]);
     if (!neighbor) continue;
     const adults = Array.from({ length: neighbor.adults }, (_, seat) => ({ relationship: seat === 0 ? "Head of household" : extra.pick(elders), child: false, birthYear: thisYear - extra.between(24, 78) }));
+    // Drawn as before, then made sensible by relabelling only, so every draw (and the pinned year) is unchanged:
+    // ages fit the roles (a spouse within 15 years of the head, a parent at least 16 older, a child at least 16
+    // younger, a grandchild at least 32), and there is one spouse, one mother and one father at most.
+    const head = adults[0]?.birthYear ?? thisYear;
+    const female = new Set(["Mother", "Grandmother", "Wife", "Sister", "Aunt", "Daughter", "Granddaughter"]);
+    const taken = new Set<string>();
+    const fits = (role: string, older: number) => {
+      if (role === "Husband" || role === "Wife") return Math.abs(older) <= 15 && !taken.has("spouse");
+      if (role === "Mother" || role === "Father") return older >= 16 && !taken.has(role);
+      if (role === "Grandmother") return older >= 32;
+      if (role === "Son" || role === "Daughter") return older <= -16;
+      if (role === "Grandson" || role === "Granddaughter") return older <= -32;
+      return true;
+    };
+    const settle = (person: { relationship: string; birthYear: number }) => {
+      const older = head - person.birthYear;
+      const her = female.has(person.relationship);
+      const choices = her ? ["Wife", "Mother", "Grandmother", "Daughter", "Granddaughter", "Sister"] : ["Husband", "Father", "Son", "Grandson", "Brother"];
+      if (!fits(person.relationship, older)) person.relationship = choices.find((role) => role !== "Wife" && role !== "Husband" && fits(role, older)) ?? (her ? "Sister" : "Brother");
+      taken.add(person.relationship === "Husband" || person.relationship === "Wife" ? "spouse" : person.relationship);
+    };
+    adults.slice(1).forEach(settle);
     const young = Array.from({ length: neighbor.children }, () => ({ relationship: extra.pick(["Son", "Daughter", "Grandson", "Granddaughter"]), child: true, birthYear: thisYear - extra.between(1, 16) }));
+    young.forEach(settle);
     await db.patch("neighbors", neighbor._id, { household: [...adults, ...young] });
   }
   // The accounts, cautions and notes sit on households that also say who lives there, so one record shows it all.

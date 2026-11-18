@@ -283,7 +283,7 @@ export function NeighborRecord({
   const { neighbor } = record;
   return (
     <>
-      {done && <HelpDone>{done}</HelpDone>}
+{done && <HelpDone>{done}</HelpDone>}
       <NeighborRecordView
         record={record}
         format={format}
@@ -689,6 +689,12 @@ export function NeighborRecordView({
             </div>
             {first.status === "approved" && (
               <div className="help-actions">
+                {/* Paid often days later, by someone else: the way to record it stays on the request until it is paid. */}
+                {(first.amountApproved ?? 0) > 0 && (
+                  <Link className="live-link" href={`/app/treasury?pay=${first.id}`}>
+                    {text.done.pay}
+                  </Link>
+                )}
                 <Button
                   variant="link"
                   className="help-text-action"

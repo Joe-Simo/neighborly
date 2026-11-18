@@ -46,7 +46,7 @@ export function AtHome({
   onShowNumbers: () => void;
   onStep: (step: HomeStep) => void;
 }) {
-  const { words } = useWorkspace();
+  const { words, sampleSaid } = useWorkspace();
   const text = words.rooms.neighbors;
   const at = text.atHome;
   const { household, money, accounts } = record;
@@ -80,7 +80,7 @@ export function AtHome({
           <dt>{at.lives}</dt>
           <dd>
             {household.length
-              ? livesHere(household)
+              ? livesHere(household, sampleSaid)
               : record.neighbor.children
                 ? fill(text.home.adultsAndChildren, {
                     adults: text.home.adults(record.neighbor.adults),
