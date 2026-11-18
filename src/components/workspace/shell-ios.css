@@ -137,6 +137,12 @@
 :root[data-shell="ios"][data-text-large] .live-app .help-initials + .help-initials { width: 2.9em; margin-left: -1.1em; padding-left: 0.6em; }
 :root[data-shell="ios"][data-text-large] .help-figures { display: grid; grid-template-columns: minmax(0, 1fr); }
 :root[data-shell="ios"][data-text-large] .help-figures > * { border-left: 0; padding-left: 0; }
+/* The Help line at the accessibility sizes: a call's time stands on its own line above the name ("SUN 10:10 AM"),
+   read across like a line of the page, so the column beside the name never has to hold a grown time. */
+:root[data-shell="ios"][data-text-large] .help-row { grid-template-columns: minmax(0, 1fr); row-gap: 10px; }
+:root[data-shell="ios"][data-text-large] .help-row > :nth-child(n) { grid-column: 1; }
+:root[data-shell="ios"][data-text-large] .help-row .live-date-leaf { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 0 0.4em; width: fit-content; min-height: 0; padding: 6px 0 0; border-bottom: 0; }
+:root[data-shell="ios"][data-text-large] .help-row .live-date-leaf strong { font-size: 1.5em; }
 
 /* A mark set beside a line of words grows with them. */
 :root[data-shell="ios"][data-text-large] .live-app .live-count > svg { width: 1.1em; height: 1.1em; flex: none; }
@@ -157,7 +163,7 @@
   :root[data-shell="ios"] .live-app { --ipad-measure: 680px; }
   :root[data-shell="ios"] .live-app .live-main { --live-pad: max(56px, calc((100vw - var(--ipad-measure)) / 2)); --live-top: 48px; padding-left: var(--live-pad); }
   :root[data-shell="ios"] .live-app .live-header { padding-inline: max(56px, calc((100vw - var(--ipad-measure)) / 2)); }
-  :root[data-shell="ios"] .live-app .live-page-head h1 { font-size: 64px; }
+  :root[data-shell="ios"] .live-app .live-page-head h1 { --head-size: 64px; }
   :root[data-shell="ios"] .live-app .live-page-head .live-deck { font-size: 19px; }
   :root[data-shell="ios"] .live-app .live-page-head { margin-bottom: 40px; padding-bottom: 36px; }
   /* The picture keeps the right half of the screen, flush to its edge; the words wrap before it. */
