@@ -62,7 +62,7 @@ export function ClosingBand({ language = "en" }: { language?: Language }) {
 /** The foot of every public page: the name set across the paper, and its quiet links. */
 export function Colophon({ home = "/", language = "en" }: { home?: string; language?: Language }) {
   const said = endingWords[language];
-  return <footer className="neighborly-colophon" role="contentinfo">
+  return <footer className="neighborly-colophon">
     <span>{said.made}</span>
     <nav aria-label={said.about}>
       <Link className="neighborly-give" href={said.weekPath}>{said.week}</Link>
