@@ -13,7 +13,7 @@ import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
 import { readFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
-import { DateLeaf as PieceLeaf, LiveField } from "@/components/workspace/primitives";
+import { DateLeaf as PieceLeaf, LiveField, PaperScene } from "@/components/workspace/primitives";
 import { parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import { formatDate, type Language } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
@@ -320,6 +320,7 @@ export function BankView({
           </>
         ) : (
           <div className="help-empty">
+            <PaperScene kind="empty" />
             <div>
               <h3>{w.waiting.emptyTitle}</h3>
               <p>

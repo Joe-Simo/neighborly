@@ -86,6 +86,22 @@ function firstDrawn(room: Element): Element | null {
   return null;
 }
 
+/**
+ * The small cut-paper scene beside a state's words: two sheets cut by hand with a third laid on them. Nothing here yet
+ * is the blank pile; a whole-room state lays the room's own picture card on top. Its folded corner says the state in the
+ * colours every room uses: ochre while it waits (no connection), plum when something went wrong, plain otherwise.
+ */
+export function PaperScene({ kind, children }: { kind: "empty" | "private" | "missing" | "error" | "offline"; children?: ReactNode }) {
+  return (
+    <span className="paper-scene" data-kind={kind} data-card={children ? "" : undefined} aria-hidden="true">
+      <i />
+      <i />
+      {children ?? <i />}
+      <b />
+    </span>
+  );
+}
+
 /** Nothing here yet: a line in the serif, its sentence and the one act, on the room's own measure. The room's picture is in its head, once. */
 export function LiveEmpty({
   title,
@@ -106,6 +122,7 @@ export function LiveEmpty({
         if (element && room && firstDrawn(room) === element) element.dataset.first = "";
       }}
     >
+      <PaperScene kind="empty" />
       <div>
         <FollowingHeading>{title}</FollowingHeading>
         <p>{children}</p>

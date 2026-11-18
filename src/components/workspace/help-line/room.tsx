@@ -11,7 +11,7 @@ import { CircleCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { FollowingHeading, LiveLoading } from "@/components/workspace/primitives";
+import { FollowingHeading, LiveLoading, PaperScene } from "@/components/workspace/primitives";
 import { LiveState } from "@/components/workspace/states";
 
 /**
@@ -40,6 +40,7 @@ export function HelpEmpty({
 }) {
   return (
     <div className="help-empty" data-first={first ? "" : undefined}>
+      <PaperScene kind="empty" />
       <div>
         {/* h2 straight under the room's h1, h3 under a section's h2: no level is skipped. */}
         <FollowingHeading>{title}</FollowingHeading>
