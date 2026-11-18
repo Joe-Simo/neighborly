@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -138,6 +138,12 @@ export function FrescoThreshold() {
       // How far inside the courtyard the visitor stands: the frame, the doors and the wall are gone at 1.
       host.style.setProperty("--inside", inside.toFixed(4));
       host.style.setProperty("--standing", standingIn.toFixed(4));
+      // The doors' headline is drawn up out of two cuts in the wall's paper, a line at a time, as the opening is lifted off the wall; with Reduce Motion it is simply there.
+      const come = media.matches ? 1 : clamp((travelled - .35) / .5);
+      host.style.setProperty("--come", come.toFixed(4));
+      host.dataset.slipping = String(come > 0 && come < 1);
+      // Standing in the courtyard, the words are a strip of paper laid on the paving that stands up as the walk ends, and lies back down as the courtyard draws back into its frame.
+      host.style.setProperty("--stand", ease(clamp((inside - .55) / .45)).toFixed(4));
       host.dataset.inside = String(inside > .98);
       // The courtyard is all painting: the bar drawn over it leaves in one cut as the visitor steps in and returns in one as they step out.
       host.dataset.within = String(inside > 0);
@@ -214,7 +220,7 @@ export function FrescoThreshold() {
       <div className="fresco-invitation" aria-hidden={open}>
         {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
         <p className="fresco-kicker">Small acts. Shared purpose.</p>
-        <h2>There is room<br /><em>for you.</em></h2>
+        <h2><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span></span></h2>
         <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
       </div>
