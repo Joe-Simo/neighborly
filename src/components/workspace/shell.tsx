@@ -245,20 +245,37 @@ export function LiveWorkspace({
     const tell = (window as Bar).webkit?.messageHandlers?.kindHelpsBar;
     const bar = document.querySelector<HTMLElement>(".live-tab-bar");
     if (!inApp || !tell || !bar) return;
-    const say = () =>
-      tell.postMessage(
-        [...bar.querySelectorAll<HTMLElement>(".live-tab")].map((tab) => {
-          const box = tab.getBoundingClientRect();
-          return { name: tab.textContent?.trim() ?? "", x: box.left, y: box.top, width: box.width, height: box.height };
-        }),
-      );
+    // The tabs stand down (none are told) while anything lies over the bar: the Menu or any other sheet or dialog,
+    // a row's long-press sheet, or the keyboard, which takes the bottom of the screen.
+    const covered = () =>
+      !!document.querySelector('[data-slot="dialog-content"][data-state="open"], [data-slot="sheet-content"][data-state="open"], [data-vaul-drawer][data-state="open"], [role="dialog"][data-state="open"], .row-menu-shade') ||
+      (window.visualViewport?.height ?? window.innerHeight) < window.innerHeight - 100;
+    let last = "";
+    const say = () => {
+      const tabs = covered()
+        ? []
+        : [...bar.querySelectorAll<HTMLElement>(".live-tab")].map((tab) => {
+            const box = tab.getBoundingClientRect();
+            return { name: tab.textContent?.trim() ?? "", x: box.left, y: box.top, width: box.width, height: box.height };
+          });
+      const said = JSON.stringify(tabs);
+      if (said === last) return;
+      last = said;
+      tell.postMessage(tabs);
+    };
     say();
     const laid = new ResizeObserver(say);
     laid.observe(bar);
+    // A sheet or dialog opening or closing is a change to the page's own nodes and their open state.
+    const opened = new MutationObserver(say);
+    opened.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state"] });
     window.addEventListener("resize", say);
+    window.visualViewport?.addEventListener("resize", say);
     return () => {
       laid.disconnect();
+      opened.disconnect();
       window.removeEventListener("resize", say);
+      window.visualViewport?.removeEventListener("resize", say);
       tell.postMessage([]);
     };
   }, [inApp]);
