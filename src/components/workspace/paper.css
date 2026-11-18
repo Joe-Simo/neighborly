@@ -212,10 +212,14 @@
 .live-app .live-head-back:hover { text-decoration: underline; text-underline-offset: 4px; }
 .live-head-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
 .live-head-actions:empty { display: none; }
-/* From 1280px every room's head is the height of a two-line title, so the rule under it lies at one height
+/* From 900px every room's head is the height of a two-line title, so the rule under it lies at one height
    as the menu turns from room to room. A longer head keeps its own height; phones keep their natural one. */
-@media (min-width: 1280px) {
+@media (min-width: 1240px) {
   .live-app .live-main .live-page-head { min-height: max(clamp(250px, 21vw, 336px), calc(181px + 1.96 * clamp(40px, 5vw, 76px))); }
+}
+/* Below 1240px the title still fits two lines, but the narrower column can turn a deck to two: the floor holds both. */
+@media (min-width: 900px) and (max-width: 1239px) {
+  .live-app .live-main .live-page-head { min-height: max(clamp(250px, 21vw, 336px), calc(209px + 1.96 * clamp(40px, 5vw, 76px))); }
 }
 /* A room that ends short of the screen closes on the foot Reports ends on: one quiet sentence under a check. */
 .live-room-foot { grid-column: 1 / -1; max-width: 78ch; line-height: 1.5; }
