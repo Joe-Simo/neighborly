@@ -1077,3 +1077,10 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .room-turn-roll { width: 90px; background: linear-gradient(to right, #5a47262e, #f8efd9b3 10px, #f6ecd466 34px, #0000 90px); }
 /* The lifted sheet's shade on the room beneath: close and dark at the crease, wide and faint away from it. */
 .room-turn-shade { width: 120px; background: linear-gradient(to left, #2e24165e, #2e241629 14px, #2e24160f 50px, #0000 120px); }
+
+/* Forced colours: the chosen choice in a set (a period, a place, a language) and the room you are in keep their
+   mark, drawn in the system's own highlight, since the paper tints that carry them are taken away. */
+@media (forced-colors: active) {
+  :is(.live-app, .live-dialog) :is([data-state="on"], [aria-checked="true"][role="radio"], [aria-pressed="true"]) { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  :is(.live-app, .live-mobile-menu) a[aria-current="page"] { outline: 2px solid Highlight; outline-offset: -2px; }
+}
