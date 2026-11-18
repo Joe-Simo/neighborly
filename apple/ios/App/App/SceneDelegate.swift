@@ -14,7 +14,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // status bar, keyboard and system sheets included.
         window?.overrideUserInterfaceStyle = .light
         // Opened from a Home Screen quick action: the app opens straight into that room.
-        ShellViewController.launchRoom = QuickRoom.room(for: connectionOptions.shortcutItem)
+        ShellViewController.launchRoom = QuickRoom.room(for: connectionOptions.shortcutItem) ?? Self.widgetRoom(connectionOptions.urlContexts.first?.url)
         // From iOS 18 the system's tab bar and sidebar stand in for the page's; before it, the page keeps its own.
         if #available(iOS 18.0, *) { window?.rootViewController = ShellTabs() } else { window?.rootViewController = ShellViewController() }
         window?.makeKeyAndVisible()
@@ -23,6 +23,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        // The Home Screen widget's own link (`kindhelps://help-line`): the room is opened as a link to it would be.
+        if let room = Self.widgetRoom(URLContexts.first?.url), let shell = Self.shell(in: window?.rootViewController) {
+            shell.open(room: room)
+            return
+        }
         SceneDelegateProxy.shared.scene(scene, openURLContexts: URLContexts)
     }
 
@@ -35,6 +40,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let room = QuickRoom.room(for: shortcutItem), let shell = Self.shell(in: window?.rootViewController) else { return completionHandler(false) }
         shell.open(room: room)
         completionHandler(true)
+    }
+
+    /// A room the app's own link names (`kindhelps://<room>`), only one of the rooms the Home Screen offers.
+    private static func widgetRoom(_ url: URL?) -> String? {
+        guard let url, url.scheme == "kindhelps", let room = url.host, QuickRoom.rooms.contains(where: { $0.room == room }) else { return nil }
+        return room
     }
 
     private static func shell(in root: UIViewController?) -> ShellViewController? {
