@@ -18,14 +18,14 @@
   --cut-c:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V3C82 4 71 9 49 8S16 2 0 7Z'/%3E%3C/svg%3E")}
 .public-words h1,.public-words section{position:relative;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 5px 7px #3b2a1218)}
 .public-words h1::before,.public-words section::before{content:"";position:absolute;inset:0;z-index:-1;background:#f7f4ed;-webkit-mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,linear-gradient(#000,#000) top/100% calc(100% - 29px) no-repeat;mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,linear-gradient(#000,#000) top/100% calc(100% - 29px) no-repeat}
-.public-words h1{z-index:11;margin:0;padding:clamp(40px,5.6vw,104px) clamp(20px,5.4vw,104px) clamp(250px,62vw,300px);font:400 clamp(64px,9vw,144px)/.92 'Newsreader',Georgia,serif;letter-spacing:-.065em}
+.public-words h1{z-index:11;margin:0;padding:clamp(40px,5.6vw,104px) clamp(20px,5.4vw,104px) clamp(250px,62vw,300px);font:400 clamp(64px,9vw,144px)/var(--lead-1) 'Newsreader',Georgia,serif;letter-spacing:var(--track-1)}
 .public-words section{display:grid;grid-template-columns:minmax(0,.62fr) minmax(0,1fr);gap:12px clamp(40px,6vw,110px);margin-top:-30px;padding:clamp(64px,6vw,104px) clamp(20px,5.4vw,104px) clamp(56px,5.4vw,92px)}
 .public-words section:nth-of-type(3n+2){--cut:var(--cut-b)}
 .public-words section:nth-of-type(3n){--cut:var(--cut-c)}
 .public-words section:nth-of-type(3n)::before{background:#f4efe4}
 .public-words section:nth-of-type(even)::before{background:#f1ebde;scale:-1 1}
 .public-words section:nth-of-type(1){z-index:10}.public-words section:nth-of-type(2){z-index:9}.public-words section:nth-of-type(3){z-index:8}.public-words section:nth-of-type(4){z-index:7}.public-words section:nth-of-type(5){z-index:6}.public-words section:nth-of-type(6){z-index:5}.public-words section:nth-of-type(7){z-index:4}.public-words section:nth-of-type(8){z-index:3}.public-words section:nth-of-type(9){z-index:2}.public-words section:nth-of-type(10){z-index:1}
-.public-words h2{margin:0;max-width:14ch;font:400 clamp(28px,2.7vw,44px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.04em;text-wrap:balance}
+.public-words h2{margin:0;max-width:14ch;font:400 clamp(28px,2.7vw,44px)/var(--lead-3) 'Newsreader',Georgia,serif;letter-spacing:var(--track-3);text-wrap:balance}
 .public-words section>div{max-width:28em;font-size:17px;line-height:1.6}
 .public-words p,.public-words ul{margin:0 0 1em;text-wrap:pretty}
 .public-words section>div>:last-child{margin-bottom:0}
