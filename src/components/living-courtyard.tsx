@@ -256,7 +256,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     const journey = host.closest(".fresco-journey");
     // Walking through the doors, the near stone slides out past the window's edges faster than the far hills.
     const inside = () => Number(host.style.getPropertyValue("--inside") || 0);
-    let raf = 0, last = 0, began = 0, disposed = false;
+    let raf = 0, last = 0, began = 0, disposed = false, clock = 0;
     const tick = (time: number) => {
       if (gone) return;
       raf = requestAnimationFrame(tick);
@@ -300,7 +300,8 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       const unit = stage.width / Math.max(1, frame.clientWidth) || 1;
       uniforms.uRect.value.set((painting.left - stage.left) / unit, (painting.top - stage.top) / unit, painting.width / unit, painting.height / unit);
       // Scrolling through the fresco, the near stone and the far hills part by about ten pixels from first sight to last.
-      const through = still || !journey ? .5 : Math.max(0, Math.min(1, (-journey.getBoundingClientRect().top / Math.max(1, innerHeight) - 3.65) / .9));
+      const walked = journey?.getBoundingClientRect();
+      const through = still || !walked ? .5 : Math.max(0, Math.min(1, (-walked.top / Math.max(1, innerHeight) - 3.65) / .9));
       const part = (through - .5) * 10 / (.9 * Math.max(1, painting.height));
       // Standing in the courtyard, its paper parts in depth as the page goes on: the near sheets come forward and lean further with the cursor or the tilt than the far ones.
       const standing = still ? 0 : Number(host.style.getPropertyValue("--standing") || 0);
@@ -333,7 +334,12 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
           layer.style.setProperty("translate", `${(centreX - origin.x) * (1 - grow) + uniforms.uView.value.x * (nearness - FOCUS) * reach * 2 + lookX * drift[0]}px ${(centreY - origin.y) * (1 - grow) + uniforms.uView.value.y * (nearness - FOCUS) * reach + lookY * drift[1]}px`);
         }
       }
-      uniforms.uDusk.value = mix(uniforms.uDusk.value, Number(evening), still ? 1 : 1 - Math.exp(-dt * 1.4));
+      clock = mix(clock, Number(evening), still ? 1 : 1 - Math.exp(-dt * 1.4));
+      // The week ends at dusk: over the last screen of the walk, as the story's sheet comes up over the wall, the same sun goes down and the arch's light warms.
+      // It follows the scroll exactly, back as well as forward; under Reduce Motion the courtyard is simply at evening once that last screen is reached.
+      const end = walked ? Math.max(0, Math.min(1, 1 - (walked.bottom - innerHeight) / (.9 * innerHeight))) : 0;
+      const late = still ? Number(end > 0) : end * end * (3 - 2 * end);
+      uniforms.uDusk.value = Math.max(clock, late);
       const place = host.dataset.destination ?? "";
       if (place !== notice.place) { notice.place = place; notice.since = seconds; }
       const ease = still ? 1 : 1 - Math.exp(-dt * 2.4);
