@@ -63,6 +63,8 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
     canvas.replaceWith(frame);
   } } }));
   sheet.append(copy);
+  // The sample's card, lying where it was on the doors or in the courtyard, is part of the page too: it is held with it, exactly as it lay.
+  for (const card of document.querySelectorAll<HTMLElement>(".thread-card")) if (Number(getComputedStyle(card).opacity) > 0) sheet.append(card.cloneNode(true));
   document.body.append(held);
   // The page coming in may scroll where the courtyard did not: its scroll bar would stand beside the held page as a strip, so the window keeps none until the page is off.
   document.documentElement.toggleAttribute("data-courtyard-held", true);

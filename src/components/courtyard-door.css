@@ -7,7 +7,7 @@
 #courtyard-held{position:fixed;inset:0;z-index:82;min-height:0;height:100lvh;--turn-page:100lvh;pointer-events:none;contain:strict}
 #courtyard-held .relief-turn-page{overflow:hidden}
 #courtyard-held .courtyard-held-page{position:absolute;inset:0;overflow:hidden}
-/* The one quiet line, in the waiting ochre, low on the page, if the room is not on its way yet. Never faded in. */
-#courtyard-held .courtyard-held-opening{position:fixed;z-index:3;inset:auto 24px calc(env(safe-area-inset-bottom) + 18px);margin:0;text-align:center;font:600 17px/1.5 "Source Sans 3",sans-serif;color:#8D631B;text-shadow:0 1px 0 #f6eedbcc}
+/* The one quiet line, if the room is not on its way yet: in the waiting ochre, on its own small cut slip of the card's lighter paper (4.8:1), low in the middle at every width, never faded in. */
+#courtyard-held .courtyard-held-opening{position:fixed;z-index:3;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);translate:-50% 0;margin:0;padding:8px 18px 9px;background:#f7f2e6;border-radius:2px 3px 2px 4px;box-shadow:0 1px 0 #3b2a1238,0 3px 6px #3b2a1224;font:600 17px/1.4 "Source Sans 3",sans-serif;color:#8D631B;white-space:nowrap}
 html[data-courtyard-held]{scrollbar-width:none}
 html[data-courtyard-held]::-webkit-scrollbar{display:none}
