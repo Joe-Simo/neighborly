@@ -112,6 +112,9 @@ final class ShellViewController: CAPBridgeViewController {
             scripts.addUserScript(WKUserScript(source: "try { if (!sessionStorage.getItem('kind-helps:kept-gone')) window.kindHelpsKept = \(kept); } catch {}", injectionTime: .atDocumentStart, forMainFrameOnly: true))
         }
         scripts.add(KeptRoomRequests(host: bridge?.config.serverURL.host), name: "kindHelpsKeep")
+        // In a room the page takes the left edge itself: its step back is the page turn the finger holds
+        // (room-sheet.tsx, useEdgeTurn). Anywhere else, a record or the way in, the app's own swipe back is the step back.
+        scripts.add(EdgeOwner { [weak self] pageOwns in self?.webView?.allowsBackForwardNavigationGestures = !pageOwns }, name: "kindHelpsEdge")
         // In the app a long press brings up no web callout, a tap leaves no
         // grey flash, a button's words are not selected by accident, and what is
         // pressed answers from touch-down.
@@ -533,6 +536,16 @@ private final class KeptRoomRequests: NSObject, WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard message.frameInfo.isMainFrame, message.frameInfo.securityOrigin.host == host else { return }
         if let json = message.body as? String { KeptRoom.keep(json) } else { KeptRoom.forget() }
+    }
+}
+
+/// The page says whether it takes the left edge's swipe itself (true in a room).
+private final class EdgeOwner: NSObject, WKScriptMessageHandler {
+    private let changed: (Bool) -> Void
+    init(changed: @escaping (Bool) -> Void) { self.changed = changed }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame else { return }
+        changed(message.body as? Bool == true)
     }
 }
 
