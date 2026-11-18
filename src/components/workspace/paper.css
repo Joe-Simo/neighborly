@@ -1358,3 +1358,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-kicker { margin-bottom: 8px; }
   .live-app .week-columns:not([data-far]) > .live-section > .live-section-head { margin-bottom: 16px; }
 }
+
+/* No word left alone on a line: every room's headings share their lines evenly, and its paragraphs and short
+   lines keep at least two words on the last line. Zero specificity, so a room's own text-wrap always wins. */
+:where(.live-app, .live-dialog) :where(h1, h2, h3, h4, legend, dt) { text-wrap: balance; }
+:where(.live-app, .live-dialog) :where(p, li, dd, figcaption, label, small) { text-wrap: pretty; }
