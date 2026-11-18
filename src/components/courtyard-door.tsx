@@ -86,8 +86,6 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
   const since = performance.now();
   let saying: HTMLElement | null = null, turning = 0;
   const off = () => { held.remove(); document.documentElement.removeAttribute("data-courtyard-held"); };
-  // Come back to from the back-forward cache, home is shown as it stands, never still under the held page.
-  addEventListener("pageshow", (shown: PageTransitionEvent) => { if (shown.persisted) off(); }, { once: true });
   const look = () => {
     if (!held.isConnected) return off();
     const waited = performance.now() - since;
