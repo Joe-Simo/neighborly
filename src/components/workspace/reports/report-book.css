@@ -1,0 +1,91 @@
+/* The year's report bound as sheets on the desk (report-book.tsx). Each sheet is a letter page in proportion, set like
+   print: the display serif for its title, 15px body, true tables with figures that line up. Shades only where paper lies. */
+.report .report-book { border: 0; box-shadow: none; }
+.report-book { margin: 8px 0 56px; overflow: clip; overflow-clip-margin: 12px; padding: 0 0 4px; }
+.book-desk {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr); width: min(100%, 520px);
+  outline: none;
+}
+.book-desk[data-facing] { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(100%, 1040px); }
+.book-desk:focus-visible { outline: none; }
+/* Focus shows on the sheet itself, inside its edge, so nothing is drawn under the book. */
+.book-desk:focus-visible .book-right > .book-turn .book-sheet { outline: 2px solid var(--live-ink, #283c32); outline-offset: -8px; }
+.book-desk:not(:focus-visible) .book-sheet { outline: none; }
+.book-left, .book-right { position: relative; aspect-ratio: 8.5 / 11; }
+/* Facing pages meet at a gutter: a soft shade into the fold on each side. */
+.book-desk[data-facing] .book-left .book-sheet { box-shadow: inset -18px 0 22px -20px rgb(40 30 10 / 0.3), 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3); }
+.book-desk[data-facing] .book-right .book-sheet { box-shadow: inset 18px 0 22px -20px rgb(40 30 10 / 0.3), 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3); }
+.book-under { position: absolute; inset: 0; }
+
+.book-sheet {
+  position: absolute; inset: 0; display: flex; flex-direction: column; gap: 18px; overflow: hidden;
+  padding: clamp(24px, 6%, 52px) clamp(22px, 7%, 56px);
+  background: #fbf8f1; color: var(--live-ink, #283c32); font-size: 15px; line-height: 1.5;
+  box-shadow: 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3);
+}
+.book-sheet h3 { margin: 0; font-family: "Newsreader", Georgia, serif; font-weight: 400; font-size: clamp(26px, 3vw, 34px); line-height: 1.1; letter-spacing: -0.01em; }
+.book-folio { margin: auto 0 0; font-size: 13px; color: #5b6b61; font-variant-numeric: tabular-nums; }
+
+.book-cover { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.book-cover h3 { margin-top: auto; font-size: clamp(38px, 5vw, 56px); }
+.book-cover p { margin: 0; }
+.book-group { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.book-sample { font-size: 13px; color: #5b6b61; }
+.book-mark { --size: 22px; display: flex; margin: 18px 0 auto; }
+.book-mark .week-quilt-piece { margin-left: -6px; }
+
+.book-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums lining-nums; }
+.book-table th, .book-table td { padding: 9px 0; font-size: 15px; letter-spacing: normal; text-transform: none; color: inherit; line-height: 1.4; border-bottom: 1px solid rgb(40 60 50 / 0.16); text-align: left; font-weight: 400; vertical-align: baseline; }
+.book-table td { text-align: right; padding-left: 12px; white-space: nowrap; }
+.report-book .book-table thead th, .report-book-print .book-table thead th { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #4a5a50; border-bottom-color: var(--live-ink, #283c32); }
+.book-table thead th:not(:first-child) { text-align: right; }
+.book-table tfoot th, .book-table tfoot td { font-weight: 600; border-bottom: 0; border-top: 1px solid var(--live-ink, #283c32); }
+.book-table:not(.book-columns) td { font-family: "Newsreader", Georgia, serif; font-size: clamp(22px, 2.6vw, 28px); line-height: 1.1; }
+
+/* The turn: the shared page turn's five parts (lib/page-turn.ts), drawn as the story's are (chapter-sheets.css). */
+.book-turn { position: absolute; inset: 0; }
+.book-turn-round { position: absolute; inset: 0; pointer-events: none; }
+.book-turn-page { position: absolute; inset: 0; pointer-events: auto; }
+.book-turn-shade, .book-turn-back { display: none; }
+.book-turn[data-laid] .book-turn-round {
+  inset: auto; left: calc(var(--turn-x) - var(--turn-r)); top: calc(var(--turn-y) - var(--turn-r));
+  width: calc(var(--turn-r) * 2); height: calc(var(--turn-r) * 2); border-radius: 50%; overflow: hidden;
+}
+.book-turn[data-laid] .book-turn-page { inset: auto; left: calc(var(--turn-r) - var(--turn-x)); top: calc(var(--turn-r) - var(--turn-y)); width: var(--turn-w); height: var(--turn-h); }
+.book-turn:not([data-turned="no"]) .book-turn-back { display: block; position: absolute; inset: 0; z-index: 2; transform-origin: 0 0; }
+.book-turn-under { position: absolute; inset: 0; overflow: hidden; background: #efe8d9; }
+.book-turn-roll, .book-turn:not([data-turned="no"]) .book-turn-shade { position: absolute; left: calc(var(--turn-long) / -2); width: var(--turn-long); height: 260px; pointer-events: none; }
+.book-turn-roll { top: -4px; transform-origin: calc(var(--turn-long) / 2) 4px; background: radial-gradient(circle at 50% calc(4px + var(--turn-r)), #0000 calc(var(--turn-r) - 170px), #f6ecd466 calc(var(--turn-r) - 62px), #f8efd9b3 calc(var(--turn-r) - 40px), #0000 calc(var(--turn-r) - 15px), #5a47262e calc(var(--turn-r) - 4px), #3c2e1857 var(--turn-r)); }
+.book-turn:not([data-turned="no"]) .book-turn-shade { display: block; top: -150px; z-index: 1; transform-origin: calc(var(--turn-long) / 2) 150px; background: radial-gradient(circle at 50% calc(150px + var(--turn-r)), #0000 calc(var(--turn-r) - 1px), #2e24165e var(--turn-r), #2e241629 calc(var(--turn-r) + 14px), #2e24160f calc(var(--turn-r) + 60px), #0000 calc(var(--turn-r) + 140px)); }
+.book-turn[data-turned="yes"] { visibility: hidden; }
+.report-book:is(:hover, :focus-within) .book-turn[data-laid] .book-turn-page, .book-turn:not([data-turned="no"]) :is(.book-turn-round, .book-turn-page, .book-turn-back, .book-turn-roll, .book-turn-shade) { will-change: transform; }
+/* The lower right corner can be taken in the hand and drawn back. */
+.book-corner { position: absolute; right: 0; bottom: 0; z-index: 3; width: 56px; height: 56px; cursor: grab; touch-action: none; }
+.book-corner:active { cursor: grabbing; }
+
+.book-foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.book-note { margin: 4px 0 0; font-size: 13px; color: #4a5a50; }
+.book-print {
+  margin-left: auto; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; color: var(--live-ink, #283c32);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; cursor: pointer;
+}
+.book-print:hover { text-decoration-thickness: 2px; }
+.book-print:focus-visible { outline: 2px solid var(--live-ink, #283c32); outline-offset: 4px; }
+.report-book-print { display: none; }
+
+@media (forced-colors: active) {
+  .book-sheet { border: 1px solid CanvasText; box-shadow: none !important; }
+  .book-mark .week-quilt-piece { forced-color-adjust: none; }
+}
+
+/* "Print the report" prints these sheets and nothing else: one to a letter page, no shades, no motion. */
+@media print {
+  @page report-book { size: letter; margin: 0.75in; }
+  :root[data-print-book] body > :not(.report-book-print) { display: none !important; }
+  :root[data-print-book] body > .report-book-print { display: block !important; }
+  .report-book-print .book-sheet { position: static; page: report-book; break-after: page; min-height: 9.4in; padding: 0; box-shadow: none; background: none; color: #000; }
+  .report-book-print .book-sheet:last-child { break-after: auto; }
+  .report-book-print .book-table th, .report-book-print .book-table td { border-color: #0004; }
+  .report-book-print .book-mark .week-quilt-piece { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  :root:not([data-print-book]) .report-book { display: none; }
+}

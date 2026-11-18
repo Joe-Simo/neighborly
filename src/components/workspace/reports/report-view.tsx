@@ -7,6 +7,7 @@ import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ReportBook } from "@/components/workspace/reports/report-book";
 import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
 import { LiveLoading } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -282,6 +283,7 @@ export function ReportView({
       {period}
       {sheet}
       {done && <HelpDone>{done}</HelpDone>}
+      {!report.quarter && <ReportBook report={report} groupName={groupName} sample={sample} />}
 
       {/* The year as one cut piece: what was paid, standing on a ledge, with the calls, requests and visits that led to it. */}
       <dl className="report-year">
