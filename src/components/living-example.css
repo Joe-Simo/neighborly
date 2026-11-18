@@ -17,12 +17,12 @@
   .living-paper-rest{margin-top:clamp(220px,30svh,330px)}
   .living-view-control{bottom:100px}
 }
-.living-paper-rest h2:focus-visible{outline:2px solid #526b45;outline-offset:5px}
+.living-paper-rest h2:focus-visible{outline:2px solid #283c32;outline-offset:3px}
 /* A quiet paper key keeps the painting controls readable over every pigment. */
 .living-screen .living-view-control{background:#f7f4eb;border:1px solid #ded8c8;padding:3px 13px;gap:19px;box-shadow:0 2px 8px #3b382808}
 .living-screen .living-view-control [data-slot=button]{color:#354a37;border:0;background:transparent;padding:8px 0;min-height:42px}
 .living-screen .living-view-control [data-slot=button]:hover{color:#213c29;text-decoration:underline;text-underline-offset:5px;background:transparent}
-.living-screen .living-view-control [data-slot=button]:focus-visible{outline:2px solid #354a37;outline-offset:3px;box-shadow:none}
+.living-screen .living-view-control [data-slot=button]:focus-visible{outline:2px solid #283c32;outline-offset:3px;box-shadow:none}
 .living-screen .mural-brand::before{display:none}
 .living-guide-anchor[data-slot=button]{position:absolute;z-index:2;left:46%;top:74%;transform:translate(-50%,calc(-100% - 28px));height:auto;min-height:44px;padding:9px 13px;border:1px solid #cfc7b5;border-radius:2px;background:#faf7ed;color:#354a37;font-size:12px;gap:12px;box-shadow:0 3px 14px #35321e12}
 .living-guide-anchor:after{content:"";position:absolute;top:100%;left:50%;width:1px;height:28px;background:#6b705b}

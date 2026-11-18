@@ -1,5 +1,5 @@
 .neighborly-continuation{--ink:#293f32;position:relative;isolation:isolate;color:var(--ink);background:#eee7d7}
-.neighborly-continuation a:focus-visible,.neighborly-continuation button:focus-visible{outline:2px solid #365c46;outline-offset:2px}
+.neighborly-continuation a:focus-visible,.neighborly-continuation button:focus-visible{outline:2px solid #283c32;outline-offset:3px}
 .has-reveal [data-reveal]{translate:0 16px;transition:translate .5s cubic-bezier(.2,.7,.2,1)}
 .has-reveal [data-reveal].is-visible,.has-reveal [data-reveal]:focus-within{translate:none}
 /* Interactive targets never move under a pointer. */

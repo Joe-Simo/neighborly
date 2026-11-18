@@ -11,7 +11,7 @@
 .home-yes-stage h2{font:30px/1.12 "Newsreader",Georgia,serif;letter-spacing:-.7px;margin:0 0 22px}
 .home-yes-stage .help-sheet{margin-bottom:0}
 .home-yes-stage .help-actions [data-slot=button]{min-height:44px;padding-inline:18px;font-size:16px}
-.home-yes-stage [data-slot=button]:focus-visible{outline:2px solid #365c46;outline-offset:2px}
+.home-yes-stage [data-slot=button]:focus-visible{outline:2px solid #283c32;outline-offset:3px}
 
 /* The sheet is already on the desk when it is reached, and one paper holds both the draft and the list: it never changes size. */
 .home-yes-stage{align-items:stretch}
