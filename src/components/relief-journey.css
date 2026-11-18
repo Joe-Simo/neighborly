@@ -176,6 +176,22 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-chapter=call] .relief-picture{aspect-ratio:9/7}
   .relief-panel[data-chapter=call] .relief-layers{width:116.6%;margin-left:-10.5%}
 }
+/* A phone held upright is composed for itself, not shrunk: each picture is cut closer, so what is painted fills the cut and no band of
+   bare paper stands above it, and the visit, whose door stands at the left, sets its words on the right, under the paper its picture leaves open.
+   The year keeps the left, where its figures stand in columns. */
+@media(max-width:700px) and (orientation:portrait),(max-width:480px){
+  .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:10px;padding:20px 0 36px}
+  .relief-panel[data-chapter=visit] .relief-words{text-align:right}
+  .relief-panel[data-chapter=visit] .relief-words p{margin-left:auto;text-align:left;width:20em;max-width:100%}
+  .relief-panel[data-chapter=call] .relief-picture{aspect-ratio:4/3}
+  .relief-panel[data-chapter=call] .relief-layers{width:128%;height:124%;margin:-19% 0 0 -18%}
+  .relief-panel[data-chapter=visit] .relief-picture{aspect-ratio:5/6}
+  .relief-panel[data-chapter=visit] .relief-layers{width:170%;height:112%;margin:-6% 0 0 -6%}
+  .relief-panel[data-chapter=help] .relief-picture{aspect-ratio:1/1}
+  .relief-panel[data-chapter=help] .relief-layers{width:180%;height:136%;margin:-24% 0 0 -66%}
+  .relief-panel[data-chapter=year] .relief-picture{aspect-ratio:4/3}
+  .relief-panel[data-chapter=year] .relief-layers{width:150%;height:138%;margin:-12% 0 0 -12%}
+}
 @media(prefers-reduced-motion:reduce){.relief-panel{--e:1!important;--h:1!important;min-height:0}.relief-hold{position:static;height:auto;padding-block:clamp(48px,9svh,96px)}}
 /* The call's words lie under its picture in the same cell, so with less motion it still takes the window's height, unpinned. */
 @media(prefers-reduced-motion:reduce) and (min-width:821px){.relief-panel[data-chapter=call] .relief-hold{height:100svh;padding-top:0}}
