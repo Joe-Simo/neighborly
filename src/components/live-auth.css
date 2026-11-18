@@ -161,7 +161,10 @@
 .live-app .entry .live-field .live-auth-code {
   min-height: 64px;
   padding-left: 0.32em;
-  font: 500 28px/1 ui-monospace, "SF Mono", Menlo, monospace;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.32em;
   text-align: center;

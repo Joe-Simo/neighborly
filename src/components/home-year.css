@@ -4,7 +4,7 @@
 .relief-words .home-year{display:grid;grid-template-columns:auto auto;justify-content:space-between;gap:clamp(20px,2.2vw,34px) 24px;margin:clamp(26px,2.8vw,44px) 0 0;padding:clamp(18px,1.8vw,26px) 0 0;border-top:1px solid #293f3224}
 .home-year>div{display:flex;flex-direction:column-reverse;min-width:0}
 .home-year dt{margin:6px 0 0;font-size:15px;line-height:1.35;color:#3d4f43}
-.home-year dd{position:relative;margin:0;font:400 clamp(44px,4.45vw,80px)/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.045em;font-variant-numeric:lining-nums tabular-nums;color:#293f32;white-space:nowrap}
+.home-year dd{position:relative;margin:0;font-family: 'Newsreader','Newsreader Fallback',Georgia,serif; font-weight: 400; font-size: clamp(44px,4.45vw,80px); line-height: 1;letter-spacing:-.045em;font-variant-numeric:lining-nums tabular-nums;color:#293f32;white-space:nowrap}
 /* Each figure stands on its own tab, cut from the page and hinged at its foot. At rest the tab lies flush: the page's own paper, its cut
    shown only as a hairline of paper edge along its top and sides, and the type on it plain and selectable (no transform is left on it).
    As the page is turned off the chapter, each tab stands up out of the page: the hole it leaves shows its cut line, and the tab throws
