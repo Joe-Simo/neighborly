@@ -29,8 +29,8 @@
 .fresco-wall::after{content:"";position:absolute;inset:0;border-radius:inherit;opacity:calc(1 - var(--inside));box-shadow:inset 0 18px 44px #1b2a1f99,inset 0 0 0 1px #2c392c4d,inset 0 -8px 26px #1b2a1f40;pointer-events:none}
 .fresco-view{position:absolute;left:0;top:0;translate:-50% -50%}
 .fresco-painting{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.fresco-view .living-courtyard{position:absolute;inset:0;pointer-events:none}
-.fresco-view .living-courtyard canvas{display:block;width:100%;height:100%}
+.fresco-view .living-courtyard{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.fresco-view .living-courtyard canvas{display:block;width:100%;height:100%;transform-origin:0 0}
 .fresco-stage:not([data-living=true]) .living-courtyard{visibility:hidden}
 .fresco-doors{position:absolute;inset:0;border-radius:inherit;perspective:1500px;opacity:clamp(0,calc(1 - var(--grow) * 1000),1);pointer-events:none}
 .fresco-doors i{position:absolute;top:0;bottom:0;width:50.15%;background-color:#8fa888;background-size:200% 100%;backface-visibility:hidden;box-shadow:inset 0 0 25px #17271c22}
