@@ -160,6 +160,8 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
 
 function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string): (() => void) | undefined {
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Safari on iPhone and iPad closes a tab outright when its memory runs short, and a phone with little memory may too: there the scene is shaded at one pixel per point.
+    const tight = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) || ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4;
     let renderer: WebGLRenderer;
     try { renderer = new WebGLRenderer({ antialias: false, powerPreference: "high-performance" }); } catch { return; }
     frame.append(renderer.domElement);
@@ -167,7 +169,8 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     const origins = new WeakMap<HTMLElement, { x: number; y: number }>();
     const release = () => { host.removeAttribute("data-living"); host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => { layer.style.removeProperty("scale"); layer.style.removeProperty("translate"); origins.delete(layer); }); };
     const lost = (event: Event) => { event.preventDefault(); release(); };
-    const restored = () => { if (uniforms.uMap.value) host.setAttribute("data-living", "true"); };
+    // The paintings' decoded copies are let go once they are on the graphics card, so a lost context is not brought back: the painted courtyard stays.
+    const restored = () => {};
     renderer.domElement.addEventListener("webglcontextlost", lost);
     renderer.domElement.addEventListener("webglcontextrestored", restored);
 
@@ -198,7 +201,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       // The scene is twice the window's height wide, so its cost is its area: it is drawn at up to 1.25, but never past the pixels a 1920 by 1080 window shades cleanly.
       // A window just over that (1728 by 1117) would otherwise be caught by the pace check mid-walk, and its drawing buffer reallocated in one long frame.
       const budget = Math.sqrt(2.36e6 / Math.max(1, frame.clientWidth * frame.clientHeight));
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25, budget) * detail);
+      renderer.setPixelRatio(Math.min(devicePixelRatio, tight ? 1 : 1.25, budget) * detail);
       renderer.setSize(frame.clientWidth, frame.clientHeight, false);
       uniforms.uRes.value.set(frame.clientWidth, frame.clientHeight);
       host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => origins.delete(layer));
@@ -347,7 +350,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       [uniforms.uMap.value, uniforms.uDepth.value, uniforms.uNormal.value, uniforms.uFigures.value, uniforms.uIdle.value, uniforms.uAnswer.value] = textures;
       resize();
       // Each painting is handed to the graphics card on its own frame, and the shader is prepared in the background, so arriving in the courtyard costs nothing.
-      for (const texture of textures) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.initTexture(texture); }
+      for (const texture of textures) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.initTexture(texture); if (texture.image instanceof ImageBitmap) texture.image.close(); }
       await renderer.compileAsync(scene, camera);
       if (disposed) return;
       // One frame is drawn before the layers are shown, so the program's first use and the textures' first sampling happen now, not on the walk.
