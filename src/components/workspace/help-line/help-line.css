@@ -120,8 +120,10 @@
 .help-row-open::after { content: ""; position: absolute; inset: 0; }
 .help-row-open:focus-visible { outline: none; }
 /* A waiting call's number is a link that rings it, in ink with a hairline underline, above the row's own link. */
-.help-row a.help-phone { position: relative; z-index: 1; color: var(--live-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: rgb(40 60 50 / 0.4); }
-@media (pointer: coarse) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; } }
+/* A name and a number never break across lines, and a mouse gets 40px of the number without the line moving. */
+.help-row h3 > .help-row-open { white-space: nowrap; }
+.help-row a.help-phone { position: relative; z-index: 1; white-space: nowrap; padding-block: 8px; margin-block: -8px; color: var(--live-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: rgb(40 60 50 / 0.4); }
+@media (pointer: coarse) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
 @media (pointer: coarse) and (max-width: 850px) { .help-row a.help-phone { display: flex; width: fit-content; margin-top: 0; } }
 .help-row:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px; }
 .help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
