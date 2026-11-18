@@ -9,8 +9,6 @@ function useIosShell() {
   return useSyncExternalStore(noChange, () => document.documentElement.dataset.shell === "ios", () => false);
 }
 
-type Felt = { webkit?: { messageHandlers?: { kindHelpsFelt?: { postMessage: (felt: string) => void } } } };
-
 /** How long a finger rests on a row before its actions come, and how far it may move before it is a scroll. */
 const HOLD = 450;
 const DRIFT = 10;
@@ -59,7 +57,6 @@ export function RowMenu() {
         if (!actions.length) return;
         // The press is the menu's: the click that follows the lift does not also open the row.
         swallow.current = row;
-        (window as Felt).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("touch");
         const box = row.getBoundingClientRect();
         const tall = actions.length * 45 + 8;
         const above = box.bottom + tall + 12 > window.innerHeight - 90 && box.top - tall - 12 > 60;
