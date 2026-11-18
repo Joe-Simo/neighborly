@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 
+type Felt = { webkit?: { messageHandlers?: { kindHelpsFelt?: { postMessage: (felt: "selected") => void } } } };
+
 const noChange = () => () => {};
 function useIosShell() {
   return useSyncExternalStore(noChange, () => document.documentElement.dataset.shell === "ios", () => false);
@@ -57,6 +59,8 @@ export function RowMenu() {
         if (!actions.length) return;
         // The press is the menu's: the click that follows the lift does not also open the row.
         swallow.current = row;
+        // The sheet opening is felt as the system's selection tap (SceneDelegate, "selected").
+        (window as Felt).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("selected");
         const box = row.getBoundingClientRect();
         const tall = actions.length * 45 + 8;
         const above = box.bottom + tall + 12 > window.innerHeight - 90 && box.top - tall - 12 > 60;

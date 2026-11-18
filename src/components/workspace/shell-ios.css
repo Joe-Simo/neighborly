@@ -374,3 +374,11 @@
 }
 .row-menu button + button { border-top: 1px solid rgb(40 60 50 / 0.12); }
 .row-menu button:active { background: rgb(40 60 50 / 0.07); }
+
+/* ── The accessibility text sizes on a phone (data-text-ax, AX1 and up): the room's head picture yields to a thin
+   band of itself, cut across its middle, so the title, its line and the room's first act fit on the first screen. ── */
+@media (max-width: 699px) {
+  :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art { height: 44px; aspect-ratio: auto; margin-bottom: 14px; }
+  :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art > .relief { position: absolute; inset: 0; top: 0; width: 100%; height: 100%; aspect-ratio: auto; -webkit-mask-image: none; mask-image: none; }
+  :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art > .relief img { object-fit: cover; object-position: center calc(var(--relief-y, 0.5) * 100%) !important; }
+}

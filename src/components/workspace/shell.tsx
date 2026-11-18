@@ -237,7 +237,31 @@ export function LiveWorkspace({
   const tabMenu = useRef<HTMLButtonElement>(null);
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
-  useSystemTextSize("data-text-large");
+  useSystemTextSize("data-text-large", "data-text-ax");
+  // The app shows a tab's name large while it is held, at the accessibility text sizes (SceneDelegate, kindHelpsBar):
+  // it is told where the bar's tabs are, and again whenever the bar is laid out anew.
+  useEffect(() => {
+    type Bar = { webkit?: { messageHandlers?: { kindHelpsBar?: { postMessage: (tabs: { name: string; x: number; y: number; width: number; height: number }[]) => void } } } };
+    const tell = (window as Bar).webkit?.messageHandlers?.kindHelpsBar;
+    const bar = document.querySelector<HTMLElement>(".live-tab-bar");
+    if (!inApp || !tell || !bar) return;
+    const say = () =>
+      tell.postMessage(
+        [...bar.querySelectorAll<HTMLElement>(".live-tab")].map((tab) => {
+          const box = tab.getBoundingClientRect();
+          return { name: tab.textContent?.trim() ?? "", x: box.left, y: box.top, width: box.width, height: box.height };
+        }),
+      );
+    say();
+    const laid = new ResizeObserver(say);
+    laid.observe(bar);
+    window.addEventListener("resize", say);
+    return () => {
+      laid.disconnect();
+      window.removeEventListener("resize", say);
+      tell.postMessage([]);
+    };
+  }, [inApp]);
   useKeysInUse();
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
   const leave = () => setMobileMenuOpen(false);
