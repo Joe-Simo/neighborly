@@ -344,6 +344,12 @@
 .report-months li[data-quiet] p {
   color: #8b9087;
 }
+/* On a phone the months' words are small, so a quiet month's line is set in a deeper grey of the same ink: still the
+   quietest line on the page, and read at 4.8:1 on the paper. */
+@media (max-width: 850px) {
+  .report-months li[data-quiet] p.help-amount,
+  .report-months li[data-quiet] p { color: #676e64; }
+}
 
 /* One line for every request, colored by what became of it. */
 .report-outcomes {
