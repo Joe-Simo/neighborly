@@ -47,6 +47,7 @@ import {
 } from "@/components/workspace/help-line/format";
 import { useSave } from "@/components/workspace/help-line/use-save";
 import { DraftSheet, caller } from "@/components/workspace/help-line/draft-sheet";
+import { laySlip, PAPER_EASE, tipTab } from "@/lib/lay-slip";
 import {
   HelpDone,
   dropSheetWords,
@@ -73,7 +74,6 @@ type Step =
   // The caller is not on file yet: the neighbor is added first, then the draft goes on.
   | { kind: "join"; drafted: Drafted; then: "approve" | "change" };
 
-const PAPER_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
 
 export function HelpLineSection() {
   return (
@@ -689,6 +689,8 @@ export function HelpLineView({
       move.addEventListener("cancel", land);
     };
     const stayed: [HTMLElement, number][] = [];
+    // Calls that changed lists this time: laid onto the "returned" count, or (undone) lifted back off it.
+    const laid: { row: HTMLElement; from: number }[] = [], lifted: HTMLElement[] = [];
     let travelled = false;
     lists.current
       ?.querySelectorAll<HTMLElement>("[data-call]")
@@ -699,7 +701,9 @@ export function HelpLineView({
         now.set(id, { top, waiting });
         const was = before.current.get(id);
         if (was && was.waiting === waiting) stayed.push([row, was.top - top]);
+        if (was && !was.waiting && waiting) lifted.push(row);
         if (!was?.waiting || waiting) return;
+        laid.push({ row, from: was.top - window.scrollY });
         travelled = true;
         row.dataset.arrived = "";
         if (still) return;
@@ -727,6 +731,42 @@ export function HelpLineView({
     }
     before.current = now;
     others.current = heads;
+    // Play the yes, in the room: the returned call's slip is carried from where it waited and laid on the "returned" count, which then steps up
+    // by one; undone, it is lifted back off and carried home, and the count steps down. The home page's own move (lay-slip.ts), nothing new.
+    const count = lists.current?.querySelector<HTMLElement>("[data-returned-count]");
+    if (still || !count || (!laid.length && !lifted.length)) return;
+    const said = calls.returned.length;
+    // Nothing is laid while a sheet is still on the page (closing, its paper over the list) or the rows are still finding their places:
+    // the slip starts at its own size once the room is still, and every place is read in that frame, never as the change lands.
+    const sheetOpen = () => Boolean(document.querySelector('[data-slot="dialog-content"], [data-slot="sheet-content"]'));
+    const whenStill = (go: () => void, since = performance.now()) => requestAnimationFrame((now) => {
+      if (sheetOpen() || now - since < 480) return whenStill(go, since);
+      go();
+    });
+    const slip = (name: string, left: number, top: number) => {
+      const piece = document.createElement("div");
+      piece.className = "help-slip";
+      piece.setAttribute("aria-hidden", "true");
+      piece.textContent = name;
+      Object.assign(piece.style, { left: `${left}px`, top: `${top}px` });
+      document.body.append(piece);
+      return piece;
+    };
+    const name = (row: HTMLElement) => row.querySelector("h3")?.textContent ?? "";
+    count.textContent = text.count(said - laid.length + lifted.length);
+    const moves = laid.map(({ row, from }) => ({ row, from, back: false })).concat(lifted.map((row) => ({ row, from: 0, back: true })));
+    whenStill(() => {
+      const to = count.getBoundingClientRect();
+      moves.forEach(({ row, from, back }, index) => {
+        const box = row.getBoundingClientRect();
+        const piece = slip(name(row), box.left + 56, back ? box.top : from);
+        if (back) { count.textContent = text.count(said); tipTab(count); }
+        void laySlip(piece, to, to.bottom, { back }).finished.finally(() => {
+          piece.remove();
+          if (!back && index === moves.length - 1) { count.textContent = text.count(said); tipTab(count); }
+        });
+      });
+    });
   });
   const leaf = (at: number) => {
     const part = (options: Intl.DateTimeFormatOptions) =>
@@ -884,7 +924,7 @@ export function HelpLineView({
         <section className="live-section">
           <div className="live-section-head">
             <h2>{text.returnedThisWeek}</h2>
-            <span className="live-count">
+            <span className="live-count" data-returned-count>
               {text.count(calls.returned.length)}
             </span>
           </div>

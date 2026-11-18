@@ -1,11 +1,11 @@
 "use client";
 
 import { type PointerEvent, useRef, useState } from "react";
+import { laySlip, PAPER_EASE, tipTab } from "@/lib/lay-slip";
 import { sampleYear } from "@/lib/sample-year";
 
 const whole = new Intl.NumberFormat("en-US");
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-const PAPER_EASE = "cubic-bezier(.2,.7,.2,1)";
 /** How far a press may wander and still be a press, not a carry. */
 const SLOP = 6;
 /** Rosa's help, in dollars: the help figure waits for it. */
@@ -54,23 +54,9 @@ export function HomeYearSlip() {
     };
     const onto = stack ?? tab;
     if (!onto || matchMedia("(prefers-reduced-motion: reduce)").matches) return turn();
-    // From where it is held to the top of the pile (or, where money is not a pile, onto its figure): carried whole and level, then it lies down edge on, one sheet's depth.
-    const from = element.getBoundingClientRect(), to = onto.getBoundingClientRect();
-    const scale = (to.width - 8) / from.width;
-    const x = to.left + 4 - from.left, y = (stack ? to.bottom - 3 * Number(target.dataset.sheets) : to.bottom) - from.top;
-    const set = element.animate([
-      { transform: `translate(${dx}px, ${dy}px)` },
-      { transform: `translate(${x}px, ${y - from.height * scale}px) scale(${scale})`, offset: .7 },
-      { transform: `translate(${x}px, ${y}px) scale(${scale}, ${3 / from.height})` },
-    ], { duration: 620, easing: PAPER_EASE, fill: "forwards" });
-    // Its words are lifted off as it begins to lie down (a 0/1 step), so no line of type is ever seen squeezed.
-    const lying = window.setTimeout(() => { element.dataset.lying = "true"; }, 620 * .7);
-    void set.finished.then(() => {
-      clearTimeout(lying);
-      turn();
-      // The figure's tab tips back off its hinge and stands again, the new count on it: never past 60° off upright.
-      tab?.animate([{ transform: "none" }, { transform: "rotateX(60deg)", offset: .45 }, { transform: "none" }], { duration: 380, easing: PAPER_EASE });
-    }, turn);
+    // From where it is held to the top of the pile (or, where money is not a pile, onto its figure).
+    const to = onto.getBoundingClientRect();
+    void laySlip(element, to, stack ? to.bottom - 3 * Number(target.dataset.sheets) : to.bottom, { dx, dy }).finished.then(() => { turn(); tipTab(tab); }, turn);
   };
 
   const down = (event: PointerEvent<HTMLButtonElement>) => {
