@@ -14,6 +14,8 @@ const firstVisit = () => {
 const SEEN = "kh-courtyard-assembled";
 /** Each sheet stands up from 60° in this long, the next one starting this much later: about 1.2s for the six that stand on the far one. */
 const STAND = 700, NEXT = 100;
+/** It starts once the doors stand this far open, so the courtyard is seen arriving, not glimpsed through a slit. */
+const OPEN = 0.45 * 0.05; // --door-progress runs 0 to .05 (fresco-threshold.tsx)
 
 /**
  * A visitor's first time through the doors, the courtyard arrives as the sheets it is cut from, standing up into place from the back,
@@ -30,7 +32,14 @@ export function CourtyardAssembly() {
     const element = host.current;
     const stage = element?.closest<HTMLElement>(".fresco-stage");
     if (!here || !element || !stage) return;
-    const done = () => { delete stage.dataset.assembling; setOver(true); };
+    // Hand over in place: the painting and its canvas have been drawn underneath all along, so the sheets only stop showing,
+    // and leave the page later, when the browser is idle.
+    let leave = 0;
+    const done = () => {
+      delete stage.dataset.assembling;
+      element.dataset.over = "true";
+      leave = window.setTimeout(() => requestIdleCallback(() => setOver(true), { timeout: 2000 }), 1000);
+    };
     let ready = false, played = false;
     const images = [...element.querySelectorAll("img")];
     void Promise.all(images.map(image => image.decode())).then(() => { ready = true; }, () => {});
@@ -38,14 +47,17 @@ export function CourtyardAssembly() {
     // Read after the doors have been placed for this frame (fresco-threshold.tsx sets --door-progress in its own frame).
     const watch = () => requestAnimationFrame(check);
     const check = () => {
-      if (played || !Number(stage.style.getPropertyValue("--door-progress"))) return;
+      if (played || Number(stage.style.getPropertyValue("--door-progress")) < OPEN) return;
       played = true;
       removeEventListener("scroll", watch);
       if (!ready) return done();
       try { localStorage.setItem(SEEN, "1"); } catch { /* It may play again next time. */ }
       element.dataset.played = "true";
-      // The far sheet, sky and hills, is the ground the others stand up on: it is there from the start.
-      const turns = images.slice(1).map((image, index) => image.animate(
+      // The words wait for the courtyard to be whole; only the picture of them waits, a reader has them throughout.
+      stage.dataset.assembling = "playing";
+      // The whole painting is the ground and the far sheet stands on it from the start, so the arch is never empty anywhere;
+      // each nearer sheet stands up onto its own place in it.
+      const turns = images.slice(2).map((image, index) => image.animate(
         [{ transform: "rotateX(60deg)" }, { transform: "none" }],
         { duration: STAND, delay: index * NEXT, easing: "cubic-bezier(.2,.7,.2,1)", fill: "both" },
       ));
@@ -53,11 +65,13 @@ export function CourtyardAssembly() {
     };
     addEventListener("scroll", watch, { passive: true });
     watch();
-    return () => { removeEventListener("scroll", watch); delete stage.dataset.assembling; };
+    return () => { removeEventListener("scroll", watch); clearTimeout(leave); delete stage.dataset.assembling; };
   }, [here]);
 
   if (!here) return null;
   return <div ref={host} className="courtyard-assembly" aria-hidden="true">
+    {/* eslint-disable-next-line @next/next/no-img-element -- the same painting the stage shows, in register under the sheets */}
+    <img src="/assets/threshold/courtyard-fresco.webp" alt="" width={1774} height={887} decoding="async" />
     {/* eslint-disable-next-line @next/next/no-img-element -- the sheets are cut at two widths and must stay in register with the painting, pixel for pixel */}
     {sheets.map(sheet => <img key={sheet} src={source(sheet, 1774)} srcSet={`${source(sheet, 960)} 960w, ${source(sheet, 1774)} 1774w`} sizes="100vw" alt="" width={1774} height={887} decoding="async" />)}
   </div>;

@@ -214,5 +214,6 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 /* A first visit: the courtyard stands up out of its own cut sheets (courtyard-assembly.tsx), then is the painting again. */
 .courtyard-assembly{position:absolute;inset:0;perspective:1400px;pointer-events:none;background:#eee7d7}
 .courtyard-assembly img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;display:block;transform-origin:50% 100%;will-change:transform;backface-visibility:hidden}
-.courtyard-assembly:not([data-played]) img:not(:first-child){transform:rotateX(60deg)}
-.fresco-stage[data-assembling=true] :is(.fresco-painting,.living-courtyard){visibility:hidden}
+.courtyard-assembly:not([data-played]) img:nth-child(n+3){transform:rotateX(60deg)}
+.courtyard-assembly[data-over]{visibility:hidden}
+.fresco-stage[data-assembling=playing] :is(.fresco-standing,.fresco-caption){opacity:0;transition:none}
