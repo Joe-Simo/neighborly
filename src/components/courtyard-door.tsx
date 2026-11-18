@@ -28,82 +28,80 @@ const easeInOut = (t: number) => t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 
  */
 export function CourtyardDoor({ label, opening, here }: { label: string; opening: string; here: boolean }) {
   const router = useRouter();
-  const enter = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || document.getElementById(HELD)) return;
-    event.preventDefault();
-    const href = event.currentTarget.getAttribute("href") ?? "/app";
-    const stage = event.currentTarget.closest<HTMLElement>(".fresco-stage");
-    if (!stage) return void router.push(href);
-    try { sessionStorage.setItem(LEFT_AT, String(Math.round(scrollY))); } catch {}
-    const plain = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    // The page as it is: the painting, the living courtyard's last frame over it, and the words on the paving, each where it lies on the window.
-    const held = document.createElement("div");
-    held.id = HELD;
-    held.className = "relief-panel";
-    held.dataset.turn = "from";
-    held.setAttribute("aria-hidden", "true");
-    held.innerHTML = `<div class="relief-turn" data-turned="no" data-near><div class="relief-turn-shade"></div><div class="relief-turn-round"><div class="relief-turn-page"><div class="courtyard-held-page"></div><div class="relief-turn-back"><div class="relief-turn-under"><div class="relief-turn-roll"></div></div></div></div></div></div>`;
-    const sheet = held.querySelector<HTMLElement>(".courtyard-held-page")!;
-    const lay = (node: HTMLElement, box: DOMRect) => {
-      Object.assign(node.style, { position: "absolute", left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px`, margin: "0", maxWidth: "none", maxHeight: "none", translate: "none", transform: "none" });
-      sheet.append(node);
-    };
-    const painting = stage.querySelector<HTMLImageElement>(".fresco-painting");
-    if (painting) lay(painting.cloneNode() as HTMLElement, painting.getBoundingClientRect());
-    window.dispatchEvent(new CustomEvent<CourtyardStill>(COURTYARD_STILL, { detail: { take: (picture, box) => {
-      const frame = document.createElement("img");
-      frame.src = picture; frame.alt = "";
-      lay(frame, box);
-    } } }));
-    const words = stage.querySelector<HTMLElement>(".fresco-standing");
-    if (words) {
-      const box = words.getBoundingClientRect(), copy = words.cloneNode(true) as HTMLElement;
-      copy.style.opacity = getComputedStyle(words).opacity;
-      lay(copy, box);
-      copy.style.transform = "none";
-      const leaning = words.firstElementChild;
-      if (leaning instanceof HTMLElement && copy.firstElementChild instanceof HTMLElement) copy.firstElementChild.style.transform = getComputedStyle(leaning).transform;
-    }
-    document.body.append(held);
-    const turn = held.querySelector<HTMLElement>(".relief-turn")!;
-    const part = (name: string) => held.querySelector<HTMLElement>(`.relief-turn-${name}`)!;
-    const parts = { round: part("round"), page: part("page"), back: part("back"), roll: part("roll"), shade: part("shade") };
-    const geometry = turnGeometry(innerWidth, innerHeight);
-    setTurnGeometry(turn, geometry);
-
-    router.push(href);
-
-    const since = performance.now();
-    let saying: HTMLElement | null = null, turning = 0;
-    const off = () => held.remove();
-    const look = () => {
-      if (!held.isConnected) return;
-      const waited = performance.now() - since;
-      if (!wholeUnderneath() && waited < LONGEST) {
-        // A wait is quiet at first; past 400ms the held page says so in one line.
-        if (waited > 400 && !saying) {
-          saying = document.createElement("p");
-          saying.className = "courtyard-held-opening";
-          saying.setAttribute("role", "status");
-          saying.textContent = opening;
-          held.append(saying);
-        }
-        return void requestAnimationFrame(look);
-      }
-      // The line goes first, in this frame, so it is never read over the room.
-      saying?.remove();
-      restWhatIsUnderneath();
-      if (plain) return off();
-      const step = (time: number) => {
-        if (!turning) turning = time;
-        const t = Math.min(1, (time - turning) / TURN);
-        turn.dataset.turned = placeTurn(geometry, parts, easeInOut(t));
-        if (t < 1) requestAnimationFrame(step); else off();
-      };
-      requestAnimationFrame(step);
-    };
-    requestAnimationFrame(look);
-  };
+  const enter = (event: MouseEvent<HTMLAnchorElement>) => goInTurning(event, router.push, opening);
   return <Link href="/app" className="fresco-door" aria-label={label} tabIndex={here ? undefined : -1} aria-hidden={here ? undefined : true} onClick={enter} />;
+}
+
+/** Pressed, a way in from the doors or the courtyard: the stage is held as one page, the workspace laid whole beneath it, and the page turned off. */
+export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: string) => void, opening: string) {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || document.getElementById(HELD)) return;
+  event.preventDefault();
+  const href = event.currentTarget.getAttribute("href") ?? "/app";
+  const stage = event.currentTarget.closest<HTMLElement>(".fresco-stage");
+  if (!stage) return void push(href);
+  try { sessionStorage.setItem(LEFT_AT, String(Math.round(scrollY))); } catch {}
+  const plain = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // The held page, with the turn's parts around it (chapter-sheets.css draws them).
+  const held = document.createElement("div");
+  held.id = HELD;
+  held.className = "relief-panel";
+  held.dataset.turn = "from";
+  held.setAttribute("aria-hidden", "true");
+  held.innerHTML = `<div class="relief-turn" data-turned="no" data-near><div class="relief-turn-shade"></div><div class="relief-turn-round"><div class="relief-turn-page"><div class="courtyard-held-page"></div><div class="relief-turn-back"><div class="relief-turn-under"><div class="relief-turn-roll"></div></div></div></div></div></div>`;
+  // The page is the stage itself, copied as it stands, with the living courtyard's canvas replaced by the frame it last drew.
+  const sheet = held.querySelector<HTMLElement>(".courtyard-held-page")!;
+  const copy = stage.cloneNode(true) as HTMLElement, box = stage.getBoundingClientRect();
+  for (const named of [copy, ...copy.querySelectorAll<HTMLElement>("[id]")]) named.removeAttribute("id");
+  Object.assign(copy.style, { position: "absolute", left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px`, margin: "0" });
+  const canvas = copy.querySelector("canvas");
+  window.dispatchEvent(new CustomEvent<CourtyardStill>(COURTYARD_STILL, { detail: { take: (picture) => {
+    if (!canvas) return;
+    const frame = document.createElement("img");
+    frame.src = picture; frame.alt = ""; frame.className = canvas.className; frame.style.cssText = canvas.style.cssText;
+    Object.assign(frame.style, { display: "block", width: "100%", height: "100%", maxWidth: "none" });
+    canvas.replaceWith(frame);
+  } } }));
+  sheet.append(copy);
+  document.body.append(held);
+  // The page coming in may scroll where the courtyard did not: its scroll bar would stand beside the held page as a strip, so the window keeps none until the page is off.
+  document.documentElement.toggleAttribute("data-courtyard-held", true);
+  const turn = held.querySelector<HTMLElement>(".relief-turn")!;
+  const part = (name: string) => held.querySelector<HTMLElement>(`.relief-turn-${name}`)!;
+  const parts = { round: part("round"), page: part("page"), back: part("back"), roll: part("roll"), shade: part("shade") };
+  const geometry = turnGeometry(innerWidth, innerHeight);
+  setTurnGeometry(turn, geometry);
+
+  push(href);
+
+  const since = performance.now();
+  let saying: HTMLElement | null = null, turning = 0;
+  const off = () => { held.remove(); document.documentElement.removeAttribute("data-courtyard-held"); };
+  const look = () => {
+    if (!held.isConnected) return off();
+    const waited = performance.now() - since;
+    if (!wholeUnderneath() && waited < LONGEST) {
+      // A wait is quiet at first; past 400ms the held page says so in one line.
+      if (waited > 400 && !saying) {
+        saying = document.createElement("p");
+        saying.className = "courtyard-held-opening";
+        saying.setAttribute("role", "status");
+        saying.textContent = opening;
+        held.append(saying);
+      }
+      return void requestAnimationFrame(look);
+    }
+    // The line goes first, in this frame, so it is never read over the room.
+    saying?.remove();
+    restWhatIsUnderneath();
+    if (plain) return off();
+    const step = (time: number) => {
+      if (!turning) turning = time;
+      const t = Math.min(1, (time - turning) / TURN);
+      turn.dataset.turned = placeTurn(geometry, parts, easeInOut(t));
+      if (t < 1) requestAnimationFrame(step); else off();
+    };
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(look);
 }

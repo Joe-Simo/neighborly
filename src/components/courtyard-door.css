@@ -8,4 +8,6 @@
 #courtyard-held .relief-turn-page{overflow:hidden}
 #courtyard-held .courtyard-held-page{position:absolute;inset:0;overflow:hidden}
 /* The one quiet line, in the waiting ochre, low on the page, if the room is not on its way yet. Never faded in. */
-#courtyard-held .courtyard-held-opening{position:fixed;z-index:3;inset:96px 24px auto;margin:0;text-align:center;font:600 17px/1.5 "Source Sans 3",sans-serif;color:#8D631B;text-shadow:0 1px 0 #f6eedbcc}
+#courtyard-held .courtyard-held-opening{position:fixed;z-index:3;inset:auto 24px calc(env(safe-area-inset-bottom) + 18px);margin:0;text-align:center;font:600 17px/1.5 "Source Sans 3",sans-serif;color:#8D631B;text-shadow:0 1px 0 #f6eedbcc}
+html[data-courtyard-held]{scrollbar-width:none}
+html[data-courtyard-held]::-webkit-scrollbar{display:none}

@@ -24,9 +24,6 @@
 /* Only its colour eases. Were everything to ease, the button would still be hidden for a moment after its place is shown, and the keyboard could not land on it. */
 .fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none;transition-property:background-color}
 .fresco-open[data-slot=button]:hover{background:#3a5040}
-/* The arch's plain twin, beside the one solid button: a quiet text way in, as the bar's own. */
-.fresco-enter{display:inline-flex;align-items:center;gap:11px;min-height:44px;margin-left:28px;padding:0 2px;font-size:15px;color:inherit;text-decoration:none;border-bottom:1px solid #253e3140;vertical-align:middle}
-.fresco-stage[data-walked=true] .fresco-enter{visibility:hidden}
 
 /* One opening in the wall. It is the doorway first, then the frame of the fresco. */
 .fresco-frame{position:absolute;left:0;top:0;z-index:1;box-shadow:0 0 0 calc(var(--grow) * 12px) #f5f0e3,0 0 0 calc(var(--grow) * 13px) #cdbf9f,0 28px 70px #51433040}
@@ -69,7 +66,6 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .fresco-invitation p{display:none}
   /* The button stands on paper under the doors, clear of them. */
   .fresco-open[data-slot=button]{position:absolute;z-index:0;left:50%;top:calc(79svh + 34px);translate:-50% 0;min-height:50px}
-  .fresco-enter{position:absolute;z-index:0;left:50%;top:calc(79svh + 92px);translate:-50% 0;margin:0}
   .fresco-caption{top:calc(var(--caption-top,70%) + 34px);font-size:clamp(32px,9.5vw,44px)}
 }
 @media(prefers-reduced-motion:reduce){.fresco-journey{height:360svh}}

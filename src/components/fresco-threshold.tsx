@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
-import { CourtyardDoor } from "./courtyard-door";
+import { CourtyardDoor, goInTurning } from "./courtyard-door";
+import { useRouter } from "next/navigation";
 import { useSettled } from "@/lib/use-settled";
 import "./relief-journey.css";
 
@@ -40,6 +41,7 @@ export function FrescoThreshold() {
   const walking = useRef(false);
   const [near, setNear] = useState(false);
   const settled = useSettled();
+  const router = useRouter();
   // A wide window counts as near as soon as the page is quiet; settled is only ever true in the browser, so the server's drawing is unchanged.
   const living = near || (settled && matchMedia("(min-width: 1200px)").matches);
 
@@ -218,10 +220,10 @@ export function FrescoThreshold() {
 
   return <div ref={journey} className="fresco-journey">
     <section ref={stage} className="fresco-stage" id="your-community" tabIndex={-1} aria-label="The doors and the courtyard" data-open={open} data-settled={settled} data-destination="1">
-      {/* The same name and way in as the opening's bar, drawn again over the courtyard for the eye; a keyboard or a screen reader meets them once, above. */}
+      {/* The same name and way in as the opening's bar, drawn again over the doors for the eye; a keyboard or a screen reader meets them once, above. Pressed, it goes in as the arch does: the stage is held and turned off the workspace. */}
       <header className="fresco-header" aria-hidden="true">
         <a href="#story-start" className="fresco-brand" tabIndex={-1}>kind helps</a>
-        <Link href="/app" tabIndex={-1}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
+        <Link href="/app" tabIndex={-1} onClick={event => goInTurning(event, router.push, "Opening…")}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </header>
       <div className="fresco-invitation" aria-hidden={open}>
         {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
@@ -229,8 +231,6 @@ export function FrescoThreshold() {
         <h2><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span></span></h2>
         <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
-        {/* The arch inside is a door too; this is its plain twin, for touch and for anyone who would rather not walk in. */}
-        <Link className="fresco-enter" href="/app" tabIndex={open ? -1 : undefined}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </div>
       <div ref={frame} className="fresco-frame">
         <div className="fresco-wall">
