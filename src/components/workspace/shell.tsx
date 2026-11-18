@@ -237,7 +237,7 @@ export function LiveWorkspace({
   const tabMenu = useRef<HTMLButtonElement>(null);
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
-  useSystemTextSize("data-text-large");
+  useSystemTextSize("data-text-large", "data-text-ax");
   useKeysInUse();
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
   const leave = () => setMobileMenuOpen(false);
