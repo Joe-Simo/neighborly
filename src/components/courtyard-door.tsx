@@ -123,10 +123,10 @@ export function holdAndTurn(page: HTMLElement[], opening: string, ready: () => b
       const state = placeTurn(geometry, parts, easeInOut(t));
       turn.dataset.turned = state;
       // The turned corner's tip: the page's lower right corner, laid over by the underside's mirror. Once it has left
-      // the window past the top or left edge, what is left of the page goes in that frame, one cut, never a standing
+      // the window past its top left corner (beyond both edges), what is left of the page goes in that frame, one cut, never a standing
       // strip; and once nothing of the page is left, it is gone in that frame too.
       const [c, sn, , , ex, ey] = (parts.back.style.transform.match(/-?[\d.]+/g) ?? []).map(Number);
-      const tipGone = state === "part" && c !== undefined && (c * geometry.w + sn * geometry.h + ex < 0 || sn * geometry.w - c * geometry.h + ey < 0);
+      const tipGone = state === "part" && c !== undefined && (c * geometry.w + sn * geometry.h + ex < 0 && sn * geometry.w - c * geometry.h + ey < 0);
       if (t < 1 && state !== "yes" && !tipGone) requestAnimationFrame(step); else off();
     };
     requestAnimationFrame(step);

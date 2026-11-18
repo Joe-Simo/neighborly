@@ -7,7 +7,11 @@ export type TurnParts = { round: HTMLElement; page: HTMLElement; back: HTMLEleme
 
 /** The page: w by h. The crease travels `far`, corner to corner, along (nx, ny); its round has radius r and stands at (x0, y0) on the corner. */
 export function turnGeometry(w: number, h: number) {
-  const far = Math.hypot(w, h), nx = -w / far, ny = -h / far, r = Math.round(far * 4);
+  // On a tall window (a phone) the diagonal stands nearly upright, so a crease across it would lie nearly flat and leave
+  // the page's last strip cut straight, its turned-back part already above the window. The crease is kept leaning, as
+  // on a page no taller than a quarter more than its width, and travels until it has passed the far corner.
+  const lean = Math.min(h, w * 1.25), slope = Math.hypot(w, lean), nx = -w / slope, ny = -lean / slope;
+  const far = (w * w + h * lean) / slope, r = Math.round(far * 4);
   // The round is set on whole pixels, so the still page inside it lies exactly on the window.
   return { w, h, far, nx, ny, r, x0: Math.round(w + nx * r), y0: Math.round(h + ny * r), long: Math.round(2 * w * h / far + 240) };
 }
