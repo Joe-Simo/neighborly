@@ -54,11 +54,14 @@ const en = {
         { lead: "Under a second.", rest: "The sample conference opens in about 0.85 seconds at desk width and 1.1 on a phone, measured on our test machine." },
         { lead: "Three frames.", rest: "On the same machine, the first scroll is answered by the third frame, or within 60 pixels." },
         { lead: "Two seconds.", rest: "The iPhone app opens into its room in 1.6 to 2 seconds in the simulator." },
+        { lead: "Not one frame over.", rest: "The courtyard that stands up on a first visit was filmed at 390 pixels with the processor slowed four times, and at 1440, in light and dark: 91 frames each time, none over 33 milliseconds, including the first run after the server had just started." },
+        { lead: "With Reduce Motion too.", rest: "The same films are run again with Reduce Motion on. Then the courtyard is simply there, and nothing is kept about the visit." },
       ],
     ] },
     { title: "Made for everyone", blocks: [
       "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on, where nothing moves. These are our own checks, not a certification.",
       "Every button is at least 44 pixels to a finger and 40 to a mouse, there is one focus ring and it is always seen, and no colour carries meaning on its own: waiting, wrong and done are always said in words too.",
+      "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
     { title: "Free for every conference", blocks: [
       "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone, given through one quiet link at the foot of the public pages.",
@@ -114,11 +117,14 @@ const es: typeof en = {
         { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos 0,85 segundos en el ancho de escritorio y en 1,1 en un teléfono, medido en nuestra máquina de pruebas." },
         { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde antes del tercer cuadro, o dentro de 60 píxeles." },
         { lead: "Dos segundos.", rest: "La aplicación del iPhone abre en su sala en 1,6 a 2 segundos en el simulador." },
+        { lead: "Ni un fotograma de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 fotogramas cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
+        { lead: "También con Reducir movimiento.", rest: "Las mismas películas se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí, y no se guarda nada de la visita." },
       ],
     ] },
     { title: "Hecho para todos", blocks: [
       "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado, donde nada se mueve. Son revisiones nuestras, no una certificación.",
       "Cada botón mide al menos 44 píxeles para un dedo y 40 para un ratón, hay un solo anillo de foco y siempre se ve, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras.",
+      "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",
     ] },
     { title: "Gratis para toda conferencia", blocks: [
       "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos, dados por un enlace discreto al pie de las páginas públicas.",
