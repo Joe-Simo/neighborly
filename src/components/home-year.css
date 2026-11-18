@@ -45,6 +45,7 @@
 .home-year-slip span{font-size:15px;line-height:1.35;color:#3d4f43}
 .home-year-slip[data-held]{cursor:grabbing;box-shadow:0 0 0 1px #b0a08466,calc(10px * var(--sun-k,1) * var(--sun-t,0)) calc(10px * var(--sun-k,1)) 0 -4px #3b2a1229,calc(14px * var(--sun-k,1) * var(--sun-t,0)) calc(14px * var(--sun-k,1)) 18px -8px #3b2a1240;will-change:transform}
 .home-year-slip:focus-visible{outline:2px solid #293f32;outline-offset:3px}
+.home-year-give p:focus{outline:none}
 .home-year-give p{margin:0;font-size:15px;line-height:1.4;color:#3d4f43}
 .home-year-slip[data-lying] > *{visibility:hidden}
 /* Once laid the slip's place is kept, so nothing below it moves. */
