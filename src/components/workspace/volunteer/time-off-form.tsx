@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LiveFailure } from "@/components/workspace/states";
 import { useMutation } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import type { FunctionReturnType } from "convex/server";
@@ -72,11 +73,7 @@ export function LiveTimeOffForm({
       >
         <Textarea name="note" value={draft.note} onChange={(event) => setDraft({ ...draft, note: event.target.value })} maxLength={1000} />
       </LiveField>
-      {error && (
-        <div className="live-error" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <LiveFailure message={error} />}
       <div className="live-form-actions">
         <Button type="submit">{words.timeOffForm.review}</Button>
       </div>
@@ -119,11 +116,7 @@ function TimeOffConfirmation({
       <p>
         {words.timeOffForm.explain}
       </p>
-      {error && (
-        <div className="live-error" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <LiveFailure message={error} kept="" />}
       <div className="live-form-actions">
         <Button variant="outline" disabled={saving} onClick={onBack}>
           {words.timeOffForm.back}

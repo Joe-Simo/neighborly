@@ -130,9 +130,10 @@
 .report-year > div:first-child dt { max-width: 520px; font-size: 16px; padding-right: 32px; }
 .report-year dt strong { font-weight: 650; color: var(--live-ink); }
 .report-year dd > span { display: block; filter: drop-shadow(1.5px 1px 0 rgb(40 60 50 / 0.26)) drop-shadow(7px 9px 9px rgb(40 60 50 / 0.17)); }
+/* A bigger year sets its figure smaller, so seven figures and more still fit a phone whole. */
 .report-year-paid > .report-year-pile {
   display: inline-grid;
-  font: 400 min(124px, 20.5vw) / 0.78 "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font: 400 min(124px, 20.5vw, 144vw / var(--figure-length, 7)) / 0.78 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.045em;
   font-variant-numeric: lining-nums;
   color: #335844;

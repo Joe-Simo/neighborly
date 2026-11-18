@@ -689,7 +689,8 @@ export function LiveWorkspace({
               {words.shell.limited}
             </div>
           )}
-          {error && (
+          {/* A refusal from a sheet is said in that sheet, once; only one from the page itself is said here. */}
+          {error && !saveFrom && (
             <div className="live-error" role="alert">
               {error}
             </div>

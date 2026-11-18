@@ -5,6 +5,7 @@ import type { FunctionReturnType } from "convex/server";
 import { Check, Sparkles } from "lucide-react";
 import type { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { nameKeeper } from "@/components/workspace/keep-names";
 import { words as book, type Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import type { Workspace } from "@/components/workspace/context";
@@ -90,8 +91,8 @@ export function DraftSheet({
   // The title is one whole line in each language: what is asked, how much, and to whom, as far as the note said.
   const what = draft.kind ? words.kinds[draft.kind] : sheet.aRequest;
   const amount = draft.amountRequested === null ? null : shortMoney(draft.amountRequested);
-  // A payee's name is never broken across lines: the headline breaks before it, not inside it.
-  const payee = draft.payeeName?.replaceAll(" ", "\u00a0");
+  // A payee's name is kept whole: the headline breaks before it, and only a name longer than the line turns inside it.
+  const payee = draft.payeeName ?? undefined;
   const title = empty
     ? sheet.nothingYet
     : amount !== null && payee
@@ -136,7 +137,7 @@ export function DraftSheet({
             {sheet.calledOn(format(call.takenAt, { weekday: "long", month: "long" }))}
           </p>
           <h2 id={arriving ? undefined : "draft-title"}>
-            {title}
+            {payee ? nameKeeper([payee])(title) : title}
           </h2>
           {!complete && (
             <p className="help-assistant help-blank">
