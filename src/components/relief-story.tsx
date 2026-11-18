@@ -50,12 +50,28 @@ const hold = (part: (typeof story)[number]) => <div className="relief-hold">
       </div>
 ;
 
+/**
+ * Where the shadows fall at a local hour: down and to the right in the morning, sun low in the east (the page's left), swinging through
+ * the house angle at midday (down and a little right, the light the art was cut under) to straight down by evening. Before 7 and after 19
+ * it holds at the nearer end. Returned as the direction's sine and cosine from straight down.
+ */
+const sun = (now: Date) => {
+  const hour = Math.min(19, Math.max(7, now.getHours() + now.getMinutes() / 60));
+  const angle = (70 - (hour - 7) / 12 * 70) * Math.PI / 180;
+  return { sin: Math.sin(angle), cos: Math.cos(angle) };
+};
+
 /** What a conference does with Kind Helps, one idea to a screen, each with its own cut-paper picture. */
 export function ReliefStory() {
   const root = useRef<HTMLElement>(null);
   useEffect(() => {
     const element = root.current;
     if (!element) return;
+    // Real light: the sun stands where it does at the visitor's own hour, so the paper's shadows fall the way they would on their own desk.
+    // Set once as the story arrives (below the first screen, before any shadow is in sight): a direction only, never a tint, never moving while seen.
+    const { sin, cos } = sun(new Date());
+    element.style.setProperty("--sun-s", sin.toFixed(3));
+    element.style.setProperty("--sun-c", cos.toFixed(3));
     const panels = [...element.querySelectorAll<HTMLElement>(".relief-panel")];
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still) return;

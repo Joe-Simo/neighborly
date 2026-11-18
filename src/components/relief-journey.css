@@ -103,7 +103,8 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .relief-piece{position:absolute;left:-2.0833%;top:-3.125%;width:104.1667%;height:106.25%;pointer-events:none}
 .relief-piece picture,.relief-piece .relief-shadow{position:absolute;inset:0}
 /* The piece's own shadow on the plate, a small soft picture made from the piece's outline: close where the paper lies flat, longer and fainter the higher it is held. */
-.relief-shadow{--up:var(--q);opacity:calc(.34 - var(--up) * .14);translate:calc(4px + var(--up) * 18px) calc(6px + var(--up) * 26px)}
+/* Each shadow is cast along the light (relief-story.tsx sets --sun-s and --sun-c from the visitor's hour; without script, the house angle). */
+.relief-shadow{--up:var(--q);--cast:calc(7.2px + var(--up) * 31.6px);opacity:calc(.34 - var(--up) * .14);translate:calc(var(--cast) * var(--sun-s,.56)) calc(var(--cast) * var(--sun-c,.83))}
 /* The call: the receiver lies on its cradle and is lifted, turning about the cord's joint. Its shadow grows as it rises, and the cord swings once from the same joint and comes to rest. */
 [data-picture=call] [data-piece=piece]{transform-origin:82% 61.8%;transform:rotate(calc(var(--q) * -9deg))}
 [data-picture=call] .relief-shadow{--up:var(--h)}
