@@ -3,6 +3,9 @@ import type { Language } from "@/lib/words";
 /** A paragraph, or a list whose items open with a few strong words; a list item may carry the colour it names. */
 export type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
+/** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
+export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string } };
+
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
   path: "/about/how-we-made-it",
@@ -12,11 +15,20 @@ const en = {
   preview: "The painting, the paper's rules, the assistant, and a promise: free for every conference.",
   enter: "Enter Kind Helps",
   translated: null as null | [string, string, string],
+  courtyard: {
+    label: "The courtyard painting, its paper sheets drawn apart, laid back together as the page scrolls",
+    apart: "Six sheets cut along the painting’s own depth, and the people at the table on a seventh.",
+    whole: "Laid together, they are the courtyard behind the doors.",
+  },
   sections: [
     { title: "One painting, made of paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
       "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolours it or crops into it. What moves is the paper around it.",
     ] },
+    { title: "Cut along its own depth", blocks: [
+      "The courtyard was painted whole. To let it move, it was cut along the painting’s own depth: the sky and hills, the far cloister and the table, the near walls, the garden and the bench, the paving, the pillars. The people at the table stand on a sheet of their own.",
+      "Nothing was painted in to fill a gap. Every cut edge is the painting’s, and laid together the sheets are the painting again.",
+    ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "The courtyard in shades of grey: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The map the cut followed: the courtyard’s depth, far in dark and near in light." } },
     { title: "The rules the paper keeps", blocks: [
       "A ministry's software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
       [
@@ -25,16 +37,21 @@ const en = {
         { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned.", tone: "done" },
       ],
       "Nothing fades and nothing blurs. Paper does not dissolve: it is laid down, lifted, turned or folded, and every move on the page is one a sheet could make. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Words are never smaller than 13 pixels in the app, and 15 on public pages like this one.",
+      "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°. Even drawn apart above, the courtyard leans back no further than 40°.",
     ] },
     { title: "Responsible AI, with Jev", blocks: [
       "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does three clerical jobs: it drafts a request for help from a call note, puts urgent calls first with the reason shown, and checks the year’s records before the report. It does not write prose and it saves nothing by itself.",
       "A neighbor’s name, phone and address are never sent to it. Everything sent passes first through one step that takes them out, and on every draft “What the assistant saw” shows the note exactly as it left. A person reads every draft and decides. Saving a request is not granting it: the conference members who visit the home decide on the help.",
       "On 12 made-up call notes kept apart from the ones it was tuned on, it filled 42 of 48 fields correctly, left 6 blank and got none wrong. Twelve notes is a small set, and it will make mistakes, which is why a person checks every draft.",
     ] },
+    { title: "In English and Spanish", blocks: [
+      "Every screen a volunteer uses is in English and Spanish, and so are the privacy page and this one. The Spanish is its own fixed words, written for each screen, not translated by a machine as the page opens, so the same button always says the same thing.",
+      "It was read and approved by the founder, who speaks Spanish. Where a page is a translation it says so at the top, and the English governs.",
+    ] },
     { title: "Free for every conference", blocks: [
       "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone, given through one quiet link at the foot of the public pages.",
     ] },
-  ] as { title: string; blocks: MadeBlock[] }[],
+  ] as MadeSection[],
   last: "Kind Helps is independent. It is not affiliated with or endorsed by the Society of St. Vincent de Paul. The code is open at github.com/Joe-Simo/neighborly.",
 };
 
@@ -46,11 +63,20 @@ const es: typeof en = {
   preview: "La pintura, las reglas del papel, el asistente y una promesa: gratis para toda conferencia.",
   enter: "Entrar a Kind Helps",
   translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],
+  courtyard: {
+    label: "La pintura del patio, con sus hojas de papel separadas, que se vuelven a juntar al bajar por la página",
+    apart: "Seis hojas cortadas según la profundidad de la propia pintura, y las personas de la mesa en una séptima.",
+    whole: "Juntas, son el patio que hay tras las puertas.",
+  },
   sections: [
     { title: "Una sola pintura, hecha de papel", blocks: [
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
       "La obra pintada se hizo con una herramienta de imágenes con IA a partir de indicaciones escritas, y luego se eligió y se retocó a mano. La página nunca pinta encima, nunca le cambia el color ni la recorta. Lo que se mueve es el papel que la rodea.",
     ] },
+    { title: "Cortado según su propia profundidad", blocks: [
+      "El patio se pintó entero. Para que pudiera moverse, se cortó según la profundidad de la propia pintura: el cielo y las colinas, el claustro del fondo y la mesa, los muros cercanos, el jardín y el banco, el empedrado, los pilares. Las personas de la mesa están en una hoja propia.",
+      "No se pintó nada para llenar un hueco. Cada borde cortado es de la pintura, y juntas las hojas vuelven a ser la pintura.",
+    ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa que siguió el corte: la profundidad del patio, lo lejano en oscuro y lo cercano en claro." } },
     { title: "Las reglas que guarda el papel", blocks: [
       "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
       [
@@ -59,11 +85,16 @@ const es: typeof en = {
         { lead: "Verde es hecho.", rest: "Una visita escrita, una factura pagada, una llamada devuelta.", tone: "done" },
       ],
       "Nada se desvanece y nada se desenfoca. El papel no se disuelve: se pone, se levanta, se da vuelta o se dobla, y cada movimiento de la página es uno que una hoja podría hacer. Una sala se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta.",
+      "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°. Aun separado, arriba, el patio no se inclina más de 40°.",
     ] },
     { title: "IA responsable, con Jev", blocks: [
       "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace tres tareas de oficina: redacta una petición de ayuda a partir de la nota de una llamada, pone primero las llamadas urgentes con el motivo a la vista y revisa los registros del año antes del informe. No escribe prosa y no guarda nada por sí solo.",
       "Nunca se le envían el nombre, el teléfono ni la dirección de un vecino. Todo lo que se envía pasa antes por un paso que los quita, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Una persona lee cada borrador y decide. Guardar una petición no es concederla: los miembros de la conferencia que visitan el hogar deciden la ayuda.",
       "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
+    ] },
+    { title: "En inglés y en español", blocks: [
+      "Cada pantalla que usa un voluntario está en inglés y en español, y también la página de privacidad y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
+      "Lo leyó y lo aprobó el fundador, que habla español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
     { title: "Gratis para toda conferencia", blocks: [
       "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos, dados por un enlace discreto al pie de las páginas públicas.",

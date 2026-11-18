@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ReaderLanguage } from "@/components/reader-language";
+import { MadeCourtyard } from "@/components/made-courtyard";
 import { PublicEnding } from "@/components/public-ending";
 import { edgeWords } from "@/lib/edge-words";
 import { linkPreviewIn } from "@/lib/link-preview";
@@ -34,12 +36,18 @@ export function MadePage({ language }: { language: Language }) {
       <h1>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={madeWords.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />
-      {said.sections.map(({ title, blocks }) => <section key={title}>
-        <h2>{title}</h2>
-        <div>{blocks.map((block) => typeof block === "string"
-          ? <p key={block}>{block}</p>
-          : <ul key={block[0].lead} className="public-made-tones">{block.map(({ lead, rest, tone }) => <li key={lead} data-tone={tone}><strong>{lead}</strong> {rest}</li>)}</ul>)}</div>
-      </section>)}
+      {said.sections.map(({ title, blocks, figure }, index) => <Fragment key={title}>
+        {/* After the first sheet, the painting it speaks of is drawn apart into its paper and laid back together. */}
+        {index === 1 && <MadeCourtyard {...said.courtyard} />}
+        <section>
+          <h2>{title}</h2>
+          <div>{blocks.map((block) => typeof block === "string"
+            ? <p key={block}>{block}</p>
+            : <ul key={block[0].lead} className="public-made-tones">{block.map(({ lead, rest, tone }) => <li key={lead} data-tone={tone}><strong>{lead}</strong> {rest}</li>)}</ul>)}
+          {/* eslint-disable-next-line @next/next/no-img-element -- a 960px working file shown as it is */}
+          {figure && <figure className="public-made-figure"><img src={figure.src} alt={figure.alt} width={960} height={480} loading="lazy" decoding="async" /><figcaption>{figure.caption}</figcaption></figure>}</div>
+        </section>
+      </Fragment>)}
       <section>
         <div><p className="public-words-last">{said.last}</p></div>
       </section>
