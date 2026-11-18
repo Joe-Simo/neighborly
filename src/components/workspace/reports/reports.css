@@ -143,7 +143,9 @@
 .report-year-figure {
   display: block;
   padding-bottom: 0.06em;
-  animation: report-sheet-set 380ms var(--paper-ease) backwards;
+  transform-origin: 50% 100%;
+  /* Set down last, on top of its months, standing up from 60° on the pile; at rest it holds no transform. */
+  animation: report-stand 380ms var(--paper-ease) backwards;
   animation-delay: calc(var(--paper-wait, 0ms) + 520ms);
 }
 /* Twelve sheets, one a month, each as thick as its share of the year's help (the pile is the year: they add up to
@@ -167,7 +169,6 @@
 .report-stack i:nth-child(8) { --sheet: 7; } .report-stack i:nth-child(9) { --sheet: 8; } .report-stack i:nth-child(10) { --sheet: 9; }
 .report-stack i:nth-child(11) { --sheet: 10; } .report-stack i:nth-child(12) { --sheet: 11; }
 @keyframes report-sheet-drop { from { transform: translateY(-14px); } }
-@keyframes report-sheet-set { from { opacity: 0; transform: translateY(-14px); } 60% { opacity: 1; } }
 /* Once a visit: the pile is already standing when Reports is opened again. */
 .report-year-pile[data-laid] :is(.report-year-figure, .report-stack i) { animation: none; }
 /* A month under the pointer or the keyboard lifts its own sheet in the pile. */
@@ -198,8 +199,10 @@
   color: var(--live-ink);
   clip-path: polygon(0 6px, 100% 0, 100% 100%, 0 100%);
   rotate: -1.4deg;
-  transform-origin: bottom;
-  animation: report-rise 420ms var(--paper-ease) backwards;
+  transform-origin: 50% 100%;
+  /* A paper tab stood up from its foot, never seen more than 60° off upright (as home's courtyard words); at rest
+     it holds no transform, so its figure is plain, selectable text. */
+  animation: report-stand 420ms var(--paper-ease) backwards;
   animation-delay: calc(var(--paper-wait, 0ms) + 150ms);
 }
 .report-year > div:nth-child(3) dd b { clip-path: polygon(0 0, 100% 5px, 100% 100%, 0 100%); rotate: 1deg; padding-top: 24px; animation-delay: calc(var(--paper-wait, 0ms) + 210ms); }
@@ -307,6 +310,7 @@
 .report-months li:nth-child(10) { --paper-order: 9; }
 .report-months li:nth-child(11) { --paper-order: 10; }
 .report-months li:nth-child(12) { --paper-order: 11; }
+@keyframes report-stand { from { transform: perspective(600px) rotateX(60deg); } }
 @keyframes report-rise { from { transform: scaleY(0); } }
 .report-months h3 {
   margin: 0 0 6px;
