@@ -32,7 +32,9 @@ function useLanguage() {
   // Visitors to the sample share one made-up member, so their language is kept on their own device and never
   // saved: the rooms read the door's language for them (live-app.tsx), and choosing here changes that.
   const look = useFirstLook();
-  const visiting = useQuery(api.demo.visiting, {}) ?? (look ? (look.visiting ?? true) : undefined);
+  // A look (the sample's seed, or a room kept on the device) writes nothing: until the live room is in, a language is
+  // kept on the device as a visitor's is, so nothing is saved for a conference the person may no longer be in.
+  const visiting = useQuery(api.demo.visiting, {}) ?? (look ? true : undefined);
   const [, setOnDevice] = useEntryLanguage();
   // The door and the rooms speak one language: what the person pressed on the entry sheet is saved here, and
   // the device's own language fills in for someone who has never chosen. Once per conference and visit.
