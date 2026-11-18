@@ -316,6 +316,31 @@ export function LiveWorkspace({
       window.removeEventListener("resize", read);
     };
   }, [area]);
+  // A headline word that is longer than its column even at the measured size (a long surname) drops a size, and
+  // another, until it fits whole: a word is never broken inside itself (paper.css).
+  useEffect(() => {
+    const words = app.current?.querySelector<HTMLElement>(".live-page-head .live-head-words");
+    if (!words) return;
+    const fit = () => {
+      const headline = words.querySelector<HTMLElement>("h1");
+      if (!headline) return;
+      headline.style.removeProperty("font-size");
+      let size = parseFloat(getComputedStyle(headline).fontSize);
+      while (headline.scrollWidth > headline.clientWidth + 1 && size > 24) {
+        size -= 4;
+        headline.style.fontSize = `${size}px`;
+      }
+    };
+    fit();
+    const resized = new ResizeObserver(fit);
+    resized.observe(words);
+    const changed = new MutationObserver(fit);
+    changed.observe(words, { childList: true, subtree: true, characterData: true });
+    return () => {
+      resized.disconnect();
+      changed.disconnect();
+    };
+  }, [area]);
   // A keyboard on a phone slides the view down the page without moving the page itself, so anything held at the
   // top would be left behind above the view. The shell says how far the view has slid; the bar and a held
   // saved line add it to their place (`--live-pan`).
