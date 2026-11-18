@@ -1447,3 +1447,24 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* A sheet laid over the room (the month, a menu) is whole from its first frame and only rises. */
 @keyframes paper-rise-solid { from { transform: translateY(12px); } }
 .live-date-sheet:not(.live-date-bottom) { animation-name: paper-rise-solid; }
+
+/* ── One slip for what a save came to ─────────────────────────────────────────────────────────────────────────
+   Saved (with its Undo) and refused are one paper slip, as the connection strip already is: sheet ground, hairline edge and a
+   3px edge in the state's colour: green done, plum wrong. The quiet waiting line beside a form's buttons is ochre.
+   Each slip (the connection strip keeps its own fold) is whole from its first frame and only rises 12px, as the month and the menus do; nothing fades. */
+:is(.live-app, .live-dialog) .live-success.help-done {
+  padding: 12px 18px 12px 16px;
+  background: #fffdf7;
+  border: 1px solid color-mix(in srgb, #365c46 26%, #f7f4ed);
+  border-left: 3px solid #365c46;
+  border-radius: 0 4px 4px 0;
+  line-height: 1.5;
+}
+:is(.live-app, .live-dialog) .live-success.help-done:not([data-filed-from]),
+.live-error { animation: paper-rise-solid 320ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards; }
+.live-waiting { color: #7d5a17; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.live-app, .live-dialog) .live-success.help-done:not([data-filed-from]), .live-error { animation: none; }
+}
+@media (forced-colors: active) { :is(.live-app, .live-dialog) .live-success.help-done { border-left-width: 3px; } }
+@media print { :is(.live-app, .live-dialog) .live-success.help-done { background: none; } }
