@@ -13,7 +13,7 @@ export function weekBegan(now: number, timeZone: string) {
   return now - (day * 86_400_000 + Number(parts.hour) * 3_600_000 + Number(parts.minute) * 60_000 + Number(parts.second) * 1000);
 }
 
-const act = v.object({ id: v.string(), kind: v.union(v.literal("call"), v.literal("visit"), v.literal("yes")), at: v.number() });
+const act = v.object({ id: v.string(), kind: v.union(v.literal("call"), v.literal("visit"), v.literal("yes")), at: v.number(), day: v.number() });
 
 /**
  * What was done since Monday began where the group is, oldest first: each call called back, each visit written
@@ -42,6 +42,10 @@ export const week = query({
       ...returned.filter((call) => within(call.returnedAt)).map((call) => ({ id: call._id as string, kind: "call" as const, at: call.returnedAt ?? 0 })),
       ...visits.filter((visit) => visit.status === "completed" && within(visit.completedAt ?? visit.scheduledAt)).map((visit) => ({ id: visit._id as string, kind: "visit" as const, at: visit.completedAt ?? visit.scheduledAt })),
       ...[...approved, ...paid].filter((request) => within(request.decidedAt)).map((request) => ({ id: request._id as string, kind: "yes" as const, at: request.decidedAt ?? 0 })),
-    ].sort((a, b) => a.at - b.at).slice(0, 120);
+    ]
+      .sort((a, b) => a.at - b.at)
+      .slice(0, 120)
+      // The weekday it was done on, Monday 0 to Sunday 6.
+      .map((one) => ({ ...one, day: Math.min(6, Math.floor((one.at - monday) / 86_400_000)) }));
   },
 });

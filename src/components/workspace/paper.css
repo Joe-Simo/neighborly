@@ -1086,29 +1086,37 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 
 /* ── The week's quilt ───────────────────────────────────────────────────────
-   One small paper piece for each thing done since Monday, laid along the foot of This week's head in the order
-   it was done, three deep: a call called back in the page's own paper, a home visit in sage, a yes in green.
-   Each is cut by hand (its own small lean) and lies in tight contact with the paper under it. A piece laid while
-   the room is open is cut in above the quilt and set down in its place. */
-.week-quilt {
-  /* Resting on the head's foot rule (36px above the room at desk widths, 24px on a phone), taking no room. */
-  --head-gap: 36px; --quilt: 42px;
-  display: grid; grid-template-rows: repeat(3, 12px); grid-auto-flow: column; grid-auto-columns: 12px; gap: 3px;
-  /* Sewn from the right edge leftward, Monday first, so a new piece takes a new place and none already laid moves. */
-  direction: rtl; justify-content: start; width: 100%; height: var(--quilt); margin: calc(-1 * (var(--head-gap) + var(--quilt) + 1px)) 0 calc(var(--head-gap) + 1px); pointer-events: none;
+   A band of cut paper under This week's head, the full width of its foot rule: seven days from Monday at the
+   left, each holding one piece for every thing done that day, a little overlapped like patchwork. A call called
+   back is the page's own cream, a home visit sage, a yes green. Each piece has its own cut and lean (from its
+   id), a grain of light across it and a tight contact shade. Under the band, one caption. */
+.week-quilt { --size: 21px; margin: calc(-1 * var(--head-gap, 36px)) 0 30px; }
+.week-quilt-band {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); column-gap: 6px; height: calc(var(--size) + 10px); align-items: center;
+  /* The stitch the pieces are laid on: a running stitch along the band, there before any piece. */
+  background: repeating-linear-gradient(90deg, rgb(40 60 50 / 0.3) 0 6px, transparent 6px 11px) 0 50% / 100% 1px no-repeat;
 }
-/* On a phone the quilt lies two deep in the narrow space between the head's button and its rule. */
-@media (max-width: 850px) { .week-quilt { --head-gap: 24px; --quilt: 20px; grid-template-rows: repeat(2, 9px); grid-auto-columns: 9px; gap: 2px; } }
-.week-quilt i {
-  display: block; rotate: calc(var(--lean, 0) * 1.6deg); translate: 0 calc(var(--nudge, 0) * 0.4px);
-  background: #f3eee1; box-shadow: 0 0 0 0.5px rgb(40 60 50 / 0.34), 1px 1.5px 0 rgb(40 60 50 / 0.16);
+.week-quilt-day { display: flex; align-items: center; padding-left: 6px; overflow: clip; overflow-clip-margin: 6px; }
+.week-quilt-piece {
+  flex: none; width: var(--size); height: var(--size); margin-left: -6px; rotate: var(--lean); translate: 0 var(--rise);
+  filter: drop-shadow(0 0 0.5px rgb(40 60 50 / 0.45)) drop-shadow(1px 1.5px 0.5px rgb(40 60 50 / 0.16));
 }
-.week-quilt i[data-kind="visit"] { background: #b9c6ab; }
-.week-quilt i[data-kind="yes"] { background: #365c46; }
-.week-quilt i[data-laid] { animation: week-piece-laid 420ms var(--paper-ease) both; }
-@keyframes week-piece-laid {
-  0% { transform: translateY(-14px) scale(1.5) rotate(-12deg); box-shadow: 0 0 0 0.5px rgb(40 60 50 / 0.34), 3px 7px 6px rgb(40 60 50 / 0.22); }
-  70% { transform: translateY(0) scale(1.04) rotate(0); }
+.week-quilt-piece i {
+  display: block; width: 100%; height: 100%;
+  background: linear-gradient(155deg, rgb(255 255 255 / 0.5), transparent 45%, rgb(40 60 50 / 0.06)), #f4efe2;
 }
-@media (prefers-reduced-motion: reduce) { .week-quilt i[data-laid] { animation: none; } }
-@media (forced-colors: active) { .week-quilt i { forced-color-adjust: none; } }
+.week-quilt-piece[data-kind="visit"] i { background-color: #b7c4a7; background-image: linear-gradient(155deg, rgb(255 255 255 / 0.32), transparent 45%, rgb(40 60 50 / 0.1)); }
+.week-quilt-piece[data-kind="yes"] i { background-color: #365c46; background-image: linear-gradient(155deg, rgb(255 255 255 / 0.18), transparent 45%, rgb(0 0 0 / 0.12)); }
+/* Saved while the room is open: pressed once into its place. */
+.week-quilt-piece[data-laid] { animation: week-piece-pressed 200ms var(--paper-ease) both; }
+@keyframes week-piece-pressed { from { transform: translateY(-3px) scale(1.08); } }
+.week-quilt figcaption { margin-top: 8px; font-size: 13px; line-height: 1.4; color: var(--live-ink); }
+@media (max-width: 850px) {
+  .week-quilt { --head-gap: 24px; }
+  .week-quilt-band { column-gap: 3px; }
+  .week-quilt-day { padding-left: 3px; }
+  .week-quilt { --size: 14px; }
+  .week-quilt-piece { margin-left: -6px; }
+}
+@media (prefers-reduced-motion: reduce) { .week-quilt-piece[data-laid] { animation: none; } }
+@media (forced-colors: active) { .week-quilt-piece { forced-color-adjust: none; } }
