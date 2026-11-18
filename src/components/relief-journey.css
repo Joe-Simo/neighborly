@@ -184,3 +184,10 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-words p{font-size:min(1.45vw,2.6svh)}
   .relief-words .home-year dd{font-size:min(4.45vw,8svh)}
 }
+/* Between a phone and a desk the chapters lie in the page's flow under pictures the full width of the screen, so their words grow with that width
+   instead of keeping a phone's size: the headline holds its share of the picture above it, and the sentence stays one easy measure. */
+@media(min-width:600px) and (max-width:820px){
+  .relief-words{padding:0 max(20px,4vw)}
+  .relief-words h2{font-size:clamp(76px,13.5vw,110px)}
+  .relief-words p{font-size:clamp(19px,2.9vw,23px);max-width:22em}
+}
