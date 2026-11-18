@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import { useFirstLook } from "@/components/workspace/first-look";
@@ -15,20 +15,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useWorkspace } from "@/components/workspace/context";
-import { languageNames, languages, type Language } from "@/lib/words";
+import { languageNames, languages, type Language, type Words } from "@/lib/words";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { takeEntryLanguage, useEntryLanguage } from "@/components/live-auth-words";
 import { api } from "../../../convex/_generated/api";
 
 const carried = new Set<string>();
 
 /** The person's language, and the way to change it. A failed change says so where they are looking. */
-function useLanguage() {
-  const { data, words } = useWorkspace();
+function useLanguage(words: Words, churchId: Id<"churches">) {
   const save = useMutation(api.language.choose);
   const adopt = useMutation(api.language.adopt);
   const [failed, setFailed] = useState(false);
-  const churchId = data.church.id;
   // Visitors to the sample share one made-up member, so their language is kept on their own device and never
   // saved: the rooms read the door's language for them (live-app.tsx), and choosing here changes that.
   const look = useFirstLook();
@@ -61,8 +59,8 @@ function useLanguage() {
  * In the header: a quiet line of text, the language named in itself, so it can
  * be found from any other. It carries no more weight than the person's name beside it.
  */
-export function LanguageChooser() {
-  const { words, current, failed, choose } = useLanguage();
+export const LanguageChooser = memo(function LanguageChooser({ words: book, churchId }: { words: Words; churchId: Id<"churches"> }) {
+  const { words, current, failed, choose } = useLanguage(book, churchId);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -86,4 +84,4 @@ export function LanguageChooser() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

@@ -234,6 +234,8 @@ export function LiveWorkspace({
   // A menu line marked for leaders is shown only to coordinators and owners of the group.
   const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
   const menuItems = navigation.filter((item) => leads || !("leadersOnly" in item));
+  // The rooms' names for the keys' sheet, one per line: equal from draw to draw while the names stay, so the keys are not drawn again.
+  const roomNames = menuItems.map(({ id, label }) => menu[id] ?? label).join("\n");
   // On a phone the menu button says "Menu" and tells a screen reader which room this is.
   const menuLabel = menu[area] ?? navigation.find((item) => item.id === area)?.label;
   const navRef = useNavMarker(area);
@@ -536,7 +538,7 @@ export function LiveWorkspace({
         <div className="live-header-actions">
           <div className="live-header-desk contents">
             {selectChurch}
-            <LanguageChooser />
+            <LanguageChooser words={words} churchId={data.church.id} />
             <span className="live-account">
               {data.user.name || data.user.email}
             </span>
@@ -566,7 +568,7 @@ export function LiveWorkspace({
                 {selectChurch}
               </div>
               <div className="live-menu-foot">
-                <LanguageChooser />
+                <LanguageChooser words={words} churchId={data.church.id} />
                 <Button variant="outline" className="live-menu-leave" disabled={pending} onClick={() => void signOut()}>
                   <LogOut size={17} aria-hidden="true" /> {leaveLabel}
                 </Button>
@@ -594,7 +596,7 @@ export function LiveWorkspace({
         </nav>
         <WorkspaceProvider value={workspace}>
         <KeptTyping member={data.user.id} conference={data.church.id} />
-        <WorkspaceKeys nav={navRef} rooms={menuItems.map(({ id, label }) => menu[id] ?? label)} />
+        <WorkspaceKeys nav={navRef} rooms={roomNames} keys={words.shell.keys} />
         <RoomStill area={area} column={column}>
         <RoomShown value={shown}>
         <main
