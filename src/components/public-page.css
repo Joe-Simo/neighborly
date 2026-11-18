@@ -3,6 +3,7 @@
 .public-page a:focus-visible{outline:2px solid #283c32;outline-offset:3px}
 .public-page-header{display:flex;align-items:center;justify-content:space-between;gap:20px;height:76px;padding:0 max(20px,4%)}
 .public-page-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:inherit;text-decoration:none}
+.public-page-language{display:inline-flex;align-items:center;min-height:44px;margin-left:auto;padding:0 2px;font-size:15px;color:inherit;text-decoration:none;border-bottom:1px solid #253e3140}
 .public-page-header>a:last-child{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 2px;font-size:15px;color:inherit;text-decoration:none;border-bottom:1px solid #253e3140}
 /* The page's words arrive as every sheet here does: rising a little, once. They are never hidden. */
 @keyframes paper-rise{from{translate:0 16px}}
@@ -121,4 +122,6 @@
 .public-words .public-made-tones li:not([data-tone]){padding-left:0}
 .public-words .public-made-tones li:not([data-tone])::before{display:none}
 /* Very wide windows: the laid sheets already run the window's width, so their words and the title's piece grow with it, and nothing is left as a small column on a big sheet. */
-@media(min-width:2000px){.public-words section>div{font-size:24px}.public-words-last{font-size:19px}.public-words h2{font-size:clamp(44px,2.3vw,64px)}.public-words-relief{width:clamp(420px,22vw,600px)}.public-page-header>a:last-child{font-size:18px}}
+@media(min-width:2000px){.public-page-language{font-size:18px}.public-words section>div{font-size:24px}.public-words-last{font-size:19px}.public-words h2{font-size:clamp(44px,2.3vw,64px)}.public-words-relief{width:clamp(420px,22vw,600px)}.public-page-header>a:last-child{font-size:18px}}
+@media(max-width:430px){.public-page-header{gap:12px;padding-inline:16px}}
+@media(max-width:380px){.public-page-header{gap:8px}}

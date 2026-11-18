@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { PublicLanguage } from "@/components/public-language";
 import { ReaderLanguage } from "@/components/reader-language";
 import { PublicEnding } from "@/components/public-ending";
 import { edgeWords } from "@/lib/edge-words";
@@ -30,6 +31,7 @@ export function WeekPage({ language }: { language: Language }) {
     {language !== "en" && <ReaderLanguage page={language} />}
     <header className="public-page-header">
       <Link className="public-page-brand" href="/" aria-label={edgeWords[language].home}><span lang="en">kind helps</span></Link>
+      <PublicLanguage language={language} paths={{ en: weekWords.en.path, es: weekWords.es.path }} />
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
     <main className="public-words public-week paper-rise" data-address={`kindhelps.com${said.path}`}>
