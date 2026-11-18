@@ -135,6 +135,8 @@ void main(){
 
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
 const FOCUS = .24;
+// Each painting goes to the graphics card in this many bands, one a frame.
+const BANDS = 4;
 // Everything placed over the painting, with how near it stands, so it moves in depth with the painting beneath it.
 const placed = [[".threshold-table-chair", .25], [".threshold-table-settings", .16], [".threshold-garden-basket", .4], [".threshold-garden-plants", .4], [".threshold-hall-chairs", .12], [".threshold-hall-flowers", .11], [".threshold-lamps", .1], [".threshold-foreground", .78]] as const;
 const placedLayers = placed.map(([selector]) => selector).join(",");
@@ -347,7 +349,34 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       [uniforms.uMap.value, uniforms.uDepth.value, uniforms.uNormal.value, uniforms.uFigures.value, uniforms.uIdle.value, uniforms.uAnswer.value] = textures;
       resize();
       // Each painting is handed to the graphics card on its own frame, and the shader is prepared in the background, so arriving in the courtyard costs nothing.
-      for (const texture of textures) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.initTexture(texture); }
+      // A whole painting sent at once is one long pause on a phone, so each is sent in bands, one band a frame: the card holds the same pixels either way.
+      const gl = renderer.getContext();
+      for (const texture of textures) {
+        const bitmap = texture.image as ImageBitmap;
+        const bands = await Promise.all(Array.from({ length: BANDS }, (_, band) => {
+          const top = Math.round(bitmap.height * band / BANDS);
+          return createImageBitmap(bitmap, 0, top, bitmap.width, Math.round(bitmap.height * (band + 1) / BANDS) - top, { premultiplyAlpha: "none", colorSpaceConversion: "none" }).then(part => ({ top, part }));
+        }));
+        if (disposed) { bands.forEach(({ part }) => part.close()); return; }
+        texture.source.dataReady = false;
+        await new Promise(requestAnimationFrame); if (disposed) return;
+        renderer.initTexture(texture);
+        const handle = (renderer.properties.get(texture) as { __webglTexture: WebGLTexture }).__webglTexture;
+        for (const { top, part } of bands) {
+          await new Promise(requestAnimationFrame);
+          if (disposed) { part.close(); continue; }
+          renderer.state.bindTexture(gl.TEXTURE_2D, handle);
+          renderer.state.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+          renderer.state.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+          renderer.state.pixelStorei(gl.UNPACK_ALIGNMENT, texture.unpackAlignment);
+          renderer.state.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+          renderer.state.texSubImage2D(gl.TEXTURE_2D, 0, 0, top, gl.RGBA, gl.UNSIGNED_BYTE, part);
+          part.close();
+        }
+        if (disposed) return;
+        if (texture.generateMipmaps) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.state.bindTexture(gl.TEXTURE_2D, handle); gl.generateMipmap(gl.TEXTURE_2D); }
+        texture.source.dataReady = true;
+      }
       await renderer.compileAsync(scene, camera);
       if (disposed) return;
       // One frame is drawn before the layers are shown, so the program's first use and the textures' first sampling happen now, not on the walk.
