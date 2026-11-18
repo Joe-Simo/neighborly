@@ -20,25 +20,37 @@ export function MadeCourtyard({ label, apart, whole }: { label: string; apart: s
   useEffect(() => {
     const element = host.current;
     if (!element || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let last = -1;
-    const place = () => {
+    let last = -1, start = 0, run = 1;
+    // Where the courtyard's run begins and how long it is are measured once, and again only when the page's size changes,
+    // so a scroll reads nothing from the layout and costs one style change.
+    const measure = () => {
       const { top, height } = element.getBoundingClientRect();
-      const run = Math.max(1, height - innerHeight);
+      start = top + scrollY;
+      run = Math.max(1, height - innerHeight);
+    };
+    const place = () => {
       // Apart for the first third of the run, laid together over the middle, whole for the last fifth.
-      const travelled = Math.min(1, Math.max(0, (-top / run - .2) / .6));
+      const travelled = Math.min(1, Math.max(0, ((scrollY - start) / run - .2) / .6));
       const open = Math.round((1 - travelled * travelled * (3 - 2 * travelled)) * 1000) / 1000;
       if (open === last) return;
+      const whole = open === 0;
+      if ((last === 0) !== whole || last < 0) element.dataset.whole = String(whole);
       last = open;
       element.style.setProperty("--open", String(open));
-      element.dataset.whole = String(open === 0);
     };
+    const resized = () => { measure(); place(); };
     element.dataset.live = "true";
     // The sheets are shown together or not at all, so no sheet of the courtyard arrives after the others.
     Promise.all([...element.querySelectorAll("img")].map(image => image.decode().catch(() => undefined))).then(() => { element.dataset.ready = "true"; });
-    place();
+    // A window before the courtyard comes into sight its seven sheets are given their own layers, drawn once,
+    // so the first scroll only moves them; they are let go again once it is far away.
+    const near = new IntersectionObserver(([entry]) => { element.dataset.near = String(entry.isIntersecting); }, { rootMargin: "100% 0px" });
+    near.observe(element);
+    const sized = new ResizeObserver(resized);
+    sized.observe(document.documentElement);
+    resized();
     addEventListener("scroll", place, { passive: true });
-    addEventListener("resize", place);
-    return () => { removeEventListener("scroll", place); removeEventListener("resize", place); };
+    return () => { removeEventListener("scroll", place); sized.disconnect(); near.disconnect(); };
   }, []);
 
   return <div ref={host} className="made-courtyard" data-whole="true">

@@ -7,6 +7,7 @@
 /* Each sheet carries the whole lean itself and lies flat in the page, back to front in order, so no sheet is ever sorted or redrawn as it moves. */
 .made-courtyard-stack img{position:absolute;inset:0;width:100%;height:100%;
   transform:perspective(2600px) var(--lean) translateZ(calc(var(--open) * (var(--sheet) - 3) * var(--gap)))}
+.made-courtyard[data-near=true] .made-courtyard-stack img{will-change:transform}
 .made-courtyard[data-live=true]:not([data-ready=true]) .made-courtyard-stack{visibility:hidden}
 .made-courtyard-said{position:relative;margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;min-height:3.2em;text-align:center;font:400 clamp(17px,1.35vw,22px)/1.45 'Newsreader',Georgia,serif;color:#293f32;text-wrap:balance}
 .made-courtyard-said span{position:absolute;inset:0 20px}
