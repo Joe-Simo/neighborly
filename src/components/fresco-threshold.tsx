@@ -81,6 +81,8 @@ export function FrescoThreshold() {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     let raf = 0;
     let placed: { size: string; top: number } | undefined;
+    // Where the invitation's words end, measured once for each size of window (they never move within one), never on the frames of the walk.
+    let words: { size: string; foot: number } | undefined;
     const update = () => {
       raf = 0;
       const width = host.clientWidth, height = host.clientHeight;
@@ -158,7 +160,11 @@ export function FrescoThreshold() {
       // The courtyard is all painting: the bar drawn over it leaves in one cut as the visitor steps in and returns in one as they step out.
       host.dataset.within = String(inside > 0);
       // Once the visitor has walked in, the wall they came through is behind them: its words do not come back with the frame.
-      host.dataset.walked = String(inside > .98 || grow > 0);
+      // On a phone the arch grows up over the words as the visitor walks in: they leave in one cut the moment its top would reach them,
+      // so no line of them is ever seen half under it.
+      const windowSize = `${width}x${height}`;
+      if (words?.size !== windowSize) words = { size: windowSize, foot: host.querySelector(".fresco-invitation h2")?.getBoundingClientRect().bottom ?? 0 };
+      host.dataset.walked = String(inside > .98 || grow > 0 || (inside > 0 && centreY - h / 2 < words.foot + 8));
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
       // Under the frame as it is actually drawn (its ring and any scale included): each time the courtyard rests in its frame, the line's own box is
       // measured against the frame's drawn bottom and set at least 12px clear of it, so no letter is ever under its edge.
