@@ -1030,10 +1030,11 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 
 /* A name in a line of words is a link as tall as its letters. Under a finger it answers over 44px: the place to
-   touch reaches above and below the word, and the line itself does not move. */
+   touch reaches above and below the word, and the line itself does not move. A mouse gets 40px of it. */
+.live-main a.live-link { position: relative; }
+.live-main a.live-link::after { content: ""; position: absolute; inset: -8px -4px; }
 @media (max-width: 850px), (pointer: coarse) {
-  .live-main a.live-link { position: relative; }
-  .live-main a.live-link::after { content: ""; position: absolute; inset: -10px -4px; }
+  .live-main a.live-link::after { inset: -10px -4px; }
 }
 
 /* This week: what is coming up and what the conference has said. From 1100px they stand side by side over one
