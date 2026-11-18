@@ -278,8 +278,9 @@
 .visits-aside-day em { display: block; font-style: normal; color: var(--help-plum, #6f5f93); }
 /* A name is never broken: a pair wraps between its two names only. */
 .visits-name { white-space: nowrap; }
-/* Beside the side column the room's own column is narrow, so a row's answer and buttons sit under its words. */
-@media (min-width: 1280px) {
+/* Beside the side column the room's own column is narrow (an iPad's room beside its sidebar too), so a row's answer and
+   buttons sit under its words, and a name is never run under them. */
+@media (min-width: 700px) {
   .live-main:has(> .live-aside:not(:empty)) .visits-room .help-row { row-gap: 14px; }
   .live-main:has(> .live-aside:not(:empty)) .visits-room .help-row > .live-row-actions { grid-column: 2; justify-content: flex-start; }
 }
