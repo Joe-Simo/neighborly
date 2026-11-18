@@ -130,7 +130,7 @@ const es: AuthWords = {
   emailCode: "Enviarme un código",
   forgot: "¿Olvidaste tu contraseña?",
   backToSignIn: "Volver a iniciar sesión",
-  sample: "Recorrer una conferencia de muestra",
+  sample: "Recorrer una muestra",
   sampleOpening: "Abriendo la conferencia de muestra…",
   sampleResetting: "Estamos dejando la muestra como nueva. Un momento.",
   leaveSample: "Salir de la muestra",
