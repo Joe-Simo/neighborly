@@ -26,9 +26,13 @@ export function EdgeSheet({ piece, lines, ways, children }: {
   children?: ReactNode;
 }) {
   const { src, srcSet, width, height, box } = pieces[piece];
+  // The piece stands in a <picture> (which draws no box, not-found.css) so React does not lift it into a preload in the
+  // head: the not-found and error sheets are drawn with every page's shell, and a lifted preload made every page, the
+  // rooms included, fetch the arch first and at high priority. On an edge page itself it is still asked for at high priority.
   const image = (
-    // eslint-disable-next-line @next/next/no-img-element -- one cut piece at two widths, shown as it was cut
-    <img src={src} srcSet={srcSet} sizes="min(78vw, 640px)" width={width} height={height} alt="" fetchPriority="high" />
+    <picture>
+      <img src={src} srcSet={srcSet} sizes="min(78vw, 640px)" width={width} height={height} alt="" fetchPriority="high" />
+    </picture>
   );
   return <main className="lost-door" data-piece={piece}>
     {children}
