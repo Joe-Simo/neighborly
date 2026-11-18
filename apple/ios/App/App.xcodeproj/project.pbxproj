@@ -21,6 +21,8 @@
 		7AC1A1D00000000000000006 /* KindHelpsWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7AC1A1D00000000000000001 /* KindHelpsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7AC1A1E00000000000000003 /* NativeWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A1E00000000000000001 /* NativeWords.swift */; };
 		7AC1A1E00000000000000004 /* NativeWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A1E00000000000000001 /* NativeWords.swift */; };
+		7AC1A1F00000000000000002 /* WeekFigures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A1F00000000000000001 /* WeekFigures.swift */; };
+		7AC1A1F00000000000000003 /* WeekFigures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A1F00000000000000001 /* WeekFigures.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +66,7 @@
 		7AC1A1D00000000000000002 /* CallsWaitingWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallsWaitingWidget.swift; sourceTree = "<group>"; };
 		7AC1A1D00000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7AC1A1E00000000000000001 /* NativeWords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeWords.swift; sourceTree = "<group>"; };
+		7AC1A1F00000000000000001 /* WeekFigures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekFigures.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,6 +138,7 @@
 			isa = PBXGroup;
 			children = (
 				7AC1A1E00000000000000001 /* NativeWords.swift */,
+				7AC1A1F00000000000000001 /* WeekFigures.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -251,6 +255,7 @@
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 				7AC1A1E00000000000000003 /* NativeWords.swift in Sources */,
+				7AC1A1F00000000000000002 /* WeekFigures.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,6 +265,7 @@
 			files = (
 				7AC1A1D00000000000000005 /* CallsWaitingWidget.swift in Sources */,
 				7AC1A1E00000000000000004 /* NativeWords.swift in Sources */,
+				7AC1A1F00000000000000003 /* WeekFigures.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -409,6 +415,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -431,6 +438,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -451,6 +459,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGN_ENTITLEMENTS = KindHelpsWidget/KindHelpsWidget.entitlements;
 				INFOPLIST_FILE = KindHelpsWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -473,6 +482,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGN_ENTITLEMENTS = KindHelpsWidget/KindHelpsWidget.entitlements;
 				INFOPLIST_FILE = KindHelpsWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

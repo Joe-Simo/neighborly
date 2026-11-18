@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import WidgetKit
 import CoreText
 import Capacitor
 
@@ -867,12 +868,32 @@ enum KeptRoom {
         } else {
             guard let file = file(.week) else { return }
             try? Data(json.utf8).write(to: file, options: [.atomic, .completeFileProtection])
+            shareWeek(object)
         }
+    }
+
+    /// The week's counts for the Home Screen widget, when this person may see them (the kept room says so).
+    private static func shareWeek(_ kept: [String: Any]) {
+        let room = kept["room"] as? [String: Any]
+        let note = room?["weekNote"] as? [String: Any]
+        let count = { (key: String) in (note?[key] as? NSNumber)?.intValue ?? 0 }
+        let figures = kept["allowed"] as? Bool == true && note != nil
+            ? WeekFigures(callsWaiting: count("callsWaiting"), oldestWaitingDays: count("oldestWaitingDays"), visitsPlanned: count("visitsPlanned"),
+                          requestsOpen: count("requestsOpen"), sample: (room?["church"] as? [String: Any])?["sample"] as? Bool == true)
+            : nil
+        guard figures != WeekFigures.read() else { return }
+        WeekFigures.write(figures)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Both are let go together: sign-out, or a room that is no longer this member's.
     static func forget() {
         for kind in [Kind.week, .helpLine] { if let file = file(kind) { try? FileManager.default.removeItem(at: file) } }
+        // The widget's counts go with them.
+        if WeekFigures.read() != nil {
+            WeekFigures.write(nil)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 }
 

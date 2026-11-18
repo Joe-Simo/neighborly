@@ -15,6 +15,9 @@ struct NativeWords {
     let callsWaitingAbout: String
     let oldest: (Int) -> String
     let sample: String
+    let visitsPlanned: String
+    let requestsWaiting: String
+    let openToSee: String
 
     static let en = NativeWords(
         opening: "Opening…",
@@ -26,8 +29,11 @@ struct NativeWords {
         undo: "Undo",
         callsWaiting: "Calls waiting",
         callsWaitingAbout: "How many help line calls are waiting for a call back.",
-        oldest: { $0 == 1 ? "Oldest, 1 day" : "Oldest, \($0) days" },
-        sample: "Sample"
+        oldest: { $0 == 0 ? "Oldest, today" : $0 == 1 ? "Oldest, 1 day" : "Oldest, \($0) days" },
+        sample: "Sample",
+        visitsPlanned: "Visits planned",
+        requestsWaiting: "Awaiting a yes",
+        openToSee: "Open Kind Helps to see your week."
     )
 
     static let es = NativeWords(
@@ -40,8 +46,11 @@ struct NativeWords {
         undo: "Deshacer",
         callsWaiting: "Llamadas por devolver",
         callsWaitingAbout: "Cuántas llamadas de la línea de ayuda esperan que les devuelvan la llamada.",
-        oldest: { $0 == 1 ? "La más antigua, 1 día" : "La más antigua, \($0) días" },
-        sample: "Muestra"
+        oldest: { $0 == 0 ? "La más antigua, de hoy" : $0 == 1 ? "La más antigua, 1 día" : "La más antigua, \($0) días" },
+        sample: "Muestra",
+        visitsPlanned: "Visitas planeadas",
+        requestsWaiting: "Esperan un sí",
+        openToSee: "Abre Kind Helps para ver tu semana."
     )
 
     /// The device's language: Spanish where it is first, English otherwise.
