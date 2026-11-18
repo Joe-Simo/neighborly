@@ -24,8 +24,6 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
     const sheet = paper.current, next = sheet?.closest<HTMLElement>(sheets[to].next) ?? sheet?.parentElement?.querySelector<HTMLElement>(sheets[to].next);
     if (!sheet || !next) return;
     const still = matchMedia("(prefers-reduced-motion: reduce)");
-    // Where chapters are not held (relief-journey.css lets them scroll as plain pages up to 820px), nothing is turned. Read from the media query, never from a computed style.
-    const plain = matchMedia("(max-width: 820px)");
     let frame = 0, across = "", foot = "", lie = "", tall = "";
     const update = () => {
       frame = 0;
