@@ -34,6 +34,7 @@ export function DraftSheet({
   drafted: { call, draft },
   waiting = 1,
   sealed = false,
+  deciding = false,
   arriving = false,
   format,
   pending,
@@ -49,6 +50,8 @@ export function DraftSheet({
   waiting?: number;
   /** The yes was given and the request is on the record: the corner folds to green. */
   sealed?: boolean;
+  /** Approve was pressed and the answer is on its way: the corner is half folded, and holds there until it comes. */
+  deciding?: boolean;
   /**
    * Laid where the saved sheet before it is closing: unseen, its title not yet named, until that sheet has gone.
    * Then it is laid down whole, as any sheet is.
@@ -99,12 +102,15 @@ export function DraftSheet({
     <section
       className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
       data-fold-leaves={sealed ? "" : undefined}
+      data-deciding={deciding ? "" : undefined}
       data-arriving={arriving ? "" : undefined}
       aria-labelledby={arriving ? undefined : "draft-title"}
       data-blank={complete ? undefined : ""}
       // The sheet can hold focus itself: when its button rests after a yes, focus stays on the sheet, not on nothing.
       tabIndex={-1}
     >
+      {/* The answer is slow: the one waiting mark stands at the half-folded corner (after 400ms, help-line.css). */}
+      {deciding && <span className="help-fold-ring" aria-hidden="true" />}
       <p className="help-sheet-label">
         {sealed
           ? text.approved

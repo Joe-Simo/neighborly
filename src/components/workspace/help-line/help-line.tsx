@@ -148,6 +148,8 @@ function HelpLine() {
   >(null);
   // From the moment the saved draft starts to close, the next one waiting is laid in its place.
   const [handing, setHanding] = useState(false);
+  // The draft whose Approve was pressed and is on its way: its corner is folding, held half down until the answer.
+  const [pressing, setPressing] = useState<Call["id"] | null>(null);
   useEffect(() => {
     if (!sealed) return;
     let left = false;
@@ -258,6 +260,7 @@ function HelpLine() {
     // The button that was pressed rests while the request is saved and sealed, and a resting button lets focus fall to
     // the page. The sheet takes it, so the next key starts from here; the saved line takes it from the sheet.
     document.querySelector<HTMLElement>(".help-sheet:not([data-arriving])")?.focus({ preventScroll: true });
+    setPressing(call.id);
     const outcome = await approving.save(() =>
       createRequest({
         churchId,
@@ -271,6 +274,7 @@ function HelpLine() {
         source: "ai_draft",
       }),
     );
+    setPressing(null);
     if (!outcome.saved) return;
     settle(call);
     // The sheet is sealed as the call now stands: a caller just added as a neighbor is on file, so the sealed sheet
@@ -375,6 +379,7 @@ function HelpLine() {
                     key={one.call.id}
                     drafted={one}
                     sealed={one === sealed}
+                    deciding={pressing === one.call.id && one !== sealed}
                     arriving={one === next}
                     waiting={drafts.length}
                     format={format}
