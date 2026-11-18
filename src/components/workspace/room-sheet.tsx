@@ -204,9 +204,13 @@ const HELD = ["opacity", "transform", "translate", "rotate", "scale", "visibilit
 function stillPicture(shown: HTMLImageElement, twin: HTMLImageElement) {
   if (!shown.complete || !shown.naturalWidth) return;
   const canvas = document.createElement("canvas");
-  const sharp = window.devicePixelRatio || 1;
-  canvas.width = Math.round(shown.naturalWidth * sharp);
-  canvas.height = Math.round(shown.naturalHeight * sharp);
+  // Painted at the size it is seen at (its box on this screen's pixels), never above the picture's own: a copy at
+  // full size on a phone's screen is many times the pixels anyone sees, and the press waits on every one of them.
+  const box = shown.getBoundingClientRect();
+  const seen = Math.max(box.width / shown.naturalWidth, box.height / shown.naturalHeight) * (window.devicePixelRatio || 1);
+  const scale = Math.min(1, seen || 1);
+  canvas.width = Math.max(1, Math.round(shown.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(shown.naturalHeight * scale));
   canvas.getContext("2d")?.drawImage(shown, 0, 0, canvas.width, canvas.height);
   // Laid out and fitted exactly as the picture was: its box, its fit and its focus.
   const style = getComputedStyle(shown);
@@ -222,10 +226,23 @@ function stillPicture(shown: HTMLImageElement, twin: HTMLImageElement) {
  */
 function stillCopy(column: HTMLElement) {
   const copy = column.cloneNode(true) as HTMLElement;
-  const moving = new Set(document.getAnimations().map((move) => (move.effect instanceof KeyframeEffect ? move.effect.target : null)));
   const from = [column, ...column.querySelectorAll<HTMLElement>("*")];
   const to = [copy, ...copy.querySelectorAll<HTMLElement>("*")];
+  // What lies wholly below the screen is never seen on the sheet (the sheet is cut at the screen's foot), so it is
+  // left out of the copy, whole branches at a time: the press then waits only on what can be seen.
+  const foot = window.innerHeight;
+  const gone = new Set<Element>();
   from.forEach((element, index) => {
+    if (index === 0) return;
+    if (gone.has(element.parentElement as Element)) return gone.add(element);
+    if (element.getBoundingClientRect().top > foot && getComputedStyle(element).position === "static") {
+      gone.add(element);
+      to[index].remove();
+    }
+  });
+  const moving = new Set(document.getAnimations().map((move) => (move.effect instanceof KeyframeEffect ? move.effect.target : null)));
+  from.forEach((element, index) => {
+    if (gone.has(element)) return;
     const twin = to[index];
     if (moving.has(element)) {
       const style = getComputedStyle(element);
@@ -325,10 +342,10 @@ function isWhole(column: HTMLElement) {
 /**
  * The room shown has come to rest: nothing in it is still moving to its place (its picture's piece, a row easing in). What moves without end, if anything, does not count.
  */
-function atRest(column: HTMLElement) {
-  return !column
+function stillMoving(column: HTMLElement) {
+  return column
     .getAnimations({ subtree: true })
-    .some((move) => move.playState === "running" && Number.isFinite(move.effect?.getComputedTiming().endTime));
+    .filter((move) => move.playState === "running" && Number.isFinite(move.effect?.getComputedTiming().endTime));
 }
 
 /**
@@ -440,12 +457,26 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
   useEffect(() => {
     const element = column.current;
     if (held || !element) return;
+    // Asked once a frame at first, then only when what was moving has ended: asking the page what moves makes it
+    // work out every style in the room, and asked on every frame of a turn that was most of the frame.
     const since = performance.now();
-    let frame = requestAnimationFrame(function rest(now) {
-      if (atRest(element) || now - since >= LONGEST) return setSettled(area);
-      frame = requestAnimationFrame(rest);
-    });
-    return () => cancelAnimationFrame(frame);
+    let left = false;
+    let frame = 0;
+    const look = (now: number) => {
+      if (left) return;
+      const moving = stillMoving(element);
+      if (!moving.length || now - since >= LONGEST) return setSettled(area);
+      const ends = Promise.all(moving.map((move) => move.finished.catch(() => undefined)));
+      const late = new Promise((go) => setTimeout(go, Math.max(0, LONGEST - (now - since))));
+      void Promise.race([ends, late]).then(() => {
+        if (!left) frame = requestAnimationFrame(look);
+      });
+    };
+    frame = requestAnimationFrame(look);
+    return () => {
+      left = true;
+      cancelAnimationFrame(frame);
+    };
   }, [area, held, column]);
   return { shown: !held, opening: held && opening, lost: held && opening && lost, settled: !held && settled === area };
 }
