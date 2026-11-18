@@ -634,6 +634,8 @@
 :is(.live-main, .live-dialog, .live-header-desk) [data-slot="button"]:not([data-size^="icon"]) { min-height: 40px; font-size: 15px; }
 @media (pointer: coarse) {
   :is(.live-main, .live-dialog) [data-slot="button"]:not([data-size^="icon"]) { min-height: 44px; }
+  /* A button with only a mark (the month's arrows, a report's pages, a line's remove) is a finger's size too. */
+  :is(.live-main, .live-dialog) [data-slot="button"][data-size^="icon"] { min-width: 44px; min-height: 44px; }
 }
 .live-app .live-head-actions [data-slot="button"] { min-height: 44px; font-size: 16px; }
 

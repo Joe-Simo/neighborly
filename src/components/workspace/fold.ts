@@ -272,6 +272,52 @@ export function openInPlaceOf(sheet: HTMLElement, going: HTMLElement) {
   if (!anchored(sheet)) window.scrollBy(0, document.body.offsetHeight - pageWithout(sheet, "gone"));
 }
 
+/** Two margins that meet fold into one: the largest above nothing plus the most negative. */
+function fold2(one: number, other: number) {
+  return Math.max(one, other, 0) + Math.min(one, other, 0);
+}
+
+/**
+ * The nearest neighbour that takes part in the page's flow, passing over what is drawn out of it (a line kept only
+ * for screen readers, a hidden piece), whose margins meet nothing. Null where margins could meet something else.
+ */
+function inFlow(sheet: HTMLElement, way: "previousElementSibling" | "nextElementSibling") {
+  for (let element = sheet[way]; element; element = element[way]) {
+    if (!(element instanceof HTMLElement)) return null;
+    const style = getComputedStyle(element);
+    if (style.display === "none" || style.position === "absolute" || style.position === "fixed") continue;
+    if (style.display === "contents" || style.float !== "none") return null;
+    return style;
+  }
+  return null;
+}
+
+/**
+ * The same margin closedMargin finds, worked out from the styles alone, with no page laid out to try it on: for a
+ * sheet between two neighbours in a plain column, where what folds is only its margins and theirs. Anywhere else
+ * (first or last in its column, a flex or grid column, a neighbour out of the flow) it says nothing, and the
+ * margin is found by trying, as before.
+ */
+function foldedMargin(sheet: HTMLElement, style: CSSStyleDeclaration) {
+  // A dialog's paper is drawn over the page, not in it: the page is as tall with the sheet as without, so trying
+  // always ends at once on no margin. It is said here without laying the page out to find it.
+  if (sheet.closest('[role="dialog"]')) return "0px";
+  const column = sheet.parentElement;
+  if (!column || style.position !== "static" || style.float !== "none") return null;
+  const flow = getComputedStyle(column).display;
+  if (flow !== "block" && flow !== "flow-root") return null;
+  const above = inFlow(sheet, "previousElementSibling");
+  const below = inFlow(sheet, "nextElementSibling");
+  if (!above || !below) return null;
+  const up = parseFloat(above.marginBottom);
+  const down = parseFloat(below.marginTop);
+  // Without the sheet its neighbours' margins fold together; shut, it keeps its borders and holds them apart.
+  const wanted = fold2(up, down) - fold2(up, 0) - parseFloat(edge(style));
+  const margin = down >= 0 ? (wanted > down ? wanted : wanted - down) : wanted > down ? wanted - down : wanted;
+  if (!Number.isFinite(margin)) return null;
+  return `${Math.round(margin * 100) / 100}px`;
+}
+
 /** Opens the room of a piece of paper just laid in the page, from exactly the page as it was without it. */
 function openRoom(sheet: HTMLElement) {
   const style = getComputedStyle(sheet);
@@ -279,7 +325,7 @@ function openRoom(sheet: HTMLElement) {
   const height = sheet.offsetHeight;
   holdThePage();
   const shut = { overflow: "hidden", boxSizing: "border-box", minHeight: "0px" };
-  const from = closedMargin(sheet, pageBefore ?? pageWithout(sheet, "gone"));
+  const from = pageBefore !== undefined ? closedMargin(sheet, pageBefore) : (foldedMargin(sheet, style) ?? closedMargin(sheet, pageWithout(sheet, "gone")));
   const move = sheet.animate(
     [
       { ...shut, height: edge(style), marginTop: "0px", marginBottom: from, paddingTop: "0px", paddingBottom: "0px" },
