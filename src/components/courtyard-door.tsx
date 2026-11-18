@@ -72,7 +72,7 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
  * Holds what the visitor sees as one page over the window (the given copies, laid where they stood), waits until
  * what is beneath is whole (`ready`), and turns the page off it from the lower right corner. A wait is quiet at first;
  * past 400ms the held page says so in one line (`opening`). Nothing on the other side ever whole lets it go after
- * twelve seconds. Under reduced motion the page is taken away in one cut. Returns a way to let the page go at once
+ * twelve seconds. With no line given (the page says so itself), none is added. Under reduced motion the page is taken away in one cut. Returns a way to let the page go at once
  * (a way in that fails after all).
  */
 export function holdAndTurn(page: HTMLElement[], opening: string, ready: () => boolean): () => void {
@@ -104,7 +104,7 @@ export function holdAndTurn(page: HTMLElement[], opening: string, ready: () => b
     if (!held.isConnected) return off();
     const waited = performance.now() - since;
     if (!ready() && waited < LONGEST) {
-      if (waited > 400 && !saying) {
+      if (waited > 400 && !saying && opening) {
         saying = document.createElement("p");
         saying.className = "courtyard-held-opening";
         saying.setAttribute("role", "status");

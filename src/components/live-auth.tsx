@@ -215,7 +215,9 @@ export function LiveAuth({
     copy.querySelectorAll<HTMLInputElement>("input").forEach((field, at) => field.setAttribute("value", typed[at]?.value ?? ""));
     Object.assign(copy.style, { position: "absolute", left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px`, margin: "0", backgroundColor: getComputedStyle(document.body).backgroundColor });
     // Whole is a room, shown, with nothing of it still on its way, and the sheet itself gone from under the page.
-    return holdAndTurn([copy], w.opening, () => {
+    // One waiting line at a time: a sheet that already says it is opening (the sample's line) keeps that one alone.
+    const saysAlready = !!copy.querySelector("[data-opening]");
+    return holdAndTurn([copy], saysAlready ? "" : w.opening, () => {
       const under = (node: Element | null) => !!node?.closest(".live-app") && !node.closest("#courtyard-held");
       // No sheet left under the page, a room shown and whole, and nothing still arriving (the room's own lay-in is over).
       const arriving = document.getAnimations().some((move) => {
