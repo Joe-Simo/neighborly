@@ -21,3 +21,5 @@
   .public-week h1{padding-bottom:calc(var(--relief-h) + 72px);font-size:clamp(56px,15vw,96px)}
   .public-week .public-words-relief{position:relative;top:auto;display:block;width:min(78vw,320px,calc(100% - 2 * clamp(20px,5.4vw,104px)));margin:calc(-1 * var(--relief-h) - 52px) clamp(20px,5.4vw,104px) 52px auto}
 }
+@media(min-width:2000px){.public-week-lede>div{font-size:24px}.public-week .public-week-when,.public-week .public-week-room{font-size:17px}}
+@media(min-width:2000px){.public-week-day>div:last-child{max-width:none}.public-week-day>div:last-child>p{max-width:28em}.public-week-day .public-week-piece{max-width:40em}}
