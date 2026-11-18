@@ -58,10 +58,10 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
   return {
     invite: {
       deck: `Esa persona decidirá si se une a tu ${t.group}.`,
-      queued: "Invitación hecha. El correo está en cola, pero aún no llega.",
-      noEmail: "Invitación hecha. No se envió ningún correo.",
-      linkQueued: "Invitación hecha y correo en cola. Comparte este enlace privado con esa persona:",
-      linkNoEmail: "Invitación hecha. No se envió ningún correo. Comparte este enlace privado con esa persona:",
+      queued: "Invitación creada. El correo está en cola y aún no sale.",
+      noEmail: "Invitación creada. No se envió ningún correo.",
+      linkQueued: "Invitación creada y correo en cola. Comparte este enlace privado con esa persona:",
+      linkNoEmail: "Invitación creada. No se envió ningún correo. Comparte este enlace privado con esa persona:",
       linkLabel: "Enlace privado de la invitación",
       dismiss: "Cerrar",
     },
