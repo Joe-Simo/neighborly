@@ -173,13 +173,13 @@ export function es(set: WordSet): Words {
       quietDetail:
         "No hay compromisos en los próximos siete días. Las fechas posteriores están en Compromisos.",
       fromGroup: set === "vincentian" ? "De tu conferencia" : "De tu grupo",
-      noAnnouncementsTitle: "Todavía no hay avisos.",
+      noAnnouncementsTitle: "Todo tranquilo en el grupo.",
       noAnnouncementsDetail: "Los avisos de tus coordinadores se guardarán aquí.",
     },
     mine: {
       accepted: "Compromisos aceptados",
       addToCalendar: "Añádelos al calendario de tu teléfono",
-      emptyTitle: "Todavía no hay compromisos aceptados.",
+      emptyTitle: "Hay lugar para tu primer sí.",
       emptyDetail:
         "Los compromisos que aceptes aparecerán aquí con todo lo necesario para prepararte.",
     },
@@ -191,7 +191,7 @@ export function es(set: WordSet): Words {
       allTeams: "Todos los equipos",
       noneForTeamTitle: "Este equipo no tiene fechas próximas.",
       noneForTeamDetail: "Elige otro equipo o mira todos los equipos para ver los demás compromisos.",
-      emptyTitle: "No hay compromisos próximos.",
+      emptyTitle: "El camino está despejado.",
       emptyDetail:
         "Los compromisos nuevos aparecerán aquí con su fecha, persona y preparación.",
       placeOpen: "Hay un lugar libre",
@@ -237,7 +237,7 @@ export function es(set: WordSet): Words {
       note: "Los días libres no te sacan de tus equipos. Los compromisos que ya tienes se cambian aparte, para que todos sepan qué está cubierto.",
       remove: "Quitar",
       removed: "Días libres quitados.",
-      emptyTitle: "No tienes días libres planeados.",
+      emptyTitle: "Todos tus días están libres.",
       emptyDetail:
         "Agrega las fechas en que no estarás. Tu lugar en el equipo sigue igual.",
       coverTitle: "Peticiones para cubrir turnos",
@@ -289,7 +289,7 @@ export function es(set: WordSet): Words {
       reopenTask: (title: string) => `Dejar pendiente de nuevo: ${title}`,
       done: "Hecha",
       open: "Pendiente",
-      emptyTitle: "Todavía no hay tareas.",
+      emptyTitle: "Sin tareas por ahora. Todo en orden.",
       emptyDetail: "Las tareas compartidas aparecerán aquí con su responsable y su fecha.",
       meetings: "Reuniones",
       going: "Vas a ir",

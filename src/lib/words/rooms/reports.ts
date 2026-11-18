@@ -67,7 +67,7 @@ export const en = (t: Terms, place: string) => ({
     spreadsheet: "Download as a spreadsheet",
   },
   empty: {
-    title: "Nothing to add up yet.",
+    title: "Ready for the first figures.",
     year: "The first figures appear here the day the first call, visit or payment is written down.",
     quarter: "This quarter’s first figures appear here the day its first call, visit or payment is written down.",
     open: "Open the help line",
@@ -388,7 +388,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       spreadsheet: "Descargar como hoja de cálculo",
     },
     empty: {
-      title: "Todavía no hay nada que sumar.",
+      title: "Listo para las primeras cifras.",
       year: "Las primeras cifras aparecen aquí el día en que se anota la primera llamada, visita o pago.",
       quarter: "Las primeras cifras del trimestre aparecen aquí el día en que se anota su primera llamada, visita o pago.",
       open: "Abrir la línea de ayuda",
