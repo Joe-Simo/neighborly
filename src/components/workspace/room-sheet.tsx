@@ -32,7 +32,19 @@ const LOST = 2000;
  * How far down the sheet reaches: to the window's foot, or to the phone's bottom bar, which stays put above it,
  * so the corner that lifts first is in view from the turn's first frame.
  */
-const sheetHeight = (top: number) => Math.max(0, (document.querySelector(".live-tab-bar")?.getBoundingClientRect().top ?? window.innerHeight) - top);
+const sheetHeight = (top: number) => {
+  // While the Menu is open the bar is put away, and it is back at the foot once the menu goes: it is measured as it will
+  // stand then. Where the shell has no bar (wider screens, the web), there is none to measure.
+  const bar = document.querySelector<HTMLElement>(".live-tab-bar");
+  let tall = bar?.offsetHeight ?? 0;
+  const shown = document.documentElement.dataset.shell === "ios" && matchMedia("(max-width: 699px)").matches;
+  if (bar && !tall && shown && document.body.hasAttribute("data-scroll-locked")) {
+    bar.style.setProperty("display", "grid");
+    tall = bar.offsetHeight;
+    bar.style.removeProperty("display");
+  }
+  return Math.max(0, window.innerHeight - tall - top);
+};
 
 /** The still copy of the column just left, while it lies on the page. */
 let still: HTMLElement | null = null;
@@ -79,6 +91,12 @@ function turnAway(opening: ReturnType<typeof openingSheet> | null) {
   still = null;
   const turn = laid ?? (opening ? roomTurn(opening.sheet, opening.frame) : null);
   if (!turn) return;
+  // A room picked from the Menu: the menu and its shade, still on their way out, are taken away in this one frame,
+  // so the page turned is the page seen clearly, never one under a shade.
+  for (const closing of document.querySelectorAll<HTMLElement>('[data-slot="dialog-overlay"][data-state="closed"], [data-slot="dialog-content"][data-state="closed"]')) {
+    closing.style.visibility = "hidden";
+    for (const move of closing.getAnimations()) move.finish();
+  }
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return turn.end();
   void turn.play();
 }
