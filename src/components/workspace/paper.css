@@ -1195,3 +1195,31 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-nav, .live-app .live-header { border-color: CanvasText; }
 }
 @media print { .live-app .live-main, .live-app .live-header { box-shadow: none; } .live-app .live-main::before { content: none; } }
+
+/* ── The web shell's last paper (w88): lighting and edges only, no new colour, nothing fades ──
+   The room chosen in the menu is a slip of the room's own paper lying on the menu's sheet, its edge lit and its
+   contact shade under it. Each room's head band is cut paper over the room: its rule is the head's cut edge, lit
+   above and shaded below, with a second, narrower layer just showing beneath it. */
+@media (min-width: 900px) {
+  .live-app .live-nav-marker {
+    background: #f7f4ed;
+    box-shadow: inset 3px 0 #55714c, inset 0 1px 0 rgb(255 255 255 / 0.7), 0 1px 1px rgb(40 60 50 / 0.14), 0 6px 10px -8px rgb(40 60 50 / 0.4);
+  }
+}
+.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 1px 0 rgb(255 255 255 / 0.75), 0 9px 12px -10px rgb(40 60 50 / 0.3); }
+.live-app .live-page-head::before {
+  content: ""; position: absolute; left: 12px; right: 28px; bottom: -6px; height: 5px; pointer-events: none;
+  border-bottom: 1px solid rgb(40 60 50 / 0.1); box-shadow: 0 5px 8px -7px rgb(40 60 50 / 0.26);
+}
+/* From 1728px a room with no second column ends its rule at the room's measure, so its light and shade end there too. */
+@media (min-width: 1728px) {
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head { box-shadow: none; }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 1px 0 rgb(255 255 255 / 0.75), 0 9px 12px -10px rgb(40 60 50 / 0.3); }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::before { right: auto; width: calc(min(1040px, 100%) - 40px); }
+}
+@media (forced-colors: active) {
+  .live-app .live-page-head { box-shadow: none; }
+  .live-app .live-page-head::before { content: none; }
+  .live-app .live-nav-marker { box-shadow: none; outline: 2px solid Highlight; }
+}
+@media print { .live-app .live-page-head, .live-app .live-page-head::after { box-shadow: none; } .live-app .live-page-head::before { content: none; } }
