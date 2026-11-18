@@ -80,8 +80,10 @@ export function RecordSlide({ part, children }: { part: "list" | "record"; child
       });
       void step.finished.finally(() => delete root.dataset.recordStep);
     };
-    here.addEventListener("click", go, { capture: true });
-    return () => here.removeEventListener("click", go, { capture: true });
+    // The record's way back stands in the room's head, outside this wrapper: on a record it is listened for on the page.
+    const on: EventTarget = part === "record" ? document : here;
+    on.addEventListener("click", go as EventListener, { capture: true });
+    return () => on.removeEventListener("click", go as EventListener, { capture: true });
   }, [ios, part, router]);
 
   // The list's place: read at the press, since opening a record moves the page to its top before the list is gone;
