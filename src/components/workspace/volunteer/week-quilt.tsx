@@ -48,7 +48,8 @@ export function WeekQuilt() {
     <figure className="week-quilt">
       <div className="week-quilt-band" aria-hidden="true">
         {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-          <span key={day} className="week-quilt-day">
+          // Its count sets how tightly its pieces overlap, so every saved piece stays in sight.
+          <span key={day} className="week-quilt-day" style={{ "--n": acts.filter((act) => act.day === day).length } as CSSProperties}>
             {acts
               .filter((act) => act.day === day)
               .map((act) => (
