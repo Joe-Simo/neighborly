@@ -223,6 +223,16 @@
   .report-controls > .report-actions { order: 1; margin-bottom: 44px; }
   .report-year ~ * { order: 2; }
 }
+/* Beside a sidebar (an iPad, a narrow window) the room is narrower than the screen: the year's figure takes the whole
+   row and its three slips go beneath it, as on a phone, once the room itself is too narrow for them side by side. */
+.report { container-type: inline-size; }
+@container (max-width: 900px) {
+  .report-year { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, auto); margin-bottom: 40px; }
+  .report-year > div:first-child :is(dt, dd) { grid-column: 1 / -1; }
+  .report-year > div:first-child dt { padding-right: 0; }
+  .report-year > div:not(:first-child) dd { grid-row: 3; padding: 30px 6px 0; justify-content: center; }
+  .report-year > div:not(:first-child) dt { grid-row: 4; padding: 10px 4px 0; text-align: center; justify-self: center; }
+}
 @media (prefers-reduced-motion: reduce) { .report-year-figure, .report-stack i, .report-year dd b { animation: none; } .report-stack i { transition: none; } }
 @media print { .report .report-year { display: none; } }
 
