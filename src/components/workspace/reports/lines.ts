@@ -4,6 +4,8 @@ import type { api } from "../../../../convex/_generated/api";
 import { formatDate, words as book, type Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { categoryLabel } from "@/components/workspace/treasury/labels";
+import { formatCount, formatMoney } from "@/lib/words/numbers";
+import type { Language } from "@/lib/words";
 
 export type YearReport = FunctionReturnType<typeof api.reports.year>;
 export type Kind = YearReport["kinds"][number]["kind"];
@@ -14,13 +16,10 @@ type Kinds = Record<Kind, string>;
 /** Plain labels. The Society's own line names take their place when the official form is on hand. */
 export const kindLabels = (words: Words = english): Kinds => words.rooms.reports.kindNames;
 
-const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
-const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 /** A count, or hours and miles to one decimal: "1,282", "177.5". */
-export const count = (value: number) => whole.format(value);
+export const count = (value: number, language: Language = "en") => formatCount(value, language);
 /** Whole cents as "$4,675" when there are no cents to show, "$4,675.50" when there are. */
-export const money = (cents: number) =>
-  cents % 100 === 0 ? dollars.format(cents / 100).slice(0, -3) : dollars.format(cents / 100);
+export const money = (cents: number, language: Language = "en") => formatMoney(cents / 100, language, cents % 100 === 0);
 
 /** Noon on a calendar day ("2025-10-01") or in the middle of a month ("2025-10"), which is the same day in every time zone. */
 const noon = (day: string) => Date.parse(`${day.length === 7 ? `${day}-15` : day}T12:00:00Z`);

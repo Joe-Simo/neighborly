@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
+import { formatCount } from "@/lib/words/numbers";
 
 type ToolsWords = Words["rooms"]["tools"];
 
@@ -35,8 +36,7 @@ export type SheetWords = {
 };
 
 /** A count written the way the reader's language writes it. */
-const numberForms: Record<Language, string> = { en: "en-US", es: "es-US" };
-export const counted = (amount: number, language: Language) => amount.toLocaleString(numberForms[language]);
+export const counted = (amount: number, language: Language) => formatCount(amount, language);
 
 /**
  * What a file itself has wrong is said by the readers (the *-rows files) in English. Here each is said in the

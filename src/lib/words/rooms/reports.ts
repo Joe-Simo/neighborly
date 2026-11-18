@@ -1,3 +1,4 @@
+import { counter } from "../numbers";
 import type { Terms } from "../sets";
 
 /**
@@ -5,9 +6,9 @@ import type { Terms } from "../sets";
  * Every sentence is written whole in each language: a line, a line counted by a number, or a line with named
  * places (`{name}`) filled by `fill` (../fill.ts). Nothing is joined from pieces on the screen.
  */
-const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
-/** A count as the report writes it: "1,282", "177.5". */
-const n = (value: number) => whole.format(value);
+/** A count as the report writes it in each language: "1,282", "177.5". */
+const n = counter("en");
+const esN = counter("es");
 const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 /* eslint-disable @typescript-eslint/no-unused-vars -- every room's table is given the terms and the place, and every
@@ -338,7 +339,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
   // A conference is "esta conferencia"; a group or a workspace is "este grupo".
   const she = t.group === "conferencia";
   const thisGroup = she ? `esta ${t.group}` : `este ${t.group}`;
-  const active = (count: number) => (count === 1 ? "1 miembro activo" : `${n(count)} miembros activos`);
+  const active = (count: number) => (count === 1 ? "1 miembro activo" : `${esN(count)} miembros activos`);
   return {
     opening: "Abriendo los informes",
     saved: (name) => `Se guardó ${name} en tus descargas. Se abre en Excel, Numbers o Google Sheets.`,
@@ -399,8 +400,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       paidDirectOrVouchers: "Se pagó directamente o se entregó en vales",
       neverCash: ", nunca en efectivo.",
       toCent: "{amount} al centavo.",
-      householdsHelped: (count) => (count === 1 ? "1 hogar ayudado" : `${n(count)} hogares ayudados`),
-      peopleInAll: (count) => (count === 1 ? "1 persona en total" : `${n(count)} personas en total`),
+      householdsHelped: (count) => (count === 1 ? "1 hogar ayudado" : `${esN(count)} hogares ayudados`),
+      peopleInAll: (count) => (count === 1 ? "1 persona en total" : `${esN(count)} personas en total`),
       reach: "{households}, {people}, de {span}.",
       reachSoFar: "{households}, {people}, de {span} hasta ahora.",
       calls: "Llamadas atendidas",
@@ -415,24 +416,24 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       vouchersSoFar: "Se pagó directamente o se entregó en vales, nunca en efectivo, de {span} hasta ahora.",
       more: "Hay {amount} más en el historial de ServWare.",
       neighbors: `${cap(t.neighbors)} ayudados`,
-      households: (count) => (count === 1 ? "Hogares, 1 persona en total" : `Hogares, ${n(count)} personas en total`),
+      households: (count) => (count === 1 ? "Hogares, 1 persona en total" : `Hogares, ${esN(count)} personas en total`),
       visits: cap(t.visits),
       pairs: "Siempre en parejas",
       calls: "Llamadas atendidas",
-      returned: (count) => (count === 1 ? "1 devuelta" : `${n(count)} devueltas`),
+      returned: (count) => (count === 1 ? "1 devuelta" : `${esN(count)} devueltas`),
       hours: "Horas donadas",
-      miles: (count) => (count === 1 ? "1 milla manejada para ir a las visitas" : `${n(count)} millas manejadas para ir a las visitas`),
+      miles: (count) => (count === 1 ? "1 milla manejada para ir a las visitas" : `${esN(count)} millas manejadas para ir a las visitas`),
     },
     kindNames: { rent: "Alquiler", utility: "Servicios", food: "Comida", voucher: "Vales para la tienda de segunda mano", other: "Otra ayuda" },
     kinds: {
       title: "Por tipo de ayuda",
       fromShelf: "Entregados del estante",
-      fromShelfPeople: (count) => (count === 1 ? "Entregados del estante · 1 persona" : `Entregados del estante · ${n(count)} personas`),
-      vouchersGiven: (count) => (count === 1 ? "1 vale entregado" : `${n(count)} vales entregados`),
-      vouchers: (count) => (count === 1 ? "1 vale" : `${n(count)} vales`),
+      fromShelfPeople: (count) => (count === 1 ? "Entregados del estante · 1 persona" : `Entregados del estante · ${esN(count)} personas`),
+      vouchersGiven: (count) => (count === 1 ? "1 vale entregado" : `${esN(count)} vales entregados`),
+      vouchers: (count) => (count === 1 ? "1 vale" : `${esN(count)} vales`),
       amountPaid: "{amount} pagados",
-      requestsPaid: (count) => (count === 1 ? "1 petición pagada" : `${n(count)} peticiones pagadas`),
-      people: (count) => (count === 1 ? "1 persona" : `${n(count)} personas`),
+      requestsPaid: (count) => (count === 1 ? "1 petición pagada" : `${esN(count)} peticiones pagadas`),
+      people: (count) => (count === 1 ? "1 persona" : `${esN(count)} personas`),
       noneYear: "Ninguna este año",
       noneYetYear: "Ninguna todavía este año",
       noneQuarter: "Ninguna este trimestre",
@@ -442,23 +443,23 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     history: {
       title: "Del historial de ServWare",
       line: "{requests} de {households}, {amount} en ayuda anotada antes de que te mudaras aquí. Se cuenta aparte del dinero de tu libro.",
-      requests: (count) => (count === 1 ? "1 petición" : `${n(count)} peticiones`),
-      households: (count) => (count === 1 ? "1 hogar" : `${n(count)} hogares`),
+      requests: (count) => (count === 1 ? "1 petición" : `${esN(count)} peticiones`),
+      households: (count) => (count === 1 ? "1 hogar" : `${esN(count)} hogares`),
     },
     months: {
       title: "Mes por mes",
       keyPaid: "Ayuda pagada, y",
       keyVisits: "las visitas que hubo detrás",
       toCome: "Aún por venir",
-      visits: (count) => (count === 1 ? "1 visita" : `${n(count)} visitas`),
+      visits: (count) => (count === 1 ? "1 visita" : `${esN(count)} visitas`),
       said: "{month}: {amount} pagados, {visits}.",
-      tip: (count) => (count === 1 ? "en ayuda pagada, 1 visita" : `en ayuda pagada, ${n(count)} visitas`),
+      tip: (count) => (count === 1 ? "en ayuda pagada, 1 visita" : `en ayuda pagada, ${esN(count)} visitas`),
     },
     outcomes: {
       title: "Qué pasó con cada petición",
-      received: (count) => (count === 1 ? "1 petición recibida" : `${n(count)} peticiones recibidas`),
+      received: (count) => (count === 1 ? "1 petición recibida" : `${esN(count)} peticiones recibidas`),
       paid: (count) => (count === 1 ? "Pagada" : "Pagadas"),
-      paidInPart: (count) => `Pagadas, ${n(count)} de ellas en parte`,
+      paidInPart: (count) => `Pagadas, ${esN(count)} de ellas en parte`,
       approved: (count) => (count === 1 ? "Aprobada, en espera de pago" : "Aprobadas, en espera de pago"),
       open: (count) => "En espera de una decisión",
       declined: (count) => (count === 1 ? "No aprobada" : "No aprobadas"),
@@ -476,13 +477,13 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       miles: "Millas",
       driven: `Manejadas para ir a las ${t.visits}`,
       returned: "Llamadas devueltas",
-      ofCalls: (count) => (count === 1 ? "De 1 llamada atendida" : `De ${n(count)} llamadas atendidas`),
-      noCallBack: (count) => (count === 1 ? "En 1 no hizo falta devolver la llamada" : `En ${n(count)} no hizo falta devolver la llamada`),
+      ofCalls: (count) => (count === 1 ? "De 1 llamada atendida" : `De ${esN(count)} llamadas atendidas`),
+      noCallBack: (count) => (count === 1 ? "En 1 no hizo falta devolver la llamada" : `En ${esN(count)} no hizo falta devolver la llamada`),
       visits: cap(t.visits),
-      visitsInPairs: (count) => (count === 1 ? "1 visita, siempre en parejas" : `${n(count)} visitas, siempre en parejas`),
-      shifts: (count) => (count === 1 ? "1 turno" : `${n(count)} turnos`),
-      hoursCount: (count) => (count === 1 ? "1 hora" : `${n(count)} horas`),
-      milesCount: (count) => (count === 1 ? "1 milla" : `${n(count)} millas`),
+      visitsInPairs: (count) => (count === 1 ? "1 visita, siempre en parejas" : `${esN(count)} visitas, siempre en parejas`),
+      shifts: (count) => (count === 1 ? "1 turno" : `${esN(count)} turnos`),
+      hoursCount: (count) => (count === 1 ? "1 hora" : `${esN(count)} horas`),
+      milesCount: (count) => (count === 1 ? "1 milla" : `${esN(count)} millas`),
     },
     lines: {
       show: "Mostrar todas las líneas",

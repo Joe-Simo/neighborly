@@ -1,4 +1,7 @@
 import type { Terms } from "../sets";
+import { counter } from "../numbers";
+const enN = counter("en");
+const esN = counter("es");
 
 /**
  * The neighbors list, a neighbor's record and the household.
@@ -12,16 +15,16 @@ export const en = (t: Terms, place: string) => ({
   /** Lines the list and the record both say. */
   home: {
     livesAlone: "Lives alone",
-    householdOf: (count: number) => `Household of ${count}`,
-    adults: (count: number) => (count === 1 ? "1 adult" : `${count} adults`),
-    children: (count: number) => (count === 1 ? "1 child" : `${count} children`),
+    householdOf: (count: number) => `Household of ${enN(count)}`,
+    adults: (count: number) => (count === 1 ? "1 adult" : `${enN(count)} adults`),
+    children: (count: number) => (count === 1 ? "1 child" : `${enN(count)} children`),
     adultsAndChildren: "{adults}, {children}",
   },
   /** A request in a few words: what kind, how much, and to whom. `{item}` is the shelf's own name, as typed. */
   request: {
     amount: "{kind}, {amount}",
     amountTo: "{kind}, {amount} to {payee}",
-    vouchers: (count: number) => (count === 1 ? "1 {item} voucher" : `${count} {item} vouchers`),
+    vouchers: (count: number) => (count === 1 ? "1 {item} voucher" : `${enN(count)} {item} vouchers`),
   },
   languages: { en: "English", es: "Spanish", ht: "Haitian Creole", other: "Another language" },
   list: {
@@ -29,8 +32,8 @@ export const en = (t: Terms, place: string) => ({
     findBy: "Name, phone or street",
     addHelp: "We check first that they are not already on file.",
     title: "Neighbors",
-    households: (count: number) => (count === 1 ? "1 household" : `${count} households`),
-    waitingCount: (count: number) => `${count} waiting for a decision`,
+    households: (count: number) => (count === 1 ? "1 household" : `${enN(count)} households`),
+    waitingCount: (count: number) => `${enN(count)} waiting for a decision`,
     logged: "each opening is logged",
     waiting: "Waiting for a decision",
     lastHelped: (date: string) => `last helped ${date}`,
@@ -45,14 +48,14 @@ export const en = (t: Terms, place: string) => ({
       body: `Each household your ${t.group} helps has its record here, starting with the first one you add.`,
       bring: "Moving over from ServWare or paper? Bring in a file.",
     },
-    first: (count: number) => `Showing the first ${count}. Search to find anyone else.`,
+    first: (count: number) => `Showing the first ${enN(count)}. Search to find anyone else.`,
     bring: "Bring in a file",
   },
   record: {
     /** The quiet line under the name. */
     deck: {
       livesAlone: "lives alone",
-      householdOf: (count: number) => `household of ${count}`,
+      householdOf: (count: number) => `household of ${enN(count)}`,
       speaks: { en: "speaks English", es: "speaks Spanish", ht: "speaks Haitian Creole", other: "speaks another language" },
       speaksNamed: (language: string) => `speaks ${language}`,
       since: (date: string) => `on file since ${date}`,
@@ -96,7 +99,7 @@ export const en = (t: Terms, place: string) => ({
     },
     figures: {
       year: "Help this year",
-      requests: (count: number) => (count === 1 ? "1 request, paid direct" : `${count} requests, paid direct`),
+      requests: (count: number) => (count === 1 ? "1 request, paid direct" : `${enN(count)} requests, paid direct`),
       visits: "Home visits",
       lastVisit: (date: string) => `Last on ${date}`,
       noVisits: "None yet",
@@ -125,7 +128,7 @@ export const en = (t: Terms, place: string) => ({
     },
     also: {
       title: "Also open",
-      count: (count: number) => (count === 1 ? "1 request" : `${count} requests`),
+      count: (count: number) => (count === 1 ? "1 request" : `${enN(count)} requests`),
       brought: "Brought over from earlier records.",
       approveThis: (request: string) => `Approve request: ${request}`,
     },
@@ -142,8 +145,8 @@ export const en = (t: Terms, place: string) => ({
       callTakenBy: (name: string) => `Call taken by ${name}`,
       noteBy: (name: string) => `Note by ${name}`,
       broughtOver: "Brought over from earlier records",
-      vouchersGiven: (count: number) => (count === 1 ? "1 {item} voucher given" : `${count} {item} vouchers given`),
-      vouchersTakenBack: (count: number) => (count === 1 ? "1 {item} voucher taken back" : `${count} {item} vouchers taken back`),
+      vouchersGiven: (count: number) => (count === 1 ? "1 {item} voucher given" : `${enN(count)} {item} vouchers given`),
+      vouchersTakenBack: (count: number) => (count === 1 ? "1 {item} voucher taken back" : `${enN(count)} {item} vouchers taken back`),
       takenBackBy: (name: string) => `Taken back by ${name}`,
       approvedBy: (name: string) => `Approved by ${name}`,
       closedAfter: "{kind} request closed after {paid} of {approved}",
@@ -238,15 +241,15 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   all: `Todos los ${t.neighbors}`,
   home: {
     livesAlone: "Vive sin compañía",
-    householdOf: (count) => (count === 1 ? "Hogar de 1 persona" : `Hogar de ${count} personas`),
-    adults: (count) => (count === 1 ? "1 adulto" : `${count} adultos`),
-    children: (count) => (count === 1 ? "1 niño" : `${count} niños`),
+    householdOf: (count) => (count === 1 ? "Hogar de 1 persona" : `Hogar de ${esN(count)} personas`),
+    adults: (count) => (count === 1 ? "1 adulto" : `${esN(count)} adultos`),
+    children: (count) => (count === 1 ? "1 niño" : `${esN(count)} niños`),
     adultsAndChildren: "{adults} y {children}",
   },
   request: {
     amount: "{kind}: {amount}",
     amountTo: "{kind}, {amount} a {payee}",
-    vouchers: (count) => (count === 1 ? "1 vale de {item}" : `${count} vales de {item}`),
+    vouchers: (count) => (count === 1 ? "1 vale de {item}" : `${esN(count)} vales de {item}`),
   },
   languages: { en: "Inglés", es: "Español", ht: "Criollo haitiano", other: "Otro idioma" },
   list: {
@@ -254,8 +257,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     findBy: "Nombre, teléfono o calle",
     addHelp: "Primero revisamos que no esté ya en el registro.",
     title: "Vecinos",
-    households: (count) => (count === 1 ? "1 hogar" : `${count} hogares`),
-    waitingCount: (count) => (count === 1 ? "1 espera una decisión" : `${count} esperan una decisión`),
+    households: (count) => (count === 1 ? "1 hogar" : `${esN(count)} hogares`),
+    waitingCount: (count) => (count === 1 ? "1 espera una decisión" : `${esN(count)} esperan una decisión`),
     logged: "cada apertura queda anotada",
     waiting: "Esperan una decisión",
     lastHelped: (date) => `última ayuda: ${date}`,
@@ -269,13 +272,13 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       body: `Cada hogar al que tu ${t.group} ayuda tiene aquí su registro, empezando por el primero que agregues.`,
       bring: "¿Vienes de ServWare o del papel? Trae un archivo.",
     },
-    first: (count) => (count === 1 ? "Se muestra solo el primero. Busca para encontrar a alguien más." : `Se muestran los primeros ${count}. Busca para encontrar a alguien más.`),
+    first: (count) => (count === 1 ? "Se muestra solo el primero. Busca para encontrar a alguien más." : `Se muestran los primeros ${esN(count)}. Busca para encontrar a alguien más.`),
     bring: "Traer un archivo",
   },
   record: {
     deck: {
       livesAlone: "vive sin compañía",
-      householdOf: (count) => (count === 1 ? "hogar de 1 persona" : `hogar de ${count} personas`),
+      householdOf: (count) => (count === 1 ? "hogar de 1 persona" : `hogar de ${esN(count)} personas`),
       speaks: { en: "habla inglés", es: "habla español", ht: "habla criollo haitiano", other: "habla otro idioma" },
       speaksNamed: (language) => `habla ${language}`,
       since: (date) => `en el registro desde ${date}`,
@@ -319,7 +322,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
     figures: {
       year: "Ayuda este año",
-      requests: (count) => (count === 1 ? "1 petición, pagada directamente" : `${count} peticiones, pagadas directamente`),
+      requests: (count) => (count === 1 ? "1 petición, pagada directamente" : `${esN(count)} peticiones, pagadas directamente`),
       visits: "Visitas domiciliarias",
       lastVisit: (date) => `La última, el ${date}`,
       noVisits: "Ninguna todavía",
@@ -348,7 +351,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
     also: {
       title: "También abiertas",
-      count: (count) => (count === 1 ? "1 petición" : `${count} peticiones`),
+      count: (count) => (count === 1 ? "1 petición" : `${esN(count)} peticiones`),
       brought: "Traída de registros anteriores.",
       approveThis: (request) => `Aprobar petición: ${request}`,
     },
@@ -364,8 +367,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       callTakenBy: (name) => `Llamada atendida por ${name}`,
       noteBy: (name) => `Nota de ${name}`,
       broughtOver: "Traído de registros anteriores",
-      vouchersGiven: (count) => (count === 1 ? "1 vale de {item} entregado" : `${count} vales de {item} entregados`),
-      vouchersTakenBack: (count) => (count === 1 ? "1 vale de {item} retirado" : `${count} vales de {item} retirados`),
+      vouchersGiven: (count) => (count === 1 ? "1 vale de {item} entregado" : `${esN(count)} vales de {item} entregados`),
+      vouchersTakenBack: (count) => (count === 1 ? "1 vale de {item} retirado" : `${esN(count)} vales de {item} retirados`),
       takenBackBy: (name) => `Lo retiró ${name}`,
       approvedBy: (name) => `Con la aprobación de ${name}`,
       closedAfter: "{kind}: petición cerrada tras pagar {paid} de {approved}",

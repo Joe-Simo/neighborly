@@ -12,6 +12,8 @@ import * as peopleRoomWords from "./rooms/people";
 import * as sheetsWords from "./rooms/sheets";
 import * as firstDaysWords from "./rooms/first-days";
 import type { Language, Terms, WordSet } from "./sets";
+import { counter } from "./numbers";
+const enN = counter("en");
 
 const terms: Record<WordSet, Terms> = {
   general: {
@@ -150,7 +152,7 @@ export function en(set: WordSet) {
       commitmentForm: {
         title: "Title", team: "Team", chooseTeam: "Choose a team…", starts: "Starts", ends: "Ends", where: "Where to meet",
         preparation: "Preparation", preparationHelp: "What should the person know or do beforehand?",
-        repeats: "Repeats", everyWeek: "Every week", everyWeeks: (count: number) => `Every ${count} weeks`,
+        repeats: "Repeats", everyWeek: "Every week", everyWeeks: (count: number) => `Every ${enN(count)} weeks`,
         times: "How many times", timesHelp: "1 is a single date. Up to 52 within one year.", save: "Save", saving: "Saving…",
       },
       announcementSees: `Everyone in the ${t.group} sees this on This week.`,
@@ -160,11 +162,11 @@ export function en(set: WordSet) {
     week: {
       /** The week's quilt: its one caption, which is also what a screen reader hears. */
       quilt: "This week: {calls} · {visits} · {yeses}",
-      quiltCalls: (count: number) => (count === 1 ? "1 call returned" : `${count} calls returned`),
-      quiltVisits: (count: number) => (count === 1 ? "1 visit" : `${count} visits`),
-      quiltYeses: (count: number) => (count === 1 ? "1 yes" : `${count} yeses`),
+      quiltCalls: (count: number) => (count === 1 ? "1 call returned" : `${enN(count)} calls returned`),
+      quiltVisits: (count: number) => (count === 1 ? "1 visit" : `${enN(count)} visits`),
+      quiltYeses: (count: number) => (count === 1 ? "1 yes" : `${enN(count)} yeses`),
       quiltNone: "Nothing yet this week",
-      figures: { calls: "Calls waiting", visits: "Visits planned", requests: "Requests awaiting a yes", oldest: (days: number) => (days === 1 ? "Oldest call, 1 day" : `Oldest call, ${days} days`), toPay: (count: number) => `${count} approved, not yet paid` },
+      figures: { calls: "Calls waiting", visits: "Visits planned", requests: "Requests awaiting a yes", oldest: (days: number) => (days === 1 ? "Oldest call, 1 day" : `Oldest call, ${enN(days)} days`), toPay: (count: number) => `${enN(count)} approved, not yet paid` },
       startHere: { lead: "Start here", rest: "a call is waiting for your yes." },
       comingUp: "Coming up",
       cardFor: "For",
@@ -191,7 +193,7 @@ export function en(set: WordSet) {
     commitments: {
       weekByTeam: "This week by team",
       covered: "Covered",
-      placesOpen: (count: number) => (count === 1 ? "1 place open" : `${count} places open`),
+      placesOpen: (count: number) => (count === 1 ? "1 place open" : `${enN(count)} places open`),
       filterLabel: "Filter by team",
       allTeams: "All teams",
       noneForTeamTitle: "No upcoming dates for this team.",
@@ -207,7 +209,7 @@ export function en(set: WordSet) {
     },
     requests: {
       title: "Your choice",
-      awaiting: (count: number) => `${count} awaiting your reply`,
+      awaiting: (count: number) => `${enN(count)} awaiting your reply`,
       fallbackTitle: "Cover request",
       unavailable: "Commitment details unavailable",
       accept: "Accept",
@@ -268,7 +270,7 @@ export function en(set: WordSet) {
       affected: (count: number) =>
         count === 0
           ? "No commitments affected"
-          : `${count} ${count === 1 ? "commitment" : "commitments"} affected`,
+          : `${enN(count)} ${count === 1 ? "commitment" : "commitments"} affected`,
       explain:
         "Confirming will release only these commitments and record your time off. Team memberships and other dates stay the same.",
       back: "Back",
@@ -320,7 +322,7 @@ export function en(set: WordSet) {
       invited: "You’re invited to this team. Joining does not accept a commitment.",
       join: "Join team",
       decline: "Decline",
-      members: (count: number) => (count === 1 ? "1 member" : `${count} members`),
+      members: (count: number) => (count === 1 ? "1 member" : `${enN(count)} members`),
       viewMembers: "View members",
       hideMembers: "Hide members",
       coordinator: "Coordinator",
@@ -382,7 +384,7 @@ export function en(set: WordSet) {
     },
     visits: {
       title: "Home visits",
-      count: (count: number) => `${count} ${count === 1 ? "visit" : "visits"}, always with a partner`,
+      count: (count: number) => `${enN(count)} ${count === 1 ? "visit" : "visits"}, always with a partner`,
       notSaved: "Your answer was not saved. Try again.",
       on: (street: string) => `A visit on ${street}`,
       nearby: "a street nearby",
@@ -444,32 +446,32 @@ export function en(set: WordSet) {
       title: "This week, in short.",
       weekOf: (date: string) => `Week of ${date}`,
       origin: "Counted from your records by fixed rules. The assistant writes none of it.",
-      calls: (count: number) => (count === 1 ? "1 call is waiting to be returned." : `${count} calls are waiting to be returned.`),
-      firstByAssistant: (count: number) => (count === 1 ? "1 was put first by the assistant." : `${count} were put first by the assistant.`),
-      firstByPerson: (count: number) => (count === 1 ? "1 was put first by one of you." : `${count} were put first by one of you.`),
-      oldest: (days: number) => (days === 1 ? "The oldest has waited 1 day." : `The oldest has waited ${days} days.`),
-      visits: (count: number) => (count === 1 ? `1 ${t.visit} is planned.` : `${count} ${t.visits} are planned.`),
-      open: (count: number) => (count === 1 ? "1 request is waiting for a decision." : `${count} requests are waiting for a decision.`),
-      approved: (count: number) => (count === 1 ? "1 approved request is not yet paid." : `${count} approved requests are not yet paid.`),
-      places: (count: number) => (count === 1 ? "1 place is open in the next seven days." : `${count} places are open in the next seven days.`),
-      away: (count: number) => (count === 1 ? `1 ${t.member} is away this week.` : `${count} ${t.members} are away this week.`),
+      calls: (count: number) => (count === 1 ? "1 call is waiting to be returned." : `${enN(count)} calls are waiting to be returned.`),
+      firstByAssistant: (count: number) => (count === 1 ? "1 was put first by the assistant." : `${enN(count)} were put first by the assistant.`),
+      firstByPerson: (count: number) => (count === 1 ? "1 was put first by one of you." : `${enN(count)} were put first by one of you.`),
+      oldest: (days: number) => (days === 1 ? "The oldest has waited 1 day." : `The oldest has waited ${enN(days)} days.`),
+      visits: (count: number) => (count === 1 ? `1 ${t.visit} is planned.` : `${enN(count)} ${t.visits} are planned.`),
+      open: (count: number) => (count === 1 ? "1 request is waiting for a decision." : `${enN(count)} requests are waiting for a decision.`),
+      approved: (count: number) => (count === 1 ? "1 approved request is not yet paid." : `${enN(count)} approved requests are not yet paid.`),
+      places: (count: number) => (count === 1 ? "1 place is open in the next seven days." : `${enN(count)} places are open in the next seven days.`),
+      away: (count: number) => (count === 1 ? `1 ${t.member} is away this week.` : `${enN(count)} ${t.members} are away this week.`),
       done: "Done reading",
       read: "Read",
       /** The note as one line, when something else already holds the sheet's place. */
       brief: {
         label: "Monday note",
-        calls: (count: number) => (count === 1 ? "1 call to return" : `${count} calls to return`),
-        open: (count: number) => (count === 1 ? "1 request to decide" : `${count} requests to decide`),
-        approved: (count: number) => (count === 1 ? "1 approved request to pay" : `${count} approved requests to pay`),
-        visits: (count: number) => (count === 1 ? `1 ${t.visit} planned` : `${count} ${t.visits} planned`),
-        places: (count: number) => (count === 1 ? "1 place open" : `${count} places open`),
-        away: (count: number) => (count === 1 ? `1 ${t.member} away` : `${count} ${t.members} away`),
+        calls: (count: number) => (count === 1 ? "1 call to return" : `${enN(count)} calls to return`),
+        open: (count: number) => (count === 1 ? "1 request to decide" : `${enN(count)} requests to decide`),
+        approved: (count: number) => (count === 1 ? "1 approved request to pay" : `${enN(count)} approved requests to pay`),
+        visits: (count: number) => (count === 1 ? `1 ${t.visit} planned` : `${enN(count)} ${t.visits} planned`),
+        places: (count: number) => (count === 1 ? "1 place open" : `${enN(count)} places open`),
+        away: (count: number) => (count === 1 ? `1 ${t.member} away` : `${enN(count)} ${t.members} away`),
       },
     },
     /** The check before the yearly report. Each line points a person to one record; nothing is changed for them. */
     yearCheck: {
       title: "Before you send it",
-      count: (count: number) => `${count} ${count === 1 ? "record" : "records"} to look at`,
+      count: (count: number) => `${enN(count)} ${count === 1 ? "record" : "records"} to look at`,
       clear: "Everything adds up.",
       approvedNotPaid: "Approved more than a month ago, and no payment is recorded.",
       paidNoPayment: "Marked paid, and no payment is in the ledger.",
@@ -482,10 +484,10 @@ export function en(set: WordSet) {
       putAway: "Hide the check",
       /** What was looked over. The screen puts the two counts and the time of day in the marked places. */
       checked: "Checked {requests}, {visits} and the ledger, today at {time}.",
-      requests: (count: number) => (count === 1 ? "1 request" : `${count} requests`),
-      visits: (count: number) => (count === 1 ? "1 visit" : `${count} visits`),
-      show: (count: number) => `Show the ${count} records`,
-      hide: (count: number) => `Hide the ${count} records`,
+      requests: (count: number) => (count === 1 ? "1 request" : `${enN(count)} requests`),
+      visits: (count: number) => (count === 1 ? "1 visit" : `${enN(count)} visits`),
+      show: (count: number) => `Show the ${enN(count)} records`,
+      hide: (count: number) => `Hide the ${enN(count)} records`,
       openShort: "Open",
       /** One record said in a line: "Rent, $450, approved Nov 3" or "Home visit, Nov 3". */
       happened: { open: "received", approved: "approved", paid: "marked paid", declined: "declined", closed: "closed" },
@@ -520,7 +522,7 @@ export function en(set: WordSet) {
         person: "Who decides",
         personDetail: "A person. Every draft waits for a yes, and nothing is saved before it. A call put first can be moved back. When the assistant is not sure, it leaves a blank instead of a guess.",
         limit: "Its limits",
-        limitDetail: (checks: number) => `${checks.toLocaleString("en-US")} checks a month for each ${t.group}, and five a minute for each person. Past that, or when it cannot be reached, the screens work by fixed rules and say so.`,
+        limitDetail: (checks: number) => `${enN(checks)} checks a month for each ${t.group}, and five a minute for each person. Past that, or when it cannot be reached, the screens work by fixed rules and say so.`,
         measured: "How it was measured",
         measuredDetail: (date: string) =>
           `On ${m.notes} made-up call notes kept apart from the ones it was adjusted on, it filled ${m.right} of ${m.right + m.blank + m.wrong} fields correctly, left ${m.blank} blank for a person and got ${m.wrong} wrong (measured ${date}). An earlier run got one wrong; we fixed the rule behind it, so those notes have now shaped one rule. This is a small test, and Spanish and Creole notes are a small part of it.`,
@@ -553,7 +555,7 @@ export function en(set: WordSet) {
         confirmPayee: { why: "The assistant was not sure who is paid.", act: "Confirm who is paid." },
       },
       title: "Drafted for you",
-      waiting: (count: number) => (count === 1 ? "Waiting for your yes" : `${count} waiting for your yes`),
+      waiting: (count: number) => (count === 1 ? "Waiting for your yes" : `${enN(count)} waiting for your yes`),
       origin: "Filled in by the assistant from the call note. Nothing is saved until you say so.",
       checked: "The assistant checked each detail against the note.",
       review: "The assistant could not check this. Read each detail against the note.",
