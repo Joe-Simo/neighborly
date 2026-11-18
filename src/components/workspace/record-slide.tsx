@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { turnBackOver } from "@/components/workspace/room-sheet";
 
 const noChange = () => () => {};
 /** True inside the iOS app (`:root[data-shell="ios"]`, set before the first paint). False on the server and the website. */
@@ -33,8 +34,9 @@ function drawn(part: "list" | "record") {
 /**
  * In the iOS app a record is a sheet of paper laid over its list. A tap on a row opens the record inside a view
  * transition: the list stays where it is and the record slides in from the right over it (shell-ios.css,
- * `kh-record`); its way back returns to the list at the place it was left, as a plain step for now. A step back through the history (the system's edge swipe, which already moves the page under the
- * finger) is not animated again. Coming back, the list is at the place it was left. On the website nothing is
+ * `kh-record`); its way back turns the record's page back, the list coming over from the left at the place it was
+ * left (room-sheet.tsx, turnBackOver). A step back through the history (the system's edge swipe, which already moves
+ * the page under the finger) is not animated again. Coming back, the list is at the place it was left. On the website nothing is
  * wrapped and nothing moves.
  */
 export function RecordSlide({ part, children }: { part: "list" | "record"; children: ReactNode }) {
@@ -54,11 +56,17 @@ export function RecordSlide({ part, children }: { part: "list" | "record"; child
       event.preventDefault();
       const href = link.getAttribute("href") ?? "";
       if (to === "list") {
-        // The way back is a plain step (no slide yet): the list returns at the place it was left. Only this way
-        // back gives the list its place again; the menu and other links open it at its top.
+        // The way back turns the record's page back: the list comes back over from the left, at the place it was
+        // left (only this way back gives the list its place again; the menu and other links open it at its top).
         const [place] = (sessionStorage.getItem(KEPT) ?? "").split(":");
         if (place) sessionStorage.setItem(KEPT, `${place}:back`);
-        router.push(href, { scroll: false });
+        const column = here.closest<HTMLElement>("main.live-main") ?? here;
+        void turnBackOver(column, async () => {
+          router.push(href, { scroll: false });
+          await drawn("list");
+          // The list gives its place back as its rows come in: the page is turned once it stands there.
+          await new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)));
+        });
         return;
       }
       const root = document.documentElement;
@@ -72,8 +80,10 @@ export function RecordSlide({ part, children }: { part: "list" | "record"; child
       });
       void step.finished.finally(() => delete root.dataset.recordStep);
     };
-    here.addEventListener("click", go, { capture: true });
-    return () => here.removeEventListener("click", go, { capture: true });
+    // The record's way back stands in the room's head, outside this wrapper: on a record it is listened for on the page.
+    const on: EventTarget = part === "record" ? document : here;
+    on.addEventListener("click", go as EventListener, { capture: true });
+    return () => on.removeEventListener("click", go as EventListener, { capture: true });
   }, [ios, part, router]);
 
   // The list's place: read at the press, since opening a record moves the page to its top before the list is gone;
