@@ -301,7 +301,7 @@ export function ReportView({
             <span className="report-year-pile" ref={pile}>
               {/* The pile is as wide as the year's whole figure from the first frame, so nothing moves while it counts up. */}
               <span className="report-year-measure" aria-hidden="true">{money(Math.round(report.helpPaid / 100) * 100)}</span>
-              <span className="report-year-figure">
+              <span className="report-year-figure" data-stands="">
                 <span className="count-up">{money(Math.round(report.helpPaid / 100) * 100)}</span>
               </span>
               <span className="report-stack" aria-hidden="true">
@@ -321,7 +321,7 @@ export function ReportView({
             <dt>{figure.label}</dt>
             <dd>
               <span>
-                <b>
+                <b data-stands="">
                   <span className="count-up">{count(figure.value)}</span>
                 </b>
               </span>

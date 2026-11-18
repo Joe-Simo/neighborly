@@ -75,8 +75,25 @@ export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
   turn.append(shade, lying, over);
   document.body.append(turn);
 
+  // Paper that stands up in the room beneath (`data-stands`) holds at 60° until the crease passes its near corner
+  // (its lower right, the first the fold uncovers), then stands as the rest of the turn runs.
+  const run = far * 1.04;
+  // Found as the turn starts: the room beneath is drawn only after the sheet was laid over it.
+  let standing: { element: HTMLElement; uncovered: number }[] = [];
+  const findStanding = () => [...document.querySelectorAll<HTMLElement>("[data-stands]")]
+    .filter((element) => !element.closest(".room-turn") && !frame.contains(element))
+    .map((element) => {
+      const box = element.getBoundingClientRect();
+      const uncovered = (box.right - place.left - width) * d.x + (box.bottom - place.top - height) * d.y;
+      return { element, uncovered: Math.max(0, Math.min(run * 0.95, uncovered)) };
+    });
   const drive = (progress: number) => {
-    const s = ease(Math.min(1, Math.max(0, progress))) * far * 1.04;
+    const s = ease(Math.min(1, Math.max(0, progress))) * run;
+    for (const { element, uncovered } of standing) {
+      const up = Math.min(1, Math.max(0, (s - uncovered) / (run - uncovered)));
+      element.style.animation = "none";
+      element.style.transform = up >= 1 ? "" : `perspective(600px) rotateX(${(60 * (1 - up)).toFixed(2)}deg)`;
+    }
     const fx = width + d.x * s;
     const fy = height + d.y * s;
     // Everything of the column beyond the fold: a cut along it, reaching past every edge.
@@ -101,6 +118,7 @@ export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
     if (ended) return;
     ended = true;
     turn.remove();
+    for (const { element } of standing) element.style.removeProperty("transform");
   };
 
   const glide = (from: number, to: 0 | 1) =>
@@ -109,6 +127,7 @@ export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
       turn.setAttribute("data-turning", "");
       // The rest of the way takes its share of the whole turn's time.
       const span = Math.max(1, Math.abs(to - from) * TURN_MS);
+      if (!standing.length) standing = findStanding();
       drive(from);
       const step = (now: number) => {
         if (ended) return resolve();
