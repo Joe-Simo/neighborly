@@ -1372,3 +1372,12 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 :is(.live-app, .live-dialog) :is(.help-amount, .help-money, .live-count, .report-months, .report-legend, .help-bars, .help-ledger, .help-figures, td, th, time, .live-date-leaf) {
   font-variant-numeric: tabular-nums lining-nums;
 }
+
+/* A name is kept whole on its line, and when it is longer than the line (a family's full name on a phone) it turns
+   between its words: it never runs past the page, and never breaks inside a word. */
+.live-app :is(.live-name, .visits-name:not(.visits-aside-day *), .help-row h3 > .help-row-open, .help-sheet .help-from strong) {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: normal;
+}

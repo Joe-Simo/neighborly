@@ -300,7 +300,7 @@ export function ReportView({
           <dd className="report-year-paid">
             {/* The year's figure stands on its months: twelve thin sheets, each as thick as that month's share of
                 the help paid, laid from the first month at the back to the last at the front. */}
-            <span className="report-year-pile" ref={pile}>
+            <span className="report-year-pile" ref={pile} style={{ "--figure-length": money(Math.round(report.helpPaid / 100) * 100).length } as CSSProperties}>
               {/* The pile is as wide as the year's whole figure from the first frame, so nothing moves while it counts up. */}
               <span className="report-year-measure" aria-hidden="true">{money(Math.round(report.helpPaid / 100) * 100)}</span>
               <span className="report-year-figure" data-stands="">
