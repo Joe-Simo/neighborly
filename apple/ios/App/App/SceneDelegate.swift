@@ -918,7 +918,8 @@ final class ShellTabs: UITabBarController, UITabBarControllerDelegate {
             selectedTab = tab
         }
         hold()
-        setTabBarHidden(state.tabs.isEmpty || state.covered, animated: true)
+        // Present or not, in one frame: the bar never shows half there.
+        setTabBarHidden(state.tabs.isEmpty || state.covered, animated: false)
         sidebar.isHidden = !pad || state.rooms.isEmpty
     }
 

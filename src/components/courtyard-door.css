@@ -6,6 +6,8 @@
 /* The courtyard held over the window as one page while the workspace is laid beneath it, then turned off it (chapter-sheets.css draws the turn). */
 #courtyard-held{position:fixed;inset:0;z-index:82;min-height:0;height:100lvh;--turn-page:100lvh;pointer-events:none;contain:strict}
 #courtyard-held .relief-turn-page{overflow:hidden}
+/* The round is far larger than the window; on a phone its rounded overflow is not always kept as a mask, so it is cut as a circle outright. */
+#courtyard-held .relief-turn-round{clip-path:circle(50%)}
 #courtyard-held .courtyard-held-page{position:absolute;inset:0;overflow:hidden}
 /* The one quiet line, if the room is not on its way yet: in the waiting ochre, on its own small cut slip of the card's lighter paper (4.8:1), low in the middle at every width, never faded in. */
 #courtyard-held .courtyard-held-opening{position:fixed;z-index:3;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);translate:-50% 0;margin:0;padding:8px 18px 9px;background:#f7f2e6;border-radius:2px 3px 2px 4px;box-shadow:0 1px 0 #3b2a1238,0 3px 6px #3b2a1224;font:600 17px/1.4 "Source Sans 3",sans-serif;color:#8D631B;white-space:nowrap}

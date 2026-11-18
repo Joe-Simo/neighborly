@@ -253,9 +253,9 @@ export function LiveWorkspace({
     const side = document.querySelector<HTMLElement>(".live-nav");
     if (!inApp || !tell || !bar || !side) return;
     // The tabs stand down while anything lies over the bar: the Menu or any other sheet or dialog,
-    // a row's long-press sheet, or the keyboard, which takes the bottom of the screen.
+    // a row's long-press sheet, a page held to be turned (the way in), or the keyboard, which takes the bottom of the screen.
     const covered = () =>
-      !!document.querySelector('[data-slot="dialog-content"][data-state="open"], [data-slot="sheet-content"][data-state="open"], [data-vaul-drawer][data-state="open"], [role="dialog"][data-state="open"], .row-menu-shade') ||
+      !!document.querySelector('[data-slot="dialog-content"][data-state="open"], [data-slot="sheet-content"][data-state="open"], [data-vaul-drawer][data-state="open"], [role="dialog"][data-state="open"], .row-menu-shade, #courtyard-held') ||
       (window.visualViewport?.height ?? window.innerHeight) < window.innerHeight - 100;
     // A tab or room by the room it opens ("menu" for the Menu), and whether it is where the person is.
     const place = (link: HTMLElement, within: HTMLElement): Place => {
