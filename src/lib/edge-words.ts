@@ -13,7 +13,7 @@ export const edgeWords = {
     home: "Inicio de Kind Helps", back: "Volver a Kind Helps",
     lost: "Esta puerta no está aquí.", courtyard: "Volver al patio", lostTab: "Página no encontrada — Kind Helps",
     lostAbout: "La dirección puede ser vieja o tener un error. Kind Helps está en kindhelps.com.",
-    offlineAbout: "Este dispositivo no tiene conexión. Lo que ves en pantalla se guarda, y Kind Helps vuelve a abrir cuando regrese la conexión.",
+    offlineAbout: "Este dispositivo no tiene conexión. Lo que ves en pantalla se guarda, y Kind Helps se vuelve a abrir cuando regrese la conexión.",
     failed: "Esta página no se abrió.", failedDeck: "No se perdió nada. Inténtalo de nuevo en un momento.", tryAgain: "Intentar de nuevo", failedTab: "Esta página no se abrió — Kind Helps",
   },
 } satisfies Record<Language, Record<string, string>>;

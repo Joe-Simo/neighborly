@@ -155,7 +155,7 @@ const es: AuthWords = {
     signIn: "Escríbelo para terminar de iniciar sesión en este dispositivo.",
   },
   codeLabel: "Código del correo",
-  codeHint: "Puede tardar un minuto en llegar. Mira en correo no deseado si no lo ves.",
+  codeHint: "Puede tardar un minuto en llegar. Si no lo ves, mira en el correo no deseado.",
   continue: "Continuar",
   sendAgain: "Enviar un código nuevo",
   sentAgain: "Código nuevo enviado",
@@ -169,14 +169,14 @@ const es: AuthWords = {
   language: "Idioma",
   errors: {
     email: "Ese correo electrónico no parece correcto.",
-    exists: "Este correo ya tiene una cuenta. Elige Iniciar sesión.",
+    exists: "Este correo ya tiene una cuenta. Elige «Iniciar sesión».",
     noAccount:
-      "Ninguna cuenta usa ese correo todavía. Elige Crear cuenta. Si ya estuviste aquí, usa el mismo correo y tus conferencias te estarán esperando.",
-    password: "Esa contraseña no coincide. Inténtalo de nuevo o elige ¿Olvidaste tu contraseña?",
+      "Ninguna cuenta usa ese correo todavía. Elige «Crear cuenta». Si ya estuviste aquí, usa el mismo correo y tus conferencias te estarán esperando.",
+    password: "Esa contraseña no coincide. Inténtalo de nuevo o elige «¿Olvidaste tu contraseña?».",
     short: "Usa al menos 8 caracteres en tu contraseña.",
     long: "Usa como máximo 72 caracteres en tu contraseña.",
     leakedSignIn:
-      "Esta contraseña apareció en una filtración de datos de otro sitio. Elige ¿Olvidaste tu contraseña? para poner una nueva.",
+      "Esta contraseña apareció en una filtración de datos de otro sitio. Elige «¿Olvidaste tu contraseña?» para poner una nueva.",
     leaked: "Esa contraseña apareció en una filtración de datos de otro sitio. Elige otra, por favor.",
     common: "Elige una contraseña menos común.",
     code: "Ese código no coincide. Revisa el correo e inténtalo de nuevo, o envía un código nuevo.",

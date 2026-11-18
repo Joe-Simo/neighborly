@@ -395,7 +395,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       open: "Abrir la línea de ayuda",
     },
     year: {
-      title: "El año, sumado.",
+      title: "El año, en cifras.",
       paidDirect: "Se pagó directamente",
       paidDirectOrVouchers: "Se pagó directamente o se entregó en vales",
       neverCash: ", nunca en efectivo.",
@@ -442,7 +442,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     history: {
       title: "Del historial de ServWare",
-      line: "{requests} de {households}, {amount} en ayuda anotada antes de que te mudaras aquí. Se cuenta aparte del dinero de tu libro.",
+      line: "{requests} de {households}, {amount} en ayuda anotada antes de que llegaras aquí. Se cuenta aparte del dinero de tu libro.",
       requests: (count) => (count === 1 ? "1 petición" : `${esN(count)} peticiones`),
       households: (count) => (count === 1 ? "1 hogar" : `${esN(count)} hogares`),
     },
