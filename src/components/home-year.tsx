@@ -47,6 +47,12 @@ export function HomeYear() {
     const panel = list?.closest<HTMLElement>(".relief-panel");
     if (!list || !panel) return;
     const cells = [...list.querySelectorAll<HTMLElement>(":scope > div")];
+    // Each pile's picture is decoded while the page is idle, well before the turn that lays it.
+    const idle = window.requestIdleCallback ?? ((work: () => void) => window.setTimeout(work, 200));
+    idle(() => list.querySelectorAll<HTMLElement>(".home-year-stack").forEach(stack => {
+      const source = /url\("(.*)"\)/.exec(getComputedStyle(stack).backgroundImage)?.[1];
+      if (source) { const picture = new Image(); picture.src = source; void picture.decode().catch(() => {}); }
+    }));
     const requests = list.querySelector<HTMLElement>("[data-figure=requests]");
     const given = () => { if (requests) requests.textContent = whole.format(sampleYear.requests + 1); list.dataset.oneMore = "true"; };
     if (document.documentElement.dataset.yesGiven === "true") given();
