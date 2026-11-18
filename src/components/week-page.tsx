@@ -28,8 +28,7 @@ export function weekMetadata(language: Language): Metadata {
 export function WeekPage({ language }: { language: Language }) {
   const said = weekWords[language];
   return <div className="public-page" lang={language}>
-    {/* On the English page too: its root is already English, but the piece is then loaded before the reader turns to the Spanish page, so nothing is fetched or run inside that turn. */}
-    <ReaderLanguage page={language} />
+    {language !== "en" && <ReaderLanguage page={language} />}
     <header className="public-page-header">
       <Link className="public-page-brand" href="/" aria-label={edgeWords[language].home}><span lang="en">kind helps</span></Link>
       <PublicLanguage language={language} paths={{ en: weekWords.en.path, es: weekWords.es.path }} />
