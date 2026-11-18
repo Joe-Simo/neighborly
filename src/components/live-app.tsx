@@ -365,15 +365,38 @@ function LiveRooms({
   // Waiting to learn who is here, or for their workspace to arrive. A wait that outlasts ten seconds
   // (a session the backend will not accept, no connection) is said plainly, with a way on and a way out.
   const waiting = !leavingForSample && !signedOut && (!asking || !viewer || sampleVisitor === undefined);
+  const offline = useOffline();
+  // A kept room opened with no connection: when the connection returns, the sign-in service (whose own script never
+  // came) is brought back by opening the page once more, the kept room drawn again at once and the cover laid over the
+  // change by the app (SceneDelegate, kindHelpsReload), so the page is never seen half there. Once a visit.
+  const wasOffline = useRef(false);
+  useEffect(() => {
+    if (offline) {
+      wasOffline.current = true;
+      return;
+    }
+    if (!wasOffline.current || !kept || (window as { Clerk?: { loaded?: boolean } }).Clerk?.loaded) return;
+    wasOffline.current = false;
+    try {
+      if (sessionStorage.getItem("kind-helps:back-online")) return;
+      sessionStorage.setItem("kind-helps:back-online", "1");
+    } catch {
+      return;
+    }
+    const reload = (window as { webkit?: { messageHandlers?: { kindHelpsReload?: { postMessage: (body: null) => void } } } }).webkit?.messageHandlers?.kindHelpsReload;
+    if (reload) reload.postMessage(null);
+    else window.location.reload();
+  }, [offline, kept]);
   const [waitedLong, setWaitedLong] = useState(false);
   useEffect(() => {
-    if (!waiting) return;
+    // The wait is counted with a connection only: it starts again from the moment the connection returns.
+    if (!waiting || offline) return;
     const timer = setTimeout(() => setWaitedLong(true), 10000);
     return () => {
       clearTimeout(timer);
       setWaitedLong(false);
     };
-  }, [waiting]);
+  }, [waiting, offline]);
   // The sign-in sheet is for someone known to be signed out. Until that is known, and from then until
   // the workspace has arrived, there is one waiting screen and nothing else: a signed-in person goes
   // from it straight to their room. In a first look the sheet is not drawn, and the way in runs behind the room;
@@ -382,7 +405,6 @@ function LiveRooms({
   // that is being laid anew, ends it, and what is said below is said as it always was.
   // With no connection a kept room stays as it was last seen, under one line that says so, until the connection
   // returns and the live room takes its place; it is neither ended nor let go for want of an answer.
-  const offline = useOffline();
   if (look && !(kept && offline) && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
   // A kept room whose member has no conference any more (removed, or the conference closed) ends here too.
   if (kept && look && !waiting && !signedOut && viewer && !churchId) setLookOver(true);
