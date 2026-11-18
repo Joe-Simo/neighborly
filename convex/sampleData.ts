@@ -321,7 +321,8 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
       const amountApproved = voucher && granted ? 0 : share;
       const decidedAt = outcome === "open" ? undefined : takenAt + random.between(3, 5) * DAY;
       const paidTo = random.pick(need.payees);
-      const payeeName = voucher ? "" : paidTo;
+      // A utility bill is paid to the company whose bill it is (each summary sits beside its company); the draw stays.
+      const payeeName = voucher ? "" : need.kind === "utility" ? need.payees[(need.summaries as readonly string[]).indexOf(summary)] ?? paidTo : paidTo;
       // The one who took the call files its request. The draw stays, so every number after it is as pinned.
       random.pick(staff);
       const requestId = await db.insert("assistanceRequests", { churchId, neighborId, callId, kind: need.kind, summary, amountRequested, amountApproved, ...(voucher ? { voucher } : {}), status: outcome, decisionNote: outcome === "declined" ? "Referred to the county program, which covers this in full." : outcome === "closed" ? "Neighbor resolved it before the visit." : granted ? "Approved after the home visit." : "", decidedBy: decidedAt ? owner : undefined, decidedAt, payeeKind: need.payeeKind, payeeName, source: index % 8 === 3 ? "ai_draft" : "person", createdBy: taker, createdAt: takenAt });

@@ -85,10 +85,10 @@ export const recordHref = (neighborId: string) =>
 export const requestHref = (neighborId: string, requestId: string) =>
   `${recordHref(neighborId)}&request=${requestId}`;
 /** "Mother, 41 · Son, 12": the household without anyone's name. */
-export const livesHere = (people: NeighborRecord["household"]) =>
+export const livesHere = (people: NeighborRecord["household"], said: (typed: string) => string = (typed) => typed) =>
   people
     .map((person) =>
-      person.age === null ? person.relationship : `${person.relationship}, ${person.age}`,
+      person.age === null ? said(person.relationship) : `${said(person.relationship)}, ${person.age}`,
     )
     .join(" · ");
 export const total = (lines: { amount: number }[]) =>
