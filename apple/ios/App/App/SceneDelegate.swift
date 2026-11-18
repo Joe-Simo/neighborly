@@ -302,7 +302,7 @@ final class ShellViewController: CAPBridgeViewController {
         guard cover == nil else { return }
         switch what {
         case "turned": UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        case "decided": UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        case "decided", "creased": UIImpactFeedbackGenerator(style: .light).impactOccurred()
         case "refused": UINotificationFeedbackGenerator().notificationOccurred(.warning)
         case "selected": UISelectionFeedbackGenerator().selectionChanged()
         default: break

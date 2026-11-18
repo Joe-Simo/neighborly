@@ -4,6 +4,8 @@
  * manila file rises under it, and the folded sheet slides into the file, where it rests. Drawn on a copy above the
  * page, so the real sheet only steps aside; nothing fades. Under reduced motion it is not drawn.
  */
+type Creased = { webkit?: { messageHandlers?: { kindHelpsFelt?: { postMessage: (felt: "creased") => void } } } };
+
 function copyOf(sheet: HTMLElement) {
   const copy = sheet.cloneNode(true) as HTMLElement;
   const from = [sheet, ...sheet.querySelectorAll("*")];
@@ -72,6 +74,8 @@ export async function fileAway(sheet: HTMLElement | null, household: string) {
   const shrink = `scale(${scale})`;
   folded.animate([{ transform: "none" }, { transform: shrink }], { duration: 260, easing: ease, fill: "forwards" });
   await flap.animate([{ transform: "rotateX(0deg)" }, { transform: "rotateX(180deg)" }], { duration: 260, easing: ease, fill: "forwards" }).finished;
+  // In the iOS app the crease is felt once, as one light tap; the file rising and taking the sheet is not.
+  (window as Creased).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("creased");
   // The file rises once, under the sheet where it is.
   await pocket.animate([{ transform: below }, { transform: "none" }], { duration: 240, easing: ease, fill: "forwards" }).finished;
   // Into it, until only the sheet's top edge shows over the mouth; it rests there.
