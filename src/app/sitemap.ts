@@ -1,13 +1,19 @@
 import type { MetadataRoute } from "next";
 
+const site = "https://kindhelps.com";
+/** Each page of words in English and Spanish; each names the other, so a search engine shows the reader's own. */
+const pairs = [
+  { en: "/privacy", es: "/privacidad", priority: .3 },
+  { en: "/about/a-week", es: "/sobre/una-semana", priority: .5 },
+  { en: "/about/how-we-made-it", es: "/sobre/como-lo-hicimos", priority: .4 },
+];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
-    { url: "https://kindhelps.com/", changeFrequency: "weekly", priority: 1 },
-    { url: "https://kindhelps.com/privacy", changeFrequency: "monthly", priority: .3 },
-    { url: "https://kindhelps.com/privacidad", changeFrequency: "monthly", priority: .3 },
-    { url: "https://kindhelps.com/about/a-week", changeFrequency: "monthly", priority: .5 },
-    { url: "https://kindhelps.com/sobre/una-semana", changeFrequency: "monthly", priority: .5 },
-    { url: "https://kindhelps.com/about/how-we-made-it", changeFrequency: "monthly", priority: .4 },
-    { url: "https://kindhelps.com/sobre/como-lo-hicimos", changeFrequency: "monthly", priority: .4 },
+    { url: `${site}/`, changeFrequency: "weekly", priority: 1 },
+    ...pairs.flatMap(({ en, es, priority }) => {
+      const languages = { en: `${site}${en}`, es: `${site}${es}`, "x-default": `${site}${en}` };
+      return [en, es].map((path) => ({ url: `${site}${path}`, changeFrequency: "monthly" as const, priority, alternates: { languages } }));
+    }),
   ];
 }

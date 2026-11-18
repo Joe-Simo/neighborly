@@ -8,7 +8,7 @@ import "@/components/public-turn.css";
 import { CutHeads } from "@/components/cut-heads";
 import "@/components/cut-heads.css";
 import { launchScreens } from "@/lib/launch-screens";
-import { linkPreview } from "@/lib/link-preview";
+import { linkCardIn, linkPreview } from "@/lib/link-preview";
 import { firstLanguage } from "@/lib/first-language";
 import { staleCheck } from "@/lib/stale-check";
 import { sunLight } from "@/lib/sun";
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: "Kind Helps — Good work, together.",
     description: "The help line, home visits in pairs, the ledger and the yearly report, with the volunteers who do the work. Free for every conference.",
   },
-  twitter: { card: "summary_large_image", images: ["/assets/link-card.jpg"] },
+  twitter: linkCardIn("en"),
   appleWebApp: {
     capable: true,
     title: "Kind Helps",

@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { ReaderLanguage } from "@/components/reader-language";
 import { PublicEnding } from "@/components/public-ending";
 import { edgeWords } from "@/lib/edge-words";
-import { linkPreviewIn } from "@/lib/link-preview";
+import { linkPreviewIn, linkCardIn } from "@/lib/link-preview";
 import { weekWords } from "@/lib/week-words";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
@@ -17,8 +17,9 @@ export function weekMetadata(language: Language): Metadata {
   return {
     title: said.tab,
     description: said.description,
-    alternates: { canonical: said.path, languages: Object.fromEntries(languages.map((other) => [other, weekWords[other].path])) },
+    alternates: { canonical: said.path, languages: { ...Object.fromEntries(languages.map((other) => [other, weekWords[other].path])), "x-default": weekWords.en.path } },
     openGraph: { ...linkPreviewIn(language), url: said.path, title: said.tab, description: said.preview },
+    twitter: { ...linkCardIn(language), title: said.tab, description: said.preview },
   };
 }
 

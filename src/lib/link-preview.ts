@@ -20,3 +20,8 @@ export const linkPreviewIn = (language: keyof typeof described) => ({
   images: [{ ...picture, alt: described[language] }],
 }) satisfies Metadata["openGraph"];
 export const linkPreview = linkPreviewIn("en");
+/** The same picture for apps that read the Twitter card, described in the page's own language. */
+export const linkCardIn = (language: keyof typeof described) => ({
+  card: "summary_large_image",
+  images: [{ url: "/assets/link-card.jpg", alt: described[language] }],
+}) satisfies Metadata["twitter"];
