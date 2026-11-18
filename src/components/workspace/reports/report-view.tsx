@@ -262,7 +262,7 @@ export function ReportView({
   const [pageBefore = "", pageBetween = "", pageAfter = ""] = w.foot.page.split(/\{pages?\}/);
   const pageCount = `${quoted(`${printedLine} · ${pageBefore}`)} counter(page) ${quoted(pageBetween)} counter(pages)${pageAfter ? ` ${quoted(pageAfter)}` : ""}`;
   const footLine = `${groupName} · ${periodLabel(report, words)}, ${span}`;
-  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(footLine)}; font: 9pt "Source Sans 3", "Source Sans 3 Fallback", sans-serif; color: #000; } @bottom-right { content: ${pageCount}; font: 9pt "Source Sans 3", "Source Sans 3 Fallback", sans-serif; color: #000; } } }`;
+  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(footLine)}; font: 9pt "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-feature-settings: "lnum" 1, "tnum" 1; color: #000; } @bottom-right { content: ${pageCount}; font: 9pt "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-feature-settings: "lnum" 1, "tnum" 1; color: #000; } } }`;
   const sections = new Map<string, ReportLine[]>();
   for (const line of reportLines(report, words, sampleSaid))
     sections.set(line.section, [...(sections.get(line.section) ?? []), line]);

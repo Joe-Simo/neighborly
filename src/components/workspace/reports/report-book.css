@@ -1,6 +1,8 @@
 /* The year's report bound as sheets on the desk (report-book.tsx). Each sheet is a letter page in proportion, set like
    print: the display serif for its title, 15px body, true tables with figures that line up. Shades only where paper lies. */
 .report .report-book { border: 0; box-shadow: none; }
+/* The book and its printed sheets keep the room's figures: lining and tabular (see .report in reports.css). */
+.report-book, .report-book-print { font-feature-settings: "lnum" 1, "tnum" 1; }
 .report-book { margin: 8px 0 56px; overflow: clip; overflow-clip-margin: 12px; padding: 0 0 4px; }
 .book-desk {
   position: relative; display: grid; grid-template-columns: minmax(0, 1fr); width: min(100%, 520px);
@@ -24,7 +26,7 @@
   box-shadow: 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3);
 }
 .book-sheet h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: clamp(26px, 3vw, 34px); line-height: 1.1; letter-spacing: -0.01em; }
-.book-folio { margin: auto 0 0; font-size: 13px; color: #5b6b61; font-variant-numeric: tabular-nums; }
+.book-folio { margin: auto 0 0; font-size: 13px; color: #5b6b61; }
 
 .book-cover { display: flex; flex-direction: column; gap: 10px; height: 100%; }
 .book-cover :is(h2, h3) { margin-top: auto; font-size: clamp(38px, 5vw, 56px); }
@@ -34,7 +36,7 @@
 .book-mark { --size: 22px; display: flex; margin: 18px 0 auto; }
 .book-mark .week-quilt-piece { margin-left: -6px; }
 
-.book-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums lining-nums; }
+.book-table { width: 100%; border-collapse: collapse; }
 .book-table th, .book-table td { padding: 9px 0; font-size: 15px; letter-spacing: normal; text-transform: none; color: inherit; line-height: 1.4; border-bottom: 1px solid rgb(40 60 50 / 0.16); text-align: left; font-weight: 400; vertical-align: baseline; }
 .book-table td { text-align: right; padding-left: 12px; white-space: nowrap; }
 .report-book .book-table thead th, .report-book-print .book-table thead th { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #4a5a50; border-bottom-color: var(--live-ink, #283c32); }
@@ -63,7 +65,7 @@
 .book-corner { position: absolute; right: 0; bottom: 0; z-index: 3; width: 56px; height: 56px; cursor: grab; touch-action: none; }
 .book-corner:active { cursor: grabbing; }
 
-.book-foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.book-foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 15px; }
 .book-note { margin: 4px 0 0; font-size: 13px; color: #4a5a50; }
 .book-print {
   margin-left: auto; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; color: var(--live-ink, #283c32);
@@ -85,7 +87,9 @@
   :root[data-print-book] body > .report-book-print { display: block !important; }
   .report-book-print .book-sheet { position: static; page: report-book; break-after: page; min-height: 9.4in; padding: 0; box-shadow: none; background: none; color: #000; }
   .report-book-print .book-sheet:last-child { break-after: auto; }
+  .report-book-print .book-sheet h3 { break-after: avoid; }
   .report-book-print .book-table th, .report-book-print .book-table td { border-color: #0004; }
+  .report-book-print :is(.book-table tr, .book-note) { break-inside: avoid; }
   .report-book-print .book-mark .week-quilt-piece { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   :root:not([data-print-book]) .report-book { display: none; }
 }
