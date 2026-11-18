@@ -358,7 +358,6 @@ export function en(set: WordSet) {
       offlineRoom: "This room opens when it returns.",
       offlineDeck: "What’s on screen stays. Your changes go out once this device is back online.",
       /** Said in green in the same strip for a moment once the connection returns. */
-      back: "The connection is back.",
       /** The page shown in place of one that could not be fetched (/offline): its sentence and its tab. */
       offlinePageDeck: "Nothing is lost. Your team’s week will be here as soon as this device is back online.",
       offlinePageTab: "No connection — Kind Helps",

@@ -11,7 +11,6 @@ export const stateWords = {
   offlineTitle: "No connection right now.",
   offlineRoom: "This room opens when it returns.",
   offlineDeck: "What’s on screen stays. Your changes go out once this device is back online.",
-  back: "The connection is back.",
   errorTitle: "This room didn’t open.",
   errorDeck: "Nothing is lost. Try again; if it still won’t open, the other rooms are in the menu.",
   privateTitle: "Kept private.",
