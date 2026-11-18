@@ -158,9 +158,16 @@ export function FrescoThreshold() {
       // Once the visitor has walked in, the wall they came through is behind them: its words do not come back with the frame.
       host.dataset.walked = String(inside > .98 || grow > 0);
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
-      // Under the frame as it is actually drawn (its ring and any scale included), read once it has come to rest, so no letter is ever under its edge.
-      const framedBottom = grow === 1 && inside === 0 ? wall.getBoundingClientRect().bottom - host.getBoundingClientRect().top : 0;
-      host.style.setProperty("--caption-top", `${Math.max(frameY + frameHeight / 2, framedBottom)}px`);
+      // Under the frame as it is actually drawn (its ring and any scale included): each time the courtyard rests in its frame, the line's own box is
+      // measured against the frame's drawn bottom and set at least 12px clear of it, so no letter is ever under its edge.
+      let captionTop = frameY + frameHeight / 2;
+      const line = host.querySelector<HTMLElement>(".fresco-caption");
+      if (grow > .999 && inside < .001 && line) {
+        host.style.setProperty("--caption-top", `${captionTop}px`);
+        const gap = line.getBoundingClientRect().top - wall.getBoundingClientRect().bottom;
+        if (gap < 12) captionTop += 12 - gap;
+      }
+      host.style.setProperty("--caption-top", `${captionTop}px`);
       setOpen(grow > .5 || inside > .5);
     };
     const request = () => { if (!raf) raf = requestAnimationFrame(update); };
