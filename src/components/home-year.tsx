@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useRef } from "react";
 import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
+import { HomeYearSlip } from "./home-year-slip";
 import "./home-year.css";
 
 const whole = new Intl.NumberFormat("en-US");
@@ -115,6 +116,7 @@ export function HomeYear() {
       </div>;
       })}
     </dl>
+    <HomeYearSlip />
     <p className="home-year-note">Each sheet is ten. From the sample conference. Every person in it is made up.</p>
   </>;
 }
