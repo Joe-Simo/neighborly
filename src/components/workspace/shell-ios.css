@@ -382,3 +382,8 @@
   :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art > .relief { position: absolute; inset: 0; top: 0; width: 100%; height: 100%; aspect-ratio: auto; -webkit-mask-image: none; mask-image: none; }
   :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art > .relief img { object-fit: cover; object-position: center calc(var(--relief-y, 0.5) * 100%) !important; }
 }
+
+/* A room kept on the device, shown with no connection: one still ochre line laid over the head's band, on a slip of
+   the page's paper, so nothing under it moves when it comes or goes. */
+.live-app main.live-main:has(> .kept-offline) { position: relative; }
+.live-app .kept-offline { position: absolute; z-index: 3; top: 10px; left: var(--live-pad, 20px); margin: 0; padding: 4px 10px; border-radius: 4px; color: var(--ochre-ink, #8a5a12); font-size: 15px; line-height: 1.4; background: rgb(247 244 237 / 0.94); pointer-events: none; }

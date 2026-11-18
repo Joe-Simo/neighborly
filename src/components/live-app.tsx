@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { useAction, useMutation, useQueries, type RequestForQueries } from "convex/react";
+import { useAction, useConvexConnectionState, useMutation, useQueries, type RequestForQueries } from "convex/react";
 import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";
 import { FirstLookProvider, firstLookData, useAfterLook, useFirstRoom, useKeptPress } from "@/components/workspace/first-look";
 import { useClerk } from "@clerk/nextjs";
@@ -27,6 +27,46 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 
 const noChange = () => () => {};
+
+/**
+ * No connection: the device says it is offline, the backend's socket has tried and failed to open, or this site
+ * itself does not answer (asked every few seconds while there is no backend connection; the device's own flag is
+ * often still "online" on a network that reaches nothing). A page still opening its first connection is not offline.
+ */
+function useOffline() {
+  const offDevice = useSyncExternalStore(
+    (changed) => {
+      window.addEventListener("online", changed);
+      window.addEventListener("offline", changed);
+      return () => {
+        window.removeEventListener("online", changed);
+        window.removeEventListener("offline", changed);
+      };
+    },
+    () => !navigator.onLine,
+    () => false,
+  );
+  const link = useConvexConnectionState();
+  const [unanswered, setUnanswered] = useState(false);
+  useEffect(() => {
+    if (link.isWebSocketConnected) return;
+    let live = true;
+    const ask = () =>
+      fetch(`${window.location.origin}/app`, { method: "HEAD", cache: "no-store" })
+        .then(() => live && setUnanswered(false))
+        .catch(() => live && setUnanswered(true));
+    const first = window.setTimeout(ask, 2000);
+    const again = window.setInterval(ask, 5000);
+    window.addEventListener("online", ask);
+    return () => {
+      live = false;
+      window.clearTimeout(first);
+      window.clearInterval(again);
+      window.removeEventListener("online", ask);
+    };
+  }, [link.isWebSocketConnected]);
+  return offDevice || (unanswered && !link.isWebSocketConnected) || (!link.isWebSocketConnected && link.connectionRetries > 1);
+}
 
 /** The app, with the door's sweep above whatever it is showing. */
 export function LiveApp(props: Parameters<typeof LiveRooms>[0]) {
@@ -325,26 +365,53 @@ function LiveRooms({
   // Waiting to learn who is here, or for their workspace to arrive. A wait that outlasts ten seconds
   // (a session the backend will not accept, no connection) is said plainly, with a way on and a way out.
   const waiting = !leavingForSample && !signedOut && (!asking || !viewer || sampleVisitor === undefined);
+  const offline = useOffline();
+  // A kept room opened with no connection: when the connection returns, the sign-in service (whose own script never
+  // came) is brought back by opening the page once more, the kept room drawn again at once and the cover laid over the
+  // change by the app (SceneDelegate, kindHelpsReload), so the page is never seen half there. Once a visit.
+  const wasOffline = useRef(false);
+  useEffect(() => {
+    if (offline) {
+      wasOffline.current = true;
+      return;
+    }
+    if (!wasOffline.current || !kept || (window as { Clerk?: { loaded?: boolean } }).Clerk?.loaded) return;
+    wasOffline.current = false;
+    try {
+      if (sessionStorage.getItem("kind-helps:back-online")) return;
+      sessionStorage.setItem("kind-helps:back-online", "1");
+    } catch {
+      return;
+    }
+    const reload = (window as { webkit?: { messageHandlers?: { kindHelpsReload?: { postMessage: (body: null) => void } } } }).webkit?.messageHandlers?.kindHelpsReload;
+    if (reload) reload.postMessage(null);
+    else window.location.reload();
+  }, [offline, kept]);
   const [waitedLong, setWaitedLong] = useState(false);
   useEffect(() => {
-    if (!waiting) return;
+    // The wait is counted with a connection only: it starts again from the moment the connection returns.
+    if (!waiting || offline) return;
     const timer = setTimeout(() => setWaitedLong(true), 10000);
     return () => {
       clearTimeout(timer);
       setWaitedLong(false);
     };
-  }, [waiting]);
+  }, [waiting, offline]);
   // The sign-in sheet is for someone known to be signed out. Until that is known, and from then until
   // the workspace has arrived, there is one waiting screen and nothing else: a signed-in person goes
   // from it straight to their room. In a first look the sheet is not drawn, and the way in runs behind the room;
   // the sheet and the room keep their places here and below, so neither is ever made a second time.
   // A look is no way round a wait or a reset: a session the backend has not confirmed in ten seconds, or a sample
   // that is being laid anew, ends it, and what is said below is said as it always was.
-  if (look && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
+  // With no connection a kept room stays as it was last seen, under one line that says so, until the connection
+  // returns and the live room takes its place; it is neither ended nor let go for want of an answer.
+  if (look && !(kept && offline) && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
   // A kept room whose member has no conference any more (removed, or the conference closed) ends here too.
   if (kept && look && !waiting && !signedOut && viewer && !churchId) setLookOver(true);
   if (look || signedOut) {
-    const first = look && firstLookData(look, kept ? kept.room.user.language : deviceLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting } : {});
+    // A sample visitor reads the rooms in their own device's language, kept room or not; a member in their saved one.
+    const lookLanguage = kept && !kept.visiting ? kept.room.user.language : deviceLanguage;
+    const first = look && firstLookData(look, lookLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting } : {});
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
     const sheetKnown = invitationGood !== undefined;
     const entry = badInvite ? "signin" : intent;
@@ -365,6 +432,7 @@ function LiveRooms({
               requestCommitments={first.requestCommitments}
               data={first.data}
               sampleVisitor={kept ? kept.visiting : true}
+              keptNotice={kept && offline ? <p className="kept-offline" role="status">{wordsFor(lookLanguage, kept.room.church.wordSet).states.keptOffline}</p> : undefined}
               signOut={() => afterLook(signOut)}
               // Nothing in a first look can ask for a write: every press in the room is kept until the look is over.
               run={() => Promise.reject(new Error(stateWords.kept))}

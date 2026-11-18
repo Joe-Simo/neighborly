@@ -334,6 +334,7 @@ export function en(set: WordSet) {
       /** Under a yes or a no that was pressed, not typed, while the connection is down. */
       answerKept: "Your answer is kept. It will be sent when the connection returns.",
       offlineTitle: "No connection right now.",
+      keptOffline: "Offline — showing what you last saw",
       /** After the title, where a room that was never opened is waiting for the connection. */
       offlineRoom: "This room opens when it returns.",
       offlineDeck: "What is on screen is kept. Changes will be sent when this device is back online.",

@@ -14,6 +14,8 @@
   "ios": {
     "contentInset": "never",
     "backgroundColor": "#f5f3ec",
-    "preferredContentMode": "mobile"
+    "preferredContentMode": "mobile",
+    "appendUserAgent": "KindHelpsApp",
+    "limitsNavigationsToAppBoundDomains": true
   }
 }

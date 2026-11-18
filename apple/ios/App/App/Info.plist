@@ -43,6 +43,15 @@
       </array>
     </dict>
 	</dict>
+	<key>WKAppBoundDomains</key>
+	<array>
+		<string>kindhelps.com</string>
+		<string>clerk.com</string>
+		<string>clerk.accounts.dev</string>
+		<string>cloudflare.com</string>
+		<string>convex.cloud</string>
+		<string>localhost</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

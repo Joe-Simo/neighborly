@@ -29,8 +29,10 @@ export function forgetThisBrowser() {
       // Storage is closed to the page: nothing was kept.
     }
   }
-  // In the iOS app, the first screen it keeps on the device (lib/kept-room.ts).
+  // In the iOS app, the first screen it keeps on the device (lib/kept-room.ts), and the app's pages kept by its
+  // offline worker (app/sw.ts).
   forgetKeptRoom();
+  if (typeof caches !== "undefined") void caches.keys().then((names) => Promise.all(names.filter((name) => name.startsWith("kh-app-pages-")).map((name) => caches.delete(name)))).catch(() => {});
 }
 
 /**
