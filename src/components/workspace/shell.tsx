@@ -58,9 +58,7 @@ import type {
   LiveWorkspaceData,
 } from "@/components/workspace/types";
 import { CommitmentDetail } from "@/components/workspace/volunteer/commitment-detail";
-import { LiveCommitmentEditor } from "@/components/workspace/volunteer/commitment-editor";
-import { LiveCreateForm } from "@/components/workspace/volunteer/create-form";
-import { LiveTimeOffForm } from "@/components/workspace/volunteer/time-off-form";
+import { fetchFormsAhead, sheetForms } from "@/components/workspace/volunteer/sheet-forms";
 import { formatDate, words as wordsFor } from "@/lib/words";
 
 export function LiveWorkspace({
@@ -320,7 +318,7 @@ export function LiveWorkspace({
   const [rested, setRested] = useState(false);
   useEffect(() => void roomsOpened.add(area), [area]);
   // Once the first room is in, the others are fetched while nothing else is happening.
-  useEffect(() => fetchRoomsAhead(), []);
+  useEffect(() => fetchRoomsAhead(fetchFormsAhead), []);
   // The first room after the door is drawn finished under the sweep's paper (door.css). The next room arrives as rooms do.
   const firstArea = useRef(area);
   useLayoutEffect(() => {
@@ -773,8 +771,9 @@ export function LiveWorkspace({
                       : undefined
             }
           >
+            <Suspense fallback={null}>
               {dialog === "timeOff" ? (
-                <LiveTimeOffForm
+                <sheetForms.timeOff.Form
                   data={data}
                   onSaved={() => {
                     setDialog(null);
@@ -785,7 +784,7 @@ export function LiveWorkspace({
                 />
               ) : (
                 dialog && (
-                  <LiveCreateForm
+                  <sheetForms.create.Form
                     kind={dialog}
                     data={data}
                     pending={pending}
@@ -797,6 +796,7 @@ export function LiveWorkspace({
                   />
                 )
               )}
+            </Suspense>
           </LiveDialog>
           <LiveDialog
             title={selected ? keepNames(sampleSaid(selected.title)) : words.detail.fallbackTitle}
@@ -825,8 +825,9 @@ export function LiveWorkspace({
           title={sheets.edit.title}
           description={sheets.edit.deck(zoneName(data.church.timeZone, words.locale))}
         >
+            <Suspense fallback={null}>
             {editingCommitment && (
-              <LiveCommitmentEditor
+              <sheetForms.editor.Form
                 key={editingCommitment.id + ":" + editingCommitment.version}
                 item={editingCommitment}
                 timeZone={data.church.timeZone}
@@ -842,6 +843,7 @@ export function LiveWorkspace({
                 }
               />
             )}
+            </Suspense>
         </LiveDialog>
         <LiveDialog
           open={confirmation !== null}

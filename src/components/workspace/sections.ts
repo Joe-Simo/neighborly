@@ -43,9 +43,12 @@ export function fetchRoom(area: LiveArea) {
 }
 
 /** Every room not yet fetched, asked for when the browser has nothing else to do. */
-export function fetchRoomsAhead() {
+export function fetchRoomsAhead(alsoAhead?: () => void) {
   // A room fetched ahead that does not come is no fault to anyone: it is fetched again when it is opened.
-  const all = () => liveAreas.forEach((area) => void fetchRoom(area).catch(() => {}));
+  const all = () => {
+    liveAreas.forEach((area) => void fetchRoom(area).catch(() => {}));
+    alsoAhead?.();
+  };
   if ("requestIdleCallback" in window) window.requestIdleCallback(all, { timeout: 4000 });
   else setTimeout(all, 1500);
 }
