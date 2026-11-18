@@ -1,0 +1,75 @@
+import type { Language } from "@/lib/words";
+
+/** A paragraph, or a list whose items open with a few strong words; a list item may carry the colour it names. */
+export type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
+
+/** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
+const en = {
+  path: "/about/how-we-made-it",
+  title: "How we made it",
+  tab: "How we made it — Kind Helps",
+  description: "How Kind Helps was made: the painting, the rules its paper keeps, how the assistant is held to a person's say, and why it is free for every conference.",
+  preview: "The painting, the paper's rules, the assistant, and a promise: free for every conference.",
+  enter: "Enter Kind Helps",
+  translated: null as null | [string, string, string],
+  sections: [
+    { title: "One painting, made of paper", blocks: [
+      "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
+      "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolours it or crops into it. What moves is the paper around it.",
+    ] },
+    { title: "The rules the paper keeps", blocks: [
+      "A ministry's software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
+      [
+        { lead: "Ochre means waiting.", rest: "A call not yet returned, a request not yet decided, a room still opening.", tone: "waiting" },
+        { lead: "Plum means something is wrong.", rest: "There is no red anywhere. A mistake is named plainly, with the way to put it right.", tone: "wrong" },
+        { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned.", tone: "done" },
+      ],
+      "Nothing fades and nothing blurs. Paper does not dissolve: it is laid down, lifted, turned or folded, and every move on the page is one a sheet could make. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Words are never smaller than 13 pixels in the app, and 15 on public pages like this one.",
+    ] },
+    { title: "Responsible AI, with Jev", blocks: [
+      "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does three clerical jobs: it drafts a request for help from a call note, puts urgent calls first with the reason shown, and checks the year’s records before the report. It does not write prose and it saves nothing by itself.",
+      "A neighbor’s name, phone and address are never sent to it. Everything sent passes first through one step that takes them out, and on every draft “What the assistant saw” shows the note exactly as it left. A person reads every draft and decides. Saving a request is not granting it: the conference members who visit the home decide on the help.",
+      "On 12 made-up call notes kept apart from the ones it was tuned on, it filled 42 of 48 fields correctly, left 6 blank and got none wrong. Twelve notes is a small set, and it will make mistakes, which is why a person checks every draft.",
+    ] },
+    { title: "Free for every conference", blocks: [
+      "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone, given through one quiet link at the foot of the public pages.",
+    ] },
+  ] as { title: string; blocks: MadeBlock[] }[],
+  last: "Kind Helps is independent. It is not affiliated with or endorsed by the Society of St. Vincent de Paul. The code is open at github.com/Joe-Simo/neighborly.",
+};
+
+const es: typeof en = {
+  path: "/sobre/como-lo-hicimos",
+  title: "Cómo lo hicimos",
+  tab: "Cómo lo hicimos — Kind Helps",
+  description: "Cómo se hizo Kind Helps: la pintura, las reglas que guarda su papel, cómo el asistente queda sujeto a lo que decide una persona, y por qué es gratis para toda conferencia.",
+  preview: "La pintura, las reglas del papel, el asistente y una promesa: gratis para toda conferencia.",
+  enter: "Entrar a Kind Helps",
+  translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],
+  sections: [
+    { title: "Una sola pintura, hecha de papel", blocks: [
+      "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
+      "La obra pintada se hizo con una herramienta de imágenes con IA a partir de indicaciones escritas, y luego se eligió y se retocó a mano. La página nunca pinta encima, nunca le cambia el color ni la recorta. Lo que se mueve es el papel que la rodea.",
+    ] },
+    { title: "Las reglas que guarda el papel", blocks: [
+      "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
+      [
+        { lead: "Ocre es esperar.", rest: "Una llamada aún sin devolver, una petición aún sin decidir, una sala que todavía se abre.", tone: "waiting" },
+        { lead: "Ciruela es que algo está mal.", rest: "No hay rojo en ninguna parte. Un error se nombra con claridad, junto con la manera de corregirlo.", tone: "wrong" },
+        { lead: "Verde es hecho.", rest: "Una visita escrita, una factura pagada, una llamada devuelta.", tone: "done" },
+      ],
+      "Nada se desvanece y nada se desenfoca. El papel no se disuelve: se pone, se levanta, se da vuelta o se dobla, y cada movimiento de la página es uno que una hoja podría hacer. Una sala se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta.",
+    ] },
+    { title: "IA responsable, con Jev", blocks: [
+      "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace tres tareas de oficina: redacta una petición de ayuda a partir de la nota de una llamada, pone primero las llamadas urgentes con el motivo a la vista y revisa los registros del año antes del informe. No escribe prosa y no guarda nada por sí solo.",
+      "Nunca se le envían el nombre, el teléfono ni la dirección de un vecino. Todo lo que se envía pasa antes por un paso que los quita, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Una persona lee cada borrador y decide. Guardar una petición no es concederla: los miembros de la conferencia que visitan el hogar deciden la ayuda.",
+      "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
+    ] },
+    { title: "Gratis para toda conferencia", blocks: [
+      "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos, dados por un enlace discreto al pie de las páginas públicas.",
+    ] },
+  ],
+  last: "Kind Helps es independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo. El código está abierto en github.com/Joe-Simo/neighborly.",
+};
+
+export const madeWords: Record<Language, typeof en> = { en, es };

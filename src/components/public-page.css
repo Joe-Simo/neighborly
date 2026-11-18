@@ -109,3 +109,11 @@
   .public-page-header>a:last-child{gap:6px}
   .public-words h1{font-size:17.5vw}
 }
+/* How it was made: the title's sheet carries the help's piece of the painting, and each colour the app keeps is named beside a small chip cut from its own paper. */
+.public-made .public-words-relief::before{background-image:url(/assets/home/relief-help-768.webp)}
+.public-made-tones{list-style:none;padding:0}
+.public-words .public-made-tones li{position:relative;padding-left:1.6em;text-indent:0}
+.public-words .public-made-tones li::before{content:"";display:block;position:absolute;left:0;top:.38em;width:.9em;height:.9em;border-radius:2px 3px 2px 4px;box-shadow:0 1px 0 #3b2a1238,0 2px 3px #3b2a1224}
+.public-words .public-made-tones [data-tone=waiting]::before{background:#a8791f}
+.public-words .public-made-tones [data-tone=wrong]::before{background:#6a557f}
+.public-words .public-made-tones [data-tone=done]::before{background:#365c46}
