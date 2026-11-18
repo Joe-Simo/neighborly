@@ -3,7 +3,7 @@
 import { isBrandNew } from "@/lib/first-days";
 import { sampleSayer } from "@/lib/words/sample-names";
 import { nameKeeper } from "@/components/workspace/keep-names";
-import { RoomShown, RoomStill, useEdgeTurn, useWholeRoom } from "@/components/workspace/room-sheet";
+import { RoomShown, RoomStill, useEdgeTurn, useMenuArea, useWholeRoom } from "@/components/workspace/room-sheet";
 import { useSearchParams } from "next/navigation";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
@@ -368,6 +368,8 @@ export function LiveWorkspace({
   const app = useRef<HTMLDivElement>(null);
   const column = useRef<HTMLElement>(null);
   const { shown, opening, lost, settled } = useWholeRoom(area, column);
+  // The room the side column and the bar name: held on the room being left while a finger turns its page back.
+  const menuArea = useMenuArea(area);
   // The room itself, with nothing opened inside it (a record, a sheet): the edge's step back is the page turn there.
   const inside = useSearchParams().size > 0;
   useEdgeTurn(inApp, !inside, shown);
@@ -511,7 +513,7 @@ export function LiveWorkspace({
             <Link
               key={id}
               href={`/app/${id}`}
-              aria-current={area === id ? "page" : undefined}
+              aria-current={menuArea === id ? "page" : undefined}
               onClick={leave}
             >
               <Icon aria-hidden="true" />
@@ -655,7 +657,7 @@ export function LiveWorkspace({
       {inApp && (
         <nav className="live-tab-bar" aria-label={words.shell.workspace}>
           {tabs.map(({ id, label, icon: Icon }) => (
-            <Link key={id} className="live-tab" href={`/app/${id}`} aria-current={area === id ? "page" : undefined}>
+            <Link key={id} className="live-tab" href={`/app/${id}`} aria-current={menuArea === id ? "page" : undefined}>
               <Icon aria-hidden="true" />
               <span>{id === "visits" ? words.shell.tabVisits : id === "mine" ? words.shell.tabMine : (menu[id] ?? label)}</span>
             </Link>

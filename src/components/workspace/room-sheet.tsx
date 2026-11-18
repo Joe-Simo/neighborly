@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { Component, createContext, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
 import { flushSync } from "react-dom";
 import { edgeTurn, roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
@@ -71,6 +71,26 @@ const finger: { on: boolean; progress: number; asked: "on" | "back" | null; turn
   undoing: false,
 };
 
+/**
+ * The room the menus name as current while a finger holds a step back: the room being left, until the turn carries
+ * on to the room before and is done; then the menus move to it in that same frame. A page laid back never moves them.
+ */
+let heldArea: string | null = null;
+const heldListeners = new Set<() => void>();
+function holdArea(area: string | null) {
+  if (heldArea === area) return;
+  heldArea = area;
+  flushSync(() => heldListeners.forEach((listener) => listener()));
+}
+const watchHeld = (changed: () => void) => {
+  heldListeners.add(changed);
+  return () => heldListeners.delete(changed);
+};
+/** The room the side column and the bar name as current: the shown one, or the one a held step back is leaving. */
+export function useMenuArea(area: string) {
+  return useSyncExternalStore(watchHeld, () => heldArea, () => null) ?? area;
+}
+
 /** The finger has let go and the room before is whole: the turn is carried on, or laid back down and the step undone. */
 function letFingerGo() {
   const turn = finger.turn;
@@ -80,7 +100,7 @@ function letFingerGo() {
   finger.turn = null;
   finger.asked = null;
   if (asked === "on") {
-    void turn.glide(finger.progress, 1);
+    void turn.glide(finger.progress, 1).then(() => holdArea(null));
     return;
   }
   void turn.glide(finger.progress, 0).then(() => {
@@ -130,6 +150,7 @@ function turnAway(opening: ReturnType<typeof openingSheet> | null) {
   // The room a step back was undone to is whole beneath the sheet that shows it: the sheet goes in one cut.
   if (finger.undoing) {
     finger.undoing = false;
+    holdArea(null);
     return turn.end();
   }
   // A finger holds this turn: it is laid where the finger is, and carried on or back once the finger lets go.
@@ -455,11 +476,14 @@ export function useEdgeTurn(inApp: boolean, inRoom: boolean, roomShown: boolean)
         if (!start || dx < 8) return;
         finger.on = true;
         finger.asked = null;
+        holdArea(window.location.pathname.split("/")[2] ?? null);
         window.history.back();
         // A step back that leads to no room (the way in, another page) brings no turn: the finger lets it be.
         window.clearTimeout(lost);
         lost = window.setTimeout(() => {
-          if (finger.on && !finger.turn) Object.assign(finger, { on: false, asked: null });
+          if (!finger.on || finger.turn) return;
+          Object.assign(finger, { on: false, asked: null });
+          holdArea(null);
         }, 1500);
       }
       event.preventDefault();
