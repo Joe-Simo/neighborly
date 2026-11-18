@@ -21,8 +21,10 @@
 .fresco-invitation h2 em{font-weight:400}
 /* Each line of the headline is drawn up out of its own cut in the wall's paper: the cut's edge shows only while a line is coming through it. */
 .fresco-slot{display:block;overflow:hidden;margin:0 -.12em -.16em 0;padding:0 .12em .16em 0;position:relative}
-.fresco-slot>span{display:block;translate:0 calc((1 - clamp(0,(var(--come) - var(--line) * .3) / .7,1)) * 115%)}
-.fresco-stage[data-slip0=true] .fresco-slot:first-child::after,.fresco-stage[data-slip1=true] .fresco-slot:last-child::after{content:"";position:absolute;left:0;right:.12em;bottom:.16em;height:5px;border-bottom:1px solid #9a875f99;background:linear-gradient(#2e241600,#2e241624)}
+/* Each heading line is either whole in its slot or held far below it (300%, past the slot's padding), with no slide between: a
+   scroll that stops anywhere never leaves glyph tops showing at the slot's edge. The slip rule shows only while its line is out. */
+.fresco-slot>span{display:block;translate:0 calc((1 - round(clamp(0,(var(--come) - var(--line) * .3) / .7,1), 1)) * 300%)}
+.fresco-stage[data-slip0=true] .fresco-slot:first-child::after,.fresco-stage[data-slip1=true] .fresco-slot:last-child::after{content:"";position:absolute;left:0;right:.12em;bottom:.16em;height:5px;border-bottom:1px solid #9a875f99;background:linear-gradient(#2e241600,#2e241624);opacity:calc(1 - round(clamp(0,(var(--come) - var(--line) * .3) / .7,1), 1))}
 .fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
 /* Only its colour eases. Were everything to ease, the button would still be hidden for a moment after its place is shown, and the keyboard could not land on it. */
 .fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none;transition-property:background-color}
