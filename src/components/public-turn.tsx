@@ -27,11 +27,11 @@ export function PublicTurn() {
       // No frame is drawn while the turn waits for the page (the browser holds them), so it is answered straight from the commit.
       arrived.current = now => { if (now === to) { clearTimeout(give); arrived.current = null; done(); } };
     });
-    const turn = (way: "on" | "back", change: () => void, to: string) => {
+    const turn = (way: "on" | "back", change: () => void, to: string, landed?: () => void) => {
       document.documentElement.dataset.publicTurn = way;
       // The flap and its shade are laid on the page only inside the turn, so the browser pictures them as parts of the turn and never as the page.
       const parts = ["public-turn-shade", "public-turn-flap"].map(name => Object.assign(document.createElement("div"), { className: name, ariaHidden: "true" }));
-      const moving = document.startViewTransition(async () => { change(); document.body.append(...parts); await until(to); });
+      const moving = document.startViewTransition(async () => { change(); document.body.append(...parts); await until(to); landed?.(); });
       // The turn is held still until the page beneath has mounted and drawn its first frames, so its own setting-up never lands inside the motion.
       void moving.ready.then(() => {
         const parts = document.getAnimations().filter(animation => (animation.effect as KeyframeEffect | null)?.pseudoElement?.startsWith("::view-transition"));
@@ -55,7 +55,9 @@ export function PublicTurn() {
       const to = link.pathname;
       if (to === location.pathname || !PUBLIC.test(to) || !PUBLIC.test(location.pathname)) return;
       event.preventDefault();
-      turn("on", () => router.push(link.pathname + link.search + link.hash), to);
+      // The router is not asked to find the new page's top (it measures the page as it lands, inside the turn); a page without a mark is simply opened at its top as it is laid down.
+      const mark = Boolean(link.hash);
+      turn("on", () => router.push(link.pathname + link.search + link.hash, { scroll: mark }), to, mark ? undefined : () => scrollTo(0, 0));
     };
     // Back: the router is told only inside the turn, so the page leaving is pictured before the one coming back is laid down.
     let replaying = false;
