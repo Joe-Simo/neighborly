@@ -55,8 +55,8 @@ export function CourtyardAssembly() {
       element.dataset.played = "true";
       // The words wait for the courtyard to be whole; only the picture of them waits, a reader has them throughout.
       stage.dataset.assembling = "playing";
-      // The whole painting is the ground and the far sheet stands on it from the start, so the arch is never empty anywhere;
-      // each nearer sheet stands up onto its own place in it.
+      // The ground is bare paper with the far sheet standing on it, and each nearer sheet's slot cut in it from its own outline
+      // (courtyard-slots, made from the sheets' alpha): a pop-up, each piece standing up into the slot it came from.
       const turns = images.slice(2).map((image, index) => image.animate(
         // While it stands it throws its hard shadow down onto the sheet behind, which tightens into the painting's own resting relief as it lands, so the swap to the painting is exact: light only, no blur.
         [{ transform: "rotateX(60deg)", filter: "drop-shadow(0 14px 0 rgb(46 34 22 / .34))" }, { transform: "none", filter: "drop-shadow(0 0 0 rgb(46 34 22 / 0))" }],
@@ -71,8 +71,8 @@ export function CourtyardAssembly() {
 
   if (!here) return null;
   return <div ref={host} className="courtyard-assembly" aria-hidden="true">
-    {/* eslint-disable-next-line @next/next/no-img-element -- the same painting the stage shows, in register under the sheets */}
-    <img src="/assets/threshold/courtyard-fresco.webp" alt="" width={1774} height={887} decoding="async" />
+    {/* eslint-disable-next-line @next/next/no-img-element -- the slots, cut from the sheets' own outlines, in register with them */}
+    <img src="/assets/made/courtyard-slots-1774.webp" srcSet="/assets/made/courtyard-slots-960.webp 960w, /assets/made/courtyard-slots-1774.webp 1774w" sizes="100vw" alt="" width={1774} height={887} decoding="async" />
     {/* eslint-disable-next-line @next/next/no-img-element -- the sheets are cut at two widths and must stay in register with the painting, pixel for pixel */}
     {sheets.map(sheet => <img key={sheet} src={source(sheet, 1774)} srcSet={`${source(sheet, 960)} 960w, ${source(sheet, 1774)} 1774w`} sizes="100vw" alt="" width={1774} height={887} decoding="async" />)}
   </div>;
