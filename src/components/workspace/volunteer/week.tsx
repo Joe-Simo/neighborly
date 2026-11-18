@@ -11,6 +11,8 @@ import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { RoomAside, useFarScreen } from "@/components/workspace/aside";
 import { StartHere } from "@/components/workspace/start-here";
+import { FirstWeekSlips } from "@/components/workspace/first-week/first-week";
+import { COMING_UP } from "@/components/workspace/first-week/first-week-state";
 import { WeekQuilt } from "@/components/workspace/volunteer/week-quilt";
 import { CardGreeting } from "@/components/workspace/volunteer/card-greeting";
 import { WeekNote } from "@/components/workspace/week-note/week-note";
@@ -65,6 +67,7 @@ export function WeekSection() {
       {/* Sewn onto the head's own rule, before the first thing to do. */}
       <WeekQuilt />
       <StartHere />
+      <FirstWeekSlips />
       <WeekNote brief={briefed || incoming.length > 0} />
       <IncomingRequests {...requests} place={words.week.comingUp} />
       {firstDays ? (
@@ -74,7 +77,7 @@ export function WeekSection() {
       ) : (
       /* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */
       <div className="week-columns" data-far={far ? "" : undefined}>
-      <section className="live-section">
+      <section className="live-section" id={COMING_UP}>
         <div className="live-section-head">
           <h2>{words.week.comingUp}</h2>
           <span className="live-count">{words.week.nextSevenDays}</span>
