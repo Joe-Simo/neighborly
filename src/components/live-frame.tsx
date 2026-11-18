@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, type ReactNode } from "react";
+import { startTransition, useEffect, useLayoutEffect, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LiveApp } from "@/components/live-app";
 import type { LiveEntryIntent } from "@/components/live-auth";
@@ -73,7 +73,10 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
       // Only the room's own way back (a link inside the room) returns to the list's place; the menu opens a room at its top.
       const back = sameRoom && kept?.path === link.pathname && link.closest("main") ? kept.y : 0;
       kept = null;
-      window.history.pushState(null, "", link.pathname);
+      // The press is painted in the next frame, as paper (the link pressed), and the next room is drawn after it, in
+      // a transition: the room left stays whole on screen until the next one is whole (room-sheet.tsx).
+      link.setAttribute("data-going", "");
+      startTransition(() => window.history.pushState(null, "", link.pathname));
       if (!back) return window.scrollTo(0, 0);
       // Back in the list where it was left: once the list is long enough to stand there again, or after a second.
       let tries = 60;
@@ -87,6 +90,11 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
     document.addEventListener("click", step, true);
     return () => document.removeEventListener("click", step, true);
   }, []);
+
+  // The link pressed is let go of once its room is the one in the address.
+  useEffect(() => {
+    for (const link of document.querySelectorAll("a[data-going]")) link.removeAttribute("data-going");
+  }, [pathname]);
 
   // The tab names the room; the server only does so on a fresh load. Set before paint, so the room's own
   // effect (shell.tsx), which knows the person's language, has the last word.

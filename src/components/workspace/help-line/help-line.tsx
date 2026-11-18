@@ -5,6 +5,7 @@ import { DateLeaf } from "@/components/workspace/primitives";
 import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf, openUp } from "@/components/workspace/fold";
 import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
+  startTransition,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -221,9 +222,10 @@ function HelpLine() {
   // The draft that waits next, laid under the saved one while it closes.
   const next = sealed && handing && drafted && drafted.call.id !== sealed.call.id ? drafted : null;
   const sheetOpen = onSheet !== null;
+  // A sheet is opened in a transition: the press is painted first (the button pressed), and the sheet lifts after.
   const log = useCallback(() => {
     setDone(null);
-    setStep({ kind: "log" });
+    startTransition(() => setStep({ kind: "log" }));
   }, []);
   const draftsUnknown = answer === undefined;
   useLayoutEffect(() => {
@@ -257,7 +259,7 @@ function HelpLine() {
     setDone(null);
     approving.clear();
     if (next.kind === "draft") void draftFor(next.call.id);
-    else setStep(next);
+    else startTransition(() => setStep(next));
   }
   /** Asks the assistant to draft a request from one call's note. The sheet shows it reading meanwhile. */
   async function draftFor(callId: Call["id"]) {

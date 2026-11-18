@@ -171,6 +171,9 @@
 }
 .live-nav a { position: relative; }
 .live-app .live-nav a[aria-current="page"] { background: none; box-shadow: none; }
+/* A room's link pressed, in the frame after the press, while its room is drawn: the selected room's own slip (the
+   marker's paper and its ink bar), so the press reads as this room chosen one frame early. */
+.live-app .live-nav a[data-going]:not([aria-current="page"]) { border-radius: 4px; background: #dde5d3; box-shadow: inset 3px 0 #55714c; }
 @media (min-width: 900px) {
   /* The menu is as wide as its longest label in any language, so no label wraps; the group's name wraps inside that width. */
   .live-app .live-layout { grid-template-columns: minmax(230px, max-content) minmax(0, 1fr); }
