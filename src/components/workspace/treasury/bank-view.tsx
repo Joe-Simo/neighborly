@@ -13,7 +13,7 @@ import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
 import { readFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
-import { LiveField } from "@/components/workspace/primitives";
+import { DateLeaf as PieceLeaf, LiveField } from "@/components/workspace/primitives";
 import { parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
 import { formatDate, type Language } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
@@ -46,10 +46,10 @@ function DateLeaf({ day }: { day: string }) {
   const { words } = useWorkspace();
   const { month, date } = dayParts(words.locale, day);
   return (
-    <div className="live-date-leaf">
+    <PieceLeaf said={`${month} ${date}`}>
       <span>{month}</span>
       <strong>{date}</strong>
-    </div>
+    </PieceLeaf>
   );
 }
 

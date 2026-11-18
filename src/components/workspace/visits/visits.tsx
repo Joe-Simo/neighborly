@@ -1,5 +1,7 @@
 "use client";
 
+import { DateLeaf } from "@/components/workspace/primitives";
+
 import { FOLD_HOLD, closeUp, foldLeaves, openUp, useSavedLine } from "@/components/workspace/fold";
 import "./visits.css";
 import {
@@ -429,7 +431,7 @@ export function VisitsView({
     }).split(/\s/);
     const near = Math.abs(at - now) < WEEK;
     return (
-      <div className="live-date-leaf">
+      <DateLeaf said={format(at, near ? { month: undefined, day: undefined, weekday: "long", hour: "numeric", minute: "2-digit" } : { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}>
         <span>
           {near
             ? part(at, { weekday: "short" })
@@ -437,7 +439,7 @@ export function VisitsView({
         </span>
         <strong>{time}</strong>
         <span>{half}</span>
-      </div>
+      </DateLeaf>
     );
   };
   // The side column on a wide screen: the week's visits by day. Only while the pair sheet holds the

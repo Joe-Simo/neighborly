@@ -219,3 +219,17 @@ export function LiveField({
     </label>
   );
 }
+
+/**
+ * A row's leaf (a day and a time, a month and a date): drawn in its pieces, read as one phrase. In the iOS app's web
+ * view (WebKit) `role="text"` makes VoiceOver meet the leaf once, as `said`, instead of each piece on its own ("MON",
+ * "10:10", "AM"); elsewhere the pieces are read in order, as before. The leaf keeps its own pieces as its children,
+ * so the rows' rules that look at them (help-line.css, `:first-child`) stand as they were.
+ */
+export function DateLeaf({ said, children }: { said: string; children: ReactNode }) {
+  return (
+    <div className="live-date-leaf" role="text" aria-label={said}>
+      {children}
+    </div>
+  );
+}
