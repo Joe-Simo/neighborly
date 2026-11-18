@@ -279,3 +279,7 @@ td.help-money[data-balance] { color: var(--live-muted); }
 @media (prefers-reduced-motion: reduce) {
   .help-bar span { animation: none; }
 }
+
+/* Figures line up: every room table uses lining figures of one width,
+   so a column of numbers reads straight down and a total never shifts as it changes. */
+.live-app table, .live-dialog table { font-variant-numeric: lining-nums tabular-nums; }
