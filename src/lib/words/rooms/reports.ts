@@ -68,8 +68,8 @@ export const en = (t: Terms, place: string) => ({
   },
   empty: {
     title: "Nothing to add up yet.",
-    year: "As calls, visits and payments are recorded, this year’s counts appear here on their own.",
-    quarter: "As calls, visits and payments are recorded, this quarter’s counts appear here on their own.",
+    year: "The first figures appear here the day the first call, visit or payment is written down.",
+    quarter: "This quarter’s first figures appear here the day its first call, visit or payment is written down.",
     open: "Open the help line",
   },
   /** The year as one piece: the words in bold, the rest of their sentence, and the three figures beside it. */
@@ -362,8 +362,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     empty: {
       title: "Todavía no hay nada que sumar.",
-      year: "A medida que se anotan llamadas, visitas y pagos, las cuentas de este año aparecen aquí solas.",
-      quarter: "A medida que se anotan llamadas, visitas y pagos, las cuentas de este trimestre aparecen aquí solas.",
+      year: "Las primeras cifras aparecen aquí el día en que se anota la primera llamada, visita o pago.",
+      quarter: "Las primeras cifras del trimestre aparecen aquí el día en que se anota su primera llamada, visita o pago.",
       open: "Abrir la línea de ayuda",
     },
     year: {

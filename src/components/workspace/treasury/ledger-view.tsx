@@ -182,7 +182,7 @@ export function LedgerView({
           <p>
             {w.first.deck}
           </p>
-          <Button onClick={onRecord}>
+          <Button variant="outline" onClick={onRecord}>
             <Plus size={18} aria-hidden="true" /> {w.first.action}
           </Button>
         </div>

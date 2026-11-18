@@ -219,7 +219,7 @@ export function ShelfView({
             <p>
               {w.empty.deck}
             </p>
-            <Button onClick={onAdd}>{w.empty.action}</Button>
+            <Button variant="outline" onClick={onAdd}>{w.empty.action}</Button>
           </div>
         </div>
       )}
