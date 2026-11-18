@@ -399,6 +399,18 @@ export function LiveWorkspace({
     page.focus({ preventScroll: true });
     page.removeAttribute("tabindex");
   }, [roomIn]);
+  // Moving to another room, focus lands on its headline once the room is at rest (the page turn over): a screen
+  // reader says the room once, by its name, and the next Tab goes on from the top of the room. A ring is drawn there
+  // only for someone on keys. The first room keeps focus where the arrival put it.
+  const headline = useRef<HTMLHeadingElement>(null);
+  const focusedArea = useRef(area);
+  useEffect(() => {
+    if (!settled || focusedArea.current === area) return;
+    focusedArea.current = area;
+    const active = document.activeElement;
+    if (active && active !== document.body && !active.closest("nav, .live-tab-bar, [data-slot='dialog-content']") && document.contains(active)) return;
+    headline.current?.focus({ preventScroll: true });
+  }, [settled, area]);
   const shellHeld = !roomIn && !lost;
   // Shown in that same frame: a button that eases everything it changes would otherwise come a frame or two late.
   useLayoutEffect(() => {
@@ -567,7 +579,7 @@ export function LiveWorkspace({
                 {churchName}
                 {data.church.sample ? ` · ${words.shell.sample}` : ""}
               </p>
-              <h1>{heading.title}</h1>
+              <h1 ref={headline} tabIndex={-1}>{heading.title}</h1>
               <p className="live-deck">{heading.deck}</p>
             </div>
             <div className="live-head-actions" key={`actions-${area}`}>
