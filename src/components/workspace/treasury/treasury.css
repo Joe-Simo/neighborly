@@ -93,6 +93,9 @@
   text-underline-offset: 5px;
   transition: text-decoration-color 200ms ease;
 }
+/* The line reads as words, yet takes a tap or click of full height: padding that reaches past the line without moving it. */
+.live-app .help-what [data-slot="button"] { padding-block: 10px; margin-block: -10px; }
+@media (pointer: coarse) { .live-app .help-what [data-slot="button"] { padding-block: 14px; margin-block: -14px; } }
 .live-app .help-what [data-slot="button"]:hover {
   text-decoration-color: #a9b697;
 }
