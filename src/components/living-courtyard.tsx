@@ -201,6 +201,11 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const rest = () => { pointer.x = 0; pointer.y = 0; };
     addEventListener("pointermove", onPointer, { passive: true });
     document.documentElement.addEventListener("pointerleave", rest);
+    // On a screen past 1920 by 1080 the page around the scene costs the graphics card more to put together while it moves, so while the page is scrolling the scene is
+    // shaded on a smaller part of its own canvas, stretched to fill its place; within a frame of the scroll stopping it is shaded whole again. Nothing is reallocated.
+    let scrolledAt = -1e9, shade = 1;
+    const onScroll = () => { scrolledAt = performance.now(); };
+    addEventListener("scroll", onScroll, { passive: true });
 
     const shown = (selector: string) => { const layer = host.querySelector(selector); return layer ? Number(getComputedStyle(layer).opacity) : 0; };
     // Left alone, the people notice you now and then: a look up, a turn of the head. An act of care is answered with a reach or a wave, and then they stay turned towards you.
@@ -234,8 +239,16 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       // Its whole height is always drawn, because a quick flick moves the page further in one frame than any margin, and a strip left undrawn would show bare.
       const marginX = stage.width * .08;
       const left = Math.max(0, (-marginX - stage.left) / stage.width), right = Math.min(1, (innerWidth + marginX - stage.left) / stage.width);
+      const moving = time - scrolledAt < 120;
+      const nowShade = moving ? Math.min(1, Math.sqrt((1920 * 1080) / Math.max(1, innerWidth * innerHeight))) : 1;
+      if (nowShade !== shade) {
+        shade = nowShade; drawn = false;
+        renderer.domElement.style.transform = shade < 1 ? `scale(${1 / shade})` : "";
+      }
+      const width = frame.clientWidth * shade, height = frame.clientHeight * shade;
+      renderer.setViewport(0, frame.clientHeight - height, width, height);
       renderer.setScissorTest(drawn);
-      renderer.setScissor(left * frame.clientWidth, 0, Math.max(0, right - left) * frame.clientWidth, frame.clientHeight);
+      renderer.setScissor(left * width, frame.clientHeight - height, Math.max(0, right - left) * width, height);
       // If the graphics card cannot keep pace, the painting is drawn a little smaller rather than letting the journey stutter.
       pace = mix(pace, Math.min(elapsed, .1), .06);
       strained = pace > .0195 ? strained + 1 : 0;
@@ -322,6 +335,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       cancelAnimationFrame(raf);
       observer.disconnect();
       removeEventListener("pointermove", onPointer);
+      removeEventListener("scroll", onScroll);
       document.documentElement.removeEventListener("pointerleave", rest);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       renderer.domElement.removeEventListener("webglcontextrestored", restored);
