@@ -177,13 +177,13 @@ export function en(set: WordSet) {
       quietDetail:
         "No commitments are scheduled in the next seven days. Later dates are in Commitments.",
       fromGroup: `From your ${t.group}`,
-      noAnnouncementsTitle: "No announcements yet.",
+      noAnnouncementsTitle: "All quiet from the group.",
       noAnnouncementsDetail: "Updates from your coordinators will be kept here.",
     },
     mine: {
       accepted: "Accepted commitments",
       addToCalendar: "Add these to your phone’s calendar",
-      emptyTitle: "No accepted commitments yet.",
+      emptyTitle: "Room for your first yes.",
       emptyDetail:
         "Commitments you accept will appear here with everything you need to prepare.",
     },
@@ -195,7 +195,7 @@ export function en(set: WordSet) {
       allTeams: "All teams",
       noneForTeamTitle: "No upcoming dates for this team.",
       noneForTeamDetail: `Choose another team or view all teams to see the rest of your ${t.group}’s commitments.`,
-      emptyTitle: "No upcoming commitments.",
+      emptyTitle: "A clear road ahead.",
       emptyDetail:
         "New commitments will appear here with their date, person and preparation.",
       placeOpen: "A place is open",
@@ -240,7 +240,7 @@ export function en(set: WordSet) {
       note: "Time off does not remove you from your teams. Existing commitments need a separate change so everyone knows what is covered.",
       remove: "Remove",
       removed: "Time off removed.",
-      emptyTitle: "No time away planned.",
+      emptyTitle: "Every day is open.",
       emptyDetail:
         "Add dates when you won’t be available. Your place on the team stays the same.",
       coverTitle: "Cover requests",
@@ -292,7 +292,7 @@ export function en(set: WordSet) {
       reopenTask: (title: string) => `Open again: ${title}`,
       done: "Done",
       open: "Open",
-      emptyTitle: "No tasks yet.",
+      emptyTitle: "No tasks yet. A clean slate.",
       emptyDetail: "Shared tasks will appear here with their owner and due date.",
       meetings: "Meetings",
       going: "You are going",
