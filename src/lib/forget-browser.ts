@@ -19,6 +19,8 @@ const session = [
   // Which rooms' pictures have already been laid, and the reports pile (workspace/relief-arrival.tsx, reports/report-view.tsx).
   "kind-helps-arrived",
   "report-pile-laid",
+  // What was typed into a room's form and not yet saved (workspace/kept-typing.tsx).
+  "kh-typed",
 ];
 
 export function forgetThisBrowser() {
@@ -44,6 +46,8 @@ export function forgetWhoWasHere() {
   // A room the app kept on the device is never drawn for someone signed out.
   forgetKeptRoom();
   try {
+    // Typing kept for a member is never opened for nobody.
+    window.sessionStorage.removeItem("kh-typed");
     if (local.some((key) => window.localStorage.getItem(key) !== null)) forgetThisBrowser();
   } catch {
     // Storage is closed to the page: nothing was kept.

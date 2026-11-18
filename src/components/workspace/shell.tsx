@@ -28,6 +28,7 @@ import { LiveConnection, LiveState, LiveWaiting, RoomBoundary } from "@/componen
 import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { WorkspaceKeys } from "@/components/workspace/keys";
+import { KeptTyping } from "@/components/workspace/kept-typing";
 import {
   WorkspaceProvider,
   type LiveHeadAction,
@@ -584,6 +585,7 @@ export function LiveWorkspace({
           ))}
         </nav>
         <WorkspaceProvider value={workspace}>
+        <KeptTyping member={data.user.id} conference={data.church.id} />
         <WorkspaceKeys nav={navRef} rooms={menuItems.map(({ id, label }) => menu[id] ?? label)} />
         <RoomStill area={area} column={column}>
         <RoomShown value={shown}>

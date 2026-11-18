@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { readFailure } from "@/components/workspace/failure";
+import { SAVED_EVENT } from "@/components/workspace/kept-typing";
 
 type Felt = "saved" | "decided";
 type FeltBridge = { webkit?: { messageHandlers?: { kindHelpsFelt?: { postMessage: (felt: "decided" | "refused") => void } } } };
@@ -23,6 +24,7 @@ export function useSave(felt: Felt = "saved") {
     try {
       const result = await work();
       if (felt === "decided") (window as FeltBridge).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("decided");
+      window.dispatchEvent(new Event(SAVED_EVENT));
       return { saved: true as const, result };
     } catch (cause) {
       (window as FeltBridge).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("refused");
