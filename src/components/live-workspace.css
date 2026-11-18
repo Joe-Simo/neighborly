@@ -183,12 +183,16 @@
 .live-section-head {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 10px 16px;
   align-items: baseline;
   margin-bottom: 16px;
 }
 .live-section-head h2 {
   margin: 0;
+}
+/* A button that does not fit beside its head's title goes to the next line, never past the page's edge. */
+.live-section-head:has(> [data-slot="button"]:not(.tools-quiet)) {
+  flex-wrap: wrap;
 }
 .live-count {
   font-size: 14px;
