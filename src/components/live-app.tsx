@@ -267,7 +267,9 @@ function LiveRooms({
   const roomWaiting = (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
   // Behind a first look the week's own three readings are asked for too, so the signed-in room has every answer on
   // its first frame. They are let go a moment after the change, once the room itself is asking them.
-  const [aheadOfWeek, setAheadOfWeek] = useState(viaSample || kept !== null);
+  const [aheadOfWeek, setAheadOfWeek] = useState(viaSample);
+  // A kept room is read just after hydration: its look asks the week's readings ahead from that render on.
+  if (kept && look && !aheadOfWeek) setAheadOfWeek(true);
   const hour = useHour();
   const week = useQueries(
     useMemo(

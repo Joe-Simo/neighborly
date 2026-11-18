@@ -21,8 +21,16 @@ export const canKeep = () => handler() !== undefined;
 export function keptRoom(): Kept | null {
   if (typeof window === "undefined") return null;
   const kept = (window as { kindHelpsKept?: unknown }).kindHelpsKept as Partial<Kept> | undefined;
-  return kept && typeof kept.memberId === "string" && typeof kept.churchId === "string" && kept.room ? (kept as Kept) : null;
+  if (!kept || typeof kept.memberId !== "string" || typeof kept.churchId !== "string" || !kept.room) return null;
+  // No email is ever kept: the room is drawn with none, as for a member whose email is not theirs to see.
+  if (!withoutEmails.has(kept.room)) {
+    kept.room.user.email = "";
+    for (const person of kept.room.people) person.email = "";
+    withoutEmails.add(kept.room);
+  }
+  return kept as Kept;
 }
+const withoutEmails = new WeakSet<object>();
 
 /** The week's counts for someone who may not see them: never drawn (week-note.tsx draws nothing then), kept as zeros. */
 export const emptyNote: FirstRoom["weekNote"] = { callsWaiting: 0, callsFirstByAssistant: 0, callsFirstByPerson: 0, oldestWaitingDays: 0, visitsPlanned: 0, requestsOpen: 0, approvedUnpaid: 0, approvedUnpaidCents: 0, openPlaces: 0, away: 0 };
@@ -58,11 +66,11 @@ export function keepRoom(
   const byId = new Map(requestCommitments.map((shift) => [shift.id, shift]));
   const room = {
     church: { id: data.church.id, name: data.church.name, timeZone: data.church.timeZone, sample: data.church.sample, wordSet: data.church.wordSet },
-    user: { id: data.user.id, name: data.user.name, email: "", language: data.user.language },
+    user: { id: data.user.id, name: data.user.name, language: data.user.language },
     canCoordinate: data.canCoordinate,
     truncated: data.truncated,
     teams: data.teams.map((team) => ({ id: team.id, name: team.name, description: team.description, memberIds: team.memberIds, approvedMemberIds: team.approvedMemberIds, myInvitation: team.myInvitation, canCoordinate: team.canCoordinate, memberRoles: team.memberRoles.map((role) => ({ personId: role.personId, role: role.role })) })),
-    people: data.people.map((person) => ({ id: person.id, name: person.name, email: "", role: person.role, active: person.active, approved: person.approved, coverOptIn: person.coverOptIn })),
+    people: data.people.map((person) => ({ id: person.id, name: person.name, role: person.role, active: person.active, approved: person.approved, coverOptIn: person.coverOptIn })),
     commitments: data.commitments.map(commitment),
     requests: data.requests.map(request),
     availability: data.availability.map((free) => ({ id: free.id, personId: free.personId, start: free.start, end: free.end })),
