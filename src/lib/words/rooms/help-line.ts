@@ -19,8 +19,8 @@ export const en = (t: Terms, place: string) => ({
     callMatched: `Call saved, and added to the ${t.neighbor}’s record.`,
     callWaiting: "Call saved. It is waiting below until someone calls back.",
     returned: (name: string) => `Marked returned. ${name} has been called back.`,
-    returnedUndone: (name: string) => `${name} is waiting to be called back again.`,
-    callTakenBack: "The call is taken off the list.",
+    returnedUndone: (name: string) => `${name} is back on the call-back list.`,
+    callTakenBack: "The call is off the list.",
     neighborAdded: "Neighbor added. This call is now on their record.",
   },
   /** What went wrong, and what is still true. */

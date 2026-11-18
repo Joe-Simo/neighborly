@@ -84,7 +84,7 @@ export const en = (t: Terms, place: string) => ({
       month: "The month is saved.",
       accounts: "Accounts saved.",
       note: "Note added.",
-      noteTakenBack: "The note is taken off the record.",
+      noteTakenBack: "The note is removed.",
       request: "Request saved. It is waiting for a decision.",
       changed: "Request changed.",
       details: "Details saved.",
