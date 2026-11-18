@@ -13,6 +13,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // The app keeps its paper colours when the device is set to dark:
         // status bar, keyboard and system sheets included.
         window?.overrideUserInterfaceStyle = .light
+        // Opened from a Home Screen quick action: the app opens straight into that room.
+        ShellViewController.launchRoom = QuickRoom.room(for: connectionOptions.shortcutItem)
         window?.rootViewController = ShellViewController()
         window?.makeKeyAndVisible()
 
@@ -26,6 +28,34 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         SceneDelegateProxy.shared.scene(scene, continue: userActivity)
     }
+
+    /// A quick action while the app is already open: the room is opened as a link to it would be, with its page turn.
+    func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+        guard let room = QuickRoom.room(for: shortcutItem), let shell = window?.rootViewController as? ShellViewController else { return completionHandler(false) }
+        shell.open(room: room)
+        completionHandler(true)
+    }
+}
+
+/// The Home Screen quick actions: three rooms, named in the device's language, with the system's own symbols.
+enum QuickRoom {
+    static let rooms: [(type: String, room: String, en: String, es: String, symbol: String)] = [
+        ("com.kindhelps.app.week", "week", "This week", "Esta semana", "calendar"),
+        ("com.kindhelps.app.help-line", "help-line", "Help line", "Línea de ayuda", "phone"),
+        ("com.kindhelps.app.visits", "visits", "Record a visit", "Anotar una visita", "shoeprints.fill"),
+    ]
+
+    static func room(for item: UIApplicationShortcutItem?) -> String? {
+        guard let item else { return nil }
+        return rooms.first { $0.type == item.type }?.room
+    }
+
+    static func offer() {
+        let spanish = Locale.preferredLanguages.first?.hasPrefix("es") == true
+        UIApplication.shared.shortcutItems = rooms.map {
+            UIApplicationShortcutItem(type: $0.type, localizedTitle: spanish ? $0.es : $0.en, localizedSubtitle: nil, icon: UIApplicationShortcutIcon(systemImageName: $0.symbol), userInfo: nil)
+        }
+    }
 }
 
 /// Keeps the launch view (paper, the small k) over the web view until the
@@ -36,6 +66,24 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 /// outright ends on the no-connection page, which Capacitor loads from
 /// `server.errorPath`.
 final class ShellViewController: CAPBridgeViewController {
+    /// The room a quick action opened the app into, read once as the first page is chosen.
+    static var launchRoom: String?
+
+    override func instanceDescriptor() -> InstanceDescriptor {
+        let descriptor = super.instanceDescriptor()
+        if let room = Self.launchRoom, let server = descriptor.serverURL, var parts = URLComponents(string: server) {
+            parts.path = "/app/\(room)"
+            descriptor.serverURL = parts.string
+        }
+        Self.launchRoom = nil
+        return descriptor
+    }
+
+    /// Opens a room in the page already open, as its link in the bar would.
+    func open(room: String) {
+        webView?.evaluateJavaScript("(() => { const a = document.createElement('a'); a.href = '/app/\(room)'; document.body.append(a); a.click(); a.remove(); })()")
+    }
+
     private let paper = UIColor(red: 0.9608, green: 0.9529, blue: 0.9255, alpha: 1)
     private var cover: UIView?
     private var statusStrip: UIView?

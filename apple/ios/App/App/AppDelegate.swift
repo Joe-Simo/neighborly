@@ -15,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         warm.loadHTMLString("", baseURL: nil)
         self.warm = warm
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in self?.warm = nil }
+        QuickRoom.offer()
         return true
     }
 
