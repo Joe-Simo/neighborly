@@ -29,6 +29,7 @@ import { zoneName } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { WorkspaceKeys } from "@/components/workspace/keys";
 import { KeptTyping } from "@/components/workspace/kept-typing";
+import { UndoAct } from "@/components/workspace/undo";
 import {
   WorkspaceProvider,
   type LiveHeadAction,
@@ -700,24 +701,25 @@ export function LiveWorkspace({
             <Outcome
               ref={outcomeNotice}
               action={undo && (
-                <Button variant="link" className="help-text-action" disabled={pending} onClick={async () => {
-                  // The line's button leaves with the line, so focus goes back to the thing the act was taken on.
-                  setPending(true);
-                  setUndo(undefined);
-                  try {
-                    await undo.run();
-                    setNotice(undo.said);
-                    focusWhenAwake(undo.returnTo);
-                  } catch (cause) {
-                    const said = readFailure(cause, words.notices.failed);
-                    setNotice("");
-                    setError(words.notices.refused[said] ?? said);
-                  } finally {
-                    setPending(false);
-                  }
-                }}>
-                  {words.tasks.undo}
-                </Button>
+                <UndoAct
+                  key={notice}
+                  run={async () => {
+                    // The line's button leaves with the line, so focus goes back to the thing the act was taken on.
+                    setPending(true);
+                    setUndo(undefined);
+                    try {
+                      await undo.run();
+                      setNotice(undo.said);
+                      focusWhenAwake(undo.returnTo);
+                    } catch (cause) {
+                      const said = readFailure(cause, words.notices.failed);
+                      setNotice("");
+                      setError(words.notices.refused[said] ?? said);
+                    } finally {
+                      setPending(false);
+                    }
+                  }}
+                />
               )}
             >
               {notice}
