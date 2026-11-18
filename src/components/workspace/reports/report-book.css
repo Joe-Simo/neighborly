@@ -94,7 +94,11 @@
   .report-book-print .book-folio { display: none; }
   .report-book-print .book-table { break-inside: avoid; }
   .report-book-print .book-sheet h3 { break-after: avoid; }
-  .report-book-print .book-table th, .report-book-print .book-table td { border-color: #0004; }
+  /* Each rule is drawn once, on its row, in an opaque grey: cell borders meeting mid-row printed a tick where they overlap. */
+  .report-book-print .book-table :is(th, td) { border-bottom: 0; border-top: 0; }
+  .report-book-print .book-table tr { border-bottom: 1px solid #bfbfbf; }
+  .report-book-print .book-table thead tr { border-bottom-color: #000; }
+  .report-book-print .book-table tfoot tr { border-top: 1px solid #000; border-bottom: 0; }
   .report-book-print :is(.book-table tr, .book-note) { break-inside: avoid; }
   .report-book-print .book-mark .week-quilt-piece { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   :root:not([data-print-book]) .report-book { display: none; }
