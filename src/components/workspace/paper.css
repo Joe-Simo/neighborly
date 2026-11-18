@@ -1305,3 +1305,27 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    where it shows past the card's lower right. */
 .paper-scene[data-card] > b { top: auto; right: -14px; bottom: -13px; width: 20px; height: 20px; z-index: -1; transform: rotate(5deg); }
 .paper-scene[data-card] > b::before { clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+
+/* ── w95 (D2, D4): the rooms in the home page's paper ──
+   Cards: the home sheet's grain, a fine laid line at 8 degrees, under the same lit edge and contact shade. Background
+   only, so no card's own corners, folds or marks are touched. */
+:is(.live-app, .live-dialog) :is(.help-sheet, .tools-leaf, nav.week-figures a) {
+  background-image: repeating-linear-gradient(8deg, transparent 0 2px, rgb(112 105 79 / 0.045) 3px, transparent 4px);
+}
+:is(.live-app, .live-dialog) :is(.help-sheet, .tools-leaf) {
+  border-color: rgb(201 189 167 / 0.5);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.85), 0 1px 1px rgb(59 58 36 / 0.12), 0 22px 40px -28px rgb(71 62 36 / 0.45);
+}
+/* Lists and tables: set as type. Figures line up by the digit, the rules are hairlines, a table's heads are small letterspaced capitals. */
+.live-app :is(.live-list, table, .help-aside-list, .visits-aside-day, .week-figures) { font-variant-numeric: tabular-nums lining-nums; font-kerning: normal; }
+.live-app table:not(.book-table) th { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live-muted); }
+.live-app table:not(.book-table) :is(th, td) { border-bottom: 1px solid var(--live-line); }
+/* Heads: the display line set as the home page sets its own: optical size, balanced lines, hanging punctuation. */
+.live-app .live-page-head h1 { font-optical-sizing: auto; text-wrap: balance; hanging-punctuation: first last; font-kerning: normal; }
+.live-app .live-page-head .live-deck { text-wrap: pretty; }
+/* Selection: the sage wash the home page's paper is marked with, ink on it. */
+:is(.live-app, .live-dialog) ::selection { background: #dde5d3; color: #283c32; }
+/* Focus: the one ink ring, set off the control by a paper margin, as a cut edge is set off the sheet beneath. */
+:is(.live-app, .live-dialog) :is(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid #283c32; outline-offset: 3px; }
+@media (forced-colors: active) { :is(.live-app, .live-dialog) :is(.help-sheet, .tools-leaf, nav.week-figures a) { background-image: none; } }
+@media print { :is(.live-app, .live-dialog) :is(.help-sheet, .tools-leaf, nav.week-figures a) { background-image: none; box-shadow: none; } }
