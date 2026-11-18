@@ -35,15 +35,21 @@ export function CutHeads() {
       });
     };
     const wake = () => { if (!frame) frame = requestAnimationFrame(place); };
+    // Where each head lies is learnt from the observer's own first answer, never by measuring the page as it lands (a page turned to is laid out inside the turn).
+    const met = new Set<HTMLElement>();
     const watch = new IntersectionObserver(entries => {
-      entries.forEach(entry => { const head = entry.target as HTMLElement; if (entry.isIntersecting) seen.add(head); else seen.delete(head); });
+      entries.forEach(entry => {
+        const head = entry.target as HTMLElement;
+        if (!met.has(head)) {
+          met.add(head);
+          if (entry.boundingClientRect.bottom < innerHeight * .8) { head.dataset.cut = "stood"; watch.unobserve(head); return; }
+          head.dataset.cut = "rising";
+        }
+        if (entry.isIntersecting) seen.add(head); else seen.delete(head);
+      });
       wake();
     }, { rootMargin: "0px 0px 20% 0px" });
-    heads.forEach(head => {
-      if (head.getBoundingClientRect().bottom < innerHeight * .8) { head.dataset.cut = "stood"; return; }
-      head.dataset.cut = "rising";
-      watch.observe(head);
-    });
+    heads.forEach(head => watch.observe(head));
     addEventListener("scroll", wake, { passive: true });
     addEventListener("resize", wake);
     return () => { heads.forEach(head => { delete head.dataset.cut; head.style.removeProperty("--stand"); }); watch.disconnect(); removeEventListener("scroll", wake); removeEventListener("resize", wake); cancelAnimationFrame(frame); };

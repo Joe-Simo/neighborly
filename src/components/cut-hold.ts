@@ -25,7 +25,7 @@ export function useCutHold(viewport: RefObject<HTMLElement | null>, on: boolean,
       view.style.setProperty("--hold-w", `${Math.round(width)}px`);
       view.style.setProperty("--hold-h", `${Math.round(bottom - top + above + below)}px`);
     };
-    measure();
+    // The observer's first answer comes in the frame's own layout, before it is painted: the page is never measured as it lands (a page turned to is laid out inside the turn).
     const watch = new ResizeObserver(measure);
     watch.observe(view);
     void document.fonts?.ready.then(measure);
