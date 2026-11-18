@@ -31,6 +31,7 @@ import type * as reports from "../reports.js";
 import type * as sampleData from "../sampleData.js";
 import type * as spoken from "../spoken.js";
 import type * as treasury from "../treasury.js";
+import type * as undo from "../undo.js";
 import type * as users from "../users.js";
 import type * as visits from "../visits.js";
 import type * as workspace from "../workspace.js";
@@ -65,6 +66,7 @@ declare const fullApi: ApiFromModules<{
   sampleData: typeof sampleData;
   spoken: typeof spoken;
   treasury: typeof treasury;
+  undo: typeof undo;
   users: typeof users;
   visits: typeof visits;
   workspace: typeof workspace;
