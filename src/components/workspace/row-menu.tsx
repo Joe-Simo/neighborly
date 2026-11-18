@@ -5,6 +5,15 @@ import { createPortal } from "react-dom";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 
 type Felt = { webkit?: { messageHandlers?: { kindHelpsFelt?: { postMessage: (felt: "selected") => void } } } };
+/**
+ * The app's own context menu (SceneDelegate, kindHelpsMenu): as a finger comes down on a row, the page tells the app
+ * where the row is and its actions in its own words; if the finger stays, the system lifts the row and shows them,
+ * and answers on `window.kindHelpsMenuChose`. A finger down anywhere else clears it.
+ */
+type NativeMenu = { webkit?: { messageHandlers?: { kindHelpsMenu?: { postMessage: (menu: { x: number; y: number; width: number; height: number; actions: string[]; kinds: string[] }) => void } } } };
+declare global {
+  interface Window { kindHelpsMenuChose?: (index: number) => void }
+}
 
 const noChange = () => () => {};
 function useIosShell() {
@@ -43,19 +52,36 @@ export function RowMenu() {
       window.clearTimeout(timer);
       start = null;
     };
+    const actionsOf = (row: HTMLElement) => {
+      const link = row.querySelector<HTMLAnchorElement>("a[href]:not([href^='tel:'])");
+      const phone = row.querySelector<HTMLAnchorElement>("a[href^='tel:']");
+      const own = row.querySelector<HTMLButtonElement>("[data-row-action]");
+      return [
+        phone && { kind: "call", label: callLabel, run: () => phone.click() },
+        link && { kind: "open", label: openLabel, run: () => link.click() },
+        own && { kind: "own", label: (own.textContent ?? "").trim(), run: () => own.click() },
+      ].filter((action): action is { kind: string; label: string; run: () => void } => !!action && !!action.label);
+    };
+    const native = (window as NativeMenu).webkit?.messageHandlers?.kindHelpsMenu;
     const down = (event: TouchEvent) => {
       const row = event.target instanceof Element ? event.target.closest<HTMLElement>("[data-row-menu]") : null;
+      if (native) {
+        // The system holds the press, lifts the row and sets the menu; the page only names what is on it.
+        const actions = row && event.touches.length === 1 ? actionsOf(row) : [];
+        // The row whole, with anything of it that stands past its edge (a full-width button), so the lift shows all of it.
+        const boxes = row ? [row, ...row.querySelectorAll("*")].map((part) => part.getBoundingClientRect()).filter((part) => part.width && part.height) : [];
+        const left = Math.min(...boxes.map((part) => part.left)), top = Math.min(...boxes.map((part) => part.top));
+        const right = Math.max(...boxes.map((part) => part.right)), bottom = Math.max(...boxes.map((part) => part.bottom));
+        window.kindHelpsMenuChose = (index) => actions[index]?.run();
+        native.postMessage(boxes.length
+          ? { x: left, y: top, width: right - left, height: bottom - top, actions: actions.map((action) => action.label), kinds: actions.map((action) => action.kind) }
+          : { x: 0, y: 0, width: 0, height: 0, actions: [], kinds: [] });
+        return;
+      }
       if (!row || event.touches.length !== 1) return cancel();
       start = { x: event.touches[0].clientX, y: event.touches[0].clientY };
       timer = window.setTimeout(() => {
-        const link = row.querySelector<HTMLAnchorElement>("a[href]:not([href^='tel:'])");
-        const phone = row.querySelector<HTMLAnchorElement>("a[href^='tel:']");
-        const own = row.querySelector<HTMLButtonElement>("[data-row-action]");
-        const actions = [
-          phone && { label: callLabel, run: () => phone.click() },
-          link && { label: openLabel, run: () => link.click() },
-          own && { label: (own.textContent ?? "").trim(), run: () => own.click() },
-        ].filter((action): action is { label: string; run: () => void } => !!action && !!action.label);
+        const actions = actionsOf(row);
         if (!actions.length) return;
         // The press is the menu's: the click that follows the lift does not also open the row.
         swallow.current = row;
