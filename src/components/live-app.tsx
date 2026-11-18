@@ -451,7 +451,7 @@ function LiveRooms({
   if (leavingForSample) return <LiveRoomLoading label={authWords[deviceLanguage].sampleOpening} />;
   // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
   if (waiting) return waitedLong ? <LaunchFailure language={deviceLanguage} leave={signOut} /> : <LiveRoomLoading />;
-  if (sampleVisitor && !churchId) return <SampleResetting leave={signOut} />;
+  if (sampleVisitor && !churchId) return <SampleResetting language={deviceLanguage} leave={signOut} />;
   if (
     !churchId ||
     (liveToken && !invitationConsumed) ||
@@ -690,18 +690,18 @@ function LaunchFailure({ language, leave }: { language: Language; leave: () => v
 }
 
 /** Shown to the sample visitor in the moment between the old sample being cleared and the new one arriving. */
-function SampleResetting({ leave }: { leave: () => void }) {
+function SampleResetting({ language, leave }: { language: keyof typeof authWords; leave: () => void }) {
   const [waitedLong, setWaitedLong] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setWaitedLong(true), 20000);
     return () => clearTimeout(timer);
   }, []);
   return (
-    <LiveRoomLoading label="The sample is being reset. One moment.">
+    <LiveRoomLoading label={authWords[language].sampleResetting}>
       {waitedLong ? (
         <p className="mt-4">
           <Button variant="outline" onClick={leave}>
-            Leave the sample
+            {authWords[language].leaveSample}
           </Button>
         </p>
       ) : null}
