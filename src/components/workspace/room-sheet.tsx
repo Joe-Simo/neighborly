@@ -93,6 +93,10 @@ export function useMenuArea(area: string) {
   return useSyncExternalStore(watchHeld, () => heldArea, () => null) ?? area;
 }
 
+type Felt = { webkit?: { messageHandlers?: { kindHelpsFelt?: { postMessage: (felt: "turned") => void } } } };
+/** A page turn that commits is felt once, softly, in the iOS app; one laid back down is not. */
+const feelTurn = () => (window as Felt).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("turned");
+
 /** The finger has let go and the room before is whole: the turn is carried on, or laid back down and the step undone. */
 function letFingerGo() {
   const turn = finger.turn;
@@ -102,6 +106,7 @@ function letFingerGo() {
   finger.turn = null;
   finger.asked = null;
   if (asked === "on") {
+    feelTurn();
     finger.record = false;
     void turn.glide(finger.progress, 1).then(() => holdArea(null));
     return;
@@ -184,6 +189,7 @@ function turnAway(opening: ReturnType<typeof openingSheet> | null) {
     closing.style.visibility = "hidden";
     for (const move of closing.getAnimations()) move.finish();
   }
+  feelTurn();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return turn.end();
   void turn.play();
 }
@@ -572,6 +578,7 @@ export async function turnBackOver(column: HTMLElement, step: () => Promise<void
   } catch {
     return turn.end();
   }
+  feelTurn();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return turn.end();
   await turn.glide(0, 1);
 }
