@@ -1,6 +1,7 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useMutation, useQueries } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import { HelpDone } from "@/components/workspace/help-line/room";
@@ -97,6 +98,18 @@ export function TreasurySection() {
   const [held, setHeld] = useState(open);
   if (open && open !== held) setHeld(open);
   const view = open ?? held;
+  // Arriving from a yes just given (`?pay=`), that request's payment sheet is open on arrival: once, and only for
+  // a request still waiting to be paid. The address is then put back as the room's own.
+  const askedToPay = useSearchParams().get("pay");
+  const [payAsked, setPayAsked] = useState<string | null>(null);
+  if (askedToPay && payable && payAsked !== askedToPay) {
+    setPayAsked(askedToPay);
+    const request = payable.find((one) => one.requestId === askedToPay);
+    if (request) setOpen({ is: "payment", request });
+  }
+  useEffect(() => {
+    if (payAsked) window.history.replaceState(window.history.state, "", window.location.pathname);
+  }, [payAsked]);
   const [done, setDone] = useState("");
   const recordMoney = () => {
     setDone("");

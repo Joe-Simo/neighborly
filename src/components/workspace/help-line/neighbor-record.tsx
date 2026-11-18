@@ -220,7 +220,10 @@ export function NeighborRecord({
   };
   // The request given its yes in this visit: its corner turns over to green as the record shows it approved.
   const [approvedNow, setApprovedNow] = useState<HelpRequest["id"] | null>(null);
-  const finish = (message: string) => {
+  // A yes just given leads on to paying it, where the payment is recorded: the line carries the way there.
+  const [toPay, setToPay] = useState<HelpRequest["id"] | null>(null);
+  const finish = (message: string, pay: HelpRequest["id"] | null = null) => {
+    setToPay(pay);
     setStep(null);
     moveOn();
     setDone(message);
@@ -283,7 +286,19 @@ export function NeighborRecord({
   const { neighbor } = record;
   return (
     <>
-      {done && <HelpDone>{done}</HelpDone>}
+      {done && (
+        <HelpDone
+          action={
+            toPay ? (
+              <Link className="live-link" href={`/app/treasury?pay=${toPay}`}>
+                {text.done.pay}
+              </Link>
+            ) : undefined
+          }
+        >
+          {done}
+        </HelpDone>
+      )}
       <NeighborRecordView
         record={record}
         format={format}
@@ -403,7 +418,10 @@ export function NeighborRecord({
             decision={step.kind === "approve" ? "approved" : "declined"}
             onSaved={() => {
               if (step.kind === "approve") setApprovedNow(step.request.id);
-              finish(step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name));
+              finish(
+                step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name),
+                step.kind === "approve" ? step.request.id : null,
+              );
             }}
           />
         </LiveDialog>
