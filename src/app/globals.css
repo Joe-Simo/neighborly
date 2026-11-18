@@ -1,6 +1,8 @@
 @import "tailwindcss" source("../");
 @import "tw-animate-css";
 :root {
+  /* Read by the stale-page check in the head (layout.tsx): if this is missing, the page was drawn without its stylesheet. */
+  --kh-styled: 1;
   color-scheme: only light;
   --background: #f5f3ec;
   --foreground: #242a27;
@@ -175,17 +177,6 @@ summary:focus-visible,
 }
 .mural-navigation a:hover {
   text-decoration-line: underline;
-}
-.ambient-sound[data-on="true"] {
-  position: fixed;
-  right: max(20px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 45;
-  background: #f5f3ec;
-  color: #275748;
-  border: 1px solid #b7bcb1;
-  min-height: 44px;
-  padding-inline: 14px;
 }
 @media (max-width: 700px) {
   .mural-navigation { display: none; }
