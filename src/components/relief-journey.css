@@ -7,6 +7,9 @@
 .fresco-header{position:absolute;z-index:4;top:0;left:0;right:0;height:76px;padding:0 max(20px,4%);display:flex;align-items:center;justify-content:space-between;gap:20px}
 .fresco-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none}
 .fresco-header>a:last-child{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 2px;font-size:15px;text-decoration:none;border-bottom:1px solid #253e3140}
+/* On a wide screen the cloth reaches the corner; the way in steps back onto the paper, so its words stay read. */
+@media (min-aspect-ratio:17/10){.fresco-header{padding-right:max(20px,10%)}}
+@media (min-aspect-ratio:2/1){.fresco-header{padding-right:max(20px,13%)}}
 
 /* The doors' words are printed on the wall, under the opening: they stand in full ink while the doors swing, and the opening's own edge covers them as the visitor walks in. They are never faded. */
 .fresco-invitation{position:absolute;z-index:0;left:7%;top:50%;width:min(30%,520px);translate:0 -50%}
