@@ -117,3 +117,6 @@
 .public-words .public-made-tones [data-tone=waiting]::before{background:#a8791f}
 .public-words .public-made-tones [data-tone=wrong]::before{background:#6a557f}
 .public-words .public-made-tones [data-tone=done]::before{background:#365c46}
+/* A list of measures, not colours: no chip, the strong words lead. */
+.public-words .public-made-tones li:not([data-tone]){padding-left:0}
+.public-words .public-made-tones li:not([data-tone])::before{display:none}
