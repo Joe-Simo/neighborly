@@ -102,8 +102,8 @@ final class ShellViewController: CAPBridgeViewController {
             forMainFrameOnly: true
         ))
         scripts.add(SignInShown { [weak self] shown in self?.signIn(shown: shown) }, name: "kindHelpsSignIn")
-        // A save the page makes is felt here: it says "saved" or "decided" (use-save.ts), and a row's long press
-        // says "touch" (row-menu.tsx). Nothing else is felt.
+        // What the page asks to be felt: a committed page turn (room-sheet.tsx), a decision going through and a
+        // refused save (use-save.ts). See tap(for:).
         scripts.add(Felt { [weak self] what in self?.tap(for: what) }, name: "kindHelpsFelt")
         // The first screen of the last room, kept on the device (KeptRoom) so the next launch draws it at once while
         // the session and the live data catch up. It is handed to the page before its scripts run; a page that has
@@ -208,10 +208,17 @@ final class ShellViewController: CAPBridgeViewController {
         }
     }
 
+    /// Only what is real is felt, and iOS's own System Haptics setting turns all of it off: a page turn that commits
+    /// (`turned`, soft), a decision whose corner lays green (`decided`, light), and a save the server refused
+    /// (`refused`, the system's warning). Anything else the page says is not felt.
     private func tap(for what: String) {
         guard cover == nil else { return }
-        if what == "decided" { UINotificationFeedbackGenerator().notificationOccurred(.success) }
-        else if what == "saved" || what == "touch" { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
+        switch what {
+        case "turned": UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        case "decided": UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        case "refused": UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        default: break
+        }
     }
 
     override func viewSafeAreaInsetsDidChange() {
