@@ -12,8 +12,8 @@ const firstVisit = () => {
   try { return localStorage.getItem(SEEN) !== "1" && !matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; }
 };
 const SEEN = "kh-courtyard-assembled";
-/** Each sheet stands up from 60° in this long, the next one starting this much later: about 1.2s for the six that stand on the far one. */
-const STAND = 700, NEXT = 100;
+/** Each sheet stands up from 60° in this long, the next one starting this much later: 1.5s for the six that stand on the far one. */
+const STAND = 750, NEXT = 150;
 /** It starts once the doors stand this far open, so the courtyard is seen arriving, not glimpsed through a slit. */
 const OPEN = 0.45 * 0.05; // --door-progress runs 0 to .05 (fresco-threshold.tsx)
 
@@ -58,7 +58,8 @@ export function CourtyardAssembly() {
       // The whole painting is the ground and the far sheet stands on it from the start, so the arch is never empty anywhere;
       // each nearer sheet stands up onto its own place in it.
       const turns = images.slice(2).map((image, index) => image.animate(
-        [{ transform: "rotateX(60deg)" }, { transform: "none" }],
+        // While it stands it throws its hard shadow down onto the sheet behind, which tightens into the painting's own resting relief as it lands, so the swap to the painting is exact: light only, no blur.
+        [{ transform: "rotateX(60deg)", filter: "drop-shadow(0 14px 0 rgb(46 34 22 / .34))" }, { transform: "none", filter: "drop-shadow(0 0 0 rgb(46 34 22 / 0))" }],
         { duration: STAND, delay: index * NEXT, easing: "cubic-bezier(.2,.7,.2,1)", fill: "both" },
       ));
       void Promise.all(turns.map(turn => turn.finished)).then(done, done);
