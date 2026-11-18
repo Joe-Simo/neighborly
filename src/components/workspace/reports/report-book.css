@@ -85,8 +85,14 @@
   @page report-book { size: letter; margin: 0.75in; }
   :root[data-print-book] body > :not(.report-book-print) { display: none !important; }
   :root[data-print-book] body > .report-book-print { display: block !important; }
-  .report-book-print .book-sheet { position: static; page: report-book; break-after: page; min-height: 9.4in; padding: 0; box-shadow: none; background: none; color: #000; }
-  .report-book-print .book-sheet:last-child { break-after: auto; }
+  /* The sheets flow one after another on the paper; only a table or a row is kept whole. */
+  .report-book-print .book-sheet { position: static; page: report-book; padding: 0; box-shadow: none; background: none; color: #000; }
+  .report-book-print .book-sheet + .book-sheet { margin-top: 28pt; }
+  .report-book-print .book-cover { height: auto; }
+  .report-book-print .book-cover :is(h2, h3) { margin-top: 0; }
+  .report-book-print .book-mark { margin: 8pt 0 0; }
+  .report-book-print .book-folio { display: none; }
+  .report-book-print .book-table { break-inside: avoid; }
   .report-book-print .book-sheet h3 { break-after: avoid; }
   .report-book-print .book-table th, .report-book-print .book-table td { border-color: #0004; }
   .report-book-print :is(.book-table tr, .book-note) { break-inside: avoid; }
