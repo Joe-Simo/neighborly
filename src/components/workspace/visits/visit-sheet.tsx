@@ -27,7 +27,8 @@ import { capital, firstName, need, spoken, together, useVisitDates, type Sheet }
  * Opening it shows a neighbor's details, so it is written down first, like opening the record.
  */
 export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
-  const { data, now, setHeading, words } = useWorkspace();
+  const { data, now, setHeading, words, offerUndo } = useWorkspace();
+  const reinstate = useMutation(api.visits.reinstate);
   const text = words.rooms.visitsRoom.sheet;
   const format = useVisitDates();
   const churchId = data.church.id;
@@ -169,7 +170,13 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
               disabled={pending}
               onClick={async () => {
                 const outcome = await save(() => cancel({ churchId, visitId }));
-                if (outcome.saved) router.push("/app/visits");
+                if (!outcome.saved) return;
+                const name = sheet.neighbor.name;
+                offerUndo(text.calledOff(name), {
+                  run: () => reinstate({ churchId, visitId }),
+                  said: text.plannedAgain(name),
+                });
+                router.push("/app/visits");
               }}
             >
               {text.callOff}

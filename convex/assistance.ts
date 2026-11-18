@@ -2,6 +2,7 @@ import { ConvexError, v, type Infer } from "convex/values";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, neighborAccess, neighborRecord } from "./access";
+import { mayUndo } from "./undo";
 import { voucherGiven } from "./treasury";
 import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
@@ -442,6 +443,43 @@ export const markReturned = mutation({
     const call = await ownCall(ctx, churchId, callId);
     if (call.callback !== "needed") throw new ConvexError("This call is not waiting for a callback.");
     await ctx.db.patch("calls", callId, { callback: "done", returnedBy: member._id, returnedAt: Date.now(), outcome: text(outcome ?? "", "The outcome", 500) });
+    return null;
+  },
+});
+
+/**
+ * Undoes writing a call down, from the line that said so. Only while nothing has been built on it: no draft, no
+ * request, not returned. Otherwise it stays, and is changed the room's usual way.
+ */
+export const takeBackCall = mutation({
+  args: { churchId: v.id("churches"), callId: v.id("calls") },
+  returns: v.null(),
+  handler: async (ctx, { churchId, callId }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const call = await ownCall(ctx, churchId, callId);
+    mayUndo({ by: call.takenBy, at: call.takenAt }, member._id, Date.now());
+    const neighborId = call.neighborId;
+    const built =
+      call.callback === "done" ||
+      (await ctx.db.query("requestDrafts").withIndex("by_call", (q) => q.eq("callId", callId)).first()) !== null ||
+      (neighborId !== undefined &&
+        (await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect()).some((request) => request.callId === callId));
+    if (built) throw new ConvexError("This call has been worked on since. Change it from its record instead.");
+    await ctx.db.delete("calls", callId);
+    return null;
+  },
+});
+
+/** Undoes marking a call returned, from the line that said so: it waits to be returned again, as it did. */
+export const unmarkReturned = mutation({
+  args: { churchId: v.id("churches"), callId: v.id("calls") },
+  returns: v.null(),
+  handler: async (ctx, { churchId, callId }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const call = await ownCall(ctx, churchId, callId);
+    if (call.callback !== "done") throw new ConvexError("This call is not marked returned.");
+    mayUndo({ by: call.returnedBy, at: call.returnedAt }, member._id, Date.now());
+    await ctx.db.patch("calls", callId, { callback: "needed", returnedBy: undefined, returnedAt: undefined, outcome: undefined });
     return null;
   },
 });

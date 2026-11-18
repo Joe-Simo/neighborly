@@ -11,7 +11,8 @@ import { ArrowLeft, Lock, TriangleAlert } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { useWorkspace, type Workspace } from "@/components/workspace/context";
+import { useWorkspace, type Workspace, type WayBack } from "@/components/workspace/context";
+import { UndoAct } from "@/components/workspace/undo";
 import {
   CloseForm,
   takingBack,
@@ -222,11 +223,17 @@ export function NeighborRecord({
   };
   // The request given its yes in this visit: its corner turns over to green as the record shows it approved.
   const [approvedNow, setApprovedNow] = useState<HelpRequest["id"] | null>(null);
-  const finish = (message: string) => {
+  const finish = (message: string, back?: WayBack) => {
     setStep(null);
     moveOn();
     setDone(message);
+    setBack(back);
+    setUndoRefused("");
   };
+  // The way back from the step just taken, while its line is up; and an undo the server would not take, in plum.
+  const [back, setBack] = useState<WayBack>();
+  const [undoRefused, setUndoRefused] = useState("");
+  const takeBackNote = useMutation(api.neighbors.takeBackNote);
   const close = () => {
     setStep(null);
     moveOn();
@@ -285,7 +292,32 @@ export function NeighborRecord({
   const { neighbor } = record;
   return (
     <>
-{done && <HelpDone>{done}</HelpDone>}
+      {undoRefused && !done && (
+        <div className="live-error" role="alert">
+          <p>{undoRefused}</p>
+        </div>
+      )}
+      {done && (
+        <HelpDone
+          key={done}
+          action={back && (
+            <UndoAct
+              run={async () => {
+                setBack(undefined);
+                try {
+                  await back.run();
+                  setDone(back.said);
+                } catch (cause) {
+                  setDone("");
+                  setUndoRefused(readFailure(cause, words.notices.failed));
+                }
+              }}
+            />
+          )}
+        >
+          {done}
+        </HelpDone>
+      )}
       <NeighborRecordView
         record={record}
         format={format}
@@ -359,7 +391,7 @@ export function NeighborRecord({
           description={text.sheets.note.about(neighbor.name)}
           onClose={close}
         >
-          <NoteForm target={target} onSaved={() => finish(text.done.note)} />
+          <NoteForm target={target} onSaved={(noteId) => finish(text.done.note, { run: () => takeBackNote({ churchId: target.churchId, noteId }), said: text.done.noteTakenBack })} />
         </LiveDialog>
       )}
       {step?.kind === "request" && (

@@ -544,7 +544,7 @@ export function AccountsForm({
   );
 }
 
-export function NoteForm({ target, onSaved }: { target: Target; onSaved: () => void }) {
+export function NoteForm({ target, onSaved }: { target: Target; onSaved: (noteId: Id<"neighborNotes">) => void }) {
   const addNote = useMutation(api.neighbors.addNote);
   const { pending, error, save } = useSave();
   const text = useWorkspace().words.rooms.neighbors.note;
@@ -555,7 +555,7 @@ export function NoteForm({ target, onSaved }: { target: Target; onSaved: () => v
         event.preventDefault();
         const body = String(new FormData(event.currentTarget).get("body") ?? "");
         const outcome = await save(() => addNote({ ...target, body }));
-        if (outcome.saved) onSaved();
+        if (outcome.saved) onSaved(outcome.result);
       }}
     >
       <LiveField label={text.label}>

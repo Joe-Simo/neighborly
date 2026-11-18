@@ -54,6 +54,10 @@ describe("who may use neighbor records", () => {
         () => caller.mutation(api.neighbors.saveHousehold, { churchId, neighborId: ids.rosa, household: [] }),
         () => caller.mutation(api.neighbors.showAccounts, { churchId, neighborId: ids.rosa }),
         () => caller.mutation(api.neighbors.addNote, { churchId, neighborId: ids.rosa, body: "Prefers a call after five." }),
+        async () => {
+          const noteId = await caller.mutation(api.neighbors.addNote, { churchId, neighborId: ids.rosa, body: "Wrong record." });
+          return caller.mutation(api.neighbors.takeBackNote, { churchId, noteId });
+        },
       ];
       // Removing a record is the owner's alone: a member meets the same door, a coordinator a plain no.
       await expect(caller.mutation(api.neighbors.remove, { churchId, neighborId: ids.earl, typedName: "Darnell Joseph" })).rejects.toThrow(person === ids.member ? refused : "Only an owner can remove a neighbor’s record.");
@@ -288,6 +292,18 @@ describe("the home on a record", () => {
     await expect(as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, household: [{ relationship: "Son", child: true }] })).rejects.toThrow("at least one adult");
     await expect(as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, money: { income: [{ label: "Wages", amount: -5 }], expenses: [] } })).rejects.toThrow("zero or more");
     await expect(as(ids.owner).mutation(api.neighbors.saveHousehold, { churchId: ids.church, neighborId: ids.elsewhere, household: [] })).rejects.toThrow("Record not found.");
+  });
+
+  test("a note just added is taken back only by its writer, while its line can be up", async () => {
+    const { t, ids, as } = await setup();
+    const target = { churchId: ids.church, neighborId: ids.rosa };
+    const noteId = await as(ids.coordinator).mutation(api.neighbors.addNote, { ...target, body: "Wrong record." });
+    await expect(as(ids.owner).mutation(api.neighbors.takeBackNote, { churchId: ids.church, noteId })).rejects.toThrow("no longer be undone");
+    await as(ids.coordinator).mutation(api.neighbors.takeBackNote, { churchId: ids.church, noteId });
+    expect(await t.run((ctx) => ctx.db.get("neighborNotes", noteId))).toBeNull();
+    const later = await as(ids.coordinator).mutation(api.neighbors.addNote, { ...target, body: "Works nights." });
+    await t.run((ctx) => ctx.db.patch("neighborNotes", later, { createdAt: Date.now() - 3 * 60 * 1000 }));
+    await expect(as(ids.coordinator).mutation(api.neighbors.takeBackNote, { churchId: ids.church, noteId: later })).rejects.toThrow("no longer be undone");
   });
 
   test("a note is signed and dated in the history, and an alert sits on the record", async () => {

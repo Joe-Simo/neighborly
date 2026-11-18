@@ -310,7 +310,7 @@ export function HelpDone({
     // Once, as the line is laid.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // Six seconds, or twelve when it carries an action; then it closes up and stays as a message for screen readers.
+  // Six seconds, or ten when it carries an action (an Undo); then it closes up and stays as a message for screen readers.
   const seen = useSavedLine(line, { action: !!action, of: children });
   useEffect(() => {
     if (focus) line.current?.focus({ preventScroll: true });

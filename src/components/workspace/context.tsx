@@ -41,6 +41,11 @@ export type Workspace = {
   teamName: (id: string) => string;
   /** `undo` puts a way back on the saved line: the command that reverses this one, and what to say once it has. */
   perform: (command: LiveCommand, success?: string, undo?: { command: LiveCommand; said: string; returnTo?: HTMLElement }) => Promise<boolean>;
+  /**
+   * Lays the workspace's saved line with a way back on it, for an act a room took itself and then left (a visit
+   * called off from its own page). The line stays ten seconds, and as long as a hand or the focus is on it.
+   */
+  offerUndo: (said: string, back: WayBack) => void;
   openAction: (kind: ActionKind) => void;
   showCommitment: (item: LiveCommitment, trigger: HTMLButtonElement) => void;
   confirm: (confirmation: LiveConfirmation) => void;
@@ -65,6 +70,9 @@ export type Workspace = {
 
 const WorkspaceContext = createContext<Workspace | null>(null);
 export const WorkspaceProvider = WorkspaceContext.Provider;
+
+/** The reverse of an act just taken, and what the line says once it has run. */
+export type WayBack = { run: () => Promise<unknown>; said: string; returnTo?: HTMLElement };
 
 export function useWorkspace() {
   const workspace = useContext(WorkspaceContext);
