@@ -13,7 +13,7 @@
 .painted-world-header:before{content:"";position:absolute;z-index:-1;inset:-30px -4vw -22px;pointer-events:none;background:linear-gradient(180deg,#10231d55,transparent)}
 .painted-world[data-scene=opening] .painted-world-header{color:#253e31}
 .painted-world[data-scene=opening] .painted-world-header:before{background:linear-gradient(180deg,#f1eadbe8,transparent)}
-.painted-world-brand{font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none}
+.painted-world-brand{font:400 46px/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none}
 .painted-world-enter{display:flex;gap:11px;align-items:center;min-height:44px;font-size:12px;text-decoration:none;padding:0 2px;border-bottom:1px solid #fff8e94a}
 .painted-world[data-scene=opening] .painted-world-enter{border-color:#253e3140}
 .painted-world-caption{position:absolute;z-index:2;isolation:isolate;left:6%;bottom:16%;max-width:560px;width:40%;pointer-events:none;color:#fff8e9}
@@ -22,7 +22,7 @@
 .painted-world[data-scene=opening] .painted-world-caption{top:31%;bottom:auto;max-width:690px;width:60%;color:#253e31}
 .painted-world[data-scene=opening] .painted-world-caption:before{display:none}
 .painted-world-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.16em;margin:0 0 20px;color:inherit;opacity:.78}
-.painted-world-caption h1{font:400 clamp(45px,4.8vw,72px)/1.02 'Newsreader',Georgia,serif;letter-spacing:-.045em;margin:0}
+.painted-world-caption h1{font:400 clamp(45px,4.8vw,72px)/1.02 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.045em;margin:0}
 .painted-world[data-scene=opening] .painted-world-caption h1{font-size:clamp(50px,5.4vw,84px)}
 .painted-world-caption h1 em,.painted-world-end h2 em{font-weight:400}
 .painted-world-description{font-size:15px;line-height:1.6;max-width:31ch;margin:22px 0 0;color:inherit;opacity:.88}
@@ -36,7 +36,7 @@
 .painted-world[data-scene=opening] .painted-world-progress>div{background:#253e3140}
 .painted-world-progress i{display:block;height:2px;background:currentColor;transform:scaleX(var(--story-progress));transform-origin:left}
 .painted-world-end{padding:clamp(80px,12vw,160px) 8%;min-height:72svh;display:flex;flex-direction:column;justify-content:center;scroll-margin-top:24px}
-.painted-world-end h2{font:400 clamp(54px,7vw,102px)/var(--lead-2) 'Newsreader',Georgia,serif;letter-spacing:var(--track-2);margin:0 0 30px}
+.painted-world-end h2{font:400 clamp(54px,7vw,102px)/var(--lead-2) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-2);margin:0 0 30px}
 .painted-world-end>p:not(.painted-world-kicker){font-size:17px;line-height:1.65;max-width:39ch}
 .painted-world-account{display:flex;align-items:center;flex-wrap:wrap;gap:28px;margin-top:32px}
 .painted-world-account>a{display:flex;align-items:center;gap:9px;min-height:44px;font-size:13px;text-underline-offset:5px}

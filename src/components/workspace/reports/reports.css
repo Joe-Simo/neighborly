@@ -34,7 +34,7 @@
   padding: 0 16px;
   border: 0;
   border-radius: 2px;
-  font: 400 19px/1 "Newsreader", Georgia, serif;
+  font: 400 19px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-variant-numeric: lining-nums;
   color: var(--live-muted);
   gap: 7px;
@@ -48,10 +48,10 @@
 .live-app .report-quarters [data-slot="toggle-group-item"] {
   min-width: 0;
   padding: 0 14px;
-  font: 400 16px/1 "Source Sans 3", sans-serif;
+  font: 400 16px/1 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
 }
 .live-app .report-years [data-slot="toggle-group-item"] span {
-  font: 400 15px/1 "Source Sans 3", sans-serif;
+  font: 400 15px/1 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
 }
 .live-app .report-years [data-slot="toggle-group-item"]:hover {
   background: var(--help-sage-wash);
@@ -132,7 +132,7 @@
 .report-year dd > span { display: block; filter: drop-shadow(1.5px 1px 0 rgb(40 60 50 / 0.26)) drop-shadow(7px 9px 9px rgb(40 60 50 / 0.17)); }
 .report-year-paid > .report-year-pile {
   display: inline-grid;
-  font: 400 min(124px, 20.5vw) / 0.78 "Newsreader", Georgia, serif;
+  font: 400 min(124px, 20.5vw) / 0.78 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.045em;
   font-variant-numeric: lining-nums;
   color: #335844;
@@ -192,7 +192,7 @@
   min-width: 84px;
   padding: 16px 16px 9px;
   background: #fbf9f3;
-  font: 400 42px/1 "Newsreader", Georgia, serif;
+  font: 400 42px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.03em;
   font-variant-numeric: lining-nums tabular-nums;
   text-align: center;
@@ -334,15 +334,21 @@
 .report-months li { position: relative; }
 .report-month-open { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 2px; transition: background-color 160ms var(--paper-ease); }
 .report-month-open:focus-visible { outline: 2px solid #283c32; outline-offset: -2px; }
-.report-tip { min-width: 148px; padding: 12px 16px 13px; border: 1px solid #d9ddce; border-radius: 4px; background: #f7f4ed; color: #283c32; font-family: "Source Sans 3", sans-serif; text-align: center; box-shadow: -5px -9px 22px -12px rgb(40 60 50 / 0.22), 0 18px 40px -18px rgb(40 60 50 / 0.4); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
+.report-tip { min-width: 148px; padding: 12px 16px 13px; border: 1px solid #d9ddce; border-radius: 4px; background: #f7f4ed; color: #283c32; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; text-align: center; box-shadow: -5px -9px 22px -12px rgb(40 60 50 / 0.22), 0 18px 40px -18px rgb(40 60 50 / 0.4); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
 /* The card is as wide as its longest line (Spanish runs longer), never wider than the screen. */
 .report-tip { width: max-content; max-width: calc(100vw - 24px); }
 .report-tip p { margin: 0; font-size: 15px; color: #52644f; }
 .report-tip .report-tip-month { margin-bottom: 4px; font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
-.report-tip .help-amount { font-family: "Newsreader", Georgia, serif; font-size: 26px; line-height: 1.15; color: #283c32; }
+.report-tip .help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 26px; line-height: 1.15; color: #283c32; }
 .report-months li[data-quiet] p.help-amount,
 .report-months li[data-quiet] p {
   color: #8b9087;
+}
+/* On a phone the months' words are small, so a quiet month's line is set in a deeper grey of the same ink: still the
+   quietest line on the page, and read at 4.8:1 on the paper. */
+@media (max-width: 850px) {
+  .report-months li[data-quiet] p.help-amount,
+  .report-months li[data-quiet] p { color: #676e64; }
 }
 
 /* One line for every request, colored by what became of it. */
@@ -382,7 +388,7 @@
   border-radius: 1px;
 }
 .report-legend strong {
-  font: 400 23px/1 "Newsreader", Georgia, serif;
+  font: 400 23px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--live-ink);
   margin-right: 4px;
@@ -488,7 +494,7 @@
 .live-app .report-form th {
   padding-right: 18px;
   text-align: left;
-  font: 400 17px/1.4 "Source Sans 3", sans-serif;
+  font: 400 17px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
   letter-spacing: 0;
   text-transform: none;
   color: var(--live-ink);
@@ -496,7 +502,7 @@
 .live-app .report-form td {
   text-align: right;
   white-space: nowrap;
-  font: 400 21px/1.3 "Newsreader", Georgia, serif;
+  font: 400 21px/1.3 "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--live-ink);
 }
@@ -580,11 +586,11 @@
   /* The head of the sheet: whose year it is on the left, the wordmark on the right, one rule under both. */
   .report-print-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24pt; margin-bottom: 10pt; }
   .report-print-head > div > p:first-child { font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
-  .report-print-head strong { font: 400 17pt/1 "Newsreader", Georgia, serif; letter-spacing: -0.03em; white-space: nowrap; }
+  .report-print-head strong { font: 400 17pt/1 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em; white-space: nowrap; }
   .report .report-aside { margin-top: 8pt; max-width: none; font-size: 11pt; line-height: 1.4; }
   .report .help-figures dd small .report-own-line { display: inline; }
   .report .help-figures dd small .report-own-line::before { content: " · "; }
-  .report-print-head h1 { font: 400 24pt/1.1 "Newsreader", Georgia, serif; letter-spacing: -0.03em; margin: 2pt 0 4pt; }
+  .report-print-head h1 { font: 400 24pt/1.1 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em; margin: 2pt 0 4pt; }
   .report-print-head p { margin: 0; font-size: 11pt; }
   .report .help-bar, .report .help-bar span, .report .report-outcomes span, .report .report-legend li::before { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 
@@ -602,7 +608,7 @@
   .report .help-bars li { grid-template-columns: 150pt minmax(0, 1fr) 80pt; gap: 16pt; padding: 6pt 0; break-inside: avoid; border-color: var(--print-line); }
   .report .help-bars { border-color: var(--print-line); }
   .report .help-bars .help-bar { grid-column: auto; order: 0; height: 8pt; }
-  .report .help-bars h3 { font: 600 12pt/1.25 "Source Sans 3", sans-serif; letter-spacing: 0; }
+  .report .help-bars h3 { font: 600 12pt/1.25 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; }
   .report .help-bars p { font-size: 11pt; margin: 1pt 0 0; }
   .report .help-bars .help-amount { font-size: 13pt; }
   /* Page one is the year at a glance; time given opens page two with its teams, and the lines follow. */
@@ -657,7 +663,7 @@
     font-size: 9.5pt;
     break-inside: avoid;
   }
-  .report-print-foot strong { font: 400 15pt/1 "Newsreader", Georgia, serif; letter-spacing: -0.03em; }
+  .report-print-foot strong { font: 400 15pt/1 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em; }
 }
 
 /* The switches and what to do with the period, on one line. */
@@ -818,8 +824,8 @@
   .report-sheet-figures > div:not(:first-child) dt { align-self: end; }
   .report-sheet-figures > div + div:not(:nth-child(2)) { padding-left: 12pt; border-left: 1px solid var(--print-line); }
   .report-sheet-figures dt { margin-bottom: 4pt; font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
-  .report-sheet-figures dd { margin: 0; font: 400 24pt/1 "Newsreader", Georgia, serif; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; }
-  .report-sheet-figures dd small { display: block; margin-top: 5pt; font: 400 10pt/1.35 "Source Sans 3", sans-serif; letter-spacing: 0; }
+  .report-sheet-figures dd { margin: 0; font: 400 24pt/1 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; }
+  .report-sheet-figures dd small { display: block; margin-top: 5pt; font: 400 10pt/1.35 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; }
   .report-sheet-total { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 18pt; border-bottom: 1px solid var(--print-line); padding-bottom: 8pt !important; }
   /* "Help given" is never split: a long caption (vouchers, ServWare history, cents) wraps beside the figure, evenly. */
   .report-sheet-total dt { flex: none; font-size: 11pt; white-space: nowrap; }

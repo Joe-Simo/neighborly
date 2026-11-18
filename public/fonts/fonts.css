@@ -12,6 +12,27 @@
   font-display: swap;
   src: url("/fonts/newsreader-display-italic.woff2") format("woff2");
 }
+/* The display face's stand-ins, set to Newsreader's width and line so its arrival moves nothing. Times and its
+   metric twins draw lining figures, so amounts and years stay on the line even if Newsreader never arrives
+   (Georgia, after them, draws old-style figures). Newsreader itself is precached by the offline worker. */
+@font-face {
+  font-family: "Newsreader Fallback";
+  font-style: normal;
+  src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Tinos"), local("Liberation Serif");
+  size-adjust: 111.1%;
+  ascent-override: 66.2%;
+  descent-override: 23.9%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Newsreader Fallback";
+  font-style: italic;
+  src: local("Times New Roman Italic"), local("TimesNewRomanPS-ItalicMT"), local("Tinos Italic"), local("Liberation Serif Italic");
+  size-adjust: 106.4%;
+  ascent-override: 69.1%;
+  descent-override: 24.9%;
+  line-gap-override: 0%;
+}
 /* The text face's stand-in while it loads: a face the device already has, set to Source Sans 3's own width and line, so the words do not move when the real face arrives. */
 @font-face {
   font-family: "Source Sans 3 Fallback";

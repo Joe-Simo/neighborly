@@ -17,7 +17,7 @@
 .volunteer-choice-row:last-child { padding-bottom: 0; }
 :is(.volunteer-choice, .volunteer-meeting) h3 {
   margin: 0 0 6px;
-  font: 400 26px/1.15 "Newsreader", Georgia, serif;
+  font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.02em;
 }
 :is(.volunteer-choice, .volunteer-meeting) p:not(.help-sheet-label) { font-size: 17px; margin: 0; }
@@ -57,7 +57,7 @@
 .live-row.volunteer-task { min-height: 80px; padding: 16px 0; }
 .volunteer-task h3 {
   margin: 0 0 4px;
-  font: 400 24px/1.2 "Newsreader", Georgia, serif;
+  font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.015em;
 }
 .volunteer-task h3 span {

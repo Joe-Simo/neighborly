@@ -21,7 +21,7 @@
 /* Its box is the ochre square's own box, so the name is pinned to the square and never to the marks' states: the marks'
    fade, breathing and waiting rules do not reach it, and its face, weight and place are the same in every frame. */
 .door-card > .door-card-for { left: 30%; top: 36%; width: 7%; aspect-ratio: 1; opacity: 1; animation: none; transition: none; }
-.door-card > .door-card-for > em { position: absolute; left: 0; bottom: calc(100% + 10px); font: italic 400 clamp(17px, 2.4vw, 30px)/1.1 "Newsreader", Georgia, serif; font-synthesis: none; -webkit-font-smoothing: antialiased; color: #2b2a26; white-space: nowrap; }
+.door-card > .door-card-for > em { position: absolute; left: 0; bottom: calc(100% + 10px); font: italic 400 clamp(17px, 2.4vw, 30px)/1.1 "Newsreader", "Newsreader Fallback", Georgia, serif; font-synthesis: none; -webkit-font-smoothing: antialiased; color: #2b2a26; white-space: nowrap; }
 /* Transform and opacity only, so the card never waits on the page being drawn under it. */
 @keyframes door-card-grow {
   from { opacity: 0; transform: translate(4vw, 30vh) rotate(8deg) scale(0.14); }
@@ -31,7 +31,7 @@
 /* The one quiet line, where the waiting screen has it, if the room is not ready when the paper has landed. */
 .door-opening {
   position: fixed; inset: calc(50vh + 64px) 24px auto; display: flex; justify-content: center; align-items: center; gap: 12px; margin: 0;
-  font: 400 17px/1.5 "Source Sans 3", sans-serif; color: #68715f; text-align: center;
+  font: 400 17px/1.5 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; color: #68715f; text-align: center;
   animation: door-opening-in 200ms ease backwards;
 }
 /* On the card the line is spoken, not drawn; after a long wait it is drawn low, clear of the card's marks. */

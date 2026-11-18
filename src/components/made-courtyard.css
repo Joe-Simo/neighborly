@@ -19,8 +19,8 @@
 .made-courtyard-stack:focus-visible::after{visibility:visible}
 .made-courtyard-stack img{-webkit-user-drag:none;pointer-events:none}
 /* The hint: the caption's type, one step quieter. */
-.made-courtyard-hint{margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;text-align:center;font:400 clamp(15px,1.15vw,19px)/1.45 'Newsreader',Georgia,serif;color:#3d4f43;text-wrap:balance}
-.made-courtyard-said{position:relative;margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;min-height:3.2em;text-align:center;font:400 clamp(17px,1.35vw,22px)/1.45 'Newsreader',Georgia,serif;color:#293f32;text-wrap:balance}
+.made-courtyard-hint{margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;text-align:center;font:400 clamp(15px,1.15vw,19px)/1.45 'Newsreader','Newsreader Fallback',Georgia,serif;color:#3d4f43;text-wrap:balance}
+.made-courtyard-said{position:relative;margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;min-height:3.2em;text-align:center;font:400 clamp(17px,1.35vw,22px)/1.45 'Newsreader','Newsreader Fallback',Georgia,serif;color:#293f32;text-wrap:balance}
 .made-courtyard-said span{position:absolute;inset:0 20px}
 .made-courtyard[data-whole=true] .made-courtyard-said span:first-child,.made-courtyard[data-whole=false] .made-courtyard-said span:last-child{visibility:hidden}
 

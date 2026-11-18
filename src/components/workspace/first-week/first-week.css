@@ -8,7 +8,7 @@
 .live-app .first-week-slip { background: #fffdf7; border: 1px solid #e0dccb; border-radius: 3px; box-shadow: 0 1px 0 #e6e1d2, 0 6px 14px -12px #3b3a2466; }
 .live-app .first-week-slip[data-done] { --paper-corner: var(--paper-green); }
 .live-app .first-week-slip a { display: grid; gap: 6px; height: 100%; min-height: 44px; padding: 18px 44px 18px 18px; color: var(--paper-ink); text-decoration: none; box-sizing: border-box; }
-.live-app .first-week-slip strong { font: 400 21px / 1.2 "Newsreader", Georgia, serif; }
+.live-app .first-week-slip strong { font: 400 21px / 1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; }
 .live-app .first-week-slip span { font-size: 15px; line-height: 1.4; color: var(--live-muted); }
 .live-app .first-week-slip .first-week-mark { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-weight: 600; color: var(--paper-green); }
 .live-app .first-week-arrow { margin-top: 4px; transition: transform 160ms var(--paper-ease); }

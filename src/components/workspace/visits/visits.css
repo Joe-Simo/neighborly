@@ -94,6 +94,7 @@
 .visits-paper h2 {
   font:
     400 46px/1.05 "Newsreader",
+    "Newsreader Fallback",
     Georgia,
     serif;
   letter-spacing: -0.025em;
@@ -102,6 +103,7 @@
 .visits-paper-when {
   font:
     400 22px/1.3 "Newsreader",
+    "Newsreader Fallback",
     Georgia,
     serif;
   color: #3c4a40;
@@ -135,6 +137,7 @@
   margin: 22px 0 0;
   font:
     italic 400 20px/1.45 "Newsreader",
+    "Newsreader Fallback",
     Georgia,
     serif;
   color: #3c4a40;
@@ -155,6 +158,7 @@
 .visits-paper-write h3 {
   font:
     400 22px/1.2 "Newsreader",
+    "Newsreader Fallback",
     Georgia,
     serif;
   letter-spacing: -0.01em;
@@ -264,7 +268,7 @@
   .visits-paper footer { margin-top: 3mm; font-size: 10pt; }
   .visits-paper-blanks dt { font-size: 9pt; }
   .visits-paper-foot { display: flex; justify-content: space-between; margin: 3mm 0 0; padding-top: 2mm; border-top: 0.5pt solid #000; font-size: 9pt; }
-  .visits-paper-foot span:first-child { font: 400 12pt/1 "Newsreader", Georgia, serif; }
+  .visits-paper-foot span:first-child { font: 400 12pt/1 "Newsreader", "Newsreader Fallback", Georgia, serif; }
 }
 
 /* ── The side column on a wide screen: the week's visits by day, the hour beside the two who go ── */
@@ -291,7 +295,7 @@
 .visits-written > p { grid-column: 1; margin: 0; min-width: 0; }
 .visits-written > .help-row-arrow { grid-column: 2; grid-row: 1 / span 2; }
 .visits-written-who { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
-.visits-written-who strong { font: 400 21px/1.25 "Newsreader", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); white-space: nowrap; }
+.visits-written-who strong { font: 400 21px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); white-space: nowrap; }
 .visits-written-who > span { font-size: 15px; color: var(--live-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .visits-written-found { display: flex; gap: 16px; font-size: 16px; line-height: 1.45; color: var(--live-muted); }
 .visits-written-found > span:last-child { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

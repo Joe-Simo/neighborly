@@ -8,9 +8,9 @@
 .neighborly-rooms li:nth-child(2n){margin-top:clamp(12px,1.6vw,28px)}
 .neighborly-rooms picture{display:block}
 .neighborly-rooms img{display:block;width:100%;height:auto}
-.neighborly-rooms h3{margin:0;font:400 24px/1.1 'Newsreader',Georgia,serif;letter-spacing:-.03em}
+.neighborly-rooms h3{margin:0;font:400 24px/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.03em}
 .neighborly-rooms li p{margin:8px 0 0;max-width:24em;font-size:17px;line-height:1.5;text-wrap:pretty;opacity:.84}
-.neighborly-free{margin:clamp(4px,1vw,16px) 0 0;font:400 clamp(34px,4.4vw,72px)/1.04 'Newsreader',Georgia,serif;letter-spacing:-.045em;text-wrap:balance}
+.neighborly-free{margin:clamp(4px,1vw,16px) 0 0;font:400 clamp(34px,4.4vw,72px)/1.04 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.045em;text-wrap:balance}
 .neighborly-free em{color:#365c46}
 /* The cards are on the desk before the section is reached: a fast drag never crosses bare paper, and nothing fades up from nothing in view. */
 .has-reveal .neighborly-rooms[data-reveal]{translate:none}
