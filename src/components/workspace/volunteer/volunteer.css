@@ -118,3 +118,15 @@
      so for one frame the buttons had gone and the word was not yet there. */
   .live-app .volunteer-given, .volunteer-given, .live-row.volunteer-filed, .volunteer-ticked h3 span, .volunteer-ticked [data-slot="button"] svg { animation: none; }
 }
+
+/* Times, days and counts set lining figures at one width, so a column of times reads down the page. */
+.live-commitment-time,
+.volunteer-choice-when,
+.volunteer-due,
+.volunteer-task-done,
+.volunteer-replies,
+.volunteer-days,
+.volunteer-meeting-desk,
+.live-app .live-commitment-row .live-row-main p {
+  font-variant-numeric: lining-nums tabular-nums;
+}

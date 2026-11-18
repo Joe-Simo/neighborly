@@ -39,3 +39,4 @@
 .live-aside-sheet .volunteer-next-reply::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
 .live-aside-sheet .volunteer-next-reply[data-reply="accepted"]::before { border: 0; background: #365c46; }
 .live-aside-sheet .volunteer-next-reply[data-reply="declined"]::before { border: 1px solid var(--live-ink); }
+.volunteer-next-day { font-variant-numeric: lining-nums tabular-nums; }

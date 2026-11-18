@@ -25,7 +25,7 @@ export function TimeOffSection() {
             .map((item) => (
               <div className="live-row" key={item.id}>
                 <div>
-                  <h3>
+                  <h3 className="volunteer-days">
                     {readDays(words, item.start, item.end)}
                   </h3>
                   {item.note && <p>{sampleSaid(item.note)}</p>}
@@ -98,7 +98,7 @@ function LiveAvailability({
           .filter((item) => item.personId === data.user.id)
           .map((item) => (
             <div className="live-row" key={item.id}>
-              <span>
+              <span className="volunteer-days">
                 {readDays(words, item.start, item.end)}
               </span>
               <Button
