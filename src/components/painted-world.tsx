@@ -15,9 +15,9 @@ import { useCutHold } from "./cut-hold";
 const chapters = {
   opening: { number: "01", name: "An open hand", title: <>Good things begin<br />with <em>an open hand.</em></>, copy: "A little care can go a long way." },
   meal: { number: "02", name: "A meal shared", title: <>A meal,<br /><em>made together.</em></>, copy: "A meal becomes more when it is shared." },
-  visit: { number: "03", name: "A visit made", title: <>A knock.<br /><em>A familiar face.</em></>, copy: "Bring a meal. Stay for a conversation." },
+  visit: { number: "03", name: "A visit made", title: <>A knock.<br /><em>A familiar face.</em></>, copy: "Sit down. Listen to the whole story." },
   welcome: { number: "04", name: "A welcome offered", title: <>A place<br /><em>for everyone.</em></>, copy: "Small acts of care become a community." },
-  complete: { number: "04", name: "Good work, together", title: <>Good work,<br /><em>together.</em></>, copy: "Organize the next act of care with your church or community." },
+  complete: { number: "04", name: "Good work, together", title: <>Good work,<br /><em>together.</em></>, copy: "Answer the next call for help with your conference." },
 } as const;
 /** The open hand holding the card, for wide screens: 1440 for one pixel per point, 2880 for two. */
 const acceptedStill = "/assets/living-relief-accepted-1440.avif 1440w, /assets/living-relief-accepted-2880.avif 2880w";
@@ -256,7 +256,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
             <Button asChild className="painted-world-scene-start"><Link href="/app?intent=start">Start your conference <ArrowUpRight size={16} aria-hidden="true" /></Link></Button>
             <Link href="/app?intent=join">Join your people <ArrowUpRight size={16} aria-hidden="true" /></Link>
             <Link href="/app?intent=signin">Sign in</Link>
-            <a href="#story-start" className="painted-world-restart">Experience again</a>
+            <a href="#story-start" className="painted-world-restart">See it again</a>
           </nav>}
         </div>
         <footer className="painted-world-tools">
@@ -266,7 +266,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
       </div>
     </section>
     {!heroOnly && <section className="painted-world-end" id="your-community" tabIndex={-1} aria-labelledby="community-title">
-      <p className="painted-world-kicker">For churches and communities</p>
+      <p className="painted-world-kicker">For every conference</p>
       <h2 id="community-title">Your people.<br /><em>Your way to help.</em></h2>
       <p>A shared place for the plans, people, and acts of care that matter to your community.</p>
       <div className="painted-world-account">

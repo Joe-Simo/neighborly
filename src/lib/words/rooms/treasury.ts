@@ -43,7 +43,7 @@ export const en = (t: Terms, place: string) => ({
     payment: { title: "Record a payment", paidTo: (name: string) => `Paid to ${name}, never to the ${t.neighbor}.` },
     moneyOut: { title: "Record money out", deck: `A purchase, dues or a fee the ${t.group} paid.` },
     money: { title: "Record money", deck: `A collection, a gift, or what the ${t.group} holds today.` },
-    deposit: { title: "Record a deposit", deck: "The gifts you carried to the bank together. Nothing about them changes; they become one line to match." },
+    deposit: { title: "Record a deposit", deck: "The gifts you took to the bank together. They become one line to match against the statement." },
   },
   /** The line after a step is taken. */
   done: {
@@ -307,7 +307,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     payment: { title: "Anotar un pago", paidTo: (name) => `Se le paga a ${name}, nunca al ${t.neighbor}.` },
     moneyOut: { title: "Anotar dinero que sale", deck: `Una compra, cuotas o una comisión que pagó tu ${t.group}.` },
     money: { title: "Anotar dinero", deck: `Una colecta, un donativo, o lo que tu ${t.group} tiene hoy.` },
-    deposit: { title: "Anotar un depósito", deck: "Los donativos que llevaste juntos al banco. Nada en ellos cambia; pasan a ser una sola línea para comparar." },
+    deposit: { title: "Anotar un depósito", deck: "Los donativos que llevaste juntos al banco. Pasan a ser una sola línea para comparar con el estado de cuenta." },
   },
   done: {
     moneyOut: "{amount} para {name} quedan anotados en el libro, y el saldo está al día.",
@@ -515,7 +515,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     columns: { voucher: "Vale", received: "Recibidos", given: "Entregados", onHand: "Disponibles" },
     short: "Se entregaron más de los que se pusieron en el estante. Anota los que recibiste.",
     noneLeft: "no queda ninguno",
-    lately: "Últimamente",
+    lately: "Lo más reciente",
     newest: (count) => (count === 1 ? "El más reciente" : `Los ${count} más recientes`),
     givenOnRequest: "Entregado por una petición",
     backOnShelf: "De vuelta en el estante",

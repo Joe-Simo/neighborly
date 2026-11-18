@@ -48,7 +48,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     members: {
       yes: { lead: "Da tu sí", rest: "Toma a tu cargo algo de esta semana." },
       mine: { lead: "Mira tu parte", rest: "Todo lo que tomaste a tu cargo, en un solo lugar." },
-      away: { lead: "Marca tus días fuera", rest: "Así nadie te lo pide mientras no estás." },
+      away: { lead: "Marca tus días fuera", rest: "Así nadie te pide nada mientras no estás." },
     },
   },
 });

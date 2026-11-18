@@ -142,8 +142,8 @@ const es: typeof en = {
         { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos 0,85 segundos en el ancho de escritorio y en 1,1 en un teléfono, medido en nuestra máquina de pruebas." },
         { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde antes del tercer cuadro, o dentro de 60 píxeles." },
         { lead: "Dos segundos.", rest: "La aplicación del iPhone abre en su sala en 1,6 a 2 segundos en el simulador." },
-        { lead: "Ni un fotograma de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 fotogramas cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
-        { lead: "También con Reducir movimiento.", rest: "Las mismas películas se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí, y no se guarda nada de la visita." },
+        { lead: "Ni un cuadro de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 cuadros cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
+        { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí, y no se guarda nada de la visita." },
       ],
     ] },
     { title: "Hecho para todos", blocks: [

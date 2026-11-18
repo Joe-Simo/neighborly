@@ -88,7 +88,7 @@ const en = {
     code: "That code doesn’t match. Check the email and try again, or send a new code.",
     expired: "That code has expired. Send a new one.",
     tooMany: "Too many attempts. Wait a little while, then try again.",
-    other: "We couldn’t complete that. Please try again.",
+    other: "That didn’t go through. Try again.",
   },
 };
 export type AuthWords = typeof en;
@@ -115,7 +115,7 @@ const es: AuthWords = {
   signIn: "Iniciar sesión",
   create: "Crear cuenta",
   /** Read after a tab's own words, so the tab and the form's button are not two controls of one name. */
-  tabHint: { signIn: "usa una cuenta que ya tienes", create: "haz una cuenta nueva" },
+  tabHint: { signIn: "usa una cuenta que ya tienes", create: "crea una cuenta nueva" },
   email: "Correo electrónico",
   password: "Contraseña",
   newPassword: "Contraseña nueva",
@@ -133,7 +133,7 @@ const es: AuthWords = {
   opening: "Abriendo…",
   sampleNote: "Personas inventadas. Lo que cambies se borra cada noche.",
   /** The same promise in a few words, for the smallest phones. */
-  sampleNoteShort: "Personas inventadas, se borra cada noche.",
+  sampleNoteShort: "Todo inventado, se borra cada noche.",
   /** The quiet link to the privacy page, at the end of the language line. */
   privacy: "Privacidad",
   privacyPath: "/privacidad",

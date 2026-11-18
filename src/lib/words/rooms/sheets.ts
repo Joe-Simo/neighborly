@@ -8,10 +8,10 @@ import type { Terms } from "../sets";
 export const en = (t: Terms, place: string) => ({
   invite: {
     deck: `They’ll choose to join your ${t.group}.`,
-    queued: "Invitation created and email queued. Delivery is not yet confirmed.",
-    noEmail: "Invitation created. No email was sent.",
-    linkQueued: "Invitation created and email queued. Share this private link with the invited person:",
-    linkNoEmail: "Invitation created. No email was sent. Share this private link with the invited person:",
+    queued: "Invitation made. The email is queued but not yet delivered.",
+    noEmail: "Invitation made. No email was sent.",
+    linkQueued: "Invitation made and the email queued. Share this private link with them:",
+    linkNoEmail: "Invitation made. No email was sent. Share this private link with them:",
     linkLabel: "Private invitation link",
     dismiss: "Dismiss",
   },
@@ -21,18 +21,18 @@ export const en = (t: Terms, place: string) => ({
   edit: {
     title: "Edit commitment",
     deck: (zone: string) => `Times are ${zone}. You’ll review the changes before saving.`,
-    role: "Role / title",
+    role: "Role or title",
     starts: "Starts",
     ends: "Ends",
     where: "Where",
     preparation: "Preparation",
     review: "Review changes",
     releases:
-      "Changing the date, time, role, location or preparation releases an accepted person and withdraws pending cover requests. Someone must explicitly accept the updated commitment. Saving unchanged details preserves acceptance.",
+      "Changing the date, time, role, place or preparation frees whoever accepted and withdraws open requests for cover. Someone must accept it again. Saving with nothing changed keeps the yes.",
     back: "Back",
     confirm: "Confirm changes",
     saving: "Saving…",
-    done: "Commitment updated. Material changes require a new acceptance.",
+    done: "Commitment updated. A real change needs a new yes.",
   },
   /** The owner's desk under a meeting: who replied, and sending its invitations again. */
   meeting: {
@@ -58,10 +58,10 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
   return {
     invite: {
       deck: `Esa persona decidirá si se une a tu ${t.group}.`,
-      queued: "Invitación creada y correo en cola. La entrega aún no está confirmada.",
-      noEmail: "Invitación creada. No se envió ningún correo.",
-      linkQueued: "Invitación creada y correo en cola. Comparte este enlace privado con la persona invitada:",
-      linkNoEmail: "Invitación creada. No se envió ningún correo. Comparte este enlace privado con la persona invitada:",
+      queued: "Invitación hecha. El correo está en cola, pero aún no llega.",
+      noEmail: "Invitación hecha. No se envió ningún correo.",
+      linkQueued: "Invitación hecha y correo en cola. Comparte este enlace privado con esa persona:",
+      linkNoEmail: "Invitación hecha. No se envió ningún correo. Comparte este enlace privado con esa persona:",
       linkLabel: "Enlace privado de la invitación",
       dismiss: "Cerrar",
     },
@@ -78,11 +78,11 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       preparation: "Preparación",
       review: "Revisar los cambios",
       releases:
-        "Cambiar la fecha, la hora, el rol, el lugar o la preparación libera a quien ya había aceptado y retira las peticiones pendientes para cubrir el turno. Alguien tiene que aceptar de nuevo el compromiso cambiado. Si guardas sin cambiar nada, la aceptación se conserva.",
+        "Cambiar la fecha, la hora, el rol, el lugar o la preparación libera a quien había aceptado y retira las peticiones abiertas para cubrirlo. Alguien tiene que aceptarlo de nuevo. Si guardas sin cambiar nada, el sí se mantiene.",
       back: "Atrás",
       confirm: "Confirmar los cambios",
       saving: "Guardando…",
-      done: "Compromiso actualizado. Los cambios de fondo necesitan una nueva aceptación.",
+      done: "Compromiso actualizado. Un cambio de fondo necesita un nuevo sí.",
     },
     meeting: {
       again: "Preparar las invitaciones otra vez",

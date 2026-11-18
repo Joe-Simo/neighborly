@@ -92,7 +92,7 @@ export const en = (t: Terms, place: string) => ({
   /** While the assistant reads a call note. */
   reading: {
     label: "The assistant is reading the note",
-    title: "Reading what was written.",
+    title: "Reading the note.",
     limits: "It fills in only what the note says, and leaves blank what it does not. Nothing is saved until you say so.",
   },
   /** The draft card's own lines that hold more than one value. */
@@ -187,9 +187,9 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   calls: {
     toCallBack: "Llamadas por devolver",
     messages: (count) => (count === 0 ? "Ningún mensaje" : count === 1 ? "1 mensaje" : `${count} mensajes`),
-    oldestDays: (count) => (count === 1 ? "el más antiguo espera desde hace 1 día" : `el más antiguo espera desde hace ${count} días`),
-    oldestHours: (count) => (count === 1 ? "el más antiguo espera desde hace 1 hora" : `el más antiguo espera desde hace ${count} horas`),
-    oldestUnderHour: "el más antiguo espera desde hace menos de una hora",
+    oldestDays: (count) => (count === 1 ? "el más antiguo lleva 1 día esperando" : `el más antiguo lleva ${count} días esperando`),
+    oldestHours: (count) => (count === 1 ? "el más antiguo lleva 1 hora esperando" : `el más antiguo lleva ${count} horas esperando`),
+    oldestUnderHour: "el más antiguo lleva menos de una hora esperando",
     putFirstBy: (name) => `${name} la puso primero`,
     notUrgentBy: (name) => `${name} la marcó como no urgente`,
     callingBack: (name) => `${name} devuelve la llamada`,
@@ -209,7 +209,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   },
   reading: {
     label: "El asistente está leyendo la nota",
-    title: "Leyendo lo que se escribió.",
+    title: "Leyendo la nota.",
     limits: "Llena solo lo que dice la nota y deja en blanco lo que no dice. No se guarda nada hasta que tú lo digas.",
   },
   draft: {

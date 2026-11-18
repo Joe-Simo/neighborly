@@ -70,12 +70,12 @@ export function en(set: WordSet) {
       menuCurrent: (section: string) => `${Place} menu, current section: ${section}`,
       keys: {
         title: "Keys for this workspace",
-        description: "Pressed anywhere outside a box you type in.",
+        description: "They work anywhere you are not typing.",
         show: "Show these keys",
         rooms: "Go to a room",
         step: "The room before or after",
         find: "Find in this room",
-        act: "This room's head button",
+        act: "This room's main button",
         close: "Close",
       },
       allSections: `All ${place} sections`,
@@ -100,7 +100,7 @@ export function en(set: WordSet) {
         loading: (what: string) => `Loading ${what}…`,
         what: { commitments: "commitments", people: "people", invitations: "invitations", teams: "teams", announcements: "announcements", cover: "cover requests", timeOff: "time off", availability: "availability", tasks: "tasks", meetings: "meetings" },
       },
-      limited: "Some overview lists show a limited set of records. Use Load more in the matching section to see additional records.",
+      limited: "Some lists here show only the first records. Use Load more in that section to see the rest.",
     },
     headings: {
       "help-line": { title: "Every call, returned.", deck: "Messages from the help line, and who is calling back." },
@@ -172,13 +172,13 @@ export function en(set: WordSet) {
       printWeek: "Print the week",
       choiceAboveTitle: "Your next choice is above.",
       choiceAboveDetail:
-        "Reply to your invitation when you’re ready. Other upcoming commitments will appear here.",
+        "Answer your invitation when you’re ready. Your other dates will show up here.",
       quietTitle: "A little breathing room.",
       quietDetail:
         "No commitments are scheduled in the next seven days. Later dates are in Commitments.",
       fromGroup: `From your ${t.group}`,
       noAnnouncementsTitle: "All quiet from the group.",
-      noAnnouncementsDetail: "Updates from your coordinators will be kept here.",
+      noAnnouncementsDetail: "News from your coordinators will show up here.",
     },
     mine: {
       accepted: "Accepted commitments",
@@ -213,11 +213,11 @@ export function en(set: WordSet) {
       decline: "Decline",
       accepted: "Commitment accepted. Your plan is updated.",
       acceptedUnder: (place: string) => `Commitment accepted. It is under ${place}.`,
-      declined: "Request declined. No commitment has been assigned.",
+      declined: "Request declined. Nothing was added to your plan.",
     },
     detail: {
       cancelled:
-        "This commitment is cancelled. Its history is retained, and no one is expected to serve.",
+        "This commitment is cancelled. Its history is kept, and no one is expected to come.",
       when: "When",
       where: "Where",
       whereUnknown: "Location to be confirmed",
@@ -292,7 +292,7 @@ export function en(set: WordSet) {
       reopenTask: (title: string) => `Open again: ${title}`,
       done: "Done",
       open: "Open",
-      emptyTitle: "No tasks yet. A clean slate.",
+      emptyTitle: "No tasks yet.",
       emptyDetail: "Shared tasks will appear here with their owner and due date.",
       meetings: "Meetings",
       going: "You are going",
@@ -343,7 +343,7 @@ export function en(set: WordSet) {
       launchTitle: `We couldn’t open your ${place}.`,
       launchDeck: "Nothing was lost. Try again in a moment.",
       notSaved: "That couldn’t be saved. Try again.",
-      offlineSave: "There is no connection right now, so this was not saved.",
+      offlineSave: "No connection right now, so this wasn’t saved.",
       kept: "Nothing was saved, and what you typed is still here.",
       tryAgain: "Try again",
       waiting: "Waiting for the connection. What you typed is kept and will be sent when it returns.",
@@ -353,7 +353,7 @@ export function en(set: WordSet) {
       keptOffline: "Offline — showing what you last saw",
       /** After the title, where a room that was never opened is waiting for the connection. */
       offlineRoom: "This room opens when it returns.",
-      offlineDeck: "What is on screen is kept. Changes will be sent when this device is back online.",
+      offlineDeck: "What’s on screen stays. Your changes go out once this device is back online.",
       /** Said in green in the same strip for a moment once the connection returns. */
       back: "The connection is back.",
       /** The page shown in place of one that could not be fetched (/offline): its sentence and its tab. */
