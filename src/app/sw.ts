@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import {
   CacheableResponsePlugin,
+  CacheFirst,
   NetworkFirst,
   NetworkOnly,
   Serwist,
@@ -41,6 +42,11 @@ const keptPages = new NetworkFirst({
   ],
 });
 
+/** The rooms' head pictures, the app's own static art: kept with the pages, under the same deploy's name. */
+const appArt = ({ request, url }: { request: Request; url: URL }) =>
+  inApp && request.method === "GET" && url.origin === self.location.origin && url.pathname.startsWith("/assets/relief/");
+const keptArt = new CacheFirst({ cacheName: APP_PAGES + deploy, plugins: [new CacheableResponsePlugin({ statuses: [200] })] });
+
 // A new deploy lets go of the pages kept under the one before.
 self.addEventListener("activate", (event) => {
   event.waitUntil(
@@ -57,6 +63,7 @@ const serwist = new Serwist({
   navigationPreload: true,
   runtimeCaching: [
     { matcher: appPage, handler: keptPages },
+    { matcher: appArt, handler: keptArt },
     {
       matcher: ({ request }) => request.mode === "navigate",
       handler: new NetworkOnly(),

@@ -29,8 +29,9 @@ import { NativeSelect } from "@/components/ui/native-select";
 const noChange = () => () => {};
 
 /**
- * No connection: the device says it is offline, or the backend's socket has tried and failed to open. A page that is
- * still opening its first connection is not offline yet.
+ * No connection: the device says it is offline, the backend's socket has tried and failed to open, or this site
+ * itself does not answer (asked every few seconds while there is no backend connection; the device's own flag is
+ * often still "online" on a network that reaches nothing). A page still opening its first connection is not offline.
  */
 function useOffline() {
   const offDevice = useSyncExternalStore(
@@ -46,7 +47,25 @@ function useOffline() {
     () => false,
   );
   const link = useConvexConnectionState();
-  return offDevice || (!link.isWebSocketConnected && link.connectionRetries > 1);
+  const [unanswered, setUnanswered] = useState(false);
+  useEffect(() => {
+    if (link.isWebSocketConnected) return;
+    let live = true;
+    const ask = () =>
+      fetch(`${window.location.origin}/app`, { method: "HEAD", cache: "no-store" })
+        .then(() => live && setUnanswered(false))
+        .catch(() => live && setUnanswered(true));
+    const first = window.setTimeout(ask, 2000);
+    const again = window.setInterval(ask, 5000);
+    window.addEventListener("online", ask);
+    return () => {
+      live = false;
+      window.clearTimeout(first);
+      window.clearInterval(again);
+      window.removeEventListener("online", ask);
+    };
+  }, [link.isWebSocketConnected]);
+  return offDevice || (unanswered && !link.isWebSocketConnected) || (!link.isWebSocketConnected && link.connectionRetries > 1);
 }
 
 /** The app, with the door's sweep above whatever it is showing. */
