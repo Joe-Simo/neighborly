@@ -16,8 +16,10 @@ import {
 import { flushSync } from "react-dom";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
-import { useHour, useQuery } from "@/components/workspace/query";
-import type { FunctionReturnType } from "convex/server";
+import { keptAnswer, useHour, useQuery } from "@/components/workspace/query";
+import { useFirstLook } from "@/components/workspace/first-look";
+import { canKeep, keepHelpLine } from "@/lib/kept-room";
+import { getFunctionName, type FunctionReturnType } from "convex/server";
 import { Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -83,6 +85,9 @@ const laidToStay = (notice: HTMLElement | null) => {
   if (notice) openUp(notice, { stays: true });
 };
 
+/** What a first look asks: nothing, the same object every time, so the subscription never changes under it. */
+const nothingAsked = {};
+
 function HelpLine() {
   const { data, format, now, setHeadAction, words } = useWorkspace();
   const text = words.rooms.helpLine;
@@ -108,9 +113,10 @@ function HelpLine() {
     };
     return kept;
   }, [churchId]);
-  const answer:
-    FunctionReturnType<typeof api.assistance.drafts> | Error | undefined =
-    useQueries(asked).kept;
+  // In a first look at the kept help line (lib/kept-room.ts) nothing is asked: the drafts it kept are the answer.
+  const look = useFirstLook();
+  const live: FunctionReturnType<typeof api.assistance.drafts> | Error | undefined = useQueries(look ? nothingAsked : asked).kept;
+  const answer = look ? (keptAnswer(look.answers, api.assistance.drafts) as FunctionReturnType<typeof api.assistance.drafts> | undefined) : live;
   const kept = answer instanceof Error ? undefined : answer;
   const keepDraft = useMutation(api.assistance.keepDraft);
   const discardDraft = useMutation(api.assistance.discardDraft);
@@ -121,6 +127,17 @@ function HelpLine() {
   if (undiscarded && approving.pending) setUndiscarded(null);
   const [here, setDrafts] = useState<Drafted[]>([]);
   const drafts = kept ?? here;
+  // In the iOS app the help line's first screen is kept on the device once it is live and whole, for a launch from the
+  // Home Screen to draw at once. Only what this room already reads is kept: the calls, the drafts, and that the room is
+  // open to this person (it is drawn only then).
+  useEffect(() => {
+    if (look || !canKeep() || !calls || kept === undefined) return;
+    keepHelpLine(data.user.id, churchId, {
+      [getFunctionName(api.assistance.calls)]: calls,
+      [getFunctionName(api.assistance.drafts)]: kept,
+      [getFunctionName(api.access.canOpenNeighborRecords)]: true,
+    });
+  }, [look, calls, kept, data.user.id, churchId]);
   const newest = drafts.at(0) ?? null;
   // The call as it stands now, so a draft knows once its caller is on file.
   const drafted = newest && {

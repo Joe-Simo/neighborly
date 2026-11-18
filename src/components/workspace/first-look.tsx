@@ -25,6 +25,8 @@ type Look = {
   allowed?: boolean;
   /** Whether the person is the sample's visitor: always so in a look at the sample. */
   visiting?: boolean;
+  /** Readings kept on the device for a room other than the week (the help line), by the reading's name. */
+  answers?: Record<string, unknown>;
 };
 const FirstLook = createContext<Look | null>(null);
 export const FirstLookProvider = FirstLook.Provider;
@@ -58,7 +60,7 @@ export function useFirstRoom(wanted: boolean) {
  * The room's data for a first look. The answer has the dashboard's fields with a seed key wherever the signed-in
  * room has an id; a key is never sent anywhere, so it stands in the id's place for as long as the look lasts.
  */
-export function firstLookData(room: FirstRoom, language: Language, standing: Pick<Look, "allowed" | "visiting"> = {}) {
+export function firstLookData(room: FirstRoom, language: Language, standing: Pick<Look, "allowed" | "visiting" | "answers"> = {}) {
   const { firstRequests, firstAnnouncements, weekNote, draftsWaiting, ...dashboard } = room;
   const seeded = { ...dashboard, user: { ...dashboard.user, language }, requests: firstRequests, announcements: firstAnnouncements };
   return {

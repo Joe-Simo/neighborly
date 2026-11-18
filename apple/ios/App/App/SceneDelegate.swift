@@ -183,6 +183,10 @@ final class ShellViewController: CAPBridgeViewController {
         // let it go since (a sign-out, then a reload) says so in its session, and is not handed it again.
         if let kept = KeptRoom.read() {
             scripts.addUserScript(WKUserScript(source: "try { if (!sessionStorage.getItem('kind-helps:kept-gone')) window.kindHelpsKept = \(kept); } catch {}", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+            // The help line's, only beside the week's (the page uses it only when they are the same member's).
+            if let help = KeptRoom.read(.helpLine) {
+                scripts.addUserScript(WKUserScript(source: "try { if (!sessionStorage.getItem('kind-helps:kept-gone')) window.kindHelpsKeptHelpLine = \(help); } catch {}", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+            }
         }
         scripts.add(KeptRoomRequests(host: bridge?.config.serverURL.host), name: "kindHelpsKeep")
         // In a room the page takes the left edge itself: its step back is the page turn the finger holds
@@ -783,30 +787,40 @@ private final class Felt: NSObject, WKScriptMessageHandler {
 /// once it is a day old.
 enum KeptRoom {
     private static let day: TimeInterval = 86_400
-    private static var file: URL? {
+    /// This week's first screen, and the help line's (its callers' names and numbers): each the app's own file, with
+    /// complete protection, gone after a day and on sign-out.
+    enum Kind: String { case week = "kept-room.json", helpLine = "kept-help-line.json" }
+    private static func file(_ kind: Kind) -> URL? {
         guard let support = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true) else { return nil }
-        return support.appendingPathComponent("kept-room.json")
+        return support.appendingPathComponent(kind.rawValue)
     }
 
     /// The kept room as JSON, if there is one under a day old; an older one is let go here.
-    static func read() -> String? {
-        guard let file, let made = (try? FileManager.default.attributesOfItem(atPath: file.path))?[.modificationDate] as? Date else { return nil }
+    static func read(_ kind: Kind = .week) -> String? {
+        guard let file = file(kind), let made = (try? FileManager.default.attributesOfItem(atPath: file.path))?[.modificationDate] as? Date else { return nil }
         guard Date().timeIntervalSince(made) < day, let text = try? String(contentsOf: file, encoding: .utf8),
               (try? JSONSerialization.jsonObject(with: Data(text.utf8))) is [String: Any] else {
-            forget()
+            try? FileManager.default.removeItem(at: file)
             return nil
         }
         return text
     }
 
+    /// The page's JSON: the help line's comes as `{ helpLine: {...} }`, the week's as the room itself.
     static func keep(_ json: String) {
-        guard let file, (try? JSONSerialization.jsonObject(with: Data(json.utf8))) is [String: Any] else { return }
-        try? Data(json.utf8).write(to: file, options: [.atomic, .completeFileProtection])
+        guard let object = (try? JSONSerialization.jsonObject(with: Data(json.utf8))) as? [String: Any] else { return }
+        if let help = object["helpLine"] as? [String: Any] {
+            guard let file = file(.helpLine), let data = try? JSONSerialization.data(withJSONObject: help) else { return }
+            try? data.write(to: file, options: [.atomic, .completeFileProtection])
+        } else {
+            guard let file = file(.week) else { return }
+            try? Data(json.utf8).write(to: file, options: [.atomic, .completeFileProtection])
+        }
     }
 
+    /// Both are let go together: sign-out, or a room that is no longer this member's.
     static func forget() {
-        guard let file else { return }
-        try? FileManager.default.removeItem(at: file)
+        for kind in [Kind.week, .helpLine] { if let file = file(kind) { try? FileManager.default.removeItem(at: file) } }
     }
 }
 

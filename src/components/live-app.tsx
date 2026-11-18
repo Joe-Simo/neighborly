@@ -20,7 +20,7 @@ import { LiveRoomLoading } from "@/components/workspace/primitives";
 import "@/components/public-state.css";
 import { LiveWorkspace } from "@/components/workspace/shell";
 import { RoomsAhead } from "@/components/workspace/rooms-ahead";
-import { canKeep, emptyNote, forgetKeptRoom, keepRoom, keptRoom } from "@/lib/kept-room";
+import { canKeep, emptyNote, forgetKeptRoom, keepRoom, keptHelpLine, keptRoom } from "@/lib/kept-room";
 import { DoorSweep, carryTheCard, useDoor } from "@/components/workspace/door";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
@@ -103,7 +103,10 @@ function LiveRooms({
   // drawn at once on launch while the session and the live data catch up.
   // Read after hydration (the server never has it), so the page the server drew is the page the client first draws.
   const handed = useSyncExternalStore(noChange, keptRoom, () => null);
-  const kept = viaSample || area !== "week" ? null : handed;
+  // The help line is kept too (for the Home Screen's widget and quick action); every other room waits for the session.
+  const helpHanded = useSyncExternalStore(noChange, keptHelpLine, () => null);
+  const helpKept = area === "help-line" ? helpHanded : null;
+  const kept = viaSample || (area !== "week" && !helpKept) ? null : handed;
   const firstRoom = viaSample ? seedRoom : (kept?.room ?? null);
   const [lookOver, setLookOver] = useState(false);
   const [signedInRoom, setSignedInRoom] = useState(false);
@@ -353,7 +356,10 @@ function LiveRooms({
       requestPage.results.flatMap((request) => (request.commitment ? [request.commitment] : [])),
     );
   }, [keptNow, dashboard, requestPage.results, announcementPage.results, noteHere, draftsHere, allowedHere, sampleVisitor]);
-  if (look && dashboard && (kept ? sampleVisitor !== undefined : sampleVisitor === true) && (area !== "week" || weekInHand)) setSignedInRoom(true);
+  // A kept help line changes over once the live calls are in hand (the room's own reading; nothing more is asked).
+  const helpCalls = useQuery(api.assistance.calls, helpKept && churchId && hour ? { churchId, at: hour } : "skip");
+  const roomInHand = area === "week" ? weekInHand : helpKept ? helpCalls !== undefined : true;
+  if (look && dashboard && (kept ? sampleVisitor !== undefined : sampleVisitor === true) && roomInHand) setSignedInRoom(true);
   // A kept room is only ever the signed-in member's own: someone signed out, or another member or conference, ends it.
   if (kept && look && (signedOut || (dashboard && (dashboard.user.id !== kept.memberId || dashboard.church.id !== kept.churchId)))) {
     forgetKeptRoom();
@@ -411,7 +417,7 @@ function LiveRooms({
   if (look || signedOut) {
     // A sample visitor reads the rooms in their own device's language, kept room or not; a member in their saved one.
     const lookLanguage = kept && !kept.visiting ? kept.room.user.language : deviceLanguage;
-    const first = look && firstLookData(look, lookLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting } : {});
+    const first = look && firstLookData(look, lookLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting, answers: helpKept?.answers } : {});
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
     const sheetKnown = invitationGood !== undefined;
     const entry = badInvite ? "signin" : intent;
@@ -428,7 +434,7 @@ function LiveRooms({
             <LiveWorkspace
               area={area}
               // Any other room waits for the session, on This week's head, as a room does while its lists load.
-              roomWaiting={area !== "week"}
+              roomWaiting={area !== "week" && !helpKept}
               requestCommitments={first.requestCommitments}
               data={first.data}
               sampleVisitor={kept ? kept.visiting : true}
