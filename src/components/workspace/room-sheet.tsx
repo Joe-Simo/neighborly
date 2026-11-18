@@ -3,7 +3,7 @@
 import { Component, createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
 import { flushSync } from "react-dom";
-import { roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
+import { edgeTurn, roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
 import { useConvex, useConvexConnectionState } from "convex/react";
 
 /**
@@ -125,7 +125,7 @@ function turnAway(opening: ReturnType<typeof openingSheet> | null) {
   const laid = turning;
   turning = null;
   still = null;
-  const turn = laid ?? (opening ? roomTurn(opening.sheet, opening.frame) : null);
+  const turn = laid ?? (opening ? (finger.on ? edgeTurn : roomTurn)(opening.sheet, opening.frame) : null);
   if (!turn) return;
   // The room a step back was undone to is whole beneath the sheet that shows it: the sheet goes in one cut.
   if (finger.undoing) {
@@ -241,7 +241,8 @@ function hold(column: HTMLElement | null) {
   });
   still = stillFrame(column, copy);
   document.body.append(still);
-  turning = roomTurn(copy, still);
+  // Taken back by the finger, the room before comes back over from the left; any other change turns the corner.
+  turning = (finger.on ? edgeTurn : roomTurn)(copy, still);
 }
 
 /**

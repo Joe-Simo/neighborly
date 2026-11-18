@@ -129,3 +129,71 @@ export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
   drive(0);
   return { drive, play, glide, end };
 }
+
+/**
+ * The page turned back by the finger (the swipe in from the left edge, room-sheet.tsx): the room before comes back
+ * over from the left as a book's page turned back. The crease stands upright where the finger is, so the page's edge
+ * stays under the thumb: to its right the room being left still lies flat, to its left the room before has come
+ * back, and just left of the crease the page's underside shows as it curves over, throwing a close shade on the
+ * sheet it is about to cover. `drive(progress)` is the finger's place across the column, as it is, with no ease.
+ */
+export function edgeTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
+  const place = sheet.getBoundingClientRect();
+  const width = place.width;
+  const height = place.height;
+  const turn = piece("room-turn", { top: `${place.top}px`, left: `${place.left}px`, width: `${width}px`, height: `${height}px` });
+  turn.setAttribute("aria-hidden", "true");
+  turn.setAttribute("inert", "");
+  const lying = piece("room-turn-cut", { inset: "0" });
+  const held = piece("room-turn-held", {});
+  // The underside as the page curves over at the crease: the turned paper's own colour, lit along the bend.
+  const under = piece("room-turn-back", { height: `${height}px`, width: "0px", boxShadow: "none" });
+  const bend = piece("room-turn-roll", { height: `${height}px`, width: "100%", transform: "scaleX(-1)", transformOrigin: "50% 0" });
+  under.append(bend);
+  // The close shade the coming page throws on the sheet still lying, just right of the crease.
+  const shade = piece("room-turn-shade", { height: `${height}px`, transform: "scaleX(-1)", transformOrigin: "50% 0" });
+  sheet.style.top = "0";
+  sheet.style.left = "0";
+  sheet.style.background = "var(--live-paper, #f7f4ed)";
+  held.append(frame);
+  lying.append(held);
+  turn.append(lying, shade, under);
+  document.body.append(turn);
+
+  const drive = (progress: number) => {
+    const x = Math.min(1, Math.max(0, progress)) * width;
+    lying.style.clipPath = `inset(0 0 0 ${x}px)`;
+    // The bend is as wide as the page has room to curve, up to a finger's breadth, and ends at the crease.
+    const curve = Math.min(x, 44);
+    under.style.width = `${curve}px`;
+    under.style.transform = `translateX(${x - curve}px)`;
+    shade.style.transform = `translateX(${x}px) scaleX(-1)`;
+  };
+
+  let ended = false;
+  const end = () => {
+    if (ended) return;
+    ended = true;
+    turn.remove();
+  };
+  const glide = (from: number, to: 0 | 1) =>
+    new Promise<void>((resolve) => {
+      const began = performance.now();
+      const span = Math.max(1, Math.abs(to - from) * TURN_MS);
+      drive(from);
+      const step = (now: number) => {
+        if (ended) return resolve();
+        const done = (now - began) / span;
+        if (done >= 1) {
+          if (to === 1) end();
+          else drive(0);
+          return resolve();
+        }
+        drive(from + (to - from) * ease(done));
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  drive(0);
+  return { drive, play: () => glide(0, 1), glide, end };
+}
