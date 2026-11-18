@@ -3,7 +3,7 @@ import { es } from "./es";
 import type { Language, WordSet } from "./sets";
 
 export { counter, formatCount, formatMoney, numberLocales } from "./numbers";
-export { formatDate, formatDay, formatDays } from "./dates";
+export { dateFormatter, formatDate, formatDay, formatDays } from "./dates";
 export { languageNames, languages, wordSets } from "./sets";
 export type { Language, Terms, WordSet } from "./sets";
 export type { Words };

@@ -27,12 +27,17 @@ const calendars: Record<Exclude<Language, "en">, { weekday: Names; month: Names;
  * each time it is drawn (every shift's year, every row's day), so a new one for every date held up the page.
  */
 const formatters = new Map<string, Intl.DateTimeFormat>();
-function formatter(options: Intl.DateTimeFormatOptions) {
-  const key = JSON.stringify(options);
+/**
+ * The shared, cached date formatter for one locale and set of options. The time zone is one of the options, so
+ * each zone has its own. Every date or time written in the app comes from here rather than a new formatter.
+ */
+export function dateFormatter(locale: string, options: Intl.DateTimeFormatOptions = {}) {
+  const key = `${locale}:${JSON.stringify(options)}`;
   let made = formatters.get(key);
-  if (!made) formatters.set(key, (made = new Intl.DateTimeFormat("en-US", options)));
+  if (!made) formatters.set(key, (made = new Intl.DateTimeFormat(locale, options)));
   return made;
 }
+const formatter = (options: Intl.DateTimeFormatOptions) => dateFormatter("en-US", options);
 
 /** The plain numbers of a moment in a time zone. Only digits and English day codes are read, which every machine writes alike. */
 function numbers(time: number, timeZone: string | undefined) {
