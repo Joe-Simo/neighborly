@@ -70,7 +70,8 @@
   .live-app .entry .live-back:hover { color: var(--paper-ink); }
   .live-app .entry .live-back:hover svg { transform: translateX(-3px); }
 }
-.live-app .entry .live-kicker { margin-bottom: 12px; }
+/* 15px on a public page; the margin gives back the 2px the taller line adds, so nothing under it moves. */
+.live-app .entry .live-kicker { margin-bottom: calc(12px - 1lh * 2 / 15); font-size: 15px; }
 .live-app .entry h1 {
   font-size: clamp(38px, 3.3vw, 46px);
   line-height: 1.04;
