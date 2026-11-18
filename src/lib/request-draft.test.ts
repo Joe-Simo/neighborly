@@ -114,3 +114,9 @@ describe("what the model may see", () => {
     expect(withoutIdentity(rosa, known)).toBe(rosa);
   });
 });
+
+test("a free-text call note leaves without the caller's name, phone or street", () => {
+  const sent = withoutIdentity("Rosa at 555-0142 on Mill Road. Rosa Fontaine says rent is $450.", { names: ["Rosa Fontaine"], addresses: [] });
+  expect(sent).not.toMatch(/Rosa|Fontaine|555|0142|Mill/);
+  expect(sent).toContain("$450");
+});

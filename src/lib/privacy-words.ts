@@ -53,7 +53,7 @@ const en = {
     newTab: "(opens in a new tab)",
     /** The project's address stands between these two. */
     before: "For the software itself, or if you cannot reach an owner, open an issue on the project’s public page: ",
-    after: ". Please do not put personal details in a public issue.",
+    after: ". Do not put personal details in a public issue.",
     independent: "Kind Helps is an independent project. It is not affiliated with or endorsed by the Society of St. Vincent de Paul.",
   },
 };
@@ -104,7 +104,7 @@ const es: typeof en = {
     title: "Preguntas",
     newTab: "(se abre en una pestaña nueva)",
     before: "Sobre el programa en sí, o si no puedes comunicarte con un responsable, abre un reporte («issue») en la página pública del proyecto: ",
-    after: ". Por favor, no pongas datos personales en un reporte público.",
+    after: ". No pongas datos personales en un reporte público.",
     independent: "Kind Helps es un proyecto independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo.",
   },
 };
