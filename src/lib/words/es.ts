@@ -473,7 +473,7 @@ export function es(set: WordSet): Words {
       noteSaysPaid: "La nota dice que se pagó, y no hay ningún pago anotado.",
       visitNotMarked: "La nota dice que la visita se hizo, y no está marcada como hecha.",
       byRule: "Se encontró al contar.",
-      byAssistant: "El asistente leyó la nota. Léela tú también.",
+      byAssistant: "El asistente leyó la nota. Léela tú antes de dar el sí.",
       open: "Abrir el registro",
       putAway: "Guardar esto",
       checked: "Revisado hoy ({time}): {requests}, {visits} y el libro.",

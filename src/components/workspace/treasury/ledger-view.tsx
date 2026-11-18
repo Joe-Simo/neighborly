@@ -276,9 +276,9 @@ export function LedgerView({
                       id={request.neighborId}
                       name={request.neighborName}
                     />
-                    . {sampleSaid(request.summary)}
+                    . {sentence(sampleSaid(request.summary))}
                     {request.paid > 0 &&
-                      `. ${w.also.alreadyPaid(formatFigure(request.paid))}`}
+                      ` ${sentence(w.also.alreadyPaid(formatFigure(request.paid)))}`}
                   </p>
                 </div>
                 <Button variant="outline" aria-label={fill(w.sheet.payLabel, { amount: formatFigure(request.remaining), payee: sampleSaid(request.payeeName) })} onClick={() => onPay(request)}>

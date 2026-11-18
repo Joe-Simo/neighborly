@@ -29,7 +29,7 @@ export const en = (t: Terms, place: string) => ({
     readingWhat: "{requests}, {visits} and the ledger.",
     /** Said when the assistant could not read the notes: nothing was read, so nothing is claimed about what they say. */
     unread: "The assistant could not read the notes this time. The counting was done; the notes below are for you to read.",
-    notRead: "Not read by the assistant. Please read the note yourself.",
+    notRead: "Not read by the assistant. Read the note yourself.",
     noteMaySayPaid: "The note may say this was paid, and no payment is recorded.",
     visitMayBeDone: "The note may say this visit happened, and it is not marked done.",
     /** One record said in a line: "Home visit, Nov 3" or "Rent, $450, approved Nov 3". */

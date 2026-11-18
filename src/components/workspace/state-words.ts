@@ -3,7 +3,7 @@
  * tables (the error page, the not-found page). Inside a room, read `words.states`.
  */
 export const stateWords = {
-  notSaved: "That couldn’t be saved. Please try again.",
+  notSaved: "That couldn’t be saved. Try again.",
   offlineSave: "There is no connection right now, so this was not saved.",
   kept: "Nothing was saved, and what you typed is still here.",
   tryAgain: "Try again",

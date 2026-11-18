@@ -58,7 +58,7 @@ export const en = (t: Terms, place: string) => ({
       since: (date: string) => `on file since ${date}`,
     },
     numbers: {
-      refused: "The account numbers couldn’t be shown. Please try again.",
+      refused: "The account numbers couldn’t be shown. Try again.",
       offline: "There is no connection right now, so the account numbers couldn’t be shown.",
       keptInForm: "The numbers on file are still covered, and what you typed is still here.",
       keptOnPage: "The numbers on file are still covered. Nothing on the record was changed.",
