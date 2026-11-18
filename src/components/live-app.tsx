@@ -20,6 +20,7 @@ import { LiveRoomLoading } from "@/components/workspace/primitives";
 import "@/components/public-state.css";
 import { LiveWorkspace } from "@/components/workspace/shell";
 import { RoomsAhead } from "@/components/workspace/rooms-ahead";
+import { canKeep, emptyNote, forgetKeptRoom, keepRoom, keptRoom } from "@/lib/kept-room";
 import { DoorSweep, carryTheCard, useDoor } from "@/components/workspace/door";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,11 @@ function LiveRooms({
   // Through the sample door, This week is first drawn from the seed's public answer while the session is being made
   // (first-look.tsx). The look ends when the signed-in room is whole in hand, or when the sample will not open.
   const [viaSample] = useState(enterSample && sampleEntry);
-  const firstRoom = useFirstRoom(viaSample);
+  const seedRoom = useFirstRoom(viaSample);
+  // In the iOS app, This week as the member last saw it, kept on the device (lib/kept-room.ts), is the look instead:
+  // drawn at once on launch while the session and the live data catch up.
+  const [kept] = useState(() => (viaSample || area !== "week" ? null : keptRoom()));
+  const firstRoom = viaSample ? seedRoom : (kept?.room ?? null);
   const [lookOver, setLookOver] = useState(false);
   const [signedInRoom, setSignedInRoom] = useState(false);
   const look = firstRoom && !lookOver && !signedInRoom ? firstRoom : null;
@@ -258,7 +263,7 @@ function LiveRooms({
   const roomWaiting = (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
   // Behind a first look the week's own three readings are asked for too, so the signed-in room has every answer on
   // its first frame. They are let go a moment after the change, once the room itself is asking them.
-  const [aheadOfWeek, setAheadOfWeek] = useState(viaSample);
+  const [aheadOfWeek, setAheadOfWeek] = useState(viaSample || kept !== null);
   const hour = useHour();
   const week = useQueries(
     useMemo(
@@ -282,7 +287,27 @@ function LiveRooms({
   }, [lookComing, looking]);
   // The change is one commit: the look's rows and the signed-in room's are never on the page together.
   const weekInHand = !roomWaiting && week.allowed !== undefined && week.note !== undefined && week.drafts !== undefined;
-  if (look && dashboard && sampleVisitor === true && (area !== "week" || weekInHand)) setSignedInRoom(true);
+  // In the iOS app, This week's first screen is kept on the device once it is whole and live, for the next launch to
+  // draw at once (lib/kept-room.ts). It asks only what the room on screen is already asking, so nothing more is read.
+  const keeping = area === "week" && look === null && !!dashboard && !!churchId && !!hour && canKeep();
+  const allowedHere = useQuery(api.access.canOpenNeighborRecords, keeping && churchId ? { churchId } : "skip");
+  const noteHere = useQuery(api.drafts.weekNote, keeping && churchId && allowedHere ? { churchId, at: hour } : "skip");
+  const draftsHere = useQuery(api.assistance.drafts, keeping && churchId && sampleVisitor ? { churchId } : "skip");
+  const keptNow = keeping && !roomWaiting && allowedHere !== undefined && (!allowedHere || noteHere !== undefined) && (!sampleVisitor || draftsHere !== undefined);
+  useEffect(() => {
+    if (!keptNow || !dashboard) return;
+    keepRoom(
+      { ...dashboard, requests: requestPage.results, announcements: announcementPage.results },
+      { weekNote: noteHere ?? emptyNote, draftsWaiting: draftsHere?.length ?? 0, allowed: allowedHere === true, visiting: sampleVisitor === true },
+      requestPage.results.flatMap((request) => (request.commitment ? [request.commitment] : [])),
+    );
+  }, [keptNow, dashboard, requestPage.results, announcementPage.results, noteHere, draftsHere, allowedHere, sampleVisitor]);
+  if (look && dashboard && (kept ? sampleVisitor !== undefined : sampleVisitor === true) && (area !== "week" || weekInHand)) setSignedInRoom(true);
+  // A kept room is only ever the signed-in member's own: someone signed out, or another member or conference, ends it.
+  if (kept && look && (signedOut || (dashboard && (dashboard.user.id !== kept.memberId || dashboard.church.id !== kept.churchId)))) {
+    forgetKeptRoom();
+    setLookOver(true);
+  }
   // The signed-in room is in hand with no look on the page (the seed's answer is late, or the visitor was already
   // inside): the moment for a look has passed, and a late answer starts none.
   if (viaSample && !look && !signedInRoom && dashboard && sampleVisitor === true) setSignedInRoom(true);
@@ -306,7 +331,7 @@ function LiveRooms({
   // that is being laid anew, ends it, and what is said below is said as it always was.
   if (look && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
   if (look || signedOut) {
-    const first = look && firstLookData(look, deviceLanguage);
+    const first = look && firstLookData(look, kept ? kept.room.user.language : deviceLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting } : {});
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
     const sheetKnown = invitationGood !== undefined;
     const entry = badInvite ? "signin" : intent;
@@ -326,7 +351,7 @@ function LiveRooms({
               roomWaiting={area !== "week"}
               requestCommitments={first.requestCommitments}
               data={first.data}
-              sampleVisitor
+              sampleVisitor={kept ? kept.visiting : true}
               signOut={() => afterLook(signOut)}
               // Nothing in a first look can ask for a write: every press in the room is kept until the look is over.
               run={() => Promise.reject(new Error(stateWords.kept))}
