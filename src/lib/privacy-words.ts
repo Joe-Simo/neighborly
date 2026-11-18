@@ -88,7 +88,7 @@ const es: typeof en = {
       "No hay publicidad. No vendemos ni compartimos registros. El sitio no carga programas de analítica ni de rastreo. Los únicos servicios externos que usa son los que se nombran en esta página.",
       "Para poder abrirse sin conexión, la aplicación guarda en tu dispositivo sus propias páginas, imágenes y tipos de letra. No guarda ahí los registros de tu conferencia.",
     ] },
-    { title: "La conferencia de muestra", blocks: ["«Recorrer una conferencia de muestra» abre una conferencia de personas inventadas con teléfonos inventados. Se vuelve a crear cada noche, y todo lo que se haya escrito en ella se descarta entonces."] },
+    { title: "La conferencia de muestra", blocks: ["«Recorrer una muestra» abre una conferencia de personas inventadas con teléfonos inventados. Se vuelve a crear cada noche, y todo lo que se haya escrito en ella se descarta entonces."] },
     { title: "Eliminar un registro, una persona o una conferencia entera", blocks: [
       "Pregunta primero al responsable de tu conferencia. Los registros son de la conferencia, y solo un responsable puede eliminarlos. En cada eliminación se le pide al responsable que escriba el nombre, y no se puede deshacer.",
       [
