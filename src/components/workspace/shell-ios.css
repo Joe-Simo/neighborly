@@ -313,6 +313,11 @@
 }
 /* Where the app draws the system's tab bar (Liquid Glass) in its place, this one keeps its room at the foot, unseen. */
 :root[data-native-tabs] .live-app .live-tab-bar { visibility: hidden; }
+/* On iPad the app's own sidebar takes the menu's place beside the room, so the page's side menu and its Menu button
+   leave the layout; the sidebar's own Menu opens the same sheet. */
+:root[data-native-sidebar] .live-app .live-nav,
+:root[data-native-sidebar] .live-app .live-menu-trigger { display: none; }
+:root[data-native-sidebar] .live-app .live-layout { display: block; }
 @media print { .live-tab-bar { display: none !important; } }
 
 /* ── A7: a record is a sheet laid over its list (record-slide.tsx). A tap on a row opens it inside a view transition:
