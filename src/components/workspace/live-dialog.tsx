@@ -47,7 +47,7 @@ export function LiveDialog({
     // is brought back into view each time the sheet's own size changes, not only once.
     const settled = new ResizeObserver(() => keepInView(document.activeElement));
     // The tallest the view has been since the dialog opened is the screen without its keyboard.
-    let tallest = view.height;
+    let tallest = window.innerHeight;
     const fit = () => {
       tallest = Math.max(tallest, view.height);
       // A see-through keyboard shows whatever lies under it, and nothing fixed to the window can be drawn
@@ -65,7 +65,11 @@ export function LiveDialog({
       // The keyboard has moved the sheet: bring the box being typed in back between the title and the buttons.
       requestAnimationFrame(() => keepInView(document.activeElement));
     };
-    fit();
+    // Nothing is read or set as the sheet opens: no keyboard is up yet, so the view is the window and the page's
+    // own values (100dvh, no offset) already hold. Only the held title's two sizes are set, from the window's height,
+    // which needs no layout. Reading the view here would lay the whole page out inside the press that opens it.
+    document.documentElement.toggleAttribute("data-live-short", window.innerHeight < 240);
+    document.documentElement.toggleAttribute("data-live-tight", window.innerHeight < 360);
     view.addEventListener("resize", fit);
     view.addEventListener("scroll", fit);
     return () => {
@@ -266,7 +270,11 @@ function leaving(sheet: HTMLElement | null) {
   // Just before the shade and the dialog, beside them in the body, so it is set in the same type and a dialog
   // opened in its stead is laid over it.
   (shade ?? sheet).before(frame);
-  const moves = frame.getAnimations({ subtree: true });
-  if (!moves.length) return frame.remove();
-  void Promise.allSettled(moves.map((move) => move.finished)).then(() => frame.remove());
+  // Its moves are asked for in the copy's first frame, where the browser works out its styles anyway: asked here,
+  // inside the press, they make it work out the whole page's styles once more before it draws.
+  requestAnimationFrame(() => {
+    const moves = frame.getAnimations({ subtree: true });
+    if (!moves.length) return frame.remove();
+    void Promise.allSettled(moves.map((move) => move.finished)).then(() => frame.remove());
+  });
 }

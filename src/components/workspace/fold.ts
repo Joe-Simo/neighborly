@@ -277,13 +277,19 @@ function fold2(one: number, other: number) {
   return Math.max(one, other, 0) + Math.min(one, other, 0);
 }
 
-/** A neighbour that takes part in the page's flow, or null where margins could meet something else. */
-function inFlow(element: Element | null) {
-  if (!(element instanceof HTMLElement)) return null;
-  const style = getComputedStyle(element);
-  if (style.display === "none" || style.display === "contents" || style.float !== "none") return null;
-  if (style.position === "absolute" || style.position === "fixed") return null;
-  return style;
+/**
+ * The nearest neighbour that takes part in the page's flow, passing over what is drawn out of it (a line kept only
+ * for screen readers, a hidden piece), whose margins meet nothing. Null where margins could meet something else.
+ */
+function inFlow(sheet: HTMLElement, way: "previousElementSibling" | "nextElementSibling") {
+  for (let element = sheet[way]; element; element = element[way]) {
+    if (!(element instanceof HTMLElement)) return null;
+    const style = getComputedStyle(element);
+    if (style.display === "none" || style.position === "absolute" || style.position === "fixed") continue;
+    if (style.display === "contents" || style.float !== "none") return null;
+    return style;
+  }
+  return null;
 }
 
 /**
@@ -300,8 +306,8 @@ function foldedMargin(sheet: HTMLElement, style: CSSStyleDeclaration) {
   if (!column || style.position !== "static" || style.float !== "none") return null;
   const flow = getComputedStyle(column).display;
   if (flow !== "block" && flow !== "flow-root") return null;
-  const above = inFlow(sheet.previousElementSibling);
-  const below = inFlow(sheet.nextElementSibling);
+  const above = inFlow(sheet, "previousElementSibling");
+  const below = inFlow(sheet, "nextElementSibling");
   if (!above || !below) return null;
   const up = parseFloat(above.marginBottom);
   const down = parseFloat(below.marginTop);
