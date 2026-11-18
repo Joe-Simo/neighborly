@@ -105,6 +105,9 @@ final class ShellViewController: CAPBridgeViewController {
         // What the page asks to be felt: a committed page turn (room-sheet.tsx), a decision going through and a
         // refused save (use-save.ts). See tap(for:).
         scripts.add(Felt { [weak self] what in self?.tap(for: what) }, name: "kindHelpsFelt")
+        // At the accessibility text sizes the bar's words stay small; held, a tab shows its name large, as any iOS
+        // tab bar does. The page says where its tabs are (shell.tsx); iOS turns the viewer on only at those sizes.
+        scripts.add(BarTabs { [weak self] tabs in self?.layBarTabs(tabs) }, name: "kindHelpsBar")
         // The first screen of the last room, kept on the device (KeptRoom) so the next launch draws it at once while
         // the session and the live data catch up. It is handed to the page before its scripts run; a page that has
         // let it go since (a sign-out, then a reload) says so in its session, and is not handed it again.
@@ -161,6 +164,39 @@ final class ShellViewController: CAPBridgeViewController {
         present(sheet, animated: true)
     }
 
+    /// One clear view laid over each of the bar's tabs, where the page last said they are: held at the accessibility
+    /// text sizes it shows the tab's name large (iOS turns the viewer on only there), and a tap on it presses the tab.
+    /// They own touches inside the bar alone; with the bar put away the page lists no tabs and none are laid.
+    private var barViews: [UIView] = []
+
+    fileprivate func layBarTabs(_ tabs: [BarTab]) {
+        barViews.forEach { $0.removeFromSuperview() }
+        barViews = []
+        guard let webView else { return }
+        for tab in tabs where tab.frame.width > 0 && tab.frame.height > 0 {
+            let over = UIView(frame: view.convert(tab.frame, from: webView))
+            over.backgroundColor = .clear
+            // VoiceOver reads the page's own tab; this view is only for the finger.
+            over.isAccessibilityElement = false
+            over.showsLargeContentViewer = true
+            over.largeContentTitle = tab.name
+            over.tag = tab.index
+            over.addInteraction(UILargeContentViewerInteraction(delegate: self))
+            over.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(pressTab(_:))))
+            if let cover { view.insertSubview(over, belowSubview: cover) } else { view.addSubview(over) }
+            barViews.append(over)
+        }
+    }
+
+    @objc private func pressTab(_ tap: UITapGestureRecognizer) {
+        guard let index = tap.view?.tag else { return }
+        press(tab: index)
+    }
+
+    fileprivate func press(tab index: Int) {
+        webView?.evaluateJavaScript("document.querySelectorAll('.live-tab-bar .live-tab')[\(index)]?.click()")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         guard let webView else { return }
@@ -209,14 +245,16 @@ final class ShellViewController: CAPBridgeViewController {
     }
 
     /// Only what is real is felt, and iOS's own System Haptics setting turns all of it off: a page turn that commits
-    /// (`turned`, soft), a decision whose corner lays green (`decided`, light), and a save the server refused
-    /// (`refused`, the system's warning). Anything else the page says is not felt.
+    /// (`turned`, soft), a decision whose corner lays green (`decided`, light), a save the server refused
+    /// (`refused`, the system's warning), and a row's long-press sheet opening (`selected`, the selection tap).
+    /// Anything else the page says is not felt.
     private func tap(for what: String) {
         guard cover == nil else { return }
         switch what {
         case "turned": UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         case "decided": UIImpactFeedbackGenerator(style: .light).impactOccurred()
         case "refused": UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        case "selected": UISelectionFeedbackGenerator().selectionChanged()
         default: break
         }
     }
@@ -495,6 +533,34 @@ final class ShellViewController: CAPBridgeViewController {
 }
 
 /// Hears from the page when the way in is shown, and when it is left.
+fileprivate struct BarTab { let name: String; let frame: CGRect; let index: Int }
+
+extension ShellViewController: UILargeContentViewerInteractionDelegate {
+    func largeContentViewerInteraction(_ interaction: UILargeContentViewerInteraction, itemAt point: CGPoint) -> (any UILargeContentViewerItem)? {
+        interaction.view
+    }
+
+    func largeContentViewerInteraction(_ interaction: UILargeContentViewerInteraction, didEndOn item: (any UILargeContentViewerItem)?, at point: CGPoint) {
+        // Let go on the tab that was held: it is pressed, as a tap on it would be.
+        guard let over = interaction.view, over.bounds.contains(point) else { return }
+        press(tab: over.tag)
+    }
+}
+
+/// The page lists its bar's tabs: `[{ name, x, y, width, height }]` in web view points, or `[]` with no bar.
+private final class BarTabs: NSObject, WKScriptMessageHandler {
+    private let changed: ([BarTab]) -> Void
+    init(changed: @escaping ([BarTab]) -> Void) { self.changed = changed }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame, let list = message.body as? [[String: Any]] else { return }
+        changed(list.enumerated().compactMap { index, tab in
+            guard let name = tab["name"] as? String, let x = tab["x"] as? Double, let y = tab["y"] as? Double,
+                  let width = tab["width"] as? Double, let height = tab["height"] as? Double else { return nil }
+            return BarTab(name: name, frame: CGRect(x: x, y: y, width: width, height: height), index: index)
+        })
+    }
+}
+
 private final class Felt: NSObject, WKScriptMessageHandler {
     private let felt: (String) -> Void
     init(felt: @escaping (String) -> Void) { self.felt = felt }
