@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, type MouseEvent } from "react";
+import { useEffect, useLayoutEffect, type MouseEvent } from "react";
 import { CardOffer } from "./card-offer";
 import type { CardWords } from "./public-ending";
 import { useSampleDoor } from "./sample-link";
@@ -16,8 +16,10 @@ const LONGEST = 12000;
 const EASE = "cubic-bezier(.3,.6,.2,1)";
 /** On a wide window the card starts slowly, so it is seen as the card, words and all, before it fills the window; a fast start covered the window in about 120ms. */
 const WIDE = "cubic-bezier(.55,0,.25,1)";
-/** The gold square's travel on a wide window: it stays on the card while the card is still a card, and is at rest this far past the paper's cut. */
-const TRAVEL = "cubic-bezier(.65,0,.6,1)", SETTLE = .12;
+/** The gold square rides the card until the paper's cut, and is at rest this far past it. */
+const SETTLE = .12;
+/** Where on home the visitor gave the card, so the way back lands there even when home is still laying its long scroll. */
+const LEFT_AT = "home-left-at";
 
 /** Pressed, the card is not left behind: the same card, words and all, grows to the window and becomes the first sheet of the room. */
 export function CardOfferGrow({ said }: { said: CardWords }) {
@@ -49,6 +51,7 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
     const fill = Math.max(innerWidth * 1.08 / width, innerHeight * 1.08 / height);
     const dx = innerWidth / 2 - (box.left + box.width / 2), dy = innerHeight / 2 - (box.top + box.height / 2);
     offer.dataset.given = "";
+    try { sessionStorage.setItem(LEFT_AT, String(Math.round(scrollY))); } catch {}
     const timing = { duration: GROW, easing: EASE, fill: "forwards" } as const;
     const end = { transform: `translate(${dx}px,${dy}px) rotate(0deg) scale(${fill})` };
     // On a narrow window the card first rises to the middle and straightens at the window's width, whole and readable, and only then fills it.
@@ -61,9 +64,8 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
     const fade = narrow ? rest + .1 : .42;
     // A clean swap in one frame: the card's own words, square and name go as the grown card's marks and name come, so the two are never seen together.
     const swap = (from: number, to: number) => [{ opacity: from }, { opacity: from, offset: fade }, { opacity: to, offset: Math.min(1, fade + .001) }, { opacity: to }];
-    // The card's own square is not among them: the gold square is one square from the first frame to the last (below).
-    const own = sheet.querySelector<HTMLElement>(":scope > i");
-    for (const mark of sheet.children) if (mark !== own) mark.animate(swap(1, 0), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
+    // The card's own square goes with its words: until the swap it is the card's mark, riding the card, so it never crosses a word.
+    for (const mark of sheet.children) mark.animate(swap(1, 0), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
     // As the words give way, the grown card's own marks come up in the same moment, where the door's card has them: the card is never blank paper.
     const marks = document.createElement("div");
     marks.className = "card-held-marks";
@@ -81,21 +83,21 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
     const span = narrow ? GROW + 200 : GROW;
     const cover = paper.animate(swap(0, 1), { ...timing, duration: span, easing: "linear" });
     line?.animate(swap(0, 1), { ...timing, duration: narrow ? GROW + 200 : GROW, easing: "linear" });
-    // One gold square all the way: it leaves from the card's own square, turned as the card is turned, and comes to rest as the
-    // grown paper's square, so the card's last grown frame and the paper are the same mark in the same place. Nothing is swapped.
+    // One gold square all the way: in the frame of the swap the paper's square takes over from the card's own, where the card's
+    // square is in that frame and turned as it is, and only then travels, on bare paper, to rest where the door's card has it.
+    const own = sheet.querySelector<HTMLElement>(":scope > i");
     if (own) {
-      const from = own.getBoundingClientRect(), to = square.getBoundingClientRect(), side = width * own.offsetWidth / Math.max(1, sheet.offsetWidth);
-      own.style.opacity = "0";
-      const pose = (x: number, y: number, size: number, angle: number) => `translate(${x - (to.left + to.width / 2)}px,${y - (to.top + to.height / 2)}px) rotate(${angle}deg) scale(${size / to.width})`;
-      const start = { transform: pose(from.left + from.width / 2, from.top + from.height / 2, side, turn), opacity: 1 }, last = { transform: pose(to.left + to.width / 2, to.top + to.height / 2, to.width, 0), opacity: .4 };
-      // On a narrow window it stays in its place on the card while the card rises whole, and travels only as the card fills the window.
-      const whole = innerWidth * .92 / width, risen = { transform: pose(innerWidth / 2 + (own.offsetLeft + own.offsetWidth / 2 - sheet.offsetWidth / 2) * width / sheet.offsetWidth * whole, innerHeight / 2 + (own.offsetTop + own.offsetHeight / 2 - sheet.offsetHeight / 2) * width / sheet.offsetWidth * whole, side * whole, 0), opacity: 1 };
-      // Nothing moves on still paper. On a narrow window the square is in its place and at the paper's tone in the frame the paper
-      // covers the card. On a wide one its place is still outside the card then, so it arrives just as the card's edge has passed it.
-      const landed = narrow ? fade : fade + SETTLE;
-      square.animate(narrow
-        ? [{ ...start, easing: EASE }, { ...risen, offset: rest, easing: "ease-in-out" }, { ...last, offset: landed }, last]
-        : [{ ...start, easing: TRAVEL }, { ...last, offset: landed }, last], { ...timing, duration: span, easing: "linear" });
+      square.style.opacity = "0";
+      const at = fade * span, settle = SETTLE * span;
+      const pose = (box: DOMRect, to: DOMRect) => `translate(${box.left + box.width / 2 - (to.left + to.width / 2)}px,${box.top + box.height / 2 - (to.top + to.height / 2)}px) scale(${box.width / to.width})`;
+      const handOver = () => {
+        if (!held.isConnected) return;
+        if (Number(grow.currentTime ?? 0) < at - 17 && grow.playState !== "finished") return void requestAnimationFrame(handOver);
+        const to = square.getBoundingClientRect();
+        square.style.opacity = "";
+        square.animate([{ transform: pose(own.getBoundingClientRect(), to), opacity: 1 }, { transform: "none", opacity: .4 }], { duration: settle, easing: EASE, fill: "forwards" });
+      };
+      requestAnimationFrame(handOver);
     }
     // The room is asked for in the first frame the paper covers the window, not at the grow's end: it is laid and drawn whole under the
     // paper while the card goes on growing, and it is never seen round a half-grown card.
@@ -139,7 +141,42 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
     grow.finished.then(grown, grown);
   }
   useCardLean();
+  useCardInHand();
   return <CardOffer said={said} door={useSampleDoor(open)} />;
+}
+
+/** Home is whole on every visit: coming back, the card lies in the hand again before the page is shown, with no animation, whether the
+ * page is shown again by the router (its layout effects run before paint) or from the browser's back-forward cache. */
+function useCardInHand() {
+  useLayoutEffect(() => {
+    const restore = () => {
+      for (const card of document.querySelectorAll<HTMLElement>(".card-offer[data-given]")) {
+        delete card.dataset.given;
+        // Its words are on it from the first frame: lettered at once, not faded in as if it had just landed.
+        card.dataset.back = "";
+        card.classList.add("is-here");
+      }
+      let left: number | null = null;
+      try { const kept = sessionStorage.getItem(LEFT_AT); sessionStorage.removeItem(LEFT_AT); left = kept === null ? null : Number(kept); } catch {}
+      if (left === null || !Number.isFinite(left)) return;
+      const y = left;
+      // Back where the card was given: at once if home is long enough to stand there, else as soon as it is (or after a second).
+      let tries = 60;
+      const settle = () => {
+        if (document.documentElement.scrollHeight - innerHeight >= y || --tries === 0) window.scrollTo({ top: y, behavior: "instant" });
+        else requestAnimationFrame(settle);
+      };
+      settle();
+    };
+    restore();
+    const settled = () => document.querySelectorAll<HTMLElement>(".card-offer[data-back]").forEach(card => delete card.dataset.back);
+    const shown = (event: PageTransitionEvent) => { if (event.persisted) restore(); };
+    addEventListener("pageshow", shown);
+    addEventListener("pointerdown", settled, { once: true });
+    addEventListener("wheel", settled, { once: true, passive: true });
+    addEventListener("touchmove", settled, { once: true, passive: true });
+    return () => { removeEventListener("pageshow", shown); removeEventListener("pointerdown", settled); removeEventListener("wheel", settled); removeEventListener("touchmove", settled); };
+  }, []);
 }
 
 /** At rest the card turns a little toward a mouse or pen, at most 1.5 degrees, and settles when it leaves the window. Not for touch, not for reduced motion. */

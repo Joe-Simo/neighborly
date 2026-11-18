@@ -49,6 +49,8 @@
 .thread-live .card-offer:not(.is-here):not(:focus-visible){opacity:0;pointer-events:none}
 .thread-live .card-offer:not(.is-here):not(:focus-visible) .card-offer-words{opacity:0;transition:none}
 .card-offer[data-given]{opacity:0}
+/* Back on home, the card is in the hand already lettered: its words are not faded in again. */
+.card-offer[data-back] .card-offer-words{opacity:1;transition:none}
 @media(max-width:1279px),(max-height:444px){.neighborly-close-offer{top:0}}
 @media(max-width:700px) and (orientation:portrait),(max-width:480px){
   .neighborly-close-offer{height:216.41cqw}
