@@ -3,7 +3,8 @@
 import { isBrandNew } from "@/lib/first-days";
 import { sampleSayer } from "@/lib/words/sample-names";
 import { nameKeeper } from "@/components/workspace/keep-names";
-import { RoomShown, RoomStill, useWholeRoom } from "@/components/workspace/room-sheet";
+import { RoomShown, RoomStill, useEdgeTurn, useWholeRoom } from "@/components/workspace/room-sheet";
+import { useSearchParams } from "next/navigation";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useConvexConnectionState } from "convex/react";
@@ -367,6 +368,9 @@ export function LiveWorkspace({
   const app = useRef<HTMLDivElement>(null);
   const column = useRef<HTMLElement>(null);
   const { shown, opening, lost, settled } = useWholeRoom(area, column);
+  // The room itself, with nothing opened inside it (a record, a sheet): the edge's step back is the page turn there.
+  const inside = useSearchParams().size > 0;
+  useEdgeTurn(inApp, shown && !inside);
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
   const [roomIn, setRoomIn] = useState(false);
   if (shown && !roomIn) setRoomIn(true);

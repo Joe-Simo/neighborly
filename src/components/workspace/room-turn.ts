@@ -10,7 +10,8 @@
  *   - The turned-over part: a blank sheet of the underside's paper, mirrored across the fold and cut at it; its own
  *     edges throw a close shade on the sheet it lies over, and the paper curving over at the fold catches the light.
  *   - The crease's shade on the room beneath.
- * `drive(progress)` lays every piece for one point of the turn, so a finger can hold it anywhere; `play()` runs it.
+ * `drive(progress)` lays every piece for one point of the turn, so a finger can hold it anywhere; `play()` runs it,
+ * and `glide()` carries it on from where a finger let go.
  */
 
 /** The whole turn, corner down to sheet gone. */
@@ -19,7 +20,13 @@ export const TURN_MS = 280;
 /** The turn's ease: the corner lifts gently, the fold runs, and the sheet leaves the far edge without a stop. */
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
-export type RoomTurn = { drive: (progress: number) => void; play: () => Promise<void>; end: () => void };
+export type RoomTurn = {
+  drive: (progress: number) => void;
+  play: () => Promise<void>;
+  /** From where a finger let go of it, on to the end (1) or back down (0), at the turn's own pace. */
+  glide: (from: number, to: 0 | 1) => Promise<void>;
+  end: () => void;
+};
 
 const piece = (className: string, style: Partial<CSSStyleDeclaration>) => {
   const element = document.createElement("div");
@@ -96,24 +103,97 @@ export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
     turn.remove();
   };
 
-  const play = () =>
+  const glide = (from: number, to: 0 | 1) =>
     new Promise<void>((resolve) => {
       const began = performance.now();
       turn.setAttribute("data-turning", "");
-      drive(0);
+      // The rest of the way takes its share of the whole turn's time.
+      const span = Math.max(1, Math.abs(to - from) * TURN_MS);
+      drive(from);
       const step = (now: number) => {
         if (ended) return resolve();
-        const progress = (now - began) / TURN_MS;
-        if (progress >= 1) {
-          end();
+        const done = (now - began) / span;
+        if (done >= 1) {
+          // Turned away, the sheet is gone; laid back down, it lies flat where it was.
+          if (to === 1) end();
+          else drive(0);
           return resolve();
         }
-        drive(progress);
+        drive(from + (to - from) * done);
         requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
     });
+  const play = () => glide(0, 1);
 
   drive(0);
-  return { drive, play, end };
+  return { drive, play, glide, end };
+}
+
+/**
+ * The page turned back by the finger (the swipe in from the left edge, room-sheet.tsx): the room before comes back
+ * over from the left as a book's page turned back. The crease stands upright where the finger is, so the page's edge
+ * stays under the thumb: to its right the room being left still lies flat, to its left the room before has come
+ * back, and just left of the crease the page's underside shows as it curves over, throwing a close shade on the
+ * sheet it is about to cover. `drive(progress)` is the finger's place across the column, as it is, with no ease.
+ */
+export function edgeTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
+  const place = sheet.getBoundingClientRect();
+  const width = place.width;
+  const height = place.height;
+  const turn = piece("room-turn", { top: `${place.top}px`, left: `${place.left}px`, width: `${width}px`, height: `${height}px` });
+  turn.setAttribute("aria-hidden", "true");
+  turn.setAttribute("inert", "");
+  const lying = piece("room-turn-cut", { inset: "0" });
+  const held = piece("room-turn-held", {});
+  // The underside as the page curves over at the crease: the turned paper's own colour, lit along the bend.
+  const under = piece("room-turn-back", { height: `${height}px`, width: "0px", boxShadow: "none" });
+  const bend = piece("room-turn-roll", { height: `${height}px`, width: "100%", transform: "scaleX(-1)", transformOrigin: "50% 0" });
+  under.append(bend);
+  // The close shade the coming page throws on the sheet still lying, just right of the crease.
+  const shade = piece("room-turn-shade", { height: `${height}px`, transform: "scaleX(-1)", transformOrigin: "50% 0" });
+  sheet.style.top = "0";
+  sheet.style.left = "0";
+  sheet.style.background = "var(--live-paper, #f7f4ed)";
+  held.append(frame);
+  lying.append(held);
+  turn.append(lying, shade, under);
+  document.body.append(turn);
+
+  const drive = (progress: number) => {
+    const x = Math.min(1, Math.max(0, progress)) * width;
+    lying.style.clipPath = `inset(0 0 0 ${x}px)`;
+    // The bend is as wide as the page has room to curve, up to a finger's breadth, and ends at the crease.
+    const curve = Math.min(x, 44);
+    under.style.width = `${curve}px`;
+    under.style.transform = `translateX(${x - curve}px)`;
+    shade.style.transform = `translateX(${x}px) scaleX(-1)`;
+  };
+
+  let ended = false;
+  const end = () => {
+    if (ended) return;
+    ended = true;
+    turn.remove();
+  };
+  const glide = (from: number, to: 0 | 1) =>
+    new Promise<void>((resolve) => {
+      const began = performance.now();
+      const span = Math.max(1, Math.abs(to - from) * TURN_MS);
+      drive(from);
+      const step = (now: number) => {
+        if (ended) return resolve();
+        const done = (now - began) / span;
+        if (done >= 1) {
+          if (to === 1) end();
+          else drive(0);
+          return resolve();
+        }
+        drive(from + (to - from) * ease(done));
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  drive(0);
+  return { drive, play: () => glide(0, 1), glide, end };
 }

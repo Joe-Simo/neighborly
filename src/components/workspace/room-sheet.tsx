@@ -1,9 +1,9 @@
 "use client";
 
-import { Component, createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
+import { Component, createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
 import { flushSync } from "react-dom";
-import { roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
+import { edgeTurn, roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
 import { useConvex, useConvexConnectionState } from "convex/react";
 
 /**
@@ -58,6 +58,42 @@ const letGo = () => {
 };
 
 /**
+ * A step back to the last room taken by the finger, from the left edge (useEdgeTurn): the finger holds the turn
+ * instead of the turn playing by itself. `progress` is where the finger is (0 to 1 across the column); `asked` is what
+ * it chose on letting go (on to the room before, or back to the room it was on). `undoing` is a step back laid down
+ * again: the room it left is coming back beneath the sheet, and the sheet then goes in one cut.
+ */
+const finger: { on: boolean; progress: number; asked: "on" | "back" | null; turn: RoomTurn | null; undoing: boolean } = {
+  on: false,
+  progress: 0,
+  asked: null,
+  turn: null,
+  undoing: false,
+};
+
+/** The finger has let go and the room before is whole: the turn is carried on, or laid back down and the step undone. */
+function letFingerGo() {
+  const turn = finger.turn;
+  const asked = finger.asked;
+  if (!turn || !asked) return;
+  finger.on = false;
+  finger.turn = null;
+  finger.asked = null;
+  if (asked === "on") {
+    void turn.glide(finger.progress, 1);
+    return;
+  }
+  void turn.glide(finger.progress, 0).then(() => {
+    // The sheet lies flat again over the room before. The step is undone beneath it: the room it shows comes back
+    // under it unseen (the sheet already lying there stays, as any sheet does), and it is let go of in one cut.
+    turning = turn;
+    still = document.createElement("div");
+    finger.undoing = true;
+    window.history.forward();
+  });
+}
+
+/**
  * A room that took long enough to say "Opening…" has no sheet of the last room left lying over it: the page it is
  * turned from is the one the reader was looking at, bare paper with that one line where the title will be.
  */
@@ -89,8 +125,20 @@ function turnAway(opening: ReturnType<typeof openingSheet> | null) {
   const laid = turning;
   turning = null;
   still = null;
-  const turn = laid ?? (opening ? roomTurn(opening.sheet, opening.frame) : null);
+  const turn = laid ?? (opening ? (finger.on ? edgeTurn : roomTurn)(opening.sheet, opening.frame) : null);
   if (!turn) return;
+  // The room a step back was undone to is whole beneath the sheet that shows it: the sheet goes in one cut.
+  if (finger.undoing) {
+    finger.undoing = false;
+    return turn.end();
+  }
+  // A finger holds this turn: it is laid where the finger is, and carried on or back once the finger lets go.
+  if (finger.on) {
+    finger.turn = turn;
+    turn.drive(finger.progress);
+    letFingerGo();
+    return;
+  }
   // A room picked from the Menu: the menu and its shade, still on their way out, are taken away in this one frame,
   // so the page turned is the page seen clearly, never one under a shade.
   for (const closing of document.querySelectorAll<HTMLElement>('[data-slot="dialog-overlay"][data-state="closed"], [data-slot="dialog-content"][data-state="closed"]')) {
@@ -193,7 +241,8 @@ function hold(column: HTMLElement | null) {
   });
   still = stillFrame(column, copy);
   document.body.append(still);
-  turning = roomTurn(copy, still);
+  // Taken back by the finger, the room before comes back over from the left; any other change turns the corner.
+  turning = (finger.on ? edgeTurn : roomTurn)(copy, still);
 }
 
 /**
@@ -354,4 +403,88 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     return () => cancelAnimationFrame(frame);
   }, [area, held, column]);
   return { shown: !held, opening: held && opening, lost: held && opening && lost, settled: !held && settled === area };
+}
+
+type Edge = { webkit?: { messageHandlers?: { kindHelpsEdge?: { postMessage: (pageOwns: boolean) => void } } } };
+/** How far in from the left edge a finger may land and still be taking the step back. */
+const EDGE = 24;
+/** Past this share of the column, or on a flick this fast (px per ms), a let-go turns the page; short of both, it lies back. */
+const FAR_ENOUGH = 0.4;
+const FLICK = 0.5;
+
+/**
+ * In the iOS app, the step back from a room to the room before is the page turn, held by the finger: a swipe in from
+ * the left edge turns the room's sheet as far as the finger has come, and letting go carries it on past about 40%
+ * (or on a flick) or lays it back down. The app's own swipe back (WebKit's) is put away while a room is shown and the
+ * page takes the edge; inside a room (a record, a sheet) the app's own swipe is the step back, as before. No page is
+ * ever turned under a sheet or dialog that is open: the edge is left to it.
+ */
+export function useEdgeTurn(inApp: boolean, roomShown: boolean) {
+  // Whether a step back may start: read at the touch, so a step already under way outlives the room change it makes.
+  const startable = useRef(roomShown);
+  useEffect(() => {
+    startable.current = roomShown;
+    (window as Edge).webkit?.messageHandlers?.kindHelpsEdge?.postMessage(roomShown);
+  }, [roomShown]);
+  useEffect(() => {
+    const edge = (window as Edge).webkit?.messageHandlers?.kindHelpsEdge;
+    if (!inApp || !edge) return;
+    let start: { x: number; y: number; left: number; width: number } | null = null;
+    let trail: { x: number; t: number }[] = [];
+    let lost = 0;
+    const covered = () => !!document.querySelector('[data-slot="dialog-content"][data-state="open"], .row-menu-shade, [data-vaul-drawer][data-state="open"]');
+    const down = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!startable.current || event.touches.length !== 1 || touch.clientX > EDGE || finger.on || finger.undoing || covered() || window.history.length < 2) return;
+      const column = document.querySelector<HTMLElement>(".live-app main.live-main");
+      const box = column?.getBoundingClientRect();
+      start = { x: touch.clientX, y: touch.clientY, left: box?.left ?? 0, width: box?.width ?? window.innerWidth };
+      trail = [{ x: touch.clientX, t: event.timeStamp }];
+    };
+    const move = (event: TouchEvent) => {
+      if (!start) return;
+      const touch = event.touches[0];
+      const dx = touch.clientX - start.x;
+      if (!finger.on) {
+        // A swipe that runs more down than across is a scroll, and is left to the page.
+        if (Math.abs(touch.clientY - start.y) > Math.abs(dx)) start = null;
+        if (!start || dx < 8) return;
+        finger.on = true;
+        finger.asked = null;
+        window.history.back();
+        // A step back that leads to no room (the way in, another page) brings no turn: the finger lets it be.
+        window.clearTimeout(lost);
+        lost = window.setTimeout(() => {
+          if (finger.on && !finger.turn) Object.assign(finger, { on: false, asked: null });
+        }, 1500);
+      }
+      event.preventDefault();
+      // Measured from the column's own left edge, so the crease is where the finger is, never behind it.
+      finger.progress = Math.min(1, Math.max(0, (touch.clientX - start.left) / start.width));
+      trail = [...trail.filter((point) => event.timeStamp - point.t < 80), { x: touch.clientX, t: event.timeStamp }];
+      finger.turn?.drive(finger.progress);
+    };
+    const up = (event: TouchEvent) => {
+      if (!start) return;
+      start = null;
+      if (!finger.on) return;
+      const first = trail[0];
+      const last = trail[trail.length - 1];
+      const speed = last && first && last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0;
+      finger.asked = finger.progress > FAR_ENOUGH || speed > FLICK ? "on" : "back";
+      if (event.type === "touchcancel") finger.asked = "back";
+      letFingerGo();
+    };
+    document.addEventListener("touchstart", down, { passive: true });
+    document.addEventListener("touchmove", move, { passive: false });
+    document.addEventListener("touchend", up);
+    document.addEventListener("touchcancel", up);
+    return () => {
+      window.clearTimeout(lost);
+      document.removeEventListener("touchstart", down);
+      document.removeEventListener("touchmove", move);
+      document.removeEventListener("touchend", up);
+      document.removeEventListener("touchcancel", up);
+    };
+  }, [inApp]);
 }
