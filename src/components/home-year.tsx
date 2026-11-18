@@ -5,6 +5,8 @@ import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
 import "./home-year.css";
 
 const whole = new Intl.NumberFormat("en-US");
+// The fold a tab is held at until it is in sight: 60° off upright, of the 86° a tab can lie back (home-year.css).
+const upright = 1 - 60 / 86;
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 // In the order the work happens.
 const figures = [
@@ -37,11 +39,24 @@ export function HomeYear() {
     let frame = 0, near = false, last = "";
     const follow = () => {
       frame = 0;
-      // Under a turned page, the figures stand up as the page is turned off them (chapter-sheets.tsx sets --turned); where no page is
-      // turned, as they rise into the window. Each stands a little after the one before.
+      // No figure is ever seen more than 60° off upright: each tab lies at 60° until it is in sight, then stands.
+      // Under a turned page (chapter-sheets.tsx sets --turned), a tab is in sight once the crease, travelling from the lower right corner
+      // along the window's diagonal, has passed its own nearest corner; it stands by the time the crease is a quarter of the way past its far one.
+      // Where no page is turned, it stands as it rises into the window, each a little after the one before.
       const turned = panel.dataset.turn === "to" ? panel.style.getPropertyValue("--turned") : "";
-      const act = turned ? Number(turned) : Math.max(0, Math.min(1, (innerHeight - list.getBoundingClientRect().top) / (innerHeight * .55)));
-      const folds = cells.map((_, index) => { const start = .15 + index * .1; const t = Math.max(0, Math.min(1, (act - start) / .45)); return 1 - (1 - t) ** 3; });
+      const w = innerWidth, h = innerHeight, far = Math.hypot(w, h);
+      const along = (x: number, y: number) => ((w - x) * w + (h - y) * h) / far;
+      const rise = Math.max(0, Math.min(1, (h - list.getBoundingClientRect().top) / (h * .55)));
+      const folds = cells.map((cell, index) => {
+        let t: number;
+        if (turned && Number(turned) >= 1) t = 1;
+        else if (turned) {
+          const box = cell.getBoundingClientRect(), gone = far * Number(turned), from = along(box.right, box.bottom), to = along(box.left, box.top) + far * .25;
+          t = (gone - from) / (to - from);
+        } else t = (rise - .15 - index * .1) / .45;
+        t = Math.max(0, Math.min(1, t));
+        return upright + (1 - upright) * (1 - (1 - t) ** 3);
+      });
       const key = folds.map(fold => fold.toFixed(3)).join();
       if (key !== last) {
         last = key;
