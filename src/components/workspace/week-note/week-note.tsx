@@ -91,7 +91,7 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   const week = `${data.church.sample ? "sample" : churchId}:${new Intl.DateTimeFormat("en-CA", { timeZone: data.church.timeZone }).format(monday)}`;
   const away = useSyncExternalStore(subscribe, () => stored(put) === week, () => true);
   const look = useFirstLook();
-  const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId }) ?? (look ? true : undefined);
+  const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId }) ?? (look ? (look.allowed ?? true) : undefined);
   const at = useHour();
   const counts = useQuery(api.drafts.weekNote, allowed && !away && at ? { churchId, at } : "skip") ?? (away ? undefined : look?.weekNote);
   const last = useSyncExternalStore(subscribe, () => stored(kept), () => null);

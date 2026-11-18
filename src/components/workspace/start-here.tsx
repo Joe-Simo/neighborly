@@ -17,7 +17,7 @@ export function StartHere() {
   // Already being read above the rooms, so this answers at once.
   // A first look at the sample is always a visitor's, and the seed says how many drafts wait.
   const look = useFirstLook();
-  const visiting = useQuery(api.demo.visiting, data.church.sample ? {} : "skip") ?? (look ? true : undefined);
+  const visiting = useQuery(api.demo.visiting, data.church.sample ? {} : "skip") ?? (look ? (look.visiting ?? true) : undefined);
   const show = visiting === true;
   const waiting = useQuery(api.assistance.drafts, show ? { churchId: data.church.id } : "skip")?.length ?? look?.draftsWaiting;
   if (!show || waiting === 0) return null;

@@ -105,6 +105,13 @@ final class ShellViewController: CAPBridgeViewController {
         // A save the page makes is felt here: it says "saved" or "decided" (use-save.ts), and a row's long press
         // says "touch" (row-menu.tsx). Nothing else is felt.
         scripts.add(Felt { [weak self] what in self?.tap(for: what) }, name: "kindHelpsFelt")
+        // The first screen of the last room, kept on the device (KeptRoom) so the next launch draws it at once while
+        // the session and the live data catch up. It is handed to the page before its scripts run; a page that has
+        // let it go since (a sign-out, then a reload) says so in its session, and is not handed it again.
+        if let kept = KeptRoom.read() {
+            scripts.addUserScript(WKUserScript(source: "try { if (!sessionStorage.getItem('kind-helps:kept-gone')) window.kindHelpsKept = \(kept); } catch {}", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
+        scripts.add(KeptRoomRequests(host: bridge?.config.serverURL.host), name: "kindHelpsKeep")
         // In the app a long press brings up no web callout, a tap leaves no
         // grey flash, a button's words are not selected by accident, and what is
         // pressed answers from touch-down.
@@ -483,6 +490,49 @@ private final class Felt: NSObject, WKScriptMessageHandler {
     init(felt: @escaping (String) -> Void) { self.felt = felt }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if let what = message.body as? String { felt(what) }
+    }
+}
+
+/// The first screen of the room the member last saw: names, counts and row status only (the page chooses what is
+/// in it, src/lib/kept-room.ts). One file in the app's own storage, protected so it cannot be read while the device
+/// is locked; never in the web view's storage. It is let go at sign-out, when the member or conference changes, and
+/// once it is a day old.
+enum KeptRoom {
+    private static let day: TimeInterval = 86_400
+    private static var file: URL? {
+        guard let support = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true) else { return nil }
+        return support.appendingPathComponent("kept-room.json")
+    }
+
+    /// The kept room as JSON, if there is one under a day old; an older one is let go here.
+    static func read() -> String? {
+        guard let file, let made = (try? FileManager.default.attributesOfItem(atPath: file.path))?[.modificationDate] as? Date else { return nil }
+        guard Date().timeIntervalSince(made) < day, let text = try? String(contentsOf: file, encoding: .utf8),
+              (try? JSONSerialization.jsonObject(with: Data(text.utf8))) is [String: Any] else {
+            forget()
+            return nil
+        }
+        return text
+    }
+
+    static func keep(_ json: String) {
+        guard let file, (try? JSONSerialization.jsonObject(with: Data(json.utf8))) is [String: Any] else { return }
+        try? Data(json.utf8).write(to: file, options: [.atomic, .completeFileProtection])
+    }
+
+    static func forget() {
+        guard let file else { return }
+        try? FileManager.default.removeItem(at: file)
+    }
+}
+
+/// The page keeps its first screen (a JSON string) or lets it go (`null`). Only the app's own site is heard.
+private final class KeptRoomRequests: NSObject, WKScriptMessageHandler {
+    private let host: String?
+    init(host: String?) { self.host = host }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame, message.frameInfo.securityOrigin.host == host else { return }
+        if let json = message.body as? String { KeptRoom.keep(json) } else { KeptRoom.forget() }
     }
 }
 

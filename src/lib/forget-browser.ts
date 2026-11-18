@@ -1,3 +1,5 @@
+import { forgetKeptRoom } from "@/lib/kept-room";
+
 /**
  * What the app leaves in the browser that names or hints at a conference, a person or a note. On sign-out, and on
  * leaving the sample, all of it goes, so the next person at a shared computer starts from nothing. Only the chosen
@@ -27,6 +29,8 @@ export function forgetThisBrowser() {
       // Storage is closed to the page: nothing was kept.
     }
   }
+  // In the iOS app, the first screen it keeps on the device (lib/kept-room.ts).
+  forgetKeptRoom();
 }
 
 /**
@@ -35,6 +39,8 @@ export function forgetThisBrowser() {
  * holds none of it, and the name they wrote on the home page's card is left for the door to read.
  */
 export function forgetWhoWasHere() {
+  // A room the app kept on the device is never drawn for someone signed out.
+  forgetKeptRoom();
   try {
     if (local.some((key) => window.localStorage.getItem(key) !== null)) forgetThisBrowser();
   } catch {

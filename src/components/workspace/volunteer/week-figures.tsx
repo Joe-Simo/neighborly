@@ -17,7 +17,7 @@ export function WeekFigures({ noted = false }: { noted?: boolean }) {
   const churchId = data.church.id;
   // In a first look at the sample the seed's answer stands for both readings.
   const look = useFirstLook();
-  const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId }) ?? (look ? true : undefined);
+  const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId }) ?? (look ? (look.allowed ?? true) : undefined);
   const at = useHour();
   const counts = useQuery(api.drafts.weekNote, allowed && at ? { churchId, at } : "skip") ?? look?.weekNote;
   // Still on their way: the door's paper (door.tsx) waits for them, so it lifts off a room with its figures in.

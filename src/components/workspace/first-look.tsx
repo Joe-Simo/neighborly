@@ -21,6 +21,10 @@ type Look = {
   weekNote: FunctionReturnType<typeof api.drafts.weekNote>;
   /** How many drafts wait for a yes; the week only says whether one does. */
   draftsWaiting: number;
+  /** Whether the person may open neighbor records (the week's counts): always so in the sample. */
+  allowed?: boolean;
+  /** Whether the person is the sample's visitor: always so in a look at the sample. */
+  visiting?: boolean;
 };
 const FirstLook = createContext<Look | null>(null);
 export const FirstLookProvider = FirstLook.Provider;
@@ -54,13 +58,13 @@ export function useFirstRoom(wanted: boolean) {
  * The room's data for a first look. The answer has the dashboard's fields with a seed key wherever the signed-in
  * room has an id; a key is never sent anywhere, so it stands in the id's place for as long as the look lasts.
  */
-export function firstLookData(room: FirstRoom, language: Language) {
+export function firstLookData(room: FirstRoom, language: Language, standing: Pick<Look, "allowed" | "visiting"> = {}) {
   const { firstRequests, firstAnnouncements, weekNote, draftsWaiting, ...dashboard } = room;
   const seeded = { ...dashboard, user: { ...dashboard.user, language }, requests: firstRequests, announcements: firstAnnouncements };
   return {
     data: seeded as unknown as LiveWorkspaceData,
     requestCommitments: firstRequests.flatMap((request) => (request.commitment ? [request.commitment] : [])) as unknown as LiveWorkspaceData["commitments"],
-    look: { weekNote, draftsWaiting },
+    look: { weekNote, draftsWaiting, ...standing },
   };
 }
 
@@ -133,6 +137,9 @@ export function useKeptPress(looking: boolean) {
       // Only a press that opens something is made later. One that writes is never made for the person a moment
       // after the fact: its control rests, and at the change-over it is simply live for them to press.
       press.current = control.hasAttribute(OPENS) ? place(column, control) : null;
+      // The pressed control holds the keyboard's place: when the live room comes in it is focused there, so a
+      // second press acts on it at once.
+      focus.current = place(column, control);
     };
     const where = () => {
       const column = room(), on = document.activeElement;
