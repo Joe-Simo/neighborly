@@ -1,11 +1,8 @@
-const dollars = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
+import { formatMoney, type Language } from "@/lib/words";
 
 /** Whole cents as dollars and cents, "$1,875.60". */
-export function formatCents(cents: number) {
-  return dollars.format(cents / 100);
+export function formatCents(cents: number, language: Language = "en") {
+  return formatMoney(cents / 100, language);
 }
 
 /** Whole cents as a plain amount for a form field, "1875.60". */

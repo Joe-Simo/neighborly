@@ -1,4 +1,7 @@
 import type { Terms } from "../sets";
+import { counter } from "../numbers";
+const enN = counter("en");
+const esN = counter("es");
 
 /**
  * Home visits: the room, choosing a pair, the write-up and the visit sheet.
@@ -67,9 +70,9 @@ export const en = (t: Terms, place: string) => ({
   },
   coming: {
     title: "Coming up",
-    thisWeek: (count: number) => `${count} this week`,
-    short: (count: number) => (count === 1 ? "1 is short of a visitor" : `${count} are short of a visitor`),
-    toArrange: (count: number) => (count === 1 ? "1 more needs a pair" : `${count} more need a pair`),
+    thisWeek: (count: number) => `${enN(count)} this week`,
+    short: (count: number) => (count === 1 ? "1 is short of a visitor" : `${enN(count)} are short of a visitor`),
+    toArrange: (count: number) => (count === 1 ? "1 more needs a pair" : `${enN(count)} more need a pair`),
     askSecond: "Ask a second visitor",
     askElse: "Ask someone else",
     sheet: "Visit sheet",
@@ -86,15 +89,15 @@ export const en = (t: Terms, place: string) => ({
   },
   toWriteUp: {
     title: "Done, to write up",
-    count: (count: number) => (count === 1 ? "1 visit" : `${count} visits`),
+    count: (count: number) => (count === 1 ? "1 visit" : `${enN(count)} visits`),
     writeUp: "Write up",
     writeUpLabel: "Write up: {neighbor}, {day}",
   },
   written: {
     title: "Written up",
     latest: "The latest visits",
-    hours: (count: number) => (count === 1 ? "1 hour" : `${count} hours`),
-    miles: (count: number) => (count === 1 ? "1 mile" : `${count} miles`),
+    hours: (count: number) => (count === 1 ? "1 hour" : `${enN(count)} hours`),
+    miles: (count: number) => (count === 1 ? "1 mile" : `${enN(count)} miles`),
     noNotes: "No notes written.",
   },
   forms: {
@@ -106,7 +109,7 @@ export const en = (t: Terms, place: string) => ({
     otherMembers: "Other approved members",
     finding: "Finding who can go…",
     visitFor: "Visit for",
-    waiting: (count: number) => (count === 1 ? "1 request waiting on a visit" : `${count} requests waiting on a visit`),
+    waiting: (count: number) => (count === 1 ? "1 request waiting on a visit" : `${enN(count)} requests waiting on a visit`),
     noRequest: `A ${t.neighbor} with no request, as a follow-up`,
     findNeighbor: `Find the ${t.neighbor}`,
     searchPlaceholder: "Name, phone or street",
@@ -170,8 +173,8 @@ export const en = (t: Terms, place: string) => ({
     phone: "Phone",
     noPhone: "None on file",
     household: "Household",
-    adults: (count: number) => (count === 1 ? "1 adult" : `${count} adults`),
-    children: (count: number) => (count === 1 ? "1 child" : `${count} children`),
+    adults: (count: number) => (count === 1 ? "1 adult" : `${enN(count)} adults`),
+    children: (count: number) => (count === 1 ? "1 child" : `${enN(count)} children`),
     /** The grown-ups and the children of a household, one after the other. */
     adultsAndChildren: "{adults}, {children}",
     speaks: "Speaks",
@@ -253,9 +256,9 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     coming: {
       title: "Próximas visitas",
-      thisWeek: (count) => `${count} esta semana`,
-      short: (count) => (count === 1 ? "A 1 le falta un visitador" : `A ${count} les falta un visitador`),
-      toArrange: (count) => (count === 1 ? "1 más necesita una pareja" : `${count} más necesitan una pareja`),
+      thisWeek: (count) => `${esN(count)} esta semana`,
+      short: (count) => (count === 1 ? "A 1 le falta un visitador" : `A ${esN(count)} les falta un visitador`),
+      toArrange: (count) => (count === 1 ? "1 más necesita una pareja" : `${esN(count)} más necesitan una pareja`),
       askSecond: "Pedir un segundo visitador",
       askElse: "Pedirle a otra persona",
       sheet: "Hoja de la visita",
@@ -271,15 +274,15 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     toWriteUp: {
       title: "Hechas, faltan las notas",
-      count: (count) => (count === 1 ? "1 visita" : `${count} visitas`),
+      count: (count) => (count === 1 ? "1 visita" : `${esN(count)} visitas`),
       writeUp: "Escribir las notas",
       writeUpLabel: "Escribir las notas: {neighbor}, {day}",
     },
     written: {
       title: "Con notas escritas",
       latest: "Las visitas más recientes",
-      hours: (count) => (count === 1 ? "1 hora" : `${count} horas`),
-      miles: (count) => (count === 1 ? "1 milla" : `${count} millas`),
+      hours: (count) => (count === 1 ? "1 hora" : `${esN(count)} horas`),
+      miles: (count) => (count === 1 ? "1 milla" : `${esN(count)} millas`),
       noNotes: "No se escribieron notas.",
     },
     forms: {
@@ -291,7 +294,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       otherMembers: "Otros miembros aprobados",
       finding: "Buscando quién puede ir…",
       visitFor: "Visita para",
-      waiting: (count) => (count === 1 ? "1 petición espera una visita" : `${count} peticiones esperan una visita`),
+      waiting: (count) => (count === 1 ? "1 petición espera una visita" : `${esN(count)} peticiones esperan una visita`),
       noRequest: `Un ${t.neighbor} sin petición, como seguimiento`,
       findNeighbor: `Busca al ${t.neighbor}`,
       searchPlaceholder: "Nombre, teléfono o calle",
@@ -354,8 +357,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       phone: "Teléfono",
       noPhone: "Ninguno anotado",
       household: "Hogar",
-      adults: (count) => (count === 1 ? "1 adulto" : `${count} adultos`),
-      children: (count) => (count === 1 ? "1 niño" : `${count} niños`),
+      adults: (count) => (count === 1 ? "1 adulto" : `${esN(count)} adultos`),
+      children: (count) => (count === 1 ? "1 niño" : `${esN(count)} niños`),
       adultsAndChildren: "{adults} y {children}",
       speaks: "Habla",
       going: "Van juntos",

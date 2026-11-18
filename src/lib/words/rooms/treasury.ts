@@ -1,4 +1,7 @@
 import type { Terms } from "../sets";
+import { counter } from "../numbers";
+const enN = counter("en");
+const esN = counter("es");
 
 /**
  * Treasury: the ledger, recording money and payments, the bank and the shelf.
@@ -68,9 +71,9 @@ export const en = (t: Terms, place: string) => ({
       out: (month: string) => `Out, ${month}`,
       nothingIn: "Nothing received yet",
       nothingOut: "Nothing paid yet",
-      neighbors: (count: number) => (count === 1 ? `1 ${t.neighbor}` : `${count} ${t.neighbors}`),
-      gifts: (count: number) => (count === 1 ? "1 twinning gift" : `${count} twinning gifts`),
-      others: (count: number) => (count === 1 ? "1 other payment" : `${count} other payments`),
+      neighbors: (count: number) => (count === 1 ? `1 ${t.neighbor}` : `${enN(count)} ${t.neighbors}`),
+      gifts: (count: number) => (count === 1 ? "1 twinning gift" : `${enN(count)} twinning gifts`),
+      others: (count: number) => (count === 1 ? "1 other payment" : `${enN(count)} other payments`),
     },
     /** A payment just recorded, as the ledger line its sheet became. */
     paid: {
@@ -90,7 +93,7 @@ export const en = (t: Terms, place: string) => ({
     },
     also: {
       title: "Also waiting",
-      requests: (count: number) => (count === 1 ? "1 request" : `${count} requests`),
+      requests: (count: number) => (count === 1 ? "1 request" : `${enN(count)} requests`),
       alreadyPaid: (amount: string) => `${amount} already paid`,
     },
     earlier: "Earlier month",
@@ -101,14 +104,14 @@ export const en = (t: Terms, place: string) => ({
     quiet: { title: "A quiet month so far.", deck: "Nothing is recorded in {month} yet. {amount} was carried in." },
     foot: {
       label: "Also in Treasury",
-      gifts: (count: number) => (count === 1 ? "1 gift is not deposited yet" : `${count} gifts are not deposited yet`),
+      gifts: (count: number) => (count === 1 ? "1 gift is not deposited yet" : `${enN(count)} gifts are not deposited yet`),
       onHand: (amount: string) => `${amount} on hand. Record the trip to the bank as one deposit, the way the statement will show it.`,
       deposit: "Record a deposit",
       uncleared: (count: number) =>
-        count === 0 ? "Everything has cleared the bank" : count === 1 ? "1 entry has not cleared the bank yet" : `${count} entries have not cleared the bank yet`,
+        count === 0 ? "Everything has cleared the bank" : count === 1 ? "1 entry has not cleared the bank yet" : `${enN(count)} entries have not cleared the bank yet`,
       bankDeck: "Set the ledger beside your bank statement and see that they agree.",
       bank: "Match the bank",
-      shelf: (count: number) => (count === 0 ? "The voucher shelf" : count === 1 ? "1 voucher on the shelf" : `${count} vouchers on the shelf`),
+      shelf: (count: number) => (count === 0 ? "The voucher shelf" : count === 1 ? "1 voucher on the shelf" : `${enN(count)} vouchers on the shelf`),
       openShelf: "Open the shelf",
     },
   },
@@ -166,7 +169,7 @@ export const en = (t: Terms, place: string) => ({
   bank: {
     title: "Match the bank",
     deck: "Mark each entry your statement shows. What is left is still on its way.",
-    entries: (count: number) => (count === 1 ? "1 entry" : `${count} entries`),
+    entries: (count: number) => (count === 1 ? "1 entry" : `${enN(count)} entries`),
     figures: {
       cleared: "Cleared the bank",
       clearedDeck: "Your statement should say the same",
@@ -182,7 +185,7 @@ export const en = (t: Terms, place: string) => ({
       askDeck: "Enter the day it ends and its ending balance. It should equal what has cleared here.",
       agree: "The statement and the ledger agree.",
       clearedBoth: (amount: string) => `${amount} has cleared on both.`,
-      onTheWay: (count: number) => (count === 0 ? "Nothing is waiting." : count === 1 ? "1 entry still on the way." : `${count} entries still on the way.`),
+      onTheWay: (count: number) => (count === 0 ? "Nothing is waiting." : count === 1 ? "1 entry still on the way." : `${enN(count)} entries still on the way.`),
       saved: (day: string) => `Saved for the ${day} statement.`,
       keeping: "Keeping…",
       keep: "Keep this statement",
@@ -201,13 +204,13 @@ export const en = (t: Terms, place: string) => ({
       confirm: (count: number) =>
         count === 1
           ? "Mark 1 entry cleared: {in} in and {out} out, through {day}. You can take any of them back after."
-          : `Mark ${count} entries cleared: {in} in and {out} out, through {day}. You can take any of them back after.`,
-      markAll: (count: number) => (count === 1 ? "Mark 1 entry cleared" : `Mark ${count} entries cleared`),
+          : `Mark ${enN(count)} entries cleared: {in} in and {out} out, through {day}. You can take any of them back after.`,
+      markAll: (count: number) => (count === 1 ? "Mark 1 entry cleared" : `Mark ${enN(count)} entries cleared`),
       marking: "Marking…",
       first: "Your first statement? Start with everything, then take back the few the bank has not shown.",
       everything: (day: string) => `Everything through ${day} has cleared`,
       deposit: (amount: string) => `${amount} deposit`,
-      carried: (count: number) => (count === 1 ? "1 gift carried to the bank together" : `${count} gifts carried to the bank together`),
+      carried: (count: number) => (count === 1 ? "1 gift carried to the bank together" : `${enN(count)} gifts carried to the bank together`),
       mark: "Mark cleared",
       markLabel: (what: string) => `Mark cleared: ${what}`,
       emptyTitle: "Everything has cleared.",
@@ -215,7 +218,7 @@ export const en = (t: Terms, place: string) => ({
     },
     lately: {
       title: "Cleared lately",
-      newest: (count: number) => `The newest ${count}`,
+      newest: (count: number) => `The newest ${enN(count)}`,
       onStatement: (day: string) => `On the ${day} statement`,
       undo: "Mark not cleared",
       undoLabel: (what: string) => `Mark not cleared: ${what}`,
@@ -226,7 +229,7 @@ export const en = (t: Terms, place: string) => ({
       deposit: (amount: string) => `The ${amount} deposit is marked cleared.`,
       cleared: (what: string) => `${what} is marked cleared.`,
       undone: (what: string) => `${what} is back with the entries not cleared yet.`,
-      through: (count: number) => (count === 1 ? "1 entry through {day} marked cleared." : `${count} entries through {day} marked cleared.`),
+      through: (count: number) => (count === 1 ? "1 entry through {day} marked cleared." : `${enN(count)} entries through {day} marked cleared.`),
     },
   },
   /** The voucher shelf: a count, never money. */
@@ -235,7 +238,7 @@ export const en = (t: Terms, place: string) => ({
     deck: "Thrift store vouchers on hand. A count, kept apart from the money.",
     record: "Record vouchers",
     recordDeck: "Vouchers the thrift store gave you, or a correction after counting them by hand.",
-    vouchers: (count: number) => (count === 1 ? "1 voucher" : `${count} vouchers`),
+    vouchers: (count: number) => (count === 1 ? "1 voucher" : `${enN(count)} vouchers`),
     /** One move on the shelf: "+20 vouchers, Winter coat". */
     cameIn: "+{vouchers}, {item}",
     wentOut: "−{vouchers}, {item}",
@@ -259,7 +262,7 @@ export const en = (t: Terms, place: string) => ({
     short: "More were given than were put on the shelf. Record what you received.",
     noneLeft: "none left",
     lately: "Lately",
-    newest: (count: number) => `The newest ${count}`,
+    newest: (count: number) => `The newest ${enN(count)}`,
     givenOnRequest: "Given on a request",
     backOnShelf: "Back on the shelf",
     received: "Received",
@@ -269,7 +272,7 @@ export const en = (t: Terms, place: string) => ({
       action: "Record vouchers received",
     },
     done: {
-      added: (count: number) => (count === 1 ? "1 voucher for {item} is on the shelf." : `${count} vouchers for {item} are on the shelf.`),
+      added: (count: number) => (count === 1 ? "1 voucher for {item} is on the shelf." : `${enN(count)} vouchers for {item} are on the shelf.`),
       corrected: (item: string) => `The count for ${item} is corrected.`,
     },
   },
@@ -330,9 +333,9 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       out: (month) => `Salidas de ${month}`,
       nothingIn: "Todavía no se ha recibido nada",
       nothingOut: "Todavía no se ha pagado nada",
-      neighbors: (count) => (count === 1 ? `1 ${t.neighbor}` : `${count} ${t.neighbors}`),
-      gifts: (count) => (count === 1 ? "1 donativo de hermanamiento" : `${count} donativos de hermanamiento`),
-      others: (count) => (count === 1 ? "1 pago más" : `${count} pagos más`),
+      neighbors: (count) => (count === 1 ? `1 ${t.neighbor}` : `${esN(count)} ${t.neighbors}`),
+      gifts: (count) => (count === 1 ? "1 donativo de hermanamiento" : `${esN(count)} donativos de hermanamiento`),
+      others: (count) => (count === 1 ? "1 pago más" : `${esN(count)} pagos más`),
     },
     paid: {
       said: "Pagado. Ya está en el libro.",
@@ -350,7 +353,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
     also: {
       title: "También en espera",
-      requests: (count) => (count === 1 ? "1 petición" : `${count} peticiones`),
+      requests: (count) => (count === 1 ? "1 petición" : `${esN(count)} peticiones`),
       alreadyPaid: (amount) => `Ya se pagaron ${amount}`,
     },
     earlier: "Mes anterior",
@@ -361,14 +364,14 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     quiet: { title: "Un mes tranquilo hasta ahora.", deck: "Todavía no hay nada anotado en {month}. El mes empezó con {amount}." },
     foot: {
       label: "También en Tesorería",
-      gifts: (count) => (count === 1 ? "1 donativo aún no se ha depositado" : `${count} donativos aún no se han depositado`),
+      gifts: (count) => (count === 1 ? "1 donativo aún no se ha depositado" : `${esN(count)} donativos aún no se han depositado`),
       onHand: (amount) => `Hay ${amount} en mano. Anota el viaje al banco como un solo depósito, tal como lo mostrará el estado de cuenta.`,
       deposit: "Anotar un depósito",
       uncleared: (count) =>
-        count === 0 ? "Todo ya pasó por el banco" : count === 1 ? "1 movimiento aún no pasa por el banco" : `${count} movimientos aún no pasan por el banco`,
+        count === 0 ? "Todo ya pasó por el banco" : count === 1 ? "1 movimiento aún no pasa por el banco" : `${esN(count)} movimientos aún no pasan por el banco`,
       bankDeck: "Pon el libro junto a tu estado de cuenta del banco y comprueba que coinciden.",
       bank: "Comparar con el banco",
-      shelf: (count) => (count === 0 ? "El estante de vales" : count === 1 ? "1 vale en el estante" : `${count} vales en el estante`),
+      shelf: (count) => (count === 0 ? "El estante de vales" : count === 1 ? "1 vale en el estante" : `${esN(count)} vales en el estante`),
       openShelf: "Abrir el estante",
     },
   },
@@ -424,7 +427,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   bank: {
     title: "Comparar con el banco",
     deck: "Marca cada movimiento que aparece en tu estado de cuenta. Lo que queda sigue en camino.",
-    entries: (count) => (count === 1 ? "1 movimiento" : `${count} movimientos`),
+    entries: (count) => (count === 1 ? "1 movimiento" : `${esN(count)} movimientos`),
     figures: {
       cleared: "Ya pasó por el banco",
       clearedDeck: "Tu estado de cuenta debería decir lo mismo",
@@ -440,7 +443,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       askDeck: "Escribe el día en que termina y su saldo final. Debería ser igual a lo que aquí ya pasó por el banco.",
       agree: "El estado de cuenta y el libro coinciden.",
       clearedBoth: (amount) => `En los dos, ${amount} ya pasaron por el banco.`,
-      onTheWay: (count) => (count === 0 ? "No hay nada en espera." : count === 1 ? "1 movimiento sigue en camino." : `${count} movimientos siguen en camino.`),
+      onTheWay: (count) => (count === 0 ? "No hay nada en espera." : count === 1 ? "1 movimiento sigue en camino." : `${esN(count)} movimientos siguen en camino.`),
       saved: (day) => `Guardado para el estado de cuenta del ${day}.`,
       keeping: "Guardando…",
       keep: "Guardar este estado de cuenta",
@@ -459,13 +462,13 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       confirm: (count) =>
         count === 1
           ? "Marcar que 1 movimiento ya pasó por el banco: {in} de entrada y {out} de salida, hasta el {day}. Después puedes desmarcarlo."
-          : `Marcar que ${count} movimientos ya pasaron por el banco: {in} de entrada y {out} de salida, hasta el {day}. Después puedes desmarcar cualquiera.`,
-      markAll: (count) => (count === 1 ? "Marcar 1 movimiento" : `Marcar ${count} movimientos`),
+          : `Marcar que ${esN(count)} movimientos ya pasaron por el banco: {in} de entrada y {out} de salida, hasta el {day}. Después puedes desmarcar cualquiera.`,
+      markAll: (count) => (count === 1 ? "Marcar 1 movimiento" : `Marcar ${esN(count)} movimientos`),
       marking: "Marcando…",
       first: "¿Es tu primer estado de cuenta? Empieza marcando todo y luego desmarca los pocos que el banco aún no muestra.",
       everything: (day) => `Todo hasta el ${day} ya pasó por el banco`,
       deposit: (amount) => `Depósito de ${amount}`,
-      carried: (count) => (count === 1 ? "1 donativo llevado al banco" : `${count} donativos llevados juntos al banco`),
+      carried: (count) => (count === 1 ? "1 donativo llevado al banco" : `${esN(count)} donativos llevados juntos al banco`),
       mark: "Marcar que ya pasó",
       markLabel: (what) => `Marcar que ya pasó por el banco: ${what}`,
       emptyTitle: "Todo ya pasó por el banco.",
@@ -473,7 +476,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
     lately: {
       title: "Marcados hace poco",
-      newest: (count) => (count === 1 ? "El más reciente" : `Los ${count} más recientes`),
+      newest: (count) => (count === 1 ? "El más reciente" : `Los ${esN(count)} más recientes`),
       onStatement: (day) => `En el estado de cuenta del ${day}`,
       undo: "Marcar que aún no pasa",
       undoLabel: (what) => `Marcar que aún no pasa por el banco: ${what}`,
@@ -485,7 +488,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       cleared: (what) => `${what} quedó marcado: ya pasó por el banco.`,
       undone: (what) => `${what} vuelve con los movimientos que aún no pasan por el banco.`,
       through: (count) =>
-        count === 1 ? "1 movimiento hasta el {day} quedó marcado: ya pasó por el banco." : `${count} movimientos hasta el {day} quedaron marcados: ya pasaron por el banco.`,
+        count === 1 ? "1 movimiento hasta el {day} quedó marcado: ya pasó por el banco." : `${esN(count)} movimientos hasta el {day} quedaron marcados: ya pasaron por el banco.`,
     },
   },
   shelf: {
@@ -493,7 +496,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     deck: "Vales de la tienda de segunda mano que hay disponibles. Un conteo, aparte del dinero.",
     record: "Anotar vales",
     recordDeck: "Vales que te dio la tienda de segunda mano, o una corrección después de contarlos a mano.",
-    vouchers: (count) => (count === 1 ? "1 vale" : `${count} vales`),
+    vouchers: (count) => (count === 1 ? "1 vale" : `${esN(count)} vales`),
     cameIn: "+{vouchers}: {item}",
     wentOut: "−{vouchers}: {item}",
     form: {
@@ -516,7 +519,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     short: "Se entregaron más de los que se pusieron en el estante. Anota los que recibiste.",
     noneLeft: "no queda ninguno",
     lately: "Lo más reciente",
-    newest: (count) => (count === 1 ? "El más reciente" : `Los ${count} más recientes`),
+    newest: (count) => (count === 1 ? "El más reciente" : `Los ${esN(count)} más recientes`),
     givenOnRequest: "Entregado por una petición",
     backOnShelf: "De vuelta en el estante",
     received: "Recibido",
@@ -526,7 +529,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       action: "Anotar vales recibidos",
     },
     done: {
-      added: (count) => (count === 1 ? "1 vale para {item} está en el estante." : `${count} vales para {item} están en el estante.`),
+      added: (count) => (count === 1 ? "1 vale para {item} está en el estante." : `${esN(count)} vales para {item} están en el estante.`),
       corrected: (item) => `El conteo de ${item} quedó corregido.`,
     },
   },

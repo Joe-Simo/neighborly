@@ -1,4 +1,7 @@
 import type { Terms } from "../sets";
+import { counter } from "../numbers";
+const enN = counter("en");
+const esN = counter("es");
 
 /**
  * The help line's sheets: log a call, write a request, decide, add a neighbor.
@@ -29,7 +32,7 @@ export const en = (t: Terms, place: string) => ({
     amountNeeded: "Enter the amount in dollars, such as 450.",
     voucherFor: "Voucher for",
     /** One line of the shelf's list; `{item}` is the shelf's own name for the voucher. */
-    onShelf: (count: number): string => (count > 0 ? `{item}, ${count} on hand` : "{item}, none on hand"),
+    onShelf: (count: number): string => (count > 0 ? `{item}, ${enN(count)} on hand` : "{item}, none on hand"),
     somethingElse: "Something else",
     nameVoucher: "Name the voucher",
     nameVoucherHelp: "The treasurer adds it to the shelf when vouchers arrive.",
@@ -47,8 +50,8 @@ export const en = (t: Terms, place: string) => ({
   decide: {
     give: "How many to give",
     /** `{item}` is the shelf's name for the voucher, as it was asked for. */
-    askedVouchers: (count: number): string => (count === 1 ? "They asked for 1 {item} voucher." : `They asked for ${count} {item} vouchers.`),
-    shelfHas: (count: number): string => (count > 0 ? `The shelf has ${count} on hand.` : "The shelf has none on hand."),
+    askedVouchers: (count: number): string => (count === 1 ? "They asked for 1 {item} voucher." : `They asked for ${enN(count)} {item} vouchers.`),
+    shelfHas: (count: number): string => (count > 0 ? `The shelf has ${enN(count)} on hand.` : "The shelf has none on hand."),
     notOnShelf: "It is not on the shelf yet.",
     amount: "Amount to approve, in dollars",
     asked: "They asked for {amount}.",
@@ -72,7 +75,7 @@ export const en = (t: Terms, place: string) => ({
     why: "Why it is being closed",
     /** `{item}` is the shelf's name for the voucher. */
     goesBack: (count: number): string =>
-      count === 1 ? "1 {item} voucher goes back on the shelf. No money has moved." : `${count} {item} vouchers go back on the shelf. No money has moved.`,
+      count === 1 ? "1 {item} voucher goes back on the shelf. No money has moved." : `${enN(count)} {item} vouchers go back on the shelf. No money has moved.`,
     nothingGiven: "Nothing was given. No money has moved.",
     partPaid: "{paid} of {approved} was paid and stays in the ledger. The rest is not paid.",
     noMoney: "No money has moved.",
@@ -150,7 +153,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     amount: "Cantidad pedida, en dólares",
     amountNeeded: "Escribe la cantidad en dólares, por ejemplo 450.",
     voucherFor: "Vale para",
-    onShelf: (count) => (count === 1 ? "{item}, queda 1" : count > 0 ? `{item}, quedan ${count}` : "{item}, no queda ninguno"),
+    onShelf: (count) => (count === 1 ? "{item}, queda 1" : count > 0 ? `{item}, quedan ${esN(count)}` : "{item}, no queda ninguno"),
     somethingElse: "Otra cosa",
     nameVoucher: "Ponle nombre al vale",
     nameVoucherHelp: "La tesorería lo agrega al estante cuando llegan los vales.",
@@ -166,8 +169,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   },
   decide: {
     give: "Cuántos dar",
-    askedVouchers: (count) => (count === 1 ? "Pidió 1 vale de {item}." : `Pidió ${count} vales de {item}.`),
-    shelfHas: (count) => (count === 1 ? "En el estante queda 1." : count > 0 ? `En el estante quedan ${count}.` : "En el estante no queda ninguno."),
+    askedVouchers: (count) => (count === 1 ? "Pidió 1 vale de {item}." : `Pidió ${esN(count)} vales de {item}.`),
+    shelfHas: (count) => (count === 1 ? "En el estante queda 1." : count > 0 ? `En el estante quedan ${esN(count)}.` : "En el estante no queda ninguno."),
     notOnShelf: "Todavía no está en el estante.",
     amount: "Cantidad que se aprueba, en dólares",
     asked: "Pidió {amount}.",
@@ -189,7 +192,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     whyBack: "Por qué se retira",
     why: "Por qué se cierra",
     goesBack: (count) =>
-      count === 1 ? "1 vale de {item} vuelve al estante. No se ha movido dinero." : `${count} vales de {item} vuelven al estante. No se ha movido dinero.`,
+      count === 1 ? "1 vale de {item} vuelve al estante. No se ha movido dinero." : `${esN(count)} vales de {item} vuelven al estante. No se ha movido dinero.`,
     nothingGiven: "No se entregó nada. No se ha movido dinero.",
     partPaid: "Se pagaron {paid} de {approved} y quedan en el libro. El resto no se paga.",
     noMoney: "No se ha movido dinero.",

@@ -2,6 +2,8 @@ import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../../convex/_generated/api";
 import { fill } from "@/lib/words/fill";
 import type { Words } from "@/lib/words";
+import { formatMoney } from "@/lib/words/numbers";
+import type { Language } from "@/lib/words";
 
 export type Calls = FunctionReturnType<typeof api.assistance.calls>;
 export type Call = Calls["waiting"][number];
@@ -31,20 +33,10 @@ export const languageLabels: Record<Neighbor["language"], string> = {
 /** What a household speaks, in words: one of the three, or the name recorded for another language. */
 export const spokenLabel = (neighbor: { language: Neighbor["language"]; languageName?: string }) =>
   neighbor.language === "other" ? neighbor.languageName || languageLabels.other : languageLabels[neighbor.language];
-const dollars = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
-const wholeDollars = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 /** Whole cents as "$310.00". */
-export const money = (cents: number) => dollars.format(cents / 100);
+export const money = (cents: number, language: Language = "en") => formatMoney(cents / 100, language);
 /** Whole cents as "$450" when there are no cents to show, for headings. */
-export const shortMoney = (cents: number) =>
-  (cents % 100 === 0 ? wholeDollars : dollars).format(cents / 100);
+export const shortMoney = (cents: number, language: Language = "en") => formatMoney(cents / 100, language, cents % 100 === 0);
 /** What a person typed, such as "$1,250.50", as whole cents; null when it is not an amount. */
 export function cents(typed: string) {
   const cleaned = typed.replace(/[$,\s]/g, "");

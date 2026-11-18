@@ -13,6 +13,8 @@ import type { Words } from "./en";
 import { refusals } from "../refusals";
 import { serverRefusalPatternsEs, serverRefusalsEs } from "../refusals-es";
 import type { Terms, WordSet } from "./sets";
+import { counter } from "./numbers";
+const esN = counter("es");
 
 const terms: Record<WordSet, Terms> = {
   general: {
@@ -147,7 +149,7 @@ export function es(set: WordSet): Words {
       commitmentForm: {
         title: "Título", team: "Equipo", chooseTeam: "Elige un equipo…", starts: "Empieza", ends: "Termina", where: "Dónde reunirse",
         preparation: "Preparación", preparationHelp: "¿Qué debe saber o hacer la persona de antemano?",
-        repeats: "Se repite", everyWeek: "Cada semana", everyWeeks: (count: number) => `Cada ${count} semanas`,
+        repeats: "Se repite", everyWeek: "Cada semana", everyWeeks: (count: number) => `Cada ${esN(count)} semanas`,
         times: "Cuántas veces", timesHelp: "1 es una sola fecha. Hasta 52 en un año.", save: "Guardar", saving: "Guardando…",
       },
       announcementSees: `Todos en ${t.group === "grupo" ? "el grupo" : "la conferencia"} lo ven en Esta semana.`,
@@ -156,11 +158,11 @@ export function es(set: WordSet): Words {
     dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora" },
     week: {
       quilt: "Esta semana: {calls} · {visits} · {yeses}",
-      quiltCalls: (count) => (count === 1 ? "1 llamada devuelta" : `${count} llamadas devueltas`),
-      quiltVisits: (count) => (count === 1 ? "1 visita" : `${count} visitas`),
-      quiltYeses: (count) => (count === 1 ? "1 sí" : `${count} síes`),
+      quiltCalls: (count) => (count === 1 ? "1 llamada devuelta" : `${esN(count)} llamadas devueltas`),
+      quiltVisits: (count) => (count === 1 ? "1 visita" : `${esN(count)} visitas`),
+      quiltYeses: (count) => (count === 1 ? "1 sí" : `${esN(count)} síes`),
       quiltNone: "Nada todavía esta semana",
-      figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Peticiones que esperan un sí", oldest: (days) => (days === 1 ? "La más antigua, 1 día" : `La más antigua, ${days} días`), toPay: (count) => (count === 1 ? "1 aprobada, sin pagar" : `${count} aprobadas, sin pagar`) },
+      figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Peticiones que esperan un sí", oldest: (days) => (days === 1 ? "La más antigua, 1 día" : `La más antigua, ${esN(days)} días`), toPay: (count) => (count === 1 ? "1 aprobada, sin pagar" : `${esN(count)} aprobadas, sin pagar`) },
       startHere: { lead: "Empieza aquí", rest: "una llamada espera tu sí." },
       comingUp: "Lo que viene",
       cardFor: "Para",
@@ -187,7 +189,7 @@ export function es(set: WordSet): Words {
     commitments: {
       weekByTeam: "Esta semana por equipo",
       covered: "Cubierto",
-      placesOpen: (count) => (count === 1 ? "1 lugar libre" : `${count} lugares libres`),
+      placesOpen: (count) => (count === 1 ? "1 lugar libre" : `${esN(count)} lugares libres`),
       filterLabel: "Filtrar por equipo",
       allTeams: "Todos los equipos",
       noneForTeamTitle: "Este equipo no tiene fechas próximas.",
@@ -204,7 +206,7 @@ export function es(set: WordSet): Words {
     requests: {
       title: "Tú decides",
       awaiting: (count) =>
-        count === 1 ? "1 espera tu respuesta" : `${count} esperan tu respuesta`,
+        count === 1 ? "1 espera tu respuesta" : `${esN(count)} esperan tu respuesta`,
       fallbackTitle: "Petición para cubrir un turno",
       unavailable: "No se pueden mostrar los detalles del compromiso",
       accept: "Aceptar",
@@ -267,7 +269,7 @@ export function es(set: WordSet): Words {
           ? "Ningún compromiso afectado"
           : count === 1
             ? "1 compromiso afectado"
-            : `${count} compromisos afectados`,
+            : `${esN(count)} compromisos afectados`,
       explain:
         "Al confirmar se liberan solo estos compromisos y se anotan tus días libres. Tus equipos y las otras fechas siguen igual.",
       back: "Volver",
@@ -315,7 +317,7 @@ export function es(set: WordSet): Words {
       invited: "Te invitaron a este equipo. Unirte no acepta ningún compromiso.",
       join: "Unirme al equipo",
       decline: "No, gracias",
-      members: (count) => (count === 1 ? "1 miembro" : `${count} miembros`),
+      members: (count) => (count === 1 ? "1 miembro" : `${esN(count)} miembros`),
       viewMembers: "Ver miembros",
       hideMembers: "Ocultar miembros",
       coordinator: "Coordinador",
@@ -389,7 +391,7 @@ export function es(set: WordSet): Words {
     },
     visits: {
       title: set === "vincentian" ? "Visitas domiciliarias" : "Visitas a casa",
-      count: (count) => `${count} ${count === 1 ? "visita" : "visitas"}, siempre de dos en dos`,
+      count: (count) => `${esN(count)} ${count === 1 ? "visita" : "visitas"}, siempre de dos en dos`,
       notSaved: "No se guardó tu respuesta. Inténtalo de nuevo.",
       on: (street) => `Una visita en ${street}`,
       nearby: "una calle cercana",
@@ -445,30 +447,30 @@ export function es(set: WordSet): Words {
       title: "Esta semana, en breve.",
       weekOf: (date: string) => `Semana del ${date}`,
       origin: "Contado a partir de tus registros con reglas fijas. El asistente no escribe nada de esto.",
-      calls: (count) => (count === 1 ? "1 llamada espera respuesta." : `${count} llamadas esperan respuesta.`),
-      firstByAssistant: (count) => (count === 1 ? "El asistente puso 1 primero." : `El asistente puso ${count} primero.`),
-      firstByPerson: (count) => (count === 1 ? "Uno de ustedes puso 1 primero." : `Uno de ustedes puso ${count} primero.`),
-      oldest: (days) => (days === 1 ? "La más antigua lleva 1 día esperando." : `La más antigua lleva ${days} días esperando.`),
-      visits: (count) => (count === 1 ? `Hay 1 ${t.visit} planeada.` : `Hay ${count} ${t.visits} planeadas.`),
-      open: (count) => (count === 1 ? "1 petición espera una decisión." : `${count} peticiones esperan una decisión.`),
-      approved: (count) => (count === 1 ? "1 petición aprobada aún no se ha pagado." : `${count} peticiones aprobadas aún no se han pagado.`),
-      places: (count) => (count === 1 ? "Hay 1 lugar libre en los próximos siete días." : `Hay ${count} lugares libres en los próximos siete días.`),
-      away: (count) => (count === 1 ? "1 persona está fuera esta semana." : `${count} personas están fuera esta semana.`),
+      calls: (count) => (count === 1 ? "1 llamada espera respuesta." : `${esN(count)} llamadas esperan respuesta.`),
+      firstByAssistant: (count) => (count === 1 ? "El asistente puso 1 primero." : `El asistente puso ${esN(count)} primero.`),
+      firstByPerson: (count) => (count === 1 ? "Uno de ustedes puso 1 primero." : `Uno de ustedes puso ${esN(count)} primero.`),
+      oldest: (days) => (days === 1 ? "La más antigua lleva 1 día esperando." : `La más antigua lleva ${esN(days)} días esperando.`),
+      visits: (count) => (count === 1 ? `Hay 1 ${t.visit} planeada.` : `Hay ${esN(count)} ${t.visits} planeadas.`),
+      open: (count) => (count === 1 ? "1 petición espera una decisión." : `${esN(count)} peticiones esperan una decisión.`),
+      approved: (count) => (count === 1 ? "1 petición aprobada aún no se ha pagado." : `${esN(count)} peticiones aprobadas aún no se han pagado.`),
+      places: (count) => (count === 1 ? "Hay 1 lugar libre en los próximos siete días." : `Hay ${esN(count)} lugares libres en los próximos siete días.`),
+      away: (count) => (count === 1 ? "1 persona está fuera esta semana." : `${esN(count)} personas están fuera esta semana.`),
       done: "Ya lo leí",
       read: "Leer",
       brief: {
         label: "Nota del lunes",
-        calls: (count) => (count === 1 ? "1 llamada por devolver" : `${count} llamadas por devolver`),
-        open: (count) => (count === 1 ? "1 petición por decidir" : `${count} peticiones por decidir`),
-        approved: (count) => (count === 1 ? "1 petición aprobada por pagar" : `${count} peticiones aprobadas por pagar`),
-        visits: (count) => (count === 1 ? `1 ${t.visit} planeada` : `${count} ${t.visits} planeadas`),
-        places: (count) => (count === 1 ? "1 lugar libre" : `${count} lugares libres`),
-        away: (count) => (count === 1 ? "1 persona fuera" : `${count} personas fuera`),
+        calls: (count) => (count === 1 ? "1 llamada por devolver" : `${esN(count)} llamadas por devolver`),
+        open: (count) => (count === 1 ? "1 petición por decidir" : `${esN(count)} peticiones por decidir`),
+        approved: (count) => (count === 1 ? "1 petición aprobada por pagar" : `${esN(count)} peticiones aprobadas por pagar`),
+        visits: (count) => (count === 1 ? `1 ${t.visit} planeada` : `${esN(count)} ${t.visits} planeadas`),
+        places: (count) => (count === 1 ? "1 lugar libre" : `${esN(count)} lugares libres`),
+        away: (count) => (count === 1 ? "1 persona fuera" : `${esN(count)} personas fuera`),
       },
     },
     yearCheck: {
       title: "Antes de enviarlo",
-      count: (count) => (count === 1 ? "1 registro para revisar" : `${count} registros para revisar`),
+      count: (count) => (count === 1 ? "1 registro para revisar" : `${esN(count)} registros para revisar`),
       clear: "Todo cuadra.",
       approvedNotPaid: "Aprobada hace más de un mes, y no hay ningún pago anotado.",
       paidNoPayment: "Marcada como pagada, y no hay ningún pago en el libro.",
@@ -480,10 +482,10 @@ export function es(set: WordSet): Words {
       open: "Abrir el registro",
       putAway: "Guardar esto",
       checked: "Revisado hoy ({time}): {requests}, {visits} y el libro.",
-      requests: (count) => (count === 1 ? "1 petición" : `${count} peticiones`),
-      visits: (count) => (count === 1 ? "1 visita" : `${count} visitas`),
-      show: (count) => `Mostrar los ${count} registros`,
-      hide: (count) => `Ocultar los ${count} registros`,
+      requests: (count) => (count === 1 ? "1 petición" : `${esN(count)} peticiones`),
+      visits: (count) => (count === 1 ? "1 visita" : `${esN(count)} visitas`),
+      show: (count) => `Mostrar los ${esN(count)} registros`,
+      hide: (count) => `Ocultar los ${esN(count)} registros`,
       openShort: "Abrir",
       happened: { open: "recibida", approved: "aprobada", paid: "marcada como pagada", declined: "no aprobada", closed: "cerrada" },
       visit: set === "vincentian" ? "Visita domiciliaria" : "Visita a casa",
@@ -515,7 +517,7 @@ export function es(set: WordSet): Words {
         person: "Quién decide",
         personDetail: "Una persona. Cada borrador espera un sí, y nada se guarda antes. Una llamada puesta primero se puede regresar a su lugar. Cuando el asistente no está seguro, deja un espacio en blanco en vez de adivinar.",
         limit: "Sus límites",
-        limitDetail: (checks) => `${checks.toLocaleString("es-US")} consultas al mes por cada ${t.group} y cinco por minuto por persona. Pasado ese límite, o si no se puede llegar al asistente, las pantallas trabajan con reglas fijas y lo dicen.`,
+        limitDetail: (checks) => `${esN(checks)} consultas al mes por cada ${t.group} y cinco por minuto por persona. Pasado ese límite, o si no se puede llegar al asistente, las pantallas trabajan con reglas fijas y lo dicen.`,
         measured: "Cómo se midió",
         measuredDetail: (date) =>
           `Con ${m.notes} notas de llamadas inventadas, apartadas de las que se usaron para ajustarlo, llenó bien ${m.right} de ${m.right + m.blank + m.wrong} campos, dejó ${m.blank} en blanco para una persona y se equivocó en ${m.wrong} (medido el ${date}). En una prueba anterior se equivocó en uno; corregimos la regla que lo causó, así que esas notas ya han influido en una regla. Es una prueba pequeña, y las notas en español y en criollo son una parte pequeña de ella.`,
@@ -548,7 +550,7 @@ export function es(set: WordSet): Words {
       },
       title: "Borrador para ti",
       waiting: (count) =>
-        count === 1 ? "Espera tu sí" : `${count} esperan tu sí`,
+        count === 1 ? "Espera tu sí" : `${esN(count)} esperan tu sí`,
       origin: "Llenado por el asistente a partir de la nota de la llamada. No se guarda nada hasta que tú lo digas.",
       checked: "El asistente comparó cada dato con la nota.",
       review: "El asistente no pudo comprobarlo. Lee cada dato junto a la nota.",

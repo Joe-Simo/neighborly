@@ -1,4 +1,7 @@
 import type { Terms } from "../sets";
+import { counter } from "../numbers";
+const enN = counter("en");
+const esN = counter("es");
 
 /**
  * The help line room: its head, the calls to return, the draft card and the assistant's foot.
@@ -67,9 +70,9 @@ export const en = (t: Terms, place: string) => ({
   /** The calls to return, and the calls returned this week. */
   calls: {
     toCallBack: "To call back",
-    messages: (count: number) => (count === 1 ? "1 message" : `${count} messages`),
-    oldestDays: (count: number) => (count === 1 ? "oldest waiting 1 day" : `oldest waiting ${count} days`),
-    oldestHours: (count: number) => (count === 1 ? "oldest waiting 1 hour" : `oldest waiting ${count} hours`),
+    messages: (count: number) => (count === 1 ? "1 message" : `${enN(count)} messages`),
+    oldestDays: (count: number) => (count === 1 ? "oldest waiting 1 day" : `oldest waiting ${enN(count)} days`),
+    oldestHours: (count: number) => (count === 1 ? "oldest waiting 1 hour" : `oldest waiting ${enN(count)} hours`),
     oldestUnderHour: "oldest waiting under an hour",
     putFirstBy: (name: string) => `Put first by ${name}`,
     notUrgentBy: (name: string) => `Marked not urgent by ${name}`,
@@ -85,7 +88,7 @@ export const en = (t: Terms, place: string) => ({
     noneTitle: "Calls are written down here.",
     none: "When someone calls the help line, log the call. It waits here until someone calls them back.",
     returnedThisWeek: "Returned this week",
-    count: (count: number) => (count === 1 ? "1 call" : `${count} calls`),
+    count: (count: number) => (count === 1 ? "1 call" : `${enN(count)} calls`),
     returned: "Returned",
     returnedBy: (name: string) => `Returned by ${name}`,
   },
@@ -102,7 +105,7 @@ export const en = (t: Terms, place: string) => ({
     payee: "{what} to {payee}",
     amountPayee: "{what}, {amount} to {payee}",
     /** A draft with blanks, when it is not the only one waiting. */
-    blanksWaiting: (count: number) => `A draft with blanks. ${count} waiting for your yes`,
+    blanksWaiting: (count: number) => `A draft with blanks. ${enN(count)} waiting for your yes`,
   },
   /** The side column on a wide screen. */
   aside: {
@@ -110,19 +113,19 @@ export const en = (t: Terms, place: string) => ({
     noOne: "No one yet",
     none: "No one is set for the line today.",
     callingBack: "Calling back",
-    calls: (count: number) => (count === 1 ? "1 call" : `${count} calls`),
+    calls: (count: number) => (count === 1 ? "1 call" : `${enN(count)} calls`),
   },
   /** What format.ts says of a household, a payee and a request. */
   format: {
     payees: { landlord: "Landlord", utility: "Utility company", vendor: "Store or other business" },
     languages: { en: "English", es: "Spanish", ht: "Haitian Creole", other: "Another language" },
     livesAlone: "Lives alone",
-    householdOf: (count: number) => `Household of ${count}`,
-    adults: (count: number) => (count === 1 ? "1 adult" : `${count} adults`),
-    children: (count: number) => (count === 1 ? "1 child" : `${count} children`),
+    householdOf: (count: number) => `Household of ${enN(count)}`,
+    adults: (count: number) => (count === 1 ? "1 adult" : `${enN(count)} adults`),
+    children: (count: number) => (count === 1 ? "1 child" : `${enN(count)} children`),
     adultsAndChildren: "{adults}, {children}",
     /** `{item}` is the shelf's own name for what the voucher gives, as it was typed. */
-    vouchers: (count: number) => (count === 1 ? "1 {item} voucher" : `${count} {item} vouchers`),
+    vouchers: (count: number) => (count === 1 ? "1 {item} voucher" : `${enN(count)} {item} vouchers`),
     request: "{kind}, {amount}",
     requestTo: "{kind}, {amount} to {payee}",
     accounts: { landlord: "Landlord", utility: "Utility", other: "Other" },
@@ -186,9 +189,9 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   },
   calls: {
     toCallBack: "Llamadas por devolver",
-    messages: (count) => (count === 0 ? "Ningún mensaje" : count === 1 ? "1 mensaje" : `${count} mensajes`),
-    oldestDays: (count) => (count === 1 ? "el más antiguo lleva 1 día esperando" : `el más antiguo lleva ${count} días esperando`),
-    oldestHours: (count) => (count === 1 ? "el más antiguo lleva 1 hora esperando" : `el más antiguo lleva ${count} horas esperando`),
+    messages: (count) => (count === 0 ? "Ningún mensaje" : count === 1 ? "1 mensaje" : `${esN(count)} mensajes`),
+    oldestDays: (count) => (count === 1 ? "el más antiguo lleva 1 día esperando" : `el más antiguo lleva ${esN(count)} días esperando`),
+    oldestHours: (count) => (count === 1 ? "el más antiguo lleva 1 hora esperando" : `el más antiguo lleva ${esN(count)} horas esperando`),
     oldestUnderHour: "el más antiguo lleva menos de una hora esperando",
     putFirstBy: (name) => `${name} la puso primero`,
     notUrgentBy: (name) => `${name} la marcó como no urgente`,
@@ -203,7 +206,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     noneTitle: "Aquí se anotan las llamadas.",
     none: "Cuando alguien llame a la línea de ayuda, anota la llamada. Se queda aquí hasta que alguien la devuelva.",
     returnedThisWeek: "Devueltas esta semana",
-    count: (count) => (count === 1 ? "1 llamada" : `${count} llamadas`),
+    count: (count) => (count === 1 ? "1 llamada" : `${esN(count)} llamadas`),
     returned: "Devuelta",
     returnedBy: (name) => `Devuelta por ${name}`,
   },
@@ -216,24 +219,24 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     amount: "{what}: {amount}",
     payee: "{what} a {payee}",
     amountPayee: "{what}, {amount} a {payee}",
-    blanksWaiting: (count) => `Un borrador con espacios en blanco. ${count} esperan tu sí`,
+    blanksWaiting: (count) => `Un borrador con espacios en blanco. ${esN(count)} esperan tu sí`,
   },
   aside: {
     title: "Hoy en la línea",
     noOne: "Nadie todavía",
     none: "Hoy no hay nadie asignado a la línea.",
     callingBack: "Devuelven llamadas",
-    calls: (count) => (count === 1 ? "1 llamada" : `${count} llamadas`),
+    calls: (count) => (count === 1 ? "1 llamada" : `${esN(count)} llamadas`),
   },
   format: {
     payees: { landlord: "Arrendador", utility: "Compañía de servicios", vendor: "Tienda u otro negocio" },
     languages: { en: "Inglés", es: "Español", ht: "Criollo haitiano", other: "Otro idioma" },
     livesAlone: "Vive sin compañía",
-    householdOf: (count) => (count === 1 ? "Hogar de 1 persona" : `Hogar de ${count} personas`),
-    adults: (count) => (count === 1 ? "1 adulto" : `${count} adultos`),
-    children: (count) => (count === 1 ? "1 niño" : `${count} niños`),
+    householdOf: (count) => (count === 1 ? "Hogar de 1 persona" : `Hogar de ${esN(count)} personas`),
+    adults: (count) => (count === 1 ? "1 adulto" : `${esN(count)} adultos`),
+    children: (count) => (count === 1 ? "1 niño" : `${esN(count)} niños`),
     adultsAndChildren: "{adults} y {children}",
-    vouchers: (count) => (count === 1 ? "1 vale de {item}" : `${count} vales de {item}`),
+    vouchers: (count) => (count === 1 ? "1 vale de {item}" : `${esN(count)} vales de {item}`),
     request: "{kind}: {amount}",
     requestTo: "{kind}, {amount} a {payee}",
     accounts: { landlord: "Arrendador", utility: "Servicios", other: "Otro" },
