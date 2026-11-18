@@ -311,6 +311,8 @@
   :root[data-shell="ios"] body[data-scroll-locked] .live-tab-bar,
   :root[data-shell="ios"]:has(:is(textarea, select, [contenteditable="true"], input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="file"], [type="range"])):focus) .live-tab-bar { display: none; }
 }
+/* Where the app draws the system's tab bar (Liquid Glass) in its place, this one keeps its room at the foot, unseen. */
+:root[data-native-tabs] .live-app .live-tab-bar { visibility: hidden; }
 @media print { .live-tab-bar { display: none !important; } }
 
 /* ── A7: a record is a sheet laid over its list (record-slide.tsx). A tap on a row opens it inside a view transition:
