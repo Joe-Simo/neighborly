@@ -165,6 +165,8 @@ final class ShellViewController: CAPBridgeViewController {
         // At the accessibility text sizes the bar's words stay small; held, a tab shows its name large, as any iOS
         // tab bar does. The page says where its tabs are (shell.tsx); iOS turns the viewer on only at those sizes.
         scripts.add(BarTabs { [weak self] state in self?.barChanged?(state) }, name: "kindHelpsBar")
+        // A row's long-press actions are the system's context menu (the page's paper sheet only on the website).
+        scripts.add(MenuRequests(named: { [weak self] row, actions, kinds in self?.rowMenuRow = row; self?.menuActions = actions; self?.menuKinds = kinds }), name: "kindHelpsMenu")
         // The first screen of the last room, kept on the device (KeptRoom) so the next launch draws it at once while
         // the session and the live data catch up. It is handed to the page before its scripts run; a page that has
         // let it go since (a sign-out, then a reload) says so in its session, and is not handed it again.
@@ -227,6 +229,18 @@ final class ShellViewController: CAPBridgeViewController {
         return " document.documentElement.dataset.nativeTabs = '';" + (UIDevice.current.userInterfaceIdiom == .pad ? " document.documentElement.dataset.nativeSidebar = '';" : "")
     }
 
+    /// A row's long-press actions as the system's context menu (Liquid Glass): as a finger comes down on a row, the
+    /// page names the row's place and its actions in its own words; if the finger stays, the system lifts the row as
+    /// its preview and shows them, and the one chosen runs on the page (`window.kindHelpsMenuChose(index)`).
+    fileprivate var rowMenuRow: CGRect = .zero
+    fileprivate var menuActions: [String] = []
+    fileprivate var menuKinds: [String] = []
+    fileprivate var lifted: UIView?
+
+    fileprivate func chose(_ index: Int) {
+        webView?.evaluateJavaScript("window.kindHelpsMenuChose?.(\(index))")
+    }
+
     /// Told whenever the page's bar, its rooms, or what lies over them change (ShellTabs follows it).
     var barChanged: ((BarState) -> Void)?
 
@@ -243,6 +257,7 @@ final class ShellViewController: CAPBridgeViewController {
         guard let webView else { return }
         clearTopEdge(of: webView)
         webView.allowsLinkPreview = false
+        webView.addInteraction(UIContextMenuInteraction(delegate: self))
         // A swipe from the left edge goes back, as in any app: from Privacy to sign-in, from a record to its list.
         webView.allowsBackForwardNavigationGestures = true
         // Paper, not white or black, when a page is pulled past its end.
@@ -644,6 +659,79 @@ final class ShellViewController: CAPBridgeViewController {
 }
 
 /// Hears from the page when the way in is shown, and when it is left.
+extension ShellViewController: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        guard !menuActions.isEmpty, rowMenuRow.contains(location) else { return nil }
+        let actions = zip(menuActions, menuKinds + Array(repeating: "", count: max(0, menuActions.count - menuKinds.count)))
+        return UIContextMenuConfiguration(identifier: "row" as NSString, previewProvider: nil) { _ in
+            UIMenu(children: actions.enumerated().map { index, action in
+                UIAction(title: action.0, image: UIImage(systemName: Self.symbol(forAction: action.1))) { [weak self] _ in self?.chose(index) }
+            })
+        }
+    }
+
+    /// The system's marks for the row's actions: call, open, and the room's own.
+    private static func symbol(forAction kind: String) -> String {
+        switch kind {
+        case "call": "phone"
+        case "open": "arrow.up.right"
+        default: "checkmark"
+        }
+    }
+
+    /// The row itself lifts: a picture of the whole row on its own paper, laid exactly over it, so the page stays in
+    /// place under the dim. It is drawn once the press is the system's and the page has let go of the touch, so the
+    /// row is at rest, not in its pressed tint.
+    private func rowPreview() -> UITargetedPreview? {
+        guard let webView, let first = webView.resizableSnapshotView(from: rowMenuRow, afterScreenUpdates: true, withCapInsets: .zero) else { return nil }
+        lifted?.removeFromSuperview()
+        let picture = UIView(frame: rowMenuRow)
+        first.frame = picture.bounds
+        picture.addSubview(first)
+        webView.addSubview(picture)
+        lifted = picture
+        // The page lets go of the press a moment after the system takes it: the row is drawn again then, at rest.
+        let row = rowMenuRow
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self, weak picture] in
+            guard let picture, let rest = self?.webView?.resizableSnapshotView(from: row, afterScreenUpdates: true, withCapInsets: .zero) else { return }
+            rest.frame = picture.bounds
+            picture.subviews.forEach { $0.removeFromSuperview() }
+            picture.addSubview(rest)
+        }
+        let shape = UIPreviewParameters()
+        shape.backgroundColor = UIColor(red: 0xfb / 255, green: 0xfa / 255, blue: 0xf5 / 255, alpha: 1)
+        shape.visiblePath = UIBezierPath(roundedRect: picture.bounds, cornerRadius: 4)
+        return UITargetedPreview(view: picture, parameters: shape)
+    }
+
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, willEndFor configuration: UIContextMenuConfiguration, animator: (any UIContextMenuInteractionAnimating)?) {
+        let picture = lifted
+        lifted = nil
+        if let animator { animator.addCompletion { picture?.removeFromSuperview() } } else { picture?.removeFromSuperview() }
+    }
+
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, highlightPreviewForItemWithIdentifier identifier: any NSCopying) -> UITargetedPreview? {
+        rowPreview()
+    }
+
+    /// Before iOS 16 the system asks for the lifted row this way.
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, previewForHighlightingMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        if #available(iOS 16.0, *) { return nil }
+        return rowPreview()
+    }
+}
+
+/// The page names the row under a finger: `{ x, y, width, height, actions: [title], kinds: ["call" | "open" | "own"] }` in web view points, or no actions.
+private final class MenuRequests: NSObject, WKScriptMessageHandler {
+    private let named: (CGRect, [String], [String]) -> Void
+    init(named: @escaping (CGRect, [String], [String]) -> Void) { self.named = named }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame, let body = message.body as? [String: Any] else { return }
+        let number = { (key: String) in body[key] as? Double ?? 0 }
+        named(CGRect(x: number("x"), y: number("y"), width: number("width"), height: number("height")), body["actions"] as? [String] ?? [], body["kinds"] as? [String] ?? [])
+    }
+}
+
 struct BarPlace: Equatable { let name: String; let room: String; let current: Bool }
 struct BarState: Equatable { let covered: Bool; let tabs: [BarPlace]; let rooms: [BarPlace] }
 
