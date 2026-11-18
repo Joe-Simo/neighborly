@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type MouseEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -195,22 +195,33 @@ export function FrescoThreshold() {
   }, []);
   // Through the doors, the keyboard and a screen reader are set down on the courtyard's own line, told where they now stand,
   // and not left on a button that is gone.
-  const entering = useRef(false), caption = useRef<HTMLParagraphElement>(null);
+  const entering = useRef<"key" | "pointer" | false>(false), caption = useRef<HTMLParagraphElement>(null);
   // Once the courtyard opens, the way in is fetched ahead, so no cold frame can land inside the turn.
   useEffect(() => { if (open) router.prefetch("/app"); }, [open, router]);
   useEffect(() => {
-    if (!open || !entering.current) return;
+    if (!open || entering.current !== "pointer") return;
     entering.current = false;
     caption.current?.focus({ preventScroll: true });
   }, [open]);
-  const walkIn = () => {
+  // Pressed from the keyboard, the doors' button goes once they open; when the walk has come to rest, focus is handed to the courtyard's way in, so it never falls to the page.
+  const arrive = (tries = 30) => {
+    if (entering.current !== "key") return;
+    const door = stage.current?.querySelector<HTMLElement>(".fresco-door");
+    // The doors count as open a frame or two after the scroll that opens them.
+    if (!(door && door.tabIndex >= 0) && tries > 0) return void requestAnimationFrame(() => arrive(tries - 1));
+    entering.current = false;
+    (door && door.tabIndex >= 0 ? door : caption.current)?.focus({ preventScroll: true });
+  };
+  const walkIn = (event: MouseEvent<HTMLButtonElement>) => {
     const track = journey.current, host = stage.current;
     if (!track || !host) return;
-    entering.current = true;
+    // A press from the keyboard comes as a click with no count; only then is focus carried to the courtyard when the walk rests.
+    const byKey = event.detail === 0;
+    entering.current = byKey ? "key" : "pointer";
     // With Reduce Motion the journey is shorter, so the resting place stays inside the part that holds still.
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const start = track.getBoundingClientRect().top + scrollY;
-    if (reduce) { window.scrollTo({ top: start + host.clientHeight * 2.4, behavior: "instant" }); return; }
+    if (reduce) { window.scrollTo({ top: start + host.clientHeight * 2.4, behavior: "instant" }); if (byKey) requestAnimationFrame(() => arrive()); return; }
     // The doors open and the visitor walks through in one paced move, coming to a stop standing in the courtyard.
     // A second press while walking changes nothing: the walk already under way carries on.
     if (walking.current) return;
@@ -235,7 +246,7 @@ export function FrescoThreshold() {
       cancelAnimationFrame(frame); clearTimeout(timer);
       const t = Math.max(0, Math.min(1, (performance.now() - began) / walkTime));
       window.scrollTo({ top: from + (to - from) * (1 - Math.pow(1 - t, 3)), behavior: "instant" });
-      if (t >= 1) { walking.current = false; return; }
+      if (t >= 1) { walking.current = false; if (byKey) requestAnimationFrame(() => arrive()); return; }
       frame = requestAnimationFrame(step);
       timer = window.setTimeout(step, 50);
     };
