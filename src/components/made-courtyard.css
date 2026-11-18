@@ -47,3 +47,6 @@
 .public-made-figure figcaption{margin-top:10px;font-size:15px;line-height:1.5;color:#3d4f43}
 /* On a wide screen the stage sits a little lower, so the ring keeps 24px of air below the paper of the section before it. */
 @media(min-width:701px) and (prefers-reduced-motion:no-preference){.made-courtyard-stage{padding-top:72px;box-sizing:border-box}}
+/* On a phone the stage is far taller than the courtyard, so the courtyard is laid at its top: 40px under the sheet before it, as on a desk, not centred
+   in a window of empty paper. */
+@media(max-width:700px) and (prefers-reduced-motion:no-preference){.made-courtyard-stage{align-content:start;padding-top:70px;box-sizing:border-box}}
