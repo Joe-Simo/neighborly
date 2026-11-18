@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // /about and /sobre are the parents of the two pages about Kind Helps; a reader who trims the address lands on how it was made.
+  async redirects() {
+    return [
+      { source: "/about", destination: "/about/how-we-made-it", permanent: true },
+      { source: "/sobre", destination: "/sobre/como-lo-hicimos", permanent: true },
+    ];
+  },
   async rewrites() {
     return convexSite
       ? [{ source: "/calendar/:path*", destination: `${convexSite}/calendar/:path*` }]
