@@ -35,7 +35,9 @@ export function WeekQuilt() {
   const churchId = data.church.id;
   const look = useFirstLook();
   const at = useHour();
-  const acts = useQuery(api.quilt.week, look || !at ? "skip" : { churchId, at });
+  // Only for those who may open neighbor records, as the figures under it.
+  const allowed = useQuery(api.access.canOpenNeighborRecords, look ? "skip" : { churchId });
+  const acts = useQuery(api.quilt.week, look || !at || !allowed ? "skip" : { churchId, at });
   // The pieces already there when the room was drawn are never pressed in again.
   const [seen, setSeen] = useState<Set<string> | null>(null);
   if (acts && !seen) setSeen(new Set(acts.map((act) => act.id)));

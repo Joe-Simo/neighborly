@@ -1090,7 +1090,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    left, each holding one piece for every thing done that day, a little overlapped like patchwork. A call called
    back is the page's own cream, a home visit sage, a yes green. Each piece has its own cut and lean (from its
    id), a grain of light across it and a tight contact shade. Under the band, one caption. */
-.week-quilt { --size: 21px; margin: calc(-1 * var(--head-gap, 36px)) 0 30px; }
+/* Its stitch lies on the head's own rule; what follows keeps the gap it had under the head. */
+.week-quilt { --size: 21px; margin: calc(-1 * var(--head-gap, 36px) - 5px - var(--size) / 2) 0 calc(var(--head-gap, 36px) + 8px); }
 .week-quilt-band {
   display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); column-gap: 6px; min-height: calc(var(--size) + 10px); align-items: start; padding-top: 5px;
   /* The stitch the pieces are laid on: a running stitch along the band, there before any piece. */

@@ -11,6 +11,7 @@ import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { RoomAside, useFarScreen } from "@/components/workspace/aside";
 import { StartHere } from "@/components/workspace/start-here";
+import { WeekQuilt } from "@/components/workspace/volunteer/week-quilt";
 import { CardGreeting } from "@/components/workspace/volunteer/card-greeting";
 import { WeekNote } from "@/components/workspace/week-note/week-note";
 import {
@@ -61,6 +62,8 @@ export function WeekSection() {
   return (
     <>
       <CardGreeting />
+      {/* Sewn onto the head's own rule, before the first thing to do. */}
+      <WeekQuilt />
       <StartHere />
       <WeekNote brief={briefed || incoming.length > 0} />
       <IncomingRequests {...requests} place={words.week.comingUp} />

@@ -31,7 +31,8 @@ export const week = query({
     const monday = weekBegan(now, church.timeZone);
     const [returned, visits, approved, paid] = await Promise.all([
       ctx.db.query("calls").withIndex("by_church_callback_returned", (q) => q.eq("churchId", churchId).eq("callback", "done").gte("returnedAt", monday)).take(100),
-      ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", monday).lt("scheduledAt", monday + 7 * 86_400_000)).take(100),
+      // By when it was written up, not when it was planned: a visit planned last week and written up today is today's.
+      ctx.db.query("visits").withIndex("by_church_status_completed", (q) => q.eq("churchId", churchId).eq("status", "completed").gte("completedAt", monday)).take(100),
       ctx.db.query("assistanceRequests").withIndex("by_church_status", (q) => q.eq("churchId", churchId).eq("status", "approved")).take(200),
       // A yes given this week and already paid: among the latest paid.
       ctx.db.query("assistanceRequests").withIndex("by_church_status", (q) => q.eq("churchId", churchId).eq("status", "paid")).order("desc").take(60),
@@ -40,7 +41,7 @@ export const week = query({
     const within = (at: number | undefined): at is number => at !== undefined && at >= monday;
     return [
       ...returned.filter((call) => within(call.returnedAt)).map((call) => ({ id: call._id as string, kind: "call" as const, at: call.returnedAt ?? 0 })),
-      ...visits.filter((visit) => visit.status === "completed" && within(visit.completedAt ?? visit.scheduledAt)).map((visit) => ({ id: visit._id as string, kind: "visit" as const, at: visit.completedAt ?? visit.scheduledAt })),
+      ...visits.filter((visit) => within(visit.completedAt)).map((visit) => ({ id: visit._id as string, kind: "visit" as const, at: visit.completedAt ?? 0 })),
       ...[...approved, ...paid].filter((request) => within(request.decidedAt)).map((request) => ({ id: request._id as string, kind: "yes" as const, at: request.decidedAt ?? 0 })),
     ]
       .sort((a, b) => a.at - b.at)
