@@ -909,6 +909,7 @@ private final class PrintRequests: NSObject, WKScriptMessageHandler {
 final class ShellTabs: UITabBarController, UITabBarControllerDelegate {
     let shell = ShellViewController()
     private var laid: BarState?
+    private var sidebarName: String?
 
     private final class Holder: UIViewController {
         override func loadView() {
@@ -967,15 +968,40 @@ final class ShellTabs: UITabBarController, UITabBarControllerDelegate {
             }
             tabs = next
         }
+        let before = laid
         laid = state
-        let current = state.tabs.first(where: \.current)?.room ?? state.rooms.first(where: \.current)?.room
+        // With the sidebar's rooms, the room itself is current (Treasury, say), not the bar's Menu that stands for it.
+        let roomNow = pad ? state.rooms.first(where: \.current)?.room : nil
+        let current = roomNow ?? state.tabs.first(where: \.current)?.room ?? state.rooms.first(where: \.current)?.room
         if let current, let tab = tab(forIdentifier: "tab:\(current)"), selectedTab !== tab {
             selectedTab = tab
         }
         hold()
         // Present or not, in one frame: the bar never shows half there.
         setTabBarHidden(state.tabs.isEmpty || state.covered, animated: false)
-        sidebar.isHidden = !pad || state.rooms.isEmpty
+        // The sidebar is the person's to show or hide. Only with no rooms is it put away; and where it lies over the
+        // room (an upright iPad) it is put away once a room is chosen from it, as a sidebar over content is.
+        if !pad || state.rooms.isEmpty {
+            sidebar.isHidden = true
+        } else if before.map({ $0.rooms.isEmpty }) ?? true {
+            // The rooms have just arrived: the sidebar opens beside the room where the window is wide enough for both.
+            sidebar.isHidden = view.bounds.width < view.bounds.height
+        } else if let before, before.rooms.first(where: \.current)?.room != state.rooms.first(where: \.current)?.room,
+                  view.bounds.width < view.bounds.height {
+            sidebar.isHidden = true
+        }
+        nameSidebar()
+    }
+
+    /// The sidebar's head names the conference, as the page's side menu does (its own line, read from the page).
+    private func nameSidebar() {
+        shell.webView?.evaluateJavaScript("document.querySelector('.live-nav .live-church-name')?.textContent?.trim() ?? ''") { [weak self] name, _ in
+            guard let self, let name = name as? String, !name.isEmpty, name != self.sidebarName else { return }
+            self.sidebarName = name
+            var head = UIListContentConfiguration.header()
+            head.text = name
+            self.sidebar.headerContentConfiguration = head
+        }
     }
 
     /// The page goes into the current tab's holder, in this frame: it is moved, never made again.
