@@ -64,6 +64,9 @@ import { LiveCreateForm } from "@/components/workspace/volunteer/create-form";
 import { LiveTimeOffForm } from "@/components/workspace/volunteer/time-off-form";
 import { formatDate, words as wordsFor } from "@/lib/words";
 
+// One empty list for every draw, so a workspace with no requests stays the same workspace.
+const NO_COMMITMENTS: LiveWorkspaceData["commitments"] = [];
+
 export function LiveWorkspace({
   area,
   data,
@@ -73,7 +76,7 @@ export function LiveWorkspace({
   selectChurch,
   pagination,
   keptNotice,
-  requestCommitments = [],
+  requestCommitments = NO_COMMITMENTS,
   roomWaiting = false,
 }: {
   area: LiveArea;
@@ -143,6 +146,7 @@ export function LiveWorkspace({
   const selected = selectedCommitment;
   // At most one of the shell's dialogs is open at a time.
   const openDialog: DialogName | null = dialog !== null ? "create" : selectedCommitment ? "detail" : editingCommitment ? "editor" : confirmation ? "confirmation" : release ? "release" : null;
+  // The ways a room says a date, a name or a team. (The compiler keeps them while the data and the words hold.)
   const format = (time: number, options?: Intl.DateTimeFormatOptions) =>
     formatDate(words.locale, time, {
       timeZone: data.church.timeZone,
@@ -481,6 +485,16 @@ export function LiveWorkspace({
     const later = window.setTimeout(() => fetchAhead(others.split(" ") as ReliefName[]), 900);
     return () => window.clearTimeout(later);
   }, [roomIn, others]);
+  // What a room calls when something happens is the same function from draw to draw (it always runs the latest
+  // one), and what a room reads changes only with what it reads from: so the workspace below is drawn again only
+  // when its data, the hour, the save under way, the team chosen or the words change, never because the shell's own
+  // line, sheet or menu did.
+  const latest = useRef({ perform, open });
+  useLayoutEffect(() => {
+    latest.current = { perform, open };
+  });
+  const steadyPerform = useCallback((...save: Parameters<typeof perform>) => latest.current.perform(...save), []);
+  const steadyOpen = useCallback((kind: ActionKind) => latest.current.open(kind), []);
   const workspace: Workspace = {
     area,
     data,
@@ -497,13 +511,13 @@ export function LiveWorkspace({
     teamName,
     sampleSaid,
     keepNames,
-    perform,
+    perform: steadyPerform,
     offerUndo: (said, back) => {
       setError("");
       setNotice(said);
       setUndo(back);
     },
-    openAction: open,
+    openAction: steadyOpen,
     showCommitment: (item, trigger) => {
       commitmentTrigger.current = trigger;
       setError("");
