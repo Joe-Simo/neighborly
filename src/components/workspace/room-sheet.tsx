@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
+import { Component, createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
 import { flushSync } from "react-dom";
 import { roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
@@ -419,18 +419,22 @@ const FLICK = 0.5;
  * ever turned under a sheet or dialog that is open: the edge is left to it.
  */
 export function useEdgeTurn(inApp: boolean, roomShown: boolean) {
+  // Whether a step back may start: read at the touch, so a step already under way outlives the room change it makes.
+  const startable = useRef(roomShown);
+  useEffect(() => {
+    startable.current = roomShown;
+    (window as Edge).webkit?.messageHandlers?.kindHelpsEdge?.postMessage(roomShown);
+  }, [roomShown]);
   useEffect(() => {
     const edge = (window as Edge).webkit?.messageHandlers?.kindHelpsEdge;
     if (!inApp || !edge) return;
-    edge.postMessage(roomShown);
-    if (!roomShown) return;
     let start: { x: number; y: number; width: number } | null = null;
     let trail: { x: number; t: number }[] = [];
     let lost = 0;
     const covered = () => !!document.querySelector('[data-slot="dialog-content"][data-state="open"], .row-menu-shade, [data-vaul-drawer][data-state="open"]');
     const down = (event: TouchEvent) => {
       const touch = event.touches[0];
-      if (event.touches.length !== 1 || touch.clientX > EDGE || finger.on || finger.undoing || covered() || window.history.length < 2) return;
+      if (!startable.current || event.touches.length !== 1 || touch.clientX > EDGE || finger.on || finger.undoing || covered() || window.history.length < 2) return;
       const column = document.querySelector<HTMLElement>(".live-app main.live-main");
       start = { x: touch.clientX, y: touch.clientY, width: column?.getBoundingClientRect().width ?? window.innerWidth };
       trail = [{ x: touch.clientX, t: event.timeStamp }];
@@ -479,5 +483,5 @@ export function useEdgeTurn(inApp: boolean, roomShown: boolean) {
       document.removeEventListener("touchend", up);
       document.removeEventListener("touchcancel", up);
     };
-  }, [inApp, roomShown]);
+  }, [inApp]);
 }
