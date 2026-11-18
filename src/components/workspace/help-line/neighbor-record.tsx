@@ -220,10 +220,7 @@ export function NeighborRecord({
   };
   // The request given its yes in this visit: its corner turns over to green as the record shows it approved.
   const [approvedNow, setApprovedNow] = useState<HelpRequest["id"] | null>(null);
-  // A yes just given leads on to paying it, where the payment is recorded: the line carries the way there.
-  const [toPay, setToPay] = useState<HelpRequest["id"] | null>(null);
-  const finish = (message: string, pay: HelpRequest["id"] | null = null) => {
-    setToPay(pay);
+  const finish = (message: string) => {
     setStep(null);
     moveOn();
     setDone(message);
@@ -286,19 +283,7 @@ export function NeighborRecord({
   const { neighbor } = record;
   return (
     <>
-      {done && (
-        <HelpDone
-          action={
-            toPay ? (
-              <Link className="live-link" href={`/app/treasury?pay=${toPay}`}>
-                {text.done.pay}
-              </Link>
-            ) : undefined
-          }
-        >
-          {done}
-        </HelpDone>
-      )}
+{done && <HelpDone>{done}</HelpDone>}
       <NeighborRecordView
         record={record}
         format={format}
@@ -418,10 +403,7 @@ export function NeighborRecord({
             decision={step.kind === "approve" ? "approved" : "declined"}
             onSaved={() => {
               if (step.kind === "approve") setApprovedNow(step.request.id);
-              finish(
-                step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name),
-                step.kind === "approve" ? step.request.id : null,
-              );
+              finish(step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name));
             }}
           />
         </LiveDialog>
@@ -707,6 +689,12 @@ export function NeighborRecordView({
             </div>
             {first.status === "approved" && (
               <div className="help-actions">
+                {/* Paid often days later, by someone else: the way to record it stays on the request until it is paid. */}
+                {(first.amountApproved ?? 0) > 0 && (
+                  <Link className="live-link" href={`/app/treasury?pay=${first.id}`}>
+                    {text.done.pay}
+                  </Link>
+                )}
                 <Button
                   variant="link"
                   className="help-text-action"
