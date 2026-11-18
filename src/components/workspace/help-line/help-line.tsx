@@ -1,5 +1,7 @@
 "use client";
 
+import { DateLeaf } from "@/components/workspace/primitives";
+
 import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf, openUp } from "@/components/workspace/fold";
 import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
@@ -683,11 +685,11 @@ export function HelpLineView({
       minute: "2-digit",
     }).split(/\s/);
     return (
-      <div className="live-date-leaf">
+      <DateLeaf said={format(at, { month: undefined, day: undefined, weekday: "long", hour: "numeric", minute: "2-digit" })}>
         <span>{part({ weekday: "short" })}</span>
         <strong>{time}</strong>
         <span>{half}</span>
-      </div>
+      </DateLeaf>
     );
   };
   // No call waiting and none returned: the room says what belongs here, once, and the head carries "Log a call".

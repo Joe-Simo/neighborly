@@ -1,5 +1,7 @@
 "use client";
 
+import { DateLeaf } from "@/components/workspace/primitives";
+
 import "@/components/workspace/for-good.css";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -738,12 +740,12 @@ export function NeighborRecordView({
           <div className="live-list">
             {alsoOpen.map((request) => (
               <div className="help-row" key={request.id}>
-                <div className="live-date-leaf">
+                <DateLeaf said={format(request.createdAt, { month: "long", day: "numeric" })}>
                   <span>{format(request.createdAt, { day: undefined })}</span>
                   <strong>
                     {format(request.createdAt, { month: undefined })}
                   </strong>
-                </div>
+                </DateLeaf>
                 <div>
                   <h3>{requestTitle(request)}</h3>
                   <p>

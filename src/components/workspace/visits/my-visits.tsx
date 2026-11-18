@@ -1,5 +1,7 @@
 "use client";
 
+import { DateLeaf } from "@/components/workspace/primitives";
+
 import "./visits.css";
 import { useMutation } from "convex/react";
 import { useHour, useQuery } from "@/components/workspace/query";
@@ -78,7 +80,7 @@ export function MyVisitsView({
           const subject = `${words.on(visit.street || words.nearby)}, ${format(visit.scheduledAt, { weekday: "long", month: "long", day: "numeric" })}`;
           return (
             <div className="help-row" key={visit.id}>
-              <div className="live-date-leaf">
+              <DateLeaf said={format(visit.scheduledAt, { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}>
                 <span>
                   {format(visit.scheduledAt, {
                     weekday: "short",
@@ -88,7 +90,7 @@ export function MyVisitsView({
                 </span>
                 <strong>{time}</strong>
                 <span>{half}</span>
-              </div>
+              </DateLeaf>
               <div>
                 <h3>{words.on(visit.street || words.nearby)}</h3>
                 <p>{visit.partner ? words.partner(visit.partner) : words.partnerOpen}</p>

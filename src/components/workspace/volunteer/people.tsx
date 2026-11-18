@@ -24,7 +24,8 @@ export const initials = (name: string) => {
 function Address({ email, oneLine }: { email: string; oneLine?: boolean }) {
   const at = email.lastIndexOf("@");
   return (
-    <span className="people-address" data-one-line={oneLine ? "" : undefined} title={email}>
+    // Read as one address (WebKit's role="text"), not as its two drawn pieces.
+    <span className="people-address" data-one-line={oneLine ? "" : undefined} title={email} role="text" aria-label={email}>
       <span>{at < 0 ? email : email.slice(0, at)}</span>
       {at >= 0 && <span>{email.slice(at)}</span>}
     </span>
