@@ -13,8 +13,11 @@ const figures = [
   { key: "calls", label: "Calls taken", total: sampleYear.calls, say: whole.format, each: 10 },
   { key: "requests", label: "Requests for help", total: sampleYear.requests, say: whole.format, each: 10 },
   { key: "visits", label: "Home visits, in pairs", total: sampleYear.visits, say: whole.format, each: 10 },
-  { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100, say: dollars.format, each: 1000 },
+  { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100, say: dollars.format, each: 0 },
 ] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string; each: number }[];
+
+/** A hand-squared pile: each sheet sits a little off true, the same way on every visit. */
+const jitter = (figure: number, sheet: number) => ((sheet * 7919 + figure * 104729) % 7 - 3) / 2;
 
 /**
  * The year, folded up: four figures of the sample conference's own year, each cut into the page and standing up out of it
@@ -66,7 +69,7 @@ export function HomeYear() {
           cell.style.setProperty("--fold", folds[index].toFixed(3));
           // The stack is laid a whole sheet at a time as its figure stands up: every sheet is set down, none is grown.
           const sheets = Number(cell.dataset.sheets);
-          cell.style.setProperty("--laid", String(Math.round(sheets * (folds[index] - upright) / (1 - upright))));
+          if (sheets) cell.style.setProperty("--laid", String(Math.round(sheets * (folds[index] - upright) / (1 - upright))));
         });
       }
       if (near) frame = requestAnimationFrame(follow);
@@ -79,16 +82,20 @@ export function HomeYear() {
   }, []);
   return <>
     <dl className="home-year" ref={root}>
-      {figures.map(figure => {
-        const sheets = Math.round(figure.total / figure.each);
-        return <div key={figure.key} data-sheets={sheets} style={{ "--sheets": sheets } as CSSProperties}>
+      {figures.map((figure, place) => {
+        // Only the counts are stacked, one sheet for every ten, so the three stand true to one another; money is not a pile of the same paper.
+        const sheets = figure.each ? Math.round(figure.total / figure.each) : 0;
+        return <div key={figure.key} data-sheets={sheets} style={sheets ? { "--sheets": sheets } as CSSProperties : undefined}>
         <dt>{figure.label}</dt>
-        <dd><span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span></dd>
-        {/* The figure as paper: a stack of cut sheets, one for every ten (or every $1,000), so the four stand true to one another. */}
-        <span className="home-year-stack" aria-hidden="true" />
+        <dd>
+          {sheets > 0 && <span className="home-year-stack" aria-hidden="true">
+            {Array.from({ length: sheets }, (_, sheet) => <i key={sheet} style={{ "--i": sheet, "--x": `${jitter(place, sheet)}px` } as CSSProperties} />)}
+          </span>}
+          <span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span>
+        </dd>
       </div>;
       })}
     </dl>
-    <p className="home-year-note">Each sheet is ten, or $1,000. From the sample conference. Every person in it is made up.</p>
+    <p className="home-year-note">Each sheet is ten. From the sample conference. Every person in it is made up.</p>
   </>;
 }
