@@ -18,6 +18,8 @@ const EASE = "cubic-bezier(.3,.6,.2,1)";
 const WIDE = "cubic-bezier(.55,0,.25,1)";
 /** The gold square rides the card until the paper's cut, and is at rest this far past it. */
 const SETTLE = .12;
+/** Where on home the visitor gave the card, so the way back lands there even when home is still laying its long scroll. */
+const LEFT_AT = "home-left-at";
 
 /** Pressed, the card is not left behind: the same card, words and all, grows to the window and becomes the first sheet of the room. */
 export function CardOfferGrow({ said }: { said: CardWords }) {
@@ -49,6 +51,7 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
     const fill = Math.max(innerWidth * 1.08 / width, innerHeight * 1.08 / height);
     const dx = innerWidth / 2 - (box.left + box.width / 2), dy = innerHeight / 2 - (box.top + box.height / 2);
     offer.dataset.given = "";
+    try { sessionStorage.setItem(LEFT_AT, String(Math.round(scrollY))); } catch {}
     const timing = { duration: GROW, easing: EASE, fill: "forwards" } as const;
     const end = { transform: `translate(${dx}px,${dy}px) rotate(0deg) scale(${fill})` };
     // On a narrow window the card first rises to the middle and straightens at the window's width, whole and readable, and only then fills it.
@@ -146,11 +149,33 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
  * page is shown again by the router (its layout effects run before paint) or from the browser's back-forward cache. */
 function useCardInHand() {
   useLayoutEffect(() => {
-    const restore = () => document.querySelectorAll<HTMLElement>(".card-offer[data-given]").forEach(card => delete card.dataset.given);
+    const restore = () => {
+      for (const card of document.querySelectorAll<HTMLElement>(".card-offer[data-given]")) {
+        delete card.dataset.given;
+        // Its words are on it from the first frame: lettered at once, not faded in as if it had just landed.
+        card.dataset.back = "";
+        card.classList.add("is-here");
+      }
+      let left: number | null = null;
+      try { const kept = sessionStorage.getItem(LEFT_AT); sessionStorage.removeItem(LEFT_AT); left = kept === null ? null : Number(kept); } catch {}
+      if (left === null || !Number.isFinite(left)) return;
+      const y = left;
+      // Back where the card was given: at once if home is long enough to stand there, else as soon as it is (or after a second).
+      let tries = 60;
+      const settle = () => {
+        if (document.documentElement.scrollHeight - innerHeight >= y || --tries === 0) window.scrollTo({ top: y, behavior: "instant" });
+        else requestAnimationFrame(settle);
+      };
+      settle();
+    };
     restore();
+    const settled = () => document.querySelectorAll<HTMLElement>(".card-offer[data-back]").forEach(card => delete card.dataset.back);
     const shown = (event: PageTransitionEvent) => { if (event.persisted) restore(); };
     addEventListener("pageshow", shown);
-    return () => removeEventListener("pageshow", shown);
+    addEventListener("pointerdown", settled, { once: true });
+    addEventListener("wheel", settled, { once: true, passive: true });
+    addEventListener("touchmove", settled, { once: true, passive: true });
+    return () => { removeEventListener("pageshow", shown); removeEventListener("pointerdown", settled); removeEventListener("wheel", settled); removeEventListener("touchmove", settled); };
   }, []);
 }
 
