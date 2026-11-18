@@ -216,7 +216,7 @@ function escape(text: string) {
  * shaped like one goes too, including every capitalised word that does not open a
  * sentence, so a landlord's or a child's name leaves with the rest.
  */
-export function withoutIdentity(note: string, known: { names: string[]; addresses: string[] }): string {
+export function withoutIdentity(note: string, known: { names: string[]; addresses: string[]; others?: string[] }): string {
   let text = note;
   for (const address of known.addresses.map((value) => value.trim()).filter((value) => value.length > 3))
     text = text.replace(new RegExp(escape(address), "gi"), "[address]");
@@ -229,6 +229,11 @@ export function withoutIdentity(note: string, known: { names: string[]; addresse
   const parts = known.names.flatMap((name) => name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "")).filter((part) => part.length > 1);
   for (const part of new Set(parts))
     text = text.replace(new RegExp(`(?<![\\p{L}])${escape(part)}(?![\\p{L}])`, "giu"), "[name]");
+  // Everyone else the conference knows (its neighbors and members): taken out wherever written with a capital, in one
+  // pass. Only the capitalised form, so a neighbor named Hope or Will never takes the plain word out of a note.
+  const others = [...new Set((known.others ?? []).flatMap((name) => name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "")))]
+    .filter((part) => part.length > 1 && /^\p{Lu}/u.test(part) && !isSafe(part));
+  if (others.length) text = text.replace(new RegExp(`(?<![\\p{L}])(?:${others.map(escape).join("|")})(?![\\p{L}])`, "gu"), "[name]");
   text = text
     .replace(/\b((?:my name is|name is|this is|i am|i'm|me llamo|soy)\s+)[\p{L}'-]+(?:\s+[\p{L}'-]+)?/giu, "$1[name]")
     .replace(/\b(?:mr|mrs|ms|miss|dr|sr|sra|fr|father|sister|deacon)\.?\s+[\p{L}'-]+/giu, "[name]")

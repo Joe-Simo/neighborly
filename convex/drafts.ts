@@ -7,6 +7,7 @@ import { jevSet } from "../src/lib/jev-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { hour, hourAsked, neighborAccess, user } from "./access";
 import { fiscalYear } from "./reports";
+import { namesFor } from "./knownNames";
 import { paidTowardRequest } from "./treasury";
 
 const draftResult = v.object({
@@ -58,7 +59,8 @@ type Question = { type: "noul" | "choice"; instructions: string; criteria?: Reco
  */
 const model = "jev-1.14.0";
 
-type Known = { names: string[]; addresses: string[] };
+type Known = { names: string[]; addresses: string[]; others?: string[] };
+
 /** Every piece of text in a state, at any depth, with identity taken out. */
 function scrubbed(value: unknown, known: Known): unknown {
   if (typeof value === "string") return withoutIdentity(value, known);
@@ -260,7 +262,7 @@ const requestDraft = v.object({
 /** One call's note for drafting, with the names and addresses that must be taken out of it. Coordinators and owners only. */
 export const callNote = internalQuery({
   args: { churchId: v.id("churches"), callId: v.id("calls") },
-  returns: v.object({ userId: v.id("users"), note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()) }),
+  returns: v.object({ userId: v.id("users"), note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
   handler: async (ctx, { churchId, callId }) => {
     const member = await neighborAccess(ctx, churchId);
     const call = await ctx.db.get("calls", callId);
@@ -270,6 +272,7 @@ export const callNote = internalQuery({
       userId: member.userId, note: call.note,
       names: [call.callerName, neighbor?.name ?? ""].filter(Boolean),
       addresses: neighbor?.address ? [neighbor.address] : [],
+      others: await namesFor(ctx, churchId),
     };
   },
 });
@@ -281,8 +284,8 @@ export const callNote = internalQuery({
 export const noteAsSent = query({
   args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: v.string(),
   handler: async (ctx, args): Promise<string> => {
-    const { note, names, addresses } = await ctx.runQuery(internal.drafts.callNote, args);
-    return withoutIdentity(note, { names, addresses });
+    const { note, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
+    return withoutIdentity(note, { names, addresses, others });
   },
 });
 
@@ -296,7 +299,7 @@ export const noteAsSent = query({
 export const draftRequest = action({
   args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: requestDraft,
   handler: async (ctx, args) => {
-    const { userId, note, names, addresses } = await ctx.runQuery(internal.drafts.callNote, args);
+    const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
     const draft = prepareRequestDraft(note);
     // The payee's name is copied by code and never shown to the model, so a person always confirms it.
     const fallback = { ...draft, verification: "review" as const };
@@ -304,11 +307,11 @@ export const draftRequest = action({
     if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     // Each question stands on its own in plain words. A bare field name ("proposed.kind") gave the model nothing to judge.
-    const payeeShown = payeeIsShown(draft, note, { names, addresses });
+    const payeeShown = payeeIsShown(draft, note, { names, addresses, others });
     const answers = await decide(env.TYPESAFE_API_KEY, { note }, {
       ...Object.fromEntries(Object.entries(draftQuestions(draft, payeeShown)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
       chosenKind: kindQuestion,
-    }, { names, addresses });
+    }, { names, addresses, others });
     if (!answers) return fallback;
     const sure = { kind: noul(answers.kind), payeeKind: noul(answers.payeeKind) }, pick = picked(answers.chosenKind);
     // A proposed field with no usable answer means the reply cannot be trusted; the person reads the draft as code made it.
@@ -341,12 +344,12 @@ const urgency = v.object({
 export const readUrgency = action({
   args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: urgency,
   handler: async (ctx, args): Promise<{ signs: UrgentSign[]; verification: "review" | "checked" }> => {
-    const { userId, note, names, addresses } = await ctx.runQuery(internal.drafts.callNote, args);
+    const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
     const signs = urgentSigns(note);
     const fallback = { signs, verification: "review" as const };
     if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-    const answers = await decide(env.TYPESAFE_API_KEY, { note }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])), { names, addresses });
+    const answers = await decide(env.TYPESAFE_API_KEY, { note }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])), { names, addresses, others });
     if (!answers) return fallback;
     const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
     if (signs.some(({ reason }) => sure[reason] === null)) return fallback;
@@ -376,7 +379,7 @@ const visitedWords = /\b(?:visited|we met|met with|went to see|stopped by|visita
 export const yearRecords = internalQuery({
   // `now` comes from the action that asks: a query never reads the clock.
   args: { churchId: v.id("churches"), year: v.number(), now: v.number() },
-  returns: v.object({ userId: v.id("users"), flags: v.array(yearFlag), toRead: v.array(toRead) }),
+  returns: v.object({ userId: v.id("users"), flags: v.array(yearFlag), toRead: v.array(toRead), others: v.array(v.string()) }),
   handler: async (ctx, { churchId, year, now }) => {
     const member = await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
@@ -408,7 +411,7 @@ export const yearRecords = internalQuery({
       if (visit.status === "completed" && visit.visitors.every(visitor => visitor.hours === 0)) flags.push({ kind: "visitNoHours", record, source: "rule" });
       else if (visit.status === "scheduled" && visit.scheduledAt < now && visitedWords.test(visit.notes) && reading.length < 20) reading.push({ kind: "visitNotMarked", record, note: visit.notes, ...(await identity(visit.neighborId)) });
     }
-    return { userId: member.userId, flags, toRead: reading };
+    return { userId: member.userId, flags, toRead: reading, others: reading.length ? await namesFor(ctx, churchId) : [] };
   },
 });
 
@@ -422,7 +425,7 @@ export const checkYear = action({
   args: { churchId: v.id("churches"), year: v.number() },
   returns: v.object({ flags: v.array(yearFlag), verification: v.union(v.literal("review"), v.literal("checked")) }),
   handler: async (ctx, args): Promise<{ flags: (typeof yearFlag.type)[]; verification: "review" | "checked" }> => {
-    const { userId, flags, toRead: reading } = await ctx.runQuery(internal.drafts.yearRecords, { ...args, now: Date.now() });
+    const { userId, flags, toRead: reading, others } = await ctx.runQuery(internal.drafts.yearRecords, { ...args, now: Date.now() });
     // With no model, a person reads the notes code picked out; they are flagged as a rule's finding.
     const unread = { flags: [...flags, ...reading.map(({ kind, record }) => ({ kind, record, source: "rule" as const }))], verification: "review" as const };
     if (!reading.length) return { flags, verification: "checked" };
@@ -432,7 +435,7 @@ export const checkYear = action({
     const sure = await confidence(env.TYPESAFE_API_KEY,
       { notes: Object.fromEntries(reading.map((item, index) => [`n${index}`, item.note.slice(0, 1000)])) },
       Object.fromEntries(reading.map((item, index) => [`n${index}`, `Does notes.n${index} say ${asked[item.kind]}? ${plainly}`])),
-      { names: reading.flatMap(item => item.names), addresses: reading.flatMap(item => item.addresses) },
+      { names: reading.flatMap(item => item.names), addresses: reading.flatMap(item => item.addresses), others },
     );
     if (!sure) return unread;
     return { flags: [...flags, ...reading.flatMap(({ kind, record }, index) => (sure[`n${index}`] >= sureEnough ? [{ kind, record, source: "assistant" as const }] : []))], verification: "checked" };

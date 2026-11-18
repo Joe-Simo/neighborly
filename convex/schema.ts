@@ -13,6 +13,8 @@ export default defineSchema({
   users: defineTable({ clerkId: v.optional(v.string()), legacyEmail: v.optional(v.string()) }).index("by_clerk", ["clerkId"]).index("by_legacy_email", ["legacyEmail"]),
   aiUsage: defineTable({userId:v.id("users"),windowStart:v.number(),count:v.number()}).index("by_user",["userId"]),
   // The assistant's monthly allowance per group. month is "yyyy-MM".
+  /** Every name a conference holds (its neighbors' and members'), kept in the same write as the name: what the assistant's scrub takes out of a note. */
+  knownNames: defineTable({ churchId: v.id("churches"), names: v.array(v.string()) }).index("by_church", ["churchId"]),
   aiUsageByChurch: defineTable({ churchId: v.id("churches"), month: v.string(), count: v.number() }).index("by_church_month", ["churchId", "month"]),
   churches: defineTable({ name: v.string(), timeZone: v.string(), sample: v.optional(v.boolean()), wordSet: v.optional(v.union(v.literal("general"), v.literal("vincentian"))), /** Running figures kept by convex/counts.ts. */ householdCount: v.optional(v.number()), waitingCount: v.optional(v.number()), waitingHouseholdIds: v.optional(v.array(v.id("neighbors"))) }),
   memberships: defineTable({ churchId: v.id("churches"), userId: v.id("users"), name: v.string(), email: v.string(), role, active: v.boolean(), approved: v.boolean(), coverOptIn: v.boolean(), language: v.optional(language), /** Set when the owner removed this person for good: the row stays, nameless, so their logged work still counts. */ removedAt: v.optional(v.number()) }).index("by_user", ["userId"]).index("by_church_user", ["churchId", "userId"]).index("by_church", ["churchId"]),

@@ -120,3 +120,9 @@ test("a free-text call note leaves without the caller's name, phone or street", 
   expect(sent).not.toMatch(/Rosa|Fontaine|555|0142|Mill/);
   expect(sent).toContain("$450");
 });
+
+test("another neighbor the conference knows is taken out too, and an ordinary word that is also a name stays", () => {
+  const sent = withoutIdentity("Behind on rent. Her neighbor Marisol Vega drove her here. Hope is short, will pay what she can.", { names: [], addresses: [], others: ["Marisol Vega", "Will Hope"] });
+  expect(sent).not.toMatch(/Marisol|Vega/);
+  expect(sent).toContain("will pay");
+});
