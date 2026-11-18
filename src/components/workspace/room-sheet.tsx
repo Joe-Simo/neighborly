@@ -429,7 +429,7 @@ export function useEdgeTurn(inApp: boolean, roomShown: boolean) {
   useEffect(() => {
     const edge = (window as Edge).webkit?.messageHandlers?.kindHelpsEdge;
     if (!inApp || !edge) return;
-    let start: { x: number; y: number; width: number } | null = null;
+    let start: { x: number; y: number; left: number; width: number } | null = null;
     let trail: { x: number; t: number }[] = [];
     let lost = 0;
     const covered = () => !!document.querySelector('[data-slot="dialog-content"][data-state="open"], .row-menu-shade, [data-vaul-drawer][data-state="open"]');
@@ -437,7 +437,8 @@ export function useEdgeTurn(inApp: boolean, roomShown: boolean) {
       const touch = event.touches[0];
       if (!startable.current || event.touches.length !== 1 || touch.clientX > EDGE || finger.on || finger.undoing || covered() || window.history.length < 2) return;
       const column = document.querySelector<HTMLElement>(".live-app main.live-main");
-      start = { x: touch.clientX, y: touch.clientY, width: column?.getBoundingClientRect().width ?? window.innerWidth };
+      const box = column?.getBoundingClientRect();
+      start = { x: touch.clientX, y: touch.clientY, left: box?.left ?? 0, width: box?.width ?? window.innerWidth };
       trail = [{ x: touch.clientX, t: event.timeStamp }];
     };
     const move = (event: TouchEvent) => {
@@ -458,7 +459,8 @@ export function useEdgeTurn(inApp: boolean, roomShown: boolean) {
         }, 1500);
       }
       event.preventDefault();
-      finger.progress = Math.min(1, Math.max(0, dx / start.width));
+      // Measured from the column's own left edge, so the crease is where the finger is, never behind it.
+      finger.progress = Math.min(1, Math.max(0, (touch.clientX - start.left) / start.width));
       trail = [...trail.filter((point) => event.timeStamp - point.t < 80), { x: touch.clientX, t: event.timeStamp }];
       finger.turn?.drive(finger.progress);
     };
