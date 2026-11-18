@@ -2,7 +2,7 @@
 
 import { type CSSProperties, useEffect, useRef } from "react";
 import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
-import { HomeYearSlip } from "./home-year-slip";
+import { HomeYearSlip, ROSA_HELP } from "./home-year-slip";
 import "./home-year.css";
 
 const whole = new Intl.NumberFormat("en-US");
@@ -11,11 +11,11 @@ const upright = 1 - 60 / 86;
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 // In the order the work happens.
 const figures = [
-  { key: "calls", label: "Calls taken", total: sampleYear.calls, say: whole.format, each: 10 },
+  // Rosa's week is the year's last: each pile waits for its part of it (home-year-slip.tsx), and laying the three down completes the year.
+  { key: "calls", label: "Calls taken", total: sampleYear.calls - 1, say: whole.format, each: 10 },
   { key: "requests", label: "Requests for help", total: sampleYear.requests, say: whole.format, each: 10 },
-  // Rosa's visit is the year's last: the pile waits for it (home-year-slip.tsx), and laying it down completes the year.
   { key: "visits", label: "Home visits, in pairs", total: sampleYear.visits - 1, say: whole.format, each: 10 },
-  { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100, say: dollars.format, each: 0 },
+  { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100 - ROSA_HELP, say: dollars.format, each: 0 },
 ] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string; each: number }[];
 
 /** A hand-squared pile: each sheet sits a little off true, the same way on every visit. */

@@ -4,40 +4,60 @@ import { type PointerEvent, useRef, useState } from "react";
 import { sampleYear } from "@/lib/sample-year";
 
 const whole = new Intl.NumberFormat("en-US");
+const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const PAPER_EASE = "cubic-bezier(.2,.7,.2,1)";
 /** How far a press may wander and still be a press, not a carry. */
 const SLOP = 6;
+/** Rosa's help, in dollars: the help figure waits for it. */
+export const ROSA_HELP = 450;
+
+/** Rosa's week, one slip a day, each laid on the figure it belongs to, which then reads the year's own pinned number. */
+const week = [
+  { figure: "calls", day: "Monday", line: "She calls about the rent.", ask: "Lay her call on the calls pile.", done: `${whole.format(sampleYear.calls)} calls.` },
+  { figure: "visits", day: "Wednesday", line: "Visited in pairs.", ask: "Lay the visit on the visits pile.", done: `${whole.format(sampleYear.visits)} home visits.` },
+  { figure: "paid", day: "Thursday", line: "$450 toward rent, paid to the landlord.", ask: "Lay the help on the help.", done: `${dollars.format(sampleYear.helpPaid / 100)} in help.` },
+] as const;
+const finals = { calls: whole.format(sampleYear.calls), visits: whole.format(sampleYear.visits), paid: dollars.format(sampleYear.helpPaid / 100) };
 
 /**
- * One request slip beside the year: the visitor picks it up and lays it on the pile of home visits (or presses it, from the keyboard
- * or by tap), and it is carried there whole and laid on the top sheet: it is the year's last visit, and the figure turns over to the year's own count.
- * On the page only; nothing is sent or kept. With Reduce Motion it is laid at once.
+ * One neighbour's week beside the year: three slips, laid one after another (picked up and carried, or pressed from the keyboard or by tap),
+ * each carried whole onto its figure's pile and laid on the top sheet, and the figure turns over to the year's own count.
+ * On the page only; nothing is sent or kept. With Reduce Motion each is laid at once.
  */
 export function HomeYearSlip() {
   const slip = useRef<HTMLButtonElement>(null);
   const carry = useRef<{ x: number; y: number; dx: number; dy: number; id: number } | null>(null);
   const carried = useRef(false);
-  const [laid, setLaid] = useState(false);
+  const busy = useRef(false);
+  const [step, setStep] = useState(0);
+  const today = week[Math.min(step, week.length - 1)];
+  const laid = step >= week.length;
 
-  const visits = () => slip.current?.closest(".relief-words")?.querySelector<HTMLElement>(".home-year div:has([data-figure=visits])") ?? null;
+  const cell = () => slip.current?.closest(".relief-words")?.querySelector<HTMLElement>(`.home-year div:has([data-figure=${today.figure}])`) ?? null;
 
   const lay = (dx = 0, dy = 0) => {
-    const element = slip.current, cell = visits();
-    if (!element || !cell || laid) return;
-    const stack = cell.querySelector<HTMLElement>(".home-year-stack");
-    const figure = cell.querySelector<HTMLElement>("[data-figure=visits]");
-    const tab = cell.querySelector<HTMLElement>(".home-year-tab");
+    const element = slip.current, target = cell();
+    if (!element || !target || laid || busy.current) return;
+    busy.current = true;
+    const stack = target.querySelector<HTMLElement>(".home-year-stack");
+    const figure = target.querySelector<HTMLElement>(`[data-figure=${today.figure}]`);
+    const tab = target.querySelector<HTMLElement>(".home-year-tab");
     const turn = () => {
-      if (figure) figure.textContent = whole.format(sampleYear.visits);
-      setLaid(true);
-      // The slip leaves with the press, so the keyboard is handed to what came of it.
-      requestAnimationFrame(() => document.getElementById("home-year-give")?.focus({ preventScroll: true }));
+      if (figure) figure.textContent = finals[today.figure];
+      delete element.dataset.lying;
+      element.getAnimations().forEach(animation => animation.cancel());
+      busy.current = false;
+      const next = step + 1;
+      setStep(next);
+      // The slip leaves with the press: the keyboard stays on the next day's slip, and after the last, goes to what came of it.
+      requestAnimationFrame(() => (next < week.length ? element : document.getElementById("home-year-give"))?.focus({ preventScroll: true }));
     };
-    if (!stack || matchMedia("(prefers-reduced-motion: reduce)").matches) return turn();
-    // From where it is held to the top of the pile: carried whole and level, then it lies down onto the pile edge on, one sheet's depth.
-    const from = element.getBoundingClientRect(), to = stack.getBoundingClientRect();
+    const onto = stack ?? tab;
+    if (!onto || matchMedia("(prefers-reduced-motion: reduce)").matches) return turn();
+    // From where it is held to the top of the pile (or, where money is not a pile, onto its figure): carried whole and level, then it lies down edge on, one sheet's depth.
+    const from = element.getBoundingClientRect(), to = onto.getBoundingClientRect();
     const scale = (to.width - 8) / from.width;
-    const x = to.left + 4 - from.left, y = to.bottom - 3 * Number(cell.dataset.sheets) - from.top;
+    const x = to.left + 4 - from.left, y = (stack ? to.bottom - 3 * Number(target.dataset.sheets) : to.bottom) - from.top;
     const set = element.animate([
       { transform: `translate(${dx}px, ${dy}px)` },
       { transform: `translate(${x}px, ${y - from.height * scale}px) scale(${scale})`, offset: .7 },
@@ -54,7 +74,7 @@ export function HomeYearSlip() {
   };
 
   const down = (event: PointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0 || laid) return;
+    if (event.button !== 0 || laid || busy.current) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     carried.current = false;
     carry.current = { x: event.clientX, y: event.clientY, dx: 0, dy: 0, id: event.pointerId };
@@ -74,20 +94,21 @@ export function HomeYearSlip() {
     delete element.dataset.held;
     carried.current = true;
     element.style.removeProperty("transform");
-    const box = visits()?.getBoundingClientRect();
+    const box = cell()?.getBoundingClientRect();
     const over = box && event.clientX > box.left - 48 && event.clientX < box.right + 48 && event.clientY > box.top - 96 && event.clientY < box.bottom + 24;
     if (over) return lay(held.dx, held.dy);
-    // Not over the pile: it goes back to where it was picked up from.
+    // Not over its pile: it goes back to where it was picked up from.
     element.animate([{ transform: `translate(${held.dx}px, ${held.dy}px)` }, { transform: "none" }], { duration: 280, easing: PAPER_EASE });
   };
 
+  const said = laid ? `${week.map(day => day.done).join(" ")} Rosa's week is laid down, and the year with it.` : step ? `${week[step - 1].done} ${today.ask}` : today.ask;
   return <div className="home-year-give">
     <button ref={slip} type="button" className="home-year-slip" data-laid={laid || undefined} disabled={laid} aria-hidden={laid || undefined} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
-      onClick={() => { if (!carried.current) lay(); }}
+      onClick={() => { if (!carried.current) lay(); carried.current = false; }}
       aria-describedby="home-year-give">
       <strong>Rosa Fontaine</strong>
-      <span>Rent, $450. Visited in pairs.</span>
+      <span>{today.day}. {today.line}</span>
     </button>
-    <p id="home-year-give" role="status" tabIndex={-1}>{laid ? `${whole.format(sampleYear.visits)} home visits. The year is laid down.` : "Lay it on the visits pile."}</p>
+    <p id="home-year-give" role="status" tabIndex={-1}>{said}</p>
   </div>;
 }
