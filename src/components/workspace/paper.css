@@ -1329,3 +1329,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 :is(.live-app, .live-dialog) :is(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid #283c32; outline-offset: 3px; }
 @media (forced-colors: active) { :is(.live-app, .live-dialog) :is(.help-sheet, .tools-leaf, nav.week-figures a) { background-image: none; } }
 @media print { :is(.live-app, .live-dialog) :is(.help-sheet, .tools-leaf, nav.week-figures a) { background-image: none; box-shadow: none; } }
+
+/* The room's lede holds about 1.3 leading at every size, Larger Text included: its lines stay one thought, never a
+   list of loose lines. */
+.live-app .live-page-head .live-deck,
+:root[data-shell="ios"] .live-app .live-page-head .live-deck { line-height: 1.3; }
