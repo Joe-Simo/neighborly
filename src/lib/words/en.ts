@@ -342,7 +342,7 @@ export function en(set: WordSet) {
       neededCheck: "Look at this again.",
       launchTitle: `We couldn’t open your ${place}.`,
       launchDeck: "Nothing was lost. Try again in a moment.",
-      notSaved: "That couldn’t be saved. Please try again.",
+      notSaved: "That couldn’t be saved. Try again.",
       offlineSave: "There is no connection right now, so this was not saved.",
       kept: "Nothing was saved, and what you typed is still here.",
       tryAgain: "Try again",
@@ -371,7 +371,7 @@ export function en(set: WordSet) {
     notices: {
       saved: "Saved.",
       updated: "Updated.",
-      failed: "That change couldn’t be saved. Please try again.",
+      failed: "That change couldn’t be saved. Try again.",
       /** A refusal the backend says in English, in this language, keyed by the English sentence. */
       refused: Object.fromEntries(Object.values(refusals).map((sentence) => [sentence, sentence])) as Record<string, string>,
     },
@@ -472,7 +472,7 @@ export function en(set: WordSet) {
       noteSaysPaid: "The note says this was paid, and no payment is recorded.",
       visitNotMarked: "The note says this visit happened, and it is not marked done.",
       byRule: "Found by counting.",
-      byAssistant: "The assistant read the note. Please read it yourself.",
+      byAssistant: "The assistant read the note. Read it yourself before you say yes.",
       open: "Open the record",
       putAway: "Hide the check",
       /** What was looked over. The screen puts the two counts and the time of day in the marked places. */
@@ -521,7 +521,7 @@ export function en(set: WordSet) {
           `On ${m.notes} made-up call notes kept apart from the ones it was adjusted on, it filled ${m.right} of ${m.right + m.blank + m.wrong} fields correctly, left ${m.blank} blank for a person and got ${m.wrong} wrong (measured ${date}). An earlier run got one wrong; we fixed the rule behind it, so those notes have now shaped one rule. This is a small test, and Spanish and Creole notes are a small part of it.`,
       },
       /** The foot of a draft: what was read, what was never sent, what a blank means, and who decides. */
-      made: { checked: "Filled in by the assistant from the call note and checked against it.", review: "Filled in from the call note by fixed rules. The assistant could not check it, so please read each detail against the note." },
+      made: { checked: "Filled in by the assistant from the call note and checked against it.", review: "Filled in from the call note by fixed rules. The assistant could not check it, so read each detail against the note." },
       unsaved: "Nothing is saved until you say so.",
       show: "What the assistant saw",
       hide: "Hide what the assistant saw",
@@ -551,7 +551,7 @@ export function en(set: WordSet) {
       waiting: (count: number) => (count === 1 ? "Waiting for your yes" : `${count} waiting for your yes`),
       origin: "Filled in by the assistant from the call note. Nothing is saved until you say so.",
       checked: "The assistant checked each detail against the note.",
-      review: "The assistant could not check this. Please read each detail against the note.",
+      review: "The assistant could not check this. Read each detail against the note.",
       approve: "Save this request",
       change: "Change",
       discard: "Discard",
