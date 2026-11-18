@@ -7,7 +7,7 @@ import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords } from "@/components/workspace/failure";
 import { closeUp, openUp, settleFrom } from "@/components/workspace/fold";
 import { headings } from "@/components/workspace/navigation";
-import { FollowingHeading } from "@/components/workspace/primitives";
+import { FollowingHeading, PaperScene } from "@/components/workspace/primitives";
 import { ReliefPicture } from "@/components/workspace/relief";
 
 /**
@@ -47,7 +47,11 @@ export function LiveState({
       data-lead={art ? "" : undefined}
       role={kind === "error" || kind === "offline" ? "alert" : undefined}
     >
-      {art && <ReliefPicture name={art.picture} focus={art.focus} vignette className="paper-vignette" />}
+      {art && (
+        <PaperScene kind={kind}>
+          <ReliefPicture name={art.picture} focus={art.focus} vignette className="paper-vignette" />
+        </PaperScene>
+      )}
       <div>
         <FollowingHeading>{title}</FollowingHeading>
         <p>{children}</p>

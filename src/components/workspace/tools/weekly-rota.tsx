@@ -1,5 +1,6 @@
 "use client";
 
+import { PaperScene } from "@/components/workspace/primitives";
 import "./tools.css";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
@@ -58,6 +59,7 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
           </div>
         ) : (
           <div className="help-empty">
+            <PaperScene kind="empty" />
             <div>
               <h3>{text.quietTitle}</h3>
               <p>{text.quietDetail}</p>

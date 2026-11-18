@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, CircleCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { RoomAside, useFarScreen } from "@/components/workspace/aside";
-import { LiveLoading } from "@/components/workspace/primitives";
+import { LiveLoading, PaperScene } from "@/components/workspace/primitives";
 import { openUp, useGrowsSmoothly, useSavedLine } from "@/components/workspace/fold";
 import { SavedWords } from "@/components/workspace/saved-words";
 import { LiveState } from "@/components/workspace/states";
@@ -177,6 +177,7 @@ export function LedgerView({
   if (untouched)
     return (
       <div className="help-empty" data-first>
+        <PaperScene kind="empty" />
         <div>
           <h2>{w.first.title}</h2>
           <p>
@@ -390,6 +391,7 @@ export function LedgerView({
         </div>
       ) : (
         <div className="help-empty">
+          <PaperScene kind="empty" />
           <div>
             <h3>{w.quiet.title}</h3>
             <p>

@@ -1237,3 +1237,52 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 1px 1px rgb(40 60 50 / 0.14), 0 3px 5px -4px rgb(40 60 50 / 0.4);
 }
 @media (forced-colors: active) { .live-keys kbd { box-shadow: none; } }
+
+/* ── w92: every state beside its words is a small cut-paper scene. Two sheets cut by hand, a third laid on them: blank for
+   nothing here yet, the room's picture card for a state of the whole room. Its folded corner says which: ochre waits
+   (no connection), plum is wrong, plain is plain. It is laid once, by movement only; nothing fades. ── */
+.paper-scene {
+  position: relative; display: block; flex: none; width: 132px; height: 92px; margin: 6px 0 0 6px;
+  filter: drop-shadow(0 1px 1px rgb(40 60 50 / 0.16)) drop-shadow(0 8px 10px rgb(40 60 50 / 0.16));
+}
+.paper-scene > i { position: absolute; inset: 0; background: #f7f4ed; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8); }
+.paper-scene > i:nth-child(1) { background: #e8e1d2; transform: translate(9px, 7px) rotate(5deg); clip-path: polygon(1% 3%, 98% 0, 100% 97%, 2% 100%); }
+.paper-scene > i:nth-child(2) { background: #efeadf; transform: translate(-4px, 3px) rotate(-3deg); clip-path: polygon(0 1%, 99% 3%, 97% 100%, 1% 98%); }
+.paper-scene > i:nth-child(3) { transform: rotate(-6deg) translate(2px, -6px); clip-path: polygon(2% 0, 100% 2%, 99% 99%, 0 97%); }
+/* The pile's top sheet carries three faint ruled lines, nothing written on them yet. */
+.paper-scene[data-kind="empty"] > i:nth-child(3) {
+  background: linear-gradient(rgb(40 60 50 / 0.11), rgb(40 60 50 / 0.11)) 18% 34% / 54% 1px no-repeat,
+              linear-gradient(rgb(40 60 50 / 0.11), rgb(40 60 50 / 0.11)) 18% 52% / 64% 1px no-repeat,
+              linear-gradient(rgb(40 60 50 / 0.11), rgb(40 60 50 / 0.11)) 18% 70% / 40% 1px no-repeat, #f7f4ed;
+}
+/* A whole-room state: the scene is the picture card's size, and the card lies on the two cut sheets. */
+.paper-scene[data-card] { width: 180px; height: 120px; }
+.paper-scene[data-card] > .paper-vignette { position: absolute; inset: 0; width: auto; height: auto; box-shadow: none; }
+/* The folded corner, on the top sheet's top right: its turned-down flap shows the paper's other side. */
+.paper-scene > b { position: absolute; top: -7px; right: 4px; width: 22px; height: 22px; transform: rotate(-5deg); display: none; }
+.paper-scene > b::before { content: ""; position: absolute; inset: 0; clip-path: polygon(0 0, 100% 100%, 0 100%); background: var(--fold, #c8962e); box-shadow: none; }
+.paper-scene[data-kind="offline"] > b { display: block; --fold: #c8962e; }
+.paper-scene[data-kind="error"] > b { display: block; --fold: #6f5f93; }
+/* Laid once: the pile is set down from a little above, the top sheet last. Transform only. */
+.paper-scene > :is(i, .paper-vignette) { animation: paper-scene-lay 420ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards; }
+.paper-scene > :nth-child(2) { animation-delay: 50ms; }
+.paper-scene > :nth-child(3) { animation-delay: 100ms; }
+@keyframes paper-scene-lay { from { translate: 0 -10px; rotate: -3deg; } }
+.live-app .live-state .paper-vignette { animation: paper-scene-lay 420ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) 100ms backwards; }
+/* The scene stands to the left of its words, on the words' first line; on a narrow window, above them. */
+.live-app :is(.live-empty, .help-empty):has(> .paper-scene) { grid-template-columns: auto minmax(0, 1fr); gap: 32px; align-items: start; }
+.live-app .live-state[data-lead] { grid-template-columns: 196px minmax(0, 1fr); }
+@media (max-width: 899px) {
+  /* On a phone the pile is small and stands beside the words, so the line is read in the first screen. */
+  .live-app :is(.live-empty, .help-empty):has(> .paper-scene[data-kind="empty"]) { grid-template-columns: 76px minmax(0, 1fr); gap: 20px; }
+  .live-app :is(.live-empty, .help-empty) > .paper-scene[data-kind="empty"] { width: 64px; height: 46px; margin-top: 10px; }
+  .live-app .live-state[data-lead] { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .live-app .live-state .paper-scene[data-card] { width: 150px; height: 100px; }
+}
+@media (prefers-reduced-motion: reduce) { .paper-scene > *, .live-app .live-state .paper-vignette { animation: none; } }
+@media (forced-colors: active) { .paper-scene { filter: none; } .paper-scene > i { border: 1px solid CanvasText; } }
+@media print { .paper-scene { display: none; } }
+/* On a whole-room state the card is the painting, and nothing lies on it: the corner is folded on the cut sheet beneath,
+   where it shows past the card's lower right. */
+.paper-scene[data-card] > b { top: auto; right: -14px; bottom: -13px; width: 20px; height: 20px; z-index: -1; transform: rotate(5deg); }
+.paper-scene[data-card] > b::before { clip-path: polygon(100% 0, 100% 100%, 0 100%); }

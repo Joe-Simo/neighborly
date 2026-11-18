@@ -11,7 +11,7 @@ import { LiveDialog } from "@/components/workspace/live-dialog";
 import { Input } from "@/components/ui/input";
 import { readFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
-import { LiveField } from "@/components/workspace/primitives";
+import { LiveField, PaperScene } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { fill } from "@/lib/words/fill";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
@@ -214,6 +214,7 @@ export function ShelfView({
         </>
       ) : (
         <div className="help-empty" data-first>
+          <PaperScene kind="empty" />
           <div>
             <h3>{w.empty.title}</h3>
             <p>
