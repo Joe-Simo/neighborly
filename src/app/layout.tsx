@@ -3,6 +3,8 @@ import "./globals.css";
 import "../../public/fonts/fonts.css";
 import { SerwistProvider } from "@serwist/turbopack/react";
 import { OfflineWorker } from "@/components/offline-worker";
+import { CutHeads } from "@/components/cut-heads";
+import "@/components/cut-heads.css";
 import { launchScreens } from "@/lib/launch-screens";
 import { linkPreview } from "@/lib/link-preview";
 import { firstLanguage } from "@/lib/first-language";
@@ -55,6 +57,7 @@ export default function RootLayout({
       <body>
         <SerwistProvider swUrl="/serwist/sw.js" register={false} reloadOnOnline={false}>
           <OfflineWorker />
+          <CutHeads />
           {children}
         </SerwistProvider>
       </body>
