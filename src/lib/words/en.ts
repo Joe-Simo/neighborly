@@ -313,6 +313,8 @@ export function en(set: WordSet) {
       loadMore: "Load more members",
       loading: "Loading members…",
       emptyTitle: "Start with one team.",
+      /** The room's foot, as Reports ends: one quiet sentence under a check. */
+      footnote: "Taking time off does not take anyone off a team, and one member can serve on more than one.",
     },
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {

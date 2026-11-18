@@ -309,6 +309,7 @@ export function es(set: WordSet): Words {
       loadMore: "Cargar más miembros",
       loading: "Cargando miembros…",
       emptyTitle: "Empieza con un equipo.",
+      footnote: "Tomar días libres no saca a nadie de un equipo, y un miembro puede servir en más de uno.",
     },
     /** When something is not as usual: a save that failed, no connection, a room that did not open or is not this person's. */
     states: {
