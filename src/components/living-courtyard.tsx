@@ -147,6 +147,18 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const frame = holder.current;
     const host = frame?.closest<HTMLElement>(within);
     if (!frame || !host) return;
+    // Nothing of the living courtyard is made until the first screen is whole and the page is idle: making a graphics context alone costs a phone tens of
+    // milliseconds, and the painted courtyard beneath already shows exactly what it will draw first.
+    let stop: (() => void) | undefined, cancelled = false;
+    const opened = new Promise<void>(resolve => { if (document.readyState === "complete") resolve(); else addEventListener("load", () => resolve(), { once: true }); });
+    opened.then(() => new Promise<void>(resolve => { if ("requestIdleCallback" in window) requestIdleCallback(() => resolve(), { timeout: 1500 }); else setTimeout(resolve, 200); })).then(() => { if (!cancelled) stop = live(frame, host, paintingSelector); });
+    return () => { cancelled = true; stop?.(); };
+  }, [within, paintingSelector]);
+
+  return <div ref={holder} className="living-courtyard" aria-hidden="true" />;
+}
+
+function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string): (() => void) | undefined {
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let renderer: WebGLRenderer;
     try { renderer = new WebGLRenderer({ antialias: false, powerPreference: "high-performance" }); } catch { return; }
@@ -330,9 +342,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       drawn = true;
     };
 
-    // The opening picture comes first: on a slow connection the courtyard waits until the first screen has everything it needs.
-    const opened = new Promise<void>(resolve => { if (document.readyState === "complete") resolve(); else addEventListener("load", () => resolve(), { once: true }); });
-    opened.then(() => Promise.all([load("courtyard-quiet-plate-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)])).then(async textures => {
+    Promise.all([load("courtyard-quiet-plate-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)]).then(async textures => {
       if (disposed) { textures.forEach(texture => texture.dispose()); return; }
       [uniforms.uMap.value, uniforms.uDepth.value, uniforms.uNormal.value, uniforms.uFigures.value, uniforms.uIdle.value, uniforms.uAnswer.value] = textures;
       resize();
@@ -365,7 +375,4 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       [uniforms.uMap, uniforms.uDepth, uniforms.uNormal, uniforms.uFigures, uniforms.uIdle, uniforms.uAnswer].forEach(uniform => { if (uniform.value?.image instanceof ImageBitmap) uniform.value.image.close(); uniform.value?.dispose(); });
       geometry.dispose(); material.dispose(); renderer.dispose(); renderer.domElement.remove();
     };
-  }, [within, paintingSelector]);
-
-  return <div ref={holder} className="living-courtyard" aria-hidden="true" />;
 }
