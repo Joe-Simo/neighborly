@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     title: "Kind Helps — Good work, together.",
     description: "The help line, home visits in pairs, the ledger and the yearly report, with the volunteers who do the work. Free for every conference.",
   },
-  twitter: { card: "summary_large_image", images: ["/assets/link-preview.jpg"] },
+  twitter: { card: "summary_large_image", images: ["/assets/link-card.jpg"] },
   appleWebApp: {
     capable: true,
     title: "Kind Helps",
