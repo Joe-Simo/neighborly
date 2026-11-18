@@ -1408,3 +1408,42 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done) { transition-property: transform; }
 }
 @media (forced-colors: active), print { :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"] { box-shadow: none; } }
+
+/* Fields and menus are the same paper as the date field and its month sheet. A field is a sheet laid flush: paper
+   ground, hairline edge, 6px corner; under the pointer its edge darkens to sage, and when it takes the caret the
+   edge is ink. No halo: the one ink ring above is keyboard focus. Wrong stays plum (aria-invalid rules above win). */
+:is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"]) {
+  border-color: #c9cfbd;
+  border-radius: 6px;
+  background-color: #fbfaf5;
+  color: #283c32;
+  transition-property: border-color, box-shadow;
+  transition-duration: 160ms;
+  transition-timing-function: var(--paper-ease);
+}
+@media (max-width: 700px), (pointer: coarse) { :is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"]) { transition: none; } }
+:is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"]):hover:not(:disabled, [aria-invalid="true"]) { border-color: #365c46; }
+:is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"]):focus:not([aria-invalid="true"]) { border-color: #283c32; --tw-ring-shadow: 0 0 #0000; }
+:is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"])[aria-invalid="true"] { --tw-ring-shadow: 0 0 #0000; }
+:is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"])::placeholder { color: #60685f; }
+/* A menu is laid down as the month sheet is: it rises 12px onto the page; it never fades or grows from a point.
+   Its rows take the sage wash the month's days take, in ink. The iOS shell keeps its own set-down. */
+[data-slot="dropdown-menu-content"] {
+  border: 1px solid #d9ddce;
+  border-radius: 8px;
+  background: #f7f4ed;
+  color: #283c32;
+  --tw-ring-shadow: 0 0 #0000;
+  box-shadow: -5px -9px 22px -12px rgb(40 60 50 / 0.22), 0 18px 40px -18px rgb(40 60 50 / 0.4);
+}
+[data-slot="dropdown-menu-content"][data-state="open"] { animation: paper-rise-solid 220ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) both; }
+[data-slot="dropdown-menu-content"][data-state="closed"] { animation: none; }
+[data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]) { min-height: 44px; border-radius: 4px; color: #283c32; font-size: 16px; }
+[data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]):is(:focus, [data-highlighted]) { background: #e7ecdc; color: #283c32; }
+[data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]):active:not([data-disabled]) { transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) { [data-slot="dropdown-menu-content"][data-state="open"] { animation: none; } }
+/* Sheets portalled outside the room (the month, a menu) take the room's ease too. */
+:is(.live-date-sheet, [data-slot="dropdown-menu-content"]) { --paper-ease: cubic-bezier(0.2, 0.7, 0.2, 1); }
+/* A sheet laid over the room (the month, a menu) is whole from its first frame and only rises. */
+@keyframes paper-rise-solid { from { transform: translateY(12px); } }
+.live-date-sheet:not(.live-date-bottom) { animation-name: paper-rise-solid; }
