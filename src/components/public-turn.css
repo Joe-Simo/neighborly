@@ -1,0 +1,9 @@
+/* One turn between public pages (public-turn.tsx): the old page's picture is turned off along its diagonal from the lower right corner,
+   the crease keeping the page's own slant; Back lays the page down again from the upper left. Only the pictures' clips move. */
+@keyframes public-turn-off-mid{from{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}50%{clip-path:polygon(0 0,100% 0,100% 0,0 100%)}to{clip-path:polygon(0 0,0 0,0 0,0 0)}}
+@keyframes public-turn-down{from{clip-path:polygon(0 0,0 0,0 0,0 0)}50%{clip-path:polygon(0 0,100% 0,100% 0,0 100%)}to{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}}
+::view-transition-group(root){animation-duration:640ms}
+html[data-public-turn=on]::view-transition-old(root){animation:public-turn-off-mid 640ms cubic-bezier(.2,.7,.2,1) both;z-index:1}
+html[data-public-turn=on]::view-transition-new(root){animation:none}
+html[data-public-turn=back]::view-transition-new(root){animation:public-turn-down 640ms cubic-bezier(.2,.7,.2,1) both;z-index:1}
+html[data-public-turn=back]::view-transition-old(root){animation:none}
