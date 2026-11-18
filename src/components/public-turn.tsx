@@ -52,6 +52,8 @@ export function PublicTurn() {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || still.matches) return;
       const link = (event.target as Element | null)?.closest?.("a[href]");
       if (!(link instanceof HTMLAnchorElement) || link.target || link.hasAttribute("download") || link.origin !== location.origin) return;
+      // The page in its other language is simply opened: it is the same page, not the next one.
+      if (link.hreflang) return;
       const to = link.pathname;
       if (to === location.pathname || !PUBLIC.test(to) || !PUBLIC.test(location.pathname)) return;
       event.preventDefault();

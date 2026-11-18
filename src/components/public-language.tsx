@@ -3,7 +3,7 @@ import type { Language } from "@/lib/words";
 
 const names: Record<Language, string> = { en: "English", es: "Español" };
 
-/** The page in its other language, named in that language. Followed, the page is turned over to it (public-turn.tsx). */
+/** The page in its other language, named in that language. Followed, it is simply opened: the same page, not the next one. */
 export function PublicLanguage({ language, paths }: { language: Language; paths: Record<Language, string> }) {
   const other: Language = language === "en" ? "es" : "en";
   return <Link className="public-page-language" href={paths[other]} hrefLang={other} lang={other}>{names[other]}</Link>;
