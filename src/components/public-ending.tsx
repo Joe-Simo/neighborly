@@ -15,12 +15,12 @@ import type { Language } from "@/lib/words";
 export const endingWords = {
   en: {
     bring: ["Bring this to", "your people."], own: "Your own conference", start: "Start your conference", signIn: "Sign in",
-    made: "Made for the good we can do.", about: "About Kind Helps", privacy: "Privacy", privacyPath: "/privacy", week: "A week at St. Example", weekPath: "/about/a-week", howMade: "How we made it", howMadePath: "/about/how-we-made-it", give: "Give a gift", newTab: "(opens in a new tab)",
+    free: ["Free.", "For every conference."], about: "About Kind Helps", privacy: "Privacy", privacyPath: "/privacy", week: "A week at St. Example", weekPath: "/about/a-week", howMade: "How we made it", howMadePath: "/about/how-we-made-it", give: "Give a gift", newTab: "(opens in a new tab)",
     card: { for: "For", opening: "Opening…", look: "Look around a sample conference", madeUp: "Every person in the sample is made up.", who: "Who this card is for (optional)", stays: "Stays on this device." },
   },
   es: {
     bring: ["Lleva esto a", "tu gente."], own: "Tu propia conferencia", start: "Empieza tu conferencia", signIn: "Iniciar sesión",
-    made: "Hecho por el bien que podemos hacer.", about: "Acerca de Kind Helps", privacy: "Privacidad", privacyPath: "/privacidad", week: "Una semana en San Ejemplo", weekPath: "/sobre/una-semana", howMade: "Cómo lo hicimos", howMadePath: "/sobre/como-lo-hicimos", give: "Hacer un donativo", newTab: "(se abre en una pestaña nueva)",
+    free: ["Gratis.", "Para toda conferencia."], about: "Acerca de Kind Helps", privacy: "Privacidad", privacyPath: "/privacidad", week: "Una semana en San Ejemplo", weekPath: "/sobre/una-semana", howMade: "Cómo lo hicimos", howMadePath: "/sobre/como-lo-hicimos", give: "Hacer un donativo", newTab: "(se abre en una pestaña nueva)",
     card: { for: "Para", opening: "Abriendo…", look: "Recorrer una muestra", madeUp: "Todos en la muestra son inventados.", who: "Para quién es esta tarjeta (opcional)", stays: "Se queda en este dispositivo." },
   },
 } satisfies Record<Language, unknown>;
@@ -63,7 +63,7 @@ export function ClosingBand({ language = "en" }: { language?: Language }) {
 export function Colophon({ home = "/", language = "en" }: { home?: string; language?: Language }) {
   const said = endingWords[language];
   return <footer className="neighborly-colophon">
-    <span>{said.made}</span>
+    <span><em>{said.free[0]}</em> {said.free[1]}</span>
     <nav aria-label={said.about}>
       <Link className="neighborly-give" href={said.weekPath}>{said.week}</Link>
       <Link className="neighborly-give" href={said.howMadePath}>{said.howMade}</Link>
