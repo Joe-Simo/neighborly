@@ -4,10 +4,11 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17105"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--The app's own head, as a room draws it: the bar's paper and the wordmark at its place.-->
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
@@ -15,14 +16,26 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="center" image="Splash" translatesAutoresizingMaskIntoConstraints="NO" id="snD-IY-ifK">
-                                <rect key="frame" x="67.5" y="213.5" width="240" height="240"/>
+                            <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bar-pa-per" userLabel="Bar">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="80"/>
+                                <color key="backgroundColor" red="0.96862745098" green="0.95686274510" blue="0.92941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <imageView userInteractionEnabled="NO" tag="7" contentMode="scaleAspectFit" image="Wordmark" translatesAutoresizingMaskIntoConstraints="NO" id="wrd-mk-img" userLabel="Wordmark">
+                                <rect key="frame" x="19" y="34" width="120" height="32"/>
                             </imageView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="saf-ar-ea1"/>
                         <color key="backgroundColor" red="0.9607843137" green="0.9529411765" blue="0.9254901961" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="snD-IY-ifK" firstAttribute="centerX" secondItem="Kh7-pa-PeR" secondAttribute="centerX" id="cX1-kh-001"/>
-                            <constraint firstItem="snD-IY-ifK" firstAttribute="centerY" secondItem="Kh7-pa-PeR" secondAttribute="centerY" id="cY1-kh-002"/>
+                            <constraint firstItem="bar-pa-per" firstAttribute="top" secondItem="Kh7-pa-PeR" secondAttribute="top" id="bar-top-001"/>
+                            <constraint firstItem="bar-pa-per" firstAttribute="leading" secondItem="Kh7-pa-PeR" secondAttribute="leading" id="bar-lea-002"/>
+                            <constraint firstItem="bar-pa-per" firstAttribute="trailing" secondItem="Kh7-pa-PeR" secondAttribute="trailing" id="bar-tra-003"/>
+                            <constraint firstItem="bar-pa-per" firstAttribute="bottom" secondItem="saf-ar-ea1" secondAttribute="top" constant="60" id="bar-bot-004"/>
+                            <constraint firstItem="wrd-mk-img" firstAttribute="top" secondItem="saf-ar-ea1" secondAttribute="top" constant="14" id="wrd-top-005"/>
+                            <constraint firstItem="wrd-mk-img" firstAttribute="width" constant="120" id="wrd-wid-006"/>
+                            <constraint firstItem="wrd-mk-img" firstAttribute="height" constant="32" id="wrd-hei-007"/>
+                            <constraint firstItem="wrd-mk-img" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Kh7-pa-PeR" secondAttribute="leading" constant="19" id="wrd-min-008"/>
+                            <constraint firstItem="wrd-mk-img" firstAttribute="leading" secondItem="Kh7-pa-PeR" secondAttribute="centerX" constant="-341" priority="750" id="wrd-mid-009"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -32,6 +45,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Splash" width="240" height="240"/>
+        <image name="Wordmark" width="120" height="32"/>
     </resources>
 </document>
