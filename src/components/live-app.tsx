@@ -387,7 +387,9 @@ function LiveRooms({
   // A kept room whose member has no conference any more (removed, or the conference closed) ends here too.
   if (kept && look && !waiting && !signedOut && viewer && !churchId) setLookOver(true);
   if (look || signedOut) {
-    const first = look && firstLookData(look, kept ? kept.room.user.language : deviceLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting } : {});
+    // A sample visitor reads the rooms in their own device's language, kept room or not; a member in their saved one.
+    const lookLanguage = kept && !kept.visiting ? kept.room.user.language : deviceLanguage;
+    const first = look && firstLookData(look, lookLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting } : {});
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
     const sheetKnown = invitationGood !== undefined;
     const entry = badInvite ? "signin" : intent;
@@ -408,7 +410,7 @@ function LiveRooms({
               requestCommitments={first.requestCommitments}
               data={first.data}
               sampleVisitor={kept ? kept.visiting : true}
-              keptNotice={kept && offline ? <p className="kept-offline" role="status">{wordsFor(kept.room.user.language, kept.room.church.wordSet).states.keptOffline}</p> : undefined}
+              keptNotice={kept && offline ? <p className="kept-offline" role="status">{wordsFor(lookLanguage, kept.room.church.wordSet).states.keptOffline}</p> : undefined}
               signOut={() => afterLook(signOut)}
               // Nothing in a first look can ask for a write: every press in the room is kept until the look is over.
               run={() => Promise.reject(new Error(stateWords.kept))}
