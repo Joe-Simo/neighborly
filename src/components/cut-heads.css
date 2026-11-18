@@ -1,0 +1,6 @@
+/* Section heads as cut paper (cut-heads.tsx): hinged at the foot, standing up from 60° as they come into the window, on the compositor only.
+   While it rises, the cut it came out of and its shade lie flat on the page at its foot: drawn once on ::after and turned back by the head's own
+   angle (preserve-3d), so they stay on the page while the head stands; the shade falls along the one sun (src/lib/sun.ts) and shortens as it stands.
+   Once stood, nothing is left on it. */
+[data-cut=rising]{position:relative;transform:perspective(900px) rotateX(calc((1 - var(--stand,0)) * 60deg));transform-origin:50% 100%;transform-style:preserve-3d;will-change:transform}
+[data-cut=rising]::after{content:"";position:absolute;left:-4px;right:-4px;top:100%;height:calc(12px * var(--sun-k,1));border-top:1px solid #6b5a3a73;background:linear-gradient(#2e241638,#2e241600);transform-origin:50% 0;transform:rotateX(calc((var(--stand,0) - 1) * 60deg)) translateX(calc(var(--sun-t,0) * 8px)) scaleY(calc(1 - var(--stand,0)));pointer-events:none;will-change:transform}
