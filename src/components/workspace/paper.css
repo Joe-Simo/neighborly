@@ -1124,3 +1124,36 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 @media (prefers-reduced-motion: reduce) { .week-quilt-piece[data-laid] { animation: none; } }
 @media (forced-colors: active) { .week-quilt-piece { forced-color-adjust: none; } }
+
+/* A written-up visit filed into its household's paper file (visits/file-away.ts). */
+.file-away { position: fixed; z-index: 100; pointer-events: none; perspective: 1400px; }
+.file-away-copy { position: absolute; left: 0; right: 0; top: 0; }
+/* Folded, the sheet keeps its heading; what was typed goes into the file unseen. */
+.file-away .file-away-copy :is(form, form *) { visibility: hidden !important; }
+.file-away-sheet { position: absolute; inset: 0; transform-origin: 50% 25%; transform-style: preserve-3d; transition: filter 0s; }
+/* The folded sheet's own shade, falling into the file as it goes in. */
+.file-away-sheet[data-in] { filter: drop-shadow(0 6px 6px rgb(60 45 15 / 0.22)); }
+.file-away-flap {
+  position: absolute; left: 0; right: 0; transform-origin: 50% 0; background: #f7f4ed;
+  box-shadow: inset 0 1px 0 rgb(40 60 50 / 0.14), 0 1px 2px rgb(40 60 50 / 0.12); border-radius: 0 0 12px 12px;
+}
+.file-away-pocket { position: absolute; z-index: 1; }
+.file-away-pocket i {
+  position: absolute; inset: 0; border-radius: 2px 2px 5px 5px; border-top: 1px solid #b89f6a;
+  background:
+    linear-gradient(rgb(60 45 15 / 0.16), transparent 10px),
+    repeating-linear-gradient(97deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(8deg, rgb(90 70 30 / 0.04) 0 1px, transparent 1px 5px),
+    #e2d3b0;
+  /* The thumb-cut at the mouth. */
+  mask: radial-gradient(22px 12px at 50% 0, transparent 98%, #000 100%);
+  box-shadow: 0 1px 1px rgb(60 45 15 / 0.28), 0 4px 10px rgb(60 45 15 / 0.16);
+}
+.file-away-pocket span {
+  position: absolute; left: 18px; top: -27px; padding: 4px 14px 6px; border-radius: 6px 6px 0 0; border: 1px solid #b89f6a; border-bottom: 0;
+  background: #e2d3b0; font-size: 15px; line-height: 1.3; color: #283c32; white-space: nowrap;
+}
+/* A write-up the server refused stays flat, with a plum edge until it is tried again. */
+.live-dialog:has(form[data-refused]) { box-shadow: inset 4px 0 0 var(--paper-plum, #6f5f93), 0 24px 60px rgb(40 60 50 / 0.18); }
+/* The real sheet, stepped aside while its copy is filed: nothing of it shows, however its parts change. */
+.live-dialog[data-filed], .live-dialog[data-filed] * { visibility: hidden !important; transition: none !important; }

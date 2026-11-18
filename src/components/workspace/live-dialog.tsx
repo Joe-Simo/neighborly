@@ -239,6 +239,8 @@ function leaving(sheet: HTMLElement | null) {
   const frame = document.createElement("div");
   frame.setAttribute("aria-hidden", "true");
   frame.inert = true;
+  // A sheet already filed away (visits/file-away.ts) has left, and its shade came off with the file, at once.
+  if (sheet.dataset.filed !== undefined) return;
   for (const part of [shade, sheet]) {
     if (!part) continue;
     const copy = part.cloneNode(true) as HTMLElement;

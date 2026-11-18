@@ -19,6 +19,7 @@ import { DateField, TimeField } from "@/components/workspace/date-field";
 import { LiveField } from "@/components/workspace/primitives";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
+import { fileAway } from "@/components/workspace/visits/file-away";
 import { fill } from "@/lib/words/fill";
 import {
   firstName,
@@ -371,7 +372,8 @@ export function WriteUpForm({
       noValidate
       onSubmit={async (event) => {
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
+        const form = event.currentTarget;
+        const data = new FormData(form);
         const hours = typedNumber(data.get("hours"));
         const miles = typedNumber(data.get("miles"));
         if (hours === null || hours <= 0 || hours > 24)
@@ -401,8 +403,12 @@ export function WriteUpForm({
             throw cause;
           }
         });
-        if (outcome.saved) onSaved();
+        // Only once the save has committed is the sheet folded into the household's file; a refusal leaves it flat.
+        if (!outcome.saved) return;
+        await fileAway(form.closest<HTMLElement>(".live-dialog"), visit.neighborName);
+        onSaved();
       }}
+      data-refused={error ? "" : undefined}
     >
       <LiveField
         label={text.found}
