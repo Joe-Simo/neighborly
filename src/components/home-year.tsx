@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useRef } from "react";
 import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
+import { HomeYearSlip } from "./home-year-slip";
 import "./home-year.css";
 
 const whole = new Intl.NumberFormat("en-US");
@@ -12,7 +13,8 @@ const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "U
 const figures = [
   { key: "calls", label: "Calls taken", total: sampleYear.calls, say: whole.format, each: 10 },
   { key: "requests", label: "Requests for help", total: sampleYear.requests, say: whole.format, each: 10 },
-  { key: "visits", label: "Home visits, in pairs", total: sampleYear.visits, say: whole.format, each: 10 },
+  // Rosa's visit is the year's last: the pile waits for it (home-year-slip.tsx), and laying it down completes the year.
+  { key: "visits", label: "Home visits, in pairs", total: sampleYear.visits - 1, say: whole.format, each: 10 },
   { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100, say: dollars.format, each: 0 },
 ] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string; each: number }[];
 
@@ -105,7 +107,8 @@ export function HomeYear() {
     <dl className="home-year" ref={root}>
       {figures.map((figure, place) => {
         // Only the counts are stacked, one sheet for every ten, so the three stand true to one another; money is not a pile of the same paper.
-        const sheets = figure.each ? Math.round(figure.total / figure.each) : 0;
+        // The top sheet is the part-full one.
+        const sheets = figure.each ? Math.ceil(figure.total / figure.each) : 0;
         return <div key={figure.key} data-sheets={sheets} style={sheets ? { "--sheets": sheets } as CSSProperties : undefined}>
         <dt>{figure.label}</dt>
         <dd>
@@ -115,6 +118,7 @@ export function HomeYear() {
       </div>;
       })}
     </dl>
+    <HomeYearSlip />
     <p className="home-year-note">Each sheet is ten. From the sample conference. Every person in it is made up.</p>
   </>;
 }
