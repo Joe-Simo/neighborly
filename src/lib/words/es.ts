@@ -349,7 +349,6 @@ export function es(set: WordSet): Words {
       keptOffline: "Sin conexión — lo último que viste",
       offlineRoom: "Esta sección se abre cuando vuelva.",
       offlineDeck: "Lo que ves en pantalla se queda. Tus cambios se enviarán cuando vuelva la conexión.",
-      back: "Volvió la conexión.",
       offlinePageDeck: "No se perdió nada. La semana de tu equipo estará aquí en cuanto este dispositivo vuelva a tener conexión.",
       offlinePageTab: "Sin conexión — Kind Helps",
       errorTitle: "Esta sección no se abrió.",
