@@ -7,7 +7,7 @@ import { WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveField } from "@/components/workspace/primitives";
-import { LiveWaiting } from "@/components/workspace/states";
+import { LiveWaiting, LiveFailure } from "@/components/workspace/states";
 import type { LiveCommand, LiveCommitment } from "@/components/workspace/types";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate } from "@/lib/words";
@@ -73,11 +73,7 @@ export function LiveCommitmentEditor({
         <div className="live-note">
           {text.releases}
         </div>
-        {error && (
-          <div className="live-error" role="alert">
-            {error}
-          </div>
-        )}
+        {error && <LiveFailure message={error} />}
         {/* With the connection lost the save is held, not failed: one line says so, above the buttons. */}
         <LiveWaiting when={saving} />
         <div className="live-form-actions">

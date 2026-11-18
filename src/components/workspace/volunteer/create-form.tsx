@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
 import { LiveField } from "@/components/workspace/primitives";
-import { LiveWaiting } from "@/components/workspace/states";
+import { LiveWaiting, LiveFailure } from "@/components/workspace/states";
 import type { ActionKind } from "@/components/workspace/navigation";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -342,11 +342,7 @@ export function LiveCreateForm({
           <Textarea name="body" required rows={5} maxLength={6000} />
         </LiveField>
       )}
-      {error && (
-        <div className="live-error" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <LiveFailure message={error} />}
       {/* With the connection lost the save is held, not failed: one line says the entry is kept and will go by itself. */}
       <LiveWaiting when={saving} />
       <div className="live-form-actions">
