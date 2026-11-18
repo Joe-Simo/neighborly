@@ -4,13 +4,13 @@
  */
 export const stateWords = {
   notSaved: "That couldn’t be saved. Try again.",
-  offlineSave: "There is no connection right now, so this was not saved.",
+  offlineSave: "No connection right now, so this wasn’t saved.",
   kept: "Nothing was saved, and what you typed is still here.",
   tryAgain: "Try again",
   waiting: "Waiting for the connection. What you typed is kept and will be sent when it returns.",
   offlineTitle: "No connection right now.",
   offlineRoom: "This room opens when it returns.",
-  offlineDeck: "What is on screen is kept. Changes will be sent when this device is back online.",
+  offlineDeck: "What’s on screen stays. Your changes go out once this device is back online.",
   back: "The connection is back.",
   errorTitle: "This room didn’t open.",
   errorDeck: "Nothing is lost. Try again; if it still won’t open, the other rooms are in the menu.",

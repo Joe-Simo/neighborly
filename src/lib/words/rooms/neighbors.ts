@@ -53,7 +53,7 @@ export const en = (t: Terms, place: string) => ({
     deck: {
       livesAlone: "lives alone",
       householdOf: (count: number) => `household of ${count}`,
-      speaks: { en: "speaks English", es: "speaks Spanish", ht: "speaks Haitian Creole", other: "speaks Another language" },
+      speaks: { en: "speaks English", es: "speaks Spanish", ht: "speaks Haitian Creole", other: "speaks another language" },
       speaksNamed: (language: string) => `speaks ${language}`,
       since: (date: string) => `on file since ${date}`,
     },
@@ -64,7 +64,7 @@ export const en = (t: Terms, place: string) => ({
       keptOnPage: "The numbers on file are still covered. Nothing on the record was changed.",
     },
     missing: { title: "We couldn’t find that record.", body: "It may belong to another group, or the link may be incomplete. Nothing was opened." },
-    removed: { title: "The record is removed.", body: "The year’s totals stay as they were, with no name. Everything that said who this household was is gone." },
+    removed: { title: "The record is removed.", body: "The year’s totals stay as they were, with no name. Everything that named this household is gone." },
     sheets: {
       people: { title: "Who lives here", about: (name: string) => `${name}’s household, as they told us.` },
       money: { title: "Money each month", about: "What comes in and what goes out, in round numbers." },
@@ -256,7 +256,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     title: "Vecinos",
     households: (count) => (count === 1 ? "1 hogar" : `${count} hogares`),
     waitingCount: (count) => (count === 1 ? "1 espera una decisión" : `${count} esperan una decisión`),
-    logged: "cada vez que se abre un registro queda anotado",
+    logged: "cada apertura queda anotada",
     waiting: "Esperan una decisión",
     lastHelped: (date) => `última ayuda: ${date}`,
     notHelped: "aún sin ayuda",
@@ -287,7 +287,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       keptOnPage: "Los números guardados siguen cubiertos. No se cambió nada en el registro.",
     },
     missing: { title: "No encontramos ese registro.", body: "Puede ser de otro grupo, o el enlace puede estar incompleto. No se abrió nada." },
-    removed: { title: "El registro se borró.", body: "Los totales del año quedan como estaban, sin ningún nombre. Todo lo que decía quién era este hogar ya no está." },
+    removed: { title: "El registro se borró.", body: "Los totales del año quedan como estaban, sin ningún nombre. Todo lo que identificaba a este hogar se borró." },
     sheets: {
       people: { title: "Quién vive aquí", about: (name) => `El hogar de ${name}, tal como nos lo contó.` },
       money: { title: "Dinero de cada mes", about: "Lo que entra y lo que sale, en números redondos." },
@@ -383,7 +383,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   atHome: {
     title: "En casa",
     change: "Cambiar",
-    reach: "Cómo contactarle",
+    reach: "Cómo comunicarse",
     noPhone: "No hay teléfono guardado",
     lives: "Vive aquí",
     sayWho: "Decir quién vive aquí",

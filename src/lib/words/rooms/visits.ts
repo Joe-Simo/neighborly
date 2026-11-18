@@ -57,13 +57,13 @@ export const en = (t: Terms, place: string) => ({
       ht: { both: "Both speak Haitian Creole.", one: (name: string) => `${name} speaks Haitian Creole.`, none: "No one free that day speaks Haitian Creole." },
       /** A language written in by hand: its name stays as it was typed. */
       other: { both: (language: string) => `Both speak ${language}.`, one: "{name} speaks {language}.", none: (language: string) => `No one free that day speaks ${language}.` },
-      unnamed: { both: "Both speak Another language.", one: (name: string) => `${name} speaks Another language.`, none: "No one free that day speaks Another language." },
+      unnamed: { both: "Both speak another language.", one: (name: string) => `${name} speaks another language.`, none: "No one free that day speaks that language." },
     },
   },
   aside: "Going out this week",
   empty: {
     title: "No one is waiting on a visit.",
-    body: "When a request for help comes in on the help line, it appears here with two people who are free to go.",
+    body: "When the help line takes a request, it appears here with two people free to go.",
   },
   coming: {
     title: "Coming up",
@@ -249,7 +249,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     aside: "Salen esta semana",
     empty: {
       title: "Nadie está esperando una visita.",
-      body: "Cuando llega una petición de ayuda por la línea de ayuda, aparece aquí con dos personas que están libres para ir.",
+      body: "Cuando la línea de ayuda recibe una petición, aparece aquí con dos personas libres para ir.",
     },
     coming: {
       title: "Próximas visitas",
@@ -352,15 +352,15 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       kickerSample: (group) => `${Visit} · ${group} · Muestra`,
       address: "Dirección",
       phone: "Teléfono",
-      noPhone: "No hay ninguno anotado",
+      noPhone: "Ninguno anotado",
       household: "Hogar",
       adults: (count) => (count === 1 ? "1 adulto" : `${count} adultos`),
       children: (count) => (count === 1 ? "1 niño" : `${count} niños`),
       adultsAndChildren: "{adults} y {children}",
       speaks: "Habla",
       going: "Van juntos",
-      secondToAsk: (name) => `${name}, y un segundo visitador al que aún hay que pedírselo`,
-      twoToAsk: "Aún hay que pedírselo a dos visitadores",
+      secondToAsk: (name) => `${name}, y falta pedírselo a un segundo visitador`,
+      twoToAsk: "Falta pedírselo a dos visitadores",
       askedFor: "Pidió",
       owedTo: "{need}, que se le debe a {payee}",
       theirWords: "En sus palabras",

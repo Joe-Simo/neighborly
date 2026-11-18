@@ -35,7 +35,7 @@ export const en = (t: Terms, place: string) => ({
     /** The headings of the spreadsheet of left-out lines. */
     columns: { line: "Line", name: "Name", why: "Why it was left out" },
     unreadable: "That file could not be read. Nothing has changed; save the spreadsheet as CSV and choose it again.",
-    dropped: "The connection dropped partway through. {done} of {all} lines were dealt with and are safe. Choose the same file again to finish; nothing is added twice.",
+    dropped: "The connection dropped partway through. {done} of {all} lines are done and safe. Choose the same file again to finish; nothing is added twice.",
   },
   /** What a file itself can have wrong, said before anything is checked. */
   file: {
@@ -219,7 +219,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       downloadLeftOut: "Descargar las líneas que quedaron fuera",
       columns: { line: "Línea", name: "Nombre", why: "Por qué quedó fuera" },
       unreadable: "No se pudo leer ese archivo. Nada ha cambiado; guarda la hoja de cálculo como CSV y elígela otra vez.",
-      dropped: "La conexión se cortó a medio camino. {done} de {all} líneas ya se atendieron y están a salvo. Elige el mismo archivo otra vez para terminar; nada se agrega dos veces.",
+      dropped: "La conexión se cortó a medio camino. {done} de {all} líneas ya están listas y a salvo. Elige el mismo archivo otra vez para terminar; nada se agrega dos veces.",
     },
     file: {
       neighborsNoName: "Este archivo no tiene una columna Name. Su primera línea debe nombrar las columnas, como Name, Phone y Address.",
@@ -328,7 +328,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       nothingYet: "Todavía no hay nada aquí.",
       downloadOne: "Descargar este archivo",
       downloadOneLabel: (name) => `Descargar este archivo: ${name}`,
-      failed: "La conexión se cortó mientras se reunían. Nada se perdió ni cambió; inténtalo otra vez.",
+      failed: "La conexión se cortó al reunir los registros. Nada se perdió ni cambió; inténtalo otra vez.",
       progress: "{gathering} Archivo {index} de {all}.",
       progressSoFar: "{gathering} {lines} líneas hasta ahora. Archivo {index} de {all}.",
       gathering: {
@@ -367,8 +367,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       },
     },
     rota: {
-      printed: (date) => `Impreso en ${date}`,
-      printedSample: (date) => `Muestra · Impreso en ${date}`,
+      printed: (date) => `Impreso el ${date}`,
+      printedSample: (date) => `Muestra · Impreso el ${date}`,
     },
   };
 };

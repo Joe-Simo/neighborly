@@ -46,7 +46,7 @@ const es: typeof en = {
     { day: "Y al final del año", picture: "year", room: "El informe anual", title: "Se cuenta solo.", alt: "Una página de papel del informe del año con una cinta encima.",
       copy: ["Nadie suma la semana a mano. Esa llamada es una de las 459 que la conferencia de muestra recibió en su año, esa visita una de 325, y esos $214 parte de $52,435 en ayuda.", "Cuando termina el año, el informe está listo. El presidente revisa los totales y luego imprime."] },
   ],
-  last: "Todos los nombres, números y hogares de la muestra son inventados. Kind Helps es independiente, y no está afiliado ni respaldado por la Sociedad de San Vicente de Paúl.",
+  last: "Todos los nombres, números y hogares de la muestra son inventados. Kind Helps es independiente, y no tiene afiliación ni respaldo de la Sociedad de San Vicente de Paúl.",
   open: "Abrir la conferencia de muestra",
 };
 
