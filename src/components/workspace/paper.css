@@ -1380,3 +1380,31 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   white-space: normal;
   overflow-wrap: normal;
 }
+/* One press for every control in the rooms. A control is a slip of paper resting on the sheet: a filled or edged
+   button stands on a hairline contact shadow; pressed, it goes down onto the sheet (transform 1px, its 1px shadow shortened by the same 1px to none) in 60ms and
+   settles back in 200ms. Toggles and the month's days take the same 1px. Only these properties move, never
+   layout, so nothing a press touches is drawn late. Focus is the one ink ring above: the kit's own blue halo is
+   taken off so a focused control never wears two rings. */
+:is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) { --ring: #283c32; }
+:is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done) {
+  transition-property: transform, box-shadow, background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: var(--paper-ease);
+}
+:is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"]):focus-visible { --tw-ring-shadow: 0 0 #0000; }
+:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]) { box-shadow: 0 1px 0 rgb(40 60 50 / 0.18); }
+:is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) {
+  translate: none;
+  transform: translateY(1px);
+  transition-duration: 60ms;
+}
+:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) { box-shadow: 0 0 0 rgb(40 60 50 / 0); }
+/* Disabled never presses (the kit's own 1px too). Reduce Motion: the sink is instant and there is no settle. */
+:is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done):is(:disabled, [aria-disabled="true"], [data-disabled]) { translate: none; transform: none; }
+@media (prefers-reduced-motion: reduce) { :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done):is(*, :active) { transition-duration: 0s; } }
+/* On a phone only the transform is eased: the contact shadow stays at rest and goes to none at once on the press,
+   and no colour is eased under the finger. */
+@media (max-width: 700px), (pointer: coarse) {
+  :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done) { transition-property: transform; }
+}
+@media (forced-colors: active), print { :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"] { box-shadow: none; } }
