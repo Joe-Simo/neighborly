@@ -90,12 +90,12 @@ export function es(set: WordSet): Words {
       limited: "Algunas listas muestran solo una parte. Usa Cargar más en la sección correspondiente para ver el resto.",
     },
     headings: {
-      "help-line": { title: "Cada llamada, devuelta.", deck: "Los mensajes de la línea de ayuda y quién devuelve cada llamada." },
+      "help-line": { title: "Cada llamada, devuelta.", deck: "Cada mensaje de la línea de ayuda y quién lo devuelve." },
       neighbors: { title: "Vecinos, por su nombre.", deck: "Cada hogar y la ayuda que ha recibido, en privado." },
       treasury: { title: "Cada donativo, bien cuidado.", deck: "Lo que entró, lo que salió y lo que se pagó con ello." },
-      reports: { title: "El año, sumado.", deck: "Las cuentas para el informe anual de tu consejo, listas para imprimir." },
+      reports: { title: "El año, sumado.", deck: "Las cuentas del informe anual al consejo, listas para imprimir." },
       visits: { title: "De dos en dos.", deck: "Las visitas domiciliarias, la pareja que va y lo que encontró." },
-      tools: { title: "Trae tus registros. Llévatelos.", deck: "Desde ServWare o una hoja de cálculo, y de vuelta cuando tú quieras." },
+      tools: { title: "Trae tus registros. Llévatelos.", deck: "De ServWare o una hoja de cálculo, y de vuelta cuando quieras." },
       team: {
         title: "Un lugar en el equipo.",
         deck: "Aquí cada persona tiene su lugar, aunque sus planes cambien.",
@@ -106,7 +106,7 @@ export function es(set: WordSet): Words {
       },
       commitments: {
         title: "Compromisos claros.",
-        deck: "Mira lo que está cubierto, lo que está libre y lo que espera respuesta.",
+        deck: "Lo cubierto, lo que falta y lo que espera respuesta.",
       },
       tasks: {
         title: "Lo pequeño importa.",
