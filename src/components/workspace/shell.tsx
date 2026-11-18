@@ -372,7 +372,9 @@ export function LiveWorkspace({
   const menuArea = useMenuArea(area);
   // The room itself, with nothing opened inside it (a record, a sheet): the edge's step back is the page turn there.
   const inside = useSearchParams().size > 0;
-  useEdgeTurn(inApp, !inside, shown);
+  // A record (?neighbor=) is turned back by the finger too; inside anything else the app's own swipe is the way back.
+  const record = useSearchParams().has("neighbor");
+  useEdgeTurn(inApp, !inside || record, shown);
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
   const [roomIn, setRoomIn] = useState(false);
   if (shown && !roomIn) setRoomIn(true);
