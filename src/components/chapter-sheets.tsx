@@ -116,6 +116,8 @@ export function PageTurn({ children }: { children: ReactNode }) {
       const turned = clamp(1 - bottom / tall);
       if (turned === last) return;
       last = turned;
+      // How far the page has been turned off the chapter beneath: what lies under it (the year's figures) stands up as it is uncovered.
+      to.style.setProperty("--turned", turned.toFixed(4));
       const gone = far * turned, ox = x0 + nx * gone, oy = y0 + ny * gone, crease = turned > 0 && turned < 1 ? ends(ox, oy) : [];
       turn.dataset.turned = turned <= 0 ? "no" : turned >= 1 || crease.length !== 2 ? "yes" : "part";
       if (crease.length !== 2) { round.style.transform = page.style.transform = ""; return; }
