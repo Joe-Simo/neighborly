@@ -61,7 +61,7 @@ export function HomeYear() {
     <dl className="home-year" ref={root}>
       {figures.map(figure => <div key={figure.key}>
         <dt>{figure.label}</dt>
-        <dd><span data-figure={figure.key}>{figure.say(figure.total)}</span></dd>
+        <dd><span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span></dd>
       </div>)}
     </dl>
     <p className="home-year-note">From the sample conference. Every person in it is made up.</p>
