@@ -67,6 +67,7 @@ export function LiveWorkspace({
   sampleVisitor = false,
   selectChurch,
   pagination,
+  keptNotice,
   requestCommitments = [],
   roomWaiting = false,
 }: {
@@ -81,6 +82,8 @@ export function LiveWorkspace({
   sampleVisitor?: boolean;
   selectChurch?: ReactNode;
   pagination?: ReactNode;
+  /** One line laid at the head of the column, above the room (a kept room shown with no connection). */
+  keptNotice?: ReactNode;
   requestCommitments?: LiveWorkspaceData["commitments"];
   /** The room's own first lists are still on their way: the frame stands and the room says it is opening. */
   roomWaiting?: boolean;
@@ -589,6 +592,7 @@ export function LiveWorkspace({
           aria-busy={shown ? undefined : true}
           lang={words.locale}
         >
+          {keptNotice}
           {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. */}
           {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. A room
               held because the connection is down says that instead, in the family every other room state uses: its

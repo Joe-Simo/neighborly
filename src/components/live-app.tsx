@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { useAction, useMutation, useQueries, type RequestForQueries } from "convex/react";
+import { useAction, useConvexConnectionState, useMutation, useQueries, type RequestForQueries } from "convex/react";
 import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";
 import { FirstLookProvider, firstLookData, useAfterLook, useFirstRoom, useKeptPress } from "@/components/workspace/first-look";
 import { useClerk } from "@clerk/nextjs";
@@ -27,6 +27,27 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 
 const noChange = () => () => {};
+
+/**
+ * No connection: the device says it is offline, or the backend's socket has tried and failed to open. A page that is
+ * still opening its first connection is not offline yet.
+ */
+function useOffline() {
+  const offDevice = useSyncExternalStore(
+    (changed) => {
+      window.addEventListener("online", changed);
+      window.addEventListener("offline", changed);
+      return () => {
+        window.removeEventListener("online", changed);
+        window.removeEventListener("offline", changed);
+      };
+    },
+    () => !navigator.onLine,
+    () => false,
+  );
+  const link = useConvexConnectionState();
+  return offDevice || (!link.isWebSocketConnected && link.connectionRetries > 1);
+}
 
 /** The app, with the door's sweep above whatever it is showing. */
 export function LiveApp(props: Parameters<typeof LiveRooms>[0]) {
@@ -340,7 +361,10 @@ function LiveRooms({
   // the sheet and the room keep their places here and below, so neither is ever made a second time.
   // A look is no way round a wait or a reset: a session the backend has not confirmed in ten seconds, or a sample
   // that is being laid anew, ends it, and what is said below is said as it always was.
-  if (look && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
+  // With no connection a kept room stays as it was last seen, under one line that says so, until the connection
+  // returns and the live room takes its place; it is neither ended nor let go for want of an answer.
+  const offline = useOffline();
+  if (look && !(kept && offline) && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
   // A kept room whose member has no conference any more (removed, or the conference closed) ends here too.
   if (kept && look && !waiting && !signedOut && viewer && !churchId) setLookOver(true);
   if (look || signedOut) {
@@ -365,6 +389,7 @@ function LiveRooms({
               requestCommitments={first.requestCommitments}
               data={first.data}
               sampleVisitor={kept ? kept.visiting : true}
+              keptNotice={kept && offline ? <p className="kept-offline" role="status">{wordsFor(kept.room.user.language, kept.room.church.wordSet).states.keptOffline}</p> : undefined}
               signOut={() => afterLook(signOut)}
               // Nothing in a first look can ask for a write: every press in the room is kept until the look is over.
               run={() => Promise.reject(new Error(stateWords.kept))}

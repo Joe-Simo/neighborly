@@ -382,3 +382,7 @@
   :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art > .relief { position: absolute; inset: 0; top: 0; width: 100%; height: 100%; aspect-ratio: auto; -webkit-mask-image: none; mask-image: none; }
   :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art > .relief img { object-fit: cover; object-position: center calc(var(--relief-y, 0.5) * 100%) !important; }
 }
+
+/* A room kept on the device, shown with no connection: one still ochre line at the head of the column, above the room's
+   own head, on the page's paper so the head's picture never runs under it. */
+.live-app .kept-offline { position: relative; z-index: 2; margin: 0 0 12px; padding: 10px 0 0; color: var(--ochre-ink, #8a5a12); font-size: 15px; line-height: 1.4; background: var(--live-paper, #f7f4ed); }
