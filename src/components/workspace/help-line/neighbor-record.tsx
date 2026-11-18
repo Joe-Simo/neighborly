@@ -218,6 +218,8 @@ export function NeighborRecord({
     place.current += 1;
     setCovered(null);
   };
+  // The request given its yes in this visit: its corner turns over to green as the record shows it approved.
+  const [approvedNow, setApprovedNow] = useState<HelpRequest["id"] | null>(null);
   const finish = (message: string) => {
     setStep(null);
     moveOn();
@@ -290,6 +292,7 @@ export function NeighborRecord({
         numbers={numbers}
         // Under an open dialog the page says nothing: the dialog says it.
         covered={step ? null : covered}
+        approvedNow={approvedNow}
         onShowNumbers={() => void reveal()}
         onStep={(next) => {
           setDone("");
@@ -398,9 +401,10 @@ export function NeighborRecord({
             churchId={churchId}
             request={step.request}
             decision={step.kind === "approve" ? "approved" : "declined"}
-            onSaved={() =>
-              finish(step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name))
-            }
+            onSaved={() => {
+              if (step.kind === "approve") setApprovedNow(step.request.id);
+              finish(step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name));
+            }}
           />
         </LiveDialog>
       )}
@@ -541,6 +545,7 @@ export function NeighborRecordView({
   home = true,
   numbers = null,
   covered = null,
+  approvedNow = null,
   onShowNumbers = () => {},
   onStep,
 }: {
@@ -552,6 +557,8 @@ export function NeighborRecordView({
   numbers?: Accounts | null;
   /** "Show numbers" was refused: said in plum just above "At home", where it was asked. */
   covered?: Covered | null;
+  /** The request given its yes in this visit, whose corner turns over to green as it is shown approved. */
+  approvedNow?: HelpRequest["id"] | null;
   onShowNumbers?: () => void;
   onStep: (step: Step) => void;
 }) {
@@ -663,7 +670,10 @@ export function NeighborRecordView({
       {home && neighbor.notes && <p className="help-note">{neighbor.notes}</p>}
 
       {first && (
-        <section className="help-sheet" aria-labelledby="open-title">
+        <section
+          className={first.status === "approved" ? `help-sheet help-decided paper-fold${first.id === approvedNow ? " help-approved" : ""}` : "help-sheet help-decided"}
+          aria-labelledby="open-title"
+        >
           <p className="help-sheet-label" data-waiting="">
             {first.status === "open" ? text.sheet.open : text.sheet.approved}
           </p>
