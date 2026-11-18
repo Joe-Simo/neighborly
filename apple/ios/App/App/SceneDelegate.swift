@@ -259,9 +259,42 @@ final class ShellViewController: CAPBridgeViewController {
         }
     }
 
+    /// The launch cover is the room's own head: the bar's paper with the wordmark where the room draws it
+    /// (LaunchScreen.storyboard). The cover lies in the web view, whose safe area comes and goes while it is laid, so
+    /// its head is held from the cover's own top by the window's safe area instead. A wide iPad, laid out as a desk
+    /// (landscape), draws its head with the wordmark at the edge and a little larger; the cover follows it there, so
+    /// the wordmark does not move when the cover lifts.
+    private var coverHead: [NSLayoutConstraint] = []
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard let cover, let mark = cover.viewWithTag(7), let bar = cover.subviews.first(where: { $0 !== mark }) else { return }
+        let desk = view.bounds.width >= 1024
+        let top = max(view.window?.safeAreaInsets.top ?? 0, view.safeAreaInsets.top)
+        if coverHead.isEmpty {
+            // The storyboard's own ties to the safe area are let go, and the cover's top holds the head instead.
+            cover.constraints.filter { ["wrd-top-005", "bar-bot-004"].contains($0.identifier) }.forEach { $0.isActive = false }
+            coverHead = [mark.topAnchor.constraint(equalTo: cover.topAnchor), bar.bottomAnchor.constraint(equalTo: cover.topAnchor)]
+            NSLayoutConstraint.activate(coverHead)
+        }
+        coverHead[0].constant = top + (desk ? 22 : 14)
+        coverHead[1].constant = top + (desk ? 81 : 60)
+        for constraint in cover.constraints + mark.constraints {
+            switch constraint.identifier {
+            case "wrd-min-008": constraint.constant = desk ? 33 : 19
+            case "wrd-mid-009": constraint.constant = desk ? 33 - view.bounds.width / 2 : -341
+            case "wrd-wid-006": constraint.constant = desk ? 137 : 120
+            case "wrd-hei-007": constraint.constant = desk ? 37 : 32
+            default: break
+            }
+        }
+    }
+
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
         statusStrip?.frame.size.height = view.safeAreaInsets.top
+        // The cover's head is set from the screen's safe area, which can arrive after the first layout.
+        view.setNeedsLayout()
     }
 
     private func layStrip(_ colour: UIColor) {
@@ -461,10 +494,24 @@ final class ShellViewController: CAPBridgeViewController {
         slowTimer?.invalidate()
         lineTimer?.invalidate()
         firstScreenWatch?.invalidate()
+        holdHead()
         lift([cover])
         cover = nil
         waitLine = nil
         tryAgain = nil
+    }
+
+    /// The cover's head (the bar's paper and the wordmark) stays where it is while the sheet under it is lifted away:
+    /// the room's own head lies beneath, the same in every pixel, so the wordmark never moves. It goes once the sheet
+    /// has gone.
+    private func holdHead() {
+        guard let cover, let bar = cover.subviews.first(where: { $0.tag != 7 }) else { return }
+        let head = CGRect(x: 0, y: 0, width: cover.bounds.width, height: bar.frame.maxY)
+        guard let still = cover.resizableSnapshotView(from: head, afterScreenUpdates: false, withCapInsets: .zero) else { return }
+        still.frame = cover.convert(head, to: cover.superview)
+        still.isUserInteractionEnabled = false
+        cover.superview?.insertSubview(still, aboveSubview: cover)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.65) { still.removeFromSuperview() }
     }
 
     /// The cover leaves as the site's opening does: a sheet of paper lifted up off the page, whole from the first
