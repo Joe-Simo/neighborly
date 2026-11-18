@@ -3,7 +3,7 @@
 .fresco-stage{--door:0;--grow:0;--inside:0;--standing:0;position:sticky;top:0;height:100svh;overflow:hidden;isolation:isolate;outline:0;color:#293f32;background:#eee7d7 center/cover no-repeat}
 /* What lies below the first screen is fetched once the first screen is complete. */
 .fresco-stage[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
-.fresco-stage a:focus-visible,.fresco-stage button:focus-visible{outline:2px solid #365c46;outline-offset:2px}
+.fresco-stage a:focus-visible,.fresco-stage button:focus-visible{outline:2px solid #283c32;outline-offset:3px}
 .fresco-header{position:absolute;z-index:4;top:0;left:0;right:0;height:76px;padding:0 max(20px,4%);display:flex;align-items:center;justify-content:space-between;gap:20px}
 .fresco-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none}
 .fresco-header>a:last-child{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 2px;font-size:15px;text-decoration:none;border-bottom:1px solid #253e3140}

@@ -87,10 +87,17 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
-select:focus-visible {
-  /* Keyboard focus on paper: the workspace's ring. Over the painting the ring is turned round; see threshold-experience.css. */
-  outline: 2px solid #365c46;
-  outline-offset: 2px;
+select:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  /* Keyboard focus on paper, the same as in the rooms: one 2px ring of ink set 3px off the control, so a margin of the page shows between them. Over the painting the ring is turned round; see threshold-experience.css. */
+  outline: 2px solid #283c32;
+  outline-offset: 3px;
+}
+/* Selected words on paper: the sage wash with ink type, as in the rooms. */
+::selection {
+  background: #dde5d3;
+  color: #283c32;
 }
 .skip-link {
   position: fixed;

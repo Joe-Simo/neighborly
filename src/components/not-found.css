@@ -6,7 +6,7 @@
 .lost-door-words h1{margin:0;font:400 clamp(36px,4.2vw,76px)/1 'Newsreader',Georgia,serif;letter-spacing:-.055em;text-wrap:balance}
 .lost-door-words a{display:inline-flex;align-items:center;min-height:44px;font-size:17px;color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#253e3166}
 .lost-door-words a:hover{text-decoration-color:currentColor}
-.lost-door a:focus-visible{outline:2px solid #365c46;outline-offset:3px}
+.lost-door a:focus-visible{outline:2px solid #283c32;outline-offset:3px}
 @media(min-width:1600px){.lost-door-words a{font-size:19px}}
 /* It stands up once as the page arrives, from lying back 60° (no sheet is seen further off upright), and then stays. */
 @keyframes lost-door-stands{from{transform:perspective(1200px) rotateX(60deg)}}

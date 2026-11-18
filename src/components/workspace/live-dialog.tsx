@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { startTransition, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,7 +92,8 @@ export function LiveDialog({
   }, [sheet]);
   useLayoutEffect(() => () => leaving(drawn.current), []);
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+    // Closed in a transition: the key or press is answered in the next frame, and the room under the sheet is drawn after.
+    <Dialog open={open} onOpenChange={(next) => !next && startTransition(onClose)}>
       <DialogContent
         // A dialog is drawn under <body>, outside its room: it says its own language, so a leaders' English
         // form is not read aloud in the page's Spanish.
