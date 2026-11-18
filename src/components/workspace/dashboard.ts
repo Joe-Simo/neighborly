@@ -5,6 +5,7 @@ import { useQueries, type RequestForQueries } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { forgetKeptRoom } from "@/lib/kept-room";
 
 type Dashboard = FunctionReturnType<typeof api.workspace.dashboard>;
 
@@ -51,7 +52,11 @@ export function useDashboard({
   );
   const reading = useQueries(queries).dashboard as Dashboard | Error | undefined;
   // A failure for the conference the list names is a real one, and goes to the room's error state as before.
-  if (reading instanceof Error && (doorAsked ? sampleVisitor === true : askedChurch === churchId)) throw reading;
+  if (reading instanceof Error && (doorAsked ? sampleVisitor === true : askedChurch === churchId)) {
+    // Access refused: a room kept on the device for this conference (lib/kept-room.ts) is let go with it.
+    forgetKeptRoom();
+    throw reading;
+  }
   return reading instanceof Error || (churchId && reading?.church.id !== churchId) ? undefined : reading;
 }
 

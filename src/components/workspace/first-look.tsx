@@ -137,6 +137,9 @@ export function useKeptPress(looking: boolean) {
       // Only a press that opens something is made later. One that writes is never made for the person a moment
       // after the fact: its control rests, and at the change-over it is simply live for them to press.
       press.current = control.hasAttribute(OPENS) ? place(column, control) : null;
+      // The pressed control holds the keyboard's place: when the live room comes in it is focused there, so a
+      // second press acts on it at once.
+      focus.current = place(column, control);
     };
     const where = () => {
       const column = room(), on = document.activeElement;

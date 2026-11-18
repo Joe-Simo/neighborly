@@ -268,6 +268,11 @@ function LiveRooms({
   // Behind a first look the week's own three readings are asked for too, so the signed-in room has every answer on
   // its first frame. They are let go a moment after the change, once the room itself is asking them.
   const [aheadOfWeek, setAheadOfWeek] = useState(viaSample);
+  // A kept look that ends without its live room (a wait that failed, no conference, access refused) lets the copy
+  // go, so the next launch never draws a room this member can no longer open.
+  useEffect(() => {
+    if (kept && lookOver) forgetKeptRoom();
+  }, [kept, lookOver]);
   // A kept room is read just after hydration: its look asks the week's readings ahead from that render on.
   if (kept && look && !aheadOfWeek) setAheadOfWeek(true);
   const hour = useHour();
@@ -336,6 +341,8 @@ function LiveRooms({
   // A look is no way round a wait or a reset: a session the backend has not confirmed in ten seconds, or a sample
   // that is being laid anew, ends it, and what is said below is said as it always was.
   if (look && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
+  // A kept room whose member has no conference any more (removed, or the conference closed) ends here too.
+  if (kept && look && !waiting && !signedOut && viewer && !churchId) setLookOver(true);
   if (look || signedOut) {
     const first = look && firstLookData(look, kept ? kept.room.user.language : deviceLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting } : {});
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
