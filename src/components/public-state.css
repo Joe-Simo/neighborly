@@ -47,9 +47,9 @@
 .public-state-ways a{display:inline-flex;align-items:center;min-height:44px;font-size:17px;color:#283c32;text-decoration:none;border-bottom:1px solid #253e3166}
 .public-state-ways a:hover{border-bottom-color:currentColor}
 .public-state :is(.public-state-mark a,.public-state-ways a):focus-visible{outline:2px solid #283c32;outline-offset:3px;border-radius:2px}
-/* On the widest screens the words are set for the room they have: larger, and standing in the middle of the open paper
+/* On wide screens the words are set for the room they have: larger, and standing in the middle of the open paper
    beside the painting, not huddled against it with half the sheet left empty. */
-@media (min-width: 1600px) {
+@media (min-width: 1280px) {
   .public-state .live-auth { max-width: 640px; margin: 0 4vw 0 calc(61svh + (100vw - 61svh - 640px) / 2 - 3vw); }
   .public-state .live-auth h1 { font-size: clamp(64px, 3.9vw, 78px); line-height: 0.98; text-wrap: balance; }
   .public-state .live-auth .live-deck { max-width: 520px; font-size: 20px; line-height: 1.5; }
