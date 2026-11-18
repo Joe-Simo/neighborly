@@ -93,7 +93,11 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   const { marginTop, marginBottom, paddingTop, paddingBottom } = style;
   const height = sheet.offsetHeight;
   sheet.style.boxSizing = "border-box";
-  sheet.style.overflow = "hidden";
+  // Cut off only below, as it closes: a corner standing past its top or side edge (and its shade) is never
+  // clipped, so its edge is drawn the same on the last frame as on the first. flow-root keeps the hidden
+  // overflow's own margin rule, so nothing inside moves when the close begins.
+  if (style.display === "block") sheet.style.display = "flow-root";
+  sheet.style.clipPath = "inset(-24px -24px 0 -24px)";
   holdThePage();
   // Where the close must end: the page without this paper, and with whatever is opening beside it open.
   const { lost, closed } = onceOpened(() => {
@@ -291,13 +295,14 @@ export function settleFrom(sheet: HTMLElement, from: number) {
 
 /** Undoes closeUp on a piece of paper that stays on the page for new words. */
 function openFlat(sheet: HTMLElement) {
-  if (!sheet.style.overflow && sheet.dataset.paperHeld === undefined) return;
+  if (!sheet.style.clipPath && sheet.dataset.paperHeld === undefined) return;
   sheet.getAnimations().forEach((move) => move.cancel());
   if (sheet.dataset.paperHeld !== undefined) {
     Object.assign(sheet.style, { position: "", top: "", left: "", width: "", margin: "", zIndex: "", pointerEvents: "", visibility: "", animation: "" });
     delete sheet.dataset.paperHeld;
   }
-  sheet.style.overflow = "";
+  sheet.style.clipPath = "";
+  sheet.style.display = "";
   sheet.style.boxSizing = "";
   delete sheet.dataset.paperClosing;
 }

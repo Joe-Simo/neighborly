@@ -98,7 +98,8 @@
    on its way (the ochre ring after 400ms); saved, it lies down flat in the sheet's own paper, and the request waits on.
    A refusal lays the ochre corner back. Approve (the record's request, the decision to give help): once the yes is
    saved the corner turns over to its green face, with its mark, and lies down flat. */
-.help-sheet::after { transform-origin: 50% 50%; transform: rotate(-45deg) scaleX(1) rotate(45deg); transition: transform 110ms cubic-bezier(0.4, 0, 1, 1); }
+/* Kept on its own layer from first to last, so the corner at rest is drawn exactly as it is mid-fold. */
+.help-sheet::after { will-change: transform; transform-origin: 50% 50%; transform: rotate(-45deg) scaleX(1) rotate(45deg); transition: transform 110ms cubic-bezier(0.4, 0, 1, 1); }
 .help-sheet[data-deciding]::after { transform: rotate(-45deg) scaleX(0.5) rotate(45deg); }
 .help-sheet.help-sealed:not(.paper-fold) { --paper-corner: #e6e1d2; }
 .help-sheet.help-sealed::after { transition: transform 110ms cubic-bezier(0, 0, 0.2, 1); }
