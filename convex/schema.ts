@@ -135,6 +135,9 @@ export default defineSchema({
     visitors: v.array(v.object({ memberId: v.id("memberships"), hours: v.number(), miles: v.number(), response: v.optional(v.union(v.literal("pending"), v.literal("accepted"), v.literal("declined"))) })),
     notes: v.string(),
     completedAt: v.optional(v.number()),
+    /** Who called the visit off, and when: so that one member can undo it from the line that said so. */
+    cancelledBy: v.optional(v.id("memberships")),
+    cancelledAt: v.optional(v.number()),
     createdBy: v.id("memberships"),
     createdAt: v.number(),
   }).index("by_church", ["churchId", "scheduledAt"]).index("by_church_status_completed", ["churchId", "status", "completedAt"]).index("by_neighbor", ["neighborId"]).index("by_request", ["requestId"]),

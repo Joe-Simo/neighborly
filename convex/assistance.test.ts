@@ -57,6 +57,11 @@ describe("who may use the help line and requests", () => {
         () => caller.mutation(api.assistance.linkCall, { churchId, callId, neighborId: ids.earl }),
         () => caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["shutoff"], day: 21, by: "assistant" }),
         () => caller.mutation(api.assistance.markReturned, { churchId, callId }),
+        () => caller.mutation(api.assistance.unmarkReturned, { churchId, callId }),
+        async () => {
+          const fresh = await caller.mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Wrong line.", callback: "needed" });
+          return caller.mutation(api.assistance.takeBackCall, { churchId, callId: fresh.callId });
+        },
         () => caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...rent }),
         () => caller.mutation(api.assistance.updateRequest, { churchId, requestId, ...rent, amountRequested: 40000 }),
         () => caller.mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 40000, note: "" }),
@@ -164,6 +169,25 @@ describe("the help line", () => {
     expect(returned).toMatchObject([{ id: callId, callback: "done", returnedByName: "Marisol Vega", outcome: "Home visit planned for Thursday." }]);
     expect(returned[0].returnedAt).toBeGreaterThan(0);
     await expect(as(ids.owner).mutation(api.assistance.markReturned, { churchId: ids.church, callId })).rejects.toThrow("not waiting");
+  });
+
+  test("a call marked returned, or one just written down, can be undone by the same member while its line is up", async () => {
+    const { t, ids, as } = await setup();
+    const at = Math.floor(Date.now() / 3600000) * 3600000;
+    const { callId } = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Darnell Joseph", phone: "(100) 555-0103", note: "Shut-off notice.", callback: "needed" });
+    await as(ids.owner).mutation(api.assistance.markReturned, { churchId: ids.church, callId, outcome: "Left a message." });
+    await expect(as(ids.coordinator).mutation(api.assistance.unmarkReturned, { churchId: ids.church, callId })).rejects.toThrow("no longer be undone");
+    await as(ids.owner).mutation(api.assistance.unmarkReturned, { churchId: ids.church, callId });
+    const { waiting } = await as(ids.owner).query(api.assistance.calls, { at, churchId: ids.church });
+    expect(waiting).toMatchObject([{ id: callId, callback: "needed" }]);
+    expect(waiting[0]).not.toHaveProperty("outcome", "Left a message.");
+    // Taken back by the one who wrote it down; once its line could no longer be up, it stays.
+    await expect(as(ids.owner).mutation(api.assistance.takeBackCall, { churchId: ids.church, callId })).rejects.toThrow("no longer be undone");
+    await t.run((ctx) => ctx.db.patch("calls", callId, { takenAt: Date.now() - 3 * 60 * 1000 }));
+    await expect(as(ids.coordinator).mutation(api.assistance.takeBackCall, { churchId: ids.church, callId })).rejects.toThrow("no longer be undone");
+    const fresh = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Wrong line", phone: "", note: "", callback: "none" });
+    await as(ids.coordinator).mutation(api.assistance.takeBackCall, { churchId: ids.church, callId: fresh.callId });
+    expect(await t.run((ctx) => ctx.db.get("calls", fresh.callId))).toBeNull();
   });
 
   test("the returned list holds this week only: by when a call was returned, or taken if it was settled on the spot", async () => {

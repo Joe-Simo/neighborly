@@ -26,7 +26,9 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import type { Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
-import { useWorkspace, type Workspace } from "@/components/workspace/context";
+import { useWorkspace, type Workspace, type WayBack } from "@/components/workspace/context";
+import { UndoAct } from "@/components/workspace/undo";
+import { readFailure } from "@/components/workspace/failure";
 import {
   CallForm,
   NeighborForm,
@@ -57,7 +59,7 @@ import {
 type Draft = FunctionReturnType<typeof api.drafts.draftRequest>;
 type Drafted = { call: Call; draft: Draft };
 /** The line that says what changed, and where it leads: a neighbor's record, or a draft of the call just saved. */
-type Done = { message: string; record?: Id<"neighbors">; draft?: Call["id"]; filed?: { name: string; asks: string } };
+type Done = { message: string; record?: Id<"neighbors">; draft?: Call["id"]; filed?: { name: string; asks: string }; back?: WayBack };
 type Step =
   | { kind: "log" }
   | {
@@ -102,6 +104,8 @@ function HelpLine() {
   const draftRequest = useAction(api.drafts.draftRequest);
   const createRequest = useMutation(api.assistance.createRequest);
   const setUrgency = useMutation(api.assistance.setUrgency);
+  const takeBackCall = useMutation(api.assistance.takeBackCall);
+  const unmarkReturned = useMutation(api.assistance.unmarkReturned);
   const drafting = useSave();
   const approving = useSave("decided");
   // Every draft waits for its own yes; asking for another never drops one. The newest is on the sheet.
@@ -149,8 +153,11 @@ function HelpLine() {
     setDrafts((all) => all.filter((one) => one.call.id !== call.id));
   const [step, setStep] = useState<Step | null>(null);
   const [done, setDone] = useState<Done | null>(null);
+  // An undo the server would not take: said in plum, and the act stands.
+  const [undoRefused, setUndoRefused] = useState("");
   const finish = (message: string, more: Omit<Done, "message"> = {}) => {
     setStep(null);
+    setUndoRefused("");
     setDone({ message, ...more });
   };
   // The calls as they stand now, for work that finishes after the list has moved on.
@@ -230,6 +237,16 @@ function HelpLine() {
     });
     return () => setHeadAction(null);
   }, [setHeadAction, log, sheetOpen, draftsUnknown, text.log]);
+  /** Runs an act's way back; the line then says what came of it, with no way back of its own. */
+  const undoDone = (back: WayBack) => async () => {
+    try {
+      await back.run();
+      setDone({ message: back.said });
+    } catch (cause) {
+      setDone(null);
+      setUndoRefused(readFailure(cause, words.notices.failed));
+    }
+  };
   const saved = (call: Call) => {
     settle(call);
     finish(
@@ -322,7 +339,16 @@ function HelpLine() {
           key={done.filed ? `${done.record}:${done.filed.asks}` : "said"}
           filed={done.filed}
           action={
-            done.record ? (
+            done.back ? (
+              <>
+                {offer && (
+                  <Button variant="link" className="help-text-action" disabled={drafting.pending} onClick={() => void draftFor(offer.id)}>
+                    <Sparkles size={15} aria-hidden="true" /> {text.done.draft}
+                  </Button>
+                )}
+                <UndoAct run={undoDone(done.back)} />
+              </>
+            ) : done.record ? (
               <Link className="live-link" href={recordHref(done.record)}>
                 {text.done.openRecord}
               </Link>
@@ -340,6 +366,11 @@ function HelpLine() {
         >
           {done.message}
         </HelpDone>
+      )}
+      {undoRefused && !done && (
+        <div className="live-error" role="alert">
+          <p>{undoRefused}</p>
+        </div>
       )}
       {(approving.error || drafting.error) && (
         <div className="live-error" role="alert" ref={laidToStay}>
@@ -525,7 +556,7 @@ function HelpLine() {
                     matched
                       ? text.done.callMatched
                       : text.done.callWaiting,
-                    { draft: callId },
+                    { draft: callId, back: { run: () => takeBackCall({ churchId, callId }), said: text.done.callTakenBack } },
                   )
             }
           />
@@ -543,6 +574,7 @@ function HelpLine() {
             onSaved={() =>
               finish(
                 text.done.returned(caller(step.call, words)),
+                { back: { run: () => unmarkReturned({ churchId, callId: step.call.id }), said: text.done.returnedUndone(caller(step.call, words)) } },
               )
             }
           />

@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { logNeighborOpening, neighborAccess, neighborRecord } from "./access";
+import { mayUndo } from "./undo";
 import { TAKE_BACK_DAYS, callRow, lookups, nameKey, phoneKey, requestRow, toCallRow, toRequestRow } from "./assistance";
 import { paidTowardRequest } from "./treasury";
 import schema from "./schema";
@@ -362,12 +363,25 @@ export const showAccounts = mutation({
 /** Adds a dated, signed note. Notes are never edited or removed, so the record stays a true account. */
 export const addNote = mutation({
   args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), body: v.string() },
-  returns: v.null(),
+  returns: v.id("neighborNotes"),
   handler: async (ctx, { churchId, neighborId, body }) => {
     const { member } = await neighborRecord(ctx, churchId, neighborId);
     const text = short(body, "The note", 4000);
     if (!text) throw new ConvexError("Write the note first.");
-    await ctx.db.insert("neighborNotes", { churchId, neighborId, body: text, authorId: member._id, createdAt: Date.now() });
+    return ctx.db.insert("neighborNotes", { churchId, neighborId, body: text, authorId: member._id, createdAt: Date.now() });
+  },
+});
+
+/** Undoes adding a note, from the line that said so, for the member who wrote it. */
+export const takeBackNote = mutation({
+  args: { churchId: v.id("churches"), noteId: v.id("neighborNotes") },
+  returns: v.null(),
+  handler: async (ctx, { churchId, noteId }) => {
+    const note = await ctx.db.get("neighborNotes", noteId);
+    if (!note || note.churchId !== churchId) throw new ConvexError("Note not found.");
+    const { member } = await neighborRecord(ctx, churchId, note.neighborId);
+    mayUndo({ by: note.authorId, at: note.createdAt }, member._id, Date.now());
+    await ctx.db.delete("neighborNotes", noteId);
     return null;
   },
 });

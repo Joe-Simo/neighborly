@@ -33,6 +33,7 @@ import {
   WorkspaceProvider,
   type LiveHeadAction,
   type Workspace,
+  type WayBack,
 } from "@/components/workspace/context";
 import {
   actionTitles,
@@ -114,7 +115,7 @@ export function LiveWorkspace({
   const [saveFrom, setSaveFrom] = useState<DialogName | null>(null);
   const [notice, setNotice] = useState("");
   // The way back offered on the saved line, when the act has one.
-  const [undo, setUndo] = useState<{ command: LiveCommand; said: string; returnTo?: HTMLElement }>();
+  const [undo, setUndo] = useState<WayBack>();
   const [invitationLink, setInvitationLink] = useState("");
   const [invitationDelivery, setInvitationDelivery] = useState<
     "not_sent" | "queued"
@@ -184,7 +185,7 @@ export function LiveWorkspace({
         );
       else if (success) {
         setNotice(success);
-        setUndo(back);
+        setUndo(back && { run: () => run(back.command), said: back.said, returnTo: back.returnTo });
       }
       return true;
     } catch (cause) {
@@ -493,6 +494,11 @@ export function LiveWorkspace({
     sampleSaid,
     keepNames,
     perform,
+    offerUndo: (said, back) => {
+      setError("");
+      setNotice(said);
+      setUndo(back);
+    },
     openAction: open,
     showCommitment: (item, trigger) => {
       commitmentTrigger.current = trigger;
@@ -696,7 +702,19 @@ export function LiveWorkspace({
               action={undo && (
                 <Button variant="link" className="help-text-action" disabled={pending} onClick={async () => {
                   // The line's button leaves with the line, so focus goes back to the thing the act was taken on.
-                  if (await perform(undo.command, undo.said)) focusWhenAwake(undo.returnTo);
+                  setPending(true);
+                  setUndo(undefined);
+                  try {
+                    await undo.run();
+                    setNotice(undo.said);
+                    focusWhenAwake(undo.returnTo);
+                  } catch (cause) {
+                    const said = readFailure(cause, words.notices.failed);
+                    setNotice("");
+                    setError(words.notices.refused[said] ?? said);
+                  } finally {
+                    setPending(false);
+                  }
                 }}>
                   {words.tasks.undo}
                 </Button>

@@ -361,7 +361,7 @@ export function useSavedLine(
     return () => cancelAnimationFrame(frame);
   }, [line, of]);
   useEffect(() => {
-    const stay = action ? 12000 : 6000;
+    const stay = action ? 10000 : 6000;
     const step = 250;
     let shown = 0;
     const clock = window.setInterval(() => {

@@ -4,6 +4,7 @@ import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/s
 import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, logNeighborOpening, membership, neighborAccess, neighborRecord } from "./access";
 import { streetOnly } from "./calendar";
+import { mayUndo } from "./undo";
 import { formerMember } from "./people";
 import { spoken, spokenName, type Spoken } from "./spoken";
 import { overlapsTimeOff, parseCalendarDate, parseScheduledTime } from "../src/lib/scheduling";
@@ -486,10 +487,24 @@ export const cancel = mutation({
   args: { churchId: v.id("churches"), visitId: v.id("visits") },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await neighborAccess(ctx, args.churchId);
+    const member = await neighborAccess(ctx, args.churchId);
     const visit = await openVisit(ctx, args.churchId, args.visitId);
     if (visit.status !== "scheduled") throw new ConvexError("Only a planned visit can be called off.");
-    await ctx.db.patch("visits", visit._id, { status: "cancelled" });
+    await ctx.db.patch("visits", visit._id, { status: "cancelled", cancelledBy: member._id, cancelledAt: Date.now() });
+    return null;
+  },
+});
+
+/** Undoes calling a visit off, from the line that said so: it is planned again, as it was. */
+export const reinstate = mutation({
+  args: { churchId: v.id("churches"), visitId: v.id("visits") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const member = await neighborAccess(ctx, args.churchId);
+    const visit = await openVisit(ctx, args.churchId, args.visitId);
+    if (visit.status !== "cancelled") throw new ConvexError("This visit is not called off.");
+    mayUndo({ by: visit.cancelledBy, at: visit.cancelledAt }, member._id, Date.now());
+    await ctx.db.patch("visits", visit._id, { status: "scheduled", cancelledBy: undefined, cancelledAt: undefined });
     return null;
   },
 });

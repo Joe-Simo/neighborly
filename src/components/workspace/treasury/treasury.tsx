@@ -5,7 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { useMutation, useQueries } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import { HelpDone } from "@/components/workspace/help-line/room";
+import { UndoAct } from "@/components/workspace/undo";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { readFailure } from "@/components/workspace/failure";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { useWorkspace } from "@/components/workspace/context";
@@ -92,6 +94,7 @@ export function TreasurySection() {
   const recordIncome = useMutation(api.treasury.recordIncome);
   const recordSpending = useMutation(api.treasury.recordSpending);
   const reverseEntry = useMutation(api.treasury.reverseEntry);
+  const undoDeposit = useMutation(api.treasury.undoDeposit);
 
   const [open, setOpen] = useState<Open | null>(null);
   // What the dialog last held stays in it while it closes, so it never shows empty or as another form.
@@ -111,6 +114,10 @@ export function TreasurySection() {
     if (payAsked) window.history.replaceState(window.history.state, "", window.location.pathname);
   }, [payAsked]);
   const [done, setDone] = useState("");
+  // The reverse of the step just taken, offered on its line until the line goes.
+  const [back, setBack] = useState<{ run: () => Promise<unknown>; said: string }>();
+  // An undo the server would not take: said in plum, and the entry stands.
+  const [undoRefused, setUndoRefused] = useState("");
   const recordMoney = () => {
     setDone("");
     setMoneyOut(false);
@@ -155,21 +162,30 @@ export function TreasurySection() {
     );
 
   /** Runs one change; on success closes the dialog and says what changed, on refusal hands the reason back to the form. */
-  async function settle(
-    change: () => Promise<unknown>,
+  async function settle<Made>(
+    change: () => Promise<Made>,
     said: string,
     date?: string,
+    undo?: (made: Made) => { run: () => Promise<unknown>; said: string },
   ): Promise<Refusal> {
+    let made: Made;
     try {
-      await change();
+      made = await change();
     } catch (cause) {
       return readFailure(cause, w.refused);
     }
     if (date) setMonth(date.slice(0, 7));
     setOpen(null);
     setDone(said);
+    setUndoRefused("");
+    setBack(undo?.(made));
     return null;
   }
+  /** Money recorded a moment ago is taken back the ledger's way: a reversing entry, the first one kept. */
+  const takeBack = (amount: number) => (entryId: Id<"ledgerEntries">) => ({
+    run: () => reverseEntry({ churchId, entryId, reason: w.done.undoneReason }),
+    said: w.done.reversed(formatFigure(amount)),
+  });
   const show = (next: Open) => {
     setDone("");
     setOpen(next);
@@ -198,7 +214,34 @@ export function TreasurySection() {
 
   return (
     <>
-      {done && <HelpDone className="treasury-notice">{done}</HelpDone>}
+      {undoRefused && !done && (
+        <div className="live-error treasury-notice" role="alert">
+          <p>{undoRefused}</p>
+        </div>
+      )}
+      {done && (
+        <HelpDone
+          key={done}
+          className="treasury-notice"
+          action={back && (
+            <UndoAct
+              run={async () => {
+                try {
+                  await back.run();
+                  setBack(undefined);
+                  setDone(back.said);
+                } catch (cause) {
+                  setBack(undefined);
+                  setDone("");
+                  setUndoRefused(readFailure(cause, w.refused));
+                }
+              }}
+            />
+          )}
+        >
+          {done}
+        </HelpDone>
+      )}
       <LedgerView
         ledger={shown}
         payable={payable}
@@ -331,6 +374,7 @@ export function TreasurySection() {
                   },
                   fill(what.direction === "out" ? w.done.moneyOut : w.done.moneyIn, { amount: formatFigure(amount), name: name.trim() }),
                   date,
+                  takeBack(amount),
                 )
               }
             />
@@ -346,6 +390,8 @@ export function TreasurySection() {
                 settle(
                   () => recordDeposit({ churchId, ...deposit }),
                   w.done.deposit(formatFigure(total)),
+                  undefined,
+                  (depositId) => ({ run: () => undoDeposit({ churchId, depositId }), said: w.done.depositUndone }),
                 )
               }
             />

@@ -51,6 +51,9 @@ export const en = (t: Terms, place: string) => ({
     moneyIn: "{amount} from {name} is recorded in the ledger, and the balance is up to date.",
     deposit: (amount: string) => `A deposit of ${amount} is recorded. It will wait in Match the bank until the statement shows it.`,
     reversed: (amount: string) => `${amount} is taken back with a new entry dated today. The first entry stays in the ledger.`,
+    /** The reason written on the entry that takes back one undone right after it was recorded. */
+    undoneReason: "Undone right after it was recorded.",
+    depositUndone: "The deposit is undone. Its gifts wait to be deposited again.",
   },
   ledger: {
     first: {
@@ -311,6 +314,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     moneyIn: "{amount} de {name} quedan anotados en el libro, y el saldo está al día.",
     deposit: (amount) => `Quedó anotado un depósito de ${amount}. Esperará en Comparar con el banco hasta que el estado de cuenta lo muestre.`,
     reversed: (amount) => `${amount} se anulan con un movimiento nuevo con fecha de hoy. El primer movimiento se queda en el libro.`,
+    undoneReason: "Deshecho justo después de anotarse.",
+    depositUndone: "Se deshizo el depósito. Sus donativos esperan a depositarse de nuevo.",
   },
   ledger: {
     first: {

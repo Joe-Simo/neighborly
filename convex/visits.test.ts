@@ -78,6 +78,7 @@ describe("who may see and plan home visits", () => {
         () => caller.mutation(api.visits.reschedule, { churchId, visitId: second, at: morning(6).at }),
         () => caller.mutation(api.visits.replaceVisitor, { churchId, visitId: second, leavingId: ids.colleen.memberId, joiningId: ids.graciela.memberId }),
         () => caller.mutation(api.visits.cancel, { churchId, visitId: second }),
+        () => caller.mutation(api.visits.reinstate, { churchId, visitId: second }),
       ];
       // Every public function in the file is tried, so a new one cannot be added without its gate.
       // The two open to the visitors themselves, mine and respond, are proved in their own tests below.
@@ -157,6 +158,19 @@ describe("planning a visit by hand", () => {
     const board = await owner.query(api.visits.board, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId });
     expect(board.scheduled).toHaveLength(0);
     expect(board.suggested?.request.requestId).toBe(ids.request);
+  });
+
+  test("a visit called off is planned again by an undo from the one who called it off, while its line can be up", async () => {
+    const { t, ids, as } = await setup();
+    const owner = as(ids.owner), churchId = ids.church;
+    const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
+    await owner.mutation(api.visits.cancel, { churchId, visitId });
+    await expect(as(ids.coordinator).mutation(api.visits.reinstate, { churchId, visitId })).rejects.toThrow("no longer be undone");
+    await owner.mutation(api.visits.reinstate, { churchId, visitId });
+    expect((await owner.query(api.visits.board, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).scheduled).toHaveLength(1);
+    await owner.mutation(api.visits.cancel, { churchId, visitId });
+    await t.run((ctx) => ctx.db.patch("visits", visitId, { cancelledAt: Date.now() - 3 * 60 * 1000 }));
+    await expect(owner.mutation(api.visits.reinstate, { churchId, visitId })).rejects.toThrow("no longer be undone");
   });
 
   test("opening the visit sheet writes one line saying who opened the neighbor's details", async () => {
