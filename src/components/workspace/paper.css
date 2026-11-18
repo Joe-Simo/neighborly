@@ -1157,3 +1157,41 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .live-dialog:has(form[data-refused]) { box-shadow: inset 4px 0 0 var(--paper-plum, #6f5f93), 0 24px 60px rgb(40 60 50 / 0.18); }
 /* The real sheet, stepped aside while its copy is filed: nothing of it shows, however its parts change. */
 .live-dialog[data-filed], .live-dialog[data-filed] * { visibility: hidden !important; transition: none !important; }
+
+/* ── Relief: the shell as stacked sheets, the courtyard's one material ──
+   From 900px three sheets lie on the desk. Lowest, the menu's sheet, a shade deeper and grained. Over it the room's
+   own sheet, with a second sheet just showing beneath its left edge, each casting a tight contact shade onto the one
+   below instead of a ruled line. Over both, the header's strip. Nothing moves: the depth is only where the paper lies. */
+@media (min-width: 900px) {
+  .live-app .live-nav {
+    border-right-color: transparent;
+    background:
+      repeating-linear-gradient(93deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 5px),
+      #efeadf;
+  }
+  .live-app .live-main {
+    position: relative;
+    background: #f7f4ed;
+    box-shadow: -1px 0 0 rgb(40 60 50 / 0.1), -12px 0 18px -14px rgb(40 60 50 / 0.34);
+  }
+  /* The sheet beneath the room: its edge shows by a few pixels, a little lower, with its own shade. */
+  .live-app .live-main::before {
+    content: ""; position: absolute; top: 18px; bottom: 0; left: -6px; width: 6px; border-radius: 3px 0 0 0; pointer-events: none;
+    background: #f1ece2;
+    box-shadow: -1px 0 0 rgb(40 60 50 / 0.1), -6px 0 10px -7px rgb(40 60 50 / 0.3);
+  }
+  .live-app .live-header {
+    position: relative; z-index: 2; border-bottom-color: transparent;
+    box-shadow: 0 1px 0 rgb(40 60 50 / 0.1), 0 10px 16px -14px rgb(40 60 50 / 0.34);
+  }
+}
+/* Under 900px the held bar is the strip over the room: once the page moves, it lies on it with a contact shade, not a line. */
+@media (max-width: 899px) {
+  .live-app .live-header[data-scrolled] { border-bottom-color: transparent; box-shadow: 0 1px 0 rgb(40 60 50 / 0.1), 0 8px 12px -10px rgb(40 60 50 / 0.3); }
+}
+@media (forced-colors: active) {
+  .live-app .live-main, .live-app .live-header, .live-app .live-header[data-scrolled] { box-shadow: none; }
+  .live-app .live-main::before { content: none; }
+  .live-app .live-nav, .live-app .live-header { border-color: CanvasText; }
+}
+@media print { .live-app .live-main, .live-app .live-header { box-shadow: none; } .live-app .live-main::before { content: none; } }

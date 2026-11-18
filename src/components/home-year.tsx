@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
 import "./home-year.css";
 
@@ -10,11 +10,29 @@ const upright = 1 - 60 / 86;
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 // In the order the work happens.
 const figures = [
-  { key: "calls", label: "Calls taken", total: sampleYear.calls, say: whole.format },
-  { key: "requests", label: "Requests for help", total: sampleYear.requests, say: whole.format },
-  { key: "visits", label: "Home visits, in pairs", total: sampleYear.visits, say: whole.format },
-  { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100, say: dollars.format },
-] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string }[];
+  { key: "calls", label: "Calls taken", total: sampleYear.calls, say: whole.format, each: 10 },
+  { key: "requests", label: "Requests for help", total: sampleYear.requests, say: whole.format, each: 10 },
+  { key: "visits", label: "Home visits, in pairs", total: sampleYear.visits, say: whole.format, each: 10 },
+  { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100, say: dollars.format, each: 0 },
+] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string; each: number }[];
+
+/** A hand-squared pile: each sheet sits a little off true, the same way on every visit. */
+// Hashed per sheet rather than stepped, so no rhythm repeats inside a pile.
+const jitter = (figure: number, sheet: number) => {
+  let h = Math.imul(sheet + 1, 0x9e3779b1) ^ Math.imul(figure + 1, 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+  return (((h ^ (h >>> 13)) >>> 0) % 9 - 4) / 2;
+};
+
+/**
+ * The whole pile as one picture, drawn once: every sheet a 3px strip with its edge line, set its few pixels off true at both ends
+ * (each drawn as two halves, one held from the left and one from the right). The stack's height shows whole sheets only.
+ */
+const pile = (place: number, sheets: number) => {
+  const strip = (j: number, y: number, h: number, paint: string) => `<rect x='${4 + j}' y='${y}' width='50%25' height='${h}' ${paint}/><rect x='50%25' y='${y}' width='50%25' height='${h}' transform='translate(${j - 4} 0)' ${paint}/>`;
+  const strips = Array.from({ length: sheets }, (_, sheet) => { const y = (sheets - 1 - sheet) * 3, j = jitter(place, sheet); return strip(j, y, 3, "fill='%23f7f2e6'") + strip(j, y + 2, 1, "fill='%23b0a084'"); }).join("");
+  return `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100%25' height='${sheets * 3}'>${strips}</svg>")`;
+};
 
 /**
  * The year, folded up: four figures of the sample conference's own year, each cut into the page and standing up out of it
@@ -29,11 +47,17 @@ export function HomeYear() {
     const panel = list?.closest<HTMLElement>(".relief-panel");
     if (!list || !panel) return;
     const cells = [...list.querySelectorAll<HTMLElement>(":scope > div")];
+    // Each pile's picture is decoded while the page is idle, well before the turn that lays it.
+    const idle = window.requestIdleCallback ?? ((work: () => void) => window.setTimeout(work, 200));
+    idle(() => list.querySelectorAll<HTMLElement>(".home-year-stack").forEach(stack => {
+      const source = /url\("(.*)"\)/.exec(getComputedStyle(stack).backgroundImage)?.[1];
+      if (source) { const picture = new Image(); picture.src = source; void picture.decode().catch(() => {}); }
+    }));
     const requests = list.querySelector<HTMLElement>("[data-figure=requests]");
     const given = () => { if (requests) requests.textContent = whole.format(sampleYear.requests + 1); list.dataset.oneMore = "true"; };
     if (document.documentElement.dataset.yesGiven === "true") given();
     window.addEventListener(YES_GIVEN, given);
-    const stand = () => { cells.forEach(cell => cell.style.removeProperty("--fold")); list.dataset.folding = "false"; };
+    const stand = () => { cells.forEach(cell => { cell.style.removeProperty("--fold"); cell.style.removeProperty("--laid"); }); list.dataset.folding = "false"; };
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still) { stand(); return () => window.removeEventListener(YES_GIVEN, given); }
     let frame = 0, near = false, last = "";
@@ -62,7 +86,12 @@ export function HomeYear() {
         last = key;
         const standing = folds.every(fold => fold >= 1);
         list.dataset.folding = String(!standing);
-        cells.forEach((cell, index) => cell.style.setProperty("--fold", folds[index].toFixed(3)));
+        cells.forEach((cell, index) => {
+          cell.style.setProperty("--fold", folds[index].toFixed(3));
+          // The stack is laid a whole sheet at a time as its figure stands up: every sheet is set down, none is grown.
+          const sheets = Number(cell.dataset.sheets);
+          if (sheets) cell.style.setProperty("--laid", String(Math.round(sheets * (folds[index] - upright) / (1 - upright))));
+        });
       }
       if (near) frame = requestAnimationFrame(follow);
     };
@@ -74,11 +103,18 @@ export function HomeYear() {
   }, []);
   return <>
     <dl className="home-year" ref={root}>
-      {figures.map(figure => <div key={figure.key}>
+      {figures.map((figure, place) => {
+        // Only the counts are stacked, one sheet for every ten, so the three stand true to one another; money is not a pile of the same paper.
+        const sheets = figure.each ? Math.round(figure.total / figure.each) : 0;
+        return <div key={figure.key} data-sheets={sheets} style={sheets ? { "--sheets": sheets } as CSSProperties : undefined}>
         <dt>{figure.label}</dt>
-        <dd><span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span></dd>
-      </div>)}
+        <dd>
+          {sheets > 0 && <span className="home-year-stack" aria-hidden="true" style={{ backgroundImage: pile(place, sheets) }} />}
+          <span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span>
+        </dd>
+      </div>;
+      })}
     </dl>
-    <p className="home-year-note">From the sample conference. Every person in it is made up.</p>
+    <p className="home-year-note">Each sheet is ten. From the sample conference. Every person in it is made up.</p>
   </>;
 }
