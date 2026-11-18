@@ -1,0 +1,119 @@
+/**
+ * The page turn between rooms. The room just left is a still sheet lying over the next one (room-sheet.tsx); once the
+ * next room is whole, that sheet is turned from its lower right corner, as home's The help is turned to find The year:
+ * the corner lifts and folds back over the sheet, its underside a step warmer and darker than its face, the fold runs
+ * up and to the left, and the next room is found lying beneath, shaded close under the lifted crease.
+ *
+ * It is paper, never a fade: every piece is cut along one moving line by boxes that are only moved and turned, so the
+ * sheet is painted once and the turn itself is the compositor's alone.
+ *   - The part still lying down: the sheet inside a box whose edge is the fold, the sheet held still within it.
+ *   - The turned-over part: a blank sheet of the underside's paper, mirrored across the fold and cut at it; its own
+ *     edges throw a close shade on the sheet it lies over, and the paper curving over at the fold catches the light.
+ *   - The crease's shade on the room beneath.
+ * `drive(progress)` lays every piece for one point of the turn, so a finger can hold it anywhere; `play()` runs it.
+ */
+
+/** The whole turn, corner down to sheet gone. */
+export const TURN_MS = 280;
+
+/** The turn's ease: the corner lifts gently, the fold runs, and the sheet leaves the far edge without a stop. */
+const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+export type RoomTurn = { drive: (progress: number) => void; play: () => Promise<void>; end: () => void };
+
+const piece = (className: string, style: Partial<CSSStyleDeclaration>) => {
+  const element = document.createElement("div");
+  element.className = className;
+  Object.assign(element.style, style);
+  return element;
+};
+
+/**
+ * Makes the turn for the still sheet `sheet` (the copy, fixed over the column) held in `frame` (its frame of twins,
+ * removed at the end). The sheet's own box is the page that turns.
+ */
+export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
+  const place = sheet.getBoundingClientRect();
+  const width = place.width;
+  const height = place.height;
+  // The fold runs up and to the left, a little flatter than the diagonal, so the corner leads.
+  const length = Math.hypot(width, height * 0.62);
+  const d = { x: -width / length, y: (-height * 0.62) / length };
+  const angle = Math.atan2(d.y, d.x);
+  const degrees = (angle * 180) / Math.PI;
+  // The fold has run its course once it has passed the far corner (the top left).
+  const far = width * -d.x + height * -d.y;
+  // Boxes long enough to reach across the page at any turn: as long as its diagonal beyond the fold, twice along it.
+  const reach = Math.ceil(Math.hypot(width, height));
+  const big = reach * 2;
+
+  // The whole turn lies over the column and nowhere else.
+  const turn = piece("room-turn", { top: `${place.top}px`, left: `${place.left}px`, width: `${width}px`, height: `${height}px` });
+  turn.setAttribute("aria-hidden", "true");
+  turn.setAttribute("inert", "");
+  const shade = piece("room-turn-shade", { height: `${big}px` });
+  const lying = piece("room-turn-cut", { inset: "0" });
+  const held = piece("room-turn-held", {});
+  const over = piece("room-turn-cut", { inset: "0" });
+  const back = piece("room-turn-back", { width: `${width}px`, height: `${height}px` });
+  const roll = piece("room-turn-roll", { height: `${big}px` });
+  back.append(roll);
+  over.append(back);
+  // The sheet keeps its place inside the held box: laid at the box's corner, which is held at the column's corner.
+  sheet.style.top = "0";
+  sheet.style.left = "0";
+  sheet.style.background = "var(--live-paper, #f7f4ed)";
+  held.append(frame);
+  lying.append(held);
+  turn.append(shade, lying, over);
+  document.body.append(turn);
+
+  const drive = (progress: number) => {
+    const s = ease(Math.min(1, Math.max(0, progress))) * far * 1.04;
+    const fx = width + d.x * s;
+    const fy = height + d.y * s;
+    // Everything of the column beyond the fold: a cut along it, reaching past every edge.
+    const along = { x: -d.y * big, y: d.x * big };
+    const ahead = { x: d.x * big, y: d.y * big };
+    const beyond = `polygon(${fx + along.x}px ${fy + along.y}px, ${fx - along.x}px ${fy - along.y}px, ${fx - along.x + ahead.x}px ${fy - along.y + ahead.y}px, ${fx + along.x + ahead.x}px ${fy + along.y + ahead.y}px)`;
+    lying.style.clipPath = beyond;
+    over.style.clipPath = beyond;
+    // The corner turned over is the column mirrored across the fold.
+    const k = 2 * (width * d.x + height * d.y + s);
+    const mirror = `matrix(${1 - 2 * d.x * d.x}, ${-2 * d.x * d.y}, ${-2 * d.x * d.y}, ${1 - 2 * d.y * d.y}, ${k * d.x}, ${k * d.y})`;
+    back.style.transform = mirror;
+    // A strip laid along the fold, its left edge on it, running the fold's length.
+    const strip = `translate(${fx}px, ${fy}px) rotate(${degrees}deg) translate(0, ${-big / 2}px)`;
+    // The light along the fold, on the turned paper (in its mirrored terms, which mirror it back).
+    roll.style.transform = `${mirror} ${strip}`;
+    shade.style.transform = `${strip} translate(-100%, 0)`;
+  };
+
+  let ended = false;
+  const end = () => {
+    if (ended) return;
+    ended = true;
+    turn.remove();
+  };
+
+  const play = () =>
+    new Promise<void>((resolve) => {
+      const began = performance.now();
+      turn.setAttribute("data-turning", "");
+      drive(0);
+      const step = (now: number) => {
+        if (ended) return resolve();
+        const progress = (now - began) / TURN_MS;
+        if (progress >= 1) {
+          end();
+          return resolve();
+        }
+        drive(progress);
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+
+  drive(0);
+  return { drive, play, end };
+}

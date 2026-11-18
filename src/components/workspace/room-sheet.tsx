@@ -3,6 +3,7 @@
 import { Component, createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
 import { flushSync } from "react-dom";
+import { roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
 import { useConvex, useConvexConnectionState } from "convex/react";
 
 /**
@@ -27,12 +28,78 @@ const LONGEST = 8000;
 /** How long the connection must be down before the waiting line says so: a blink is never named (as states.tsx). */
 const LOST = 2000;
 
+/**
+ * How far down the sheet reaches: to the window's foot, or to the phone's bottom bar, which stays put above it,
+ * so the corner that lifts first is in view from the turn's first frame.
+ */
+const sheetHeight = (top: number) => {
+  // While the Menu is open the bar is put away, and it is back at the foot once the menu goes: it is measured as it will
+  // stand then. Where the shell has no bar (wider screens, the web), there is none to measure.
+  const bar = document.querySelector<HTMLElement>(".live-tab-bar");
+  let tall = bar?.offsetHeight ?? 0;
+  const shown = document.documentElement.dataset.shell === "ios" && matchMedia("(max-width: 699px)").matches;
+  if (bar && !tall && shown && document.body.hasAttribute("data-scroll-locked")) {
+    bar.style.setProperty("display", "grid");
+    tall = bar.offsetHeight;
+    bar.style.removeProperty("display");
+  }
+  return Math.max(0, window.innerHeight - tall - top);
+};
+
 /** The still copy of the column just left, while it lies on the page. */
 let still: HTMLElement | null = null;
+/** That copy, laid ready to be turned: built as the copy is laid, so the turn's first frame only moves paper. */
+let turning: RoomTurn | null = null;
 const letGo = () => {
+  turning?.end();
   still?.remove();
+  turning = null;
   still = null;
 };
+
+/**
+ * A room that took long enough to say "Opening…" has no sheet of the last room left lying over it: the page it is
+ * turned from is the one the reader was looking at, bare paper with that one line where the title will be.
+ */
+function openingSheet(column: HTMLElement, line: HTMLElement) {
+  const place = column.getBoundingClientRect();
+  const at = line.getBoundingClientRect();
+  const sheet = document.createElement("div");
+  sheet.setAttribute("data-room-still", "");
+  Object.assign(sheet.style, { position: "fixed", top: `${place.top}px`, left: `${place.left}px`, width: `${place.width}px`, height: `${sheetHeight(place.top)}px`, overflow: "hidden", zIndex: "19", pointerEvents: "none" });
+  const copy = line.cloneNode(true) as HTMLElement;
+  copy.removeAttribute("role");
+  // The line as it was set: its words' own style, at its own place on the sheet, still (its arrival is long over).
+  const style = getComputedStyle(line);
+  for (const property of style) copy.style.setProperty(property, style.getPropertyValue(property));
+  Object.assign(copy.style, { position: "absolute", top: `${at.top - place.top}px`, left: `${at.left - place.left}px`, margin: "0", animation: "none" });
+  sheet.append(copy);
+  const frame = document.createElement("div");
+  frame.setAttribute("aria-hidden", "true");
+  frame.setAttribute("inert", "");
+  frame.append(sheet);
+  return { sheet, frame };
+}
+
+/**
+ * The room beneath is whole: the sheet lying over it is turned away (room-turn.ts). With less motion asked for, or with
+ * no sheet lying there, it is one cut. The sheet is let go of at once, so a next room change starts from a clear page.
+ */
+function turnAway(opening: ReturnType<typeof openingSheet> | null) {
+  const laid = turning;
+  turning = null;
+  still = null;
+  const turn = laid ?? (opening ? roomTurn(opening.sheet, opening.frame) : null);
+  if (!turn) return;
+  // A room picked from the Menu: the menu and its shade, still on their way out, are taken away in this one frame,
+  // so the page turned is the page seen clearly, never one under a shade.
+  for (const closing of document.querySelectorAll<HTMLElement>('[data-slot="dialog-overlay"][data-state="closed"], [data-slot="dialog-content"][data-state="closed"]')) {
+    closing.style.visibility = "hidden";
+    for (const move of closing.getAnimations()) move.finish();
+  }
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return turn.end();
+  void turn.play();
+}
 
 /** The properties a move can be holding at a value of its own, read off the page and written onto the copy. */
 const HELD = ["opacity", "transform", "translate", "rotate", "scale", "visibility", "clip-path", "filter", "background-size", "box-shadow"];
@@ -118,7 +185,7 @@ function hold(column: HTMLElement | null) {
     top: `${place.top}px`,
     left: `${place.left}px`,
     width: `${place.width}px`,
-    height: `${Math.max(0, window.innerHeight - place.top)}px`,
+    height: `${sheetHeight(place.top)}px`,
     margin: "0",
     overflow: "hidden",
     zIndex: "19",
@@ -126,6 +193,7 @@ function hold(column: HTMLElement | null) {
   });
   still = stillFrame(column, copy);
   document.body.append(still);
+  turning = roomTurn(copy, still);
 }
 
 /**
@@ -246,11 +314,14 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
       const link = convex.connectionState();
       if (link.hasEverConnected && !link.isWebSocketConnected) counted = now;
       if (element && (isWhole(element) || now - counted >= LONGEST)) {
+        // A page that said "Opening…" is taken as it stands, before the line leaves it, to be turned in its place.
+        const line = said && !first && !still ? element.querySelector<HTMLElement>(".live-opening") : null;
+        const opening = line && openingSheet(element, line);
         flushSync(() => {
           setShown(area);
           setOpening(false);
         });
-        letGo();
+        turnAway(opening);
         // The room was drawn unseen: its rows' own arrivals are for a room already on screen, so they are done, and
         // so is any easing of the room's coming into view (a button that eases all it changes would be a frame late).
         for (const move of element.getAnimations({ subtree: true }))
