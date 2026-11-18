@@ -72,8 +72,8 @@ export function PageTurn({ children }: { children: ReactNode }) {
     // The page is the whole window, `tall` of it the chapter's own.
     let frame = 0, on = false, tall = 0, last = -1, near = false, geometry: TurnGeometry | null = null;
     const measure = () => {
-      // A page taller than the window cannot be held whole, and with less motion nothing is turned: the chapters then follow one another as plain pages.
-      const fits = !still.matches && hold.offsetHeight <= innerHeight + 1;
+      // A page taller than the window, or one not held at all (phones), cannot be turned whole, and with less motion nothing is turned: the chapters then follow one another as plain pages.
+      const fits = !still.matches && getComputedStyle(hold).position === "sticky" && hold.offsetHeight <= innerHeight + 1;
       if (!fits) {
         if (on) { on = false; last = -1; for (const panel of [from, to]) { panel.removeAttribute("data-turn"); panel.style.removeProperty("--turn-page"); panel.style.removeProperty("--turn-own"); } to.style.removeProperty("--e"); to.style.removeProperty("--h"); }
         return;
