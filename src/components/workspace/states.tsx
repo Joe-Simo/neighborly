@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Component, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useConvexConnectionState } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
@@ -39,13 +39,15 @@ export function LiveState({
   action?: ReactNode;
 }) {
   // Outside the shell there is no room, so no picture card: the words stand alone.
+  const named = useId();
   const art = useAreaArt();
   return (
     <div
       className="live-empty live-state"
       data-kind={kind}
       data-lead={art ? "" : undefined}
-      role={kind === "error" || kind === "offline" ? "alert" : undefined}
+      role={kind === "error" || kind === "offline" ? "alert" : "group"}
+      aria-labelledby={named}
     >
       {art && (
         <PaperScene kind={kind}>
@@ -53,7 +55,7 @@ export function LiveState({
         </PaperScene>
       )}
       <div>
-        <FollowingHeading>{title}</FollowingHeading>
+        <FollowingHeading id={named}>{title}</FollowingHeading>
         <p>{children}</p>
         {action}
       </div>

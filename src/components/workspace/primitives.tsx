@@ -113,9 +113,13 @@ export function LiveEmpty({
   /** The one act that fills this place, named as the act. */
   action?: { label: string; run: () => void };
 }) {
+  const named = useId();
   return (
     <div
       className="live-empty"
+      // Named by its own line, so a screen reader moving by region hears "No neighbors yet", not an unnamed group.
+      role="group"
+      aria-labelledby={named}
       ref={(element) => {
         // The first thing drawn under the page head, which already ends in a rule: this one draws none of its own.
         const room = element?.closest(".live-room");
@@ -124,7 +128,7 @@ export function LiveEmpty({
     >
       <PaperScene kind="empty" />
       <div>
-        <FollowingHeading>{title}</FollowingHeading>
+        <FollowingHeading id={named}>{title}</FollowingHeading>
         <p>{children}</p>
         {action && (
           <Button type="button" variant="outline" onClick={action.run}>
@@ -140,19 +144,21 @@ export function LiveEmpty({
  * A heading whose level follows the page: h2 straight under the room's h1, h3 under a
  * section's h2, so a block that can sit in either place never skips a level.
  */
-export function FollowingHeading({ children }: { children: ReactNode }) {
-  const [level, setLevel] = useState<2 | 3>(2);
+export function FollowingHeading({ children, id }: { children: ReactNode; id?: string }) {
+  const [level, setLevel] = useState<1 | 2 | 3>(2);
   const place = useRef<HTMLHeadingElement>(null);
   useLayoutEffect(() => {
     const here = place.current;
     if (!here) return;
     const before = [...(here.closest("main") ?? document).querySelectorAll("h1, h2, h3, h4")]
-      .filter((heading) => heading !== here && heading.compareDocumentPosition(here) & Node.DOCUMENT_POSITION_FOLLOWING)
+      // Only headings someone can reach count: one in a hidden part of the page is not above this one for anyone.
+      .filter((heading) => heading !== here && heading.compareDocumentPosition(here) & Node.DOCUMENT_POSITION_FOLLOWING && !heading.closest("[hidden], [inert], [aria-hidden='true'], [data-room-held] > :not(.live-opening)"))
       .at(-1);
-    setLevel(!before || before.tagName === "H1" ? 2 : 3);
+    // A room held by a lost connection shows only its card: the card's line is then the page's own heading.
+    setLevel(!before && here.closest(".live-opening[data-lost]") ? 1 : !before || before.tagName === "H1" ? 2 : 3);
   }, []);
-  const Heading = level === 2 ? "h2" : "h3";
-  return <Heading ref={place}>{children}</Heading>;
+  const Heading = level === 1 ? "h1" : level === 2 ? "h2" : "h3";
+  return <Heading ref={place} id={id}>{children}</Heading>;
 }
 
 export function LiveField({

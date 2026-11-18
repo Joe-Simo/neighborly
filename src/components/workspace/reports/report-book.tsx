@@ -1,5 +1,6 @@
 "use client";
 
+import { FollowingHeading } from "@/components/workspace/primitives";
 import "./report-book.css";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -53,7 +54,7 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
       body: (
         <div className="book-cover">
           <p className="book-group">{groupName}</p>
-          <h3>{b.cover}</h3>
+          <FollowingHeading>{b.cover}</FollowingHeading>
           <p>{period}</p>
           {/* The year's mark: the quilt's own three papers, a call, a visit and a yes, laid as a small patch. */}
           <span className="book-mark" aria-hidden="true">
