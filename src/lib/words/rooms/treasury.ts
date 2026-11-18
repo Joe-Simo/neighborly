@@ -214,6 +214,9 @@ export const en = (t: Terms, place: string) => ({
       mark: "Mark cleared",
       markLabel: (what: string) => `Mark cleared: ${what}`,
       emptyTitle: "Everything has cleared.",
+      /** Nothing has ever been written down: there is nothing to have cleared. */
+      firstTitle: "No money in or out yet.",
+      firstDeck: "Each gift and payment you write down waits here until the bank shows it on a statement.",
       emptyDeck: (day: string) => `Every entry through ${day} is marked against a statement. New entries will wait here until the bank shows them.`,
     },
     lately: {
@@ -472,6 +475,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       mark: "Marcar que ya pasó",
       markLabel: (what) => `Marcar que ya pasó por el banco: ${what}`,
       emptyTitle: "Todo ya pasó por el banco.",
+      firstTitle: "Todavía no ha entrado ni salido dinero.",
+      firstDeck: "Cada donativo y cada pago que anotes espera aquí hasta que el banco lo muestre en un estado de cuenta.",
       emptyDeck: (day) => `Cada movimiento hasta el ${day} está marcado en un estado de cuenta. Los nuevos esperarán aquí hasta que el banco los muestre.`,
     },
     lately: {
