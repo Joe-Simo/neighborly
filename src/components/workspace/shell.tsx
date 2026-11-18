@@ -370,7 +370,7 @@ export function LiveWorkspace({
   const { shown, opening, lost, settled } = useWholeRoom(area, column);
   // The room itself, with nothing opened inside it (a record, a sheet): the edge's step back is the page turn there.
   const inside = useSearchParams().size > 0;
-  useEdgeTurn(inApp, shown && !inside);
+  useEdgeTurn(inApp, !inside, shown);
   // Kept as state, so the mark is drawn with the shell and is never lost when the shell is drawn again.
   const [roomIn, setRoomIn] = useState(false);
   if (shown && !roomIn) setRoomIn(true);

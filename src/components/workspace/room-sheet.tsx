@@ -419,13 +419,17 @@ const FLICK = 0.5;
  * page takes the edge; inside a room (a record, a sheet) the app's own swipe is the step back, as before. No page is
  * ever turned under a sheet or dialog that is open: the edge is left to it.
  */
-export function useEdgeTurn(inApp: boolean, roomShown: boolean) {
+export function useEdgeTurn(inApp: boolean, inRoom: boolean, roomShown: boolean) {
   // Whether a step back may start: read at the touch, so a step already under way outlives the room change it makes.
-  const startable = useRef(roomShown);
+  const startable = useRef(roomShown && inRoom);
   useEffect(() => {
-    startable.current = roomShown;
-    (window as Edge).webkit?.messageHandlers?.kindHelpsEdge?.postMessage(roomShown);
-  }, [roomShown]);
+    startable.current = roomShown && inRoom;
+  }, [roomShown, inRoom]);
+  // The edge is the page's for as long as a room is the page, held through the room change a step back makes: the
+  // app's own swipe is never handed a finger already turning a page.
+  useEffect(() => {
+    (window as Edge).webkit?.messageHandlers?.kindHelpsEdge?.postMessage(inRoom);
+  }, [inRoom]);
   useEffect(() => {
     const edge = (window as Edge).webkit?.messageHandlers?.kindHelpsEdge;
     if (!inApp || !edge) return;
