@@ -2,7 +2,7 @@
 
 import "./people.css";
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { CircleCheck, Plus } from "lucide-react";
 import { usePaginatedQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -90,6 +90,12 @@ export function TeamsSection() {
         <LiveEmpty title={t.emptyTitle}>
           {text.emptyBody}
         </LiveEmpty>
+      )}
+      {data.teams.length > 0 && (
+        <p className="help-footnote live-room-foot">
+          <CircleCheck size={17} aria-hidden="true" />
+          <span>{t.footnote}</span>
+        </p>
       )}
       {addingTo && (
         <LiveDialog
