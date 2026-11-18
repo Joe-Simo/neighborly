@@ -19,6 +19,8 @@
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		7AC1A1D00000000000000005 /* CallsWaitingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A1D00000000000000002 /* CallsWaitingWidget.swift */; };
 		7AC1A1D00000000000000006 /* KindHelpsWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7AC1A1D00000000000000001 /* KindHelpsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7AC1A1E00000000000000003 /* NativeWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A1E00000000000000001 /* NativeWords.swift */; };
+		7AC1A1E00000000000000004 /* NativeWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A1E00000000000000001 /* NativeWords.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +63,7 @@
 		7AC1A1D00000000000000001 /* KindHelpsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KindHelpsWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AC1A1D00000000000000002 /* CallsWaitingWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallsWaitingWidget.swift; sourceTree = "<group>"; };
 		7AC1A1D00000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7AC1A1E00000000000000001 /* NativeWords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeWords.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +90,7 @@
 			children = (
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
+				7AC1A1E00000000000000002 /* Shared */,
 				7AC1A1D00000000000000004 /* KindHelpsWidget */,
 				504EC3051FED79650016851F /* Products */,
 			);
@@ -125,6 +129,14 @@
 				7AC1A1D00000000000000003 /* Info.plist */,
 			);
 			path = KindHelpsWidget;
+			sourceTree = "<group>";
+		};
+		7AC1A1E00000000000000002 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				7AC1A1E00000000000000001 /* NativeWords.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -238,6 +250,7 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
+				7AC1A1E00000000000000003 /* NativeWords.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,6 +259,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7AC1A1D00000000000000005 /* CallsWaitingWidget.swift in Sources */,
+				7AC1A1E00000000000000004 /* NativeWords.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

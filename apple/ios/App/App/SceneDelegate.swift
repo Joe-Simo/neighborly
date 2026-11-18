@@ -56,10 +56,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 /// The Home Screen quick actions: three rooms, named in the device's language, with the system's own symbols.
 enum QuickRoom {
-    static let rooms: [(type: String, room: String, en: String, es: String, symbol: String)] = [
-        ("com.kindhelps.app.week", "week", "This week", "Esta semana", "calendar"),
-        ("com.kindhelps.app.help-line", "help-line", "Help line", "Línea de ayuda", "phone"),
-        ("com.kindhelps.app.visits", "visits", "Record a visit", "Anotar una visita", "shoeprints.fill"),
+    static let rooms: [(type: String, room: String, title: (NativeWords) -> String, symbol: String)] = [
+        ("com.kindhelps.app.week", "week", \.quickWeek, "calendar"),
+        ("com.kindhelps.app.help-line", "help-line", \.quickHelpLine, "phone"),
+        ("com.kindhelps.app.visits", "visits", \.quickVisit, "shoeprints.fill"),
     ]
 
     static func room(for item: UIApplicationShortcutItem?) -> String? {
@@ -68,9 +68,9 @@ enum QuickRoom {
     }
 
     static func offer() {
-        let spanish = Locale.preferredLanguages.first?.hasPrefix("es") == true
+        let words = NativeWords.current
         UIApplication.shared.shortcutItems = rooms.map {
-            UIApplicationShortcutItem(type: $0.type, localizedTitle: spanish ? $0.es : $0.en, localizedSubtitle: nil, icon: UIApplicationShortcutIcon(systemImageName: $0.symbol), userInfo: nil)
+            UIApplicationShortcutItem(type: $0.type, localizedTitle: $0.title(words), localizedSubtitle: nil, icon: UIApplicationShortcutIcon(systemImageName: $0.symbol), userInfo: nil)
         }
     }
 }
@@ -125,7 +125,6 @@ final class ShellViewController: CAPBridgeViewController {
         return asked > 0 ? asked : 10
     }
     /// The wait's words, in the device's language: Spanish or English.
-    private var spanish: Bool { Locale.preferredLanguages.first?.hasPrefix("es") == true }
 
     /// A web view ignores the page's own print command, so the shell answers
     /// it: `window.print()` asks here, and iOS shows its print sheet for the page.
@@ -176,6 +175,7 @@ final class ShellViewController: CAPBridgeViewController {
         // At the accessibility text sizes the bar's words stay small; held, a tab shows its name large, as any iOS
         // tab bar does. The page says where its tabs are (shell.tsx); iOS turns the viewer on only at those sizes.
         scripts.add(BarTabs { [weak self] state in self?.barChanged?(state) }, name: "kindHelpsBar")
+        scripts.add(UndoSlips { [weak self] label in self?.undoSlip(label) }, name: "kindHelpsUndo")
         // A row's long-press actions are the system's context menu (the page's paper sheet only on the website).
         scripts.add(MenuRequests(named: { [weak self] row, actions, kinds in self?.rowMenuRow = row; self?.menuActions = actions; self?.menuKinds = kinds }), name: "kindHelpsMenu")
         // The first screen of the last room, kept on the device (KeptRoom) so the next launch draws it at once while
@@ -254,6 +254,21 @@ final class ShellViewController: CAPBridgeViewController {
 
     fileprivate func chose(_ index: Int) {
         webView?.evaluateJavaScript("window.kindHelpsMenuChose?.(\(index))")
+    }
+
+    /// The page's undo slip: while it shows, the same undo is the system's own, so Shake to Undo (and an iPad's
+    /// keyboard Command-Z) runs the inverse the slip's Undo runs. Its showing is felt as one light tap.
+    override var canBecomeFirstResponder: Bool { true }
+
+    fileprivate func undoSlip(_ label: String?) {
+        undoManager?.removeAllActions(withTarget: self)
+        guard let label else { return }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        becomeFirstResponder()
+        undoManager?.registerUndo(withTarget: self) { shell in
+            shell.webView?.evaluateJavaScript("window.kindHelpsUndo?.()")
+        }
+        undoManager?.setActionName(label)
     }
 
     /// Told whenever the page's bar, its rooms, or what lies over them change (ShellTabs follows it).
@@ -539,7 +554,7 @@ final class ShellViewController: CAPBridgeViewController {
             waitLine = line
             return line
         }()
-        line.text = spanish ? "Abriendo…" : "Opening…"
+        line.text = NativeWords.current.opening
         UIAccessibility.post(notification: .announcement, argument: line.text)
     }
 
@@ -548,9 +563,9 @@ final class ShellViewController: CAPBridgeViewController {
         guard let cover, let webView, webView.isLoading else { return }
         sayOpening()
         guard let line = waitLine else { return }
-        line.text = spanish ? "Esto está tardando más de lo normal." : "This is taking longer than usual."
+        line.text = NativeWords.current.slow
         var look = UIButton.Configuration.plain()
-        look.title = spanish ? "Intentar de nuevo" : "Try again"
+        look.title = NativeWords.current.tryAgain
         look.baseForegroundColor = UIColor(red: 0.553, green: 0.388, blue: 0.106, alpha: 1)
         look.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
         look.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { words in
@@ -736,6 +751,16 @@ extension ShellViewController: UIContextMenuInteractionDelegate {
     }
 }
 
+/// The page's undo slip: `{ label }` while it shows, `null` when it goes.
+private final class UndoSlips: NSObject, WKScriptMessageHandler {
+    private let changed: (String?) -> Void
+    init(changed: @escaping (String?) -> Void) { self.changed = changed }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame else { return }
+        changed((message.body as? [String: Any])?["label"] as? String)
+    }
+}
+
 /// The page names the row under a finger: `{ x, y, width, height, actions: [title], kinds: ["call" | "open" | "own"] }` in web view points, or no actions.
 private final class MenuRequests: NSObject, WKScriptMessageHandler {
     private let named: (CGRect, [String], [String]) -> Void
@@ -830,7 +855,12 @@ private final class KeptRoomRequests: NSObject, WKScriptMessageHandler {
     init(host: String?) { self.host = host }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard message.frameInfo.isMainFrame, message.frameInfo.securityOrigin.host == host else { return }
-        if let json = message.body as? String { KeptRoom.keep(json) } else { KeptRoom.forget() }
+        if let json = message.body as? String { KeptRoom.keep(json); return }
+        // Let go (sign-out, or the room is another member's): the kept rooms, and the tab's own session storage, where
+        // unsaved typing is kept (kh-typed), are wiped from the web view's store as well as by the page.
+        KeptRoom.forget()
+        let store = message.webView?.configuration.websiteDataStore
+        store?.removeData(ofTypes: [WKWebsiteDataTypeSessionStorage], modifiedSince: .distantPast) {}
     }
 }
 
