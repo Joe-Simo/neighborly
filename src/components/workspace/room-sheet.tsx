@@ -516,3 +516,24 @@ export function useEdgeTurn(inApp: boolean, inRoom: boolean, roomShown: boolean)
     };
   }, [inApp]);
 }
+
+/**
+ * A page turned back by a tap, inside a room: what is shown now (a record) is laid as a still sheet over the column,
+ * `step` makes the change beneath it (the list, back at its place), and once that is drawn the page before comes
+ * back over from the left, as the finger's turn does, at the turn's own pace.
+ */
+export async function turnBackOver(column: HTMLElement, step: () => Promise<void>) {
+  const place = column.getBoundingClientRect();
+  const copy = stillCopy(column);
+  Object.assign(copy.style, { position: "fixed", top: `${place.top}px`, left: `${place.left}px`, width: `${place.width}px`, height: `${sheetHeight(place.top)}px`, margin: "0", overflow: "hidden", zIndex: "19", pointerEvents: "none" });
+  const frame = stillFrame(column, copy);
+  document.body.append(frame);
+  const turn = edgeTurn(copy, frame);
+  try {
+    await step();
+  } catch {
+    return turn.end();
+  }
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return turn.end();
+  await turn.glide(0, 1);
+}
