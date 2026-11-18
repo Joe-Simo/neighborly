@@ -15,7 +15,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.overrideUserInterfaceStyle = .light
         // Opened from a Home Screen quick action: the app opens straight into that room.
         ShellViewController.launchRoom = QuickRoom.room(for: connectionOptions.shortcutItem)
-        window?.rootViewController = ShellViewController()
+        // From iOS 18 the system's tab bar and sidebar stand in for the page's; before it, the page keeps its own.
+        if #available(iOS 18.0, *) { window?.rootViewController = ShellTabs() } else { window?.rootViewController = ShellViewController() }
         window?.makeKeyAndVisible()
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
@@ -31,9 +32,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     /// A quick action while the app is already open: the room is opened as a link to it would be, with its page turn.
     func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
-        guard let room = QuickRoom.room(for: shortcutItem), let shell = window?.rootViewController as? ShellViewController else { return completionHandler(false) }
+        guard let room = QuickRoom.room(for: shortcutItem), let shell = Self.shell(in: window?.rootViewController) else { return completionHandler(false) }
         shell.open(room: room)
         completionHandler(true)
+    }
+
+    private static func shell(in root: UIViewController?) -> ShellViewController? {
+        if #available(iOS 18.0, *), let tabs = root as? ShellTabs { return tabs.shell }
+        return root as? ShellViewController
     }
 }
 
@@ -128,8 +134,8 @@ final class ShellViewController: CAPBridgeViewController {
         // sweep (`data-door="sweeping"`) counts as having left: its colour
         // covers the status area as one sheet, so the strip is gone at once.
         scripts.addUserScript(WKUserScript(
-            // The app draws the system's tab bar in place of the page's (`:root[data-native-tabs]`, layBarTabs).
-            source: "document.documentElement.dataset.shell = 'ios'; document.documentElement.dataset.nativeTabs = '';",
+            // The app draws the system's tab bar, and on iPad its sidebar, in place of the page's (`:root[data-native-tabs]`, `:root[data-native-sidebar]`, ShellTabs).
+            source: "document.documentElement.dataset.shell = 'ios';\(nativeBars)",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         ))
@@ -158,7 +164,7 @@ final class ShellViewController: CAPBridgeViewController {
         scripts.add(ReloadRequest { [weak self] in self?.reloadUnderStill() }, name: "kindHelpsReload")
         // At the accessibility text sizes the bar's words stay small; held, a tab shows its name large, as any iOS
         // tab bar does. The page says where its tabs are (shell.tsx); iOS turns the viewer on only at those sizes.
-        scripts.add(BarTabs { [weak self] tabs in self?.layBarTabs(tabs) }, name: "kindHelpsBar")
+        scripts.add(BarTabs { [weak self] state in self?.barChanged?(state) }, name: "kindHelpsBar")
         // The first screen of the last room, kept on the device (KeptRoom) so the next launch draws it at once while
         // the session and the live data catch up. It is handed to the page before its scripts run; a page that has
         // let it go since (a sign-out, then a reload) says so in its session, and is not handed it again.
@@ -215,61 +221,21 @@ final class ShellViewController: CAPBridgeViewController {
         present(sheet, animated: true)
     }
 
-    /// The system's tab bar (Liquid Glass) stands in for the page's own: the page lists its tabs, which one is current,
-    /// and none while anything lies over its bar (a sheet, the Menu, the keyboard), and this bar follows. Its tabs press
-    /// the page's own, so a room change is still the page's turn. VoiceOver, the large-name viewer at the accessibility
-    /// text sizes, Reduce Transparency and Increase Contrast are the system's own here. The page keeps its bar's room
-    /// at the foot, unseen (shell-ios.css), so nothing in a room lies under this one when scrolled to its end.
-    private lazy var tabBar: UITabBar = {
-        let bar = UITabBar()
-        bar.translatesAutoresizingMaskIntoConstraints = false
-        bar.delegate = self
-        bar.isHidden = true
-        // The one colour of its own: the selected tab in the paper's ink green, lifted for a dark glass.
-        bar.tintColor = UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.75, blue: 0.66, alpha: 1) : UIColor(red: 0x28 / 255, green: 0x3c / 255, blue: 0x32 / 255, alpha: 1) }
-        return bar
-    }()
-    private var barRooms: [String] = []
-
-    fileprivate func layBarTabs(_ tabs: [BarTab]) {
-        if tabBar.superview == nil {
-            if let cover { view.insertSubview(tabBar, belowSubview: cover) } else { view.addSubview(tabBar) }
-            NSLayoutConstraint.activate([
-                tabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                tabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                tabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            ])
-        }
-        let shown = tabs.filter { $0.frame.width > 0 && $0.frame.height > 0 }
-        tabBar.isHidden = shown.isEmpty
-        guard !shown.isEmpty else { return }
-        let rooms = shown.map(\.room)
-        if rooms != barRooms || zip(tabBar.items ?? [], shown).contains(where: { $0.title != $1.name }) {
-            barRooms = rooms
-            tabBar.items = shown.map { tab in
-                let item = UITabBarItem(title: tab.name, image: UIImage(systemName: Self.symbol(for: tab.room)), tag: tab.index)
-                item.largeContentSizeImage = UIImage(systemName: Self.symbol(for: tab.room))
-                return item
-            }
-        }
-        if let current = shown.first(where: \.current), let item = tabBar.items?.first(where: { $0.tag == current.index }) {
-            tabBar.selectedItem = item
-        }
+    /// Under iOS 18 the page keeps its own bar and side menu; from it, the system's stand in (ShellTabs).
+    private var nativeBars: String {
+        guard #available(iOS 18.0, *) else { return "" }
+        return " document.documentElement.dataset.nativeTabs = '';" + (UIDevice.current.userInterfaceIdiom == .pad ? " document.documentElement.dataset.nativeSidebar = '';" : "")
     }
 
-    /// The same marks as the page's tabs: the week, the help line, home visits by their footprints, one's own, and the menu.
-    private static func symbol(for room: String) -> String {
-        switch room {
-        case "week": "calendar"
-        case "help-line": "phone"
-        case "visits": "shoeprints.fill"
-        case "mine": "person"
-        default: "line.3.horizontal"
-        }
-    }
+    /// Told whenever the page's bar, its rooms, or what lies over them change (ShellTabs follows it).
+    var barChanged: ((BarState) -> Void)?
 
-    fileprivate func press(tab index: Int) {
-        webView?.evaluateJavaScript("document.querySelectorAll('.live-tab-bar .live-tab')[\(index)]?.click()")
+    /// Presses the page's own link to a room, or its Menu, so a change of room is still the page's turn.
+    func press(room: String) {
+        let js = room == "menu"
+            ? "document.querySelector('.live-tab-bar button.live-tab')?.click()"
+            : "document.querySelector('.live-tab-bar a[href=\"/app/\(room)\"], .live-nav a[href=\"/app/\(room)\"]')?.click()"
+        webView?.evaluateJavaScript(js)
     }
 
     override func viewDidLoad() {
@@ -678,25 +644,20 @@ final class ShellViewController: CAPBridgeViewController {
 }
 
 /// Hears from the page when the way in is shown, and when it is left.
-fileprivate struct BarTab { let name: String; let room: String; let current: Bool; let frame: CGRect; let index: Int }
+struct BarPlace: Equatable { let name: String; let room: String; let current: Bool }
+struct BarState: Equatable { let covered: Bool; let tabs: [BarPlace]; let rooms: [BarPlace] }
 
-extension ShellViewController: UITabBarDelegate {
-    func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
-        press(tab: item.tag)
-    }
-}
-
-/// The page lists its bar's tabs: `[{ name, room, current, x, y, width, height }]` in web view points, or `[]` with no bar.
+/// The page tells its bar and rooms: `{ covered, tabs: [{ name, room, current }], rooms: [...] }`.
 private final class BarTabs: NSObject, WKScriptMessageHandler {
-    private let changed: ([BarTab]) -> Void
-    init(changed: @escaping ([BarTab]) -> Void) { self.changed = changed }
+    private let changed: (BarState) -> Void
+    init(changed: @escaping (BarState) -> Void) { self.changed = changed }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard message.frameInfo.isMainFrame, let list = message.body as? [[String: Any]] else { return }
-        changed(list.enumerated().compactMap { index, tab in
-            guard let name = tab["name"] as? String, let x = tab["x"] as? Double, let y = tab["y"] as? Double,
-                  let width = tab["width"] as? Double, let height = tab["height"] as? Double else { return nil }
-            return BarTab(name: name, room: tab["room"] as? String ?? "menu", current: tab["current"] as? Bool ?? false, frame: CGRect(x: x, y: y, width: width, height: height), index: index)
-        })
+        guard message.frameInfo.isMainFrame, let body = message.body as? [String: Any] else { return }
+        let places = { (key: String) in (body[key] as? [[String: Any]] ?? []).compactMap { place -> BarPlace? in
+            guard let name = place["name"] as? String, let room = place["room"] as? String else { return nil }
+            return BarPlace(name: name, room: room, current: place["current"] as? Bool ?? false)
+        } }
+        changed(BarState(covered: body["covered"] as? Bool ?? false, tabs: places("tabs"), rooms: places("rooms")))
     }
 }
 
@@ -792,5 +753,114 @@ private final class PrintRequests: NSObject, WKScriptMessageHandler {
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         asked()
+    }
+}
+
+/// The system's tab bar and, on iPad, its sidebar (Liquid Glass, `.tabSidebar`), standing in for the page's own bar and
+/// side menu. There is one page: each tab's controller is an empty holder, and the shell (with its one web view) is
+/// moved into the holder of the tab that is current, in the same frame, never reloaded. A tab pressed presses the
+/// page's own link, so the change of room is the page's turn; the tab shown as current only ever follows the page.
+/// The rooms in the sidebar are the page's own menu, as it lists them. VoiceOver, the large-name viewer, Reduce
+/// Transparency and Increase Contrast are the system's; the one colour of its own is the selected item's ink green.
+@available(iOS 18.0, *)
+final class ShellTabs: UITabBarController, UITabBarControllerDelegate {
+    let shell = ShellViewController()
+    private var laid: BarState?
+
+    private final class Holder: UIViewController {
+        override func loadView() {
+            view = UIView()
+            view.backgroundColor = UIColor(red: 0xf5 / 255, green: 0xf3 / 255, blue: 0xec / 255, alpha: 1)
+        }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        delegate = self
+        mode = .tabSidebar
+        tabBar.tintColor = UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.75, blue: 0.66, alpha: 1) : UIColor(red: 0x28 / 255, green: 0x3c / 255, blue: 0x32 / 255, alpha: 1) }
+        view.tintColor = tabBar.tintColor
+        // Until the page lists its tabs there is one holder, the page in it, and no bar or sidebar.
+        tabs = [UITab(title: "", image: nil, identifier: "page") { _ in Holder() }]
+        setTabBarHidden(true, animated: false)
+        sidebar.isHidden = true
+        shell.barChanged = { [weak self] state in self?.follow(state) }
+        hold()
+    }
+
+    /// The marks of the page's own tabs and rooms, in the system's symbols.
+    private static func symbol(for room: String) -> String {
+        switch room {
+        case "week": "calendar"
+        case "team": "person.3"
+        case "people": "person"
+        case "commitments": "heart.circle"
+        case "mine": "checkmark"
+        case "time-off": "umbrella"
+        case "tasks": "list.clipboard"
+        case "help-line": "phone"
+        case "neighbors": "house"
+        case "visits": "shoeprints.fill"
+        case "treasury": "building.columns"
+        case "reports": "chart.bar"
+        case "tools": "folder"
+        default: "line.3.horizontal"
+        }
+    }
+
+    private func follow(_ state: BarState) {
+        let pad = traitCollection.userInterfaceIdiom == .pad
+        let names = { (places: [BarPlace]) in places.map { "\($0.room)=\($0.name)" } }
+        if laid.map({ names($0.tabs) != names(state.tabs) || names($0.rooms) != names(state.rooms) }) ?? true, !state.tabs.isEmpty {
+            // On iPhone the bar's tabs. On iPad every room of the menu, in its order, then the Menu: the bar's rooms
+            // are also kept in the tab bar the sidebar becomes when narrow, the rest in the sidebar alone.
+            let barRooms = Set(state.tabs.map(\.room))
+            let places = pad && !state.rooms.isEmpty ? state.rooms + state.tabs.filter { $0.room == "menu" } : state.tabs
+            let next: [UITab] = places.map { place in
+                let tab = UITab(title: place.name, image: UIImage(systemName: Self.symbol(for: place.room)), identifier: "tab:\(place.room)") { _ in Holder() }
+                // Fixed where they are, so there is nothing to rearrange and no Edit.
+                tab.preferredPlacement = barRooms.contains(place.room) ? .fixed : .sidebarOnly
+                return tab
+            }
+            tabs = next
+        }
+        laid = state
+        let current = state.tabs.first(where: \.current)?.room ?? state.rooms.first(where: \.current)?.room
+        if let current, let tab = tab(forIdentifier: "tab:\(current)"), selectedTab !== tab {
+            selectedTab = tab
+        }
+        hold()
+        setTabBarHidden(state.tabs.isEmpty || state.covered, animated: true)
+        sidebar.isHidden = !pad || state.rooms.isEmpty
+    }
+
+    /// The page goes into the current tab's holder, in this frame: it is moved, never made again.
+    private func hold() {
+        guard let holder = selectedTab?.viewController ?? selectedViewController, shell.parent !== holder else { return }
+        holder.loadViewIfNeeded()
+        if shell.parent != nil {
+            shell.willMove(toParent: nil)
+            shell.view.removeFromSuperview()
+            shell.removeFromParent()
+        }
+        holder.addChild(shell)
+        shell.view.translatesAutoresizingMaskIntoConstraints = false
+        holder.view.addSubview(shell.view)
+        // Beside the sidebar on iPad, the room takes the width that is left; elsewhere, the whole screen.
+        let leading = traitCollection.userInterfaceIdiom == .pad ? holder.view.safeAreaLayoutGuide.leadingAnchor : holder.view.leadingAnchor
+        NSLayoutConstraint.activate([
+            shell.view.leadingAnchor.constraint(equalTo: leading),
+            shell.view.trailingAnchor.constraint(equalTo: holder.view.trailingAnchor),
+            shell.view.topAnchor.constraint(equalTo: holder.view.topAnchor),
+            shell.view.bottomAnchor.constraint(equalTo: holder.view.bottomAnchor),
+        ])
+        shell.didMove(toParent: holder)
+    }
+
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelectTab tab: UITab) -> Bool {
+        let id = tab.identifier
+        guard let colon = id.firstIndex(of: ":") else { return false }
+        shell.press(room: String(id[id.index(after: colon)...]))
+        return false
     }
 }

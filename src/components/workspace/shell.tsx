@@ -242,48 +242,48 @@ export function LiveWorkspace({
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
   useSystemTextSize("data-text-large", "data-text-ax");
-  // The iOS app draws the system's own tab bar in place of this one (SceneDelegate, kindHelpsBar): it is told the bar's
-  // tabs, which is current, and that they stand down while anything lies over the bar, whenever any of it changes.
+  // The iOS app draws the system's own tab bar, and on iPad its sidebar, in place of this bar and the side menu
+  // (SceneDelegate, kindHelpsBar): it is told the bar's tabs, every room of the menu (read from the menu itself, so
+  // there is one list), which is current, and whether anything lies over the bar, whenever any of it changes.
   useEffect(() => {
-    type Bar = { webkit?: { messageHandlers?: { kindHelpsBar?: { postMessage: (tabs: { name: string; room: string; current: boolean; x: number; y: number; width: number; height: number }[]) => void } } } };
+    type Place = { name: string; room: string; current: boolean };
+    type Bar = { webkit?: { messageHandlers?: { kindHelpsBar?: { postMessage: (state: { covered: boolean; tabs: Place[]; rooms: Place[] }) => void } } } };
     const tell = (window as Bar).webkit?.messageHandlers?.kindHelpsBar;
     const bar = document.querySelector<HTMLElement>(".live-tab-bar");
-    if (!inApp || !tell || !bar) return;
-    // The tabs stand down (none are told) while anything lies over the bar: the Menu or any other sheet or dialog,
+    const side = document.querySelector<HTMLElement>(".live-nav");
+    if (!inApp || !tell || !bar || !side) return;
+    // The tabs stand down while anything lies over the bar: the Menu or any other sheet or dialog,
     // a row's long-press sheet, or the keyboard, which takes the bottom of the screen.
     const covered = () =>
       !!document.querySelector('[data-slot="dialog-content"][data-state="open"], [data-slot="sheet-content"][data-state="open"], [data-vaul-drawer][data-state="open"], [role="dialog"][data-state="open"], .row-menu-shade') ||
       (window.visualViewport?.height ?? window.innerHeight) < window.innerHeight - 100;
+    // A tab or room by the room it opens ("menu" for the Menu), and whether it is where the person is.
+    const place = (link: HTMLElement, within: HTMLElement): Place => {
+      const room = link.getAttribute("href")?.split("/").pop() ?? "menu";
+      const current = link.getAttribute("aria-current") === "page" || (room === "menu" && !within.querySelector('[aria-current="page"]'));
+      return { name: link.textContent?.trim() ?? "", room, current };
+    };
     let last = "";
     const say = () => {
-      const tabs = covered()
-        ? []
-        : [...bar.querySelectorAll<HTMLElement>(".live-tab")].map((tab) => {
-            const box = tab.getBoundingClientRect();
-            // The room a tab opens, or "menu" for the Menu, and whether it is where the person is, so the app's own bar can stand in for this one.
-            const room = tab.getAttribute("href")?.split("/").pop() ?? "menu";
-            const current = tab.getAttribute("aria-current") === "page" || (room === "menu" && !bar.querySelector('[aria-current="page"]'));
-            return { name: tab.textContent?.trim() ?? "", room, current, x: box.left, y: box.top, width: box.width, height: box.height };
-          });
-      const said = JSON.stringify(tabs);
+      const state = {
+        covered: covered(),
+        tabs: [...bar.querySelectorAll<HTMLElement>(".live-tab")].map((tab) => place(tab, bar)),
+        rooms: [...side.querySelectorAll<HTMLElement>("a[href]")].map((room) => place(room, side)),
+      };
+      const said = JSON.stringify(state);
       if (said === last) return;
       last = said;
-      tell.postMessage(tabs);
+      tell.postMessage(state);
     };
     say();
-    const laid = new ResizeObserver(say);
-    laid.observe(bar);
-    // A sheet or dialog opening or closing is a change to the page's own nodes and their open state.
+    // A sheet or dialog opening or closing, or the room changing, is a change to the page's own nodes and their state.
     const opened = new MutationObserver(say);
-    opened.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state", "aria-current"] });
-    window.addEventListener("resize", say);
+    opened.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["data-state", "aria-current"] });
     window.visualViewport?.addEventListener("resize", say);
     return () => {
-      laid.disconnect();
       opened.disconnect();
-      window.removeEventListener("resize", say);
       window.visualViewport?.removeEventListener("resize", say);
-      tell.postMessage([]);
+      tell.postMessage({ covered: false, tabs: [], rooms: [] });
     };
   }, [inApp]);
   useKeysInUse();
