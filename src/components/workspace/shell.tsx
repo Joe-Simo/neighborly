@@ -2,6 +2,7 @@
 
 import { isBrandNew } from "@/lib/first-days";
 import { sampleSayer } from "@/lib/words/sample-names";
+import { nameKeeper } from "@/components/workspace/keep-names";
 import { RoomShown, RoomStill, useWholeRoom } from "@/components/workspace/room-sheet";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
@@ -143,6 +144,7 @@ export function LiveWorkspace({
   const when = (start: number, end: number) =>
     `${format(start, { weekday: "short" })} · ${format(start, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}–${format(end, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}`;
   const sampleSaid = sampleSayer(data.church.sample, words.locale);
+  const keepNames = nameKeeper(data.people.map((person) => person.name));
   const personName = (id: string | null) => {
     const name = data.people.find((person) => person.id === id)?.name;
     return name ? sampleSaid(name) : id ? words.shell.member : words.detail.unassigned;
@@ -420,6 +422,7 @@ export function LiveWorkspace({
     personName,
     teamName,
     sampleSaid,
+    keepNames,
     perform,
     openAction: open,
     showCommitment: (item, trigger) => {
@@ -704,7 +707,7 @@ export function LiveWorkspace({
               )}
           </LiveDialog>
           <LiveDialog
-            title={selected ? sampleSaid(selected.title) : words.detail.fallbackTitle}
+            title={selected ? keepNames(sampleSaid(selected.title)) : words.detail.fallbackTitle}
             className="live-detail-dialog"
             open={!!selected}
             onClose={() => leaveDialog(() => setSelectedCommitment(null))}

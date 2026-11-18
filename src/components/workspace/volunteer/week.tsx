@@ -21,7 +21,7 @@ import {
 } from "@/components/workspace/volunteer/commitment-rows";
 
 export function WeekSection() {
-  const { data, now, format, words, isOwner, sampleSaid } = useWorkspace();
+  const { data, now, format, words, isOwner, sampleSaid, keepNames } = useWorkspace();
   // The owner alone, nothing made yet: one first-week state stands in for the empty lists, and the head carries "Invite someone".
   const firstDays = isBrandNew(data);
   const first = words.rooms.firstDays.week;
@@ -42,7 +42,7 @@ export function WeekSection() {
             {data.announcements.map((item) => (
               <article className="live-row" key={item.id}>
                 <div>
-                  <h3>{sampleSaid(item.title)}</h3>
+                  <h3>{keepNames(sampleSaid(item.title))}</h3>
                   <p className="live-prep">{sampleSaid(item.body)}</p>
                   <div className="live-meta">
                     {item.authorName} · {format(item.createdAt)}

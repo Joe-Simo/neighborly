@@ -42,6 +42,7 @@ export function TasksSection() {
     openAction: open,
     words,
     sampleSaid,
+    keepNames,
   } = useWorkspace();
   // The task just ticked and the meeting just answered: each gets its one move.
   const [ticked, setTicked] = useState<string>();
@@ -65,7 +66,7 @@ export function TasksSection() {
                   key={task.id}
                 >
                   <div>
-                    <h3><span>{sampleSaid(task.title)}</span></h3>
+                    <h3><span>{keepNames(sampleSaid(task.title))}</span></h3>
                     <p>
                       <span className="volunteer-who">{personName(task.assigneeId)}</span>
                       {task.dueAt && <span className="volunteer-due"> · {words.tasks.due(format(task.dueAt))}</span>}
@@ -150,7 +151,7 @@ export function TasksSection() {
                   {!response && <p className="help-sheet-label">{words.tasks.waiting}</p>}
                   <div className="help-sheet-body">
                     <div>
-                      <h3>{sampleSaid(meeting.title)}</h3>
+                      <h3>{keepNames(sampleSaid(meeting.title))}</h3>
                       <p className="volunteer-choice-when">{when(meeting.start, meeting.end)}</p>
                       {meeting.location && <p>{sampleSaid(meeting.location)}</p>}
                     </div>

@@ -1060,3 +1060,6 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-commitment-row .live-row-actions > .live-status { min-width: 0; }
   .live-app .live-commitment-row .live-row-actions [data-slot="button"] { flex: none; padding-inline: 14px; gap: 6px; }
 }
+
+/* A person's name inside a title never breaks across lines (keep-names.tsx). */
+.live-name { white-space: nowrap; }
