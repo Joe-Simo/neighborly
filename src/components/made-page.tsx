@@ -29,7 +29,8 @@ export function madeMetadata(language: Language): Metadata {
 export function MadePage({ language }: { language: Language }) {
   const said = madeWords[language];
   return <div className="public-page" lang={language}>
-    {language !== "en" && <ReaderLanguage page={language} />}
+    {/* On the English page too: its root is already English, but the piece is then loaded before the reader turns to the Spanish page, so nothing is fetched or run inside that turn. */}
+    <ReaderLanguage page={language} />
     <header className="public-page-header">
       <Link className="public-page-brand" href="/" aria-label={edgeWords[language].home}><span lang="en">kind helps</span></Link>
       <PublicLanguage language={language} paths={{ en: madeWords.en.path, es: madeWords.es.path }} />
