@@ -79,6 +79,7 @@ export function FrescoThreshold() {
     if (!track || !host || !wall || !scene) return;
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     let raf = 0;
+    let placed: { size: string; top: number } | undefined;
     const update = () => {
       raf = 0;
       const width = host.clientWidth, height = host.clientHeight;
@@ -160,14 +161,18 @@ export function FrescoThreshold() {
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
       // Under the frame as it is actually drawn (its ring and any scale included): each time the courtyard rests in its frame, the line's own box is
       // measured against the frame's drawn bottom and set at least 12px clear of it, so no letter is ever under its edge.
+      // It is measured once each time the frame comes to rest at a new size, never on the frames after, so scrolling on past costs no layout.
       let captionTop = frameY + frameHeight / 2;
       const line = host.querySelector<HTMLElement>(".fresco-caption");
       const rested = grow > .999 && inside < .001 && !!line;
-      if (rested) {
+      const size = `${width}x${height}`;
+      if (rested && placed?.size !== size) {
         host.style.setProperty("--caption-top", `${captionTop}px`);
         const gap = line.getBoundingClientRect().top - wall.getBoundingClientRect().bottom;
-        if (gap < 12) captionTop += 12 - gap;
+        placed = { size, top: captionTop + Math.max(0, 12 - gap) };
       }
+      if (!rested) placed = undefined;
+      if (placed) captionTop = placed.top;
       host.style.setProperty("--caption-top", `${captionTop}px`);
       // Clear or hidden, never half under the frame: the line is shown only once the frame has rested and it has been placed, in place, with no fade.
       host.dataset.captioned = String(rested);
