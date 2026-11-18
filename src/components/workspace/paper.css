@@ -1223,3 +1223,17 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-nav-marker { box-shadow: none; outline: 2px solid Highlight; }
 }
 @media print { .live-app .live-page-head, .live-app .live-page-head::after { box-shadow: none; } .live-app .live-page-head::before { content: none; } }
+
+/* w91: the workspace's keys on one sheet. Each key a small slip of paper, its name beside it. */
+.live-keys dl { display: grid; gap: 6px; margin: 4px 0 0; }
+.live-keys dl > div { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 12px; }
+.live-keys dl > div:nth-last-child(4) { margin-top: 10px; }
+.live-keys dt, .live-keys dd { margin: 0; }
+.live-keys dd { font-size: 15px; color: var(--live-ink, #283c32); overflow-wrap: anywhere; }
+.live-keys kbd {
+  display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 8px;
+  font: 600 15px/1 "Source Sans 3", sans-serif; color: var(--live-ink, #283c32);
+  background: #f7f4ed; border: 1px solid rgb(40 60 50 / 0.16); border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 1px 1px rgb(40 60 50 / 0.14), 0 3px 5px -4px rgb(40 60 50 / 0.4);
+}
+@media (forced-colors: active) { .live-keys kbd { box-shadow: none; } }
