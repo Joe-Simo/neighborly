@@ -604,6 +604,22 @@
   .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
   .live-person-row .live-person { grid-row: 1; }
 }
+/* An upright iPad (701px to 899px) and an iPad's room beside its sidebar are a phone's measure wider: a person's row is
+   laid as on a phone, so no name or address is pressed to a sliver. */
+@media (min-width: 701px) and (max-width: 899px) {
+  :root .live-app .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  :root .live-app .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
+  :root .live-app .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
+  :root .live-app .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
+  :root .live-app .live-person-row .live-person { grid-row: 1; }
+}
+@media (max-width: 1100px) {
+  :root[data-native-sidebar] .live-app .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  :root[data-native-sidebar] .live-app .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
+  :root[data-native-sidebar] .live-app .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
+  :root[data-native-sidebar] .live-app .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
+  :root[data-native-sidebar] .live-app .live-person-row .live-person { grid-row: 1; }
+}
 @media (max-width: 560px) {
   /* "Print the week" stays on the heading's line; the count drops under it. */
   .live-app .live-section-head:has(> .tools-quiet) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0 12px; }
