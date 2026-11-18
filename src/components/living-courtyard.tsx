@@ -1,5 +1,6 @@
 "use client";
 
+import { COURTYARD_STILL, type CourtyardStill } from "./courtyard-door";
 import { useEffect, useRef } from "react";
 import { ImageBitmapLoader, LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Texture, Vector2, Vector4, WebGLRenderer } from "three";
 
@@ -200,12 +201,28 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     // When the mouse leaves the window the courtyard settles back to rest instead of holding the last lean.
     const rest = () => { pointer.x = 0; pointer.y = 0; };
     addEventListener("pointermove", onPointer, { passive: true });
+    // Where the browser gives the device's tilt without asking, holding the phone leans the courtyard as the mouse does; nothing asks for it where it would have to.
+    const asks = typeof DeviceOrientationEvent !== "undefined" && typeof (DeviceOrientationEvent as unknown as { requestPermission?: unknown }).requestPermission === "function";
+    const onTilt = (event: DeviceOrientationEvent) => {
+      if (event.gamma === null || event.beta === null) return;
+      pointer.x = Math.max(-.5, Math.min(.5, event.gamma / 50)); pointer.y = Math.max(-.5, Math.min(.5, (event.beta - 50) / 60)); pointer.seen = true;
+    };
+    if (!asks && !still) addEventListener("deviceorientation", onTilt, { passive: true });
     document.documentElement.addEventListener("pointerleave", rest);
     // On a screen past 1920 by 1080 the page around the scene costs the graphics card more to put together while it moves, so while the page is scrolling the scene is
     // shaded on a smaller part of its own canvas, stretched to fill its place; within a frame of the scroll stopping it is shaded whole again. Nothing is reallocated.
     let scrolledAt = -1e9, shade = 1;
     const onScroll = () => { scrolledAt = performance.now(); };
     addEventListener("scroll", onScroll, { passive: true });
+    // Going in through the arch, the courtyard is held as it is: one frame is drawn whole and handed over as a picture of the same size and place.
+    const onStill = (event: Event) => {
+      if (!(event instanceof CustomEvent) || renderer.getContext().isContextLost()) return;
+      renderer.setScissorTest(false);
+      renderer.render(scene, camera);
+      (event.detail as CourtyardStill).take(renderer.domElement.toDataURL("image/jpeg", .92), renderer.domElement.getBoundingClientRect());
+      drawn = false;
+    };
+    addEventListener(COURTYARD_STILL, onStill);
 
     const shown = (selector: string) => { const layer = host.querySelector(selector); return layer ? Number(getComputedStyle(layer).opacity) : 0; };
     // Left alone, the people notice you now and then: a look up, a turn of the head. An act of care is answered with a reach or a wave, and then they stay turned towards you.
@@ -267,13 +284,16 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       // Scrolling through the fresco, the near stone and the far hills part by about ten pixels from first sight to last.
       const through = still || !journey ? .5 : Math.max(0, Math.min(1, (-journey.getBoundingClientRect().top / Math.max(1, innerHeight) - 3.65) / .9));
       const part = (through - .5) * 10 / (.9 * Math.max(1, painting.height));
-      uniforms.uView.value.set(-look.x * .03, -look.y * .022 + part);
+      // Standing in the courtyard, its paper parts in depth as the page goes on: the near sheets come forward and lean further with the cursor or the tilt than the far ones.
+      const standing = still ? 0 : Number(host.style.getPropertyValue("--standing") || 0);
+      const lean = 1 + inside() * .8;
+      uniforms.uView.value.set(-look.x * .03 * lean, -look.y * .022 * lean + part);
       // The light warms once, when the wall has opened, and the sun leans a little with it.
       uniforms.uWarm.value = mix(uniforms.uWarm.value, Number(host.dataset.open === "true"), still ? 1 : 1 - Math.exp(-dt * .9));
       uniforms.uSun.value.set(-.45 + look.x * 1.5 + uniforms.uWarm.value * .25, -.55 + look.y * .9);
       // Walking in: the near world grows faster than the far one as the doors are passed, and eases back for the last wide view.
       const entered = Math.min(1, Number(host.style.getPropertyValue("--door-progress") || 0) / .2);
-      uniforms.uDolly.value = mix(uniforms.uDolly.value, still ? 0 : host.dataset.overview === "true" ? .5 : .2 + entered * entered * (3 - 2 * entered) + inside() * .25, follow);
+      uniforms.uDolly.value = mix(uniforms.uDolly.value, still ? 0 : host.dataset.overview === "true" ? .5 : .2 + entered * entered * (3 - 2 * entered) + inside() * .25 + standing * .35, follow);
       const world = host.querySelector<HTMLElement>(".threshold-world");
       if (world && host.dataset.living === "true") {
         const frameOfWorld = world.getBoundingClientRect();
@@ -335,6 +355,8 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       cancelAnimationFrame(raf);
       observer.disconnect();
       removeEventListener("pointermove", onPointer);
+      removeEventListener("deviceorientation", onTilt);
+      removeEventListener(COURTYARD_STILL, onStill);
       removeEventListener("scroll", onScroll);
       document.documentElement.removeEventListener("pointerleave", rest);
       renderer.domElement.removeEventListener("webglcontextlost", lost);

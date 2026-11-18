@@ -2,19 +2,13 @@
 
 import { useLayoutEffect, useRef } from "react";
 import { HELD_CARD } from "@/lib/held-card";
-import { restWhatIsUnderneath, underneathIsReady } from "@/components/workspace/door";
+import { restWhatIsUnderneath, wholeUnderneath } from "@/lib/room-whole";
 
 /** The sheet is up and off in this long, the same as the door's own paper. */
 const LIFT = 240;
 /** If nothing under the sheet settles, it lifts anyway: what is there says for itself that it is opening. */
 const LONGEST = 1200;
 
-/** The door's sheet or a room is drawn under the paper, and the picture beside the sheet has arrived. */
-function wholeUnderneath() {
-  if (!document.querySelector(".live-app h1") || !underneathIsReady()) return false;
-  const picture = document.querySelector<HTMLImageElement>(".entry-art img");
-  return !picture || picture.complete;
-}
 
 /**
  * The sheet of paper that rose over the story lifts away to reveal the workspace. It holds for nothing:

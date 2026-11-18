@@ -1,0 +1,13 @@
+/* The hall's open arch, as painted: the door into Kind Helps. Nothing is drawn on it; it takes the pointer, and the keyboard's one ink ring in its own shape. */
+.fresco-door{position:absolute;z-index:1;left:78.4%;top:20.3%;width:16.3%;height:47.4%;min-width:44px;min-height:44px;border-radius:50% 50% 0 0/30% 30% 0 0;cursor:pointer;pointer-events:auto;outline:none}
+.fresco-door:focus-visible{outline:2px solid #293f32;outline-offset:4px}
+.fresco-stage:not([data-open=true]) .fresco-door{pointer-events:none;visibility:hidden}
+
+/* The courtyard held over the window as one page while the workspace is laid beneath it, then turned off it (chapter-sheets.css draws the turn). */
+#courtyard-held{position:fixed;inset:0;z-index:82;min-height:0;height:100lvh;--turn-page:100lvh;pointer-events:none;contain:strict}
+#courtyard-held .relief-turn-page{overflow:hidden}
+#courtyard-held .courtyard-held-page{position:absolute;inset:0;overflow:hidden}
+/* The one quiet line, if the room is not on its way yet: in the waiting ochre, on its own small cut slip of the card's lighter paper (4.8:1), low in the middle at every width, never faded in. */
+#courtyard-held .courtyard-held-opening{position:fixed;z-index:3;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);translate:-50% 0;margin:0;padding:8px 18px 9px;background:#f7f2e6;border-radius:2px 3px 2px 4px;box-shadow:0 1px 0 #3b2a1238,0 3px 6px #3b2a1224;font:600 17px/1.4 "Source Sans 3",sans-serif;color:#8D631B;white-space:nowrap}
+html[data-courtyard-held]{scrollbar-width:none}
+html[data-courtyard-held]::-webkit-scrollbar{display:none}

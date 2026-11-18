@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { paceOpening } from "@/lib/painted-world-scroll";
+import { keepPlace } from "./courtyard-door";
 import { PaintedWorld } from "./painted-world";
 
 /** A short, wide screen: the opening cannot be pinned there, so the page simply scrolls. Keep in step with the same query in painted-world.css. */
@@ -35,15 +36,20 @@ export function NeighborlyExperience() {
     if (!element) return;
     let release: ReturnType<typeof setTimeout> | undefined;
     let rise: Animation | undefined;
+    // Home can be shown again as it was left (Back keeps the route's last state), so a sheet carried up on leaving is taken down on return.
+    const carried = carry.current;
+    if (carried) delete carried.dataset.carrying;
     const carryIn = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
       const link = event.target.closest<HTMLAnchorElement>('a[href^="/app"]');
       const sheet = carry.current;
       // The sample card carries itself in: when it is pressed, it is the only paper that moves.
-      if (!link || link.matches(".card-offer") || link.target || !sheet || sheet.dataset.carrying === "true" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // The doors and the courtyard turn their own page off the workspace (courtyard-door.tsx): one paper moves, never two.
+      if (!link || link.matches(".card-offer") || link.closest(".fresco-stage") || link.target || !sheet || sheet.dataset.carrying === "true" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       event.preventDefault();
       const href = link.getAttribute("href") ?? "/app";
       router.prefetch(href);
+      keepPlace();
       try { sessionStorage.setItem("neighborly-paper", "1"); } catch { /* Without storage the workspace simply opens without the sheet. */ }
       sheet.dataset.carrying = "true";
       rise = sheet.animate([{ transform: "translateY(100%)" }, { transform: "none" }], { duration: 380, easing: "cubic-bezier(.2,.65,.2,1)", fill: "forwards" });
@@ -53,7 +59,7 @@ export function NeighborlyExperience() {
       }, () => {});
     };
     element.addEventListener("click", carryIn, true);
-    return () => { clearTimeout(release); rise?.cancel(); element.removeEventListener("click", carryIn, true); };
+    return () => { clearTimeout(release); rise?.cancel(); if (carried) delete carried.dataset.carrying; element.removeEventListener("click", carryIn, true); };
   }, [router]);
   // The doors stand one screen below the top of the journey, once the opening has given way.
   const goToDoors = () => {

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
+import { CourtyardDoor, goInTurning } from "./courtyard-door";
+import { useRouter } from "next/navigation";
 import { useSettled } from "@/lib/use-settled";
 import "./relief-journey.css";
 
@@ -39,6 +41,7 @@ export function FrescoThreshold() {
   const walking = useRef(false);
   const [near, setNear] = useState(false);
   const settled = useSettled();
+  const router = useRouter();
   // A wide window counts as near as soon as the page is quiet; settled is only ever true in the browser, so the server's drawing is unchanged.
   const living = near || (settled && matchMedia("(min-width: 1200px)").matches);
 
@@ -155,7 +158,19 @@ export function FrescoThreshold() {
       // Once the visitor has walked in, the wall they came through is behind them: its words do not come back with the frame.
       host.dataset.walked = String(inside > .98 || grow > 0);
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
-      host.style.setProperty("--caption-top", `${frameY + frameHeight / 2}px`);
+      // Under the frame as it is actually drawn (its ring and any scale included): each time the courtyard rests in its frame, the line's own box is
+      // measured against the frame's drawn bottom and set at least 12px clear of it, so no letter is ever under its edge.
+      let captionTop = frameY + frameHeight / 2;
+      const line = host.querySelector<HTMLElement>(".fresco-caption");
+      const rested = grow > .999 && inside < .001 && !!line;
+      if (rested) {
+        host.style.setProperty("--caption-top", `${captionTop}px`);
+        const gap = line.getBoundingClientRect().top - wall.getBoundingClientRect().bottom;
+        if (gap < 12) captionTop += 12 - gap;
+      }
+      host.style.setProperty("--caption-top", `${captionTop}px`);
+      // Clear or hidden, never half under the frame: the line is shown only once the frame has rested and it has been placed, in place, with no fade.
+      host.dataset.captioned = String(rested);
       setOpen(grow > .5 || inside > .5);
     };
     const request = () => { if (!raf) raf = requestAnimationFrame(update); };
@@ -169,6 +184,8 @@ export function FrescoThreshold() {
   // Through the doors, the keyboard and a screen reader are set down on the courtyard's own line, told where they now stand,
   // and not left on a button that is gone.
   const entering = useRef(false), caption = useRef<HTMLParagraphElement>(null);
+  // Once the courtyard opens, the way in is fetched ahead, so no cold frame can land inside the turn.
+  useEffect(() => { if (open) router.prefetch("/app"); }, [open, router]);
   useEffect(() => {
     if (!open || !entering.current) return;
     entering.current = false;
@@ -217,10 +234,10 @@ export function FrescoThreshold() {
 
   return <div ref={journey} className="fresco-journey">
     <section ref={stage} className="fresco-stage" id="your-community" tabIndex={-1} aria-label="The doors and the courtyard" data-open={open} data-settled={settled} data-destination="1">
-      {/* The same name and way in as the opening's bar, drawn again over the courtyard for the eye; a keyboard or a screen reader meets them once, above. */}
+      {/* The same name and way in as the opening's bar, drawn again over the doors for the eye; a keyboard or a screen reader meets them once, above. Pressed, it goes in as the arch does: the stage is held and turned off the workspace. */}
       <header className="fresco-header" aria-hidden="true">
         <a href="#story-start" className="fresco-brand" tabIndex={-1}>kind helps</a>
-        <Link href="/app" tabIndex={-1}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
+        <Link href="/app" tabIndex={-1} onClick={event => goInTurning(event, router.push, "Opening…")} onPointerEnter={() => router.prefetch("/app")}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </header>
       <div className="fresco-invitation" aria-hidden={open}>
         {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
@@ -236,6 +253,8 @@ export function FrescoThreshold() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {settled && <img className="fresco-painting" src="/assets/threshold/courtyard-fresco.webp" width="1774" height="887" decoding="async" alt="A sunlit church courtyard painted on the wall: a woman prepares food at a long shared table, under arches hung with wisteria." />}
             {living && settled && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
+            {/* The hall's open arch in the painting is the way into Kind Helps, turned to like a page. */}
+            <CourtyardDoor label="Enter Kind Helps" opening="Opening…" here={open} />
           </div>
         </div>
         <div className="fresco-doors" aria-hidden="true"><i /><i /></div>

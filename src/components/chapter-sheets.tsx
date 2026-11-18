@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useRef } from "react";
 import "./chapter-sheets.css";
+import { placeTurn, setTurnGeometry, turnGeometry, type TurnGeometry } from "@/lib/page-turn";
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 
@@ -68,8 +69,8 @@ export function PageTurn({ children }: { children: ReactNode }) {
     if (!turn || !from || !(to instanceof HTMLElement) || !round || !page || !back || !roll || !shade || !hold) return;
     const beneath = to.querySelector<HTMLElement>(".relief-hold");
     const still = matchMedia("(prefers-reduced-motion: reduce)");
-    // The page: w by h (the whole window), `tall` of it the chapter's own. The crease travels `far`, corner to corner, along (nx, ny); its round has radius r.
-    let frame = 0, on = false, w = 0, h = 0, tall = 0, far = 1, nx = 0, ny = 0, r = 0, last = -1, near = false, x0 = 0, y0 = 0;
+    // The page is the whole window, `tall` of it the chapter's own.
+    let frame = 0, on = false, tall = 0, last = -1, near = false, geometry: TurnGeometry | null = null;
     const measure = () => {
       // A page taller than the window cannot be held whole, and with less motion nothing is turned: the chapters then follow one another as plain pages.
       const fits = !still.matches && hold.offsetHeight <= innerHeight + 1;
@@ -79,37 +80,19 @@ export function PageTurn({ children }: { children: ReactNode }) {
       }
       on = true;
       from.dataset.turn = "from"; to.dataset.turn = "to";
-      tall = hold.getBoundingClientRect().height; w = turn.clientWidth; h = Math.max(page.offsetHeight, tall);
-      far = Math.hypot(w, h); nx = -w / far; ny = -h / far; r = Math.round(far * 4);
-      // The round is set on whole pixels, so the still page inside it lies exactly on the window.
-      x0 = Math.round(w + nx * r); y0 = Math.round(h + ny * r);
+      tall = hold.getBoundingClientRect().height;
+      geometry = turnGeometry(turn.clientWidth, Math.max(page.offsetHeight, tall));
       for (const panel of [from, to]) panel.style.setProperty("--turn-page", `${tall}px`);
       to.style.setProperty("--turn-own", `${beneath?.getBoundingClientRect().height ?? tall}px`);
       // The chapter beneath is found as it will stay: its picture at rest and its figures standing.
       to.style.setProperty("--e", "1"); to.style.setProperty("--h", "1");
-      // The round's centre when the crease stands on the corner, and the turn of the two bands that follow the crease.
-      turn.style.setProperty("--turn-r", `${r}px`);
-      turn.style.setProperty("--turn-x", `${x0}px`);
-      turn.style.setProperty("--turn-y", `${y0}px`);
-      turn.style.setProperty("--turn-w", `${w}px`);
-      turn.style.setProperty("--turn-long", `${(2 * w * h / far + 240).toFixed(0)}px`);
+      setTurnGeometry(turn, geometry);
       last = -1;
       update();
     };
-    // Where the round crosses the page's edges: the two ends of the crease.
-    const ends = (ox: number, oy: number) => {
-      const found: number[][] = [];
-      for (const [ax, ay, bx, by] of [[0, 0, w, 0], [w, 0, w, h], [w, h, 0, h], [0, h, 0, 0]]) {
-        const dx = bx - ax, dy = by - ay, fx = ax - ox, fy = ay - oy;
-        const a = dx * dx + dy * dy, b = 2 * (fx * dx + fy * dy), root = b * b - 4 * a * (fx * fx + fy * fy - r * r);
-        if (root < 0) continue;
-        for (const s of [(-b - Math.sqrt(root)) / (2 * a), (-b + Math.sqrt(root)) / (2 * a)]) if (s >= 0 && s < 1) found.push([ax + dx * s, ay + dy * s]);
-      }
-      return found;
-    };
     const update = () => {
       frame = 0;
-      if (!on) return;
+      if (!on || !geometry) return;
       const bottom = from.getBoundingClientRect().bottom;
       const close = bottom < tall * 2.5 && bottom > -tall;
       if (close !== near) { near = close; turn.toggleAttribute("data-near", near); }
@@ -118,22 +101,7 @@ export function PageTurn({ children }: { children: ReactNode }) {
       last = turned;
       // How far the page has been turned off the chapter beneath: what lies under it (the year's figures) stands up as it is uncovered.
       to.style.setProperty("--turned", turned.toFixed(4));
-      const gone = far * turned, ox = x0 + nx * gone, oy = y0 + ny * gone, crease = turned > 0 && turned < 1 ? ends(ox, oy) : [];
-      turn.dataset.turned = turned <= 0 ? "no" : turned >= 1 || crease.length !== 2 ? "yes" : "part";
-      if (crease.length !== 2) { round.style.transform = page.style.transform = ""; return; }
-      round.style.transform = `translate3d(${(nx * gone).toFixed(2)}px,${(ny * gone).toFixed(2)}px,0)`;
-      page.style.transform = `translate3d(${(-nx * gone).toFixed(2)}px,${(-ny * gone).toFixed(2)}px,0)`;
-      // The underside is the page mirrored in the straight line between the crease's two ends.
-      const [[px, py], [qx, qy]] = crease, twice = 2 * Math.atan2(qy - py, qx - px), c = Math.cos(twice), s = Math.sin(twice);
-      const ex = px - (c * px + s * py), ey = py - (s * px - c * py);
-      back.style.transform = `matrix(${c.toFixed(5)},${s.toFixed(5)},${s.toFixed(5)},${(-c).toFixed(5)},${ex.toFixed(2)},${ey.toFixed(2)})`;
-      // The roll of light keeps to the crease. It lies on the mirrored underside, so it is mirrored back to where the crease is.
-      const kx = ox - nx * r, ky = oy - ny * r, mx = c * kx + s * ky + ex, my = s * kx - c * ky + ey;
-      // The band's own axes: along the crease, and in towards the round's centre.
-      const ux = -ny, uy = nx;
-      shade.style.transform = `matrix(${ux.toFixed(5)},${uy.toFixed(5)},${nx.toFixed(5)},${ny.toFixed(5)},${kx.toFixed(2)},${ky.toFixed(2)})`;
-      const a = c * ux + s * uy, b = s * ux - c * uy, d = c * nx + s * ny, e = s * nx - c * ny;
-      roll.style.transform = `matrix(${a.toFixed(5)},${b.toFixed(5)},${d.toFixed(5)},${e.toFixed(5)},${mx.toFixed(2)},${my.toFixed(2)})`;
+      turn.dataset.turned = placeTurn(geometry, { round, page, back, roll, shade }, turned);
     };
     const request = () => { if (!frame) frame = requestAnimationFrame(update); };
     const sizes = new ResizeObserver(measure);
