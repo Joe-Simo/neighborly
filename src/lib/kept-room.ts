@@ -32,6 +32,29 @@ export function keptRoom(): Kept | null {
 }
 const withoutEmails = new WeakSet<object>();
 
+/**
+ * The help line's first screen, kept the same way and with the same protection (SceneDelegate.swift, KeptRoom): the
+ * three readings the room draws from, for a launch from the Home Screen's widget or its quick action. It holds callers'
+ * names and numbers, so it is the device's protected file, never the web view's, gone on sign-out and after a day.
+ */
+export type KeptHelpLine = { memberId: string; churchId: string; answers: Record<string, unknown> };
+
+/** The help line the app handed this page at launch, if it is the kept room's own member and conference. */
+export function keptHelpLine(): KeptHelpLine | null {
+  if (typeof window === "undefined") return null;
+  const kept = (window as { kindHelpsKeptHelpLine?: unknown }).kindHelpsKeptHelpLine as Partial<KeptHelpLine> | undefined;
+  const room = keptRoom();
+  if (!kept || !room || kept.memberId !== room.memberId || kept.churchId !== room.churchId || !kept.answers) return null;
+  return kept as KeptHelpLine;
+}
+
+/** Keeps the help line's readings as the signed-in member has them now. Only inside the app. */
+export function keepHelpLine(memberId: string, churchId: string, answers: Record<string, unknown>) {
+  const keep = handler();
+  if (!keep) return;
+  keep.postMessage(JSON.stringify({ helpLine: { memberId, churchId, answers } }));
+}
+
 /** The week's counts for someone who may not see them: never drawn (week-note.tsx draws nothing then), kept as zeros. */
 export const emptyNote: FirstRoom["weekNote"] = { callsWaiting: 0, callsFirstByAssistant: 0, callsFirstByPerson: 0, oldestWaitingDays: 0, visitsPlanned: 0, requestsOpen: 0, approvedUnpaid: 0, approvedUnpaidCents: 0, openPlaces: 0, away: 0 };
 
@@ -41,6 +64,7 @@ export function forgetKeptRoom() {
   const keep = handler();
   if (!keep) return;
   delete (window as { kindHelpsKept?: unknown }).kindHelpsKept;
+  delete (window as { kindHelpsKeptHelpLine?: unknown }).kindHelpsKeptHelpLine;
   try {
     sessionStorage.setItem(GONE, "1");
   } catch {

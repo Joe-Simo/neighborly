@@ -3,7 +3,7 @@
 import { useContext, useSyncExternalStore } from "react";
 import * as live from "convex/react";
 import type { OptionalRestArgsOrSkip, PaginatedQueryArgs, PaginatedQueryReference, UsePaginatedQueryReturnType } from "convex/react";
-import type { FunctionReference, FunctionReturnType } from "convex/server";
+import { getFunctionName, type FunctionReference, type FunctionReturnType } from "convex/server";
 import * as kept from "convex-helpers/react/cache/hooks";
 import { ConvexQueryCacheContext } from "convex-helpers/react/cache/provider";
 import { useFirstLook } from "@/components/workspace/first-look";
@@ -21,8 +21,15 @@ export function useQuery<Query extends FunctionReference<"query">>(
   ...args: OptionalRestArgsOrSkip<Query>
 ): FunctionReturnType<Query> | undefined {
   const source = useContext(ConvexQueryCacheContext).registry ? kept : live;
-  const looking = useFirstLook() !== null;
-  return source.useQuery(query, ...(looking ? (["skip"] as OptionalRestArgsOrSkip<Query>) : args));
+  const look = useFirstLook();
+  const asked = source.useQuery(query, ...(look ? (["skip"] as OptionalRestArgsOrSkip<Query>) : args));
+  // In a look at a kept room other than the week, the reading it kept is the answer; anything else waits.
+  return look ? (keptAnswer(look.answers, query) as FunctionReturnType<Query> | undefined) : asked;
+}
+
+/** A reading kept on the device for a first look (lib/kept-room.ts), by the reading's name. */
+export function keptAnswer(answers: Record<string, unknown> | undefined, query: FunctionReference<"query">) {
+  return answers?.[getFunctionName(query)];
 }
 
 export function usePaginatedQuery<Query extends PaginatedQueryReference>(
