@@ -733,7 +733,7 @@ export function HelpLineView({
                         {caller(call, words)}
                       </Link>
                     ) : (
-                      caller(call, words)
+                      <span className="live-name">{caller(call, words)}</span>
                     )}
                     {call.phone && (
                       // The number calls: on a phone a tap rings it, and the row's menu offers it first as Call.
