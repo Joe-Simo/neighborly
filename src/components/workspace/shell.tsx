@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import type { LiveArea } from "@/components/workspace/areas";
 import { readFailure } from "@/components/workspace/failure";
+import { sayRefused } from "@/lib/refusals";
 import { LaunchMark, LiveLoading } from "@/components/workspace/primitives";
 import { LiveConnection, LiveState, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
 import { zoneName } from "@/components/workspace/zone";
@@ -191,7 +192,7 @@ export function LiveWorkspace({
       return true;
     } catch (cause) {
       const said = readFailure(cause, words.notices.failed);
-      setError(words.notices.refused[said] ?? said);
+      setError(sayRefused(words.notices, said));
       return false;
     } finally {
       setPending(false);
@@ -714,7 +715,7 @@ export function LiveWorkspace({
                     } catch (cause) {
                       const said = readFailure(cause, words.notices.failed);
                       setNotice("");
-                      setError(words.notices.refused[said] ?? said);
+                      setError(sayRefused(words.notices, said));
                     } finally {
                       setPending(false);
                     }

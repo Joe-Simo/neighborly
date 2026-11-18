@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { readFailure } from "@/components/workspace/failure";
+import { sayRefused } from "@/lib/refusals";
 import { SAVED_EVENT } from "@/components/workspace/kept-typing";
 
 type Felt = "saved" | "decided";
@@ -31,7 +32,7 @@ export function useSave(felt: Felt = "saved") {
       (window as FeltBridge).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("refused");
       // The backend's own sentence is English; the reader's language carries it where the tables have it.
       const said = readFailure(cause, states?.notSaved, states?.offlineSave);
-      setError(words?.notices.refused[said] ?? said);
+      setError(sayRefused(words?.notices, said));
       return { saved: false as const };
     } finally {
       setPending(false);
