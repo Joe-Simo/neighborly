@@ -22,11 +22,11 @@
 }
 .tools-rota { margin-top: 30px; }
 .tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--live-muted); }
-.tools-rota header h3 { margin: 4px 0 18px; font: 400 28px/1.15 "Newsreader", serif; color: var(--live-ink); }
+.tools-rota header h3 { margin: 4px 0 18px; font: 400 28px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
 .tools-rota td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tools-rota td small { display: block; color: var(--live-muted); font-size: 15px; }
-.tools-rota .tools-rota-day th { padding-top: 26px; font: 600 16px/1.3 "Source Sans 3", sans-serif; text-transform: none; letter-spacing: 0; color: var(--live-ink); }
+.tools-rota .tools-rota-day th { padding-top: 26px; font: 600 16px/1.3 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; text-transform: none; letter-spacing: 0; color: var(--live-ink); }
 .tools-rota .tools-rota-none td { color: var(--live-muted); font-style: italic; }
 .tools-rota-foot { display: none; }
 .tools-rota-open { display: inline-block; min-width: 9em; border-bottom: 1px solid currentColor; color: var(--live-muted); }
@@ -64,7 +64,7 @@
   .tools-rota .live-table-scroll { overflow: visible; }
   .tools-rota .help-empty { display: none !important; }
   .tools-rota-foot { display: flex !important; justify-content: space-between; margin-top: 10mm; padding-top: 3mm; border-top: 0.5pt solid #000; font-size: 9pt; }
-  .tools-rota-foot span:first-child { font: 400 12pt/1 "Newsreader", Georgia, serif; }
+  .tools-rota-foot span:first-child { font: 400 12pt/1 "Newsreader", "Newsreader Fallback", Georgia, serif; }
 }
 
 :is(.live-app, .live-dialog) .tools-done:focus, :is(.live-app, .live-dialog) .tools-done:focus-visible { outline: none; }
@@ -106,7 +106,7 @@ p.tools-quiet { margin: 14px 0 0; }
 /* Your files, in paper: each thing to bring in is a leaf of paper; the one in use opens across the page. */
 .tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; margin-top: 36px; max-width: 1040px; }
 .tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: 28px 30px 26px; background: #fffdf7; border: 1px solid #e0dccb; border-radius: 3px; box-shadow: 0 1px 0 #fff inset, 0 16px 30px -26px #3b3a2466, 0 2px 5px -3px #3b3a2433; }
-.live-app .tools-leaf > h2 { margin: 0 0 10px; font: 400 27px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
+.live-app .tools-leaf > h2 { margin: 0 0 10px; font: 400 27px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
 .tools-leaf-deck { margin: 0; max-width: 62ch; font-size: 17px; line-height: 1.5; color: var(--live-muted); }
 .tools-leaf > .tools-file { max-width: none; margin-top: 22px; }
 .tools-leaf .tools-small { max-width: 62ch; }
@@ -165,7 +165,7 @@ p.tools-quiet { margin: 14px 0 0; }
   .tools-rota header h3 { margin: 1.5mm 0 0; text-wrap: balance; font-size: 27pt; line-height: 1.05; letter-spacing: -0.015em; }
   :is(.live-app, .live-dialog) .tools-rota thead th { padding-top: 3mm; padding-bottom: 1.5mm; border-bottom: 0; font-size: 7.5pt; letter-spacing: 0.1em; }
   :is(.live-app, .live-dialog) .tools-rota th, :is(.live-app, .live-dialog) .tools-rota td { border-color: #8a8a8a; border-bottom-width: 0.35pt; }
-  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { padding-top: 5mm; padding-bottom: 1.5mm; border-bottom: 0.75pt solid #000; font: 400 14pt/1.2 "Newsreader", Georgia, serif; text-transform: none; letter-spacing: -0.005em; }
+  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { padding-top: 5mm; padding-bottom: 1.5mm; border-bottom: 0.75pt solid #000; font: 400 14pt/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; text-transform: none; letter-spacing: -0.005em; }
   .tools-rota tr:not(.tools-rota-none) td:last-child { font-weight: 600; }
   .tools-rota .tools-rota-none td { font-size: 10pt; }
   .tools-rota-open { min-width: 38mm; height: 5mm; color: transparent !important; border-bottom: 0.5pt solid #000; }

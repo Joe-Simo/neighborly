@@ -66,7 +66,7 @@
     .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
     /* An address is longer than a name, so the invited role sits under it and the address takes both columns. */
     .people-invited .live-person { grid-column: span 2; }
-    .people-invited .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0; color: var(--live-muted); }
+    .people-invited .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); }
     .people-invited .live-meta > .people-role-wide { display: none; }
   }
 }
@@ -75,7 +75,7 @@
 @media (max-width: 700px) {
   .live-app .people-row { align-items: center; row-gap: 0; padding-block: 14px; }
   .people-row h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; }
-  .people-role { display: inline; font: 400 15px/1.4 "Source Sans 3", sans-serif; letter-spacing: 0; color: var(--live-muted); }
+  .people-role { display: inline; font: 400 15px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); }
   .people-row .live-meta > .people-role-wide, .people-row .live-meta > span:empty { display: none; }
   .people-row .live-meta > span { padding-left: 59px; font-size: 15px; }
   .live-app .people-row { grid-template-columns: minmax(0, 1fr) auto; }

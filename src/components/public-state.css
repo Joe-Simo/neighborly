@@ -35,7 +35,7 @@
 :root:lang(es) .public-state [lang="en"],
 :root:not(:lang(es)) .public-state [lang="es"] { display: none; }
 /* The name is only ever the lowercase wordmark. */
-.public-state .public-state-mark { margin: 0 0 18px; font: 400 30px/1 "Newsreader", Georgia, serif; letter-spacing: -0.065em; color: var(--live-ink, #24382d); }
+.public-state .public-state-mark { margin: 0 0 18px; font: 400 30px/1 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.065em; color: var(--live-ink, #24382d); }
 
 /* The cut: the page's own paper, one slow curve down its left side, with the shadow it casts on the painting. */
 .public-state{--public-state-cut:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 1000' preserveAspectRatio='none'%3E%3Cfilter id='s' x='-60%25' y='-5%25' width='170%25' height='110%25'%3E%3CfeDropShadow dx='-5' dy='3' stdDeviation='7 5' flood-color='%232e2416' flood-opacity='.34'/%3E%3C/filter%3E%3Cpath d='M110 -20L58 -20C74 140 44 270 60 430S78 690 52 840 62 960 56 1020L110 1020Z' fill='%23f7f4ed' filter='url%28%23s%29'/%3E%3C/svg%3E")}

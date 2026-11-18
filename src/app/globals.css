@@ -142,7 +142,7 @@ summary:focus-visible,
   gap: 20px;
 }
 .mural-wordmark {
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: clamp(36px, 3.65vw, 58px);
   font-weight: 600;
   letter-spacing: -0.06em;
@@ -199,7 +199,7 @@ summary:focus-visible,
   position: absolute;
   left: 3.2%;
   top: 34.5%;
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: clamp(74px, 9.75vw, 152px);
   font-weight: 400;
   letter-spacing: -0.065em;
@@ -227,7 +227,7 @@ summary:focus-visible,
   display: inline-block;
   padding-bottom: 18px;
   border-bottom: 2px solid #d4ab57;
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: clamp(30px, 3vw, 48px);
   font-weight: 400;
   letter-spacing: -0.045em;
@@ -246,7 +246,7 @@ summary:focus-visible,
   border: 0;
   background: transparent;
   border-radius: 0;
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: clamp(21px, 2.1vw, 34px);
   font-weight: 500;
   color: #275748;
@@ -287,7 +287,7 @@ summary:focus-visible,
   border: 0;
   padding: 10px 15px;
   border-radius: 0;
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: clamp(19px, 1.55vw, 26px);
   font-weight: 400;
   color: #242a27;
@@ -379,7 +379,7 @@ summary:focus-visible,
   margin: 8px 0 20px;
 }
 .surface-title {
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: 42px;
   line-height: 1.08;
   font-weight: 400;
@@ -396,7 +396,7 @@ summary:focus-visible,
   margin: 25px -7px;
 }
 .surface-dates .mural-date[data-slot="button"] {
-  font-family: "Source Sans 3", sans-serif;
+  font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
   font-size: 14px;
   padding: 8px 9px;
   min-width: 58px;
@@ -434,7 +434,7 @@ summary:focus-visible,
   margin-top: 28px;
 }
 .flow-content h3 {
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: 29px;
   line-height: 1.15;
   letter-spacing: -0.025em;
@@ -509,7 +509,7 @@ summary:focus-visible,
   flex-wrap: wrap;
 }
 .panel-title {
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: 32px;
   font-weight: 400;
   line-height: 1.1;
@@ -551,7 +551,7 @@ summary:focus-visible,
 }
 .workspace-entry h2,
 .draft-inner h2 {
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: clamp(36px, 4.3vw, 64px);
   line-height: 1;
   letter-spacing: -0.045em;
@@ -570,7 +570,7 @@ summary:focus-visible,
   border-bottom: 1px solid #242a2720;
 }
 .workspace-top h3 {
-  font-family: "Newsreader", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-size: 30px;
   font-weight: 400;
 }
@@ -1087,7 +1087,7 @@ summary:focus-visible,
 /* One sheet of paper carries the visitor from the story into the workspace. */
 .neighborly-paper-carry{position:fixed;inset:0;z-index:80;display:none;place-items:center;background:#eee7d7 url(/assets/paper-world/continuation.webp) center/cover;box-shadow:0 -18px 60px #24382c40,0 18px 60px #24382c40}
 .neighborly-paper-carry[data-carrying=true]{display:grid}
-.neighborly-paper-carry span{font:400 clamp(34px,4vw,56px)/1 'Newsreader',Georgia,serif;letter-spacing:-.05em;color:#293f32}
+.neighborly-paper-carry span{font:400 clamp(34px,4vw,56px)/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.05em;color:#293f32}
 
 /* The public display scale. Four steps of Newsreader's display cut, each with its own tracking and leading: the bigger the line, the tighter it is set, so every head on every public page is spaced by one rule. */
 :root {

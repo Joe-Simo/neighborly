@@ -62,7 +62,7 @@
     display: block !important;
     grid-column: 1 / -1;
     margin-top: 6px;
-    font: 400 17px/1.3 "Source Sans 3", sans-serif;
+    font: 400 17px/1.3 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
     color: var(--live-muted);
   }
   .help-ledger td[data-total] span {
@@ -104,7 +104,7 @@
   text-decoration-thickness: 1px;
 }
 .treasury-entry-amount {
-  font: 400 44px/1 "Newsreader", Georgia, serif;
+  font: 400 44px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.03em;
   font-variant-numeric: lining-nums tabular-nums;
   margin: 4px 0 6px;
@@ -145,7 +145,7 @@
   border-bottom: 1px solid var(--live-line);
 }
 .treasury-foot h2 {
-  font: 400 27px/1.15 "Newsreader", Georgia, serif;
+  font: 400 27px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.02em;
   margin: 0 0 7px;
   text-wrap: balance;
@@ -288,7 +288,7 @@
   margin-top: 16px;
 }
 .help-ledger.treasury-shelf td.help-what {
-  font: 400 24px/1.2 "Newsreader", Georgia, serif;
+  font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.02em;
 }
 .help-ledger.treasury-shelf td[data-total] {
@@ -296,7 +296,7 @@
 }
 .help-ledger.treasury-shelf td[data-total] small {
   margin-right: 10px;
-  font: 400 15px/1 "Source Sans 3", sans-serif;
+  font: 400 15px/1 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
   letter-spacing: 0;
   color: var(--live-muted);
 }
@@ -362,7 +362,7 @@
   color: #fff;
 }
 .treasury-gift-amount {
-  font: 400 21px/1 "Newsreader", Georgia, serif;
+  font: 400 21px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-variant-numeric: lining-nums tabular-nums;
 }
 .treasury-gift-total {
@@ -374,7 +374,7 @@
   color: #68715f;
 }
 .treasury-gift-total strong {
-  font: 400 30px/1 "Newsreader", Georgia, serif;
+  font: 400 30px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.02em;
   font-variant-numeric: lining-nums tabular-nums;
   color: #283c32;
@@ -415,7 +415,7 @@
   .help-ledger.treasury-shelf td.help-money::before {
     content: attr(data-label);
     display: block;
-    font: 400 13px/1.4 "Source Sans 3", sans-serif;
+    font: 400 13px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--live-muted);
@@ -533,7 +533,7 @@
   line-height: 1.4;
 }
 .treasury-paid-line strong {
-  font: 400 24px/1.1 "Newsreader", Georgia, serif;
+  font: 400 24px/1.1 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }

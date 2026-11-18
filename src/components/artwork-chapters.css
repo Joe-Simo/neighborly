@@ -12,7 +12,7 @@
 .artwork-chapter-copy{position:absolute;top:29%;left:4%;width:min(390px,38%);outline:none;animation:chapter-read 550ms cubic-bezier(.2,.7,.2,1) both}
 .artwork-chapter-eyebrow{font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:22px;color:#54634c}
 .artwork-chapter-eyebrow span{padding-left:8px;color:#7a806a}
-.artwork-chapter-copy h2{font:400 clamp(47px,4.7vw,76px)/.97 "Newsreader",Georgia,serif;letter-spacing:-.055em;margin:0 0 24px;outline:none}
+.artwork-chapter-copy h2{font:400 clamp(47px,4.7vw,76px)/.97 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.055em;margin:0 0 24px;outline:none}
 .artwork-chapter-copy h2 em{font-weight:400}
 .artwork-chapter-description{max-width:32ch;font-size:14px;line-height:1.65;color:#455b46}
 .paper-entry[data-chapter=choose] .artwork-chapter-copy,.paper-entry[data-chapter=prepare] .artwork-chapter-copy{top:14%;width:min(560px,50%)}

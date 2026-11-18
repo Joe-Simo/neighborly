@@ -22,8 +22,8 @@ export const clerkAppearance = {
     colorBorder: line,
     colorShadow: "rgb(40 60 50 / 0.22)",
     colorModalBackdrop: "rgb(40 60 50 / 0.16)",
-    fontFamily: '"Source Sans 3", sans-serif',
-    fontFamilyButtons: '"Source Sans 3", sans-serif',
+    fontFamily: '"Source Sans 3", "Source Sans 3 Fallback", sans-serif',
+    fontFamilyButtons: '"Source Sans 3", "Source Sans 3 Fallback", sans-serif',
     fontSize: "16px",
     borderRadius: "6px",
   },
@@ -38,7 +38,7 @@ export const clerkAppearance = {
     card: { background: paper, border: "none", boxShadow: "none" },
     footer: { background: paper, color: "#656d61", fontSize: "15px" },
     // Its title in the serif of the sheet's titles.
-    headerTitle: { fontFamily: '"Newsreader", Georgia, serif', fontWeight: 400, fontSize: "30px", lineHeight: 1.1, letterSpacing: "-0.6px", color: ink },
+    headerTitle: { fontFamily: '"Newsreader", "Newsreader Fallback", Georgia, serif', fontWeight: 400, fontSize: "30px", lineHeight: 1.1, letterSpacing: "-0.6px", color: ink },
     // Its turning spinner is our still waiting ring: ochre, as the sheet's "Please wait…", and it does not turn.
     spinner: {
       width: "20px",

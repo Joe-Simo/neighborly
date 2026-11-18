@@ -2,7 +2,7 @@
 .live-aside-sheet .volunteer-month,
 .live-aside-sheet .volunteer-teams-week { width: 100%; border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
 .live-aside-sheet :is(.volunteer-month, .volunteer-teams-week) :is(th, td) { border: 0; background: none; text-transform: none; letter-spacing: 0; }
-.live-aside-sheet .volunteer-month caption { caption-side: top; text-align: left; margin-bottom: 12px; font-family: "Newsreader", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); }
+.live-aside-sheet .volunteer-month caption { caption-side: top; text-align: left; margin-bottom: 12px; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); }
 .live-aside-sheet :is(.volunteer-month, .volunteer-teams-week) thead th { padding: 0 0 8px; font-size: 13px; font-weight: 400; text-align: center; color: var(--live-muted); border-bottom: 1px solid var(--live-line); }
 .live-aside-sheet .volunteer-teams-week tbody + tbody tr:first-child th { border-top: 1px solid var(--live-line); }
 .live-aside-sheet .volunteer-teams-week thead th[data-today] { font-weight: 600; color: var(--live-ink); }
@@ -33,7 +33,7 @@
 .live-aside-sheet .volunteer-teams-week tbody td i { display: block; margin: 0 auto 3px; }
 
 .live-aside-sheet .volunteer-next p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--live-muted); }
-.live-aside-sheet .volunteer-next .volunteer-next-day { font-family: "Newsreader", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); text-wrap: balance; }
+.live-aside-sheet .volunteer-next .volunteer-next-day { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); text-wrap: balance; }
 .live-aside-sheet .volunteer-next .volunteer-next-title { margin: 10px 0 2px; font-weight: 600; color: var(--live-ink); }
 .live-aside-sheet .volunteer-next .volunteer-next-reply { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--live-line); color: var(--live-ink); }
 .live-aside-sheet .volunteer-next-reply::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }

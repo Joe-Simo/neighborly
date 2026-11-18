@@ -121,7 +121,7 @@
 .help-seal {
   position: absolute; right: 0; bottom: 0; margin: 0 !important; min-height: 44px;
   display: flex; align-items: center; gap: 12px;
-  font: 400 24px/1.2 "Newsreader", Georgia, serif; letter-spacing: -0.01em; color: #365c46 !important;
+  font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.01em; color: #365c46 !important;
   animation: paper-rise 320ms var(--paper-ease) 120ms backwards;
 }
 .help-seal svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -163,7 +163,7 @@
    view while those households pass. On a phone the letter rides above its group, smaller. */
 .live-app .help-letter-head {
   position: sticky; top: calc(var(--live-bar, 0px) + 12px); z-index: 2; margin: 0;
-  font: 400 76px/0.9 "Newsreader", Georgia, serif; letter-spacing: -0.03em;
+  font: 400 76px/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
   color: #d8cfb6;
   text-shadow: -1px -1px 0 #fffdf7, 1px 2px 0 #b9ad8e, 2px 4px 2px rgb(40 60 50 / 0.18), 4px 10px 14px rgb(40 60 50 / 0.24);
 }
@@ -182,7 +182,7 @@
 /* The households waiting for a decision come first, under a small head of their own. */
 .live-app .help-waiting-head { margin: 0 0 10px; font: 600 13px/1.4 inherit; letter-spacing: 0.12em; text-transform: uppercase; color: var(--live-ink); }
 /* What a household is waiting on is lifted to the row's right, in ink beside its ochre ring. */
-.live-app .help-neighbor .help-asks { gap: 10px; font: 400 19px/1.2 "Newsreader", Georgia, serif; letter-spacing: -0.01em; color: var(--live-ink); white-space: nowrap; }
+.live-app .help-neighbor .help-asks { gap: 10px; font: 400 19px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.01em; color: var(--live-ink); white-space: nowrap; }
 .live-app .help-neighbor .help-asks:before { width: 10px; height: 10px; background: none; box-shadow: inset 0 0 0 2px #c8962e; }
 .help-more { display: flex; align-items: center; gap: 16px; margin: 28px 0 0; font-size: 16px; color: var(--live-muted); }
 .live-app .help-more [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
@@ -202,7 +202,7 @@
   .help-last { white-space: nowrap; }
 }
 /* The assistant is reading: one quiet sentence holds the title's place, at the title's height, until the words arrive. */
-.help-sheet .help-reading-title { margin: 4px 0 16px; font: 400 22px / 34px "Newsreader", Georgia, serif; color: var(--live-muted); }
+.help-sheet .help-reading-title { margin: 4px 0 16px; font: 400 22px / 34px "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-muted); }
 /* The way on from the line that says what changed. */
 .help-done { flex-wrap: wrap; }
 .help-done > span { flex: 1 1 14rem; min-width: 0; }
@@ -296,7 +296,7 @@
 .help-done.help-filed { align-items: start; }
 .help-done.help-filed > svg { margin-top: 5px; }
 .help-filed-words { display: grid; justify-items: start; gap: 1px 0; min-width: 0; flex: 1 1 auto; }
-.help-filed-words strong { font: 400 24px/1.2 "Newsreader", Georgia, serif; letter-spacing: -0.02em; white-space: nowrap; transform-origin: 0 0; }
+.help-filed-words strong { font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; white-space: nowrap; transform-origin: 0 0; }
 .help-filed-words [data-filed="asks"] { font-size: 17px; line-height: 1.45; }
 .help-filed-words > span:last-child { font-size: 15px; line-height: 1.45; margin-top: 3px; }
 .help-done.help-filed > :is(a, button) { align-self: center; flex: none; }
@@ -349,12 +349,12 @@
 .help-waiting-beside { margin: 0; padding: 0; list-style: none; }
 .help-waiting-beside li { position: relative; display: grid; gap: 4px; padding: 14px 0; border-top: 1px solid var(--live-line); cursor: pointer; }
 .help-waiting-beside li:first-child { padding-top: 0; border-top: 0; }
-.help-waiting-beside .help-row-open { font: 400 22px/1.2 "Newsreader", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); }
+.help-waiting-beside .help-row-open { font: 400 22px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); }
 .help-waiting-beside li:hover .help-row-open { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .help-waiting-beside li:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: 4px; border-radius: 6px; }
 .live-app .help-waiting-beside .help-asks:before { width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #a8791f; }
 
 /* A returned call's slip, carried onto the "returned" count and laid there (lay-slip.ts): the home page's slip, in the room's paper. Its name is lifted off as it lies down, never squeezed. */
-.help-slip { position: fixed; z-index: 60; padding: 10px 14px 11px; background: #f7f2e6; color: #293f32; border-radius: 1px; box-shadow: 0 0 0 1px #b0a08466, 0 1px 0 #b0a084, 0 3px 6px -2px #3b2a1233; font: 500 16px/1.25 "Newsreader", Georgia, serif; white-space: nowrap; transform-origin: 0 0; pointer-events: none; will-change: transform; }
+.help-slip { position: fixed; z-index: 60; padding: 10px 14px 11px; background: #f7f2e6; color: #293f32; border-radius: 1px; box-shadow: 0 0 0 1px #b0a08466, 0 1px 0 #b0a084, 0 3px 6px -2px #3b2a1233; font: 500 16px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; white-space: nowrap; transform-origin: 0 0; pointer-events: none; will-change: transform; }
 .help-slip[data-lying] { color: transparent; }
 @media (forced-colors: active) { .help-slip { border: 1px solid CanvasText; box-shadow: none; } }
