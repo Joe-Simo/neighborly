@@ -137,7 +137,7 @@ export default defineSchema({
     completedAt: v.optional(v.number()),
     createdBy: v.id("memberships"),
     createdAt: v.number(),
-  }).index("by_church", ["churchId", "scheduledAt"]).index("by_neighbor", ["neighborId"]).index("by_request", ["requestId"]),
+  }).index("by_church", ["churchId", "scheduledAt"]).index("by_church_status_completed", ["churchId", "status", "completedAt"]).index("by_neighbor", ["neighborId"]).index("by_request", ["requestId"]),
   ledgerEntries: defineTable({
     churchId: v.id("churches"),
     kind: v.union(v.literal("income"), v.literal("expense")),

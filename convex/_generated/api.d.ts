@@ -26,6 +26,7 @@ import type * as notificationEvents from "../notificationEvents.js";
 import type * as notifications from "../notifications.js";
 import type * as pages from "../pages.js";
 import type * as people from "../people.js";
+import type * as quilt from "../quilt.js";
 import type * as reports from "../reports.js";
 import type * as sampleData from "../sampleData.js";
 import type * as spoken from "../spoken.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   pages: typeof pages;
   people: typeof people;
+  quilt: typeof quilt;
   reports: typeof reports;
   sampleData: typeof sampleData;
   spoken: typeof spoken;

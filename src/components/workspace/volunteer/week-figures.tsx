@@ -32,6 +32,7 @@ export function WeekFigures({ noted = false }: { noted?: boolean }) {
     { area: "neighbors", label: why.requests, value: counts.requestsOpen, reason: counts.approvedUnpaid && !noted ? why.toPay(counts.approvedUnpaid) : "" },
   ] as const;
   return (
+    <>
     <nav className="week-figures paper-rows" aria-label={words.monday.title}>
       {figures.map(({ area, label, value, reason }) => (
         <Link key={area} href={`/app/${area}`}>
@@ -43,5 +44,6 @@ export function WeekFigures({ noted = false }: { noted?: boolean }) {
         </Link>
       ))}
     </nav>
+    </>
   );
 }

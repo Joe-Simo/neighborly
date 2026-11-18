@@ -105,6 +105,8 @@ const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").t
 async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id<"churches">> {
   // The conference's running figures (convex/counts.ts) are counted as the sample is laid, and written last.
   const figures = { households: 0, waiting: [] as Id<"neighbors">[] };
+  // Every call and visit as laid, for this week's relabelling at the end.
+  const laid = { calls: [] as { id: Id<"calls">; takenAt: number; done: boolean }[], visits: [] as { id: Id<"visits">; scheduledAt: number }[] };
   const laying = db;
   db = {
     ...laying,
@@ -112,7 +114,10 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
       if (table === "neighbors") figures.households++;
       // Requests are laid with their final state; none is patched afterwards.
       if (table === "assistanceRequests" && doc.status === "open") figures.waiting.push(doc.neighborId as Id<"neighbors">);
-      return laying.insert(table as never, doc as never);
+      const id = await laying.insert(table as never, doc as never);
+      if (table === "calls" && doc.neighborId) laid.calls.push({ id: id as Id<"calls">, takenAt: doc.takenAt as number, done: doc.callback === "done" && doc.returnedAt === undefined });
+      if (table === "visits" && doc.status === "completed") laid.visits.push({ id: id as Id<"visits">, scheduledAt: doc.scheduledAt as number });
+      return id;
     }) as SampleDb["insert"],
     get: laying.get.bind(laying),
     patch: laying.patch.bind(laying),
@@ -530,6 +535,23 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   await shelf(start + DAY, 40, "Furniture voucher", "From the conference thrift store");
   await shelf(start + DAY, 40, "Clothing voucher", "From the conference thrift store");
   for (const given of vouchersGiven) await shelf(Math.min(given.time, now), -1, given.item, "Given on a request", given.requestId);
+  // This week as a leader would find it: some calls already called back and visits already written up, spread
+  // over the days so far. Relabelled from the open year's last three weeks only, never drawn, so the closed year,
+  // every draw and every count stay as pinned; a call keeps when it came in and a visit when it was made.
+  const weekStart = monday.toMillis();
+  if (now - weekStart > 3 * 3600000) {
+    const since = Math.max(thisFiscalYear.toMillis(), weekStart - 21 * DAY);
+    const calls = laid.calls.filter((call) => call.done && call.takenAt >= since && call.takenAt < weekStart).sort((a, b) => a.takenAt - b.takenAt).slice(-7);
+    const visits = laid.visits.filter((visit) => visit.scheduledAt >= since && visit.scheduledAt < weekStart).sort((a, b) => a.scheduledAt - b.scheduledAt).slice(-5);
+    const acts = [...calls.map((call) => ({ call, visit: undefined, at: call.takenAt })), ...visits.map((visit) => ({ visit, call: undefined, at: visit.scheduledAt }))].sort((a, b) => a.at - b.at);
+    for (const [index, act] of acts.entries()) {
+      // Evenly over the week so far, inside working hours of its own day.
+      const day = DateTime.fromMillis(weekStart + ((now - weekStart) * (index + 0.5)) / acts.length, { zone });
+      const at = Math.min(now - 3600000, day.set({ hour: Math.min(16, Math.max(9, day.hour)) }).toMillis());
+      if (act.call) await db.patch("calls", act.call.id, { returnedBy: staff[index % staff.length], returnedAt: at });
+      if (act.visit) await db.patch("visits", act.visit.id, { completedAt: at });
+    }
+  }
   await laying.patch("churches", churchId, { householdCount: figures.households, waitingCount: figures.waiting.length, waitingHouseholdIds: figures.waiting.slice(0, WAITING_KEPT) });
 
   return churchId;
