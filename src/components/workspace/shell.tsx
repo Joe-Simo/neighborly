@@ -64,6 +64,9 @@ import { LiveCreateForm } from "@/components/workspace/volunteer/create-form";
 import { LiveTimeOffForm } from "@/components/workspace/volunteer/time-off-form";
 import { formatDate, words as wordsFor } from "@/lib/words";
 
+// One empty list for every draw, so a workspace with no requests stays the same workspace.
+const NO_COMMITMENTS: LiveWorkspaceData["commitments"] = [];
+
 export function LiveWorkspace({
   area,
   data,
@@ -73,7 +76,7 @@ export function LiveWorkspace({
   selectChurch,
   pagination,
   keptNotice,
-  requestCommitments = [],
+  requestCommitments = NO_COMMITMENTS,
   roomWaiting = false,
 }: {
   area: LiveArea;
@@ -143,6 +146,7 @@ export function LiveWorkspace({
   const selected = selectedCommitment;
   // At most one of the shell's dialogs is open at a time.
   const openDialog: DialogName | null = dialog !== null ? "create" : selectedCommitment ? "detail" : editingCommitment ? "editor" : confirmation ? "confirmation" : release ? "release" : null;
+  // The ways a room says a date, a name or a team. (The compiler keeps them while the data and the words hold.)
   const format = (time: number, options?: Intl.DateTimeFormatOptions) =>
     formatDate(words.locale, time, {
       timeZone: data.church.timeZone,
@@ -234,6 +238,8 @@ export function LiveWorkspace({
   // A menu line marked for leaders is shown only to coordinators and owners of the group.
   const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
   const menuItems = navigation.filter((item) => leads || !("leadersOnly" in item));
+  // The rooms' names for the keys' sheet, one per line: equal from draw to draw while the names stay, so the keys are not drawn again.
+  const roomNames = menuItems.map(({ id, label }) => menu[id] ?? label).join("\n");
   // On a phone the menu button says "Menu" and tells a screen reader which room this is.
   const menuLabel = menu[area] ?? navigation.find((item) => item.id === area)?.label;
   const navRef = useNavMarker(area);
@@ -479,6 +485,16 @@ export function LiveWorkspace({
     const later = window.setTimeout(() => fetchAhead(others.split(" ") as ReliefName[]), 900);
     return () => window.clearTimeout(later);
   }, [roomIn, others]);
+  // What a room calls when something happens is the same function from draw to draw (it always runs the latest
+  // one), and what a room reads changes only with what it reads from: so the workspace below is drawn again only
+  // when its data, the hour, the save under way, the team chosen or the words change, never because the shell's own
+  // line, sheet or menu did.
+  const latest = useRef({ perform, open });
+  useLayoutEffect(() => {
+    latest.current = { perform, open };
+  });
+  const steadyPerform = useCallback((...save: Parameters<typeof perform>) => latest.current.perform(...save), []);
+  const steadyOpen = useCallback((kind: ActionKind) => latest.current.open(kind), []);
   const workspace: Workspace = {
     area,
     data,
@@ -495,13 +511,13 @@ export function LiveWorkspace({
     teamName,
     sampleSaid,
     keepNames,
-    perform,
+    perform: steadyPerform,
     offerUndo: (said, back) => {
       setError("");
       setNotice(said);
       setUndo(back);
     },
-    openAction: open,
+    openAction: steadyOpen,
     showCommitment: (item, trigger) => {
       commitmentTrigger.current = trigger;
       setError("");
@@ -536,7 +552,7 @@ export function LiveWorkspace({
         <div className="live-header-actions">
           <div className="live-header-desk contents">
             {selectChurch}
-            <LanguageChooser />
+            <LanguageChooser words={words} churchId={data.church.id} />
             <span className="live-account">
               {data.user.name || data.user.email}
             </span>
@@ -566,7 +582,7 @@ export function LiveWorkspace({
                 {selectChurch}
               </div>
               <div className="live-menu-foot">
-                <LanguageChooser />
+                <LanguageChooser words={words} churchId={data.church.id} />
                 <Button variant="outline" className="live-menu-leave" disabled={pending} onClick={() => void signOut()}>
                   <LogOut size={17} aria-hidden="true" /> {leaveLabel}
                 </Button>
@@ -594,7 +610,7 @@ export function LiveWorkspace({
         </nav>
         <WorkspaceProvider value={workspace}>
         <KeptTyping member={data.user.id} conference={data.church.id} />
-        <WorkspaceKeys nav={navRef} rooms={menuItems.map(({ id, label }) => menu[id] ?? label)} />
+        <WorkspaceKeys nav={navRef} rooms={roomNames} keys={words.shell.keys} />
         <RoomStill area={area} column={column}>
         <RoomShown value={shown}>
         <main

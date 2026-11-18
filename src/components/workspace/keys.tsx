@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type RefObject } from "react";
+import { memo, useEffect, useState, type RefObject } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useWorkspace } from "@/components/workspace/context";
+import type { Words } from "@/lib/words";
 
 /** A key pressed while a box is being typed in, a sheet is open, or with a modifier belongs to that, not to the workspace. */
 function forTheWorkspace(event: KeyboardEvent) {
@@ -17,9 +17,9 @@ function forTheWorkspace(event: KeyboardEvent) {
  * room's head button, and ? shows them all on one sheet. Each key does what a click on the same control does, so
  * nothing new happens by key that cannot happen by hand.
  */
-export function WorkspaceKeys({ nav, rooms }: { nav: RefObject<HTMLElement | null>; rooms: readonly string[] }) {
-  const { words } = useWorkspace();
+export const WorkspaceKeys = memo(function WorkspaceKeys({ nav, rooms: lines, keys: k }: { nav: RefObject<HTMLElement | null>; /** The menu's rooms in order, one per line. */ rooms: string; keys: Words["shell"]["keys"] }) {
   const [shown, setShown] = useState(false);
+  const rooms = lines.split("\n");
   useEffect(() => {
     const press = (event: KeyboardEvent) => {
       if (event.key === "?" && (shown || forTheWorkspace(event))) {
@@ -57,7 +57,6 @@ export function WorkspaceKeys({ nav, rooms }: { nav: RefObject<HTMLElement | nul
     window.addEventListener("keydown", press);
     return () => window.removeEventListener("keydown", press);
   }, [nav, shown]);
-  const k = words.shell.keys;
   const rows: [string, string][] = [
     ...rooms.slice(0, 9).map((room, at): [string, string] => [String(at + 1), room]),
     ["[ ]", k.step],
@@ -83,4 +82,4 @@ export function WorkspaceKeys({ nav, rooms }: { nav: RefObject<HTMLElement | nul
       </DialogContent>
     </Dialog>
   );
-}
+});

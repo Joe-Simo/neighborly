@@ -16,9 +16,16 @@ const HELD_AWAY = "translateY(calc(-100% - 8px - var(--live-bar, 0px)))";
  * After the hold, whatever is marked `data-fold-leaves` goes: it fades and closes up over 360ms, so what
  * is below glides into its place and the page never jumps. Await it, then take the sheet out of the data.
  * For anyone who asks for less motion it is a plain cut.
+ * Every sheet is measured first, in one pass with the openings set to their end once, and only then does
+ * any of them start to move: the page is laid out for the measures, never once per sheet between moves.
  */
 export async function foldLeaves() {
-  await Promise.all([...document.querySelectorAll<HTMLElement>("[data-fold-leaves]")].map((sheet) => closeUp(sheet)));
+  if (reduced()) return;
+  const sheets = [...document.querySelectorAll<HTMLElement>("[data-fold-leaves]")];
+  if (!sheets.length) return;
+  const top = viewTop();
+  const plans = onceOpened(() => sheets.map((sheet) => planClose(sheet, "gone", top)));
+  await Promise.all(plans.map(runClose));
 }
 
 /**
@@ -72,23 +79,25 @@ function onceOpened<T>(measure: () => T) {
   return found;
 }
 
-/**
- * One piece of paper fades and closes up over 360ms, ending at exactly the height the page will have
- * without it; a plain cut for anyone who asks for less motion. `after` says what the room does with it next:
- * takes it out ("gone"), or keeps its words for screen readers only ("put away").
- */
-export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "gone") {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+type Plan = {
+  sheet: HTMLElement;
+  /** A line held under the top edge has no room in the page: it slides away, whole, and nothing else is read. */
+  held: boolean;
+  from?: Keyframe;
+  to?: Keyframe;
+  lost?: number;
+  unseen?: boolean;
+  carried?: boolean;
+  anchored?: boolean;
+};
+
+/** Everything the close needs read from the page, read once, before anything moves. */
+function planClose(sheet: HTMLElement, after: "gone" | "put away", top: number): Plan {
   // Its own arriving moves are over for good; being measured must not start them again.
   sheet.dataset.paperClosing = "";
-  // A line held under the top edge has no room in the page, so leaving moves nothing else.
-  if (sheet.dataset.paperHeld !== undefined) {
-    // It lies over the page, so it is never see-through: it slides back up under the top edge, whole.
-    await sheet.animate([{ transform: "none" }, { transform: HELD_AWAY }], { duration: LEAVE, fill: "forwards", easing: "cubic-bezier(0.6, 0, 0.9, 0.6)" }).finished;
-    sheet.style.visibility = "hidden";
-    sheet.style.pointerEvents = "none";
-    return;
-  }
+  if (sheet.dataset.paperHeld !== undefined) return { sheet, held: true };
   const style = getComputedStyle(sheet);
   const { marginTop, marginBottom, paddingTop, paddingBottom } = style;
   const height = sheet.offsetHeight;
@@ -100,30 +109,53 @@ export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "
   sheet.style.clipPath = "inset(-24px -24px 0 -24px)";
   holdThePage();
   // Where the close must end: the page without this paper, and with whatever is opening beside it open.
-  const { lost, closed } = onceOpened(() => {
-    const page = document.body.offsetHeight;
-    const without = pageWithout(sheet, after);
-    return { lost: page - without, closed: closedMargin(sheet, without) };
-  });
+  const page = document.body.offsetHeight;
+  const without = pageWithout(sheet, after);
+  const closed = closedMargin(sheet, without);
   // Wholly above the window nobody sees it go, so it goes at once and what the person is looking at stays
   // where it is. Browsers that anchor the scroll do that themselves; the others are told.
-  const unseen = home(sheet).bottom <= viewTop();
-  // A saved line whose place is above the window is held in view under the top edge (paper.css). The person
-  // does see that one go: it fades where it is, and only then is its room above the window given up, at once.
-  const carried = unseen && sheet.getBoundingClientRect().bottom > viewTop();
-  const fade = "cubic-bezier(0.6, 0, 0.9, 0.6)";
+  const unseen = home(sheet).bottom <= top;
+  return {
+    sheet,
+    held: false,
+    from: { height: `${height}px`, minHeight: "0px", marginTop, marginBottom, paddingTop, paddingBottom },
+    to: { height: edge(style), minHeight: "0px", marginTop: "0px", marginBottom: closed, paddingTop: "0px", paddingBottom: "0px" },
+    lost: page - without,
+    unseen,
+    // A saved line whose place is above the window is held in view under the top edge (paper.css). The person
+    // does see that one go: it fades where it is, and only then is its room above the window given up, at once.
+    carried: unseen && sheet.getBoundingClientRect().bottom > top,
+    anchored: unseen && anchored(sheet),
+  };
+}
+
+const fade = "cubic-bezier(0.6, 0, 0.9, 0.6)";
+
+async function runClose({ sheet, held, from, to, lost = 0, unseen, carried, anchored: kept }: Plan) {
+  if (held) {
+    // It lies over the page, so it is never see-through: it slides back up under the top edge, whole.
+    await sheet.animate([{ transform: "none" }, { transform: HELD_AWAY }], { duration: LEAVE, fill: "forwards", easing: fade }).finished;
+    sheet.style.visibility = "hidden";
+    sheet.style.pointerEvents = "none";
+    return;
+  }
   if (carried) await sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: LEAVE, fill: "forwards", easing: fade }).finished;
-  if (unseen && !anchored(sheet)) window.scrollBy(0, -lost);
+  if (unseen && !kept) window.scrollBy(0, -lost);
   const timing = { duration: unseen ? 0 : LEAVE, fill: "forwards" } as const;
   // It stays readable to the end: the fade runs the whole length and is slow to start.
   sheet.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, easing: fade });
-  await sheet.animate(
-    [
-      { height: `${height}px`, minHeight: "0px", marginTop, marginBottom, paddingTop, paddingBottom },
-      { height: edge(style), minHeight: "0px", marginTop: "0px", marginBottom: closed, paddingTop: "0px", paddingBottom: "0px" },
-    ],
-    { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
-  ).finished;
+  await sheet.animate([from!, to!], { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" }).finished;
+}
+
+/**
+ * One piece of paper fades and closes up over 360ms, ending at exactly the height the page will have
+ * without it; a plain cut for anyone who asks for less motion. `after` says what the room does with it next:
+ * takes it out ("gone"), or keeps its words for screen readers only ("put away").
+ */
+export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "gone") {
+  if (reduced()) return;
+  const top = viewTop();
+  await runClose(onceOpened(() => planClose(sheet, after, top)));
 }
 
 /**
