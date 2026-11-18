@@ -178,7 +178,7 @@ export function LedgerView({
     return (
       <div className="help-empty" data-first>
         <div>
-          <h3>{w.first.title}</h3>
+          <h2>{w.first.title}</h2>
           <p>
             {w.first.deck}
           </p>

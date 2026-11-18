@@ -314,14 +314,20 @@ export function HelpDone({
   const said = filed ? `${filed.name}: ${filed.asks}. ${children}` : children;
   return (
     <div className={seen ? cn("live-success help-done paper-settle", filed && "help-filed", className) : "sr-only"} role="status" tabIndex={-1} ref={line}>
+      {/* What a screen reader hears is the same words from first to last, so the line closing up says nothing again. */}
+      <span className="sr-only">{said}</span>
       {seen && <CircleCheck size={22} aria-hidden="true" />}
-      {!seen ? said : filed ? (
-        <span className="help-filed-words">
+      {!seen ? null : filed ? (
+        <span className="help-filed-words" aria-hidden="true">
           <strong data-filed="name">{filed.name}</strong>
           <span data-filed="asks">{filed.asks}</span>
           <SavedWords>{children}</SavedWords>
         </span>
-      ) : <SavedWords>{children}</SavedWords>}
+      ) : (
+        <span className="contents" aria-hidden="true">
+          <SavedWords>{children}</SavedWords>
+        </span>
+      )}
       {seen && action}
     </div>
   );
