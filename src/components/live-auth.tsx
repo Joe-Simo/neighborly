@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { words } from "@/lib/words";
 import { LiveField } from "@/components/workspace/primitives";
 import { carryTheCard } from "@/components/workspace/door";
+import { holdAndTurn } from "./courtyard-door";
+import { underneathIsReady } from "@/lib/room-whole";
 import { authWords, tabInReadersLanguage, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import { EntrySheet } from "./entry-sheet";
 
@@ -167,16 +169,66 @@ export function LiveAuth({
     const { error: failure } = await result;
     if (failure) throw failure;
   }
-  /** The last step of every way in. The corner goes green first; it rests again if the step fails. */
+  /**
+   * The last step of every way in. The corner goes green first; it rests again if the step fails. In the iOS app,
+   * once the way in has committed, the sheet is held as the page it is and turned off the first room, as the
+   * courtyard's door turns, only once that room is whole and with no reload (courtyard-door.tsx, holdAndTurn).
+   */
   async function finish(finalize: () => Promise<{ error: unknown }>) {
     setGiven(true);
+    const letGo = await holdForTurn();
     try {
       await done(finalize());
     } catch (failure) {
+      letGo?.();
       setGiven(false);
       throw failure;
     }
   }
+  /**
+   * The sheet, its corner laid green, is held as the page it is in the frame before the way in commits, since the
+   * commit takes the sheet away at once; the picture is the sheet itself, so nothing is seen to change until the turn.
+   */
+  async function holdForTurn() {
+    if (document.documentElement.dataset.shell !== "ios") return;
+    await new Promise((painted) => requestAnimationFrame(() => requestAnimationFrame(painted)));
+    // The page as it stands: the app's own frame with the sheet in it, so it is drawn exactly as it was.
+    const sheet = document.querySelector<HTMLElement>(".live-app .entry")?.closest<HTMLElement>(".live-app");
+    if (!sheet) return;
+    const copy = sheet.cloneNode(true) as HTMLElement, box = sheet.getBoundingClientRect();
+    for (const named of [copy, ...copy.querySelectorAll<HTMLElement>("[id]")]) named.removeAttribute("id");
+    // The copy is the page at rest, as it stands: nothing in it starts its arrival again, and what the page pins to the
+    // window (the sheet's corner, its picture) is laid where it stands, inside the page, so it turns with it.
+    const parts = [sheet, ...sheet.querySelectorAll<HTMLElement>("*")];
+    [copy, ...copy.querySelectorAll<HTMLElement>("*")].forEach((twin, at) => {
+      const source = parts[at];
+      if (!source) return;
+      twin.style.setProperty("animation", "none", "important");
+      twin.style.setProperty("transition", "none", "important");
+      const pinned = getComputedStyle(source).position;
+      if (twin === copy || (pinned !== "fixed" && pinned !== "sticky")) return;
+      const place = source.getBoundingClientRect(), from = sheet.getBoundingClientRect();
+      Object.assign(twin.style, { position: "absolute", inset: "auto", left: `${place.left - from.left}px`, top: `${place.top - from.top}px`, width: `${place.width}px`, height: `${place.height}px`, margin: "0", translate: "none", transform: "none" });
+    });
+    // What was typed lives in the fields, not in the markup: it is written into the copy, so nothing on the sheet changes.
+    const typed = sheet.querySelectorAll<HTMLInputElement>("input");
+    copy.querySelectorAll<HTMLInputElement>("input").forEach((field, at) => field.setAttribute("value", typed[at]?.value ?? ""));
+    Object.assign(copy.style, { position: "absolute", left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px`, margin: "0", backgroundColor: getComputedStyle(document.body).backgroundColor });
+    // Whole is a room, shown, with nothing of it still on its way, and the sheet itself gone from under the page.
+    return holdAndTurn([copy], w.opening, () => {
+      const under = (node: Element | null) => !!node?.closest(".live-app") && !node.closest("#courtyard-held");
+      // No sheet left under the page, a room shown and whole, and nothing still arriving (the room's own lay-in is over).
+      const arriving = document.getAnimations().some((move) => {
+        const on = move.effect instanceof KeyframeEffect ? move.effect.target : null;
+        // The room's own lay-in draws on the page's body (room-sheet.tsx), outside the frame: any move not on the held page counts.
+        return move.playState === "running" && !!on && !on.closest("#courtyard-held") && move.effect?.getComputedTiming().iterations !== Infinity;
+      });
+      // The room before, held as a still while the room lays in over it (room-sheet.tsx), is gone too.
+      const stillHeld = !!document.querySelector("body > [data-room-frame]");
+      return ![...document.querySelectorAll(".live-app .entry")].some(under) && !!document.querySelector(".live-app .live-room") && underneathIsReady() && !arriving && !stillHeld;
+    });
+  }
+
 
   /** After the password is accepted: either the person is in, or Clerk wants a code emailed to a new device. */
   async function afterSignIn() {

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { restWhatIsUnderneath, wholeUnderneath } from "@/lib/room-whole";
 import { placeTurn, setTurnGeometry, turnGeometry } from "@/lib/page-turn";
+// The turn's parts are drawn by the chapter sheets' paper: held from anywhere (the app's way in too), it comes with them.
+import "./chapter-sheets.css";
 import "./courtyard-door.css";
 
 /** Asked of the living courtyard on the window: it draws one frame and hands it back as a picture (living-courtyard.tsx). */
@@ -47,17 +49,8 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
   const stage = event.currentTarget.closest<HTMLElement>(".fresco-stage");
   keepPlace();
   if (!stage) return void push(href);
-  const plain = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // The held page, with the turn's parts around it (chapter-sheets.css draws them).
-  const held = document.createElement("div");
-  held.id = HELD;
-  held.className = "relief-panel";
-  held.dataset.turn = "from";
-  held.setAttribute("aria-hidden", "true");
-  held.innerHTML = `<div class="relief-turn" data-turned="no" data-near><div class="relief-turn-shade"></div><div class="relief-turn-round"><div class="relief-turn-page"><div class="courtyard-held-page"></div><div class="relief-turn-back"><div class="relief-turn-under"><div class="relief-turn-roll"></div></div></div></div></div></div>`;
   // The page is the stage itself, copied as it stands, with the living courtyard's canvas replaced by the frame it last drew.
-  const sheet = held.querySelector<HTMLElement>(".courtyard-held-page")!;
   const copy = stage.cloneNode(true) as HTMLElement, box = stage.getBoundingClientRect();
   for (const named of [copy, ...copy.querySelectorAll<HTMLElement>("[id]")]) named.removeAttribute("id");
   Object.assign(copy.style, { position: "absolute", left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px`, margin: "0" });
@@ -69,11 +62,34 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
     Object.assign(frame.style, { display: "block", width: "100%", height: "100%", maxWidth: "none" });
     canvas.replaceWith(frame);
   } } }));
-  sheet.append(copy);
   // The sample's card, lying where it was on the doors or in the courtyard, is part of the page too: it is held with it, exactly as it lay.
-  for (const card of document.querySelectorAll<HTMLElement>(".thread-card")) if (Number(getComputedStyle(card).opacity) > 0) sheet.append(card.cloneNode(true));
+  const cards = [...document.querySelectorAll<HTMLElement>(".thread-card")].filter((card) => Number(getComputedStyle(card).opacity) > 0).map((card) => card.cloneNode(true) as HTMLElement);
+  holdAndTurn([copy, ...cards], opening, wholeUnderneath);
+  push(href);
+}
+
+/**
+ * Holds what the visitor sees as one page over the window (the given copies, laid where they stood), waits until
+ * what is beneath is whole (`ready`), and turns the page off it from the lower right corner. A wait is quiet at first;
+ * past 400ms the held page says so in one line (`opening`). Nothing on the other side ever whole lets it go after
+ * twelve seconds. Under reduced motion the page is taken away in one cut. Returns a way to let the page go at once
+ * (a way in that fails after all).
+ */
+export function holdAndTurn(page: HTMLElement[], opening: string, ready: () => boolean): () => void {
+  const plain = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // The held page, with the turn's parts around it (chapter-sheets.css draws them).
+  const held = document.createElement("div");
+  held.id = HELD;
+  held.className = "relief-panel";
+  held.dataset.turn = "from";
+  held.setAttribute("aria-hidden", "true");
+  held.innerHTML = `<div class="relief-turn" data-turned="no" data-near><div class="relief-turn-shade"></div><div class="relief-turn-round"><div class="relief-turn-page"><div class="relief-turn-back"><div class="relief-turn-under"><div class="relief-turn-roll"></div></div></div></div></div></div>`;
+  const sheet = document.createElement("div");
+  sheet.className = "courtyard-held-page";
+  held.querySelector(".relief-turn-page")!.prepend(sheet);
+  sheet.append(...page);
   document.body.append(held);
-  // The page coming in may scroll where the courtyard did not: its scroll bar would stand beside the held page as a strip, so the window keeps none until the page is off.
+  // The page coming in may scroll where the held one did not: its scroll bar would stand beside the held page as a strip, so the window keeps none until the page is off.
   document.documentElement.toggleAttribute("data-courtyard-held", true);
   const turn = held.querySelector<HTMLElement>(".relief-turn")!;
   const part = (name: string) => held.querySelector<HTMLElement>(`.relief-turn-${name}`)!;
@@ -81,16 +97,13 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
   const geometry = turnGeometry(innerWidth, innerHeight);
   setTurnGeometry(turn, geometry);
 
-  push(href);
-
   const since = performance.now();
   let saying: HTMLElement | null = null, turning = 0;
   const off = () => { held.remove(); document.documentElement.removeAttribute("data-courtyard-held"); };
   const look = () => {
     if (!held.isConnected) return off();
     const waited = performance.now() - since;
-    if (!wholeUnderneath() && waited < LONGEST) {
-      // A wait is quiet at first; past 400ms the held page says so in one line.
+    if (!ready() && waited < LONGEST) {
       if (waited > 400 && !saying) {
         saying = document.createElement("p");
         saying.className = "courtyard-held-opening";
@@ -107,10 +120,17 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
     const step = (time: number) => {
       if (!turning) turning = time;
       const t = Math.min(1, (time - turning) / TURN);
-      turn.dataset.turned = placeTurn(geometry, parts, easeInOut(t));
-      if (t < 1) requestAnimationFrame(step); else off();
+      const state = placeTurn(geometry, parts, easeInOut(t));
+      turn.dataset.turned = state;
+      // The turned corner's tip: the page's lower right corner, laid over by the underside's mirror. Once it has left
+      // the window past the top or left edge, what is left of the page goes in that frame, one cut, never a standing
+      // strip; and once nothing of the page is left, it is gone in that frame too.
+      const [c, sn, , , ex, ey] = (parts.back.style.transform.match(/-?[\d.]+/g) ?? []).map(Number);
+      const tipGone = state === "part" && c !== undefined && (c * geometry.w + sn * geometry.h + ex < 0 || sn * geometry.w - c * geometry.h + ey < 0);
+      if (t < 1 && state !== "yes" && !tipGone) requestAnimationFrame(step); else off();
     };
     requestAnimationFrame(step);
   };
   requestAnimationFrame(look);
+  return off;
 }

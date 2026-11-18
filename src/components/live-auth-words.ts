@@ -38,6 +38,8 @@ const en = {
   backToSignIn: "Back to sign in",
   sample: "Look around a sample conference",
   sampleOpening: "Opening the sample conference…",
+  /** In the app, while the sheet waits to turn off the room it opens. */
+  opening: "Opening…",
   sampleNote: "Made-up people. Whatever you change is cleared each night.",
   /** The same promise in a few words, for the smallest phones. */
   sampleNoteShort: "Made-up people, cleared nightly.",
@@ -128,6 +130,7 @@ const es: AuthWords = {
   backToSignIn: "Volver a iniciar sesión",
   sample: "Recorrer una conferencia de muestra",
   sampleOpening: "Abriendo la conferencia de muestra…",
+  opening: "Abriendo…",
   sampleNote: "Personas inventadas. Lo que cambies se borra cada noche.",
   /** The same promise in a few words, for the smallest phones. */
   sampleNoteShort: "Personas inventadas, se borra cada noche.",
