@@ -196,7 +196,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 }
 @media(prefers-reduced-motion:reduce){.relief-panel{--e:1!important;--h:1!important;min-height:0}.relief-hold{position:static;height:auto;padding-block:clamp(48px,9svh,96px)}}
 /* The call's words lie under its picture in the same cell, so with less motion it still takes the window's height, unpinned. */
-@media(prefers-reduced-motion:reduce) and (min-width:821px){.relief-panel[data-chapter=call] .relief-hold{height:100svh;padding-top:0}}
+@media(prefers-reduced-motion:reduce) and (min-width:821px){.relief-panel:is([data-chapter=call],[data-chapter=help]) .relief-hold{height:100svh;padding-top:0}}
 
 /* A phone on its side: the wide layout, set smaller, with room for the caption under a lower fresco. */
 @media(max-height:500px) and (min-aspect-ratio:10/11){
