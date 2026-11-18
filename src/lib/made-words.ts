@@ -21,6 +21,15 @@ const en = {
     whole: "Laid together, they are the courtyard behind the doors.",
   },
   sections: [
+    { title: "Why it exists", blocks: [
+      "Kind Helps is for the volunteers of St. Vincent de Paul conferences: the people who answer the help line, visit homes and keep the books. Many conferences keep this work on paper, in spreadsheets or in ServWare. Kind Helps keeps it in one place, in English and Spanish, on a phone or at a desk.",
+      [
+        { lead: "A neighbor’s dignity.", rest: "Help is paid to the landlord, utility or store, never to the neighbor. Visits are made in pairs. A family’s name, phone and address are taken out before a note reaches the assistant." },
+        { lead: "A volunteer’s time.", rest: "A call note becomes a draft request, and the pair for a visit is suggested from who is free." },
+        { lead: "Honest books.", rest: "Every gift and payment is recorded. A mistake is put right with a new entry, never erased." },
+      ],
+      "It is free because no conference should pay to help its neighbors. The assistant only drafts: a person reads and approves every draft.",
+    ] },
     { title: "One painting, made of paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
       "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolours it or crops into it. What moves is the paper around it.",
@@ -84,6 +93,15 @@ const es: typeof en = {
     whole: "Juntas, son el patio que hay tras las puertas.",
   },
   sections: [
+    { title: "Por qué existe", blocks: [
+      "Kind Helps es para los voluntarios de las conferencias de San Vicente de Paúl: quienes atienden la línea de ayuda, visitan los hogares y llevan las cuentas. Muchas conferencias llevan este trabajo en papel, en hojas de cálculo o en ServWare. Kind Helps lo reúne en un solo lugar, en inglés y en español, en el teléfono o en el escritorio.",
+      [
+        { lead: "La dignidad del vecino.", rest: "La ayuda se paga al casero, a la compañía de servicios o a la tienda, nunca al vecino. Las visitas se hacen de dos en dos. El nombre, el teléfono y la dirección de una familia se quitan antes de que una nota llegue al asistente." },
+        { lead: "El tiempo del voluntario.", rest: "La nota de una llamada se vuelve un borrador de petición, y la pareja para una visita se sugiere según quién está libre." },
+        { lead: "Cuentas honradas.", rest: "Cada donativo y cada pago queda anotado. Un error se corrige con una anotación nueva, nunca se borra." },
+      ],
+      "Es gratis porque ninguna conferencia debería pagar por ayudar a sus vecinos. El asistente solo redacta: una persona lee y aprueba cada borrador.",
+    ] },
     { title: "Una sola pintura, hecha de papel", blocks: [
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
       "La obra pintada se hizo con una herramienta de imágenes con IA a partir de indicaciones escritas, y luego se eligió y se retocó a mano. La página nunca pinta encima, nunca le cambia el color ni la recorta. Lo que se mueve es el papel que la rodea.",

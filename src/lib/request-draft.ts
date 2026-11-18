@@ -222,9 +222,10 @@ export function withoutIdentity(note: string, known: { names: string[]; addresse
     text = text.replace(new RegExp(escape(address), "gi"), "[address]");
   text = text
     .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "[email]")
+    // A phone goes before an address, so a number such as 555-0142 is never split by a street after it.
+    .replace(/(?<![\d$])\+?\(?\d(?:[\s().-]*\d){6,}(?!\d)/g, "[phone]")
     .replace(addressPattern, "[address]")
-    .replace(/\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/g, "[date]")
-    .replace(/(?<![\d$])\+?\(?\d(?:[\s().-]*\d){6,}(?!\d)/g, "[phone]");
+    .replace(/\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/g, "[date]");
   const parts = known.names.flatMap((name) => name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "")).filter((part) => part.length > 1);
   for (const part of new Set(parts))
     text = text.replace(new RegExp(`(?<![\\p{L}])${escape(part)}(?![\\p{L}])`, "giu"), "[name]");
