@@ -14,6 +14,8 @@ import Loading from "./loading";
 import { PaperArrival } from "@/components/paper-arrival";
 import { PageLanguage } from "@/components/page-language";
 
+const convexOrigin = process.env.NEXT_PUBLIC_CONVEX_URL && new URL(process.env.NEXT_PUBLIC_CONVEX_URL).origin;
+
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function LiveAppLayout({
@@ -29,6 +31,9 @@ export default function LiveAppLayout({
       {/* The menu's words are set in these faces from the first frame, so no label wraps and then jumps. */}
       {/* Clerk's bot check, which every sign-in waits on, loads from here; the connection is opened with the page. */}
       <link rel="preconnect" href={protect} crossOrigin="anonymous" />
+      {/* The backend's socket is opened only once the app's scripts have run; its name is looked up and its connection
+          warmed with the page, so that wait is not added to the first room's. */}
+      {convexOrigin && <link rel="preconnect" href={convexOrigin} />}
       {["source-sans-3-latin-variable", "newsreader-display-regular"].map((face) => (
         <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
       ))}
