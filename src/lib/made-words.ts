@@ -19,6 +19,10 @@ const en = {
     label: "The courtyard painting, its paper sheets drawn apart, laid back together as the page scrolls",
     apart: "Six sheets cut along the painting’s own depth, and the people at the table on a seventh.",
     whole: "Laid together, they are the courtyard behind the doors.",
+    hold: "Draw the sheets apart",
+    hint: "Drag the courtyard up or down, or use the arrow keys, to draw its sheets apart.",
+    /** Said by the slider: whole, part apart ({n} is the percent), and fully apart. */
+    amount: ["Whole", "{n}% apart", "All seven sheets apart"] as [string, string, string],
   },
   sections: [
     { title: "Why it exists", blocks: [
@@ -91,6 +95,9 @@ const es: typeof en = {
     label: "La pintura del patio, con sus hojas de papel separadas, que se vuelven a juntar al bajar por la página",
     apart: "Seis hojas cortadas según la profundidad de la propia pintura, y las personas de la mesa en una séptima.",
     whole: "Juntas, son el patio que hay tras las puertas.",
+    hold: "Separar las hojas",
+    hint: "Arrastra el patio hacia arriba o hacia abajo, o usa las flechas, para separar sus hojas.",
+    amount: ["Entero", "Separadas al {n}%", "Las siete hojas separadas"],
   },
   sections: [
     { title: "Por qué existe", blocks: [
