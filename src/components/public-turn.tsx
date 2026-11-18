@@ -32,6 +32,14 @@ export function PublicTurn() {
       // The flap and its shade are laid on the page only inside the turn, so the browser pictures them as parts of the turn and never as the page.
       const parts = ["public-turn-shade", "public-turn-flap"].map(name => Object.assign(document.createElement("div"), { className: name, ariaHidden: "true" }));
       const moving = document.startViewTransition(async () => { change(); document.body.append(...parts); await until(to); });
+      // The turn is held still until the page beneath has mounted and drawn its first frames, so its own setting-up never lands inside the motion.
+      void moving.ready.then(() => {
+        const parts = document.getAnimations().filter(animation => (animation.effect as KeyframeEffect | null)?.pseudoElement?.startsWith("::view-transition"));
+        parts.forEach(animation => animation.pause());
+        let wait = 3;
+        const go = () => { if (--wait > 0) requestAnimationFrame(go); else parts.forEach(animation => animation.play()); };
+        requestAnimationFrame(go);
+      }, () => {});
       void moving.finished.finally(() => { parts.forEach(part => part.remove()); delete document.documentElement.dataset.publicTurn; });
     };
     const click = (event: MouseEvent) => {
