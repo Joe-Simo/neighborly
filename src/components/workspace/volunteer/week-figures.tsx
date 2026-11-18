@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { WeekQuilt } from "@/components/workspace/volunteer/week-quilt";
 import { useHour, useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
@@ -32,6 +33,8 @@ export function WeekFigures({ noted = false }: { noted?: boolean }) {
     { area: "neighbors", label: why.requests, value: counts.requestsOpen, reason: counts.approvedUnpaid && !noted ? why.toPay(counts.approvedUnpaid) : "" },
   ] as const;
   return (
+    <>
+    <WeekQuilt />
     <nav className="week-figures paper-rows" aria-label={words.monday.title}>
       {figures.map(({ area, label, value, reason }) => (
         <Link key={area} href={`/app/${area}`}>
@@ -43,5 +46,6 @@ export function WeekFigures({ noted = false }: { noted?: boolean }) {
         </Link>
       ))}
     </nav>
+    </>
   );
 }

@@ -147,6 +147,11 @@ export function en(set: WordSet) {
     },
     dateField: { choose: "Choose a day", done: "Done", chooseTime: "Choose a time" },
     week: {
+      /** The week's quilt, said once: one paper piece for each thing done since Monday. */
+      quilt: "Done since Monday: {calls}, {visits}, {yeses}.",
+      quiltCalls: (count: number) => (count === 1 ? "1 call returned" : `${count} calls returned`),
+      quiltVisits: (count: number) => (count === 1 ? "1 home visit written up" : `${count} home visits written up`),
+      quiltYeses: (count: number) => (count === 1 ? "1 request approved" : `${count} requests approved`),
       figures: { calls: "Calls waiting", visits: "Visits planned", requests: "Requests awaiting a yes", oldest: (days: number) => (days === 1 ? "Oldest call, 1 day" : `Oldest call, ${days} days`), toPay: (count: number) => `${count} approved, not yet paid` },
       startHere: { lead: "Start here", rest: "a call is waiting for your yes." },
       comingUp: "Coming up",

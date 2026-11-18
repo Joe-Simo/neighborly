@@ -1084,3 +1084,31 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   :is(.live-app, .live-dialog) :is([data-state="on"], [aria-checked="true"][role="radio"], [aria-pressed="true"]) { forced-color-adjust: none; background: Highlight; color: HighlightText; }
   :is(.live-app, .live-mobile-menu) a[aria-current="page"] { outline: 2px solid Highlight; outline-offset: -2px; }
 }
+
+/* ── The week's quilt ───────────────────────────────────────────────────────
+   One small paper piece for each thing done since Monday, laid along the foot of This week's head in the order
+   it was done, three deep: a call called back in the page's own paper, a home visit in sage, a yes in green.
+   Each is cut by hand (its own small lean) and lies in tight contact with the paper under it. A piece laid while
+   the room is open is cut in above the quilt and set down in its place. */
+.week-quilt {
+  /* Resting on the head's foot rule (36px above the room at desk widths, 24px on a phone), taking no room. */
+  --head-gap: 36px; --quilt: 42px;
+  display: grid; grid-template-rows: repeat(3, 12px); grid-auto-flow: column; grid-auto-columns: 12px; gap: 3px;
+  /* Sewn from the right edge leftward, Monday first, so a new piece takes a new place and none already laid moves. */
+  direction: rtl; justify-content: start; width: 100%; height: var(--quilt); margin: calc(-1 * (var(--head-gap) + var(--quilt) + 1px)) 0 calc(var(--head-gap) + 1px); pointer-events: none;
+}
+/* On a phone the quilt lies two deep in the narrow space between the head's button and its rule. */
+@media (max-width: 850px) { .week-quilt { --head-gap: 24px; --quilt: 20px; grid-template-rows: repeat(2, 9px); grid-auto-columns: 9px; gap: 2px; } }
+.week-quilt i {
+  display: block; rotate: calc(var(--lean, 0) * 1.6deg); translate: 0 calc(var(--nudge, 0) * 0.4px);
+  background: #f3eee1; box-shadow: 0 0 0 0.5px rgb(40 60 50 / 0.34), 1px 1.5px 0 rgb(40 60 50 / 0.16);
+}
+.week-quilt i[data-kind="visit"] { background: #b9c6ab; }
+.week-quilt i[data-kind="yes"] { background: #365c46; }
+.week-quilt i[data-laid] { animation: week-piece-laid 420ms var(--paper-ease) both; }
+@keyframes week-piece-laid {
+  0% { transform: translateY(-14px) scale(1.5) rotate(-12deg); box-shadow: 0 0 0 0.5px rgb(40 60 50 / 0.34), 3px 7px 6px rgb(40 60 50 / 0.22); }
+  70% { transform: translateY(0) scale(1.04) rotate(0); }
+}
+@media (prefers-reduced-motion: reduce) { .week-quilt i[data-laid] { animation: none; } }
+@media (forced-colors: active) { .week-quilt i { forced-color-adjust: none; } }
