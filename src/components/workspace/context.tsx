@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
 import type { LiveArea } from "@/components/workspace/areas";
 import type {
@@ -46,6 +47,8 @@ export type Workspace = {
   focusOutcome: () => void;
   /** One of the sample conference's own names, titles or places, said in this reader's language; anyone else's typed words come back as typed. For the screen only, never for a form's value. */
   sampleSaid: (typed: string) => string;
+  /** A line with every member's name in it kept whole, so no name breaks across lines. For the screen only. */
+  keepNames: (text: string) => ReactNode;
   /** Every phrase the screens show, in this person's language and this group's word set. */
   words: Words;
   /**

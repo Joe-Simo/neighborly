@@ -29,7 +29,7 @@ export function CommitmentRows({
   /** The commitment just accepted: its row is laid in. */
   fresh?: string;
 }) {
-  const { data, format, when, personName, teamName, showCommitment, words, sampleSaid } =
+  const { data, format, when, personName, teamName, showCommitment, words, sampleSaid, keepNames } =
     useWorkspace();
   const statuses: Partial<Record<string, string>> = words.commitments.status;
   // The accepted row opens its own room in the list, once, before it is painted.
@@ -58,7 +58,7 @@ export function CommitmentRows({
                 <span>{teamName(item.teamId)}</span>
                 <span className="live-commitment-time">{when(item.start, item.end)}</span>
               </div>
-              <h3>{sampleSaid(item.title)}</h3>
+              <h3>{keepNames(sampleSaid(item.title))}</h3>
               <p>
                 {item.assigneeId
                   ? personName(item.assigneeId)
@@ -216,6 +216,7 @@ export function IncomingRequests({
     showCommitment,
     words,
     sampleSaid,
+    keepNames,
   } = useWorkspace();
   // `given` is the request whose yes was pressed: it is kept on the sheet from the press to the end of the beat.
   // It is not green for that. Green is `taken`: the same request, once its save has truly gone through.
@@ -299,7 +300,7 @@ export function IncomingRequests({
             return (
               <div className="volunteer-choice-row" data-fold-leaves={request.id === taken?.id && shown.length > 1 ? "" : undefined} key={request.id}>
                 <div>
-                  <h3>{item ? sampleSaid(item.title) : words.requests.fallbackTitle}</h3>
+                  <h3>{item ? keepNames(sampleSaid(item.title)) : words.requests.fallbackTitle}</h3>
                   <p className="volunteer-choice-when">
                     {item
                       ? when(item.start, item.end)

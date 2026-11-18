@@ -97,7 +97,7 @@ function TimeOffConfirmation({
   onBack: () => void;
   onSaved: () => void;
 }) {
-  const { words, sampleSaid } = useWorkspace();
+  const { words, sampleSaid, keepNames } = useWorkspace();
   const [snapshot] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -112,7 +112,7 @@ function TimeOffConfirmation({
       </h3>
       {snapshot.map((item) => (
         <div className="live-note" key={item.id}>
-          {sampleSaid(item.title)} ·{" "}
+          {keepNames(sampleSaid(item.title))} ·{" "}
           {formatDate(words.locale, item.start, { timeZone: data.church.timeZone, dateStyle: "medium" })}
         </div>
       ))}
