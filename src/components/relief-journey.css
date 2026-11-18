@@ -44,7 +44,8 @@
 /* The line the keyboard is set down on inside the courtyard is words, not a control: it takes no ring. */
 main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 /* Under the framed fresco the line is drawn out from behind the frame's lower edge, in full ink, as the frame settles. */
-.fresco-caption{position:absolute;z-index:0;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em;translate:0 calc(clamp(0,(1 - var(--grow)) * 2.5,1) * (-100% - 44px))}
+.fresco-caption{position:absolute;z-index:0;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.05em}
+.fresco-stage:not([data-captioned=true]) .fresco-caption{visibility:hidden}
 .fresco-caption em{font-weight:400}
 /* Standing in the courtyard: the words are set large on the paving, and the wordmark steps aside so nothing sits over the picture.
    They come up into the window from its foot in full ink over the last of the walk, and go down the same way when the courtyard draws back into its frame. */

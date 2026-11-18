@@ -162,12 +162,15 @@ export function FrescoThreshold() {
       // measured against the frame's drawn bottom and set at least 12px clear of it, so no letter is ever under its edge.
       let captionTop = frameY + frameHeight / 2;
       const line = host.querySelector<HTMLElement>(".fresco-caption");
-      if (grow > .999 && inside < .001 && line) {
+      const rested = grow > .999 && inside < .001 && !!line;
+      if (rested) {
         host.style.setProperty("--caption-top", `${captionTop}px`);
         const gap = line.getBoundingClientRect().top - wall.getBoundingClientRect().bottom;
         if (gap < 12) captionTop += 12 - gap;
       }
       host.style.setProperty("--caption-top", `${captionTop}px`);
+      // Clear or hidden, never half under the frame: the line is shown only once the frame has rested and it has been placed, in place, with no fade.
+      host.dataset.captioned = String(rested);
       setOpen(grow > .5 || inside > .5);
     };
     const request = () => { if (!raf) raf = requestAnimationFrame(update); };
