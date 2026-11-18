@@ -1064,3 +1064,16 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 
 /* A person's name inside a title never breaks across lines (keep-names.tsx). */
 .live-name { white-space: nowrap; }
+
+/* The page turn between rooms (room-turn.ts): the same paper as home's turn of The help to The year. Every piece is
+   only moved and turned, so nothing is painted again while it runs. */
+.room-turn { position: fixed; z-index: 19; overflow: hidden; pointer-events: none; }
+.room-turn > *, .room-turn-held, .room-turn-back, .room-turn-roll { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+.room-turn-held, .room-turn-back, .room-turn-roll, .room-turn-shade { will-change: transform; }
+.room-turn-cut { overflow: hidden; }
+/* The underside: a step warmer and darker than the face. Its own edges throw a close shade on the sheet beneath. */
+.room-turn-back { overflow: hidden; background: #dbcbab; box-shadow: 0 0 2px rgb(46 36 22 / 0.3), 0 0 14px rgb(46 36 22 / 0.16); }
+/* Across the fold the turned paper curves over: a dark line at the crease, a light band, then the underside's own tone. */
+.room-turn-roll { width: 90px; background: linear-gradient(to right, #5a47262e, #f8efd9b3 10px, #f6ecd466 34px, #0000 90px); }
+/* The lifted sheet's shade on the room beneath: close and dark at the crease, wide and faint away from it. */
+.room-turn-shade { width: 120px; background: linear-gradient(to left, #2e24165e, #2e241629 14px, #2e24160f 50px, #0000 120px); }
