@@ -11,6 +11,7 @@ import * as firstDaysWords from "./rooms/first-days";
 import { measured as m } from "../jev-set";
 import type { Words } from "./en";
 import { refusals } from "../refusals";
+import { serverRefusalPatternsEs, serverRefusalsEs } from "../refusals-es";
 import type { Terms, WordSet } from "./sets";
 
 const terms: Record<WordSet, Terms> = {
@@ -382,7 +383,9 @@ export function es(set: WordSet): Words {
         [refusals.noAvailability]: "No se encontró esa disponibilidad.",
         [refusals.noTeamInvitation]: "No se encontró esa invitación al equipo.",
         [refusals.noMeetingInvitation]: "No se encontró esa invitación a la reunión.",
+        ...serverRefusalsEs,
       },
+      refusedLike: serverRefusalPatternsEs,
     },
     visits: {
       title: set === "vincentian" ? "Visitas domiciliarias" : "Visitas a casa",

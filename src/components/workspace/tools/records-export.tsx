@@ -8,7 +8,7 @@ import { CircleCheck, Download, FolderDown } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveFailure } from "@/components/workspace/states";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
 import { counted } from "@/components/workspace/tools/sheet-import";
 import { formatDate } from "@/lib/words";
@@ -154,7 +154,7 @@ export function RecordsExport() {
     <RecordsExportView
       state={state}
       onReset={() => setState({ step: "ready" })}
-      onGather={() => void gather().catch((cause: unknown) => setState({ step: "ready", error: readFailure(cause, text.failed, words.states.offlineSave) }))}
+      onGather={() => void gather().catch((cause: unknown) => setState({ step: "ready", error: sayFailure(words.notices,cause, text.failed, words.states.offlineSave) }))}
       onDownloadAll={async (files) => {
         // The cover carries the site's two typefaces inside it. Without them (offline, say) it still reads, in the device's own faces.
         const [serif, sans] = await Promise.all(["newsreader-latin-variable", "source-sans-3-latin-variable"].map(face));

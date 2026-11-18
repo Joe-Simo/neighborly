@@ -2,7 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { languages, words, wordSets } from "./index";
 
 type Leaf = string | ((count: number) => string) | ((section: string) => string);
-type Book = { [key: string]: Leaf | Book };
+// A refusal pattern sits in a book too: its regular expression holds no phrase, its saying is one.
+type Book = { readonly [key: string]: Leaf | Book | RegExp | ReadonlyArray<unknown> | ((...parts: string[]) => string) };
 
 /** Every phrase in a book, with counted phrases written out for 0, 1 and 4. */
 function phrases(book: Book, path = ""): [string, string][] {
@@ -11,7 +12,7 @@ function phrases(book: Book, path = ""): [string, string][] {
     if (typeof value === "string") return [[at, value] as [string, string]];
     if (typeof value === "function")
       return [0, 1, 4].map((count) => [`${at}(${count})`, (value as (count: number) => string)(count)] as [string, string]);
-    return phrases(value, at);
+    return phrases(value as Book, at);
   });
 }
 
@@ -87,5 +88,40 @@ describe("refusals a member can meet", () => {
     }
     // Every name the backend throws is in the table: a sentence added there cannot miss its translations.
     for (const [, key] of backend.matchAll(/refusals\.(\w+)/g)) expect(Object.keys(refusals), key).toContain(key);
+  });
+});
+
+describe("refusals the backend writes out", () => {
+  test("each one is said in Spanish, matched exactly or by its pattern", async () => {
+    const { sayRefused } = await import("../refusals");
+    const root = `${import.meta.dir}/../../../convex`;
+    const sentences = new Set<string>();
+    for await (const file of new Bun.Glob("**/*.ts").scan(root)) {
+      if (file.includes(".test.") || file.startsWith("_generated")) continue;
+      const source = await Bun.file(`${root}/${file}`).text();
+      for (const [, quoted] of source.matchAll(/ConvexError\(\s*"((?:[^"\\]|\\.)*)"\s*\)/g)) sentences.add(quoted);
+      // A dynamic part stands in as a sample name or number; a choice between two words is tried both ways.
+      for (const [, built] of source.matchAll(/ConvexError\(\s*`([^`]*)`\s*\)/g)) {
+        const choice = /\$\{[^}]*\?\s*"([^"]+)"\s*:\s*"([^"]+)"\s*\}/.exec(built);
+        const forms = choice ? [choice[1], choice[2]].map((word) => built.replace(choice[0], word)) : [built];
+        for (const form of forms) sentences.add(form.replace(/\$\{[^}]*\}/g, (part) => (/[A-Z_]{3,}|most/.test(part) ? "25" : "Rosa")));
+      }
+    }
+    expect(sentences.size).toBeGreaterThanOrEqual(155);
+    // Every field name the backend puts into a built refusal has its Spanish name.
+    const { fieldLabelsEs } = await import("../refusals-es");
+    for await (const file of new Bun.Glob("{assistance,neighbors}.ts").scan(root)) {
+      const source = await Bun.file(`${root}/${file}`).text();
+      for (const [, label] of source.matchAll(/\b(?:text|wholeCents|short|count)\([^;]*?"([A-Z][^"]*)"/g)) {
+        expect(fieldLabelsEs[label], label).toBeDefined();
+      }
+    }
+    const es = words("es").notices;
+    for (const sentence of sentences) {
+      expect(sayRefused(words("en").notices, sentence), sentence).toBe(sentence);
+      const said = sayRefused(es, sentence);
+      expect(said, sentence).not.toBe(sentence);
+      expect(said.includes("${"), sentence).toBe(false);
+    }
   });
 });

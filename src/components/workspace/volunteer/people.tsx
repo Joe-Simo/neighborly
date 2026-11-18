@@ -9,7 +9,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { NameToConfirm } from "@/components/workspace/help-line/forms";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
@@ -56,7 +56,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
             await remove({ churchId, personId: person.id, typedName: typed });
             onClose();
           } catch (cause) {
-            setFailed(readFailure(cause, text.failed, words.states.offlineSave));
+            setFailed(sayFailure(words.notices,cause, text.failed, words.states.offlineSave));
             setBusy(false);
           }
         }}

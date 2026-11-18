@@ -6,7 +6,7 @@ import type { FunctionReturnType } from "convex/server";
 import { Download, UserPlus } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
 import { invitationLinksCsv, readMemberRows, type MemberRow } from "@/components/workspace/tools/member-rows";
 import { fileProblem, readSoFar, SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
@@ -72,7 +72,7 @@ export function MembersImport() {
             setResults(imported);
             setState({ step: "done", done: imported.filter((row) => row.outcome === "invited").length, leftOut: membersLeftOut(imported, tools.members.reasons) });
           })
-          .catch((cause: unknown) => setState({ ...review, error: readFailure(cause, tools.members.notAdded, words.states.offlineSave) }));
+          .catch((cause: unknown) => setState({ ...review, error: sayFailure(words.notices,cause, tools.members.notAdded, words.states.offlineSave) }));
       }}
       afterDone={
         <Button

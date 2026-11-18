@@ -9,7 +9,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LiveFailure } from "@/components/workspace/states";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveLoading } from "@/components/workspace/primitives";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -120,7 +120,7 @@ export function CalendarAddress({ titled = true }: { titled?: boolean }) {
         setBusy(true);
         setError("");
         void create({ churchId: data.church.id })
-          .catch((cause: unknown) => setError(readFailure(cause, words.calendar.failed, words.states.offlineSave)))
+          .catch((cause: unknown) => setError(sayFailure(words.notices,cause, words.calendar.failed, words.states.offlineSave)))
           .finally(() => setBusy(false));
       }}
     />

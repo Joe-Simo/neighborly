@@ -24,3 +24,18 @@ export const refusals = {
   noTeamInvitation: "Team invitation not found.",
   noMeetingInvitation: "Meeting invitation not found.",
 } as const;
+
+/** A refusal the backend said in English, in the reader's language when the tables carry it. */
+export function sayRefused(
+  notices: { refused: Record<string, string>; refusedLike: ReadonlyArray<readonly [RegExp, (...parts: string[]) => string]> } | undefined,
+  said: string,
+): string {
+  if (!notices) return said;
+  const exact = notices.refused[said];
+  if (exact) return exact;
+  for (const [pattern, say] of notices.refusedLike) {
+    const found = pattern.exec(said);
+    if (found) return say(...found.slice(1));
+  }
+  return said;
+}

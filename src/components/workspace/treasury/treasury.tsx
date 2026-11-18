@@ -8,7 +8,7 @@ import { HelpDone } from "@/components/workspace/help-line/room";
 import { UndoAct } from "@/components/workspace/undo";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { useWorkspace } from "@/components/workspace/context";
 import {
@@ -172,7 +172,7 @@ export function TreasurySection() {
     try {
       made = await change();
     } catch (cause) {
-      return readFailure(cause, w.refused);
+      return sayFailure(words.notices,cause, w.refused);
     }
     if (date) setMonth(date.slice(0, 7));
     setOpen(null);
@@ -233,7 +233,7 @@ export function TreasurySection() {
                 } catch (cause) {
                   setBack(undefined);
                   setDone("");
-                  setUndoRefused(readFailure(cause, w.refused));
+                  setUndoRefused(sayFailure(words.notices,cause, w.refused));
                 }
               }}
             />

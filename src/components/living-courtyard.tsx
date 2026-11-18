@@ -168,7 +168,9 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     // If the graphics context is ever taken away, the painted courtyard underneath shows exactly as it always has.
     const origins = new WeakMap<HTMLElement, { x: number; y: number }>();
     const release = () => { host.removeAttribute("data-living"); host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => { layer.style.removeProperty("scale"); layer.style.removeProperty("translate"); origins.delete(layer); }); };
-    const lost = (event: Event) => { event.preventDefault(); release(); };
+    // Once the context is lost the scene is over for this visit: nothing draws again, and a start still under way does not show it.
+    let gone = false;
+    const lost = (event: Event) => { event.preventDefault(); gone = true; cancelAnimationFrame(raf); release(); };
     // The paintings' decoded copies are let go once they are on the graphics card, so a lost context is not brought back: the painted courtyard stays.
     const restored = () => {};
     renderer.domElement.addEventListener("webglcontextlost", lost);
@@ -256,6 +258,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     const inside = () => Number(host.style.getPropertyValue("--inside") || 0);
     let raf = 0, last = 0, began = 0, disposed = false;
     const tick = (time: number) => {
+      if (gone) return;
       raf = requestAnimationFrame(tick);
       if (!began) began = time;
       const elapsed = (time - last) / 1000 || .016;
@@ -358,7 +361,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       if (disposed) return;
       renderer.render(scene, camera);
       await new Promise(requestAnimationFrame);
-      if (disposed) return;
+      if (disposed || gone) return;
       host.setAttribute("data-living", "true");
       raf = requestAnimationFrame(tick);
     }).catch(() => { /* Without the living layers the painted courtyard shows exactly as it always has. */ });

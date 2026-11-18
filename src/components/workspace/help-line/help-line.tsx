@@ -29,7 +29,7 @@ import type { Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { useWorkspace, type Workspace, type WayBack } from "@/components/workspace/context";
 import { UndoAct } from "@/components/workspace/undo";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import {
   CallForm,
   NeighborForm,
@@ -246,7 +246,7 @@ function HelpLine() {
       setDone({ message: back.said });
     } catch (cause) {
       setDone(null);
-      setUndoRefused(readFailure(cause, words.notices.failed));
+      setUndoRefused(sayFailure(words.notices,cause, words.notices.failed));
     }
   };
   const saved = (call: Call) => {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { readFailure } from "@/components/workspace/failure";
+import { sayRefused } from "@/lib/refusals";
 import { SAVED_EVENT } from "@/components/workspace/kept-typing";
 
 type Felt = "saved" | "decided";
@@ -15,7 +16,8 @@ type FeltBridge = { webkit?: { messageHandlers?: { kindHelpsFelt?: { postMessage
  * thing felt (room-sheet.tsx), and the device's own haptics setting turns all of it off.
  */
 export function useSave(felt: Felt = "saved") {
-  const states = useWorkspaceIfAny()?.words.states;
+  const words = useWorkspaceIfAny()?.words;
+  const states = words?.states;
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function save<Result>(work: () => Promise<Result>) {
@@ -28,7 +30,9 @@ export function useSave(felt: Felt = "saved") {
       return { saved: true as const, result };
     } catch (cause) {
       (window as FeltBridge).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("refused");
-      setError(readFailure(cause, states?.notSaved, states?.offlineSave));
+      // The backend's own sentence is English; the reader's language carries it where the tables have it.
+      const said = readFailure(cause, states?.notSaved, states?.offlineSave);
+      setError(sayRefused(words?.notices, said));
       return { saved: false as const };
     } finally {
       setPending(false);

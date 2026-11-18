@@ -7,7 +7,7 @@ import { DateTime } from "luxon";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import type { Words } from "@/lib/words";
 import { HelpRoom } from "@/components/workspace/help-line/room";
 import { LiveFailure, LiveState } from "@/components/workspace/states";
@@ -41,7 +41,7 @@ class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { 
         }
       >
         {/* The backend's own sentence when it refused (a year too large to add up), calm words otherwise. */}
-        {readFailure(this.state.cause, words.rooms.reports.failed.safe, words.states.offlineSave)}
+        {sayFailure(words.notices, this.state.cause, words.rooms.reports.failed.safe, words.states.offlineSave)}
       </LiveState>
     );
   }
@@ -91,7 +91,7 @@ function Report() {
     try {
       setCheck({ year, result: await checkYear({ churchId, year }), at: Date.now() });
     } catch (cause) {
-      setCheck({ year, failed: readFailure(cause, w.check.failed, words.states.offlineSave) });
+      setCheck({ year, failed: sayFailure(words.notices,cause, w.check.failed, words.states.offlineSave) });
     }
   }, [checkYear, churchId, year, w, words]);
   // The check reads a whole year, so it steps aside while a quarter is shown.
