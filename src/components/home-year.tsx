@@ -109,7 +109,7 @@ export function HomeYear() {
         return <div key={figure.key} data-sheets={sheets} style={sheets ? { "--sheets": sheets } as CSSProperties : undefined}>
         <dt>{figure.label}</dt>
         <dd>
-          {sheets > 0 && <span className="home-year-stack" aria-hidden="true"><i style={{ backgroundImage: pile(place, sheets) }} /></span>}
+          {sheets > 0 && <><span className="home-year-stack" aria-hidden="true"><i style={{ backgroundImage: pile(place, sheets) }} /></span><span className="home-year-foot" aria-hidden="true" /></>}
           <span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span>
         </dd>
       </div>;
