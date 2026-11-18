@@ -17,7 +17,7 @@ const figures = [
 ] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string; each: number }[];
 
 /** A hand-squared pile: each sheet sits a little off true, the same way on every visit. */
-const jitter = (figure: number, sheet: number) => ((sheet * 7919 + figure * 104729) % 7 - 3) / 2;
+const jitter = (figure: number, sheet: number) => ((sheet * 7919 + figure * 104729) % 9 - 4) / 2;
 
 /**
  * The year, folded up: four figures of the sample conference's own year, each cut into the page and standing up out of it
