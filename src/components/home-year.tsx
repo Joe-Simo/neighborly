@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
 import "./home-year.css";
 
@@ -10,11 +10,11 @@ const upright = 1 - 60 / 86;
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 // In the order the work happens.
 const figures = [
-  { key: "calls", label: "Calls taken", total: sampleYear.calls, say: whole.format },
-  { key: "requests", label: "Requests for help", total: sampleYear.requests, say: whole.format },
-  { key: "visits", label: "Home visits, in pairs", total: sampleYear.visits, say: whole.format },
-  { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100, say: dollars.format },
-] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string }[];
+  { key: "calls", label: "Calls taken", total: sampleYear.calls, say: whole.format, each: 10 },
+  { key: "requests", label: "Requests for help", total: sampleYear.requests, say: whole.format, each: 10 },
+  { key: "visits", label: "Home visits, in pairs", total: sampleYear.visits, say: whole.format, each: 10 },
+  { key: "paid", label: "Paid direct, never in cash", total: sampleYear.helpPaid / 100, say: dollars.format, each: 1000 },
+] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string; each: number }[];
 
 /**
  * The year, folded up: four figures of the sample conference's own year, each cut into the page and standing up out of it
@@ -33,7 +33,7 @@ export function HomeYear() {
     const given = () => { if (requests) requests.textContent = whole.format(sampleYear.requests + 1); list.dataset.oneMore = "true"; };
     if (document.documentElement.dataset.yesGiven === "true") given();
     window.addEventListener(YES_GIVEN, given);
-    const stand = () => { cells.forEach(cell => cell.style.removeProperty("--fold")); list.dataset.folding = "false"; };
+    const stand = () => { cells.forEach(cell => { cell.style.removeProperty("--fold"); cell.style.removeProperty("--laid"); }); list.dataset.folding = "false"; };
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still) { stand(); return () => window.removeEventListener(YES_GIVEN, given); }
     let frame = 0, near = false, last = "";
@@ -62,7 +62,12 @@ export function HomeYear() {
         last = key;
         const standing = folds.every(fold => fold >= 1);
         list.dataset.folding = String(!standing);
-        cells.forEach((cell, index) => cell.style.setProperty("--fold", folds[index].toFixed(3)));
+        cells.forEach((cell, index) => {
+          cell.style.setProperty("--fold", folds[index].toFixed(3));
+          // The stack is laid a whole sheet at a time as its figure stands up: every sheet is set down, none is grown.
+          const sheets = Number(cell.dataset.sheets);
+          cell.style.setProperty("--laid", String(Math.round(sheets * (folds[index] - upright) / (1 - upright))));
+        });
       }
       if (near) frame = requestAnimationFrame(follow);
     };
@@ -74,11 +79,16 @@ export function HomeYear() {
   }, []);
   return <>
     <dl className="home-year" ref={root}>
-      {figures.map(figure => <div key={figure.key}>
+      {figures.map(figure => {
+        const sheets = Math.round(figure.total / figure.each);
+        return <div key={figure.key} data-sheets={sheets} style={{ "--sheets": sheets } as CSSProperties}>
         <dt>{figure.label}</dt>
         <dd><span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span></dd>
-      </div>)}
+        {/* The figure as paper: a stack of cut sheets, one for every ten (or every $1,000), so the four stand true to one another. */}
+        <span className="home-year-stack" aria-hidden="true" />
+      </div>;
+      })}
     </dl>
-    <p className="home-year-note">From the sample conference. Every person in it is made up.</p>
+    <p className="home-year-note">Each sheet is ten, or $1,000. From the sample conference. Every person in it is made up.</p>
   </>;
 }
