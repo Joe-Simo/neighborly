@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useAction, useMutation, useQueries, type RequestForQueries } from "convex/react";
 import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";
@@ -25,6 +25,8 @@ import { DoorSweep, carryTheCard, useDoor } from "@/components/workspace/door";
 import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
+
+const noChange = () => () => {};
 
 /** The app, with the door's sweep above whatever it is showing. */
 export function LiveApp(props: Parameters<typeof LiveRooms>[0]) {
@@ -59,7 +61,9 @@ function LiveRooms({
   const seedRoom = useFirstRoom(viaSample);
   // In the iOS app, This week as the member last saw it, kept on the device (lib/kept-room.ts), is the look instead:
   // drawn at once on launch while the session and the live data catch up.
-  const [kept] = useState(() => (viaSample || area !== "week" ? null : keptRoom()));
+  // Read after hydration (the server never has it), so the page the server drew is the page the client first draws.
+  const handed = useSyncExternalStore(noChange, keptRoom, () => null);
+  const kept = viaSample || area !== "week" ? null : handed;
   const firstRoom = viaSample ? seedRoom : (kept?.room ?? null);
   const [lookOver, setLookOver] = useState(false);
   const [signedInRoom, setSignedInRoom] = useState(false);
