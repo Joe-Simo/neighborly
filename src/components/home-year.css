@@ -10,7 +10,7 @@
    As the page is turned off the chapter, each tab stands up out of the page: the hole it leaves shows its cut line, and the tab throws
    a tight shade at its hinge, longer the lower it lies. The label under it stays on the page. */
 .home-year dd{position:relative;width:fit-content}
-.home-year-tab{position:relative;z-index:1;display:inline-block;margin:-6px calc(-6px - .045em) -6px -6px;padding:6px calc(6px + .045em) 6px 6px;background:#eee7d7;box-shadow:0 -1px 0 #9a875f2e,-1px 0 0 #9a875f24,1px 0 0 #9a875f24;transform-origin:50% 100%}
+.home-year-tab{position:relative;z-index:1;display:inline-block;margin:-6px calc(-6px - .045em) -6px -6px;padding:6px calc(6px + .045em) 6px 6px;background:#eee7d7;transform-origin:50% 100%}
 .home-year[data-folding=true] .home-year-tab{box-shadow:0 -1px 0 #d3c7ad,-1px 0 0 #d9cfb7,1px 0 0 #d9cfb7}
 .home-year[data-folding=true]{perspective:900px}
 .home-year[data-folding=true] .home-year-tab{transform:rotateX(calc((1 - var(--fold,1)) * 86deg))}
