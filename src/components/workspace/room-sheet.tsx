@@ -342,10 +342,10 @@ function isWhole(column: HTMLElement) {
 /**
  * The room shown has come to rest: nothing in it is still moving to its place (its picture's piece, a row easing in). What moves without end, if anything, does not count.
  */
-function atRest(column: HTMLElement) {
-  return !column
+function stillMoving(column: HTMLElement) {
+  return column
     .getAnimations({ subtree: true })
-    .some((move) => move.playState === "running" && Number.isFinite(move.effect?.getComputedTiming().endTime));
+    .filter((move) => move.playState === "running" && Number.isFinite(move.effect?.getComputedTiming().endTime));
 }
 
 /**
@@ -457,12 +457,26 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
   useEffect(() => {
     const element = column.current;
     if (held || !element) return;
+    // Asked once a frame at first, then only when what was moving has ended: asking the page what moves makes it
+    // work out every style in the room, and asked on every frame of a turn that was most of the frame.
     const since = performance.now();
-    let frame = requestAnimationFrame(function rest(now) {
-      if (atRest(element) || now - since >= LONGEST) return setSettled(area);
-      frame = requestAnimationFrame(rest);
-    });
-    return () => cancelAnimationFrame(frame);
+    let left = false;
+    let frame = 0;
+    const look = (now: number) => {
+      if (left) return;
+      const moving = stillMoving(element);
+      if (!moving.length || now - since >= LONGEST) return setSettled(area);
+      const ends = Promise.all(moving.map((move) => move.finished.catch(() => undefined)));
+      const late = new Promise((go) => setTimeout(go, Math.max(0, LONGEST - (now - since))));
+      void Promise.race([ends, late]).then(() => {
+        if (!left) frame = requestAnimationFrame(look);
+      });
+    };
+    frame = requestAnimationFrame(look);
+    return () => {
+      left = true;
+      cancelAnimationFrame(frame);
+    };
   }, [area, held, column]);
   return { shown: !held, opening: held && opening, lost: held && opening && lost, settled: !held && settled === area };
 }
