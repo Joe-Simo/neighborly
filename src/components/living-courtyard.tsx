@@ -1,5 +1,6 @@
 "use client";
 
+import { COURTYARD_STILL, type CourtyardStill } from "./courtyard-door";
 import { useEffect, useRef } from "react";
 import { ImageBitmapLoader, LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Texture, Vector2, Vector4, WebGLRenderer } from "three";
 
@@ -213,6 +214,15 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     let scrolledAt = -1e9, shade = 1;
     const onScroll = () => { scrolledAt = performance.now(); };
     addEventListener("scroll", onScroll, { passive: true });
+    // Going in through the arch, the courtyard is held as it is: one frame is drawn whole and handed over as a picture of the same size and place.
+    const onStill = (event: Event) => {
+      if (!(event instanceof CustomEvent) || renderer.getContext().isContextLost()) return;
+      renderer.setScissorTest(false);
+      renderer.render(scene, camera);
+      (event.detail as CourtyardStill).take(renderer.domElement.toDataURL("image/jpeg", .92), renderer.domElement.getBoundingClientRect());
+      drawn = false;
+    };
+    addEventListener(COURTYARD_STILL, onStill);
 
     const shown = (selector: string) => { const layer = host.querySelector(selector); return layer ? Number(getComputedStyle(layer).opacity) : 0; };
     // Left alone, the people notice you now and then: a look up, a turn of the head. An act of care is answered with a reach or a wave, and then they stay turned towards you.
@@ -346,6 +356,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
       observer.disconnect();
       removeEventListener("pointermove", onPointer);
       removeEventListener("deviceorientation", onTilt);
+      removeEventListener(COURTYARD_STILL, onStill);
       removeEventListener("scroll", onScroll);
       document.documentElement.removeEventListener("pointerleave", rest);
       renderer.domElement.removeEventListener("webglcontextlost", lost);

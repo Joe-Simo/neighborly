@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
+import { CourtyardDoor } from "./courtyard-door";
 import { useSettled } from "@/lib/use-settled";
 import "./relief-journey.css";
 
@@ -228,6 +229,8 @@ export function FrescoThreshold() {
         <h2><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span></span></h2>
         <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
+        {/* The arch inside is a door too; this is its plain twin, for touch and for anyone who would rather not walk in. */}
+        <Link className="fresco-enter" href="/app" tabIndex={open ? -1 : undefined}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </div>
       <div ref={frame} className="fresco-frame">
         <div className="fresco-wall">
@@ -236,6 +239,8 @@ export function FrescoThreshold() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {settled && <img className="fresco-painting" src="/assets/threshold/courtyard-fresco.webp" width="1774" height="887" decoding="async" alt="A sunlit church courtyard painted on the wall: a woman prepares food at a long shared table, under arches hung with wisteria." />}
             {living && settled && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
+            {/* The hall's open arch in the painting is the way into Kind Helps, turned to like a page. */}
+            <CourtyardDoor label="Enter Kind Helps" opening="Opening…" here={open} />
           </div>
         </div>
         <div className="fresco-doors" aria-hidden="true"><i /><i /></div>

@@ -1,0 +1,11 @@
+/* The hall's open arch, as painted: the door into Kind Helps. Nothing is drawn on it; it takes the pointer, and the keyboard's one ink ring in its own shape. */
+.fresco-door{position:absolute;z-index:1;left:78.4%;top:20.3%;width:16.3%;height:47.4%;min-width:44px;min-height:44px;border-radius:50% 50% 0 0/30% 30% 0 0;cursor:pointer;pointer-events:auto;outline:none}
+.fresco-door:focus-visible{outline:2px solid #293f32;outline-offset:4px}
+.fresco-stage:not([data-open=true]) .fresco-door{pointer-events:none;visibility:hidden}
+
+/* The courtyard held over the window as one page while the workspace is laid beneath it, then turned off it (chapter-sheets.css draws the turn). */
+#courtyard-held{position:fixed;inset:0;z-index:82;min-height:0;height:100lvh;--turn-page:100lvh;pointer-events:none;contain:strict}
+#courtyard-held .relief-turn-page{overflow:hidden}
+#courtyard-held .courtyard-held-page{position:absolute;inset:0;overflow:hidden}
+/* The one quiet line, in the waiting ochre, low on the page, if the room is not on its way yet. Never faded in. */
+#courtyard-held .courtyard-held-opening{position:fixed;z-index:3;inset:96px 24px auto;margin:0;text-align:center;font:600 17px/1.5 "Source Sans 3",sans-serif;color:#8D631B;text-shadow:0 1px 0 #f6eedbcc}
