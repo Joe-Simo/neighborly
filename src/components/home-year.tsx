@@ -49,7 +49,7 @@ export function HomeYear() {
     const cells = [...list.querySelectorAll<HTMLElement>(":scope > div")];
     // Each pile's picture is decoded while the page is idle, well before the turn that lays it.
     const idle = window.requestIdleCallback ?? ((work: () => void) => window.setTimeout(work, 200));
-    idle(() => list.querySelectorAll<HTMLElement>(".home-year-stack").forEach(stack => {
+    idle(() => list.querySelectorAll<HTMLElement>(".home-year-stack>i").forEach(stack => {
       const source = /url\("(.*)"\)/.exec(getComputedStyle(stack).backgroundImage)?.[1];
       if (source) { const picture = new Image(); picture.src = source; void picture.decode().catch(() => {}); }
     }));
@@ -109,7 +109,7 @@ export function HomeYear() {
         return <div key={figure.key} data-sheets={sheets} style={sheets ? { "--sheets": sheets } as CSSProperties : undefined}>
         <dt>{figure.label}</dt>
         <dd>
-          {sheets > 0 && <span className="home-year-stack" aria-hidden="true" style={{ backgroundImage: pile(place, sheets) }} />}
+          {sheets > 0 && <><span className="home-year-stack" aria-hidden="true"><i style={{ backgroundImage: pile(place, sheets) }} /></span><span className="home-year-foot" aria-hidden="true" /></>}
           <span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span>
         </dd>
       </div>;

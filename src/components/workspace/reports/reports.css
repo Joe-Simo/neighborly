@@ -572,7 +572,8 @@
   .report { page: year-report; --print-line: #6b6b6b; }
   html, body, .live-app { background: #fff !important; }
   /* Only when the report is the page being printed: other rooms print their own sheets. */
-  body:has(.report) :not(:has(.report)):not(.report):not(.report *) { display: none !important; }
+  /* "Print the report" (report-book.tsx) prints its own sheets instead. */
+  :root:not([data-print-book]) body:has(.report) :not(:has(.report)):not(.report):not(.report *) { display: none !important; }
   .live-layout, .live-main { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
   .report * { color: #000 !important; animation: none !important; }
   .report .report-period, .report .report-actions, .report .help-done, .report .report-month-bar, .report .report-month-open, .report .report-every-line { display: none !important; }
