@@ -5,4 +5,4 @@
 .relief-story{--lean-x:0;--lean-y:0}
 [data-lean] :is([data-picture=call],[data-picture=help]) .relief-piece,[data-lean] [data-piece=hands]{translate:calc(var(--lean-x) * 9px) calc(var(--lean-y) * 6px)}
 [data-lean] [data-piece=ribbon]{translate:calc(var(--lean-x) * 5px) calc(var(--lean-y) * 3px)}
-[data-lean] :is([data-picture=call],[data-picture=help],[data-piece=hands]) .relief-shadow{translate:calc(var(--cast) * var(--sun-s,.56) - var(--lean-x) * 5px) calc(var(--cast) * var(--sun-c,.83) - var(--lean-y) * 4px)}
+[data-lean] :is([data-picture=call],[data-picture=help],[data-piece=hands]) .relief-shadow{translate:calc(var(--cast) * var(--sun-s,.574) - var(--lean-x) * 5px) calc(var(--cast) * var(--sun-c,.819) - var(--lean-y) * 4px)}
