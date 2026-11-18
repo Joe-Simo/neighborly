@@ -20,3 +20,4 @@ html[data-public-turn]::view-transition-group(public-turn-flap){z-index:3}
 .public-turn-flap,.public-turn-shade{position:fixed;inset:0;z-index:2147483647;pointer-events:none}
 .public-turn-flap{view-transition-name:public-turn-flap;background:linear-gradient(135deg,#efe7d6,#f7f2e6 60%,#e9dfca)}
 .public-turn-shade{view-transition-name:public-turn-shade;background:#2e241633}
+main h1[tabindex="-1"]:focus{outline:none}

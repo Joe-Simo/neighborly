@@ -40,7 +40,13 @@ export function PublicTurn() {
         const go = () => { if (--wait > 0) requestAnimationFrame(go); else parts.forEach(animation => animation.play()); };
         requestAnimationFrame(go);
       }, () => {});
-      void moving.finished.finally(() => { parts.forEach(part => part.remove()); delete document.documentElement.dataset.publicTurn; });
+      void moving.finished.finally(() => {
+        parts.forEach(part => part.remove());
+        delete document.documentElement.dataset.publicTurn;
+        // Once the page has landed, the reader is on its title, as on a fresh load: a screen reader reads the new page from its name.
+        const title = document.querySelector<HTMLElement>("main h1");
+        if (title) { if (!title.hasAttribute("tabindex")) title.tabIndex = -1; title.focus({ preventScroll: true }); }
+      });
     };
     const click = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || still.matches) return;
