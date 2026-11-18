@@ -105,6 +105,8 @@ final class ShellViewController: CAPBridgeViewController {
         // What the page asks to be felt: a committed page turn (room-sheet.tsx), a decision going through and a
         // refused save (use-save.ts). See tap(for:).
         scripts.add(Felt { [weak self] what in self?.tap(for: what) }, name: "kindHelpsFelt")
+        // A kept room opened with no connection asks to be opened again once the connection returns (live-app.tsx).
+        scripts.add(ReloadRequest { [weak self] in self?.reloadUnderStill() }, name: "kindHelpsReload")
         // At the accessibility text sizes the bar's words stay small; held, a tab shows its name large, as any iOS
         // tab bar does. The page says where its tabs are (shell.tsx); iOS turns the viewer on only at those sizes.
         scripts.add(BarTabs { [weak self] tabs in self?.layBarTabs(tabs) }, name: "kindHelpsBar")
@@ -286,6 +288,29 @@ final class ShellViewController: CAPBridgeViewController {
             case "wrd-wid-006": constraint.constant = desk ? 137 : 120
             case "wrd-hei-007": constraint.constant = desk ? 37 : 32
             default: break
+            }
+        }
+    }
+
+    /// The page is opened again under a still picture of itself: the picture stays until the page says its first screen
+    /// is whole again (the same kept room, drawn at once), and goes in one frame, so no white or half-drawn page is seen.
+    /// It goes after eight seconds at the most, whatever the page says.
+    private func reloadUnderStill() {
+        guard let webView, let still = webView.snapshotView(afterScreenUpdates: false) else { webView?.reload(); return }
+        still.frame = webView.bounds
+        still.isUserInteractionEnabled = false
+        webView.addSubview(still)
+        webView.reload()
+        let began = Date()
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self, weak webView] watch in
+            guard let webView, Date().timeIntervalSince(began) < 8 else { watch.invalidate(); still.removeFromSuperview(); return }
+            // Asked of the new page only: one opened since the reload began, not the one it replaces.
+            let since = Int(Date().timeIntervalSince(began) * 1000) + 300
+            webView.evaluateJavaScript("(\(Self.firstScreenWhole)) && performance.now() < \(since)") { result, _ in
+                guard result as? Bool == true, still.superview != nil else { return }
+                watch.invalidate()
+                still.removeFromSuperview()
+                _ = self
             }
         }
     }
@@ -605,6 +630,15 @@ private final class BarTabs: NSObject, WKScriptMessageHandler {
                   let width = tab["width"] as? Double, let height = tab["height"] as? Double else { return nil }
             return BarTab(name: name, frame: CGRect(x: x, y: y, width: width, height: height), index: index)
         })
+    }
+}
+
+private final class ReloadRequest: NSObject, WKScriptMessageHandler {
+    private let asked: () -> Void
+    init(asked: @escaping () -> Void) { self.asked = asked }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame else { return }
+        asked()
     }
 }
 
