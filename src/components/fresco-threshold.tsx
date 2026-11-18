@@ -82,8 +82,6 @@ export function FrescoThreshold() {
     const update = () => {
       raf = 0;
       const width = host.clientWidth, height = host.clientHeight;
-      // Where the courtyard's frame stood last frame: the standing line is only ever shown while that frame is wholly below the window, so no frame crosses a letter.
-      const frameBelow = wall.getBoundingClientRect().bottom - host.getBoundingClientRect().top >= height + 48;
       // A phone on its side is wide but short: it takes the wide layout with a lower fresco.
       const short = height <= 500 && width > height;
       const phone = width <= 899 && !short;
@@ -152,7 +150,7 @@ export function FrescoThreshold() {
       // Standing in the courtyard, the words are a strip of paper laid on the paving that stands up as the walk ends, and lies back down as the courtyard draws back into its frame.
       // It is never seen more than 60° off upright: hidden until the walk is past halfway, then stood up from 60°.
       host.style.setProperty("--stand", ease(clamp((inside - .55) / .45)).toFixed(4));
-      host.dataset.standing = String(inside > .55 && (grow === 0 || frameBelow));
+      host.dataset.standing = String(inside > .55);
       host.dataset.stood = String(inside >= 1);
       host.dataset.inside = String(inside > .98);
       // The courtyard is all painting: the bar drawn over it leaves in one cut as the visitor steps in and returns in one as they step out.
@@ -160,7 +158,9 @@ export function FrescoThreshold() {
       // Once the visitor has walked in, the wall they came through is behind them: its words do not come back with the frame.
       host.dataset.walked = String(inside > .98 || grow > 0);
       host.style.setProperty("--door-progress", (door * .05).toFixed(4));
-      host.style.setProperty("--caption-top", `${frameY + frameHeight / 2}px`);
+      // Under the frame as it is actually drawn (its ring and any scale included), read once it has come to rest, so no letter is ever under its edge.
+      const framedBottom = grow === 1 && inside === 0 ? wall.getBoundingClientRect().bottom - host.getBoundingClientRect().top : 0;
+      host.style.setProperty("--caption-top", `${Math.max(frameY + frameHeight / 2, framedBottom)}px`);
       setOpen(grow > .5 || inside > .5);
     };
     const request = () => { if (!raf) raf = requestAnimationFrame(update); };
