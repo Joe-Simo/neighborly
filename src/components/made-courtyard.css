@@ -9,6 +9,17 @@
   transform:perspective(2600px) var(--lean) translateZ(calc(var(--open) * (var(--sheet) - 3) * var(--gap)))}
 .made-courtyard[data-near=true] .made-courtyard-stack img{will-change:transform}
 .made-courtyard[data-live=true]:not([data-ready=true]) .made-courtyard-stack{visibility:hidden}
+/* Held by a hand: the sheets follow the pointer, so the page does not scroll under a touch that drags them. */
+.made-courtyard[data-live=true] .made-courtyard-stack{cursor:grab;touch-action:pan-x;user-select:none;-webkit-user-select:none;outline:none}
+/* Keyboard focus on the held courtyard: one ink ring drawn on the figure, a margin of paper off it and inside the page's gutter at every width.
+   While it shows, the sheets are cut at its outer edge and lie beneath it, so no sheet ever crosses it. */
+.made-courtyard-stack{--ring:-12px max(-24px,calc((100% - 100vw) / 2 + 15px))}
+.made-courtyard-stack::after{content:"";position:absolute;z-index:1;inset:var(--ring);border:2px solid #283c32;border-radius:3px;pointer-events:none;visibility:hidden}
+.made-courtyard[data-live=true] .made-courtyard-stack:focus-visible{outline:none;clip-path:inset(var(--ring))}
+.made-courtyard-stack:focus-visible::after{visibility:visible}
+.made-courtyard-stack img{-webkit-user-drag:none;pointer-events:none}
+/* The hint: the caption's type, one step quieter. */
+.made-courtyard-hint{margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;text-align:center;font:400 clamp(15px,1.15vw,19px)/1.45 'Newsreader',Georgia,serif;color:#3d4f43;text-wrap:balance}
 .made-courtyard-said{position:relative;margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;min-height:3.2em;text-align:center;font:400 clamp(17px,1.35vw,22px)/1.45 'Newsreader',Georgia,serif;color:#293f32;text-wrap:balance}
 .made-courtyard-said span{position:absolute;inset:0 20px}
 .made-courtyard[data-whole=true] .made-courtyard-said span:first-child,.made-courtyard[data-whole=false] .made-courtyard-said span:last-child{visibility:hidden}
@@ -34,3 +45,5 @@
 .public-made-figure{margin:28px 0 0}
 .public-made-figure img{display:block;width:100%;height:auto;box-shadow:0 1px 2px #3b2a1230,0 10px 20px -10px #3b2a1240}
 .public-made-figure figcaption{margin-top:10px;font-size:15px;line-height:1.5;color:#3d4f43}
+/* On a wide screen the stage sits a little lower, so the ring keeps 24px of air below the paper of the section before it. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){.made-courtyard-stage{padding-top:72px;box-sizing:border-box}}
