@@ -10,7 +10,7 @@ const SLOP = 6;
 
 /**
  * One request slip beside the year: the visitor picks it up and lays it on the pile of home visits (or presses it, from the keyboard
- * or by tap), and it is carried there whole, set down as one more sheet, and the visits figure turns over to count it.
+ * or by tap), and it is carried there whole and laid on the top sheet: it is the year's last visit, and the figure turns over to the year's own count.
  * On the page only; nothing is sent or kept. With Reduce Motion it is laid at once.
  */
 export function HomeYearSlip() {
@@ -28,8 +28,7 @@ export function HomeYearSlip() {
     const figure = cell.querySelector<HTMLElement>("[data-figure=visits]");
     const tab = cell.querySelector<HTMLElement>(".home-year-tab");
     const turn = () => {
-      if (figure) figure.textContent = whole.format(sampleYear.visits + 1);
-      cell.dataset.added = "true";
+      if (figure) figure.textContent = whole.format(sampleYear.visits);
       setLaid(true);
       // The slip leaves with the press, so the keyboard is handed to what came of it.
       requestAnimationFrame(() => document.getElementById("home-year-give")?.focus({ preventScroll: true }));
@@ -38,7 +37,7 @@ export function HomeYearSlip() {
     // From where it is held to the top of the pile: carried whole and level, then it lies down onto the pile edge on, one sheet's depth.
     const from = element.getBoundingClientRect(), to = stack.getBoundingClientRect();
     const scale = (to.width - 8) / from.width;
-    const x = to.left + 4 - from.left, y = to.bottom - 3 * Number(cell.dataset.sheets) - 3 - from.top;
+    const x = to.left + 4 - from.left, y = to.bottom - 3 * Number(cell.dataset.sheets) - from.top;
     const set = element.animate([
       { transform: `translate(${dx}px, ${dy}px)` },
       { transform: `translate(${x}px, ${y - from.height * scale}px) scale(${scale})`, offset: .7 },
@@ -89,6 +88,6 @@ export function HomeYearSlip() {
       <strong>Rosa Fontaine</strong>
       <span>Rent, $450. Visited in pairs.</span>
     </button>
-    <p id="home-year-give" role="status" tabIndex={-1}>{laid ? `${whole.format(sampleYear.visits + 1)} home visits. One of them yours.` : "Lay it on the visits pile."}</p>
+    <p id="home-year-give" role="status" tabIndex={-1}>{laid ? `${whole.format(sampleYear.visits)} home visits. The year is laid down.` : "Lay it on the visits pile."}</p>
   </div>;
 }

@@ -38,7 +38,7 @@
 @media(min-width:600px) and (max-width:820px){.relief-words .home-year{justify-content:start;column-gap:clamp(56px,11vw,96px)}}
 @media(min-width:1600px){.home-year dt,.relief-words p.home-year-note{font-size:16px}}
 /* The visitor's slip (home-year-slip.tsx): one request on a slip of the pile's own paper, picked up and laid on the visits pile.
-   Once laid, the pile has one more sheet on top (drawn by the stack's ::before, its top face lifted by one sheet), and the slip is gone. */
+   Once laid it is part of the top sheet (each sheet is ten; the top one is the part-full one), and the slip is gone. */
 .home-year-give{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:clamp(18px,1.8vw,26px)}
 .home-year-slip{display:grid;gap:2px;text-align:left;padding:10px 14px 11px;background:#f7f2e6;color:#293f32;border:0;border-radius:1px;box-shadow:0 0 0 1px #b0a08466,0 1px 0 #b0a084,0 3px 6px -2px #3b2a1233;cursor:grab;touch-action:none;transform-origin:0 0;user-select:none}
 .home-year-slip strong{font:500 16px/1.25 'Newsreader',Georgia,serif}
@@ -46,10 +46,6 @@
 .home-year-slip[data-held]{cursor:grabbing;box-shadow:0 0 0 1px #b0a08466,0 10px 0 -4px #3b2a1229,0 14px 18px -8px #3b2a1240;will-change:transform}
 .home-year-slip:focus-visible{outline:2px solid #293f32;outline-offset:3px}
 .home-year-give p{margin:0;font-size:15px;line-height:1.4;color:#3d4f43}
-.home-year div[data-added] .home-year-stack{height:calc(var(--sheets) * 3px + 11px)}
-.home-year div[data-added] .home-year-stack::before{content:"";position:absolute;left:4px;right:4px;bottom:calc(var(--sheets) * 3px);height:3px;background:linear-gradient(#f7f2e6 0 2px,#b0a084 2px)}
-.home-year div[data-added] .home-year-stack::after{translate:0 -3px}
-.home-year div[data-added] .home-year-foot{bottom:calc(100% + 17px)}
 .home-year-slip[data-lying] > *{visibility:hidden}
 /* Once laid the slip's place is kept, so nothing below it moves. */
 .home-year-slip[data-laid]{visibility:hidden}
