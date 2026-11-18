@@ -370,6 +370,17 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
     const neighbor = await db.get("neighbors", households[index]);
     if (!neighbor) continue;
     const adults = Array.from({ length: neighbor.adults }, (_, seat) => ({ relationship: seat === 0 ? "Head of household" : extra.pick(elders), child: false, birthYear: thisYear - extra.between(24, 78) }));
+    // Drawn as before, then made sensible: one spouse and one of each parent at most; a later draw of either is
+    // another relative of the same generation, so every draw (and the pinned year) is unchanged.
+    const once: Record<string, string> = { Husband: "Brother", Wife: "Sister", Mother: "Aunt", Father: "Brother" };
+    let spoused = false;
+    const seen = new Set<string>();
+    for (const adult of adults) {
+      const spouse = adult.relationship === "Husband" || adult.relationship === "Wife";
+      if ((spouse && spoused) || (!spouse && adult.relationship in once && seen.has(adult.relationship))) adult.relationship = once[adult.relationship];
+      if (spouse && !spoused) spoused = true;
+      seen.add(adult.relationship);
+    }
     const young = Array.from({ length: neighbor.children }, () => ({ relationship: extra.pick(["Son", "Daughter", "Grandson", "Granddaughter"]), child: true, birthYear: thisYear - extra.between(1, 16) }));
     await db.patch("neighbors", neighbor._id, { household: [...adults, ...young] });
   }
