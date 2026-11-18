@@ -6,7 +6,7 @@ import { readersLanguage } from "@/lib/first-language";
 import { linkPreview } from "@/lib/link-preview";
 import { EdgeSheet } from "@/components/edge-sheet";
 
-const lost = "The address may be old or mistyped. Kind Helps is at kindhelps.com.";
+const lost = edgeWords.en.lostAbout;
 export const metadata: Metadata = {
   title: edgeWords.en.lostTab,
   description: lost,
@@ -22,6 +22,6 @@ export default function NotFound() {
     lines={{ en: edgeWords.en.lost, es: edgeWords.es.lost }}
     ways={{ en: <Link href="/#your-community">{edgeWords.en.courtyard}</Link>, es: <Link href="/#your-community">{edgeWords.es.courtyard}</Link> }}>
     <script dangerouslySetInnerHTML={{ __html: readersLanguage }} />
-    <ReaderLanguage tabs={{ en: edgeWords.en.lostTab, es: edgeWords.es.lostTab }} />
+    <ReaderLanguage tabs={{ en: edgeWords.en.lostTab, es: edgeWords.es.lostTab }} abouts={{ en: edgeWords.en.lostAbout, es: edgeWords.es.lostAbout }} />
   </EdgeSheet>;
 }

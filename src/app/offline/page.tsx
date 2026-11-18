@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { EdgeSheet } from "@/components/edge-sheet";
 import { ReaderLanguage } from "@/components/reader-language";
+import { edgeWords } from "@/lib/edge-words";
 import { words } from "@/lib/words";
 import { TryAgain } from "./try-again";
 
 export const metadata: Metadata = {
   title: words("en").states.offlinePageTab,
-  description: "This device is offline. What is on screen is kept, and Kind Helps opens again when the connection returns.",
+  description: edgeWords.en.offlineAbout,
   robots: { index: false, follow: false },
 };
 
@@ -22,6 +23,6 @@ export default function Offline() {
     piece="bowl"
     lines={{ en: en.offlineTitle, es: es.offlineTitle }}
     ways={{ en: <TryAgain label={en.tryAgain} />, es: <TryAgain label={es.tryAgain} /> }}>
-    <ReaderLanguage tabs={{ en: en.offlinePageTab, es: es.offlinePageTab }} />
+    <ReaderLanguage tabs={{ en: en.offlinePageTab, es: es.offlinePageTab }} abouts={{ en: edgeWords.en.offlineAbout, es: edgeWords.es.offlineAbout }} />
   </EdgeSheet>;
 }
