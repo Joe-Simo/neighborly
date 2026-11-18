@@ -97,7 +97,11 @@ export function NeighborlyExperience() {
       const progress = reduce ? scrolled : paceOpening(scrolled);
       // The foot's "Scroll" has been answered once the page has moved: it leaves in one cut, before the edge reaches it.
       element.toggleAttribute("data-lifting", scrolled > .004);
-      write("--entry-portrait", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4))));
+      const portraitShown = reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .4));
+      write("--entry-portrait", String(portraitShown));
+      // Once the sheet is wholly lifted its shadow is put away by an attribute, not only by the value: on iPad Safari a fling can leave
+      // the fixed shadow painted where the value last stood, a dark band across every chapter after it.
+      element.toggleAttribute("data-lifted", portraitShown <= 0);
       write("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (scrolled - .3) / .5))));
       // The headline holds at full ink until the picture begins to leave at .4 and is gone by .5. The doors' own words are printed on the wall beneath and are simply uncovered.
       write("--entry-caption", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .1))));
