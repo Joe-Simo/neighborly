@@ -17,7 +17,22 @@ const figures = [
 ] as const satisfies readonly { key: string; label: string; total: number; say: (value: number) => string; each: number }[];
 
 /** A hand-squared pile: each sheet sits a little off true, the same way on every visit. */
-const jitter = (figure: number, sheet: number) => ((sheet * 7919 + figure * 104729) % 9 - 4) / 2;
+// Hashed per sheet rather than stepped, so no rhythm repeats inside a pile.
+const jitter = (figure: number, sheet: number) => {
+  let h = Math.imul(sheet + 1, 0x9e3779b1) ^ Math.imul(figure + 1, 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+  return (((h ^ (h >>> 13)) >>> 0) % 9 - 4) / 2;
+};
+
+/**
+ * The whole pile as one picture, drawn once: every sheet a 3px strip with its edge line, set its few pixels off true at both ends
+ * (each drawn as two halves, one held from the left and one from the right). The stack's height shows whole sheets only.
+ */
+const pile = (place: number, sheets: number) => {
+  const strip = (j: number, y: number, h: number, paint: string) => `<rect x='${4 + j}' y='${y}' width='50%25' height='${h}' ${paint}/><rect x='50%25' y='${y}' width='50%25' height='${h}' transform='translate(${j - 4} 0)' ${paint}/>`;
+  const strips = Array.from({ length: sheets }, (_, sheet) => { const y = (sheets - 1 - sheet) * 3, j = jitter(place, sheet); return strip(j, y, 3, "fill='%23f7f2e6'") + strip(j, y + 2, 1, "fill='%23b0a084'"); }).join("");
+  return `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100%25' height='${sheets * 3}'>${strips}</svg>")`;
+};
 
 /**
  * The year, folded up: four figures of the sample conference's own year, each cut into the page and standing up out of it
@@ -88,9 +103,7 @@ export function HomeYear() {
         return <div key={figure.key} data-sheets={sheets} style={sheets ? { "--sheets": sheets } as CSSProperties : undefined}>
         <dt>{figure.label}</dt>
         <dd>
-          {sheets > 0 && <span className="home-year-stack" aria-hidden="true">
-            {Array.from({ length: sheets }, (_, sheet) => <i key={sheet} style={{ "--i": sheet, "--x": `${jitter(place, sheet)}px` } as CSSProperties} />)}
-          </span>}
+          {sheets > 0 && <span className="home-year-stack" aria-hidden="true" style={{ backgroundImage: pile(place, sheets) }} />}
           <span className="home-year-tab"><span data-figure={figure.key}>{figure.say(figure.total)}</span></span>
         </dd>
       </div>;
