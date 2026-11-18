@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { takeSampleTicket } from "@/lib/sample-ticket";
 import { useWaited } from "@/lib/use-waited";
 import { useFocusBack } from "@/lib/use-focus-back";
@@ -9,6 +9,7 @@ import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { holdTheSheet } from "@/components/workspace/door";
 import { Input } from "@/components/ui/input";
 import { words } from "@/lib/words";
 import { LiveField } from "@/components/workspace/primitives";
@@ -114,6 +115,20 @@ export function LiveAuth({
       document.title = tabInReadersLanguage(found);
     };
   }, [pageTitle, behind]);
+
+  // The sheet leaves with its answer given: on the web it is held over the page as it stands, and folds into the
+  // first room once that room is whole (door.tsx). The iPhone app has its own way in, and less motion keeps the plain paper.
+  const leavesGiven = useRef(false);
+  useEffect(() => {
+    leavesGiven.current = given && !behind;
+  }, [given, behind]);
+  useLayoutEffect(
+    () => () => {
+      if (!leavesGiven.current || document.documentElement.dataset.shell === "ios" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      holdTheSheet();
+    },
+    [],
+  );
 
   const focus = useFocusBack();
 

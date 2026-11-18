@@ -71,3 +71,16 @@ body:has(.door-sweep) :is(.paper-loading-mark, .paper-loading-words, .live-openi
 .door-sweep[data-held] .door-opening svg { display: none; }
 .door-card[data-waits] > .door-card-for, .door-card[data-holds] > .door-card-for { opacity: 1; animation: none; }
 @media (prefers-reduced-motion: reduce) { .door-card > .door-card-for { display: block; } }
+
+/* w90: on the web the public sheet itself is the paper over the first room. It stands as it was given, green corner
+   and all, until the room is whole, then its foot folds up behind it, printed face out, and it is carried up off the room. The sweep's
+   own sheets are not drawn under it. Transform only; Reduce Motion never holds it (the plain paper stands instead). */
+.door-sweep[data-folds] > :is(svg, .door-paper) { display: none; }
+.door-fold { position: fixed; inset: 0; z-index: 81; overflow: hidden; pointer-events: none; perspective: 2200px; }
+.door-fold-half { position: absolute; inset: 0; overflow: hidden; transform-origin: 50% 50%; backface-visibility: hidden; will-change: transform; }
+.door-fold-half[data-half="top"] { clip-path: inset(0 0 50% 0); z-index: 1; }
+.door-fold-half[data-half="foot"] { clip-path: inset(50% 0 0 0); box-shadow: 0 -1px 0 rgb(40 60 50 / 0.12); }
+.door-fold-half .entry { min-height: 100dvh; }
+/* The copy is the sheet as it stands: nothing on it is laid down again. */
+.door-fold *, .door-fold *::before, .door-fold *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) { .door-fold { display: none; } }

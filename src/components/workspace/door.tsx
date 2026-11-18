@@ -52,6 +52,62 @@ function readCardFor() {
   }
 }
 let card = false;
+/**
+ * The public sheet as it stood the moment the sign-in was given, held over the page in two halves along its middle
+ * (w90). On the web the sweep's sheets are not drawn for it: this is the paper over the room, and when the room is
+ * whole its foot folds up behind it, printed face out, and the folded sheet is carried up off the room.
+ */
+let heldSheet: HTMLElement | null = null;
+/** Called by the sign-in sheet in the frame it leaves, with its answer given; never in the iPhone app, nor for less motion. */
+export function holdTheSheet() {
+  const entry = document.querySelector<HTMLElement>(".entry");
+  if (!entry || heldSheet) return;
+  const hold = document.createElement("div");
+  hold.className = "door-fold";
+  hold.setAttribute("aria-hidden", "true");
+  hold.inert = true;
+  const scrolled = window.scrollY;
+  // The page's own ground is under the sheet; each half carries it, so nothing of the room shows through before it should.
+  const ground = getComputedStyle(document.body).backgroundColor;
+  for (const half of ["top", "foot"]) {
+    const copy = entry.cloneNode(true) as HTMLElement;
+    // What was typed lives in the fields, not in the page's markup: it is written into the copy, so nothing on the sheet changes.
+    const typed = entry.querySelectorAll<HTMLInputElement>("input");
+    copy.querySelectorAll<HTMLInputElement>("input").forEach((field, at) => field.setAttribute("value", typed[at]?.value ?? ""));
+    copy.querySelectorAll("[id]").forEach((named) => named.removeAttribute("id"));
+    copy.style.setProperty("translate", `0 ${-scrolled}px`);
+    const side = document.createElement("div");
+    side.className = "door-fold-half";
+    side.dataset.half = half;
+    side.style.backgroundColor = ground;
+    // The sheet's look comes from the page around it (`.live-app`, its language): the copy is set in the same, so not a line of it changes.
+    const around = entry.closest(".live-app")?.cloneNode(false) as HTMLElement | undefined;
+    if (around) {
+      around.removeAttribute("id");
+      around.append(copy);
+    }
+    side.append(around ?? copy);
+    hold.append(side);
+  }
+  document.body.append(hold);
+  heldSheet = hold;
+}
+const FOLD = 240;
+const CARRY = 220;
+/**
+ * The held sheet folds over the whole room: its foot turns up behind the top, so the printed face (the painting and
+ * the card) stays outward, and the folded sheet is carried up off the room showing that face. Resolves once nothing is left.
+ */
+function foldTheSheet(hold: HTMLElement) {
+  const [top, foot] = hold.querySelectorAll<HTMLElement>(".door-fold-half");
+  foot.animate([{ transform: "rotateX(0deg)" }, { transform: "rotateX(-90deg)", visibility: "hidden" }], { duration: FOLD, easing: "cubic-bezier(0.5, 0, 0.9, 0.7)", fill: "forwards" });
+  const up = top.animate([{ transform: "none" }, { transform: `translateY(${-Math.round(window.innerHeight * 0.5 + 40)}px)` }], { duration: CARRY, delay: FOLD - 40, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" });
+  return up.finished.then(() => undefined);
+}
+function letGoOfTheSheet() {
+  heldSheet?.remove();
+  heldSheet = null;
+}
 /** Called by the door when it starts opening the sample, and again with false if the sample did not open. */
 export function carryTheCard(carry = true) {
   carried = carry;
@@ -110,7 +166,10 @@ export function DoorSweep() {
     let goOnSaying = heldSaying;
     heldSaying = false;
     // Taken over from the home page's card, the paper is down already: there is no sweep to wait out.
-    const down = paper.current?.hasAttribute("data-held") ?? false;
+    // The public sheet held from sign-in is the paper itself: it is down already, and it folds rather than lifts.
+    const folds = heldSheet !== null && !card;
+    if (!folds) letGoOfTheSheet();
+    const down = folds || (paper.current?.hasAttribute("data-held") ?? false);
     const lift = () => {
       lifting = true;
       // The home page's card may still lie over this one, identical to it, for a few frames: it goes now, so the lift is seen from its first frame.
@@ -119,6 +178,18 @@ export function DoorSweep() {
       paper.current?.querySelector<HTMLElement>(".door-opening")?.style.setProperty("visibility", "hidden");
       setHolding(false);
       restWhatIsUnderneath();
+      if (folds) {
+        const over = () => {
+          letGoOfTheSheet();
+          setHolding(false);
+          delete document.documentElement.dataset.door;
+          finished = arrival;
+          for (const watch of watchers) watch();
+        };
+        if (heldSheet) foldTheSheet(heldSheet).then(over, over);
+        else over();
+        return;
+      }
       const sheet = paper.current?.querySelector<HTMLElement>(".door-card, .door-paper");
       const far = -((sheet?.getBoundingClientRect().bottom ?? window.innerHeight) + 70);
       const away = { duration: LIFT, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" } as const;
@@ -153,7 +224,9 @@ export function DoorSweep() {
       const waited = performance.now() - arrivedAt;
       const landed = plain || down || waited >= SWEEP;
       const read = saidAt === 0 || performance.now() - saidAt >= READ;
-      if (landed && read && (underneathIsReady() || waited > LONGEST)) return lift();
+      // The public sheet comes off a room at rest (`data-room-whole`): every part of it in place, its figures landed.
+      const ready = underneathIsReady() && (!folds || document.querySelector(".live-app[data-room-whole]") !== null);
+      if (landed && read && (ready || waited > LONGEST)) return lift();
       const held = plain ? null : paper.current?.querySelector<HTMLElement>(".door-card");
       if (held) {
         // The card waits as the card. Nothing is drawn that must then be read, so it lifts the frame the room is whole.
@@ -189,7 +262,7 @@ export function DoorSweep() {
 
   if (!playing) return null;
   return createPortal(
-    <div className="door-sweep" ref={paper} aria-hidden={holding ? undefined : true}>
+    <div className="door-sweep" ref={paper} data-folds={heldSheet && !card ? "" : undefined} aria-hidden={holding ? undefined : true}>
       {["#365c46", "#6f5f93", "#f7f4ed"].slice(0, card ? 2 : 3).map((fill, sheet) => (
         <svg key={fill} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path fill={fill} d={["M0 9C18 1 34 13 53 7S84 0 100 8V100H0Z", "M0 5C22 12 40 0 60 6S88 12 100 4V100H0Z", "M0 10C16 3 38 9 56 4S86 11 100 6V100H0Z"][sheet]} />
