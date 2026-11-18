@@ -10,7 +10,8 @@
  *   - The turned-over part: a blank sheet of the underside's paper, mirrored across the fold and cut at it; its own
  *     edges throw a close shade on the sheet it lies over, and the paper curving over at the fold catches the light.
  *   - The crease's shade on the room beneath.
- * `drive(progress)` lays every piece for one point of the turn, so a finger can hold it anywhere; `play()` runs it.
+ * `drive(progress)` lays every piece for one point of the turn, so a finger can hold it anywhere; `play()` runs it,
+ * and `glide()` carries it on from where a finger let go.
  */
 
 /** The whole turn, corner down to sheet gone. */
@@ -19,7 +20,13 @@ export const TURN_MS = 280;
 /** The turn's ease: the corner lifts gently, the fold runs, and the sheet leaves the far edge without a stop. */
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
-export type RoomTurn = { drive: (progress: number) => void; play: () => Promise<void>; end: () => void };
+export type RoomTurn = {
+  drive: (progress: number) => void;
+  play: () => Promise<void>;
+  /** From where a finger let go of it, on to the end (1) or back down (0), at the turn's own pace. */
+  glide: (from: number, to: 0 | 1) => Promise<void>;
+  end: () => void;
+};
 
 const piece = (className: string, style: Partial<CSSStyleDeclaration>) => {
   const element = document.createElement("div");
@@ -96,24 +103,29 @@ export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
     turn.remove();
   };
 
-  const play = () =>
+  const glide = (from: number, to: 0 | 1) =>
     new Promise<void>((resolve) => {
       const began = performance.now();
       turn.setAttribute("data-turning", "");
-      drive(0);
+      // The rest of the way takes its share of the whole turn's time.
+      const span = Math.max(1, Math.abs(to - from) * TURN_MS);
+      drive(from);
       const step = (now: number) => {
         if (ended) return resolve();
-        const progress = (now - began) / TURN_MS;
-        if (progress >= 1) {
-          end();
+        const done = (now - began) / span;
+        if (done >= 1) {
+          // Turned away, the sheet is gone; laid back down, it lies flat where it was.
+          if (to === 1) end();
+          else drive(0);
           return resolve();
         }
-        drive(progress);
+        drive(from + (to - from) * done);
         requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
     });
+  const play = () => glide(0, 1);
 
   drive(0);
-  return { drive, play, end };
+  return { drive, play, glide, end };
 }
