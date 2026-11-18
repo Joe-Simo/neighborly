@@ -370,18 +370,30 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
     const neighbor = await db.get("neighbors", households[index]);
     if (!neighbor) continue;
     const adults = Array.from({ length: neighbor.adults }, (_, seat) => ({ relationship: seat === 0 ? "Head of household" : extra.pick(elders), child: false, birthYear: thisYear - extra.between(24, 78) }));
-    // Drawn as before, then made sensible: one spouse and one of each parent at most; a later draw of either is
-    // another relative of the same generation, so every draw (and the pinned year) is unchanged.
-    const once: Record<string, string> = { Husband: "Brother", Wife: "Sister", Mother: "Aunt", Father: "Brother" };
-    let spoused = false;
-    const seen = new Set<string>();
-    for (const adult of adults) {
-      const spouse = adult.relationship === "Husband" || adult.relationship === "Wife";
-      if ((spouse && spoused) || (!spouse && adult.relationship in once && seen.has(adult.relationship))) adult.relationship = once[adult.relationship];
-      if (spouse && !spoused) spoused = true;
-      seen.add(adult.relationship);
-    }
+    // Drawn as before, then made sensible by relabelling only, so every draw (and the pinned year) is unchanged:
+    // ages fit the roles (a spouse within 15 years of the head, a parent at least 16 older, a child at least 16
+    // younger, a grandchild at least 32), and there is one spouse, one mother and one father at most.
+    const head = adults[0]?.birthYear ?? thisYear;
+    const female = new Set(["Mother", "Grandmother", "Wife", "Sister", "Aunt", "Daughter", "Granddaughter"]);
+    const taken = new Set<string>();
+    const fits = (role: string, older: number) => {
+      if (role === "Husband" || role === "Wife") return Math.abs(older) <= 15 && !taken.has("spouse");
+      if (role === "Mother" || role === "Father") return older >= 16 && !taken.has(role);
+      if (role === "Grandmother") return older >= 32;
+      if (role === "Son" || role === "Daughter") return older <= -16;
+      if (role === "Grandson" || role === "Granddaughter") return older <= -32;
+      return true;
+    };
+    const settle = (person: { relationship: string; birthYear: number }) => {
+      const older = head - person.birthYear;
+      const her = female.has(person.relationship);
+      const choices = her ? ["Wife", "Mother", "Grandmother", "Daughter", "Granddaughter", "Sister"] : ["Husband", "Father", "Son", "Grandson", "Brother"];
+      if (!fits(person.relationship, older)) person.relationship = choices.find((role) => role !== "Wife" && role !== "Husband" && fits(role, older)) ?? (her ? "Sister" : "Brother");
+      taken.add(person.relationship === "Husband" || person.relationship === "Wife" ? "spouse" : person.relationship);
+    };
+    adults.slice(1).forEach(settle);
     const young = Array.from({ length: neighbor.children }, () => ({ relationship: extra.pick(["Son", "Daughter", "Grandson", "Granddaughter"]), child: true, birthYear: thisYear - extra.between(1, 16) }));
+    young.forEach(settle);
     await db.patch("neighbors", neighbor._id, { household: [...adults, ...young] });
   }
   // The accounts, cautions and notes sit on households that also say who lives there, so one record shows it all.
