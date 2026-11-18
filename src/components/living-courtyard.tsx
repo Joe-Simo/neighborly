@@ -160,7 +160,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     renderer.domElement.addEventListener("webglcontextrestored", restored);
 
     // The paintings are decoded away from the page's own thread, so reading the first screen is never interrupted.
-    const loader = new ImageBitmapLoader().setOptions({ imageOrientation: "from-image", premultiplyAlpha: "none" });
+    const loader = new ImageBitmapLoader().setOptions({ imageOrientation: "none", premultiplyAlpha: "none" });
     const load = (name: string, mipmaps: boolean) => loader.loadAsync(`/assets/threshold/${name}.webp`).then(bitmap => {
       const texture = new Texture(bitmap);
       texture.flipY = false;
