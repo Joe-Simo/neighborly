@@ -69,3 +69,6 @@
   .home-yes-still h3{font-size:29px}
   .home-yes-still .home-yes-still-in{align-self:stretch}
 }
+
+/* High contrast is the reader's choice: the ground is the page's own Canvas, not a forced block. */
+@media(forced-colors:active){.home-yes{background:none}}

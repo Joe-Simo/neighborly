@@ -91,8 +91,16 @@ export function FrescoThreshold() {
       const standingIn = media.matches ? 0 : clamp((travelled - standing[0]) / (standing[1] - standing[0])) * (1 - grow);
       // The doorway, as painted; and the fresco's frame on the wall beyond it.
       const doorWidth = phone ? width * .73 : Math.min(width * .5, 630);
-      const doorHeight = Math.min(height * (phone ? .5 : .78), doorWidth * (phone ? 1.6 : 1.35));
-      const doorX = phone ? width / 2 : width / 2 + doorWidth * .2, doorY = phone ? height * .54 : height * .52;
+      const narrowShort = height <= 500 && width > height && width <= 600;
+      // Short and narrow, the doors stand whole in the window below the header bar.
+      const doorHeight = narrowShort ? Math.min(height - 72, doorWidth * 1.35) : Math.min(height * (phone ? .5 : .78), doorWidth * (phone ? 1.6 : 1.35));
+      // A window both short and narrow (a small window at 400% zoom) has no room for the words beside the doors: the words stand
+      // alone first, across the paper, and the doors come up from below the window as the visitor goes on, taking the words' place.
+      const tiny = narrowShort;
+      const rise = tiny ? ease(clamp((travelled - .35) / (doorsOpen[0] - .35))) : 1;
+      const doorX = phone || tiny ? width / 2 : width / 2 + doorWidth * .2, doorY = phone ? height * .54 : tiny ? mix(height + doorHeight / 2 + 24, 60 + (height - 60) / 2, rise) : height * .52;
+      host.dataset.tiny = String(tiny);
+      host.dataset.rising = String(tiny && rise > 0);
       const frameHeight = phone ? Math.min((width - 40) * 1.2, height - 290) : short ? height - 124 : Math.min(width * .35, height - 290);
       const frameWidth = phone ? width - 40 : frameHeight * 2;
       const frameY = (short ? 60 : Math.max(phone ? 84 : 96, (height - frameHeight - (phone ? 150 : 120)) / 2)) + frameHeight / 2;

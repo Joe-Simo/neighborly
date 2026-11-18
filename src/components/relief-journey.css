@@ -174,6 +174,15 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .fresco-invitation p{display:none}
   .fresco-caption{top:calc(var(--caption-top,70%) + 12px);font-size:28px}
 }
+/* Short and narrow (a small window at 400% zoom): the words stand alone across the paper, then go in one cut as the doors come up from below. */
+@media(max-height:500px) and (min-aspect-ratio:10/11) and (max-width:600px){
+  .fresco-stage[data-tiny=true] .fresco-invitation{left:20px;right:20px;top:64px;width:auto;translate:none}
+  .fresco-stage[data-tiny=true] .fresco-invitation .fresco-kicker{margin-bottom:8px}
+  .fresco-stage[data-tiny=true] .fresco-invitation h2{margin-bottom:12px;font-size:26px}
+  .fresco-stage[data-tiny=true] .fresco-standing{bottom:16px;font-size:44px}
+}
+.fresco-stage[data-rising=true] .fresco-invitation{visibility:hidden}
+.fresco-stage[data-tiny=true]:not([data-walked=true]) .fresco-caption{visibility:hidden}
 /* On the widest screens the pictures stop at the window's height and at their own pixels, so the words take up the room instead:
    each chapter's headline and sentence grow with the window, held to its height, and the page stays one composition rather than a picture with air beside it. */
 @media(min-width:1600px) and (min-height:760px){
