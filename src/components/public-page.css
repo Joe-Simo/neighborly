@@ -120,3 +120,5 @@
 /* A list of measures, not colours: no chip, the strong words lead. */
 .public-words .public-made-tones li:not([data-tone]){padding-left:0}
 .public-words .public-made-tones li:not([data-tone])::before{display:none}
+/* Very wide windows: the laid sheets already run the window's width, so their words and the title's piece grow with it, and nothing is left as a small column on a big sheet. */
+@media(min-width:2000px){.public-words section>div{font-size:24px}.public-words-last{font-size:19px}.public-words h2{font-size:clamp(44px,2.3vw,64px)}.public-words-relief{width:clamp(420px,22vw,600px)}.public-page-header>a:last-child{font-size:18px}}
