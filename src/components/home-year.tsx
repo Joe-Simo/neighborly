@@ -83,10 +83,11 @@ export function HomeYear() {
         t = Math.max(0, Math.min(1, t));
         return upright + (1 - upright) * (1 - (1 - t) ** 3);
       });
-      const key = folds.map(fold => fold.toFixed(3)).join();
+      // Whether all stand is part of the key: a last step from .9996 to 1 rounds to the same figures, and must still put the cut edges away.
+      const standing = folds.every(fold => fold >= 1);
+      const key = folds.map(fold => fold.toFixed(3)).join() + standing;
       if (key !== last) {
         last = key;
-        const standing = folds.every(fold => fold >= 1);
         list.dataset.folding = String(!standing);
         cells.forEach((cell, index) => {
           cell.style.setProperty("--fold", folds[index].toFixed(3));
