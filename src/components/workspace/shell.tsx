@@ -241,10 +241,10 @@ export function LiveWorkspace({
   // From 1280px up a room may fill one side column; under that the place for it does not exist.
   const wide = useWideScreen();
   useSystemTextSize("data-text-large", "data-text-ax");
-  // The app shows a tab's name large while it is held, at the accessibility text sizes (SceneDelegate, kindHelpsBar):
-  // it is told where the bar's tabs are, and again whenever the bar is laid out anew.
+  // The iOS app draws the system's own tab bar in place of this one (SceneDelegate, kindHelpsBar): it is told the bar's
+  // tabs, which is current, and that they stand down while anything lies over the bar, whenever any of it changes.
   useEffect(() => {
-    type Bar = { webkit?: { messageHandlers?: { kindHelpsBar?: { postMessage: (tabs: { name: string; x: number; y: number; width: number; height: number }[]) => void } } } };
+    type Bar = { webkit?: { messageHandlers?: { kindHelpsBar?: { postMessage: (tabs: { name: string; room: string; current: boolean; x: number; y: number; width: number; height: number }[]) => void } } } };
     const tell = (window as Bar).webkit?.messageHandlers?.kindHelpsBar;
     const bar = document.querySelector<HTMLElement>(".live-tab-bar");
     if (!inApp || !tell || !bar) return;
@@ -259,7 +259,10 @@ export function LiveWorkspace({
         ? []
         : [...bar.querySelectorAll<HTMLElement>(".live-tab")].map((tab) => {
             const box = tab.getBoundingClientRect();
-            return { name: tab.textContent?.trim() ?? "", x: box.left, y: box.top, width: box.width, height: box.height };
+            // The room a tab opens, or "menu" for the Menu, and whether it is where the person is, so the app's own bar can stand in for this one.
+            const room = tab.getAttribute("href")?.split("/").pop() ?? "menu";
+            const current = tab.getAttribute("aria-current") === "page" || (room === "menu" && !bar.querySelector('[aria-current="page"]'));
+            return { name: tab.textContent?.trim() ?? "", room, current, x: box.left, y: box.top, width: box.width, height: box.height };
           });
       const said = JSON.stringify(tabs);
       if (said === last) return;
@@ -271,7 +274,7 @@ export function LiveWorkspace({
     laid.observe(bar);
     // A sheet or dialog opening or closing is a change to the page's own nodes and their open state.
     const opened = new MutationObserver(say);
-    opened.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state"] });
+    opened.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state", "aria-current"] });
     window.addEventListener("resize", say);
     window.visualViewport?.addEventListener("resize", say);
     return () => {

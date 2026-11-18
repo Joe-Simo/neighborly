@@ -128,7 +128,8 @@ final class ShellViewController: CAPBridgeViewController {
         // sweep (`data-door="sweeping"`) counts as having left: its colour
         // covers the status area as one sheet, so the strip is gone at once.
         scripts.addUserScript(WKUserScript(
-            source: "document.documentElement.dataset.shell = 'ios';",
+            // The app draws the system's tab bar in place of the page's (`:root[data-native-tabs]`, layBarTabs).
+            source: "document.documentElement.dataset.shell = 'ios'; document.documentElement.dataset.nativeTabs = '';",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         ))
@@ -214,33 +215,57 @@ final class ShellViewController: CAPBridgeViewController {
         present(sheet, animated: true)
     }
 
-    /// One clear view laid over each of the bar's tabs, where the page last said they are: held at the accessibility
-    /// text sizes it shows the tab's name large (iOS turns the viewer on only there), and a tap on it presses the tab.
-    /// They own touches inside the bar alone; with the bar put away the page lists no tabs and none are laid.
-    private var barViews: [UIView] = []
+    /// The system's tab bar (Liquid Glass) stands in for the page's own: the page lists its tabs, which one is current,
+    /// and none while anything lies over its bar (a sheet, the Menu, the keyboard), and this bar follows. Its tabs press
+    /// the page's own, so a room change is still the page's turn. VoiceOver, the large-name viewer at the accessibility
+    /// text sizes, Reduce Transparency and Increase Contrast are the system's own here. The page keeps its bar's room
+    /// at the foot, unseen (shell-ios.css), so nothing in a room lies under this one when scrolled to its end.
+    private lazy var tabBar: UITabBar = {
+        let bar = UITabBar()
+        bar.translatesAutoresizingMaskIntoConstraints = false
+        bar.delegate = self
+        bar.isHidden = true
+        // The one colour of its own: the selected tab in the paper's ink green, lifted for a dark glass.
+        bar.tintColor = UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.75, blue: 0.66, alpha: 1) : UIColor(red: 0x28 / 255, green: 0x3c / 255, blue: 0x32 / 255, alpha: 1) }
+        return bar
+    }()
+    private var barRooms: [String] = []
 
     fileprivate func layBarTabs(_ tabs: [BarTab]) {
-        barViews.forEach { $0.removeFromSuperview() }
-        barViews = []
-        guard let webView else { return }
-        for tab in tabs where tab.frame.width > 0 && tab.frame.height > 0 {
-            let over = UIView(frame: view.convert(tab.frame, from: webView))
-            over.backgroundColor = .clear
-            // VoiceOver reads the page's own tab; this view is only for the finger.
-            over.isAccessibilityElement = false
-            over.showsLargeContentViewer = true
-            over.largeContentTitle = tab.name
-            over.tag = tab.index
-            over.addInteraction(UILargeContentViewerInteraction(delegate: self))
-            over.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(pressTab(_:))))
-            if let cover { view.insertSubview(over, belowSubview: cover) } else { view.addSubview(over) }
-            barViews.append(over)
+        if tabBar.superview == nil {
+            if let cover { view.insertSubview(tabBar, belowSubview: cover) } else { view.addSubview(tabBar) }
+            NSLayoutConstraint.activate([
+                tabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                tabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                tabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            ])
+        }
+        let shown = tabs.filter { $0.frame.width > 0 && $0.frame.height > 0 }
+        tabBar.isHidden = shown.isEmpty
+        guard !shown.isEmpty else { return }
+        let rooms = shown.map(\.room)
+        if rooms != barRooms || zip(tabBar.items ?? [], shown).contains(where: { $0.title != $1.name }) {
+            barRooms = rooms
+            tabBar.items = shown.map { tab in
+                let item = UITabBarItem(title: tab.name, image: UIImage(systemName: Self.symbol(for: tab.room)), tag: tab.index)
+                item.largeContentSizeImage = UIImage(systemName: Self.symbol(for: tab.room))
+                return item
+            }
+        }
+        if let current = shown.first(where: \.current), let item = tabBar.items?.first(where: { $0.tag == current.index }) {
+            tabBar.selectedItem = item
         }
     }
 
-    @objc private func pressTab(_ tap: UITapGestureRecognizer) {
-        guard let index = tap.view?.tag else { return }
-        press(tab: index)
+    /// The same marks as the page's tabs: the week, the help line, home visits by their footprints, one's own, and the menu.
+    private static func symbol(for room: String) -> String {
+        switch room {
+        case "week": "calendar"
+        case "help-line": "phone"
+        case "visits": "shoeprints.fill"
+        case "mine": "person"
+        default: "line.3.horizontal"
+        }
     }
 
     fileprivate func press(tab index: Int) {
@@ -653,21 +678,15 @@ final class ShellViewController: CAPBridgeViewController {
 }
 
 /// Hears from the page when the way in is shown, and when it is left.
-fileprivate struct BarTab { let name: String; let frame: CGRect; let index: Int }
+fileprivate struct BarTab { let name: String; let room: String; let current: Bool; let frame: CGRect; let index: Int }
 
-extension ShellViewController: UILargeContentViewerInteractionDelegate {
-    func largeContentViewerInteraction(_ interaction: UILargeContentViewerInteraction, itemAt point: CGPoint) -> (any UILargeContentViewerItem)? {
-        interaction.view
-    }
-
-    func largeContentViewerInteraction(_ interaction: UILargeContentViewerInteraction, didEndOn item: (any UILargeContentViewerItem)?, at point: CGPoint) {
-        // Let go on the tab that was held: it is pressed, as a tap on it would be.
-        guard let over = interaction.view, over.bounds.contains(point) else { return }
-        press(tab: over.tag)
+extension ShellViewController: UITabBarDelegate {
+    func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        press(tab: item.tag)
     }
 }
 
-/// The page lists its bar's tabs: `[{ name, x, y, width, height }]` in web view points, or `[]` with no bar.
+/// The page lists its bar's tabs: `[{ name, room, current, x, y, width, height }]` in web view points, or `[]` with no bar.
 private final class BarTabs: NSObject, WKScriptMessageHandler {
     private let changed: ([BarTab]) -> Void
     init(changed: @escaping ([BarTab]) -> Void) { self.changed = changed }
@@ -676,7 +695,7 @@ private final class BarTabs: NSObject, WKScriptMessageHandler {
         changed(list.enumerated().compactMap { index, tab in
             guard let name = tab["name"] as? String, let x = tab["x"] as? Double, let y = tab["y"] as? Double,
                   let width = tab["width"] as? Double, let height = tab["height"] as? Double else { return nil }
-            return BarTab(name: name, frame: CGRect(x: x, y: y, width: width, height: height), index: index)
+            return BarTab(name: name, room: tab["room"] as? String ?? "menu", current: tab["current"] as? Bool ?? false, frame: CGRect(x: x, y: y, width: width, height: height), index: index)
         })
     }
 }
