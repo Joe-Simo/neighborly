@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
+import { CourtyardAssembly } from "./courtyard-assembly";
 import { CourtyardDoor, goInTurning } from "./courtyard-door";
 import { useRouter } from "next/navigation";
 import { useSettled } from "@/lib/use-settled";
@@ -258,6 +259,7 @@ export function FrescoThreshold() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {settled && <img className="fresco-painting" src="/assets/threshold/courtyard-fresco.webp" width="1774" height="887" decoding="async" alt="A sunlit church courtyard painted on the wall: a woman prepares food at a long shared table, under arches hung with wisteria." />}
             {living && settled && <LivingCourtyard within=".fresco-stage" painting=".fresco-painting" />}
+            {settled && <CourtyardAssembly />}
             {/* The hall's open arch in the painting is the way into Kind Helps, turned to like a page. */}
             <CourtyardDoor label="Enter Kind Helps" opening="Opening…" here={open} />
           </div>
