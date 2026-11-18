@@ -152,6 +152,35 @@ export const serverRefusalsEs: Record<string, string> = {
   "You already have a kind with this name.": "Ya tienes un tipo con este nombre.",
 };
 
+/** The field names the backend puts in its "is needed / is too long / must be a …" refusals, in Spanish. */
+export const fieldLabelsEs: Readonly<Record<string, string>> = {
+  "A label": "Etiqueta",
+  "A name": "Nombre",
+  "A note": "Nota",
+  "A phone number": "Teléfono",
+  "A referral": "Referencia",
+  "A relationship": "Parentesco",
+  Adults: "Adultos",
+  "An account number": "Número de cuenta",
+  Children: "Niños",
+  "The address": "Dirección",
+  "The alert": "Alerta",
+  "The amount": "Monto",
+  "The approved amount": "Monto aprobado",
+  "The email": "Correo electrónico",
+  "The language": "Idioma",
+  "The name": "Nombre",
+  "The note": "Nota",
+  "The outcome": "Resultado",
+  "The phone number": "Teléfono",
+  "The quote": "Cotización",
+  "The referral": "Referencia",
+  "The voucher": "Vale",
+  "What they need": "Lo que necesitan",
+  "Who is paid": "A quién se paga",
+};
+const fieldEs = (label: string) => fieldLabelsEs[label] ?? label;
+
 /**
  * Refusals the backend builds around a name or a number. Each pattern is the English sentence with
  * its dynamic part captured; the Spanish keeps that part as the backend said it.
@@ -159,10 +188,10 @@ export const serverRefusalsEs: Record<string, string> = {
 export const serverRefusalPatternsEs: ReadonlyArray<readonly [RegExp, (...parts: string[]) => string]> = [
   [/^(.+) is already on file with this phone number\.$/, (name) => `${name} ya está registrado con este teléfono.`],
   [/^(.+) is already on file with this name\.$/, (name) => `${name} ya está registrado con este nombre.`],
-  [/^(.+) is needed\.$/, (label) => `Falta: ${label}.`],
-  [/^(.+) is too long\.$/, (label) => `${label}: es demasiado largo.`],
-  [/^(.+) must be a dollar amount\.$/, (label) => `${label}: escribe un monto en dólares.`],
-  [/^(.+) must be a whole number\.$/, (label) => `${label}: escribe un número entero.`],
+  [/^(.+) is needed\.$/, (label) => `Falta: ${fieldEs(label)}.`],
+  [/^(.+) is too long\.$/, (label) => `${fieldEs(label)}: el texto es demasiado largo.`],
+  [/^(.+) must be a dollar amount\.$/, (label) => `${fieldEs(label)}: escribe un monto en dólares.`],
+  [/^(.+) must be a whole number\.$/, (label) => `${fieldEs(label)}: escribe un número entero.`],
   [/^(.+) is away that day\.$/, (name) => `${name} no está disponible ese día.`],
   [/^(.+) is not an approved member yet\.$/, (name) => `${name} todavía no es un voluntario aprobado.`],
   [

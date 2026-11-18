@@ -9,7 +9,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { Input } from "@/components/ui/input";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
 import { LiveField, PaperScene } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -292,7 +292,7 @@ export function ShelfRoom({
             try {
               await recordVouchers({ churchId, ...vouchers });
             } catch (cause) {
-              return readFailure(cause, room.refused);
+              return sayFailure(words.notices,cause, room.refused);
             }
             setAdding(false);
             setDone(

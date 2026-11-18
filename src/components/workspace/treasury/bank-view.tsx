@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
 import { DateLeaf as PieceLeaf, LiveField, PaperScene } from "@/components/workspace/primitives";
 import { parseCents, formatCents, formatFigure } from "@/components/workspace/treasury/money";
@@ -439,7 +439,7 @@ export function BankRoom({
     try {
       setDone(await run());
     } catch (cause) {
-      setError(readFailure(cause));
+      setError(sayFailure(words.notices,cause));
     }
     setBusy(null);
   }

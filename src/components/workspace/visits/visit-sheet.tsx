@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { sampleSayer } from "@/lib/words/sample-names";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { HelpLoading } from "@/components/workspace/help-line/room";
 import { LiveFailure } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
@@ -34,6 +34,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   const churchId = data.church.id;
   // One neighbor's details: a plain head, with no painting.
   const { title, deck, didNotOpen } = text;
+  const notices = words.notices;
   useLayoutEffect(() => {
     setHeading({ title, deck });
     return () => setHeading(null);
@@ -60,13 +61,13 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       },
       // Without this the quiet "Opening…" line would stay for ever, saying something is on its way when nothing is.
       (cause: unknown) => {
-        if (current) setRefused({ sentence: readFailure(cause, didNotOpen), attempt });
+        if (current) setRefused({ sentence: sayFailure(notices, cause, didNotOpen), attempt });
       },
     );
     return () => {
       current = false;
     };
-  }, [openSheet, churchId, visitId, attempt, didNotOpen]);
+  }, [openSheet, churchId, visitId, attempt, didNotOpen, notices]);
   const sheet = useQuery(
     api.visits.sheet,
     opened ? { churchId, visitId } : "skip",

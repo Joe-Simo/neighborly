@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import Link from "next/link";
 import { words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
@@ -109,7 +109,7 @@ export function LiveWelcome({
       setGiven(true);
     } catch (cause) {
       setError(
-        readFailure(cause, mode === "create" ? w.notSaved : w.notSavedJoin),
+        sayFailure(book.notices, cause, mode === "create" ? w.notSaved : w.notSavedJoin),
       );
       if (mode === "join") setCodeShown(true);
     } finally {

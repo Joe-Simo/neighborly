@@ -1,5 +1,6 @@
 import { ConvexError } from "convex/values";
 
+import { sayRefused } from "@/lib/refusals";
 import { stateWords } from "./state-words";
 export { stateWords };
 
@@ -23,4 +24,14 @@ export function readFailure(
   if (sentence) return sentence.split("\n")[0].trim();
   if (typeof navigator !== "undefined" && navigator.onLine === false) return offline;
   return fallback;
+}
+
+/** `readFailure`, said in the reader's language: the backend's English refusal goes through the word tables. */
+export function sayFailure(
+  notices: Parameters<typeof sayRefused>[0],
+  cause: unknown,
+  fallback?: string,
+  offline?: string,
+): string {
+  return sayRefused(notices, readFailure(cause, fallback, offline));
 }

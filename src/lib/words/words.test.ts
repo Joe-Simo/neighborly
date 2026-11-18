@@ -108,6 +108,14 @@ describe("refusals the backend writes out", () => {
       }
     }
     expect(sentences.size).toBeGreaterThanOrEqual(155);
+    // Every field name the backend puts into a built refusal has its Spanish name.
+    const { fieldLabelsEs } = await import("../refusals-es");
+    for await (const file of new Bun.Glob("{assistance,neighbors}.ts").scan(root)) {
+      const source = await Bun.file(`${root}/${file}`).text();
+      for (const [, label] of source.matchAll(/\b(?:text|wholeCents|short|count)\([^;]*?"([A-Z][^"]*)"/g)) {
+        expect(fieldLabelsEs[label], label).toBeDefined();
+      }
+    }
     const es = words("es").notices;
     for (const sentence of sentences) {
       expect(sayRefused(words("en").notices, sentence), sentence).toBe(sentence);

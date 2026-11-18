@@ -21,7 +21,7 @@ import {
   RemoveForm,
   RequestForm,
 } from "@/components/workspace/help-line/forms";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { openUp } from "@/components/workspace/fold";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveState } from "@/components/workspace/states";
@@ -249,7 +249,8 @@ export function NeighborRecord({
         if (place.current !== askedAt) return;
         // The backend's own sentence when it gives one. The notice stays up while a second try is on its way.
         setCovered((before) => ({
-          why: readFailure(
+          why: sayFailure(
+            words.notices,
             cause,
             text.numbers.refused,
             text.numbers.offline,
@@ -309,7 +310,7 @@ export function NeighborRecord({
                   setDone(back.said);
                 } catch (cause) {
                   setDone("");
-                  setUndoRefused(readFailure(cause, words.notices.failed));
+                  setUndoRefused(sayFailure(words.notices,cause, words.notices.failed));
                 }
               }}
             />
