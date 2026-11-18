@@ -380,6 +380,7 @@ function HelpLine() {
                     drafted={one}
                     sealed={one === sealed}
                     deciding={pressing === one.call.id && one !== sealed}
+                    paperSeal
                     arriving={one === next}
                     waiting={drafts.length}
                     format={format}

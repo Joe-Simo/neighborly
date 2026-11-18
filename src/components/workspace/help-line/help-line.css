@@ -91,14 +91,26 @@
 
 /* ── Paper motion of this room: the yes, and a call returned ───────────── */
 /* The yes is given: the corner folds to green (paper-fold), the sheet lifts and settles, a check is drawn. */
-/* The yes, pressed into the paper. On Approve the ochre corner folds down about its crease and holds half down while
-   the answer is on its way; the yes turns its face green and it lies down flat, with its mark. A refusal lays the same
-   ochre corner back. The sheet itself stays where it lies: nothing lifts, nothing fades. */
-/* Its colour is the face it shows, never a blend between two: only the fold moves. */
-.help-sheet::after { transition: transform 110ms cubic-bezier(0.4, 0, 1, 1); }
-.help-sheet[data-deciding]::after { transform: perspective(140px) rotate3d(1, 1, 0, -64deg); }
-.help-sheet.paper-fold { animation: none; }
-.help-sheet.paper-fold::after { animation: none; transition: transform 110ms cubic-bezier(0, 0, 0.2, 1); }
+/* A corner pressed into the paper. The flap turns about its crease, seen square on: it narrows toward the crease and
+   widens back, so it stays hinged inside the sheet's outline and keeps its shade at the crease. Its colour is the face
+   it shows, never a blend between two. Nothing lifts the sheet, nothing fades.
+   Save (the help line's drafted request): the corner folds half down on the press and holds there while the answer is
+   on its way (the ochre ring after 400ms); saved, it lies down flat in the sheet's own paper, and the request waits on.
+   A refusal lays the ochre corner back. Approve (the record's request, the decision to give help): once the yes is
+   saved the corner turns over to its green face, with its mark, and lies down flat. */
+.help-sheet::after { transform-origin: 50% 50%; transform: rotate(-45deg) scaleX(1) rotate(45deg); transition: transform 110ms cubic-bezier(0.4, 0, 1, 1); }
+.help-sheet[data-deciding]::after { transform: rotate(-45deg) scaleX(0.5) rotate(45deg); }
+.help-sheet.help-sealed:not(.paper-fold) { --paper-corner: #e6e1d2; }
+.help-sheet.help-sealed::after { transition: transform 110ms cubic-bezier(0, 0, 0.2, 1); }
+.help-decided.paper-fold, .help-decided.paper-fold::after { animation: none; }
+.help-decided.help-approved::after { animation: help-turn-over 220ms linear, help-face 220ms steps(1, jump-end); }
+@keyframes help-turn-over {
+  0% { transform: rotate(-45deg) scaleX(1) rotate(45deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+  50% { transform: rotate(-45deg) scaleX(0.06) rotate(45deg); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+  100% { transform: rotate(-45deg) scaleX(1) rotate(45deg); }
+}
+/* The ochre face until the flap stands on its crease, then the green one, its mark with it. */
+@keyframes help-face { 0% { --paper-corner: #c8962e; background-size: 0 0, auto; } 50% { --paper-corner: #365c46; background-size: 11px 11px, auto; } }
 .help-fold-ring { position: absolute; top: 10px; right: 46px; width: 11px; height: 11px; border: 2px solid #a8791f; border-radius: 50%; visibility: hidden; animation: help-ring-due 0s 400ms forwards; }
 @keyframes help-ring-due { to { visibility: visible; } }
 .help-sealed .help-sheet-body { position: relative; }

@@ -35,6 +35,7 @@ export function DraftSheet({
   waiting = 1,
   sealed = false,
   deciding = false,
+  paperSeal = false,
   arriving = false,
   format,
   pending,
@@ -52,6 +53,8 @@ export function DraftSheet({
   sealed?: boolean;
   /** Approve was pressed and the answer is on its way: the corner is half folded, and holds there until it comes. */
   deciding?: boolean;
+  /** Saved, the corner lies down in the sheet's own paper: the request is on the record, still waiting for its decision. */
+  paperSeal?: boolean;
   /**
    * Laid where the saved sheet before it is closing: unseen, its title not yet named, until that sheet has gone.
    * Then it is laid down whole, as any sheet is.
@@ -100,7 +103,7 @@ export function DraftSheet({
           : what;
   return (
     <section
-      className={sealed ? "help-sheet paper-fold help-sealed" : "help-sheet"}
+      className={sealed ? (paperSeal ? "help-sheet help-sealed" : "help-sheet paper-fold help-sealed") : "help-sheet"}
       data-fold-leaves={sealed ? "" : undefined}
       data-deciding={deciding ? "" : undefined}
       data-arriving={arriving ? "" : undefined}
