@@ -115,6 +115,9 @@
    the room just left stands still over the page (a copy, which cannot move), and once the wait has lasted 400ms
    the column is the one quiet "Opening…" line, where the room's title will be. */
 .live-app .live-main[data-room-held] { visibility: hidden; }
+/* Held by a lost connection the room stays a main landmark, with only its offline card in it to be seen or read. */
+.live-app .live-main[data-room-held]:has(> .live-opening[data-lost]) { visibility: visible; }
+.live-app .live-main[data-room-held]:has(> .live-opening[data-lost]) > :not(.live-opening) { visibility: hidden; }
 /* The first room of a visit brings its bar and its menu with it, in the same frame: nothing of the workspace is
    seen before then but the "Opening…" line. Later rooms change under a bar and menu that stay. */
 .live-app[data-shell-held] > .live-header,
@@ -469,7 +472,7 @@
 .paper-vignette img { width: 100%; height: 100%; object-fit: cover; }
 @keyframes paper-card-settle { from { opacity: 0; transform: translateY(16px) rotate(-6deg); } }
 @media (prefers-reduced-motion: reduce) { .paper-vignette { animation: none; } }
-.live-app .live-empty :is(h2, h3) { font: 400 26px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0; color: var(--live-ink); }
+.live-app .live-empty :is(h1, h2, h3) { font: 400 26px/1.15 "Newsreader", Georgia, serif; letter-spacing: -0.02em; margin: 0; color: var(--live-ink); }
 .live-app .live-empty p { margin: 8px 0 0; font-size: 17px; line-height: 1.5; }
 .live-app .live-empty p:empty { display: none; }
 .live-app .live-empty [data-slot="button"] { margin-top: 14px; }

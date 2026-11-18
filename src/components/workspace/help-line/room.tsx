@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+
 import { SavedWords } from "@/components/workspace/saved-words";
 import { cn } from "@/lib/utils";
 import { heldWhenLaid, opened, useSavedLine } from "@/components/workspace/fold";
@@ -38,12 +40,13 @@ export function HelpEmpty({
   children: ReactNode;
   action?: ReactNode;
 }) {
+  const named = useId();
   return (
-    <div className="help-empty" data-first={first ? "" : undefined}>
+    <div className="help-empty" data-first={first ? "" : undefined} role="group" aria-labelledby={named}>
       <PaperScene kind="empty" />
       <div>
         {/* h2 straight under the room's h1, h3 under a section's h2: no level is skipped. */}
-        <FollowingHeading>{title}</FollowingHeading>
+        <FollowingHeading id={named}>{title}</FollowingHeading>
         <p>{children}</p>
         {action}
       </div>
