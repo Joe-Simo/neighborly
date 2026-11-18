@@ -27,8 +27,11 @@
   .neighborly-rooms li p{max-width:16em;text-wrap:balance}
 }
 @media(max-width:700px){
-  /* One column: each picture at the column's width, its name and line beneath it. */
-  .neighborly-rooms ul{grid-template-columns:minmax(0,1fr);gap:34px}
+  /* One column of rooms, each a picture with its name and line beside it, so the six read as one list on one screen, not three screens of cards. */
+  .neighborly-rooms ul{grid-template-columns:minmax(0,1fr);gap:22px}
+  .neighborly-rooms li{grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:0 16px}
+  .neighborly-rooms h3{font-size:22px}
+  .neighborly-rooms li p{margin-top:6px;font-size:15px;line-height:1.45}
   .neighborly-rooms li{padding:0;background:none;box-shadow:none;rotate:none;translate:none}
   .neighborly-rooms li:nth-child(2n){margin-top:0}
   .neighborly-rooms img{box-shadow:0 1px 2px #51433024,0 10px 24px -10px #51433052}
