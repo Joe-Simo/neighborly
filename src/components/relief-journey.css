@@ -48,7 +48,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .fresco-caption em{font-weight:400}
 /* Standing in the courtyard: the words are set large on the paving, and the wordmark steps aside so nothing sits over the picture.
    They come up into the window from its foot in full ink over the last of the walk, and go down the same way when the courtyard draws back into its frame. */
-.fresco-standing{position:absolute;z-index:2;left:0;right:0;bottom:9svh;width:fit-content;margin:0 auto;text-align:center;color:#2b3d2f;font:400 clamp(64px,8.6vw,152px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.06em;text-shadow:0 1px 0 #f6eedb80,0 0 40px #f3e6c8a6;pointer-events:none}
+.fresco-standing{position:absolute;z-index:2;left:0;right:0;bottom:max(9svh,48px);max-width:calc(100% - 32px);width:fit-content;margin:0 auto;text-align:center;color:#2b3d2f;font:400 clamp(44px,min(8.6vw,13svh),152px)/.95 'Newsreader',Georgia,serif;letter-spacing:-.06em;text-shadow:0 1px 0 #f6eedb80,0 0 40px #f3e6c8a6;pointer-events:none}
 .fresco-standing>span{display:block;will-change:transform;transform-origin:50% 92%;transform:perspective(900px) rotateX(calc((1 - var(--stand,0)) * 60deg))}
 /* Before it is stood up it is already drawn, on its own layer, out of sight: showing it is then one switch, with nothing new to paint as the walk hands over to the courtyard. */
 .fresco-standing{will-change:opacity}

@@ -29,7 +29,14 @@ const easeInOut = (t: number) => t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 
 export function CourtyardDoor({ label, opening, here }: { label: string; opening: string; here: boolean }) {
   const router = useRouter();
   const enter = (event: MouseEvent<HTMLAnchorElement>) => goInTurning(event, router.push, opening);
-  return <Link href="/app" className="fresco-door" aria-label={label} tabIndex={here ? undefined : -1} aria-hidden={here ? undefined : true} onClick={enter} />;
+  // Fetched before the press, so no cold first frame can land inside the turn.
+  const ready = () => router.prefetch("/app");
+  return <Link href="/app" className="fresco-door" aria-label={label} tabIndex={here ? undefined : -1} aria-hidden={here ? undefined : true} onClick={enter} onPointerEnter={ready} onFocus={ready} />;
+}
+
+/** Where the visitor stood on home when they went in, so Back returns them there (card-offer-grow.tsx restores it). */
+export function keepPlace() {
+  try { sessionStorage.setItem(LEFT_AT, String(Math.round(scrollY))); } catch {}
 }
 
 /** Pressed, a way in from the doors or the courtyard: the stage is held as one page, the workspace laid whole beneath it, and the page turned off. */
@@ -38,8 +45,8 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
   event.preventDefault();
   const href = event.currentTarget.getAttribute("href") ?? "/app";
   const stage = event.currentTarget.closest<HTMLElement>(".fresco-stage");
+  keepPlace();
   if (!stage) return void push(href);
-  try { sessionStorage.setItem(LEFT_AT, String(Math.round(scrollY))); } catch {}
   const plain = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // The held page, with the turn's parts around it (chapter-sheets.css draws them).
@@ -79,6 +86,8 @@ export function goInTurning(event: MouseEvent<HTMLAnchorElement>, push: (href: s
   const since = performance.now();
   let saying: HTMLElement | null = null, turning = 0;
   const off = () => { held.remove(); document.documentElement.removeAttribute("data-courtyard-held"); };
+  // Come back to from the back-forward cache, home is shown as it stands, never still under the held page.
+  addEventListener("pageshow", (shown: PageTransitionEvent) => { if (shown.persisted) off(); }, { once: true });
   const look = () => {
     if (!held.isConnected) return off();
     const waited = performance.now() - since;

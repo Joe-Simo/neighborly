@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { keepPlace } from "./courtyard-door";
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -240,7 +241,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
         <div className="painted-world-shade" aria-hidden="true" />
         <header className="painted-world-header">
           <a href="#story-start" className="painted-world-brand" aria-label="Kind Helps home">kind helps</a>
-          <Link href="/app" className="painted-world-enter">Enter Kind Helps <ArrowUpRight size={15} aria-hidden="true" /></Link>
+          <Link href="/app" className="painted-world-enter" onClick={keepPlace}>Enter Kind Helps <ArrowUpRight size={15} aria-hidden="true" /></Link>
         </header>
         <div className="painted-world-caption" key={visibleScene}>
           <div aria-live="polite" aria-atomic="true">
