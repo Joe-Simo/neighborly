@@ -91,7 +91,6 @@ export const serverRefusalsEs: Record<string, string> = {
   "Request not found.": "No se encontró esa petición.",
   "Say why the count is going down.": "Di por qué baja el conteo.",
   "Say why this entry is being reversed.": "Di por qué se anula este movimiento.",
-  "Sign in required.": "Primero inicia sesión.",
   "Sign in to prepare a team draft.": "Inicia sesión para preparar un borrador del equipo.",
   "Task access required.": "No tienes acceso a esta tarea.",
   "Team access required.": "No tienes acceso a este equipo.",
@@ -144,7 +143,6 @@ export const serverRefusalsEs: Record<string, string> = {
   "Type the person’s name exactly to remove them.": "Escribe el nombre exacto de la persona para quitarla.",
   "Use the invitation flow to create a secure invitation.": "Usa la opción de invitar para crear una invitación segura.",
   "Visit not found.": "No se encontró esa visita.",
-  "Workspace access required.": "No tienes acceso a este espacio.",
   "Workspace not found.": "No se encontró ese espacio.",
   "Write a few words about what you found.": "Escribe unas palabras sobre lo que encontraste.",
   "Write the note first.": "Primero escribe la nota.",
@@ -184,6 +182,9 @@ export const fieldLabelsEs: Readonly<Record<string, string>> = {
  * on a stale page or a group not yet set up, so each is said in plain words in both languages: what happened, and what to do.
  */
 export const serverRefusalsPlain: Record<string, { en: string; es: string }> = {
+  // A sign-in that ended while a form was open: the form stays as typed, so the one step is to sign in and save again.
+  "Sign in required.": { en: "Your sign-in ended, so this wasn’t saved. Sign in again, then save it once more.", es: "Tu sesión terminó, así que esto no se guardó. Vuelve a iniciar sesión y guárdalo otra vez." },
+  "Workspace access required.": { en: "Your place in this group has ended. Ask a coordinator to invite you again.", es: "Ya no tienes acceso a este grupo. Pídele a un coordinador que te invite de nuevo." },
   "Page size exceeds 100.": { en: "That list couldn’t be read. Reload the page.", es: "No se pudo leer esa lista. Vuelve a cargar la página." },
   "Page size exceeds 25.": { en: "That list couldn’t be read. Reload the page.", es: "No se pudo leer esa lista. Vuelve a cargar la página." },
   "Page size exceeds 10.": { en: "That list couldn’t be read. Reload the page.", es: "No se pudo leer esa lista. Vuelve a cargar la página." },
