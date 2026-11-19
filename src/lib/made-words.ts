@@ -32,15 +32,14 @@ const en = {
         { lead: "A volunteer’s time.", rest: "A call note becomes a draft request, and the pair for a visit is suggested from who is free." },
         { lead: "Honest books.", rest: "Every gift and payment is recorded. A mistake is put right with a new entry, never erased." },
       ],
-      "It is free because no conference should pay to help its neighbors. The assistant only drafts: a person reads and approves every draft.",
+      "It is free because no conference should pay to help its neighbors.",
     ] },
     { title: "One painting, made of paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
       "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolors it or crops into it. What moves is the paper around it.",
     ] },
     { title: "Cut along its own depth", blocks: [
-      "The courtyard was painted whole. To let it move, it was cut along the painting’s own depth: the sky and hills, the far cloister and the table, the near walls, the garden and the bench, the paving, the pillars. The people at the table stand on a sheet of their own.",
-      "Nothing was painted in to fill a gap. Every cut edge is the painting’s, and laid together the sheets are the painting again.",
+      "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
     ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The map the cut followed: the courtyard’s depth, far in dark and near in light." } },
     { title: "The rules the paper keeps", blocks: [
       "A ministry’s software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
@@ -50,7 +49,7 @@ const en = {
         { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned.", tone: "done" },
       ],
       "Nothing fades and nothing blurs. Paper does not dissolve: it is laid down, lifted, turned or folded, and every move on the page is one a sheet could make. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Words are never smaller than 13 pixels in the app, and 15 on public pages like this one.",
-      "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°. Even drawn apart above, the courtyard leans back no further than 40°.",
+      "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°.",
     ] },
     { title: "Responsible AI, with Jev", blocks: [
       "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does three clerical jobs: it drafts a request for help from a call note, puts urgent calls first with the reason shown, and checks the year’s records before the report. It does not write prose and it saves nothing by itself.",
@@ -68,11 +67,11 @@ const en = {
         { lead: "Three frames.", rest: "On the same machine, the first scroll is answered by the third frame, or within 60 pixels." },
         { lead: "Two seconds.", rest: "The iPhone app opens into its room in 1.6 to 2 seconds in the simulator." },
         { lead: "Not one frame over.", rest: "The courtyard that stands up on a first visit was filmed at 390 pixels with the processor slowed four times, and at 1440, in light and dark: 91 frames each time, none over 33 milliseconds, including the first run after the server had just started." },
-        { lead: "With Reduce Motion too.", rest: "The same films are run again with Reduce Motion on. Then the courtyard is simply there, and nothing is kept about the visit." },
+        { lead: "With Reduce Motion too.", rest: "The same films are run again with Reduce Motion on. Then the courtyard is simply there." },
       ],
     ] },
     { title: "Made for everyone", blocks: [
-      "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on, where nothing moves. These are our own checks, not a certification.",
+      "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on. These are our own checks, not a certification.",
       "Every button is at least 44 pixels to a finger and 40 to a mouse, there is one focus ring and it is always seen, and no color carries meaning on its own: waiting, wrong and done are always said in words too.",
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
@@ -107,15 +106,14 @@ const es: typeof en = {
         { lead: "El tiempo del voluntario.", rest: "La nota de una llamada se vuelve un borrador de petición, y la pareja para una visita se sugiere según quién está libre." },
         { lead: "Cuentas honradas.", rest: "Cada donativo y cada pago queda anotado. Un error se corrige con una anotación nueva, nunca se borra." },
       ],
-      "Es gratis porque ninguna conferencia debería pagar por ayudar a sus vecinos. El asistente solo redacta: una persona lee y aprueba cada borrador.",
+      "Es gratis porque ninguna conferencia debería pagar por ayudar a sus vecinos.",
     ] },
     { title: "Una sola pintura, hecha de papel", blocks: [
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
       "La obra pintada se hizo con una herramienta de imágenes con IA a partir de indicaciones escritas, y luego se eligió y se retocó a mano. La página nunca pinta encima, nunca le cambia el color ni la recorta. Lo que se mueve es el papel que la rodea.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
-      "El patio se pintó entero. Para que pudiera moverse, se cortó según la profundidad de la propia pintura: el cielo y las colinas, el claustro del fondo y la mesa, los muros cercanos, el jardín y el banco, el empedrado, los pilares. Las personas de la mesa están en una hoja propia.",
-      "No se pintó nada para llenar un hueco. Cada borde cortado es de la pintura, y juntas las hojas vuelven a ser la pintura.",
+      "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
     ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa que siguió el corte: la profundidad del patio, lo lejano en oscuro y lo cercano en claro." } },
     { title: "Las reglas que guarda el papel", blocks: [
       "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
@@ -125,7 +123,7 @@ const es: typeof en = {
         { lead: "Verde es hecho.", rest: "Una visita con sus notas, una factura pagada, una llamada devuelta.", tone: "done" },
       ],
       "Nada se desvanece y nada se desenfoca. El papel no se disuelve: se pone, se levanta, se da vuelta o se dobla, y cada movimiento de la página es uno que una hoja podría hacer. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta.",
-      "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°. Aun separado, arriba, el patio no se inclina más de 40°.",
+      "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
     ] },
     { title: "IA responsable, con Jev", blocks: [
       "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace tres tareas de oficina: redacta una petición de ayuda a partir de la nota de una llamada, pone primero las llamadas urgentes con el motivo a la vista y revisa los registros del año antes del informe. No escribe prosa y no guarda nada por sí solo.",
@@ -143,11 +141,11 @@ const es: typeof en = {
         { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde antes del tercer cuadro, o dentro de 60 píxeles." },
         { lead: "Dos segundos.", rest: "La aplicación del iPhone abre su sección en 1.6 a 2 segundos en el simulador." },
         { lead: "Ni un cuadro de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 cuadros cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
-        { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí, y no se guarda nada de la visita." },
+        { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí." },
       ],
     ] },
     { title: "Hecho para todos", blocks: [
-      "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado, donde nada se mueve. Son revisiones nuestras, no una certificación.",
+      "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado. Son revisiones nuestras, no una certificación.",
       "Cada botón mide al menos 44 píxeles para un dedo y 40 para un ratón, hay un solo anillo de foco y siempre se ve, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras.",
       "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",
     ] },
