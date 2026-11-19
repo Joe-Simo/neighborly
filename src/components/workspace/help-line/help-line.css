@@ -170,24 +170,16 @@
   .help-row-arrow { transition: none; }
   .help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { transform: none; }
 }
-/* The neighbor list reads under large cut-paper letters, laid in the margin beside their households and held in
-   view while those households pass. On a phone the letter rides above its group, smaller. */
+/* The neighbor list reads under cut-paper letters, each riding above its group and held in view while those households
+   pass. The rows keep the room's one left edge, the heading's and the search's, at every width. */
 .live-app .help-letter-head {
   position: sticky; top: calc(var(--live-bar, 0px) + 12px); z-index: 2; margin: 0;
-  font: 400 76px/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
+  font: 400 48px/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
   color: #d8cfb6;
   text-shadow: -1px -1px 0 #fffdf7, 1px 2px 0 #b9ad8e, 2px 4px 2px rgb(40 60 50 / 0.18), 4px 10px 14px rgb(40 60 50 / 0.24);
+  padding: 8px 0; background: var(--live-paper, #f5f3ec); border-bottom: 1px solid var(--live-line);
 }
-@media (min-width: 900px) {
-  .help-letter { display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: start; }
-  .help-letter > .help-waiting-head { grid-column: 2; }
-  .help-letter > .live-list { grid-column: 2; }
-  .help-letter:not([data-waiting]) > .help-letter-head { padding-top: 10px; }
-}
-@media (max-width: 899px) {
-  .live-app .help-letter-head { font-size: 48px; padding: 10px 0 8px; background: var(--live-paper, #f5f3ec); border-bottom: 1px solid var(--live-line); }
-  .help-letter > .help-letter-head + .live-list { border-top: 0; }
-}
+.help-letter > .help-letter-head + .live-list { border-top: 0; }
 .help-letter + .help-letter > .live-list { border-top: 0; }
 .help-letter + .help-letter { margin-top: 28px; }
 /* The households waiting for a decision come first, under a small head of their own. */
