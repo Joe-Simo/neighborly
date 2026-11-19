@@ -527,7 +527,7 @@ export function es(set: WordSet): Words {
         measuredDetail: (date) =>
           `Con ${m.notes} notas de llamadas inventadas, apartadas de las que se usaron para ajustarlo, llenó bien ${m.right} de ${m.right + m.blank + m.wrong} campos, dejó ${m.blank} en blanco para una persona y se equivocó en ${m.wrong} (medido el ${date}). En una prueba anterior se equivocó en uno; corregimos la regla que lo causó, así que esas notas ya han influido en una regla. Es una prueba pequeña, y las notas en español y en criollo son una parte pequeña de ella.`,
       },
-      made: { checked: "Llenado por el asistente a partir de la nota de la llamada y comparado con ella.", review: "Llenado a partir de la nota de la llamada con reglas fijas. El asistente no pudo revisarlo, así que compara cada dato con la nota." },
+      made: { checked: "Llenado a partir de la nota de la llamada; el asistente revisó el tipo de ayuda y qué tipo de beneficiario es.", review: "Llenado a partir de la nota de la llamada con reglas fijas. El asistente no pudo revisarlo, así que compara cada dato con la nota." },
       unsaved: "No se guarda nada hasta que tú lo digas.",
       show: "Lo que vio el asistente",
       hide: "Ocultar lo que vio el asistente",
@@ -556,8 +556,8 @@ export function es(set: WordSet): Words {
       title: "Borrador para ti",
       waiting: (count) =>
         count === 1 ? "Espera tu sí" : `${esN(count)} esperan tu sí`,
-      origin: "Llenado por el asistente a partir de la nota de la llamada. No se guarda nada hasta que tú lo digas.",
-      checked: "El asistente comparó cada dato con la nota.",
+      origin: "Llenado a partir de la nota de la llamada con reglas fijas. No se guarda nada hasta que tú lo digas.",
+      checked: "El asistente comparó con la nota el tipo de ayuda y qué tipo de beneficiario es.",
       review: "El asistente no pudo comprobarlo. Lee cada dato junto a la nota.",
       approve: "Guardar esta petición",
       change: "Cambiar",

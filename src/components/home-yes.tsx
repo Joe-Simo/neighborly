@@ -53,7 +53,7 @@ export function HomeYes() {
           <p className="home-yes-still-quote">“Behind on November rent, $450. The landlord is Mill&nbsp;Road&nbsp;Rentals.”</p>
           <p>From the message taken at 10:20 AM. Not yet on file as a neighbor.</p>
           <Button asChild className="home-yes-still-in"><Link href={SAMPLE_DOOR} prefetch={false}>Look around a sample conference</Link></Button>
-          <p className="home-yes-still-foot"><Sparkles size={16} aria-hidden="true" />Filled in by the assistant from the call note and checked against it.</p>
+          <p className="home-yes-still-foot"><Sparkles size={16} aria-hidden="true" />Filled in from the call note; the assistant checked the kind of help and what kind of payee it is.</p>
         </div>
       </noscript>
     </div>
