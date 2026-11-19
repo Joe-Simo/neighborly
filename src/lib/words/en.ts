@@ -78,7 +78,7 @@ export function en(set: WordSet) {
         rooms: "Go to a room",
         step: "The room before or after",
         find: "Find in this room",
-        act: "This room's main button",
+        act: "This room’s main button",
         close: "Close",
       },
       allSections: `All ${place} sections`,
@@ -109,7 +109,7 @@ export function en(set: WordSet) {
       "help-line": { title: "Every call, returned.", deck: "Messages from the help line, and who is calling back." },
       neighbors: { title: "Neighbors, by name.", deck: "Each household and the help it has received, kept private." },
       treasury: { title: "Every gift, cared for.", deck: "What came in, what went out, and what it paid for." },
-      reports: { title: "The year, added up.", deck: "Counts for your council's yearly report, ready to print." },
+      reports: { title: "The year, added up.", deck: "Counts for your council’s yearly report, ready to print." },
       visits: { title: "Two by two.", deck: "Home visits, the pair who are going, and what they found." },
       tools: { title: "Your records, in and out.", deck: "From ServWare or a spreadsheet, and back out whenever you like." },
       team: {
