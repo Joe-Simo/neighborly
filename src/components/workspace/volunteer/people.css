@@ -137,3 +137,6 @@
 
 /* Short lines of words break evenly, so no line ends on one stranded word ("en dos.", "their behalf.", "than one."). */
 .live-app :is(.people-deck, .team-card > p, .live-room-foot > span) { text-wrap: balance; }
+
+/* An invitation's Revoke is a full 44px press, like every other row action. */
+.live-app .people-invitations .live-row-actions [data-slot="button"] { min-height: 44px; }
