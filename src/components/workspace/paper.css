@@ -1528,3 +1528,13 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .live-save-label { display: inline-grid; justify-items: center; }
 .live-save-label > span { grid-area: 1 / 1; }
 .live-save-label[data-saving] > :first-child, .live-save-label:not([data-saving]) > :last-child { visibility: hidden; }
+
+/* ── An ultra-wide window (2560 and up): the side column stays beside the room's column, not across an empty field
+   at the far edge. The room's column keeps its measure; the column comes in to stand one gap after it. ── */
+@media (min-width: 1800px) {
+  .live-main:has(> .live-aside:not(:empty)) > .live-aside:not(:empty) {
+    margin-right: max(0px, 100% - 1040px - var(--aside-gap) - var(--aside-wide));
+  }
+}
+/* The assistant's line under a sheet keeps a reading measure on a wide sheet, as every other sentence does. */
+.live-app .help-assistant { max-width: 72ch; }
