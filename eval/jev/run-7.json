@@ -1,0 +1,1346 @@
+{
+  "choose": {
+    "blank": 18,
+    "notesAllRight": 23,
+    "right": 134,
+    "wrong": 0
+  },
+  "confirm": {
+    "blank": 23,
+    "notesAllRight": 20,
+    "right": 128,
+    "wrong": 1
+  },
+  "fresh": {
+    "choose": {
+      "blank": 8,
+      "notesAllRight": 7,
+      "right": 40,
+      "wrong": 0
+    },
+    "confirm": {
+      "blank": 8,
+      "notesAllRight": 5,
+      "right": 39,
+      "wrong": 1
+    },
+    "mix": {
+      "blank": 6,
+      "notesAllRight": 7,
+      "right": 42,
+      "wrong": 0
+    }
+  },
+  "mix": {
+    "blank": 12,
+    "notesAllRight": 27,
+    "right": 140,
+    "wrong": 0
+  },
+  "model": "jev-1.14.0",
+  "notes": 38,
+  "rows": [
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "rent-eviction",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.5,
+        "choose_child": 0.03,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.6,
+        "choose_hungry": 0.03,
+        "choose_kind": "rent",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02,
+        "confirm_alone": 0.99,
+        "confirm_eviction": 0.99,
+        "kind": 0.96,
+        "payeeKind": 0.96
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "power-shutoff",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.98,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.03,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.97,
+        "confirm_child": 0.99,
+        "confirm_shutoff": 0.95,
+        "kind": 0.98
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "food-info",
+      "mix": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.03,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.03,
+        "choose_hungry": 0.25,
+        "choose_kind": "food",
+        "choose_kind_confidence": 0.65,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.1,
+        "choose_shutoff": 0.02,
+        "kind": 0.92
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "water-words",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.02,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02,
+        "kind": 0.89
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "no-food",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.99,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.8,
+        "choose_kind": "food",
+        "choose_kind_confidence": 0.92,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.95,
+        "choose_shutoff": 0.02,
+        "confirm_child": 0.99,
+        "confirm_noFood": 0.98
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "goods",
+      "mix": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.05,
+        "choose_child": 0.04,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "none",
+        "choose_kind_confidence": 0.93,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.03,
+        "choose_shutoff": 0.02,
+        "kind": 0.97
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "other-bus",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.03,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "other",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.01
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "denial",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.03,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.02,
+        "choose_kind": "other",
+        "choose_kind_confidence": 0.44,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "ask-food",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.03,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.15,
+        "choose_kind": "food",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.1,
+        "choose_shutoff": 0.01
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "maybe",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.06,
+        "choose_elder": 0.04,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "none",
+        "choose_kind_confidence": 0.8,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "mixed",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.03,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.17,
+        "choose_hungry": 0.02,
+        "choose_kind": "none",
+        "choose_kind_confidence": 0.88,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.07,
+        "payeeKind": 0.98
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "id": "es-food",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.98,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.53,
+        "choose_kind": "food",
+        "choose_kind_confidence": 0.95,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.85,
+        "choose_shutoff": 0.01,
+        "confirm_child": 0.99
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "es-rent",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.02,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.88,
+        "choose_hungry": 0.02,
+        "choose_kind": "rent",
+        "choose_kind_confidence": 0.98,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.01,
+        "confirm_eviction": 0.99,
+        "kind": 0.93
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "id": "ht-food",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "scores": {
+        "choose_alone": 0.05,
+        "choose_child": 0.99,
+        "choose_elder": 0.05,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.82,
+        "choose_kind": "food",
+        "choose_kind_confidence": 0.94,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.86,
+        "choose_shutoff": 0.01
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "id": "ht-power",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.03,
+        "choose_elder": 0.04,
+        "choose_eviction": 0.04,
+        "choose_hungry": 0.02,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.98,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.95
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "elder-oxygen",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.08,
+        "choose_child": 0.03,
+        "choose_elder": 0.91,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.02,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.9,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.52,
+        "confirm_elder": 0.99,
+        "confirm_medical": 0.98,
+        "confirm_shutoff": 0.96,
+        "kind": 0.95
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "hungry",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.05,
+        "choose_child": 0.04,
+        "choose_elder": 0.04,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.69,
+        "choose_kind": "food",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.34,
+        "choose_shutoff": 0.02,
+        "confirm_hungry": 0.99
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "thanks",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.04,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.01,
+        "choose_kind": "none",
+        "choose_kind_confidence": 1,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.01,
+        "choose_shutoff": 0.01
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "gas-no-shutoff",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.03,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.04,
+        "confirm_shutoff": 0.06
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "all-denied",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.13,
+        "choose_child": 0.04,
+        "choose_elder": 0.04,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.02,
+        "choose_kind": "rent",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.01,
+        "kind": 0.97,
+        "payeeKind": 0.98
+      }
+    },
+    {
+      "choose": {
+        "amount": "blank",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "blank",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "three-amounts",
+      "mix": {
+        "amount": "blank",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.05,
+        "choose_child": 0.04,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.03,
+        "choose_hungry": 0.02,
+        "choose_kind": "rent",
+        "choose_kind_confidence": 1,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02,
+        "kind": 0.85
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "car-repair",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.03,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.02,
+        "choose_kind": "other",
+        "choose_kind_confidence": 0.95,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "water-authority",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.03,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.01,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.93,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02,
+        "kind": 0.96
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "power-apposition",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.03,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02,
+        "kind": 0.95,
+        "payeeKind": 0.94
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "power-owed",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.02,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.02,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 1,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02,
+        "kind": 0.9
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "someone-else",
+      "mix": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.15,
+        "choose_child": 0.03,
+        "choose_elder": 0.03,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.09,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.74,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.28,
+        "choose_shutoff": 0.03,
+        "confirm_noFood": 0.85,
+        "kind": 0.99
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "fresh-rent-words",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.05,
+        "choose_child": 0.92,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.04,
+        "choose_hungry": 0.03,
+        "choose_kind": "rent",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02,
+        "confirm_child": 0.99,
+        "kind": 0.97,
+        "payeeKind": 0.96
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "id": "fresh-es-power",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.03,
+        "choose_elder": 0.97,
+        "choose_eviction": 0.04,
+        "choose_hungry": 0.02,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.05,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.94,
+        "kind": 0.98
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "id": "fresh-ht-rent",
+      "mix": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "scores": {
+        "choose_alone": 0.08,
+        "choose_child": 0.07,
+        "choose_elder": 0.05,
+        "choose_eviction": 0.25,
+        "choose_hungry": 0.02,
+        "choose_kind": "rent",
+        "choose_kind_confidence": 0.66,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.03,
+        "choose_shutoff": 0.05
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "fresh-voicemail",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.02,
+        "choose_child": 0.02,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.01,
+        "choose_kind": "none",
+        "choose_kind_confidence": 0.98,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.01
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "fresh-hours",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.02,
+        "choose_child": 0.02,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.01,
+        "choose_kind": "other",
+        "choose_kind_confidence": 0.58,
+        "choose_medical": 0.01,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0,
+        "kind": 0.06,
+        "payeeKind": 0.77
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "fresh-es-nothing",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.02,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.01,
+        "choose_kind": "none",
+        "choose_kind_confidence": 0.99,
+        "choose_medical": 0.01,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "blank",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "blank",
+        "signs": "right"
+      },
+      "id": "fresh-insulin",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "blank",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.9,
+        "choose_child": 0.03,
+        "choose_elder": 0.04,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "other",
+        "choose_kind_confidence": 1,
+        "choose_medical": 0.98,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.01,
+        "confirm_alone": 0.99,
+        "confirm_medical": 0.99
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "fresh-clothes",
+      "mix": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.5,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "voucher",
+        "choose_kind_confidence": 0.66,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.01,
+        "confirm_child": 0.98,
+        "kind": 0.74
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "fresh-gas-off",
+      "mix": {
+        "amount": "right",
+        "kind": "blank",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.04,
+        "choose_child": 0.03,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.03,
+        "choose_hungry": 0.02,
+        "choose_kind": "utility",
+        "choose_kind_confidence": 0.88,
+        "choose_medical": 0.03,
+        "choose_noFood": 0.03,
+        "choose_shutoff": 0.7,
+        "confirm_shutoff": 0.99,
+        "kind": 0.84
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "fresh-ht-thanks",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.03,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.01,
+        "choose_hungry": 0.02,
+        "choose_kind": "none",
+        "choose_kind_confidence": 0.93,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.04,
+        "choose_shutoff": 0.01
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "id": "fresh-elder-hungry",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "blank"
+      },
+      "scores": {
+        "choose_alone": 0.41,
+        "choose_child": 0.02,
+        "choose_elder": 0.82,
+        "choose_eviction": 0.02,
+        "choose_hungry": 0.54,
+        "choose_kind": "food",
+        "choose_kind_confidence": 1,
+        "choose_medical": 0.05,
+        "choose_noFood": 0.21,
+        "choose_shutoff": 0.01,
+        "confirm_hungry": 0.99,
+        "kind": 0.98
+      }
+    },
+    {
+      "choose": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "confirm": {
+        "amount": "right",
+        "kind": "wrong",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "id": "fresh-maybe-evict",
+      "mix": {
+        "amount": "right",
+        "kind": "right",
+        "payeeKind": "right",
+        "signs": "right"
+      },
+      "scores": {
+        "choose_alone": 0.03,
+        "choose_child": 0.03,
+        "choose_elder": 0.02,
+        "choose_eviction": 0.04,
+        "choose_hungry": 0.02,
+        "choose_kind": "rent",
+        "choose_kind_confidence": 0.47,
+        "choose_medical": 0.02,
+        "choose_noFood": 0.02,
+        "choose_shutoff": 0.02,
+        "kind": 0.99
+      }
+    }
+  ],
+  "status": "done",
+  "unanswered": 0
+}
