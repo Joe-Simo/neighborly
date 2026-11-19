@@ -1575,3 +1575,15 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="waiting"], [data-state="pending"], [data-state="open"])::before,
   .live-app .help-sheet-label[data-waiting]::before { forced-color-adjust: none; box-shadow: none; background: none; border: 2px solid CanvasText; border-radius: 50%; box-sizing: border-box; }
 }
+/* On the widest screens the room's chrome (bar, rail, side sheet, kickers, buttons) goes up one step on its own scale, 13 to 14, 15 to 16, 16 to 17,
+   so it keeps its share of a window that has grown around it. Type size only: line heights are ratios and follow; nothing below 1600 changes. */
+@media (min-width: 1600px) {
+  .live-header-actions .live-account { font-size: 16px; }
+  .live-app .live-nav a { font-size: 16px; }
+  .live-app .live-main .live-page-head .live-kicker { font-size: 14px; }
+  .live-header .live-sample-mark { font-size: 14px; }
+  .live-aside-sheet { font-size: 16px; }
+  .live-aside-sheet .live-kicker { font-size: 14px; }
+  :is(.live-main, .live-dialog, .live-header-desk) [data-slot="button"]:not([data-size^="icon"]) { font-size: 16px; }
+  .live-app .live-head-actions [data-slot="button"] { font-size: 17px; }
+}
