@@ -320,7 +320,8 @@ function NeighborListView({
               <Button variant="outline" onClick={() => setOpen(open + FIRST)}>
                 {text.list.more}
               </Button>
-              <span>{fill(text.list.shownOf, { shown: open, all: shown })}</span>
+              {/* Out of every household the conference has, the same figure as the head; past the first rows loaded, the line below says where showing stops. */}
+              <span>{fill(text.list.shownOf, { shown: open, all: list.more ? (list.households ?? shown) : shown })}</span>
             </p>
           )}
         </>
@@ -334,7 +335,7 @@ function NeighborListView({
           {text.list.none.body}
         </HelpEmpty>
       )}
-      {list.more && (
+      {list.more && open >= shown && (
         <p className="help-footnote">
           {text.list.first(shown)}
         </p>
