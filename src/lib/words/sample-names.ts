@@ -98,7 +98,10 @@ const es: Readonly<Record<string, string>> = {
 export const sampleNames = Object.keys(es);
 
 const asTyped = (typed: string) => typed;
+/** The sample's signed-in owner, named by the backend (convex/demo.ts sampleOwner), not by the seed. */
+const sampleOwner = { typed: "Sample Owner", es: "Responsable de la muestra" };
 const inSpanish = (typed: string) => {
+  if (typed === sampleOwner.typed) return sampleOwner.es;
   const known = es[typed];
   if (known) return known;
   // A call's note is the request's line with a full stop: the same line, said the same way everywhere.
