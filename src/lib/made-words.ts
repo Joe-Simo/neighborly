@@ -62,12 +62,12 @@ const en = {
       "It was read and approved by the founder, who speaks Spanish. Where a page is a translation it says so at the top, and the English governs.",
     ] },
     { title: "Measured, not guessed", blocks: [
-      "The rule every change is held to: it is filmed at eight widths, from a 360-pixel phone to a 1920-pixel screen, and it lands only when no frame of that film runs over 33 milliseconds.",
+      "The rule every change is held to: it is filmed at eight widths, from a 360‑pixel phone to a 1920‑pixel screen, and it lands only when no frame of that film runs over 33 milliseconds.",
       [
         { lead: "Under a second.", rest: "The sample conference opens in about 0.85 seconds at desk width and 1.1 on a phone, measured on our test machine." },
         { lead: "Three frames.", rest: "On the same machine, the first scroll is answered by the third frame, or within 60 pixels." },
         { lead: "Two seconds.", rest: "The iPhone app opens into its room in 1.6 to 2 seconds in the simulator." },
-        { lead: "Not one frame over.", rest: "The courtyard that stands up on a first visit was filmed at 390 pixels with the processor slowed four times, and at 1440, in light and dark: 91 frames each time, none over 33 milliseconds, including the first run after the server had just started." },
+        { lead: "Not one frame over.", rest: "The courtyard that stands up on a first visit was filmed at 390 pixels with the processor slowed four times, and at 1440, in light and dark: 91 frames each time, none over 33 milliseconds, including the first run after the server had just started." },
         { lead: "With Reduce Motion too.", rest: "The same films are run again with Reduce Motion on. Then the courtyard is simply there, and nothing is kept about the visit." },
       ],
     ] },
@@ -137,12 +137,12 @@ const es: typeof en = {
       "Lo leyó y lo aprobó el fundador, que habla español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
     { title: "Medido, no supuesto", blocks: [
-      "La regla que cumple cada cambio: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro de ese video pasa de 33 milisegundos.",
+      "La regla que cumple cada cambio: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro de ese video pasa de 33 milisegundos.",
       [
         { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos 0.85 segundos en el ancho de escritorio y en 1.1 en un teléfono, medido en nuestra máquina de pruebas." },
         { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde antes del tercer cuadro, o dentro de 60 píxeles." },
         { lead: "Dos segundos.", rest: "La aplicación del iPhone abre su sección en 1.6 a 2 segundos en el simulador." },
-        { lead: "Ni un cuadro de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 cuadros cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
+        { lead: "Ni un cuadro de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 cuadros cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
         { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí, y no se guarda nada de la visita." },
       ],
     ] },

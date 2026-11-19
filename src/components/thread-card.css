@@ -86,3 +86,4 @@
 .thread-card-words small{font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43}
 /* A window 320 wide: the card is a little larger on the band, so its headline clears the "For" line and the gold square. */
 @media(max-width:359px){.card-offer,.card-for{left:56%;width:78%}}
+.card-offer-words>:is(strong,small){text-wrap:balance}

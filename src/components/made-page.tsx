@@ -28,6 +28,9 @@ export function madeMetadata(language: Language): Metadata {
 /** How Kind Helps was made: the same laid sheets as the privacy page, with the help's own piece of the painting on the title's sheet. */
 export function MadePage({ language }: { language: Language }) {
   const said = madeWords[language];
+  /* The code's address is kept whole on one line, never broken at its slash or hyphen. */
+  const address = "github.com/Joe-Simo/neighborly";
+  const [lastLead, lastTail] = said.last.split(address);
   return <div className="public-page" lang={language}>
     {language !== "en" && <ReaderLanguage page={language} />}
     <header className="public-page-header">
@@ -53,7 +56,7 @@ export function MadePage({ language }: { language: Language }) {
         </section>
       </Fragment>)}
       <section>
-        <div><p className="public-words-last">{said.last}</p></div>
+        <div><p className="public-words-last">{lastLead}<span className="public-words-address">{address}</span>{lastTail}</p></div>
       </section>
     </main>
     <PublicEnding language={language} />

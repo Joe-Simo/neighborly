@@ -142,3 +142,4 @@
 }
 @media(max-width:1023px){.public-made section>h2{font-size:clamp(30px,8.2vw,40px)}.public-made section>div>p:first-child:not(.public-words-last){font-size:1.14em}}
 @media print{.public-made section>h2{position:static}.public-made section>h2::before{font-size:9pt}}
+.public-week-close p,.public-words h2{text-wrap:balance}

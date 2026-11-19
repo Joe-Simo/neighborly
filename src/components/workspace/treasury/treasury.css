@@ -622,3 +622,4 @@
     margin-left: 0;
   }
 }
+.treasury-waiting .help-row p { text-wrap: balance; }

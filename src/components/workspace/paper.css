@@ -1495,3 +1495,6 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .live-app .live-header .live-wordmark::after { content: ""; position: absolute; inset: min(0px, calc(50% - 22px)) 0; }
 .live-app main button.min-h-11 { position: relative; }
 .live-app main button.min-h-11::after { content: ""; position: absolute; inset: min(0px, calc(50% - 22px)); }
+
+/* Short lines break evenly, so none ends on a stranded word: the sample mark in the side menu and an empty room's words. */
+.live-nav .live-sample-mark, .live-app .live-empty p { text-wrap: balance; }
