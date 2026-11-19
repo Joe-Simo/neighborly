@@ -1,0 +1,59 @@
+/* The slip folds (slip-folds.tsx). The band's length is set here, never measured: one window of scroll to fold and settle, held at the window's middle.
+   Only the top panel and the slip are moved, by transform alone; the crease's shade and the slip's lift change in steps, by attribute. */
+.slip-folds{position:relative;z-index:1;height:200svh;background:#eee7d7;color:#293f32}
+.slip-folds-stage{position:sticky;top:0;height:100svh;display:grid;place-items:center;padding:0 16px}
+.slip-folds-figure{margin:0;display:grid;justify-items:center;gap:56px;width:min(100%,360px)}
+.slip-folds-slip,.slip-folds-pile{grid-area:1/1}
+/* The year's pile: three earlier slips, edges showing under the one being laid. */
+.slip-folds-pile{position:relative;width:100%;height:200px;translate:0 14px}
+.slip-folds-pile i{position:absolute;inset:0;background:#f3ecdc;border-radius:1px;box-shadow:0 0 0 1px #b0a08455,0 2px 3px -1px #3b2a1226}
+.slip-folds-pile i:nth-child(1){translate:3px 12px;rotate:1.4deg}
+.slip-folds-pile i:nth-child(2){translate:-2px 8px;rotate:-1deg}
+.slip-folds-pile i:nth-child(3){translate:1px 4px;rotate:.5deg}
+.slip-folds-slip{--top:68px;position:relative;width:100%;height:200px;perspective:900px;will-change:transform}
+/* The slip's edge and relief are drawn on its two parts, so once the top is folded away no outline of it is left standing. */
+.slip-folds-top,.slip-folds-body{border-radius:1px;box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084}
+.slip-folds-body{box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,3px 4px 6px -2px #3b2a1233}
+/* The top third, folded back along the score about its foot: past upright it lies behind the slip, so its words are turned away, never faded. */
+.slip-folds-top{position:absolute;z-index:0;left:0;right:0;top:0;height:var(--top);padding:18px 20px 0;background:#f7f2e6;transform-origin:50% 100%;will-change:transform}
+.slip-folds-top p{margin:0;font:500 13px/1.3 var(--font-sans,system-ui),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5b6a5e}
+.slip-folds-body{position:absolute;z-index:1;left:0;right:0;top:var(--top);bottom:0;display:grid;align-content:start;gap:4px;padding:14px 20px 0;background:#f7f2e6;border-top:1px dashed #b0a08480}
+.slip-folds-body strong{font:500 24px/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;white-space:nowrap}
+.slip-folds-body span{font-size:16px;line-height:1.4;color:#3d4f43}
+/* The crease's shade deepens in three steps as the panel comes over. */
+.slip-folds-body::before{content:"";position:absolute;left:0;right:0;top:0;height:18px;pointer-events:none}
+.slip-folds-slip[data-crease="1"] .slip-folds-body::before{background:linear-gradient(#3b2a1214,#3b2a1200)}
+.slip-folds-slip[data-crease="2"] .slip-folds-body::before{background:linear-gradient(#3b2a1224,#3b2a1200)}
+.slip-folds-slip[data-crease="3"] .slip-folds-body::before{background:linear-gradient(#3b2a1233,#3b2a1200)}
+/* Still waiting: the ochre corner. The yes is the sample's, further down the page. */
+.slip-folds-corner{position:absolute;z-index:2;right:-1px;bottom:-1px;width:30px;height:30px;background:linear-gradient(315deg,#eee7d7 50%,#c8962e calc(50% + 1px),#d6ad57 100%);border-top-left-radius:3px;box-shadow:3px -3px 6px -4px #3b3a2466}
+/* Laid one sheet up on the pile: a step in its shadow, with its lift. */
+.slip-folds-slip[data-risen="true"] .slip-folds-body{box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,6px 10px 12px -4px #3b2a1238}
+.slip-folds-figure figcaption{max-width:32ch;text-align:center;font-size:17px;line-height:1.45;color:#3d4f43}
+.slip-folds-link{display:inline-block;margin-top:8px;color:#253e31;text-underline-offset:3px}
+/* With less motion, or while the keyboard is in it, the slip is shown as it ends: folded, and laid on the pile. */
+@media(prefers-reduced-motion:reduce){
+  .slip-folds{height:auto}
+  .slip-folds-stage{position:relative;height:auto;padding:12svh 16px}
+  .slip-folds-top{transform:rotateX(180deg)!important}
+  .slip-folds-slip{transform:translate3d(0,-10px,0)!important}
+  .slip-folds-body{box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,6px 10px 12px -4px #3b2a1238}
+  .slip-folds-body::before{background:linear-gradient(#3b2a1233,#3b2a1200)}
+}
+.slip-folds:focus-within .slip-folds-top{transform:rotateX(180deg)!important}
+.slip-folds:focus-within .slip-folds-slip{transform:translate3d(0,-10px,0)!important}
+.slip-folds:focus-within .slip-folds-body{box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,6px 10px 12px -4px #3b2a1238}
+.slip-folds:focus-within .slip-folds-body::before{background:linear-gradient(#3b2a1233,#3b2a1200)}
+/* From 1024 the slip is drawn at about a hand's width, and its caption with it. */
+@media(min-width:1024px){
+  .slip-folds-figure{width:480px}
+  .slip-folds-figure figcaption{font-size:20px;max-width:34ch}
+  .slip-folds-link{font-size:18px}
+  .slip-folds-slip,.slip-folds-pile{height:260px}
+  .slip-folds-slip{--top:88px}
+  .slip-folds-top{padding:24px 28px 0}
+  .slip-folds-body{padding:18px 28px 0}
+  .slip-folds-body strong{font-size:32px}
+  .slip-folds-body span{font-size:18px}
+}
+@media print{.slip-folds{height:auto}.slip-folds-stage{position:static;height:auto}}
