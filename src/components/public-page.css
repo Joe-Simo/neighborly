@@ -213,3 +213,15 @@
 }
 @media (forced-colors:active){.public-made-anatomy-plate,.public-made-anatomy-ground{forced-color-adjust:none;border:1px solid CanvasText;background:Canvas}}
 @media print{.public-made-anatomy-plate{box-shadow:none !important;border-color:#283c32}.public-made-anatomy{break-inside:avoid}}
+
+/* Drawn, judged, redrawn: real before-and-after stills, side by side from 640, one above the other below it. Still. */
+.public-made-process{grid-column:1/-1;display:grid;gap:clamp(28px,4vw,48px);margin:clamp(20px,3vw,40px) 0 0}
+.public-made-process figure{margin:0;display:grid;gap:12px}
+.public-made-process figure > div{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.6vw,20px);align-items:start}
+.public-made-process figure > div > div{display:grid;gap:6px}
+.public-made-process span{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#4a5a50}
+.public-made-process img{display:block;width:100%;height:auto;border:1px solid var(--relief-edge);border-radius:2px;background:var(--relief-paper)}
+.public-made-process figcaption{max-width:40em}
+.public-made-process-source{margin:0;font-size:15px}
+@media (max-width:639px){.public-made-process figure > div{grid-template-columns:1fr}}
+@media print{.public-made-process figure{break-inside:avoid}}
