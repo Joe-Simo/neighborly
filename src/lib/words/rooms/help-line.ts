@@ -31,7 +31,7 @@ export const en = (t: Terms, place: string) => ({
     discard: "The draft couldn’t be discarded. It is still here; try again.",
     /** `{reason}` is the refusal as the backend gave it. */
     stillOnSheet: "{reason} The draft is still on its sheet.",
-    draft: "The assistant couldn’t draft this request. Nothing was saved.",
+    draft: "This request couldn’t be drafted. Nothing was saved.",
     stillHere: "The draft is still here. Choose Change to correct it.",
     writeYourself: "You can write the request yourself in the form.",
   },
@@ -64,7 +64,7 @@ export const en = (t: Terms, place: string) => ({
     neighbor: {
       title: `Add a ${t.neighbor}`,
       deck: "This call will be kept on their record.",
-      undrafted: `The assistant could not draft from this note. Add the ${t.neighbor}, then write the request yourself.`,
+      undrafted: `Nothing could be drafted from this note. Add the ${t.neighbor}, then write the request yourself.`,
     },
   },
   /** The calls to return, and the calls returned this week. */
@@ -152,7 +152,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   refused: {
     discard: "No se pudo descartar el borrador. Sigue aquí; inténtalo otra vez.",
     stillOnSheet: "{reason} El borrador sigue en su hoja.",
-    draft: "El asistente no pudo preparar el borrador de esta petición. No se guardó nada.",
+    draft: "No se pudo preparar el borrador de esta petición. No se guardó nada.",
     stillHere: "El borrador sigue aquí. Elige Cambiar para corregirlo.",
     writeYourself: "Puedes escribir la petición por tu cuenta en el formulario.",
   },
@@ -184,7 +184,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     neighbor: {
       title: `Agregar un ${t.neighbor}`,
       deck: "Esta llamada se guardará en su registro.",
-      undrafted: `El asistente no pudo preparar un borrador con esta nota. Agrega al ${t.neighbor} y luego escribe la petición por tu cuenta.`,
+      undrafted: `No se pudo preparar un borrador con esta nota. Agrega al ${t.neighbor} y luego escribe la petición por tu cuenta.`,
     },
   },
   calls: {

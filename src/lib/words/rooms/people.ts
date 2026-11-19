@@ -79,7 +79,7 @@ export const en = (t: Terms, place: string) => ({
       name: "Team name",
       does: "What this team does",
       /** What came of the draft, said under the button. */
-      filled: (name: string) => `Filled in by the assistant: “${name}”. Change it if it is not right.`,
+      filled: (name: string) => `Filled in from your words: “${name}”. Change it if it is not right.`,
       unsure: "The assistant was not sure of a name in your words, so it left the name blank. Enter it below.",
       unnamed: "Your words do not name the team, so the name is blank. Enter it below.",
       failed: "No name could be drafted. Enter the team name below.",
@@ -221,7 +221,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
         draft: "Proponer un nombre",
         name: "Nombre del equipo",
         does: "Qué hace este equipo",
-        filled: (name) => `Lo llenó el asistente: «${name}». Cámbialo si no es correcto.`,
+        filled: (name) => `Tomado de tus palabras: «${name}». Cámbialo si no es correcto.`,
         unsure: "El asistente no estaba seguro de un nombre en tus palabras, así que dejó el nombre en blanco. Escríbelo abajo.",
         unnamed: "Tus palabras no nombran al equipo, así que el nombre está en blanco. Escríbelo abajo.",
         failed: "No se pudo proponer un nombre. Escribe abajo el nombre del equipo.",
