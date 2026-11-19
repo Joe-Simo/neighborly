@@ -34,13 +34,27 @@ const unnamed = /^(?:new|small|big|second|third|another|other|whole|same|good|gr
 const unsure = /\?|n't\b|\b(?:not|no|never|if|maybe|perhaps|might|may|could|should|would|probably|possibly|unless|or|either)\b/i;
 const named = (name: string) => name.charAt(0).toUpperCase() + name.slice(1);
 
+/**
+ * Parts a description at its stops, one character at a time, without a lookbehind (Safari before 16.4 cannot parse one).
+ * A question mark ends its clause and stays on it; a run of full stops, exclamation marks, semicolons or line breaks ends
+ * one and goes. The character right after a question mark always opens the next clause, even when it is a stop.
+ */
+function partAtStops(parts: string[], character: string, at: number, all: string[]): string[] {
+  const last = parts.length - 1;
+  if (character === "?") parts.push((parts.pop() ?? "") + "?", "");
+  else if (!/[.!;\n]/.test(character) || (all[at - 1] === "?")) parts[last] += character;
+  else if (!/[.!;\n]/.test(all[at - 1] ?? "") || all[at - 2] === "?") parts.push("");
+  return parts;
+}
+
 /** Recognize only complete, affirmative clauses in the small supported grammar. */
 function clauses(description: string): string[] {
   return description
     .replace(/\b([ap])\.\s*m\.?/gi, "$1m")
     // Keep question marks on their clauses so a question cannot match the
     // affirmative grammar and be presented as a confirmed requirement.
-    .split(/(?<=\?)|[.!;\n]+/)
+    .split("")
+    .reduce(partAtStops, [""])
     .map((part) => part.trim())
     .filter(Boolean);
 }

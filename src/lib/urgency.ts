@@ -26,7 +26,7 @@ const dayPattern = /\b(?:on|by|for|before)\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)
  */
 export function urgentSigns(note: string): UrgentSign[] {
   const found = new Map<UrgentReason, number | null>();
-  for (const clause of note.split(/(?<=\?)|(?<=[.!;])\s+|\n+/).map((part) => part.trim()).filter(Boolean)) {
+  for (const clause of note.replace(/\?/g, "?\n").replace(/([.!;])\s+/g, "$1\n").split(/\n+/).map((part) => part.trim()).filter(Boolean)) {
     for (const reason of urgentReasons) {
       if (!signs[reason].test(clause)) continue;
       const negation = reason === "noFood" || reason === "hungry";

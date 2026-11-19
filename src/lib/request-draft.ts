@@ -113,8 +113,12 @@ function amounts(clause: string): number[] {
   return found;
 }
 
+/** What stands before a capitalised word in the same sentence: a word, number or closing mark, then spaces. Tested on the
+ * text before the word, so no lookbehind is needed (Safari before 16.4 cannot parse one). */
+const afterWord = /[\p{L}\p{N}\],'’"”)]\s+$/u;
+
 function clauses(note: string): string[] {
-  return note.split(/(?<=\?)|(?<=[.!;])\s+|\n+/).map((part) => part.trim()).filter(Boolean);
+  return note.replace(/\?/g, "?\n").replace(/([.!;])\s+/g, "$1\n").split(/\n+/).map((part) => part.trim()).filter(Boolean);
 }
 
 function only<T>(values: T[]): T | null {
@@ -223,22 +227,22 @@ export function withoutIdentity(note: string, known: { names: string[]; addresse
   text = text
     .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "[email]")
     // A phone goes before an address, so a number such as 555-0142 is never split by a street after it.
-    .replace(/(?<![\d$])\+?\(?\d(?:[\s().-]*\d){6,}(?!\d)/g, "[phone]")
+    .replace(/(^|[^\d$])\+?\(?\d(?:[\s().-]*\d){6,}(?!\d)/g, "$1[phone]")
     .replace(addressPattern, "[address]")
     .replace(/\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/g, "[date]");
   const parts = known.names.flatMap((name) => name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "")).filter((part) => part.length > 1);
   for (const part of new Set(parts))
-    text = text.replace(new RegExp(`(?<![\\p{L}])${escape(part)}(?![\\p{L}])`, "giu"), "[name]");
+    text = text.replace(new RegExp(`(^|[^\\p{L}])${escape(part)}(?![\\p{L}])`, "giu"), "$1[name]");
   // Everyone else the conference knows (its neighbors and members): taken out wherever written with a capital, in one
   // pass. Only the capitalised form, so a neighbor named Hope or Will never takes the plain word out of a note.
   const others = [...new Set((known.others ?? []).flatMap((name) => name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "")))]
     .filter((part) => part.length > 1 && /^\p{Lu}/u.test(part) && !isSafe(part));
-  if (others.length) text = text.replace(new RegExp(`(?<![\\p{L}])(?:${others.map(escape).join("|")})(?![\\p{L}])`, "gu"), "[name]");
+  if (others.length) text = text.replace(new RegExp(`(^|[^\\p{L}])(?:${others.map(escape).join("|")})(?![\\p{L}])`, "gu"), "$1[name]");
   text = text
     .replace(/\b((?:my name is|name is|this is|i am|i'm|me llamo|soy)\s+)[\p{L}'-]+(?:\s+[\p{L}'-]+)?/giu, "$1[name]")
     .replace(/\b(?:mr|mrs|ms|miss|dr|sr|sra|fr|father|sister|deacon)\.?\s+[\p{L}'-]+/giu, "[name]")
     // A capitalised word after another word in the same sentence is a proper noun.
-    .replace(/(?<=[\p{L}\p{N}\],'’"”)]\s+)\p{Lu}[\p{L}\p{N}'’&-]*/gu, (word) => (isSafe(word) ? word : "[name]"))
+    .replace(/\p{Lu}[\p{L}\p{N}'’&-]*/gu, (word, at: number, whole: string) => (afterWord.test(whole.slice(0, at)) && !isSafe(word) ? "[name]" : word))
     .replace(new RegExp(`\\b(?:${alsoNames})(?=\\s+\\[name\\])`, "g"), "[name]")
     // A sentence that opens with two capitalised words opens with a name.
     .replace(/(^|[.!?]\s+)\p{Lu}[\p{L}'’-]*(?=\s+\[name\])/gu, "$1[name]");
