@@ -127,6 +127,8 @@ export type PaintedStage = {
   pixelRatio: number;
   width: () => number;
   height: () => number;
+  /** The painting's laid-out box, fractions and all, as the canvas is sized to it (not rounded as width and height are). */
+  box: () => { width: number; height: number };
   hidden: () => boolean;
   reducedMotion: () => boolean;
   capture: (pointerId: number) => void;
@@ -145,6 +147,7 @@ function domStage(host: HTMLElement): PaintedStage {
     canvas, offscreen: false, pixelRatio: devicePixelRatio,
     sketch: (size) => Object.assign(document.createElement("canvas"), { width: size, height: size }),
     width: () => host.clientWidth, height: () => host.clientHeight,
+    box: () => host.getBoundingClientRect(),
     hidden: () => document.hidden, reducedMotion: () => media.matches,
     capture: (id) => host.setPointerCapture(id),
     release: (id) => { if (host.hasPointerCapture(id)) host.releasePointerCapture(id); },
@@ -897,7 +900,8 @@ export function createPaintedWorld(stage: PaintedStage, options: PaintedWorldOpt
     wake();
   }
   function ndc(event: StagePointer) {
-    return new T.Vector2(event.x / Math.max(1, stage.width()) * 2 - 1, 1 - event.y / Math.max(1, stage.height()) * 2);
+    const box = stage.box();
+    return new T.Vector2(event.x / Math.max(1, box.width) * 2 - 1, 1 - event.y / Math.max(1, box.height) * 2);
   }
   const hit = (point: T.Vector2) => {
     if (current === "meal" && !bowlTexture) return false;
@@ -944,7 +948,7 @@ export function createPaintedWorld(stage: PaintedStage, options: PaintedWorldOpt
     else { interactionTarget = 0; setPhase("idle"); wake(); }
   }
   function resize() {
-    const rect = { width: stage.width(), height: stage.height() };
+    const rect = stage.box();
     if (!rect.width || !rect.height || disposed) return;
     // A pointer's drag plane belongs to the old viewport. End the gesture before
     // changing that plane so rotation/address-bar resizing cannot accept it.

@@ -8,7 +8,12 @@ import { whenScrollStill } from "@/lib/scroll-still";
 import { getPaintedScrollState } from "@/lib/painted-world-scroll";
 import { isPaintedPortrait, openingKeptAbove } from "@/lib/painted-world-framing";
 import type { PaintedScene, PaintedWorldOptions } from "@/lib/painted-world-controller";
-import { canDrawOffPage, type PaintedWorld as World } from "@/lib/painted-world-offscreen";
+import type { PaintedWorld as World } from "@/lib/painted-world-offscreen";
+
+/** Whether this browser can hand a canvas to a worker at all (the worker learns whether it can draw on it). Kept here, so the
+ * worker's module is fetched only when the scene is made, never with the page. */
+const canDrawOffPage = () =>
+  typeof Worker !== "undefined" && typeof OffscreenCanvas !== "undefined" && "transferControlToOffscreen" in HTMLCanvasElement.prototype;
 import "./painted-world.css";
 import "./cut-edges.css";
 import "./public-touch.css";

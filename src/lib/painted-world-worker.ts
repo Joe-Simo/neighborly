@@ -4,12 +4,12 @@
 // the canvas and tells this worker what it would otherwise read from the page: its size, whether it is seen, the
 // reader's motion setting and the pointer.
 import { createPaintedWorld, type PaintedStage, type StagePointer } from "./painted-world-controller";
-import type { ToWorker } from "./painted-world-offscreen";
+import type { Size, ToWorker } from "./painted-world-offscreen";
 
 declare const self: DedicatedWorkerGlobalScope;
 
 let world: ReturnType<typeof createPaintedWorld> | undefined;
-let size = { width: 0, height: 0 };
+let size: Size = { width: 0, height: 0, box: { width: 0, height: 0 } };
 let hidden = false;
 let reduce = false;
 let on: Parameters<PaintedStage["listen"]>[0] | undefined;
@@ -22,7 +22,7 @@ self.onmessage = ({ data }: MessageEvent<ToWorker>) => {
       const stage: PaintedStage = {
         canvas: data.canvas, offscreen: true, pixelRatio: data.pixelRatio,
         sketch: (side) => new OffscreenCanvas(side, side),
-        width: () => size.width, height: () => size.height,
+        width: () => size.width, height: () => size.height, box: () => size.box,
         hidden: () => hidden, reducedMotion: () => reduce,
         // Only the scroll-led opening is drawn here, which takes no drag: nothing is captured.
         capture: () => {}, release: () => {},
@@ -43,7 +43,7 @@ self.onmessage = ({ data }: MessageEvent<ToWorker>) => {
       }
       return;
     }
-    case "size": size = { width: data.width, height: data.height }; on?.resize(); return;
+    case "size": size = data.size; on?.resize(); return;
     case "visible": on?.visible(data.visible); return;
     case "hidden": hidden = data.hidden; on?.visibility(); return;
     case "reduce": reduce = data.reduce; on?.reduce(); return;

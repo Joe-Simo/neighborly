@@ -4,10 +4,12 @@
 import type { ReliefOutcome } from "./relief-playback";
 import type { PaintedPhase, PaintedScene, PaintedWorldOptions, StagePointer } from "./painted-world-controller";
 
+/** The host's size as the page reads it: rounded (clientWidth) and as laid out (its box). */
+export type Size = { width: number; height: number; box: { width: number; height: number } };
 type Settings = Omit<PaintedWorldOptions, "onLoadingChange" | "onReady" | "onError" | "onSceneChange" | "onPhaseChange">;
 export type ToWorker =
-  | { kind: "start"; canvas: OffscreenCanvas; options: Settings; pixelRatio: number; size: { width: number; height: number }; hidden: boolean; reduce: boolean }
-  | { kind: "size"; width: number; height: number }
+  | { kind: "start"; canvas: OffscreenCanvas; options: Settings; pixelRatio: number; size: Size; hidden: boolean; reduce: boolean }
+  | { kind: "size"; size: Size }
   | { kind: "visible"; visible: boolean }
   | { kind: "hidden"; hidden: boolean }
   | { kind: "reduce"; reduce: boolean }
@@ -33,10 +35,6 @@ export type PaintedWorld = {
   dispose: () => void;
 };
 
-/** Whether this browser can hand a canvas to a worker at all; whether the worker can draw on it is learnt there. */
-export const canDrawOffPage = () =>
-  typeof Worker !== "undefined" && typeof OffscreenCanvas !== "undefined" && "transferControlToOffscreen" in HTMLCanvasElement.prototype;
-
 export function createOffPageWorld(host: HTMLElement, options: PaintedWorldOptions): PaintedWorld {
   const { onLoadingChange, onReady, onError, onSceneChange, onPhaseChange, ...settings } = options;
   // What the page has said so far, for the scene drawn here instead if the worker cannot draw.
@@ -52,7 +50,11 @@ export function createOffPageWorld(host: HTMLElement, options: PaintedWorldOptio
   const worker = new Worker(new URL("./painted-world-worker.ts", import.meta.url), { type: "module" });
   const send = (message: ToWorker, transfer: Transferable[] = []) => worker.postMessage(message, transfer);
 
-  const resize = () => send({ kind: "size", width: host.clientWidth, height: host.clientHeight });
+  const measure = (): Size => {
+    const { width, height } = host.getBoundingClientRect();
+    return { width: host.clientWidth, height: host.clientHeight, box: { width, height } };
+  };
+  const resize = () => send({ kind: "size", size: measure() });
   const observer = new ResizeObserver(resize);
   const intersection = new IntersectionObserver(([entry]) => send({ kind: "visible", visible: entry.isIntersecting }));
   const visibility = () => send({ kind: "hidden", hidden: document.hidden });
@@ -98,7 +100,7 @@ export function createOffPageWorld(host: HTMLElement, options: PaintedWorldOptio
   worker.onerror = (event) => { event.preventDefault(); if (!disposed && !here) drawHere(); };
 
   const offscreen = canvas.transferControlToOffscreen();
-  send({ kind: "start", canvas: offscreen, options: settings, pixelRatio: devicePixelRatio, size: { width: host.clientWidth, height: host.clientHeight }, hidden: document.hidden, reduce: media.matches }, [offscreen]);
+  send({ kind: "start", canvas: offscreen, options: settings, pixelRatio: devicePixelRatio, size: measure(), hidden: document.hidden, reduce: media.matches }, [offscreen]);
   observer.observe(host);
   intersection.observe(host);
   host.addEventListener("pointermove", move, { passive: true });
