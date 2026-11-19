@@ -42,7 +42,8 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   const router = useRouter();
   const openSheet = useMutation(api.visits.openSheet);
   const cancel = useMutation(api.visits.cancel);
-  const [opened, setOpened] = useState(false);
+  // The audit line the opening wrote; the sheet is read with it, and refused without it.
+  const [opened, setOpened] = useState<Id<"auditEvents"> | null>(null);
   const [step, setStep] = useState<"callOff" | "time" | null>(null);
   const confirming = step === "callOff";
   const setConfirming = (open: boolean) => setStep(open ? "callOff" : null);
@@ -54,10 +55,11 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   useEffect(() => {
     let current = true;
     void openSheet({ churchId, visitId }).then(
-      () => {
+      (line) => {
         if (!current) return;
         setRefused(null);
-        setOpened(true);
+        // A sheet already read keeps the line it was read with, so a second opening never makes it load again.
+        setOpened((before) => before ?? line);
       },
       // Without this the quiet "Opening…" line would stay for ever, saying something is on its way when nothing is.
       (cause: unknown) => {
@@ -70,7 +72,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   }, [openSheet, churchId, visitId, attempt, didNotOpen, notices]);
   const sheet = useQuery(
     api.visits.sheet,
-    opened ? { churchId, visitId } : "skip",
+    opened ? { churchId, visitId, opening: opened } : "skip",
   );
   // The sheet that opens on a second try takes the place of the notice, and of the Try again that had the
   // focus. The focus goes to the first thing on the sheet, the way back, and not to the page.

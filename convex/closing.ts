@@ -16,7 +16,7 @@ const nameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ")
 /** Every table that holds a conference's rows, in the order they are swept. The test holds this against the schema. */
 export const swept = [
   "memberships", "invitations", "calendarFeeds",
-  "requestDrafts", "calls", "neighborNotes", "visits", "ledgerEntries", "voucherStock", "assistanceRequests", "neighbors",
+  "aiReads", "requestDrafts", "calls", "neighborNotes", "visits", "ledgerEntries", "voucherStock", "assistanceRequests", "neighbors",
   "referralAgencies", "payees", "deposits", "ledgerKinds", "bankStatements",
   "outbox", "meetingResponses", "meetingInvitees", "meetings", "requests", "commitmentHistory", "commitments", "series",
   "teamMembers", "teams", "availability", "timeOff", "tasks", "announcements", "aiUsageByChurch", "knownNames", "auditEvents",

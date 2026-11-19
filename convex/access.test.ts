@@ -44,6 +44,15 @@ describe("who may open a neighbor's record", () => {
     expect((await as(ids.coordinator).run((ctx) => neighborRecord(ctx, ids.church, ids.neighbor))).neighbor.name).toBe("Sample Neighbor");
   });
 
+  test("a coordinator waits for the owner's approval before any record opens", async () => {
+    const { t, ids, as } = await setup();
+    await t.run((ctx) => ctx.db.patch("memberships", ids.coordinator.memberId, { approved: false }));
+    expect(await as(ids.coordinator).query(api.access.canOpenNeighborRecords, { churchId: ids.church })).toBe(false);
+    await expect(as(ids.coordinator).run((ctx) => neighborRecord(ctx, ids.church, ids.neighbor))).rejects.toThrow(refused);
+    await t.run((ctx) => ctx.db.patch("memberships", ids.coordinator.memberId, { approved: true }));
+    expect(await as(ids.coordinator).query(api.access.canOpenNeighborRecords, { churchId: ids.church })).toBe(true);
+  });
+
   test("people without a place in the group are refused before the role is considered", async () => {
     const { t, ids, as } = await setup();
     for (const caller of [as(ids.removed), as(ids.stranger)]) {

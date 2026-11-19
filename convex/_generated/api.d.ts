@@ -9,6 +9,7 @@
  */
 
 import type * as access from "../access.js";
+import type * as aiReads from "../aiReads.js";
 import type * as assistance from "../assistance.js";
 import type * as calendar from "../calendar.js";
 import type * as closing from "../closing.js";
@@ -22,6 +23,7 @@ import type * as invitations from "../invitations.js";
 import type * as knownNames from "../knownNames.js";
 import type * as language from "../language.js";
 import type * as meetingFanout from "../meetingFanout.js";
+import type * as nameKeys from "../nameKeys.js";
 import type * as neighbors from "../neighbors.js";
 import type * as notificationEvents from "../notificationEvents.js";
 import type * as notifications from "../notifications.js";
@@ -45,6 +47,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  aiReads: typeof aiReads;
   assistance: typeof assistance;
   calendar: typeof calendar;
   closing: typeof closing;
@@ -58,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   knownNames: typeof knownNames;
   language: typeof language;
   meetingFanout: typeof meetingFanout;
+  nameKeys: typeof nameKeys;
   neighbors: typeof neighbors;
   notificationEvents: typeof notificationEvents;
   notifications: typeof notifications;

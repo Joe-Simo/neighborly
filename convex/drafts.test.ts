@@ -154,18 +154,27 @@ describe("a call note drafted into a request", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  test("urgent signs are read from the note, a doubtful one is dropped, and nothing is written", async () => {
+  test("urgent signs are read from the note, a doubtful one is dropped, and the server says whose reading it was", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const fetch = answers({ shutoff: 0.97, alone: 0.3 });
     vi.stubGlobal("fetch", fetch);
     const { t, ids, coordinator, member } = await helpLine();
     await t.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Rosa Delgado has a power shut-off notice for the 21st. Lives alone." }));
     const args = { churchId: ids.churchId, callId: ids.callId };
+    const mark = async () => (await t.run(ctx => ctx.db.get("calls", ids.callId)))?.urgent;
+    // Checked by the model: the assistant's.
     expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 21 }], verification: "checked" });
+    expect(await mark()).toEqual({ reasons: ["shutoff"], day: 21, by: "assistant" });
     expect(fetch.mock.calls[0][1].body).not.toMatch(/rosa|delgado/i);
     await expect(member.action(api.drafts.readUrgency, args)).rejects.toThrow("coordinators and owners only");
+    // The model away: the fixed rules alone, and saved as theirs.
     vi.stubEnv("TYPESAFE_API_KEY", "");
     expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 21 }, { reason: "alone", day: null }], verification: "review" });
+    expect(await mark()).toEqual({ reasons: ["shutoff", "alone"], day: 21, by: "rules" });
+    // A person's word is never overwritten by a reading.
+    await coordinator.mutation(api.assistance.setUrgency, { ...args, reasons: [] });
+    await coordinator.action(api.drafts.readUrgency, args);
+    expect((await mark())?.by).toBe("person");
     expect(await t.run(ctx => ctx.db.query("auditEvents").collect())).toEqual([]);
   });
 
@@ -180,6 +189,69 @@ describe("a call note drafted into a request", () => {
     });
     expect(await coordinator.action(api.drafts.readUrgency, { churchId: ids.churchId, callId: ids.callId })).toEqual({ signs: [{ reason: "shutoff", day: 21 }, { reason: "alone", day: null }], verification: "review" });
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test("what was sent and each answer are kept with the call, open only to those who can open the note", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+      vi.stubGlobal("fetch", answers({ kind: 0.99, payeeKind: 0.99, chosenKind: 0.99 }));
+      const { t, ids, coordinator, member } = await helpLine();
+      const args = { churchId: ids.churchId, callId: ids.callId };
+      await coordinator.action(api.drafts.draftRequest, args);
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      const draft = await coordinator.query(api.aiReads.latest, { ...args, purpose: "draft" });
+      expect(draft).toMatchObject({ model: "jev-1.14.0", outcome: "checked" });
+      expect(draft?.sentText).not.toMatch(/rosa|delgado|555|0142|14 sample/i);
+      expect(draft?.asked.map((one) => [one.key, one.yes])).toEqual([["kind", true], ["payeeKind", true], ["chosenKind", true]]);
+      expect(draft?.asked[0].question).toContain("mention rent");
+      await expect(member.query(api.aiReads.latest, { ...args, purpose: "draft" })).rejects.toThrow("coordinators and owners only");
+      await expect(coordinator.query(api.aiReads.latest, { ...args, churchId: ids.otherChurch, purpose: "draft" })).rejects.toThrow();
+      // The draft going takes what was sent for it; the urgency reading stays with the note.
+      await coordinator.action(api.drafts.readUrgency, args);
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      expect(await coordinator.query(api.aiReads.latest, { ...args, purpose: "urgency" })).not.toBeNull();
+      await coordinator.mutation(api.assistance.discardDraft, args);
+      expect(await coordinator.query(api.aiReads.latest, { ...args, purpose: "draft" })).toBeNull();
+      // The neighbor's record removed: the note goes, and every row about it with it.
+      await t.run(async ctx => {
+        const own = await ctx.db.query("memberships").collect();
+        for (const one of own) if (one.role === "coordinator") await ctx.db.patch("memberships", one._id, { role: "owner" });
+      });
+      const neighborId = (await t.run(ctx => ctx.db.get("calls", ids.callId)))!.neighborId!;
+      await coordinator.mutation(api.neighbors.remove, { churchId: ids.churchId, neighborId, typedName: "Rosa Delgado" });
+      expect(await t.run(ctx => ctx.db.query("aiReads").collect())).toEqual([]);
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("a call removed takes its rows, and a failed keep never holds up the answer", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+      vi.stubGlobal("fetch", answers({ kind: 0.99, payeeKind: 0.99, chosenKind: 0.99 }));
+      const { t, ids, coordinator } = await helpLine();
+      const args = { churchId: ids.churchId, callId: ids.callId };
+      await coordinator.action(api.drafts.draftRequest, args);
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      await t.run(ctx => ctx.db.patch("calls", ids.callId, { takenAt: Date.now() }));
+      await coordinator.mutation(api.assistance.takeBackCall, args);
+      expect(await t.run(ctx => ctx.db.query("aiReads").collect())).toEqual([]);
+      // A keep that finds its call gone writes nothing and throws nothing.
+      await t.mutation(internal.aiReads.keep, { ...args, purpose: "draft", sentText: "x", asked: [], model: "jev-1.14.0", outcome: "review", at: 0 });
+      expect(await t.run(ctx => ctx.db.query("aiReads").collect())).toEqual([]);
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("a record of what was sent goes after 30 days, and a newer one stays", async () => {
+    const { t, ids } = await helpLine();
+    const day = 86_400_000;
+    await t.run(async ctx => {
+      for (const at of [Date.now() - 31 * day, Date.now() - day]) await ctx.db.insert("aiReads", { churchId: ids.churchId, callId: ids.callId, purpose: "draft", sentText: "behind on rent", asked: [], model: "jev-1.14.0", outcome: "review", at });
+    });
+    await t.mutation(internal.aiReads.dropOld, {});
+    const left = await t.run(ctx => ctx.db.query("aiReads").collect());
+    expect(left).toHaveLength(1);
+    expect(left[0].at).toBeGreaterThan(Date.now() - 2 * day);
   });
 
   test("a group that has used its month's allowance gets the draft for review, not an error", async () => {
@@ -249,6 +321,8 @@ describe("a call note drafted into a request", () => {
       // Well past three days: the note is asked by the hour, so an age turns over up to an hour late.
       await ctx.db.patch("calls", ids.callId, { takenAt: now - 3 * day - 7_200_000 });
       await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Earl Jennings", phone: "(239) 555-0178", note: "Power shut-off notice for the 21st. Lives alone.", callback: "needed", takenBy: ids.coordinator.memberId, takenAt: now - day, urgent: { reasons: ["shutoff"], day: 21, by: "assistant" } });
+      // Put first by the fixed rules alone (the model away): counted as the rules', never as the assistant's.
+      await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Sample Caller", phone: "", note: "Eviction notice.", callback: "needed", takenBy: ids.coordinator.memberId, takenAt: now - day, urgent: { reasons: ["eviction"], by: "rules" } });
       await ctx.db.insert("calls", { churchId: ids.churchId, callerName: "Mai Tran", phone: "(239) 555-0119", note: "No food today.", callback: "done", takenBy: ids.coordinator.memberId, takenAt: now - day });
       await ctx.db.insert("visits", { churchId: ids.churchId, neighborId: neighbor._id, scheduledAt: now + 2 * day, status: "scheduled", visitors: [], notes: "", createdBy: ids.coordinator.memberId, createdAt: now });
       await ctx.db.insert("visits", { churchId: ids.churchId, neighborId: neighbor._id, scheduledAt: now + 9 * day, status: "scheduled", visitors: [], notes: "", createdBy: ids.coordinator.memberId, createdAt: now });
@@ -261,7 +335,7 @@ describe("a call note drafted into a request", () => {
       await ctx.db.insert("timeOff", { churchId: ids.churchId, memberId: ids.member.memberId, start: iso(now - 2 * day), end: iso(now + 3 * day), note: "" });
     });
     const note = await coordinator.query(api.drafts.weekNote, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId });
-    expect(note).toEqual({ callsWaiting: 2, callsFirstByAssistant: 1, callsFirstByPerson: 0, oldestWaitingDays: 3, visitsPlanned: 1, requestsOpen: 0, approvedUnpaid: 1, approvedUnpaidCents: 25000, openPlaces: 1, away: 1 });
+    expect(note).toEqual({ callsWaiting: 3, callsFirstByAssistant: 1, callsFirstByRules: 1, callsFirstByPerson: 0, oldestWaitingDays: 3, visitsPlanned: 1, requestsOpen: 0, approvedUnpaid: 1, approvedUnpaidCents: 25000, openPlaces: 1, away: 1 });
     // The hour asked about began before a call taken within it: its age reads zero, never less.
     expect((await coordinator.query(api.drafts.weekNote, { at: Math.floor(Date.now() / 3600000) * 3600000 - 96 * 3600000, churchId: ids.churchId })).oldestWaitingDays).toBe(0);
     expect(fetch).not.toHaveBeenCalled();
@@ -454,5 +528,40 @@ describe("a call note drafted into a request", () => {
     await t.run(ctx => ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month: new Date().toISOString().slice(0, 7), count: 1990 }));
     expect(await t.action(internal.drafts.measure, { churchId: ids.churchId })).toMatchObject({ status: "no allowance", rows: [] });
     expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("the sample's allowance is each visitor's own", () => {
+  test("one visitor's session runs out without touching another's, and other accounts keep their own count", async () => {
+    vi.stubEnv("DEMO_CLERK_USER_ID", "clerk|visitor");
+    const t = convexTest(schema, modules);
+    const { userId, churchId } = await t.run(async ctx => ({
+      userId: await ctx.db.insert("users", { clerkId: "clerk|visitor" }),
+      churchId: await ctx.db.insert("churches", { name: "Sample", timeZone: "UTC", sample: true }),
+    }));
+    const session = (sid: string) => t.withIdentity({ subject: "clerk|visitor", email: "demo@kindhelps.com", emailVerified: true, sid });
+    const ask = (sid: string) => session(sid).mutation(internal.drafts.reserve, { userId, churchId });
+    // Five a minute each, so the clock moves a minute between rounds.
+    vi.useFakeTimers({ now: Date.parse("2026-11-20T12:00:00Z") });
+    const answers: string[] = [];
+    for (let i = 0; i < 14; i++) { if (i % 5 === 0) vi.advanceTimersByTime(60_000); answers.push(await ask("sess_a")); }
+    expect(answers.filter(a => a === "ok")).toHaveLength(12);
+    expect(answers.at(-1)).toBe("month");
+    // A second visitor is not held by the first one's use.
+    expect(await ask("sess_b")).toBe("ok");
+    vi.useRealTimers();
+  });
+
+  test("the nightly reset clears the days before today and keeps today's", async () => {
+    vi.stubEnv("SAMPLE_NIGHTLY", "off");
+    const t = convexTest(schema, modules);
+    vi.useFakeTimers({ now: Date.parse("2026-11-20T09:00:00Z") });
+    await t.run(async ctx => {
+      await ctx.db.insert("aiUsageBySession", { session: "a", day: "2026-11-19", windowStart: 0, minute: 1, count: 3 });
+      await ctx.db.insert("aiUsageBySession", { session: "b", day: "2026-11-20", windowStart: 0, minute: 1, count: 1 });
+    });
+    await t.mutation(internal.demo.nightly, {});
+    expect((await t.run(ctx => ctx.db.query("aiUsageBySession").collect())).map(row => row.session)).toEqual(["b"]);
+    vi.useRealTimers();
   });
 });

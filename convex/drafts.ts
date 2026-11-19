@@ -1,11 +1,13 @@
 import { ConvexError, v } from "convex/values";
-import { action, internalAction, internalMutation, internalQuery, query, env } from "./_generated/server";
+import { action, internalAction, internalMutation, internalQuery, query, env, type ActionCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { hour, hourAsked, neighborAccess, user } from "./access";
+import { isSampleVisitor } from "./demo";
 import { fiscalYear } from "./reports";
 import { namesFor } from "./knownNames";
 import { paidTowardRequest } from "./treasury";
@@ -24,21 +26,37 @@ export const identity = internalQuery({
 });
 
 
+/** What one visitor's session in the sample may ask the model for in a day; the sample's monthly allowance stays the ceiling. */
+export const sampleSessionAllowance = 12;
+
 /**
  * Counts one request to the model, or says why it may not be made: the person's five a minute, or
  * the group's allowance for the month. A refusal is not an error; the draft simply comes back for review.
+ * Every sample visitor is the same account, so there the five a minute and a small daily allowance belong to the
+ * visitor's own sign-in session instead: one visitor can never use up the sample for everyone.
  */
 export const reserve = internalMutation({
   args: { userId: v.id("users"), churchId: v.optional(v.id("churches")) },
   returns: v.union(v.literal("ok"), v.literal("minute"), v.literal("month")),
   handler: async (ctx, { userId, churchId }) => {
     const windowStart = Math.floor(Date.now() / 60_000) * 60_000;
-    const previous = await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
+    const identity = await ctx.auth.getUserIdentity();
+    const visitor = isSampleVisitor(identity?.subject);
+    // Clerk names the session in `sid`; a token without one counts as a single session, so it is held tightest.
+    const session = visitor ? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
+    const day = new Date().toISOString().slice(0, 10);
+    const own = session ? await ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", session).eq("day", day)).unique() : null;
+    const previous = session ? null : await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
+    if (own && own.windowStart === windowStart && own.minute >= 5) return "minute" as const;
+    if (own && own.count >= sampleSessionAllowance) return "month" as const;
     if (previous?.windowStart === windowStart && previous.count >= 5) return "minute" as const;
     const month = new Date().toISOString().slice(0, 7);
     const used = churchId ? await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", q => q.eq("churchId", churchId).eq("month", month)).unique() : null;
     if (used && used.count >= monthlyAllowance) return "month" as const;
-    if (previous) await ctx.db.patch("aiUsage", previous._id, {
+    if (session) {
+      if (own) await ctx.db.patch("aiUsageBySession", own._id, { windowStart, minute: own.windowStart === windowStart ? own.minute + 1 : 1, count: own.count + 1 });
+      else await ctx.db.insert("aiUsageBySession", { session, day, windowStart, minute: 1, count: 1 });
+    } else if (previous) await ctx.db.patch("aiUsage", previous._id, {
       windowStart, count: previous.windowStart === windowStart ? previous.count + 1 : 1,
     });
     else await ctx.db.insert("aiUsage", { userId, windowStart, count: 1 });
@@ -296,6 +314,31 @@ export const noteAsSent = query({
  * model also picks from the closed list, so a note code cannot read still gets a kind; see settleKind.
  * The model is sent the note with names, phones, emails and addresses taken out, and it writes no text at all.
  */
+/**
+ * Keeps the call just made to the assistant about a call note (aiReads), as it was made: the text exactly as it left,
+ * each question with its answer, the model, and whether the reply was used. Returns a function that takes the result
+ * being returned, schedules the row and hands the result straight back: the row is written after the answer goes,
+ * and a failure to keep it never holds up or changes the answer or its fallback.
+ */
+function keepRead(ctx: ActionCtx, at: { churchId: Id<"churches">; callId: Id<"calls">; purpose: "draft" | "urgency" }, note: string, questions: Record<string, Question>, known: Known, answers: Record<string, unknown> | null) {
+  return async <Result extends { verification: "checked" | "review" }>(result: Result): Promise<Result> => {
+    try {
+      const sent = scrubbed({ note }, known) as { note: string };
+      const asked = Object.entries(questions).map(([key, { instructions }]) => {
+        const answer = answers?.[key];
+        const pick = picked(answer);
+        const said = pick ? pick.confidence : noul(answer);
+        // Yes is what the code took from the answer: sure enough to act on, the same line every reading uses.
+        return { key, question: instructions, answer: said, ...(pick && { choice: pick.kind }), yes: said !== null && said >= sureEnough };
+      });
+      await ctx.scheduler.runAfter(0, internal.aiReads.keep, { ...at, sentText: sent.note, asked, model, outcome: result.verification, at: Date.now() });
+    } catch (cause) {
+      console.error(`aiReads not kept: ${cause instanceof Error ? cause.name : "unknown"}`);
+    }
+    return result;
+  };
+}
+
 export const draftRequest = action({
   args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: requestDraft,
   handler: async (ctx, args) => {
@@ -308,14 +351,16 @@ export const draftRequest = action({
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     // Each question stands on its own in plain words. A bare field name ("proposed.kind") gave the model nothing to judge.
     const payeeShown = payeeIsShown(draft, note, { names, addresses, others });
-    const answers = await decide(env.TYPESAFE_API_KEY, { note }, {
+    const questions = {
       ...Object.fromEntries(Object.entries(draftQuestions(draft, payeeShown)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
       chosenKind: kindQuestion,
-    }, { names, addresses, others });
-    if (!answers) return fallback;
+    };
+    const answers = await decide(env.TYPESAFE_API_KEY, { note }, questions, { names, addresses, others });
+    const kept = keepRead(ctx, { ...args, purpose: "draft" }, note, questions, { names, addresses, others }, answers);
+    if (!answers) return kept(fallback);
     const sure = { kind: noul(answers.kind), payeeKind: noul(answers.payeeKind) }, pick = picked(answers.chosenKind);
     // A proposed field with no usable answer means the reply cannot be trusted; the person reads the draft as code made it.
-    if ((draft.kind && sure.kind === null && !pick) || (draft.payeeKind && payeeShown && sure.payeeKind === null)) return fallback;
+    if ((draft.kind && sure.kind === null && !pick) || (draft.payeeKind && payeeShown && sure.payeeKind === null)) return kept(fallback);
     // Field names, numbers and a kind from the closed list only, never the note: enough to see why a field came back blank.
     console.log(`jev ${JSON.stringify({ ...sure, chosenKind: pick?.kind, chosenConfidence: pick?.confidence })}`);
     const kind = settleKind(draft.kind, sure.kind, pick);
@@ -325,7 +370,7 @@ export const draftRequest = action({
       draft.payeeKind = null;
       draft.notes.push(draftNotes.confirmPayee);
     }
-    return { ...draft, kind, notes, verification: "checked" as const };
+    return kept({ ...draft, kind, notes, verification: "checked" as const });
   },
 });
 
@@ -338,28 +383,38 @@ const urgency = v.object({
  * Reads one call's note for signs that it should be returned first: a shut-off or eviction, no food,
  * a child, an elder, a medical need. A sign code finds is confirmed by the model; any other sign the model
  * reads for itself, so a note in Spanish or Creole is read too. A sign under 0.9 is not shown, and only code
- * gives a sign its day. It saves nothing and decides nothing about who is helped:
+ * gives a sign its day. It keeps the call's mark (assistance.keepReading) and decides nothing about who is helped:
  * the screen shows the reason, and a person can always move the call.
  */
 export const readUrgency = action({
   args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: urgency,
   handler: async (ctx, args): Promise<{ signs: UrgentSign[]; verification: "review" | "checked" }> => {
-    const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
-    const signs = urgentSigns(note);
-    const fallback = { signs, verification: "review" as const };
-    if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
-    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-    const answers = await decide(env.TYPESAFE_API_KEY, { note }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])), { names, addresses, others });
-    if (!answers) return fallback;
-    const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
-    if (signs.some(({ reason }) => sure[reason] === null)) return fallback;
-    console.log(`jev ${JSON.stringify(sure)}`);
-    return {
-      signs: urgentReasons.flatMap(reason => ((sure[reason] ?? 0) >= sureEnough ? [signs.find(sign => sign.reason === reason) ?? { reason, day: null }] : [])),
-      verification: "checked" as const,
-    };
+    const read = await readNote(ctx, args);
+    // Saved here, where the check was made, so who put the call first is never the client's to say.
+    const day = read.signs.find(sign => sign.day !== null)?.day ?? undefined;
+    await ctx.runMutation(internal.assistance.keepReading, { ...args, reasons: read.signs.map(sign => sign.reason), day, by: read.verification === "checked" ? "assistant" : "rules" });
+    return read;
   },
 });
+
+async function readNote(ctx: ActionCtx, args: { churchId: Id<"churches">; callId: Id<"calls"> }): Promise<{ signs: UrgentSign[]; verification: "review" | "checked" }> {
+  const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
+  const signs = urgentSigns(note);
+  const fallback = { signs, verification: "review" as const };
+  if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
+  if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
+  const questions = Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)]));
+  const answers = await decide(env.TYPESAFE_API_KEY, { note }, questions, { names, addresses, others });
+  const kept = keepRead(ctx, { ...args, purpose: "urgency" }, note, questions, { names, addresses, others }, answers);
+  if (!answers) return kept(fallback);
+  const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
+  if (signs.some(({ reason }) => sure[reason] === null)) return kept(fallback);
+  console.log(`jev ${JSON.stringify(sure)}`);
+  return kept({
+    signs: urgentReasons.flatMap(reason => ((sure[reason] ?? 0) >= sureEnough ? [signs.find(sign => sign.reason === reason) ?? { reason, day: null }] : [])),
+    verification: "checked" as const,
+  });
+}
 
 const yearFlagKinds = ["approvedNotPaid", "paidNoPayment", "visitNoHours", "noteSaysPaid", "visitNotMarked"] as const;
 const yearFlag = v.object({
@@ -451,7 +506,7 @@ export const checkYear = action({
 export const weekNote = query({
   args: { churchId: v.id("churches"), at: hour },
   returns: v.object({
-    callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
+    callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByRules: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
     visitsPlanned: v.number(), requestsOpen: v.number(), approvedUnpaid: v.number(), approvedUnpaidCents: v.number(),
     openPlaces: v.number(), away: v.number(),
   }),
@@ -475,6 +530,7 @@ export const weekNote = query({
     return {
       callsWaiting: waiting.length,
       callsFirstByAssistant: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
+      callsFirstByRules: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "rules").length,
       callsFirstByPerson: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "person").length,
       // The hour asked about began before a call taken within it, so the age never reads below zero.
       oldestWaitingDays: waiting.length ? Math.max(0, Math.floor((now - Math.min(...waiting.map(call => call.takenAt))) / 86_400_000)) : 0,

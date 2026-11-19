@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { describe, expect, test } from "vitest";
+import { ConvexError } from "convex/values";
 import { convexTest } from "convex-test";
 import { DateTime } from "luxon";
 import schema from "./schema";
@@ -49,7 +50,7 @@ describe("who may see and use the ledger", () => {
     const { ids, as, request, income, entries } = await setup();
     const requestId = await request();
     await income(50000, day(3));
-    const payment = { churchId: ids.church, requestId, amount: 1000, date: day() };
+    const payment = { paidSeen: 0, churchId: ids.church, requestId, amount: 1000, date: day() };
     await expect(as(ids.member).query(api.treasury.ledger, { churchId: ids.church })).rejects.toThrow(refused);
     await expect(as(ids.member).query(api.treasury.payable, { churchId: ids.church })).rejects.toThrow(refused);
     await expect(as(ids.member).mutation(api.treasury.recordPayment, payment)).rejects.toThrow(refused);
@@ -71,7 +72,7 @@ describe("who may see and use the ledger", () => {
   test("a request from another group cannot be paid through your own", async () => {
     const { ids, as, request } = await setup();
     const theirs = await request({}, ids.other, ids.elsewhere);
-    await expect(as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: theirs, amount: 1000, date: day() })).rejects.toThrow("Request not found.");
+    await expect(as(ids.owner).mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: theirs, amount: 1000, date: day() })).rejects.toThrow("Request not found.");
   });
 });
 
@@ -80,7 +81,7 @@ describe("paying an approved request", () => {
     const { ids, as, request, income, entries } = await setup();
     const requestId = await request();
     await income(100000, day(5));
-    const id = await as(ids.coordinator).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 21460, date: day(1), memo: " Check 1042 " });
+    const id = await as(ids.coordinator).mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId, amount: 21460, date: day(1), memo: " Check 1042 " });
     expect((await entries()).find((entry) => entry._id === id)).toMatchObject({ kind: "expense", amount: 21460, date: day(1), category: "utility", payee: "Demo Power & Light", memo: "Check 1042", requestId, neighborId: ids.neighbor, recordedBy: ids.coordinator.memberId });
 
     const view = await as(ids.coordinator).query(api.treasury.ledger, { churchId: ids.church, month: day(1).slice(0, 7) });
@@ -91,7 +92,7 @@ describe("paying an approved request", () => {
   test("payments in parts never pass the approved amount", async () => {
     const { t, ids, as, request } = await setup();
     const requestId = await request({ amountApproved: 60000 });
-    const pay = (amount: number) => as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount, date: day() });
+    const pay = async (amount: number) => as(ids.owner).mutation(api.treasury.recordPayment, { paidSeen: await t.run((ctx) => paidTowardRequest(ctx, requestId)), churchId: ids.church, requestId, amount, date: day() });
     const owed = async () => (await as(ids.owner).query(api.treasury.payable, { churchId: ids.church })).map(({ paid, remaining }) => ({ paid, remaining }));
 
     await expect(pay(60001)).rejects.toThrow("more than what is left");
@@ -111,10 +112,10 @@ describe("paying an approved request", () => {
     const { ids, as, request } = await setup();
     for (const status of ["open", "declined", "paid", "closed"] as const) {
       const requestId = await request({ status });
-      await expect(as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 1000, date: day() })).rejects.toThrow("Only an approved request can be paid.");
+      await expect(as(ids.owner).mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId, amount: 1000, date: day() })).rejects.toThrow("Only an approved request can be paid.");
     }
     const noAmount = await request({ amountApproved: undefined });
-    await expect(as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: noAmount, amount: 1000, date: day() })).rejects.toThrow("Only an approved request can be paid.");
+    await expect(as(ids.owner).mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: noAmount, amount: 1000, date: day() })).rejects.toThrow("Only an approved request can be paid.");
   });
 
   test("the neighbor is never the payee", async () => {
@@ -126,7 +127,7 @@ describe("paying an approved request", () => {
     ] as const;
     for (const [fields, message] of cases) {
       const requestId = await request(fields);
-      await expect(as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 1000, date: day() })).rejects.toThrow(message);
+      await expect(as(ids.owner).mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId, amount: 1000, date: day() })).rejects.toThrow(message);
     }
     expect(await entries()).toHaveLength(0);
   });
@@ -134,7 +135,7 @@ describe("paying an approved request", () => {
   test("cents never become fractions, and a payment is never dated ahead", async () => {
     const { ids, as, request, entries } = await setup();
     const requestId = await request();
-    const pay = (amount: number, date = day()) => as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount, date });
+    const pay = (amount: number, date = day()) => as(ids.owner).mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId, amount, date });
     for (const amount of [10.5, 0.1 + 0.2, 0, -500, Number.NaN, Number.POSITIVE_INFINITY, 2 ** 53])
       await expect(pay(amount)).rejects.toThrow("Enter an amount");
     await expect(pay(1000, day(-1))).rejects.toThrow("cannot be dated in the future");
@@ -210,8 +211,8 @@ describe("cash in and cash out by kind", () => {
     await income(64000, day(9));
     await income(36000, day(8));
     await income(15000, day(7), "Donation");
-    const paymentId = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 20000 }), amount: 20000, date: day(6) });
-    await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 9000 }), amount: 9000, date: day(6) });
+    const paymentId = await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: await request({ amountApproved: 20000 }), amount: 20000, date: day(6) });
+    await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: await request({ amountApproved: 9000 }), amount: 9000, date: day(6) });
     await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "pantry", amount: 4250, date: day(5), to: "Fixture Family Market" });
     const doubled = await owner.mutation(api.treasury.recordIncome, { churchId: ids.church, source: "donation", amount: 15000, date: day(4), from: "Anonymous gift" });
     await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: doubled, reason: "Entered twice" });
@@ -249,10 +250,10 @@ describe("checks", () => {
     const { ids, as, request, income, entries } = await setup();
     const owner = as(ids.owner);
     await income(200000, day(20));
-    const first = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 30000 }), amount: 30000, date: day(3), checkNumber: " 1042 " });
+    const first = await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: await request({ amountApproved: 30000 }), amount: 30000, date: day(3), checkNumber: " 1042 " });
     await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "pantry", amount: 4250, date: day(4), to: "Fixture Family Market", checkNumber: "998" });
     await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "fee", amount: 500, date: day(2), to: "Sample Savings Bank" });
-    await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 9000 }), amount: 9000, date: day(15), checkNumber: "990" });
+    await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: await request({ amountApproved: 9000 }), amount: 9000, date: day(15), checkNumber: "990" });
     const reversal = await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: first, reason: "Check was lost in the mail" });
     expect((await entries()).find((entry) => entry._id === reversal)?.checkNumber).toBeUndefined();
 
@@ -272,7 +273,7 @@ describe("matching the bank", () => {
     const { ids, as, request, income, entries } = await setup();
     const owner = as(ids.owner);
     const deposit = await income(100000, day(12));
-    const check = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request({ amountApproved: 30000 }), amount: 30000, date: day(8), checkNumber: "1042" });
+    const check = await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: await request({ amountApproved: 30000 }), amount: 30000, date: day(8), checkNumber: "1042" });
     await owner.mutation(api.treasury.recordSpending, { churchId: ids.church, kind: "pantry", amount: 4250, date: day(6), to: "Fixture Family Market" });
     const late = await income(5000, day(1));
     const adds = async (asOf?: string) => {
@@ -415,7 +416,7 @@ describe("a voucher taken back", () => {
     const owner = as(ids.owner);
     await income(50000, day(9));
     const requestId = await request({ payeeKind: "vendor", payeeName: "Conference thrift store", amountApproved: 3000 });
-    const paid = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 3000, date: day(3), memo: "" });
+    const paid = await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId, amount: 3000, date: day(3), memo: "" });
     const give = (quantity: number) => t.run(async (ctx) => voucherGiven(ctx, (await ctx.db.get("memberships", ids.owner.memberId))!, { requestId, item: "Clothing voucher", quantity }));
     await give(1);
     expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(47000);
@@ -470,7 +471,7 @@ describe("taking an entry back", () => {
     const status = async () => (await t.run((ctx) => ctx.db.get("assistanceRequests", requestId)))?.status;
     await income(100000, day(9));
     const requestId = await request({ amountApproved: 30000 });
-    const paymentId = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 30000, date: day(3) });
+    const paymentId = await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId, amount: 30000, date: day(3) });
     const before = await entries();
     expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(70000);
     expect(await owner.query(api.treasury.payable, { churchId: ids.church })).toEqual([]);
@@ -485,7 +486,7 @@ describe("taking an entry back", () => {
     // The request is owed again in full and can be paid again.
     expect(await status()).toBe("approved");
     expect(await owner.query(api.treasury.payable, { churchId: ids.church })).toMatchObject([{ requestId, paid: 0, remaining: 30000 }]);
-    await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount: 30000, date: day() });
+    await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId, amount: 30000, date: day() });
     expect((await owner.query(api.treasury.ledger, { churchId: ids.church })).balance).toBe(70000);
     expect(await status()).toBe("paid");
   });
@@ -494,7 +495,7 @@ describe("taking an entry back", () => {
     const { ids, as, request, income } = await setup();
     const owner = as(ids.owner);
     await income(50000, day());
-    const paymentId = await owner.mutation(api.treasury.recordPayment, { churchId: ids.church, requestId: await request(), amount: 20000, date: day() });
+    const paymentId = await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: await request(), amount: 20000, date: day() });
     const giftId = await owner.mutation(api.treasury.recordIncome, { churchId: ids.church, source: "donation", amount: 7000, date: day(), from: "Anonymous gift" });
     expect(await owner.query(api.treasury.ledger, { churchId: ids.church })).toMatchObject({ moneyIn: 57000, moneyOut: 20000, neighborsHelped: 1 });
     await owner.mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId: paymentId, reason: "Paid twice by mistake" });
@@ -544,7 +545,7 @@ describe("a balance that always adds up", () => {
         let left = approved;
         for (let part = 0; part < parts && left > 0; part++) {
           const amount = part === parts - 1 ? left : next(1, left);
-          await as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, amount, date: day(next(0, 80)) });
+          await as(ids.owner).mutation(api.treasury.recordPayment, { paidSeen: approved - left, churchId: ids.church, requestId, amount, date: day(next(0, 80)) });
           left -= amount;
         }
       }
@@ -583,5 +584,53 @@ describe("a balance that always adds up", () => {
     const waiting = await as(ids.owner).query(api.treasury.payable, { churchId });
     expect(waiting.map((row) => row.requestId).sort()).toEqual(approved.map((row) => row._id).sort());
     for (const row of waiting) expect(row).toMatchObject({ paid: 0, remaining: row.amountApproved });
+  });
+});
+
+describe("the same payment is never recorded twice", () => {
+  test("a payment recorded since the screen showed the request is refused, naming who and how much", async () => {
+    const { ids, as, request, entries } = await setup();
+    const requestId = await request({ amountApproved: 45000 });
+    const pay = (who: typeof ids.owner, fields: { amount: number; paidSeen: number; checkNumber?: string }) =>
+      as(who).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, date: day(), ...fields });
+    // Both screens showed nothing paid. The first goes through; the second is refused, not recorded.
+    await pay(ids.coordinator, { amount: 20000, paidSeen: 0 });
+    const refusal = await pay(ids.owner, { amount: 20000, paidSeen: 0 }).then(() => null, (cause: unknown) => cause);
+    expect(refusal).toBeInstanceOf(ConvexError);
+    expect((refusal as { data: unknown }).data).toEqual({ message: "This payment is already recorded.", paid: 20000, last: { amount: 20000, by: "Sample coordinator" } });
+    expect((await entries()).filter((entry) => entry.requestId === requestId)).toHaveLength(1);
+  });
+
+  test("a real second payment goes through once the person sends it with the total the refusal gave", async () => {
+    const { t, ids, as, request } = await setup();
+    const requestId = await request({ amountApproved: 45000 });
+    const pay = (who: typeof ids.owner, amount: number, paidSeen: number) =>
+      as(who).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, date: day(), amount, paidSeen });
+    await pay(ids.coordinator, 20000, 0);
+    await expect(pay(ids.owner, 15000, 0)).rejects.toThrow("This payment is already recorded.");
+    await pay(ids.owner, 15000, 20000);
+    expect(await t.run((ctx) => paidTowardRequest(ctx, requestId))).toBe(35000);
+  });
+
+  test("the same check number on the same request is always refused, even when the screen is current", async () => {
+    const { t, ids, as, request } = await setup();
+    const requestId = await request({ amountApproved: 45000 });
+    const pay = (amount: number, paidSeen: number, checkNumber: string) =>
+      as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, date: day(), amount, paidSeen, checkNumber });
+    await pay(20000, 0, "1042");
+    await expect(pay(20000, 20000, " 1042 ")).rejects.toThrow("This payment is already recorded.");
+    expect(await t.run((ctx) => paidTowardRequest(ctx, requestId))).toBe(20000);
+    // Another check is another payment.
+    await pay(5000, 20000, "1043");
+    expect(await t.run((ctx) => paidTowardRequest(ctx, requestId))).toBe(25000);
+  });
+
+  test("a check taken back can be recorded again", async () => {
+    const { t, ids, as, request } = await setup();
+    const requestId = await request({ amountApproved: 45000 });
+    const entryId = await as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, date: day(), amount: 20000, paidSeen: 0, checkNumber: "1042" });
+    await as(ids.owner).mutation(api.treasury.reverseEntry, { churchId: ids.church, entryId, reason: "Wrong amount" });
+    await as(ids.owner).mutation(api.treasury.recordPayment, { churchId: ids.church, requestId, date: day(), amount: 21000, paidSeen: 0, checkNumber: "1042" });
+    expect(await t.run((ctx) => paidTowardRequest(ctx, requestId))).toBe(21000);
   });
 });

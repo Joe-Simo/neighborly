@@ -2,7 +2,7 @@ import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
-import { logNeighborOpening, neighborAccess, neighborRecord } from "./access";
+import { logNeighborOpening, neighborAccess, neighborRecord, openedBy, opening } from "./access";
 import { mayUndo } from "./undo";
 import { TAKE_BACK_DAYS, callRow, lookups, nameKey, phoneKey, requestRow, toCallRow, toRequestRow } from "./assistance";
 import { paidTowardRequest } from "./treasury";
@@ -10,6 +10,7 @@ import schema from "./schema";
 import { longestLanguageName, spokenName } from "./spoken";
 import { tally } from "./counts";
 import { addName, rebuildNames } from "./knownNames";
+import { dropReads } from "./aiReads";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
@@ -225,7 +226,7 @@ export const remove = mutation({
   handler: async (ctx, { churchId, neighborId, typedName }) => {
     const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
     if (member.role !== "owner") throw new ConvexError("Only an owner can remove a neighbor’s record.");
-    if (nameKey(typedName) !== neighbor.nameKey) throw new ConvexError("Type the neighbor’s name as it is written on the record.");
+    if (nameKey(typedName) !== nameKey(neighbor.name)) throw new ConvexError("Type the neighbor’s name as it is written on the record.");
 
     const [requests, visits, notes, tied, everyCall, ledger, shelf, deposits] = await Promise.all([
       ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
@@ -246,7 +247,7 @@ export const remove = mutation({
     const loose = everyCall.filter((call) => {
       if (call.neighborId) return false;
       const phone = phoneKey(call.phone);
-      return phone ? phone === neighbor.phoneKey : nameKey(call.callerName) === neighbor.nameKey;
+      return phone ? phone === neighbor.phoneKey : nameKey(call.callerName) === nameKey(neighbor.name);
     });
     const calls = [...tied, ...loose];
     const drafts = (await Promise.all(calls.map((call) => ctx.db.query("requestDrafts").withIndex("by_call", (q) => q.eq("callId", call._id)).collect()))).flat();
@@ -256,7 +257,7 @@ export const remove = mutation({
     // stays when it is a landlord, a utility or a store, and better one store too many than one name left.
     // On every other line, and on deposits and the voucher shelf, a field goes only when it carries the whole name,
     // so that removing a Lee does not blank every payment to Lee County Electric.
-    const words = neighbor.nameKey.split(" ");
+    const words = nameKey(neighbor.name).split(" ");
     const part = new Set(words.filter((word) => word.length > 2));
     const said = (text: string) => new Set(nameKey(text).split(" "));
     const anyOf = (text: string) => [...said(text)].some((word) => part.has(word));
@@ -275,7 +276,11 @@ export const remove = mutation({
     for (const draft of drafts) await ctx.db.delete("requestDrafts", draft._id);
     for (const note of notes) await ctx.db.delete("neighborNotes", note._id);
     // What the year counts stays as a row with nothing in it that was said or written about the household.
-    for (const call of calls) await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });
+    for (const call of calls) {
+      await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });
+      // What the assistant was sent from the note goes with the note.
+      await dropReads(ctx, call._id);
+    }
     for (const visit of visits) await ctx.db.patch("visits", visit._id, { notes: "" });
     for (const request of requests) await ctx.db.patch("assistanceRequests", request._id, { summary: REMOVED, decisionNote: "", payeeName: "", referral: undefined, referrals: undefined });
     await tally(ctx, churchId, { households: -1, waiting: -requests.filter((request) => request.status === "open").length, gone: neighborId });
@@ -286,14 +291,16 @@ export const remove = mutation({
   },
 });
 
-/** Opening a record is written to the audit trail. The screen calls this, then reads `record`. */
+/**
+ * Opening a record is written to the audit trail. The screen calls this, then reads `record` with the line it
+ * returns; `record` refuses without one, so the record cannot be read without being written down.
+ */
 export const open = mutation({
   args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
-  returns: v.null(),
+  returns: opening,
   handler: async (ctx, { churchId, neighborId }) => {
     const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
-    await logNeighborOpening(ctx, member, neighbor._id);
-    return null;
+    return logNeighborOpening(ctx, member, neighbor._id);
   },
 });
 
@@ -407,7 +414,8 @@ const historyEvent = v.union(
  * Payments are read from the ledger; nothing here writes to it.
  */
 export const record = query({
-  args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
+  /** `opening` is the audit line `open` returned to this caller for this neighbor. */
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), opening },
   returns: v.object({
     neighbor: neighborRow,
     household: v.array(v.object({ ...householdMember.fields, age: v.union(v.number(), v.null()) })),
@@ -426,8 +434,9 @@ export const record = query({
     /** Only an owner may remove the record; the mutation checks again. */
     mayRemove: v.boolean(),
   }),
-  handler: async (ctx, { churchId, neighborId }) => {
+  handler: async (ctx, { churchId, neighborId, opening: line }) => {
     const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    await openedBy(ctx, member, neighborId, line);
     const church = await ctx.db.get("churches", churchId);
     const yearStart = DateTime.now().setZone(church?.timeZone ?? "UTC").startOf("year");
     const found = lookups(ctx);

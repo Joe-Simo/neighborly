@@ -4,7 +4,7 @@ import { internal } from "./_generated/api";
 import { action, internalMutation, internalQuery, mutation, type MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { enqueueInvitation, resend } from "./notifications";
-import { isSampleChurch } from "./demo";
+import { isSampleChurch, isSampleVisitor, sampleOwner } from "./demo";
 import type { EmailId } from "@convex-dev/resend";
 import { addName } from "./knownNames";
 
@@ -41,6 +41,8 @@ export const createRecord = internalMutation({
     const actor = await coordinator(ctx, args.churchId, user.id);
     if (await isSampleChurch(ctx, args.churchId)) throw new ConvexError("The sample conference cannot invite anyone. Create your own account to invite your people.");
     const email = normalizeEmail(args.email);
+    // The sample's shared visitor account belongs to the sample only: inviting it would let every visitor in.
+    if (email === sampleOwner.email) throw new ConvexError("Enter a valid email address.");
     if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new ConvexError("Enter a valid email address.");
     if (!/^[a-zA-Z0-9_-]{16,128}$/.test(args.requestId)) throw new Error("Invalid request identifier.");
     const prior = await ctx.db.query("invitations").withIndex("by_church_request", q => q.eq("churchId", args.churchId).eq("requestId", args.requestId)).unique();
@@ -136,6 +138,8 @@ export const acceptRecord = internalMutation({
   args: { tokenHash: v.string(), displayName: v.string() }, returns: v.id("churches"),
   handler: async (ctx, args) => {
     const user = await account(ctx);
+    // Every sample visitor shares one account, so it can never join a real conference.
+    if (isSampleVisitor((await ctx.auth.getUserIdentity())?.subject)) throw new ConvexError("Invitation is invalid or expired.");
     const invite = await ctx.db.query("invitations").withIndex("by_token", q => q.eq("tokenHash", args.tokenHash)).unique();
     if (!invite || invite.email !== user.email || invite.status === "revoked") throw new ConvexError("Invitation is invalid or expired.");
     if (invite.status === "accepted") {

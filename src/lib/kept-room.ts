@@ -56,7 +56,7 @@ export function keepHelpLine(memberId: string, churchId: string, answers: Record
 }
 
 /** The week's counts for someone who may not see them: never drawn (week-note.tsx draws nothing then), kept as zeros. */
-export const emptyNote: FirstRoom["weekNote"] = { callsWaiting: 0, callsFirstByAssistant: 0, callsFirstByPerson: 0, oldestWaitingDays: 0, visitsPlanned: 0, requestsOpen: 0, approvedUnpaid: 0, approvedUnpaidCents: 0, openPlaces: 0, away: 0 };
+export const emptyNote: FirstRoom["weekNote"] = { callsWaiting: 0, callsFirstByAssistant: 0, callsFirstByRules: 0, callsFirstByPerson: 0, oldestWaitingDays: 0, visitsPlanned: 0, requestsOpen: 0, approvedUnpaid: 0, approvedUnpaidCents: 0, openPlaces: 0, away: 0 };
 
 /** Lets the kept room go: on the device, and for this page and its reloads. */
 export function forgetKeptRoom() {

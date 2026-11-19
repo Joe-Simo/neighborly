@@ -15,6 +15,8 @@ export default defineSchema({
   // The assistant's monthly allowance per group. month is "yyyy-MM".
   /** Every name a conference holds (its neighbors' and members'), kept in the same write as the name: what the assistant's scrub takes out of a note. */
   knownNames: defineTable({ churchId: v.id("churches"), names: v.array(v.string()) }).index("by_church", ["churchId"]),
+  /** The sample's visitors share one account, so each sign-in session has its own small allowance for the day. */
+  aiUsageBySession: defineTable({ session: v.string(), day: v.string(), windowStart: v.number(), minute: v.number(), count: v.number() }).index("by_session_day", ["session", "day"]).index("by_day", ["day"]),
   aiUsageByChurch: defineTable({ churchId: v.id("churches"), month: v.string(), count: v.number() }).index("by_church_month", ["churchId", "month"]),
   churches: defineTable({ name: v.string(), timeZone: v.string(), sample: v.optional(v.boolean()), wordSet: v.optional(v.union(v.literal("general"), v.literal("vincentian"))), /** Running figures kept by convex/counts.ts. */ householdCount: v.optional(v.number()), waitingCount: v.optional(v.number()), waitingHouseholdIds: v.optional(v.array(v.id("neighbors"))) }),
   memberships: defineTable({ churchId: v.id("churches"), userId: v.id("users"), name: v.string(), email: v.string(), role, active: v.boolean(), approved: v.boolean(), coverOptIn: v.boolean(), language: v.optional(language), /** Set when the owner removed this person for good: the row stays, nameless, so their logged work still counts. */ removedAt: v.optional(v.number()) }).index("by_user", ["userId"]).index("by_church_user", ["churchId", "userId"]).index("by_church", ["churchId"]),
@@ -85,7 +87,7 @@ export default defineSchema({
     returnedBy: v.optional(v.id("memberships")),
     returnedAt: v.optional(v.number()),
     outcome: v.optional(v.string()),
-    urgent: v.optional(v.object({ reasons: v.array(v.string()), day: v.optional(v.number()), by: v.union(v.literal("assistant"), v.literal("person")), byMember: v.optional(v.id("memberships")) })),
+    urgent: v.optional(v.object({ reasons: v.array(v.string()), day: v.optional(v.number()), by: v.union(v.literal("assistant"), v.literal("rules"), v.literal("person")), byMember: v.optional(v.id("memberships")) })),
   }).index("by_church", ["churchId", "takenAt"]).index("by_church_callback", ["churchId", "callback"]).index("by_church_callback_returned", ["churchId", "callback", "returnedAt"]).index("by_neighbor", ["neighborId"]),
   // A request the assistant drafted from a call note, waiting for a person's yes. Kept so it survives a reload.
   // Only what the draft says, the call it came from, who asked and when: no neighbor name, phone or address.
@@ -102,6 +104,22 @@ export default defineSchema({
     createdBy: v.id("memberships"),
     createdAt: v.number(),
   }).index("by_church", ["churchId", "createdAt"]).index("by_call", ["callId"]),
+  // One call to the assistant about a call note, as it was made: the text exactly as it left (already scrubbed, but held
+  // as sensitive, since the scrub works by rules), each question and the answer that came back, and the model that answered.
+  // It goes with the call it explains, and a draft's goes with the draft. "What the assistant saw" shows the latest.
+  aiReads: defineTable({
+    churchId: v.id("churches"),
+    callId: v.id("calls"),
+    purpose: v.union(v.literal("draft"), v.literal("urgency")),
+    sentText: v.string(),
+    // Each question's words are kept once, in aiQuestions: they are fixed by the code, and a row points at them.
+    asked: v.array(v.object({ key: v.string(), question: v.id("aiQuestions"), answer: v.union(v.number(), v.null()), choice: v.optional(v.string()), yes: v.boolean() })),
+    model: v.string(),
+    outcome: v.union(v.literal("checked"), v.literal("review")),
+    at: v.number(),
+  }).index("by_church", ["churchId", "at"]).index("by_call", ["callId", "purpose", "at"]).index("by_at", ["at"]),
+  // The words of one question the assistant was asked, as the code wrote them. They hold nothing from a note.
+  aiQuestions: defineTable({ text: v.string() }).index("by_text", ["text"]),
   assistanceRequests: defineTable({
     churchId: v.id("churches"),
     neighborId: v.id("neighbors"),

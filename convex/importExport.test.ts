@@ -255,7 +255,8 @@ describe("taking the records out", () => {
 
   test("an owner gets every file; an account number leaves with only its last four digits", async () => {
     const { t, ids, as } = await withRecords();
-    const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, file, cursor: null })] as const)));
+    const exported = await as(ids.owner).mutation(api.importExport.recordExport, { churchId: ids.church });
+    const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, exported, file, cursor: null })] as const)));
     for (const file of files) expect(pages[file].done).toBe(true);
     expect(pages.neighbors.rows).toEqual([["Celeste Hyppolite", "(100) 555-0142", "", "412 Placeholder Rd, Apt 7", "1", "2", "Haitian Creole", "=cmd", "", "", "", "", "Utility: Demo Power & Light, account ending 4821"]]);
     expect(JSON.stringify(pages)).not.toContain("7654");
@@ -272,7 +273,9 @@ describe("taking the records out", () => {
     expect(pages.teams.rows).toEqual([["Help line", "Answers the phone", "Renee", "Member", "Active"]]);
     expect(pages.commitments.rows).toEqual([["03/16/2026", "9:00 AM", "12:00 PM", "Help line morning", "Help line", "Parish office", "Renee", "Thomas", "No"]]);
     // The history says who and what, never which record.
-    expect(pages.history.rows).toEqual([["03/13/2026", "10:05 AM", "Marisol", "Removed a member"]]);
+    // The export itself is written down first, so the history it carries ends with that line.
+    expect(pages.history.rows.slice(0, -1)).toEqual([["03/13/2026", "10:05 AM", "Marisol", "Removed a member"]]);
+    expect(pages.history.rows.at(-1)?.slice(2)).toEqual(["Marisol", "Took the records out"]);
     expect(JSON.stringify(pages.history)).not.toContain("kept-inside");
 
     // What went out comes back in: the same column names, read into another conference, are all ready.
@@ -303,14 +306,15 @@ describe("taking the records out", () => {
       for (const entry of await ctx.db.query("ledgerEntries").collect()) await ctx.db.patch("ledgerEntries", entry._id, { memo: "Record removed" });
       await ctx.db.insert("auditEvents", { churchId: ids.church, actorId: ids.owner.userId, action: "neighbor.removed", targetId: neighbor._id, at: Date.UTC(2026, 2, 20, 14, 5) });
     });
-    const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, file, cursor: null })] as const)));
+    const exported = await as(ids.owner).mutation(api.importExport.recordExport, { churchId: ids.church });
+    const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, exported, file, cursor: null })] as const)));
     expect(pages.neighbors.rows).toEqual([["Record removed", "", "", "", "1", "2", "Haitian Creole", "", "", "", "", "", ""]]);
     expect(pages.notes.rows).toEqual([]);
     expect(pages.calls.rows).toEqual([["03/13/2026", "10:05 AM", "Record removed", "", "Record removed", "", "Returned", "Renee", "Thomas", "03/13/2026", "", ""]]);
     expect(pages.requests.rows[0].slice(0, 9)).toEqual(["Record removed", "", "03/14/2026", "Completed", "Utility", "80.00", "", "Record removed", "Paid"]);
     expect(pages.visits.rows).toEqual([["Record removed", "03/16/2026", "10:00 AM", "Completed", "Thomas; Renee", "3", "6", "", ""]]);
     expect(pages.ledger.rows).toEqual([["03/17/2026", "Money out", "80.00", "Utility", "Demo Power & Light", "Record removed", "1042", "", "Record removed", "No", "No"]]);
-    expect(pages.history.rows.at(-1)).toEqual(["03/20/2026", "10:05 AM", "Marisol", "Removed a neighbor’s record"]);
+    expect(pages.history.rows.at(-2)).toEqual(["03/20/2026", "10:05 AM", "Marisol", "Removed a neighbor’s record"]);
     for (const word of ["Celeste", "Hyppolite", "555-0142", "Placeholder", "4821", "Shut-off", "Kind welcome"]) expect(JSON.stringify(pages)).not.toContain(word);
 
     // Read back in, the line is left out: it is not a household, and its request has nobody to belong to.
@@ -322,13 +326,19 @@ describe("taking the records out", () => {
 
   test("only an owner may, and taking the records out is written down", async () => {
     const { t, ids, as } = await withRecords();
+    const exported = await as(ids.owner).mutation(api.importExport.recordExport, { churchId: ids.church });
     for (const person of [ids.coordinator, ids.member]) {
-      await expect(as(person).query(api.importExport.exportPage, { churchId: ids.church, file: "members", cursor: null })).rejects.toThrow();
+      await expect(as(person).query(api.importExport.exportPage, { churchId: ids.church, exported, file: "members", cursor: null })).rejects.toThrow();
       await expect(as(person).mutation(api.importExport.recordExport, { churchId: ids.church })).rejects.toThrow();
     }
-    await as(ids.owner).mutation(api.importExport.recordExport, { churchId: ids.church });
-    const events = (await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect())).filter((event) => event.action === "records_exported");
-    expect(events).toMatchObject([{ actorId: ids.owner.userId }]);
+    const events = async () => (await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect())).filter((event) => event.action === "records_exported");
+    expect(await events()).toMatchObject([{ _id: exported, actorId: ids.owner.userId }]);
+    // A page is read only with an export line of the owner's own: never with another kind of line.
+    const notExport = await t.run((ctx) => ctx.db.insert("auditEvents", { churchId: ids.church, actorId: ids.owner.userId, action: "neighbor.opened", at: 0 }));
+    await expect(as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, exported: notExport, file: "neighbors", cursor: null })).rejects.toThrow("Start the export again.");
+    // With it, the page is the same as ever and reading it writes nothing more: the one line covers the export.
+    expect(await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, exported, file: "members", cursor: null })).toMatchObject({ done: true });
+    expect(await events()).toHaveLength(1);
   });
 });
 
@@ -358,7 +368,8 @@ describe("your files are kept to the people who may read neighbor records", () =
     await expect(as.mutation(api.importExport.importPayees, { churchId, rows: [] })).rejects.toThrow(refused);
     await expect(as.query(api.importExport.payees, { churchId })).rejects.toThrow(refused);
     await expect(as.query(api.importExport.checkMembers, { churchId, rows: [] })).rejects.toThrow();
-    await expect(as.query(api.importExport.exportPage, { churchId, file: "neighbors", cursor: null })).rejects.toThrow(refused);
+    const exported = await signedIn(t, ids.owner.userId).mutation(api.importExport.recordExport, { churchId });
+    await expect(as.query(api.importExport.exportPage, { churchId, exported, file: "neighbors", cursor: null })).rejects.toThrow(refused);
     await expect(as.mutation(api.importExport.recordExport, { churchId })).rejects.toThrow(refused);
     expect(await as.query(api.access.canOpenNeighborRecords, { churchId })).toBe(false);
   });
@@ -370,6 +381,7 @@ describe("your files are kept to the people who may read neighbor records", () =
       expect(await as(person).query(api.access.canOpenNeighborRecords, { churchId })).toBe(true);
       await expect(as(person).query(api.importExport.checkNeighbors, { churchId, rows: households })).resolves.toBeDefined();
     }
-    await expect(as(ids.owner).query(api.importExport.exportPage, { churchId, file: "neighbors", cursor: null })).resolves.toBeDefined();
+    const exported = await as(ids.owner).mutation(api.importExport.recordExport, { churchId });
+    await expect(as(ids.owner).query(api.importExport.exportPage, { churchId, exported, file: "neighbors", cursor: null })).resolves.toBeDefined();
   });
 });

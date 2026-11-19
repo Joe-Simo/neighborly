@@ -1,6 +1,8 @@
 "use client";
 
-import { PaperScene } from "@/components/workspace/primitives";
+import { LiveRoomLoading, PaperScene } from "@/components/workspace/primitives";
+import { api } from "../../../../convex/_generated/api";
+import { useQuery } from "@/components/workspace/query";
 import "./tools.css";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
@@ -78,9 +80,12 @@ export function WeeklyRota({ titled = true }: { titled?: boolean }) {
   const { data, now, format, personName, teamName, words, sampleSaid } = useWorkspace();
   const [weeksAhead, setWeeksAhead] = useState(0);
   const start = weekStart(now, data.church.timeZone, weeksAhead);
-  const shifts = data.commitments
-    .filter((item) => item.status !== "cancelled")
-    .map((item) => ({ id: item.id, title: sampleSaid(item.title), start: item.start, end: item.end, location: sampleSaid(item.location), team: teamName(item.teamId), who: item.assigneeId ? personName(item.assigneeId) : null }));
+  const kept = data.commitments.filter((item) => item.status !== "cancelled");
+  // The paper goes on a wall, so its words come from the server with every neighbor taken out, as the calendar feed's do.
+  const printable = useQuery(api.calendar.printedWeek, { churchId: data.church.id, ids: kept.map((item) => item.id) });
+  if (!printable) return <LiveRoomLoading />;
+  const clean = new Map(printable.map((item) => [item.id, item]));
+  const shifts = kept.map((item) => ({ id: item.id, title: sampleSaid(clean.get(item.id)?.title ?? ""), start: item.start, end: item.end, location: sampleSaid(clean.get(item.id)?.location ?? ""), team: teamName(item.teamId), who: item.assigneeId ? personName(item.assigneeId) : null }));
   return (
     <WeeklyRotaView
       group={data.church.name}

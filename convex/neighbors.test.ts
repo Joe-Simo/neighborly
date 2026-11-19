@@ -3,10 +3,16 @@ import { describe, expect, test } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { signedIn } from "./clerk.testing";
+import type { Id } from "./_generated/dataModel";
 import { api, internal } from "./_generated/api";
 import * as functions from "./neighbors";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
+type Caller = Pick<ReturnType<ReturnType<typeof convexTest>["withIdentity"]>, "query" | "mutation">;
+/** Reads a record the way the screen does: `open` writes the audit line, and `record` is read with it. */
+async function readRecord(caller: Caller, args: { churchId: Id<"churches">; neighborId: Id<"neighbors"> }) {
+  return caller.query(api.neighbors.record, { ...args, opening: await caller.mutation(api.neighbors.open, args) });
+}
 const refused = "Neighbor records are open to coordinators and owners only.";
 
 /** A made-up group with an owner, a coordinator and a member, and a second group to prove nothing crosses over. */
@@ -50,7 +56,7 @@ describe("who may use neighbor records", () => {
         () => caller.mutation(api.neighbors.create, { churchId, ...pat }),
         () => caller.mutation(api.neighbors.update, { churchId, neighborId: ids.rosa, ...pat, name: "Esperanza Montoya", phone: "(100) 555-0104" }),
         () => caller.mutation(api.neighbors.open, { churchId, neighborId: ids.rosa }),
-        () => caller.query(api.neighbors.record, { churchId, neighborId: ids.rosa }),
+        () => readRecord(caller, { churchId, neighborId: ids.rosa }),
         () => caller.mutation(api.neighbors.saveHousehold, { churchId, neighborId: ids.rosa, household: [] }),
         () => caller.mutation(api.neighbors.showAccounts, { churchId, neighborId: ids.rosa }),
         () => caller.mutation(api.neighbors.addNote, { churchId, neighborId: ids.rosa, body: "Prefers a call after five." }),
@@ -73,7 +79,7 @@ describe("who may use neighbor records", () => {
     const { t, ids, as } = await setup();
     const args = { churchId: ids.church, neighborId: ids.elsewhere };
     await expect(as(ids.owner).mutation(api.neighbors.open, args)).rejects.toThrow("Record not found.");
-    await expect(as(ids.owner).query(api.neighbors.record, args)).rejects.toThrow("Record not found.");
+    await expect(readRecord(as(ids.owner), args)).rejects.toThrow("Record not found.");
     await expect(as(ids.owner).mutation(api.neighbors.update, { ...args, ...pat })).rejects.toThrow("Record not found.");
     expect(await openings(t)).toEqual([]);
   });
@@ -82,14 +88,33 @@ describe("who may use neighbor records", () => {
 describe("opening a record", () => {
   test("writes one line to the audit trail, and the record shows who opened it", async () => {
     const { t, ids, as } = await setup();
-    await as(ids.coordinator).mutation(api.neighbors.open, { churchId: ids.church, neighborId: ids.rosa });
-    expect(await openings(t)).toMatchObject([{ action: "neighbor.opened", actorId: ids.coordinator.userId, targetId: ids.rosa }]);
-    const record = await as(ids.coordinator).query(api.neighbors.record, { churchId: ids.church, neighborId: ids.rosa });
+    const opening = await as(ids.coordinator).mutation(api.neighbors.open, { churchId: ids.church, neighborId: ids.rosa });
+    expect(await openings(t)).toMatchObject([{ _id: opening, action: "neighbor.opened", actorId: ids.coordinator.userId, targetId: ids.rosa }]);
+    const record = await as(ids.coordinator).query(api.neighbors.record, { churchId: ids.church, neighborId: ids.rosa, opening });
     expect(record.openings).toMatchObject([{ who: "Thomas Okafor" }]);
-    // Reading the list or another record adds nothing.
+    // Reading the list adds nothing; reading another record is one more line, its own.
     await as(ids.coordinator).query(api.neighbors.list, { churchId: ids.church });
-    expect((await as(ids.owner).query(api.neighbors.record, { churchId: ids.church, neighborId: ids.earl })).openings).toEqual([]);
-    expect(await openings(t)).toHaveLength(1);
+    expect((await readRecord(as(ids.owner), { churchId: ids.church, neighborId: ids.earl })).openings).toMatchObject([{ who: "Marisol Vega" }]);
+    expect(await openings(t)).toHaveLength(2);
+  });
+
+  test("the record cannot be read without an opening line of the reader's own, for that neighbor", async () => {
+    const { t, ids, as } = await setup();
+    const churchId = ids.church;
+    const mine = await as(ids.coordinator).mutation(api.neighbors.open, { churchId, neighborId: ids.rosa });
+    // Another member's line, a line for another neighbor, and a line that is not an opening are all refused.
+    await expect(as(ids.owner).query(api.neighbors.record, { churchId, neighborId: ids.rosa, opening: mine })).rejects.toThrow("Open the record again.");
+    await expect(as(ids.coordinator).query(api.neighbors.record, { churchId, neighborId: ids.earl, opening: mine })).rejects.toThrow("Open the record again.");
+    const other = await t.run((ctx) => ctx.db.insert("auditEvents", { churchId, actorId: ids.coordinator.userId, action: "neighbor.removed", targetId: ids.rosa, at: 0 }));
+    const before = await openings(t);
+    await expect(as(ids.coordinator).query(api.neighbors.record, { churchId, neighborId: ids.rosa, opening: other })).rejects.toThrow("Open the record again.");
+    await expect(as(ids.coordinator).query(api.assistance.requestsForNeighbor, { churchId, neighborId: ids.earl, opening: mine })).rejects.toThrow("Open the record again.");
+    expect(await openings(t)).toEqual(before);
+    // With its own line the read returns exactly what it did before: one opening, one line.
+    const record = await as(ids.coordinator).query(api.neighbors.record, { churchId, neighborId: ids.rosa, opening: mine });
+    expect(record).toMatchObject({ neighbor: { name: "Esperanza Montoya" }, openings: [{ who: "Thomas Okafor" }] });
+    expect(await readRecord(as(ids.coordinator), { churchId, neighborId: ids.rosa })).toMatchObject({ ...record, openings: [{ who: "Thomas Okafor" }, { who: "Thomas Okafor" }] });
+    expect((await openings(t)).filter((line) => line.action === "neighbor.opened")).toHaveLength(2);
   });
 
   test("the record gathers calls, requests, visits and payments, newest first", async () => {
@@ -105,7 +130,7 @@ describe("opening a record", () => {
       await ctx.db.insert("visits", { churchId, neighborId, requestId: paid, scheduledAt: now - 8000, status: "completed", visitors: [{ memberId: ids.owner.memberId, hours: 1, miles: 6 }, { memberId: ids.coordinator.memberId, hours: 1, miles: 6 }], notes: "Fridge is empty.", completedAt: now - 7000, createdBy: ids.owner.memberId, createdAt: now - 8500 });
       await ctx.db.insert("visits", { churchId, neighborId, requestId: open, scheduledAt: now + 86400000, status: "scheduled", visitors: [], notes: "", createdBy: ids.owner.memberId, createdAt: now });
     });
-    const record = await as(ids.owner).query(api.neighbors.record, { churchId, neighborId });
+    const record = await readRecord(as(ids.owner), { churchId, neighborId });
     expect(record).toMatchObject({ paidThisYear: 31000, requestsThisYear: 2, visitsDone: 1, lastVisitAt: now - 7000, neighbor: { name: "Esperanza Montoya", adults: 2, children: 2 } });
     expect(record.open).toMatchObject([{ id: open, status: "open" }]);
     expect(record.history.map((event) => event.type).sort()).toEqual(["call", "payment", "visit"]);
@@ -202,7 +227,7 @@ describe("removing a record", () => {
     const helpLine = await owner.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId });
     expect([...helpLine.waiting, ...helpLine.returned].map((call) => call.callerName)).toEqual([]);
     for (const attempt of [
-      () => owner.query(api.neighbors.record, { churchId, neighborId }),
+      () => readRecord(owner, { churchId, neighborId }),
       () => owner.mutation(api.neighbors.open, { churchId, neighborId }),
       () => owner.mutation(api.neighbors.addNote, { churchId, neighborId, body: "Back again." }),
       () => owner.mutation(api.neighbors.remove, { churchId, neighborId, typedName: "Record removed" }),
@@ -256,8 +281,8 @@ describe("removing a record", () => {
     await expect(owner.mutation(api.neighbors.remove, { churchId, neighborId: ids.elsewhere, typedName: "Celeste Greenhalgh" })).rejects.toThrow("Record not found.");
     await t.run((ctx) => ctx.db.patch("visits", visit, { status: "cancelled" }));
     await owner.mutation(api.neighbors.remove, args);
-    expect((await owner.query(api.neighbors.record, { churchId, neighborId: ids.earl })).mayRemove).toBe(true);
-    expect((await as(ids.coordinator).query(api.neighbors.record, { churchId, neighborId: ids.earl })).mayRemove).toBe(false);
+    expect((await readRecord(owner, { churchId, neighborId: ids.earl })).mayRemove).toBe(true);
+    expect((await readRecord(as(ids.coordinator), { churchId, neighborId: ids.earl })).mayRemove).toBe(false);
   });
 });
 
@@ -272,23 +297,24 @@ describe("the home on a record", () => {
       money: { income: [{ label: "Wages", amount: 185000 }], expenses: [{ label: "Rent", amount: 145000 }, { label: "Electric", amount: 21000 }] },
       accounts: [{ kind: "utility", name: "Example Power", accountNumber: "00-4417-9921", phone: "" }],
     });
-    const record = await as(ids.coordinator).query(api.neighbors.record, target);
+    const record = await readRecord(as(ids.coordinator), target);
     expect(record.neighbor).toMatchObject({ adults: 2, children: 1 });
     expect(record.household.map((person) => person.age)).toEqual([41, 12, null]);
     expect(record.money).toMatchObject({ income: [{ amount: 185000 }], expenses: [{ label: "Rent" }, { label: "Electric" }] });
     expect(record.accounts).toEqual([{ kind: "utility", name: "Example Power", ending: "9921", phone: "" }]);
     expect(JSON.stringify(record)).not.toContain("4417");
-    expect(await openings(t)).toHaveLength(0);
+    // The opening the record was read with is the only line so far; showing the numbers writes its own.
+    expect(await openings(t)).toHaveLength(1);
     expect(await as(ids.coordinator).mutation(api.neighbors.showAccounts, target)).toMatchObject([{ accountNumber: "00-4417-9921" }]);
-    expect(await openings(t)).toMatchObject([{ action: "neighbor.opened", actorId: ids.coordinator.userId, targetId: ids.rosa }]);
+    expect(await openings(t)).toMatchObject([1, 2].map(() => ({ action: "neighbor.opened", actorId: ids.coordinator.userId, targetId: ids.rosa })));
     // A form that never saw the number can rename the account and keep the number, without an audit line.
     await as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, accounts: [{ kind: "utility", name: "Example Power and Light", phone: "", keep: 0 }, { kind: "landlord", name: "Sample Street Apartments", phone: "", accountNumber: "" }] });
-    expect(await openings(t)).toHaveLength(1);
+    expect(await openings(t)).toHaveLength(2);
     expect((await as(ids.owner).mutation(api.neighbors.showAccounts, target)).map((account) => account.accountNumber)).toEqual(["00-4417-9921", ""]);
     await as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, accounts: [{ kind: "utility", name: "Example Power", phone: "", keep: 0 }] });
     // Saving one part leaves the others as they were.
     await as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, money: { income: [], expenses: [] } });
-    expect((await as(ids.owner).query(api.neighbors.record, target)).accounts).toHaveLength(1);
+    expect((await readRecord(as(ids.owner), target)).accounts).toHaveLength(1);
     await expect(as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, household: [{ relationship: "Son", child: true }] })).rejects.toThrow("at least one adult");
     await expect(as(ids.owner).mutation(api.neighbors.saveHousehold, { ...target, money: { income: [{ label: "Wages", amount: -5 }], expenses: [] } })).rejects.toThrow("zero or more");
     await expect(as(ids.owner).mutation(api.neighbors.saveHousehold, { churchId: ids.church, neighborId: ids.elsewhere, household: [] })).rejects.toThrow("Record not found.");
@@ -312,7 +338,7 @@ describe("the home on a record", () => {
     await as(ids.coordinator).mutation(api.neighbors.addNote, { ...target, body: "  Works nights; call after five.  " });
     await expect(as(ids.coordinator).mutation(api.neighbors.addNote, { ...target, body: " " })).rejects.toThrow("Write the note first.");
     await as(ids.owner).mutation(api.neighbors.update, { ...target, ...pat, name: "Esperanza Montoya", phone: "(100) 555-0104", alert: "Call before visiting." });
-    const record = await as(ids.owner).query(api.neighbors.record, target);
+    const record = await readRecord(as(ids.owner), target);
     expect(record.history).toMatchObject([{ type: "note", note: "Works nights; call after five.", who: "Thomas Okafor" }]);
     expect(record.neighbor.alert).toBe("Call before visiting.");
   });
@@ -325,7 +351,7 @@ describe("the home on a record", () => {
       await ctx.db.insert("assistanceRequests", { ...brought, kind: "rent", summary: "Short on rent.", amountRequested: 45000, importedAmount: 45000, status: "closed", payeeName: "Sample Street Apartments", createdAt: now - 1000 });
       await ctx.db.insert("assistanceRequests", { ...brought, kind: "food", summary: "Call back about the pantry.", amountRequested: 0, status: "open", payeeName: "", createdAt: now - 3 * 86400000 });
     });
-    const record = await as(ids.owner).query(api.neighbors.record, { churchId, neighborId });
+    const record = await readRecord(as(ids.owner), { churchId, neighborId });
     expect(record.history).toMatchObject([{ type: "brought", kind: "rent", amount: 45000, payee: "Sample Street Apartments", at: now - 1000 }]);
     expect(record.paidThisYear).toBe(45000);
     expect(record.open).toMatchObject([{ source: "import", kind: "food" }]);
@@ -342,7 +368,7 @@ describe("adding and finding neighbors", () => {
     await expect(as(ids.owner).mutation(api.neighbors.create, { churchId, ...sameHouse })).rejects.toThrow("Esperanza Montoya is already on file with this phone number.");
     await expect(as(ids.owner).mutation(api.neighbors.create, { churchId, ...pat, name: "esperanza  MONTOYA" })).rejects.toThrow("already on file with this name");
     const created = await as(ids.owner).mutation(api.neighbors.create, { churchId, ...sameHouse, confirmedNew: true });
-    expect((await as(ids.owner).query(api.neighbors.record, { churchId, neighborId: created })).neighbor).toMatchObject({ name: "Alma Montoya", language: "ht" });
+    expect((await readRecord(as(ids.owner), { churchId, neighborId: created })).neighbor).toMatchObject({ name: "Alma Montoya", language: "ht" });
     // The same phone in another group is not a duplicate here.
     await as(ids.owner).mutation(api.neighbors.create, { churchId, ...pat, name: "Celeste Greenhalgh", phone: "(100) 555-0102" });
   });
@@ -352,7 +378,7 @@ describe("adding and finding neighbors", () => {
     const churchId = ids.church;
     const { callId } = await as(ids.owner).mutation(api.assistance.recordCall, { churchId, callerName: "Fabrice", phone: pat.phone, note: "Food for six.", callback: "needed" });
     const neighborId = await as(ids.owner).mutation(api.neighbors.create, { churchId, ...pat, callId });
-    expect((await as(ids.owner).query(api.neighbors.record, { churchId, neighborId })).calls).toMatchObject([{ id: callId, note: "Food for six." }]);
+    expect((await readRecord(as(ids.owner), { churchId, neighborId })).calls).toMatchObject([{ id: callId, note: "Food for six." }]);
   });
 
   test("search finds by the start of a name, by phone and by street, only in your group", async () => {

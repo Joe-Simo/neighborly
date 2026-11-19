@@ -124,7 +124,6 @@ export function CallForm({
 }) {
   const record = useMutation(api.assistance.recordCall);
   const readUrgency = useAction(api.drafts.readUrgency);
-  const setUrgency = useMutation(api.assistance.setUrgency);
   const { pending, error, save } = useSave();
   const w = useWords().rooms.helpLineForms.call;
   // With words to draft from and a call back owed, going on to the draft is the main way forward.
@@ -159,20 +158,8 @@ export function CallForm({
         // The assistant reads the note for a reason to call first. The call is already saved;
         // if the assistant is away or finds nothing, the list simply keeps its plain order.
         const { callId } = outcome.result;
-        void readUrgency({ churchId, callId })
-          .then(({ signs }) =>
-            signs.length
-              ? setUrgency({
-                  churchId,
-                  callId,
-                  reasons: signs.map((sign) => sign.reason),
-                  day:
-                    signs.find((sign) => sign.day !== null)?.day ?? undefined,
-                  by: "assistant",
-                })
-              : null,
-          )
-          .catch(() => null);
+        // The server saves what it finds, and says whose reading it was; nothing here can claim the assistant's word.
+        void readUrgency({ churchId, callId }).catch(() => null);
       }}
     >
       <div className="live-form-grid help-caller-grid">

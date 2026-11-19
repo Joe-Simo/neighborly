@@ -3,6 +3,8 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQueries } from "convex/react";
+import { ConvexError } from "convex/values";
+import { sayRefused } from "@/lib/refusals";
 import { useQuery } from "@/components/workspace/query";
 import { HelpDone } from "@/components/workspace/help-line/room";
 import { UndoAct } from "@/components/workspace/undo";
@@ -45,6 +47,13 @@ type Open =
   | { is: "money" }
   | { is: "deposit" }
   | { is: "entry"; entry: LedgerEntry };
+
+/** The refusal for a payment recorded since the sheet was shown: who recorded what, and the paid total now. */
+function recordedSince(cause: unknown): { message: string; paid: number; last: { amount: number; by: string } | null } | null {
+  if (!(cause instanceof ConvexError) || typeof cause.data !== "object" || cause.data === null) return null;
+  const data = cause.data as { message?: unknown; paid?: unknown; last?: { amount: number; by: string } | null };
+  return typeof data.message === "string" && typeof data.paid === "number" ? { message: data.message, paid: data.paid, last: data.last ?? null } : null;
+}
 
 const answered = <T,>(value: T | Error | undefined) =>
   value instanceof Error ? undefined : value;
@@ -102,6 +111,8 @@ export function TreasurySection() {
   const [held, setHeld] = useState(open);
   if (open && open !== held) setHeld(open);
   const view = open ?? held;
+  // The paid total a payment sheet was shown, once a refusal has said what changed since.
+  const [paidSeen, setPaidSeen] = useState<{ requestId: string; paid: number } | null>(null);
   // Arriving from a yes just given (`?pay=`), that request's payment sheet is open on arrival: once, and only for
   // a request still waiting to be paid. The address is then put back as the room's own.
   const askedToPay = useSearchParams().get("pay");
@@ -300,12 +311,23 @@ export function TreasurySection() {
                 settle(
                   () => {
                     setPaying(view.request);
+                    const seen = paidSeen?.requestId === view.request.requestId ? paidSeen.paid : view.request.paid;
                     return recordPayment({
                       churchId,
                       requestId: view.request.requestId,
                       ...payment,
                       ...(checkNumber.trim() && { checkNumber }),
+                      paidSeen: seen,
                     })
+                      .catch((cause: unknown) => {
+                        // Someone recorded a payment here since this sheet showed it: named, with what they recorded.
+                        // Recording again sends the total the refusal gave, which is the person choosing a second payment.
+                        const recorded = recordedSince(cause);
+                        if (!recorded) throw cause;
+                        setPaidSeen({ requestId: view.request.requestId, paid: recorded.paid });
+                        const named = recorded.last ? ` ${fill(w.recordedBy, { amount: formatFigure(recorded.last.amount), name: recorded.last.by })}` : "";
+                        throw new ConvexError(`${sayRefused(words.notices, recorded.message)}${named}`);
+                      })
                       .then((entryId) =>
                         pay(view.request, payment.amount, entryId, payment.date, checkNumber.trim() || undefined),
                       )

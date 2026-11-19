@@ -21,7 +21,7 @@ const put = "week-note-put-away";
 /** The counts the note last showed, numbers only, so its place can be kept at the right size while this visit's are on their way. */
 const kept = "week-note-last";
 /** A first visit keeps room for a full note, which is what a busy week has. */
-const full: Counts = { callsWaiting: 2, callsFirstByAssistant: 1, callsFirstByPerson: 1, oldestWaitingDays: 2, visitsPlanned: 2, requestsOpen: 2, approvedUnpaid: 2, approvedUnpaidCents: 0, openPlaces: 2, away: 2 };
+const full: Counts = { callsWaiting: 2, callsFirstByAssistant: 1, callsFirstByRules: 0, callsFirstByPerson: 1, oldestWaitingDays: 2, visitsPlanned: 2, requestsOpen: 2, approvedUnpaid: 2, approvedUnpaidCents: 0, openPlaces: 2, away: 2 };
 function remembered(raw: string | null): Counts {
   try {
     const last: unknown = JSON.parse(raw ?? "");
@@ -61,6 +61,8 @@ export function weekLines(text: Words["monday"], counts: Counts, most = 4): Line
   const calls: Line["parts"] = [
     { text: text.calls(counts.callsWaiting) },
     ...(counts.callsFirstByAssistant ? [{ text: text.firstByAssistant(counts.callsFirstByAssistant), assistant: true as const }] : []),
+    // An older backend counts no calls put first by the rules alone.
+    ...(counts.callsFirstByRules ? [{ text: text.firstByRules(counts.callsFirstByRules) }] : []),
     ...(counts.callsFirstByPerson ? [{ text: text.firstByPerson(counts.callsFirstByPerson) }] : []),
     ...(counts.oldestWaitingDays ? [{ text: text.oldest(counts.oldestWaitingDays) }] : []),
   ];

@@ -1,12 +1,13 @@
 import { ConvexError, v, type Infer } from "convex/values";
-import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { hour, hourAsked, neighborAccess, neighborRecord } from "./access";
+import { hour, hourAsked, neighborAccess, neighborRecord, openedBy, opening } from "./access";
 import { mayUndo } from "./undo";
 import { voucherGiven } from "./treasury";
 import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
 import { tally } from "./counts";
+import { dropReads } from "./aiReads";
 
 /**
  * The help line and requests for help.
@@ -16,7 +17,8 @@ import { tally } from "./counts";
  */
 const requestFields = schema.tables.assistanceRequests.validator.fields;
 const callFields = schema.tables.calls.validator.fields;
-const urgentBy = v.union(v.literal("assistant"), v.literal("person"));
+/** Who put a call first: the model reading its note, fixed rules alone (the model away or out of checks), or a person. */
+const urgentBy = v.union(v.literal("assistant"), v.literal("rules"), v.literal("person"));
 /** A payment never goes to the neighbor, so the form offers only these. */
 const payeeKind = v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"));
 const DAY = 24 * 60 * 60 * 1000;
@@ -26,7 +28,12 @@ const MAX_VOUCHERS = 20;
 /** How long after a voucher is given it can still be taken back. */
 export const TAKE_BACK_DAYS = 30;
 
-export const nameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+/**
+ * A name as it is matched and looked up: its accents set aside, in small letters, its words one space apart.
+ * "José  García" and "jose garcia" are the same key, so a search typed either way finds the record.
+ */
+export const nameKey = (name: string) =>
+  name.normalize("NFD").replace(/\p{M}+/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 export const phoneKey = (phone: string) => phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
 
 function text(value: string, label: string, max: number, required = false) {
@@ -157,23 +164,28 @@ export const requests = query({
 });
 
 /** Every request one neighbor has made, newest first. */
+/** One neighbor's requests: their detail, so read only with the audit line `neighbors.open` returned. */
 export const requestsForNeighbor = query({
-  args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), opening },
   returns: v.array(requestRow),
-  handler: async (ctx, { churchId, neighborId }) => {
-    await neighborRecord(ctx, churchId, neighborId);
+  handler: async (ctx, { churchId, neighborId, opening: line }) => {
+    const { member } = await neighborRecord(ctx, churchId, neighborId);
+    await openedBy(ctx, member, neighborId, line);
     const rows = await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).order("desc").take(200);
     const found = lookups(ctx);
     return Promise.all(rows.map((row) => toRequestRow(found, row)));
   },
 });
 
+/** One request, which names its neighbor: read only with the audit line `neighbors.open` returned for that neighbor. */
 export const request = query({
-  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests") },
+  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), opening },
   returns: requestRow,
-  handler: async (ctx, { churchId, requestId }) => {
-    await neighborAccess(ctx, churchId);
-    return toRequestRow(lookups(ctx), await ownRequest(ctx, churchId, requestId));
+  handler: async (ctx, { churchId, requestId, opening: line }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const row = await ownRequest(ctx, churchId, requestId);
+    await openedBy(ctx, member, row.neighborId, line);
+    return toRequestRow(lookups(ctx), row);
   },
 });
 
@@ -417,19 +429,33 @@ export const recordCall = mutation({
 });
 
 /**
- * Says a call should be returned first, or that it should not. The assistant proposes from the note
- * and a person can always overrule it: once a person has spoken, the assistant's reading is ignored.
- * No reasons means "not urgent"; "marked" is a person's own say-so.
+ * A person's own word that a call should be returned first, or that it should not. Who said it is the signed-in
+ * person, never what the client says: a `by` sent by an older client is ignored. Once a person has spoken, a reading
+ * of the note no longer moves the call. No reasons means "not urgent"; "marked" is a person's own say-so.
  */
 export const setUrgency = mutation({
-  args: { churchId: v.id("churches"), callId: v.id("calls"), reasons: v.array(v.union(...urgentReasons.map((reason) => v.literal(reason)), v.literal("marked"))), day: v.optional(v.number()), by: urgentBy },
+  args: { churchId: v.id("churches"), callId: v.id("calls"), reasons: v.array(v.union(...urgentReasons.map((reason) => v.literal(reason)), v.literal("marked"))), day: v.optional(v.number()), by: v.optional(urgentBy) },
+  returns: v.null(),
+  handler: async (ctx, { churchId, callId, reasons, day }) => {
+    const member = await neighborAccess(ctx, churchId);
+    await ownCall(ctx, churchId, callId);
+    if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new ConvexError("The day should be a day of the month.");
+    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by: "person", byMember: member._id } });
+    return null;
+  },
+});
+
+/**
+ * The reading of a call's note, saved by the server that made it (drafts.readUrgency): the assistant's only when its
+ * check came back "checked", the fixed rules' otherwise. It never overrules a person, and finding nothing changes nothing.
+ */
+export const keepReading = internalMutation({
+  args: { churchId: v.id("churches"), callId: v.id("calls"), reasons: v.array(v.union(...urgentReasons.map((reason) => v.literal(reason)))), day: v.optional(v.number()), by: v.union(v.literal("assistant"), v.literal("rules")) },
   returns: v.null(),
   handler: async (ctx, { churchId, callId, reasons, day, by }) => {
-    const member = await neighborAccess(ctx, churchId);
-    const call = await ownCall(ctx, churchId, callId);
-    if (by === "assistant" && call.urgent?.by === "person") return null;
-    if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new ConvexError("The day should be a day of the month.");
-    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by, byMember: by === "person" ? member._id : undefined } });
+    const call = await ctx.db.get("calls", callId);
+    if (!call || call.churchId !== churchId || !reasons.length || call.urgent?.by === "person") return null;
+    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by } });
     return null;
   },
 });
@@ -466,6 +492,7 @@ export const takeBackCall = mutation({
         (await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect()).some((request) => request.callId === callId));
     if (built) throw new ConvexError("This call has been worked on since. Change it from its record instead.");
     await ctx.db.delete("calls", callId);
+    await dropReads(ctx, callId);
     return null;
   },
 });
@@ -514,6 +541,8 @@ const keptDraft = v.object({
 async function dropDrafts(ctx: MutationCtx, callId: Id<"calls">) {
   const kept = await ctx.db.query("requestDrafts").withIndex("by_call", (q) => q.eq("callId", callId)).take(10);
   for (const draft of kept) await ctx.db.delete("requestDrafts", draft._id);
+  // What the assistant was sent for the draft goes with it.
+  await dropReads(ctx, callId, "draft");
 }
 
 /** Drafts waiting for a yes, newest first, each with its call. */

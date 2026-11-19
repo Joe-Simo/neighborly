@@ -19,6 +19,8 @@ export const en = (t: Terms, place: string) => ({
   kept: "Nothing was recorded, and what you typed is still here.",
   /** Above `kept`, when a save does not go through: what happened, once; `kept` then says the typing is safe. */
   refused: "That couldn’t be recorded. Try again.",
+  /** After "This payment is already recorded.": the payment recorded since, by whom. Recording again is the person choosing a second payment. */
+  recordedBy: "{amount}, recorded by {name}. If yours is a second payment, record it again.",
   /** An Undo that does not go through: the entry is still there, as the ledger shows. */
   undoRefused: "The undo didn’t go through. The entry stands as recorded.",
   kindGone: "This kind is no longer offered. Choose another.",
@@ -294,6 +296,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   recording: "Anotando…",
   kept: "No se anotó nada, y lo que escribiste sigue aquí.",
   refused: "No se pudo anotar. Inténtalo de nuevo.",
+  recordedBy: "{amount}, anotado por {name}. Si el tuyo es un segundo pago, vuelve a anotarlo.",
   undoRefused: "No se pudo deshacer. La entrada queda como se anotó.",
   kindGone: "Este tipo ya no se ofrece. Elige otro.",
   kinds: { rent: "Alquiler", utility: "Servicios", food: "Comida", voucher: "Vale para la tienda de segunda mano", other: "Otra ayuda" },

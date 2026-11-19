@@ -146,14 +146,15 @@ export function NeighborRecord({
   const churchId = data.church.id;
   const open = useMutation(api.neighbors.open);
   const asked = useRef(false);
-  const [opened, setOpened] = useState<"waiting" | "yes" | "missing">(
-    "waiting",
-  );
+  // The audit line the opening wrote; the record is read with it, and refused without it.
+  const [opened, setOpened] = useState<
+    "waiting" | "missing" | { line: Id<"auditEvents"> }
+  >("waiting");
   useEffect(() => {
     if (asked.current) return;
     asked.current = true;
     open({ churchId, neighborId }).then(
-      () => setOpened("yes"),
+      (line) => setOpened({ line }),
       () => setOpened("missing"),
     );
   }, [open, churchId, neighborId]);
@@ -166,8 +167,8 @@ export function NeighborRecord({
   const [removed, setRemoved] = useState(false);
   const live = useQuery(
     api.neighbors.record,
-    opened === "yes" && !removing && !removed
-      ? { churchId, neighborId }
+    typeof opened === "object" && !removing && !removed
+      ? { churchId, neighborId, opening: opened.line }
       : "skip",
   );
   const read = removed ? undefined : (live ?? held ?? undefined);

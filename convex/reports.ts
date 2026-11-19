@@ -492,7 +492,9 @@ export const year = query({
       vouchers: { ...vouchers, requests: voucherRequests, households: voucherHouseholds.size },
       calls: { taken: calls.length, returned: calls.filter((call) => call.callback === "done").length, waiting: calls.filter((call) => call.callback === "needed").length },
       time: {
-        hours: round(visitHours + shiftHours),
+        // The one total every surface prints (the sheet's "Hours given", the book's "All hours of service"): the sum
+        // of the very lines the book lists under it, visits and each team, so the total and its lines never disagree.
+        hours: round(round(visitHours) + shiftHours),
         shiftHours,
         // The council's report counts the people who can serve: with access, and marked ready to serve.
         activeMembers: memberships.filter((member) => member.active && member.approved).length,

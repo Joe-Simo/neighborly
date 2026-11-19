@@ -88,6 +88,9 @@ export const nightly = internalMutation({
   returns: v.null(),
   handler: async (ctx) => {
     if (process.env.SAMPLE_NIGHTLY !== "off") await ctx.runMutation(internal.demo.refresh, {});
+    // Yesterday's per-visitor AI counts are spent: each night clears them (a few hundred at most, so in one go).
+    const today = new Date().toISOString().slice(0, 10);
+    for (const row of await ctx.db.query("aiUsageBySession").withIndex("by_day", q => q.lt("day", today)).take(1000)) await ctx.db.delete("aiUsageBySession", row._id);
     return null;
   },
 });
@@ -126,7 +129,7 @@ export const firstRoom = query({
     firstAnnouncements: v.array(firstRoomAnnouncement),
     /** What drafts.weekNote answers the sample's owner for the hour asked. */
     weekNote: v.object({
-      callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
+      callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByRules: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
       visitsPlanned: v.number(), requestsOpen: v.number(), approvedUnpaid: v.number(), approvedUnpaidCents: v.number(),
       openPlaces: v.number(), away: v.number(),
     }),
@@ -182,6 +185,7 @@ export const firstRoom = query({
       weekNote: {
         callsWaiting: waiting.length,
         callsFirstByAssistant: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
+        callsFirstByRules: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "rules").length,
         callsFirstByPerson: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "person").length,
         oldestWaitingDays: waiting.length ? Math.max(0, Math.floor((asked - Math.min(...waiting.map((call) => call.takenAt))) / DAY)) : 0,
         visitsPlanned: rows("visits").filter((visit) => visit.status === "scheduled" && visit.scheduledAt >= asked && visit.scheduledAt < weekEnd).length,

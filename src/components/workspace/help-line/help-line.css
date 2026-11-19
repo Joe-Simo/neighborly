@@ -402,3 +402,7 @@
 }
 /* The assistant's line keeps its rule the sheet's full width; its words stop at a reading measure. */
 .help-sheet .help-assistant-line > span { max-width: 68ch; }
+/* What the assistant read for a call put first opens under its line, at the line's whole width. */
+.help-row .help-first:has(.help-first-read) { flex-wrap: wrap; column-gap: 8px; }
+.help-first-read { flex-basis: 100%; }
+.help-first-read > button { padding-left: 23px; }

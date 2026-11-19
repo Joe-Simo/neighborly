@@ -280,7 +280,7 @@ export function LiveWorkspace({
   // A brand-new conference has no one to tell yet: This week's one press is the invitation.
   const primary = area === "week" && nothingMadeYet(data) ? "invite" : primaryActions[area];
   // A menu line marked for leaders is shown only to coordinators and owners of the group.
-  const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
+  const leads = ownPerson?.role === "owner" || (ownPerson?.role === "coordinator" && ownPerson.approved);
   const menuItems = navigation.filter((item) => leads || !("leadersOnly" in item));
   // The rooms' names for the keys' sheet, one per line: equal from draw to draw while the names stay, so the keys are not drawn again.
   const roomNames = menuItems.map(({ id, label }) => menu[id] ?? label).join("\n");

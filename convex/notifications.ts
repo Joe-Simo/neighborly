@@ -5,6 +5,7 @@ import { components } from "./_generated/api";
 import { query, type MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { isSampleChurch } from "./demo";
+import { emailLanguage, paperEmail } from "../src/lib/email/paper-email";
 
 // Real delivery requires an explicit deployment switch and verified sender configuration.
 export const resend = new Resend(components.resend, { testMode: false });
@@ -34,7 +35,11 @@ export async function enqueueInvitation(ctx: MutationCtx, invitation: Doc<"invit
   if (!config || (await isSampleChurch(ctx, invitation.churchId))) return "not_sent" as const;
   const link = new URL("/app", config.site);
   link.searchParams.set("invite", token);
-  const emailId = await resend.sendEmail(ctx, { from: config.sender, to: invitation.email, subject: "You have been invited to Kind Helps", text: `You have been invited to join a church on Kind Helps. Open this private link to review and accept the invitation:\n\n${link.toString()}\n\nThis invitation expires after seven days.`, idempotencyKey: `invitation:${invitation._id}` });
+  // Written in the language of the person who sent it, for the group they belong to.
+  const [church, inviter] = await Promise.all([ctx.db.get("churches", invitation.churchId), ctx.db.get("memberships", invitation.createdBy)]);
+  if (!church) return "not_sent" as const;
+  const email = paperEmail({ kind: "invitation", language: emailLanguage(inviter?.language), set: church.wordSet ?? "general", place: church.name, link: link.toString() });
+  const emailId = await resend.sendEmail(ctx, { from: config.sender, to: invitation.email, ...email, idempotencyKey: `invitation:${invitation._id}` });
   await ctx.db.patch("outbox", outbox._id, { state: "queued", providerId: emailId });
   return "queued" as const;
 }

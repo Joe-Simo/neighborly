@@ -58,3 +58,19 @@ test("the year's money in Reports is the Treasury's: same closing balance, same 
   expect(report.kinds.reduce((paid, kind) => paid + kind.paid, 0)).toBe(report.helpPaid);
   expect(report.helpPaid + report.money.otherSpending.reduce((spent, line) => spent + line.amount, 0)).toBe(report.money.spent);
 });
+
+test("the year's hours are one total: the sheet's, the book's lines and the members' all add to it", async () => {
+  const t = convexTest(schema, modules);
+  const churchId = await t.mutation(internal.sampleData.load, {});
+  const owner = await t.run(async (ctx) => (await ctx.db.query("memberships").collect()).find((member) => member.role === "owner"));
+  if (!owner) throw new Error("The sample has no owner.");
+  // Shifts count once they are over, so the total is read at the sample's moment and again days later.
+  for (const at of [Date.parse(sampleYear.asOf), Date.parse(sampleYear.asOf) + 3 * 86_400_000]) {
+    const report = await signedIn(t, owner.userId).query(api.reports.year, { churchId, year: sampleYear.year, at });
+    const bookLines = report.visitHours + report.time.teams.reduce((hours, team) => hours + team.hours, 0);
+    const members = report.time.members.reduce((hours, member) => hours + member.hours, 0);
+    expect(report.time.hours).toBeCloseTo(bookLines, 2);
+    expect(report.time.hours).toBeCloseTo(members, 1);
+    expect(report.time.hours).toBe(1589);
+  }
+});

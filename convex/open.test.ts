@@ -107,6 +107,8 @@ describe("the one read that needs no sign-in", () => {
         const row = await ctx.db.query(table).first();
         if (row) found[table] = row._id;
       }
+      // A record is read with an audit line; the sample has none, so the check gets one to name.
+      found.auditEvents ??= await ctx.db.insert("auditEvents", { churchId: found.churches as never, actorId: found.users as never, action: "neighbor.opened", at: 0 });
       return found;
     });
     // The smallest arguments each query's own validator accepts, with real ids of the sample, so the refusal

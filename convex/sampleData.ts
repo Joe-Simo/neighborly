@@ -4,6 +4,7 @@ import { internalMutation, type MutationCtx } from "./_generated/server";
 import type { Doc, Id, TableNames } from "./_generated/dataModel";
 import { WAITING_KEPT } from "./counts";
 import { rebuildNames } from "./knownNames";
+import { nameKey } from "./assistance";
 
 type TableName = TableNames;
 type Row = { table: TableName; doc: Doc<TableName> };
@@ -100,7 +101,7 @@ function generator(seed: number) {
   return { next, between, pick };
 }
 const isoDay = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM-dd");
-const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const key = nameKey;
 
 /** Writes the whole made-up year through `db`: the real database, or the plan `renew` compares with what is there. */
 async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id<"churches">> {
@@ -183,7 +184,7 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   // a help-line morning and a home visit next week.
   const mine = monday.plus({ weeks: 1 });
   await db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start: mine.plus({ days: 1, hours: 9 }).toMillis(), end: mine.plus({ days: 1, hours: 12 }).toMillis(), location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: owner, coordinatorId: others[1], version: 1 });
-  await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Renee Baptiste", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
+  await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
   // Today on the help line: the morning is covered and the afternoon still has an open place, whatever day the sample is loaded.
   const todayStart = DateTime.fromMillis(now, { zone }).startOf("day");
   const helpLineToday = async (hour: number, hours: number, assigneeId: Id<"memberships"> | null) => {
@@ -608,7 +609,7 @@ export const load = internalMutation({
 });
 
 /** The tables a conference's rows sit in, reached by their `by_church` index. */
-const churchTables = ["ledgerEntries", "visits", "requestDrafts", "assistanceRequests", "calls", "neighbors", "auditEvents", "calendarFeeds", "payees", "invitations", "outbox", "meetings", "meetingResponses", "series", "deposits", "voucherStock", "ledgerKinds", "bankStatements", "neighborNotes", "referralAgencies", "announcements", "tasks", "timeOff", "availability", "requests", "commitments", "teamMembers", "teams", "memberships"] as const;
+const churchTables = ["ledgerEntries", "visits", "aiReads", "requestDrafts", "assistanceRequests", "calls", "neighbors", "auditEvents", "calendarFeeds", "payees", "invitations", "outbox", "meetings", "meetingResponses", "series", "deposits", "voucherStock", "ledgerKinds", "bankStatements", "neighborNotes", "referralAgencies", "announcements", "tasks", "timeOff", "availability", "requests", "commitments", "teamMembers", "teams", "memberships"] as const;
 
 /**
  * Every row of a sample conference, each read once: its own tables, the two reached only through a parent

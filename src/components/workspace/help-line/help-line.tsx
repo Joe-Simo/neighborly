@@ -3,7 +3,7 @@
 import { DateLeaf } from "@/components/workspace/primitives";
 
 import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf, openUp, takeLine, useKeptLine } from "@/components/workspace/fold";
-import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
+import { AssistantLimits, DraftToDo, UrgencyRead } from "@/components/workspace/week-note/assistant-limits";
 import {
   startTransition,
   useCallback,
@@ -430,7 +430,6 @@ function HelpLine() {
                     churchId,
                     callId: call.id,
                     reasons: first ? ["marked"] : [],
-                    by: "person",
                   }),
                 )
             : undefined
@@ -822,12 +821,14 @@ export function HelpLineView({
             )}
           </span>
         </div>
-        {calls.waiting.some(
-          (call) => isFirst(call) && call.urgent?.by === "assistant",
-        ) && (
+        {/* Each source says itself: the assistant's mark only where the assistant read the note, the rules' in plain words. */}
+        {calls.waiting.some((call) => isFirst(call) && call.urgent?.by === "assistant") && (
           <p className="help-assistant help-first-origin">
-            <Sparkles size={15} aria-hidden="true" /> {words.urgent.origin}
+            <Sparkles size={15} aria-hidden="true" /> {words.urgent.originAssistant}
           </p>
+        )}
+        {calls.waiting.some((call) => isFirst(call) && call.urgent?.by === "rules") && (
+          <p className="help-assistant help-first-origin">{words.urgent.origin}</p>
         )}
         {calls.waiting.length ? (
           <div className="live-list">
@@ -858,13 +859,14 @@ export function HelpLineView({
                     )}
                   </h3>
                   <p>{sampleSaid(call.note)}</p>
-                  {call.urgent?.by === "assistant" && isFirst(call) && (
+                  {call.urgent && call.urgent.by !== "person" && isFirst(call) && (
                     <p className="help-assistant help-first paper-rise">
-                      <Sparkles size={15} aria-hidden="true" />
+                      {call.urgent.by === "assistant" && <Sparkles size={15} aria-hidden="true" />}
                       <strong>
                         {whyFirst(call.urgent, words).join(" · ") ||
                           words.urgent.label}
                       </strong>
+                      {call.urgent.by === "assistant" && <UrgencyRead callId={call.id as Id<"calls">} />}
                     </p>
                   )}
                   {call.urgent?.by === "person" && call.urgent.byName && (
