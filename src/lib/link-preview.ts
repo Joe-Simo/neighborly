@@ -17,6 +17,7 @@ export const linkPreviewIn = (language: keyof typeof described) => ({
   type: "website",
   siteName: "Kind Helps",
   locale: locales[language],
+  alternateLocale: locales[language === "en" ? "es" : "en"],
   images: [{ ...picture, alt: described[language] }],
 }) satisfies Metadata["openGraph"];
 export const linkPreview = linkPreviewIn("en");
