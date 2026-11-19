@@ -1,5 +1,6 @@
 "use client";
 
+import { viewport } from "@/lib/viewport";
 import { frameStep } from "@/lib/scroll-frame";
 import { whenIdle } from "@/lib/idle";
 import { useEffect, useRef, useState } from "react";
@@ -124,8 +125,8 @@ export function NeighborlyExperience() {
       write("--entry-caption", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .1))));
       // The sheet's wavy edge is drawn over the band just above its foot: a piece of the words still on the sheet leaves in one cut the moment
       // that band would reach it, so no line of type is ever seen cut by the edge, or drawn across the doors beneath.
-      const edge = Math.min(120, Math.max(52, innerWidth * .075));
-      const band = ((pieces?.tall ?? innerHeight) + edge) * portraitShown - edge;
+      const edge = Math.min(120, Math.max(52, viewport.width * .075));
+      const band = ((pieces?.tall ?? viewport.height) + edge) * portraitShown - edge;
       pieces?.feet.forEach(([piece, foot]) => piece.toggleAttribute("data-gone", !reduce && scrolled > 0 && band < foot + 4));
       const portrait = element.querySelector<HTMLElement>(".painted-world-track");
       const courtyard = element.querySelector<HTMLElement>(".fresco-stage");
