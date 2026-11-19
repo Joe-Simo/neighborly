@@ -1183,7 +1183,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   background: #e2d3b0; font-size: 15px; line-height: 1.3; color: #283c32; white-space: nowrap;
 }
 /* A write-up the server refused stays flat, with a plum edge until it is tried again. */
-.live-dialog:has(form[data-refused]) { box-shadow: inset 4px 0 0 var(--paper-plum, #6f5f93), 0 24px 60px rgb(40 60 50 / 0.18); }
+/* A sheet whose save was refused wears the plum edge, whichever form it holds: its notice is the sign. */
+.live-dialog:has(form[data-refused], .live-error[role="alert"]) { box-shadow: inset 4px 0 0 var(--paper-plum, #6f5f93), 0 24px 60px rgb(40 60 50 / 0.18); }
 /* The real sheet, stepped aside while its copy is filed: nothing of it shows, however its parts change. */
 .live-dialog[data-filed], .live-dialog[data-filed] * { visibility: hidden !important; transition: none !important; }
 
