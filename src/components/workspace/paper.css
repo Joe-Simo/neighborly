@@ -1587,3 +1587,5 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   :is(.live-main, .live-dialog, .live-header-desk) [data-slot="button"]:not([data-size^="icon"]) { font-size: 16px; }
   .live-app .live-head-actions [data-slot="button"] { font-size: 17px; }
 }
+/* On a phone the bar's three things stand 8px apart, so a room's longer Spanish name ("Visitas domiciliarias" at 390) still stands whole beside the wordmark. */
+@media (max-width: 899px) { .live-app .live-header { column-gap: 8px; } }
