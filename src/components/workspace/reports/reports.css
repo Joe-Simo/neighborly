@@ -346,6 +346,11 @@
 .report-months li { position: relative; }
 .report-month-open { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 2px; transition: background-color 160ms var(--paper-ease); }
 .report-month-open:focus-visible { outline: 2px solid #283c32; outline-offset: -2px; }
+/* The month in hand is marked under its bars by a hairline of the ink; the line below the chart says its figures. */
+.report-month-open[aria-pressed="true"] { box-shadow: inset 0 -2px 0 #283c32; }
+.report-month-held { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; min-height: 2lh; margin: 12px 0 0; font-size: 15px; line-height: 1.5; color: #52644f; }
+.report-month-held .report-tip-month { font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+.report-month-held .help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 22px; line-height: 1.15; color: #283c32; }
 .report-tip { min-width: 148px; padding: 12px 16px 13px; border: 1px solid var(--relief-edge); border-radius: 4px; background: var(--relief-paper); color: #283c32; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; text-align: center; box-shadow: var(--relief-sheet); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
 /* The card is as wide as its longest line (Spanish runs longer), never wider than the screen. */
 .report-tip { width: max-content; max-width: calc(100vw - 24px); }
