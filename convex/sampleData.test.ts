@@ -151,7 +151,8 @@ describe("sample conference", () => {
       places: await ctx.db.query("referralAgencies").collect(),
     }));
     expect(found.places).toHaveLength(6);
-    expect(new Set(found.notes.map((note) => note.neighborId)).size).toBe(20);
+    // Twenty records noted over the year, and Rosa's, which the week's story adds.
+    expect(new Set(found.notes.map((note) => note.neighborId)).size).toBe(21);
     expect(found.notes.every((note) => note.createdAt < Date.now())).toBe(true);
     const listed = found.neighbors.filter((neighbor) => neighbor.household);
     expect(listed.length).toBeGreaterThanOrEqual(60);
