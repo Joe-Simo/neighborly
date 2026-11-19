@@ -22,8 +22,9 @@ export async function POST(request: Request) {
   ticket?.catch(() => undefined);
   const userId = await fetchMutation(api.demo.admit, { visitor });
   if (!userId) return new Response(null, { status: 429, headers: { "Retry-After": "60" } });
-  const { token } = await (userId === account && ticket
-    ? ticket
-    : clerkClient().then((client) => client.signInTokens.createSignInToken({ userId, expiresInSeconds: 60 })));
+  // Only ever the account this server was given: a backend that names any other (a wrong setting, the wrong
+  // deployment) gets no ticket, so no visitor can be signed in as a real person.
+  if (!account || !ticket || userId !== account) return new Response(null, { status: 503, headers: { "Cache-Control": "no-store" } });
+  const { token } = await ticket;
   return Response.json({ ticket: token }, { headers: { "Cache-Control": "no-store" } });
 }
