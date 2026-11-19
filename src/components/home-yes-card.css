@@ -54,9 +54,18 @@
 @media(max-width:850px){
   .home-yes-filed{padding:27px 23px 21px}
   .home-yes-filed .help-sheet-label{padding-right:30px}
+}
+/* A phone stacks the list's rows and the after-line. From 600px the sheet is wide enough to keep the desk's own rows, so the filed
+   face, whose height the sheet keeps, is no taller than the draft needs. */
+@media(max-width:599px){
   .home-yes-filed li{grid-template-columns:minmax(0,1fr)}
   .home-yes-after .home-yes-again{margin-left:0}
   .home-yes-year em{display:block;margin:2px 0 0}
+}
+/* From 600px to 850px the draft's one button keeps its own width, set at the right under the line it acts on, not drawn as a bar. */
+@media(min-width:600px) and (max-width:850px){
+  .home-yes-stage .help-sheet .help-actions{justify-content:flex-end}
+  .home-yes-stage .help-sheet .help-actions>[data-slot=button]:first-child{flex:0 0 auto}
 }
 @media(prefers-reduced-motion:reduce){
   [data-step=filed] .help-sheet .help-from strong{opacity:1}
