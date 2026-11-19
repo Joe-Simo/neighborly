@@ -101,12 +101,12 @@ function LiveAvailability({
           .filter((item) => item.personId === data.user.id)
           .map((item) => (
             <div className="live-row" key={item.id}>
-              <span className="volunteer-days">
-                {readDays(words, item.start, item.end)}
-              </span>
+              <div>
+                <h3 className="volunteer-days">{readDays(words, item.start, item.end)}</h3>
+              </div>
               <Button
-                aria-label={`${words.timeOff.remove}: ${readDays(words, item.start, item.end)}`}
-                variant="ghost"
+                aria-label={`${words.timeOff.removeDates}: ${readDays(words, item.start, item.end)}`}
+                variant="outline"
                 size="sm"
                 onClick={() =>
                   void run(
@@ -116,7 +116,7 @@ function LiveAvailability({
                   )
                 }
               >
-                {words.timeOff.remove}
+                {words.timeOff.removeDates}
               </Button>
             </div>
           ))}

@@ -69,7 +69,7 @@
 .card-for-line{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 clamp(17px,1.5cqw,29px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;pointer-events:auto;cursor:text}
 .card-for-line>span{visibility:hidden}
 .card-for-line input{flex:1;min-width:0;min-height:44px;margin:-12px 0;padding:0 0 1px;border:0;background:transparent;font:inherit;color:transparent;caret-color:#253e31;outline:none}
-.card-for-line:has(input:focus-visible){outline:2px solid #283c32;outline-offset:3px}
+.card-for-line:has(input:focus-visible){outline:2px solid #283c32;outline-offset:3px;border-radius:4px}
 /* The note is written on a slip of the card's own paper, so it reads over the cloth, the cut and the foot alike. */
 .card-for-note{position:absolute;right:9%;top:calc(100% + 17px);width:max-content;padding:3px 10px 4px;background:#f7f2e6;box-shadow:0 1px 2px rgb(40 60 50 / 0.3);font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43;rotate:2.5deg;pointer-events:none}
 .card-offer[data-given]~.card-for{opacity:0}

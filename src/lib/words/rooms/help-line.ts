@@ -110,7 +110,9 @@ export const en = (t: Terms, place: string) => ({
   /** The side column on a wide screen. */
   aside: {
     title: "On the line today",
-    noOne: "No one yet",
+    noOne: "No one on this shift yet",
+    /** Calls no one has taken to call back. */
+    untaken: "Not taken yet",
     none: "No one is set for the line today.",
     callingBack: "Calling back",
     calls: (count: number) => (count === 1 ? "1 call" : `${enN(count)} calls`),
@@ -223,7 +225,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   },
   aside: {
     title: "Hoy en la línea",
-    noOne: "Nadie todavía",
+    noOne: "Nadie en este turno todavía",
+    untaken: "Sin tomar todavía",
     none: "Hoy no hay nadie asignado a la línea.",
     callingBack: "Devuelven llamadas",
     calls: (count) => (count === 1 ? "1 llamada" : `${esN(count)} llamadas`),

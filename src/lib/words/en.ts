@@ -244,6 +244,7 @@ export function en(set: WordSet) {
       canHelp: "Can help",
       note: "Time off does not remove you from your teams. Existing commitments need a separate change so everyone knows what is covered.",
       remove: "Remove time off",
+      removeDates: "Remove these dates",
       removed: "Time off removed.",
       restored: "Time off put back.",
       availabilityRemoved: "Available dates removed.",
@@ -519,6 +520,8 @@ export function en(set: WordSet) {
       alone: "Lives alone",
       medical: "A medical need",
       notUrgent: "Not urgent",
+      /** The row's own press that moves a call to the top, said as what it does. */
+      putFirst: "Put this call first",
     },
     /** What a person reads beside anything the assistant drafted. */
     assistant: {
