@@ -334,6 +334,8 @@ export function LiveWorkspace({
   // The answer comes from the connection the page already holds: nothing is read from the backend for it.
   const { isWebSocketConnected } = useConvexConnectionState();
   const pulled = useEffectEvent(() => {
+    // A sheet is open: a pull would take the words being typed with it. The page stays as it is and says nothing.
+    if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return true;
     const room = document.querySelector(".live-app .live-room");
     const current = isWebSocketConnected && !roomWaiting && !!room && !room.querySelector('.live-state[data-kind="error"]');
     if (!current) return false;

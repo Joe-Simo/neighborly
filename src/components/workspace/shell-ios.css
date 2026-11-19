@@ -406,3 +406,7 @@
    the page's paper, so nothing under it moves when it comes or goes. */
 .live-app main.live-main:has(> .kept-offline) { position: relative; }
 .live-app .kept-offline { position: absolute; z-index: 3; top: 10px; left: var(--live-pad, 20px); margin: 0; padding: 4px 10px; border-radius: 4px; color: var(--ochre-ink, #8a5a12); font-size: 15px; line-height: 1.4; background: rgb(247 244 237 / 0.94); pointer-events: none; }
+
+/* iOS zooms the page into any field under 16px as it takes focus. The kit draws fields at 14px from 768px up (an iPad),
+   so in the app every field keeps 16px at every width; fields drawn larger on purpose keep their own size. */
+:root[data-shell="ios"] :is(input, textarea, select, button[role="combobox"])[class*="md:text-sm"] { font-size: 16px; }
