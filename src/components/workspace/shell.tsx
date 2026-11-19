@@ -259,6 +259,17 @@ export function LiveWorkspace({
     close();
   }
   /** Sends the save and, when it has gone through, closes the dialog it was sent from, if the person is still in it. */
+  // What a create form said it did, named, so the line is enough when it is heard alone.
+  function doneLine(command: Parameters<typeof perform>[0]) {
+    switch (command.type) {
+      case "createTask": return words.tasks.added(command.title);
+      case "createAnnouncement": return sheets.done.announcementShared(command.title);
+      case "createTeam": return sheets.done.teamCreated(command.name);
+      case "createCommitment": return sheets.done.commitmentAdded(command.title);
+      case "createMeeting": return sheets.done.meetingPlanned(command.title);
+      default: return undefined;
+    }
+  }
   async function performThenClose(close: () => void, ...save: Parameters<typeof perform>) {
     const at = left.current;
     if ((await perform(...save)) && at === left.current) close();
@@ -853,7 +864,7 @@ export function LiveWorkspace({
                     saving={pending && saveFrom === "create"}
                     error={saveFrom === "create" ? error : ""}
                     onSubmit={(command) =>
-                      performThenClose(() => setDialog(null), command, command.type === "createTask" ? words.tasks.added(command.title) : sheets.saved)
+                      performThenClose(() => setDialog(null), command, doneLine(command))
                     }
                   />
                 )
@@ -927,7 +938,7 @@ export function LiveWorkspace({
               <Button
                 disabled={pending}
                 onClick={() => {
-                  if (confirmation) void performThenClose(() => setConfirmation(null), confirmation.command, sheets.updated);
+                  if (confirmation) void performThenClose(() => setConfirmation(null), confirmation.command, confirmation.done);
                 }}
               >
                 {confirmation?.action}

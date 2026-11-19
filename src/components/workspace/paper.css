@@ -1237,6 +1237,9 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    own sheet, with a second sheet just showing beneath its left edge, each casting a tight contact shade onto the one
    below instead of a ruled line. Over both, the header's strip. Nothing moves: the depth is only where the paper lies. */
 @media (min-width: 900px) {
+  /* The menu's sheet is the desk's lowest, so it lies under the whole layout: below a long room the rail's column is still
+     that paper all the way down, however the held menu itself is placed. The room's own sheet covers the rest. */
+  .live-app .live-layout,
   .live-app .live-nav {
     border-right-color: transparent;
     background:

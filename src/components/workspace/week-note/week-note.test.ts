@@ -13,7 +13,7 @@ describe("the Monday note", () => {
   test("urgency and waiting are said only alongside the calls they describe", () => {
     expect(weekLines(words("en").monday, { ...none, callsFirstByAssistant: 2, oldestWaitingDays: 4 })).toEqual([]);
     expect(weekLines(words("en").monday, { ...none, callsWaiting: 3, callsFirstByAssistant: 1, callsFirstByPerson: 2, oldestWaitingDays: 4, away: 2 })).toEqual([
-      { area: "help-line", parts: [{ text: "3 calls are waiting to be returned." }, { text: "1 was put first by the assistant.", assistant: true }, { text: "2 were put first by one of you." }, { text: "The oldest has waited 4 days." }], brief: "3 calls to return" },
+      { area: "help-line", parts: [{ text: "3 calls are waiting to be returned." }, { text: "1 was put first from its note.", assistant: true }, { text: "2 were put first by one of you." }, { text: "The oldest has waited 4 days." }], brief: "3 calls to return" },
       { area: "time-off", parts: [{ text: "2 volunteers are away this week." }], brief: "2 volunteers away" },
     ]);
   });

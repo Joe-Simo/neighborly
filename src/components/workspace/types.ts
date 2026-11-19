@@ -16,4 +16,6 @@ export type LiveConfirmation = {
   /** The button's words: the act itself ("Cancel commitment"). Required, so no dialog can fall back to a bare "Confirm". */
   action: string;
   command: LiveCommand;
+  /** The line said once it is done, naming who or what changed. */
+  done: string;
 };

@@ -15,8 +15,19 @@ export const en = (t: Terms, place: string) => ({
     linkLabel: "Private invitation link",
     dismiss: "Dismiss",
   },
-  saved: "Saved.",
-  updated: "Updated.",
+  /** Each done line names what was done, so it says enough when it is heard alone. */
+  done: {
+    announcementShared: (title: string) => `Announcement shared. ${title}`,
+    teamCreated: (name: string) => `Team created. ${name}`,
+    commitmentAdded: (title: string) => `Commitment added. ${title}`,
+    meetingPlanned: (title: string) => `Meeting planned. ${title}`,
+    commitmentCanceled: (title: string) => `Commitment canceled. ${title}`,
+    markedReady: (name: string) => `${name} is marked ready to serve.`,
+    markedNotReady: (name: string) => `${name} is marked not ready.`,
+    accessRemoved: (name: string) => `${name} can no longer sign in.`,
+    accessRestored: (name: string) => `${name} can sign in again.`,
+    inviteWithdrawn: (email: string) => `Invitation to ${email} withdrawn.`,
+  },
   goBack: "Go back",
   edit: {
     title: "Edit commitment",
@@ -65,8 +76,19 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       linkLabel: "Enlace privado de la invitación",
       dismiss: "Cerrar",
     },
-    saved: "Guardado.",
-    updated: "Actualizado.",
+    // A named person's gender is never marked: each line is said about the act or with "ya puede".
+    done: {
+      announcementShared: (title) => `Aviso compartido. ${title}`,
+      teamCreated: (name) => `Equipo creado. ${name}`,
+      commitmentAdded: (title) => `Compromiso agregado. ${title}`,
+      meetingPlanned: (title) => `Reunión planeada. ${title}`,
+      commitmentCanceled: (title) => `Compromiso cancelado. ${title}`,
+      markedReady: (name) => `${name} ya puede servir.`,
+      markedNotReady: (name) => `Se quitó la marca para servir a ${name}.`,
+      accessRemoved: (name) => `${name} ya no puede iniciar sesión.`,
+      accessRestored: (name) => `${name} ya puede iniciar sesión de nuevo.`,
+      inviteWithdrawn: (email) => `Se anuló la invitación a ${email}.`,
+    },
     goBack: "Volver",
     edit: {
       title: "Cambiar el compromiso",
