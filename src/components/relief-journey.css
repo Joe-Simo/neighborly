@@ -92,7 +92,11 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .relief-story::before{background:#cfc2a4;translate:0 -3px;filter:blur(1px);opacity:.8}
 .relief-story::after{background:#eee7d7}
 /* Each chapter holds for a little over half a window while its one act plays at the reader's own pace. --e runs 0 to 1 as the chapter comes in, --h as it holds; --q is what is left of the act. */
-.relief-panel{--e:1;--h:1;--q:calc(1 - var(--h));position:relative;min-height:160svh}
+/* A chapter's act (chapter-act.ts): written on each part drawn with it, never passed down; registered at rest. */
+@property --e{syntax:"<number>";inherits:false;initial-value:1}
+@property --h{syntax:"<number>";inherits:false;initial-value:1}
+@property --q{syntax:"<number>";inherits:false;initial-value:0}
+.relief-panel{position:relative;min-height:160svh}
 .relief-hold{position:sticky;top:0;height:100svh;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0;padding-left:7%}
 .relief-panel[data-side=left] .relief-hold{grid-template-columns:auto minmax(0,1fr);padding-left:0;padding-right:7%}
 .relief-panel[data-side=left] .relief-picture{order:-1;justify-self:start}

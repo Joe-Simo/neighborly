@@ -1,6 +1,7 @@
 "use client";
 
 import { frameStep } from "@/lib/scroll-frame";
+import { setAct } from "@/lib/chapter-act";
 import { Fragment, useEffect, useRef } from "react";
 import { HomeYear } from "./home-year";
 import { PageTurn } from "./chapter-sheets";
@@ -83,8 +84,7 @@ export function ReliefStory() {
         const h = holds ? Math.max(0, Math.min(1, -box.top / Math.max(1, (box.height - height) * .85))) : Math.max(0, Math.min(1, (e - .35) / .65));
         // Written only when changed: a chapter at rest, or one not yet reached, is not styled again on every frame of the scroll.
         const nowE = (1 - (1 - e) ** 3).toFixed(4), nowH = (h * h * (3 - 2 * h)).toFixed(4);
-        if (panel.style.getPropertyValue("--e") !== nowE) panel.style.setProperty("--e", nowE);
-        if (panel.style.getPropertyValue("--h") !== nowH) panel.style.setProperty("--h", nowH);
+        setAct(panel, nowE, nowH);
       }
     };
     const { ask: request, drop } = frameStep(read, update);

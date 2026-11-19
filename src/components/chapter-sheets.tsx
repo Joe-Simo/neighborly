@@ -3,6 +3,7 @@
 import { type ReactNode, useEffect, useRef } from "react";
 import "./chapter-sheets.css";
 import { frameStep } from "@/lib/scroll-frame";
+import { setAct } from "@/lib/chapter-act";
 import { placeTurn, setTurnGeometry, turnGeometry, type TurnGeometry } from "@/lib/page-turn";
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -80,7 +81,7 @@ export function PageTurn({ children }: { children: ReactNode }) {
       // A page taller than the window, or one not held at all (phones), cannot be turned whole, and with less motion nothing is turned: the chapters then follow one another as plain pages.
       const fits = !still.matches && !plain.matches && hold.offsetHeight <= innerHeight + 1;
       if (!fits) {
-        if (on) { on = false; last = -1; for (const panel of [from, to]) { panel.removeAttribute("data-turn"); panel.style.removeProperty("--turn-page"); panel.style.removeProperty("--turn-own"); } to.style.removeProperty("--e"); to.style.removeProperty("--h"); }
+        if (on) { on = false; last = -1; for (const panel of [from, to]) { panel.removeAttribute("data-turn"); panel.style.removeProperty("--turn-page"); panel.style.removeProperty("--turn-own"); } setAct(to, "1.0000", "1.0000"); }
         return;
       }
       on = true;
@@ -90,7 +91,7 @@ export function PageTurn({ children }: { children: ReactNode }) {
       for (const panel of [from, to]) panel.style.setProperty("--turn-page", `${tall}px`);
       to.style.setProperty("--turn-own", `${beneath?.getBoundingClientRect().height ?? tall}px`);
       // The chapter beneath is found as it will stay: its picture at rest and its figures standing.
-      to.style.setProperty("--e", "1"); to.style.setProperty("--h", "1");
+      setAct(to, "1.0000", "1.0000");
       setTurnGeometry(turn, geometry);
       last = -1;
       read();
