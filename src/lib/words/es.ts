@@ -367,8 +367,6 @@ export function es(set: WordSet): Words {
       missingAction: `Ir a tu ${place}`,
     },
     notices: {
-      saved: "Guardado.",
-      updated: "Actualizado.",
       failed: "No se pudo guardar el cambio. Inténtalo de nuevo.",
       refused: Object.fromEntries(Object.entries({
         [refusals.away]: "Ese día lo marcaste como libre. Cambia tus días libres o di que no puedes tomar este.",
@@ -565,7 +563,7 @@ export function es(set: WordSet): Words {
       change: "Cambiar",
       discard: "Descartar",
       saved: "Guardado en el registro",
-      approved: `Guardada. Tu ${t.group} decide después.`,
+      approved: `Petición guardada. Tu ${t.group} decide después.`,
       sheet: {
         newCaller: "Persona nueva",
         noName: "Alguien que no dio su nombre",

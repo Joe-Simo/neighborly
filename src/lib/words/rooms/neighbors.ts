@@ -70,7 +70,7 @@ export const en = (t: Terms, place: string) => ({
       keptOnPage: "The numbers on file are still covered. Nothing on the record was changed.",
     },
     missing: { title: "We couldn’t find that record.", body: "It may belong to another group, or the link may be incomplete. Nothing was opened." },
-    removed: { title: "The record is removed.", body: "The year’s totals stay as they were, with no name. Everything that named this household is gone." },
+    removed: { title: "Record removed.", body: "The year’s totals stay as they were, with no name. Everything that named this household is gone." },
     sheets: {
       people: { title: "Who lives here", about: (name: string) => `${name}’s household, as they told us.` },
       money: { title: "Money each month", about: "What comes in and what goes out, in round numbers." },
@@ -90,7 +90,7 @@ export const en = (t: Terms, place: string) => ({
       month: "The month is saved.",
       accounts: "Accounts saved.",
       note: "Note added.",
-      noteTakenBack: "The note is removed from the record.",
+      noteTakenBack: "Note removed from the record.",
       request: "Request saved. It is waiting for a decision.",
       changed: "Request changed.",
       details: "Details saved.",

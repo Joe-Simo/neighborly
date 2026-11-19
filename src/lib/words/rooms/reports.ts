@@ -15,7 +15,7 @@ const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
    counted line its count; English reads the same for one and many where Spanish must agree in number */
 export const en = (t: Terms, place: string) => ({
   opening: "Opening the reports",
-  saved: (name: string) => `Saved ${name} to your downloads. It opens in Excel, Numbers or Google Sheets.`,
+  saved: (name: string) => `${name} saved to your downloads. It opens in Excel, Numbers or Google Sheets.`,
   failed: {
     title: "The year couldn’t be added up.",
     safe: "Your records are safe and nothing was changed. Check your connection, then try again.",

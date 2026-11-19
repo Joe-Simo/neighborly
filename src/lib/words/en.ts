@@ -380,8 +380,6 @@ export function en(set: WordSet) {
       missingAction: `Go to your ${place}`,
     },
     notices: {
-      saved: "Saved.",
-      updated: "Updated.",
       failed: "That change couldn’t be saved. Try again.",
       /** A refusal the backend says in English, in this language, keyed by the English sentence. */
       refused: {
@@ -575,7 +573,7 @@ export function en(set: WordSet) {
       change: "Change",
       discard: "Discard",
       saved: "Saved to the record",
-      approved: `Saved. The ${t.group} decides next.`,
+      approved: `Request saved. The ${t.group} decides next.`,
       /** The draft's own sheet, sentence by sentence, so it reads whole in each language. */
       sheet: {
         newCaller: "New caller",
