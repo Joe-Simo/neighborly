@@ -25,6 +25,8 @@ type Flow = "signIn" | "signUp" | "reset";
 type Step = "details" | "code" | "newPassword";
 
 function errorKey(error: unknown, flow: Flow): AuthError {
+  // A request that never reached anyone (no connection, or the connection dropped) is not a wrong answer.
+  if (!navigator.onLine || (error instanceof Error && "code" in error && error.code === "network_error") || (error instanceof TypeError && /fetch|network|load failed/i.test(error.message))) return "offline";
   const code = isClerkAPIResponseError(error) ? error.errors[0]?.code : undefined;
   switch (code) {
     case "form_param_format_invalid":

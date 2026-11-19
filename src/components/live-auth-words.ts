@@ -91,6 +91,8 @@ const en = {
     expired: "That code has expired. Send a new one.",
     tooMany: "Too many attempts. Wait a little while, then try again.",
     other: "That didn’t go through. Try again.",
+    /** Nothing reached us: not the person's mistake, so it says so, and what was typed is kept. */
+    offline: "We couldn’t reach Kind Helps. Check your connection, then try again. What you typed is kept.",
   },
 };
 export type AuthWords = typeof en;
@@ -183,6 +185,7 @@ const es: AuthWords = {
     expired: "Ese código venció. Envía uno nuevo.",
     tooMany: "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
     other: "No pudimos completar eso. Inténtalo de nuevo.",
+    offline: "No pudimos conectar con Kind Helps. Revisa tu conexión e inténtalo de nuevo. Lo que escribiste se guarda.",
   },
 };
 
