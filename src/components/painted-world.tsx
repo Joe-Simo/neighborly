@@ -11,6 +11,7 @@ import "./painted-world.css";
 import "./cut-edges.css";
 import "./public-touch.css";
 import { useCutHold } from "./cut-hold";
+import { whenIdle } from "@/lib/idle";
 
 const chapters = {
   opening: { number: "01", name: "An open hand", title: <>Good things begin<br />with <em>an open hand.</em></>, copy: "A little care can go a long way." },
@@ -63,7 +64,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
   useEffect(() => {
     let disposed = false;
     let active: Controller | undefined;
-    let idle: number | undefined;
+    let stopIdle: (() => void) | undefined;
     let defer: ReturnType<typeof setTimeout> | undefined;
     const enterFallback = () => {
       if (disposed || fallbackRef.current) return;
@@ -95,20 +96,18 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     if (heroOnly && openingStartsOn === "interaction") {
       signs.forEach(sign => window.addEventListener(sign, begin, { passive: true }));
       defer = setTimeout(() => {
-        if ("requestIdleCallback" in window) idle = window.requestIdleCallback(begin);
-        else begin();
+        stopIdle = whenIdle(begin, undefined, 0);
       }, 4000);
     } else if (heroOnly) {
       defer = setTimeout(() => {
-        if ("requestIdleCallback" in window) idle = window.requestIdleCallback(enhance, { timeout: 2000 });
-        else enhance();
+        stopIdle = whenIdle(enhance, 2000, 0);
       }, 1200);
     } else enhance();
     return () => {
       disposed = true;
       signs.forEach(sign => window.removeEventListener(sign, begin));
       clearTimeout(defer);
-      if (idle !== undefined) window.cancelIdleCallback(idle);
+      stopIdle?.();
       active?.dispose(); controller.current = null;
     };
   }, [scenes, heroOnly]);
