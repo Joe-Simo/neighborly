@@ -5,6 +5,7 @@ import { releaseFarLayers } from "@/lib/far-layers";
 import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
 import { HomeYes } from "./home-yes";
+import { YearPaper } from "./year-paper";
 import { ThreadCard } from "./thread-card";
 import { ChapterSheet } from "./chapter-sheets";
 import { ReliefLean } from "./relief-lean";
@@ -61,6 +62,7 @@ export function NeighborlyContinuation() {
     <ReliefStory />
     <ReliefLean />
     <HomeYes />
+    <YearPaper />
     <section id="how-neighborly-works" tabIndex={-1} className="neighborly-together" aria-labelledby="together-title">
       <div className="neighborly-together-paper" data-settled={settled} aria-hidden="true" />
       <ChapterSheet to="close" />

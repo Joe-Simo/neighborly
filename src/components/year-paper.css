@@ -1,0 +1,35 @@
+/* The year in paper (year-paper.tsx). The band's run is the stylesheet's: five windows of scroll, the stage held in the window throughout.
+   The slips' window is cut to one of two fixed shapes, so the poster drawn for that shape is the canvas's first frame to the pixel. */
+.year-paper{position:relative;background:#eee7d7;color:#293f32}
+.year-paper-run{height:420svh}
+.year-paper-stage{position:sticky;top:0;height:100svh;display:grid;place-items:center;padding:0 16px}
+.year-paper-figure{margin:0;display:grid;gap:clamp(14px,1.6vw,24px);justify-items:start}
+.year-paper-window{position:relative;width:min(100vw - 32px,(100svh - 190px) * 1.6,1280px);aspect-ratio:16/10;overflow:hidden;background:#eee7d7;box-shadow:0 0 0 1px #b0a08455}
+.year-paper-window img,.year-paper-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* A cut, never a fade: once the canvas has drawn the poster's frame, the poster is put away. */
+.year-paper[data-live=true] .year-paper-window picture{visibility:hidden}
+.year-paper figcaption{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:4px 24px;width:100%}
+.year-paper-title{grid-column:1;margin:0;font:400 clamp(28px,2.6vw,44px)/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.02em}
+.year-paper figcaption p{grid-column:1;margin:0;font-size:17px;line-height:1.4;color:#3d4f43}
+.year-paper figcaption .year-paper-month{grid-column:2;grid-row:1 / span 2;align-self:end;font:400 clamp(20px,1.6vw,28px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;font-feature-settings:"lnum","tnum";color:#293f32;white-space:nowrap}
+/* The flight ends on the year as Reports adds it up: the page's own text, in the flow after the stage, never over the slips. */
+.year-paper-total{min-height:100svh;display:grid;align-content:center;justify-items:start;gap:clamp(18px,2vw,30px);padding:0 max(16px,calc((100vw - min(100vw - 32px,1280px)) / 2));background:#eee7d7}
+.year-paper-count{margin:0;display:grid;font-size:17px;color:#3d4f43}
+.year-paper-count span{font:400 clamp(88px,11vw,184px)/.95 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.05em;font-feature-settings:"lnum","tnum";color:#293f32}
+.year-paper-total dl{margin:0;display:flex;flex-wrap:wrap;gap:16px clamp(28px,4vw,72px);border-top:1px solid #293f3224;padding-top:clamp(14px,1.4vw,20px)}
+.year-paper-total dl div{display:flex;flex-direction:column-reverse}
+.year-paper-total dt{font-size:15px;color:#3d4f43}
+.year-paper-total dd{margin:0;font:400 clamp(30px,3vw,48px)/1.05 'Newsreader','Newsreader Fallback',Georgia,serif;font-feature-settings:"lnum","tnum";color:#293f32;white-space:nowrap}
+.year-paper-note{margin:0;font-size:15px;color:#3d4f43}
+@media(max-width:767px){
+  .year-paper-window{width:min(100vw - 32px,(100svh - 210px) * .75);aspect-ratio:3/4}
+  .year-paper figcaption{grid-template-columns:1fr}
+  .year-paper figcaption .year-paper-month{grid-column:1;grid-row:auto}
+}
+/* Still: the poster is the flight's end, the stage simply stands in the page, and the total follows it. */
+@media(prefers-reduced-motion:reduce){
+  .year-paper-run{height:auto}
+  .year-paper-stage{position:static;height:auto;padding:clamp(48px,8vw,120px) 16px 0}
+  .year-paper-total{min-height:0;padding-block:clamp(40px,6vw,96px)}
+  .year-paper figcaption .year-paper-month{display:none}
+}
