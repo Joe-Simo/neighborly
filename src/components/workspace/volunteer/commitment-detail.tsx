@@ -101,7 +101,7 @@ export function CommitmentDetail({
               <section>
                 <h3>{words.detail.readyTitle}</h3>
                 <p className="live-prep">
-                  {selected.preparation ||
+                  {sampleSaid(selected.preparation) ||
                     words.detail.noPreparation}
                 </p>
                 <Button

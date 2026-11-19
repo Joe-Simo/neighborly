@@ -46,6 +46,7 @@ export function DraftSheet({
   onChange,
   onDiscard,
   words = book(),
+  say = (typed: string) => typed,
 }: {
   drafted: Sheet;
   /** How many drafts wait for a yes, this one included. */
@@ -73,6 +74,8 @@ export function DraftSheet({
   onDiscard?: () => void;
   /** The person's own words. The home page lays this sheet down outside a workspace, and it reads in English there. */
   words?: Words;
+  /** How the sample's own words are said to this reader; the home page and a real conference keep them as typed. */
+  say?: (typed: string) => string;
 }) {
   const text = words.assistant;
   const sheet = text.sheet;
@@ -146,7 +149,7 @@ export function DraftSheet({
               {[missing && sheet.noteDoesNotSay(missing), unpaid && sheet.unpaid, sheet.yours(Number(!draft.kind) + Number(draft.amountRequested === null) + Number(unpaid))].filter(Boolean).join(" ")}
             </p>
           )}
-          <p className="help-quote">“{draft.quote || call.note}”</p>
+          <p className="help-quote">“{say(draft.quote || call.note)}”</p>
           <p className="help-why">
             {sheet.takenAt(format(call.takenAt, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" }))}
             {!call.neighborId && ` ${sheet.notOnFile(firstName)}`}

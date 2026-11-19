@@ -68,9 +68,12 @@ export function CommitmentRows({
               </p>
             </div>
             <div className="live-row-actions">
-              <span className="live-status" data-state={item.status}>
-                {statuses[item.status] ?? item.status.replaceAll("_", " ")}
-              </span>
+              {/* An open place is said once, in the row's line; the status names anything else. */}
+              {!(item.status === "open" && !item.assigneeId) && (
+                <span className="live-status" data-state={item.status}>
+                  {statuses[item.status] ?? item.status.replaceAll("_", " ")}
+                </span>
+              )}
               <Button
                 variant="outline"
                 className="live-row-opens"

@@ -13,9 +13,9 @@ export const ROSA_HELP = 450;
 
 /** Rosa's week, one slip a day, each laid on the figure it belongs to, which then reads the year's own pinned number. */
 const week = [
-  { figure: "calls", day: "Monday", line: "She calls about the rent.", ask: "Lay her call on the calls pile.", done: `${whole.format(sampleYear.calls)} calls.` },
-  { figure: "visits", day: "Wednesday", line: "Visited in pairs.", ask: "Lay the visit on the visits pile.", done: `${whole.format(sampleYear.visits)} home visits.` },
-  { figure: "paid", day: "Thursday", line: "$450 toward rent, paid to the landlord.", ask: "Lay the help on the help.", done: `${dollars.format(sampleYear.helpPaid / 100)} in help.` },
+  { figure: "calls", day: "Day one", line: "She calls about the rent.", ask: "Lay her call on the calls pile.", done: `${whole.format(sampleYear.calls)} calls.` },
+  { figure: "visits", day: "Day three", line: "Visited in pairs.", ask: "Lay the visit on the visits pile.", done: `${whole.format(sampleYear.visits)} home visits.` },
+  { figure: "paid", day: "Day four", line: "$450 toward rent, paid to the landlord.", ask: "Lay the help on the help.", done: `${dollars.format(sampleYear.helpPaid / 100)} in help.` },
 ] as const;
 const finals = { calls: whole.format(sampleYear.calls), visits: whole.format(sampleYear.visits), paid: dollars.format(sampleYear.helpPaid / 100) };
 

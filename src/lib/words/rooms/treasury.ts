@@ -41,7 +41,7 @@ export const en = (t: Terms, place: string) => ({
     paidTo: (name: string) => `Paid to ${name}`,
     to: (name: string) => `To ${name}`,
     from: (name: string) => `From ${name}`,
-    amountTo: "{amount} to {name}",
+    amountTo: "{amount} to\u00a0{name}",
     amountFrom: "{amount} from {name}",
     /** Before a neighbor's name, which is a link: "Rent for Rosa Fontaine". */
     kindFor: (kind: string) => `${kind} for`,
@@ -313,7 +313,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     paidTo: (name) => `Pagado a ${name}`,
     to: (name) => `Para ${name}`,
     from: (name) => `De ${name}`,
-    amountTo: "{amount} para {name}",
+    amountTo: "{amount} para\u00a0{name}",
     amountFrom: "{amount} de {name}",
     kindFor: (kind) => `${kind} para`,
   },

@@ -166,6 +166,7 @@ function Visits() {
         now={now}
         format={format}
         words={words}
+        say={sampleSaid}
         busy={pending || Boolean(asking)}
         fresh={fresh?.id}
         asking={asking}
@@ -394,6 +395,7 @@ function VisitsView({
   now,
   format,
   words,
+  say,
   busy,
   fresh,
   asking,
@@ -409,6 +411,8 @@ function VisitsView({
   format: Workspace["format"];
   /** The person's own words: the view asks for nothing itself. */
   words: Words;
+  /** How the sample's own notes are said to this reader; anything typed comes back as typed. */
+  say: (typed: string) => string;
   busy: boolean;
   /** The visit just planned or written up: its pair joins, or its row settles into Written up. */
   fresh?: Id<"visits">;
@@ -713,7 +717,7 @@ function VisitsView({
                       {format(visit.scheduledAt, { month: "short" })} · {text.written.hours(visit.visitors[0]?.hours ?? 0)} ·{" "}
                       {text.written.miles(miles)}
                     </span>
-                    <span>{visit.notes || text.written.noNotes}</span>
+                    <span>{say(visit.notes) || text.written.noNotes}</span>
                   </p>
                   {href && <ArrowRight className="help-row-arrow" size={20} aria-hidden="true" />}
                 </div>

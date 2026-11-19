@@ -11,7 +11,6 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import { sampleSayer } from "@/lib/words/sample-names";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { sayFailure } from "@/components/workspace/failure";
 import { HelpLoading } from "@/components/workspace/help-line/room";
@@ -27,7 +26,7 @@ import { capital, firstName, need, spoken, together, useVisitDates, type Sheet }
  * Opening it shows a neighbor's details, so it is written down first, like opening the record.
  */
 export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
-  const { data, now, setHeading, words, offerUndo } = useWorkspace();
+  const { data, now, setHeading, words, offerUndo, sampleSaid } = useWorkspace();
   const reinstate = useMutation(api.visits.reinstate);
   const text = words.rooms.visitsRoom.sheet;
   const format = useVisitDates();
@@ -123,6 +122,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
         words={words}
         printed={format(now, { month: "long", day: "numeric", year: "numeric" })}
         sample={data.church.sample}
+        say={sampleSaid}
         onPrint={() => window.print()}
         onCallOff={() => setStep("callOff")}
         onChangeTime={() => setStep("time")}
@@ -230,6 +230,7 @@ function VisitSheetView({
   words,
   printed,
   sample,
+  say,
   onPrint,
   onCallOff,
   onChangeTime,
@@ -243,6 +244,8 @@ function VisitSheetView({
   printed: string;
   /** The sample conference's sheets say so on paper, so a made-up household is never taken for a real one. */
   sample?: boolean;
+  /** How the sample's own words are said to this reader; anything typed comes back as typed. */
+  say: (typed: string) => string;
   onCallOff: () => void;
   onChangeTime: () => void;
 }) {
@@ -338,13 +341,13 @@ function VisitSheetView({
         {request?.summary && (
           <p className="visits-paper-words">
             <span>{text.theirWords}</span>
-            {sampleSayer(!!sample, words.locale)(request.summary)}
+            {say(request.summary)}
           </p>
         )}
         {neighbor.notes && (
           <p className="visits-paper-words">
             <span>{text.goodToKnow}</span>
-            {neighbor.notes}
+            {say(neighbor.notes)}
           </p>
         )}
         {sheet.lastVisit && (
@@ -352,7 +355,7 @@ function VisitSheetView({
             <span>
               {fill(text.lastVisit, { date: format(sheet.lastVisit.at), visitors: together(room, sheet.lastVisit.visitors) })}
             </span>
-            <em className="visits-paper-last">{sheet.lastVisit.notes}</em>
+            <em className="visits-paper-last">{say(sheet.lastVisit.notes)}</em>
           </p>
         )}
         <section className="visits-paper-write">

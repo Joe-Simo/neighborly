@@ -591,11 +591,6 @@
 .treasury-foot[data-beside] p { font-size: 15px; }
 .live-app .treasury-foot[data-beside] [data-slot="button"] { margin-top: var(--space-16); }
 
-/* On a phone every request that waits keeps two lines for what it is for, so the presses fall on one beat. */
-@media (max-width: 560px) {
-  .treasury-waiting .help-row p { min-height: 2lh; }
-}
-
 /* Figures stand in columns: every amount, count and date in the room sets lining figures at one width, and an
    amount that ends a row sits at the row's right, so dollars line up under dollars down the page. */
 .treasury-day,

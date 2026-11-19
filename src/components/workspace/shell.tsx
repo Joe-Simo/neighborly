@@ -1,7 +1,7 @@
 "use client";
 
 import { nothingMadeYet } from "@/lib/first-days";
-import { sampleSayer } from "@/lib/words/sample-names";
+import { sampleSayer, type SampleSentences } from "@/lib/words/sample-names";
 import { nameKeeper } from "@/components/workspace/keep-names";
 import { RoomShown, RoomStill, useEdgeTurn, useMenuArea, useWholeRoom } from "@/components/workspace/room-sheet";
 import { useSearchParams } from "next/navigation";
@@ -182,7 +182,13 @@ export function LiveWorkspace({
     });
   const when = (start: number, end: number) =>
     `${format(start, { weekday: "short" })} · ${format(start, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}–${format(end, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}`;
-  const sampleSaid = sampleSayer(data.church.sample, words.locale);
+  // The seed's own notes in Spanish load on their own, only for a Spanish reader of the sample.
+  const [sentences, setSentences] = useState<SampleSentences>();
+  const notesInSpanish = data.church.sample && words.locale === "es";
+  useEffect(() => {
+    if (notesInSpanish && !sentences) void import("@/lib/words/sample-sentences").then((loaded) => setSentences(loaded.sampleSentences));
+  }, [notesInSpanish, sentences]);
+  const sampleSaid = sampleSayer(data.church.sample, words.locale, sentences);
   // The conference's zone, said in sheets, is worked out once the room is drawn and the page is idle.
   useEffect(() => sayZoneLater(data.church.timeZone, words.locale), [data.church.timeZone, words.locale]);
   const keepNames = nameKeeper(data.people.map((person) => person.name));
