@@ -88,7 +88,8 @@
 
 /* "Print the report" prints these sheets and nothing else: one to a letter page, no shades, no motion. */
 @media print {
-  @page report-book { size: letter; margin: 0.75in; }
+  /* No set size: the sheets take the paper the printer holds, A4 or Letter. */
+  @page report-book { margin: 0.75in; }
   :root[data-print-book] body > :not(.report-book-print) { display: none !important; }
   :root[data-print-book] body > .report-book-print { display: block !important; }
   /* The sheets flow one after another on the paper; only a table or a row is kept whole. */
@@ -98,7 +99,6 @@
   .report-book-print .book-cover :is(h2, h3) { margin-top: 0; }
   .report-book-print .book-mark { margin: 8pt 0 0; }
   .report-book-print .book-folio { display: none; }
-  .report-book-print .book-table { break-inside: avoid; }
   .report-book-print .book-sheet h3 { break-after: avoid; }
   /* Each rule is drawn once, on its row, in an opaque grey: cell borders meeting mid-row printed a tick where they overlap. */
   .report-book-print .book-table :is(th, td) { border-bottom: 0; border-top: 0; }
@@ -106,6 +106,13 @@
   .report-book-print .book-table thead tr { border-bottom-color: #000; }
   .report-book-print .book-table tfoot tr { border-top: 1px solid #000; border-bottom: 0; }
   .report-book-print :is(.book-table tr, .book-note) { break-inside: avoid; }
+  /* A long table runs on to the next page under its own head row; its total is said once, at its end (a footer
+     group would be printed again at the foot of every page, as if each page were added up). */
+  .report-book-print .book-table tfoot { display: table-row-group; }
+  /* A note goes with the table it speaks of: it never starts a page on its own. */
+  .report-book-print .book-note { break-before: avoid; }
+  .report-book-print .book-table:has(+ .book-note) :is(tbody:last-child, tfoot) tr:last-child { break-after: avoid; }
+  .report-book-print .book-table:has(+ .book-note) { break-after: avoid; }
   .report-book-print .book-mark .week-quilt-piece { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   :root:not([data-print-book]) .report-book { display: none; }
 }
