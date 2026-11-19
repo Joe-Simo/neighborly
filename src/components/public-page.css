@@ -145,3 +145,6 @@
 .public-week-close p,.public-words h2{text-wrap:balance}
 /* Across the two columns the heading and its first line of words share one baseline; the chapter number stands above the heading, out of that line. */
 @media(min-width:1024px){.public-words section{align-items:baseline}.public-made section>h2{position:relative;align-self:baseline}.public-made section>h2::before{position:absolute;left:0;bottom:100%}}
+/* At 400 percent zoom (a window 320 wide) the name, the other language and the way in do not fit one row: the way in drops to a second row,
+   right-aligned, so nothing runs past the window. */
+@media(max-width:359px){.public-page-header{flex-wrap:wrap;height:auto;row-gap:0;padding-block:6px}.public-page-header>a:last-child{margin-left:auto}}
