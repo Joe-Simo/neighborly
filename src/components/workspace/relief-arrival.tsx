@@ -8,11 +8,20 @@ import { useRoomShown } from "@/components/workspace/room-sheet";
 /** What each laying of a picture was told, by its id: it plays, or it does not, for as long as it stands. */
 const decided = new Map<string, boolean>();
 const noChange = () => () => {};
+/** Whether a room's picture has been laid since the page loaded: the first is the page loading, every later one a switch. */
+let pageLaid = false;
+/** A picture moves only when the person switched to its room inside the app, never on a page's own load. */
+function plays(name: ReliefName) {
+  const switched = pageLaid;
+  pageLaid = true;
+  return switched && unseen(name);
+}
 
 /**
- * A room's head picture. On the first arrival in a visit, where its two layers exist (`reliefMoves`), the piece
- * makes one small move into its place: the cup is set down, the key goes on its hook. Every other time, and for
- * every picture without layers, it is the flat picture.
+ * A room's head picture. When the person switches to a room inside the app and it is that room's first arrival in
+ * the visit, where its two layers exist (`reliefMoves`), the piece makes one small move into its place: the cup is
+ * set down, the key goes on its hook. On a page's own load, every other time, and for every picture without layers,
+ * it is the flat picture, at its end state.
  */
 export function ArrivingRelief({
   name,
@@ -36,7 +45,7 @@ export function ArrivingRelief({
   const laying = useId();
   const moving = useSyncExternalStore(
     noChange,
-    () => !!move && (decided.get(laying) ?? (decided.set(laying, unseen(name)), decided.get(laying)!)),
+    () => decided.get(laying) ?? (decided.set(laying, plays(name) && !!move), decided.get(laying)!),
     () => false,
   );
   const [loaded, setLoaded] = useState(0);
