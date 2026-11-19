@@ -1524,3 +1524,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-page-head .live-deck { margin-top: 14px; }
   .live-head-actions { margin-top: 20px; }
 }
+
+/* A save button's two labels share one place (SaveLabel): the button keeps the width of the longer one throughout. */
+.live-save-label { display: inline-grid; justify-items: center; }
+.live-save-label > span { grid-area: 1 / 1; }
+.live-save-label[data-saving] > :first-child, .live-save-label:not([data-saving]) > :last-child { visibility: hidden; }

@@ -68,6 +68,19 @@ export function LiveState({
  * what happened, the second line that the form's content is kept, and the one action
  * sends the form again. Put it inside the form, above its buttons.
  */
+/**
+ * A save button's words. Both are laid in the one place and only the one that applies is seen, so the button is as
+ * wide as the longer of them from the start and never changes width while its save is in flight.
+ */
+export function SaveLabel({ saving, idle, busy }: { saving: boolean; idle: ReactNode; busy: ReactNode }) {
+  return (
+    <span className="live-save-label" data-saving={saving || undefined}>
+      <span>{idle}</span>
+      <span>{busy}</span>
+    </span>
+  );
+}
+
 export function LiveFailure({
   message,
   kept,

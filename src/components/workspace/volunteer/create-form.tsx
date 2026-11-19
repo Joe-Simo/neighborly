@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
 import { LiveField, markWrong } from "@/components/workspace/primitives";
 import { refusals } from "@/lib/refusals";
-import { LiveWaiting, LiveFailure } from "@/components/workspace/states";
+import { LiveWaiting, LiveFailure, SaveLabel } from "@/components/workspace/states";
 import type { ActionKind } from "@/components/workspace/navigation";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -357,15 +357,11 @@ export function LiveCreateForm({
       <div className="live-form-actions">
         <Button type="submit" disabled={pending}>
           {/* Waiting is said in words alone: nothing turns beside them. */}
-          {saving ? (
-            kind === "announcement" ? form.saving : (own?.saving ?? text.saving)
-          ) : kind === "invite" ? (
-            text.createInvitation
-          ) : kind === "announcement" ? (
-            form.save
-          ) : (
-            acts[kind]
-          )}
+          <SaveLabel
+            saving={saving}
+            idle={kind === "invite" ? text.createInvitation : kind === "announcement" ? form.save : acts[kind]}
+            busy={kind === "announcement" ? form.saving : (own?.saving ?? text.saving)}
+          />
         </Button>
       </div>
     </form>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LiveFailure } from "@/components/workspace/states";
+import { LiveFailure, SaveLabel } from "@/components/workspace/states";
 import { useMutation } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import type { FunctionReturnType } from "convex/server";
@@ -141,7 +141,7 @@ function TimeOffConfirmation({
             }
           }}
         >
-          {saving ? words.timeOffForm.saving : words.timeOffForm.confirm}
+          <SaveLabel saving={saving} idle={words.timeOffForm.confirm} busy={words.timeOffForm.saving} />
         </Button>
       </div>
     </div>

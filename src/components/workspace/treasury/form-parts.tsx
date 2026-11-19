@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
+import { LiveFailure, LiveWaiting, SaveLabel } from "@/components/workspace/states";
 
 /** What a form's submit resolves to: a message when the entry was refused, null when it was recorded. */
 export type Refusal = string | null;
@@ -31,7 +31,7 @@ export function FormActions({
         {w.cancel}
       </Button>
       <Button type="submit" disabled={saving}>
-        {saving ? w.recording : children}
+        <SaveLabel saving={saving} idle={children} busy={w.recording} />
       </Button>
     </div>
   );

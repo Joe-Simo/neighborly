@@ -505,7 +505,7 @@ function LiveRooms({
   const more = shell.more;
   return (
     <>
-    <RoomsAhead key="ahead" data={dashboard} />
+    <RoomsAhead key="ahead" data={dashboard} sample={sampleVisitor === true} area={area} />
     <FirstLookProvider key="room" value={null}>
     <LiveWorkspace
       area={area}
