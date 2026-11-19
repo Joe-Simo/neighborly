@@ -1070,7 +1070,8 @@ final class ShellTabs: UITabBarController, UITabBarControllerDelegate {
             shell.view.leadingAnchor.constraint(equalTo: leading),
             shell.view.trailingAnchor.constraint(equalTo: holder.view.trailingAnchor),
             shell.view.topAnchor.constraint(equalTo: holder.view.topAnchor),
-            shell.view.bottomAnchor.constraint(equalTo: holder.view.bottomAnchor),
+            // The page ends where the keyboard begins, as a native view's does, so a sheet's fields and its buttons rise above it.
+            shell.view.bottomAnchor.constraint(equalTo: holder.view.keyboardLayoutGuide.topAnchor),
         ])
         shell.didMove(toParent: holder)
     }
