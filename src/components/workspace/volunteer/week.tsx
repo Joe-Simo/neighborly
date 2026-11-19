@@ -38,6 +38,11 @@ export function WeekSection() {
   const [briefed, setBriefed] = useState(false);
   if (incoming.length > 0 && !briefed) setBriefed(true);
   const far = useFarScreen();
+  // A choice that waits for this person comes first, right under the head, ahead of the week's figures, so it is met
+  // before anything else. It is settled from the data on the first render and held for the visit: answering never moves
+  // a section, and the answered card leaves in its own cut.
+  const [choiceFirst] = useState(incoming.length > 0);
+  const choices = <IncomingRequests {...requests} place={words.week.comingUp} />;
   const said = (
     <>
         {data.announcements.length ? (
@@ -66,10 +71,11 @@ export function WeekSection() {
       <CardGreeting />
       {/* Sewn onto the head's own rule, before the first thing to do. */}
       <WeekQuilt />
+      {choiceFirst && choices}
       <StartHere />
       <FirstWeekSlips />
       <WeekNote brief={briefed || incoming.length > 0} />
-      <IncomingRequests {...requests} place={words.week.comingUp} />
+      {!choiceFirst && choices}
       {firstDays ? (
         <LiveEmpty title={first.title}>
           {first.detail}
