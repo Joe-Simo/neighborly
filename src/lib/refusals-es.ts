@@ -207,6 +207,9 @@ export const serverRefusalsPlain: Record<string, { en: string; es: string }> = {
   "A planned row was patched before it was planned.": { en: "The file couldn’t be brought in. Nothing was changed. Try again.", es: "No se pudo traer el archivo. No se cambió nada. Inténtalo de nuevo." },
   "The sample's rows name each other in a circle.": { en: "The sample couldn’t be set up. Nothing was changed. Try again.", es: "No se pudo preparar la muestra. No se cambió nada. Inténtalo de nuevo." },
 };
+/** A refusal for something no longer there ("Call not found."): the page is behind, so the next step is the same in each. */
+export const notFound = /not found\.$/;
+export const nextStep = { en: "Reload the page.", es: "Vuelve a cargar la página." };
 const fieldEs = (label: string) => fieldLabelsEs[label] ?? label;
 
 /**

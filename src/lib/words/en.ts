@@ -1,6 +1,6 @@
 import { measured as m } from "../jev-set";
 import { refusals } from "../refusals";
-import { sayLikeEnglish, serverRefusalPatternsEs, serverRefusalsEs, serverRefusalsPlain } from "../refusals-es";
+import { nextStep, notFound, sayLikeEnglish, serverRefusalPatternsEs, serverRefusalsEs, serverRefusalsPlain } from "../refusals-es";
 import * as helpLineWords from "./rooms/help-line";
 import * as helpLineFormsWords from "./rooms/help-line-forms";
 import * as neighborsWords from "./rooms/neighbors";
@@ -381,7 +381,7 @@ export function en(set: WordSet) {
       failed: "That change couldn’t be saved. Try again.",
       /** A refusal the backend says in English, in this language, keyed by the English sentence. */
       refused: {
-        ...Object.fromEntries([...Object.values(refusals), ...Object.keys(serverRefusalsEs)].map((sentence) => [sentence, sentence])),
+        ...Object.fromEntries([...Object.values(refusals), ...Object.keys(serverRefusalsEs)].map((sentence) => [sentence, notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence])),
         ...Object.fromEntries(Object.entries(serverRefusalsPlain).map(([sentence, said]) => [sentence, said.en])),
       } as Record<string, string>,
       /** A refusal built around a name or a number: its pattern, and how this language says it. */
