@@ -261,8 +261,6 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   await db.insert("tasks", { churchId, title: "Restock the food pantry shelf", dueAt: now + 4 * DAY, assigneeId: others[4], complete: false });
   await db.insert("tasks", { churchId, title: "Bring the visit sheets to Tuesday's meeting", dueAt: now + 6 * DAY, assigneeId: others[4], complete: false });
   await db.insert("tasks", { churchId, title: "Send thank-you notes for the fall collection", dueAt: null, assigneeId: others[2], complete: true });
-  // The week's own note to the conference, pointing at what is waiting without naming a neighbor to every member.
-  await db.insert("announcements", { churchId, title: "Before Tuesday's meeting", body: "Two calls are waiting to be returned, a water bill needs a pair to visit, and one visit still needs its write-up.", authorId: owner, createdAt: now - DAY });
   await db.insert("announcements", { churchId, title: "Winter coat drive starts next week", body: "Bring coats to the parish office. Home visitors, ask each family for sizes.", authorId: owner, createdAt: now - 2 * DAY });
 
   // From the start of the last full fiscal year (October 1) to today, so that year and every
@@ -470,11 +468,17 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   await db.insert("assistanceRequests", { churchId, neighborId: households[14], kind: "utility", summary: "Past-due water bill", amountRequested: 9500, status: "open", decisionNote: "", payeeKind: "utility", payeeName: "County Water Authority", source: "person", createdBy: staff[2], createdAt: clock(now - DAY, callSlots) });
 
   // A call waiting to be returned whose note names two amounts, so a draft from it leaves the amount for a person.
-  await db.insert("calls", { churchId, neighborId: households[63], callerName: "Denise Walker", phone: "(100) 555-0163", note: "Light bill is $145, and $60 is past due from last month.", callback: "needed", takenBy: staff[2], takenAt: clock(now - DAY, callSlots) });
+  const deniseCall = await db.insert("calls", { churchId, neighborId: households[63], callerName: "Denise Walker", phone: "(100) 555-0163", note: "Light bill is $145, and $60 is past due from last month.", callback: "needed", takenBy: staff[2], takenAt: clock(now - DAY, callSlots) });
 
   // A call with a draft already made from it and waiting for a person's yes.
+  const denise = await db.get("calls", deniseCall);
   const drafted = await db.insert("calls", { churchId, neighborId: households[64], callerName: "Rosa Fontaine", phone: "(100) 555-0164", note: "Behind on November rent, $450. The landlord is Mill Road Rentals.", callback: "needed", takenBy: staff[1], takenAt: clock(now - DAY, callSlots) });
   await db.insert("requestDrafts", { churchId, callId: drafted, kind: "rent", amountRequested: 45000, payeeKind: "landlord", payeeName: "Mill Road Rentals", quote: "Behind on November rent, $450.", notes: [], verification: "checked", createdBy: staff[1], createdAt: now - DAY / 2 });
+  // The week's own note to the conference, pointing at what is waiting without naming a neighbor to every member.
+  // Written half an hour after the later of the two calls it counts, and never after now.
+  const rosa = await db.get("calls", drafted);
+  const counted = Math.max(rosa?.takenAt ?? 0, denise?.takenAt ?? 0);
+  await db.insert("announcements", { churchId, title: "Before Tuesday's meeting", body: "Two calls are waiting to be returned, a water bill needs a pair to visit, and one visit still needs its write-up.", authorId: owner, createdAt: Math.min(now - 60000, counted + 30 * 60000) });
   // What the help line already knew when Rosa and Denise called again, and what Marcus and Yolanda's visitors should know, so their records read as one story.
   await db.insert("neighborNotes", { churchId, neighborId: households[20], body: "Prefers a call in the morning; he hears the phone better then.", authorId: staff[0], createdAt: clock(now - 10 * DAY, callSlots) });
   await db.insert("neighborNotes", { churchId, neighborId: households[14], body: "The bill came after a leak under the sink. The landlord fixed the leak; the water bill is hers.", authorId: staff[2], createdAt: clock(now - 2 * DAY, callSlots) });
