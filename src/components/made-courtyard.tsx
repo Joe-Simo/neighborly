@@ -10,7 +10,7 @@ const sheets = ["0", "1", "people", "2", "3", "4", "5"] as const;
 const FARTHEST = .7;
 
 const source = (sheet: (typeof sheets)[number], width: 960 | 1774) =>
-  sheet === "people" ? `/assets/made/courtyard-people-${width}.webp` : `/assets/made/courtyard-sheet-${sheet}-${width}.webp`;
+  sheet === "people" ? `/assets/made/courtyard-people-${width}.webp` : `/assets/made/courtyard-sheet-${sheet}-${width}${sheet === "5" ? "" : "-filled"}.webp`;
 
 /**
  * The courtyard drawn apart into its paper sheets, laid back together as the page scrolls past it.
