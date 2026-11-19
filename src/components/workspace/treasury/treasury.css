@@ -611,3 +611,14 @@
     text-align: right;
   }
 }
+
+/* On a phone the waiting requests read as a list of amounts, each with its own press at the size of its words,
+   not a stack of full-width bars that outweighs the figures. */
+@media (max-width: 599px) {
+  .live-app .treasury-waiting:not(.treasury-uncleared) .help-row [data-slot="button"] {
+    width: auto;
+    min-height: 44px;
+    justify-self: start;
+    margin-left: 0;
+  }
+}
