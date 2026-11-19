@@ -47,15 +47,34 @@ const appArt = ({ request, url }: { request: Request; url: URL }) =>
   inApp && request.method === "GET" && url.origin === self.location.origin && url.pathname.startsWith("/assets/relief/");
 const keptArt = new CacheFirst({ cacheName: APP_PAGES + deploy, plugins: [new CacheableResponsePlugin({ statuses: [200] })] });
 
+/**
+ * The public pages (home, about, privacy, in both languages) say nothing about anyone, so on any device a page once
+ * read is kept, with the art it drew: from the network whenever there is one, from what was kept when there is none.
+ */
+const PUBLIC_PAGES = "kh-public-pages-";
+const publicPaths = /^\/(?:about(?:\/.*)?|sobre(?:\/.*)?|privacy|privacidad)?$/;
+const publicPage = ({ request, url }: { request: Request; url: URL }) =>
+  request.mode === "navigate" && url.origin === self.location.origin && publicPaths.test(url.pathname) && url.search === "";
+const keptPublic = new NetworkFirst({
+  cacheName: PUBLIC_PAGES + deploy,
+  plugins: [
+    new CacheableResponsePlugin({ statuses: [200] }),
+    { cacheWillUpdate: async ({ response }) => (response.redirected || response.type !== "basic" ? null : response) },
+  ],
+});
+const publicArt = ({ request, url }: { request: Request; url: URL }) =>
+  request.method === "GET" && url.origin === self.location.origin && (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/fonts/"));
+const keptPublicArt = new CacheFirst({ cacheName: PUBLIC_PAGES + deploy, plugins: [new CacheableResponsePlugin({ statuses: [200] })] });
+
 // A new deploy lets go of the pages kept under the one before.
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((names) => Promise.all(names.filter((name) => name.startsWith(APP_PAGES) && name !== APP_PAGES + deploy).map((name) => caches.delete(name)))),
+    caches.keys().then((names) => Promise.all(names.filter((name) => (name.startsWith(APP_PAGES) && name !== APP_PAGES + deploy) || (name.startsWith(PUBLIC_PAGES) && name !== PUBLIC_PAGES + deploy)).map((name) => caches.delete(name)))),
   );
 });
 
-// Pages always come from the network, but for the app's own (above). With no connection, the offline page
-// answers instead of the browser's own error.
+// Other pages always come from the network. With no connection, a page not kept above is answered by the offline page
+// instead of the browser's own error.
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
@@ -64,6 +83,8 @@ const serwist = new Serwist({
   runtimeCaching: [
     { matcher: appPage, handler: keptPages },
     { matcher: appArt, handler: keptArt },
+    { matcher: publicPage, handler: keptPublic },
+    { matcher: publicArt, handler: keptPublicArt },
     {
       matcher: ({ request }) => request.mode === "navigate",
       handler: new NetworkOnly(),
