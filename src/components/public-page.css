@@ -174,3 +174,5 @@
 @media(min-width:1600px){.public-words section,.public-made .public-made-figure{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 /* On a phone a link inside a sentence (the translation note's, the project's address) is a 44px target: its padding reaches above and below the line without moving it. */
 @media(max-width:430px){.public-words p a:not([class]),.public-words li a:not([class]),.public-words .public-words-note a,.public-words .public-words-address{padding-block:12px;margin-block:-12px}}
+/* Forced colours drop the paper tone, so each torn sheet keeps a plain system rule at its foot instead of a lone shade. */
+@media (forced-colors:active){.public-words :is(h1,section){filter:none;border-bottom:1px solid CanvasText}}
