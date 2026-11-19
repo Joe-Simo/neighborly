@@ -132,12 +132,19 @@ export function DateField({
     />
     </Suspense>
   );
-  // Whichever way the month closes (a day chosen, Escape, a tap outside), focus goes back to what opened it:
-  // the button on a desk, the field itself on a phone. There is no trigger for the library to return to.
+  // Whichever way the month closes (a day chosen, Escape, a tap outside), focus goes back to the field, where the
+  // keys are: a day is typed there, or Down opens the month. The button beside it is for a pointer and is no Tab stop.
+  // There is no trigger for the library to return to.
   const field = useRef<HTMLSpanElement>(null);
   const backToOpener = (event: Event) => {
     event.preventDefault();
-    field.current?.querySelector<HTMLElement>(sheet ? ".live-date-words" : ".live-date-open")?.focus({ preventScroll: true });
+    field.current?.querySelector<HTMLElement>(".live-date-words")?.focus({ preventScroll: true });
+  };
+  // The month opens on its day, not on its arrows: the chosen day, else today, else the first day that can be chosen,
+  // which the month itself keeps as its one Tab stop. Arrows move between days and Enter takes one.
+  const toTheDay = (event: Event) => {
+    event.preventDefault();
+    (event.currentTarget as HTMLElement).querySelector<HTMLElement>('.rdp-day_button[tabindex="0"]')?.focus();
   };
   return (
     <Popover open={open && !sheet} onOpenChange={setOpen}>
@@ -173,7 +180,7 @@ export function DateField({
               }
             }}
           />
-          <button type="button" className="live-date-open" disabled={disabled} tabIndex={sheet ? -1 : 0} aria-label={label ? `${label}, ${words.dateField.choose.toLowerCase()}` : words.dateField.choose} onClick={(event) => {
+          <button type="button" className="live-date-open" disabled={disabled} tabIndex={-1} aria-label={label ? `${label}, ${words.dateField.choose.toLowerCase()}` : words.dateField.choose} onClick={(event) => {
             // The month opens below. A field low on the screen is brought up first; where the page ends
             // and there is still no room, the month opens beside the field, so it never covers what is being read above.
             const field = event.currentTarget.parentElement;
@@ -221,11 +228,11 @@ export function DateField({
           {missing}
         </small>
       )}
-      <PopoverContent className="live-date-sheet" onCloseAutoFocus={backToOpener} aria-label={label || words.dateField.choose} collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
+      <PopoverContent className="live-date-sheet" onOpenAutoFocus={toTheDay} onCloseAutoFocus={backToOpener} aria-label={label || words.dateField.choose} collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
         {month}
       </PopoverContent>
       <Dialog open={open && sheet} onOpenChange={setOpen}>
-        <DialogContent className="live-date-sheet live-date-bottom" onCloseAutoFocus={backToOpener} showCloseButton={false}>
+        <DialogContent className="live-date-sheet live-date-bottom" onOpenAutoFocus={toTheDay} onCloseAutoFocus={backToOpener} showCloseButton={false}>
           <div className="live-date-bar">
             <DialogTitle>{label || words.dateField.choose}</DialogTitle>
             <DialogClose className="live-date-done">{words.dateField.done}</DialogClose>
