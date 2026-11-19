@@ -307,7 +307,9 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       const marginX = stage.width * .08;
       const left = Math.max(0, (-marginX - stage.left) / stage.width), right = Math.min(1, (innerWidth + marginX - stage.left) / stage.width);
       const moving = time - scrolledAt < 120;
-      const nowShade = moving ? Math.min(1, Math.sqrt((1920 * 1080) / Math.max(1, innerWidth * innerHeight))) : 1;
+      // While the page moves, the painting is shaded at three quarters of its pixels across (the soft painting shows no difference in motion), and whole again once it rests:
+      // presenting the full canvas on every scroll frame alone took a 1440 window's frame past 33ms.
+      const nowShade = moving ? Math.min(.75, Math.sqrt((1920 * 1080) / Math.max(1, innerWidth * innerHeight))) : 1;
       if (nowShade !== shade) {
         shade = nowShade; drawn = false;
         renderer.domElement.style.transform = shade < 1 ? `scale(${1 / shade})` : "";
