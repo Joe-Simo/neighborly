@@ -23,7 +23,7 @@ export const en = (t: Terms, place: string) => ({
     callWaiting: "Call saved. It is waiting below until someone calls back.",
     returned: (name: string) => `Marked returned. ${name} has been called back.`,
     returnedUndone: (name: string) => `${name} is back on the call-back list.`,
-    callTakenBack: "The call is off the list.",
+    callTakenBack: "The call is off the call-back list.",
     neighborAdded: "Neighbor added. This call is now on their record.",
   },
   /** What went wrong, and what is still true. */
@@ -146,7 +146,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     callWaiting: "Llamada guardada. Espera aquí abajo hasta que alguien devuelva la llamada.",
     returned: (name) => `Marcada como devuelta. Ya se le devolvió la llamada a ${name}.`,
     returnedUndone: (name) => `${name} vuelve a esperar que le devuelvan la llamada.`,
-    callTakenBack: "La llamada se quitó de la lista.",
+    callTakenBack: "La llamada salió de las llamadas por devolver.",
     neighborAdded: `Se agregó al ${t.neighbor}. Esta llamada ya está en su registro.`,
   },
   refused: {
