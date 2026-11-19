@@ -203,6 +203,7 @@ export function LiveField({
   });
   const noteId = useId();
   const labelId = useId();
+  const helpId = useId();
   const [note, setNote] = useState("");
   // Only the first wrong field of a form is said aloud as it is refused (it takes focus too); the rest are read when reached.
   const [first, setFirst] = useState(false);
@@ -222,7 +223,7 @@ export function LiveField({
       // What the form itself had said about this control is put back once the person answers.
       if (control.getAttribute("aria-invalid") !== "true") control.dataset.needed = control.getAttribute("aria-invalid") ?? "";
       control.setAttribute("aria-invalid", "true");
-      control.setAttribute("aria-describedby", noteId);
+      control.setAttribute("aria-describedby", help ? `${noteId} ${helpId}` : noteId);
       // The note sits inside the label, so the field is named by its label words alone: the note is said once, as its description.
       if (!control.hasAttribute("aria-labelledby")) {
         control.setAttribute("aria-labelledby", labelId);
@@ -244,8 +245,9 @@ export function LiveField({
       );
     };
     const settle = () => {
-      for (const control of label.querySelectorAll<HTMLElement>(`[aria-describedby="${noteId}"]`)) {
-        control.removeAttribute("aria-describedby");
+      for (const control of label.querySelectorAll<HTMLElement>(`[aria-describedby~="${noteId}"]`)) {
+        if (help) control.setAttribute("aria-describedby", helpId);
+        else control.removeAttribute("aria-describedby");
         if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement) control.setCustomValidity("");
         if (control.dataset.namedForNote !== undefined) {
           control.removeAttribute("aria-labelledby");
@@ -267,7 +269,19 @@ export function LiveField({
       label.removeEventListener("input", settle);
       label.removeEventListener("change", settle);
     };
-  }, [noteId, labelId, workspace]);
+  }, [noteId, labelId, helpId, help, workspace]);
+  // A hint is said as the field's description, not as part of its name: the field is named by its label words alone.
+  useEffect(() => {
+    const control = help ? field.current?.querySelector<HTMLElement>("input:not([type=hidden]):not(.live-date-value), textarea, select, [role=combobox]") : null;
+    if (!control) return;
+    const named = !control.hasAttribute("aria-labelledby") && !control.hasAttribute("aria-label");
+    if (named) control.setAttribute("aria-labelledby", labelId);
+    if (!control.hasAttribute("aria-describedby")) control.setAttribute("aria-describedby", helpId);
+    return () => {
+      if (control.getAttribute("aria-describedby") === helpId) control.removeAttribute("aria-describedby");
+      if (named && control.getAttribute("aria-labelledby") === labelId) control.removeAttribute("aria-labelledby");
+    };
+  }, [help, helpId, labelId]);
   return (
     <label className="live-field" ref={field}>
       <span id={labelId}>{label}</span>
@@ -277,7 +291,7 @@ export function LiveField({
           {note}
         </small>
       )}
-      {help && <small>{help}</small>}
+      {help && <small id={helpId}>{help}</small>}
     </label>
   );
 }
