@@ -85,3 +85,5 @@
    assistant's line, set at the sheet's foot, so the room it does not need lies between its button and that line, not as a blank band of white below. */
 .home-yes-sheet .help-sheet{display:flex;flex-direction:column}
 .home-yes-sheet .help-sheet>.help-assistant-line,.home-yes-sheet .help-sheet>:last-child{margin-top:auto}
+/* The help line's card on the home page is the room's own: its buttons are cut and set as the room's are (4px, regular weight). */
+.home-yes-stage .help-actions [data-slot=button]{border-radius:4px;font-weight:400}

@@ -37,7 +37,7 @@
 .fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
 /* Only its colour eases. Were everything to ease, the button would still be hidden for a moment after its place is shown, and the keyboard could not land on it. */
 .fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none;transition-property:background-color}
-.fresco-open[data-slot=button]:hover{background:#3a5040}
+.fresco-open[data-slot=button]:hover{background:#223e2d}
 
 /* One opening in the wall. It is the doorway first, then the frame of the fresco. */
 .fresco-frame{position:absolute;left:0;top:0;z-index:1;box-shadow:0 0 0 calc(var(--grow) * 12px) #f5f0e3,0 0 0 calc(var(--grow) * 13px) #cdbf9f,calc(28px * var(--sun-k,1) * var(--sun-t,0)) calc(28px * var(--sun-k,1)) 70px #51433040}
@@ -268,3 +268,6 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .relief-panel .relief-hold{transform-origin:50% 0}
 .relief-panel[data-leaf-turning] .relief-hold{will-change:transform}
 .relief-panel[data-leaf-turning]::before{content:"";position:absolute;z-index:2;left:0;right:0;top:-14px;height:14px;pointer-events:none;background:linear-gradient(#3b2a1200,#3b2a121f)}
+/* One green for the public page's framed way in: the doors' button is the hero's, at rest and under the pointer. */
+.fresco-open[data-slot=button]{background:#304e3c}
+.fresco-open[data-slot=button]:hover{background:#223e2d}
