@@ -2,7 +2,7 @@
 
 import { DateLeaf } from "@/components/workspace/primitives";
 
-import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf, openUp } from "@/components/workspace/fold";
+import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf, openUp, takeLine, useKeptLine } from "@/components/workspace/fold";
 import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
 import {
   startTransition,
@@ -153,7 +153,10 @@ function HelpLine() {
   const settle = (call: Call) =>
     setDrafts((all) => all.filter((one) => one.call.id !== call.id));
   const [step, setStep] = useState<Step | null>(null);
-  const [done, setDone] = useState<Done | null>(null);
+  // A line with its way back is kept while the person steps into another room, and is here again on return in its time.
+  const [returned] = useState(() => takeLine<Done>("help-line"));
+  const [done, setDone] = useState<Done | null>(returned?.value ?? null);
+  useKeptLine("help-line", done?.back ? done : undefined, returned);
   // An undo the server would not take: said in plum, and the act stands.
   const [undoRefused, setUndoRefused] = useState("");
   const finish = (message: string, more: Omit<Done, "message"> = {}) => {
@@ -337,6 +340,7 @@ function HelpLine() {
     <>
       {done && (
         <HelpDone
+          remaining={returned && done === returned.value ? returned.remaining : undefined}
           // A filed draft is a new line each time, so its words set off from their own sheet.
           key={done.filed ? `${done.record}:${done.filed.asks}` : "said"}
           filed={done.filed}

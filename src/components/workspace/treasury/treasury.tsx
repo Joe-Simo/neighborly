@@ -6,6 +6,7 @@ import { useMutation, useQueries } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import { HelpDone } from "@/components/workspace/help-line/room";
 import { UndoAct } from "@/components/workspace/undo";
+import { takeLine, useKeptLine } from "@/components/workspace/fold";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { sayFailure } from "@/components/workspace/failure";
@@ -113,9 +114,14 @@ export function TreasurySection() {
   useEffect(() => {
     if (payAsked) window.history.replaceState(window.history.state, "", window.location.pathname);
   }, [payAsked]);
-  const [done, setDone] = useState("");
+  type Back = { run: () => Promise<unknown>; said: string };
+  // A line with its way back is kept while the person steps into another room, and is here again on return in its time.
+  const [returned] = useState(() => takeLine<{ done: string; back: Back }>("treasury"));
+  const [done, setDone] = useState(returned?.value.done ?? "");
   // The reverse of the step just taken, offered on its line until the line goes.
-  const [back, setBack] = useState<{ run: () => Promise<unknown>; said: string }>();
+  const [back, setBack] = useState<Back | undefined>(returned?.value.back);
+  const line = useMemo(() => (done && back ? { done, back } : undefined), [done, back]);
+  useKeptLine("treasury", line, returned);
   // An undo the server would not take: said in plum, and the entry stands.
   const [undoRefused, setUndoRefused] = useState("");
   const recordMoney = () => {
@@ -223,6 +229,7 @@ export function TreasurySection() {
         <HelpDone
           key={done}
           className="treasury-notice"
+          remaining={returned && back === returned.value.back ? returned.remaining : undefined}
           action={back && (
             <UndoAct
               run={async () => {
