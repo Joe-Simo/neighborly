@@ -30,7 +30,7 @@ const chapters = {
 const acceptedStill = "/assets/living-relief-accepted-1440.avif 1440w, /assets/living-relief-accepted-2880.avif 2880w";
 function fallbackSource(scene: PaintedScene, mobile: boolean, accepted = false) {
   if (scene === "opening" && accepted) return mobile ? "/assets/living-relief-mobile-accepted.webp" : "/assets/living-relief-accepted.webp";
-  if (scene === "opening") return mobile ? "/assets/living-relief-mobile.webp" : "/assets/living-relief-poster.webp";
+  if (scene === "opening") return mobile ? "/assets/living-relief-mobile-gl.webp" : "/assets/living-relief-poster-gl.webp";
   return `/assets/painted-world/${scene === "complete" ? "welcome" : scene}${mobile ? "-mobile" : ""}.webp`;
 }
 /**
@@ -234,9 +234,9 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
         <div className="painted-world-art" ref={host} {...(heroOnly ? { role: "img", "aria-label": "Two people stand side by side. Below them, one hand passes a small card to another's open palm." } : { "aria-hidden": true })} />
         {(!ready || failed) && <picture className="painted-world-fallback">
           {/* The first picture a visitor sees: the lightest file their screen can use, asked for before anything else. */}
-          {heroOnly && openingOutcome !== "accepted" && <source media="(max-width:700px)" type="image/avif" srcSet="/assets/living-relief-mobile-480.avif 480w, /assets/living-relief-mobile-780.avif 780w" sizes="100vw" />}
+          {heroOnly && openingOutcome !== "accepted" && <source media="(max-width:700px)" type="image/avif" srcSet="/assets/living-relief-mobile-gl-390.avif 390w" sizes="100vw" />}
           <source media={heroOnly ? "(max-width:700px)" : "(max-width:700px), (max-width:1000px) and (max-aspect-ratio:9/10)"} srcSet={fallbackSource(visibleScene, true, openingOutcome === "accepted")} />
-          {heroOnly && openingOutcome !== "accepted" && <source type="image/avif" srcSet="/assets/living-relief-poster-960.avif 960w, /assets/living-relief-poster-1440.avif 1440w, /assets/living-relief-poster-2880.avif 2880w" sizes="100vw" />}
+          {heroOnly && openingOutcome !== "accepted" && <source type="image/avif" srcSet="/assets/living-relief-poster-gl-1440.avif 1440w, /assets/living-relief-poster-gl-1920.avif 1920w" sizes="100vw" />}
           {heroOnly && openingOutcome === "accepted" && <source type="image/avif" srcSet={acceptedStill} sizes="100vw" />}
           <img crossOrigin="anonymous" fetchPriority="high" decoding="sync" src={fallbackSource(visibleScene, false, openingOutcome === "accepted")} alt="" />
         </picture>}
