@@ -43,7 +43,7 @@ export function ClosingBand({ language = "en" }: { language?: Language }) {
     <span className="neighborly-close-hand" aria-hidden="true">
       <picture className="thread-empty">
         <source media="(max-width:700px) and (orientation:portrait), (max-width:480px)" srcSet="/assets/home/hand-empty-mobile.webp" width={170} height={165} />
-        <img src="/assets/home/hand-empty.webp" width={360} height={295} alt="" loading="lazy" decoding="async" />
+        <img src="/assets/home/hand-empty.webp" srcSet="/assets/home/hand-empty.webp 360w, /assets/home/hand-empty-2x.webp 720w" sizes="28vw" width={360} height={295} alt="" loading="lazy" decoding="async" />
       </picture>
     </span>
     <div className="neighborly-close-words">
