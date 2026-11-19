@@ -6,7 +6,7 @@ import { PublicLanguage } from "@/components/public-language";
 import { ReaderLanguage } from "@/components/reader-language";
 import { PublicEnding } from "@/components/public-ending";
 import { edgeWords } from "@/lib/edge-words";
-import { linkPreviewIn, linkCardIn } from "@/lib/link-preview";
+import { ownCardIn, ownTwitterCard } from "@/lib/link-preview";
 import { privacyWords } from "@/lib/privacy-words";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
@@ -22,8 +22,8 @@ export function privacyMetadata(language: Language): Metadata {
     title: said.tab,
     description: said.description,
     alternates: { canonical: said.path, languages: { ...Object.fromEntries(languages.map((other) => [other, privacyWords[other].path])), "x-default": privacyWords.en.path } },
-    openGraph: { ...linkPreviewIn(language), url: said.path, title: said.tab, description: said.preview },
-    twitter: { ...linkCardIn(language), title: said.tab, description: said.preview },
+    openGraph: { ...ownCardIn(language), url: said.path, title: said.tab, description: said.preview },
+    twitter: { ...ownTwitterCard, title: said.tab, description: said.preview },
   };
 }
 

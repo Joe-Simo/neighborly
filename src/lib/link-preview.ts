@@ -13,11 +13,15 @@ const described = {
 };
 /** A preview names its language the way the apps that read it expect: language and region. */
 const locales = { en: "en_US", es: "es_LA" };
-export const linkPreviewIn = (language: keyof typeof described) => ({
+/** For a page with its own card (opengraph-image.tsx beside it): everything but the picture, which the card file gives. */
+export const ownCardIn = (language: keyof typeof described) => ({
   type: "website",
   siteName: "Kind Helps",
   locale: locales[language],
   alternateLocale: locales[language === "en" ? "es" : "en"],
+}) satisfies Metadata["openGraph"];
+export const linkPreviewIn = (language: keyof typeof described) => ({
+  ...ownCardIn(language),
   images: [{ ...picture, alt: described[language] }],
 }) satisfies Metadata["openGraph"];
 export const linkPreview = linkPreviewIn("en");
@@ -26,3 +30,4 @@ export const linkCardIn = (language: keyof typeof described) => ({
   card: "summary_large_image",
   images: [{ url: "/assets/link-card.jpg", alt: described[language] }],
 }) satisfies Metadata["twitter"];
+export const ownTwitterCard = { card: "summary_large_image" } satisfies Metadata["twitter"];
