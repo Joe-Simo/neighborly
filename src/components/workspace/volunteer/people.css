@@ -95,6 +95,8 @@
 .team-faces .live-avatar + .live-avatar { margin-left: -8px; }
 .team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
 .live-app .team-card .live-team-line { gap: var(--space-8) 20px; min-height: 44px; }
+/* Teams side by side keep their members on one line across: each description holds two lines' room. */
+@media (min-width: 1181px) { .live-app .team-card > p { min-height: 2lh; } }
 /* Two teams side by side need a desk; below it each team has the full width for its members. */
 @media (max-width: 900px) {
   .live-app .live-teams { grid-template-columns: minmax(0, 1fr); }

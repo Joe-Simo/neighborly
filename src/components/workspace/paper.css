@@ -1076,6 +1076,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 @media (min-width: 721px) {
   .live-app .live-list:has(> .live-commitment-row) { container-type: inline-size; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; column-gap: 22px; }
   .live-app .live-list > :not(.live-commitment-row) { grid-column: 1 / -1; }
+  /* Every date leaf is one width, so a one-figure day starts its words where a two-figure day does. */
+  .live-app .live-list > .live-commitment-row .live-date-leaf { min-width: 40px; }
   .live-app .live-list > .live-commitment-row { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-column: 1 / -1; align-items: start; gap: 0 22px; }
   .live-app .live-list > .live-commitment-row .live-row-actions { grid-column: 2; justify-content: space-between; margin-top: var(--space-8); }
   .live-app .live-list > .live-commitment-row .live-date-leaf { grid-row: 1 / span 2; }
