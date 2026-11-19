@@ -26,7 +26,7 @@ const rooms = [
   ["help", "The ledger", "Every bill paid is on one page: to whom, for whom, and how much.", -.8],
   ["year", "The yearly report", "Ready when the year ends. Check the totals, then print.", 1.1],
   ["people", "Your people", "Each member sees what they said yes to, in English or Spanish.", -1.1],
-  ["files", "The assistant", "It drafts a request from the call note. A person checks every one.", .8],
+  ["files", "The assistant", "It checks the draft request made from a call note. A person decides on every one.", .8],
 ] as const;
 
 export function NeighborlyContinuation() {
