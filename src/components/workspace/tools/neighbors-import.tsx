@@ -17,7 +17,7 @@ type Problem = Exclude<(Checked[number] | Imported[number])["outcome"], "ready" 
 
 type ToolsWords = Words["rooms"]["tools"];
 /** The sheet's own lines in the person's language. The sample file is made-up data and stays as it is. */
-export const neighborWords = (text: ToolsWords["neighbors"]): SheetWords => ({
+const neighborWords = (text: ToolsWords["neighbors"]): SheetWords => ({
   id: "neighbors-import",
   title: text.title,
   deck: text.deck,
@@ -30,7 +30,7 @@ export const neighborWords = (text: ToolsWords["neighbors"]): SheetWords => ({
   nothingDone: text.nothingDone,
 });
 /** A line with no name is known by the first thing it does have, read from the file on this device. */
-export function neighborsLeftOut(rows: (Checked[number] | Imported[number])[], reasons: Record<Problem, string>, sheet: NeighborRow[]): LeftOut[] {
+function neighborsLeftOut(rows: (Checked[number] | Imported[number])[], reasons: Record<Problem, string>, sheet: NeighborRow[]): LeftOut[] {
   const lines = new Map(sheet.map((row) => [row.line, row]));
   return rows.flatMap((row) => (row.outcome === "ready" || row.outcome === "added" ? [] : [{ line: row.line, name: row.name || lines.get(row.line)?.phone || lines.get(row.line)?.address || "", reason: reasons[row.outcome] }]));
 }

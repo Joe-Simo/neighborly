@@ -16,7 +16,7 @@ import {
 } from "@/components/workspace/treasury/form-parts";
 import { categoryLabel, dayLabel, type Gift } from "@/components/workspace/treasury/labels";
 
-export type Deposit = { entryIds: Gift["id"][]; date: string; memo: string };
+type Deposit = { entryIds: Gift["id"][]; date: string; memo: string };
 
 /** The gifts on hand, all chosen to begin with: most trips to the bank carry everything. */
 export function DepositForm({

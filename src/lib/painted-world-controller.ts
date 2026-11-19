@@ -19,7 +19,7 @@ export type PaintedLayer = {
   /** Full-canvas layers remain UV-registered to the covered background. */
   fit?: "artwork";
 };
-export type PaintedAnchors = {
+type PaintedAnchors = {
   bowlStart?: readonly [number, number];
   bowlTarget?: readonly [number, number];
   doorCenter?: readonly [number, number];
@@ -49,8 +49,8 @@ export type PaintedWorldOptions = {
   scenes?: Partial<Record<PaintedScene, PaintedSceneDefinition>>;
 };
 
-export const paintedSequence: readonly PaintedScene[] = ["opening", "meal", "visit", "welcome", "complete"];
-export const nextPaintedScene = (scene: PaintedScene): PaintedScene => paintedSequence[Math.min(paintedSequence.indexOf(scene) + 1, paintedSequence.length - 1)];
+const paintedSequence: readonly PaintedScene[] = ["opening", "meal", "visit", "welcome", "complete"];
+const nextPaintedScene = (scene: PaintedScene): PaintedScene => paintedSequence[Math.min(paintedSequence.indexOf(scene) + 1, paintedSequence.length - 1)];
 const clamp = (value: number) => T.MathUtils.clamp(Number.isFinite(value) ? value : 0, 0, 1);
 const smooth = (value: number) => { const t = clamp(value); return t * t * (3 - 2 * t); };
 const imageScene = (scene: PaintedScene) => scene === "complete" ? "welcome" : scene;

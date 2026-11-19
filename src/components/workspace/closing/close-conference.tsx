@@ -72,7 +72,7 @@ export function CloseConference() {
   );
 }
 
-export function CloseConferenceForm({
+function CloseConferenceForm({
   church,
   onExport,
 }: {

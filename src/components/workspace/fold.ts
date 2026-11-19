@@ -368,24 +368,6 @@ export function holdThePage() {
   window.addEventListener("scroll", release, { passive: true });
 }
 
-/**
- * For a sheet whose words have just changed under the same paper (a request that became "Paid" and lost its
- * buttons): it moves from the height it had to the height it has over the same 360ms. Call it before the
- * browser paints, with the height measured before the change. A plain cut for anyone who asks for less motion.
- */
-export function settleFrom(sheet: HTMLElement, from: number) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const to = sheet.offsetHeight;
-  if (to === from) return;
-  holdThePage();
-  // Getting shorter, the words already fit; getting taller, they are covered until the paper reaches them.
-  const box = { boxSizing: "border-box", ...(to > from && { overflow: "hidden" }) };
-  sheet.animate(
-    [{ ...box, height: `${from}px` }, { ...box, height: `${to}px` }],
-    { id: GROWING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
-  );
-}
-
 /** Undoes closeUp on a piece of paper that stays on the page for new words. */
 function openFlat(sheet: HTMLElement) {
   if (!sheet.style.clipPath && sheet.dataset.paperHeld === undefined) return;
@@ -573,7 +555,7 @@ export function useGrowsSmoothly(box: RefObject<HTMLElement | null>) {
  */
 const keptLines = new Map<string, { value: unknown; until: number }>();
 /** Puts the room's line by as the room is left, when it still has time to stand. */
-export function keepLine(room: string, value: unknown, since: number, action: boolean) {
+function keepLine(room: string, value: unknown, since: number, action: boolean) {
   const until = since + lineStay(action);
   if (until - Date.now() > 500) keptLines.set(room, { value, until });
 }

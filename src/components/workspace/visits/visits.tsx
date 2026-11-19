@@ -339,7 +339,7 @@ function Pair({
  * stays as a message for screen readers. After a pair is asked, their initials come
  * together beside the words.
  */
-export function VisitsDone({
+function VisitsDone({
   pair,
   names,
   children,
@@ -389,7 +389,7 @@ function BothAsked({ said }: { said: string }) {
 }
 
 /** The screen itself, given its records: no fetching here, so it can be shown with made-up data. */
-export function VisitsView({
+function VisitsView({
   board,
   now,
   format,

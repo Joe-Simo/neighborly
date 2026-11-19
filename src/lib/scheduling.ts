@@ -55,7 +55,7 @@ export function overlapsTimeOff(
   return start < last.plus({ days: 1 }).toMillis() && end > first.toMillis();
 }
 
-export type ScheduleInput = {
+type ScheduleInput = {
   start: string;
   end: string;
   timeZone: string;

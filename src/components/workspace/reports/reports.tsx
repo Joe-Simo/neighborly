@@ -23,11 +23,11 @@ import {
 
 /** Says what happened and what to do when the year cannot be read, and leaves the rest of the workspace standing. */
 class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { failed: boolean; cause: unknown }> {
-  state = { failed: false, cause: undefined as unknown };
+  override state = { failed: false, cause: undefined as unknown };
   static getDerivedStateFromError(cause: unknown) {
     return { failed: true, cause };
   }
-  render() {
+  override render() {
     if (!this.state.failed) return this.props.children;
     const { words } = this.props;
     return (

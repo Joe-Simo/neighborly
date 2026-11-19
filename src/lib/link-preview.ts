@@ -20,7 +20,7 @@ export const ownCardIn = (language: keyof typeof described) => ({
   locale: locales[language],
   alternateLocale: locales[language === "en" ? "es" : "en"],
 }) satisfies Metadata["openGraph"];
-export const linkPreviewIn = (language: keyof typeof described) => ({
+const linkPreviewIn = (language: keyof typeof described) => ({
   ...ownCardIn(language),
   images: [{ ...picture, alt: described[language] }],
 }) satisfies Metadata["openGraph"];

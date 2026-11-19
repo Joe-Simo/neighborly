@@ -24,7 +24,7 @@ function useAreaArt() {
   return workspace ? headings[workspace.area].art : null;
 }
 
-export type LiveStateKind = "empty" | "private" | "missing" | "error" | "offline";
+type LiveStateKind = "empty" | "private" | "missing" | "error" | "offline";
 
 export function LiveState({
   kind,
@@ -208,11 +208,11 @@ function RoomFault({ onRetry }: { onRetry: () => void }) {
  * another room clears it.
  */
 export class RoomBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
+  override state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  render() {
+  override render() {
     if (!this.state.failed) return this.props.children;
     return <RoomFault onRetry={() => this.setState({ failed: false })} />;
   }

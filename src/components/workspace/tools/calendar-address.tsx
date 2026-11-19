@@ -16,12 +16,12 @@ import { LiveDialog } from "@/components/workspace/live-dialog";
 
 type CalendarApp = "apple" | "google" | "outlook";
 /** The calendar most likely already on this device: Apple's on an iPhone, iPad or Mac, Outlook on Windows, Google elsewhere. */
-export function likelyCalendar(userAgent: string): CalendarApp {
+function likelyCalendar(userAgent: string): CalendarApp {
   if (/iPhone|iPad|Macintosh/.test(userAgent)) return "apple";
   return /Windows/.test(userAgent) ? "outlook" : "google";
 }
 /** Each calendar app has its own way to follow an address; these open the right screen with it filled in, this device's own first. */
-export function calendarLinks(address: string, first: CalendarApp) {
+function calendarLinks(address: string, first: CalendarApp) {
   const webcal = address.replace(/^https?:/, "webcal:");
   const links = [
     { app: "apple" as const, href: webcal },
@@ -32,7 +32,7 @@ export function calendarLinks(address: string, first: CalendarApp) {
 }
 const noChange = () => () => {};
 
-export function CalendarAddressView({ address, busy, error, onCreate, titled = true }: { address: string | null; busy: boolean; error: string; onCreate: () => void; titled?: boolean }) {
+function CalendarAddressView({ address, busy, error, onCreate, titled = true }: { address: string | null; busy: boolean; error: string; onCreate: () => void; titled?: boolean }) {
   const [copied, setCopied] = useState(false);
   const [replacing, setReplacing] = useState(false);
   const text = useWorkspace().words.calendar;

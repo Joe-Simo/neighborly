@@ -109,7 +109,7 @@ type Recorded = NonNullable<FunctionReturnType<typeof api.aiReads.latest>>;
  * its placeholder, each question as it was put and the answer that came back, and the model that answered.
  * Nothing here is rebuilt: a question stands in the words it was sent in, and an answer as the number Jev returned.
  */
-export function AssistantRecord({ record }: { record: Recorded }) {
+function AssistantRecord({ record }: { record: Recorded }) {
   const { words } = useWorkspace();
   const text = useRoomWords();
   const removed: Record<string, string> = text.removed;

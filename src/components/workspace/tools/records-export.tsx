@@ -15,8 +15,8 @@ import { formatDate } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { recordFiles, recordsCover, recordsCoverName, recordsCsv, recordsFileName, recordsZipName, type RecordFileKey } from "@/components/workspace/tools/records";
 
-export type GatheredFile = { key: RecordFileKey; title: string; fileName: string; lines: number; csv: string };
-export type RecordsStep =
+type GatheredFile = { key: RecordFileKey; title: string; fileName: string; lines: number; csv: string };
+type RecordsStep =
   | { step: "ready"; error?: string }
   | { step: "working"; progress: string; files: GatheredFile[] }
   | { step: "done"; files: GatheredFile[] };
@@ -52,7 +52,7 @@ function FileRows({ files, onDownload }: { files: GatheredFile[]; onDownload?: (
  * The way out. One yes gathers the conference's own records into spreadsheets on this device, one for each kind of record.
  * Nothing is sent anywhere, and each file uses the column names the imports read, so it can come back in.
  */
-export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, onReset }: { state: RecordsStep; onGather: () => void; onDownloadAll: (files: GatheredFile[]) => void; onDownload: (file: GatheredFile) => void; onReset: () => void }) {
+function RecordsExportView({ state, onGather, onDownloadAll, onDownload, onReset }: { state: RecordsStep; onGather: () => void; onDownloadAll: (files: GatheredFile[]) => void; onDownload: (file: GatheredFile) => void; onReset: () => void }) {
   // The one download always holds the whole set: a kind with nothing in it yet goes along with its headings only, so the folder, the cover and this list agree.
   const filled = state.step === "done" ? state.files.filter((file) => file.lines > 0) : [];
   const [lifted, setLifted] = useState(0);

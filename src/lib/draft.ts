@@ -1,4 +1,4 @@
-export interface TeamDraft {
+interface TeamDraft {
   teamName: string;
   recurrence: string;
   peopleCount: string;

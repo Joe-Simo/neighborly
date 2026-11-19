@@ -6,8 +6,8 @@ import type { Language, WordSet } from "../words/sets";
  * meaning here, so the sheet is ink on paper; the one link is ink too. Nothing is an image, so a mail app that
  * blocks pictures shows the whole email. Each comes with a plain-text twin that says the same thing.
  */
-export type EmailKind = "invitation" | "cover_request" | "meeting";
-export type Email = { subject: string; text: string; html: string };
+type EmailKind = "invitation" | "cover_request" | "meeting";
+type Email = { subject: string; text: string; html: string };
 
 const group = { en: { general: "group", vincentian: "conference" }, es: { general: "grupo", vincentian: "conferencia" } } as const;
 

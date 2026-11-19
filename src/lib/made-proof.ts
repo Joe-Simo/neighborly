@@ -2,7 +2,7 @@ import run7 from "../../eval/jev/run-7.json";
 import { jevSet } from "./jev-set";
 
 /** A field the assistant fills on a draft, in the order the draft shows them. */
-export const evalFields = ["kind", "amount", "payeeKind", "signs"] as const;
+const evalFields = ["kind", "amount", "payeeKind", "signs"] as const;
 type Field = (typeof evalFields)[number];
 type Mark = "right" | "blank" | "wrong";
 

@@ -116,9 +116,8 @@ export function carryTheCard(carry = true) {
 }
 const watchers = new Set<() => void>();
 /** Someone has just come through the door and is still in the first room: figures are drawn at their value, not rolled. */
-export const cameThroughTheDoor = () => typeof document !== "undefined" && document.documentElement.dataset.fromDoor !== undefined;
 /** Called in the frame the door's sheet leaves. */
-export function arriveFromTheDoor() {
+function arriveFromTheDoor() {
   arrivals += 1;
   arrivedAt = performance.now();
   card = carried;

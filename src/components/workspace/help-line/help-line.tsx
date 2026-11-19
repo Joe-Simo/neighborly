@@ -650,7 +650,7 @@ function whyFirst(urgent: NonNullable<Call["urgent"]>, words: Words) {
   });
 }
 
-export function HelpLineView({
+function HelpLineView({
   calls,
   format,
   onStep,

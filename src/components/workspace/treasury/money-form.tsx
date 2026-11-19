@@ -21,8 +21,8 @@ import {
 } from "@/components/workspace/treasury/labels";
 
 /** One of the conference's own kinds, or a new one being named in this form. */
-export type OwnKind = { id: string; direction: "in" | "out"; name: string };
-export type Money = (
+type OwnKind = { id: string; direction: "in" | "out"; name: string };
+type Money = (
   | { direction: "in"; kind: IncomeSource }
   | { direction: "out"; kind: SpendingKind }
   | { direction: "in" | "out"; kind: "own"; id: string }

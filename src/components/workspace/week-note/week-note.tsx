@@ -138,7 +138,7 @@ const quietLink = "min-h-11 inline-flex items-center border-0 bg-transparent p-0
 /** While waiting, the note keeps its room unseen: no bars, no empty card. It arrives with its words or not yet. */
 const held = "invisible";
 
-export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }: { counts: Counts; monday: number; brief: boolean; waiting?: boolean; onDone: () => void }) {
+function WeekNoteView({ counts, monday, brief, waiting = false, onDone }: { counts: Counts; monday: number; brief: boolean; waiting?: boolean; onDone: () => void }) {
   const { data, words } = useWorkspace();
   const [open, setOpen] = useState(false);
   // "Done reading" puts the sheet away like paper: it lifts, thins and the page closes over where it lay.

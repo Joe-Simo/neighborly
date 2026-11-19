@@ -54,7 +54,7 @@ function DateLeaf({ day }: { day: string }) {
 }
 
 /** The statement beside the ledger: what has cleared, what is still on its way, and whether the two agree. */
-export function BankView({
+function BankView({
   bank,
   busy,
   done,

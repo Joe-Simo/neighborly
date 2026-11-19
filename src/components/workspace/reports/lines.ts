@@ -8,7 +8,7 @@ import { formatCount, formatMoney } from "@/lib/words/numbers";
 import type { Language } from "@/lib/words";
 
 export type YearReport = FunctionReturnType<typeof api.reports.year>;
-export type Kind = YearReport["kinds"][number]["kind"];
+type Kind = YearReport["kinds"][number]["kind"];
 
 /** The words of one person: their language, and the report's own table. English when no one is asked for. */
 const english = book();
@@ -173,7 +173,7 @@ export function reportLines(report: YearReport, words: Words = english, said: (n
 const dollars = (cents: number) => (cents / 100).toFixed(2);
 
 /** The twelve months as spreadsheet rows, one column per count: the column names, then a row for each month. */
-export function monthLines(report: YearReport, words: Words = english) {
+function monthLines(report: YearReport, words: Words = english) {
   const w = words.rooms.reports.rows.csv;
   return [
     [w.month, w.calls, w.requests, w.visits, w.households, w.paid, w.moneyIn],
@@ -182,7 +182,7 @@ export function monthLines(report: YearReport, words: Words = english) {
 }
 
 /** Each member who served as a spreadsheet row, under the column names. Members are volunteers; no neighbor appears here. */
-export function memberLines(report: YearReport, words: Words = english) {
+function memberLines(report: YearReport, words: Words = english) {
   const w = words.rooms.reports.rows.csv;
   return [
     [w.member, w.visits, w.shifts, w.hours, w.miles],

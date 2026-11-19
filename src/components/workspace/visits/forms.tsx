@@ -189,7 +189,7 @@ type Visited = {
 const withoutRequest = "none";
 
 /** The plan form itself, given the people who may go and the neighbors found: no fetching here. */
-export function PlanFormView({
+function PlanFormView({
   board,
   requestId,
   people,

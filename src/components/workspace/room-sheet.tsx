@@ -400,15 +400,15 @@ function hold(column: HTMLElement | null) {
  * (`getSnapshotBeforeUpdate` runs before any of the commit's changes are made), so the copy is the room as it was seen.
  */
 export class RoomStill extends Component<{ area: string; column: RefObject<HTMLElement | null>; children: ReactNode }> {
-  getSnapshotBeforeUpdate(previous: Readonly<{ area: string }>) {
+  override getSnapshotBeforeUpdate(previous: Readonly<{ area: string }>) {
     if (previous.area !== this.props.area) hold(this.props.column.current);
     return null;
   }
-  componentDidUpdate() {}
-  componentWillUnmount() {
+  override componentDidUpdate() {}
+  override componentWillUnmount() {
     letGo();
   }
-  render() {
+  override render() {
     return this.props.children;
   }
 }

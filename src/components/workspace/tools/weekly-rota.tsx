@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/workspace/tools/rota";
 
-export function WeeklyRotaView({ group, week, days, printed, sample, titled = true, none, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; titled?: boolean; /** True when no commitment exists in any week: there is no other week to turn to. */ none?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
+function WeeklyRotaView({ group, week, days, printed, sample, titled = true, none, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; titled?: boolean; /** True when no commitment exists in any week: there is no other week to turn to. */ none?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
   const planned = days.some((day) => day.shifts.length > 0);
   const { words } = useWorkspace();
   const text = words.rota;

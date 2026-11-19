@@ -39,7 +39,7 @@ export const slips: readonly Slip[] = perMonth.flatMap((of, month) => Array.from
 })));
 
 /** Column-major 4x4, as GL takes it. */
-export type Mat = Float32Array;
+type Mat = Float32Array;
 const mul = (a: Mat, b: Mat, out: Mat = new Float32Array(16)) => {
   for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) {
     out[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
@@ -58,7 +58,7 @@ const monthZ = (month: number) => -month * GAP;
 /** The flight takes the band's first 80%; in the last 20% the camera draws back and every leaf settles into its fan, so the band ends on the whole year. */
 const FLIGHT = .8;
 const settle = (through: number) => ease((through - FLIGHT) / (1 - FLIGHT));
-export const cameraZ = (through: number) => START + (monthZ(MONTHS - 1) + 2.4 - START) * ease(Math.min(1, through / FLIGHT));
+const cameraZ = (through: number) => START + (monthZ(MONTHS - 1) + 2.4 - START) * ease(Math.min(1, through / FLIGHT));
 
 /** Which month is nearest in front of the camera: its leaf is the one being read. */
 export const monthAt = (through: number) => through > FLIGHT ? MONTHS - 1 : Math.max(0, Math.min(MONTHS - 1, Math.round((START - 2.4 - cameraZ(through)) / GAP)));

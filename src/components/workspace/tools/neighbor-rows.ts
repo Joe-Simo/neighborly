@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import { mostLines } from "@/components/workspace/tools/member-rows";
 
 export type NeighborRow = { line: number; name: string; phone: string; email: string; address: string; adults: string; children: string; language: string; notes: string };
-export type NeighborSheet = { rows: NeighborRow[] } | { error: string };
+type NeighborSheet = { rows: NeighborRow[] } | { error: string };
 
 const columns = {
   name: ["name", "full name", "neighbor", "neighbor name", "client", "client name", "head of household"],
