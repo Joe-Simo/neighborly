@@ -55,7 +55,8 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
         <div className="book-cover">
           <p className="book-group">{groupName}</p>
           <FollowingHeading>{b.cover}</FollowingHeading>
-          <p>{period}</p>
+          <p className="book-period">{period}</p>
+          <p className="book-total">{fill(b.coverTotal(report.history.householdsInAll), { amount: dollars(report.helpPaid) })}</p>
           {/* The year's mark: the quilt's own three papers, a call, a visit and a yes, laid as a small patch. */}
           <span className="book-mark" aria-hidden="true">
             {(["call", "visit", "yes"] as const).map((kind) => (
