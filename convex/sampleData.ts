@@ -29,9 +29,9 @@ const recentCalls = new Map([[194, DAY / 8], [195, DAY], [196, 2 * DAY], [197, 7
 const HOUSEHOLDS = 200;
 /**
  * The week a judge walks through is about households the year already knows: Rosa and Denise have called before,
- * so their calls this week open records with a history. Only the name changes; every draw stays where it was.
+ * so their calls this week open records with a history; Marcus waits for his visit's write-up and Yolanda for a pair. Only the name changes; every draw stays where it was.
  */
-const storyNames = new Map([[64, "Rosa Fontaine"], [63, "Denise Walker"]]);
+const storyNames = new Map([[64, "Rosa Fontaine"], [63, "Denise Walker"], [20, "Marcus Bellamy"], [14, "Yolanda Price"]]);
 
 const volunteerNames = ["Marisol Vega", "Thomas Okafor", "Renee Baptiste", "Daniel Whitcombe", "Graciela Fuentes", "Samuel Adeyemi", "Colleen Marsh", "Jean-Luc Pierre", "Hannah Lindqvist", "Victor Salgado", "Priya Raman", "Walter Brzezinski"];
 // 200 first names, one for each household, in no order, and 40 family names. All invented.
@@ -261,6 +261,8 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   await db.insert("tasks", { churchId, title: "Restock the food pantry shelf", dueAt: now + 4 * DAY, assigneeId: others[4], complete: false });
   await db.insert("tasks", { churchId, title: "Bring the visit sheets to Tuesday's meeting", dueAt: now + 6 * DAY, assigneeId: others[4], complete: false });
   await db.insert("tasks", { churchId, title: "Send thank-you notes for the fall collection", dueAt: null, assigneeId: others[2], complete: true });
+  // The week's own note to the conference, pointing at what is waiting without naming a neighbor to every member.
+  await db.insert("announcements", { churchId, title: "Before Tuesday's meeting", body: "Two calls are waiting to be returned, a water bill needs a pair to visit, and one visit still needs its write-up.", authorId: owner, createdAt: now - DAY });
   await db.insert("announcements", { churchId, title: "Winter coat drive starts next week", body: "Bring coats to the parish office. Home visitors, ask each family for sizes.", authorId: owner, createdAt: now - 2 * DAY });
 
   // From the start of the last full fiscal year (October 1) to today, so that year and every
@@ -473,7 +475,9 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   // A call with a draft already made from it and waiting for a person's yes.
   const drafted = await db.insert("calls", { churchId, neighborId: households[64], callerName: "Rosa Fontaine", phone: "(100) 555-0164", note: "Behind on November rent, $450. The landlord is Mill Road Rentals.", callback: "needed", takenBy: staff[1], takenAt: clock(now - DAY, callSlots) });
   await db.insert("requestDrafts", { churchId, callId: drafted, kind: "rent", amountRequested: 45000, payeeKind: "landlord", payeeName: "Mill Road Rentals", quote: "Behind on November rent, $450.", notes: [], verification: "checked", createdBy: staff[1], createdAt: now - DAY / 2 });
-  // What the help line already knew when Rosa and Denise called again, so their records read as one story.
+  // What the help line already knew when Rosa and Denise called again, and what Marcus and Yolanda's visitors should know, so their records read as one story.
+  await db.insert("neighborNotes", { churchId, neighborId: households[20], body: "Prefers a call in the morning; he hears the phone better then.", authorId: staff[0], createdAt: clock(now - 10 * DAY, callSlots) });
+  await db.insert("neighborNotes", { churchId, neighborId: households[14], body: "The bill came after a leak under the sink. The landlord fixed the leak; the water bill is hers.", authorId: staff[2], createdAt: clock(now - 2 * DAY, callSlots) });
   await db.insert("neighborNotes", { churchId, neighborId: households[64], body: "Hours at the laundromat were cut in October. Mill Road Rentals has been patient so far.", authorId: staff[1], createdAt: clock(now - 9 * DAY, callSlots) });
   await db.insert("neighborNotes", { churchId, neighborId: households[63], body: "The furnace went out, so she heats with a space heater. Expects the light bill to run high.", authorId: staff[2], createdAt: clock(now - 12 * DAY, callSlots) });
 
