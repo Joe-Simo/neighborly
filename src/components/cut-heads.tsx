@@ -1,5 +1,6 @@
 "use client";
 
+import { frameStep } from "@/lib/scroll-frame";
 import { useEffect, useRef, type ComponentPropsWithoutRef } from "react";
 import { whenIdle } from "@/lib/idle";
 
@@ -16,22 +17,28 @@ const seen = new Set<HTMLElement>();
 const met = new Set<HTMLElement>();
 const set = new Map<HTMLElement, string>();
 let watch: IntersectionObserver | null = null;
-let frame = 0;
+// Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
+let h = 0;
+const feet = new Map<HTMLElement, number>();
+const read = () => { h = innerHeight; feet.clear(); seen.forEach(head => feet.set(head, head.getBoundingClientRect().bottom)); };
 
 const place = () => {
-  frame = 0;
-  const h = innerHeight;
+  let changed = false;
   seen.forEach(head => {
+    const foot = feet.get(head);
+    if (foot === undefined) return;
     // It moves only while its foot is in the bottom fifth of the window; above that it stands, and once stood it stays stood for the visit.
-    const t = Math.max(0, Math.min(1, (h - head.getBoundingClientRect().bottom) / (h * .2)));
+    const t = Math.max(0, Math.min(1, (h - foot) / (h * .2)));
     const stand = (1 - (1 - t) ** 3).toFixed(3);
     if (set.get(head) === stand) return;
     set.set(head, stand);
+    changed = true;
     if (stand === "1.000") { head.dataset.cut = "stood"; head.style.removeProperty("--stand"); seen.delete(head); watch?.unobserve(head); return; }
     head.style.setProperty("--stand", stand);
   });
+  return changed;
 };
-const wake = () => { if (!frame) frame = requestAnimationFrame(place); };
+const { ask: wake, drop: rest } = frameStep(read, place);
 
 // Heads mount one by one as their sections hydrate. They are gathered and given to the watch together once the page is idle,
 // so hydration is never cut by an observer's first answer and the layout it reads, once per section. A head below the fold
@@ -81,7 +88,7 @@ function leave(head: HTMLElement) {
   if (met.size || !watch) return;
   watch.disconnect(); watch = null;
   removeEventListener("scroll", wake); removeEventListener("resize", wake);
-  cancelAnimationFrame(frame); frame = 0;
+  rest();
 }
 
 /** A public section head, cut from the page: an h2 that stands up from 60° as it comes into the window. */

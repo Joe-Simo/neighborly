@@ -1,5 +1,12 @@
 /* The journey after the opening: the doors, the courtyard as a fresco, and the story in four pictures. One material: paper. */
 .fresco-journey{position:relative;height:555svh}
+/* The walk's values are written on each part drawn with them, and do not pass down: one changed value no longer restyles the whole stage, painting and all, on every frame. */
+@property --door{syntax:"<number>";inherits:false;initial-value:0}
+@property --grow{syntax:"<number>";inherits:false;initial-value:0}
+@property --inside{syntax:"<number>";inherits:false;initial-value:0}
+@property --come{syntax:"<number>";inherits:false;initial-value:0}
+@property --standing{syntax:"<number>";inherits:false;initial-value:0}
+@property --door-progress{syntax:"<number>";inherits:false;initial-value:0}
 .fresco-stage{--door:0;--grow:0;--inside:0;--standing:0;position:sticky;top:0;height:100svh;overflow:hidden;isolation:isolate;outline:0;color:#293f32;background:#eee7d7 center/cover no-repeat}
 /* What lies below the first screen is fetched once the first screen is complete. */
 .fresco-stage[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
@@ -24,7 +31,9 @@
 /* Each heading line is either whole in its slot or held far below it (300%, past the slot's padding), with no slide between: a
    scroll that stops anywhere never leaves glyph tops showing at the slot's edge. The slip rule shows only while its line is out. */
 .fresco-slot>span{display:block;translate:0 calc((1 - round(clamp(0,(var(--come) - var(--line) * .3) / .7,1), 1)) * 300%)}
-.fresco-stage[data-slip0=true] .fresco-slot:first-child::after,.fresco-stage[data-slip1=true] .fresco-slot:last-child::after{content:"";position:absolute;left:0;right:.12em;bottom:.16em;height:5px;border-bottom:1px solid #9a875f99;background:linear-gradient(#2e241600,#2e241624);opacity:calc(1 - round(clamp(0,(var(--come) - var(--line) * .3) / .7,1), 1))}
+/* The cut's edge, the frame's ring and the wall's face are drawn by elements of their own, not pseudo-elements, so each is given the walk's values directly (fresco-threshold.tsx). */
+.fresco-slip{display:none}
+.fresco-stage[data-slip0=true] .fresco-slot:first-child>.fresco-slip,.fresco-stage[data-slip1=true] .fresco-slot:last-child>.fresco-slip{display:block;position:absolute;left:0;right:.12em;bottom:.16em;height:5px;border-bottom:1px solid #9a875f99;background:linear-gradient(#2e241600,#2e241624);opacity:calc(1 - round(clamp(0,(var(--come) - var(--line) * .3) / .7,1), 1))}
 .fresco-invitation p{margin:0 0 34px;font-size:17px;line-height:1.6}
 /* Only its colour eases. Were everything to ease, the button would still be hidden for a moment after its place is shown, and the keyboard could not land on it. */
 .fresco-open[data-slot=button]{min-height:54px;padding:0 24px;gap:28px;border-radius:0;background:#293f32;color:#fff6e4;font-size:15px;box-shadow:none;transition-property:background-color}
@@ -32,10 +41,10 @@
 
 /* One opening in the wall. It is the doorway first, then the frame of the fresco. */
 .fresco-frame{position:absolute;left:0;top:0;z-index:1;box-shadow:0 0 0 calc(var(--grow) * 12px) #f5f0e3,0 0 0 calc(var(--grow) * 13px) #cdbf9f,calc(28px * var(--sun-k,1) * var(--sun-t,0)) calc(28px * var(--sun-k,1)) 70px #51433040}
-.fresco-frame::before{content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;box-shadow:0 0 0 6px #9c8660,0 0 0 13px #e0d2b8,0 0 0 16px #ad9670;opacity:calc((1 - var(--grow) * 2.2) * (1 - var(--inside) * 2));pointer-events:none}
+.fresco-frame>.fresco-ring{position:absolute;inset:0;z-index:1;border-radius:inherit;box-shadow:0 0 0 6px #9c8660,0 0 0 13px #e0d2b8,0 0 0 16px #ad9670;opacity:calc((1 - var(--grow) * 2.2) * (1 - var(--inside) * 2));pointer-events:none}
 .fresco-wall{position:absolute;inset:0;overflow:hidden;border-radius:inherit;background:#b6ac82}
 /* The painting lies a little behind the wall's face. */
-.fresco-wall::after{content:"";position:absolute;inset:0;border-radius:inherit;opacity:calc(1 - var(--inside));box-shadow:inset 0 18px 44px #1b2a1f99,inset 0 0 0 1px #2c392c4d,inset 0 -8px 26px #1b2a1f40;pointer-events:none}
+.fresco-wall>.fresco-face{position:absolute;inset:0;border-radius:inherit;opacity:calc(1 - var(--inside));box-shadow:inset 0 18px 44px #1b2a1f99,inset 0 0 0 1px #2c392c4d,inset 0 -8px 26px #1b2a1f40;pointer-events:none}
 .fresco-view{position:absolute;left:0;top:0;translate:-50% -50%}
 .fresco-painting{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .fresco-view .living-courtyard{position:absolute;inset:0;overflow:hidden;pointer-events:none}
@@ -49,7 +58,7 @@
 /* The line the keyboard is set down on inside the courtyard is words, not a control: it takes no ring. */
 main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 /* Under the framed fresco the line is drawn out from behind the frame's lower edge, in full ink, as the frame settles. */
-.fresco-caption{position:absolute;z-index:0;left:0;right:0;top:calc(var(--caption-top,70%) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/var(--lead-3) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-3)}
+.fresco-caption{position:absolute;z-index:0;left:0;right:0;top:0;translate:0 calc(var(--caption-top,70svh) + 36px);margin:0;text-align:center;font:400 clamp(32px,3.4vw,54px)/var(--lead-3) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-3)}
 .fresco-stage:not([data-captioned=true]) .fresco-caption{visibility:hidden}
 .fresco-caption em{font-weight:400}
 /* Standing in the courtyard: the words are set large on the paving, and the wordmark steps aside so nothing sits over the picture.
@@ -72,7 +81,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .fresco-invitation p{display:none}
   /* The button stands on paper under the doors, clear of them. */
   .fresco-open[data-slot=button]{position:absolute;z-index:0;left:50%;top:calc(79svh + 34px);translate:-50% 0;min-height:50px}
-  .fresco-caption{top:calc(var(--caption-top,70%) + 34px);font-size:clamp(32px,9.5vw,44px)}
+  .fresco-caption{top:0;translate:0 calc(var(--caption-top,70svh) + 34px);font-size:clamp(32px,9.5vw,44px)}
 }
 @media(prefers-reduced-motion:reduce){.fresco-journey{height:360svh}}
 
@@ -83,7 +92,11 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .relief-story::before{background:#cfc2a4;translate:0 -3px;filter:blur(1px);opacity:.8}
 .relief-story::after{background:#eee7d7}
 /* Each chapter holds for a little over half a window while its one act plays at the reader's own pace. --e runs 0 to 1 as the chapter comes in, --h as it holds; --q is what is left of the act. */
-.relief-panel{--e:1;--h:1;--q:calc(1 - var(--h));position:relative;min-height:160svh}
+/* A chapter's act (chapter-act.ts): written on each part drawn with it, never passed down; registered at rest. */
+@property --e{syntax:"<number>";inherits:false;initial-value:1}
+@property --h{syntax:"<number>";inherits:false;initial-value:1}
+@property --q{syntax:"<number>";inherits:false;initial-value:0}
+.relief-panel{position:relative;min-height:160svh}
 .relief-hold{position:sticky;top:0;height:100svh;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0;padding-left:7%}
 .relief-panel[data-side=left] .relief-hold{grid-template-columns:auto minmax(0,1fr);padding-left:0;padding-right:7%}
 .relief-panel[data-side=left] .relief-picture{order:-1;justify-self:start}
@@ -205,7 +218,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .fresco-invitation{left:max(20px,4%);width:30%}
   .fresco-invitation h2{margin-bottom:18px;font-size:clamp(30px,4.4vw,40px)}
   .fresco-invitation p{display:none}
-  .fresco-caption{top:calc(var(--caption-top,70%) + 12px);font-size:28px}
+  .fresco-caption{top:0;translate:0 calc(var(--caption-top,70svh) + 12px);font-size:28px}
 }
 /* Short and narrow (a small window at 400% zoom): the words stand alone across the paper, then go in one cut as the doors come up from below. */
 @media(max-height:500px) and (min-aspect-ratio:10/11) and (max-width:600px){

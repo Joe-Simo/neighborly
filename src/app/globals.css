@@ -1,5 +1,7 @@
 @import "tailwindcss" source("../");
 @import "tw-animate-css";
+/* Registered with the first stylesheet: registered late (paper.css comes with the yes card), it restyles the whole page mid-scroll. */
+@property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
 :root {
   /* Read by the stale-page check in the head (layout.tsx): if this is missing, the page was drawn without its stylesheet. */
   --kh-styled: 1;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { whenScrollStill } from "@/lib/scroll-still";
 import { getPaintedScrollState } from "@/lib/painted-world-scroll";
 import { isPaintedPortrait, openingKeptAbove } from "@/lib/painted-world-framing";
 import type { PaintedScene, PaintedWorldOptions, createPaintedWorldController } from "@/lib/painted-world-controller";
@@ -28,12 +29,12 @@ function fallbackSource(scene: PaintedScene, mobile: boolean, accepted = false) 
   return `/assets/painted-world/${scene === "complete" ? "welcome" : scene}${mobile ? "-mobile" : ""}.webp`;
 }
 /**
- * When the home page's 3D opening is built. "idle" builds it shortly after the painting has shown.
- * "interaction" builds it on the first sign of a person (a move, touch, key or scroll) or once the page
- * has been idle for four seconds, whichever comes first; the still painting and the button carry the
- * opening until then. Switch only on a measurement from a real device.
+ * The home page's 3D opening is built shortly after the painting has shown, once the page is still: its first evaluation and its
+ * scene's setup are long tasks, so they wait until the page has been still a quarter second (read from scrollY each frame), then for an idle moment.
+ * A visitor who never stops scrolling gets it at the next idle moment eight seconds after the page opened. The still painting carries
+ * the opening until then, and the swap is the same single cut as always.
  */
-const openingStartsOn = "idle" as "idle" | "interaction";
+const settleBeforeUpgrade = 250, upgradeAtLatest = 8000;
 type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStoryProgress" | "setOpeningOutcome" | "setHandoff" | "setReducedMotion" | "dispose">;
 // Where the card rests in the giving hand and in the open hand, as shares of each opening painting.
 const cardPath = {
@@ -64,8 +65,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
   useEffect(() => {
     let disposed = false;
     let active: Controller | undefined;
-    let stopIdle: (() => void) | undefined;
-    let defer: ReturnType<typeof setTimeout> | undefined;
+    let stopStill: (() => void) | undefined;
     const enterFallback = () => {
       if (disposed || fallbackRef.current) return;
       fallbackRef.current = true;
@@ -89,25 +89,13 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
       else { controller.current = active; active.setStoryProgress(progress.current); active.setOpeningOutcome(outcomeRef.current); }
     }).catch(enterFallback); };
     // The responsive painting is the initial experience. Upgrade the optional
-    // dimensional guide after critical text and imagery have had time to paint.
-    const signs = ["pointermove", "pointerdown", "keydown", "touchstart", "wheel", "scroll"] as const;
-    let begun = false;
-    const begin = () => { if (begun) return; begun = true; signs.forEach(sign => window.removeEventListener(sign, begin)); clearTimeout(defer); enhance(); };
-    if (heroOnly && openingStartsOn === "interaction") {
-      signs.forEach(sign => window.addEventListener(sign, begin, { passive: true }));
-      defer = setTimeout(() => {
-        stopIdle = whenIdle(begin, undefined, 0);
-      }, 4000);
-    } else if (heroOnly) {
-      defer = setTimeout(() => {
-        stopIdle = whenIdle(enhance, 2000, 0);
-      }, 1200);
-    } else enhance();
+    // dimensional guide after critical text and imagery have had time to paint, and while the page is still.
+    // Read from scrollY each frame, so a jump by script or Safari's momentum counts as movement too (scroll-still.ts).
+    if (heroOnly) stopStill = whenScrollStill(enhance, { settle: settleBeforeUpgrade, latest: upgradeAtLatest });
+    else enhance();
     return () => {
       disposed = true;
-      signs.forEach(sign => window.removeEventListener(sign, begin));
-      clearTimeout(defer);
-      stopIdle?.();
+      stopStill?.();
       active?.dispose(); controller.current = null;
     };
   }, [scenes, heroOnly]);
@@ -153,6 +141,9 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
   useEffect(() => {
     if (!heroOnly || !viewport.current) return;
     const element = viewport.current;
+    // Each value is written only when it has changed: the scene becoming ready asks for the places again, and a value written over itself
+    // on the stage restyled the whole first screen in the frame of the swap.
+    const set = (name: string, value: string) => { if (element.style.getPropertyValue(name) !== value) element.style.setProperty(name, value); };
     const place = () => {
       const art = host.current?.getBoundingClientRect(), frame = element.getBoundingClientRect();
       if (!art) return;
@@ -164,14 +155,14 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
       const left = art.left - frame.left + (art.width - paintingWidth) / 2, top = art.top - frame.top - (paintingHeight - art.height) * (mobile ? 0 : openingKeptAbove);
       const at = (point: readonly [number, number]) => [left + point[0] * paintingWidth, top + point[1] * paintingHeight];
       const [fromX, fromY] = at(path.from), [toX, toY] = at(path.to);
-      element.style.setProperty("--card-x", `${fromX}px`); element.style.setProperty("--card-y", `${fromY}px`);
-      element.style.setProperty("--card-dx", `${toX - fromX}px`); element.style.setProperty("--card-dy", `${toY - fromY}px`);
-      element.style.setProperty("--card-size", `${Math.max(72, paintingWidth * .15)}px`);
+      set("--card-x", `${fromX}px`); set("--card-y", `${fromY}px`);
+      set("--card-dx", `${toX - fromX}px`); set("--card-dy", `${toY - fromY}px`);
+      set("--card-size", `${Math.max(72, paintingWidth * .15)}px`);
       // The travelling card's place in the open hand, and the patch of empty hand it leaves behind (thread-card.css).
       const [emptyX, emptyY, emptyWidth, emptyHeight] = path.empty;
-      element.style.setProperty("--hand-x", `${left + emptyX * scale}px`); element.style.setProperty("--hand-y", `${top + emptyY * scale}px`);
-      element.style.setProperty("--hand-w", `${emptyWidth * scale}px`); element.style.setProperty("--hand-h", `${emptyHeight * scale}px`);
-      element.style.setProperty("--hand-card", `${paintingWidth * path.card}px`);
+      set("--hand-x", `${left + emptyX * scale}px`); set("--hand-y", `${top + emptyY * scale}px`);
+      set("--hand-w", `${emptyWidth * scale}px`); set("--hand-h", `${emptyHeight * scale}px`);
+      set("--hand-card", `${paintingWidth * path.card}px`);
       element.querySelector<HTMLElement>(".painted-world-hand")?.toggleAttribute("data-tall", mobile);
     };
     place();

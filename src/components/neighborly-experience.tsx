@@ -1,5 +1,6 @@
 "use client";
 
+import { frameStep } from "@/lib/scroll-frame";
 import { whenIdle } from "@/lib/idle";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -73,7 +74,6 @@ export function NeighborlyExperience() {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const sideways = matchMedia(sidewaysPhone);
     element.classList.add("is-connected");
-    let frame = 0;
     // Where each piece of the opening's words ends: read only when the page is idle after it loads or the window changes size, never inside a frame.
     let pieces: { tall: number; feet: [HTMLElement, number][] } | undefined;
     let stopIdle = () => {};
@@ -96,8 +96,10 @@ export function NeighborlyExperience() {
       element.style.setProperty(name, value);
       if (selector) for (const part of element.querySelectorAll<HTMLElement>(selector)) part.style.setProperty(name, value);
     };
+    // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
+    let read = 0;
+    const measureFrame = () => { const stage = element.querySelector<HTMLElement>(".painted-world-viewport"); read = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight))); };
     const update = () => {
-      frame = 0;
       const reduce = media.matches;
       // A phone on its side reads as a plain page: nothing is pinned, nothing gives way, and everything stays reachable.
       if (sideways.matches) {
@@ -107,8 +109,7 @@ export function NeighborlyExperience() {
         for (const part of element.querySelectorAll<HTMLElement>(".painted-world-track,.fresco-stage")) part.removeAttribute("data-away");
         return;
       }
-      const stage = element.querySelector<HTMLElement>(".painted-world-viewport");
-      const scrolled = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight)));
+      const scrolled = read;
       // The sheet begins to lift with the first pixel. With less motion nothing lifts, so the scroll is read as it is.
       const progress = reduce ? scrolled : paceOpening(scrolled);
       // The foot's "Scroll" has been answered once the page has moved: it leaves in one cut, before the edge reaches it.
@@ -148,7 +149,7 @@ export function NeighborlyExperience() {
       portrait?.toggleAttribute("data-away", !portraitVisible);
       courtyard?.toggleAttribute("data-away", !entered);
     };
-    const request = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const { ask: request, drop } = frameStep(measureFrame, update);
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("resize", request);
     window.addEventListener("resize", remeasure);
@@ -176,6 +177,7 @@ export function NeighborlyExperience() {
         from.toggleAttribute("data-away", true);
         to.removeAttribute("data-away");
         // The place arrived at is drawn before its control is asked to take the keyboard: a control still hidden by the last place's drawing cannot.
+        measureFrame();
         update();
         pick(reachable(to))?.focus({ preventScroll: true });
       };
@@ -191,11 +193,13 @@ export function NeighborlyExperience() {
       const top = element.getBoundingClientRect().top + scrollY;
       window.scrollTo({ top: part.classList.contains("fresco-stage") ? top + stage.getBoundingClientRect().height * (media.matches ? .5 : 1) : top, behavior: "instant" });
       part.removeAttribute("data-away");
+      measureFrame();
       update();
     };
     element.addEventListener("focusin", follow);
+    measureFrame();
     update();
-    return () => { cancelAnimationFrame(frame); stopIdle(); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); window.removeEventListener("resize", remeasure); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.removeEventListener("keydown", walk); element.removeEventListener("focusin", follow); element.classList.remove("is-connected"); };
+    return () => { drop(); stopIdle(); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); window.removeEventListener("resize", remeasure); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.removeEventListener("keydown", walk); element.removeEventListener("focusin", follow); element.classList.remove("is-connected"); };
   }, []);
   return <div className="neighborly-connected-world is-connected" ref={root}><PaintedWorld heroOnly passed={passed} onContinue={goToDoors} onPass={() => {
     // The card crosses to the open hand and rests there a beat, long enough to see it settle and be held,
