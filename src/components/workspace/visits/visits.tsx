@@ -23,6 +23,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { RoomAside } from "@/components/workspace/aside";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
+import { nameKeeper } from "@/components/workspace/keep-names";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { initials } from "@/components/workspace/help-line/format";
 import {
@@ -82,6 +83,8 @@ function Visits() {
   const { pending, error, save, clear } = useSave();
   const [step, setStep] = useState<Step | null>(null);
   const [done, setDone] = useState("");
+  // The names the done line says, kept whole: a neighbor's full name and the visitors' first names.
+  const [doneNames, setDoneNames] = useState<string[]>([]);
   // The visit just planned or written up, so its row can show the paper moving into place.
   const [fresh, setFresh] = useState<Fresh | null>(null);
   // The pair sheet whose ask is on its way: it is kept on the page as it is, its buttons off, until the save answers.
@@ -127,9 +130,10 @@ function Visits() {
     });
     return () => setHeadAction(null);
   }, [sheetId, setHeadAction, planVisit, planLabel, waitingOnYes, boardUnknown]);
-  const finish = (message: string, moved: Fresh | null = null) => {
+  const finish = (message: string, moved: Fresh | null, names: string[]) => {
     setStep(null);
     setFresh(moved);
+    setDoneNames(names);
     setDone(message);
   };
   // A weekday alone names a day of this week; a visit further off is given its date.
@@ -150,7 +154,7 @@ function Visits() {
   return (
     <div className="visits-room" ref={room}>
       {done && (
-        <VisitsDone key={done} pair={fresh?.pair}>
+        <VisitsDone key={done} pair={fresh?.pair} names={doneNames}>
           {done}
         </VisitsDone>
       )}
@@ -206,6 +210,7 @@ function Visits() {
                 time: time(suggested.scheduledAt),
               }),
               { id: outcome.result, pair: pair.map((person) => person.name) },
+              [suggested.request.neighborName, firstName(pair[0].name), firstName(pair[1].name)],
             );
         }}
         onWriteUp={(visit) => start({ kind: "writeUp", visit })}
@@ -227,6 +232,7 @@ function Visits() {
               finish(
                 fill(text.done.planned, { first: firstName(planned.pair[0]), second: firstName(planned.pair[1]), neighbor: planned.neighborName }),
                 { id: planned.visitId, pair: planned.pair },
+                [planned.neighborName, firstName(planned.pair[0]), firstName(planned.pair[1])],
               )
             }
           />
@@ -247,6 +253,8 @@ function Visits() {
                 step.leaving.removed
                   ? fill(text.done.second, { joining: firstName(joining), neighbor: step.visit.neighborName })
                   : fill(text.done.replaced, { joining: firstName(joining), neighbor: step.visit.neighborName, leaving: firstName(step.leaving.name) }),
+                null,
+                [step.visit.neighborName, firstName(joining), firstName(step.leaving.name)],
               )
             }
           />
@@ -269,6 +277,7 @@ function Visits() {
               finish(
                 fill(text.done.writtenUp, { neighbor: step.visit.neighborName }),
                 { id: step.visit.id },
+                [step.visit.neighborName],
               )
             }
           />
@@ -332,9 +341,11 @@ function Pair({
  */
 export function VisitsDone({
   pair,
+  names,
   children,
 }: {
   pair?: string[];
+  names: readonly string[];
   children: string;
 }) {
   const line = useRef<HTMLDivElement>(null);
@@ -352,7 +363,7 @@ export function VisitsDone({
       ) : (
         <CircleCheck size={22} aria-hidden="true" />
       ))}
-      {seen ? <span>{children}</span> : children}
+      {seen ? <span>{nameKeeper(names)(children)}</span> : children}
     </div>
   );
 }
