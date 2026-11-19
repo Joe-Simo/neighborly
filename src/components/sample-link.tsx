@@ -42,10 +42,12 @@ export function warmWhenNear(link: HTMLElement | null) {
   let cancel = () => {};
   const near = new IntersectionObserver((seen) => {
     if (!seen.some((entry) => entry.isIntersecting)) return;
-    warmSignIn();
     near.disconnect();
-    // Its code is run as it arrives, so it is asked for once the page is idle, never in the middle of a scroll's frame.
-    cancel = whenIdle(askFirstRoom, 1000);
+    // Both lay tags and run code as they arrive, so they are asked for once the page is idle, never in a scroll's frame.
+    cancel = whenIdle(() => {
+      warmSignIn();
+      askFirstRoom();
+    }, 1000);
   }, { rootMargin: "600px 0px" });
   near.observe(link);
   return () => {
