@@ -14,8 +14,10 @@ import "./home-yes-card.css";
 
 const DAY = 86_400_000;
 const PAPER_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
-/** The corner turns green and the tick settles; then the sheet folds down into the list. */
+/** The corner turns green and the tick settles; then the sheet folds back off the list. */
 const GREEN = 300;
+/** The fold (home-yes-card.css): the list's words are set down only once the draft is past them. */
+const FOLD = 380;
 const format = (time: number, options?: Intl.DateTimeFormatOptions) => formatDate("en", time, { month: "short", day: "numeric", ...options });
 
 // The same made-up call the sample conference holds, so what is seen here is what waits behind the door.
@@ -30,8 +32,8 @@ const others = [
 ] as const;
 
 /**
- * The workspace's draft sheet, laid on the home page. One press: the corner turns green, and the sheet's own
- * words fold down into the first line of the list of requests, on the same paper, which never changes size.
+ * The workspace's draft sheet, laid on the home page. One press: the corner turns green, and the sheet folds back and away from its
+ * top edge as the slip above did, its words turned with it at full ink, leaving the list of requests on the paper beneath, which never changes size.
  * The public pages' travelling card lands on `.home-yes-sheet .help-sheet`; its top left corner is kept bare.
  */
 export function HomeYesCard() {
@@ -48,55 +50,26 @@ export function HomeYesCard() {
     const green = setTimeout(() => setStep("filed"), matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : GREEN);
     return () => clearTimeout(green);
   }, [step]);
-  // Before the list is first painted, each of its words is put where the sheet's own word for it stands,
-  // at that word's size, and from there it travels to its line. Transforms and opacity only.
+  // The tick is set down as the sheet above it folds away: scale only, never faded.
   useLayoutEffect(() => {
-    const root = stage.current;
-    if (step !== "filed" || !root || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const find = (selector: string) => root.querySelector<HTMLElement>(selector);
-    const moves: Animation[] = [];
-    // The sheet's small words are gone within 100ms; only then does anything set off.
-    const travel = (from: HTMLElement | null, to: HTMLElement | null, resized: boolean) => {
-      if (!from || !to) return;
-      const start = from.getBoundingClientRect();
-      const end = to.getBoundingClientRect();
-      const move = `translate(${start.left - end.left}px, ${start.top - end.top}px)`;
-      // The name keeps its shape, sized by its letters. The request is never stretched: its small setting
-      // comes up in the place of the large one as that fades, and is carried to its line.
-      const scale = parseFloat(getComputedStyle(from).fontSize) / parseFloat(getComputedStyle(to).fontSize);
-      moves.push(to.animate(
-        resized ? [{ transform: `${move} scale(${scale})` }, { transform: "none" }] : [{ transform: move, opacity: 0 }, { opacity: 0, offset: 0.2 }, { opacity: 1, offset: 0.55 }, { transform: "none", opacity: 1 }],
-        { duration: 420, delay: 100, easing: PAPER_EASE, fill: "backwards" },
-      ));
-    };
-    travel(find(".help-from strong"), find("[data-new] strong"), true);
-    travel(find("#draft-title"), find("[data-new] span"), false);
-    const arrive = (part: HTMLElement | null, delay: number, rise = 0, duration = 260) => {
-      if (part) moves.push(part.animate([{ opacity: 0, transform: `translateY(${rise}px)` }, { opacity: 1, transform: "none" }], { duration, delay, easing: PAPER_EASE, fill: "backwards" }));
-    };
-    // The list begins to form about 120ms before the draft has finished leaving, so the paper is never seen bare.
-    arrive(find(".home-yes-filed .help-sheet-label"), 30);
-    arrive(find("[data-new] small"), 360, 0, 160);
-    // The tick is set down at the head of the line as the words reach it. Carried straight from the foot of the sheet it would cross them.
-    const tick = find("[data-new] i");
-    if (tick) moves.push(tick.animate([{ opacity: 0, transform: "scale(1.5)" }, { opacity: 1, transform: "none" }], { duration: 220, delay: 300, easing: PAPER_EASE, fill: "backwards" }));
-    root.querySelectorAll<HTMLElement>(".home-yes-filed li:not([data-new])").forEach((row, order) => arrive(row, 90 + order * 40, 12));
-    arrive(find(".home-yes-year"), 440, 0, 160);
-    arrive(find(".home-yes-after"), 520, 8, 80);
-    return () => moves.forEach(move => move.cancel());
+    const tick = stage.current?.querySelector<HTMLElement>("[data-new] i");
+    if (step !== "filed" || !tick || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const set = tick.animate([{ transform: "scale(0)" }, { transform: "scale(1.2)", offset: 0.7 }, { transform: "none" }], { duration: 260, delay: FOLD, easing: PAPER_EASE, fill: "backwards" });
+    return () => set.cancel();
   }, [step]);
   useEffect(() => {
     // The press leaves with the button, so the keyboard is handed to what came of it; the page itself never moves.
-    if (step === "filed") way.current?.focus({ preventScroll: true });
+    let handed: ReturnType<typeof setTimeout> | undefined;
+    if (step === "filed") handed = setTimeout(() => way.current?.focus({ preventScroll: true }), matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : FOLD + 40);
     // The year in the book above counts this request too. It is said on the page only; nothing is sent or kept.
     if (step === "filed" && document.documentElement.dataset.yesGiven !== "true") {
       document.documentElement.dataset.yesGiven = "true";
       window.dispatchEvent(new Event(YES_GIVEN));
     }
-    if (step !== "waiting" || !again.current) return;
+    if (step !== "waiting" || !again.current) return () => clearTimeout(handed);
     // The sheet's button can take the keyboard only once the browser has drawn the sheet as let back in: the frame after next.
     let frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => stage.current?.querySelector<HTMLElement>(".help-actions button")?.focus({ preventScroll: true })); });
-    return () => cancelAnimationFrame(frame);
+    return () => { clearTimeout(handed); cancelAnimationFrame(frame); };
   }, [step]);
   return <div className="home-yes-stage" data-step={step} ref={stage}>
     <div className="home-yes-sheet" inert={step === "filed"}>
@@ -109,16 +82,17 @@ export function HomeYesCard() {
         onApprove={() => setStep("sealed")}
       />
     </div>
-    <div className="home-yes-filed" inert={step !== "filed"} role="group" aria-labelledby="home-yes-filed">
+    {/* Spoken once, from its own region outside the list, which is set down only as the fold passes. */}
+    <span role="status" className="sr-only">{step === "filed" && `${drafted.call.callerName}: ${saved}`}</span>
+    <div className={`home-yes-filed paper-corner${step === "filed" ? " paper-fold" : ""}`} inert={step !== "filed"} role="group" aria-labelledby="home-yes-filed">
       <p className="help-sheet-label" id="home-yes-filed">Requests waiting for a decision</p>
       <ol>
         <li data-new>
           <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5L19.5 7" /></svg></i>
           <strong>{drafted.call.callerName}</strong>
           <span>Rent, $450 to Mill Road Rentals</span>
-          {/* The line always holds its place, so the paper never changes height; the status is spoken once it is filed. */}
+          {/* The line always holds its place, so the paper never changes height. */}
           <small aria-hidden="true">{saved}</small>
-          <span role="status" className="sr-only">{step === "filed" && saved}</span>
         </li>
         {others.map(one => <li key={one.name}>
           <strong>{one.name}</strong>

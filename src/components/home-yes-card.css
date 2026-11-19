@@ -20,17 +20,20 @@
 .home-yes-stage .help-seal{animation-duration:200ms;animation-delay:0ms}
 .home-yes-stage .help-seal path{animation-duration:200ms;animation-delay:80ms}
 
-/* Filed: the sheet's small words give way within 100ms, and the list's words travel from them (home-yes-card.tsx). Back to rest is one 200ms cross-fade. */
-.home-yes-sheet .help-sheet>*{transition:opacity 200ms linear}
-[data-step=filed] .help-sheet>*{opacity:0;transition-duration:100ms}
-/* The name is never seen twice: the sheet's own leaves at once as the list's stands in its place. The request's large setting fades as its small one comes up. */
-[data-step=filed] .help-sheet .help-from strong{opacity:0}
-[data-step=filed] .help-sheet .help-sheet-body{transition-duration:150ms}
-/* The request's large setting is out of the way in 80ms, before the first waiting row comes up through its place. */
-[data-step=filed] .help-sheet #draft-title{opacity:0;transition:opacity 80ms linear}
-[data-step=filed] .help-sheet .help-sheet-body :is(.help-from,.help-quote,.help-why,.help-seal){opacity:0;transition:opacity 100ms linear}
-.home-yes-filed{position:relative;padding:31px 35px 27px;opacity:0;pointer-events:none;transition:opacity 200ms linear}
-[data-step=filed]>.home-yes-filed{opacity:1;pointer-events:auto;transition:none}
+/* Filed: the slip's fold, finished. The draft folds back about its top edge and away from the reader, so perspective only narrows it inside
+   its own place and it never crosses the words around it; past edge-on it is put away. Its words turn with their paper at full ink.
+   The list waits beneath on paper of its own, the same paper, and takes the green corner: one done language. Transform only. */
+.home-yes-sheet{position:relative;z-index:1;perspective:1600px}
+.home-yes-sheet .help-sheet{transform-origin:50% 0;backface-visibility:hidden}
+[data-step=filed] .home-yes-sheet .help-sheet{animation:home-yes-fold 380ms cubic-bezier(.45,.05,.55,.95) forwards}
+@keyframes home-yes-fold{0%{transform:none}99.9%{transform:rotateX(-90deg);visibility:visible}100%{transform:rotateX(-90deg);visibility:hidden}}
+.home-yes-filed{position:relative;padding:31px 35px 27px;visibility:hidden;pointer-events:none;background:#fffdf7;border:1px solid #e0dccb;border-radius:3px;box-shadow:inset 0 1px #fff,0 18px 34px -26px #3b3a2466,0 2px 5px -3px #3b3a2440}
+[data-step=filed]>.home-yes-filed{visibility:visible;pointer-events:auto}
+/* Its links are shown at once with their face, never eased in (a transition on all would hold them hidden past the focus they are given). */
+/* The fold passes only over bare paper: the list's words are set down, at once and never faded, the moment the draft has gone past them. */
+[data-step=filed]>.home-yes-filed>*{animation:home-yes-under 380ms step-end}
+@keyframes home-yes-under{from,to{visibility:hidden}}
+.home-yes-filed [data-slot=button]{transition-property:color,text-decoration-color,box-shadow}
 .home-yes-filed .help-sheet-label{color:#52644f;margin:0;padding-bottom:14px;border-bottom:1px solid var(--live-line)}
 .home-yes-filed ol{list-style:none;margin:0;padding:0}
 .home-yes-filed li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 24px;padding:11px 0 11px 30px}
@@ -68,15 +71,14 @@
   .home-yes-stage .help-sheet .help-actions>[data-slot=button]:first-child{flex:0 0 auto}
 }
 @media(prefers-reduced-motion:reduce){
-  [data-step=filed] .help-sheet .help-from strong{opacity:1}
-  [data-step=filed] .help-sheet>*{transition-duration:200ms}
-  [data-step=filed]>.home-yes-filed{transition:opacity 200ms linear}
+  [data-step=filed] .home-yes-sheet .help-sheet{animation:none;visibility:hidden}
+  [data-step=filed]>.home-yes-filed>*{animation:none}
 }
 
 /* On the public page the sheet labels keep the public minimum of 15px; the workspace keeps its own 13px. */
 .home-yes .help-sheet-label{font-size:15px}
-/* The unsaved line fades in place with the buttons, so the sheet keeps its height at the seal. */
-.home-yes-stage .help-unsaved{transition:opacity 120ms ease-out,visibility 0s linear 120ms}
+/* The unsaved line is put away in place at the seal (never faded), so the sheet keeps its height. */
+.home-yes-stage .help-unsaved{transition:none}
 .home-yes-stage .help-sealed .help-unsaved{visibility:hidden;opacity:0}
 @media (prefers-reduced-motion:reduce){.home-yes-stage .help-unsaved{transition:none}}
 /* The plum line never ends on one word alone. */
