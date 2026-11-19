@@ -134,3 +134,6 @@
   .live-app .team-roster .live-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; }
   .live-app .team-roster .live-row-actions { width: auto; margin: 0; padding: 0; justify-self: end; }
 }
+
+/* Short lines of words break evenly, so no line ends on one stranded word ("en dos.", "their behalf.", "than one."). */
+.live-app :is(.people-deck, .team-card > p, .live-room-foot > span) { text-wrap: balance; }
