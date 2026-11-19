@@ -20,7 +20,8 @@
 .public-words h1,.public-words section{position:relative;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 5px 7px #3b2a1218)}
 .public-words h1::before,.public-words section::before{content:"";position:absolute;inset:0;z-index:-1;background:#f7f4ed;-webkit-mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,linear-gradient(#000,#000) top/100% calc(100% - 29px) no-repeat;mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,linear-gradient(#000,#000) top/100% calc(100% - 29px) no-repeat}
 .public-words h1{z-index:11;margin:0;padding:clamp(40px,5.6vw,104px) clamp(20px,5.4vw,104px) clamp(250px,62vw,300px);font:400 clamp(64px,9vw,144px)/var(--lead-1) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-1)}
-.public-words section{display:grid;grid-template-columns:minmax(0,.62fr) minmax(0,1fr);gap:12px clamp(40px,6vw,110px);margin-top:-30px;padding:clamp(64px,6vw,104px) clamp(20px,5.4vw,104px) clamp(56px,5.4vw,92px)}
+/* The head and its words stand as one pair from the left edge: the head's column fits its 14ch, the words' their 28em, with no gap stretched between them on a wide window. */
+.public-words section{display:grid;grid-template-columns:minmax(0,24rem) minmax(0,28em);justify-content:start;gap:12px clamp(40px,6vw,110px);margin-top:-30px;padding:clamp(64px,6vw,104px) clamp(20px,5.4vw,104px) clamp(56px,5.4vw,92px)}
 .public-words section:nth-of-type(3n+2){--cut:var(--cut-b)}
 .public-words section:nth-of-type(3n){--cut:var(--cut-c)}
 .public-words section:nth-of-type(3n)::before{background:#f4efe4}
@@ -175,9 +176,9 @@
 @media(min-width:600px) and (max-width:1023px){
   .public-words:has(.public-words-note) .public-words-relief{position:relative;display:block;top:auto;margin:-186px calc(-1 * max(12px,3%)) calc(186px - min(78vw,320px) * 2 / 3) auto}
 }
-/* On the widest screens the words' column stops at its measure, so the sheet split .62 to 1 left a bare third of paper at the right of every sheet.
-   Split evenly there: the words start at the sheet's middle and the paper either side of them is level. */
-@media(min-width:1600px){.public-words section,.public-made .public-made-figure{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+/* On the widest screens the pair keeps together from the left edge (an even split had left some 480px of bare paper between a head and its words);
+   only the made page's figures still split evenly. */
+@media(min-width:1600px){.public-made .public-made-figure{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.public-words section{grid-template-columns:minmax(0,26rem) minmax(0,30em)}.public-words section>div{max-width:30em}}
 /* On a phone a link inside a sentence (the translation note's, the project's address) is a 44px target: its padding reaches above and below the line without moving it. */
 @media(max-width:430px){.public-words p a:not([class]),.public-words li a:not([class]),.public-words .public-words-note a,.public-words .public-words-address{padding-block:12px;margin-block:-12px}}
 /* Forced colours drop the paper tone, so each torn sheet keeps a plain system rule at its foot instead of a lone shade. */
