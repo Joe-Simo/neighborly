@@ -63,7 +63,9 @@
 .live-app .live-list:has(> .people-row) { container: people-list / inline-size; }
 @media (min-width: 701px) {
   @container people-list (max-width: 939px) {
+    /* A person row holds at most a short wait and the arrow, so those columns give the name and address their width. */
     .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
+    @media (min-width: 900px) { .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 120px 24px; } }
     /* An address is longer than a name, so the invited role sits under it and the address takes both columns. */
     .people-invited .live-person { grid-column: span 2; }
     .people-invited .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); }

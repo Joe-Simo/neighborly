@@ -387,7 +387,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     actions: {
       printYear: "Imprimir este año",
       printQuarter: "Imprimir este trimestre",
-      spreadsheet: "Descargar como hoja de cálculo",
+      spreadsheet: "Descargar hoja de cálculo",
     },
     empty: {
       title: "Listo para las primeras cifras.",

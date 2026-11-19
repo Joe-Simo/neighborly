@@ -20,7 +20,7 @@ const en = {
   preview: "A call, a visit, a yes, and the year. One made-up week, told in four steps.",
   enter: "Enter Kind Helps",
   translated: null as null | [string, string, string],
-  lede: "St. Example is a made‑up parish, and everyone in this week is made up too. The week is told from the sample conference’s own records.",
+  lede: "St. Example is a made‑up parish, and everyone in this week is made up too. It is told around a request in the sample conference’s records; the days and times are only to tell it.",
   days: [
     { day: "Monday, 9:12 a.m.", picture: "call", room: "The help line", title: "A call comes in.", alt: "Two paper hands lifting a telephone receiver from its cradle, its cord curling across the sheet.",
       copy: ["A mother of two leaves a message: the power bill is past due and the shutoff notice says Friday. The member on the phone this week writes it down once, in her words.", "Because of the date, the call rises to the top in ochre, waiting. By 10:40 it is returned, and a visit is set for Wednesday."] },
@@ -43,7 +43,7 @@ const es: typeof en = {
   preview: "Una llamada, una visita, un sí y el año. Una semana inventada, contada en cuatro pasos.",
   enter: "Entrar a Kind Helps",
   translated: null,
-  lede: "San Ejemplo es una parroquia inventada, y todas las personas de esta semana también lo son. La semana se cuenta con los propios registros de la conferencia de muestra.",
+  lede: "San Ejemplo es una parroquia inventada, y todas las personas de esta semana también lo son. Se cuenta a partir de una petición de los registros de la conferencia de muestra; los días y las horas son solo para contarla.",
   days: [
     { day: "Lunes, 9:12 a. m.", picture: "call", room: "La línea de ayuda", title: "Entra una llamada.", alt: "Dos manos de papel que levantan el auricular de un teléfono, con el cable enroscado sobre la hoja.",
       copy: ["Una madre de dos hijos deja un mensaje: el recibo de la luz está vencido y el aviso de corte dice el viernes. El miembro que atiende el teléfono esta semana la anota una sola vez, con sus palabras.", "Por la fecha, la llamada pasa arriba en ocre, esperando. A las 10:40 ya se devolvió, y la visita queda para el miércoles."] },
