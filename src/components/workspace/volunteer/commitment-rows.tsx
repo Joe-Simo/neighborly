@@ -1,4 +1,5 @@
 "use client";
+import type { LiveArea } from "@/components/workspace/areas";
 
 import { SavedWords } from "@/components/workspace/saved-words";
 import { FOLD_HOLD, arriving, foldLeaves, openUp, useFocusOnce, useSavedLine, viewTop } from "@/components/workspace/fold";
@@ -25,7 +26,7 @@ export function CommitmentRows({
   fresh,
 }: {
   items: LiveWorkspaceData["commitments"];
-  empty?: { title: string; detail: string };
+  empty?: { title: string; detail: string; go?: LiveArea };
   /** The commitment just accepted: its row is laid in. */
   fresh?: string;
 }) {
@@ -84,7 +85,7 @@ export function CommitmentRows({
         ))}
       </div>
     ) : (
-      <LiveEmpty title={empty?.title ?? words.commitments.emptyTitle}>{empty?.detail ?? words.commitments.emptyDetail}</LiveEmpty>
+      <LiveEmpty title={empty?.title ?? words.commitments.emptyTitle} go={empty?.go}>{empty?.detail ?? words.commitments.emptyDetail}</LiveEmpty>
     );
 }
 

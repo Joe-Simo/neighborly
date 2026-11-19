@@ -255,3 +255,12 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .courtyard-assembly:not([data-played]) .courtyard-rise i{transform:translateY(14px) rotateX(60deg);opacity:.34}
 .courtyard-assembly[data-over]{visibility:hidden}
 .fresco-stage[data-assembling=playing] :is(.fresco-standing,.fresco-caption){opacity:0;transition:none}
+/* One display scale from 1440: every chapter's head is set at the same size (the visit no longer stands larger than the rest),
+   and each chapter's sentence is held to one editorial measure, about 60 characters of the text face, given in em so the fallback face wraps alike. */
+@media(min-width:1440px){
+  .relief-panel[data-chapter=visit] .relief-words h2{font-size:clamp(64px,9.45vw,150px)}
+  .relief-words p,.relief-panel[data-chapter=help] .relief-words p{max-width:30em}
+}
+@media(min-width:1600px) and (min-height:760px){
+  .relief-panel[data-chapter=visit] .relief-words h2{font-size:min(9.45vw,17svh)}
+}

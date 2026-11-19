@@ -114,7 +114,7 @@ export function TasksSection() {
             })}
           </div>
         ) : (
-          <LiveEmpty title={words.tasks.emptyTitle}>
+          <LiveEmpty title={words.tasks.emptyTitle} go={isOwner ? undefined : "mine"}>
             {words.tasks.emptyDetail}
           </LiveEmpty>
         )}

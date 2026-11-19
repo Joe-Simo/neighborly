@@ -88,7 +88,7 @@ export function TeamsSection() {
           </section>
         ))
       ) : (
-        <LiveEmpty title={t.emptyTitle}>
+        <LiveEmpty title={t.emptyTitle} go={isOwner ? undefined : "mine"}>
           {text.emptyBody}
         </LiveEmpty>
       )}
