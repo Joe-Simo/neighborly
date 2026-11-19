@@ -271,7 +271,9 @@ td.help-money[data-balance] { color: var(--live-muted); }
   .live-app table.help-ledger, .help-ledger tbody, .help-ledger tfoot { display: block; width: 100%; }
   .help-ledger thead { display: none; }
   .help-ledger tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; padding: 18px 0; border-bottom: 1px solid var(--live-line); }
-  .live-app table.help-ledger td { display: block; padding: 0; border: 0; }
+  .live-app table.help-ledger:not(.book-table) td { display: block; padding: 0; border: 0; }
+  /* The total's money out says it is out, as money in says it is in; nothing out stays a plain $0.00. */
+  .help-ledger tfoot td.help-money[data-out]::before { content: "− "; }
   .help-ledger td:first-child { grid-column: 1 / -1; font-size: 15px; margin-bottom: 4px; }
   .help-ledger td:empty, .help-ledger td[data-balance], .help-ledger td[data-for] { display: none !important; }
   .help-ledger tfoot tr { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 18px; padding-top: 16px; border-top: 2px solid #596e51; }
