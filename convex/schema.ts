@@ -15,6 +15,8 @@ export default defineSchema({
   // The assistant's monthly allowance per group. month is "yyyy-MM".
   /** Every name a conference holds (its neighbors' and members'), kept in the same write as the name: what the assistant's scrub takes out of a note. */
   knownNames: defineTable({ churchId: v.id("churches"), names: v.array(v.string()) }).index("by_church", ["churchId"]),
+  /** The sample's visitors share one account, so each sign-in session has its own small allowance for the day. */
+  aiUsageBySession: defineTable({ session: v.string(), day: v.string(), windowStart: v.number(), minute: v.number(), count: v.number() }).index("by_session_day", ["session", "day"]).index("by_day", ["day"]),
   aiUsageByChurch: defineTable({ churchId: v.id("churches"), month: v.string(), count: v.number() }).index("by_church_month", ["churchId", "month"]),
   churches: defineTable({ name: v.string(), timeZone: v.string(), sample: v.optional(v.boolean()), wordSet: v.optional(v.union(v.literal("general"), v.literal("vincentian"))), /** Running figures kept by convex/counts.ts. */ householdCount: v.optional(v.number()), waitingCount: v.optional(v.number()), waitingHouseholdIds: v.optional(v.array(v.id("neighbors"))) }),
   memberships: defineTable({ churchId: v.id("churches"), userId: v.id("users"), name: v.string(), email: v.string(), role, active: v.boolean(), approved: v.boolean(), coverOptIn: v.boolean(), language: v.optional(language), /** Set when the owner removed this person for good: the row stays, nameless, so their logged work still counts. */ removedAt: v.optional(v.number()) }).index("by_user", ["userId"]).index("by_church_user", ["churchId", "userId"]).index("by_church", ["churchId"]),

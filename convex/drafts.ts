@@ -6,6 +6,7 @@ import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareReques
 import { jevSet } from "../src/lib/jev-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { hour, hourAsked, neighborAccess, user } from "./access";
+import { isSampleVisitor } from "./demo";
 import { fiscalYear } from "./reports";
 import { namesFor } from "./knownNames";
 import { paidTowardRequest } from "./treasury";
@@ -24,21 +25,37 @@ export const identity = internalQuery({
 });
 
 
+/** What one visitor's session in the sample may ask the model for in a day; the sample's monthly allowance stays the ceiling. */
+export const sampleSessionAllowance = 12;
+
 /**
  * Counts one request to the model, or says why it may not be made: the person's five a minute, or
  * the group's allowance for the month. A refusal is not an error; the draft simply comes back for review.
+ * Every sample visitor is the same account, so there the five a minute and a small daily allowance belong to the
+ * visitor's own sign-in session instead: one visitor can never use up the sample for everyone.
  */
 export const reserve = internalMutation({
   args: { userId: v.id("users"), churchId: v.optional(v.id("churches")) },
   returns: v.union(v.literal("ok"), v.literal("minute"), v.literal("month")),
   handler: async (ctx, { userId, churchId }) => {
     const windowStart = Math.floor(Date.now() / 60_000) * 60_000;
-    const previous = await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
+    const identity = await ctx.auth.getUserIdentity();
+    const visitor = isSampleVisitor(identity?.subject);
+    // Clerk names the session in `sid`; a token without one counts as a single session, so it is held tightest.
+    const session = visitor ? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
+    const day = new Date().toISOString().slice(0, 10);
+    const own = session ? await ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", session).eq("day", day)).unique() : null;
+    const previous = session ? null : await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
+    if (own && own.windowStart === windowStart && own.minute >= 5) return "minute" as const;
+    if (own && own.count >= sampleSessionAllowance) return "month" as const;
     if (previous?.windowStart === windowStart && previous.count >= 5) return "minute" as const;
     const month = new Date().toISOString().slice(0, 7);
     const used = churchId ? await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", q => q.eq("churchId", churchId).eq("month", month)).unique() : null;
     if (used && used.count >= monthlyAllowance) return "month" as const;
-    if (previous) await ctx.db.patch("aiUsage", previous._id, {
+    if (session) {
+      if (own) await ctx.db.patch("aiUsageBySession", own._id, { windowStart, minute: own.windowStart === windowStart ? own.minute + 1 : 1, count: own.count + 1 });
+      else await ctx.db.insert("aiUsageBySession", { session, day, windowStart, minute: 1, count: 1 });
+    } else if (previous) await ctx.db.patch("aiUsage", previous._id, {
       windowStart, count: previous.windowStart === windowStart ? previous.count + 1 : 1,
     });
     else await ctx.db.insert("aiUsage", { userId, windowStart, count: 1 });

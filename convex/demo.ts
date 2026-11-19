@@ -88,6 +88,9 @@ export const nightly = internalMutation({
   returns: v.null(),
   handler: async (ctx) => {
     if (process.env.SAMPLE_NIGHTLY !== "off") await ctx.runMutation(internal.demo.refresh, {});
+    // Yesterday's per-visitor AI counts are spent: each night clears them (a few hundred at most, so in one go).
+    const today = new Date().toISOString().slice(0, 10);
+    for (const row of await ctx.db.query("aiUsageBySession").withIndex("by_day", q => q.lt("day", today)).take(1000)) await ctx.db.delete("aiUsageBySession", row._id);
     return null;
   },
 });

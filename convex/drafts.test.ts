@@ -456,3 +456,38 @@ describe("a call note drafted into a request", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+describe("the sample's allowance is each visitor's own", () => {
+  test("one visitor's session runs out without touching another's, and other accounts keep their own count", async () => {
+    vi.stubEnv("DEMO_CLERK_USER_ID", "clerk|visitor");
+    const t = convexTest(schema, modules);
+    const { userId, churchId } = await t.run(async ctx => ({
+      userId: await ctx.db.insert("users", { clerkId: "clerk|visitor" }),
+      churchId: await ctx.db.insert("churches", { name: "Sample", timeZone: "UTC", sample: true }),
+    }));
+    const session = (sid: string) => t.withIdentity({ subject: "clerk|visitor", email: "demo@kindhelps.com", emailVerified: true, sid });
+    const ask = (sid: string) => session(sid).mutation(internal.drafts.reserve, { userId, churchId });
+    // Five a minute each, so the clock moves a minute between rounds.
+    vi.useFakeTimers({ now: Date.parse("2026-11-20T12:00:00Z") });
+    const answers: string[] = [];
+    for (let i = 0; i < 14; i++) { if (i % 5 === 0) vi.advanceTimersByTime(60_000); answers.push(await ask("sess_a")); }
+    expect(answers.filter(a => a === "ok")).toHaveLength(12);
+    expect(answers.at(-1)).toBe("month");
+    // A second visitor is not held by the first one's use.
+    expect(await ask("sess_b")).toBe("ok");
+    vi.useRealTimers();
+  });
+
+  test("the nightly reset clears the days before today and keeps today's", async () => {
+    vi.stubEnv("SAMPLE_NIGHTLY", "off");
+    const t = convexTest(schema, modules);
+    vi.useFakeTimers({ now: Date.parse("2026-11-20T09:00:00Z") });
+    await t.run(async ctx => {
+      await ctx.db.insert("aiUsageBySession", { session: "a", day: "2026-11-19", windowStart: 0, minute: 1, count: 3 });
+      await ctx.db.insert("aiUsageBySession", { session: "b", day: "2026-11-20", windowStart: 0, minute: 1, count: 1 });
+    });
+    await t.mutation(internal.demo.nightly, {});
+    expect((await t.run(ctx => ctx.db.query("aiUsageBySession").collect())).map(row => row.session)).toEqual(["b"]);
+    vi.useRealTimers();
+  });
+});
