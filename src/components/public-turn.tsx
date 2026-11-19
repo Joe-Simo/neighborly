@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 /** The public pages: one book, turned from page to page. The workspace and its doors keep their own turn (courtyard-door.tsx). */
-const PUBLIC = /^\/(?:$|about\/|sobre\/|privacy$|privacidad$)/;
+const PUBLIC = /^\/(?:$|about\/|sobre\/|privacy$|privacidad$|accessibility$|accesibilidad$)/;
 
 /**
  * One turn between public pages: following a link from one public page to another, the page is turned off from its lower right corner

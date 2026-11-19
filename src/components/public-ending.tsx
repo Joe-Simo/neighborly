@@ -16,12 +16,12 @@ import { CutHead } from "@/components/cut-heads";
 export const endingWords = {
   en: {
     bring: ["Bring this to", "your people."], own: "Your own conference", start: "Start your conference", signIn: "Sign in",
-    free: ["Free.", "For every conference."], about: "About Kind Helps", privacy: "Privacy", privacyPath: "/privacy", week: "A week at St. Example", weekPath: "/about/a-week", howMade: "How we made it", howMadePath: "/about/how-we-made-it", give: "Give a gift", newTab: "(opens in a new tab)",
+    free: ["Free.", "For every conference."], about: "About Kind Helps", privacy: "Privacy", privacyPath: "/privacy", access: "Accessibility", accessPath: "/accessibility", week: "A week at St. Example", weekPath: "/about/a-week", howMade: "How we made it", howMadePath: "/about/how-we-made-it", give: "Give a gift", newTab: "(opens in a new tab)",
     card: { for: "For", opening: "Opening…", look: "Look around a sample conference", madeUp: "Every person in the sample is made up.", who: "Who this card is for (optional)", stays: "Stays in this tab." },
   },
   es: {
     bring: ["Lleva esto a", "tu gente."], own: "Tu propia conferencia", start: "Empieza tu conferencia", signIn: "Iniciar sesión",
-    free: ["Gratis.", "Para toda conferencia."], about: "Acerca de Kind Helps", privacy: "Privacidad", privacyPath: "/privacidad", week: "Una semana en San Ejemplo", weekPath: "/sobre/una-semana", howMade: "Cómo lo hicimos", howMadePath: "/sobre/como-lo-hicimos", give: "Hacer un donativo", newTab: "(se abre en una pestaña nueva)",
+    free: ["Gratis.", "Para toda conferencia."], about: "Acerca de Kind Helps", privacy: "Privacidad", privacyPath: "/privacidad", access: "Accesibilidad", accessPath: "/accesibilidad", week: "Una semana en San Ejemplo", weekPath: "/sobre/una-semana", howMade: "Cómo lo hicimos", howMadePath: "/sobre/como-lo-hicimos", give: "Hacer un donativo", newTab: "(se abre en una pestaña nueva)",
     card: { for: "Para", opening: "Abriendo…", look: "Recorrer una muestra", madeUp: "Todos en la muestra son inventados.", who: "Para quién es esta tarjeta (opcional)", stays: "Se queda en esta pestaña." },
   },
 } satisfies Record<Language, unknown>;
@@ -69,6 +69,7 @@ export function Colophon({ home = "/", language = "en" }: { home?: string; langu
       <Link className="neighborly-give" href={said.weekPath}>{said.week}</Link>
       <Link className="neighborly-give" href={said.howMadePath}>{said.howMade}</Link>
       <Link className="neighborly-give" href={said.privacyPath}>{said.privacy}</Link>
+      <Link className="neighborly-give" href={said.accessPath}>{said.access}</Link>
       <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">{said.give}<span className="sr-only"> {said.newTab}</span></a>
     </nav>
     {/* Last, as it is set: the name is the page's final line for the eye, the keyboard and a screen reader alike. */}
