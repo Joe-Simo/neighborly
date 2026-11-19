@@ -2,6 +2,7 @@
 
 import { Component, createContext, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
+import { whenIdle } from "@/lib/idle";
 import { flushSync } from "react-dom";
 import { edgeTurn, roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
 import { drawn as drawnPart, markWayBack } from "@/components/workspace/record-slide";
@@ -317,12 +318,58 @@ function stillFrame(column: HTMLElement, copy: HTMLElement) {
   return frame;
 }
 
+/**
+ * The copy, taken ahead while the room is at rest and nothing is asked of the page, so the frame that changes room
+ * only lays it down. It stands for the room exactly as it is: any change in the room, a scroll, a resize or a
+ * typed letter puts it aside, and it is taken again once the page is quiet. Without one, the copy is taken then.
+ */
+let ready: { column: HTMLElement; copy: HTMLElement; y: number; width: number; height: number } | null = null;
+function keepReady(column: HTMLElement) {
+  let cancel = () => {};
+  let settle = 0;
+  const take = () => {
+    cancel();
+    cancel = whenIdle(() => {
+      if (!column.isConnected || column.hasAttribute("data-room-held") || still) return;
+      ready = { column, copy: stillCopy(column), y: window.scrollY, width: window.innerWidth, height: window.innerHeight };
+    }, 1500);
+  };
+  const stale = () => {
+    if (ready?.column === column) ready = null;
+    cancel();
+    window.clearTimeout(settle);
+    settle = window.setTimeout(take, 200);
+  };
+  const changed = new MutationObserver(stale);
+  changed.observe(column, { subtree: true, childList: true, attributes: true, characterData: true });
+  window.addEventListener("scroll", stale, { passive: true });
+  window.addEventListener("resize", stale);
+  column.addEventListener("input", stale);
+  take();
+  return () => {
+    cancel();
+    window.clearTimeout(settle);
+    changed.disconnect();
+    window.removeEventListener("scroll", stale);
+    window.removeEventListener("resize", stale);
+    column.removeEventListener("input", stale);
+    if (ready?.column === column) ready = null;
+  };
+}
+/** The copy taken ahead, when it is still the room as it stands now. */
+function readyCopy(column: HTMLElement) {
+  const kept = ready;
+  ready = null;
+  const same = kept && kept.column === column && kept.y === window.scrollY && kept.width === window.innerWidth && kept.height === window.innerHeight;
+  return same && !stillMoving(column).length ? kept.copy : stillCopy(column);
+}
+
 /** Lays the still copy over the column, where the column lies on the screen. */
 function hold(column: HTMLElement | null) {
   // A room that was never shown is not copied: the copy already lying there, or the "Opening…" line, stays.
   if (!column || still || column.hasAttribute("data-room-held")) return;
   const place = column.getBoundingClientRect();
-  const copy = stillCopy(column);
+  const copy = readyCopy(column);
   Object.assign(copy.style, {
     position: "fixed",
     top: `${place.top}px`,
@@ -515,7 +562,14 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
       cancelAnimationFrame(frame);
     };
   }, [area, held, column]);
-  return { shown: !held, opening: held && opening, lost: held && opening && lost, settled: !held && settled === area };
+  // At rest, the copy the next room change lays down is taken ahead, and kept as the room it stands for.
+  const atRest = !held && settled === area;
+  useEffect(() => {
+    const element = column.current;
+    if (!atRest || !element) return;
+    return keepReady(element);
+  }, [atRest, column]);
+  return { shown: !held, opening: held && opening, lost: held && opening && lost, settled: atRest };
 }
 
 type Edge = { webkit?: { messageHandlers?: { kindHelpsEdge?: { postMessage: (pageOwns: boolean) => void } } } };
