@@ -5,7 +5,6 @@ import { SerwistProvider } from "@serwist/turbopack/react";
 import { OfflineWorker } from "@/components/offline-worker";
 import { PublicTurn } from "@/components/public-turn";
 import "@/components/public-turn.css";
-import { CutHeads } from "@/components/cut-heads";
 import "@/components/cut-heads.css";
 import { launchScreens } from "@/lib/launch-screens";
 import { linkCardIn, linkPreview } from "@/lib/link-preview";
@@ -64,7 +63,6 @@ export default function RootLayout({
         <SerwistProvider swUrl="/serwist/sw.js" register={false} reloadOnOnline={false}>
           <OfflineWorker />
           <PublicTurn />
-          <CutHeads />
           {children}
         </SerwistProvider>
       </body>

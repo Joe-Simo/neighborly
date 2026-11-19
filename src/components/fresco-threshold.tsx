@@ -10,6 +10,7 @@ import { CourtyardDoor, goInTurning } from "./courtyard-door";
 import { useRouter } from "next/navigation";
 import { useSettled } from "@/lib/use-settled";
 import "./relief-journey.css";
+import { CutHead } from "@/components/cut-heads";
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const ease = (value: number) => value * value * (3 - 2 * value);
@@ -265,7 +266,7 @@ export function FrescoThreshold() {
       <div className="fresco-invitation" aria-hidden={open}>
         {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
         <p className="fresco-kicker">One call. Two at the door.</p>
-        <h2><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span></span></h2>
+        <CutHead><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span></span></CutHead>
         <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
       </div>

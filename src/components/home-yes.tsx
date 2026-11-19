@@ -7,6 +7,7 @@ import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSettled } from "@/lib/use-settled";
 import "./home-yes.css";
+import { CutHead } from "@/components/cut-heads";
 
 // The sheet is the workspace's own, with the workspace's own styles. They are fetched well clear of the first screen:
 // two seconds after it has settled, or as soon as the visitor comes within two windows of this place, whichever is
@@ -32,7 +33,7 @@ export function HomeYes() {
   return <section className="home-yes" aria-labelledby="home-yes-title">
     <div className="relief-words home-yes-words">
       <p className="home-yes-kicker">The help line · Sample</p>
-      <h2 id="home-yes-title">Your turn.</h2>
+      <CutHead id="home-yes-title">Your turn.</CutHead>
       <p>On the help line, a request waits for a person. Here, that person is you.</p>
     </div>
     <div className="home-yes-desk" ref={desk}>
