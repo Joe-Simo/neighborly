@@ -39,7 +39,7 @@ const es: typeof en = {
   path: "/sobre/una-semana",
   title: "Una semana en\u00a0San\u00a0Ejemplo",
   tab: "Una semana en San Ejemplo — Kind Helps",
-  description: "Una semana inventada en una conferencia inventada: una llamada a la línea de ayuda, una visita en pareja, el informe y el sí, y la cuenta del año.",
+  description: "Una semana inventada en una conferencia inventada: una llamada a la línea de ayuda, una visita en pareja, las notas y el sí, y las cifras del año.",
   preview: "Una llamada, una visita, un sí y el año. Una semana inventada, contada en cuatro pasos.",
   enter: "Entrar a Kind Helps",
   translated: null,

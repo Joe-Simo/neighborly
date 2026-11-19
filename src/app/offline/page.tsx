@@ -2,12 +2,16 @@ import type { Metadata } from "next";
 import { EdgeSheet } from "@/components/edge-sheet";
 import { ReaderLanguage } from "@/components/reader-language";
 import { edgeWords } from "@/lib/edge-words";
+import { linkCardIn, linkPreview } from "@/lib/link-preview";
 import { words } from "@/lib/words";
 import { TryAgain } from "./try-again";
 
 export const metadata: Metadata = {
   title: words("en").states.offlinePageTab,
   description: edgeWords.en.offlineAbout,
+  // A link to this page, pasted into a chat, says what it is and does not pass as the home page.
+  openGraph: { ...linkPreview, title: words("en").states.offlinePageTab, description: edgeWords.en.offlineAbout },
+  twitter: { ...linkCardIn("en"), title: words("en").states.offlinePageTab, description: edgeWords.en.offlineAbout },
   robots: { index: false, follow: false },
 };
 
