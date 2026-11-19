@@ -32,12 +32,14 @@ import "./treasury.css";
 const neighborHref = (id: string) =>
   `/app/neighbors?neighbor=${encodeURIComponent(id)}`;
 
-function NeighborLink({ id, name }: { id: string; name: string }) {
-  return (
+/** A name link; `after` is the punctuation that follows it, kept on the name's line. */
+function NeighborLink({ id, name, after }: { id: string; name: string; after?: string }) {
+  const link = (
     <Link className="live-link live-name" href={neighborHref(id)}>
       {name}
     </Link>
   );
+  return after ? <span className="live-glue">{link}{after}</span> : link;
 }
 
 /**
@@ -239,8 +241,8 @@ export function LedgerView({
                 {fill(w.sheet.title, { kind: categoryLabel(room, first.kind), amount: formatFigure(first.remaining), payee: sampleSaid(first.payeeName) })}
               </h2>
               <p className="help-why">
-                {w.sheet.for} <NeighborLink id={first.neighborId} name={first.neighborName} />
-                . {sentence(sampleSaid(first.summary))}
+                {w.sheet.for} <NeighborLink id={first.neighborId} name={first.neighborName} after="." />{" "}
+                {sentence(sampleSaid(first.summary))}
               </p>
               <p>
                 {first.paid > 0
@@ -279,8 +281,9 @@ export function LedgerView({
                     <NeighborLink
                       id={request.neighborId}
                       name={request.neighborName}
-                    />
-                    . {sentence(sampleSaid(request.summary))}
+                      after="."
+                    />{" "}
+                    {sentence(sampleSaid(request.summary))}
                     {request.paid > 0 &&
                       ` ${sentence(w.also.alreadyPaid(formatFigure(request.paid)))}`}
                   </p>
