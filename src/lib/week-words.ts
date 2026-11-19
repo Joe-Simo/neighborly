@@ -15,10 +15,10 @@ export type WeekDay = { day: string; title: string; copy: string[]; room: string
 const en = {
   path: "/about/a-week",
   title: "A week at St.\u00a0Example",
-  tab: "A week at St. Example — Kind Helps",
+  tab: "A week at St. Example — Kind Helps",
   description: "One made-up week at a made-up conference: a call to the help line, a visit in pairs, the write-up and the yes, and the year’s count.",
   preview: "A call, a visit, a yes, and the year. One made-up week, told in four steps.",
-  enter: "Enter Kind Helps",
+  enter: "Enter Kind Helps",
   translated: null as null | [string, string, string],
   lede: "St. Example is a made-up parish, and everyone in this week is made up too. The week is the one the sample conference keeps, so every step can be opened and seen.",
   days: [
@@ -31,17 +31,17 @@ const en = {
     { day: "And at the year’s end", picture: "year", room: "The yearly report", title: "It counts itself.", alt: "A paper page of the year’s report with a ribbon laid across it.",
       copy: [`Nobody adds the week up by hand. That call is one of ${calls} the sample conference took in its year, that visit one of ${visits}, and that ${weekHelp} part of ${help} in help.`, "When the year ends, the report is ready. The president checks the totals, then prints."] },
   ] as WeekDay[],
-  last: "Every name, number and household in the sample is made up. Kind Helps is independent, and not affiliated with or endorsed by the Society of St. Vincent de Paul.",
+  last: "Every name, number and household in the sample is made up. Kind Helps is independent, and not affiliated with or endorsed by the Society of St. Vincent de Paul.",
   open: "Open the sample conference",
 };
 
 const es: typeof en = {
   path: "/sobre/una-semana",
   title: "Una semana en\u00a0San\u00a0Ejemplo",
-  tab: "Una semana en San Ejemplo — Kind Helps",
+  tab: "Una semana en San Ejemplo — Kind Helps",
   description: "Una semana inventada en una conferencia inventada: una llamada a la línea de ayuda, una visita en pareja, el informe y el sí, y la cuenta del año.",
   preview: "Una llamada, una visita, un sí y el año. Una semana inventada, contada en cuatro pasos.",
-  enter: "Entrar a Kind Helps",
+  enter: "Entrar a Kind Helps",
   translated: null,
   lede: "San Ejemplo es una parroquia inventada, y todas las personas de esta semana también lo son. Es la semana que guarda la conferencia de muestra, así que cada paso se puede abrir y ver.",
   days: [
@@ -54,7 +54,7 @@ const es: typeof en = {
     { day: "Y al final del año", picture: "year", room: "El informe anual", title: "Se cuenta solo.", alt: "Una página de papel del informe del año con una cinta encima.",
       copy: [`Nadie suma la semana a mano. Esa llamada es una de las ${calls} que la conferencia de muestra recibió en su año, esa visita una de ${visits}, y esos ${weekHelp} parte de ${help} en ayuda.`, "Cuando termina el año, el informe está listo. El presidente revisa los totales y lo imprime."] },
   ],
-  last: "Todos los nombres, números y hogares de la muestra son inventados. Kind Helps es independiente, y no tiene afiliación ni respaldo de la Sociedad de San Vicente de Paúl.",
+  last: "Todos los nombres, números y hogares de la muestra son inventados. Kind Helps es independiente, y no tiene afiliación ni respaldo de la Sociedad de San Vicente de Paúl.",
   open: "Abrir la conferencia de muestra",
 };
 

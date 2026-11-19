@@ -7,14 +7,14 @@ type Block = string | [lead: string, rest: string][];
 const en = {
   path: "/privacy",
   title: "Privacy",
-  tab: "Privacy — Kind Helps",
-  description: "What a conference keeps in Kind Helps, who can see it, what the assistant is sent, and how a record, a person or a whole conference is removed.",
-  preview: "What a conference keeps in Kind Helps, who can see it, and how it is removed.",
-  enter: "Enter Kind Helps",
+  tab: "Privacy — Kind Helps",
+  description: "What a conference keeps in Kind Helps, who can see it, what the assistant is sent, and how a record, a person or a whole conference is removed.",
+  preview: "What a conference keeps in Kind Helps, who can see it, and how it is removed.",
+  enter: "Enter Kind Helps",
   /** Under the title of a page that is a translation: [before the link, the link to the English page, after it]. English has none. */
   translated: null as null | [string, string, string],
   sections: [
-    { title: "Your records belong to your conference", blocks: ["Kind Helps is free software for a conference to keep its own work in one place. What a conference writes here belongs to the conference, not to us."] },
+    { title: "Your records belong to your conference", blocks: ["Kind Helps is free software for a conference to keep its own work in one place. What a conference writes here belongs to the conference, not to us."] },
     { title: "What a conference keeps here", blocks: [[
       ["Its members:", "name, email, role, teams, availability, time off, commitments, tasks, meetings and announcements."],
       ["The neighbors it helps:", "name, phone, email, address, how many adults and children, language and notes. If the conference chooses to record them: who lives in the household by relationship and birth year (no names, no birth dates), monthly income and expenses, and landlord or utility account details."],
@@ -54,20 +54,20 @@ const en = {
     /** The project's address stands between these two. */
     before: "For the software itself, or if you cannot reach an owner, open an issue on the project’s public page: ",
     after: ". Do not put personal details in a public issue.",
-    independent: "Kind Helps is an independent project. It is not affiliated with or endorsed by the Society of St. Vincent de Paul.",
+    independent: "Kind Helps is an independent project. It is not affiliated with or endorsed by the Society of St. Vincent de Paul.",
   },
 };
 
 const es: typeof en = {
   path: "/privacidad",
   title: "Privacidad",
-  tab: "Privacidad — Kind Helps",
-  description: "Qué guarda una conferencia en Kind Helps, quién puede verlo, qué se le envía al asistente y cómo se elimina un registro, una persona o una conferencia entera.",
-  preview: "Qué guarda una conferencia en Kind Helps, quién puede verlo y cómo se elimina.",
-  enter: "Entrar a Kind Helps",
+  tab: "Privacidad — Kind Helps",
+  description: "Qué guarda una conferencia en Kind Helps, quién puede verlo, qué se le envía al asistente y cómo se elimina un registro, una persona o una conferencia entera.",
+  preview: "Qué guarda una conferencia en Kind Helps, quién puede verlo y cómo se elimina.",
+  enter: "Entrar a Kind Helps",
   translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],
   sections: [
-    { title: "Tus registros pertenecen a tu conferencia", blocks: ["Kind Helps es un programa gratuito para que una conferencia guarde su propio trabajo en un solo lugar. Lo que una conferencia escribe aquí pertenece a la conferencia, no a nosotros."] },
+    { title: "Tus registros pertenecen a tu conferencia", blocks: ["Kind Helps es un programa gratuito para que una conferencia guarde su propio trabajo en un solo lugar. Lo que una conferencia escribe aquí pertenece a la conferencia, no a nosotros."] },
     { title: "Qué guarda aquí una conferencia", blocks: [[
       ["Sus miembros:", "nombre, correo electrónico, rol, equipos, disponibilidad, días libres, compromisos, tareas, reuniones y avisos."],
       ["Los vecinos a quienes ayuda:", "nombre, teléfono, correo electrónico, dirección, cuántos adultos y niños, idioma y notas. Si la conferencia decide anotarlos: quién vive en el hogar, por parentesco y año de nacimiento (sin nombres ni fechas de nacimiento), ingresos y gastos mensuales, y datos de la cuenta del dueño de la vivienda o de los servicios."],
@@ -105,7 +105,7 @@ const es: typeof en = {
     newTab: "(se abre en una pestaña nueva)",
     before: "Sobre el programa en sí, o si no puedes comunicarte con un responsable, abre un reporte («issue») en la página pública del proyecto: ",
     after: ". No pongas datos personales en un reporte público.",
-    independent: "Kind Helps es un proyecto independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo.",
+    independent: "Kind Helps es un proyecto independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo.",
   },
 };
 

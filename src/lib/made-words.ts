@@ -6,14 +6,14 @@ export type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
 export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string } };
 
-/** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
+/** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
   path: "/about/how-we-made-it",
   title: "How we made it",
-  tab: "How we made it — Kind Helps",
-  description: "How Kind Helps was made: the painting, the rules its paper keeps, how the assistant is held to a person’s say, and why it is free for every conference.",
+  tab: "How we made it — Kind Helps",
+  description: "How Kind Helps was made: the painting, the rules its paper keeps, how the assistant is held to a person’s say, and why it is free for every conference.",
   preview: "The painting, the paper’s rules, the assistant, and a promise: free for every conference.",
-  enter: "Enter Kind Helps",
+  enter: "Enter Kind Helps",
   translated: null as null | [string, string, string],
   courtyard: {
     label: "The courtyard painting, its paper sheets drawn apart, laid back together as the page scrolls",
@@ -26,7 +26,7 @@ const en = {
   },
   sections: [
     { title: "Why it exists", blocks: [
-      "Kind Helps is for the volunteers of St. Vincent de Paul conferences: the people who answer the help line, visit homes and keep the books. Many conferences keep this work on paper, in spreadsheets or in ServWare. Kind Helps keeps it in one place, in English and Spanish, on a phone or at a desk.",
+      "Kind Helps is for the volunteers of St. Vincent de Paul conferences: the people who answer the help line, visit homes and keep the books. Many conferences keep this work on paper, in spreadsheets or in ServWare. Kind Helps keeps it in one place, in English and Spanish, on a phone or at a desk.",
       [
         { lead: "A neighbor’s dignity.", rest: "Help is paid to the landlord, utility or store, never to the neighbor. Visits are made in pairs. A family’s name, phone and address are taken out before a note reaches the assistant." },
         { lead: "A volunteer’s time.", rest: "A call note becomes a draft request, and the pair for a visit is suggested from who is free." },
@@ -35,7 +35,7 @@ const en = {
       "It is free because no conference should pay to help its neighbors.",
     ] },
     { title: "One painting, made of paper", blocks: [
-      "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
+      "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
       "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolors it or crops into it. What moves is the paper around it.",
     ] },
     { title: "Cut along its own depth", blocks: [
@@ -67,28 +67,28 @@ const en = {
         { lead: "Three frames.", rest: "On the same machine, the first scroll is answered by the third frame, or within 60 pixels." },
         { lead: "Two seconds.", rest: "The iPhone app opens into its room in 1.6 to 2 seconds in the simulator." },
         { lead: "Not one frame over.", rest: "The courtyard that stands up on a first visit was filmed at 390 pixels with the processor slowed four times, and at 1440, in light and dark: 91 frames each time, none over 33 milliseconds, including the first run after the server had just started." },
-        { lead: "With Reduce Motion too.", rest: "The same films are run again with Reduce Motion on. Then the courtyard is simply there." },
+        { lead: "With Reduce Motion too.", rest: "The same films are run again with Reduce Motion on. Then the courtyard is simply there." },
       ],
     ] },
     { title: "Made for everyone", blocks: [
-      "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on. These are our own checks, not a certification.",
+      "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on. These are our own checks, not a certification.",
       "Every button is at least 44 pixels to a finger and 40 to a mouse, there is one focus ring and it is always seen, and no color carries meaning on its own: waiting, wrong and done are always said in words too.",
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
     { title: "Free for every conference", blocks: [
-      "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone, given through one quiet link at the foot of the public pages.",
+      "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone, given through one quiet link at the foot of the public pages.",
     ] },
   ] as MadeSection[],
-  last: "Kind Helps is independent. It is not affiliated with or endorsed by the Society of St. Vincent de Paul. The code is open at github.com/Joe-Simo/neighborly.",
+  last: "Kind Helps is independent. It is not affiliated with or endorsed by the Society of St. Vincent de Paul. The code is open at github.com/Joe-Simo/neighborly.",
 };
 
 const es: typeof en = {
   path: "/sobre/como-lo-hicimos",
   title: "Cómo lo hicimos",
-  tab: "Cómo lo hicimos — Kind Helps",
-  description: "Cómo se hizo Kind Helps: la pintura, las reglas que guarda su papel, cómo el asistente queda sujeto a lo que decide una persona, y por qué es gratis para toda conferencia.",
+  tab: "Cómo lo hicimos — Kind Helps",
+  description: "Cómo se hizo Kind Helps: la pintura, las reglas que guarda su papel, cómo el asistente queda sujeto a lo que decide una persona, y por qué es gratis para toda conferencia.",
   preview: "La pintura, las reglas del papel, el asistente y una promesa: gratis para toda conferencia.",
-  enter: "Entrar a Kind Helps",
+  enter: "Entrar a Kind Helps",
   translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],
   courtyard: {
     label: "La pintura del patio, con sus hojas de papel separadas, que se vuelven a juntar al bajar por la página",
@@ -100,7 +100,7 @@ const es: typeof en = {
   },
   sections: [
     { title: "Por qué existe", blocks: [
-      "Kind Helps es para los voluntarios de las conferencias de San Vicente de Paúl: quienes atienden la línea de ayuda, visitan los hogares y llevan las cuentas. Muchas conferencias llevan este trabajo en papel, en hojas de cálculo o en ServWare. Kind Helps lo reúne en un solo lugar, en inglés y en español, en el teléfono o en el escritorio.",
+      "Kind Helps es para los voluntarios de las conferencias de San Vicente de Paúl: quienes atienden la línea de ayuda, visitan los hogares y llevan las cuentas. Muchas conferencias llevan este trabajo en papel, en hojas de cálculo o en ServWare. Kind Helps lo reúne en un solo lugar, en inglés y en español, en el teléfono o en el escritorio.",
       [
         { lead: "La dignidad del vecino.", rest: "La ayuda se paga al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al vecino. Las visitas se hacen de dos en dos. El nombre, el teléfono y la dirección de una familia se quitan antes de que una nota llegue al asistente." },
         { lead: "El tiempo del voluntario.", rest: "La nota de una llamada se vuelve un borrador de petición, y la pareja para una visita se sugiere según quién está libre." },
@@ -109,7 +109,7 @@ const es: typeof en = {
       "Es gratis porque ninguna conferencia debería pagar por ayudar a sus vecinos.",
     ] },
     { title: "Una sola pintura, hecha de papel", blocks: [
-      "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
+      "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
       "La obra pintada se hizo con una herramienta de imágenes con IA a partir de indicaciones escritas, y luego se eligió y se retocó a mano. La página nunca pinta encima, nunca le cambia el color ni la recorta. Lo que se mueve es el papel que la rodea.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
@@ -141,19 +141,19 @@ const es: typeof en = {
         { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde antes del tercer cuadro, o dentro de 60 píxeles." },
         { lead: "Dos segundos.", rest: "La aplicación del iPhone abre su sección en 1.6 a 2 segundos en el simulador." },
         { lead: "Ni un cuadro de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 cuadros cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
-        { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí." },
+        { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí." },
       ],
     ] },
     { title: "Hecho para todos", blocks: [
-      "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado. Son revisiones nuestras, no una certificación.",
+      "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado. Son revisiones nuestras, no una certificación.",
       "Cada botón mide al menos 44 píxeles para un dedo y 40 para un ratón, hay un solo anillo de foco y siempre se ve, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras.",
       "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",
     ] },
     { title: "Gratis para toda conferencia", blocks: [
-      "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos, dados por un enlace discreto al pie de las páginas públicas.",
+      "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos, dados por un enlace discreto al pie de las páginas públicas.",
     ] },
   ],
-  last: "Kind Helps es independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo. El código está abierto en github.com/Joe-Simo/neighborly.",
+  last: "Kind Helps es independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo. El código está abierto en github.com/Joe-Simo/neighborly.",
 };
 
 export const madeWords: Record<Language, typeof en> = { en, es };
