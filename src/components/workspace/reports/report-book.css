@@ -117,7 +117,7 @@
   :root[data-print-book] body > :not(.report-book-print) { display: none !important; }
   :root[data-print-book] body > .report-book-print { display: block !important; }
   /* The sheets flow one after another on the paper; only a table or a row is kept whole. */
-  .report-book-print .book-sheet { position: static; page: report-book; padding: 0; box-shadow: none; background: none; color: #000; }
+  .report-book-print .book-sheet { position: static; page: report-book; padding: 0; border: 0; box-shadow: none; background: none; color: #000; }
   .report-book-print .book-sheet + .book-sheet { margin-top: 28pt; }
   .report-book-print .book-cover { height: auto; }
   .report-book-print .book-cover :is(h2, h3) { margin-top: 0; }
