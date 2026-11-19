@@ -17,7 +17,10 @@ export const en = (t: Terms, place: string) => ({
   recording: "Recording…",
   /** Under a refused entry, inside its form. */
   kept: "Nothing was recorded, and what you typed is still here.",
-  refused: "Nothing was recorded, and what you typed is still here. Try again.",
+  /** Above `kept`, when a save does not go through: what happened, once; `kept` then says the typing is safe. */
+  refused: "That couldn’t be recorded. Try again.",
+  /** An Undo that does not go through: the entry is still there, as the ledger shows. */
+  undoRefused: "The undo didn’t go through. The entry stands as recorded.",
   kindGone: "This kind is no longer offered. Choose another.",
   /** What a payment for a request was for. */
   kinds: { rent: "Rent", utility: "Utilities", food: "Food", voucher: "Thrift store voucher", other: "Other help" },
@@ -290,7 +293,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   cancel: "Cancelar",
   recording: "Anotando…",
   kept: "No se anotó nada, y lo que escribiste sigue aquí.",
-  refused: "No se anotó nada, y lo que escribiste sigue aquí. Inténtalo de nuevo.",
+  refused: "No se pudo anotar. Inténtalo de nuevo.",
+  undoRefused: "No se pudo deshacer. La entrada queda como se anotó.",
   kindGone: "Este tipo ya no se ofrece. Elige otro.",
   kinds: { rent: "Alquiler", utility: "Servicios", food: "Comida", voucher: "Vale para la tienda de segunda mano", other: "Otra ayuda" },
   sources: { collection: "Colecta de la parroquia", walk: "Caminata Amigos de los Pobres", donation: "Donativo", twinning: "Hermanamiento recibido", opening: "Saldo inicial" },
@@ -333,7 +337,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
     figures: {
       balance: "Saldo de hoy",
-      asOf: (day) => `Al ${day}`,
+      asOf: (day) => `Hasta el ${day}`,
       in: (month) => `Entradas de ${month}`,
       out: (month) => `Salidas de ${month}`,
       nothingIn: "Todavía no se ha recibido nada",

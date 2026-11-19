@@ -12,7 +12,6 @@ import "./painted-world.css";
 import "./cut-edges.css";
 import "./public-touch.css";
 import { useCutHold } from "./cut-hold";
-import { whenIdle } from "@/lib/idle";
 
 const chapters = {
   opening: { number: "01", name: "An open hand", title: <>Good things begin<br />with <em>an open hand.</em></>, copy: "A little care can go a long way." },
@@ -76,8 +75,9 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
       setScene(heroOnly ? "opening" : getPaintedScrollState(progress.current).captionScene);
     };
     fallbackRef.current = false;
+    let nearNow = true;
     const enhance = () => { void import("@/lib/painted-world-controller").then(({ createPaintedWorldController: createController }) => {
-      if (disposed || !host.current) return;
+      if (disposed || !host.current || !nearNow) return;
       active = createController(host.current, {
         scenes, mode: "scroll", openingOnly: heroOnly,
         onReady: () => { if (!disposed && !fallbackRef.current) { setReady(true); setFailed(false); active?.setStoryProgress(progress.current); } },
@@ -91,10 +91,22 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     // The responsive painting is the initial experience. Upgrade the optional
     // dimensional guide after critical text and imagery have had time to paint, and while the page is still.
     // Read from scrollY each frame, so a jump by script or Safari's momentum counts as movement too (scroll-still.ts).
-    if (heroOnly) stopStill = whenScrollStill(enhance, { settle: settleBeforeUpgrade, latest: upgradeAtLatest });
+    let begun = false;
+    const begin = () => { begun = true; enhance(); };
+    if (heroOnly) stopStill = whenScrollStill(begin, { settle: settleBeforeUpgrade, latest: upgradeAtLatest });
     else enhance();
+    // The opening's scene (its model, textures and graphics context) is let go once the opening is more than two windows behind the reader, and
+    // made again as they come back within two: an iPhone counts that memory against the tab. Out of sight, the still painting stands in, as before the upgrade.
+    const near = heroOnly && track.current ? new IntersectionObserver(entries => {
+      nearNow = entries[entries.length - 1].isIntersecting;
+      if (nearNow) { if (begun && !active && !disposed && !fallbackRef.current) enhance(); return; }
+      if (!active) return;
+      active.dispose(); active = undefined; controller.current = null; setReady(false);
+    }, { rootMargin: "200% 0px" }) : undefined;
+    if (track.current) near?.observe(track.current);
     return () => {
       disposed = true;
+      near?.disconnect();
       stopStill?.();
       active?.dispose(); controller.current = null;
     };

@@ -114,7 +114,10 @@ function gradeToStill(surface: T.Material, phone: boolean) {
 
 /** One renderer owns the continuous painted journey. No account state is read or changed. */
 export function createPaintedWorldController(host: HTMLElement, options: PaintedWorldOptions = {}) {
-  const renderer = new T.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
+  // On an iPhone or iPad (or a phone with little memory) the scene is drawn without multisampling: its four samples a pixel held several times the
+  // canvas's own memory, which Safari counts against the tab, and at that screen's density its painted edges show no steps without it.
+  const tight = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) || ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4;
+  const renderer = new T.WebGLRenderer({ alpha: true, antialias: !tight, powerPreference: "low-power" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
@@ -182,6 +185,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const loader = new T.TextureLoader();
   let openingModel: T.Group | undefined;
   let openingLoaded = false;
+  const released = new WeakSet<T.Texture>();
   let openingGuide: T.Object3D | undefined;
   let openingAsset = "";
   let openingLoadRevision = 0;
@@ -498,7 +502,13 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   function opacity(value: Artwork, amount: number, completion = 0) {
     value.group.visible = amount > 0;
     const completedBlend = value.completed && completion >= .96 ? 1 : 0;
-    value.base.material.opacity = value.scene === "opening" && openingModel ? 0 : amount * (1 - completedBlend);
+    // Once the opening's model stands in front of it, the opening's flat plate is not drawn at all, and its picture leaves the graphics card:
+    // drawn at nothing, it was still uploaded and kept, a second whole copy of the opening (three uploads it again if it is ever drawn).
+    const covered = value.scene === "opening" && openingModel !== undefined && openingLoaded;
+    value.base.visible = !covered;
+    if (covered && value.base.material.map && !released.has(value.base.material.map)) { released.add(value.base.material.map); value.base.material.map.dispose(); }
+    if (!covered && value.base.material.map) released.delete(value.base.material.map);
+    value.base.material.opacity = covered ? 0 : amount * (1 - completedBlend);
     if (value.completed) value.completed.material.opacity = amount * completedBlend;
     value.layers.forEach((layer) => { layer.mesh.material.opacity = amount * (1 - completedBlend); });
   }
@@ -1103,6 +1113,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       doorTextures.forEach((texture) => texture.dispose());
       light.shadow.map?.dispose();
       renderer.dispose();
+      // Its graphics memory is given back now, not whenever the browser collects the canvas: on an iPhone that is what keeps the tab alive.
+      renderer.forceContextLoss();
       renderer.domElement.remove();
     },
   };

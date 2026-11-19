@@ -26,3 +26,12 @@ export const formatMoney = (value: number, language: Language = "en", whole = fa
 
 /** A writer of counts for one language, for a words table to call as n(count). */
 export const counter = (language: Language) => (value: number) => formatCount(value, language);
+
+// One list writer per language, made once, like the number writers above.
+const lists = new Map<Language, Intl.ListFormat>();
+/** Items said as a list in the reader's language: "Parish collection and Donation", "A, B y C". */
+export function formatList(items: readonly string[], language: Language = "en") {
+  let format = lists.get(language);
+  if (!format) lists.set(language, (format = new Intl.ListFormat(numberLocales[language], { type: "conjunction" })));
+  return format.format(items);
+}

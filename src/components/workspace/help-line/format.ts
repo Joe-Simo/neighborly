@@ -12,13 +12,6 @@ export type NeighborList = FunctionReturnType<typeof api.neighbors.list>;
 export type NeighborRecord = FunctionReturnType<typeof api.neighbors.record>;
 export type Neighbor = NeighborRecord["neighbor"];
 
-export const kindLabels: Record<HelpRequest["kind"], string> = {
-  rent: "Rent",
-  utility: "Utility bill",
-  food: "Food",
-  voucher: "Thrift store voucher",
-  other: "Other help",
-};
 export const payeeLabels = {
   landlord: "Landlord",
   utility: "Utility company",
@@ -43,25 +36,6 @@ export function cents(typed: string) {
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
   return Math.round(Number(cleaned) * 100);
 }
-export function household(adults: number, children: number) {
-  const size = adults + children;
-  return size === 1 ? "Lives alone" : `Household of ${size}`;
-}
-export function householdDetail(adults: number, children: number) {
-  return children
-    ? `${count(adults, "adult", "adults")}, ${count(children, "child", "children")}`
-    : count(adults, "adult", "adults");
-}
-/** "2 winter coat vouchers": what a voucher request takes from the shelf. */
-export const vouchers = (voucher: { item: string; quantity: number }) => {
-  // The shelf may name its item "Clothing voucher" already; it is said once.
-  const item = voucher.item.toLowerCase().replace(/\s+vouchers?$/, "");
-  return `${voucher.quantity} ${item} ${voucher.quantity === 1 ? "voucher" : "vouchers"}`;
-};
-export const requestTitle = (request: HelpRequest) =>
-  request.voucher
-    ? vouchers(request.voucher)
-    : `${kindLabels[request.kind]}, ${shortMoney(request.amountApproved ?? request.amountRequested)}${request.payeeName ? ` to ${request.payeeName}` : ""}`;
 export const initials = (name: string) =>
   name
     .split(/\s+/)

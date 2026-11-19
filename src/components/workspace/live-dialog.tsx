@@ -89,6 +89,22 @@ export function LiveDialog({
   const opener = useRef<HTMLElement | null>(null);
   const [sheet, setSheet] = useState<HTMLElement | null>(null);
   useEffect(() => (sheet ? dragDownToClose(sheet, onClose) : undefined), [sheet, onClose]);
+  // A save button that waits is disabled (or the step it was on is redrawn), and the browser drops its focus to the
+  // page itself: a screen reader is then outside the sheet and the next Tab starts from the top. Focus is kept on the
+  // sheet instead, until the room puts it where the answer is (the refusal, or the saved line).
+  useEffect(() => {
+    if (!sheet) return;
+    const keep = (event: FocusEvent) => {
+      const from = event.target;
+      if (event.relatedTarget || !(from instanceof Element)) return;
+      window.setTimeout(() => {
+        const lost = !document.activeElement || document.activeElement === document.body;
+        if (lost && sheet.isConnected && (!from.isConnected || from.matches(":disabled"))) sheet.focus({ preventScroll: true });
+      });
+    };
+    sheet.addEventListener("focusout", keep);
+    return () => sheet.removeEventListener("focusout", keep);
+  }, [sheet]);
   // Taken away with its step (the room stops drawing it), the dialog still closes the way it opened.
   const drawn = useRef<HTMLElement | null>(null);
   useLayoutEffect(() => {

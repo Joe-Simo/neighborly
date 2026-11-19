@@ -41,6 +41,9 @@ export const en = (t: Terms, place: string) => ({
     visitOn: (day: string) => `Visit ${day}`,
     more: "Show more",
     shownOf: "{shown} of {all}",
+    /** Said once when a search has settled: how many were found. */
+    found: (count: number) => (count === 1 ? "1 found." : `${enN(count)} found.`),
+    foundFirst: (count: number) => `The first ${enN(count)} found.`,
     noMatch: { title: "No one by that name.", body: "Try the start of a name, a phone number or a street. If they are new to you, add them." },
     /** A conference with no household at all. `bring` is the one quiet link under it, for whoever may bring files in. */
     none: {
@@ -266,6 +269,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     visitOn: (day) => `Visita: ${day}`,
     more: "Mostrar más",
     shownOf: "{shown} de {all}",
+    found: (count: number) => (count === 1 ? "1 resultado." : `${esN(count)} resultados.`),
+    foundFirst: (count: number) => `Los primeros ${esN(count)} resultados.`,
     noMatch: { title: "No hay nadie con ese nombre.", body: "Prueba con el comienzo de un nombre, un número de teléfono o una calle. Si es alguien nuevo para ti, agrégalo." },
     none: {
       title: `Todavía no hay ${t.neighbors}.`,

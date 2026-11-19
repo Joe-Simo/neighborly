@@ -295,6 +295,7 @@ export function HelpDone({
   className,
   focus = true,
   filed,
+  remaining,
 }: {
   children: string;
   action?: ReactNode;
@@ -303,27 +304,30 @@ export function HelpDone({
   focus?: boolean;
   /** A draft was just filed by a yes: the line carries whose it is and what it asks, as the sheet showed them. */
   filed?: { name: string; asks: string };
+  /** Put back on returning to the room (takeLine): it stands whole, unsaid and out of focus, for the time it has left. */
+  remaining?: number;
 }) {
   const line = useRef<HTMLDivElement>(null);
+  const back = remaining !== undefined;
   // Before the line starts to open: the filed words set off from the sheet (measured while the line is whole).
   useLayoutEffect(() => {
-    if (filed && line.current) fileAway(line.current);
+    if (filed && line.current && !back) fileAway(line.current);
     // Once, as the line is laid.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // Six seconds, or ten when it carries an action (an Undo); then it closes up and stays as a message for screen readers.
-  const seen = useSavedLine(line, { action: !!action, of: children });
+  const seen = useSavedLine(line, { action: !!action, of: children, remaining });
   // In the line's first frame, not inside the save's own task: focusing there makes the browser work out the whole
   // page's styles a second time before anything is drawn.
   useEffect(() => {
-    if (!focus) return;
+    if (!focus || back) return;
     const frame = requestAnimationFrame(() => line.current?.focus({ preventScroll: true }));
     return () => cancelAnimationFrame(frame);
-  }, [children, focus]);
+  }, [children, focus, back]);
   const said = filed ? `${filed.name}: ${filed.asks}. ${children}` : children;
   return (
     // Not a status region of its own: the line is read by taking focus, or said in the page's one polite region (fold.ts).
-    <div className={seen ? cn("live-success help-done paper-settle", filed && "help-filed", className) : "sr-only"} tabIndex={-1} ref={line}>
+    <div className={seen ? cn("live-success help-done", !back && "paper-settle", filed && "help-filed", className) : "sr-only"} tabIndex={-1} ref={line}>
       {/* What a screen reader hears is the same words from first to last, so the line closing up says nothing again. */}
       <span className="sr-only">{said}</span>
       {seen && <CircleCheck size={22} aria-hidden="true" />}

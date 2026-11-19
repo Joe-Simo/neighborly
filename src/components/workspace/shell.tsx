@@ -49,7 +49,7 @@ import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { AsidePlace, useWideScreen } from "@/components/workspace/aside";
 import { RowMenu } from "@/components/workspace/row-menu";
 import { useSystemTextSize } from "@/components/system-text-size";
-import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
+import { lineStay, readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
 import { fetchAhead } from "@/components/workspace/relief-ahead";
 import { ArrivingRelief } from "@/components/workspace/relief-arrival";
@@ -123,6 +123,28 @@ export function LiveWorkspace({
   const [notice, setNotice] = useState("");
   // The way back offered on the saved line, when the act has one.
   const [undo, setUndo] = useState<WayBack>();
+  // The saved line belongs to the room it was put up in; another room does not show it. Back there within its time
+  // (ten seconds with a way back, six without), it stands again for what is left, its Undo and ⌘Z with it; then it goes.
+  const [noticeHome, setNoticeHome] = useState<{ area: LiveArea; at: number }>();
+  const [noticeLeft, setNoticeLeft] = useState<number>();
+  const kept = useRef({ area, noticeHome, undo });
+  useEffect(() => {
+    kept.current = { area, noticeHome, undo };
+  });
+  useLayoutEffect(() => {
+    setNoticeHome(notice ? { area: kept.current.area, at: Date.now() } : undefined);
+    setNoticeLeft(undefined);
+  }, [notice]);
+  useLayoutEffect(() => {
+    const home = kept.current.noticeHome;
+    if (!home || home.area !== area) return;
+    const left = home.at + lineStay(!!kept.current.undo) - Date.now();
+    if (left > 500) setNoticeLeft(left);
+    else {
+      setNotice("");
+      setUndo(undefined);
+    }
+  }, [area]);
   const [invitationLink, setInvitationLink] = useState("");
   const [invitationDelivery, setInvitationDelivery] = useState<
     "not_sent" | "queued"
@@ -727,9 +749,10 @@ export function LiveWorkspace({
               </Button>
             </div>
           )}
-          {notice && (
+          {notice && (!noticeHome || noticeHome.area === area) && (
             <Outcome
               ref={outcomeNotice}
+              remaining={noticeLeft}
               action={undo && (
                 <UndoAct
                   key={notice}
@@ -1007,12 +1030,13 @@ declare global {
  * The green line that says what was done. It is seen for six seconds, then leaves the page and
  * stays as a message for screen readers. Each new outcome is a new line (the old one is cleared first).
  */
-function Outcome({ children, action, ref }: { children: string; action?: ReactNode; ref: RefObject<HTMLDivElement | null> }) {
+function Outcome({ children, action, ref, remaining }: { children: string; action?: ReactNode; ref: RefObject<HTMLDivElement | null>; remaining?: number }) {
   // It is laid down like a slip, and after six seconds (ten with a way back) it closes up so the page below does not jump.
-  const seen = useSavedLine(ref, { action: !!action, of: children });
+  // Put back on returning to its room, it stands whole for what is left of that time.
+  const seen = useSavedLine(ref, { action: !!action, of: children, remaining });
   return (
     // Not a status region of its own: the words are said in the page's one polite region (fold.ts), which was there first.
-    <div className={seen ? "live-success help-done paper-settle" : "sr-only"} tabIndex={-1} ref={ref}>
+    <div className={seen ? (remaining === undefined ? "live-success help-done paper-settle" : "live-success help-done") : "sr-only"} tabIndex={-1} ref={ref}>
       {seen && <CircleCheck size={22} aria-hidden="true" />}
       {seen ? <SavedWords>{children}</SavedWords> : children}
       {seen && action}

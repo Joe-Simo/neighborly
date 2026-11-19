@@ -401,6 +401,8 @@ function openFlat(sheet: HTMLElement) {
 }
 
 const never = Symbol("never");
+/** How long a saved line stands: six seconds, ten when it carries a way back. */
+export const lineStay = (action: boolean) => (action ? 10000 : 6000);
 
 /**
  * One polite region for the whole page, there before anything is said in it: a line that is drawn already
@@ -463,28 +465,42 @@ export function useFocusOnce(line: RefObject<HTMLElement | null>, saying: unknow
  */
 export function useSavedLine(
   line: RefObject<HTMLElement | null>,
-  { action = false, of }: { action?: boolean; of?: unknown } = {},
+  {
+    action = false,
+    of,
+    remaining,
+  }: {
+    action?: boolean;
+    of?: unknown;
+    /** A line put back when the person returns to its room within its time: it stands whole for what is left, unsaid. */
+    remaining?: number;
+  } = {},
 ) {
   const [left, setLeft] = useState<unknown>(never);
+  const back = remaining !== undefined;
   // Before it is first painted, the line opens its own room; one that closed up before is opened flat first.
   useLayoutEffect(() => {
-    if (!line.current) return;
+    if (!line.current || back) return;
     openFlat(line.current);
     openUp(line.current);
+    // Whether the line is new or put back is fixed when it is laid.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [line, of]);
   // Spoken as well as seen. A line that takes focus is read by that; the others are said in the page's polite region.
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       const now = line.current;
+      if (back) return;
       // Focus can reach the line a moment after it is drawn (the room puts it there once the save is answered).
       const focused = () => !!now && (now === document.activeElement || now.contains(document.activeElement));
       if (!now || focused()) return;
       speak(typeof of === "string" ? of : (now.textContent ?? ""), focused);
     });
     return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [line, of]);
   useEffect(() => {
-    const stay = action ? 10000 : 6000;
+    const stay = remaining ?? lineStay(action);
     const step = 250;
     let shown = 0;
     const clock = window.setInterval(() => {
@@ -498,7 +514,7 @@ export function useSavedLine(
       else setLeft(of);
     }, step);
     return () => window.clearInterval(clock);
-  }, [line, action, of]);
+  }, [line, action, of, remaining]);
   // Once the room has put the words away for screen readers, the closing move is taken off them.
   useEffect(() => {
     if (left === of && line.current) openFlat(line.current);
@@ -531,3 +547,43 @@ export function useGrowsSmoothly(box: RefObject<HTMLElement | null>) {
     );
   });
 }
+
+/**
+ * A room's saved line, held while the person steps into another room: back within its time, the line and its way
+ * back are there again for what is left of it, without a second saying or a move. One per room; the newest wins.
+ */
+const keptLines = new Map<string, { value: unknown; until: number }>();
+/** Puts the room's line by as the room is left, when it still has time to stand. */
+export function keepLine(room: string, value: unknown, since: number, action: boolean) {
+  const until = since + lineStay(action);
+  if (until - Date.now() > 500) keptLines.set(room, { value, until });
+}
+/** Takes the room's line back as the room is entered again, with the time it has left; nothing once that has passed. */
+export function takeLine<T>(room: string): { value: T; remaining: number } | undefined {
+  const kept = keptLines.get(room);
+  keptLines.delete(room);
+  const remaining = kept ? kept.until - Date.now() : 0;
+  return kept && remaining > 500 ? { value: kept.value as T, remaining } : undefined;
+}
+
+/**
+ * A room's line with a way back, kept across a step into another room. `line` is what the room shows now (undefined
+ * when it shows none); `restored` is what the room took back with takeLine as it was entered (read once, into its state).
+ */
+export function useKeptLine<T>(room: string, line: T | undefined, restored: { value: T; remaining: number } | undefined) {
+  // When the line now shown was put up: a restored one keeps the moment it first went up.
+  const since = useRef(0);
+  const kept = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    if (line !== undefined && restored && same(line, restored.value)) since.current ||= Date.now() + restored.remaining - lineStay(true);
+    else if (line !== undefined && !(kept.current !== undefined && same(line, kept.current))) since.current = Date.now();
+    kept.current = line;
+  }, [line, restored]);
+  useEffect(() => () => void (kept.current !== undefined && keepLine(room, kept.current, since.current, true)), [room]);
+}
+/** The same line: the same parts, each the same thing (a line is rebuilt from its parts on each drawing). */
+const same = (one: unknown, other: unknown) =>
+  one === other ||
+  (typeof one === "object" && typeof other === "object" && one !== null && other !== null &&
+    Object.keys(one).length === Object.keys(other).length &&
+    Object.entries(one).every(([key, part]) => (other as Record<string, unknown>)[key] === part));
