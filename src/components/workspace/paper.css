@@ -1502,3 +1502,12 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* Sign out in the desktop bar is drawn 40px tall; its reach is 44px, the button unchanged. */
 .live-app .live-header-desk > button { position: relative; }
 .live-app .live-header-desk > button::after { content: ""; position: absolute; inset: min(0px, calc(50% - 22px)); }
+
+/* A short, wide window (an iPad on its side) keeps the room's head to under two fifths of the screen, so the first
+   card shows below it: a smaller title and a tighter band, still one height in every room. */
+@media (min-width: 900px) and (max-height: 860px) {
+  .live-app .live-page-head h1 { --head-size: clamp(40px, 4.2vw, 60px); }
+  .live-app .live-main .live-page-head { min-height: calc(184px + 1.96 * clamp(40px, 4.2vw, 60px)); margin-bottom: 28px; padding-bottom: 24px; }
+  .live-app .live-page-head .live-deck { margin-top: 14px; }
+  .live-head-actions { margin-top: 20px; }
+}
