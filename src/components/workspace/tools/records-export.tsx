@@ -84,7 +84,7 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
       )}
       {state.step === "done" && (
         <>
-          <div className="live-success help-done tools-done" role="status" tabIndex={-1} ref={(node) => node?.focus()}>
+          <div className="live-success help-done tools-done" tabIndex={-1} ref={(node) => node?.focus()}>
             <CircleCheck size={22} aria-hidden="true" />
             <span>{text.ready}</span>
           </div>
