@@ -94,7 +94,7 @@ export const en = (t: Terms, place: string) => ({
   },
   /** While the assistant reads a call note. */
   reading: {
-    label: "The assistant is reading the note",
+    label: "The assistant",
     title: "Reading the note.",
     limits: "It fills in only what the note says, and leaves blank what it does not. Nothing is saved until you say so.",
   },
@@ -140,7 +140,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     savedToDecide: `Petición guardada. Cuando tu ${t.group} se reúna, anota su sí en el registro de {name}.`,
     savedOnRecord: "Petición guardada. Espera una decisión en el registro de {name}.",
     openRecord: "Abrir el registro",
-    draft: "Preparar un borrador de petición",
+    draft: "Redactar una petición",
     discarded: "Borrador descartado. No se guardó nada.",
     callMatched: `Llamada guardada y agregada al registro del ${t.neighbor}.`,
     callWaiting: "Llamada guardada. Espera aquí abajo hasta que alguien devuelva la llamada.",
@@ -197,7 +197,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     notUrgentBy: (name) => `${name} la marcó como no urgente`,
     callingBack: (name) => `${name} devuelve la llamada`,
     drafting: "Preparando el borrador…",
-    draft: "Preparar un borrador de petición",
+    draft: "Redactar una petición",
     addNeighbor: "Agregar al registro",
     markReturned: "Marcar como devuelta",
     markReturnedFor: (name) => `Marcar como devuelta: ${name}`,
@@ -211,7 +211,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     returnedBy: (name) => `Devuelta por ${name}`,
   },
   reading: {
-    label: "El asistente está leyendo la nota",
+    label: "El asistente",
     title: "Leyendo la nota.",
     limits: "Llena solo lo que dice la nota y deja en blanco lo que no dice. No se guarda nada hasta que tú lo digas.",
   },

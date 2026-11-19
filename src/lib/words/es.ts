@@ -145,7 +145,7 @@ export function es(set: WordSet): Words {
       meeting: "Planear una reunión",
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
-      commitment: "Agregar un compromiso",
+      commitment: "Agregar compromiso",
       commitmentTimes: (zone: string) => `Horario: ${zone}.`,
       commitmentForm: {
         title: "Título", team: "Equipo", chooseTeam: "Elige un equipo…", starts: "Empieza", ends: "Termina", where: "Dónde reunirse",
@@ -182,7 +182,7 @@ export function es(set: WordSet): Words {
     },
     mine: {
       accepted: "Compromisos aceptados",
-      addToCalendar: "Agrégalos al calendario de tu teléfono",
+      addToCalendar: "Agrégalos al calendario",
       emptyTitle: "Hay lugar para tu primer sí.",
       emptyDetail:
         "Los compromisos que aceptes aparecerán aquí con todo lo necesario para prepararte.",
@@ -257,7 +257,7 @@ export function es(set: WordSet): Words {
         "Ofrece las fechas en que puedes cubrir un turno. Estar disponible no es aceptar un compromiso.",
       firstAvailable: "Primer día disponible",
       lastAvailable: "Último día disponible",
-      addAvailable: "Agregar fechas disponibles",
+      addAvailable: "Agregar disponibilidad",
     },
     timeOffForm: {
       teamSees: "Tu equipo ve los días que estás fuera.",
@@ -280,7 +280,7 @@ export function es(set: WordSet): Words {
       saving: "Guardando…",
       confirm: "Confirmar días libres",
       failed:
-        "No pudimos confirmar estas fechas. Puede que tus compromisos hayan cambiado. Vuelve para revisar la lista actual.",
+        "No pudimos confirmar estas fechas. Puede que se perdiera la conexión o que tus compromisos cambiaran. No se guardó nada. Vuelve para revisar la lista y confirma otra vez.",
       saved: "Días libres guardados. Solo se liberaron los compromisos revisados.",
     },
     tasks: {
