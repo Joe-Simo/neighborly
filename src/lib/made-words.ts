@@ -24,6 +24,21 @@ const en = {
     /** Said by the slider: whole, part apart ({n} is the percent), and fully apart. */
     amount: ["Whole", "{n}% apart", "All seven sheets apart"] as [string, string, string],
   },
+  /**
+   * The checks this page rests on, each with where it is recorded. Only what has been run is here. {frames1440}, {frames390}, {right}, {cells},
+   * {blank} and {wrong} are counted from the run files (made-frames.ts, made-proof.ts).
+   */
+  checked: {
+    title: "How it was checked",
+    items: [
+      { lead: "Every frame.", rest: "A scroll down this page on a Mac, at 1440 pixels and at 390 with the processor slowed four times: {frames1440} and {frames390} frames, none over 33 milliseconds.", source: "Mac run, 19 November 2026, build e4eacc3. Raw times: eval/frames/made-scroll.json." },
+      { lead: "78 of 78.", rest: "An automated accessibility check (axe-core, WCAG 2.2 AA) found nothing wrong in any of the 13 rooms, in English and Spanish, at 1440, at 390 and at 200% zoom. Every public page passed it too, at 390 and 1440.", source: "axe-core 4.14, rooms on build 7e3513e, public pages on build 7db60ae." },
+      { lead: "By keyboard alone.", rest: "The core flow, from logging a call to recording a payment, walked with Tab, arrows, Enter and Esc in Chromium: 14 steps walked and passing after two fixes, and the step that records a yes checked in the code. The walk in Safari is still to come.", source: "Keyboard walk, Chromium at 1440, 19 November 2026." },
+      { lead: "What a screen reader is told.", rest: "Each focus move and each spoken change recorded along the same flow: every done line said once, every refusal an alert, waiting always in words. One line said three times was fixed. The walk in VoiceOver is still to come.", source: "Screen-reader recording, Chromium at 1440, 19 November 2026." },
+      { lead: "In high contrast.", rest: "With Windows’ forced colors on, the marks, the months and the printed year draw in the system’s own colors, checked in six rooms at 390 and 1440.", source: "Forced-colors pass, 19 November 2026." },
+      { lead: "{right} of {cells}.", rest: "On 12 call notes kept apart from the ones it was tuned on, the assistant filled {right} of {cells} fields right, left {blank} blank and got {wrong} wrong.", source: "Measure run 7, 19 November 2026, model jev-1.14.0. Raw output: eval/jev/run-7.json." },
+    ],
+  },
   frameStrip: {
     caption: "A scroll down this page on the Mac, frame by frame",
     widths: { "1440": "At 1440 pixels", "390": "At 390 pixels, processor slowed four times" },
@@ -112,6 +127,17 @@ const es: typeof en = {
     hold: "Separar las hojas",
     hint: "Arrastra el patio hacia arriba o hacia abajo, o usa las flechas, para separar sus hojas.",
     amount: ["Entero", "Separadas al {n}%", "Las siete hojas separadas"],
+  },
+  checked: {
+    title: "Cómo se comprobó",
+    items: [
+      { lead: "Cada cuadro.", rest: "Un desplazamiento por esta página en una Mac, a 1440 píxeles y a 390 con el procesador cuatro veces más lento: {frames1440} y {frames390} cuadros, ninguno de más de 33 milisegundos.", source: "Medición en la Mac, 19 de noviembre de 2026, versión e4eacc3. Tiempos sin tocar: eval/frames/made-scroll.json." },
+      { lead: "78 de 78.", rest: "Una comprobación automática de accesibilidad (axe-core, WCAG 2.2 AA) no encontró nada mal en ninguna de las 13 secciones, en inglés y en español, a 1440, a 390 y con zoom al 200%. Todas las páginas públicas también la pasaron, a 390 y 1440.", source: "axe-core 4.14, secciones en la versión 7e3513e, páginas públicas en la versión 7db60ae." },
+      { lead: "Solo con el teclado.", rest: "El recorrido principal, de anotar una llamada a registrar un pago, hecho con Tab, flechas, Intro y Esc en Chromium: 14 pasos recorridos y correctos tras dos arreglos, y el paso que registra un sí comprobado en el código. Falta el recorrido en Safari.", source: "Recorrido con teclado, Chromium a 1440, 19 de noviembre de 2026." },
+      { lead: "Lo que oye un lector de pantalla.", rest: "Cada movimiento del foco y cada cambio anunciado, grabados en el mismo recorrido: cada línea de hecho se dice una vez, cada rechazo es una alerta y la espera siempre se dice con palabras. Se arregló una línea que se decía tres veces. Falta el recorrido con VoiceOver.", source: "Grabación del lector de pantalla, Chromium a 1440, 19 de noviembre de 2026." },
+      { lead: "En alto contraste.", rest: "Con los colores forzados de Windows, las marcas, los meses y el año impreso se dibujan con los colores del propio sistema, comprobado en seis secciones a 390 y 1440.", source: "Revisión de colores forzados, 19 de noviembre de 2026." },
+      { lead: "{right} de {cells}.", rest: "En 12 notas de llamadas apartadas de las que se usaron para ajustarlo, el asistente llenó bien {right} de {cells} campos, dejó {blank} en blanco y se equivocó en {wrong}.", source: "Medición 7, 19 de noviembre de 2026, modelo jev-1.14.0. Salida sin tocar: eval/jev/run-7.json." },
+    ],
   },
   frameStrip: {
     caption: "Un desplazamiento por esta página en la Mac, cuadro a cuadro",

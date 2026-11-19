@@ -326,11 +326,15 @@ function stillFrame(column: HTMLElement, copy: HTMLElement) {
 let ready: { column: HTMLElement; copy: HTMLElement; y: number; width: number; height: number } | null = null;
 function keepReady(column: HTMLElement) {
   let cancel = () => {};
-  let settle = 0;
+  let settle = 0, waiting = false;
   const take = () => {
+    waiting = false;
     cancel();
     cancel = whenIdle(() => {
       if (!column.isConnected || column.hasAttribute("data-room-held") || still) return;
+      // Not while a sheet lies over the room: the copy would be taken in the middle of the sheet's own frames, and
+      // the room cannot be left from under it. Closing the sheet changes the room again, which takes it then.
+      if (document.querySelector('[role="dialog"][data-state="open"]')) { waiting = true; return; }
       ready = { column, copy: stillCopy(column), y: window.scrollY, width: window.innerWidth, height: window.innerHeight };
     }, 1500);
   };
@@ -345,6 +349,9 @@ function keepReady(column: HTMLElement) {
   window.addEventListener("scroll", stale, { passive: true });
   window.addEventListener("resize", stale);
   column.addEventListener("input", stale);
+  // A sheet hands focus back as it closes: the room is at rest again, so the copy is taken then.
+  const back = () => { if (waiting) stale(); };
+  document.addEventListener("focusin", back);
   take();
   return () => {
     cancel();
@@ -353,6 +360,7 @@ function keepReady(column: HTMLElement) {
     window.removeEventListener("scroll", stale);
     window.removeEventListener("resize", stale);
     column.removeEventListener("input", stale);
+    document.removeEventListener("focusin", back);
     if (ready?.column === column) ready = null;
   };
 }

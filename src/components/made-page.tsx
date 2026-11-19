@@ -15,6 +15,7 @@ import "@/components/public-page.css";
 import { CutHead } from "@/components/cut-heads";
 import { BookLeaves } from "@/components/book-leaves";
 import { MadeFrames } from "@/components/made-frames";
+import { MadeChecked } from "@/components/made-checked";
 import "@/components/made-book.css";
 
 export { privacyViewport as madeViewport } from "@/components/privacy-page";
@@ -69,6 +70,7 @@ export function MadePage({ language }: { language: Language }) {
           {figure && <figure className="public-made-figure"><img src={figure.src} alt={figure.alt} width={960} height={480} loading="lazy" decoding="async" /><figcaption>{figure.caption}</figcaption></figure>}
         </section>
       </Fragment>)}
+      <MadeChecked said={said.checked} />
       <section>
         <div><p className="public-words-last">{lastLead}<span className="public-words-address">{address}</span>{lastTail}</p></div>
       </section>
