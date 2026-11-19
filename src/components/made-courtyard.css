@@ -14,7 +14,7 @@
 /* Keyboard focus on the held courtyard: one ink ring drawn on the figure, a margin of paper off it and inside the page's gutter at every width.
    While it shows, the sheets are cut at its outer edge and lie beneath it, so no sheet ever crosses it. */
 .made-courtyard-stack{--ring:-12px max(-24px,calc((100% - 100vw) / 2 + 15px))}
-.made-courtyard-stack::after{content:"";position:absolute;z-index:1;inset:var(--ring);border:2px solid #283c32;border-radius:3px;pointer-events:none;visibility:hidden}
+.made-courtyard-stack::after{content:"";position:absolute;z-index:1;inset:var(--ring);border:2px solid #283c32;border-radius:4px;pointer-events:none;visibility:hidden}
 .made-courtyard[data-live=true] .made-courtyard-stack:focus-visible{outline:none;clip-path:inset(var(--ring))}
 .made-courtyard-stack:focus-visible::after{visibility:visible}
 .made-courtyard-stack img{-webkit-user-drag:none;pointer-events:none}

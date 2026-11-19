@@ -4,17 +4,17 @@
 .card-offer[data-leaning]{transform:perspective(900px) rotateX(var(--lean-x,0deg)) rotateY(var(--lean-y,0deg));transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s,transform 600ms cubic-bezier(.2,.7,.2,1)}
 
 /* A link's line is a tab of ink paper: on hover or focus it lifts 2px off the page and its 1px shadow stays on the page beneath. */
-:is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot])){background-image:linear-gradient(currentColor,currentColor),linear-gradient(#2e241630,#2e241630);background-repeat:no-repeat;background-size:0 1px,0 1px;background-position:0 100%,0 100%;transition:background-size 160ms cubic-bezier(.2,.7,.2,1),background-position 160ms cubic-bezier(.2,.7,.2,1)}
+:is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot]),.public-page-header>a:not(.public-page-brand)){background-image:linear-gradient(currentColor,currentColor),linear-gradient(#2e241630,#2e241630);background-repeat:no-repeat;background-size:0 1px,0 1px;background-position:0 100%,0 100%;transition:background-size 160ms cubic-bezier(.2,.7,.2,1),background-position 160ms cubic-bezier(.2,.7,.2,1)}
 .neighborly-give{background-position:0 calc(50% + .75em),0 calc(50% + .75em)}
-:is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot])):is(:hover,:focus-visible){border-bottom-color:transparent;background-size:100% 1px,100% 1px;background-position:0 calc(100% - 2px),0 calc(100% - 1px)}
+:is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot]),.public-page-header>a:not(.public-page-brand)):is(:hover,:focus-visible){border-bottom-color:transparent;background-size:100% 1px,100% 1px;background-position:0 calc(100% - 2px),0 calc(100% - 1px)}
 .neighborly-give:is(:hover,:focus-visible){text-decoration-color:transparent;background-position:0 calc(50% + .75em - 2px),0 calc(50% + .75em - 1px)}
 
 /* Keyboard focus on a public page: one 2px ring of ink set 3px off, as in the rooms. Never the browser's blue. */
-:is(.neighborly-continuation,.public-page,.lost-door,main.painted-world) :is(a,button,[tabindex]):focus-visible{outline:2px solid #283c32;outline-offset:3px}
+:is(.neighborly-continuation,.public-page,.lost-door,main.painted-world) :is(a,button,[tabindex]):focus-visible{outline:2px solid #283c32;outline-offset:3px;border-radius:4px}
 
 @media(prefers-reduced-motion:reduce){
-  :is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot])){transition:none}
-  :is(.neighborly-final-links a,.public-page :is(p,li) a,.lost-door a:not([data-slot])):is(:hover,:focus-visible){background-position:0 100%,0 100%}
+  :is(.neighborly-final-links a,.neighborly-give,.public-page :is(p,li) a,.lost-door a:not([data-slot]),.public-page-header>a:not(.public-page-brand)){transition:none}
+  :is(.neighborly-final-links a,.public-page :is(p,li) a,.lost-door a:not([data-slot]),.public-page-header>a:not(.public-page-brand)):is(:hover,:focus-visible){background-position:0 100%,0 100%}
   .neighborly-give:is(:hover,:focus-visible){background-position:0 calc(50% + .75em),0 calc(50% + .75em)}
 }
 .card-for[data-leaning]{transform:perspective(900px) rotateX(var(--lean-x,0deg)) rotateY(var(--lean-y,0deg));transition:translate .2s cubic-bezier(.2,.7,.2,1),transform 600ms cubic-bezier(.2,.7,.2,1)}
