@@ -211,6 +211,10 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
     let detail = 1, pace = 1 / 60, strained = 0, calm = 0, recoveries = 0, drawn = false;
+    // A courtyard at rest (out of reach of the window, or behind shut doors and drawn) asks for no frames: the next scroll, resize or still asks again.
+    // Asking every frame regardless kept a phone measuring four boxes and two styles, sixty times a second, through the rest of the page.
+    let resting = false;
+    const wake = () => { if (resting && !gone) { resting = false; step.ask(); } };
     const resize = () => {
       // The scene is twice the window's height wide, so its cost is its area: it is drawn at up to 1.25, but never past the pixels a 1920 by 1080 window shades cleanly.
       // A window just over that (1728 by 1117) would otherwise be caught by the pace check mid-walk, and its drawing buffer reallocated in one long frame.
@@ -220,6 +224,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       uniforms.uRes.value.set(frame.clientWidth, frame.clientHeight);
       host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => origins.delete(layer));
       drawn = false;
+      wake();
     };
     const observer = new ResizeObserver(resize);
     observer.observe(frame);
@@ -241,7 +246,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     // On a screen past 1920 by 1080 the page around the scene costs the graphics card more to put together while it moves, so while the page is scrolling the scene is
     // shaded on a smaller part of its own canvas, stretched to fill its place; within a frame of the scroll stopping it is shaded whole again. Nothing is reallocated.
     let scrolledAt = -1e9, shade = 1;
-    const onScroll = () => { scrolledAt = performance.now(); };
+    const onScroll = () => { scrolledAt = performance.now(); wake(); };
     addEventListener("scroll", onScroll, { passive: true });
     // Going in through the arch, the courtyard is held as it is: one frame is drawn whole and handed over as a picture of the same size and place.
     const onStill = (event: Event) => {
@@ -250,6 +255,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       renderer.render(scene, camera);
       (event.detail as CourtyardStill).take(renderer.domElement.toDataURL("image/jpeg", .92), renderer.domElement.getBoundingClientRect());
       drawn = false;
+      wake();
     };
     addEventListener(COURTYARD_STILL, onStill);
 
@@ -284,15 +290,15 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     };
     const tick = (time: number) => {
       if (gone) return;
-      step.ask();
       if (!began) began = time;
       const elapsed = (time - last) / 1000 || .016;
       const dt = Math.min(.05, elapsed); last = time;
       const seconds = (time - began) / 1000;
       // It goes on drawing for half a window beyond the screen's edges, so on a quick flick back it is already painted when it comes into view.
-      if (!painting || stage.bottom < -innerHeight * .5 || stage.top > innerHeight * 1.5 || renderer.getContext().isContextLost()) return;
+      if (!painting || stage.bottom < -innerHeight * .5 || stage.top > innerHeight * 1.5 || renderer.getContext().isContextLost()) { resting = true; return; }
       // Behind shut doors nobody sees the courtyard: once it has been drawn at this size it rests, and the frame it holds is the one the doors open on.
-      if (drawn && host.dataset.opening !== "true" && host.dataset.inside !== "true") return;
+      if (drawn && host.dataset.opening !== "true" && host.dataset.inside !== "true") { resting = true; return; }
+      step.ask();
       // Only the columns of the painting that are on the screen are shaded, with a margin for a frame's movement: on a phone the painting is four times as wide as the window.
       // Its whole height is always drawn, because a quick flick moves the page further in one frame than any margin, and a strip left undrawn would show bare.
       const marginX = stage.width * .08;
