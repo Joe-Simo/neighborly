@@ -47,7 +47,8 @@ export function WeekPage({ language }: { language: Language }) {
           <section key={picture} className="public-week-day" aria-labelledby={`week-${picture}`}>
             <div className="public-week-head">
               <p className="public-week-when"><span aria-hidden="true">{index + 1}</span>{day}</p>
-              <CutHead id={`week-${picture}`}>{title}</CutHead>
+              {/* A hyphened word ("write-up") is kept whole: a head never breaks inside a word. */}
+              <CutHead id={`week-${picture}`}>{title.split(/(\S+-\S+)/).map((part, at) => at % 2 ? <span key={at} className="whitespace-nowrap">{part}</span> : part)}</CutHead>
               <p className="public-week-room">{room}</p>
             </div>
             <div>
