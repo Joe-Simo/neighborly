@@ -5,11 +5,13 @@ import { frameStep } from "@/lib/scroll-frame";
 import { viewport } from "@/lib/viewport";
 import { sampleYear } from "@/lib/sample-year";
 import { FIRST_MONTH, MONTHS, monthAt, SLIPS } from "@/lib/year-paper";
+import { yearPaperWords } from "@/lib/year-paper-words";
 import type { YearPaperCanvas } from "./year-paper-gl";
 import "./year-paper.css";
 
 const monthName = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 const months = Array.from({ length: MONTHS }, (_, month) => monthName.format(new Date(FIRST_MONTH).setUTCMonth(new Date(FIRST_MONTH).getUTCMonth() + month)));
+const words = yearPaperWords.en;
 const whole = new Intl.NumberFormat("en-US");
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
@@ -72,21 +74,21 @@ export function YearPaper() {
           </picture>
         </div>
         <figcaption>
-          <h2 id="year-paper-title" className="year-paper-title">The year in paper.</h2>
-          <p>One slip for every request for help, October to September.</p>
+          <h2 id="year-paper-title" className="year-paper-title">{words.title}</h2>
+          <p>{words.lead}</p>
           <p className="year-paper-month" aria-hidden="true">{months[0]}</p>
         </figcaption>
       </figure>
     </div>
     </div>
     <div className="year-paper-total">
-      <p className="year-paper-count"><span>{whole.format(SLIPS)}</span> Requests for help</p>
+      <p className="year-paper-count"><span>{whole.format(SLIPS)}</span> {words.requests}</p>
       <dl>
-        <div><dt>Calls taken</dt><dd>{whole.format(sampleYear.calls)}</dd></div>
-        <div><dt>Home visits, in pairs</dt><dd>{whole.format(sampleYear.visits)}</dd></div>
-        <div><dt>Paid direct, never in cash</dt><dd>{dollars.format(sampleYear.helpPaid / 100)}</dd></div>
+        <div><dt>{words.calls}</dt><dd>{whole.format(sampleYear.calls)}</dd></div>
+        <div><dt>{words.visits}</dt><dd>{whole.format(sampleYear.visits)}</dd></div>
+        <div><dt>{words.paid}</dt><dd>{dollars.format(sampleYear.helpPaid / 100)}</dd></div>
       </dl>
-      <p className="year-paper-note">From the sample conference. Every person in it is made up.</p>
+      <p className="year-paper-note">{words.note}</p>
     </div>
   </section>;
 }

@@ -33,12 +33,15 @@ const perMonth = (() => {
   return counts;
 })();
 
-type Slip = { month: number; place: number; of: number; turn: number; tilt: number; lift: number };
+type Slip = { month: number; place: number; of: number; turn: number; tilt: number; lift: number; waiting: boolean };
+/** Still waiting at the year's end: only the last weeks' requests, the share a stand-in for the look, not a count read from the sample. */
+const waitingShare = (month: number) => month === MONTHS - 1 ? .3 : month === MONTHS - 2 ? .08 : 0;
 export const slips: readonly Slip[] = perMonth.flatMap((of, month) => Array.from({ length: of }, (_, place) => ({
   month, place, of,
   turn: (hash(month, place) - .5) * .09,
   tilt: (hash(place, month + 40) - .5) * .12,
   lift: (hash(month + 80, place) - .5) * .05,
+  waiting: hash(month + 120, place) < waitingShare(month),
 })));
 
 /** Column-major 4x4, as GL takes it. */
@@ -102,10 +105,16 @@ export function placeSlips(through: number, out: Float32Array = new Float32Array
   return out;
 }
 
+/** Each slip's contact shade on the sheet under it: thrown down and to the right, away from the light, and grown a little past the slip's edge. */
+export const SHADE = { x: .022, y: -.03, z: -.006, grow: .05, ink: .2 } as const;
+/** The hairline at a slip's edge: the pile's ink-warm colour, laid lightly over the paper. */
+export const HAIRLINE = .45;
 /** The light falls from the upper left, as on every relief on the page; a slip's shade from its facing alone. */
 export const LIGHT = [-.45, .6, .66] as const;
 export const PAPER = [0xf7 / 255, 0xf2 / 255, 0xe6 / 255] as const;
 export const EDGE = [0xb0 / 255, 0xa0 / 255, 0x84 / 255] as const;
+export const WAITING = [0xc8 / 255, 0x96 / 255, 0x2e / 255] as const;
+export const SHADOW = [0x3b / 255, 0x2a / 255, 0x12 / 255] as const;
 export const DONE = [0x36 / 255, 0x5c / 255, 0x46 / 255] as const;
 export const shade = (m: Float32Array, at = 0) => {
   const nx = m[at + 8], ny = m[at + 9], nz = m[at + 10], length = Math.hypot(nx, ny, nz) || 1;
