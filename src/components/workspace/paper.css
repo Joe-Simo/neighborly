@@ -1615,3 +1615,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 .live-date-sheet.live-date-inline { display: grid; justify-content: start; gap: 4px; width: fit-content; max-width: 100%; margin-top: 8px; box-shadow: none; animation: none; }
 .live-date-inline .live-date-bar { justify-content: flex-end; }
 @media (max-width: 699px) { .live-date-sheet.live-date-inline { width: 100%; justify-content: center; padding-inline: 4px; } }
+/* Teams on a tablet: three across from 1280, and where two stand side by side an odd last team takes the full row,
+   so no team is left alone beside an empty column. */
+@media (min-width: 1280px) { .live-teams { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 901px) and (max-width: 1279px) { .live-teams > .live-team:last-of-type:nth-of-type(odd) { grid-column: 1 / -1; } }
