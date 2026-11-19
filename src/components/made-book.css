@@ -39,3 +39,10 @@
 /* The 33 ms line is named where it runs, above it at the strip's right end. */
 .public-made-frames-plot{position:relative}
 .public-made-frames-plot>span{position:absolute;right:0;top:var(--line);transform:translateY(calc(-100% - 3px));font-size:15px;line-height:1;color:#293f32;font-feature-settings:"tnum","lnum";background:#f6f2e9;padding-left:6px}
+/* How it was checked: each check, then where it is recorded, in the source lines' quieter type. */
+.public-made-checked ul{list-style:none;padding:0;margin:0}
+.public-words .public-made-checked li{margin:0;padding-left:0;text-indent:0}
+.public-words .public-made-checked li::before{content:none}
+.public-words .public-made-checked li+li{margin-top:clamp(18px,2vw,26px)}
+.public-made-checked li p{margin:0}
+.public-words .public-made-checked .public-made-checked-source{margin-top:4px;font-size:15px;line-height:1.5;color:#3d4f43}
