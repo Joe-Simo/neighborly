@@ -823,7 +823,7 @@ export function HelpLineView({
           </span>
         </div>
         {calls.waiting.some(
-          (call) => isFirst(call) && call.urgent?.by === "assistant",
+          (call) => isFirst(call) && call.urgent !== null && call.urgent.by !== "person",
         ) && (
           <p className="help-assistant help-first-origin">
             <Sparkles size={15} aria-hidden="true" /> {words.urgent.origin}
@@ -858,7 +858,7 @@ export function HelpLineView({
                     )}
                   </h3>
                   <p>{sampleSaid(call.note)}</p>
-                  {call.urgent?.by === "assistant" && isFirst(call) && (
+                  {call.urgent && call.urgent.by !== "person" && isFirst(call) && (
                     <p className="help-assistant help-first paper-rise">
                       <Sparkles size={15} aria-hidden="true" />
                       <strong>

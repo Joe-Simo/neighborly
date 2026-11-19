@@ -16,7 +16,8 @@ import { tally } from "./counts";
  */
 const requestFields = schema.tables.assistanceRequests.validator.fields;
 const callFields = schema.tables.calls.validator.fields;
-const urgentBy = v.union(v.literal("assistant"), v.literal("person"));
+/** Who put a call first: the model reading its note, fixed rules alone (the model away or out of checks), or a person. */
+const urgentBy = v.union(v.literal("assistant"), v.literal("rules"), v.literal("person"));
 /** A payment never goes to the neighbor, so the form offers only these. */
 const payeeKind = v.union(v.literal("landlord"), v.literal("utility"), v.literal("vendor"));
 const DAY = 24 * 60 * 60 * 1000;
@@ -437,7 +438,7 @@ export const setUrgency = mutation({
   handler: async (ctx, { churchId, callId, reasons, day, by }) => {
     const member = await neighborAccess(ctx, churchId);
     const call = await ownCall(ctx, churchId, callId);
-    if (by === "assistant" && call.urgent?.by === "person") return null;
+    if (by !== "person" && call.urgent?.by === "person") return null;
     if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new ConvexError("The day should be a day of the month.");
     await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by, byMember: by === "person" ? member._id : undefined } });
     return null;

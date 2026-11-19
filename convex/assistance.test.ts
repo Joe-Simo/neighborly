@@ -123,6 +123,18 @@ describe("who may use the help line and requests", () => {
     await expect(as(ids.stranger).mutation(api.assistance.setUrgency, { churchId: ids.other, callId: rent, reasons: [], by: "person" })).rejects.toThrow("Call not found.");
   });
 
+  test("signs found by the fixed rules alone are saved as the rules', and a person's word still outranks them", async () => {
+    const { ids, as } = await setup();
+    const churchId = ids.church, caller = as(ids.coordinator);
+    const { callId } = await caller.mutation(api.assistance.recordCall, { churchId, callerName: "Caller", phone: "", note: "Shut-off notice for the 21st.", callback: "needed" });
+    const first = async () => (await caller.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).waiting[0].urgent;
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["shutoff"], day: 21, by: "rules" });
+    expect(await first()).toEqual({ reasons: ["shutoff"], day: 21, by: "rules", byName: null });
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: [], by: "person" });
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["shutoff"], day: 21, by: "rules" });
+    expect((await first())?.by).toBe("person");
+  });
+
   test("another group's coordinator cannot reach this group's calls or requests", async () => {
     const { ids, as } = await setup();
     const requestId = await as(ids.owner).mutation(api.assistance.createRequest, { churchId: ids.church, neighborId: ids.rosa, ...rent });

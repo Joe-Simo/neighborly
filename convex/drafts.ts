@@ -491,7 +491,7 @@ export const weekNote = query({
     for (const request of approved) approvedUnpaidCents += Math.max(0, (request.amountApproved ?? request.amountRequested) - await paidTowardRequest(ctx, request._id));
     return {
       callsWaiting: waiting.length,
-      callsFirstByAssistant: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
+      callsFirstByAssistant: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by !== "person").length,
       callsFirstByPerson: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "person").length,
       // The hour asked about began before a call taken within it, so the age never reads below zero.
       oldestWaitingDays: waiting.length ? Math.max(0, Math.floor((now - Math.min(...waiting.map(call => call.takenAt))) / 86_400_000)) : 0,

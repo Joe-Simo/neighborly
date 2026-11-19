@@ -160,7 +160,7 @@ export function CallForm({
         // if the assistant is away or finds nothing, the list simply keeps its plain order.
         const { callId } = outcome.result;
         void readUrgency({ churchId, callId })
-          .then(({ signs }) =>
+          .then(({ signs, verification }) =>
             signs.length
               ? setUrgency({
                   churchId,
@@ -168,7 +168,8 @@ export function CallForm({
                   reasons: signs.map((sign) => sign.reason),
                   day:
                     signs.find((sign) => sign.day !== null)?.day ?? undefined,
-                  by: "assistant",
+                  // Saved as the model's only when it read the note; otherwise the fixed rules found the signs alone.
+                  by: verification === "checked" ? "assistant" : "rules",
                 })
               : null,
           )

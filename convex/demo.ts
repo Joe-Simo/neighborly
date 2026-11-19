@@ -184,7 +184,7 @@ export const firstRoom = query({
       firstAnnouncements: rows("announcements").reverse().slice(0, 25).map(announcement),
       weekNote: {
         callsWaiting: waiting.length,
-        callsFirstByAssistant: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
+        callsFirstByAssistant: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by !== "person").length,
         callsFirstByPerson: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "person").length,
         oldestWaitingDays: waiting.length ? Math.max(0, Math.floor((asked - Math.min(...waiting.map((call) => call.takenAt))) / DAY)) : 0,
         visitsPlanned: rows("visits").filter((visit) => visit.status === "scheduled" && visit.scheduledAt >= asked && visit.scheduledAt < weekEnd).length,
