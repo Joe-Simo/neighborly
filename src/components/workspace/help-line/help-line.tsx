@@ -88,6 +88,9 @@ const laidToStay = (notice: HTMLElement | null) => {
   if (notice) openUp(notice, { stays: true });
 };
 
+/** Whether the sample door's arrival has already put the keyboard on the waiting sheet, this visit. */
+let sampleDoorFocused = false;
+
 /** What a first look asks: nothing, the same object every time, so the subscription never changes under it. */
 const nothingAsked = {};
 
@@ -225,6 +228,15 @@ function HelpLine() {
   // The draft that waits next, laid under the saved one while it closes.
   const next = sealed && handing && drafted && drafted.call.id !== sealed.call.id ? drafted : null;
   const sheetOpen = onSheet !== null;
+  // Arrived by the home page's sample door (SAMPLE_DOOR): the keyboard and a screen reader start on the waiting sheet's own first act,
+  // so the walk is one press. Only focus moves, without scrolling, once per visit; nothing on the page moves.
+  useEffect(() => {
+    if (!sheetOpen || sampleDoorFocused || new URLSearchParams(window.location.search).get("intent") !== "sample") return;
+    const act = document.querySelector<HTMLElement>(".help-sheet:not([data-arriving]) .help-actions button:not([disabled])");
+    if (!act || document.activeElement?.matches("input, textarea, select, [contenteditable]")) return;
+    sampleDoorFocused = true;
+    act.focus({ preventScroll: true });
+  }, [sheetOpen]);
   // A sheet is opened in a transition: the press is painted first (the button pressed), and the sheet lifts after.
   const log = useCallback(() => {
     setDone(null);
