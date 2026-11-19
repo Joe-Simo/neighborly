@@ -2,6 +2,7 @@
 
 import "./volunteer.css";
 import { useState } from "react";
+import { takeFocus } from "@/components/workspace/volunteer/commitment-rows";
 import { usePaginatedQuery } from "@/components/workspace/query";
 import { Check, CircleCheck, Plus } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -47,6 +48,8 @@ export function TasksSection() {
   // The task just ticked and the meeting just answered: each gets its one move.
   const [ticked, setTicked] = useState<string>();
   const [answered, setAnswered] = useState<string>();
+  // The meeting just replied to, yes or no: its reply takes the place of the buttons, and focus with it.
+  const [replied, setReplied] = useState<string>();
   const [changing, setChanging] = useState<string>();
   return (
     <>
@@ -139,6 +142,7 @@ export function TasksSection() {
                 });
                 if (!saved) return;
                 setAnswered(answer === "accepted" ? meeting.id : undefined);
+                setReplied(meeting.id);
                 setChanging(undefined);
               };
               // The corner: ochre while it waits for a reply, green on a yes, plain on a no.
@@ -157,7 +161,7 @@ export function TasksSection() {
                     </div>
                     {response && changing !== meeting.id ? (
                       <div className="live-row-actions">
-                        <p className="volunteer-given" data-no={response === "declined" || undefined} role="status">
+                        <p className="volunteer-given" data-no={response === "declined" || undefined} tabIndex={-1} ref={meeting.id === replied ? takeFocus : undefined}>
                           {response === "accepted" && <CircleCheck size={22} aria-hidden="true" />}
                           {response === "accepted" ? words.tasks.going : words.tasks.notGoing}
                         </p>

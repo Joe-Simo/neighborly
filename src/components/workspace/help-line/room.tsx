@@ -322,7 +322,8 @@ export function HelpDone({
   }, [children, focus]);
   const said = filed ? `${filed.name}: ${filed.asks}. ${children}` : children;
   return (
-    <div className={seen ? cn("live-success help-done paper-settle", filed && "help-filed", className) : "sr-only"} role="status" tabIndex={-1} ref={line}>
+    // Not a status region of its own: the line is read by taking focus, or said in the page's one polite region (fold.ts).
+    <div className={seen ? cn("live-success help-done paper-settle", filed && "help-filed", className) : "sr-only"} tabIndex={-1} ref={line}>
       {/* What a screen reader hears is the same words from first to last, so the line closing up says nothing again. */}
       <span className="sr-only">{said}</span>
       {seen && <CircleCheck size={22} aria-hidden="true" />}

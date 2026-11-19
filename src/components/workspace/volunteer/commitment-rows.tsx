@@ -101,7 +101,6 @@ function Said({ children }: { children: string }) {
     <p
       ref={line}
       tabIndex={-1}
-      role="status"
       className={seen ? "live-success help-done volunteer-said paper-settle" : "sr-only"}
     >
       {seen && <CircleCheck size={22} aria-hidden="true" />}
@@ -157,7 +156,7 @@ function WaitsToGo({ when }: { when: boolean }) {
  * The word that takes the buttons' place takes the focus they had, once, and only when focus has fallen to the
  * page with them: a person who has moved on to something else keeps their place.
  */
-const takeFocus = (word: HTMLElement | null) => {
+export const takeFocus = (word: HTMLElement | null) => {
   if (word && document.activeElement === document.body) word.focus({ preventScroll: true });
 };
 
@@ -311,7 +310,7 @@ export function IncomingRequests({
                 </div>
                 {request.id === taken?.id ? (
                   // The buttons it replaces are gone, so the word takes focus: it is never left to fall to the page.
-                  <p className="volunteer-given" role="status" tabIndex={-1} ref={takeFocus}>
+                  <p className="volunteer-given" tabIndex={-1} ref={takeFocus}>
                     <CircleCheck size={22} aria-hidden="true" />
                     {statuses.accepted}
                   </p>
