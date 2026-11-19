@@ -427,7 +427,8 @@ export function LiveWorkspace({
         headline.style.fontSize = `${size}px`;
       }
     };
-    fit();
+    // First fitted when the room's layout is done (an observer's first call, before that frame is painted), not
+    // here in the middle of drawing it, where each try would make the page work out the room's styles again.
     const resized = new ResizeObserver(fit);
     resized.observe(words);
     const changed = new MutationObserver(fit);
@@ -658,6 +659,7 @@ export function LiveWorkspace({
           ref={column}
           data-room={heading.room}
           data-room-held={shown ? undefined : ""}
+          data-room-lost={opening && lost ? "" : undefined}
           aria-busy={shown ? undefined : true}
           lang={words.locale}
         >
