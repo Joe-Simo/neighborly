@@ -469,15 +469,7 @@ export function LiveAuth({
             <ArrowLeft size={16} aria-hidden="true" /> {w.back}
           </Link>
         )}
-        <p className="live-kicker">{w.kicker}</p>
-        <h1>{w.heading[kind]}</h1>
-        <p className="live-deck">{w.deck[kind]}</p>
-        {left && (
-          <div role="status" className="live-success paper-rise">
-            {w.left}
-          </div>
-        )}
-        {badInvite && failure(w.badInvite)}
+        {/* The tabs come first, so changing tab only changes what lies under them: they never move under the hand. */}
         {flow !== "reset" && (
           <div className="entry-tabs" role="group" aria-label={w.options} data-flow={flow}>
             <Button variant="ghost" aria-label={`${w.signIn}: ${w.tabHint.signIn}`} aria-pressed={flow === "signIn"} disabled={busy} onClick={() => choose("signIn")}>
@@ -488,6 +480,15 @@ export function LiveAuth({
             </Button>
           </div>
         )}
+        <p className="live-kicker">{w.kicker}</p>
+        <h1>{w.heading[kind]}</h1>
+        <p className="live-deck">{w.deck[kind]}</p>
+        {left && (
+          <div role="status" className="live-success paper-rise">
+            {w.left}
+          </div>
+        )}
+        {badInvite && failure(w.badInvite)}
         <form className="live-form" onSubmit={submitDetails}>
           <LiveField label={w.email} said={{ needed, neededCheck: w.errors.email }}>
             <Input

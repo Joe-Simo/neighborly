@@ -13,10 +13,14 @@
   display: grid;
   align-items: center;
   min-height: 100svh;
+  /* The sheet's top stays put whichever tab is open: it sits where the tallest sheet (a new account, about 760px)
+     would be centred, instead of each sheet centring itself and the tabs jumping under the hand. */
+  align-content: start;
   /* The door starts 47% across the wall. The sheet keeps its width and moves left when it must,
      so at least 32px of bare paper always lies between the two. */
   padding: 32px max(24px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom))
     max(24px, env(safe-area-inset-left), min(clamp(40px, 8vw, 168px), max(47vw, 70.5vh) - 510px));
+  padding-top: max(32px, calc((100svh - 760px) / 2));
   background: var(--paper);
 }
 /* Room for a phone's keyboard: the page grows below by the keyboard's height while it is up. */
@@ -103,7 +107,7 @@
 .entry-tabs {
   display: flex;
   gap: 26px;
-  margin-top: 16px;
+  margin: 0 0 28px;
   border-bottom: 1px solid var(--live-line);
 }
 .live-app .entry-tabs button {
@@ -368,7 +372,7 @@
   .entry-sample { margin-top: 16px; padding-top: 6px; }
   .live-app .entry h1 { font-size: clamp(34px, 9.6vw, 40px); letter-spacing: -1px; }
   .live-app .entry .live-deck { margin-top: 10px; }
-  .entry-tabs { margin-top: 10px; }
+  .entry-tabs { margin-bottom: 20px; }
   .live-app .entry-tabs button { height: 44px; }
   .live-app .entry .live-form { gap: 14px; margin-top: 18px; }
   .live-app .entry .live-field input:not(.live-auth-code) { min-height: 48px; }
