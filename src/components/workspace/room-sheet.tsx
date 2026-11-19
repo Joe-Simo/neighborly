@@ -201,17 +201,50 @@ const HELD = ["opacity", "transform", "translate", "rotate", "scale", "visibilit
  * A picture in the copy, painted from the very picture on screen. A copied <img> picks its source and loads it
  * again, even from the cache, and is blank for the copy's first frame; a canvas drawn from the shown one is not.
  */
+/** The size a picture's copy is painted at: its box on this screen's pixels, never above the picture's own. */
+function stillSize(shown: HTMLImageElement) {
+  const box = shown.getBoundingClientRect();
+  const seen = Math.max(box.width / shown.naturalWidth, box.height / shown.naturalHeight) * (window.devicePixelRatio || 1);
+  const scale = Math.min(1, seen || 1);
+  return { width: Math.max(1, Math.round(shown.naturalWidth * scale)), height: Math.max(1, Math.round(shown.naturalHeight * scale)) };
+}
+
+/**
+ * A room's pictures, decoded ahead at the size their copy is painted at, once the room is at rest: drawing a picture
+ * that is not yet decoded makes the press wait while it is decoded, in the very frame the next room arrives.
+ */
+const decoded = new WeakMap<HTMLImageElement, { src: string; width: number; height: number; bitmap: ImageBitmap }>();
+function decodeAhead(column: HTMLElement) {
+  for (const picture of column.querySelectorAll("img")) {
+    if (!picture.complete || !picture.naturalWidth) continue;
+    const size = stillSize(picture);
+    const kept = decoded.get(picture);
+    if (kept && kept.src === picture.currentSrc && kept.width === size.width && kept.height === size.height) continue;
+    const src = picture.currentSrc;
+    void createImageBitmap(picture, { resizeWidth: size.width, resizeHeight: size.height, resizeQuality: "high" })
+      .then((bitmap) => {
+        decoded.get(picture)?.bitmap.close();
+        decoded.set(picture, { src, ...size, bitmap });
+      })
+      .catch(() => undefined);
+  }
+}
+
+/**
+ * A picture in the copy, painted from the very picture on screen. A copied <img> picks its source and loads it
+ * again, even from the cache, and is blank for the copy's first frame; a canvas drawn from the shown one is not.
+ */
 function stillPicture(shown: HTMLImageElement, twin: HTMLImageElement) {
   if (!shown.complete || !shown.naturalWidth) return;
   const canvas = document.createElement("canvas");
   // Painted at the size it is seen at (its box on this screen's pixels), never above the picture's own: a copy at
   // full size on a phone's screen is many times the pixels anyone sees, and the press waits on every one of them.
-  const box = shown.getBoundingClientRect();
-  const seen = Math.max(box.width / shown.naturalWidth, box.height / shown.naturalHeight) * (window.devicePixelRatio || 1);
-  const scale = Math.min(1, seen || 1);
-  canvas.width = Math.max(1, Math.round(shown.naturalWidth * scale));
-  canvas.height = Math.max(1, Math.round(shown.naturalHeight * scale));
-  canvas.getContext("2d")?.drawImage(shown, 0, 0, canvas.width, canvas.height);
+  const size = stillSize(shown);
+  canvas.width = size.width;
+  canvas.height = size.height;
+  const kept = decoded.get(shown);
+  const ahead = kept && kept.src === shown.currentSrc && kept.width === size.width && kept.height === size.height ? kept.bitmap : null;
+  canvas.getContext("2d")?.drawImage(ahead ?? shown, 0, 0, canvas.width, canvas.height);
   // Laid out and fitted exactly as the picture was: its box, its fit and its focus.
   const style = getComputedStyle(shown);
   for (const property of style) canvas.style.setProperty(property, style.getPropertyValue(property));
@@ -465,7 +498,11 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     const look = (now: number) => {
       if (left) return;
       const moving = stillMoving(element);
-      if (!moving.length || now - since >= LONGEST) return setSettled(area);
+      if (!moving.length || now - since >= LONGEST) {
+        // At rest, its pictures are decoded for the copy the next room change takes (stillPicture), off this thread.
+        decodeAhead(element);
+        return setSettled(area);
+      }
       const ends = Promise.all(moving.map((move) => move.finished.catch(() => undefined)));
       const late = new Promise((go) => setTimeout(go, Math.max(0, LONGEST - (now - since))));
       void Promise.race([ends, late]).then(() => {
