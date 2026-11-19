@@ -11,7 +11,8 @@
     "test": "bun run test:unit && bun run test:backend",
     "test:unit": "bun test src",
     "test:backend": "vitest run convex",
-    "a11y": "bun scripts/a11y.mts"
+    "a11y": "bun scripts/a11y.mts",
+    "budget": "bun scripts/budget.mts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.10.0",
