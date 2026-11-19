@@ -60,6 +60,7 @@ export function CommitmentDetail({
                       title: text.cancelTitle,
                       action: text.cancel,
                       body: text.cancelBody,
+                      done: words.rooms.sheets.done.commitmentCanceled(sampleSaid(selected.title)),
                       command: {
                         type: "cancelCommitment",
                         commitmentId: selected.id,

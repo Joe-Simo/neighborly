@@ -90,6 +90,7 @@ export function PeopleSection() {
   const { data, pending, isOwner, confirm: setConfirmation, words } = useWorkspace();
   const roles: Record<string, string> = words.people.roles;
   const text = words.rooms.peopleRoom;
+  const sheets = words.rooms.sheets;
   const invitedAs: Record<string, string> = text.invitations.invitedAs;
   const [managingId, setManagingId] = useState<string | null>(null);
   const managing = data.people.find((person) => person.id === managingId);
@@ -157,6 +158,7 @@ export function PeopleSection() {
                         ? text.manage.markNotReadyBody
                         : text.manage.markReadyBody,
                       action: managing.approved ? text.manage.markNotReady : text.manage.markReady,
+                      done: managing.approved ? sheets.done.markedNotReady(managing.name) : sheets.done.markedReady(managing.name),
                       command: {
                         type: "setApproval",
                         personId: managing.id,
@@ -179,6 +181,7 @@ export function PeopleSection() {
                       title: managing.active ? text.manage.removeAccessTitle : text.manage.restoreAccessTitle,
                       action: managing.active ? text.manage.removeAccess : text.manage.restoreAccess,
                       body: text.manage.accessBody,
+                      done: managing.active ? sheets.done.accessRemoved(managing.name) : sheets.done.accessRestored(managing.name),
                       command: {
                         type: "setMembership",
                         personId: managing.id,
@@ -259,6 +262,7 @@ export function PeopleSection() {
                               title: text.invitations.revokeTitle,
                               body: text.invitations.revokeBody,
                               action: text.invitations.revoke,
+                              done: sheets.done.inviteWithdrawn(invite.email),
                               command: {
                                 type: "revokeInvitation",
                                 invitationId: invite.id,
