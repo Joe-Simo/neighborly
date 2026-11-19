@@ -211,7 +211,7 @@ export function reducer(
       return {
         ...state,
         changePreview: null,
-        announcement: "Change cancelled. Your commitments are unchanged.",
+        announcement: "Change canceled. Your commitments are unchanged.",
       };
     case "confirm-change": {
       if (state.view === "coordinator" || !state.changePreview?.length)

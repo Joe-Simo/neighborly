@@ -202,7 +202,7 @@ export function en(set: WordSet) {
       emptyDetail:
         "New commitments will appear here with their date, person and preparation.",
       placeOpen: "A place is open",
-      status: { accepted: "Accepted", open: "Open", cancelled: "Cancelled" },
+      status: { accepted: "Accepted", open: "Open", cancelled: "Canceled" },
       viewPreparation: "View preparation",
       viewCommitment: "View commitment",
       details: "Details",
@@ -220,7 +220,7 @@ export function en(set: WordSet) {
     },
     detail: {
       cancelled:
-        "This commitment is cancelled. Its history is kept, and no one is expected to come.",
+        "This commitment is canceled. Its history is kept, and no one is expected to come.",
       when: "When",
       where: "Where",
       whereUnknown: "Location to be confirmed",

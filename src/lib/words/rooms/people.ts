@@ -104,7 +104,7 @@ export const en = (t: Terms, place: string) => ({
     edit: "Edit details",
     cancel: "Cancel commitment",
     cancelTitle: "Cancel this commitment?",
-    cancelBody: "The date is cancelled, its accepted person is released and pending cover requests are withdrawn. It stays in the history. Other dates and teams are unchanged.",
+    cancelBody: "The date is canceled, its accepted person is released and pending cover requests are withdrawn. It stays in the history. Other dates and teams are unchanged.",
     askTitle: "Ask someone to help",
     askDeck: "These people have opted in, confirmed availability and are approved for this team. Each person can accept or decline.",
     awaiting: (name: string) => `Awaiting a reply from ${name}.`,

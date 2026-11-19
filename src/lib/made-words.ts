@@ -36,12 +36,12 @@ const en = {
     ] },
     { title: "One painting, made of paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
-      "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolours it or crops into it. What moves is the paper around it.",
+      "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolors it or crops into it. What moves is the paper around it.",
     ] },
     { title: "Cut along its own depth", blocks: [
       "The courtyard was painted whole. To let it move, it was cut along the painting’s own depth: the sky and hills, the far cloister and the table, the near walls, the garden and the bench, the paving, the pillars. The people at the table stand on a sheet of their own.",
       "Nothing was painted in to fill a gap. Every cut edge is the painting’s, and laid together the sheets are the painting again.",
-    ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "The courtyard in shades of grey: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The map the cut followed: the courtyard’s depth, far in dark and near in light." } },
+    ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The map the cut followed: the courtyard’s depth, far in dark and near in light." } },
     { title: "The rules the paper keeps", blocks: [
       "A ministry’s software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
       [
@@ -73,7 +73,7 @@ const en = {
     ] },
     { title: "Made for everyone", blocks: [
       "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on, where nothing moves. These are our own checks, not a certification.",
-      "Every button is at least 44 pixels to a finger and 40 to a mouse, there is one focus ring and it is always seen, and no colour carries meaning on its own: waiting, wrong and done are always said in words too.",
+      "Every button is at least 44 pixels to a finger and 40 to a mouse, there is one focus ring and it is always seen, and no color carries meaning on its own: waiting, wrong and done are always said in words too.",
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
     { title: "Free for every conference", blocks: [
