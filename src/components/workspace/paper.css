@@ -1498,3 +1498,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 
 /* Short lines break evenly, so none ends on a stranded word: the sample mark in the side menu and an empty room's words. */
 .live-nav .live-sample-mark, .live-app .live-empty p { text-wrap: balance; }
+
+/* Sign out in the desktop bar is drawn 40px tall; its reach is 44px, the button unchanged. */
+.live-app .live-header-desk > button { position: relative; }
+.live-app .live-header-desk > button::after { content: ""; position: absolute; inset: min(0px, calc(50% - 22px)); }
