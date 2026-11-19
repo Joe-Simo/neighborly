@@ -6,7 +6,7 @@ header names Data Collection AB, Joel Palmius, and Jonas Hauquier as the
 copyright holders at that release.
 
 Local inspected source:
-`/Users/josephsimo/Library/Application Support/Blender/5.2/extensions/user_default/mpfb/data/3dobjs/base.obj`
+`<Blender user extensions>/user_default/mpfb/data/3dobjs/base.obj` (Blender 5.2)
 
 Base-file SHA-256: `8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c`
 
