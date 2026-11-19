@@ -4,6 +4,14 @@
 @property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
 /* Every control presses like paper, one layer down: the 1px step and the contact shadow it leaves. One token, every room and page. */
 :root { --press-y: 1px; --press-rest: 0 1px 0 rgb(40 60 50 / 0.18); }
+/* Paper relief: one tone, one edge, one 1px shadow family in the page's green ink, three heights.
+   A slip lies on paper, a card stands on the page, a sheet is laid over the room. */
+:root {
+  --relief-paper: #fffdf7; --relief-edge: #e0dccb;
+  --relief-slip: inset 0 1px 0 #fff, 0 1px 0 rgb(40 60 50 / 0.08), 0 2px 5px -3px rgb(40 60 50 / 0.3);
+  --relief-card: inset 0 1px 0 #fff, 0 1px 0 rgb(40 60 50 / 0.08), 0 2px 5px -3px rgb(40 60 50 / 0.3), 0 16px 30px -24px rgb(40 60 50 / 0.42);
+  --relief-sheet: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 0 0 1px rgb(40 60 50 / 0.1), 0 2px 3px rgb(40 60 50 / 0.12), 0 24px 60px rgb(40 60 50 / 0.18);
+}
 :root {
   /* Read by the stale-page check in the head (layout.tsx): if this is missing, the page was drawn without its stylesheet. */
   --kh-styled: 1;

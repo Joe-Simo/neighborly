@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 /**
  * A focus ring is for someone finding their way with keys. Focus that the app moves itself (back to Menu when
- * its sheet closes, onto a sheet as it opens) or that follows a tap draws none; boxes to type in always show it.
+ * its sheet closes, onto a sheet as it opens) or that follows a tap draws none, a box to type in included (its edge goes ink instead).
  * The page is marked while keys are in use, and the mark goes with the next touch or click. The frame (live-frame.tsx)
  * holds it, so the sign-in sheet and every room share it.
  */

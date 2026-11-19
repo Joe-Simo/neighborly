@@ -3,7 +3,7 @@
 .neighborly-rooms .neighborly-together-statement{max-width:30ch;font-size:clamp(26px,2.6vw,40px)}
 .neighborly-rooms-kicker{margin:0 0 clamp(14px,1.4vw,22px);font-size:15px;font-weight:650;line-height:1.3;letter-spacing:.1em;text-transform:uppercase;color:#52644f}
 .neighborly-rooms ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(30px,3vw,52px) clamp(28px,3.4vw,64px);margin:0;padding:0;list-style:none}
-.neighborly-rooms li{position:relative;display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);align-items:center;gap:0 clamp(20px,2vw,34px);padding:clamp(14px,1.2vw,20px);background:#f8f4ea;box-shadow:0 1px 0 #fffdf7 inset,0 1px 2px #51433024,0 14px 30px -10px #51433052;rotate:var(--turn);translate:calc(var(--lean-x) * 9px) calc(var(--lean-y) * 6px)}
+.neighborly-rooms li{position:relative;display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);align-items:center;gap:0 clamp(20px,2vw,34px);padding:clamp(14px,1.2vw,20px);background:var(--relief-paper);box-shadow:var(--relief-card);rotate:var(--turn);translate:calc(var(--lean-x) * 9px) calc(var(--lean-y) * 6px)}
 /* The card is the paper; the second row sits a little lower than the first, as nothing is put down in line. */
 .neighborly-rooms li:nth-child(2n){margin-top:clamp(12px,1.6vw,28px)}
 .neighborly-rooms picture{display:block}

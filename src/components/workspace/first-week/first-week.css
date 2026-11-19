@@ -5,7 +5,7 @@
 .live-app .first-week-head h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live-muted); }
 .live-app .first-week-away { width: 44px; height: 44px; margin-right: -12px; color: var(--live-muted); }
 .live-app .first-week-slips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
-.live-app .first-week-slip { background: #fffdf7; border: 1px solid #e0dccb; border-radius: 3px; box-shadow: 0 1px 0 #e6e1d2, 0 6px 14px -12px #3b3a2466; }
+.live-app .first-week-slip { background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-slip); }
 .live-app .first-week-slip[data-done] { --paper-corner: var(--paper-green); }
 .live-app .first-week-slip a { display: grid; gap: 8px; height: 100%; min-height: 44px; padding: 18px 44px 18px 18px; color: var(--paper-ink); text-decoration: none; box-sizing: border-box; }
 .live-app .first-week-slip strong { font: 400 21px / 1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; text-wrap: balance; }

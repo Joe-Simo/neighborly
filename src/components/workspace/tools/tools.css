@@ -105,13 +105,13 @@ p.tools-quiet { margin: 14px 0 0; }
 
 /* Your files, in paper: each thing to bring in is a leaf of paper; the one in use opens across the page. */
 .tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; margin-top: 36px; max-width: 1040px; }
-.tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: 28px 30px 26px; background: #fffdf7; border: 1px solid #e0dccb; border-radius: 3px; box-shadow: 0 1px 0 #fff inset, 0 16px 30px -26px #3b3a2466, 0 2px 5px -3px #3b3a2433; }
+.tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: 28px 30px 26px; background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
 .live-app .tools-leaf > h2 { margin: 0 0 10px; font: 400 27px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
 .tools-leaf-deck { margin: 0; max-width: 62ch; font-size: 17px; line-height: 1.5; color: var(--live-muted); }
 .tools-leaf > .tools-file { max-width: none; margin-top: 22px; }
 .tools-leaf .tools-small { max-width: 62ch; }
 .tools-leaf .tools-sheet { margin-bottom: 0; }
-.tools-leaf .help-sheet { background: var(--live-paper, #f7f4ed); box-shadow: 0 1px 0 #fff inset, 0 2px 5px -3px #3b3a2440; }
+.tools-leaf .help-sheet { background: var(--live-paper, #f7f4ed); box-shadow: var(--relief-slip); }
 .tools-leaf .help-sheet::after { background: linear-gradient(225deg, #fffdf7 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%); }
 .tools-leaf .live-error, .tools-leaf .tools-done { margin-top: 22px; }
 @media (min-width: 1000px) {
@@ -147,7 +147,7 @@ p.tools-quiet { margin: 14px 0 0; }
 .tools-leaf.paper-corner::after { background: linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%); }
 .tools-leaf.paper-corner > h2 { padding-right: 34px; }
 /* The week on paper is a sheet of paper on the screen too: laid down when it opens, and again for each week turned to. */
-.tools-rota { padding: 26px 28px 12px; background: #fffdf7; border: 1px solid #e0dccb; border-radius: 3px; box-shadow: 0 1px 0 #fff inset, 0 16px 30px -26px #3b3a2466, 0 2px 5px -3px #3b3a2433; }
+.tools-rota { padding: 26px 28px 12px; background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
 .tools-rota .help-empty { margin-bottom: 14px; }
 @media (max-width: 700px) { .tools-rota { padding: 20px 18px 6px; } }
 @media print { .tools-rota { padding: 0; border: 0; border-radius: 0; box-shadow: none; background: none; animation: none; } .tools-rota * { animation: none !important; } }
