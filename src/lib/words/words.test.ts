@@ -125,3 +125,23 @@ describe("refusals the backend writes out", () => {
     }
   });
 });
+
+describe("refusals the backend writes out", () => {
+  test("every sentence thrown in English has its Spanish, so no English shows in a Spanish room", async () => {
+    const { Glob } = await import("bun");
+    const convex = `${import.meta.dir}/../../../convex`;
+    const thrown: string[] = [];
+    for await (const file of new Glob("*.ts").scan(convex)) {
+      if (file.endsWith(".test.ts") || file.startsWith("_")) continue;
+      const text = await Bun.file(`${convex}/${file}`).text();
+      for (const [, sentence] of text.matchAll(/(?:ConvexError|new Error)\("([^"]+)"\)/g)) thrown.push(sentence);
+    }
+    expect(thrown.length).toBeGreaterThan(50);
+    const es = words("es").notices;
+    for (const sentence of thrown) {
+      const said = es.refused[sentence] ?? es.refusedLike.find(([pattern]) => pattern.test(sentence))?.[0];
+      expect(said, sentence).toBeTruthy();
+    }
+  });
+});
+

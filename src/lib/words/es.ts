@@ -11,7 +11,7 @@ import * as firstDaysWords from "./rooms/first-days";
 import { measured as m } from "../jev-set";
 import type { Words } from "./en";
 import { refusals } from "../refusals";
-import { serverRefusalPatternsEs, serverRefusalsEs } from "../refusals-es";
+import { serverRefusalPatternsEs, serverRefusalsEs, serverRefusalsPlain } from "../refusals-es";
 import type { Terms, WordSet } from "./sets";
 import { counter } from "./numbers";
 const esN = counter("es");
@@ -389,6 +389,7 @@ export function es(set: WordSet): Words {
         [refusals.noTeamInvitation]: "No se encontró esa invitación al equipo.",
         [refusals.noMeetingInvitation]: "No se encontró esa invitación a la reunión.",
         ...serverRefusalsEs,
+        ...Object.fromEntries(Object.entries(serverRefusalsPlain).map(([sentence, said]) => [sentence, said.es])),
       },
       refusedLike: serverRefusalPatternsEs,
     },
