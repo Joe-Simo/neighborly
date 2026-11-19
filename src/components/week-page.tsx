@@ -55,7 +55,7 @@ export function WeekPage({ language }: { language: Language }) {
               {copy.map((line) => <p key={line}>{line}</p>)}
             </div>
           </section>)}
-      <section>
+      <section className="public-week-close">
         <div>
           <p><Link className="public-week-open" href="/app?intent=sample">{said.open}<ArrowUpRight size={16} aria-hidden="true" /></Link></p>
           <p className="public-words-last">{said.last}</p>
