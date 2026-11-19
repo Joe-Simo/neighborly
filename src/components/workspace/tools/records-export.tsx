@@ -4,13 +4,13 @@ import "./tools.css";
 import { useState } from "react";
 import { useConvex, useMutation } from "convex/react";
 import { strToU8, zipSync } from "fflate";
-import { CircleCheck, Download, FolderDown } from "lucide-react";
+import { Download, FolderDown } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveFailure } from "@/components/workspace/states";
 import { sayFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
-import { counted } from "@/components/workspace/tools/sheet-import";
+import { counted, ToolsDone } from "@/components/workspace/tools/sheet-import";
 import { formatDate } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { recordFiles, recordsCover, recordsCoverName, recordsCsv, recordsFileName, recordsZipName, type RecordFileKey } from "@/components/workspace/tools/records";
@@ -84,10 +84,7 @@ export function RecordsExportView({ state, onGather, onDownloadAll, onDownload, 
       )}
       {state.step === "done" && (
         <>
-          <div className="live-success help-done tools-done" tabIndex={-1} ref={(node) => node?.focus()}>
-            <CircleCheck size={22} aria-hidden="true" />
-            <span>{text.ready}</span>
-          </div>
+          <ToolsDone>{text.ready}</ToolsDone>
           {filled.length > 0 && (
             <div className="help-actions tools-after tools-bundle-line">
               <span className="tools-bundle" key={lifted} data-lifted={lifted ? "" : undefined} aria-hidden="true"><i /><i /><i /></span>

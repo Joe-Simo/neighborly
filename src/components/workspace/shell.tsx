@@ -1051,7 +1051,7 @@ declare global {
  * The green line that says what was done. It is seen for six seconds, then leaves the page and
  * stays as a message for screen readers. Each new outcome is a new line (the old one is cleared first).
  */
-function Outcome({ children, action, ref, remaining }: { children: string; action?: ReactNode; ref: RefObject<HTMLDivElement | null>; remaining?: number }) {
+export function Outcome({ children, action, ref, remaining }: { children: string; action?: ReactNode; ref: RefObject<HTMLDivElement | null>; remaining?: number }) {
   // It is laid down like a slip, and after six seconds (ten with a way back) it closes up so the page below does not jump.
   // Put back on returning to its room, it stands whole for what is left of that time.
   const seen = useSavedLine(ref, { action: !!action, of: children, remaining });

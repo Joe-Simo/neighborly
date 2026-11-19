@@ -208,10 +208,7 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
       )}
       {state.step === "done" && (
         <>
-          <div className="live-success help-done tools-done" tabIndex={-1} ref={(node) => node?.focus()}>
-            <CircleCheck size={22} aria-hidden="true" />
-            <span>{state.done ? words.done(state.done) : words.nothingDone}</span>
-          </div>
+          <ToolsDone>{state.done ? words.done(state.done) : words.nothingDone}</ToolsDone>
           <div className="help-actions tools-after">
             {state.done > 0 && afterDone}
             <Button variant="outline" onClick={onReset}>{text.another}</Button>
@@ -220,5 +217,20 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
         </>
       )}
     </section>
+  );
+}
+
+/**
+ * A tool's finished line: the one done look (circled tick, green), read by taking focus once when it is laid,
+ * since the button that started the work has left the page. It stays, as the tool's result.
+ */
+export function ToolsDone({ children }: { children: string }) {
+  const line = useRef<HTMLDivElement>(null);
+  useEffect(() => line.current?.focus({ preventScroll: true }), []);
+  return (
+    <div className="live-success help-done tools-done" tabIndex={-1} ref={line}>
+      <CircleCheck size={22} aria-hidden="true" />
+      <span>{children}</span>
+    </div>
   );
 }

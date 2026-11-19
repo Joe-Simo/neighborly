@@ -318,6 +318,8 @@ export function es(set: WordSet): Words {
     teams: {
       noDescription: "Un equipo donde hay lugar para ayudar.",
       onTeam: "Ya estás en este equipo.",
+      joined: "Te uniste a {team}.",
+      declined: "Rechazaste la invitación a {team}.",
       invited: "Te invitaron a este equipo. Unirte no acepta ningún compromiso.",
       join: "Unirme al equipo",
       decline: "No, gracias",

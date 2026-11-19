@@ -324,6 +324,8 @@ export function en(set: WordSet) {
     teams: {
       noDescription: "A team with room to contribute.",
       onTeam: "You’re on this team.",
+      joined: "Joined {team}.",
+      declined: "Declined the invitation to {team}.",
       invited: "You’re invited to this team. Joining does not accept a commitment.",
       join: "Join team",
       decline: "Decline",
