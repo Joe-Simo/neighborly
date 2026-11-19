@@ -46,3 +46,5 @@
 .public-words .public-made-checked li+li{margin-top:clamp(18px,2vw,26px)}
 .public-made-checked li p{margin:0}
 .public-words .public-made-checked .public-made-checked-source{margin-top:4px;font-size:15px;line-height:1.5;color:#3d4f43}
+/* Heads balance their lines at every width rather than tying the last two words: tied, a long last word ("profundidad") ran past the head's column at 1920. */
+.public-words.public-made section>h2{text-wrap:balance}

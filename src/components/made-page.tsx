@@ -52,7 +52,7 @@ export function MadePage({ language }: { language: Language }) {
         {/* After the first sheet, the painting it speaks of is drawn apart into its paper and laid back together. */}
         {index === 1 && <MadeCourtyard {...said.courtyard} />}
         <section data-figure={figure || table ? "" : undefined}>
-          <CutHead>{title.replace(/ (\S+)$/, "\u00a0$1")}</CutHead>
+          <CutHead>{title}</CutHead>
           <div>{blocks.map((block) => typeof block === "string"
             ? <p key={block}>{block}</p>
             : <ul key={block[0].lead} className="public-made-tones">{block.map(({ lead, rest, tone }) => <li key={lead} data-tone={tone}><strong>{lead}</strong> {rest}</li>)}</ul>)}
