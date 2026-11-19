@@ -1076,9 +1076,34 @@ final class ShellTabs: UITabBarController, UITabBarControllerDelegate {
     }
 
     func tabBarController(_ tabBarController: UITabBarController, shouldSelectTab tab: UITab) -> Bool {
-        let id = tab.identifier
-        guard let colon = id.firstIndex(of: ":") else { return false }
-        shell.press(room: String(id[id.index(after: colon)...]))
+        go(to: tab)
         return false
+    }
+
+    /// A tab chosen: its room, by the page's own link. The tab already open goes back to its top, as every tab does.
+    private func go(to tab: UITab) {
+        let id = tab.identifier
+        guard let colon = id.firstIndex(of: ":") else { return }
+        let room = String(id[id.index(after: colon)...])
+        if tab === selectedTab, room != "menu", let scroll = shell.webView?.scrollView {
+            scroll.setContentOffset(CGPoint(x: 0, y: -scroll.adjustedContentInset.top), animated: true)
+            return
+        }
+        shell.press(room: room)
+    }
+
+    /// With a keyboard, Command and a number opens that room, in the order they stand (the iPad sidebar's, or the
+    /// iPhone bar's), each named in the Command-held list by its own name, as an app's sections are.
+    override var keyCommands: [UIKeyCommand]? {
+        tabs.prefix(9).enumerated().map { index, tab in
+            let command = UIKeyCommand(title: tab.title, action: #selector(goByKey(_:)), input: "\(index + 1)", modifierFlags: .command)
+            command.discoverabilityTitle = tab.title
+            return command
+        }
+    }
+
+    @objc private func goByKey(_ command: UIKeyCommand) {
+        guard let input = command.input, let number = Int(input), tabs.indices.contains(number - 1) else { return }
+        go(to: tabs[number - 1])
     }
 }
