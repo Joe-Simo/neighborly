@@ -26,9 +26,11 @@ const drafted = {
   call: { neighborId: null, neighborName: null, callerName: "Rosa Fontaine", note: "Behind on November rent, $450. The landlord is Mill\u00a0Road\u00a0Rentals." },
   draft: { kind: "rent", amountRequested: 45000, payeeKind: "landlord", payeeName: "Mill Road Rentals", quote: "" },
 } as const;
+// Two of the sample's own requests waiting for a decision this week (convex/sampleData.ts): Yolanda Price's water bill,
+// written by hand, and Herminia Raymond's groceries, one of the recent calls the year draws.
 const others = [
-  { name: "Darnell Joseph", asks: "Utility bill, $95 to County Water Authority", days: 2 },
-  { name: "Esperanza Montoya", asks: "Rent, $600 to Orchard Street Apartments", days: 4 },
+  { name: "Yolanda Price", asks: "Utility bill, $95 to County Water Authority", days: 1 },
+  { name: "Herminia Raymond", asks: "Food, $105 to Corner Family Market", days: 4 },
 ] as const;
 
 /**
