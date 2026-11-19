@@ -1,12 +1,10 @@
 "use client";
 
-import { Suspense, useId, useRef, useState, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { fetchedCode } from "@/components/workspace/fetched-code";
 import { ChevronDown } from "lucide-react";
 import { wrongControl } from "@/components/workspace/failure";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate, type Language } from "@/lib/words";
 
@@ -79,7 +77,6 @@ export function DateField({
   const [own, setOwn] = useState(defaultValue);
   const [typed, setTyped] = useState<string>();
   const [label, setLabel] = useState("");
-  const [beside, setBeside] = useState(false);
   const chosen = value ?? own;
   const allowed = (day: string) => (!min || day >= min) && (!max || day <= max);
   // A needed day left empty, or one the form says is wrong (markWrong): said under the field in our own words,
@@ -114,7 +111,6 @@ export function DateField({
     <Suspense fallback={null}>
     <Month
       mode="single"
-      autoFocus
       language={words.locale}
       selected={chosen ? toDay(chosen) : undefined}
       defaultMonth={chosen ? toDay(chosen) : min ? toDay(min) : undefined}
@@ -127,28 +123,42 @@ export function DateField({
       onSelect={(day) => {
         if (!day) return;
         choose(toValue(day));
-        setOpen(false);
+        close();
       }}
     />
     </Suspense>
   );
-  // Whichever way the month closes (a day chosen, Escape, a tap outside), focus goes back to the field, where the
-  // keys are: a day is typed there, or Down opens the month. The button beside it is for a pointer and is no Tab stop.
-  // There is no trigger for the library to return to.
+  // Whichever way the month closes (a day chosen, Escape, Done), focus goes back to the field, where the keys are:
+  // a day is typed there, or Down opens the month. The button beside it is for a pointer and is no Tab stop.
   const field = useRef<HTMLSpanElement>(null);
-  const backToOpener = (event: Event) => {
-    event.preventDefault();
+  const grid = useRef<HTMLDivElement>(null);
+  const monthId = useId();
+  const close = () => {
+    setOpen(false);
     field.current?.querySelector<HTMLElement>(".live-date-words")?.focus({ preventScroll: true });
   };
   // The month opens on its day, not on its arrows: the chosen day, else today, else the first day that can be chosen,
-  // which the month itself keeps as its one Tab stop. Arrows move between days and Enter takes one.
-  const toTheDay = (event: Event) => {
-    event.preventDefault();
-    (event.currentTarget as HTMLElement).querySelector<HTMLElement>('.rdp-day_button[tabindex="0"]')?.focus();
-  };
+  // which the month itself keeps as its one Tab stop. Arrows move between days and Enter takes one. In the month's
+  // first frame, not inside the press: focusing there made the browser work out the page's styles before it drew.
+  useEffect(() => {
+    if (!open) return;
+    let frame = requestAnimationFrame(function find() {
+      const day = grid.current?.querySelector<HTMLElement>('.rdp-day_button[tabindex="0"]');
+      if (day) day.focus({ preventScroll: true });
+      else frame = requestAnimationFrame(find);
+    });
+    // Escape closes the month alone, not the sheet the form lies in: it is caught before the sheet hears it.
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || !(event.target instanceof Node) || !grid.current?.contains(event.target)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      close();
+    };
+    window.addEventListener("keydown", escape, { capture: true });
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("keydown", escape, { capture: true }); };
+  }, [open]);
   return (
-    <Popover open={open && !sheet} onOpenChange={setOpen}>
-      <PopoverAnchor asChild>
+    <>
         <span ref={field} className="live-date" data-open={open || undefined} data-missing={missing || undefined}>
           <input
             className="live-date-words"
@@ -156,7 +166,7 @@ export function DateField({
             autoComplete="off"
             disabled={disabled}
             readOnly={sheet}
-            aria-haspopup="dialog"
+            aria-controls={open ? monthId : undefined}
             aria-required={required || undefined}
             aria-invalid={missing ? true : undefined}
             aria-describedby={missing ? missingId : undefined}
@@ -179,17 +189,7 @@ export function DateField({
               }
             }}
           />
-          <button type="button" className="live-date-open" disabled={disabled} tabIndex={-1} aria-label={label ? `${label}, ${words.dateField.choose.toLowerCase()}` : words.dateField.choose} onClick={(event) => {
-            // The month opens below. A field low on the screen is brought up first; where the page ends
-            // and there is still no room, the month opens beside the field, so it never covers what is being read above.
-            const field = event.currentTarget.parentElement;
-            const room = () => (field ? innerHeight - field.getBoundingClientRect().bottom : 0);
-            if (!open && !sheet && field) {
-              if (room() < 380) field.scrollIntoView({ block: "center" });
-              setBeside(room() < 380);
-            }
-            setOpen(!open);
-          }}>
+          <button type="button" className="live-date-open" disabled={disabled} tabIndex={-1} aria-label={label ? `${label}, ${words.dateField.choose.toLowerCase()}` : words.dateField.choose} aria-expanded={open} onClick={() => (open ? close() : setOpen(true))}>
             <ChevronDown aria-hidden="true" />
           </button>
           {/* What the form reads and checks. A form's reset empties it, and the field with it. */}
@@ -221,25 +221,23 @@ export function DateField({
             }}
           />
         </span>
-      </PopoverAnchor>
       {missing && (
         <small id={missingId} className="live-date-missing" role={first ? "alert" : undefined}>
           {missing}
         </small>
       )}
-      <PopoverContent className="live-date-sheet" onOpenAutoFocus={toTheDay} onCloseAutoFocus={backToOpener} aria-label={label || words.dateField.choose} collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
-        {month}
-      </PopoverContent>
-      <Dialog open={open && sheet} onOpenChange={setOpen}>
-        <DialogContent className="live-date-sheet live-date-bottom" onOpenAutoFocus={toTheDay} onCloseAutoFocus={backToOpener} showCloseButton={false}>
+      {/* The month opens in the form itself, under its field, and the form makes room for it: nothing is laid over the page. */}
+      {open && (
+        <div ref={grid} id={monthId} role="group" aria-label={label || words.dateField.choose} className="live-date-sheet live-date-inline"
+>
+          {/* The field above already names the day; the bar holds only the way to put the month away. */}
           <div className="live-date-bar">
-            <DialogTitle>{label || words.dateField.choose}</DialogTitle>
-            <DialogClose className="live-date-done">{words.dateField.done}</DialogClose>
+            <button type="button" className="live-date-done" onClick={close}>{words.dateField.done}</button>
           </div>
           {month}
-        </DialogContent>
-      </Dialog>
-    </Popover>
+        </div>
+      )}
+    </>
   );
 }
 

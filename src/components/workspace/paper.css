@@ -745,7 +745,7 @@
 .live-date-sheet .rdp-day_button:hover { background: #e7ecdc; }
 .live-date-sheet .rdp-day_button:focus-visible,
 .live-date-sheet .rdp-nav button:focus-visible { outline: 2px solid #283c32; outline-offset: 2px; }
-.live-date-sheet .rdp-today .rdp-day_button { box-shadow: inset 0 0 0 1px #6f5f93; }
+.live-date-sheet .rdp-today .rdp-day_button { box-shadow: inset 0 0 0 1px rgb(40 60 50 / 0.45); }
 .live-date-sheet .rdp-selected .rdp-day_button { background: #365c46; color: #f7f4ed; font-weight: 600; }
 .live-date-sheet .rdp-outside .rdp-day_button { color: #8b9384; }
 .live-date-sheet .rdp-disabled .rdp-day_button { color: #b3b9aa; cursor: default; background: none; }
@@ -1611,3 +1611,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* A form's fields share its columns by the column, never by the width of an empty field: two date fields side by side
    keep inside the sheet's own margins (they set the sheet 30px wider than its padding before). */
 :is(.live-app, .live-dialog) .live-form-grid > .live-field { min-width: 0; }
+/* The month in the form: laid under its field, full width of the form's column, set in place without a rise. */
+.live-date-sheet.live-date-inline { display: grid; justify-content: start; gap: 4px; width: fit-content; max-width: 100%; margin-top: 8px; box-shadow: none; animation: none; }
+.live-date-inline .live-date-bar { justify-content: flex-end; }
+@media (max-width: 699px) { .live-date-sheet.live-date-inline { width: 100%; justify-content: center; padding-inline: 4px; } }
