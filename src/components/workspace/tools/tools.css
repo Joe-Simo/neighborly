@@ -192,3 +192,4 @@ p.tools-quiet { margin: 14px 0 0; }
   .tools-records { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 44px; }
   .tools-records > .tools-gathering { grid-column: 1 / -1; }
 }
+.tools-leaf[data-holding] { visibility: hidden; }

@@ -44,9 +44,11 @@ export function PayeesImport() {
   const importPayees = useMutation(api.importExport.importPayees);
   const [state, setState] = useState<SheetStep>({ step: "choose" });
   const [rows, setRows] = useState<PayeeRow[]>([]);
-  if (!allowed) return null;
+  // While the answer is on its way the leaf keeps its place, unseen, so nothing below it moves when it arrives.
+  if (allowed === false) return null;
   return (
     <SheetImportView
+      holding={allowed === undefined}
       words={payeeWords(tools.payees)}
       state={state}
       icon={<Store size={18} aria-hidden="true" />}
