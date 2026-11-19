@@ -573,10 +573,16 @@
 @keyframes paper-late { from, to { clip-path: inset(50%); } }
 .live-main.paper-loading .paper-loading-words {
   top: calc(50vh + 76px);
-  left: max(var(--live-pad, 24px), env(safe-area-inset-left));
-  right: max(var(--live-pad, 24px), env(safe-area-inset-right));
+  /* Measured as the mark is, on the whole window (vw, a scrollbar included): the line's middle is the mark's middle. */
+  left: 0;
+  right: auto;
+  width: 100vw;
+  box-sizing: border-box;
+  padding-inline: max(24px, env(safe-area-inset-left), env(safe-area-inset-right));
   justify-items: center;
   text-align: center;
+  /* The room column's width cap is for a room's sheets; under the mark the line is centred on the whole screen at every width. */
+  max-width: none !important;
 }
 .live-app .live-opening > span { position: absolute; top: 0; left: 0; right: 0; }
 /* A room held by a lost connection shows the offline card in the same place, over the room that is not seen. */
