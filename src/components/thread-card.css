@@ -71,7 +71,7 @@
 .card-for-line input{flex:1;min-width:0;min-height:44px;margin:-12px 0;padding:0 0 1px;border:0;background:transparent;font:inherit;color:transparent;caret-color:#253e31;outline:none}
 .card-for-line:has(input:focus-visible){outline:2px solid #283c32;outline-offset:3px}
 /* The note is written on a slip of the card's own paper, so it reads over the cloth, the cut and the foot alike. */
-.card-for-note{position:absolute;right:9%;top:calc(100% + 17px);width:max-content;padding:3px 10px 4px;background:#f7f2e6;box-shadow:0 1px 2px rgba(46,36,22,.3);font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43;rotate:2.5deg;pointer-events:none}
+.card-for-note{position:absolute;right:9%;top:calc(100% + 17px);width:max-content;padding:3px 10px 4px;background:#f7f2e6;box-shadow:0 1px 2px rgb(40 60 50 / 0.3);font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43;rotate:2.5deg;pointer-events:none}
 .card-offer[data-given]~.card-for{opacity:0}
 /* The card's own face for its last flight, into the open hand: the same paper, square, words and line as the card it becomes, drawn at the travelling card's 240px. */
 .thread-card-face{position:absolute;inset:0;display:none;background:url(/assets/home/card-blank-480.webp) center/100% 100% #f7f2e6;color:#253e31}
