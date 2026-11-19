@@ -57,7 +57,7 @@ export const en = (t: Terms, place: string) => ({
     revokeTitle: "Revoke this invitation?",
     revokeBody: "The link will stop working. This does not remove anyone who has already joined. This cannot be undone.",
     emptyTitle: "No open invitations.",
-    emptyBody: "The people you invite wait here until they join.",
+    emptyBody: "Invite someone, and they wait here until they join.",
   },
   /** The leaders' forms: a new team, an invitation, a meeting, a task, and what the other forms share. */
   form: {
@@ -204,7 +204,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       revokeTitle: "¿Anular esta invitación?",
       revokeBody: "El enlace dejará de funcionar. Esto no quita a nadie que ya se haya unido. Esto no se puede deshacer.",
       emptyTitle: "No hay invitaciones abiertas.",
-      emptyBody: "Las personas que invites esperan aquí hasta que se unan.",
+      emptyBody: "Invita a alguien y esperará aquí hasta que se una.",
     },
     form: {
       createTeam: "Crear el equipo",
