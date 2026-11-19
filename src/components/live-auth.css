@@ -13,12 +13,18 @@
   display: grid;
   align-items: center;
   min-height: 100svh;
+  /* The sheet's top stays put whichever tab is open: it sits where the tallest sheet (a new account, about 760px)
+     would be centred, instead of each sheet centring itself and the tabs jumping under the hand. */
+  align-content: start;
   /* The door starts 47% across the wall. The sheet keeps its width and moves left when it must,
      so at least 32px of bare paper always lies between the two. */
   padding: 32px max(24px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom))
     max(24px, env(safe-area-inset-left), min(clamp(40px, 8vw, 168px), max(47vw, 70.5vh) - 510px));
+  padding-top: max(32px, calc((100svh - 760px) / 2));
   background: var(--paper);
 }
+/* The wall runs to the window's edge: no scrollbar's place is kept beside it (the rooms keep theirs, paper.css). */
+html:has(.entry) { scrollbar-gutter: auto; }
 /* Room for a phone's keyboard: the page grows below by the keyboard's height while it is up. */
 .live-app:has(> .entry, .entry) { padding-bottom: var(--entry-keys, 0px); }
 .entry-sheet { --entry-top: env(safe-area-inset-top); }
@@ -103,7 +109,7 @@
 .entry-tabs {
   display: flex;
   gap: 26px;
-  margin-top: 16px;
+  margin: 0 0 28px;
   border-bottom: 1px solid var(--live-line);
 }
 .live-app .entry-tabs button {
@@ -328,9 +334,10 @@
   .entry-art {
     position: relative;
     inset: auto;
-    flex: 1 0 auto;
-    min-height: calc(var(--entry-band) + env(safe-area-inset-top));
-    max-height: 42svh;
+    /* A set height, taken from the sign-in sheet: the band fills what that sheet leaves of the screen, and the
+       longer new-account sheet grows downward and scrolls, so changing tab changes only the form. */
+    flex: none;
+    height: clamp(calc(var(--entry-band) + env(safe-area-inset-top)), calc(100svh - var(--entry-signin) - env(safe-area-inset-bottom)), 42svh);
     background: var(--paper);
   }
   .entry-sheet { position: relative; flex: none; }
@@ -348,7 +355,8 @@
 }
 /* A phone: the band is 132 points, the picture kept whole and anchored to its right. */
 @media (max-width: 699px) {
-  .entry { --entry-band: 132px; --entry-pad: 22px; }
+  /* --entry-signin: the sign-in sheet's height, less its 22px tuck under the band, plus the 40px below it. */
+  .entry { --entry-band: 132px; --entry-pad: 22px; --entry-signin: 605px; }
   .entry-art > .relief {
     position: absolute;
     right: 0;
@@ -368,7 +376,7 @@
   .entry-sample { margin-top: 16px; padding-top: 6px; }
   .live-app .entry h1 { font-size: clamp(34px, 9.6vw, 40px); letter-spacing: -1px; }
   .live-app .entry .live-deck { margin-top: 10px; }
-  .entry-tabs { margin-top: 10px; }
+  .entry-tabs { margin-bottom: 20px; }
   .live-app .entry-tabs button { height: 44px; }
   .live-app .entry .live-form { gap: 14px; margin-top: 18px; }
   .live-app .entry .live-field input:not(.live-auth-code) { min-height: 48px; }
@@ -381,7 +389,7 @@
 /* The smallest iPhone: sign-in fits the screen whole, so nothing scrolls. The band is lower still,
    the deck steps aside and the sample's note is said in a few words. */
 @media (max-width: 699px) and (max-height: 680px) {
-  .entry { --entry-band: 76px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .entry { --entry-band: 76px; --entry-signin: 493px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
   .live-app .entry .live-deck:not(.entry-deck-kept),
   .entry-deck-kept > span,
   .entry-sample > small:not(.entry-sample-short) { display: none; }
