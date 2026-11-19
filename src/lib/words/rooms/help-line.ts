@@ -132,7 +132,7 @@ export const en = (t: Terms, place: string) => ({
   },
 });
 
-/** Spanish. Written without a native speaker's review; one is still owed. */
+/** Spanish. The founder, who speaks Spanish, said on November 19, 2026 that it is fine as written. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   log: "Anotar una llamada",

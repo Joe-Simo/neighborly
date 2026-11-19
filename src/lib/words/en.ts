@@ -243,7 +243,7 @@ export function en(set: WordSet) {
       away: "Away",
       canHelp: "Can help",
       note: "Time off does not remove you from your teams. Existing commitments need a separate change so everyone knows what is covered.",
-      remove: "Remove",
+      remove: "Remove time off",
       removed: "Time off removed.",
       restored: "Time off put back.",
       availabilityRemoved: "Available dates removed.",

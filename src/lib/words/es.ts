@@ -239,7 +239,7 @@ export function es(set: WordSet): Words {
       away: "Día libre",
       canHelp: "Puedes ayudar",
       note: "Los días libres no te sacan de tus equipos. Los compromisos que ya tienes se cambian aparte, para que todos sepan qué está cubierto.",
-      remove: "Quitar",
+      remove: "Quitar días libres",
       removed: "Días libres quitados.",
       restored: "Días libres repuestos.",
       availabilityRemoved: "Fechas disponibles quitadas.",
