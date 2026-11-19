@@ -95,7 +95,7 @@ let sampleDoorFocused = false;
 const nothingAsked = {};
 
 function HelpLine() {
-  const { data, format, now, setHeadAction, words } = useWorkspace();
+  const { data, format, now, setHeadAction, words, sampleSaid } = useWorkspace();
   const text = words.rooms.helpLine;
   // The person's words as they stand now, for the saved line that is said after a wait (the sealed sheet's effect).
   const spoken = useRef(words);
@@ -452,6 +452,7 @@ function HelpLine() {
                     waiting={drafts.length}
                     format={format}
                     words={words}
+                    say={sampleSaid}
                     // Once saved, its buttons stay as they were while saving and fade from there with the seal,
                     // never back to full ink first.
                     pending={approving.pending || one === sealed}
@@ -957,7 +958,7 @@ function HelpLineView({
                 {leaf(call.returnedAt ?? call.takenAt)}
                 <div>
                   <h3>{caller(call, words)}</h3>
-                  <p>{call.outcome || sampleSaid(call.note)}</p>
+                  <p>{sampleSaid(call.outcome || call.note)}</p>
                 </div>
                 <span className="live-status help-returned">
                   {call.returnedByName ? text.returnedBy(call.returnedByName) : text.returned}

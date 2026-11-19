@@ -626,7 +626,7 @@ function NeighborRecordView({
       </p>
       {neighbor.alert && (
         <p className="help-alert" role="note">
-          <TriangleAlert size={18} aria-hidden="true" /> {neighbor.alert}
+          <TriangleAlert size={18} aria-hidden="true" /> {sampleSaid(neighbor.alert)}
         </p>
       )}
 
@@ -694,7 +694,7 @@ function NeighborRecordView({
             </div>
           </dl>
           <p className="help-note">
-            {neighbor.notes && <>{neighbor.notes} </>}
+            {neighbor.notes && <>{sampleSaid(neighbor.notes)} </>}
             <Button
               variant="link"
               className="help-text-action"
@@ -705,7 +705,7 @@ function NeighborRecordView({
           </p>
         </>
       )}
-      {home && neighbor.notes && <p className="help-note">{neighbor.notes}</p>}
+      {home && neighbor.notes && <p className="help-note">{sampleSaid(neighbor.notes)}</p>}
 
       {first && (
         <section

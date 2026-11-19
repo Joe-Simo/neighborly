@@ -27,7 +27,6 @@ import {
   type Payable,
 } from "@/components/workspace/treasury/labels";
 import { handOver, type Paid } from "@/components/workspace/treasury/paid-moment";
-import { nameKeeper } from "@/components/workspace/keep-names";
 import "./treasury.css";
 
 const neighborHref = (id: string) =>
@@ -274,9 +273,8 @@ export function LedgerView({
               <div className="help-row" key={request.requestId}>
                 <div>
                   <h3>
-                    {nameKeeper([sampleSaid(request.payeeName)])(
-                      fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: sampleSaid(request.payeeName) }),
-                    )}
+                    {/* The payee's name never splits, and "to" goes with it: the line breaks after the amount or not at all. */}
+                    {fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: sampleSaid(request.payeeName).replaceAll(" ", "\u00a0") })}
                   </h3>
                   <p>
                     {room.lines.kindFor(categoryLabel(room, request.kind))}{" "}

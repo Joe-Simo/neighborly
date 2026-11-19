@@ -5,8 +5,8 @@ import type { Language } from "./sets";
  * The sample conference's own names, titles and places, as its seed types them (convex/sampleData.ts), in Spanish.
  * A Spanish reader of the sample meets them in their language; a real conference's typed words are never touched,
  * and nothing here is read from or written to the database: the seed's exact English is the key, on the screen only.
- * People's names, businesses and agencies are proper names and stay. These are the seed's own lines; a call's notes,
- * what a caller said and a visit's findings stay as typed.
+ * People's names, businesses and agencies are proper names and stay. The seed's own notes are said in Spanish
+ * sentence by sentence; any note a person typed stays as typed.
  */
 const es: Readonly<Record<string, string>> = {
   // Teams
@@ -97,23 +97,36 @@ const es: Readonly<Record<string, string>> = {
 /** The seed's exact English names, for the test that holds this table to the seed. */
 export const sampleNames = Object.keys(es);
 
+
 const asTyped = (typed: string) => typed;
 /** The sample's signed-in owner, named by the backend (convex/demo.ts sampleOwner), not by the seed. */
 const sampleOwner = { typed: "Sample Owner", es: "Responsable de la muestra" };
-const inSpanish = (typed: string) => {
+/** The seed's own sentences in Spanish (sample-sentences.ts), once a Spanish reader of the sample has loaded them. */
+export type SampleSentences = Readonly<Record<string, string>>;
+const inSpanish = (typed: string, sentences?: SampleSentences) => {
   if (typed === sampleOwner.typed) return sampleOwner.es;
   const known = es[typed];
   if (known) return known;
   // A call's note is the request's line with a full stop: the same line, said the same way everywhere.
   const line = typed.endsWith(".") ? es[typed.slice(0, -1)] : undefined;
   if (line) return `${line}.`;
-  return typed;
+  if (!sentences) return typed;
+  // A note the seed put together from its own sentences is said sentence by sentence, or not at all.
+  const parts = typed.split(/\.\s+/).map((part, index, all) => (index < all.length - 1 ? `${part}.` : part));
+  const said = parts.map((part) => sentences[part] ?? (part.endsWith(".") ? es[part.slice(0, -1)] && `${es[part.slice(0, -1)]}.` : undefined));
+  return said.every(Boolean) ? said.join(" ") : typed;
 };
 
 /** The name the backend gives a removed member's visits and hours (convex/people.ts formerMember), as a Spanish reader is told it. */
 const formerMember = { typed: "A former member", es: "Un miembro anterior" };
 const formerInSpanish = (typed: string) => (typed === formerMember.typed ? formerMember.es : typed);
 const allInSpanish = (typed: string) => formerInSpanish(inSpanish(typed));
+const withSentences = new WeakMap<SampleSentences, (typed: string) => string>();
+const titledWith = (sentences: SampleSentences) => {
+  let say = withSentences.get(sentences);
+  if (!say) withSentences.set(sentences, (say = (typed: string) => keepTitle(formerInSpanish(inSpanish(typed, sentences)))));
+  return say;
+};
 // Every name said keeps a title such as "St." joined to it, so it never breaks after the title.
 const titledAsTyped = (typed: string) => keepTitle(asTyped(typed));
 const titledAllInSpanish = (typed: string) => keepTitle(allInSpanish(typed));
@@ -124,5 +137,5 @@ const titledFormerInSpanish = (typed: string) => keepTitle(formerInSpanish(typed
  * conference; the sample's own names are said in Spanish too. Anything else comes back as typed. The same function
  * each time, so nothing that names it runs again.
  */
-export const sampleSayer = (sample: boolean, language: Language) =>
-  language !== "es" ? titledAsTyped : sample ? titledAllInSpanish : titledFormerInSpanish;
+export const sampleSayer = (sample: boolean, language: Language, sentences?: SampleSentences) =>
+  language !== "es" ? titledAsTyped : !sample ? titledFormerInSpanish : sentences ? titledWith(sentences) : titledAllInSpanish;
