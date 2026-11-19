@@ -1,5 +1,6 @@
 "use client";
 
+import { keepTitle } from "@/lib/words/titles";
 import { useId } from "react";
 
 import { SavedWords } from "@/components/workspace/saved-words";
@@ -327,7 +328,7 @@ export function HelpDone({
       {seen && <CircleCheck size={22} aria-hidden="true" />}
       {!seen ? null : filed ? (
         <span className="help-filed-words" aria-hidden="true">
-          <strong data-filed="name">{filed.name}</strong>
+          <strong data-filed="name">{keepTitle(filed.name)}</strong>
           <span data-filed="asks">{filed.asks}</span>
           <SavedWords>{children}</SavedWords>
         </span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { keepTitle } from "@/lib/words/titles";
 import { useState, type FormEvent } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -330,7 +331,7 @@ export function LiveCreateForm({
               <option value="">{text.task.unassigned}</option>
               {data.people.map((person) => (
                 <option value={person.id} key={person.id}>
-                  {person.name}
+                  {keepTitle(person.name)}
                 </option>
               ))}
             </NativeSelect>

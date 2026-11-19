@@ -1,5 +1,6 @@
 "use client";
 
+import { keepTitle } from "@/lib/words/titles";
 import "./people.css";
 import { useState } from "react";
 import { CircleCheck, Plus } from "lucide-react";
@@ -109,7 +110,7 @@ export function TeamsSection() {
                 <div className="live-row" key={person.id}>
                   <div className="live-person">
                     <span className="live-avatar" aria-hidden="true">{initials(person.name)}</span>
-                    <h3>{person.name}</h3>
+                    <h3>{keepTitle(person.name)}</h3>
                   </div>
                   <Button
                     variant="outline"
@@ -278,7 +279,7 @@ function LiveTeamRoster({
                 <div className="live-person">
                   <span className="live-avatar" aria-hidden="true">{initials(person.name)}</span>
                   <div>
-                    <h3>{person.name}</h3>
+                    <h3>{keepTitle(person.name)}</h3>
                     <p data-waits={person.status === "invited" || !person.approved ? "" : undefined}>
                       {person.role === "coordinator" ? t.coordinator : t.member}
                       {person.status === "invited"

@@ -1,3 +1,4 @@
+import { keepTitle } from "@/lib/words/titles";
 import type { ReactNode } from "react";
 
 /**
@@ -5,7 +6,7 @@ import type { ReactNode } from "react";
  * so "Home visit with Renee Baptiste" wraps before "Renee", not between her names.
  */
 export function nameKeeper(names: readonly string[]) {
-  const whole = [...new Set(names.filter((name) => /\s/.test(name.trim())))].sort((a, b) => b.length - a.length);
+  const whole = [...new Set(names.filter((name) => /\s/.test(name.trim())).map(keepTitle))].sort((a, b) => b.length - a.length);
   if (!whole.length) return (text: string): ReactNode => text;
   const pattern = new RegExp(`(${whole.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`);
   return (text: string): ReactNode => {
