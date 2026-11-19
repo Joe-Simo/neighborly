@@ -320,7 +320,9 @@ export function LiveWorkspace({
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const heading = headingOverride
     ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
-    : { ...headings[area], ...translatedHeadings[area] };
+    : area === "week" && isBrandNew(data)
+      ? { ...headings[area], ...translatedHeadings[area], title: words.rooms.firstDays.week.head }
+      : { ...headings[area], ...translatedHeadings[area] };
   // A room opened before in this visit comes back with its head at rest (phones only, in paper.css): the full
   // head is the arrival, and an arrival happens once. Decided as the room is entered, so nothing below ever jumps.
   const [rested, setRested] = useState(false);

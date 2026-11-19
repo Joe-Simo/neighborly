@@ -252,7 +252,9 @@ export function TreasurySection() {
         paid={paid}
         landed={landed}
         paying={paying}
-        uncleared={bank?.waitingCount}
+        // Matching the bank and the voucher shelf are offered once there is money or stock for them to hold;
+        // until then the head's "Record money" is the one thing to do.
+        uncleared={bank && (bank.books !== 0 || bank.waiting.length || bank.lately.length || bank.deposits.length) ? bank.waitingCount : undefined}
         onHand={
           gifts && {
             count: gifts.length,
@@ -260,10 +262,10 @@ export function TreasurySection() {
           }
         }
         onDeposit={() => show({ is: "deposit" })}
-        shelf={shelf?.items.reduce(
+        shelf={shelf && (shelf.lately.length || shelf.items.some((row) => row.onHand > 0)) ? shelf.items.reduce(
           (sum, row) => sum + Math.max(row.onHand, 0),
           0,
-        )}
+        ) : undefined}
         onShelf={() => {
           setDone("");
           setAtShelf(true);
