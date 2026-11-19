@@ -126,8 +126,8 @@ export const en = (t: Terms, place: string) => ({
       approvedBy: "Approved by {name} for {amount}. The treasurer pays {payee} directly.",
       close: "Close this request",
       approve: "Approve request",
-      decline: "Decline",
-      change: "Change",
+      decline: "Decline request",
+      change: "Change request",
     },
     also: {
       title: "Also open",
@@ -166,7 +166,7 @@ export const en = (t: Terms, place: string) => ({
   },
   atHome: {
     title: "At home",
-    change: "Change",
+    change: "Change home details",
     reach: "Reach them",
     noPhone: "No phone on file",
     lives: "Lives here",
@@ -351,8 +351,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       approvedBy: "Aprobada por {name} por {amount}. La tesorería le paga directamente a {payee}.",
       close: "Cerrar esta petición",
       approve: "Aprobar petición",
-      decline: "No aprobar",
-      change: "Cambiar",
+      decline: "No aprobar la petición",
+      change: "Cambiar la petición",
     },
     also: {
       title: "También abiertas",
@@ -390,7 +390,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   },
   atHome: {
     title: "En casa",
-    change: "Cambiar",
+    change: "Cambiar los datos de casa",
     reach: "Cómo comunicarse",
     noPhone: "No hay teléfono guardado",
     lives: "Vive aquí",
