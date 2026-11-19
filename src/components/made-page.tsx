@@ -9,6 +9,7 @@ import { PublicEnding } from "@/components/public-ending";
 import { edgeWords } from "@/lib/edge-words";
 import { linkPreviewIn, linkCardIn } from "@/lib/link-preview";
 import { madeWords } from "@/lib/made-words";
+import { evalTable } from "@/lib/made-proof";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
 import { CutHead } from "@/components/cut-heads";
@@ -43,7 +44,7 @@ export function MadePage({ language }: { language: Language }) {
       <h1>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={madeWords.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />
-      {said.sections.map(({ title, blocks, figure }, index) => <Fragment key={title}>
+      {said.sections.map(({ title, blocks, figure, table }, index) => <Fragment key={title}>
         {/* After the first sheet, the painting it speaks of is drawn apart into its paper and laid back together. */}
         {index === 1 && <MadeCourtyard {...said.courtyard} />}
         <section>
@@ -52,6 +53,14 @@ export function MadePage({ language }: { language: Language }) {
             ? <p key={block}>{block}</p>
             : <ul key={block[0].lead} className="public-made-tones">{block.map(({ lead, rest, tone }) => <li key={lead} data-tone={tone}><strong>{lead}</strong> {rest}</li>)}</ul>)}
 </div>
+          {table === "eval" && <figure className="public-made-eval">
+            <table>
+              <caption>{said.evalTable.caption}</caption>
+              <thead><tr>{said.evalTable.head.map((head, column) => <th key={head} scope="col" className={column ? "is-count" : undefined}>{head}</th>)}</tr></thead>
+              <tbody>{evalTable.fields.map(({ field, right, blank, wrong }) => <tr key={field}><th scope="row">{said.evalTable.fields[field]}</th><td>{right}</td><td>{blank}</td><td data-tone={wrong ? "wrong" : undefined}>{wrong}</td></tr>)}</tbody>
+            </table>
+            <figcaption>{said.evalTable.source}</figcaption>
+          </figure>}
           {/* eslint-disable-next-line @next/next/no-img-element -- a 960px working file shown as it is */}
           {figure && <figure className="public-made-figure"><img src={figure.src} alt={figure.alt} width={960} height={480} loading="lazy" decoding="async" /><figcaption>{figure.caption}</figcaption></figure>}
         </section>
