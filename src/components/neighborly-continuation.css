@@ -23,7 +23,9 @@
 .neighborly-final-links a:is(:hover,:focus-visible){background-size:100% 1px}
 .neighborly-final-actions small{font-size:14px;line-height:1.5;color:#3d4f43}
 .neighborly-colophon{container-type:inline-size;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px;padding:12px 0 calc(82px + env(safe-area-inset-bottom));font-size:15px}
-.neighborly-colophon>a{flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 calc(100cqi / 4.1)/.8 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:#293f32;text-decoration:none}
+.neighborly-colophon>a{flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 calc(100cqi / 4.1)/.8 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:#293f32;text-decoration:none;text-shadow:.008em .016em .012em #3b2a1240,.03em .07em .08em #3b2a1224}
+/* The name is cut from the green sheet and laid on the page: its two steps of shadow on the paper beneath. Drawn once; nothing moves. */
+@media(forced-colors:active){.neighborly-colophon>a{text-shadow:none}}
 /* The name is set to the measure: its ink runs from the column's left edge to its right, the last line of the page squared to every line above it. */
 /* The name stays on paper: beneath it the cloth is seen as through a thin sheet. */
 .neighborly-together::after{content:"";position:absolute;left:0;right:0;bottom:0;z-index:-1;height:calc(24vw + 120px);background:linear-gradient(#eee7d700,#eee7d7d9 38%,#eee7d7e6);pointer-events:none}
