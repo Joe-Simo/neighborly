@@ -426,6 +426,14 @@
   :is(.live-app, .live-dialog) .live-success.help-done, .live-skip { display: none !important; }
   :is(.live-app, .live-dialog) :focus, :is(.live-app, .live-dialog) :focus-visible, :is(.live-app, .live-dialog) :focus-within { outline: none !important; }
 }
+/* Paper can't be pressed or typed into: a room's actions, filters and forms stay on screen. A trailing control left in
+   print was the whole of a last page. A button that is a table cell's words (what a gift was for) is the record and prints. */
+@media print {
+  .live-app .live-main :is([data-slot="button"], input, select, textarea):not(td *), .live-app .live-main form { display: none !important; }
+  .live-app .live-main p:has(> :is(button, [data-slot="button"]):only-child):not(td *) { display: none !important; }
+  /* A row is one record: it never splits across two sheets. */
+  .live-app .live-main :is(.live-row, .help-row, tr) { break-inside: avoid; }
+}
 
 /* The menu sheet fills the screen between the insets: its title, every room in a list that scrolls, and a foot that stays. */
 .live-mobile-menu[data-slot="dialog-content"] {
