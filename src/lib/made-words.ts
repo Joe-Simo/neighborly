@@ -53,7 +53,7 @@ const en = {
     ] },
     { title: "Responsible AI, with Jev", blocks: [
       "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does three clerical jobs: it drafts a request for help from a call note, puts urgent calls first with the reason shown, and checks the year’s records before the report. It does not write prose and it saves nothing by itself.",
-      "A neighbor’s name, phone and address are never sent to it. Everything sent passes first through one step that takes them out, and on every draft “What the assistant saw” shows the note exactly as it left. A person reads every draft and decides. Saving a request is not granting it: the conference members who visit the home decide on the help.",
+      "A neighbor’s name, phone and address are taken out before anything is sent: everything passes first through one step of fixed rules, and on every draft “What the assistant saw” shows the note exactly as it left. A person reads every draft and decides. Saving a request is not granting it: the conference members who visit the home decide on the help.",
       "On 12 made-up call notes kept apart from the ones it was tuned on, it filled 42 of 48 fields correctly, left 6 blank and got none wrong. Twelve notes is a small set, and it will make mistakes, which is why a person checks every draft.",
     ] },
     { title: "In English and Spanish", blocks: [
@@ -127,7 +127,7 @@ const es: typeof en = {
     ] },
     { title: "IA responsable, con Jev", blocks: [
       "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace tres tareas de oficina: redacta una petición de ayuda a partir de la nota de una llamada, pone primero las llamadas urgentes con el motivo a la vista y revisa los registros del año antes del informe. No escribe prosa y no guarda nada por sí solo.",
-      "Nunca se le envían el nombre, el teléfono ni la dirección de un vecino. Todo lo que se envía pasa antes por un paso que los quita, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Una persona lee cada borrador y decide. Guardar una petición no es concederla: los miembros de la conferencia que visitan el hogar deciden la ayuda.",
+      "El nombre, el teléfono y la dirección de un vecino se quitan antes de enviar nada: todo pasa antes por un paso de reglas fijas, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Una persona lee cada borrador y decide. Guardar una petición no es concederla: los miembros de la conferencia que visitan el hogar deciden la ayuda.",
       "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
     ] },
     { title: "En inglés y en español", blocks: [
