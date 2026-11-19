@@ -12,6 +12,9 @@ test("a Spanish reader of the sample meets the seed's names in Spanish; no one e
   expect(es("Choir practice")).toBe("Choir practice");
   expect(sampleSayer(true, "en")("Pantry")).toBe("Pantry");
   expect(sampleSayer(false, "es")("Pantry")).toBe("Pantry");
+  // The sample's owner, named by the backend, is said in Spanish too; a real member's name never is.
+  expect(es("Sample Owner")).toBe("Responsable de la muestra");
+  expect(sampleSayer(false, "es")("Sample Owner")).toBe("Sample Owner");
 });
 
 test("every name in the table is one the seed still types, letter for letter", () => {
