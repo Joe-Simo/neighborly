@@ -599,6 +599,8 @@
 /* ── The volunteer rooms ──────────────────────────────────────────────── */
 /* A note is a slip of paper with a green edge, not a grey box. */
 .live-app .live-note { background: #fffdf7; border: 1px solid #e0dccb; border-left: 3px solid #8a986e; border-radius: 0 3px 3px 0; font-size: 17px; }
+/* Inside a form a note is one of its fields: the form's own gap spaces it, no margin of its own on top. */
+:is(.live-app, .live-dialog) .live-form > .live-note { margin-block: 0; }
 /* This week: three large figures, each a way into its room. One row at every width. */
 .week-figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 var(--space-40); border-top: 2px solid #596e51; border-bottom: 1px solid var(--live-line); }
 .week-figures a { display: grid; gap: var(--space-8) 8px; align-content: start; padding: var(--space-24) 20px var(--space-24) 0; color: var(--live-ink); transition: transform 200ms var(--paper-ease); }
@@ -709,6 +711,9 @@
    One field for every room: a paper button that opens a month. See date-field.tsx. */
 .live-date { position: relative; display: flex; align-items: center; width: 100%; height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; transition: border-color 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
 .live-date:hover { border-color: #365c46; }
+/* A field's value is never in its label's weight, and the date box keeps to its column with its border inside. */
+.live-field > .live-date, .live-date { box-sizing: border-box; min-width: 0; font-weight: 400; }
+:is(.live-app, .live-dialog) .live-field :is(input, select, textarea) { font-weight: 400; }
 .live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
 .live-date:has(.live-date-words:focus-visible) { outline: 2px solid #283c32; outline-offset: 2px; }
 .live-date:has(:disabled) { opacity: 0.55; }
