@@ -169,6 +169,19 @@ describe("a call note drafted into a request", () => {
     expect(await t.run(ctx => ctx.db.query("auditEvents").collect())).toEqual([]);
   });
 
+  test("once the month's allowance is used, the urgent signs come from the rules alone and nothing leaves", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = answers({ shutoff: 0.97, alone: 0.3 });
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids, coordinator } = await helpLine();
+    await t.run(async ctx => {
+      await ctx.db.patch("calls", ids.callId, { note: "Rosa Delgado has a power shut-off notice for the 21st. Lives alone." });
+      await ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month: new Date().toISOString().slice(0, 7), count: 2000 });
+    });
+    expect(await coordinator.action(api.drafts.readUrgency, { churchId: ids.churchId, callId: ids.callId })).toEqual({ signs: [{ reason: "shutoff", day: 21 }, { reason: "alone", day: null }], verification: "review" });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   test("a group that has used its month's allowance gets the draft for review, not an error", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const fetch = answers({ kind: 0.99, amountRequested: 0.99, payeeKind: 0.99 });
