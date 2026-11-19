@@ -20,7 +20,7 @@ const en = {
   preview: "A call, a visit, a yes, and the year. One made-up week, told in four steps.",
   enter: "Enter Kind Helps",
   translated: null as null | [string, string, string],
-  lede: "St. Example is a made-up parish, and everyone in this week is made up too. The week is the one the sample conference keeps, so every step can be opened and seen.",
+  lede: "St. Example is a made‑up parish, and everyone in this week is made up too. The week is the one the sample conference keeps, so every step can be opened and seen.",
   days: [
     { day: "Monday, 9:12 a.m.", picture: "call", room: "The help line", title: "A call comes in.", alt: "Two paper hands lifting a telephone receiver from its cradle, its cord curling across the sheet.",
       copy: ["A mother of two leaves a message: the power bill is past due and the shutoff notice says Friday. The member on the phone this week writes it down once, in her words.", "Because of the date, the call rises to the top in ochre, waiting. By 10:40 it is returned, and a visit is set for Wednesday."] },
