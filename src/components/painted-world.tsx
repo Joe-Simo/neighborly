@@ -91,7 +91,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     // The responsive painting is the initial experience. Upgrade the optional
     // dimensional guide after critical text and imagery have had time to paint, and while the page is still.
     // Read from scrollY each frame, so a jump by script or Safari's momentum counts as movement too (scroll-still.ts).
-    let begun = false;
+    let begun = false, again: (() => void) | undefined;
     const begin = () => { begun = true; enhance(); };
     if (heroOnly) stopStill = whenScrollStill(begin, { settle: settleBeforeUpgrade, latest: upgradeAtLatest });
     else enhance();
@@ -99,7 +99,9 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     // made again as they come back within two: an iPhone counts that memory against the tab. Out of sight, the still painting stands in, as before the upgrade.
     const near = heroOnly && track.current ? new IntersectionObserver(entries => {
       nearNow = entries[entries.length - 1].isIntersecting;
-      if (nearNow) { if (begun && !active && !disposed && !fallbackRef.current) enhance(); return; }
+      // Made again only once the page is still: a new context, its shaders and textures held a phone's scroll for a second.
+      if (nearNow) { if (begun && !active && !disposed && !fallbackRef.current && !again) again = whenScrollStill(() => { again = undefined; if (nearNow && !active && !disposed && !fallbackRef.current) enhance(); }, { notBefore: 0, latest: Infinity }); return; }
+      again?.(); again = undefined;
       if (!active) return;
       active.dispose(); active = undefined; controller.current = null; setReady(false);
     }, { rootMargin: "200% 0px" }) : undefined;
@@ -107,7 +109,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     return () => {
       disposed = true;
       near?.disconnect();
-      stopStill?.();
+      stopStill?.(); again?.();
       active?.dispose(); controller.current = null;
     };
   }, [scenes, heroOnly]);
