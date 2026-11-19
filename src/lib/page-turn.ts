@@ -38,8 +38,12 @@ function ends({ w, h, r }: TurnGeometry, ox: number, oy: number) {
   return found;
 }
 
-/** Lays the parts for a page turned this far (0 to 1); answers "no", "part" or "yes", how much of the page is lifted. */
-export function placeTurn(geometry: TurnGeometry, { round, page, back, roll, shade }: TurnParts, turned: number): "no" | "part" | "yes" {
+/**
+ * Lays the parts for a page turned this far (0 to 1); answers "no", "part" or "yes", how much of the page is lifted.
+ * `clear` are boxes on the page (in its own pixels) that the turned-back underside must never lie over: the fold is then
+ * kept short, only as deep as the paper between the crease and the nearest of them, so it never reaches the words.
+ */
+export function placeTurn(geometry: TurnGeometry, { round, page, back, roll, shade }: TurnParts, turned: number, clear?: readonly { left: number; top: number; right: number; bottom: number }[]): "no" | "part" | "yes" {
   const { far, nx, ny, r, x0, y0 } = geometry;
   const gone = far * turned, ox = x0 + nx * gone, oy = y0 + ny * gone, crease = turned > 0 && turned < 1 ? ends(geometry, ox, oy) : [];
   const state = turned <= 0 ? "no" : turned >= 1 || crease.length !== 2 ? "yes" : "part";
@@ -49,6 +53,16 @@ export function placeTurn(geometry: TurnGeometry, { round, page, back, roll, sha
   // The underside is the page mirrored in the straight line between the crease's two ends.
   const [[px, py], [qx, qy]] = crease, twice = 2 * Math.atan2(qy - py, qx - px), c = Math.cos(twice), s = Math.sin(twice);
   const ex = px - (c * px + s * py), ey = py - (s * px - c * py);
+  if (clear) {
+    // How far the paper runs from the crease, in towards the still page, before the first box: the fold is no deeper, less a margin.
+    // A box wholly on the lifted side, already uncovered beneath, is never under the fold, so it does not count.
+    const depths = clear.map(({ left, top, right, bottom }) => [[left, top], [right, top], [left, bottom], [right, bottom]].map(([x, y]) => (x - px) * nx + (y - py) * ny)).filter(d => Math.max(...d) > 0);
+    const gap = Math.min(gone, ...depths.map(d => Math.max(0, Math.min(...d) - 24)));
+    // The underside keeps only the strip of the lifted page that deep beyond the crease (the page's own pixels, before it is mirrored).
+    const lx = qx - px, ly = qy - py, span = Math.hypot(lx, ly) || 1, ax = lx / span * 4000, ay = ly / span * 4000, fx = -nx * gap, fy = -ny * gap;
+    const at = (x: number, y: number) => `${x.toFixed(1)}px ${y.toFixed(1)}px`;
+    back.style.clipPath = `polygon(${at(px - ax, py - ay)},${at(qx + ax, qy + ay)},${at(qx + ax + fx, qy + ay + fy)},${at(px - ax + fx, py - ay + fy)})`;
+  }
   back.style.transform = `matrix(${c.toFixed(5)},${s.toFixed(5)},${s.toFixed(5)},${(-c).toFixed(5)},${ex.toFixed(2)},${ey.toFixed(2)})`;
   // The roll of light keeps to the crease. It lies on the mirrored underside, so it is mirrored back to where the crease is.
   const kx = ox - nx * r, ky = oy - ny * r, mx = c * kx + s * ky + ex, my = s * kx - c * ky + ey;

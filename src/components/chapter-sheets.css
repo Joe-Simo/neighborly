@@ -50,4 +50,3 @@
 .relief-turn[data-turned=no] :is(.relief-turn-shade,.relief-turn-back){visibility:hidden}
 .relief-turn[data-near] :is(.relief-turn-round,.relief-turn-page,.relief-turn-back,.relief-turn-roll,.relief-turn-shade){will-change:transform}
 @media print{.relief-turn-back,.relief-turn-shade{display:none!important}}
-[data-under-turn]{visibility:hidden}
