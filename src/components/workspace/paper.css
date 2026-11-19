@@ -287,9 +287,11 @@
   }
 }
 
-/* ── Measure: from 1280 up the reading column stops at 1040px; only the picture runs to the edge ── */
+/* ── Measure: from 1280 up the reading column stops at 1040px; only the picture runs to the edge ──
+   Where the room has less than 64px to spare past 1040 (about 1440 wide), it takes the whole width, so its edge
+   meets the head's rule instead of stopping a few pixels short of it. */
 @media (min-width: 1280px) {
-  .live-main > :not(.live-page-head) { max-width: 1040px; }
+  .live-main > :not(.live-page-head) { max-width: max(1040px, min(100%, 1040px + (1104px - 100%) * 1000)); }
 }
 
 /* ── The side column: from 1280 up, a room that fills it (RoomAside) gets one quiet column on the right.
@@ -304,7 +306,7 @@
        above, the browser would work out every element's style again each time anything in the room came or went. */
     --room-wide: min(1040px, calc(100% - var(--aside-wide) - var(--aside-gap)));
   }
-  .live-main > :not(.live-page-head, .live-aside) { max-width: var(--room-wide, 1040px); }
+  .live-main > :not(.live-page-head, .live-aside) { max-width: var(--room-wide, max(1040px, min(100%, 1040px + (1104px - 100%) * 1000))); }
   .live-aside:not(:empty) {
     display: block;
     float: right;
