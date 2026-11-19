@@ -4,6 +4,7 @@ import { internalMutation, type MutationCtx } from "./_generated/server";
 import type { Doc, Id, TableNames } from "./_generated/dataModel";
 import { WAITING_KEPT } from "./counts";
 import { rebuildNames } from "./knownNames";
+import { nameKey } from "./assistance";
 
 type TableName = TableNames;
 type Row = { table: TableName; doc: Doc<TableName> };
@@ -100,7 +101,7 @@ function generator(seed: number) {
   return { next, between, pick };
 }
 const isoDay = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM-dd");
-const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const key = nameKey;
 
 /** Writes the whole made-up year through `db`: the real database, or the plan `renew` compares with what is there. */
 async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id<"churches">> {

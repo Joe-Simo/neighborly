@@ -225,7 +225,7 @@ export const remove = mutation({
   handler: async (ctx, { churchId, neighborId, typedName }) => {
     const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
     if (member.role !== "owner") throw new ConvexError("Only an owner can remove a neighbor’s record.");
-    if (nameKey(typedName) !== neighbor.nameKey) throw new ConvexError("Type the neighbor’s name as it is written on the record.");
+    if (nameKey(typedName) !== nameKey(neighbor.name)) throw new ConvexError("Type the neighbor’s name as it is written on the record.");
 
     const [requests, visits, notes, tied, everyCall, ledger, shelf, deposits] = await Promise.all([
       ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect(),
@@ -246,7 +246,7 @@ export const remove = mutation({
     const loose = everyCall.filter((call) => {
       if (call.neighborId) return false;
       const phone = phoneKey(call.phone);
-      return phone ? phone === neighbor.phoneKey : nameKey(call.callerName) === neighbor.nameKey;
+      return phone ? phone === neighbor.phoneKey : nameKey(call.callerName) === nameKey(neighbor.name);
     });
     const calls = [...tied, ...loose];
     const drafts = (await Promise.all(calls.map((call) => ctx.db.query("requestDrafts").withIndex("by_call", (q) => q.eq("callId", call._id)).collect()))).flat();
@@ -256,7 +256,7 @@ export const remove = mutation({
     // stays when it is a landlord, a utility or a store, and better one store too many than one name left.
     // On every other line, and on deposits and the voucher shelf, a field goes only when it carries the whole name,
     // so that removing a Lee does not blank every payment to Lee County Electric.
-    const words = neighbor.nameKey.split(" ");
+    const words = nameKey(neighbor.name).split(" ");
     const part = new Set(words.filter((word) => word.length > 2));
     const said = (text: string) => new Set(nameKey(text).split(" "));
     const anyOf = (text: string) => [...said(text)].some((word) => part.has(word));

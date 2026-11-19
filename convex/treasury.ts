@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { neighborAccess } from "./access";
-import { settleRequest } from "./assistance";
+import { nameKey, settleRequest } from "./assistance";
 
 /**
  * The treasury: one ledger per group. Money is whole cents, always positive; the entry kind says
@@ -51,7 +51,6 @@ type Entry = Doc<"ledgerEntries">;
 
 const signed = (entry: Pick<Entry, "kind" | "amount">) => (entry.kind === "income" ? entry.amount : -entry.amount);
 const isCents = (amount: number) => Number.isSafeInteger(amount) && amount > 0;
-const nameKey = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
 async function group(ctx: Ctx, churchId: Id<"churches">) {
   const church = await ctx.db.get("churches", churchId);
@@ -255,7 +254,7 @@ export const recordPayment = mutation({
     const neighbor = await ctx.db.get("neighbors", request.neighborId);
     const payee = request.payeeName.trim();
     if (!payee) throw new ConvexError("Add who is to be paid to the request first.");
-    if (request.payeeKind === "neighbor" || (neighbor && nameKey(payee) === neighbor.nameKey))
+    if (request.payeeKind === "neighbor" || (neighbor && nameKey(payee) === nameKey(neighbor.name)))
       throw new ConvexError("Payments go to the landlord, utility or store, never to the neighbor. Change who is paid on the request first.");
 
     const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
