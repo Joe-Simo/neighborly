@@ -23,8 +23,8 @@ export function sayReadersLanguage() {
 export const readersLanguage = `(${sayReadersLanguage})()`;
 /**
  * Run from the root layout's head, before anything is drawn, so the app's pages already say their language on a
- * fresh load. The Spanish privacy page says Spanish. The other public pages are English and are left alone.
+ * fresh load. The Spanish privacy and accessibility pages say Spanish. The other public pages are English and are left alone.
  * Arriving by a link inside the site runs no script, so there <PageLanguage /> or <ReaderLanguage /> gives the same
  * answer before the first paint.
  */
-export const firstLanguage = `(function(){try{var p=location.pathname;if(/^\\/(privacidad|sobre)(\\/|$)/.test(p)){document.documentElement.lang="es";return}if(/^\\/(app|offline)(\\/|$)/.test(p))${readersLanguage}}catch(e){}})()`;
+export const firstLanguage = `(function(){try{var p=location.pathname;if(/^\\/(privacidad|accesibilidad|sobre)(\\/|$)/.test(p)){document.documentElement.lang="es";return}if(/^\\/(app|offline)(\\/|$)/.test(p))${readersLanguage}}catch(e){}})()`;

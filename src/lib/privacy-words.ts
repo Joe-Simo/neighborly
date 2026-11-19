@@ -113,4 +113,7 @@ const es: typeof en = {
   },
 };
 
-export const privacyWords: Record<Language, typeof en> = { en, es };
+/** The shape of a public page of words; the accessibility page uses it too. */
+export type PublicWords = typeof en;
+
+export const privacyWords: Record<Language, PublicWords> = { en, es };
