@@ -20,15 +20,15 @@
 .book-measure::before { content: ""; grid-area: 1 / 1; aspect-ratio: 8.5 / 11; }
 .book-measure .book-sheet { grid-area: 1 / 1; position: relative; inset: auto; height: auto; overflow: visible; }
 /* Facing pages meet at a gutter: a soft shade into the fold on each side. */
-.book-desk[data-facing] .book-left .book-sheet { box-shadow: inset -18px 0 22px -20px rgb(40 30 10 / 0.3), 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3); }
-.book-desk[data-facing] .book-right .book-sheet { box-shadow: inset 18px 0 22px -20px rgb(40 30 10 / 0.3), 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3); }
+.book-desk[data-facing] .book-left .book-sheet { box-shadow: inset -18px 0 22px -20px rgb(40 30 10 / 0.3), var(--relief-card); }
+.book-desk[data-facing] .book-right .book-sheet { box-shadow: inset 18px 0 22px -20px rgb(40 30 10 / 0.3), var(--relief-card); }
 .book-under { position: absolute; inset: 0; }
 
 .book-sheet {
   position: absolute; inset: 0; display: flex; flex-direction: column; gap: 18px; overflow: hidden;
   padding: clamp(24px, 6%, 52px) clamp(22px, 7%, 56px);
-  background: #fbf8f1; color: var(--live-ink, #283c32); font-size: 15px; line-height: 1.5;
-  box-shadow: 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3);
+  background: var(--relief-paper); color: var(--live-ink, #283c32); font-size: 15px; line-height: 1.5;
+  box-shadow: var(--relief-card);
 }
 .book-sheet h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: clamp(26px, 3vw, 34px); line-height: 1.1; letter-spacing: -0.01em; }
 .book-folio { margin: auto 0 0; font-size: 13px; color: #5b6b61; }

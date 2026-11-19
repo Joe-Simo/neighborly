@@ -14,7 +14,7 @@
   --help-ochre-ink: #7d5a17;
   --help-ochre-wash: #f6ecd3;
   --help-sage-wash: #e9eddf;
-  --help-sheet: #fffdf7;
+  --help-sheet: var(--relief-paper);
   --help-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
@@ -64,11 +64,11 @@
 .help-sheet {
   position: relative;
   background: var(--help-sheet);
-  border: 1px solid #e0dccb;
+  border: 1px solid var(--relief-edge);
   border-radius: 3px;
   padding: 30px 34px 30px;
   margin-bottom: 52px;
-  box-shadow: 0 1px 0 #fff inset, 0 18px 34px -26px #3b3a2466, 0 2px 5px -3px #3b3a2440;
+  box-shadow: var(--relief-card);
 }
 .help-sheet::after {
   content: "";

@@ -109,10 +109,10 @@
 .team-asked {
   margin: 4px 0 20px;
   padding: 22px 26px 20px;
-  border: 1px solid #e0dccb;
+  border: 1px solid var(--relief-edge);
   border-radius: 3px;
-  background: #fffdf7;
-  box-shadow: 0 1px 0 #fff inset, 0 14px 26px -24px #3b3a2466, 0 2px 5px -3px #3b3a2440;
+  background: var(--relief-paper);
+  box-shadow: var(--relief-card);
 }
 .live-app .team-asked p { margin: 0; padding-right: 26px; font-size: 17px; color: var(--live-ink); }
 .team-asked .live-row-actions { margin-top: 16px; }
