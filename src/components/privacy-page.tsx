@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { preload } from "react-dom";
@@ -40,7 +41,7 @@ export function PrivacyPage({ language, book = privacyWords }: { language: Langu
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
     <main className="public-words paper-rise" data-address={`kindhelps.com${said.path}`}>
-      <h1>{said.title}</h1>
+      <h1 style={{ "--word": Math.max(...said.title.split(/\s+/).map((word) => word.length)) } as CSSProperties}>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={book.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />
       {said.sections.map(({ title, blocks }) => <section key={title}>
