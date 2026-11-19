@@ -28,7 +28,7 @@ const en = {
     { title: "Why it exists", blocks: [
       "Kind Helps is for the volunteers of St. Vincent de Paul conferences: the people who answer the help line, visit homes and keep the books. Many conferences keep this work on paper, in spreadsheets or in ServWare. Kind Helps keeps it in one place, in English and Spanish, on a phone or at a desk.",
       [
-        { lead: "A neighbor’s dignity.", rest: "Help is paid to the landlord, utility or store, never to the neighbor. Visits are made in pairs. A family’s name, phone and address are taken out before a note reaches the assistant." },
+        { lead: "A neighbor’s dignity.", rest: "Help is paid to the landlord, utility or store, never to the neighbor. Visits are made in pairs. A neighbor’s name, phone and address are taken out before a note reaches the assistant." },
         { lead: "A volunteer’s time.", rest: "A call note becomes a draft request, and the pair for a visit is suggested from who is free." },
         { lead: "Honest books.", rest: "Every gift and payment is recorded. A mistake is put right with a new entry, never erased." },
       ],
@@ -102,7 +102,7 @@ const es: typeof en = {
     { title: "Por qué existe", blocks: [
       "Kind Helps es para los voluntarios de las conferencias de San Vicente de Paúl: quienes atienden la línea de ayuda, visitan los hogares y llevan las cuentas. Muchas conferencias llevan este trabajo en papel, en hojas de cálculo o en ServWare. Kind Helps lo reúne en un solo lugar, en inglés y en español, en el teléfono o en el escritorio.",
       [
-        { lead: "La dignidad del vecino.", rest: "La ayuda se paga al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al vecino. Las visitas se hacen de dos en dos. El nombre, el teléfono y la dirección de una familia se quitan antes de que una nota llegue al asistente." },
+        { lead: "La dignidad del vecino.", rest: "La ayuda se paga al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al vecino. Las visitas se hacen de dos en dos. El nombre, el teléfono y la dirección de un vecino se quitan antes de que una nota llegue al asistente." },
         { lead: "El tiempo del voluntario.", rest: "La nota de una llamada se vuelve un borrador de petición, y la pareja para una visita se sugiere según quién está libre." },
         { lead: "Cuentas honradas.", rest: "Cada donativo y cada pago queda anotado. Un error se corrige con una anotación nueva, nunca se borra." },
       ],
@@ -120,7 +120,7 @@ const es: typeof en = {
       [
         { lead: "Ocre es esperar.", rest: "Una llamada aún sin devolver, una petición aún sin decidir, una sección que todavía se abre.", tone: "waiting" },
         { lead: "Ciruela es que algo está mal.", rest: "No hay rojo en ninguna parte. Un error se nombra con claridad, junto con la manera de corregirlo.", tone: "wrong" },
-        { lead: "Verde es hecho.", rest: "Una visita con sus notas, una factura pagada, una llamada devuelta.", tone: "done" },
+        { lead: "Verde es hecho.", rest: "Una visita con sus notas, un recibo pagado, una llamada devuelta.", tone: "done" },
       ],
       "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta, donde solo los números de los capítulos miden 13.",
       "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
