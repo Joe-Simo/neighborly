@@ -33,7 +33,7 @@ const en = {
     ] },
     { title: "What we do not do", blocks: [
       "No advertising. We do not sell or share records. The site loads no analytics or tracking scripts. The only outside services it uses are the ones named on this page.",
-      "So that it can open without a connection, the app keeps its own pages, pictures and fonts on your device. It does not keep your conference’s records there.",
+      "So that it can open without a connection, the app keeps its own pages, pictures and fonts on your device. In the iPhone and iPad app, the first screen of This week and of the help line is kept too, so the app opens at once: what those screens show, callers’ names and numbers among it, but never an email. It is held in the app’s own protected storage and let go after a day, or at once on signing out. In a browser, words typed into a form and not yet saved stay only in that tab, and signing out clears what the site kept there.",
     ] },
     { title: "The sample conference", blocks: ["“Look around a sample conference” opens a conference of made-up people with made-up phone numbers. It is rebuilt every night, and anything typed into it is thrown away then."] },
     { title: "Removing a record, a person or a whole conference", blocks: [
@@ -86,7 +86,7 @@ const es: typeof en = {
     ] },
     { title: "Lo que no hacemos", blocks: [
       "No hay publicidad. No vendemos ni compartimos registros. El sitio no carga programas de analítica ni de rastreo. Los únicos servicios externos que usa son los que se nombran en esta página.",
-      "Para poder abrirse sin conexión, la aplicación guarda en tu dispositivo sus propias páginas, imágenes y tipos de letra. No guarda ahí los registros de tu conferencia.",
+      "Para poder abrirse sin conexión, la aplicación guarda en tu dispositivo sus propias páginas, imágenes y tipos de letra. En la aplicación para iPhone y iPad también se guarda la primera pantalla de Esta semana y de la línea de ayuda, para que la aplicación se abra al instante: lo que esas pantallas muestran, incluidos los nombres y teléfonos de quienes llamaron, pero nunca un correo electrónico. Se guarda en el almacenamiento protegido de la propia aplicación y se borra al cabo de un día, o en cuanto cierras sesión. En un navegador, lo que escribes en un formulario y aún no se ha guardado se queda solo en esa pestaña, y al cerrar sesión se borra lo que el sitio guardó ahí.",
     ] },
     { title: "La conferencia de muestra", blocks: ["«Recorrer una muestra» abre una conferencia de personas inventadas con teléfonos inventados. Se vuelve a crear cada noche, y todo lo que se haya escrito en ella se descarta entonces."] },
     { title: "Eliminar un registro, una persona o una conferencia entera", blocks: [
