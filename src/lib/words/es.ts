@@ -185,7 +185,7 @@ export function es(set: WordSet): Words {
       addToCalendar: "Agrégalos al calendario",
       emptyTitle: "Hay lugar para tu primer sí.",
       emptyDetail:
-        "Los compromisos que aceptes aparecerán aquí con todo lo necesario para prepararte.",
+        "Cuando das tu sí a un compromiso, se guarda aquí con lo que hay que preparar.",
     },
     commitments: {
       weekByTeam: "Esta semana por equipo",
@@ -195,9 +195,9 @@ export function es(set: WordSet): Words {
       allTeams: "Todos los equipos",
       noneForTeamTitle: "Este equipo no tiene fechas próximas.",
       noneForTeamDetail: "Elige otro equipo o mira todos los equipos para ver los demás compromisos.",
-      emptyTitle: "El camino está despejado.",
+      emptyTitle: "Todavía no hay fechas.",
       emptyDetail:
-        "Los compromisos nuevos aparecerán aquí con su fecha, persona y preparación.",
+        "Aquí aparece cada fecha en que se necesita a alguien, con quién va y qué preparar.",
       placeOpen: "Hay un lugar libre",
       status: { accepted: "Aceptado", open: "Libre", cancelled: "Cancelado" },
       viewPreparation: "Ver la preparación",
@@ -297,7 +297,7 @@ export function es(set: WordSet): Words {
       done: "Hecha",
       open: "Pendiente",
       emptyTitle: "Sin tareas por ahora.",
-      emptyDetail: "Las tareas compartidas aparecerán aquí con la persona a cargo y su fecha.",
+      emptyDetail: "Aquí aparece todo lo que el grupo necesita hacer, con quién lo hace y para cuándo.",
       meetings: "Reuniones",
       going: "Vas a ir",
       notGoing: "No puedes ir",

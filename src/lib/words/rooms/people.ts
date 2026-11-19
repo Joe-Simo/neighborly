@@ -122,6 +122,9 @@ export const en = (t: Terms, place: string) => ({
   /** Teams, as their coordinators and the owner manage them. */
   teams: {
     emptyBody: `Give your first team a name, then add people when they join your ${t.group}.`,
+    /** A member's Teams before any team is made: they cannot make one, so it says who does. */
+    memberEmptyTitle: "No teams yet.",
+    memberEmptyBody: "A coordinator sets up the teams. Yours will show here once you are added.",
     addMember: "Add a member",
     addTo: (name: string) => `Add a member to ${name}`,
     addDeck: "They get an invitation to the team. Joining never accepts a commitment for them.",
@@ -262,6 +265,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     teams: {
       emptyBody: `Ponle nombre a tu primer equipo y luego agrega a las personas cuando se unan a tu ${t.group}.`,
+      memberEmptyTitle: "Todavía no hay equipos.",
+      memberEmptyBody: "Quien coordina arma los equipos. El tuyo aparecerá aquí cuando te agreguen.",
       addMember: "Agregar un miembro",
       addTo: (name) => `Agregar un miembro a ${name}`,
       addDeck: "Recibe una invitación al equipo. Unirse nunca acepta un compromiso en su nombre.",

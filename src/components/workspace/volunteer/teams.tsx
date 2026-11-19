@@ -88,8 +88,8 @@ export function TeamsSection() {
           </section>
         ))
       ) : (
-        <LiveEmpty title={t.emptyTitle} go={isOwner ? undefined : "mine"}>
-          {text.emptyBody}
+        <LiveEmpty title={isOwner ? t.emptyTitle : text.memberEmptyTitle} go={isOwner ? undefined : "mine"}>
+          {isOwner ? text.emptyBody : text.memberEmptyBody}
         </LiveEmpty>
       )}
       {data.teams.length > 0 && (
