@@ -106,3 +106,22 @@
 }
 /* At 400 percent zoom a long link (es "Una semana en San Ejemplo") may break inside itself rather than run past the window. */
 @media(max-width:359px){.neighborly-colophon nav{gap:0 20px;min-width:0;max-width:100%;grid-template-columns:repeat(2,minmax(0,max-content))}.neighborly-colophon nav a{white-space:normal;max-width:100%}}
+/* The home page's last screen is one frame: the close whole, the card between the hands, and the name as a quiet foot
+   beneath it. The close gives up exactly the foot's height, and the painting and the hand that holds the card are
+   placed together by the same rule, so the card still sits in the hand. Other pages keep the name set large. */
+@media(min-width:1280px) and (min-height:445px){
+  .neighborly-continuation .neighborly-close{height:min(calc(100svh - var(--foot)),100vw / 1.40625)}
+  .neighborly-continuation .neighborly-close-art img{object-position:50% 62%}
+  .neighborly-continuation .neighborly-close-hand{top:calc(62% - 44.089cqw)}
+}
+@media(min-width:901px){
+  .neighborly-continuation{--foot:clamp(92px,7.4vw,140px)}
+  .neighborly-continuation .neighborly-colophon{box-sizing:border-box;min-height:var(--foot);flex-wrap:nowrap;align-items:center;gap:0 clamp(24px,3vw,48px);padding:0 0 env(safe-area-inset-bottom)}
+  .neighborly-continuation .neighborly-colophon>span{flex:none}
+  .neighborly-continuation .neighborly-colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}
+  .neighborly-continuation .neighborly-colophon nav a{display:inline-flex;align-items:center;min-height:44px}
+  .neighborly-continuation .neighborly-colophon>a{flex:none;margin:0;font-size:clamp(48px,4.6vw,88px)}
+}
+/* On a phone the painting stands taller than the screen, so the last screen leads with the card in the hands: the foot sits
+   right under the torn edge, with room kept below the name so the close's words leave the frame whole, never cut. */
+@media(max-width:600px){.neighborly-continuation .neighborly-colophon{padding-bottom:calc(82px + 22vw + env(safe-area-inset-bottom))}}
