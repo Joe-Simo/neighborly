@@ -30,7 +30,7 @@
 .public-week .public-week-lede>div{grid-column:1/-1;max-width:30em;font:400 clamp(22px,2.1vw,32px)/1.38 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.01em;color:#22362a}
 .public-week-close>div{grid-column:1/-1}
 .public-week .public-week-close .public-week-open{gap:14px;font:400 clamp(28px,2.7vw,44px)/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.02em;text-decoration-thickness:1px;text-underline-offset:.18em}
-.public-week .public-week-close .public-week-open{display:inline}
+.public-week .public-week-close .public-week-open{display:inline-block;min-height:44px;padding-block:3px;box-sizing:border-box}
 .public-week-close .public-week-open svg{display:inline;width:.6em;height:.6em;margin-left:.25em;vertical-align:.05em}
 @media(min-width:1024px){.public-week-close>div{grid-column:2;max-width:28em}}
 @media(min-width:2000px){.public-week .public-week-lede>div{font-size:clamp(32px,1.7vw,40px)}}
