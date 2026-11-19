@@ -76,7 +76,9 @@ self.addEventListener("activate", (event) => {
 // Other pages always come from the network. With no connection, a page not kept above is answered by the offline page
 // instead of the browser's own error.
 const serwist = new Serwist({
-  precacheEntries: self.__SW_MANIFEST,
+  // A worker's start script is read from the network: it learns its chunks from its own address's #params, and an
+  // answer from the cache carries an address without them, so the opening's worker would not start.
+  precacheEntries: (self.__SW_MANIFEST ?? []).filter((entry) => !(typeof entry === "string" ? entry : entry.url).includes("/turbopack-worker-")),
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
