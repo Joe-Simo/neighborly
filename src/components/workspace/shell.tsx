@@ -49,6 +49,7 @@ import { LanguageChooser } from "@/components/workspace/language-chooser";
 import { AsidePlace, useWideScreen } from "@/components/workspace/aside";
 import { RowMenu } from "@/components/workspace/row-menu";
 import { useSystemTextSize } from "@/components/system-text-size";
+import { useSheetLeaves } from "@/components/workspace/sheet-leaves";
 import { lineStay, readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
 import { fetchAhead } from "@/components/workspace/relief-ahead";
@@ -460,6 +461,7 @@ export function LiveWorkspace({
   const app = useRef<HTMLDivElement>(null);
   const column = useRef<HTMLElement>(null);
   const { shown, opening, lost, settled } = useWholeRoom(area, column);
+  useSheetLeaves(column, shown ? area : null);
   // The room the side column and the bar name: held on the room being left while a finger turns its page back.
   const menuArea = useMenuArea(area);
   // The room itself, with nothing opened inside it (a record, a sheet): the edge's step back is the page turn there.
