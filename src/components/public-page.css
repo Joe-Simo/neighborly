@@ -46,6 +46,9 @@
   /* Laid by hand: each sheet sits a little in or out of the last, never turned, so the lines stay level. */
   .public-words section:nth-of-type(odd){margin-left:2.2%;margin-right:-.6%}
   .public-words section:nth-of-type(3n){margin-left:.8%;margin-right:1.6%}
+  /* The sheets move, the words do not: each sheet's inside edge gives back what it moved, so every heading and paragraph keeps one left edge. */
+  .public-words section:nth-of-type(odd){padding-left:calc(clamp(20px,5.4vw,104px) - 2.2%);padding-right:calc(clamp(20px,5.4vw,104px) + .6%)}
+  .public-words section:nth-of-type(3n){padding-left:calc(clamp(20px,5.4vw,104px) - .8%);padding-right:calc(clamp(20px,5.4vw,104px) - 1.6%)}
   .public-words h1{padding-bottom:clamp(60px,7vw,130px)}
   .public-words h1,.public-words section{filter:drop-shadow(0 1px .5px #3b2a1238) drop-shadow(0 9px 12px #3b2a1220)}
   .public-words-relief{top:clamp(48px,5.6vw,104px);width:clamp(340px,27vw,420px)}

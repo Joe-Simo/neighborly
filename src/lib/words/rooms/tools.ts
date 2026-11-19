@@ -241,7 +241,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     neighbors: {
       title: `Trae los registros de tus ${t.neighbors}`,
       deck: "¿Vienes del papel o de otro sistema? Guarda tu lista como archivo CSV y elígela aquí. Quien ya está registrado queda fuera, para que ningún hogar se anote dos veces.",
-      fileHelp: "Necesita una columna Name. Phone, Email, Address, Adults, Children, Language y Notes se toman cuando están.",
+      fileHelp: "Necesita una columna Name. Si hay columnas Phone, Email, Address, Adults, Children, Language o Notes, también se importan.",
       yes: (count) => (count === 1 ? `Agregar 1 ${t.neighbor}` : `Agregar ${esN(count)} ${t.neighbors}`),
       nothingReady: "Todavía no se puede agregar a nadie de este archivo",
       promise: "Cada uno pasa a ser un registro privado, abierto solo a los coordinadores. Nada se guarda hasta que tú lo digas.",
@@ -304,7 +304,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     payees: {
       title: "Trae a quienes les pagas",
       deck: `Los dueños de vivienda, las compañías de servicios y las tiendas a las que tu ${t.group} ya les paga. Exporta la lista de ServWare o de otro sistema, guárdala como CSV y elígela aquí, para que nadie escriba dos veces a quién se le paga.`,
-      fileHelp: "Necesita una columna Name. Type, Address, Phone, Email y Notes se toman cuando están.",
+      fileHelp: "Necesita una columna Name. Si hay columnas Type, Address, Phone, Email o Notes, también se importan.",
       yes: (count) => (count === 1 ? "Agregar 1 nombre a tu lista de pagos" : `Agregar ${esN(count)} nombres a tu lista de pagos`),
       nothingReady: "Todavía no se puede agregar nada de este archivo",
       promise: "Solo nombres y cómo encontrarlos. Con la lista no viene dinero ni números de cuenta. Nada se guarda hasta que tú lo digas.",
