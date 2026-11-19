@@ -153,8 +153,17 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     // milliseconds, and the painted courtyard beneath already shows exactly what it will draw first.
     let stop: (() => void) | undefined, cancelled = false;
     const opened = new Promise<void>(resolve => { if (document.readyState === "complete") resolve(); else addEventListener("load", () => resolve(), { once: true }); });
-    opened.then(() => new Promise<void>(resolve => { whenIdle(() => resolve(), 1500, 200); })).then(() => { if (!cancelled) stop = live(frame, host, paintingSelector); });
-    return () => { cancelled = true; stop?.(); };
+    // The living courtyard holds about forty megabytes of graphics memory, which an iPhone counts against the tab: it is let go once the courtyard
+    // is more than two windows away, and made again as it comes back within two, before it is in sight. Meanwhile the painted courtyard shows, as it always does first.
+    let ready = false, close = true;
+    const start = () => { if (ready && close && !cancelled && !stop) stop = live(frame, host, paintingSelector); };
+    const near = new IntersectionObserver(entries => {
+      close = entries[entries.length - 1].isIntersecting;
+      if (close) start(); else { stop?.(); stop = undefined; }
+    }, { rootMargin: "200% 0px" });
+    near.observe(host);
+    opened.then(() => new Promise<void>(resolve => { whenIdle(() => resolve(), 1500, 200); })).then(() => { ready = true; start(); });
+    return () => { cancelled = true; near.disconnect(); stop?.(); };
   }, [within, paintingSelector]);
 
   return <div ref={holder} className="living-courtyard" aria-hidden="true" />;
@@ -179,7 +188,8 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     renderer.domElement.addEventListener("webglcontextrestored", restored);
 
     // The paintings are decoded away from the page's own thread, so reading the first screen is never interrupted.
-    const loader = new ImageBitmapLoader().setOptions({ imageOrientation: "from-image", premultiplyAlpha: "none" });
+    // On a phone the plates (1774 wide) are decoded at 1024 wide: the courtyard is drawn there at one pixel per point and never wider than that.
+    const loader = new ImageBitmapLoader().setOptions({ imageOrientation: "from-image", premultiplyAlpha: "none", ...(tight ? { resizeWidth: 1024, resizeQuality: "high" as const } : {}) });
     const load = (name: string, mipmaps: boolean) => loader.loadAsync(`/assets/threshold/${name}.webp`).then(bitmap => {
       const texture = new Texture(bitmap);
       texture.flipY = false;
@@ -397,6 +407,6 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       renderer.domElement.removeEventListener("webglcontextrestored", restored);
       release();
       [uniforms.uMap, uniforms.uDepth, uniforms.uNormal, uniforms.uFigures, uniforms.uIdle, uniforms.uAnswer].forEach(uniform => { if (uniform.value?.image instanceof ImageBitmap) uniform.value.image.close(); uniform.value?.dispose(); });
-      geometry.dispose(); material.dispose(); renderer.dispose(); renderer.domElement.remove();
+      geometry.dispose(); material.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove();
     };
 }

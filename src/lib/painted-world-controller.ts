@@ -1103,6 +1103,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       doorTextures.forEach((texture) => texture.dispose());
       light.shadow.map?.dispose();
       renderer.dispose();
+      // Its graphics memory is given back now, not whenever the browser collects the canvas: on an iPhone that is what keeps the tab alive.
+      renderer.forceContextLoss();
       renderer.domElement.remove();
     },
   };
