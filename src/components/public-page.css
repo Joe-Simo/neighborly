@@ -123,8 +123,8 @@
 .public-words .public-made-tones li:not([data-tone])::before{display:none}
 /* Very wide windows: the laid sheets already run the window's width, so their words and the title's piece grow with it, and nothing is left as a small column on a big sheet. */
 @media(min-width:2000px){.public-page-language{font-size:18px}.public-words section>div{font-size:24px}.public-words-last{font-size:19px}.public-words h2{font-size:clamp(44px,2.3vw,64px)}.public-words-relief{width:clamp(420px,22vw,600px)}.public-page-header>a:last-child{font-size:18px}}
-@media(max-width:430px){.public-page-header{gap:12px;padding-inline:16px}}
-@media(max-width:380px){.public-page-header{gap:8px}}
+/* On a phone the three ways out keep 16px between them on one line: the arrow after the way in gives up its room first. */
+@media(max-width:430px){.public-page-header{gap:16px;padding-inline:16px}.public-page-header>a:last-child svg{display:none}}
 /* How it was made reads as one story in chapters. Each head is numbered and stands at the top of its own words (never stretched to the
    sheet's height, so it turns on its own foot);. Each chapter opens on one sentence set in
    the title's face, and the depth map is laid across the whole sheet, under the words that speak of it, the way the courtyard is above. */
