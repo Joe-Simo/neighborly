@@ -14,6 +14,7 @@
     "test:backend": "vitest run convex",
     "a11y": "bun scripts/a11y.mts",
     "budget": "bun scripts/budget.mts",
+    "size": "bun scripts/size-budget.mts",
     "words-whole": "bun scripts/words-whole.mts"
   },
   "dependencies": {
