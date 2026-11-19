@@ -140,3 +140,6 @@
 
 /* An invitation's Revoke is a full 44px press, like every other row action. */
 .live-app .people-invitations .live-row-actions [data-slot="button"] { min-height: 44px; }
+
+/* At 200% text a long invited address takes the whole line rather than pushing past it. */
+.live-app .people-row h3 { grid-template-columns: minmax(0, 1fr); }

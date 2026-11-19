@@ -1549,3 +1549,12 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 /* The assistant's line under a sheet keeps a reading measure on a wide sheet, as every other sentence does. */
 .live-app .help-assistant { max-width: 72ch; }
+
+/* Forced colors: a tick is a mask, so it is drawn in the text colour; a waiting ring loses its box-shadow, so it becomes a border. Shape, not colour, keeps the meaning. */
+@media (forced-colors: active) {
+  /* Every tick rule is more specific than this one, so the text colour is set as the one important here. */
+  .live-app .live-status:not(:is([data-state="waiting"], [data-state="pending"], [data-state="open"]))::before { forced-color-adjust: none; background: CanvasText !important; }
+  nav.week-figures a > small::before,
+  .live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="waiting"], [data-state="pending"], [data-state="open"])::before,
+  .live-app .help-sheet-label[data-waiting]::before { forced-color-adjust: none; box-shadow: none; background: none; border: 2px solid CanvasText; border-radius: 50%; box-sizing: border-box; }
+}
