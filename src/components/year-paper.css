@@ -1,7 +1,7 @@
 /* The year in paper (year-paper.tsx). The band's run is the stylesheet's: five windows of scroll, the stage held in the window throughout.
    The slips' window is cut to one of two fixed shapes, so the poster drawn for that shape is the canvas's first frame to the pixel. */
 .year-paper{--yp-w:min(100vw - 40px,(100svh - 190px) * 1.6,1280px);position:relative;background:#eee7d7;color:#293f32}
-.year-paper-run{height:420svh}
+.year-paper-run{height:260svh}
 .year-paper-stage{position:sticky;top:0;height:100svh;display:grid;place-items:center;padding:0 20px}
 .year-paper-figure{margin:0;display:grid;gap:clamp(14px,1.6vw,24px);justify-items:start}
 .year-paper-window{position:relative;width:var(--yp-w);aspect-ratio:16/10;overflow:hidden;background:#eee7d7}
