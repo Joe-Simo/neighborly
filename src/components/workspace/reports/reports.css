@@ -934,3 +934,27 @@
 }
 /* A note under the year's figures keeps a reading measure on a wide screen: about seventy letters, not the page's full width. */
 .report-aside,.report .help-footnote{max-width:36em}
+
+/* Time given is one form: every figure at one size, every bar one strip on one line with its name and its hours. */
+.report-time .help-figures > div:first-child dd { font-size: 44px; }
+.report-time .report-teams li { grid-template-columns: 230px minmax(0, 1fr) 150px; grid-template-rows: auto auto; row-gap: var(--space-4); align-items: center; }
+.report-time .report-teams li > div:first-child { display: contents; }
+.report-time .report-teams h3 { grid-column: 1; grid-row: 1; margin: 0; }
+.report-time .report-teams p { grid-column: 1 / -1; grid-row: 2; }
+.report-time .report-teams .help-bar { grid-column: 2; grid-row: 1; order: 0; height: 10px; }
+.report-time .report-teams .help-amount { grid-column: 3; grid-row: 1; text-align: right; font-feature-settings: "lnum" 1, "tnum" 1; }
+.report .report-time .report-teams li .help-bar span { background: #4f7a61; }
+.report-time .help-figures dt { white-space: nowrap; }
+@media (max-width: 850px) {
+  .report-time .help-figures dd, .report-time .help-figures > div:first-child dd { font-size: 35px; }
+  .report-time .report-teams li { grid-template-columns: minmax(0, 1fr) auto; }
+  .report-time .report-teams .help-amount { grid-column: 2; }
+  .report-time .report-teams p { grid-row: 2; }
+  .report-time .report-teams .help-bar { grid-column: 1 / -1; grid-row: 3; margin-top: var(--space-4); }
+}
+@media print {
+  .report-time .report-teams li { grid-template-columns: 150pt minmax(0, 1fr) 80pt; }
+  .report-time .report-teams .help-bar { grid-column: 2; grid-row: 1; height: 8pt; margin-top: 0; }
+  .report-time .report-teams .help-amount { grid-column: 3; }
+  .report-time .help-figures dd, .report-time .help-figures > div:first-child dd { font-size: 30pt; }
+}

@@ -185,6 +185,8 @@ export const en = (t: Terms, place: string) => ({
   book: {
     label: "The yearly report",
     cover: "Yearly report",
+    /** The cover's line of the year, `{amount}` filled with the year's help paid: "$52,435 given to 191 households". */
+    coverTotal: (households: number) => `{amount} given to ${n(households)} ${households === 1 ? "household" : "households"}`,
     contents: "Contents",
     page: "Page {page} of {pages}",
     next: "Next page",
@@ -499,6 +501,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     book: {
       label: "El informe anual",
       cover: "Informe anual",
+      coverTotal: (households) => `{amount} dados a ${esN(households)} ${households === 1 ? "hogar" : "hogares"}`,
       contents: "Contenido",
       page: "Página {page} de {pages}",
       next: "Página siguiente",

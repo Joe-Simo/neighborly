@@ -524,7 +524,7 @@ export function ReportView({
         </section>
       )}
 
-      <section className="live-section">
+      <section className="live-section report-time">
         <div className="live-section-head">
           <h2>{w.time.title}</h2>
           <span className="live-count">
