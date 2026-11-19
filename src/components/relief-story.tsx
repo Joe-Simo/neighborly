@@ -69,6 +69,8 @@ export function ReliefStory() {
     // The chapters after the slip each arrive as the next leaf (paper-turn.ts). One already in the window when the page is first drawn, or one
     // the keyboard has entered, lies flat until it has left the window below, so the first frame is the page as drawn and focus never lands on a turning leaf.
     const leaves = panels.slice(1).map(panel => ({ panel, leaf: panel.querySelector<HTMLElement>(".relief-hold") }));
+    // Phones keep their chapters flat: at 4x CPU the turn cost an occasional frame past budget, so it is drawn from 1024 up only.
+    const wide = matchMedia("(min-width: 1024px)");
     const flat = new Set<HTMLElement>();
     let seeded = false;
     const focused = (event: FocusEvent) => { const panel = (event.target as Element | null)?.closest<HTMLElement>(".relief-panel"); if (panel) { flat.add(panel); request(); } };
@@ -101,7 +103,7 @@ export function ReliefStory() {
         if (!leaf || panel.dataset.turn === "to") continue;
         const top = boxes[panels.indexOf(panel)].top;
         if (top > height) flat.delete(panel);
-        turnLeaf(panel, leaf, paperTurnAt(top, height), flat.has(panel));
+        turnLeaf(panel, leaf, paperTurnAt(top, height), flat.has(panel) || !wide.matches);
       }
     };
     const { ask: request, drop } = frameStep(read, update);
