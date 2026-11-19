@@ -161,9 +161,10 @@ export function LiveWorkspace({
   const sheets = words.rooms.sheets;
   // The browser tab names the room in the person's language, in the menu's own words.
   const tabTitle = menu[area];
+  const groupName = data.church.name;
   useEffect(() => {
-    if (tabTitle) document.title = `${tabTitle} · Kind Helps`;
-  }, [tabTitle]);
+    if (tabTitle) document.title = `${tabTitle} · ${groupName} · Kind Helps`;
+  }, [tabTitle, groupName]);
   // Every room reads in the person's own language, the leaders' rooms included (words/rooms).
   const translatedHeadings: Partial<Record<LiveArea, { title: string; deck: string }>> = words.headings;
   const ownPerson = data.people.find((person) => person.id === data.user.id);

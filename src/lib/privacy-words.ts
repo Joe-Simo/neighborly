@@ -7,7 +7,7 @@ type Block = string | [lead: string, rest: string][];
 const en = {
   path: "/privacy",
   title: "Privacy",
-  tab: "Privacy — Kind Helps",
+  tab: "Privacy · Kind Helps",
   description: "What a conference keeps in Kind Helps, who can see it, what the assistant is sent, and how a record, a person or a whole conference is removed.",
   preview: "What a conference keeps in Kind Helps, who can see it, and how it is removed.",
   enter: "Enter Kind Helps",
@@ -63,7 +63,7 @@ const en = {
 const es: typeof en = {
   path: "/privacidad",
   title: "Privacidad",
-  tab: "Privacidad — Kind Helps",
+  tab: "Privacidad · Kind Helps",
   description: "Qué guarda una conferencia en Kind Helps, quién lo ve, qué se le envía al asistente y cómo se elimina un registro, una persona o una conferencia.",
   preview: "Qué guarda una conferencia en Kind Helps, quién puede verlo y cómo se elimina.",
   enter: "Entrar a Kind Helps",
