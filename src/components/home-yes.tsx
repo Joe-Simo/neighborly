@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { SAMPLE_DOOR } from "./sample-link";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,7 @@ export function HomeYes() {
           <h3>Rent, $450 to Mill&nbsp;Road&nbsp;Rentals</h3>
           <p className="home-yes-still-quote">“Behind on November rent, $450. The landlord is Mill&nbsp;Road&nbsp;Rentals.”</p>
           <p>From the message taken at 10:20 AM. Not yet on file as a neighbor.</p>
-          <Button asChild className="home-yes-still-in"><Link href="/app?intent=sample" prefetch={false}>Look around a sample conference</Link></Button>
+          <Button asChild className="home-yes-still-in"><Link href={SAMPLE_DOOR} prefetch={false}>Look around a sample conference</Link></Button>
           <p className="home-yes-still-foot"><Sparkles size={16} aria-hidden="true" />Filled in by the assistant from the call note and checked against it.</p>
         </div>
       </noscript>

@@ -116,7 +116,8 @@ function LiveRooms({
   const { ready, isAuthenticated, signedOut, clerkAnswered } = useAccount();
   // Through the sample door, This week is first drawn from the seed's public answer while the session is being made
   // (first-look.tsx). The look ends when the signed-in room is whole in hand, or when the sample will not open.
-  const [viaSample] = useState(enterSample && sampleEntry);
+  // The seed's look is This week's: arriving in another room, the room simply waits for the session.
+  const [viaSample] = useState(enterSample && sampleEntry && area === "week");
   const seedRoom = useFirstRoom(viaSample);
   // In the iOS app, This week as the member last saw it, kept on the device (lib/kept-room.ts), is the look instead:
   // drawn at once on launch while the session and the live data catch up.

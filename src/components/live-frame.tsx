@@ -32,7 +32,8 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
     asked === "start" || asked === "join" || asked === "signin" ? asked : invite ? "join" : "signin";
 
   // Arrived by the sample door from outside (a fresh load): the ticket is asked for now, while Clerk loads.
-  const enterSample = entry && params.get("intent") === "sample";
+  // The help line is a door too: the home page opens the sample straight on Rosa's waiting call (SAMPLE_DOOR).
+  const enterSample = (entry || area === "help-line") && params.get("intent") === "sample";
   useEffect(() => {
     if (!enterSample || !sampleEntry) return;
     askSampleTicket();
