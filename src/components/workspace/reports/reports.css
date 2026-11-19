@@ -860,6 +860,9 @@
   .report-kinds-print .report-kinds-total th { font-size: 9.75pt; letter-spacing: 0.06em; text-transform: uppercase; }
   .report-kinds-print tbody th { text-transform: none; letter-spacing: 0; font-size: 11pt; }
   .report-kinds-print td { white-space: nowrap; }
+  /* A gap before each figure, so a long kind ("Vales para la tienda de segunda mano") and a worded cell ("Entregados del estante") never touch. */
+  .report-kinds-print td { padding-left: 12pt; }
+  .report-kinds-print tbody th { padding-right: 12pt; }
   .report .live-section { margin-top: 11pt; }
   .report .help-footnote { margin-top: 10pt; }
   .report .report-legend { gap: 2pt 16pt; }

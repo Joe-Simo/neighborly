@@ -4,6 +4,7 @@ import { keepTitle } from "@/lib/words/titles";
 import "./people.css";
 import "@/components/workspace/for-good.css";
 import { useState } from "react";
+import Link from "next/link";
 import { useMutation } from "convex/react";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -205,6 +206,14 @@ export function PeopleSection() {
           </p>
         </LiveDialog>
         )
+      )}
+      {/* A member can read the list but not act on it: the next step is their own commitments, as in the rooms kept private. */}
+      {!isOwner && (
+        <p className="tools-quiet">
+          <Button variant="outline" asChild>
+            <Link href="/app/mine">{words.menu.mine}</Link>
+          </Button>
+        </p>
       )}
       {isOwner && (
         <section className="live-section">

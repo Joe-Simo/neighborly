@@ -34,3 +34,12 @@
 .public-week-close .public-week-open svg{display:inline;width:.6em;height:.6em;margin-left:.25em;vertical-align:.05em}
 @media(min-width:1024px){.public-week-close>div{grid-column:2;max-width:28em}}
 @media(min-width:2000px){.public-week .public-week-lede>div{font-size:clamp(32px,1.7vw,40px)}}
+/* On the widest screens each day reads as a spread: its heading and its words down the left, its piece of the relief standing alone on the right, its top level with the heading's.
+   The picture spans every row; the last row is the one that grows, so the words keep their own spacing under the heading. */
+@media(min-width:1600px){
+  .public-week-day{align-items:start;grid-template-rows:repeat(5,auto) 1fr}
+  .public-week-day .public-week-head{position:static;grid-column:1;grid-row:1}
+  .public-week-day>div:last-child{display:contents}
+  .public-week-day .public-week-piece{grid-column:2;grid-row:1/span 6;margin:0}
+  .public-week-day>div:last-child>p{grid-column:1;max-width:28em;margin-bottom:0}
+}

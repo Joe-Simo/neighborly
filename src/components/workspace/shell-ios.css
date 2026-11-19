@@ -243,13 +243,13 @@
   :root[data-shell="ios"] :is([data-slot="dialog-content"], [data-slot="dropdown-menu-content"], [data-slot="popover-content"]) { animation: none !important; }
 }
 
-/* ── A5: under the finger. The paper presses in the moment it is touched (the app listens for touches, so :active
-   holds from touch-down), and goes back when the finger lifts; there is no grey flash. Rows, labels and buttons are
+/* ── A5: under the finger. The paper presses one layer down the moment it is touched, the site's own press (its
+   resting 1px shade steps away as it sinks 1px; :active holds from touch-down, as the app listens for touches), and
+   comes back when the finger lifts; there is no grey flash. Rows, labels and buttons are
    not selected by a long press; what a person wrote (notes, quoted words, a record's facts) stays selectable. ── */
 :root[data-shell="ios"] :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:active:not(:disabled) {
   transform: translateY(var(--press-y));
-  box-shadow: inset 0 1px 3px rgb(40 60 50 / 0.22);
-  filter: brightness(0.96);
+  box-shadow: none;
   transition: none;
 }
 :root[data-shell="ios"] :is(.live-row, .help-row, .live-team, .people-row, .live-commitment-row):has(:is(a, button):active):not(:has([data-slot="button"]:active)) {
