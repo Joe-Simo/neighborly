@@ -14,7 +14,7 @@ import {
 } from "@/components/workspace/treasury/form-parts";
 import type { Payable } from "@/components/workspace/treasury/labels";
 
-export type Payment = {
+type Payment = {
   amount: number;
   date: string;
   memo: string;

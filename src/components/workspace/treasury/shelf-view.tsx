@@ -22,7 +22,7 @@ import {
 } from "@/components/workspace/treasury/form-parts";
 import { dayLabel, type Shelf } from "@/components/workspace/treasury/labels";
 
-export type Vouchers = {
+type Vouchers = {
   item: string;
   change: number;
   date: string;
@@ -116,7 +116,7 @@ function VoucherForm({
 }
 
 /** How many of each voucher are on hand, and what moved lately. A count, never money. */
-export function ShelfView({
+function ShelfView({
   shelf,
   done,
   onAdd,

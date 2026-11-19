@@ -8,13 +8,13 @@ import { shortMoney } from "@/components/workspace/help-line/format";
 export type Board = FunctionReturnType<typeof api.visits.board>;
 export type Visit = Board["scheduled"][number];
 export type Suggestion = NonNullable<Board["suggested"]>;
-export type Waiting = Board["toArrange"][number];
+type Waiting = Board["toArrange"][number];
 export type Visitors = FunctionReturnType<typeof api.visits.visitors>;
 export type Sheet = FunctionReturnType<typeof api.visits.sheet>;
 export type OwnVisit = FunctionReturnType<typeof api.visits.mine>[number];
 
 /** The room's own words, in the person's language: a helper cannot ask for them, so the component passes them. */
-export type VisitWords = Words["rooms"]["visitsRoom"];
+type VisitWords = Words["rooms"]["visitsRoom"];
 
 /** "Rent, $450": what the visit is about, in the words of the request. */
 export const need = (words: Words, kind: Waiting["kind"], cents: number) =>

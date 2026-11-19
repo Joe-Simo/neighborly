@@ -224,7 +224,7 @@ function DidNotOpen({ sentence, trying, tryAgain, recovery, opening }: { sentenc
 const lines = (n: number) =>
   Array.from({ length: n }, (_, index) => <i key={index} />);
 
-export function VisitSheetView({
+function VisitSheetView({
   sheet,
   format,
   words,

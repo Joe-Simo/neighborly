@@ -1,10 +1,10 @@
 import type { Language } from "@/lib/words";
 
 /** A paragraph, or a list whose items open with a few strong words; a list item may carry the colour it names. */
-export type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
+type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
-export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" };
+type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {

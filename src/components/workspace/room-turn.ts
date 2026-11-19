@@ -15,7 +15,7 @@
  */
 
 /** The whole turn, corner down to sheet gone. */
-export const TURN_MS = 280;
+const TURN_MS = 280;
 
 /** The turn's ease: the corner lifts gently, the fold runs, and the sheet leaves the far edge without a stop. */
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);

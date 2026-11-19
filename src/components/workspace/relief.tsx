@@ -24,7 +24,7 @@ export type ReliefName = (typeof reliefNames)[number];
  * Add a name here when its six files are in `public/assets/relief/`; until then
  * every place that asks for it draws the paper placeholder at the same size.
  */
-export const reliefReady: readonly ReliefName[] = ["call", "help", "year", "week", "visit", "people", "commitment", "tasks", "files", "rest", "neighbors", "mine", "teams"];
+const reliefReady: readonly ReliefName[] = ["call", "help", "year", "week", "visit", "people", "commitment", "tasks", "files", "rest", "neighbors", "mine", "teams"];
 
 /**
  * The one small move a room's picture makes on the first arrival in a visit: where its moving piece starts,

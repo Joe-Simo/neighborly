@@ -3,7 +3,7 @@
  * and what has been lifted is seen from behind, folded back over the crease. Shared by the turn between chapters (chapter-sheets.tsx)
  * and the courtyard's door into the workspace (courtyard-door.tsx). Only transforms are set: nothing is redrawn.
  */
-export type TurnParts = { round: HTMLElement; page: HTMLElement; back: HTMLElement; roll: HTMLElement; shade: HTMLElement };
+type TurnParts = { round: HTMLElement; page: HTMLElement; back: HTMLElement; roll: HTMLElement; shade: HTMLElement };
 
 /** The page: w by h. The crease travels `far`, corner to corner, along (nx, ny); its round has radius r and stands at (x0, y0) on the corner. */
 export function turnGeometry(w: number, h: number) {

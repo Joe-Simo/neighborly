@@ -576,7 +576,7 @@ function happened(event: Record["history"][number], now: number, words: Words) {
   }
 }
 
-export function NeighborRecordView({
+function NeighborRecordView({
   record,
   format,
   now,

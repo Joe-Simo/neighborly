@@ -25,7 +25,7 @@ export function StartHere() {
   return <StartHereLine {...words.week.startHere} waiting={waiting === undefined} />;
 }
 
-export function StartHereLine({ lead, rest, waiting = false }: { lead: string; rest: string; waiting?: boolean }) {
+function StartHereLine({ lead, rest, waiting = false }: { lead: string; rest: string; waiting?: boolean }) {
   return (
     <Link className="start-here" href="/app/help-line" data-waiting={waiting ? "" : undefined} data-room-pending={waiting ? "" : undefined} inert={waiting} aria-hidden={waiting || undefined}>
       <span>

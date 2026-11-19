@@ -24,7 +24,7 @@ function useAreaArt() {
   return workspace ? headings[workspace.area].art : null;
 }
 
-export type LiveStateKind = "empty" | "private" | "missing" | "error" | "offline";
+type LiveStateKind = "empty" | "private" | "missing" | "error" | "offline";
 
 export function LiveState({
   kind,

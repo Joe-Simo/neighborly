@@ -18,7 +18,7 @@ type Problem = Exclude<(Checked[number] | Imported[number])["outcome"], "ready" 
 
 type ToolsWords = Words["rooms"]["tools"];
 /** The sheet's own lines in the person's language. The sample file is made-up data and stays as it is. */
-export const memberWords = (text: ToolsWords["members"]): SheetWords => ({
+const memberWords = (text: ToolsWords["members"]): SheetWords => ({
   id: "members-import",
   title: text.title,
   deck: text.deck,
@@ -30,7 +30,7 @@ export const memberWords = (text: ToolsWords["members"]): SheetWords => ({
   done: text.done,
   nothingDone: text.nothingDone,
 });
-export function membersLeftOut(rows: (Checked[number] | Imported[number])[], reasons: Record<Problem, string>): LeftOut[] {
+function membersLeftOut(rows: (Checked[number] | Imported[number])[], reasons: Record<Problem, string>): LeftOut[] {
   return rows.flatMap((row) => (row.outcome === "ready" || row.outcome === "invited" ? [] : [{ line: row.line, name: row.name || row.email, reason: reasons[row.outcome] }]));
 }
 

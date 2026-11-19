@@ -42,7 +42,7 @@ export function MyVisits() {
   );
 }
 
-export function MyVisitsView({
+function MyVisitsView({
   visits,
   format,
   words,

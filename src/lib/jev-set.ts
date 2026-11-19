@@ -6,7 +6,7 @@ import type { UrgentSign } from "./urgency";
  * assistant against the live model. Nobody here is real, and every phone is a 555-01xx number.
  * The answers were written from the notes alone, before any run, and are not adjusted to make a run pass.
  */
-export interface SetNote {
+interface SetNote {
   id: string;
   /** What the note is there to try. */
   tries: string;

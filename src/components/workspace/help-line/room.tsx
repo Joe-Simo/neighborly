@@ -56,7 +56,7 @@ export function HelpEmpty({
 }
 
 /** The door: what a member sees instead of a neighbor screen. */
-export function KeptPrivate() {
+function KeptPrivate() {
   const { words } = useWorkspace();
   return (
     <LiveState

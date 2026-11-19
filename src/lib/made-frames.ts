@@ -2,7 +2,6 @@ import run from "../../eval/frames/made-scroll.json";
 
 /** The two ways the page was filmed on the Mac: at desk width, and at phone width with the processor slowed four times. */
 export const frameWidths = ["1440", "390"] as const;
-export type FrameWidth = (typeof frameWidths)[number];
 
 /** The bar every change is held to: 33 ms, two refreshes at 60 Hz. A frame that took two refreshes (33.3 ms measured) is on time, as the recorder counts it. */
 export const lateMs = 33;

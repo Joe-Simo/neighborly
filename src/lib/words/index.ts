@@ -2,10 +2,10 @@ import { en, type Words } from "./en";
 import { es } from "./es";
 import type { Language, WordSet } from "./sets";
 
-export { counter, formatCount, formatMoney, numberLocales } from "./numbers";
-export { dateFormatter, formatDate, formatDay, formatDays } from "./dates";
+export { formatCount, formatMoney } from "./numbers";
+export { dateFormatter, formatDate, formatDay } from "./dates";
 export { languageNames, languages, wordSets } from "./sets";
-export type { Language, Terms, WordSet } from "./sets";
+export type { Language } from "./sets";
 export type { Words };
 
 const books: Record<Language, (set: WordSet) => Words> = { en, es };

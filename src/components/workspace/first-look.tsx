@@ -72,7 +72,7 @@ export function firstLookData(room: FirstRoom, language: Language, standing: Pic
 
 type Kept = { path: number[]; said: string };
 /** On a control that only opens something (a dialog, a sheet, a record): the one kind of press a first look keeps and makes later. */
-export const OPENS = "data-opens";
+const OPENS = "data-opens";
 const RING = "kept-ring";
 const CONTROL = "button, [role='button'], summary, input, select, textarea, label";
 /** Where an element is in the room, and what it and its row say, so the same one can be found in the signed-in room. */

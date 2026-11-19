@@ -202,7 +202,7 @@ function NeighborRow({
   );
 }
 
-export function NeighborListView({
+function NeighborListView({
   list,
   searching,
   format,

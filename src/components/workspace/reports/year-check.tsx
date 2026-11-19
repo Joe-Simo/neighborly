@@ -12,7 +12,7 @@ import { fill } from "@/lib/words/fill";
 import { money } from "@/components/workspace/reports/lines";
 
 export type YearCheckResult = FunctionReturnType<typeof api.drafts.checkYear>;
-export type FlaggedRecords = FunctionReturnType<typeof api.reports.flagged>;
+type FlaggedRecords = FunctionReturnType<typeof api.reports.flagged>;
 type Flag = YearCheckResult["flags"][number];
 
 /** The sheet while the year is being read: it lies where the verdict will, so nothing moves when the verdict arrives. */

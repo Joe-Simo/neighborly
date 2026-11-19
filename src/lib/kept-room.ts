@@ -37,7 +37,7 @@ const withoutEmails = new WeakSet<object>();
  * three readings the room draws from, for a launch from the Home Screen's widget or its quick action. It holds callers'
  * names and numbers, so it is the device's protected file, never the web view's, gone on sign-out and after a day.
  */
-export type KeptHelpLine = { memberId: string; churchId: string; answers: Record<string, unknown> };
+type KeptHelpLine = { memberId: string; churchId: string; answers: Record<string, unknown> };
 
 /** The help line the app handed this page at launch, if it is the kept room's own member and conference. */
 export function keptHelpLine(): KeptHelpLine | null {

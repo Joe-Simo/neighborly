@@ -1,7 +1,7 @@
 import Papa from "papaparse";
 
 export type MemberRow = { line: number; name: string; email: string; role: string };
-export type MemberSheet = { rows: MemberRow[] } | { error: string };
+type MemberSheet = { rows: MemberRow[] } | { error: string };
 
 const nameColumns = ["name", "full name", "member", "member name"];
 const firstColumns = ["first name", "first", "given name"];

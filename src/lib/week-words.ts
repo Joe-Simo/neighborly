@@ -9,7 +9,7 @@ const calls = whole(sampleYear.calls), visits = whole(sampleYear.visits);
 const help = dollars(sampleYear.helpPaid / 100), weekHelp = dollars(sampleYear.weekHelp / 100);
 
 /** One day of the week: when it is, what happened, and the room of the app it happened in. `picture` names the room's relief. */
-export type WeekDay = { day: string; title: string; copy: string[]; room: string; picture: "call" | "visit" | "help" | "year"; alt: string };
+type WeekDay = { day: string; title: string; copy: string[]; room: string; picture: "call" | "visit" | "help" | "year"; alt: string };
 
 /** A made-up week at a made-up conference, told in four steps. English is the source; Spanish says the same, day for day. */
 const en = {
