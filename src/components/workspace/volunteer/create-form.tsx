@@ -11,7 +11,8 @@ import { useOpenedIntoView } from "@/components/workspace/week-note/assistant-li
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
-import { LiveField } from "@/components/workspace/primitives";
+import { LiveField, markWrong } from "@/components/workspace/primitives";
+import { refusals } from "@/lib/refusals";
 import { LiveWaiting, LiveFailure } from "@/components/workspace/states";
 import type { ActionKind } from "@/components/workspace/navigation";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
@@ -35,7 +36,8 @@ export function LiveCreateForm({
 }) {
   // Every form here speaks the reader's language: the members' from the shared tables, the leaders' from this room's.
   const { sampleSaid } = useWorkspace();
-  const { actions, tasks, rooms } = useWorkspace().words;
+  const words = useWorkspace().words;
+  const { actions, tasks, rooms } = words;
   const text = rooms.peopleRoom.form;
   const form = actions.announcementForm;
   // Adding a commitment opens from Commitments, a member's room, so its form speaks the reader's language too.
@@ -82,8 +84,14 @@ export function LiveCreateForm({
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const fields = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const fields = new FormData(form);
     const value = (name: string) => String(fields.get(name) ?? "").trim();
+    // An end before its start is said on the end, before anything is sent (the server refuses it the same way).
+    const [start, end] = [value("start"), value("end")];
+    if (start && end && (kind === "timeOff" ? end < start : (kind === "commitment" || kind === "meeting") && end <= start))
+      markWrong(form, "end", kind === "timeOff" ? words.timeOffForm.orderError : (words.notices.refused[refusals.endAfterStart] ?? refusals.endAfterStart));
+    if (!form.checkValidity()) return;
     let command: LiveCommand;
     switch (kind) {
       case "team":
