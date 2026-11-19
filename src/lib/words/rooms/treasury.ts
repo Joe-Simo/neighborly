@@ -333,7 +333,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
     figures: {
       balance: "Saldo de hoy",
-      asOf: (day) => `Al ${day}`,
+      asOf: (day) => `Hasta el ${day}`,
       in: (month) => `Entradas de ${month}`,
       out: (month) => `Salidas de ${month}`,
       nothingIn: "Todavía no se ha recibido nada",
