@@ -88,6 +88,8 @@ export function en(set: WordSet) {
       /** For someone who belongs to more than one: the picker in the bar. */
       groups: { label: `Choose a ${t.group}`, more: `More ${t.group}s` },
       signOut: "Sign out",
+      /** Over the phone menu's Sign out: whose account it is, as the desktop bar shows it. */
+      signedInAs: (name: string) => `Signed in as ${name}`,
       leaveSample: "Leave the sample",
       close: "Close",
       sampleMark: "Sample · made-up\u00a0people",

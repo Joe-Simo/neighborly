@@ -445,6 +445,9 @@
 .live-mobile-menu .live-menu-current { font-size: 13px; }
 .live-menu-rooms .live-row-actions { display: grid; gap: 10px; margin-top: 18px; }
 .live-menu-rooms select { width: 100%; }
+/* Whose account the menu signs out of, set on the foot's paper just above it. */
+.live-menu-who { margin: 0; padding: 12px 14px 0; border-top: 1px solid #d9ddce; background: #efefe3; font-size: 14px; color: #4a5a50; overflow-wrap: anywhere; }
+.live-menu-who + .live-menu-foot { border-top: 0; }
 .live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
 .live-mobile-menu .live-menu-leave[data-slot="button"] { height: 44px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
 

@@ -85,7 +85,8 @@ export function es(set: WordSet): Words {
       skip: `Ir a tu ${place}`,
       /** For someone who belongs to more than one: the picker in the bar. */
       groups: { label: `Elegir ${t.group}`, more: `Más ${t.group}s` },
-      signOut: "Salir",
+      signOut: "Cerrar sesión",
+      signedInAs: (name: string) => `Sesión iniciada como ${name}`,
       leaveSample: "Salir de la muestra",
       close: "Cerrar",
       sampleMark: "Muestra · personas\u00a0inventadas",

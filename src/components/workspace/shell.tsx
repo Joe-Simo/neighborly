@@ -583,6 +583,7 @@ export function LiveWorkspace({
                 <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={leave}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
                 {selectChurch}
               </div>
+              {!sampleVisitor && <p className="live-menu-who">{words.shell.signedInAs(data.user.name || data.user.email)}</p>}
               <div className="live-menu-foot">
                 <LanguageChooser words={words} churchId={data.church.id} />
                 <Button variant="outline" className="live-menu-leave" disabled={pending} onClick={() => void signOut()}>
