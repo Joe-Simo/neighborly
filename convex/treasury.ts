@@ -237,12 +237,26 @@ export const payable = query({
   },
 });
 
+/** Said when a payment on a request was recorded since the person's screen showed it, or its check already is. */
+export const PAYMENT_RECORDED = "This payment is already recorded.";
+
 /**
  * Pays part or all of an approved request. The money goes to the landlord, utility or store named
  * on the request, never to the neighbor, and the total paid never passes the approved amount.
  */
 export const recordPayment = mutation({
-  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), amount: v.number(), date: v.string(), memo: v.optional(v.string()), checkNumber: v.optional(v.string()) },
+  args: {
+    churchId: v.id("churches"),
+    requestId: v.id("assistanceRequests"),
+    amount: v.number(),
+    date: v.string(),
+    memo: v.optional(v.string()),
+    checkNumber: v.optional(v.string()),
+    /** What the person's screen showed as paid toward the request. Anything recorded since then is refused here,
+     *  named, so the same payment is never recorded twice by two people; a real second payment is sent again with the
+     *  total the refusal gave, which is the person choosing it. */
+    paidSeen: v.number(),
+  },
   returns: v.id("ledgerEntries"),
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
@@ -259,10 +273,22 @@ export const recordPayment = mutation({
 
     const { date, memo } = await dated(ctx, args.churchId, args.date, args.memo);
 
-    const remaining = request.amountApproved - (await paidTowardRequest(ctx, request._id));
+    // The same check on the same request is one payment, always.
+    const checkNumber = check(args.checkNumber);
+    const onRequest = await ctx.db.query("ledgerEntries").withIndex("by_request", (q) => q.eq("requestId", request._id)).take(REQUEST_ENTRY_LIMIT + 1);
+    if (checkNumber && onRequest.some((entry) => entry.kind === "expense" && !entry.reverses && entry.checkNumber === checkNumber && !onRequest.some((later) => later.reverses === entry._id)))
+      throw new ConvexError(PAYMENT_RECORDED);
+
+    const paid = await paidTowardRequest(ctx, request._id);
+    if (paid !== args.paidSeen) {
+      const last = onRequest.filter((entry) => entry.kind === "expense").sort((a, b) => b.createdAt - a.createdAt)[0];
+      const by = last ? await ctx.db.get("memberships", last.recordedBy) : null;
+      throw new ConvexError({ message: PAYMENT_RECORDED, paid, last: last ? { amount: last.amount, by: by?.name ?? "" } : null });
+    }
+    const remaining = request.amountApproved - paid;
     if (args.amount > remaining) throw new ConvexError(remaining > 0 ? "This is more than what is left of the approved amount." : "This request is already paid in full.");
 
-    const entryId = await ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date, category: request.kind, payee, memo, checkNumber: check(args.checkNumber), requestId: request._id, neighborId: request.neighborId, recordedBy: member._id, createdAt: Date.now() });
+    const entryId = await ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: "expense", amount: args.amount, date, category: request.kind, payee, memo, checkNumber, requestId: request._id, neighborId: request.neighborId, recordedBy: member._id, createdAt: Date.now() });
     // The last payment closes the request, through the one function the help line exposes for it.
     if (args.amount === remaining) await settleRequest(ctx, member, request._id, true);
     return entryId;

@@ -316,7 +316,7 @@ describe("a request for help", () => {
     const churchId = ids.church;
     const requestId = await as(ids.coordinator).mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...rent });
     await as(ids.coordinator).mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 45000, note: "" });
-    await as(ids.owner).mutation(api.treasury.recordPayment, { churchId, requestId, amount: 20000, date: "2026-11-10" });
+    await as(ids.owner).mutation(api.treasury.recordPayment, { paidSeen: 0, churchId, requestId, amount: 20000, date: "2026-11-10" });
     await as(ids.owner).mutation(api.assistance.closeRequest, { churchId, requestId, note: "Moved in with family." });
     const { history } = await readRecord(as(ids.owner), { churchId, neighborId: ids.rosa });
     expect(history).toContainEqual(expect.objectContaining({ type: "decision", status: "closed", approved: 45000, paid: 20000, who: "Marisol Vega", approvedBy: "Thomas Okafor", note: "Moved in with family." }));

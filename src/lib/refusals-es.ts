@@ -129,6 +129,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "This person has too many records to remove at once. Please write to us.":
     "Esta persona tiene demasiados registros para borrarlos de una vez. Escríbenos, por favor.",
   "This person is not in the conference.": "Esta persona no está en la conferencia.",
+  "This payment is already recorded.": "Este pago ya está anotado.",
   "This request has already been decided.": "Esta petición ya se decidió.",
   "This request has too many ledger entries to add up.": "Esta petición tiene demasiados movimientos en el libro para sumarlos.",
   "This request is already finished.": "Esta petición ya está cerrada.",
