@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ComponentPropsWithoutRef } from "react";
+import { whenIdle } from "@/lib/idle";
 
 /**
  * Section heads as cut paper, by the rule of "Faith, lived out.": each public section head is cut from the page and hinged at its foot.
@@ -36,21 +37,19 @@ const wake = () => { if (!frame) frame = requestAnimationFrame(place); };
 // so hydration is never cut by an observer's first answer and the layout it reads, once per section. A head below the fold
 // is waiting to be scrolled to anyway; one already in the bottom fifth starts its stand a moment later, from where it lies.
 const waiting = new Set<HTMLElement>();
-let gathering = 0;
-const whenIdle = (go: () => void) => typeof requestIdleCallback === "function" ? requestIdleCallback(go, { timeout: 600 }) : window.setTimeout(go, 120);
-const dropIdle = (id: number) => typeof cancelIdleCallback === "function" ? cancelIdleCallback(id) : clearTimeout(id);
+let gathering: (() => void) | undefined;
 let still: boolean | undefined;
 const reduced = () => still ??= matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function gather() {
-  gathering = 0;
+  gathering = undefined;
   waiting.forEach(observe);
   waiting.clear();
 }
 
 function join(head: HTMLElement) {
   waiting.add(head);
-  if (!gathering) gathering = whenIdle(gather);
+  gathering ??= whenIdle(gather, 600, 120);
 }
 
 function observe(head: HTMLElement) {
@@ -75,7 +74,7 @@ function observe(head: HTMLElement) {
 }
 
 function leave(head: HTMLElement) {
-  if (waiting.delete(head) && !waiting.size && gathering) { dropIdle(gathering); gathering = 0; }
+  if (waiting.delete(head) && !waiting.size && gathering) { gathering(); gathering = undefined; }
   watch?.unobserve(head);
   seen.delete(head); met.delete(head); set.delete(head);
   delete head.dataset.cut; head.style.removeProperty("--stand");
