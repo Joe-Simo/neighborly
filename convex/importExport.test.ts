@@ -331,3 +331,45 @@ describe("taking the records out", () => {
     expect(events).toMatchObject([{ actorId: ids.owner.userId }]);
   });
 });
+
+describe("your files are kept to the people who may read neighbor records", () => {
+  async function withTeamCoordinator() {
+    const base = await setup();
+    const lead = await base.t.run(async (ctx) => {
+      const userId = await ctx.db.insert("users", {});
+      const memberId = await ctx.db.insert("memberships", { churchId: base.ids.church, userId, name: "Ines", email: "ines@neighborly.example", role: "member", active: true, approved: true, coverOptIn: false });
+      const teamId = await ctx.db.insert("teams", { churchId: base.ids.church, name: "Food pantry", description: "" });
+      await ctx.db.insert("teamMembers", { churchId: base.ids.church, teamId, memberId, teamRole: "coordinator", approved: true, status: "active" });
+      return { userId, memberId };
+    });
+    return { ...base, lead };
+  }
+
+  test("a team coordinator is refused every way in and every way out", async () => {
+    const { ids, lead, t } = await withTeamCoordinator();
+    const as = signedIn(t, lead.userId);
+    const churchId = ids.church;
+    const refused = "Neighbor records are open to coordinators and owners only.";
+    await expect(as.query(api.importExport.checkNeighbors, { churchId, rows: households })).rejects.toThrow(refused);
+    await expect(as.mutation(api.importExport.importNeighbors, { churchId, rows: households })).rejects.toThrow(refused);
+    await expect(as.query(api.importExport.checkRequests, { churchId, rows: [] })).rejects.toThrow(refused);
+    await expect(as.mutation(api.importExport.importRequests, { churchId, rows: [] })).rejects.toThrow(refused);
+    await expect(as.query(api.importExport.checkPayees, { churchId, rows: [] })).rejects.toThrow(refused);
+    await expect(as.mutation(api.importExport.importPayees, { churchId, rows: [] })).rejects.toThrow(refused);
+    await expect(as.query(api.importExport.payees, { churchId })).rejects.toThrow(refused);
+    await expect(as.query(api.importExport.checkMembers, { churchId, rows: [] })).rejects.toThrow();
+    await expect(as.query(api.importExport.exportPage, { churchId, file: "neighbors", cursor: null })).rejects.toThrow(refused);
+    await expect(as.mutation(api.importExport.recordExport, { churchId })).rejects.toThrow(refused);
+    expect(await as.query(api.access.canOpenNeighborRecords, { churchId })).toBe(false);
+  });
+
+  test("the owner and the group coordinator may bring records in; the owner alone takes them out", async () => {
+    const { ids, as } = await withTeamCoordinator();
+    const churchId = ids.church;
+    for (const person of [ids.owner, ids.coordinator]) {
+      expect(await as(person).query(api.access.canOpenNeighborRecords, { churchId })).toBe(true);
+      await expect(as(person).query(api.importExport.checkNeighbors, { churchId, rows: households })).resolves.toBeDefined();
+    }
+    await expect(as(ids.owner).query(api.importExport.exportPage, { churchId, file: "neighbors", cursor: null })).resolves.toBeDefined();
+  });
+});
