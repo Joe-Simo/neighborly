@@ -173,7 +173,7 @@ function Sheet({ page, at, of, label }: { page: { title?: string; body: ReactNod
  * The year's report bound as a few sheets lying on the desk: a cover, the year's counts, help by kind, hours and miles,
  * and the people served, every figure the report query's own. A page is turned from its lower right corner with the
  * shared page turn (lib/page-turn.ts), by a drag of the corner, the arrows or the arrow keys; what is lifted shows its
- * bare back. With less motion a page is simply changed. "Print the report" prints exactly these sheets.
+ * bare back. With less motion a page is simply changed. "Print these pages" prints exactly these sheets.
  */
 export function ReportBook({ report, groupName, sample = false }: { report: YearReport; groupName: string; sample?: boolean }) {
   const { words } = useWorkspace();
