@@ -39,7 +39,7 @@
   --tw-ring-shadow: 0 0 #0000;
 }
 /* A text link: a little more room and a soft corner. A menu line is a control, so it keeps the control's ring. */
-:is(.live-app, .live-dialog, .live-mobile-menu) a:is(a, [href]):focus-visible { outline-offset: 3px; border-radius: 2px; }
+:is(.live-app, .live-dialog, .live-mobile-menu) a:is(a, [href]):focus-visible { outline-offset: 3px; border-radius: 4px; }
 :is(.live-nav, .live-mobile-nav, .live-mobile-menu nav) a:is(a, [href]):focus-visible { outline-offset: 3px; border-radius: 4px; }
 /* A text link with a 44px tap height: the ring gets about 8px at the sides so the box looks even. Nothing moves. */
 :is(.live-back, .live-link):is(a, [href]):focus-visible { padding-inline: 5px; margin-inline: -5px; }

@@ -1043,7 +1043,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 :is(.live-app, .live-dialog) .live-field :is(input, textarea, select)[aria-invalid="true"]:focus-visible { outline-color: #6f5f93; }
 :is(.live-app, .live-dialog) :is(.help-row-open, .people-row-open, .live-row-opens):focus-visible { outline: none; }
 :is(.live-app, .live-dialog) :is(.help-row:has(.help-row-open:focus-visible), .people-row[data-opens]:has(.people-row-open:focus-visible), .live-commitment-row:has(.live-row-opens:focus-visible)) {
-  outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px;
+  outline: 2px solid #283c32; outline-offset: -2px; border-radius: 4px;
 }
 /* The card the visitor wrote on, handed back: the week opens addressed to the name on it, in the card's own lettering. */
 .card-greeting{margin:0 0 18px;font:400 clamp(24px,3vw,32px)/1.2 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.02em;color:#283c32;text-wrap:balance}
@@ -1391,6 +1391,13 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 :is(.live-app, .live-dialog) ::selection { background: #dde5d3; color: #283c32; }
 /* Focus: the one ink ring, set off the control by a paper margin, as a cut edge is set off the sheet beneath. */
 :is(.live-app, .live-dialog) :is(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid #283c32; outline-offset: 3px; }
+/* One ring everywhere: its corner is 4px whatever the control's own corner (a link's 2px, a bare button's square, a
+   chooser's tab), and it comes with keys only. A box to type in takes its ink edge when the caret lands and the ring
+   only when it was reached by Tab, as every other control; the program putting focus back draws none. */
+:is(.live-app, .live-header, .live-dialog, .live-mobile-menu, .live-date-sheet) :is(a, [data-slot="button"]:is([data-variant="link"], [data-variant="ghost"]), [data-slot="toggle-group-item"], .help-row-open, .help-phone, .tools-one, .tools-quiet, .report-month-open):focus-visible { border-radius: 4px; }
+/* A bare control with no corner of its own takes the same 4px; any corner it does set (a round mark) wins. */
+:where(.live-app, .live-dialog, .live-mobile-menu, .live-date-sheet) :where(a, button, summary):focus-visible { border-radius: 4px; }
+html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(input, textarea):focus-visible { outline: none; }
 @media (forced-colors: active) { :is(.live-app, .live-dialog) :is(.help-sheet, .tools-leaf, nav.week-figures a) { background-image: none; } }
 @media print { :is(.live-app, .live-dialog) :is(.help-sheet, .tools-leaf, nav.week-figures a) { background-image: none; box-shadow: none; } }
 

@@ -13,7 +13,7 @@
 :is(.live-app, .live-dialog) .people-row-open { margin: 0; padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; text-align: left; cursor: pointer; }
 .people-row-open::after { content: ""; position: absolute; inset: 0; }
 .live-app .people-row-open:focus-visible { outline: none; }
-.people-row[data-opens]:has(.people-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px; }
+.people-row[data-opens]:has(.people-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 4px; }
 .people-row-go { flex: none; color: #9aa193; transition: color 160ms var(--paper-ease, ease), transform 160ms var(--paper-ease, ease); }
 .people-row[data-opens]:has(.people-row-open:focus-visible) .people-row-go { color: #283c32; }
 @media (hover: hover) {

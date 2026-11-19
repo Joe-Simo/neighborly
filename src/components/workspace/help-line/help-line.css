@@ -152,7 +152,7 @@
 @media (max-width: 850px) { .help-row a.help-phone { padding-top: 0; margin-top: 6px; } }
 @media (pointer: coarse) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
 @media (pointer: coarse) and (max-width: 850px) { .help-row a.help-phone { display: flex; width: fit-content; margin-top: 0; } }
-.help-row:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 6px; }
+.help-row:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 4px; }
 .help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
 .help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { color: var(--live-ink); transform: translateX(4px); }
 @media (max-width: 850px) {
@@ -359,7 +359,7 @@
 .help-waiting-beside li:first-child { padding-top: 0; border-top: 0; }
 .help-waiting-beside .help-row-open { font: 400 22px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); }
 .help-waiting-beside li:hover .help-row-open { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-.help-waiting-beside li:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: 4px; border-radius: 6px; }
+.help-waiting-beside li:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: 4px; border-radius: 4px; }
 .live-app .help-waiting-beside .help-asks:before { width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #a8791f; }
 
 /* A returned call's slip, carried onto the "returned" count and laid there (lay-slip.ts): the home page's slip, in the room's paper. Its name is lifted off as it lies down, never squeezed. */
