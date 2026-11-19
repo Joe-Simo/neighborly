@@ -451,7 +451,8 @@ export function es(set: WordSet): Words {
       weekOf: (date: string) => `Semana del ${date}`,
       origin: "Contado a partir de tus registros con reglas fijas. El asistente no escribe nada de esto.",
       calls: (count) => (count === 1 ? "1 llamada espera respuesta." : `${esN(count)} llamadas esperan respuesta.`),
-      firstByAssistant: (count) => (count === 1 ? "1 se adelantó por su nota." : `${esN(count)} se adelantaron por sus notas.`),
+      firstByAssistant: (count) => (count === 1 ? "El asistente adelantó 1 por su nota." : `El asistente adelantó ${esN(count)} por sus notas.`),
+      firstByRules: (count) => (count === 1 ? "1 se adelantó por su nota." : `${esN(count)} se adelantaron por sus notas.`),
       firstByPerson: (count) => (count === 1 ? "Uno de ustedes adelantó 1." : `Uno de ustedes adelantó ${esN(count)}.`),
       oldest: (days) => (days === 1 ? "La más antigua lleva 1 día esperando." : `La más antigua lleva ${esN(days)} días esperando.`),
       visits: (count) => (count === 1 ? `Hay 1 ${t.visit} planeada.` : `Hay ${esN(count)} ${t.visits} planeadas.`),
@@ -497,6 +498,7 @@ export function es(set: WordSet): Words {
     urgent: {
       label: "Llamar primero",
       origin: "Se puso primero por lo que dice la nota. Puedes moverla.",
+      originAssistant: "El asistente la puso primero por lo que dice la nota. Puedes moverla.",
       shutoff: (day) => (day ? `Corte de servicio el día ${day}` : "Corte de servicio"),
       eviction: (day) => (day ? `Desalojo el día ${day}` : "Desalojo"),
       noFood: "Sin comida",

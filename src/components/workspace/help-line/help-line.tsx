@@ -821,12 +821,14 @@ export function HelpLineView({
             )}
           </span>
         </div>
-        {calls.waiting.some(
-          (call) => isFirst(call) && call.urgent !== null && call.urgent.by !== "person",
-        ) && (
+        {/* Each source says itself: the assistant's mark only where the assistant read the note, the rules' in plain words. */}
+        {calls.waiting.some((call) => isFirst(call) && call.urgent?.by === "assistant") && (
           <p className="help-assistant help-first-origin">
-            <Sparkles size={15} aria-hidden="true" /> {words.urgent.origin}
+            <Sparkles size={15} aria-hidden="true" /> {words.urgent.originAssistant}
           </p>
+        )}
+        {calls.waiting.some((call) => isFirst(call) && call.urgent?.by === "rules") && (
+          <p className="help-assistant help-first-origin">{words.urgent.origin}</p>
         )}
         {calls.waiting.length ? (
           <div className="live-list">
@@ -859,7 +861,7 @@ export function HelpLineView({
                   <p>{sampleSaid(call.note)}</p>
                   {call.urgent && call.urgent.by !== "person" && isFirst(call) && (
                     <p className="help-assistant help-first paper-rise">
-                      <Sparkles size={15} aria-hidden="true" />
+                      {call.urgent.by === "assistant" && <Sparkles size={15} aria-hidden="true" />}
                       <strong>
                         {whyFirst(call.urgent, words).join(" · ") ||
                           words.urgent.label}

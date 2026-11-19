@@ -129,7 +129,7 @@ export const firstRoom = query({
     firstAnnouncements: v.array(firstRoomAnnouncement),
     /** What drafts.weekNote answers the sample's owner for the hour asked. */
     weekNote: v.object({
-      callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
+      callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByRules: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
       visitsPlanned: v.number(), requestsOpen: v.number(), approvedUnpaid: v.number(), approvedUnpaidCents: v.number(),
       openPlaces: v.number(), away: v.number(),
     }),
@@ -184,7 +184,8 @@ export const firstRoom = query({
       firstAnnouncements: rows("announcements").reverse().slice(0, 25).map(announcement),
       weekNote: {
         callsWaiting: waiting.length,
-        callsFirstByAssistant: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by !== "person").length,
+        callsFirstByAssistant: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
+        callsFirstByRules: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "rules").length,
         callsFirstByPerson: waiting.filter((call) => call.urgent?.reasons.length && call.urgent.by === "person").length,
         oldestWaitingDays: waiting.length ? Math.max(0, Math.floor((asked - Math.min(...waiting.map((call) => call.takenAt))) / DAY)) : 0,
         visitsPlanned: rows("visits").filter((visit) => visit.status === "scheduled" && visit.scheduledAt >= asked && visit.scheduledAt < weekEnd).length,

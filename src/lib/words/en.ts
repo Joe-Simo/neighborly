@@ -455,7 +455,8 @@ export function en(set: WordSet) {
       weekOf: (date: string) => `Week of ${date}`,
       origin: "Counted from your records by fixed rules. The assistant writes none of it.",
       calls: (count: number) => (count === 1 ? "1 call is waiting to be returned." : `${enN(count)} calls are waiting to be returned.`),
-      firstByAssistant: (count: number) => (count === 1 ? "1 was put first from its note." : `${enN(count)} were put first from their notes.`),
+      firstByAssistant: (count: number) => (count === 1 ? "1 was put first by the assistant from its note." : `${enN(count)} were put first by the assistant from their notes.`),
+      firstByRules: (count: number) => (count === 1 ? "1 was put first from its note." : `${enN(count)} were put first from their notes.`),
       firstByPerson: (count: number) => (count === 1 ? "1 was put first by one of you." : `${enN(count)} were put first by one of you.`),
       oldest: (days: number) => (days === 1 ? "The oldest has waited 1 day." : `The oldest has waited ${enN(days)} days.`),
       visits: (count: number) => (count === 1 ? `1 ${t.visit} is planned.` : `${enN(count)} ${t.visits} are planned.`),
@@ -506,6 +507,7 @@ export function en(set: WordSet) {
     urgent: {
       label: "Call first",
       origin: "Put first from what the note says. You can move it.",
+      originAssistant: "Put first by the assistant from what the note says. You can move it.",
       shutoff: (day: number) => (day ? `Shut-off on the ${day}${["th", "st", "nd", "rd"][day % 100 > 10 && day % 100 < 14 ? 0 : Math.min(day % 10, 4) % 4]}` : "Shut-off"),
       eviction: (day: number) => (day ? `Eviction on the ${day}${["th", "st", "nd", "rd"][day % 100 > 10 && day % 100 < 14 ? 0 : Math.min(day % 10, 4) % 4]}` : "Eviction"),
       noFood: "No food",

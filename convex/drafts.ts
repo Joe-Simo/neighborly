@@ -477,7 +477,7 @@ export const checkYear = action({
 export const weekNote = query({
   args: { churchId: v.id("churches"), at: hour },
   returns: v.object({
-    callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
+    callsWaiting: v.number(), callsFirstByAssistant: v.number(), callsFirstByRules: v.number(), callsFirstByPerson: v.number(), oldestWaitingDays: v.number(),
     visitsPlanned: v.number(), requestsOpen: v.number(), approvedUnpaid: v.number(), approvedUnpaidCents: v.number(),
     openPlaces: v.number(), away: v.number(),
   }),
@@ -500,7 +500,8 @@ export const weekNote = query({
     for (const request of approved) approvedUnpaidCents += Math.max(0, (request.amountApproved ?? request.amountRequested) - await paidTowardRequest(ctx, request._id));
     return {
       callsWaiting: waiting.length,
-      callsFirstByAssistant: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by !== "person").length,
+      callsFirstByAssistant: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "assistant").length,
+      callsFirstByRules: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "rules").length,
       callsFirstByPerson: waiting.filter(call => call.urgent?.reasons.length && call.urgent.by === "person").length,
       // The hour asked about began before a call taken within it, so the age never reads below zero.
       oldestWaitingDays: waiting.length ? Math.max(0, Math.floor((now - Math.min(...waiting.map(call => call.takenAt))) / 86_400_000)) : 0,

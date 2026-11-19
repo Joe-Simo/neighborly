@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { words } from "@/lib/words";
 import { mondayOf, weekLines } from "./week-note";
 
-const none = { callsWaiting: 0, callsFirstByAssistant: 0, callsFirstByPerson: 0, oldestWaitingDays: 0, visitsPlanned: 0, requestsOpen: 0, approvedUnpaid: 0, approvedUnpaidCents: 0, openPlaces: 0, away: 0 };
+const none = { callsWaiting: 0, callsFirstByAssistant: 0, callsFirstByRules: 0, callsFirstByPerson: 0, oldestWaitingDays: 0, visitsPlanned: 0, requestsOpen: 0, approvedUnpaid: 0, approvedUnpaidCents: 0, openPlaces: 0, away: 0 };
 const texts = (...args: Parameters<typeof weekLines>) => weekLines(...args).map((line) => line.parts.map((part) => part.text).join(" "));
 
 describe("the Monday note", () => {
@@ -12,8 +12,8 @@ describe("the Monday note", () => {
 
   test("urgency and waiting are said only alongside the calls they describe", () => {
     expect(weekLines(words("en").monday, { ...none, callsFirstByAssistant: 2, oldestWaitingDays: 4 })).toEqual([]);
-    expect(weekLines(words("en").monday, { ...none, callsWaiting: 3, callsFirstByAssistant: 1, callsFirstByPerson: 2, oldestWaitingDays: 4, away: 2 })).toEqual([
-      { area: "help-line", parts: [{ text: "3 calls are waiting to be returned." }, { text: "1 was put first from its note.", assistant: true }, { text: "2 were put first by one of you." }, { text: "The oldest has waited 4 days." }], brief: "3 calls to return" },
+    expect(weekLines(words("en").monday, { ...none, callsWaiting: 4, callsFirstByAssistant: 1, callsFirstByRules: 1, callsFirstByPerson: 2, oldestWaitingDays: 4, away: 2 })).toEqual([
+      { area: "help-line", parts: [{ text: "4 calls are waiting to be returned." }, { text: "1 was put first by the assistant from its note.", assistant: true }, { text: "1 was put first from its note." }, { text: "2 were put first by one of you." }, { text: "The oldest has waited 4 days." }], brief: "4 calls to return" },
       { area: "time-off", parts: [{ text: "2 volunteers are away this week." }], brief: "2 volunteers away" },
     ]);
   });
