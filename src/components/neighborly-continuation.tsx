@@ -70,7 +70,7 @@ export function NeighborlyContinuation() {
       <div className="neighborly-rooms" data-reveal role="region" aria-labelledby="rooms-title">
         <div>
           <p className="neighborly-rooms-kicker">The rooms</p>
-          <p className="neighborly-together-statement" id="rooms-title" role="heading" aria-level={2}>One place to answer every call for help, from the first message to the visit, the bill and the year’s report.</p>
+          <p className="neighborly-together-statement" id="rooms-title" role="heading" aria-level={2}>One place for a call for help, from the first message to the visit, the bill and the year’s report.</p>
         </div>
         <ul aria-label="What your conference gets">
           {rooms.map(([picture, title, line, turn], index) => <li key={title} style={{ "--turn": `${turn}deg`, "--i": index } as CSSProperties}>
