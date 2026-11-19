@@ -93,7 +93,7 @@ export function CommitmentRows({
  * The line that says a reply was taken. It is seen for six seconds, then leaves the
  * page and stays as a message for screen readers.
  */
-function Said({ children, of }: { children: string; of: string }) {
+export function Said({ children, of }: { children: string; of: string }) {
   const line = useRef<HTMLParagraphElement>(null);
   // Asked for before the line is said, so a line that takes focus is read by that and not said twice.
   useFocusOnce(line, of);

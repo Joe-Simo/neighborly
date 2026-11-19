@@ -4,6 +4,7 @@ import { keepTitle } from "@/lib/words/titles";
 import "./people.css";
 import { useState } from "react";
 import { CircleCheck, Plus } from "lucide-react";
+import { fill } from "@/lib/words/fill";
 import { usePaginatedQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ export function TeamsSection() {
               {sampleSaid(team.description) || t.noDescription}
             </p>
             {joined.includes(team.id) ? (
-              <div className="team-asked paper-corner paper-fold" role="status">
+              <div className="team-asked paper-corner paper-fold">
                 <p>{t.onTeam}</p>
               </div>
             ) : (
@@ -58,7 +59,7 @@ export function TeamsSection() {
                       size="sm"
                       aria-label={`${t.join}: ${sampleSaid(team.name)}`}
                       onClick={async () => {
-                        if (await perform({ type: "respondTeam", teamId: team.id, accept: true }))
+                        if (await perform({ type: "respondTeam", teamId: team.id, accept: true }, fill(t.joined, { team: sampleSaid(team.name) })))
                           setJoined((teams) => [...teams, team.id]);
                       }}
                     >
@@ -69,7 +70,7 @@ export function TeamsSection() {
                       size="sm"
                       variant="ghost"
                       aria-label={`${t.decline}: ${sampleSaid(team.name)}`}
-                      onClick={() => void perform({ type: "respondTeam", teamId: team.id, accept: false })}
+                      onClick={() => void perform({ type: "respondTeam", teamId: team.id, accept: false }, fill(t.declined, { team: sampleSaid(team.name) }))}
                     >
                       {t.decline}
                     </Button>
