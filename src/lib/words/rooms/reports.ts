@@ -24,7 +24,7 @@ export const en = (t: Terms, place: string) => ({
   check: {
     button: "Check before you send",
     checking: "Checking…",
-    failed: "The check couldn’t run just now.",
+    failed: "The check couldn’t run. Try again in a moment.",
     kept: "The report is fine. You can still print or save the year.",
     reading: "Reading the year",
     readingWhat: "{requests}, {visits} and the ledger.",
@@ -351,7 +351,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     check: {
       button: "Revisar antes de enviar",
       checking: "Revisando…",
-      failed: "La revisión no se pudo hacer en este momento.",
+      failed: "No se pudo hacer la revisión. Inténtalo otra vez en un momento.",
       kept: "El informe está bien. Todavía puedes imprimir o guardar el año.",
       reading: "Leyendo el año",
       readingWhat: "{requests}, {visits} y el libro.",

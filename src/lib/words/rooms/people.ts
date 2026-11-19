@@ -39,7 +39,7 @@ export const en = (t: Terms, place: string) => ({
     staysDetail: "The visits and hours they logged stay in the year’s counts under “A former member”.",
     typeName: (name: string) => `Type ${name} to remove them`,
     last: "This cannot be undone.",
-    failed: "They could not be removed just now. Try again.",
+    failed: "They couldn’t be removed. Try again.",
     kept: "Nothing was removed.",
     removing: "Removing…",
     confirm: "Remove this person",
