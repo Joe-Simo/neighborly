@@ -34,7 +34,15 @@ export function LiveTimeOffForm({
   );
   if (review)
     return affected === undefined ? (
-      <LiveLoading label={words.timeOffForm.checking} />
+      // Offline, the check waits for the link; Back returns to the days as they were typed.
+      <div className="live-form">
+        <LiveLoading label={words.timeOffForm.checking} />
+        <div className="live-form-actions">
+          <Button variant="outline" onClick={() => setReview(null)}>
+            {words.timeOffForm.back}
+          </Button>
+        </div>
+      </div>
     ) : (
       <TimeOffConfirmation
         key={`${review.start}:${review.end}`}
