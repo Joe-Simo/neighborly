@@ -1,17 +1,21 @@
 "use client";
 
-import { useId, useRef, useState, useSyncExternalStore } from "react";
+import { Suspense, useId, useRef, useState, useSyncExternalStore } from "react";
+import { fetchedCode } from "@/components/workspace/fetched-code";
 import { ChevronDown } from "lucide-react";
 import { wrongControl } from "@/components/workspace/failure";
-import { DayPicker } from "react-day-picker";
-import { es } from "react-day-picker/locale";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate, type Language } from "@/lib/words";
 
-const calendars = { en: undefined, es };
+// The calendar library is needed only once a month is opened. It is fetched when the page is idle after the first
+// room (fetchMonthAhead, with the rooms ahead), and marked as React marks a promise it has read, so a month opened
+// after that is drawn in its first frame; one opened sooner waits a moment for it, inside the open sheet.
+const monthCode = fetchedCode(() => import("@/components/workspace/date-month").then((code) => code.DateMonth));
+export const fetchMonthAhead = monthCode.fetch;
+const Month = monthCode.Code;
 
 /** "2026-11-20" and the local day it names, each way. */
 const toDay = (value: string) => {
@@ -98,10 +102,11 @@ export function DateField({
     else setTyped(undefined);
   };
   const month = (
-    <DayPicker
+    <Suspense fallback={null}>
+    <Month
       mode="single"
       autoFocus
-      locale={calendars[words.locale]}
+      language={words.locale}
       selected={chosen ? toDay(chosen) : undefined}
       defaultMonth={chosen ? toDay(chosen) : min ? toDay(min) : undefined}
       disabled={[...(min ? [{ before: toDay(min) }] : []), ...(max ? [{ after: toDay(max) }] : [])]}
@@ -116,6 +121,7 @@ export function DateField({
         setOpen(false);
       }}
     />
+    </Suspense>
   );
   // Whichever way the month closes (a day chosen, Escape, a tap outside), focus goes back to what opened it:
   // the button on a desk, the field itself on a phone. There is no trigger for the library to return to.
