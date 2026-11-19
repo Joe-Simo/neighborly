@@ -94,7 +94,8 @@ export function NeighborlyExperience() {
       // A part drawn again by the page since the last write has lost its value, so the part itself is asked, not only the record.
       if (written.get(name) === value && (!selector || element.querySelector<HTMLElement>(selector)?.style.getPropertyValue(name) === value)) return;
       written.set(name, value);
-      element.style.setProperty(name, value);
+      // Only the opening's value is read on the root (its fixed shadow, painted-world.css); the others are read by their own parts alone.
+      if (name === "--entry-portrait") element.style.setProperty(name, value);
       if (selector) for (const part of element.querySelectorAll<HTMLElement>(selector)) part.style.setProperty(name, value);
     };
     // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
