@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, startTransition, useContext, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,24 @@ import { cn } from "@/lib/utils";
  * keyboard is up, the dialog fits the space above it so the button stays in view.
  */
 const touchScreen = "(hover: none) and (pointer: coarse)";
+const InSheet = createContext(false);
+
+/**
+ * Every sheet's buttons stand in one order: Cancel, then the press that does the work, last on the right.
+ * Cancel closes the sheet as its X does. Outside a sheet (a form set in a page) there is nothing to close, so it is left out.
+ */
+export function SheetCancel({ disabled }: { disabled?: boolean }) {
+  const inSheet = useContext(InSheet);
+  const cancel = useWorkspaceIfAny()?.words.shell.cancel ?? "Cancel";
+  if (!inSheet) return null;
+  return (
+    <DialogClose asChild>
+      <Button type="button" variant="ghost" disabled={disabled}>
+        {cancel}
+      </Button>
+    </DialogClose>
+  );
+}
 export function LiveDialog({
   title,
   description,
@@ -166,7 +184,7 @@ export function LiveDialog({
           </DialogClose>
         </DialogHeader>
         {description && <DialogDescription>{description}</DialogDescription>}
-        {children}
+        <InSheet.Provider value>{children}</InSheet.Provider>
       </DialogContent>
     </Dialog>
   );

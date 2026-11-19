@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { SheetCancel } from "@/components/workspace/live-dialog";
 import { DateField, WhenField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { useOpenedIntoView } from "@/components/workspace/week-note/assistant-limits";
@@ -355,6 +356,7 @@ export function LiveCreateForm({
       {/* With the connection lost the save is held, not failed: one line says the entry is kept and will go by itself. */}
       <LiveWaiting when={saving} />
       <div className="live-form-actions">
+        <SheetCancel disabled={pending} />
         <Button type="submit" disabled={pending}>
           {/* Waiting is said in words alone: nothing turns beside them. */}
           <SaveLabel

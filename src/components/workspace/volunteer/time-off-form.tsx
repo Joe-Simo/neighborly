@@ -7,6 +7,7 @@ import { useQuery } from "@/components/workspace/query";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { SheetCancel } from "@/components/workspace/live-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
@@ -82,6 +83,7 @@ export function LiveTimeOffForm({
       </LiveField>
       {error && <LiveFailure message={error} />}
       <div className="live-form-actions">
+        <SheetCancel />
         <Button type="submit">{words.timeOffForm.review}</Button>
       </div>
     </form>
