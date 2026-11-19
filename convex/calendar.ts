@@ -139,3 +139,20 @@ export const feed = httpAction(async (ctx, request) => {
   if (text === null) return new Response(null, { status: 404 });
   return new Response(text, { status: 200, headers: { "Content-Type": "text/calendar; charset=utf-8", "Cache-Control": "private, max-age=900" } });
 });
+
+/**
+ * The words of the week on paper, which is printed for the parish office wall: each commitment's title and place with
+ * every neighbor taken out, as the calendar feed sends them. Open to any member of the group, since nothing it returns
+ * names a neighbor.
+ */
+export const printedWeek = query({
+  args: { churchId: v.id("churches"), ids: v.array(v.id("commitments")) },
+  returns: v.array(v.object({ id: v.id("commitments"), title: v.string(), location: v.string() })),
+  handler: async (ctx, { churchId, ids }) => {
+    await membership(ctx, churchId);
+    if (ids.length > mostEvents) throw new Error(`At most ${mostEvents} commitments.`);
+    const neighbors = (await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(5000)).filter((one) => one.nameKey);
+    const shifts = await Promise.all(ids.map((id) => ctx.db.get("commitments", id)));
+    return shifts.flatMap((shift) => (shift && shift.churchId === churchId ? [{ id: shift._id, title: withoutNeighbors(shift.title, neighbors), location: withoutNeighbors(shift.location, neighbors) }] : []));
+  },
+});

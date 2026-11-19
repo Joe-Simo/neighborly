@@ -129,6 +129,16 @@ describe("a member's calendar feed", () => {
     expect(text).toContain("LOCATION:Parish office");
   });
 
+  test("the week on paper names no neighbor", async () => {
+    const { t, ids, as } = await setup();
+    const id = await t.run(async (ctx) => {
+      const shift = (await ctx.db.query("commitments").withIndex("by_assignee_end", (q) => q.eq("assigneeId", ids.marisol.memberId)).collect()).find((one) => !one.cancelled)!;
+      return ctx.db.insert("commitments", { ...shift, _id: undefined, _creationTime: undefined, title: "Ride for Celeste Hyppolite", location: "412 Placeholder Rd, Apt 7" } as never);
+    });
+    const [row] = await as(ids.marisol).query(api.calendar.printedWeek, { churchId: ids.church, ids: [id] });
+    expect(row).toEqual({ id, title: "Ride for [name] [name]", location: "[address]" });
+  });
+
   test("one address opens one member's calendar: a visitor on no visit sees no street at all", async () => {
     const { t, ids, as } = await setup();
     const none = await t.run(async (ctx) => {
