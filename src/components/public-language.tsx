@@ -4,7 +4,7 @@ import type { Language } from "@/lib/words";
 
 const names: Record<Language, string> = { en: "English", es: "Español" };
 
-/** The page in its other language, named in that language. Followed, it is simply opened: the same page, not the next one. */
+/** The page in its other language, named in that language. Followed, the same page turns over to it (public-turn.tsx). */
 export function PublicLanguage({ language, paths }: { language: Language; paths: Record<Language, string> }) {
   const other: Language = language === "en" ? "es" : "en";
   // The page's text face is asked for with the page, as the app does: arriving late, it would move this right-hand link by a few pixels.
