@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { preload } from "react-dom";
 import { ArrowUpRight } from "lucide-react";
 import { PublicLanguage } from "@/components/public-language";
 import { ReaderLanguage } from "@/components/reader-language";
@@ -27,6 +28,8 @@ export function privacyMetadata(language: Language): Metadata {
 }
 
 export function PrivacyPage({ language }: { language: Language }) {
+  // The relief beside the heading is the page's largest paint, drawn from the stylesheet: asked for with the page, not once the styles are read.
+  preload("/assets/home/relief-kept-640.webp", { as: "image", fetchPriority: "high" });
   const said = privacyWords[language];
   return <div className="public-page" lang={language}>
     {language !== "en" && <ReaderLanguage page={language} />}

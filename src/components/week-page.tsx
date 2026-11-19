@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { preload } from "react-dom";
 import { ArrowUpRight } from "lucide-react";
 import { PublicLanguage } from "@/components/public-language";
 import { ReaderLanguage } from "@/components/reader-language";
@@ -27,6 +28,8 @@ export function weekMetadata(language: Language): Metadata {
 
 /** One made-up week, told in four days. Each day is a sheet laid on the last, with its room's own piece of the relief lying on it. */
 export function WeekPage({ language }: { language: Language }) {
+  // The relief beside the heading is the page's largest paint, drawn from the stylesheet: asked for with the page, not once the styles are read.
+  preload("/assets/relief/relief-week-640.webp", { as: "image", fetchPriority: "high" });
   const said = weekWords[language];
   return <div className="public-page" lang={language}>
     {language !== "en" && <ReaderLanguage page={language} />}
