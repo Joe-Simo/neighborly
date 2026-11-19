@@ -111,7 +111,8 @@ export function WeekSection() {
       )}
       </div>
       )}
-      <p className="!mt-14 !mb-0 border-t border-[var(--live-line)] pt-3">
+      {/* The list above already closes on its own rule: the foot stands under it on space alone. */}
+      <p className="!mt-14 !mb-0">
         <AssistantGuide />
       </p>
       {printing && (
