@@ -15,7 +15,7 @@ export type WeekDay = { day: string; title: string; copy: string[]; room: string
 const en = {
   path: "/about/a-week",
   title: "A week at St.\u00a0Example",
-  tab: "A week at St. Example — Kind Helps",
+  tab: "A week at St. Example · Kind Helps",
   description: "One made-up week at a made-up conference: a call to the help line, a visit in pairs, the write-up and the yes, and the year’s count.",
   preview: "A call, a visit, a yes, and the year. One made-up week, told in four steps.",
   enter: "Enter Kind Helps",
@@ -38,7 +38,7 @@ const en = {
 const es: typeof en = {
   path: "/sobre/una-semana",
   title: "Una semana en\u00a0San\u00a0Ejemplo",
-  tab: "Una semana en San Ejemplo — Kind Helps",
+  tab: "Una semana en San Ejemplo · Kind Helps",
   description: "Una semana inventada en una conferencia inventada: una llamada a la línea de ayuda, una visita en pareja, las notas y el sí, y las cifras del año.",
   preview: "Una llamada, una visita, un sí y el año. Una semana inventada, contada en cuatro pasos.",
   enter: "Entrar a Kind Helps",

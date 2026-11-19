@@ -365,7 +365,7 @@ export function en(set: WordSet) {
       /** Said in green in the same strip for a moment once the connection returns. */
       /** The page shown in place of one that could not be fetched (/offline): its sentence and its tab. */
       offlinePageDeck: "Nothing is lost. Your team’s week will be here as soon as this device is back online.",
-      offlinePageTab: "No connection — Kind Helps",
+      offlinePageTab: "No connection · Kind Helps",
       errorTitle: "This room didn’t open.",
       errorDeck: `Nothing is lost. Try again; if it still won’t open, the rest of your ${place} is in the menu.`,
       privateTitle: "Kept private.",

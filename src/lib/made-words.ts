@@ -10,7 +10,7 @@ export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: 
 const en = {
   path: "/about/how-we-made-it",
   title: "How we made it",
-  tab: "How we made it — Kind Helps",
+  tab: "How we made it · Kind Helps",
   description: "How Kind Helps was made: the painting, the rules its paper keeps, how the assistant is held to a person’s say, and why it is free for every conference.",
   preview: "The painting, the paper’s rules, the assistant, and a promise: free for every conference.",
   enter: "Enter Kind Helps",
@@ -115,7 +115,7 @@ const en = {
 const es: typeof en = {
   path: "/sobre/como-lo-hicimos",
   title: "Cómo lo hicimos",
-  tab: "Cómo lo hicimos — Kind Helps",
+  tab: "Cómo lo hicimos · Kind Helps",
   description: "Cómo se hizo Kind Helps: la pintura, las reglas de su papel, cómo el asistente queda sujeto a una persona, y por qué es gratis para toda conferencia.",
   preview: "La pintura, las reglas del papel, el asistente y una promesa: gratis para toda conferencia.",
   enter: "Entrar a Kind Helps",
