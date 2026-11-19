@@ -336,5 +336,3 @@
 }
 /* With less motion no scene opens, so nothing is said to be opening. */
 @media(prefers-reduced-motion:reduce){.painted-world-scroll-cue[data-waiting]{visibility:hidden}}
-/* A piece of the opening's words that the sheet's edge would reach has left the sheet in one cut (neighborly-experience.tsx). */
-.neighborly-connected-world.is-connected .painted-world[data-hero-only=true] [data-gone]{visibility:hidden}
