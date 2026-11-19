@@ -202,7 +202,7 @@ export function es(set: WordSet): Words {
       status: { accepted: "Aceptado", open: "Libre", cancelled: "Cancelado" },
       viewPreparation: "Ver la preparación",
       viewCommitment: "Ver el compromiso",
-      details: "Detalles",
+      details: "Ver detalles",
     },
     requests: {
       title: "Tú decides",
@@ -367,8 +367,6 @@ export function es(set: WordSet): Words {
       missingAction: `Ir a tu ${place}`,
     },
     notices: {
-      saved: "Guardado.",
-      updated: "Actualizado.",
       failed: "No se pudo guardar el cambio. Inténtalo de nuevo.",
       refused: Object.fromEntries(Object.entries({
         [refusals.away]: "Ese día lo marcaste como libre. Cambia tus días libres o di que no puedes tomar este.",
@@ -562,10 +560,10 @@ export function es(set: WordSet): Words {
       checked: "El asistente comparó con la nota el tipo de ayuda y qué tipo de destinatario del pago es.",
       review: "El asistente no pudo comprobarlo. Lee cada dato junto a la nota.",
       approve: "Guardar esta petición",
-      change: "Cambiar",
-      discard: "Descartar",
+      change: "Cambiar el borrador",
+      discard: "Descartar el borrador",
       saved: "Guardado en el registro",
-      approved: `Guardada. Tu ${t.group} decide después.`,
+      approved: `Petición guardada. Tu ${t.group} decide después.`,
       sheet: {
         newCaller: "Persona nueva",
         noName: "Alguien que no dio su nombre",

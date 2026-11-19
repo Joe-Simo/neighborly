@@ -60,7 +60,7 @@ export const en = (t: Terms, place: string) => ({
     reversed: (amount: string) => `${amount} is taken back with a new entry dated today. The first entry stays in the ledger.`,
     /** The reason written on the entry that takes back one undone right after it was recorded. */
     undoneReason: "Undone right after it was recorded.",
-    depositUndone: "The deposit is undone. Its gifts wait to be deposited again.",
+    depositUndone: "Deposit undone. Its gifts wait to be deposited again.",
   },
   ledger: {
     first: {
@@ -235,7 +235,7 @@ export const en = (t: Terms, place: string) => ({
       kept: "The {day} statement is kept at {amount}.",
       deposit: (amount: string) => `The ${amount} deposit is marked cleared.`,
       cleared: (what: string) => `${what} is marked cleared.`,
-      undone: (what: string) => `${what} is back with the entries not cleared yet.`,
+      undone: (what: string) => `${what} put back with the entries not cleared yet.`,
       through: (count: number) => (count === 1 ? "1 entry through {day} marked cleared." : `${enN(count)} entries through {day} marked cleared.`),
     },
   },
@@ -279,7 +279,7 @@ export const en = (t: Terms, place: string) => ({
       action: "Record vouchers received",
     },
     done: {
-      added: (count: number) => (count === 1 ? "1 voucher for {item} is on the shelf." : `${enN(count)} vouchers for {item} are on the shelf.`),
+      added: (count: number) => (count === 1 ? "1 voucher for {item} added to the shelf." : `${enN(count)} vouchers for {item} added to the shelf.`),
       corrected: (item: string) => `The count for ${item} is corrected.`,
     },
   },
@@ -540,7 +540,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       action: "Anotar vales recibidos",
     },
     done: {
-      added: (count) => (count === 1 ? "1 vale para {item} está en el estante." : `${esN(count)} vales para {item} están en el estante.`),
+      added: (count) => (count === 1 ? "Se agregó 1 vale para {item} al estante." : `Se agregaron ${esN(count)} vales para {item} al estante.`),
       corrected: (item) => `El conteo de ${item} quedó corregido.`,
     },
   },

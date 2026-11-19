@@ -1596,3 +1596,5 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 :is(.live-main, .live-dialog) [data-slot="button"] { font-weight: 400; }
 .live-app :is(.live-main, .live-dialog) .help-text-action.help-text-action[data-slot="button"] { color: var(--paper-ink); }
 .live-app :is([data-slot="select-trigger"], select) { border-radius: 4px; }
+/* A form's fields are cut at the same 4px as every other field and button, in a dialog as on the page. */
+:is(.live-app, .live-dialog) .live-form :is(input:not([type="checkbox"], [type="radio"]), textarea, select, [data-slot="select-trigger"]) { border-radius: 4px; }
