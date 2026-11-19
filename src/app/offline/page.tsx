@@ -26,6 +26,7 @@ export default function Offline() {
   return <EdgeSheet
     piece="bowl"
     lines={{ en: en.offlineTitle, es: es.offlineTitle }}
+    abouts={{ en: edgeWords.en.offlineAbout, es: edgeWords.es.offlineAbout }}
     ways={{ en: <TryAgain label={en.tryAgain} />, es: <TryAgain label={es.tryAgain} /> }}>
     <ReaderLanguage tabs={{ en: en.offlinePageTab, es: es.offlinePageTab }} abouts={{ en: edgeWords.en.offlineAbout, es: edgeWords.es.offlineAbout }} />
   </EdgeSheet>;

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LostDoorBrand } from "@/components/edge-sheet";
 import { ReaderLanguage } from "@/components/reader-language";
 import { edgeWords } from "@/lib/edge-words";
 import { readersLanguage } from "@/lib/first-language";
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return <main className="lost-door" data-piece="slip">
     <script dangerouslySetInnerHTML={{ __html: readersLanguage }} />
+    <LostDoorBrand />
     <ReaderLanguage tabs={{ en: edgeWords.en.lostTab, es: edgeWords.es.lostTab }} abouts={{ en: edgeWords.en.lostAbout, es: edgeWords.es.lostAbout }} />
     {languages.map((language) => <div key={language} lang={language} className="lost-door-words" suppressHydrationWarning>
       <div className="lost-slip">

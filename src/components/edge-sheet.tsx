@@ -19,9 +19,11 @@ const pieces = {
  * a piece of the painting, one plain line and one way back. It carries both languages and shows the reader's own
  * (not-found.css), which the root says before the first paint.
  */
-export function EdgeSheet({ piece, lines, ways, children }: {
+export function EdgeSheet({ piece, lines, abouts, ways, children }: {
   piece: keyof typeof pieces;
   lines: Record<Language, string>;
+  /** One plain line under the title: what happened and what to do. */
+  abouts?: Record<Language, string>;
   ways: Record<Language, ReactNode>;
   children?: ReactNode;
 }) {
@@ -36,6 +38,7 @@ export function EdgeSheet({ piece, lines, ways, children }: {
   );
   return <main className="lost-door" data-piece={piece}>
     {children}
+    <LostDoorBrand />
     {box
       ? <span className="lost-door-piece" aria-hidden="true" style={{
         aspectRatio: `${box[2] - box[0]} / ${box[3] - box[1]}`,
@@ -46,7 +49,15 @@ export function EdgeSheet({ piece, lines, ways, children }: {
       : <span className="lost-door-arch" aria-hidden="true">{image}</span>}
     {languages.map((language) => <div key={language} lang={language} className="lost-door-words" suppressHydrationWarning>
       <h1>{lines[language]}</h1>
+      {abouts && <p>{abouts[language]}</p>}
       {ways[language]}
     </div>)}
   </main>;
+}
+
+/** The wordmark at the sheet's top corner, as on every public page: the site is named, and home is one press away. */
+export function LostDoorBrand() {
+  // A plain link, not next/link: this sheet is drawn in every page's shell, and the router's link would add to every page's first load.
+  // eslint-disable-next-line @next/next/no-html-link-for-pages
+  return <a className="lost-door-brand" href="/">kind helps</a>;
 }
