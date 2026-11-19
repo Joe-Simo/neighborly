@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import esX from "eslint-plugin-es-x";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -36,6 +37,12 @@ const eslintConfig = defineConfig([
         { object: "globalThis", property: "requestIdleCallback", message: "Safari has no requestIdleCallback. Use whenIdle from @/lib/idle." },
       ],
     },
+  },
+  {
+    // A regex lookbehind is a syntax error in Safari before 16.4: the whole script fails to parse, not just the one line.
+    files: ["src/**/*.{ts,tsx}"],
+    plugins: { "es-x": esX },
+    rules: { "es-x/no-regexp-lookbehind-assertions": "error" },
   },
   {
     // Already guarded by hand, in files other work owns; each moves to whenIdle with its owner's next change, and leaves this list then.
