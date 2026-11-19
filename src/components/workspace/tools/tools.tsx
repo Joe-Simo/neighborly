@@ -30,7 +30,7 @@ export function ToolsSection() {
             </Button>
           }
         >
-          {words.states.privateDeck}
+          {words.states.privateDeckTools}
         </LiveState>
       </div>
     );
