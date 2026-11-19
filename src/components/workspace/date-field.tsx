@@ -59,6 +59,7 @@ export function DateField({
   min,
   max,
   disabled,
+  short,
 }: {
   name?: string;
   value?: string;
@@ -69,6 +70,8 @@ export function DateField({
   min?: string;
   max?: string;
   disabled?: boolean;
+  /** The day said short ("Wed, Sep 30" / "mié, 30 sept"; "Sep 29, 2027" in another year), for a field that shares its row, so the whole date always shows. */
+  short?: boolean;
 }) {
   const { words } = useWorkspace();
   const sheet = useSyncExternalStore(watchNarrow, () => matchMedia(narrow).matches, () => false);
@@ -95,8 +98,9 @@ export function DateField({
   };
   const said = chosen
     ? formatDate(words.locale, toDay(chosen).getTime(), {
-        weekday: "long",
-        month: "long",
+        // Said short, a day in another year gives up its weekday for the year, so the whole date still fits.
+        ...(short && toDay(chosen).getFullYear() !== new Date().getFullYear() ? {} : { weekday: short ? "short" : "long" }),
+        month: short ? "short" : "long",
         day: "numeric",
         ...(toDay(chosen).getFullYear() === new Date().getFullYear() ? {} : { year: "numeric" }),
       })
@@ -296,6 +300,7 @@ export function WhenField({
     <span className="live-when">
       <input type="hidden" name={name} value={day && time ? `${day}T${time}` : ""} />
       <DateField
+        short
         value={day}
         min={min}
         required={required}

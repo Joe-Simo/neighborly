@@ -276,10 +276,10 @@ export function LiveCreateForm({
       {(kind === "commitment" || kind === "meeting" || kind === "timeOff") && (
         <div className="live-form-grid">
           <LiveField label={kind === "timeOff" ? text.firstDay : (own?.starts ?? text.starts)}>
-            {kind === "timeOff" ? <DateField name="start" required /> : <WhenField name="start" required />}
+            {kind === "timeOff" ? <DateField short name="start" required /> : <WhenField name="start" required />}
           </LiveField>
           <LiveField label={kind === "timeOff" ? text.lastDay : (own?.ends ?? text.ends)}>
-            {kind === "timeOff" ? <DateField name="end" required /> : <WhenField name="end" required />}
+            {kind === "timeOff" ? <DateField short name="end" required /> : <WhenField name="end" required />}
           </LiveField>
         </div>
       )}
