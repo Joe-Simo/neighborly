@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { action, internalAction, internalMutation, internalQuery, query, env } from "./_generated/server";
+import { action, internalAction, internalMutation, internalQuery, query, env, type ActionCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
@@ -355,28 +356,36 @@ const urgency = v.object({
  * Reads one call's note for signs that it should be returned first: a shut-off or eviction, no food,
  * a child, an elder, a medical need. A sign code finds is confirmed by the model; any other sign the model
  * reads for itself, so a note in Spanish or Creole is read too. A sign under 0.9 is not shown, and only code
- * gives a sign its day. It saves nothing and decides nothing about who is helped:
+ * gives a sign its day. It keeps the call's mark (assistance.keepReading) and decides nothing about who is helped:
  * the screen shows the reason, and a person can always move the call.
  */
 export const readUrgency = action({
   args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: urgency,
   handler: async (ctx, args): Promise<{ signs: UrgentSign[]; verification: "review" | "checked" }> => {
-    const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
-    const signs = urgentSigns(note);
-    const fallback = { signs, verification: "review" as const };
-    if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
-    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-    const answers = await decide(env.TYPESAFE_API_KEY, { note }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])), { names, addresses, others });
-    if (!answers) return fallback;
-    const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
-    if (signs.some(({ reason }) => sure[reason] === null)) return fallback;
-    console.log(`jev ${JSON.stringify(sure)}`);
-    return {
-      signs: urgentReasons.flatMap(reason => ((sure[reason] ?? 0) >= sureEnough ? [signs.find(sign => sign.reason === reason) ?? { reason, day: null }] : [])),
-      verification: "checked" as const,
-    };
+    const read = await readNote(ctx, args);
+    // Saved here, where the check was made, so who put the call first is never the client's to say.
+    const day = read.signs.find(sign => sign.day !== null)?.day ?? undefined;
+    await ctx.runMutation(internal.assistance.keepReading, { ...args, reasons: read.signs.map(sign => sign.reason), day, by: read.verification === "checked" ? "assistant" : "rules" });
+    return read;
   },
 });
+
+async function readNote(ctx: ActionCtx, args: { churchId: Id<"churches">; callId: Id<"calls"> }): Promise<{ signs: UrgentSign[]; verification: "review" | "checked" }> {
+  const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
+  const signs = urgentSigns(note);
+  const fallback = { signs, verification: "review" as const };
+  if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
+  if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
+  const answers = await decide(env.TYPESAFE_API_KEY, { note }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])), { names, addresses, others });
+  if (!answers) return fallback;
+  const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
+  if (signs.some(({ reason }) => sure[reason] === null)) return fallback;
+  console.log(`jev ${JSON.stringify(sure)}`);
+  return {
+    signs: urgentReasons.flatMap(reason => ((sure[reason] ?? 0) >= sureEnough ? [signs.find(sign => sign.reason === reason) ?? { reason, day: null }] : [])),
+    verification: "checked" as const,
+  };
+}
 
 const yearFlagKinds = ["approvedNotPaid", "paidNoPayment", "visitNoHours", "noteSaysPaid", "visitNotMarked"] as const;
 const yearFlag = v.object({

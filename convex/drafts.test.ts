@@ -154,18 +154,27 @@ describe("a call note drafted into a request", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  test("urgent signs are read from the note, a doubtful one is dropped, and nothing is written", async () => {
+  test("urgent signs are read from the note, a doubtful one is dropped, and the server says whose reading it was", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const fetch = answers({ shutoff: 0.97, alone: 0.3 });
     vi.stubGlobal("fetch", fetch);
     const { t, ids, coordinator, member } = await helpLine();
     await t.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Rosa Delgado has a power shut-off notice for the 21st. Lives alone." }));
     const args = { churchId: ids.churchId, callId: ids.callId };
+    const mark = async () => (await t.run(ctx => ctx.db.get("calls", ids.callId)))?.urgent;
+    // Checked by the model: the assistant's.
     expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 21 }], verification: "checked" });
+    expect(await mark()).toEqual({ reasons: ["shutoff"], day: 21, by: "assistant" });
     expect(fetch.mock.calls[0][1].body).not.toMatch(/rosa|delgado/i);
     await expect(member.action(api.drafts.readUrgency, args)).rejects.toThrow("coordinators and owners only");
+    // The model away: the fixed rules alone, and saved as theirs.
     vi.stubEnv("TYPESAFE_API_KEY", "");
     expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 21 }, { reason: "alone", day: null }], verification: "review" });
+    expect(await mark()).toEqual({ reasons: ["shutoff", "alone"], day: 21, by: "rules" });
+    // A person's word is never overwritten by a reading.
+    await coordinator.mutation(api.assistance.setUrgency, { ...args, reasons: [] });
+    await coordinator.action(api.drafts.readUrgency, args);
+    expect((await mark())?.by).toBe("person");
     expect(await t.run(ctx => ctx.db.query("auditEvents").collect())).toEqual([]);
   });
 

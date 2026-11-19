@@ -1,5 +1,5 @@
 import { ConvexError, v, type Infer } from "convex/values";
-import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, neighborAccess, neighborRecord, openedBy, opening } from "./access";
 import { mayUndo } from "./undo";
@@ -428,19 +428,33 @@ export const recordCall = mutation({
 });
 
 /**
- * Says a call should be returned first, or that it should not. The assistant proposes from the note
- * and a person can always overrule it: once a person has spoken, the assistant's reading is ignored.
- * No reasons means "not urgent"; "marked" is a person's own say-so.
+ * A person's own word that a call should be returned first, or that it should not. Who said it is the signed-in
+ * person, never what the client says: a `by` sent by an older client is ignored. Once a person has spoken, a reading
+ * of the note no longer moves the call. No reasons means "not urgent"; "marked" is a person's own say-so.
  */
 export const setUrgency = mutation({
-  args: { churchId: v.id("churches"), callId: v.id("calls"), reasons: v.array(v.union(...urgentReasons.map((reason) => v.literal(reason)), v.literal("marked"))), day: v.optional(v.number()), by: urgentBy },
+  args: { churchId: v.id("churches"), callId: v.id("calls"), reasons: v.array(v.union(...urgentReasons.map((reason) => v.literal(reason)), v.literal("marked"))), day: v.optional(v.number()), by: v.optional(urgentBy) },
+  returns: v.null(),
+  handler: async (ctx, { churchId, callId, reasons, day }) => {
+    const member = await neighborAccess(ctx, churchId);
+    await ownCall(ctx, churchId, callId);
+    if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new ConvexError("The day should be a day of the month.");
+    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by: "person", byMember: member._id } });
+    return null;
+  },
+});
+
+/**
+ * The reading of a call's note, saved by the server that made it (drafts.readUrgency): the assistant's only when its
+ * check came back "checked", the fixed rules' otherwise. It never overrules a person, and finding nothing changes nothing.
+ */
+export const keepReading = internalMutation({
+  args: { churchId: v.id("churches"), callId: v.id("calls"), reasons: v.array(v.union(...urgentReasons.map((reason) => v.literal(reason)))), day: v.optional(v.number()), by: v.union(v.literal("assistant"), v.literal("rules")) },
   returns: v.null(),
   handler: async (ctx, { churchId, callId, reasons, day, by }) => {
-    const member = await neighborAccess(ctx, churchId);
-    const call = await ownCall(ctx, churchId, callId);
-    if (by !== "person" && call.urgent?.by === "person") return null;
-    if (day !== undefined && (!Number.isInteger(day) || day < 1 || day > 31)) throw new ConvexError("The day should be a day of the month.");
-    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by, byMember: by === "person" ? member._id : undefined } });
+    const call = await ctx.db.get("calls", callId);
+    if (!call || call.churchId !== churchId || !reasons.length || call.urgent?.by === "person") return null;
+    await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by } });
     return null;
   },
 });

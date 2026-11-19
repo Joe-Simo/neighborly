@@ -4,7 +4,7 @@ import { convexTest } from "convex-test";
 import schema from "./schema";
 import { signedIn } from "./clerk.testing";
 import type { Id } from "./_generated/dataModel";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import * as functions from "./assistance";
 import { neighborAccess } from "./access";
 import { settleRequest } from "./assistance";
@@ -103,36 +103,38 @@ describe("who may use the help line and requests", () => {
     expect((await readRequest(caller, { churchId, requestId: second }, ids.earl)).referrals).toEqual(["Sample County Rent Help"]);
   });
 
-  test("calls to return first lead the list, and a person's word outranks the assistant's", async () => {
-    const { ids, as } = await setup();
+  test("calls to return first lead the list, and a person's word outranks a reading of the note", async () => {
+    const { t, ids, as } = await setup();
     const churchId = ids.church, caller = as(ids.coordinator);
     const log = async (note: string) => (await caller.mutation(api.assistance.recordCall, { churchId, callerName: "Caller", phone: "", note, callback: "needed" })).callId;
     const rent = await log("Behind on rent."), power = await log("Shut-off notice for the 21st."), food = await log("Asked about the pantry.");
-    const order = async () => (await caller.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).waiting.map((call) => call.id);
+    const waiting = async () => (await caller.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).waiting;
+    const order = async () => (await waiting()).map((call) => call.id);
     expect(await order()).toEqual([rent, power, food]);
-    await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: ["shutoff", "elder"], day: 21, by: "assistant" });
+    await t.mutation(internal.assistance.keepReading, { churchId, callId: power, reasons: ["shutoff", "elder"], day: 21, by: "assistant" });
     expect(await order()).toEqual([power, rent, food]);
-    expect((await caller.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).waiting[0].urgent).toEqual({ reasons: ["shutoff", "elder"], day: 21, by: "assistant", byName: null });
-    // A person moves one up and the other back; the assistant cannot undo either.
-    await caller.mutation(api.assistance.setUrgency, { churchId, callId: food, reasons: ["marked"], by: "person" });
-    await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: [], by: "person" });
-    await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: ["shutoff"], day: 21, by: "assistant" });
+    expect((await waiting())[0].urgent).toEqual({ reasons: ["shutoff", "elder"], day: 21, by: "assistant", byName: null });
+    // A person moves one up and the other back; no later reading undoes either.
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId: food, reasons: ["marked"] });
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId: power, reasons: [] });
+    await t.mutation(internal.assistance.keepReading, { churchId, callId: power, reasons: ["shutoff"], day: 21, by: "assistant" });
+    await t.mutation(internal.assistance.keepReading, { churchId, callId: power, reasons: ["shutoff"], day: 21, by: "rules" });
     expect(await order()).toEqual([food, rent, power]);
-    expect((await caller.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).waiting.map((call) => call.urgent?.byName ?? null)).toEqual(["Thomas Okafor", null, "Thomas Okafor"]);
-    await expect(caller.mutation(api.assistance.setUrgency, { churchId, callId: rent, reasons: ["shutoff"], day: 45, by: "assistant" })).rejects.toThrow("day of the month");
-    await expect(as(ids.stranger).mutation(api.assistance.setUrgency, { churchId: ids.other, callId: rent, reasons: [], by: "person" })).rejects.toThrow("Call not found.");
+    expect((await waiting()).map((call) => call.urgent?.byName ?? null)).toEqual(["Thomas Okafor", null, "Thomas Okafor"]);
+    await expect(caller.mutation(api.assistance.setUrgency, { churchId, callId: rent, reasons: ["marked"], day: 45 })).rejects.toThrow("day of the month");
+    await expect(as(ids.stranger).mutation(api.assistance.setUrgency, { churchId: ids.other, callId: rent, reasons: [] })).rejects.toThrow("Call not found.");
   });
 
-  test("signs found by the fixed rules alone are saved as the rules', and a person's word still outranks them", async () => {
+  test("who put a call first is the server's to say: a client's claim is ignored", async () => {
     const { ids, as } = await setup();
     const churchId = ids.church, caller = as(ids.coordinator);
     const { callId } = await caller.mutation(api.assistance.recordCall, { churchId, callerName: "Caller", phone: "", note: "Shut-off notice for the 21st.", callback: "needed" });
     const first = async () => (await caller.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).waiting[0].urgent;
-    await caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["shutoff"], day: 21, by: "rules" });
-    expect(await first()).toEqual({ reasons: ["shutoff"], day: 21, by: "rules", byName: null });
-    await caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: [], by: "person" });
-    await caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["shutoff"], day: 21, by: "rules" });
-    expect((await first())?.by).toBe("person");
+    // An older client that says "assistant" or "rules" is saved as what it is: this person's own word, under their name.
+    await caller.mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["shutoff"], day: 21, by: "assistant" });
+    expect(await first()).toEqual({ reasons: ["shutoff"], day: 21, by: "person", byName: "Thomas Okafor" });
+    await as(ids.owner).mutation(api.assistance.setUrgency, { churchId, callId, reasons: ["marked"], by: "rules" });
+    expect(await first()).toMatchObject({ by: "person", byName: "Marisol Vega" });
   });
 
   test("another group's coordinator cannot reach this group's calls or requests", async () => {

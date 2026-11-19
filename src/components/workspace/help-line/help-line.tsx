@@ -430,7 +430,6 @@ function HelpLine() {
                     churchId,
                     callId: call.id,
                     reasons: first ? ["marked"] : [],
-                    by: "person",
                   }),
                 )
             : undefined
