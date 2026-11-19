@@ -7,7 +7,7 @@ import { WeekByTeam } from "@/components/workspace/volunteer/asides";
 import { CommitmentRows } from "@/components/workspace/volunteer/commitment-rows";
 
 export function CommitmentsSection() {
-  const { data, now, teamFilter, setTeamFilter, words, sampleSaid } = useWorkspace();
+  const { data, now, teamFilter, setTeamFilter, words, sampleSaid, isOwner } = useWorkspace();
   const text = words.commitments;
   const datedCommitments = upcomingCommitments(data.commitments, now, true);
   return (
@@ -36,7 +36,7 @@ export function CommitmentsSection() {
         empty={
           teamFilter && datedCommitments.length > 0
           ? { title: text.noneForTeamTitle, detail: text.noneForTeamDetail }
-          : undefined
+          : isOwner ? undefined : { title: words.commitments.emptyTitle, detail: words.commitments.emptyDetail, go: "week" }
         }
       />
     </>

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords, wrongControl } from "@/components/workspace/failure";
 import { useEntryLanguage } from "@/components/live-auth-words";
@@ -107,13 +109,17 @@ export function LiveEmpty({
   title,
   children,
   action,
+  go,
 }: {
   title: string;
   children: ReactNode;
   /** The one act that fills this place, named as the act. */
   action?: { label: string; run: () => void };
+  /** Where the next step is when it is not here (one who may not fill this place): the room, by its own name in the menu. */
+  go?: LiveArea;
 }) {
   const named = useId();
+  const menu = useWorkspaceIfAny()?.words.menu;
   return (
     <div
       className="live-empty"
@@ -130,6 +136,11 @@ export function LiveEmpty({
       <div>
         <FollowingHeading id={named}>{title}</FollowingHeading>
         <p>{children}</p>
+        {!action && go && menu && (
+          <Button variant="outline" asChild>
+            <Link href={`/app/${go}`}>{menu[go]}</Link>
+          </Button>
+        )}
         {action && (
           <Button type="button" variant="outline" onClick={action.run}>
             {action.label}
