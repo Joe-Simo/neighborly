@@ -976,3 +976,9 @@
   95% { --live-fade-start: 32px; --live-fade-end: 32px; }
   100% { --live-fade-start: 32px; --live-fade-end: 0px; }
 }
+
+/* More contrast asked for: the quiet words and the hairlines step toward the ink. Quiet words go from 5:1 on the
+   paper to over 9:1, and the rules between rows reach 3:1, so every edge that separates things can be seen. */
+@media (prefers-contrast: more) {
+  .live-app, .live-dialog { --live-muted: #3d453a; --live-line: #8f9488; }
+}
