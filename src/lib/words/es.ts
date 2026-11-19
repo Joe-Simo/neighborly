@@ -558,7 +558,7 @@ export function es(set: WordSet): Words {
       change: "Cambiar",
       discard: "Descartar",
       saved: "Guardado en el registro",
-      approved: "Guardada, espera una decisión",
+      approved: "Guardada. La conferencia decide después.",
       sheet: {
         newCaller: "Persona nueva",
         noName: "Alguien que no dio su nombre",

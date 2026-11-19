@@ -564,7 +564,7 @@ export function en(set: WordSet) {
       change: "Change",
       discard: "Discard",
       saved: "Saved to the record",
-      approved: "Saved, waiting for a decision",
+      approved: "Saved. The conference decides next.",
       /** The draft's own sheet, sentence by sentence, so it reads whole in each language. */
       sheet: {
         newCaller: "New caller",
