@@ -62,3 +62,6 @@
   .home-year-give{margin-top:14px}
   .relief-words p.home-year-note{margin-top:10px}
 }
+/* The piles are not drawn (kept in place, unseen, as the slip is laid to where they stand): the opening registers --sheet as not inherited, so they have never had height here, and the year is laid out without them.
+     What showed was only each pile's top face, a stray sliver over three figures. */
+.home-year-stack{visibility:hidden}

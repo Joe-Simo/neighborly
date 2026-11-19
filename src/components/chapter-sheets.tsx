@@ -30,7 +30,12 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
     let across = "", foot = "", lie = "", tall = "";
     // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
     let box = next.getBoundingClientRect(), height = innerHeight, own = sheet.offsetHeight;
-    const read = () => { box = next.getBoundingClientRect(); height = innerHeight; if (to === "close") own = sheet.offsetHeight; };
+    // The story's sheet carries the courtyard's caption, printed where the caption stands, so as the sheet comes over the words they are still there to read.
+    const caption = to === "story" ? document.querySelector<HTMLElement>(".fresco-caption") : null, words = sheet.querySelector<HTMLElement>(".chapter-sheet-words");
+    let place = caption?.getBoundingClientRect(), placed = "", sheetWidth = sheet.offsetWidth;
+    const fit = () => { if (!caption || !words) return; sheetWidth = sheet.offsetWidth; const look = getComputedStyle(caption); words.style.font = look.font; words.style.letterSpacing = look.letterSpacing; words.style.color = look.color; };
+    fit();
+    const read = () => { box = next.getBoundingClientRect(); height = innerHeight; if (to === "close") own = sheet.offsetHeight; if (caption) place = caption.getBoundingClientRect(); };
     const update = () => {
       const top = box.top;
       // The next chapter's paper comes over as that chapter's first edge rises from the foot of the window to its top.
@@ -49,6 +54,11 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
       // Each value is written on the sheet alone, and only when it has changed.
       if (nowAcross !== across) { across = nowAcross; sheet.style.setProperty("--across", across); sheet.toggleAttribute("data-away", across === "0"); }
       if (across !== "0" && nowFoot !== foot) { foot = nowFoot; sheet.style.setProperty("--foot", foot); }
+      if (words && place && across !== "0") {
+        // The sheet stands moved right by the share it has yet to cross; the words are moved back by as much, onto the caption.
+        const now = `${((Number(across) - 1) * sheetWidth + place.left).toFixed(1)}px ${place.top.toFixed(1)}px`;
+        if (now !== placed) { placed = now; words.style.translate = now; words.style.width = `${place.width.toFixed(1)}px`; }
+      }
     };
     const { ask, drop } = frameStep(read, update);
     // Safari on iPhone can end a flick's momentum with no scroll event for where it came to rest, which left a sheet resting half across
@@ -58,11 +68,14 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
     addEventListener("scroll", request, { passive: true });
     addEventListener("scrollend", ask);
     addEventListener("resize", request);
+    addEventListener("resize", fit);
     still.addEventListener("change", request);
     update();
-    return () => { drop(); clearTimeout(after); removeEventListener("scroll", request); removeEventListener("scrollend", ask); removeEventListener("resize", request); still.removeEventListener("change", request); };
+    return () => { drop(); clearTimeout(after); removeEventListener("scroll", request); removeEventListener("scrollend", ask); removeEventListener("resize", request); removeEventListener("resize", fit); still.removeEventListener("change", request); };
   }, [to]);
-  return <div ref={paper} className={to === "close" ? "chapter-sheet-close" : `chapter-sheet chapter-sheet-${to}`} data-away="" aria-hidden="true" />;
+  return <div ref={paper} className={to === "close" ? "chapter-sheet-close" : `chapter-sheet chapter-sheet-${to}`} data-away="" aria-hidden="true">
+    {to === "story" && <p className="chapter-sheet-words">Faith, <em>lived out.</em></p>}
+  </div>;
 }
 
 /**
