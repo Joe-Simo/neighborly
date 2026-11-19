@@ -1,5 +1,6 @@
 "use client";
 
+import { whenIdle } from "@/lib/idle";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -73,6 +74,15 @@ export function NeighborlyExperience() {
     const sideways = matchMedia(sidewaysPhone);
     element.classList.add("is-connected");
     let frame = 0;
+    // Where each piece of the opening's words ends: read only when the page is idle after it loads or the window changes size, never inside a frame.
+    let pieces: { tall: number; feet: [HTMLElement, number][] } | undefined;
+    let stopIdle = () => {};
+    const measure = () => {
+      const hero = element.querySelector<HTMLElement>(".painted-world[data-hero-only=true]");
+      pieces = { tall: hero?.querySelector<HTMLElement>(".painted-world-viewport")?.getBoundingClientRect().height ?? innerHeight, feet: [...(hero?.querySelectorAll<HTMLElement>(".painted-world-caption h1, .painted-world-description, .painted-world-opening-actions, .painted-world-header") ?? [])].map(piece => [piece, piece.getBoundingClientRect().bottom]) };
+      request();
+    };
+    const remeasure = () => { stopIdle(); stopIdle = whenIdle(measure, 500); };
     let entryRequested = false;
     // Each value is written only on the few elements that draw with it, and only when it has changed: written on the whole page's root,
     // one changed value had every element of the page styled again on every frame of the scroll.
@@ -111,6 +121,11 @@ export function NeighborlyExperience() {
       write("--entry-door", String(reduce ? Number(progress >= .5) : Math.max(0, Math.min(1, (scrolled - .3) / .5))));
       // The headline holds at full ink until the picture begins to leave at .4 and is gone by .5. The doors' own words are printed on the wall beneath and are simply uncovered.
       write("--entry-caption", String(reduce ? Number(progress < .5) : 1 - Math.max(0, Math.min(1, (progress - .4) / .1))));
+      // The sheet's wavy edge is drawn over the band just above its foot: a piece of the words still on the sheet leaves in one cut the moment
+      // that band would reach it, so no line of type is ever seen cut by the edge, or drawn across the doors beneath.
+      const edge = Math.min(120, Math.max(52, innerWidth * .075));
+      const band = ((pieces?.tall ?? innerHeight) + edge) * portraitShown - edge;
+      pieces?.feet.forEach(([piece, foot]) => piece.toggleAttribute("data-gone", !reduce && scrolled > 0 && band < foot + 4));
       const portrait = element.querySelector<HTMLElement>(".painted-world-track");
       const courtyard = element.querySelector<HTMLElement>(".fresco-stage");
       const entered = progress >= (reduce ? .5 : .6);
@@ -136,6 +151,9 @@ export function NeighborlyExperience() {
     const request = () => { if (!frame) frame = requestAnimationFrame(update); };
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("resize", request);
+    window.addEventListener("resize", remeasure);
+    remeasure();
+    void document.fonts.ready.then(remeasure);
     media.addEventListener("change", request);
     sideways.addEventListener("change", request);
     const enter = (event: MouseEvent) => {
@@ -177,7 +195,7 @@ export function NeighborlyExperience() {
     };
     element.addEventListener("focusin", follow);
     update();
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.removeEventListener("keydown", walk); element.removeEventListener("focusin", follow); element.classList.remove("is-connected"); };
+    return () => { cancelAnimationFrame(frame); stopIdle(); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); window.removeEventListener("resize", remeasure); media.removeEventListener("change", request); element.removeEventListener("click", enter); element.removeEventListener("keydown", walk); element.removeEventListener("focusin", follow); element.classList.remove("is-connected"); };
   }, []);
   return <div className="neighborly-connected-world is-connected" ref={root}><PaintedWorld heroOnly passed={passed} onContinue={goToDoors} onPass={() => {
     // The card crosses to the open hand and rests there a beat, long enough to see it settle and be held,

@@ -1,5 +1,6 @@
 "use client";
 
+import { whenIdle } from "@/lib/idle";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 /** The courtyard's own cut sheets (P26), back to front: the painting cut along its depth, its people on a sheet of their own. */
@@ -38,7 +39,7 @@ export function CourtyardAssembly() {
     const done = () => {
       delete stage.dataset.assembling;
       element.dataset.over = "true";
-      leave = window.setTimeout(() => requestIdleCallback(() => setOver(true), { timeout: 2000 }), 1000);
+      leave = window.setTimeout(() => whenIdle(() => setOver(true), 2000), 1000);
     };
     let ready = false, played = false;
     const images = [...element.querySelectorAll("img")];
