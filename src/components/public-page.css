@@ -131,7 +131,7 @@
 .public-made{counter-reset:chapter}
 .public-made section:has(h2){counter-increment:chapter}
 .public-made section>h2{align-self:start}
-.public-made section>h2::before{content:counter(chapter,decimal-leading-zero);display:block;margin-bottom:.9em;font:600 13px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;font-variant-numeric:tabular-nums;color:#5b6b5f}
+.public-made section>h2::before{content:counter(chapter,decimal-leading-zero);display:block;margin-bottom:.9em;font-family:'Source Sans 3','Source Sans 3 Fallback',sans-serif;font-weight:600;font-size:13px;line-height:1;letter-spacing:.14em;font-variant-numeric:lining-nums tabular-nums;color:#5b6b5f}
 .public-made section>div>p:first-child:not(.public-words-last){font:400 1.24em/1.42 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.01em;color:#22362a}
 .public-made .public-made-figure{grid-column:1/-1;margin:clamp(20px,3vw,48px) 0 0}
 @media(min-width:1024px){
