@@ -3,7 +3,7 @@
  * shapes, and its last, which Reduce Motion shows. Run after any change to year-paper.ts: bun scripts/year-paper-posters.mts
  */
 import { writeFileSync } from "node:fs";
-import { ASPECT, DONE, EDGE, HAIRLINE, PAPER, SHADE, SHADOW, slips, WAITING, placeSlips, shade, SLIP, SLIPS, viewProjection, cameraZ, type Shape } from "../src/lib/year-paper";
+import { ASPECT, DONE, EDGE, HAIRLINE, PAPER, SHADE, SHADOW, slips, WAITING, placeSlips, shade, SLIP, SLIPS, viewProjection, type Shape } from "../src/lib/year-paper";
 
 const size: Record<Shape, [number, number]> = { wide: [1600, 1000], tall: [600, 800] };
 const hex = (c: readonly number[], lit: number) => "#" + c.map(v => Math.round(Math.min(1, v * lit) * 255).toString(16).padStart(2, "0")).join("");
@@ -11,7 +11,7 @@ const mixed = PAPER.map((p, i) => p + (EDGE[i] - p) * .55);
 const HAIR = .006, HAIR_Y = HAIR * SLIP.w / SLIP.h;
 
 for (const shape of ["wide", "tall"] as const) for (const [name, through] of [["start", 0], ["end", 1]] as const) {
-  const [W, H] = size[shape], view = viewProjection(ASPECT[shape], cameraZ(through)), models = placeSlips(through);
+  const [W, H] = size[shape], view = viewProjection(ASPECT[shape], through), models = placeSlips(through);
   const faces: { depth: number; svg: string }[] = [];
   for (let s = 0; s < SLIPS; s++) {
     const at = s * 16;

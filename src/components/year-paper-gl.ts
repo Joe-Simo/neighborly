@@ -1,5 +1,5 @@
 import { whenIdle } from "@/lib/idle";
-import { cameraZ, DONE, EDGE, HAIRLINE, LIGHT, PAPER, placeSlips, SHADE, SHADOW, SLIP, slips, SLIPS, viewProjection, WAITING } from "@/lib/year-paper";
+import { DONE, EDGE, HAIRLINE, LIGHT, PAPER, placeSlips, SHADE, SHADOW, SLIP, slips, SLIPS, viewProjection, WAITING } from "@/lib/year-paper";
 
 /**
  * The year's slips on one canvas, in one instanced draw: every slip the same quad, placed by its own matrix (year-paper.ts).
@@ -137,7 +137,7 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
       placeSlips(through, matrices);
       gl.bindBuffer(gl.ARRAY_BUFFER, models);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, matrices);
-      gl.uniformMatrix4fv(view, false, viewProjection(aspect, cameraZ(through)));
+      gl.uniformMatrix4fv(view, false, viewProjection(aspect, through));
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       // The slips first, then their shades, tested against the slips' depth but never written: a shade lies only on the sheets behind its slip.
       gl.uniform1f(shade, 0); gl.depthMask(true); gl.disable(gl.BLEND);
