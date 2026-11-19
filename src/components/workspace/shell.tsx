@@ -980,43 +980,44 @@ export function LiveWorkspace({
 /** The shell's own dialogs: the form an act opens, a commitment's details, its editor, a yes-or-no, and giving a date back. */
 type DialogName = "create" | "detail" | "editor" | "confirmation" | "release";
 
-/** Where the menu's marker last sat, so it can slide from the room just left even though the page is new. */
-let lastMarker: Record<string, string> | null = null;
-
-/** Lays the marker under the current room's line and slides it there from where it was. */
+/**
+ * Lays the marker under the current room's line. It goes straight there (paper.css): where each line sits is read
+ * when the menu is laid out (an observer's call, after layout), so a room change places the marker without asking
+ * the page to lay itself out in the middle of drawing the next room.
+ */
 function useNavMarker(area: LiveArea) {
   const nav = useRef<HTMLElement | null>(null);
+  const places = useRef(new Map<HTMLElement, Record<string, string>>());
   useLayoutEffect(() => {
     const element = nav.current;
     const marker = element?.querySelector<HTMLElement>(".live-nav-marker");
     if (!element || !marker) return;
-    const place = (slide: boolean) => {
-      const current = element.querySelector<HTMLElement>('a[aria-current="page"]');
-      if (!current) return;
-      const next = {
-        "--marker-x": `${current.offsetLeft}px`,
-        "--marker-y": `${current.offsetTop}px`,
-        "--marker-w": `${current.offsetWidth}px`,
-        "--marker-h": `${current.offsetHeight}px`,
+    const measure = (link: HTMLElement) => {
+      const place = {
+        "--marker-x": `${link.offsetLeft}px`,
+        "--marker-y": `${link.offsetTop}px`,
+        "--marker-w": `${link.offsetWidth}px`,
+        "--marker-h": `${link.offsetHeight}px`,
       };
-      if (slide && lastMarker) {
-        delete marker.dataset.sliding;
-        for (const [name, value] of Object.entries(lastMarker)) marker.style.setProperty(name, value);
-        void marker.offsetWidth;
-        marker.dataset.sliding = "";
-      }
-      for (const [name, value] of Object.entries(next)) marker.style.setProperty(name, value);
-      lastMarker = next;
-      // In the sideways row of an upright tablet, bring the current room into view.
-      if (element.scrollWidth > element.clientWidth)
-        element.scrollLeft = current.offsetLeft - (element.clientWidth - current.offsetWidth) / 2;
+      places.current.set(link, place);
+      return place;
     };
-    place(true);
+    const current = () => element.querySelector<HTMLElement>('a[aria-current="page"]');
+    const place = (link: HTMLElement | null, known?: Record<string, string>) => {
+      const next = link && (known ?? places.current.get(link) ?? measure(link));
+      if (next) for (const [name, value] of Object.entries(next)) marker.style.setProperty(name, value);
+    };
+    place(current());
     const resized = new ResizeObserver(() => {
-      delete marker.dataset.sliding;
-      place(false);
+      for (const link of element.querySelectorAll<HTMLElement>("a")) measure(link);
+      const now = current();
+      place(now);
+      // In the sideways row of an upright tablet, bring the current room into view.
+      if (now && element.scrollWidth > element.clientWidth)
+        element.scrollLeft = now.offsetLeft - (element.clientWidth - now.offsetWidth) / 2;
     });
     resized.observe(element);
+    for (const link of element.querySelectorAll<HTMLElement>("a")) resized.observe(link);
     return () => resized.disconnect();
   }, [area]);
   return nav;
