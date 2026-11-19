@@ -180,7 +180,7 @@ const requestImported = v.object({ line: v.number(), name: v.string(), outcome: 
 const kinds = [["rent", /rent|housing|mortgage|deposit|lodging|shelter/], ["utility", /utilit|electric|power|water|gas|heat|energy|phone|internet/], ["food", /food|grocer|pantry|meal/], ["voucher", /voucher|thrift|furniture|clothing|cloth|store/]] as const;
 const stillOpenDays = 60;
 const payeeKinds = { rent: "landlord", utility: "utility", food: "vendor", voucher: "vendor", other: "vendor" } as const;
-const statuses = new Map([["", "closed"], ["completed", "closed"], ["complete", "closed"], ["closed", "closed"], ["open", "open"], ["call back", "open"], ["callback", "open"], ["pending", "open"]] as const);
+const statuses = new Map<string, "open" | "closed">([["", "closed"], ["completed", "closed"], ["complete", "closed"], ["closed", "closed"], ["open", "open"], ["call back", "open"], ["callback", "open"], ["pending", "open"]]);
 
 async function reviewRequests(ctx: QueryCtx, churchId: Id<"churches">, rows: Infer<typeof requestRow>[]) {
   if (rows.length > mostRows) throw new ConvexError(`Bring in up to ${mostRows} requests at a time.`);
@@ -202,7 +202,7 @@ async function reviewRequests(ctx: QueryCtx, churchId: Id<"churches">, rows: Inf
     const money = row.amount.trim() === "" ? 0 : Number(row.amount.replace(/[$,\s]/g, ""));
     const importedAmount = Math.round(money * 100);
     if (!Number.isFinite(money) || money < 0 || importedAmount > 100_000_00) { results.push(verdict("bad_amount")); continue; }
-    const stated = statuses.get(row.status.trim().toLowerCase() as never) as "open" | "closed" | undefined;
+    const stated = statuses.get(row.status.trim().toLowerCase());
     if (!stated) { results.push(verdict("bad_status")); continue; }
     // Only what is truly still waiting stays open: an old request left open in the other system comes in as history.
     const status = stated === "open" && createdAt >= now - stillOpenDays * 86400000 ? "open" : "closed";
@@ -413,12 +413,14 @@ export const exportPage = query({
     const page = { cursor, numItems: 200 };
     const day = (time: number | undefined) => (time === undefined ? "" : DateTime.fromMillis(time, { zone: church.timeZone }).toFormat("MM/dd/yyyy"));
     const names = new Map<string, string>();
-    const nameOf = async (table: "neighbors" | "memberships", id: Id<"neighbors"> | Id<"memberships"> | undefined) => {
+    const named = async <Id extends string>(id: Id | undefined, read: (id: Id) => Promise<string>) => {
       if (!id) return "";
-      // A neighbor whose record was removed is still named on the lines the year's books keep, by the one phrase.
-      if (!names.has(id)) names.set(id, (await ctx.db.get(table, id as never) as { name: string } | null)?.name ?? (table === "neighbors" ? REMOVED : ""));
+      if (!names.has(id)) names.set(id, await read(id));
       return names.get(id) ?? "";
     };
+    // A neighbor whose record was removed is still named on the lines the year's books keep, by the one phrase.
+    const neighborName = (id: Id<"neighbors"> | undefined) => named(id, async (found) => (await ctx.db.get("neighbors", found))?.name ?? REMOVED);
+    const memberName = (id: Id<"memberships"> | undefined) => named(id, async (found) => (await ctx.db.get("memberships", found))?.name ?? "");
     const finish = (result: { continueCursor: string; isDone: boolean }, rows: string[][]) => ({ columns: [...exportColumns[file]] as string[], rows, cursor: result.continueCursor, done: result.isDone });
 
     if (file === "neighbors") {
@@ -440,12 +442,12 @@ export const exportPage = query({
     }
     if (file === "visits") {
       const result = await ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [await nameOf("neighbors", row.neighborId), day(row.scheduledAt), DateTime.fromMillis(row.scheduledAt, { zone: church.timeZone }).toFormat("h:mm a"), title(row.status),
-        (await Promise.all(row.visitors.map((visitor) => nameOf("memberships", visitor.memberId)))).join("; "), String(row.visitors.reduce((total, visitor) => total + visitor.hours, 0)), String(row.visitors.reduce((total, visitor) => total + visitor.miles, 0)), row.notes, day(row.completedAt)])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [await neighborName(row.neighborId), day(row.scheduledAt), DateTime.fromMillis(row.scheduledAt, { zone: church.timeZone }).toFormat("h:mm a"), title(row.status),
+        (await Promise.all(row.visitors.map((visitor) => memberName(visitor.memberId)))).join("; "), String(row.visitors.reduce((total, visitor) => total + visitor.hours, 0)), String(row.visitors.reduce((total, visitor) => total + visitor.miles, 0)), row.notes, day(row.completedAt)])));
     }
     if (file === "ledger") {
       const result = await ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), row.kind === "income" ? "Money in" : "Money out", dollars(row.amount), title(row.category), row.payee, row.memo, row.checkNumber ?? "", plainDay(row.clearedOn), await nameOf("neighbors", row.neighborId), yesNo(Boolean(row.reverses)), yesNo(Boolean(row.voidedAt))])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), row.kind === "income" ? "Money in" : "Money out", dollars(row.amount), title(row.category), row.payee, row.memo, row.checkNumber ?? "", plainDay(row.clearedOn), await neighborName(row.neighborId), yesNo(Boolean(row.reverses)), yesNo(Boolean(row.voidedAt))])));
     }
     if (file === "payees") {
       const result = await ctx.db.query("payees").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
@@ -454,25 +456,25 @@ export const exportPage = query({
     const clock = (time: number | undefined) => (time === undefined ? "" : DateTime.fromMillis(time, { zone: church.timeZone }).toFormat("h:mm a"));
     if (file === "notes") {
       const result = await ctx.db.query("neighborNotes").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [await nameOf("neighbors", row.neighborId), day(row.createdAt), row.body, await nameOf("memberships", row.authorId)])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [await neighborName(row.neighborId), day(row.createdAt), row.body, await memberName(row.authorId)])));
     }
     if (file === "calls") {
       const result = await ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       const callBack = { none: "Not needed", needed: "Still needed", done: "Returned" } as const;
-      return finish(result, await Promise.all(result.page.map(async (row) => [day(row.takenAt), clock(row.takenAt), row.callerName || ((await nameOf("neighbors", row.neighborId)) === REMOVED ? REMOVED : ""), row.phone, await nameOf("neighbors", row.neighborId), row.note, callBack[row.callback],
-        await nameOf("memberships", row.takenBy), await nameOf("memberships", row.returnedBy), day(row.returnedAt), row.outcome ?? "", row.urgent ? row.urgent.reasons.map((reason) => urgentWords[reason] ?? plainWords(reason)).join("; ") || "Yes" : ""])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [day(row.takenAt), clock(row.takenAt), row.callerName || ((await neighborName(row.neighborId)) === REMOVED ? REMOVED : ""), row.phone, await neighborName(row.neighborId), row.note, callBack[row.callback],
+        await memberName(row.takenBy), await memberName(row.returnedBy), day(row.returnedAt), row.outcome ?? "", row.urgent ? row.urgent.reasons.map((reason) => urgentWords[reason] ?? plainWords(reason)).join("; ") || "Yes" : ""])));
     }
     if (file === "deposits") {
       const result = await ctx.db.query("deposits").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), dollars(row.total), row.memo, await nameOf("memberships", row.recordedBy)])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), dollars(row.total), row.memo, await memberName(row.recordedBy)])));
     }
     if (file === "statements") {
       const result = await ctx.db.query("bankStatements").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.endsOn), dollars(row.balance), await nameOf("memberships", row.agreedBy), day(row.agreedAt)])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.endsOn), dollars(row.balance), await memberName(row.agreedBy), day(row.agreedAt)])));
     }
     if (file === "vouchers") {
       const result = await ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
-      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), row.change > 0 ? String(row.change) : "", row.change < 0 ? String(-row.change) : "", row.item, row.note, await nameOf("memberships", row.recordedBy)])));
+      return finish(result, await Promise.all(result.page.map(async (row) => [plainDay(row.date), row.change > 0 ? String(row.change) : "", row.change < 0 ? String(-row.change) : "", row.item, row.note, await memberName(row.recordedBy)])));
     }
     if (file === "referrals") {
       const result = await ctx.db.query("referralAgencies").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
@@ -483,13 +485,13 @@ export const exportPage = query({
       const result = await ctx.db.query("teamMembers").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       return finish(result, await Promise.all(result.page.map(async (row) => {
         const team = await ctx.db.get("teams", row.teamId);
-        return [team?.name ?? "", team?.description ?? "", await nameOf("memberships", row.memberId), title(row.teamRole), title(row.status)];
+        return [team?.name ?? "", team?.description ?? "", await memberName(row.memberId), title(row.teamRole), title(row.status)];
       })));
     }
     if (file === "commitments") {
       const result = await ctx.db.query("commitments").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       return finish(result, await Promise.all(result.page.map(async (row) => [day(row.start), clock(row.start), clock(row.end), row.title, (await ctx.db.get("teams", row.teamId))?.name ?? "", row.location,
-        row.assigneeId ? await nameOf("memberships", row.assigneeId) : "Open", await nameOf("memberships", row.coordinatorId), yesNo(Boolean(row.cancelled))])));
+        row.assigneeId ? await memberName(row.assigneeId) : "Open", await memberName(row.coordinatorId), yesNo(Boolean(row.cancelled))])));
     }
     if (file === "history") {
       // Who did what and when, in plain words. It names the action only, never the record it touched.
