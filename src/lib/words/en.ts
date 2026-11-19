@@ -245,6 +245,9 @@ export function en(set: WordSet) {
       note: "Time off does not remove you from your teams. Existing commitments need a separate change so everyone knows what is covered.",
       remove: "Remove",
       removed: "Time off removed.",
+      restored: "Time off put back.",
+      availabilityRemoved: "Available dates removed.",
+      availabilityRestored: "Available dates put back.",
       emptyTitle: "Every day is open.",
       emptyDetail:
         "Add dates when you won’t be available. Your place on the team stays the same.",
@@ -564,7 +567,7 @@ export function en(set: WordSet) {
       change: "Change",
       discard: "Discard",
       saved: "Saved to the record",
-      approved: "Saved, waiting for a decision",
+      approved: `Saved. The ${t.group} decides next.`,
       /** The draft's own sheet, sentence by sentence, so it reads whole in each language. */
       sheet: {
         newCaller: "New caller",

@@ -304,11 +304,13 @@ export function NeighborRecord({
           action={back && (
             <UndoAct
               run={async () => {
-                setBack(undefined);
+                // Undo stays (asleep) until the reverse answers, so focus has somewhere to be meanwhile.
                 try {
                   await back.run();
+                  setBack(undefined);
                   setDone(back.said);
                 } catch (cause) {
+                  setBack(undefined);
                   setDone("");
                   setUndoRefused(sayFailure(words.notices,cause, words.notices.failed));
                 }

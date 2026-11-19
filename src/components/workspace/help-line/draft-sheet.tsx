@@ -199,9 +199,12 @@ export function DraftSheet({
           )}
         </div>
         {sealed && (
-          <p className="help-seal" role="status">
+          // The one done mark, the circled tick; its check is drawn in as before. Not said aloud here: the filed
+          // line that follows is read by its focus, so a screen reader hears the save once.
+          <p className="help-seal">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4.5 12.5l5 5L19.5 7" pathLength={1} />
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 12.2l2.8 2.8L16.2 9.3" pathLength={1} />
             </svg>
             {text.saved}
           </p>

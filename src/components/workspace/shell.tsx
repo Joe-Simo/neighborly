@@ -193,6 +193,11 @@ export function LiveWorkspace({
       else if (success) {
         setNotice(success);
         setUndo(back && { run: () => run(back.command), said: back.said, returnTo: back.returnTo });
+        // A step that takes away the control it was taken from (a removed row) leaves focus nowhere: it goes to the
+        // saved line, which then reads itself, and its Undo is the next key.
+        if (back) requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (!document.activeElement || document.activeElement === document.body) outcomeNotice.current?.focus({ preventScroll: true });
+        }));
       }
       return true;
     } catch (cause) {
@@ -732,7 +737,9 @@ export function LiveWorkspace({
                     try {
                       await undo.run();
                       setNotice(undo.said);
-                      focusWhenAwake(undo.returnTo);
+                      // The pressed Undo has gone with its line; without a control of its own to go back to, focus
+                      // goes to the line that now says what came back, so it is never left to fall to the page.
+                      focusWhenAwake(undo.returnTo ?? outcomeNotice.current ?? undefined);
                     } catch (cause) {
                       const said = readFailure(cause, words.notices.failed);
                       setNotice("");
