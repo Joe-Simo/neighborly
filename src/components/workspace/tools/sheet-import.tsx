@@ -8,6 +8,8 @@ import Papa from "papaparse";
 import { CircleCheck, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
+import { useQuery } from "@/components/workspace/query";
+import { api } from "../../../../convex/_generated/api";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { formatCount } from "@/lib/words/numbers";
@@ -108,7 +110,17 @@ function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }
  * A spreadsheet coming in: choose the file, see what would happen, say yes, see what happened.
  * The file waiting for a yes is the one sheet on the screen; nothing is saved before that yes.
  */
-export function SheetImportView({ words, state, icon, afterDone, holding, onFile, onYes, onReset }: { words: SheetWords; state: SheetStep; icon: ReactNode; afterDone?: ReactNode; holding?: boolean; onFile: (file: File) => void; onYes: () => void; onReset: () => void }) {
+/**
+ * Whether to offer the neighbor records leaves. The role the page opened with answers on the first paint, so a leaf
+ * is in its place from the start; the backend's own answer takes over when it arrives, and stays the real gate.
+ */
+export function useRecordsOffered() {
+  const { data } = useWorkspace();
+  const role = data.people.find((person) => person.id === data.user.id)?.role;
+  return useQuery(api.access.canOpenNeighborRecords, { churchId: data.church.id }) ?? (role === "owner" || role === "coordinator");
+}
+
+export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, onReset }: { words: SheetWords; state: SheetStep; icon: ReactNode; afterDone?: ReactNode; onFile: (file: File) => void; onYes: () => void; onReset: () => void }) {
   const { words: book } = useWorkspace();
   const text = book.rooms.tools.sheet;
   const chooser = useRef<HTMLInputElement>(null);
@@ -129,7 +141,7 @@ export function SheetImportView({ words, state, icon, afterDone, holding, onFile
     if (!at || at === document.body || (paper.contains(at) && at.matches(":disabled"))) paper.focus({ preventScroll: saving });
   }, [step, saving]);
   return (
-    <section className="tools-leaf" inert={holding} data-holding={holding ? "" : undefined} data-open={state.step === "choose" ? undefined : ""} aria-labelledby={`${words.id}-name`}>
+    <section className="tools-leaf" data-open={state.step === "choose" ? undefined : ""} aria-labelledby={`${words.id}-name`}>
       <h2 id={`${words.id}-name`}>{words.title}</h2>
       <p className="tools-leaf-deck">{words.deck}</p>
       {"error" in state && state.error && <LiveFailure message={state.error} kept="" />}
