@@ -21,7 +21,7 @@
   .tools-address { flex-direction: column; align-items: stretch; }
 }
 .tools-rota { margin-top: var(--space-32); }
-.tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--live-muted); }
+.tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: var(--caps-track); color: var(--live-muted); }
 .tools-rota header h3 { margin: var(--space-4) 0 var(--space-16); font: 400 28px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
 .tools-rota td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -84,7 +84,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .live-dialog.tools-rota-dialog { max-width: min(880px, calc(100vw - 32px)) !important; width: 100%; }
 /* In the dialog the rota is outside the app frame, so it brings the frame's table rules with it. */
 .live-dialog .tools-rota table { width: 100%; border-collapse: collapse; font-size: 17px; }
-.live-dialog .tools-rota th { text-align: left; color: var(--live-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; padding: var(--space-16) 10px; border-bottom: 1px solid var(--live-line); }
+.live-dialog .tools-rota th { text-align: left; color: var(--live-muted); font-size: 13px; text-transform: uppercase; letter-spacing: var(--caps-track); font-weight: 600; padding: var(--space-16) 10px; border-bottom: 1px solid var(--live-line); }
 .live-dialog .tools-rota td { padding: var(--space-20) 10px; border-bottom: 1px solid var(--live-line); }
 .live-dialog .tools-rota th:first-child, .live-dialog .tools-rota td:first-child { padding-left: 0; }
 @media print {
@@ -106,7 +106,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 /* Your files, in paper: each thing to bring in is a leaf of paper; the one in use opens across the page. */
 .tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-24) 22px; margin-top: var(--space-40); max-width: 1040px; }
 .tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: var(--space-32) 30px var(--space-24); background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
-.live-app .tools-leaf > h2 { margin: 0 0 var(--space-8); font: 400 27px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
+.live-app .tools-leaf > h2 { margin: 0 0 var(--space-8); font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
 .tools-leaf-deck { margin: 0; max-width: 62ch; font-size: 17px; line-height: 1.5; color: var(--live-muted); }
 .tools-leaf > .tools-file { max-width: none; margin-top: var(--space-24); }
 .tools-leaf .tools-small { max-width: 62ch; }

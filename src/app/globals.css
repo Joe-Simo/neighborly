@@ -79,8 +79,27 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
-  font-size: 17px;
+  font-size: var(--text-md);
   line-height: 1.5;
+  /* Newsreader is served at 400 only and Source Sans 3 upright only: a weight or slant they do not have is never faked. */
+  font-synthesis: none;
+}
+/* The type scale. Every size the app sets is one of these steps. Source Sans 3 for words and controls, Newsreader for names,
+   heads and amounts. A room may set a smaller step at phone width; it never sets a size between two steps. The public pages
+   keep their own fluid display scale (--track-1 to --track-4, below). */
+:root {
+  --text-xs: 13px;   /* meta, counts, caps labels */
+  --text-sm: 15px;   /* secondary lines, hints, buttons in a dense row */
+  --text-ui: 16px;   /* fields and buttons (16px keeps iOS from zooming a field) */
+  --text-md: 17px;   /* body */
+  --text-lg: 19px;   /* decks and lead lines */
+  --serif-sm: 16px;  /* initials in an avatar */
+  --serif-row: 22px; /* a name or title in a row */
+  --serif-head: 24px;
+  --serif-sheet: 26px;
+  --serif-title: 30px;
+  --serif-figure: 35px;
+  --caps-track: 0.08em; /* every small-caps label */
 }
 button,
 a,
@@ -516,7 +535,7 @@ summary:focus-visible,
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: var(--caps-track);
 }
 .panel-header {
   display: flex;

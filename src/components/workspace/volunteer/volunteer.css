@@ -70,7 +70,7 @@
 .volunteer-due, .volunteer-who { white-space: nowrap; }
 .volunteer-task > [data-slot="button"], .volunteer-task > .live-status, .volunteer-task > .volunteer-task-act { flex: none; }
 .volunteer-task-act { display: flex; align-items: center; gap: var(--space-16) 16px; }
-.volunteer-task-done { display: inline-flex; align-items: center; gap: var(--space-8) 6px; font-size: 14px; color: var(--live-muted); white-space: nowrap; }
+.volunteer-task-done { display: inline-flex; align-items: center; gap: var(--space-8) 6px; font-size: 13px; color: var(--live-muted); white-space: nowrap; }
 .volunteer-task-done svg { color: var(--live-accent); }
 .volunteer-task[data-done] h3 { color: var(--live-muted); }
 .volunteer-task[data-done] h3 span { background-size: 100% 1.5px; }

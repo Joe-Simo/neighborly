@@ -83,7 +83,7 @@
 .visits-paper-label {
   font-size: 13px;
   font-weight: 650;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   text-transform: uppercase;
   color: #52644f;
   margin: 0 0 var(--space-16);
@@ -120,14 +120,14 @@
 .visits-paper dt {
   font-size: 13px;
   font-weight: 650;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   text-transform: uppercase;
   color: #52644f;
   margin-bottom: var(--space-4);
 }
 .visits-paper dd {
   margin: 0;
-  font-size: 18px;
+  font-size: 19px;
   line-height: 1.4;
 }
 .visits-paper-words {
@@ -144,7 +144,7 @@
   font:
     650 13px/1.4 "Source Sans 3",
     sans-serif;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   text-transform: uppercase;
   color: #52644f;
   margin-bottom: var(--space-4);
@@ -294,7 +294,7 @@
 .visits-written > p { grid-column: 1; margin: 0; min-width: 0; }
 .visits-written > .help-row-arrow { grid-column: 2; grid-row: 1 / span 2; }
 .visits-written-who { display: flex; align-items: baseline; gap: var(--space-12) 12px; min-width: 0; }
-.visits-written-who strong { font: 400 21px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); white-space: nowrap; }
+.visits-written-who strong { font: 400 22px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); white-space: nowrap; }
 .visits-written-who > span { font-size: 15px; color: var(--live-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .visits-written-found { display: flex; gap: var(--space-16) 16px; font-size: 16px; line-height: 1.45; color: var(--live-muted); }
 .visits-written-found > span:last-child { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

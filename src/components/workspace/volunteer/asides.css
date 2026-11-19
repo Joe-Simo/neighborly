@@ -28,7 +28,7 @@
 
 .live-aside-sheet .volunteer-teams-week tbody th { padding: var(--space-16) 0 2px; text-align: left; font-weight: 400; }
 .live-aside-sheet .volunteer-teams-week tbody th span { display: block; font-size: 15px; font-weight: 600; color: var(--live-ink); overflow-wrap: anywhere; }
-.live-aside-sheet .volunteer-teams-week tbody th small { display: flex; align-items: center; gap: var(--space-8) 8px; font-size: 14px; color: var(--live-muted); }
+.live-aside-sheet .volunteer-teams-week tbody th small { display: flex; align-items: center; gap: var(--space-8) 8px; font-size: 13px; color: var(--live-muted); }
 .live-aside-sheet .volunteer-teams-week tbody td { height: 26px; padding: var(--space-4) 0 var(--space-8); text-align: center; vertical-align: top; line-height: 0; }
 .live-aside-sheet .volunteer-teams-week tbody td i { display: block; margin: 0 auto 3px; }
 

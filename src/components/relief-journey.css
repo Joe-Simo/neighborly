@@ -23,7 +23,7 @@
 .fresco-stage[data-walked=true] .fresco-invitation{visibility:hidden}
 /* A button that can still take the keyboard is never invisible. */
 .fresco-stage:not([data-opening=true]) .fresco-invitation:has(:focus-visible){opacity:1}
-.fresco-invitation .fresco-kicker{display:block;margin:0 0 clamp(14px,1.4vw,22px);font-size:15px;font-weight:650;line-height:1.3;letter-spacing:.1em;text-transform:uppercase;color:#52644f}
+.fresco-invitation .fresco-kicker{display:block;margin:0 0 clamp(14px,1.4vw,22px);font-size:15px;font-weight:650;line-height:1.3;letter-spacing: var(--caps-track);text-transform:uppercase;color:#52644f}
 .fresco-invitation h2{margin:0 0 24px;font:400 clamp(44px,4.7vw,76px)/var(--lead-2) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-2)}
 .fresco-invitation h2 em{font-weight:400}
 /* Each line of the headline is drawn up out of its own cut in the wall's paper: the cut's edge shows only while a line is coming through it. */

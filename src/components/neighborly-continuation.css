@@ -125,3 +125,5 @@
 /* On a phone the painting stands taller than the screen, so the last screen leads with the card in the hands: the foot sits
    right under the torn edge, with room kept below the name so the close's words leave the frame whole, never cut. */
 @media(max-width:600px){.neighborly-continuation .neighborly-colophon{padding-bottom:calc(82px + 22vw + env(safe-area-inset-bottom))}}
+/* "Free." leans in the display face's own italic, which every public page already has. The text face is served upright only, so an em in it would be a slanted copy. */
+.neighborly-colophon>span>em{font-family:'Newsreader','Newsreader Fallback',Georgia,serif;font-style:italic;font-weight:400}

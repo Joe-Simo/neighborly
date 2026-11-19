@@ -196,7 +196,7 @@
   .live-nav a { margin: 2px 0; }
 }
 .live-app .live-sample-mark,
-.live-mobile-menu .live-sample-mark { font-size: 13px; letter-spacing: 0.05em; }
+.live-mobile-menu .live-sample-mark { font-size: 13px; letter-spacing: var(--caps-track); }
 
 /* ── The page head: words on the left, the room's picture on the right ── */
 .live-app .live-page-head {
@@ -207,7 +207,7 @@
   border-bottom: 1px solid var(--live-line);
 }
 .live-app .live-kicker,
-.live-app .live-main .live-page-head .live-kicker { font-size: 13px; letter-spacing: 0.11em; margin-bottom: var(--space-16); }
+.live-app .live-main .live-page-head .live-kicker { font-size: 13px; letter-spacing: var(--caps-track); margin-bottom: var(--space-16); }
 .live-app .live-page-head h1 {
   --head-size: clamp(40px, 5vw, 76px);
   font: 400 var(--head-size) / 0.98 "Newsreader", "Newsreader Fallback", Georgia, serif;
@@ -404,7 +404,7 @@
   .live-main, .live-main * { scroll-margin-top: calc(var(--live-bar) + 12px); }
   /* The room's name, beside the wordmark. One line or not at all: a name that does not fit beside the 1px
      post wraps under it, out of the line's height, and is not drawn. */
-  .live-bar-room { display: flex; flex: 1 1 0; flex-wrap: wrap; min-width: 0; height: 20px; overflow: hidden; margin-top: var(--space-8); font-size: 14px; line-height: 20px; color: var(--live-muted); opacity: 0; }
+  .live-bar-room { display: flex; flex: 1 1 0; flex-wrap: wrap; min-width: 0; height: 20px; overflow: hidden; margin-top: var(--space-8); font-size: 13px; line-height: 20px; color: var(--live-muted); opacity: 0; }
   .live-bar-room > i { width: 1px; height: 20px; }
   .live-bar-room > span { white-space: nowrap; }
   .live-bar-room[data-shown] { opacity: 1; }
@@ -463,7 +463,7 @@
 .live-menu-rooms .live-row-actions { display: grid; gap: var(--space-8) 10px; margin-top: var(--space-16); }
 .live-menu-rooms select { width: 100%; }
 /* Whose account the menu signs out of, set on the foot's paper just above it. */
-.live-menu-who { margin: 0; padding: var(--space-12) 14px 0; border-top: 1px solid #d9ddce; background: #efefe3; font-size: 14px; color: #4a5a50; overflow-wrap: anywhere; }
+.live-menu-who { margin: 0; padding: var(--space-12) 14px 0; border-top: 1px solid #d9ddce; background: #efefe3; font-size: 15px; color: #4a5a50; overflow-wrap: anywhere; }
 .live-menu-who + .live-menu-foot { border-top: 0; }
 .live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12) 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
 .live-mobile-menu .live-menu-leave[data-slot="button"] { height: 44px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
@@ -607,10 +607,10 @@
 .week-figures a > span:nth-child(2) { font-size: 15px; line-height: 1.3; color: var(--live-muted); text-decoration: underline; text-decoration-color: #b9c4b0; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .week-figures a:is(:hover, :active) > span:nth-child(2) { text-decoration-thickness: 2px; text-decoration-color: currentColor; }
 /* The reason under a figure: plum, the attention colour, because it is only there when something waits. Its room is kept when it is empty. */
-.week-figures a > small { min-height: 1lh; margin-top: -2px; font-size: 14px; line-height: 1.3; color: var(--help-plum, #6f5f93); }
+.week-figures a > small { min-height: 1lh; margin-top: -2px; font-size: 13px; line-height: 1.3; color: var(--help-plum, #6f5f93); }
 @media (max-width: 560px) { .week-figures a > small { min-height: 2lh; font-size: 13px; } }
 @media (hover: hover) { .week-figures a:hover { transform: translateY(-1px); } }
-@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 14px; } }
+@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 13px; } }
 /* Your choice: the answer is the filled button; Details is a quiet link after it. */
 .live-request-section .live-row-actions { gap: var(--space-8) 14px; }
 .live-request-section .live-row-actions .tools-quiet { margin-left: 6px; }
@@ -638,7 +638,7 @@
 @media (max-width: 700px) {
   .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-4); }
   .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
-  .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
+  .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 13px; }
   .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
   .live-person-row .live-person { grid-row: 1; }
 }
@@ -647,14 +647,14 @@
 @media (min-width: 701px) and (max-width: 899px) {
   :root .live-app .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-4); }
   :root .live-app .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
-  :root .live-app .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
+  :root .live-app .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 13px; }
   :root .live-app .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
   :root .live-app .live-person-row .live-person { grid-row: 1; }
 }
 @media (max-width: 1100px) {
   :root[data-native-sidebar] .live-app .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-4); }
   :root[data-native-sidebar] .live-app .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
-  :root[data-native-sidebar] .live-app .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
+  :root[data-native-sidebar] .live-app .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 13px; }
   :root[data-native-sidebar] .live-app .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
   :root[data-native-sidebar] .live-app .live-person-row .live-person { grid-row: 1; }
 }
@@ -682,7 +682,7 @@
 :is(.live-app, .live-dialog) .live-detail dt { font-size: 13px; }
 .live-app .live-date-leaf span { font-size: 13px; letter-spacing: 0.08em; }
 .live-app .live-commitment-row .live-meta { font-size: 15px; }
-.live-app .live-password-control button { font-size: 14px; }
+.live-app .live-password-control button { font-size: 15px; }
 .live-app .help-initials { width: 30px; height: 30px; font-size: 13px; }
 .live-app .help-initials + .help-initials { margin-left: -14px; padding-left: 8px; width: 38px; }
 /* A commitment row reads title first; where and when sit under it. */
@@ -692,7 +692,7 @@
 .live-commitment-row .live-row-main > :not(.live-meta, h3) { order: 2; }
 @media (max-width: 560px) {
   .live-app .live-commitment-row { grid-template-columns: 56px minmax(0, 1fr); }
-  .live-app .live-commitment-row .live-meta { display: flex; font-size: 14px; gap: 2px 10px; }
+  .live-app .live-commitment-row .live-meta { display: flex; font-size: 13px; gap: 2px 10px; }
 }
 
 /* ── Stillness for those who ask for it ───────────────────────────────── */
@@ -732,14 +732,14 @@
 .live-date-value { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
 .live-date-sheet { padding: var(--space-16) 14px; border: 1px solid var(--relief-edge); border-radius: 4px; background: var(--relief-paper); color: #283c32; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; box-shadow: var(--relief-sheet); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
 .live-date-sheet .rdp-months { position: relative; }
-.live-date-sheet .rdp-month_caption { display: flex; align-items: center; height: 44px; padding-left: 8px; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 21px; }
+.live-date-sheet .rdp-month_caption { display: flex; align-items: center; height: 44px; padding-left: 8px; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 22px; }
 .live-date-sheet .rdp-nav { position: absolute; top: 0; right: 0; display: flex; }
 .live-date-sheet .rdp-nav button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 6px; background: none; color: #365c46; cursor: pointer; }
 .live-date-sheet .rdp-nav button:hover { background: #e7ecdc; }
 .live-date-sheet .rdp-nav button[aria-disabled="true"] { opacity: 0.35; cursor: default; }
 .live-date-sheet .rdp-chevron { width: 18px; height: 18px; fill: currentColor; }
 .live-date-sheet .rdp-month_grid { border-collapse: collapse; }
-.live-date-sheet .rdp-weekday { width: 44px; height: 32px; color: #66705f; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.live-date-sheet .rdp-weekday { width: 44px; height: 32px; color: #66705f; font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; }
 .live-date-sheet .rdp-day { padding: 0; text-align: center; }
 .live-date-sheet .rdp-day_button { width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; color: inherit; font: inherit; font-size: 16px; cursor: pointer; transition: background-color 120ms var(--paper-ease); }
 .live-date-sheet .rdp-day_button:hover { background: #e7ecdc; }
@@ -851,11 +851,11 @@
   .live-dialog.live-detail-dialog { max-width: 640px !important; }
 }
 .live-dialog { font-size: 16px; }
-.live-dialog .live-field small, .live-dialog .live-detail small { font-size: 14px; line-height: 1.45; }
+.live-dialog .live-field small, .live-dialog .live-detail small { font-size: 15px; line-height: 1.45; }
 .live-dialog.live-detail-dialog p { font-size: 15px; line-height: 1.5; }
 .live-dialog .live-field > [data-slot="native-select-wrapper"] { width: 100%; }
 .live-dialog .live-manage [data-slot="button"] { height: auto; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--space-12) 16px; white-space: normal; text-align: left; }
-.live-dialog .live-manage [data-slot="button"] small { font-size: 14px; font-weight: 400; color: var(--live-muted); }
+.live-dialog .live-manage [data-slot="button"] small { font-size: 15px; font-weight: 400; color: var(--live-muted); }
 /* An act that takes something away is ink inside the same hairline as its neighbours: no colour, no fill. */
 .live-dialog .live-manage [data-slot="button"][data-danger] { color: #283c32; }
 @media (max-width: 699px) {
@@ -1004,7 +1004,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   nav.week-figures a, nav.week-figures a + a { padding: var(--space-8) 16px; column-gap: 16px; }
   nav.week-figures .count-up { font-size: 44px; }
   nav.week-figures a > span:nth-child(2) { font-size: 16px; }
-  nav.week-figures a > small { font-size: 14px; min-height: 0; }
+  nav.week-figures a > small { font-size: 13px; min-height: 0; }
 }
 
 /* ── Visits and commitments mark their state as the neighbor record does ──────────────────
@@ -1375,7 +1375,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 /* Lists and tables: set as type. Figures line up by the digit, the rules are hairlines, a table's heads are small letterspaced capitals. */
 .live-app :is(.live-list, table, .help-aside-list, .visits-aside-day, .week-figures) { font-variant-numeric: tabular-nums lining-nums; font-kerning: normal; }
-.live-app table:not(.book-table) th { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live-muted); }
+.live-app table:not(.book-table) th { font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
 .live-app table:not(.book-table) :is(th, td) { border-bottom: 1px solid var(--live-line); }
 /* Heads: the display line set as the home page sets its own: optical size, balanced lines, hanging punctuation. */
 .live-app .live-page-head h1 { font-optical-sizing: auto; text-wrap: balance; hanging-punctuation: first last; font-kerning: normal; }
@@ -1580,10 +1580,10 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 @media (min-width: 1600px) {
   .live-header-actions .live-account { font-size: 16px; }
   .live-app .live-nav a { font-size: 16px; }
-  .live-app .live-main .live-page-head .live-kicker { font-size: 14px; }
-  .live-header .live-sample-mark { font-size: 14px; }
+  .live-app .live-main .live-page-head .live-kicker { font-size: 13px; }
+  .live-header .live-sample-mark { font-size: 13px; }
   .live-aside-sheet { font-size: 16px; }
-  .live-aside-sheet .live-kicker { font-size: 14px; }
+  .live-aside-sheet .live-kicker { font-size: 13px; }
   :is(.live-main, .live-dialog, .live-header-desk) [data-slot="button"]:not([data-size^="icon"]) { font-size: 16px; }
   .live-app .live-head-actions [data-slot="button"] { font-size: 17px; }
 }

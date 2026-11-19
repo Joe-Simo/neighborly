@@ -1,7 +1,7 @@
 /* The rooms: six paper cards laid on the desk, two to a row, each a picture with its name and its one line beside it. Put down by hand, a degree off each way. */
 .neighborly-rooms{--lean-x:0;--lean-y:0;display:flex;flex-direction:column;gap:clamp(36px,4.4vw,72px)}
 .neighborly-rooms .neighborly-together-statement{max-width:30ch;font-size:clamp(26px,2.6vw,40px)}
-.neighborly-rooms-kicker{margin:0 0 clamp(14px,1.4vw,22px);font-size:15px;font-weight:650;line-height:1.3;letter-spacing:.1em;text-transform:uppercase;color:#52644f}
+.neighborly-rooms-kicker{margin:0 0 clamp(14px,1.4vw,22px);font-size:15px;font-weight:650;line-height:1.3;letter-spacing: var(--caps-track);text-transform:uppercase;color:#52644f}
 .neighborly-rooms ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(30px,3vw,52px) clamp(28px,3.4vw,64px);margin:0;padding:0;list-style:none}
 .neighborly-rooms li{position:relative;display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);align-items:center;gap:0 clamp(20px,2vw,34px);padding:clamp(14px,1.2vw,20px);background:var(--relief-paper);box-shadow:var(--relief-card);rotate:var(--turn);translate:calc(var(--lean-x) * 9px) calc(var(--lean-y) * 6px)}
 /* The card is the paper; the second row sits a little lower than the first, as nothing is put down in line. */
