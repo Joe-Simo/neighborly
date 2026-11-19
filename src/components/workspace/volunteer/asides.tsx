@@ -79,7 +79,11 @@ export function WeekByTeam() {
   const sunday = today.startOf("week", { useLocaleWeeks: true });
   const weekdays = useWeekdays(sunday);
   const from = sunday.toMillis(), until = sunday.plus({ weeks: 1 }).toMillis();
-  const dayOf = (time: number) => Math.floor(DateTime.fromMillis(time, { zone: data.church.timeZone }).diff(sunday, "days").days);
+  // Where each of the week's seven days begins, in the conference's own zone, worked out once; a commitment's day is the
+  // last of them it starts on or after. (Asking the calendar for every commitment, for every team and day, held the room's
+  // first frame back.)
+  const dayStarts = Array.from({ length: 7 }, (_, day) => sunday.plus({ days: day }).toMillis());
+  const dayOf = (time: number) => dayStarts.findLastIndex((start) => time >= start);
   const week = data.commitments.filter((item) => item.status !== "cancelled" && item.start >= from && item.start < until);
   const teams = data.teams
     .map((team) => {
