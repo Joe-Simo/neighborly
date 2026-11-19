@@ -459,7 +459,8 @@ export function LiveWorkspace({
     page.focus({ preventScroll: true });
     page.removeAttribute("tabindex");
   }, [roomIn]);
-  // Moving to another room, focus lands on its headline once the room is at rest (the page turn over): a screen
+  // Moving to another room, focus lands on its headline once the room is at rest (the page turn over), also when the
+  // room was picked from the phone's Menu, whose closing hands focus back to its button first: a screen
   // reader says the room once, by its name, and the next Tab goes on from the top of the room. A ring is drawn there
   // only for someone on keys. The first room keeps focus where the arrival put it.
   const headline = useRef<HTMLHeadingElement>(null);
@@ -468,7 +469,7 @@ export function LiveWorkspace({
     if (!settled || focusedArea.current === area) return;
     focusedArea.current = area;
     const active = document.activeElement;
-    if (active && active !== document.body && !active.closest("nav, .live-tab-bar, [data-slot='dialog-content']") && document.contains(active)) return;
+    if (active && active !== document.body && !active.closest("nav, .live-tab-bar, [data-slot='dialog-content'], .live-menu-trigger, .live-tab") && document.contains(active)) return;
     headline.current?.focus({ preventScroll: true });
   }, [settled, area]);
   const shellHeld = !roomIn && !lost;
