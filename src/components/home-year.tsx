@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, useEffect, useRef } from "react";
+import { whenIdle } from "@/lib/idle";
 import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
 import { HomeYearSlip, ROSA_HELP } from "./home-year-slip";
 import "./home-year.css";
@@ -50,8 +51,7 @@ export function HomeYear() {
     if (!list || !panel) return;
     const cells = [...list.querySelectorAll<HTMLElement>(":scope > div")];
     // Each pile's picture is decoded while the page is idle, well before the turn that lays it.
-    const idle = window.requestIdleCallback ?? ((work: () => void) => window.setTimeout(work, 200));
-    idle(() => list.querySelectorAll<HTMLElement>(".home-year-stack>i").forEach(stack => {
+    whenIdle(() => list.querySelectorAll<HTMLElement>(".home-year-stack>i").forEach(stack => {
       const source = /url\("(.*)"\)/.exec(getComputedStyle(stack).backgroundImage)?.[1];
       if (source) { const picture = new Image(); picture.src = source; void picture.decode().catch(() => {}); }
     }));

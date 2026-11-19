@@ -18,6 +18,30 @@ const eslintConfig = defineConfig([
       }],
     },
   },
+  {
+    // APIs Safari does not have. Calling one unguarded throws on iPhone and iPad (it crashed the home page once), so every use goes through
+    // the one helper that falls back where they are missing.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/idle.ts"],
+    rules: {
+      "no-restricted-globals": ["error",
+        { name: "requestIdleCallback", message: "Safari has no requestIdleCallback. Use whenIdle from @/lib/idle." },
+        { name: "cancelIdleCallback", message: "Safari has no cancelIdleCallback. Use the stop function whenIdle from @/lib/idle returns." },
+        { name: "scheduler", message: "Safari has no scheduler (postTask, yield). Add a guarded helper in src/lib first." },
+      ],
+      "no-restricted-properties": ["error",
+        { object: "window", property: "requestIdleCallback", message: "Safari has no requestIdleCallback. Use whenIdle from @/lib/idle." },
+        { object: "window", property: "cancelIdleCallback", message: "Safari has no cancelIdleCallback. Use the stop function whenIdle from @/lib/idle returns." },
+        { object: "window", property: "scheduler", message: "Safari has no scheduler (postTask, yield). Add a guarded helper in src/lib first." },
+        { object: "globalThis", property: "requestIdleCallback", message: "Safari has no requestIdleCallback. Use whenIdle from @/lib/idle." },
+      ],
+    },
+  },
+  {
+    // Already guarded by hand, in files other work owns; each moves to whenIdle with its owner's next change, and leaves this list then.
+    files: ["src/components/painted-world.tsx", "src/components/living-courtyard.tsx", "src/components/workspace/sections.ts"],
+    rules: { "no-restricted-globals": "off", "no-restricted-properties": "off" },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
