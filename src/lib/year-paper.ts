@@ -4,7 +4,7 @@ import { sampleYear } from "@/lib/sample-year";
  * "The year in paper": the sample conference's year as one slip for every request it was asked, fanned in depth a month at a time,
  * October to September. The flight is a pure function of how far through the band the reader is, so the poster (scripts/year-paper-posters.mts)
  * and the live canvas (year-paper-gl.ts) draw the same slips from the same numbers, and the canvas's first frame is the poster.
- * Synthetic: the sample conference's own count of requests; how they fall across the months is the sample's spread, not a claim.
+ * Synthetic: the sample conference's own requests, month by month, and which are still waiting, all as its Reports room adds them up.
  */
 export const SLIPS = sampleYear.requests;
 export const MONTHS = 12;
@@ -24,24 +24,18 @@ const hash = (a: number, b: number) => {
   return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
 };
 
-/** The months' slips: a winter swell, every month holding some, all summing to the year's count. */
-const perMonth = (() => {
-  const weight = Array.from({ length: MONTHS }, (_, m) => 1 + .35 * Math.cos((m - 3) / MONTHS * Math.PI * 2));
-  const sum = weight.reduce((a, b) => a + b, 0);
-  const counts = weight.map(w => Math.floor(w / sum * SLIPS));
-  for (let m = 0, left = SLIPS - counts.reduce((a, b) => a + b, 0); left > 0; m = (m + 1) % MONTHS, left--) counts[m]++;
-  return counts;
-})();
+/** The months' slips: as many as the sample's Reports room counts in each month. */
+const perMonth = sampleYear.requestsByMonth;
 
 type Slip = { month: number; place: number; of: number; turn: number; tilt: number; lift: number; waiting: boolean };
-/** Still waiting at the year's end: only the last weeks' requests, the share a stand-in for the look, not a count read from the sample. */
-const waitingShare = (month: number) => month === MONTHS - 1 ? .3 : month === MONTHS - 2 ? .08 : 0;
+/** A month's waiting requests are its last ones in: the slips at the back of its fan. */
+const waits = (month: number, place: number, of: number) => place >= of - sampleYear.waitingByMonth[month];
 export const slips: readonly Slip[] = perMonth.flatMap((of, month) => Array.from({ length: of }, (_, place) => ({
   month, place, of,
   turn: (hash(month, place) - .5) * .09,
   tilt: (hash(place, month + 40) - .5) * .12,
   lift: (hash(month + 80, place) - .5) * .05,
-  waiting: hash(month + 120, place) < waitingShare(month),
+  waiting: waits(month, place, of),
 })));
 
 /** Column-major 4x4, as GL takes it. */

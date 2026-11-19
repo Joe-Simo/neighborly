@@ -13,6 +13,10 @@ export const sampleYear = {
   visits: 325,
   /** Cents paid toward requests: to a landlord, a utility or a store, never in cash. */
   helpPaid: 5243500,
+  /** Requests received in each month of the year, October first, as the Reports room's months add them up. */
+  requestsByMonth: [16, 12, 31, 30, 22, 36, 31, 41, 28, 44, 39, 40],
+  /** Of those, the ones still waiting at the year's close (open, or approved and not yet paid), by the month they came in. */
+  waitingByMonth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
   /** Cents the conference said yes to on the week page's Thursday: the sample's electric bill with a shut-off notice. */
   weekHelp: 21000,
 } as const;

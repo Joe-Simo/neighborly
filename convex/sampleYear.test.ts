@@ -4,6 +4,7 @@ import { convexTest } from "convex-test";
 import schema from "./schema";
 import { signedIn } from "./clerk.testing";
 import { api, internal } from "./_generated/api";
+import { DateTime } from "luxon";
 import { sampleYear } from "../src/lib/sample-year";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
@@ -28,6 +29,12 @@ test("the home page's four figures are the sample's own yearly report", async ()
     visits: sampleYear.visits,
     helpPaid: sampleYear.helpPaid,
   });
+  // The year in paper draws one slip a request, month by month, its corner ochre while the request still waits (open, or approved and unpaid).
+  expect(report.months.map((month) => month.requests)).toEqual(sampleYear.requestsByMonth);
+  const waiting = await t.run(async (ctx) => (await ctx.db.query("assistanceRequests").collect()).filter((request) => request.status === "open" || request.status === "approved"));
+  const byMonth = report.months.map(({ month }) => waiting.filter((request) => DateTime.fromMillis(request.createdAt, { zone: report.timeZone }).toFormat("yyyy-MM") === month).length);
+  expect(byMonth).toEqual(sampleYear.waitingByMonth);
+  expect(byMonth.reduce((sum, count) => sum + count, 0)).toBe(report.requests.open + report.requests.approved);
   // The week page's yes is the sample's own: the electric bill with a shut-off notice, approved after the visit.
   const shutOff = await t.run(async (ctx) =>
     (await ctx.db.query("assistanceRequests").collect()).find((request) => request.summary === "Electric bill with a shut-off notice."),
