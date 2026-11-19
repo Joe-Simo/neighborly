@@ -264,3 +264,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 @media(min-width:1600px) and (min-height:760px){
   .relief-panel[data-chapter=visit] .relief-words h2{font-size:min(9.45vw,17svh)}
 }
+/* One book (paper-turn.ts): a chapter's leaf hinges from its top edge as it arrives, and the leaf above it shows a deeper crease while it turns. */
+.relief-panel .relief-hold{transform-origin:50% 0}
+.relief-panel[data-leaf-turning] .relief-hold{will-change:transform}
+.relief-panel[data-leaf-turning]::before{content:"";position:absolute;z-index:2;left:0;right:0;top:-14px;height:14px;pointer-events:none;background:linear-gradient(#3b2a1200,#3b2a121f)}

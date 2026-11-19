@@ -2,6 +2,7 @@
 
 import { frameStep } from "@/lib/scroll-frame";
 import { setAct } from "@/lib/chapter-act";
+import { paperTurnAt, turnLeaf } from "@/lib/paper-turn";
 import { Fragment, useEffect, useRef } from "react";
 import { HomeYear } from "./home-year";
 import { SlipFolds } from "./slip-folds";
@@ -65,11 +66,21 @@ export function ReliefStory() {
     if (still) return;
     // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
     let height = innerHeight, near = false, boxes: DOMRect[] = [];
+    // The chapters after the slip each arrive as the next leaf (paper-turn.ts). One already in the window when the page is first drawn, or one
+    // the keyboard has entered, lies flat until it has left the window below, so the first frame is the page as drawn and focus never lands on a turning leaf.
+    const leaves = panels.slice(1).map(panel => ({ panel, leaf: panel.querySelector<HTMLElement>(".relief-hold") }));
+    // Phones keep their chapters flat: at 4x CPU the turn cost an occasional frame past budget, so it is drawn from 1024 up only.
+    const wide = matchMedia("(min-width: 1024px)");
+    const flat = new Set<HTMLElement>();
+    let seeded = false;
+    const focused = (event: FocusEvent) => { const panel = (event.target as Element | null)?.closest<HTMLElement>(".relief-panel"); if (panel) { flat.add(panel); request(); } };
     const read = () => {
       height = innerHeight;
       const bounds = element.getBoundingClientRect();
       near = !(bounds.bottom < -height || bounds.top > height * 2);
       boxes = near ? panels.map(panel => panel.getBoundingClientRect()) : [];
+      // Seeded from the first frame's own read, so nothing is measured at mount; a story out of reach then has no chapter in the window.
+      if (!seeded) { seeded = true; boxes.forEach((box, index) => { if (box.top < height) flat.add(panels[index]); }); }
     };
     const update = () => {
       if (!near) return;
@@ -87,13 +98,21 @@ export function ReliefStory() {
         const nowE = (1 - (1 - e) ** 3).toFixed(4), nowH = (h * h * (3 - 2 * h)).toFixed(4);
         setAct(panel, nowE, nowH);
       }
+      for (const { panel, leaf } of leaves) {
+        // The chapter found under a turned page is not a new leaf: the page turn above it is its arrival.
+        if (!leaf || panel.dataset.turn === "to") continue;
+        const top = boxes[panels.indexOf(panel)].top;
+        if (top > height) flat.delete(panel);
+        turnLeaf(panel, leaf, paperTurnAt(top, height), flat.has(panel) || !wide.matches);
+      }
     };
     const { ask: request, drop } = frameStep(read, update);
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("resize", request);
+    element.addEventListener("focusin", focused);
     read();
     update();
-    return () => { drop(); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
+    return () => { drop(); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); element.removeEventListener("focusin", focused); };
   }, []);
   return <section ref={root} className="relief-story" aria-label="What a conference does with Kind Helps">
     {story.map((part, index) => <Fragment key={part.picture}>
