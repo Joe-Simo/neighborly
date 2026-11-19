@@ -78,6 +78,9 @@ export function PageTurn({ children }: { children: ReactNode }) {
     const round = part("round"), page = part("page"), back = part("back"), roll = part("roll"), shade = part("shade"), hold = turn?.querySelector<HTMLElement>(".relief-hold");
     if (!turn || !from || !(to instanceof HTMLElement) || !round || !page || !back || !roll || !shade || !hold) return;
     const beneath = to.querySelector<HTMLElement>(".relief-hold");
+    // The words beneath are never seen half uncovered: each line is held back until the crease has passed its far corner, then shown whole.
+    const lines = Array.from(to.querySelectorAll<HTMLElement>(".relief-words h2, .relief-words p, .home-year-note"));
+    let lineBoxes: DOMRect[] = [], shown = "";
     const still = matchMedia("(prefers-reduced-motion: reduce)");
     // Where chapters are not held (relief-journey.css lets them scroll as plain pages up to 820px), nothing is turned. Read from the media query, never from a computed style.
     const plain = matchMedia("(max-width: 820px)");
@@ -87,7 +90,7 @@ export function PageTurn({ children }: { children: ReactNode }) {
       // A page taller than the window, or one not held at all (phones), cannot be turned whole, and with less motion nothing is turned: the chapters then follow one another as plain pages.
       const fits = !still.matches && !plain.matches && hold.offsetHeight <= innerHeight + 1;
       if (!fits) {
-        if (on) { on = false; last = -1; for (const panel of [from, to]) { panel.removeAttribute("data-turn"); panel.style.removeProperty("--turn-page"); panel.style.removeProperty("--turn-own"); } setAct(to, "1.0000", "1.0000"); }
+        if (on) { on = false; last = -1; for (const panel of [from, to]) { panel.removeAttribute("data-turn"); panel.style.removeProperty("--turn-page"); panel.style.removeProperty("--turn-own"); } setAct(to, "1.0000", "1.0000"); lines.forEach(line => line.removeAttribute("data-under-turn")); shown = ""; }
         return;
       }
       on = true;
@@ -104,7 +107,7 @@ export function PageTurn({ children }: { children: ReactNode }) {
       update();
     };
     // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
-    const read = () => { if (on) bottom = from.getBoundingClientRect().bottom; };
+    const read = () => { if (on) { bottom = from.getBoundingClientRect().bottom; lineBoxes = lines.map(line => line.getBoundingClientRect()); } };
     const update = () => {
       if (!on || !geometry) return;
       const close = bottom < tall * 2.5 && bottom > -tall;
@@ -114,6 +117,10 @@ export function PageTurn({ children }: { children: ReactNode }) {
       last = turned;
       // How far the page has been turned off the chapter beneath: what lies under it (the year's figures) stands up as it is uncovered.
       to.style.setProperty("--turned", turned.toFixed(4));
+      // The crease runs from the lower right corner along the window's diagonal (as home-year.tsx reads it), with a margin for its curve.
+      const w = innerWidth, h = innerHeight, far = Math.hypot(w, h), gone = far * turned;
+      const nowShown = lines.map((_, index) => { const box = lineBoxes[index]; return turned >= 1 || (!!box && gone >= ((w - box.left) * w + (h - box.top) * h) / far + far * .06) ? "1" : "0"; }).join("");
+      if (nowShown !== shown) { shown = nowShown; lines.forEach((line, index) => line.toggleAttribute("data-under-turn", nowShown[index] === "0")); }
       turn.dataset.turned = placeTurn(geometry, { round, page, back, roll, shade }, turned);
     };
     const { ask: request, drop } = frameStep(read, update);
