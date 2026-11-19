@@ -24,3 +24,18 @@
 /* A sticky head inside a turning sheet is drawn out of shape by the 3D turn, so it is held in place until the sheet lies flat. The turn ends with the sheet's
    top at 60% of the window, before the head would stick, so nothing jumps. */
 @media(min-width:1024px){.public-words.public-made>[data-leaf-turning]+section>h2{position:static}}
+/* The frame strip: one bar for each frame of the page's own scroll on the Mac, the 33 ms line across it. Drawn once; nothing in it moves. */
+.public-made-frames{grid-column:1/-1;margin:clamp(20px,3vw,40px) 0 0;max-width:34em}
+.public-made-frames-title{font:400 clamp(19px,1.5vw,24px)/1.3 'Newsreader','Newsreader Fallback',Georgia,serif;color:#22362a;margin-bottom:14px}
+.public-made-frames-row+.public-made-frames-row{margin-top:20px}
+.public-made-frames-row p{margin:0 0 8px;font-size:15px;line-height:1.5;color:#3d4f43;font-feature-settings:"tnum","lnum"}
+.public-made-frames-row strong{font-weight:600;color:#22362a}
+.public-made-frames svg{display:block;width:100%;height:64px;border-bottom:1px solid #293f3240}
+.public-made-frames rect{fill:#7f8c82}
+.public-made-frames rect[data-late]{fill:#6a557f}
+.public-made-frames line{stroke:#293f32;stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:4 3}
+.public-made-frames-source{margin:12px 0 0;font-size:15px;line-height:1.5;color:#3d4f43}
+@media(min-width:1024px){.public-words.public-made .public-made-frames{grid-column:2;grid-row:1/span 2;align-self:start;margin:0}}
+/* The 33 ms line is named where it runs, above it at the strip's right end. */
+.public-made-frames-plot{position:relative}
+.public-made-frames-plot>span{position:absolute;right:0;top:var(--line);transform:translateY(calc(-100% - 3px));font-size:15px;line-height:1;color:#293f32;font-feature-settings:"tnum","lnum";background:#f6f2e9;padding-left:6px}

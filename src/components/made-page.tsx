@@ -14,6 +14,7 @@ import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
 import { CutHead } from "@/components/cut-heads";
 import { BookLeaves } from "@/components/book-leaves";
+import { MadeFrames } from "@/components/made-frames";
 import "@/components/made-book.css";
 
 export { privacyViewport as madeViewport } from "@/components/privacy-page";
@@ -63,6 +64,7 @@ export function MadePage({ language }: { language: Language }) {
             </table>
             <figcaption>{said.evalTable.source}</figcaption>
           </figure>}
+          {table === "frames" && <MadeFrames said={said.frameStrip} language={language} />}
           {/* eslint-disable-next-line @next/next/no-img-element -- a 960px working file shown as it is */}
           {figure && <figure className="public-made-figure"><img src={figure.src} alt={figure.alt} width={960} height={480} loading="lazy" decoding="async" /><figcaption>{figure.caption}</figcaption></figure>}
         </section>
