@@ -3,7 +3,7 @@
 .report .report-book { border: 0; box-shadow: none; }
 /* The book and its printed sheets keep the room's figures: lining and tabular (see .report in reports.css). */
 .report-book, .report-book-print { font-feature-settings: "lnum" 1, "tnum" 1; }
-.report-book { margin: 8px 0 56px; overflow: clip; overflow-clip-margin: 12px; padding: 0 0 4px; }
+.report-book { margin: var(--space-8) 0 var(--space-56); overflow: clip; overflow-clip-margin: 12px; padding: 0 0 var(--space-4); }
 .book-desk {
   position: relative; display: grid; grid-template-columns: minmax(0, 1fr); width: min(100%, 520px);
   outline: none;
@@ -25,7 +25,7 @@
 .book-under { position: absolute; inset: 0; }
 
 .book-sheet {
-  position: absolute; inset: 0; display: flex; flex-direction: column; gap: 18px; overflow: hidden;
+  position: absolute; inset: 0; display: flex; flex-direction: column; gap: var(--space-16) 18px; overflow: hidden;
   padding: clamp(24px, 6%, 52px) clamp(22px, 7%, 56px);
   background: var(--relief-paper); color: var(--live-ink, #283c32); font-size: 15px; line-height: 1.5;
   box-shadow: var(--relief-card);
@@ -33,20 +33,20 @@
 .book-sheet h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: clamp(26px, 3vw, 34px); line-height: 1.1; letter-spacing: -0.01em; }
 .book-folio { margin: auto 0 0; font-size: 13px; color: #5b6b61; }
 
-.book-cover { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.book-cover { display: flex; flex-direction: column; gap: var(--space-8) 10px; height: 100%; }
 .book-cover :is(h2, h3) { margin-top: auto; font-size: clamp(38px, 5vw, 56px); }
 .book-cover p { margin: 0; }
 .book-group { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 .book-sample { font-size: 13px; color: #5b6b61; }
-.book-mark { --size: 22px; display: flex; margin: 18px 0 auto; }
+.book-mark { --size: 22px; display: flex; margin: var(--space-16) 0 auto; }
 .book-mark .week-quilt-piece { margin-left: -6px; }
 .book-mark .week-quilt-piece:first-child { margin-left: 0; }
 .book-contents { justify-content: center; }
 .book-contents ol { margin: 0; padding: 0; list-style: none; border-top: 1px solid rgb(40 60 50 / 0.16); }
-.book-contents li { padding: 12px 0; border-bottom: 1px solid rgb(40 60 50 / 0.16); font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: clamp(19px, 2vw, 23px); line-height: 1.25; }
+.book-contents li { padding: var(--space-12) 0; border-bottom: 1px solid rgb(40 60 50 / 0.16); font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: clamp(19px, 2vw, 23px); line-height: 1.25; }
 
 .book-table { width: 100%; border-collapse: collapse; }
-.book-table th, .book-table td { padding: 9px 0; font-size: 15px; letter-spacing: normal; text-transform: none; color: inherit; line-height: 1.4; border-bottom: 1px solid rgb(40 60 50 / 0.16); text-align: left; font-weight: 400; vertical-align: baseline; }
+.book-table th, .book-table td { padding: var(--space-8) 0; font-size: 15px; letter-spacing: normal; text-transform: none; color: inherit; line-height: 1.4; border-bottom: 1px solid rgb(40 60 50 / 0.16); text-align: left; font-weight: 400; vertical-align: baseline; }
 .book-table td { text-align: right; padding-left: 12px; white-space: nowrap; }
 .report-book .book-table thead th, .report-book-print .book-table thead th { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #4a5a50; border-bottom-color: var(--live-ink, #283c32); }
 .book-table thead th:not(:first-child) { text-align: right; padding-left: 12px; }
@@ -68,7 +68,7 @@
 .book-table .book-end[data-before-total="1"] > tr:first-child > *,
 .book-table .book-end[data-before-total="2"] > tr:nth-child(2) > * { border-bottom-color: var(--live-ink, #283c32); }
 /* A row set apart from the column above it (miles under hours): a space, not a rule, and the weight of an ordinary row. */
-.book-table .book-apart :is(th, td) { border-bottom: 0; padding-top: 22px; }
+.book-table .book-apart :is(th, td) { border-bottom: 0; padding-top: var(--space-24); }
 .book-table .book-total :is(th, td) { font-weight: 600; border-bottom: 0; border-top: 1px solid var(--live-ink, #283c32); }
 .book-table:not(.book-columns) td { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: clamp(22px, 2.6vw, 28px); line-height: 1.1; }
 
@@ -93,13 +93,13 @@
 .book-corner { position: absolute; right: 0; bottom: 0; z-index: 3; width: 56px; height: 56px; cursor: grab; touch-action: none; }
 .book-corner:active { cursor: grabbing; }
 
-.book-foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 15px; }
+.book-foot { display: flex; align-items: center; gap: var(--space-8) 8px; margin-top: var(--space-16); font-size: 15px; }
 /* The page arrows are 44px presses, like every control. */
 .book-foot [data-slot="button"] { width: 44px; height: 44px; }
 /* The notes row (report-book.tsx NoteRow) draws as the notes once did under the table: no rule, plain small words. */
 .book-table .book-note-row td { padding: 0; border: 0; text-align: left; white-space: normal; font: inherit; font-weight: 400; }
-.book-note-row .book-note { margin-top: 22px; }
-.book-note { margin: 4px 0 0; font-size: 13px; color: #4a5a50; }
+.book-note-row .book-note { margin-top: var(--space-24); }
+.book-note { margin: var(--space-4) 0 0; font-size: 13px; color: #4a5a50; }
 .book-print {
   margin-left: auto; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; color: var(--live-ink, #283c32);
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; cursor: pointer;

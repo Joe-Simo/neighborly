@@ -3,32 +3,32 @@
    page, so each name starts with volunteer-. */
 
 /* ── The sheet of requests: ochre corner while it waits, green on the yes ── */
-.volunteer-choice { margin-bottom: 44px; }
+.volunteer-choice { margin-bottom: var(--space-48); }
 .volunteer-choice-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px 40px;
+  gap: var(--space-16) 40px;
   align-items: center;
   min-height: 80px;
-  padding: 20px 0;
+  padding: var(--space-20) 0;
   border-top: 1px solid var(--live-line);
 }
-.volunteer-choice-rows { margin-top: 18px; }
+.volunteer-choice-rows { margin-top: var(--space-16); }
 .volunteer-choice-row:last-child { padding-bottom: 0; }
 :is(.volunteer-choice, .volunteer-meeting) h3 {
-  margin: 0 0 6px;
+  margin: 0 0 var(--space-8);
   font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.02em;
 }
 :is(.volunteer-choice, .volunteer-meeting) p:not(.help-sheet-label) { font-size: 17px; margin: 0; }
-:is(.volunteer-choice, .volunteer-meeting) .help-sheet-label { margin-bottom: 16px; }
+:is(.volunteer-choice, .volunteer-meeting) .help-sheet-label { margin-bottom: var(--space-16); }
 .live-app .volunteer-choice-when { color: var(--live-ink, #283c32); }
-.volunteer-choice .live-row-actions { gap: 10px 14px; }
+.volunteer-choice .live-row-actions { gap: var(--space-8) 14px; }
 .volunteer-choice .live-row-actions .tools-quiet { margin-left: 6px; }
 .live-app .volunteer-given {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8) 10px;
   min-height: 44px;
   color: #365c46;
   font-weight: 600;
@@ -38,11 +38,11 @@
 /* On a phone the buttons sit 3px down; the word that takes their place sits where they sat, so the sheet keeps its height. */
 @media (max-width: 560px) { .live-app .volunteer-choice .volunteer-choice-row > .volunteer-given { margin-top: 3px; } }
 .live-app .volunteer-given[data-no] { color: var(--live-muted); font-weight: 400; }
-.volunteer-meeting .live-row-actions { gap: 6px 22px; }
-.live-app .volunteer-said { margin: 0 0 28px; }
+.volunteer-meeting .live-row-actions { gap: var(--space-8) 22px; }
+.live-app .volunteer-said { margin: 0 0 var(--space-32); }
 .volunteer-said:focus, .volunteer-given:focus { outline: none; }
 /* The line that says an answer waits for the connection: a little air above it, inside the line, so its room opens and closes with it. */
-.volunteer-choice-waits .live-waiting { padding-top: 8px; }
+.volunteer-choice-waits .live-waiting { padding-top: var(--space-8); }
 
 /* The commitment just accepted is laid into the list like a sheet into a folder. */
 @keyframes volunteer-filed { from { background-color: var(--help-sheet, #fdfcf8); box-shadow: 0 10px 24px rgb(40 60 50 / 0.1); } }
@@ -54,9 +54,9 @@
 .live-app .live-commitment-row .live-status { text-transform: capitalize; }
 
 /* ── A task: a pencil line through it once it is done ── */
-.live-row.volunteer-task { min-height: 80px; padding: 16px 0; }
+.live-row.volunteer-task { min-height: 80px; padding: var(--space-16) 0; }
 .volunteer-task h3 {
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-4);
   font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.015em;
 }
@@ -69,8 +69,8 @@
 /* The due date stays whole when the line has to break. */
 .volunteer-due, .volunteer-who { white-space: nowrap; }
 .volunteer-task > [data-slot="button"], .volunteer-task > .live-status, .volunteer-task > .volunteer-task-act { flex: none; }
-.volunteer-task-act { display: flex; align-items: center; gap: 16px; }
-.volunteer-task-done { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--live-muted); white-space: nowrap; }
+.volunteer-task-act { display: flex; align-items: center; gap: var(--space-16) 16px; }
+.volunteer-task-done { display: inline-flex; align-items: center; gap: var(--space-8) 6px; font-size: 14px; color: var(--live-muted); white-space: nowrap; }
 .volunteer-task-done svg { color: var(--live-accent); }
 .volunteer-task[data-done] h3 { color: var(--live-muted); }
 .volunteer-task[data-done] h3 span { background-size: 100% 1.5px; }
@@ -81,8 +81,8 @@
 .volunteer-ticked [data-slot="button"] svg { animation: volunteer-tick 320ms var(--paper-ease) 200ms backwards; }
 
 /* ── A meeting: a small sheet whose corner tells where the reply stands ── */
-.volunteer-meetings { display: grid; gap: 22px; }
-.volunteer-meetings .help-sheet { margin: 0; padding: 26px 30px; }
+.volunteer-meetings { display: grid; gap: var(--space-24) 22px; }
+.volunteer-meetings .help-sheet { margin: 0; padding: var(--space-24) 30px; }
 .volunteer-yes { --paper-corner: #365c46; }
 .volunteer-choice.paper-fold .help-sheet-label { color: #365c46; }
 .volunteer-meeting .help-sheet-body { align-items: center; }
@@ -90,21 +90,21 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 24px;
-  margin-top: 18px;
-  padding-top: 10px;
+  gap: var(--space-4) 24px;
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
   border-top: 1px solid var(--live-line);
 }
 .volunteer-replies { flex: 1 1 100%; }
-.volunteer-replies .live-row { min-height: 56px; padding: 12px 0; font-size: 17px; }
+.volunteer-replies .live-row { min-height: 56px; padding: var(--space-12) 0; font-size: 17px; }
 .volunteer-replies .live-status { text-transform: capitalize; }
 
 @media (max-width: 699px) {
   .volunteer-choice-row, .volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); }
-  .volunteer-meetings .help-sheet { padding: 22px 20px; }
+  .volunteer-meetings .help-sheet { padding: var(--space-24) 20px; }
   :is(.volunteer-choice, .volunteer-meeting) h3 { font-size: 24px; padding-right: 26px; }
   /* The title has the row to itself; the button sits on the line of who and when, at the right. */
-  .live-row.volunteer-task { align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+  .live-row.volunteer-task { align-items: center; flex-wrap: wrap; gap: var(--space-8) 12px; }
   .volunteer-task > div { display: contents; }
   .volunteer-task h3 { flex: 1 1 100%; margin: 0; }
   /* The line keeps its natural width, so a button that does not fit beside it drops under it; a name never breaks. */
@@ -136,5 +136,5 @@
 
 /* On a phone the date leaf stands at the top of its row, level with the name, not floating in the row's middle. */
 @media (max-width: 599px) {
-  .live-app .live-row.live-commitment-row > .live-date-leaf { align-self: start; margin-top: 6px; }
+  .live-app .live-row.live-commitment-row > .live-date-leaf { align-self: start; margin-top: var(--space-8); }
 }

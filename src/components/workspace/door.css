@@ -30,7 +30,7 @@
 @keyframes door-card-marks { from { opacity: 1; } }
 /* The one quiet line, where the waiting screen has it, if the room is not ready when the paper has landed. */
 .door-opening {
-  position: fixed; inset: calc(50vh + 64px) 24px auto; display: flex; justify-content: center; align-items: center; gap: 12px; margin: 0;
+  position: fixed; inset: calc(50vh + 64px) 24px auto; display: flex; justify-content: center; align-items: center; gap: var(--space-12) 12px; margin: 0;
   font: 400 17px/1.5 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; color: #68715f; text-align: center;
   animation: door-opening-in 200ms ease backwards;
 }

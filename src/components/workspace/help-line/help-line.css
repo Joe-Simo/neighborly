@@ -1,15 +1,15 @@
 /* Only what the help line and neighbor screens add to the shared help-* styles in help.css. */
-.help-record-head { margin: -14px 0 22px; }
-.help-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 16px; color: var(--live-muted); }
+.help-record-head { margin: -14px 0 var(--space-24); }
+.help-back { display: inline-flex; align-items: center; gap: var(--space-8) 6px; min-height: 44px; font-size: 16px; color: var(--live-muted); }
 .help-back:hover { color: var(--live-ink); }
-.help-note { font-size: 18px; line-height: 1.55; color: var(--live-muted); max-width: 62ch; margin: -30px 0 46px; }
-.help-matches { display: grid; gap: 4px; }
-.help-matches .live-row { padding: 14px 0; }
+.help-note { font-size: 18px; line-height: 1.55; color: var(--live-muted); max-width: 62ch; margin: -30px 0 var(--space-48); }
+.help-matches { display: grid; gap: var(--space-4) 4px; }
+.help-matches .live-row { padding: var(--space-16) 0; }
 .help-form .live-field { font-size: 16px; }
 .help-form .live-field small, .help-form-note { font-size: 15px; line-height: 1.45; color: var(--live-muted); margin: 0; }
 .help-form textarea { min-height: 96px; }
 .live-app .help-form [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
-.help-row .help-row-more { margin-top: 10px; font-size: 16px; }
+.help-row .help-row-more { margin-top: var(--space-8); font-size: 16px; }
 /* A waiting call's smaller acts come after "Mark returned" in the page, so they are read and reached in the order
    they are seen on a phone. On a desk they still sit under the words: the leaf and "Mark returned" stand beside both rows. */
 /* Under 851px the row has two columns: the leaf stands beside the words, the act and the smaller acts in turn. */
@@ -25,50 +25,50 @@
   .help-row[data-call]:not([data-quiet]) > .help-row-more { grid-area: 2 / 2; }
 }
 .help-text-action[data-slot="button"], .live-app .help-row .help-text-action[data-slot="button"], .live-app .help-actions .help-text-action[data-slot="button"] { min-height: 44px; height: auto; padding: 0; border: 0; background: none; font-size: inherit; font-weight: 400; color: #35553c; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; flex: 0 0 auto; }
-.help-matches .live-row { border-bottom: 0; border-top: 1px solid var(--live-line); margin-top: 10px; }
-.help-sheet .help-assistant-line { display: flex; align-items: baseline; max-width: none; margin: 18px 0 0; padding-top: 16px; border-top: 1px solid #e6e0ee; font-size: 16px; }
+.help-matches .live-row { border-bottom: 0; border-top: 1px solid var(--live-line); margin-top: var(--space-8); }
+.help-sheet .help-assistant-line { display: flex; align-items: baseline; max-width: none; margin: var(--space-16) 0 0; padding-top: var(--space-16); border-top: 1px solid #e6e0ee; font-size: 16px; }
 .help-assistant-line svg { position: relative; top: 2px; }
-.help-empty[data-first] { border-top: 0; padding-top: 6px; }
-.help-row .help-first { margin-top: 8px; font-size: 16px; }
+.help-empty[data-first] { border-top: 0; padding-top: var(--space-8); }
+.help-row .help-first { margin-top: var(--space-8); font-size: 16px; }
 .help-first strong { font-weight: 600; }
 .help-row .help-moved { color: var(--live-ink); }
-.help-first-origin { margin: -6px 0 6px; font-size: 15px; }
+.help-first-origin { margin: -6px 0 var(--space-8); font-size: 15px; }
 /* In a dialog the form scrolls and its last line, the button, stays in view. */
 /* The home: three quiet facts, each with its own way in. */
-.help-home { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; margin: 0 0 52px; padding-top: 22px; border-top: 1px solid var(--live-line); }
-.help-home dt { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; color: #52644f; margin-bottom: 8px; }
+.help-home { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-32) 30px; margin: 0 0 var(--space-56); padding-top: var(--space-24); border-top: 1px solid var(--live-line); }
+.help-home dt { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; color: #52644f; margin-bottom: var(--space-8); }
 .help-home dd { margin: 0; font-size: 19px; line-height: 1.4; }
-.help-home dd small { display: block; margin-top: 4px; font-size: 16px; color: var(--live-muted); }
+.help-home dd small { display: block; margin-top: var(--space-4); font-size: 16px; color: var(--live-muted); }
 .help-home dd small[data-short] { color: var(--help-ochre-ink); }
 .help-home .help-text-action[data-slot="button"] { font-size: 16px; }
-.help-home-actions { display: flex; gap: 22px; }
-.help-accounts { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.help-home-actions { display: flex; gap: var(--space-24) 22px; }
+.help-accounts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-8) 6px; }
 .help-accounts span { display: block; font-size: 16px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
-.help-alert { display: flex; align-items: baseline; gap: 10px; margin: 0 0 34px; padding: 14px 18px; background: var(--help-ochre-wash); border-left: 3px solid var(--help-ochre); color: var(--help-ochre-ink); font-size: 18px; line-height: 1.45; }
+.help-alert { display: flex; align-items: baseline; gap: var(--space-8) 10px; margin: 0 0 var(--space-32); padding: var(--space-16) 18px; background: var(--help-ochre-wash); border-left: 3px solid var(--help-ochre); color: var(--help-ochre-ink); font-size: 18px; line-height: 1.45; }
 .help-alert svg { flex: none; position: relative; top: 3px; }
-.help-head-actions { display: inline-flex; align-items: center; gap: 22px; }
+.help-head-actions { display: inline-flex; align-items: center; gap: var(--space-24) 22px; }
 .help-head-actions .help-text-action[data-slot="button"] { font-size: 16px; }
 .help-timeline li[data-kind="note"] i, .help-timeline li[data-kind="closed"] i { background: var(--live-paper); box-shadow: inset 0 0 0 2px #859472, 0 0 0 5px var(--live-paper); }
 .help-timeline li[data-kind="note"] h3 { font-family: inherit; font-size: 17px; line-height: 1.55; letter-spacing: 0; white-space: pre-line; max-width: 68ch; }
-.help-timeline .help-found { color: var(--live-ink); font-size: 17px; line-height: 1.55; margin: 2px 0 4px; max-width: 68ch; white-space: pre-line; }
-.help-home .help-noted { margin: 6px 0 0; font-size: 15px; color: var(--live-muted); }
+.help-timeline .help-found { color: var(--live-ink); font-size: 17px; line-height: 1.55; margin: 2px 0 var(--space-4); max-width: 68ch; white-space: pre-line; }
+.help-home .help-noted { margin: var(--space-8) 0 0; font-size: 15px; color: var(--live-muted); }
 .help-record-facts[data-few] { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 820px; }
 .help-form input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 .help-form input[type="number"]::-webkit-inner-spin-button, .help-form input[type="number"]::-webkit-outer-spin-button { appearance: none; -webkit-appearance: none; margin: 0; }
-.help-lines { border: 0; margin: 0; padding: 0; display: grid; gap: 14px; min-width: 0; }
-.help-lines legend { padding: 0; margin-bottom: 4px; font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; color: #52644f; }
+.help-lines { border: 0; margin: 0; padding: 0; display: grid; gap: var(--space-16) 14px; min-width: 0; }
+.help-lines legend { padding: 0; margin-bottom: var(--space-4); font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; color: #52644f; }
 .help-lines > [data-slot="button"] { justify-self: start; }
-.help-places[data-slot="toggle-group"] { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+.help-places[data-slot="toggle-group"] { display: flex; flex-wrap: wrap; gap: var(--space-8) 8px; width: 100%; }
 .help-places [data-slot="toggle-group-item"] { min-height: 44px; padding-inline: 16px; font-size: 16px; border: 1px solid #7d8874; border-radius: 4px; background: #fbfaf6; flex: 0 0 auto; }
 .help-places [data-slot="toggle-group-item"] svg { display: none; }
 .help-places [data-slot="toggle-group-item"][data-state="on"] svg { display: block; color: #3f6a45; }
 .help-places [data-slot="toggle-group-item"][data-state="on"] { background: var(--help-sage-wash); border-color: #596e51; color: var(--live-ink); box-shadow: inset 0 0 0 1px #596e51; }
-.help-line-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; padding-bottom: 14px; border-bottom: 1px solid var(--live-line); position: relative; padding-right: 56px; }
+.help-line-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12) 12px; align-items: end; padding-bottom: var(--space-16); border-bottom: 1px solid var(--live-line); position: relative; padding-right: 56px; }
 .help-lines[data-shape="three"] .help-line-row { grid-template-columns: 1.3fr 1fr 0.8fr; }
 /* One line of boxes reads as a small table: the first line carries the labels for the rest. */
 .help-lines:not([data-shape="four"]) .help-line-row:not(:first-of-type) .live-field > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 560px) {
-  .help-lines[data-shape="three"] .help-line-row { grid-template-columns: 1.2fr 1fr 0.8fr; gap: 8px; padding-right: 50px; }
+  .help-lines[data-shape="three"] .help-line-row { grid-template-columns: 1.2fr 1fr 0.8fr; gap: var(--space-8) 8px; padding-right: 50px; }
   .help-lines[data-shape="three"] .live-field input, .help-lines[data-shape="three"] .live-field select { padding-inline: 8px; }
 }
 .help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 14px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
@@ -80,14 +80,14 @@
   /* What a line is called gets the room; the amount needs less. */
   .help-lines[data-shape="pair"] .help-line-row { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
 }
-@media (max-width: 850px) { .help-home { grid-template-columns: 1fr; gap: 26px; } }
+@media (max-width: 850px) { .help-home { grid-template-columns: 1fr; gap: var(--space-24) 26px; } }
 /* The link keeps its 44px reach without making its line taller than the other rows. */
 .help-timeline p .help-text-action[data-slot="button"] { margin-block: -13px; }
 @media (max-width: 640px) {
   .help-timeline .help-sep { display: none; }
   .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-block: 2px 0; }
 }
-.help-bring { margin: 28px 0 0; font-size: 16px; }
+.help-bring { margin: var(--space-32) 0 0; font-size: 16px; }
 .help-bring .help-text-action[data-slot="button"] { min-height: 44px; }
 
 /* ── Paper motion of this room: the yes, and a call returned ───────────── */
@@ -127,7 +127,7 @@
 .help-sealed .help-actions, .help-sealed .help-unsaved { visibility: hidden; }
 .help-seal {
   position: absolute; right: 0; bottom: 0; margin: 0 !important; min-height: 44px;
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: var(--space-12) 12px;
   font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.01em; color: #365c46 !important;
   animation: paper-rise 320ms var(--paper-ease) 120ms backwards;
 }
@@ -148,9 +148,9 @@
 /* A waiting call's number is a link that rings it, in ink with a hairline underline, above the row's own link. */
 /* A name and a number never break across lines, and a mouse gets 40px of the number without the line moving. */
 .help-row h3 > .help-row-open { white-space: nowrap; }
-.help-row a.help-phone { position: relative; z-index: 1; white-space: nowrap; padding-block: 8px; margin-block: -8px; color: var(--live-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: rgb(40 60 50 / 0.4); }
+.help-row a.help-phone { position: relative; z-index: 1; white-space: nowrap; padding-block: var(--space-8); margin-block: -8px; color: var(--live-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: rgb(40 60 50 / 0.4); }
 /* On a narrow page the number sits under the name, so its reach starts below the name instead of over it. */
-@media (max-width: 850px) { .help-row a.help-phone { padding-top: 0; margin-top: 6px; } }
+@media (max-width: 850px) { .help-row a.help-phone { padding-top: 0; margin-top: var(--space-8); } }
 @media (pointer: coarse) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
 /* Zoomed or narrow, the number keeps a full finger's height whatever the pointer. */
 @media (max-width: 850px) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
@@ -177,26 +177,26 @@
   font: 400 48px/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
   color: #d8cfb6;
   text-shadow: -1px -1px 0 #fffdf7, 1px 2px 0 #b9ad8e, 2px 4px 2px rgb(40 60 50 / 0.18), 4px 10px 14px rgb(40 60 50 / 0.24);
-  padding: 8px 0; background: var(--live-paper, #f5f3ec); border-bottom: 1px solid var(--live-line);
+  padding: var(--space-8) 0; background: var(--live-paper, #f5f3ec); border-bottom: 1px solid var(--live-line);
 }
 .help-letter > .help-letter-head + .live-list { border-top: 0; }
 .help-letter + .help-letter > .live-list { border-top: 0; }
-.help-letter + .help-letter { margin-top: 28px; }
+.help-letter + .help-letter { margin-top: var(--space-32); }
 /* The households waiting for a decision come first, under a small head of their own. */
-.live-app .help-waiting-head { margin: 0 0 10px; font: 600 13px/1.4 inherit; letter-spacing: 0.12em; text-transform: uppercase; color: var(--live-ink); }
+.live-app .help-waiting-head { margin: 0 0 var(--space-8); font: 600 13px/1.4 inherit; letter-spacing: 0.12em; text-transform: uppercase; color: var(--live-ink); }
 /* What a household is waiting on is lifted to the row's right, in ink beside its ochre ring. */
-.live-app .help-neighbor .help-asks { gap: 10px; font: 400 19px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.01em; color: var(--live-ink); white-space: nowrap; }
+.live-app .help-neighbor .help-asks { gap: var(--space-8) 10px; font: 400 19px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.01em; color: var(--live-ink); white-space: nowrap; }
 .live-app .help-neighbor .help-asks:before { width: 10px; height: 10px; background: none; box-shadow: inset 0 0 0 2px #c8962e; }
-.help-more { display: flex; align-items: center; gap: 16px; margin: 28px 0 0; font-size: 16px; color: var(--live-muted); }
+.help-more { display: flex; align-items: center; gap: var(--space-16) 16px; margin: var(--space-32) 0 0; font-size: 16px; color: var(--live-muted); }
 .live-app .help-more [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
 /* A household reads in one calm line or two, so fifty of them are a list and not a scroll. */
-.live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 20px; padding-block: 14px; align-items: center; min-height: 72px; }
+.live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 20px; padding-block: var(--space-16); align-items: center; min-height: 72px; }
 .live-app .help-neighbor .help-avatar { width: 44px; height: 44px; font-size: 16px; }
 .live-app .help-neighbor h3 { font-size: 22px; margin-bottom: 2px; }
 .live-app .help-neighbor p { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .live-app .help-neighbor > :nth-child(3) { grid-column: auto; }
 @media (max-width: 700px) {
-  .live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr); column-gap: 16px; row-gap: 2px; padding-block: 12px; }
+  .live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr); column-gap: 16px; row-gap: 2px; padding-block: var(--space-12); }
   .live-app .help-neighbor > :nth-child(3) { grid-column: 2; }
   .live-app .help-neighbor h3 { font-size: 21px; }
   /* On a phone the line keeps where they live and when they were last helped, and may wrap so neither is cut. */
@@ -205,14 +205,14 @@
   .help-last { white-space: nowrap; }
 }
 /* The assistant is reading: one quiet sentence holds the title's place, at the title's height, until the words arrive. */
-.help-sheet .help-reading-title { margin: 4px 0 16px; font: 400 22px / 34px "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-muted); }
+.help-sheet .help-reading-title { margin: var(--space-4) 0 var(--space-16); font: 400 22px / 34px "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-muted); }
 /* The way on from the line that says what changed. */
 .help-done { flex-wrap: wrap; }
 .help-done > span, .help-done > .contents > span { flex: 1 1 14rem; min-width: 0; }
 .help-done > :is(a, [data-slot="button"]) { margin-left: auto; }
 .help-done > a { min-height: 44px; display: inline-flex; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .help-reading-title { animation: none; } }
-.help-sheet .help-blank { margin: 0 0 12px; font-size: 17px; }
+.help-sheet .help-blank { margin: 0 0 var(--space-12); font-size: 17px; }
 
 /* Removing a record: quiet at the foot, in ink, never red. */
 
@@ -221,9 +221,9 @@
 @media (min-width: 1100px) {
   .help-sheet[data-blank] { display: grid; grid-template-columns: minmax(0, 68ch) minmax(240px, 1fr); column-gap: 56px; align-items: start; }
   .help-sheet[data-blank] .help-sheet-label { grid-column: 1 / -1; }
-  .help-sheet[data-blank] .help-sheet-body { grid-column: 1; grid-template-columns: minmax(0, 1fr); row-gap: 20px; }
+  .help-sheet[data-blank] .help-sheet-body { grid-column: 1; grid-template-columns: minmax(0, 1fr); row-gap: var(--space-20); }
   .help-sheet[data-blank] .help-sheet-body p { max-width: 68ch; }
-  .help-sheet[data-blank] .help-assistant-line { grid-column: 2; margin: 6px 0 0; padding: 2px 0 2px 28px; border-top: 0; border-left: 1px solid #e6e0ee; }
+  .help-sheet[data-blank] .help-assistant-line { grid-column: 2; margin: var(--space-8) 0 0; padding: 2px 0 2px 28px; border-top: 0; border-left: 1px solid #e6e0ee; }
 }
 /* A phone number is never broken across lines, and on a phone the sheet's main act takes the full width so "Discard" is not left alone on a line. */
 .help-tel { white-space: nowrap; }
@@ -234,13 +234,13 @@
   .help-row[data-call]:not([data-quiet]) > :first-child { grid-row: 1 / span 8; }
   .help-row[data-call]:not([data-quiet]) > :nth-child(2) { display: contents; }
   .help-row[data-call]:not([data-quiet]) > :nth-child(2) > * { grid-column: 2; }
-  .help-row[data-call]:not([data-quiet]) > .live-row-actions { margin: 16px 0 0; }
+  .help-row[data-call]:not([data-quiet]) > .live-row-actions { margin: var(--space-16) 0 0; }
   .live-app .help-row[data-call]:not([data-quiet]) > .live-row-actions [data-slot="button"] { width: 100%; }
-  .help-row[data-call]:not([data-quiet]) > .help-row-more { grid-column: 2; margin-top: 14px; }
+  .help-row[data-call]:not([data-quiet]) > .help-row-more { grid-column: 2; margin-top: var(--space-16); }
   .help-sheet .help-actions > [data-slot="button"]:first-child { flex: 1 0 100%; }
 }
 /* "Reach them" stands first in At home: four columns on a wide desk, two by two on a narrower one. */
-@media (min-width: 851px) { .help-home { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 34px; } }
+@media (min-width: 851px) { .help-home { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-32); } }
 @media (min-width: 1180px) { .help-home { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 /* On a phone the row itself is the sign; the arrow would only dangle under the text. */
 @media (max-width: 700px) {
@@ -249,15 +249,15 @@
 }
 /* The side column: who is on the line today and who is calling back. Names in ink, the rest quiet, hairlines between. */
 .help-aside-list { list-style: none; margin: 0; padding: 0; }
-.help-aside-list li { display: flex; flex-direction: column; padding: 10px 0; border-top: 1px solid var(--live-line); }
+.help-aside-list li { display: flex; flex-direction: column; padding: var(--space-8) 0; border-top: 1px solid var(--live-line); }
 .help-aside-list li:first-child { padding-top: 0; border-top: 0; }
 .help-aside-list strong { font-weight: 600; color: var(--live-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* A place nobody holds yet carries the same ochre ring as an open place in the Commitments column. */
-.help-aside-list strong[data-open] { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.help-aside-list strong[data-open] { display: flex; align-items: center; gap: var(--space-8) 8px; font-weight: 400; }
 .help-aside-list strong[data-open]::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
 .help-aside-list span, .help-aside-none { color: var(--live-muted); }
 .help-aside-none { margin: 0; }
-.live-app .live-aside-sheet h3.live-kicker { margin: 28px 0 14px; }
+.live-app .live-aside-sheet h3.live-kicker { margin: var(--space-32) 0 var(--space-16); }
 /* Waiting is one quiet line, and it is not drawn for the first 400ms. */
 .help-opening { animation: help-opening 1ms linear 400ms backwards; }
 @keyframes help-opening { from { opacity: 0; } }
@@ -265,13 +265,13 @@
 @media (min-width: 1280px) and (max-width: 1719px) {
   .live-main:has(> .live-aside:not(:empty)) .help-sheet-body { grid-template-columns: 1fr; }
   .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] { display: block; }
-  .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] .help-assistant-line { margin: 18px 0 0; padding: 16px 0 0; border-top: 1px solid #e6e0ee; border-left: 0; }
+  .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] .help-assistant-line { margin: var(--space-16) 0 0; padding: var(--space-16) 0 0; border-top: 1px solid #e6e0ee; border-left: 0; }
 }
 /* The draft card's first line: who called and when. The name is never broken across lines. */
-.help-sheet .help-from { margin: 0 0 8px; font-size: 19px; line-height: 1.4; color: var(--live-ink); }
+.help-sheet .help-from { margin: 0 0 var(--space-8); font-size: 19px; line-height: 1.4; color: var(--live-ink); }
 .help-sheet .help-from strong { font-weight: 600; white-space: nowrap; }
 /* Closing a conference: the offered first step sits between the terms and the name, quiet, on one line where it fits. */
-.closing-first { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; }
+.closing-first { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-8) 16px; }
 .closing-first p { margin: 0; font-size: 17px; color: var(--live-ink); }
 /* On a phone, a sheet for an act that cannot be undone gives its actions the full width. */
 @media (max-width: 699px) {
@@ -297,7 +297,7 @@
 /* A draft filed by a yes: the saved line carries the name and the request, set as the sheet set them, smaller.
    They arrive from the sheet itself (room.tsx, fileAway). The sentence under them says what was done. */
 .help-done.help-filed { align-items: start; }
-.help-done.help-filed > svg { margin-top: 5px; }
+.help-done.help-filed > svg { margin-top: var(--space-4); }
 .help-filed-words { display: grid; justify-items: start; gap: 1px 0; min-width: 0; flex: 1 1 auto; }
 .help-filed-words strong { font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; white-space: nowrap; transform-origin: 0 0; }
 .help-filed-words [data-filed="asks"] { font-size: 17px; line-height: 1.45; }
@@ -335,7 +335,7 @@
    acts below 880px of sheet, so they are never squeezed to a word a line (a tablet beside the side column). */
 .live-app .help-sheet { container: help-sheet / inline-size; }
 @container help-sheet (max-width: 880px) {
-  .help-sheet-body { grid-template-columns: minmax(0, 1fr); align-items: start; row-gap: 22px; }
+  .help-sheet-body { grid-template-columns: minmax(0, 1fr); align-items: start; row-gap: var(--space-24); }
 }
 
 /* Rows of one list keep one shape. On a phone a neighbor's street has the first line and the rest the second, in
@@ -350,7 +350,7 @@
 }
 /* From 1728px the households waiting for a decision are the room's side column: a name, what it asks, its visit. */
 .help-waiting-beside { margin: 0; padding: 0; list-style: none; }
-.help-waiting-beside li { position: relative; display: grid; gap: 4px; padding: 14px 0; border-top: 1px solid var(--live-line); cursor: pointer; }
+.help-waiting-beside li { position: relative; display: grid; gap: var(--space-4) 4px; padding: var(--space-16) 0; border-top: 1px solid var(--live-line); cursor: pointer; }
 .help-waiting-beside li:first-child { padding-top: 0; border-top: 0; }
 .help-waiting-beside .help-row-open { font: 400 22px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); }
 .help-waiting-beside li:hover .help-row-open { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
@@ -358,7 +358,7 @@
 .live-app .help-waiting-beside .help-asks:before { width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #a8791f; }
 
 /* A returned call's slip, carried onto the "returned" count and laid there (lay-slip.ts): the home page's slip, in the room's paper. Its name is lifted off as it lies down, never squeezed. */
-.help-slip { position: fixed; z-index: 60; padding: 10px 14px 11px; background: #f7f2e6; color: #293f32; border-radius: 1px; box-shadow: 0 0 0 1px #b0a08466, 0 1px 0 #b0a084, 0 3px 6px -2px #3b2a1233; font: 500 16px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; white-space: nowrap; transform-origin: 0 0; pointer-events: none; will-change: transform; }
+.help-slip { position: fixed; z-index: 60; padding: var(--space-8) 14px var(--space-12); background: #f7f2e6; color: #293f32; border-radius: 1px; box-shadow: 0 0 0 1px #b0a08466, 0 1px 0 #b0a084, 0 3px 6px -2px #3b2a1233; font: 500 16px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; white-space: nowrap; transform-origin: 0 0; pointer-events: none; will-change: transform; }
 .help-slip[data-lying] { color: transparent; }
 @media (forced-colors: active) { .help-slip { border: 1px solid CanvasText; box-shadow: none; } }
 
@@ -370,10 +370,10 @@
    stands on its own line above the name (as at the iOS accessibility sizes) and the name, number, words and acts take the full width; the smaller acts wrap, never clip. */
 .help-row .help-row-more { flex-wrap: wrap; }
 @media (max-width: 380px) {
-  .live-app .help-row { grid-template-columns: minmax(0, 1fr); row-gap: 10px; }
+  .live-app .help-row { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-8); }
   .live-app .help-row > *, .help-row[data-call]:not([data-quiet]) > :nth-child(2) > *, .help-row[data-call]:not([data-quiet]) > .help-row-more { grid-column: 1; }
   .live-app .help-row[data-call]:not([data-quiet]) > :first-child { grid-row: auto; }
-  .live-app .help-row .live-date-leaf { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 0 0.4em; width: fit-content; min-height: 0; padding: 6px 0 0; border-bottom: 0; }
+  .live-app .help-row .live-date-leaf { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 0 0.4em; width: fit-content; min-height: 0; padding: var(--space-8) 0 0; border-bottom: 0; }
   /* A household keeps its picture beside its words: one column would leave its words a sliver beside its acts. */
   .live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr); }
   .live-app .help-neighbor > :nth-child(2) { grid-column: 2; }
