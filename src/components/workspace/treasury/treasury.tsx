@@ -233,7 +233,7 @@ export function TreasurySection() {
                 } catch (cause) {
                   setBack(undefined);
                   setDone("");
-                  setUndoRefused(sayFailure(words.notices,cause, w.refused));
+                  setUndoRefused(sayFailure(words.notices,cause, w.undoRefused));
                 }
               }}
             />
