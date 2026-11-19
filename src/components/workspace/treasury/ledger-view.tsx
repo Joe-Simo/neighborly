@@ -419,7 +419,7 @@ export function LedgerView({
                 <h2>
                   {w.foot.gifts(onHand.count)}
                 </h2>
-                <p>
+                <p className="treasury-on-hand">
                   {w.foot.onHand(formatFigure(onHand.total))}
                 </p>
               </div>
