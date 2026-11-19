@@ -1190,6 +1190,14 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* A write-up the server refused stays flat, with a plum edge until it is tried again. */
 /* A sheet whose save was refused wears the plum edge, whichever form it holds: its notice is the sign. */
 .live-dialog:has(form[data-refused], .live-error[role="alert"]) { box-shadow: inset 4px 0 0 var(--paper-plum, #6f5f93), 0 24px 60px rgb(40 60 50 / 0.18); }
+/* From 700px a sheet is paper laid over the room, like every other: its top edge lit, a tight contact shade at its
+   foot and the long soft shade a refused sheet already had, so a sheet does not lift only when something is wrong. */
+@media (min-width: 700px) {
+  .live-dialog { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 0 0 1px rgb(40 60 50 / 0.1), 0 2px 3px rgb(40 60 50 / 0.12), 0 24px 60px rgb(40 60 50 / 0.18); }
+  .live-dialog:has(form[data-refused], .live-error[role="alert"]) { box-shadow: inset 4px 0 0 var(--paper-plum, #6f5f93), inset 0 1px 0 rgb(255 255 255 / 0.7), 0 0 0 1px rgb(40 60 50 / 0.1), 0 2px 3px rgb(40 60 50 / 0.12), 0 24px 60px rgb(40 60 50 / 0.18); }
+}
+@media (forced-colors: active) { .live-dialog { box-shadow: none; outline: 1px solid CanvasText; } }
+@media print { .live-dialog { box-shadow: none; } }
 /* The real sheet, stepped aside while its copy is filed: nothing of it shows, however its parts change. */
 .live-dialog[data-filed], .live-dialog[data-filed] * { visibility: hidden !important; transition: none !important; }
 
