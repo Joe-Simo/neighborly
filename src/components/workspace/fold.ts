@@ -530,18 +530,28 @@ export function useSavedLine(
  */
 export function useGrowsSmoothly(box: RefObject<HTMLElement | null>) {
   const was = useRef<{ width: number; height: number }>(undefined);
+  // Its own growing, kept here: asking the page what moves would make it work out every style in the room first.
+  const growing = useRef<Animation>(undefined);
   useLayoutEffect(() => {
     const paper = box.current;
     if (!paper) return;
+    // A box just laid has nothing to grow from: its first height is taken once the frame is laid out, so a room
+    // arriving is not measured in the middle of being drawn.
+    if (!was.current) {
+      const first = requestAnimationFrame(() => {
+        was.current ??= { width: paper.offsetWidth, height: paper.offsetHeight };
+      });
+      return () => cancelAnimationFrame(first);
+    }
     // While it grows, what can be measured is the height it is passing through; the end is already kept.
-    if (paper.getAnimations().some((move) => move.id === GROWING)) return;
+    if (growing.current?.playState === "running") return;
     const before = was.current;
     const now = { width: paper.offsetWidth, height: paper.offsetHeight };
     was.current = now;
-    const grown = before && now.width === before.width ? now.height - before.height : 0;
-    if (!before || grown <= 0 || grown > 200 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const grown = now.width === before.width ? now.height - before.height : 0;
+    if (grown <= 0 || grown > 200 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     holdThePage();
-    paper.animate(
+    growing.current = paper.animate(
       [{ height: `${before.height}px`, overflow: "hidden" }, { height: `${now.height}px`, overflow: "hidden" }],
       { id: GROWING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
     );

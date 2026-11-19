@@ -164,7 +164,8 @@ function TableEnd({ rows, children }: { rows: ReactNode[]; children: ReactNode }
   return (
     <>
       {rows.length > 2 && <tbody>{rows.slice(0, -2)}</tbody>}
-      <tbody className="book-end">
+      {/* The total comes straight after the table's rows: its last row is the one whose rule it takes (report-book.css). */}
+      <tbody className="book-end" data-before-total={Math.min(rows.length, 2) || undefined}>
         {rows.slice(-2)}
         {children}
       </tbody>

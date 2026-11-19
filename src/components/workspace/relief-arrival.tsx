@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type AnimationEventHandler, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type AnimationEventHandler, type CSSProperties } from "react";
 import { ReliefPicture, reliefMoves, reliefSources, whenDecoded, type ReliefName } from "@/components/workspace/relief";
 import { ARRIVED, arrived, SIZES, unseen } from "@/components/workspace/relief-ahead";
 import { useRoomShown } from "@/components/workspace/room-sheet";
@@ -54,17 +54,24 @@ export function ArrivingRelief({
   const stack = useRef<HTMLSpanElement>(null);
   const count = move?.front ? 3 : 2;
   const seen = useRoomShown();
-  useLayoutEffect(() => {
+  // The move is given in the frame after the room is shown: the piece already lies at its start there, and reading
+  // its style in the frame the room arrives would make the page work out the whole room's styles twice.
+  const given = useRef(false);
+  useEffect(() => {
     const piece = stack.current?.querySelector<HTMLElement>(".relief-piece");
-    if (!seen || !piece || loaded < count || piece.getAnimations().length) return;
-    const style = getComputedStyle(piece);
-    piece.animate([{ transform: style.transform }, { transform: "none" }], {
-      duration: 520,
-      // A moment after the room is shown, and after the paper wave where there is one.
-      delay: 380 + (parseFloat(style.getPropertyValue("--paper-wait")) || 0),
-      easing: style.getPropertyValue("--paper-ease").trim() || "ease-out",
-      fill: "both",
+    if (!seen || !piece || loaded < count || given.current) return;
+    const frame = requestAnimationFrame(() => {
+      given.current = true;
+      const style = getComputedStyle(piece);
+      piece.animate([{ transform: style.transform }, { transform: "none" }], {
+        duration: 520,
+        // A moment after the room is shown, and after the paper wave where there is one.
+        delay: 380 + (parseFloat(style.getPropertyValue("--paper-wait")) || 0),
+        easing: style.getPropertyValue("--paper-ease").trim() || "ease-out",
+        fill: "both",
+      });
     });
+    return () => cancelAnimationFrame(frame);
   }, [seen, loaded, count]);
   // The room is not shown before its picture can be painted (room-sheet.tsx): every layer is in, or could not be had.
   const layersIn = moving && loaded >= count;

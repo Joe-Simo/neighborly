@@ -62,8 +62,11 @@
   .report-book .book-columns thead th { font-size: 12px; letter-spacing: 0.02em; }
 }
 .book-right { container: book-page / inline-size; }
-/* A total's rule is the ink one: the faint rule of the row above would otherwise win where the two meet. */
-.book-table tr:has(+ .book-total) > * { border-bottom-color: var(--live-ink, #283c32); }
+/* A total's rule is the ink one: the faint rule of the row above would otherwise win where the two meet. The row
+   is named by its place, not by what follows it: a "followed by" test (:has(+ …)) makes every change anywhere in the
+   page work out every style on it again. */
+.book-table .book-end[data-before-total="1"] > tr:first-child > *,
+.book-table .book-end[data-before-total="2"] > tr:nth-child(2) > * { border-bottom-color: var(--live-ink, #283c32); }
 /* A row set apart from the column above it (miles under hours): a space, not a rule, and the weight of an ordinary row. */
 .book-table .book-apart :is(th, td) { border-bottom: 0; padding-top: 22px; }
 .book-table .book-total :is(th, td) { font-weight: 600; border-bottom: 0; border-top: 1px solid var(--live-ink, #283c32); }
