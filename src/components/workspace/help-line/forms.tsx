@@ -11,6 +11,7 @@ import { Check, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+import { SheetCancel } from "@/components/workspace/live-dialog";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
@@ -100,6 +101,7 @@ export function FormEnd({
       {error && <LiveFailure message={error} />}
       <div className="live-form-actions">
         <LiveWaiting when={pending} />
+        <SheetCancel disabled={pending} />
         {children}
         <Button type="submit" value={value} disabled={pending}>
           {submit}

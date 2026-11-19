@@ -335,15 +335,16 @@
   line-height: 1.5;
   margin: var(--space-16) 0;
 }
+/* One family for every sheet's form, on the 4/8 scale: 24 between fields, 8 from label to box, 4 from box to its hint. */
 .live-form {
   display: grid;
-  gap: var(--space-20) 20px;
+  gap: var(--space-24);
 }
 .live-field {
   display: grid;
   /* Beside a field whose help runs to two lines (it does in Spanish), this one keeps its box at the same height. */
   align-content: start;
-  gap: var(--space-8) 7px;
+  gap: var(--space-8);
   font-size: 15px;
 }
 .live-field > span {
@@ -353,6 +354,13 @@
   color: var(--live-muted);
   line-height: 1.4;
   font-weight: 400;
+}
+.live-field > :is(input, textarea, select, [data-slot="select-trigger"]) + small { margin-top: -4px; }
+/* An amount, a date or a time is short: its box is sized to what goes in it, not the sheet's width. */
+.live-field :is(input[type="date"], input[type="time"], input[type="number"], input[inputmode="decimal"], input[inputmode="numeric"]) {
+  justify-self: start;
+  width: 100%;
+  max-width: 13rem;
 }
 .live-field input,
 .live-field textarea,
@@ -371,7 +379,7 @@
 .live-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-16) 18px;
+  gap: var(--space-24) var(--space-16);
 }
 .live-form-actions {
   display: flex;
@@ -379,7 +387,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-12) 12px;
+  gap: var(--space-8);
   margin-top: var(--space-8);
 }
 .live-dialog {
@@ -683,7 +691,7 @@
 .live-dialog-fixed [data-slot="dialog-header"] { position: sticky; top: 0; z-index: 2; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: var(--space-12) 12px; background: #f5f3ec; box-shadow: 0 -30px 0 #f5f3ec; padding-bottom: var(--space-8); }
 .live-dialog-fixed [data-slot="dialog-header"] :is([data-slot="button"], [data-slot="dialog-close"]) { flex: none; width: 44px; height: 44px; margin: -6px -10px 0 0; color: var(--live-muted); }
 .live-dialog-fixed [data-slot="dialog-description"] { margin-top: -14px; }
-.live-dialog-fixed .live-form-actions { position: sticky; bottom: 0; z-index: 1; margin: 6px calc(-1 * var(--live-dialog-pad)) 0; padding: var(--space-16) var(--live-dialog-pad) 0; background: #f5f3ec; border-top: 1px solid var(--live-line); box-shadow: 0 var(--live-dialog-pad) 0 #f5f3ec; }
+.live-dialog-fixed .live-form-actions { position: sticky; bottom: 0; z-index: 1; margin: var(--space-8) calc(-1 * var(--live-dialog-pad)) 0; padding: var(--space-16) var(--live-dialog-pad) 0; background: #f5f3ec; border-top: 1px solid var(--live-line); box-shadow: 0 var(--live-dialog-pad) 0 #f5f3ec; }
 @media (max-width: 560px) { .live-dialog-fixed { --live-dialog-pad: 25px; } }
 .live-dialog [data-slot="button"] { border-radius: 4px; }
 .live-dialog [data-slot="button"][data-variant="default"] {

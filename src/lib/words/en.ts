@@ -92,6 +92,7 @@ export function en(set: WordSet) {
       signedInAs: (name: string) => `Signed in as ${name}`,
       leaveSample: "Leave the sample",
       close: "Close",
+      cancel: "Cancel",
       sampleMark: "Sample · made-up\u00a0people",
       /** After the conference's name in a room's kicker: "St. Example Conference · Sample". */
       sample: "Sample",
