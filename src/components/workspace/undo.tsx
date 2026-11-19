@@ -12,6 +12,9 @@ type UndoBridge = { webkit?: { messageHandlers?: { kindHelpsUndo?: { postMessage
  * In the iOS app the slip is also told to the app, with its words, and taken back when it goes; the app's own Undo
  * (a shake, a three-finger swipe) calls `window.kindHelpsUndo`, the same path as the press. Without the app, nothing.
  */
+/** The Undo of the newest saved line; ⌘Z and Ctrl+Z run only that one. */
+let newest: (() => void) | null = null;
+
 export function UndoAct({ run }: { run: () => Promise<void> }) {
   const { words } = useWorkspace();
   const [going, setGoing] = useState(false);
@@ -33,6 +36,23 @@ export function UndoAct({ run }: { run: () => Promise<void> }) {
       setGoing(false);
     }
   };
+  // On a keyboard, the way back is also the usual keys (⌘Z, or Ctrl+Z), wherever focus is, while the line is up;
+  // never inside a box being typed in, where those keys undo the typing. Only the newest line answers them.
+  useEffect(() => {
+    const mine = () => void undo();
+    newest = mine;
+    const keys = (event: KeyboardEvent) => {
+      if (newest !== mine || event.key.toLowerCase() !== "z" || event.shiftKey || event.altKey || !(event.metaKey || event.ctrlKey)) return;
+      if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [contenteditable]")) return;
+      event.preventDefault();
+      mine();
+    };
+    window.addEventListener("keydown", keys);
+    return () => {
+      window.removeEventListener("keydown", keys);
+      if (newest === mine) newest = null;
+    };
+  }, []);
   useEffect(() => {
     const page = window as UndoBridge;
     const slip = button.current?.closest(".help-done");

@@ -40,6 +40,8 @@ export function TimeOffSection() {
                     void perform(
                       { type: "removeTimeOff", timeOffId: item.id },
                       words.timeOff.removed,
+                      // The way back lays the same days down again.
+                      { command: { type: "addTimeOff", start: item.start, end: item.end, note: item.note }, said: words.timeOff.restored },
                     )
                   }
                 >
@@ -85,7 +87,7 @@ function LiveAvailability({
   run,
 }: {
   data: LiveWorkspaceData;
-  run: (command: LiveCommand) => Promise<boolean>;
+  run: (command: LiveCommand, success?: string, undo?: { command: LiveCommand; said: string }) => Promise<boolean>;
 }) {
   const { words } = useWorkspace();
   return (
@@ -107,10 +109,11 @@ function LiveAvailability({
                 variant="ghost"
                 size="sm"
                 onClick={() =>
-                  void run({
-                    type: "removeAvailability",
-                    availabilityId: item.id,
-                  })
+                  void run(
+                    { type: "removeAvailability", availabilityId: item.id },
+                    words.timeOff.availabilityRemoved,
+                    { command: { type: "addAvailability", start: item.start, end: item.end }, said: words.timeOff.availabilityRestored },
+                  )
                 }
               >
                 {words.timeOff.remove}

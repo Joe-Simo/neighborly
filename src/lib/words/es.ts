@@ -241,6 +241,9 @@ export function es(set: WordSet): Words {
       note: "Los días libres no te sacan de tus equipos. Los compromisos que ya tienes se cambian aparte, para que todos sepan qué está cubierto.",
       remove: "Quitar",
       removed: "Días libres quitados.",
+      restored: "Días libres repuestos.",
+      availabilityRemoved: "Fechas disponibles quitadas.",
+      availabilityRestored: "Fechas disponibles repuestas.",
       emptyTitle: "Todos tus días están libres.",
       emptyDetail:
         "Agrega las fechas en que no estarás. Tu lugar en el equipo sigue igual.",
