@@ -54,26 +54,29 @@ function PaidLine({ paid }: { paid: Paid }) {
   const line = useRef<HTMLDivElement>(null);
   const left = paid.request.remaining - paid.amount;
   const said = left > 0 ? w.saidLeft(formatFigure(left)) : w.said;
+  const kind = categoryLabel(room, paid.request.kind);
+  const day = dayLabel(words.locale, paid.date);
+  const to = [sampleSaid(paid.request.payeeName), paid.checkNumber && room.lines.check(paid.checkNumber)].filter(Boolean).join(" · ");
+  // What a screen reader hears, the same from first to last: given as the line's words, so it is said once and the id never is.
+  const read = `${fill(w.read, { day, kind, name: paid.request.neighborName, to, amount: formatFigure(paid.amount) })} ${said}`;
   // Asked for before the line is said, so a line that takes focus is read by that and not said twice.
   useFocusOnce(line, paid.entryId);
-  const seen = useSavedLine(line, { of: paid.entryId });
+  const seen = useSavedLine(line, { of: read });
   // After the saved line's own opening is set up, so the hand-over takes its place.
   useLayoutEffect(() => {
     if (line.current) handOver(line.current);
   }, []);
-  const kind = categoryLabel(room, paid.request.kind);
-  const day = dayLabel(words.locale, paid.date);
-  const to = [sampleSaid(paid.request.payeeName), paid.checkNumber && room.lines.check(paid.checkNumber)].filter(Boolean).join(" · ");
   return (
     <div
       ref={line}
       className={seen ? "live-success help-done treasury-paid" : "sr-only"}
-      role="status"
       tabIndex={-1}
     >
+      {/* Not a status region of its own: said once in the page's polite region (fold.ts), so closing up says nothing again. */}
+      <span className="sr-only">{read}</span>
       {seen && <CircleCheck size={22} aria-hidden="true" />}
       {seen ? (
-        <span className="treasury-paid-words">
+        <span className="treasury-paid-words" aria-hidden="true">
           <span className="treasury-paid-line">
             <span>
               {day} · <span className="treasury-paid-kind">{room.lines.kindFor(kind)}{" "}</span>
@@ -84,9 +87,7 @@ function PaidLine({ paid }: { paid: Paid }) {
           </span>
           <SavedWords>{said}</SavedWords>
         </span>
-      ) : (
-        `${fill(w.read, { day, kind, name: paid.request.neighborName, to, amount: formatFigure(paid.amount) })} ${said}`
-      )}
+      ) : null}
     </div>
   );
 }
