@@ -59,7 +59,7 @@
 .home-yes-still-label::before{content:"";width:22px;height:1px;background:currentColor}
 .home-yes-still .home-yes-still-from{font-size:calc(19px*var(--up,1));line-height:1.4}
 /* Newsreader has one weight: the name stands out by ink, the rest of the line is quieter. */
-.home-yes-still-from{color:#4a5a50}.home-yes-still-from strong{font-weight:400;color:#283c32;white-space:nowrap}
+.home-yes-still-from{color:var(--muted-foreground)}.home-yes-still-from strong{font-weight:400;color:#283c32;white-space:nowrap}
 .home-yes-still h3{margin:0 0 10px;font:calc(34px*var(--up,1))/1.12 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.7px}
 .home-yes-still .home-yes-still-quote{margin:14px 0 16px;padding:2px 0 2px 18px;border-left:2px solid #c9b98a;font:italic 400 calc(21px*var(--up,1))/1.45 "Newsreader","Newsreader Fallback",Georgia,serif;color:#3c4a40}
 .home-yes-still .home-yes-still-in{color:#fffdf5;text-decoration:none;height:auto;min-height:44px;margin-top:auto;padding-inline:18px;font-size:calc(16px*var(--up,1))}

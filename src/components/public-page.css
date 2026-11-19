@@ -198,7 +198,7 @@
 .public-words .public-made-anatomy-labels{list-style:none;margin:0;padding:0;position:absolute;left:calc(4% + min(56cqw,380px) + 56px);right:0;top:calc(2.5em + 4px + clamp(36px,10cqw,84px));height:clamp(220px,62cqw,400px)}
 .public-words .public-made-anatomy-labels li{position:absolute;left:0;right:0;margin:0;padding:0;font-family:"Newsreader","Newsreader Fallback",Georgia,serif;font-size:clamp(19px,2.2cqw,24px);line-height:1.25;text-indent:0}
 .public-words .public-made-anatomy-labels li::before{content:none;display:none}
-.public-made-anatomy-labels strong{display:block;font-weight:400;color:#283c32;position:relative}.public-made-anatomy-labels li>span{color:#4a5a50}
+.public-made-anatomy-labels strong{display:block;font-weight:400;color:#283c32;position:relative}.public-made-anatomy-labels li>span{color:var(--muted-foreground)}
 .public-made-anatomy-labels strong::before{content:"";position:absolute;top:.65em;right:calc(100% + 8px);width:var(--leader);border-top:1px solid #283c32}
 .public-made-anatomy-labels span{display:block;font-family:"Source Sans 3","Source Sans 3 Fallback",sans-serif;font-size:16px;opacity:1;color:#4a5a50}
 .public-made-anatomy-labels [data-relief="sheet"]{top:calc(-7% - .65em);--leader:11cqw}
