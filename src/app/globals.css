@@ -1104,3 +1104,5 @@ summary:focus-visible,
   font-synthesis: none;
   hanging-punctuation: first allow-end last;
 }
+/* A painted layer far from the reader is not drawn (lib/far-layers.ts); it keeps its place, and it is drawn again before it is in sight. */
+[data-far]{visibility:hidden!important}

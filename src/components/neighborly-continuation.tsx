@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
+import { releaseFarLayers } from "@/lib/far-layers";
 import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
 import { HomeYes } from "./home-yes";
@@ -36,7 +37,9 @@ export function NeighborlyContinuation() {
       for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.add("is-visible"); observer.unobserve(entry.target); }
     }, { threshold: .12 });
     element?.querySelectorAll("[data-reveal]").forEach(target => observer.observe(target));
-    return () => observer.disconnect();
+    // The painted layers of every chapter on the page are let go while far from the reader (far-layers.ts).
+    const release = releaseFarLayers(document, ".relief-picture, .neighborly-together-paper, .neighborly-close-art");
+    return () => { observer.disconnect(); release(); };
   }, []);
   return <div className="neighborly-continuation" id="neighborly-courtyard" ref={root}>
     <FrescoThreshold />
