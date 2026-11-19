@@ -26,6 +26,7 @@ import {
   type Payable,
 } from "@/components/workspace/treasury/labels";
 import { handOver, type Paid } from "@/components/workspace/treasury/paid-moment";
+import { nameKeeper } from "@/components/workspace/keep-names";
 import "./treasury.css";
 
 const neighborHref = (id: string) =>
@@ -33,7 +34,7 @@ const neighborHref = (id: string) =>
 
 function NeighborLink({ id, name }: { id: string; name: string }) {
   return (
-    <Link className="live-link" href={neighborHref(id)}>
+    <Link className="live-link live-name" href={neighborHref(id)}>
       {name}
     </Link>
   );
@@ -268,7 +269,9 @@ export function LedgerView({
               <div className="help-row" key={request.requestId}>
                 <div>
                   <h3>
-                    {fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: sampleSaid(request.payeeName) })}
+                    {nameKeeper([sampleSaid(request.payeeName)])(
+                      fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: sampleSaid(request.payeeName) }),
+                    )}
                   </h3>
                   <p>
                     {room.lines.kindFor(categoryLabel(room, request.kind))}{" "}

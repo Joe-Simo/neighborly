@@ -135,9 +135,10 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
               <th scope="row">{b.allHours}</th>
               <td>{count(report.time.hours)}</td>
             </tr>
-            <tr className="book-total">
+            {/* Miles are not hours: the row says its own unit, and is not weighted as a total of the column above it. */}
+            <tr className="book-apart">
               <th scope="row">{b.miles}</th>
-              <td>{count(report.visitMiles)}</td>
+              <td>{w.time.milesCount(report.visitMiles)}</td>
             </tr>
             <NoteRow span={2} notes={[b.hoursNote]} />
           </TableEnd>
@@ -362,6 +363,9 @@ export function ReportBook({ report, groupName, sample = false }: { report: Year
           </div>
         )}
         <div className="book-right">
+          {/* Every sheet laid in one place, out of sight: the page is as tall as its longest sheet, or a letter page if
+              that is taller, with no measuring (report-book.css). */}
+          <div className="book-measure" aria-hidden="true" inert>{pages.map((_, index) => sheet(index))}</div>
           {/* The next page already lies beneath, so a turn only has to lift the leaf off it. */}
           <div className="book-under" aria-hidden="true">{sheet(turning ? turning.under : open[at + 1]?.right)}</div>
           <div ref={turn} className="book-turn" data-turned="no">

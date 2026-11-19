@@ -5,6 +5,7 @@
 .lost-door-words{display:grid;justify-items:center;gap:clamp(14px,2svh,22px)}
 .lost-door-words h1{margin:0;font:400 clamp(36px,4.2vw,76px)/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.055em;text-wrap:balance}
 .lost-door-arch img{display:block;width:100%;height:auto}
+:is(.lost-door-arch,.lost-door-piece) picture{display:contents}
 .lost-door-words :is(a,button){display:inline-flex;align-items:center;min-height:44px;font-size:17px;color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#253e3166}
 .lost-door-words button{padding:0;border:0;background:none;font-family:inherit;cursor:pointer}
 .lost-door-words :is(a,button):hover{text-decoration-color:currentColor}

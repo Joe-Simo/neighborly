@@ -148,7 +148,7 @@ export function es(set: WordSet): Words {
       commitmentTimes: (zone: string) => `Horario: ${zone}.`,
       commitmentForm: {
         title: "Título", team: "Equipo", chooseTeam: "Elige un equipo…", starts: "Empieza", ends: "Termina", where: "Dónde reunirse",
-        preparation: "Preparación", preparationHelp: "¿Qué debe saber o hacer la persona de antemano?",
+        preparation: "Preparación", preparationHelp: "¿Qué debe saber o hacer la persona de antemano? El título, el lugar y esta nota también salen en los calendarios y en la semana impresa, así que no pongas nombres ni direcciones de vecinos.",
         repeats: "Se repite", everyWeek: "Cada semana", everyWeeks: (count: number) => `Cada ${esN(count)} semanas`,
         times: "Cuántas veces", timesHelp: "1 es una sola fecha. Hasta 52 en un año.", save: "Guardar", saving: "Guardando…",
       },

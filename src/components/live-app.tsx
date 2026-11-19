@@ -2,6 +2,10 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
+import { noSessionKept } from "@/lib/no-session-kept";
+import { fetchRoom } from "@/components/workspace/sections";
+import { fetchAhead } from "@/components/workspace/relief-arrival";
+import { headings } from "@/components/workspace/navigation";
 import { useAction, useConvexConnectionState, useMutation, useQueries, type RequestForQueries } from "convex/react";
 import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";
 import { FirstLookProvider, firstLookData, useAfterLook, useFirstRoom, useKeptPress } from "@/components/workspace/first-look";
@@ -70,12 +74,27 @@ function useOffline() {
 
 /** The app, with the door's sweep above whatever it is showing. */
 export function LiveApp(props: Parameters<typeof LiveRooms>[0]) {
+  useRoomAhead(props.area ?? "week");
   return (
     <>
       <LiveRooms {...props} />
       <DoorSweep />
     </>
   );
+}
+
+/**
+ * The room in the address is asked for the moment the page wakes: its code and its head picture (in the cut it will
+ * be shown in) travel while Clerk and the backend are still saying who is here, instead of after the room's data
+ * arrives. A browser that holds no session is going to the door, not a room, and asks for neither.
+ */
+function useRoomAhead(area: LiveArea) {
+  const [first] = useState(area);
+  useEffect(() => {
+    if (noSessionKept(document.cookie)) return;
+    void fetchRoom(first).catch(() => {});
+    fetchAhead([headings[first].art.picture]);
+  }, [first]);
 }
 
 function LiveRooms({

@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { useConvex, useMutation } from "convex/react";
-import { useQuery } from "@/components/workspace/query";
 import type { FunctionReturnType } from "convex/server";
 import { History } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
 import { readRequestRows, type RequestRow } from "@/components/workspace/tools/request-rows";
 import { mostRows } from "@/components/workspace/tools/member-rows";
-import { droppedAt, fileProblem, inBatches, linesOf, readSoFar, SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
+import { droppedAt, fileProblem, inBatches, linesOf, readSoFar, SheetImportView, useRecordsOffered, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
 import type { Words } from "@/lib/words";
 
 type Checked = FunctionReturnType<typeof api.importExport.checkRequests>;
@@ -39,16 +38,14 @@ export function RequestsImport() {
   const { data, words } = useWorkspace();
   const tools = words.rooms.tools;
   const churchId = data.church.id;
-  const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
+  const allowed = useRecordsOffered();
   const convex = useConvex();
   const importRequests = useMutation(api.importExport.importRequests);
   const [state, setState] = useState<SheetStep>({ step: "choose" });
   const [rows, setRows] = useState<RequestRow[]>([]);
-  // While the answer is on its way the leaf keeps its place, unseen, so nothing below it moves when it arrives.
-  if (allowed === false) return null;
+  if (!allowed) return null;
   return (
     <SheetImportView
-      holding={allowed === undefined}
       words={requestWords(tools.requests)}
       state={state}
       icon={<History size={18} aria-hidden="true" />}
