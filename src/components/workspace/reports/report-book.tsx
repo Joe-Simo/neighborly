@@ -317,7 +317,9 @@ export function ReportBook({ report, groupName, sample = false }: { report: Year
   const right = turning ? turning.leaf : shown.right;
 
   return (
-    <section className="report-book" aria-label={b.label}>
+    <section className="report-book" aria-labelledby="report-book-title">
+      {/* Named as a heading too, so the sheets' own headings sit under one: the page's h1, then this, then each sheet. */}
+      <h2 id="report-book-title" className="sr-only">{b.label}</h2>
       <div className="book-desk" data-facing={facing ? "" : undefined} tabIndex={0} onKeyDown={keys} aria-roledescription={b.label}>
         {/* Opposite the closed cover lies the inside board with what the book holds, so the spread reads as a book. */}
         {facing && (

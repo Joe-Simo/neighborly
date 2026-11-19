@@ -24,7 +24,7 @@ const en = {
       copy: ["Nobody adds the week up by hand. That call is one of 459 the sample conference took in its year, that visit one of 325, and that $214 part of $52,435 in help.", "When the year ends, the report is ready. The president checks the totals, then prints."] },
   ] as WeekDay[],
   last: "Every name, number and household in the sample is made up. Kind Helps is independent, and not affiliated with or endorsed by the Society of St. Vincent de Paul.",
-  open: "Open the sample conference",
+  open: "Open the sample conference",
 };
 
 const es: typeof en = {
@@ -47,7 +47,7 @@ const es: typeof en = {
       copy: ["Nadie suma la semana a mano. Esa llamada es una de las 459 que la conferencia de muestra recibió en su año, esa visita una de 325, y esos $214 parte de $52,435 en ayuda.", "Cuando termina el año, el informe está listo. El presidente revisa los totales y lo imprime."] },
   ],
   last: "Todos los nombres, números y hogares de la muestra son inventados. Kind Helps es independiente, y no tiene afiliación ni respaldo de la Sociedad de San Vicente de Paúl.",
-  open: "Abrir la conferencia de muestra",
+  open: "Abrir la conferencia de muestra",
 };
 
 export const weekWords = { en, es } satisfies Record<Language, typeof en>;

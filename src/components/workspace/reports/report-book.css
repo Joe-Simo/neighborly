@@ -70,6 +70,8 @@
 .book-corner:active { cursor: grabbing; }
 
 .book-foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 15px; }
+/* The page arrows are 44px presses, like every control. */
+.book-foot [data-slot="button"] { width: 44px; height: 44px; }
 .book-note { margin: 4px 0 0; font-size: 13px; color: #4a5a50; }
 .book-print {
   margin-left: auto; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; color: var(--live-ink, #283c32);

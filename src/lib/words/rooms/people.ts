@@ -239,7 +239,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       },
       meetingNote: `Se invitará a todas las personas ${ofTheGroup}. Cada persona decide si asiste.`,
       timeOff: { note: "Nota (opcional)", noteHelp: "Escribe solo lo que tus coordinadores necesitan saber." },
-      task: { due: "Para cuándo (opcional)", owner: "Responsable", unassigned: "Sin asignar" },
+      task: { due: "Para cuándo (opcional)", owner: "A cargo de", unassigned: "Sin asignar" },
     },
     commitment: {
       edit: "Editar los detalles",
