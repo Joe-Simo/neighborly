@@ -5,6 +5,11 @@ import schema from "./schema";
 import { signedIn } from "./clerk.testing";
 import { api } from "./_generated/api";
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
+type Caller = Pick<ReturnType<ReturnType<typeof convexTest>["withIdentity"]>, "query" | "mutation">;
+/** Reads a visit sheet the way the screen does: `openSheet` writes the audit line, and `sheet` is read with it. */
+async function readSheet(caller: Caller, args: { churchId: Id<"churches">; visitId: Id<"visits"> }) {
+  return caller.query(api.visits.sheet, { ...args, opening: await caller.mutation(api.visits.openSheet, args) });
+}
 
 test("a member is sent teammates' names and roles, never their email addresses", async () => {
   const t = convexTest(schema, modules);
@@ -113,7 +118,7 @@ describe("removing a person for good", () => {
     expect(JSON.stringify(after)).toContain(formerMember);
 
     // A visit they made still opens, and its sheet and the printed members table say the plain name.
-    const sheet = await owner.query(api.visits.sheet, { churchId, visitId: visited._id });
+    const sheet = await readSheet(owner, { churchId, visitId: visited._id });
     expect(sheet.visitors).toContain(formerMember);
     expect(sheet.visitors).not.toContain(person.name);
     expect(after.time.members.filter((line) => line.name === formerMember)).toHaveLength(1);

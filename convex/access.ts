@@ -54,9 +54,26 @@ export async function neighborRecord(ctx: QueryCtx | MutationCtx, church: Id<"ch
   if (!neighbor || neighbor.churchId !== church || !neighbor.nameKey) throw new ConvexError("Record not found.");
   return { member, neighbor };
 }
-/** Writes the audit line for opening a record. Queries cannot write, so the screen calls a mutation that calls this. */
+/**
+ * Writes the audit line for opening a record and returns it. Queries cannot write, so the screen calls a
+ * mutation that calls this, and every query that shows one neighbor's detail takes the returned line as
+ * `opening` and checks it with `openedBy`. A read without an opening line of the caller's own is refused.
+ */
 export async function logNeighborOpening(ctx: MutationCtx, member: Doc<"memberships">, neighborId: Id<"neighbors">) {
-  await ctx.db.insert("auditEvents", { churchId: member.churchId, actorId: member.userId, action: "neighbor.opened", targetId: neighborId, at: Date.now() });
+  return ctx.db.insert("auditEvents", { churchId: member.churchId, actorId: member.userId, action: "neighbor.opened", targetId: neighborId, at: Date.now() });
+}
+/** The audit line an opening mutation returned, handed back to the query that reads what was opened. */
+export const opening = v.id("auditEvents");
+/** Refuses unless `line` is the caller's own audit line of `action` (on `targetId`, when given) in this group. One read. */
+export async function auditedBy(ctx: QueryCtx | MutationCtx, member: Doc<"memberships">, line: Id<"auditEvents">, action: "neighbor.opened" | "records_exported", targetId?: string) {
+  const event = await ctx.db.get("auditEvents", line);
+  if (!event || event.churchId !== member.churchId || event.actorId !== member.userId || event.action !== action || event.targetId !== targetId) {
+    throw new ConvexError(action === "records_exported" ? "Start the export again." : "Open the record again.");
+  }
+}
+/** Refuses a read of one neighbor's detail that this caller did not open, and so write down, first. */
+export function openedBy(ctx: QueryCtx | MutationCtx, member: Doc<"memberships">, neighborId: Id<"neighbors">, line: Id<"auditEvents">) {
+  return auditedBy(ctx, member, line, "neighbor.opened", neighborId);
 }
 /**
  * The time a screen is asking about: the start of the hour on the reader's clock. A query that needs "now"

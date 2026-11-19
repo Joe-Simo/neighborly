@@ -2,7 +2,7 @@ import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
-import { logNeighborOpening, neighborAccess, neighborRecord } from "./access";
+import { logNeighborOpening, neighborAccess, neighborRecord, openedBy, opening } from "./access";
 import { mayUndo } from "./undo";
 import { TAKE_BACK_DAYS, callRow, lookups, nameKey, phoneKey, requestRow, toCallRow, toRequestRow } from "./assistance";
 import { paidTowardRequest } from "./treasury";
@@ -286,14 +286,16 @@ export const remove = mutation({
   },
 });
 
-/** Opening a record is written to the audit trail. The screen calls this, then reads `record`. */
+/**
+ * Opening a record is written to the audit trail. The screen calls this, then reads `record` with the line it
+ * returns; `record` refuses without one, so the record cannot be read without being written down.
+ */
 export const open = mutation({
   args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
-  returns: v.null(),
+  returns: opening,
   handler: async (ctx, { churchId, neighborId }) => {
     const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
-    await logNeighborOpening(ctx, member, neighbor._id);
-    return null;
+    return logNeighborOpening(ctx, member, neighbor._id);
   },
 });
 
@@ -407,7 +409,8 @@ const historyEvent = v.union(
  * Payments are read from the ledger; nothing here writes to it.
  */
 export const record = query({
-  args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
+  /** `opening` is the audit line `open` returned to this caller for this neighbor. */
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), opening },
   returns: v.object({
     neighbor: neighborRow,
     household: v.array(v.object({ ...householdMember.fields, age: v.union(v.number(), v.null()) })),
@@ -426,8 +429,9 @@ export const record = query({
     /** Only an owner may remove the record; the mutation checks again. */
     mayRemove: v.boolean(),
   }),
-  handler: async (ctx, { churchId, neighborId }) => {
+  handler: async (ctx, { churchId, neighborId, opening: line }) => {
     const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    await openedBy(ctx, member, neighborId, line);
     const church = await ctx.db.get("churches", churchId);
     const yearStart = DateTime.now().setZone(church?.timeZone ?? "UTC").startOf("year");
     const found = lookups(ctx);

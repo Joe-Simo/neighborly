@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, query, type QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { membership, neighborAccess } from "./access";
+import { auditedBy, membership, neighborAccess } from "./access";
 import { nameKey, phoneKey } from "./assistance";
 import { longestLanguageName, readSpoken, spokenName, type Spoken } from "./spoken";
 import { tally } from "./counts";
@@ -392,23 +392,24 @@ async function ownerExport(ctx: QueryCtx, churchId: Id<"churches">) {
   return { member, church };
 }
 
-/** Writes down that the records were taken out, and by whom, before the first page is read. */
+/** Writes down that the records were taken out, and by whom, before the first page is read. Returns the line `exportPage` asks for. */
 export const recordExport = mutation({
   args: { churchId: v.id("churches") },
-  returns: v.null(),
+  returns: v.id("auditEvents"),
   handler: async (ctx, args) => {
     const { member } = await ownerExport(ctx, args.churchId);
-    await ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: member.userId, action: "records_exported", at: Date.now() });
-    return null;
+    return ctx.db.insert("auditEvents", { churchId: args.churchId, actorId: member.userId, action: "records_exported", at: Date.now() });
   },
 });
 
 /** One page of one file: its column names, up to 200 lines as text, and where the next page starts. */
 export const exportPage = query({
-  args: { churchId: v.id("churches"), file: exportFile, cursor: v.union(v.string(), v.null()) },
+  /** `exported` is the audit line `recordExport` returned to this owner; a page is refused without it. */
+  args: { churchId: v.id("churches"), exported: v.id("auditEvents"), file: exportFile, cursor: v.union(v.string(), v.null()) },
   returns: v.object({ columns: v.array(v.string()), rows: v.array(v.array(v.string())), cursor: v.string(), done: v.boolean() }),
-  handler: async (ctx, { churchId, file, cursor }) => {
-    const { church } = await ownerExport(ctx, churchId);
+  handler: async (ctx, { churchId, exported, file, cursor }) => {
+    const { member, church } = await ownerExport(ctx, churchId);
+    await auditedBy(ctx, member, exported, "records_exported");
     const page = { cursor, numItems: 200 };
     const day = (time: number | undefined) => (time === undefined ? "" : DateTime.fromMillis(time, { zone: church.timeZone }).toFormat("MM/dd/yyyy"));
     const names = new Map<string, string>();

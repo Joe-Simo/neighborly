@@ -1,7 +1,7 @@
 import { ConvexError, v, type Infer } from "convex/values";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { hour, hourAsked, neighborAccess, neighborRecord } from "./access";
+import { hour, hourAsked, neighborAccess, neighborRecord, openedBy, opening } from "./access";
 import { mayUndo } from "./undo";
 import { voucherGiven } from "./treasury";
 import { urgentReasons } from "../src/lib/urgency";
@@ -157,23 +157,28 @@ export const requests = query({
 });
 
 /** Every request one neighbor has made, newest first. */
+/** One neighbor's requests: their detail, so read only with the audit line `neighbors.open` returned. */
 export const requestsForNeighbor = query({
-  args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), opening },
   returns: v.array(requestRow),
-  handler: async (ctx, { churchId, neighborId }) => {
-    await neighborRecord(ctx, churchId, neighborId);
+  handler: async (ctx, { churchId, neighborId, opening: line }) => {
+    const { member } = await neighborRecord(ctx, churchId, neighborId);
+    await openedBy(ctx, member, neighborId, line);
     const rows = await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).order("desc").take(200);
     const found = lookups(ctx);
     return Promise.all(rows.map((row) => toRequestRow(found, row)));
   },
 });
 
+/** One request, which names its neighbor: read only with the audit line `neighbors.open` returned for that neighbor. */
 export const request = query({
-  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests") },
+  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), opening },
   returns: requestRow,
-  handler: async (ctx, { churchId, requestId }) => {
-    await neighborAccess(ctx, churchId);
-    return toRequestRow(lookups(ctx), await ownRequest(ctx, churchId, requestId));
+  handler: async (ctx, { churchId, requestId, opening: line }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const row = await ownRequest(ctx, churchId, requestId);
+    await openedBy(ctx, member, row.neighborId, line);
+    return toRequestRow(lookups(ctx), row);
   },
 });
 

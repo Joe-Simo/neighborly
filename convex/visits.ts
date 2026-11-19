@@ -2,7 +2,7 @@ import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { hour, hourAsked, logNeighborOpening, membership, neighborAccess, neighborRecord } from "./access";
+import { hour, hourAsked, logNeighborOpening, membership, neighborAccess, neighborRecord, openedBy, opening } from "./access";
 import { streetOnly } from "./calendar";
 import { mayUndo } from "./undo";
 import { formerMember } from "./people";
@@ -294,9 +294,9 @@ export const visitors = query({
   },
 });
 
-/** What the pair carries to the door. Read it after openSheet(), which writes the audit line. */
+/** What the pair carries to the door. Read it with the audit line openSheet() wrote and returned; refused without one. */
 export const sheet = query({
-  args: { churchId: v.id("churches"), visitId: v.id("visits") },
+  args: { churchId: v.id("churches"), visitId: v.id("visits"), opening },
   returns: v.object({
     group: v.string(),
     scheduledAt: v.number(),
@@ -307,9 +307,10 @@ export const sheet = query({
     /** What the pair before them found, so nobody asks the neighbor to tell it all again. */
     lastVisit: v.union(v.object({ at: v.number(), visitors: v.array(v.string()), notes: v.string() }), v.null()),
   }),
-  handler: async (ctx, { churchId, visitId }) => {
-    await neighborAccess(ctx, churchId);
+  handler: async (ctx, { churchId, visitId, opening: line }) => {
+    const member = await neighborAccess(ctx, churchId);
     const visit = await ownVisit(ctx, churchId, visitId);
+    await openedBy(ctx, member, visit.neighborId, line);
     const [church, neighbor, request, found] = await Promise.all([
       ctx.db.get("churches", churchId),
       ctx.db.get("neighbors", visit.neighborId),
@@ -512,11 +513,10 @@ export const reinstate = mutation({
 /** Opening the visit sheet shows a neighbor's details, so it is written down like opening the record. */
 export const openSheet = mutation({
   args: { churchId: v.id("churches"), visitId: v.id("visits") },
-  returns: v.null(),
+  returns: opening,
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
     const visit = await openVisit(ctx, args.churchId, args.visitId);
-    await logNeighborOpening(ctx, member, visit.neighborId);
-    return null;
+    return logNeighborOpening(ctx, member, visit.neighborId);
   },
 });

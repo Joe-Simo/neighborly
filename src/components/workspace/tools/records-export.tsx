@@ -135,14 +135,14 @@ export function RecordsExport() {
   if (!isOwner) return null;
   const churchId = data.church.id;
   const gather = async () => {
-    await recordExport({ churchId });
+    const exported = await recordExport({ churchId });
     const files: GatheredFile[] = [];
     for (const [index, file] of recordFiles.entries()) {
       const rows: string[][] = [];
       let columns: string[] = [], cursor: string | null = null, done = false;
       while (!done) {
         setState({ step: "working", files: [...files], progress: fill(rows.length ? text.progressSoFar : text.progress, { gathering: text.gathering[file.key], lines: counted(rows.length, words.locale), index: index + 1, all: recordFiles.length }) });
-        const page: { columns: string[]; rows: string[][]; cursor: string; done: boolean } = await convex.query(api.importExport.exportPage, { churchId, file: file.key, cursor });
+        const page: { columns: string[]; rows: string[][]; cursor: string; done: boolean } = await convex.query(api.importExport.exportPage, { churchId, exported, file: file.key, cursor });
         rows.push(...page.rows);
         ({ columns, cursor, done } = page);
       }

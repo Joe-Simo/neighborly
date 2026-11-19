@@ -4,11 +4,17 @@ import { convexTest } from "convex-test";
 import { DateTime } from "luxon";
 import schema from "./schema";
 import { signedIn } from "./clerk.testing";
+import type { Id } from "./_generated/dataModel";
 import { api } from "./_generated/api";
 import * as functions from "./visits";
 import { freeToVisit, suggestPair, type Candidate } from "./visits";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
+type Caller = Pick<ReturnType<ReturnType<typeof convexTest>["withIdentity"]>, "query" | "mutation">;
+/** Reads a visit sheet the way the screen does: `openSheet` writes the audit line, and `sheet` is read with it. */
+async function readSheet(caller: Caller, args: { churchId: Id<"churches">; visitId: Id<"visits"> }) {
+  return caller.query(api.visits.sheet, { ...args, opening: await caller.mutation(api.visits.openSheet, args) });
+}
 const refused = "Neighbor records are open to coordinators and owners only.";
 const zone = "America/New_York";
 const DAY = 24 * 3600000;
@@ -71,7 +77,7 @@ describe("who may see and plan home visits", () => {
       const attempts = [
         () => caller.query(api.visits.board, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId }),
         () => caller.query(api.visits.visitors, { churchId }),
-        () => caller.query(api.visits.sheet, { churchId, visitId: first }),
+        () => readSheet(caller, { churchId, visitId: first }),
         () => caller.mutation(api.visits.openSheet, { churchId, visitId: first }),
         () => caller.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, at: morning(5).at, visitorIds: pair }),
         () => caller.mutation(api.visits.writeUp, { churchId, visitId: first, notes: "Reviewed the bill together.", hours: 1.5, miles: 12 }),
@@ -96,7 +102,7 @@ describe("who may see and plan home visits", () => {
     const visitId = await as(ids.owner).mutation(api.visits.plan, { churchId: ids.church, neighborId: ids.rosa, at: morning(3).at, visitorIds: pair });
     const stranger = as(ids.stranger);
     await expect(stranger.query(api.visits.board, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.church })).rejects.toThrow("Workspace access required.");
-    await expect(stranger.query(api.visits.sheet, { churchId: ids.other, visitId })).rejects.toThrow("Visit not found.");
+    await expect(readSheet(stranger, { churchId: ids.other, visitId })).rejects.toThrow("Visit not found.");
     await expect(stranger.mutation(api.visits.cancel, { churchId: ids.other, visitId })).rejects.toThrow("Visit not found.");
     await expect(stranger.mutation(api.visits.plan, { churchId: ids.other, neighborId: ids.rosa, at: morning(3).at, visitorIds: pair })).rejects.toThrow("Record not found.");
     await expect(stranger.mutation(api.visits.plan, { churchId: ids.other, neighborId: ids.elsewhere, at: morning(3).at, visitorIds: pair })).rejects.toThrow("Choose people from this group.");
@@ -141,8 +147,8 @@ describe("planning a visit by hand", () => {
 
     // One car: the miles belong to the driver alone, and the next pair's sheet carries what was found.
     const next = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, at: morning(4).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
-    expect((await owner.query(api.visits.sheet, { churchId, visitId: next })).lastVisit).toMatchObject({ visitors: ["Daniel Whitcombe", "Graciela Fuentes"], notes: "Reviewed the bill together. The amount is right." });
-    expect((await owner.query(api.visits.sheet, { churchId, visitId })).lastVisit).toBeNull();
+    expect((await readSheet(owner, { churchId, visitId: next })).lastVisit).toMatchObject({ visitors: ["Daniel Whitcombe", "Graciela Fuentes"], notes: "Reviewed the bill together. The amount is right." });
+    expect((await readSheet(owner, { churchId, visitId })).lastVisit).toBeNull();
     await expect(owner.mutation(api.visits.writeUp, { churchId, visitId: next, notes: "Follow-up.", hours: 1, miles: 8, driverId: ids.colleen.memberId })).rejects.toThrow("The driver must be one of the two visitors.");
     await owner.mutation(api.visits.writeUp, { churchId, visitId: next, notes: "Follow-up.", hours: 1, miles: 8, driverId: ids.graciela.memberId });
     const after = await owner.query(api.visits.board, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId });
@@ -177,12 +183,16 @@ describe("planning a visit by hand", () => {
     const { t, ids, as } = await setup();
     const owner = as(ids.owner), churchId = ids.church;
     const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
-    await owner.mutation(api.visits.openSheet, { churchId, visitId });
-    const sheet = await owner.query(api.visits.sheet, { churchId, visitId });
+    const sheet = await readSheet(owner, { churchId, visitId });
     expect(sheet).toMatchObject({ group: "Sample Conference", visitors: ["Daniel Whitcombe", "Graciela Fuentes"], neighbor: { name: "Benito Desrosiers", address: "214 Orchard St, Apt 2" }, request: { kind: "rent", amount: 45000, payeeName: "Orchard Street Apartments" } });
     const lines = await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", ids.rosa)).collect());
     expect(lines).toHaveLength(1);
     expect(lines[0].actorId).toBe(ids.owner.userId);
+    // Read again with that same line, the sheet is unchanged and nothing more is written.
+    expect(await owner.query(api.visits.sheet, { churchId, visitId, opening: lines[0]._id })).toEqual(sheet);
+    // Without an opening line of the reader's own, the sheet is refused and nothing is written.
+    await expect(as(ids.coordinator).query(api.visits.sheet, { churchId, visitId, opening: lines[0]._id })).rejects.toThrow("Open the record again.");
+    expect(await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", ids.rosa)).collect())).toHaveLength(1);
   });
 });
 
@@ -234,7 +244,7 @@ describe("a visitor removed from the conference for good", () => {
 
       const seats = async () => (await owner.query(api.visits.board, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).scheduled[0].visitors.map((visitor) => [visitor.name, visitor.removed, visitor.response]);
       expect(await seats()).toEqual([["Daniel Whitcombe", false, "accepted"], ["A former member", true, "pending"]]);
-      expect((await owner.query(api.visits.sheet, { churchId, visitId })).visitors).toEqual(["Daniel Whitcombe"]);
+      expect((await readSheet(owner, { churchId, visitId })).visitors).toEqual(["Daniel Whitcombe"]);
       expect((await as(ids.daniel).query(api.visits.mine, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId }))[0].partner).toBe("");
       expect((await owner.query(api.visits.visitors, { churchId })).map((person) => person.name)).not.toContain("A former member");
 
@@ -257,7 +267,7 @@ describe("a visitor removed from the conference for good", () => {
       await owner.mutation(api.people.remove, { churchId, personId: ids.graciela.memberId, typedName: "Graciela Fuentes" });
       await t.finishAllScheduledFunctions(vi.runAllTimers);
       expect((await owner.query(api.visits.board, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).scheduled[0].visitors.map((visitor) => visitor.removed)).toEqual([true, true]);
-      expect((await owner.query(api.visits.sheet, { churchId, visitId })).visitors).toEqual([]);
+      expect((await readSheet(owner, { churchId, visitId })).visitors).toEqual([]);
       await owner.mutation(api.visits.cancel, { churchId, visitId });
       const board = await owner.query(api.visits.board, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId });
       expect(board.scheduled).toEqual([]);
@@ -306,7 +316,7 @@ describe("a neighbor's record removed for good", () => {
     expect(await as(ids.daniel).query(api.visits.mine, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId })).toEqual([]);
 
     for (const visitId of [made, planned]) {
-      await expect(owner.query(api.visits.sheet, { churchId, visitId })).rejects.toThrow("Record not found.");
+      await expect(readSheet(owner, { churchId, visitId })).rejects.toThrow("Record not found.");
       await expect(owner.mutation(api.visits.openSheet, { churchId, visitId })).rejects.toThrow("Record not found.");
     }
     await expect(owner.mutation(api.visits.reschedule, { churchId, visitId: planned, at: morning(4).at })).rejects.toThrow("Record not found.");

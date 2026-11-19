@@ -3,12 +3,22 @@ import { describe, expect, test } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { signedIn } from "./clerk.testing";
+import type { Id } from "./_generated/dataModel";
 import { api } from "./_generated/api";
 import * as functions from "./assistance";
 import { neighborAccess } from "./access";
 import { settleRequest } from "./assistance";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
+type Caller = Pick<ReturnType<ReturnType<typeof convexTest>["withIdentity"]>, "query" | "mutation">;
+/** Reads a record the way the screen does: `open` writes the audit line, and `record` is read with it. */
+async function readRecord(caller: Caller, args: { churchId: Id<"churches">; neighborId: Id<"neighbors"> }) {
+  return caller.query(api.neighbors.record, { ...args, opening: await caller.mutation(api.neighbors.open, args) });
+}
+/** Reads one request with the audit line of opening its neighbor's record, as `request` requires. */
+async function readRequest(caller: Caller, args: { churchId: Id<"churches">; requestId: Id<"assistanceRequests"> }, neighborId: Id<"neighbors">) {
+  return caller.query(api.assistance.request, { ...args, opening: await caller.mutation(api.neighbors.open, { churchId: args.churchId, neighborId }) });
+}
 const refused = "Neighbor records are open to coordinators and owners only.";
 
 /** A made-up group with an owner, a coordinator and a member, and a second group to prove nothing crosses over. */
@@ -49,8 +59,8 @@ describe("who may use the help line and requests", () => {
       const caller = as(person);
       const attempts = [
         () => caller.query(api.assistance.requests, { churchId }),
-        () => caller.query(api.assistance.requestsForNeighbor, { churchId, neighborId: ids.rosa }),
-        () => caller.query(api.assistance.request, { churchId, requestId }),
+        async () => caller.query(api.assistance.requestsForNeighbor, { churchId, neighborId: ids.rosa, opening: await caller.mutation(api.neighbors.open, { churchId, neighborId: ids.rosa }) }),
+        () => readRequest(caller, { churchId, requestId }, ids.rosa),
         () => caller.query(api.assistance.calls, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId }),
         () => caller.query(api.assistance.agencies, { churchId }),
         () => caller.mutation(api.assistance.recordCall, { churchId, callerName: "Darnell Joseph", phone: "", note: "Called back.", callback: "none" }),
@@ -85,12 +95,12 @@ describe("who may use the help line and requests", () => {
     const requestId = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...rent });
     await expect(caller.mutation(api.assistance.decide, { churchId, requestId, decision: "declined", note: "", referrals: ["a", "b", "c", "d", "e"] })).rejects.toThrow("at most four");
     await caller.mutation(api.assistance.decide, { churchId, requestId, decision: "declined", note: "Outside our area.", referrals: ["Sample County Rent Help", " 211 ", "sample county rent help"] });
-    expect((await caller.query(api.assistance.request, { churchId, requestId })).referrals).toEqual(["Sample County Rent Help", "211"]);
+    expect((await readRequest(caller, { churchId, requestId }, ids.rosa)).referrals).toEqual(["Sample County Rent Help", "211"]);
     expect((await caller.query(api.assistance.agencies, { churchId })).map((agency) => agency.name)).toEqual(["211", "Sample County Rent Help"]);
     const second = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...rent });
     await caller.mutation(api.assistance.decide, { churchId, requestId: second, decision: "approved", amountApproved: 1000, note: "", referrals: ["SAMPLE COUNTY RENT HELP"] });
     expect(await caller.query(api.assistance.agencies, { churchId })).toHaveLength(2);
-    expect((await caller.query(api.assistance.request, { churchId, requestId: second })).referrals).toEqual(["Sample County Rent Help"]);
+    expect((await readRequest(caller, { churchId, requestId: second }, ids.earl)).referrals).toEqual(["Sample County Rent Help"]);
   });
 
   test("calls to return first lead the list, and a person's word outranks the assistant's", async () => {
@@ -117,7 +127,7 @@ describe("who may use the help line and requests", () => {
     const { ids, as } = await setup();
     const requestId = await as(ids.owner).mutation(api.assistance.createRequest, { churchId: ids.church, neighborId: ids.rosa, ...rent });
     await expect(as(ids.stranger).query(api.assistance.requests, { churchId: ids.church })).rejects.toThrow("Workspace access required.");
-    await expect(as(ids.stranger).query(api.assistance.request, { churchId: ids.other, requestId })).rejects.toThrow("Request not found.");
+    await expect(readRequest(as(ids.stranger), { churchId: ids.other, requestId }, ids.elsewhere)).rejects.toThrow("Request not found.");
     await expect(as(ids.stranger).mutation(api.assistance.createRequest, { churchId: ids.other, neighborId: ids.rosa, ...rent })).rejects.toThrow("Record not found.");
   });
 });
@@ -212,7 +222,7 @@ describe("a request for help", () => {
     const { ids, as } = await setup();
     const { callId } = await as(ids.coordinator).mutation(api.assistance.recordCall, { churchId: ids.church, callerName: "Someone", phone: "(100) 555-0119", note: "Rent.", callback: "needed" });
     const requestId = await as(ids.coordinator).mutation(api.assistance.createRequest, { churchId: ids.church, neighborId: ids.rosa, callId, ...rent });
-    expect(await as(ids.owner).query(api.assistance.request, { churchId: ids.church, requestId })).toMatchObject({
+    expect(await readRequest(as(ids.owner), { churchId: ids.church, requestId }, ids.rosa)).toMatchObject({
       neighborName: "Esperanza Montoya", neighborAddress: "14 Sample St, Apt 2", neighborLanguage: "es", householdSize: 4, callId, kind: "rent", amountRequested: 45000, amountApproved: null,
       status: "open", payeeKind: "landlord", payeeName: "Sample Property Co.", source: "person", createdByName: "Thomas Okafor", decidedByName: null, referral: "",
     });
@@ -236,7 +246,7 @@ describe("a request for help", () => {
     await expect(as(ids.owner).mutation(api.assistance.decide, { churchId, requestId, decision: "approved", note: "" })).rejects.toThrow("approved amount is needed");
     await expect(as(ids.owner).mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 0, note: "" })).rejects.toThrow("dollar amount");
     await as(ids.owner).mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 40000, note: "Approved after the home visit." });
-    expect(await as(ids.owner).query(api.assistance.request, { churchId, requestId })).toMatchObject({ status: "approved", amountApproved: 40000, decidedByName: "Marisol Vega", decisionNote: "Approved after the home visit." });
+    expect(await readRequest(as(ids.owner), { churchId, requestId }, ids.rosa)).toMatchObject({ status: "approved", amountApproved: 40000, decidedByName: "Marisol Vega", decisionNote: "Approved after the home visit." });
     await expect(as(ids.owner).mutation(api.assistance.decide, { churchId, requestId, decision: "declined", note: "" })).rejects.toThrow("already been decided");
     await expect(as(ids.owner).mutation(api.assistance.updateRequest, { churchId, requestId, ...rent })).rejects.toThrow("already been decided");
     expect(await as(ids.owner).query(api.assistance.requests, { churchId, status: "approved" })).toHaveLength(1);
@@ -249,7 +259,7 @@ describe("a request for help", () => {
     const requestId = await as(ids.owner).mutation(api.assistance.createRequest, { churchId, neighborId: ids.earl, ...rent, kind: "utility", payeeKind: "utility", payeeName: "" });
     await expect(as(ids.owner).mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 18600, note: "" })).rejects.toThrow("Add who is paid");
     await as(ids.owner).mutation(api.assistance.decide, { churchId, requestId, decision: "declined", note: "Outside our area.", referral: "Referred to 211." });
-    expect(await as(ids.owner).query(api.assistance.request, { churchId, requestId })).toMatchObject({ status: "declined", referral: "Referred to 211.", amountApproved: null });
+    expect(await readRequest(as(ids.owner), { churchId, requestId }, ids.earl)).toMatchObject({ status: "declined", referral: "Referred to 211.", amountApproved: null });
   });
 
   test("a voucher request takes from the shelf when approved and gives back when closed", async () => {
@@ -261,13 +271,13 @@ describe("a request for help", () => {
     await expect(caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...coats, kind: "rent" })).rejects.toThrow("Only a voucher request");
     await expect(caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...coats, voucher: { item: "Winter coat", quantity: 1.5 } })).rejects.toThrow("how many vouchers");
     const requestId = await caller.mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...coats });
-    expect(await caller.query(api.assistance.request, { churchId, requestId })).toMatchObject({ voucher: coats.voucher, amountRequested: 0, status: "open" });
+    expect(await readRequest(caller, { churchId, requestId }, ids.rosa)).toMatchObject({ voucher: coats.voucher, amountRequested: 0, status: "open" });
     expect(await onHand()).toEqual([["Winter coat", 10]]);
 
     await caller.mutation(api.assistance.decide, { churchId, requestId, decision: "approved", quantity: 3, note: "" });
-    expect(await caller.query(api.assistance.request, { churchId, requestId })).toMatchObject({ voucher: { item: "Winter coat", quantity: 3 }, amountApproved: 0, status: "paid" });
+    expect(await readRequest(caller, { churchId, requestId }, ids.rosa)).toMatchObject({ voucher: { item: "Winter coat", quantity: 3 }, amountApproved: 0, status: "paid" });
     expect(await onHand()).toEqual([["Winter coat", 7]]);
-    const history = async () => { await caller.mutation(api.neighbors.open, { churchId, neighborId: ids.rosa }); return (await caller.query(api.neighbors.record, { churchId, neighborId: ids.rosa })).history; };
+    const history = async () => (await readRecord(caller, { churchId, neighborId: ids.rosa })).history;
     expect(await history()).toContainEqual(expect.objectContaining({ type: "voucher", requestId, item: "Winter coat", quantity: 3 }));
     expect((await caller.query(api.treasury.payable, { churchId })).map((row) => row.requestId)).not.toContain(requestId);
 
@@ -294,11 +304,10 @@ describe("a request for help", () => {
     await as(ids.coordinator).mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 45000, note: "" });
     await as(ids.owner).mutation(api.treasury.recordPayment, { churchId, requestId, amount: 20000, date: "2026-11-10" });
     await as(ids.owner).mutation(api.assistance.closeRequest, { churchId, requestId, note: "Moved in with family." });
-    await as(ids.owner).mutation(api.neighbors.open, { churchId, neighborId: ids.rosa });
-    const { history } = await as(ids.owner).query(api.neighbors.record, { churchId, neighborId: ids.rosa });
+    const { history } = await readRecord(as(ids.owner), { churchId, neighborId: ids.rosa });
     expect(history).toContainEqual(expect.objectContaining({ type: "decision", status: "closed", approved: 45000, paid: 20000, who: "Marisol Vega", approvedBy: "Thomas Okafor", note: "Moved in with family." }));
     expect(history).toContainEqual(expect.objectContaining({ type: "payment", amount: 20000 }));
-    expect(await as(ids.owner).query(api.assistance.request, { churchId, requestId })).toMatchObject({ status: "closed", decidedByName: "Thomas Okafor", closedByName: "Marisol Vega" });
+    expect(await readRequest(as(ids.owner), { churchId, requestId }, ids.rosa)).toMatchObject({ status: "closed", decidedByName: "Thomas Okafor", closedByName: "Marisol Vega" });
   });
 
   test("a draft is kept for its call until it is approved or discarded", async () => {
@@ -331,9 +340,9 @@ describe("a request for help", () => {
     await as(ids.owner).mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 45000, note: "" });
     await expect(settle(ids.stranger, ids.other, true)).rejects.toThrow("Request not found.");
     await settle(ids.owner, churchId, true);
-    expect((await as(ids.owner).query(api.assistance.request, { churchId, requestId })).status).toBe("paid");
+    expect((await readRequest(as(ids.owner), { churchId, requestId }, ids.rosa)).status).toBe("paid");
     await expect(as(ids.owner).mutation(api.assistance.closeRequest, { churchId, requestId, note: "" })).rejects.toThrow("already finished");
     await settle(ids.owner, churchId, false);
-    expect((await as(ids.owner).query(api.assistance.request, { churchId, requestId })).status).toBe("approved");
+    expect((await readRequest(as(ids.owner), { churchId, requestId }, ids.rosa)).status).toBe("approved");
   });
 });

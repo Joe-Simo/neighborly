@@ -153,6 +153,9 @@ describe("the sample conference a visitor looks around", () => {
         clock.mockRestore();
         return { looked, bytes: (await ctx.meta.getTransactionMetrics()).bytesRead.used };
       });
+    // A record is read with the audit line its opening wrote, as the screen does.
+    const [neighbor] = await t.run((ctx) => ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1));
+    const opening = await guest.mutation(api.neighbors.open, { churchId, neighborId: neighbor._id });
     const rooms = {
       helpLine: await read((ctx) => ctx.runQuery(api.assistance.calls, { churchId, at })),
       weekNote: await read((ctx) => ctx.runQuery(api.drafts.weekNote, { churchId, at })),
@@ -160,10 +163,7 @@ describe("the sample conference a visitor looks around", () => {
       mine: await read((ctx) => ctx.runQuery(api.visits.mine, { churchId, at })),
       years: await read((ctx) => ctx.runQuery(api.reports.years, { churchId, at })),
       year: await read((ctx) => ctx.runQuery(api.reports.year, { churchId, at, year: 2026 })),
-      record: await read(async (ctx) => {
-        const [neighbor] = await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1);
-        return ctx.runQuery(api.neighbors.record, { churchId, neighborId: neighbor._id });
-      }),
+      record: await read((ctx) => ctx.runQuery(api.neighbors.record, { churchId, neighborId: neighbor._id, opening })),
     };
     for (const [room, { looked }] of Object.entries(rooms)) expect(looked, room).toBe(0);
     // Only a whole hour is taken, so the kept answers are one an hour, and a query asked without the hour is refused.
