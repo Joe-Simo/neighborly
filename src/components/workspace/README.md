@@ -165,8 +165,9 @@ where a head fades into the page. Any page that shows a relief picture on #f7f4e
 
 ## A picture's one move on arrival
 
-A room's head picture makes one small move the first time the room is opened in a visit (the cup is set down, the
-key goes on its hook), then never again until the tab is closed; Reduce Motion always shows it at rest. The shell
+A room's head picture makes one small move when the person switches to that room inside the app for the first time
+in a visit (the cup is set down, the key goes on its hook), then never again until the tab is closed. A fresh page
+load never plays it: the room opens with the picture at its end state. Reduce Motion always shows it at rest. The shell
 plays it (`relief-arrival.tsx`); a room does nothing. A picture moves only when it is listed in `reliefMoves` in
 `relief.tsx`, and it is listed only when its two layers are in `public/assets/relief/`:
 
