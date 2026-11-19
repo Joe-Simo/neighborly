@@ -319,7 +319,7 @@
   align-items: center;
   height: auto;
   min-height: 60px;
-  padding: var(--space-8) 6px;
+  padding: var(--space-8) 0;
   border-radius: 0;
   border-bottom: 1px solid #d9ddce;
   background: none;
