@@ -16,7 +16,7 @@ const es: typeof en = {
   requests: "Pedidos de ayuda",
   calls: "Llamadas atendidas",
   visits: "Visitas a domicilio, en pareja",
-  paid: "Pagado directo, nunca en efectivo",
+  paid: "Pagado directamente, nunca en efectivo",
   note: "De la conferencia de muestra. Todas las personas son inventadas.",
 };
 export const yearPaperWords: Record<Language, typeof en> = { en, es };

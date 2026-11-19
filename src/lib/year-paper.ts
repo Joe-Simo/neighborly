@@ -66,7 +66,7 @@ const turned = (month: number, camera: number) => month === MONTHS - 1 ? 0 : eas
 /** The view and projection for a stage of `aspect`, with the camera at `camera`. */
 export function viewProjection(aspect: number, camera: number): Mat {
   // A tall stage keeps the wide one's sideways view, so the fan is never cut at its sides on a phone.
-  const f = Math.min(1, aspect / ASPECT.wide * 1.9) / Math.tan(FOV / 2), near = .1, far = 80;
+  const f = Math.min(1, aspect / ASPECT.wide * 1.6) / Math.tan(FOV / 2), near = .1, far = 80;
   const projection = new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, 2 * far * near / (near - far), 0]);
   // A little above the stack and looking a little down on it, as one looks into a drawer of cards.
   return mul(projection, mul(rotX(.22), translate(.18, -.95, -camera)));

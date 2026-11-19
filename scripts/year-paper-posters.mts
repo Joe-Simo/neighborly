@@ -28,12 +28,14 @@ for (const shape of ["wide", "tall"] as const) for (const [name, through] of [["
     const flat = corners.map(screen);
     if (flat.every(([x]) => x < 0) || flat.every(([x]) => x > W) || flat.every(([, y]) => y < 0) || flat.every(([, y]) => y > H)) continue;
     const lit = shade(models, at);
-    const poly = (points: [number, number][], colour: string) => `<path d="M${points.map(([u, v]) => screen(project(u, v)).map(n => n.toFixed(1)).join(" ")).join("L")}Z" fill="${colour}"/>`;
+    const poly = (points: [number, number][], colour: string) => `<path d="M${points.map(([u, v]) => screen(project(u, v)).map(n => n.toFixed(0)).join(" ")).join("L")}Z" fill="${colour}"/>`;
     const quad = (u0: number, v0: number, u1: number, v1: number, colour: string) => poly([[u0, v0], [u1, v0], [u1, v1], [u0, v1]], colour);
     const wide = Math.hypot(flat[1][0] - flat[0][0], flat[1][1] - flat[0][1]);
-    // The contact shade, soft at its edge as the shader draws it: three steps from the grown edge to the slip's outline.
+    // The contact shade, soft at its edge as the shader draws it: six steps from the grown edge to the slip's outline.
     const g = SHADE.grow, shadow = hex(SHADOW, 1);
-    let svg = [1, 2 / 3, 1 / 3].map(f => `<path d="M${([[-g * f, -g * f], [1 + g * f, -g * f], [1 + g * f, 1 + g * f], [-g * f, 1 + g * f]] as const).map(([u, v]) => screen(project(u, v, 1)).map(n => n.toFixed(1)).join(" ")).join("L")}Z" fill="${shadow}" fill-opacity="${(SHADE.ink / 3).toFixed(3)}"/>`).join("");
+    // A slip a few pixels wide shows no edge to its shade: one step stands for all six.
+    const steps = wide > 24 ? [1, 5 / 6, 4 / 6, 3 / 6, 2 / 6, 1 / 6] : [1 / 2];
+    let svg = steps.map(f => `<path d="M${([[-g * f, -g * f], [1 + g * f, -g * f], [1 + g * f, 1 + g * f], [-g * f, 1 + g * f]] as const).map(([u, v]) => screen(project(u, v, 1)).map(n => n.toFixed(0)).join(" ")).join("L")}Z" fill="${shadow}" fill-opacity="${(SHADE.ink / steps.length).toFixed(3)}"/>`).join("");
     svg += quad(0, 0, 1, 1, hex(PAPER.map((p, i) => p + (EDGE[i] - p) * HAIRLINE), lit)) + quad(HAIR, HAIR_Y, 1 - HAIR, 1 - HAIR_Y, hex(PAPER, lit));
     if (wide > 14) svg += quad(.12, .62 - HAIR_Y, .78, .62 + HAIR_Y, hex(mixed, lit)) + quad(.12, .44 - HAIR_Y, .78, .44 + HAIR_Y, hex(mixed, lit)) + quad(.12, .26 - HAIR_Y, .56, .26 + HAIR_Y, hex(mixed, lit));
     // The done corner: the triangle the shader paints, inside the slip's hairline.
