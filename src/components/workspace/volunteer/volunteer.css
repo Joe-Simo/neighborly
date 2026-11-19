@@ -130,3 +130,6 @@
 .live-app .live-commitment-row .live-row-main p {
   font-variant-numeric: lining-nums tabular-nums;
 }
+
+/* A span of dates breaks as two even lines, never leaving a year alone on the second. */
+.live-app .live-row > .volunteer-days { display: block; text-wrap: balance; }

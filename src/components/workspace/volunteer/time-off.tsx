@@ -1,5 +1,6 @@
 "use client";
 
+import "./volunteer.css";
 import { Button } from "@/components/ui/button";
 import { LiveEmpty, LiveField } from "@/components/workspace/primitives";
 import { DateField } from "@/components/workspace/date-field";
