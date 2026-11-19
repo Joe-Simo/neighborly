@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useSerwist } from "@serwist/turbopack/react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
+import { whenIdle } from "@/lib/idle";
 
 /**
  * Registers the offline worker once the page is in and the browser is idle. Its first install fetches the whole release
@@ -26,15 +27,15 @@ export function OfflineWorker() {
         if (!(error instanceof DOMException && error.name === "SecurityError")) throw error;
       });
     };
-    const whenIdle = () => ("requestIdleCallback" in window ? window.requestIdleCallback(register, { timeout: 4000 }) : setTimeout(register, 1500));
+    const registerWhenIdle = () => { whenIdle(register, 4000, 1500); };
     const roomIn = () => !document.querySelector(".live-app") || document.querySelector(".live-app[data-room-shown]") !== null;
     let longest: ReturnType<typeof setTimeout> | undefined;
     const afterRoom = () => {
-      if (roomIn()) return void whenIdle();
+      if (roomIn()) return registerWhenIdle();
       const shown = () => {
         window.removeEventListener(ROOM_WHOLE, shown);
         clearTimeout(longest);
-        whenIdle();
+        registerWhenIdle();
       };
       window.addEventListener(ROOM_WHOLE, shown);
       // A page that never shows a room (the door, a welcome) still gets its worker, a while after it is in.
