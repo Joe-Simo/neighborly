@@ -316,3 +316,10 @@
 @media (max-width: 380px) {
   .live-app .visits-written-who :is(.help-person, .help-person > span, .help-person > span > span) { white-space: normal; min-width: 0; }
 }
+
+/* At large text (zoomed, narrow, or the app's largest sizes) a written visit's notes wrap up to three lines, then end in
+   an ellipsis: never cut mid-line. */
+@media (max-width: 850px) {
+  .live-app .visits-written-found > span:last-child { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
+}
+:root[data-shell="ios"][data-text-large] .live-app .visits-written-found > span:last-child { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
