@@ -59,9 +59,10 @@ export function YearSwitch({
       value={String(year)}
       onValueChange={(value) => value && onYear(Number(value))}
     >
+      {/* A fiscal year runs October to September, so it is named by both calendar years it spans: "2025–26". */}
       {[...years].reverse().map((option) => (
         <ToggleGroupItem key={option} value={String(option)}>
-          {option}
+          {option - 1}–{String(option).slice(-2)}
           {option === current && <span>{w.soFar}</span>}
         </ToggleGroupItem>
       ))}

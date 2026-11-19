@@ -190,7 +190,7 @@ export function en(set: WordSet) {
       addToCalendar: "Add these to your phone’s calendar",
       emptyTitle: "Room for your first yes.",
       emptyDetail:
-        "Commitments you accept will appear here with everything you need to prepare.",
+        "Say yes to a commitment and it is kept here, with what to prepare.",
     },
     commitments: {
       weekByTeam: "This week by team",
@@ -200,9 +200,9 @@ export function en(set: WordSet) {
       allTeams: "All teams",
       noneForTeamTitle: "No upcoming dates for this team.",
       noneForTeamDetail: `Choose another team or view all teams to see the rest of your ${t.group}’s commitments.`,
-      emptyTitle: "A clear road ahead.",
+      emptyTitle: "No dates yet.",
       emptyDetail:
-        "New commitments will appear here with their date, person and preparation.",
+        "Each date someone is needed is listed here, with who is going and what to prepare.",
       placeOpen: "A place is open",
       status: { accepted: "Accepted", open: "Open", cancelled: "Canceled" },
       viewPreparation: "View preparation",
@@ -282,7 +282,7 @@ export function en(set: WordSet) {
       saving: "Saving…",
       confirm: "Confirm time off",
       failed:
-        "We couldn’t confirm these dates. The connection may have dropped, or your commitments changed. Nothing was saved. Go back to review the list, then confirm again.",
+        "We couldn’t confirm these dates. Nothing was saved. Go back, look over the list, then confirm again.",
       saved: "Time off saved. Only the reviewed commitments were released.",
     },
     /** Tasks & meetings, as a member sees them. Planning a meeting and reviewing replies are leaders' tools and stay English. */
@@ -301,7 +301,7 @@ export function en(set: WordSet) {
       done: "Done",
       open: "Open",
       emptyTitle: "No tasks yet.",
-      emptyDetail: "Shared tasks will appear here with their owner and due date.",
+      emptyDetail: "Anything the group needs done is listed here, with who does it and by when.",
       meetings: "Meetings",
       going: "You are going",
       notGoing: "You can’t make it",

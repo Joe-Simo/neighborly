@@ -22,6 +22,11 @@ export function isBrandNew(data: FirstDaysData) {
   );
 }
 
+/** True while nothing has been made in the group yet: no team, commitment, news, task or meeting. A member's week then has no work to praise. */
+export function nothingMadeYet(data: Pick<FirstDaysData, "teams" | "commitments" | "announcements" | "tasks" | "meetings">) {
+  return [data.teams, data.commitments, data.announcements, data.tasks, data.meetings].every((list) => list.length === 0);
+}
+
 /** True when each figure the week leads with, and the one line under them, would say nothing but 0. */
 export function nothingWaiting(counts: { callsWaiting: number; visitsPlanned: number; requestsOpen: number; approvedUnpaid: number }) {
   return counts.callsWaiting === 0 && counts.visitsPlanned === 0 && counts.requestsOpen === 0 && counts.approvedUnpaid === 0;

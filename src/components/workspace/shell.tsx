@@ -1,6 +1,6 @@
 "use client";
 
-import { isBrandNew } from "@/lib/first-days";
+import { nothingMadeYet } from "@/lib/first-days";
 import { sampleSayer } from "@/lib/words/sample-names";
 import { nameKeeper } from "@/components/workspace/keep-names";
 import { RoomShown, RoomStill, useEdgeTurn, useMenuArea, useWholeRoom } from "@/components/workspace/room-sheet";
@@ -277,7 +277,7 @@ export function LiveWorkspace({
   // An act's name, in the reader's language where the tables have it. Tasks keep theirs with the room's words.
   const actName = (kind: ActionKind) => (kind === "task" ? words.tasks.add : (actions[kind] ?? actionTitles[kind]));
   // A brand-new conference has no one to tell yet: This week's one press is the invitation.
-  const primary = area === "week" && isBrandNew(data) ? "invite" : primaryActions[area];
+  const primary = area === "week" && nothingMadeYet(data) ? "invite" : primaryActions[area];
   // A menu line marked for leaders is shown only to coordinators and owners of the group.
   const leads = ownPerson?.role === "owner" || ownPerson?.role === "coordinator";
   const menuItems = navigation.filter((item) => leads || !("leadersOnly" in item));
@@ -365,7 +365,7 @@ export function LiveWorkspace({
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const heading = headingOverride
     ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
-    : area === "week" && isBrandNew(data)
+    : area === "week" && nothingMadeYet(data)
       ? { ...headings[area], ...translatedHeadings[area], title: words.rooms.firstDays.week.head }
       : { ...headings[area], ...translatedHeadings[area] };
   // A room opened before in this visit comes back with its head at rest (phones only, in paper.css): the full

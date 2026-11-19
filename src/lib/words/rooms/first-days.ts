@@ -9,7 +9,7 @@ import type { Terms } from "../sets";
 export const en = (t: Terms, place: string) => ({
   /** This week, in place of three figures at zero and two empty lists. The head carries its press, "Invite someone". */
   week: {
-    /** The room's own head while the group is brand new, in place of "Good work, this week.", which needs work to praise. */
+    /** The room's own head while nothing has been made yet, for the owner and members alike, in place of "Good work, this week.", which needs work to praise. */
     head: "Your first week.",
     title: "Invite the people you serve with.",
     detail: "What each one takes on, and what is waiting for a yes, gathers here.",

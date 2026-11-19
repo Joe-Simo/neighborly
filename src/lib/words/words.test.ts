@@ -79,7 +79,7 @@ describe("refusals a member can meet", () => {
     const backend = (await Promise.all(["workspace.ts", "pages.ts"].map((file) => Bun.file(`${import.meta.dir}/../../../convex/${file}`).text()))).join("\n");
     for (const [key, sentence] of Object.entries(refusals)) {
       // A refusal for something no longer there adds its next step.
-      expect(words("en").notices.refused[sentence], `en ${key}`).toBe(notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence);
+      expect(words("en").notices.refused[sentence], `en ${key}`).toBe(serverRefusalsPlain[sentence]?.en ?? (notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence));
       for (const language of ["es"] as const) {
         const said = words(language).notices.refused[sentence];
         expect(said, `${language} ${key}`).toBeTruthy();
