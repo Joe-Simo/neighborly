@@ -194,7 +194,7 @@ function HelpLine() {
           const words = spoken.current;
           const said = words.rooms.helpLine.done;
           setDone({
-            message: asks ? said.savedToDecide : fill(said.savedOnRecord, { name: caller(sealed.call, words) }),
+            message: asks ? fill(said.savedToDecide, { name: caller(sealed.call, words) }) : fill(said.savedOnRecord, { name: caller(sealed.call, words) }),
             record: sealed.neighborId,
             filed: asks ? { name: caller(sealed.call, words), asks } : undefined,
           });

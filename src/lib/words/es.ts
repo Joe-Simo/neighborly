@@ -85,7 +85,8 @@ export function es(set: WordSet): Words {
       skip: `Ir a tu ${place}`,
       /** For someone who belongs to more than one: the picker in the bar. */
       groups: { label: `Elegir ${t.group}`, more: `Más ${t.group}s` },
-      signOut: "Salir",
+      signOut: "Cerrar sesión",
+      signedInAs: (name: string) => `Sesión iniciada como ${name}`,
       leaveSample: "Salir de la muestra",
       close: "Cerrar",
       sampleMark: "Muestra · personas\u00a0inventadas",
@@ -572,9 +573,9 @@ export function es(set: WordSet): Words {
         yours: (count) => (count > 1 ? "Te toca a ti anotarlos." : "Te toca a ti anotarlo."),
         // The hour sits in brackets: "a las" is wrong at one o'clock, and "a.m." would end the sentence with two points.
         takenAt: (time) => `Tomado del mensaje (${time}).`,
-        notOnFile: `Aún no está en el registro como ${t.neighbor}.`,
-        addFirst: (name) => `Primero, agrega a ${name || "quien llamó"} como ${t.neighbor}.`,
-        addAndSave: `Agregar ${t.neighbor} y guardar`,
+        notOnFile: (name) => `${name || "Quien llamó"} aún no está en el registro.`,
+        addFirst: (name) => `Primero, agrega a ${name || "quien llamó"} al registro.`,
+        addAndSave: (name) => (name ? `Agregar a ${name}` : "Agregar a esta persona"),
         write: "Escribir la petición",
         fill: "Llenar lo que falta",
       },

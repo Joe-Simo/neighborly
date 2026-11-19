@@ -358,3 +358,8 @@
 .help-slip { position: fixed; z-index: 60; padding: 10px 14px 11px; background: #f7f2e6; color: #293f32; border-radius: 1px; box-shadow: 0 0 0 1px #b0a08466, 0 1px 0 #b0a084, 0 3px 6px -2px #3b2a1233; font: 500 16px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; white-space: nowrap; transform-origin: 0 0; pointer-events: none; will-change: transform; }
 .help-slip[data-lying] { color: transparent; }
 @media (forced-colors: active) { .help-slip { border: 1px solid CanvasText; box-shadow: none; } }
+
+/* The yes that adds the caller names them; where that line would overflow the button, the shorter words stand instead. */
+.help-add { display: block; min-width: 0; max-width: 100%; overflow: hidden; white-space: nowrap; }
+.help-add-short, .help-add[data-tight] .help-add-long { display: none; }
+.help-add[data-tight] .help-add-short { display: inline; }

@@ -9,8 +9,10 @@ import type { Terms } from "../sets";
 export const en = (t: Terms, place: string) => ({
   /** This week, in place of three figures at zero and two empty lists. The head carries its press, "Invite someone". */
   week: {
-    title: "Your first week starts here.",
-    detail: "Invite the people you serve with. What each one takes on, and what is waiting for a yes, gathers here.",
+    /** The room's own head while the group is brand new, in place of "Good work, this week.", which needs work to praise. */
+    head: "Your first week.",
+    title: "Invite the people you serve with.",
+    detail: "What each one takes on, and what is waiting for a yes, gathers here.",
   },
   /** A new member's first week: three slips on This week, each leading to the real control. Shown once. */
   firstWeek: {
@@ -33,8 +35,9 @@ export const en = (t: Terms, place: string) => ({
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the terms and the place; these sentences name neither
 export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   week: {
-    title: "Tu primera semana empieza aquí.",
-    detail: "Invita a las personas con quienes sirves. Aquí se junta lo que cada una toma a su cargo y lo que espera un sí.",
+    head: "Tu primera semana.",
+    title: "Invita a las personas con quienes sirves.",
+    detail: "Aquí se junta lo que cada una toma a su cargo y lo que espera un sí.",
   },
   firstWeek: {
     title: "Tu primera semana",

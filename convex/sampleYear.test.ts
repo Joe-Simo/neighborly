@@ -28,6 +28,11 @@ test("the home page's four figures are the sample's own yearly report", async ()
     visits: sampleYear.visits,
     helpPaid: sampleYear.helpPaid,
   });
+  // The week page's yes is the sample's own: the electric bill with a shut-off notice, approved after the visit.
+  const shutOff = await t.run(async (ctx) =>
+    (await ctx.db.query("assistanceRequests").collect()).find((request) => request.summary === "Electric bill with a shut-off notice."),
+  );
+  expect(shutOff?.amountApproved).toBe(sampleYear.weekHelp);
 });
 
 test("the year's money in Reports is the Treasury's: same closing balance, same money in and out", async () => {

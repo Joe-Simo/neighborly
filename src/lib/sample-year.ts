@@ -13,6 +13,8 @@ export const sampleYear = {
   visits: 325,
   /** Cents paid toward requests: to a landlord, a utility or a store, never in cash. */
   helpPaid: 5243500,
+  /** Cents the conference said yes to on the week page's Thursday: the sample's electric bill with a shut-off notice. */
+  weekHelp: 21000,
 } as const;
 
 /** Said once by "Your turn." when the visitor's yes is given, so the year's count of requests goes up by one. On the page only. */

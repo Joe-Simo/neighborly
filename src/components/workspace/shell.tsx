@@ -320,7 +320,9 @@ export function LiveWorkspace({
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const heading = headingOverride
     ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
-    : { ...headings[area], ...translatedHeadings[area] };
+    : area === "week" && isBrandNew(data)
+      ? { ...headings[area], ...translatedHeadings[area], title: words.rooms.firstDays.week.head }
+      : { ...headings[area], ...translatedHeadings[area] };
   // A room opened before in this visit comes back with its head at rest (phones only, in paper.css): the full
   // head is the arrival, and an arrival happens once. Decided as the room is entered, so nothing below ever jumps.
   const [rested, setRested] = useState(false);
@@ -581,6 +583,7 @@ export function LiveWorkspace({
                 <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={leave}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
                 {selectChurch}
               </div>
+              {!sampleVisitor && <p className="live-menu-who">{words.shell.signedInAs(data.user.name || data.user.email)}</p>}
               <div className="live-menu-foot">
                 <LanguageChooser words={words} churchId={data.church.id} />
                 <Button variant="outline" className="live-menu-leave" disabled={pending} onClick={() => void signOut()}>

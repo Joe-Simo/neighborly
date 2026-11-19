@@ -76,6 +76,8 @@ export function DraftSheet({
 }) {
   const text = words.assistant;
   const sheet = text.sheet;
+  const callerName = call.callerName.trim();
+  const firstName = callerName.split(/\s+/)[0] ?? "";
   const room = words.rooms.helpLine.draft;
   const complete =
     !!draft.kind &&
@@ -147,7 +149,7 @@ export function DraftSheet({
           <p className="help-quote">“{draft.quote || call.note}”</p>
           <p className="help-why">
             {sheet.takenAt(format(call.takenAt, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" }))}
-            {!call.neighborId && ` ${sheet.notOnFile}`}
+            {!call.neighborId && ` ${sheet.notOnFile(firstName)}`}
           </p>
           {/* What to do about a blank reads with the text, at its measure, never beside the buttons. */}
           {!complete && !call.neighborId && (
@@ -161,8 +163,18 @@ export function DraftSheet({
           {complete ? (
             <>
               <Button disabled={pending} onClick={onApprove}>
-                <Check size={18} aria-hidden="true" />{" "}
-                {call.neighborId ? text.approve : sheet.addAndSave}
+                {call.neighborId ? (
+                  <>
+                    <Check size={18} aria-hidden="true" /> {text.approve}
+                  </>
+                ) : (
+                  // The caller's name rides in the button, kept whole. Where the line would not fit the button, the
+                  // shorter words stand instead, decided as the button is laid, before it is drawn.
+                  <span className="help-add" ref={(label) => { label?.toggleAttribute("data-tight", label.scrollWidth > label.clientWidth); }}>
+                    <span className="help-add-long">{nameKeeper([callerName])(sheet.addAndSave(callerName))}</span>
+                    <span className="help-add-short">{sheet.addAndSave("")}</span>
+                  </span>
+                )}
               </Button>
               {onChange && (
                 <Button variant="outline" disabled={pending} onClick={onChange}>

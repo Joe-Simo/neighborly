@@ -404,7 +404,7 @@ export function LedgerView({
         </div>
       )}
 
-      {(uncleared !== undefined || onHand || shelf !== undefined) && (() => {
+      {(uncleared !== undefined || (onHand && onHand.count > 0) || shelf !== undefined) && (() => {
         const also = (
           <>
           {onHand && onHand.count > 0 && (

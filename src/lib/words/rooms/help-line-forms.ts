@@ -216,17 +216,17 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     onFile: { phone: "Ya hay un registro de {name} con este número de teléfono.", name: "Ya hay un registro de {name} con este nombre." },
     recovery: {
       use: {
-        phone: `Usa ese registro o cambia el número. Lo que escribiste sigue aquí. Si es otra persona, guárdala como ${t.neighbor} nuevo.`,
-        name: `Usa ese registro o cambia el nombre. Lo que escribiste sigue aquí. Si es otra persona, guárdala como ${t.neighbor} nuevo.`,
+        phone: `Usa ese registro o cambia el número. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
+        name: `Usa ese registro o cambia el nombre. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
       },
       open: {
-        phone: `Abre el registro o cambia el número. Lo que escribiste sigue aquí. Si es otra persona, guárdala como ${t.neighbor} nuevo.`,
-        name: `Abre el registro o cambia el nombre. Lo que escribiste sigue aquí. Si es otra persona, guárdala como ${t.neighbor} nuevo.`,
+        phone: `Abre el registro o cambia el número. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
+        name: `Abre el registro o cambia el nombre. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
       },
     },
     openRecord: "Abrir registro",
     saveChanges: "Guardar cambios",
-    saveNew: `Guardar como ${t.neighbor} nuevo`,
+    saveNew: "Crear un registro nuevo",
     add: `Agregar ${t.neighbor}`,
   },
   confirm: { noMatch: "No coincide. El nombre es" },
