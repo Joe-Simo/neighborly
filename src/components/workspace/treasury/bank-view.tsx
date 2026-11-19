@@ -322,9 +322,9 @@ export function BankView({
           <div className="help-empty">
             <PaperScene kind="empty" />
             <div>
-              <h3>{w.waiting.emptyTitle}</h3>
+              <h3>{bank.lately.length ? w.waiting.emptyTitle : w.waiting.firstTitle}</h3>
               <p>
-                {w.waiting.emptyDeck(day(bank.asOf))}
+                {bank.lately.length ? w.waiting.emptyDeck(day(bank.asOf)) : w.waiting.firstDeck}
               </p>
             </div>
           </div>

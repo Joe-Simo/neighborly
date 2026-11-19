@@ -39,7 +39,10 @@
 }
 .help-figures dd {
   margin: 0;
-  font: 400 44px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1;
   letter-spacing: -0.03em;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--live-ink);
@@ -47,7 +50,11 @@
 .help-figures > div:first-child dd { font-size: 62px; }
 .help-figures dd small {
   display: block;
-  font: 400 16px/1.45 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
+  font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.45;
+  font-variant-numeric: lining-nums tabular-nums;
   letter-spacing: 0;
   color: var(--live-muted);
   margin-top: 12px;
@@ -121,7 +128,7 @@
 .help-row[data-quiet] h3 { font-size: 22px; color: #4b564d; }
 .help-row[data-quiet] .live-date-leaf { border-top-color: var(--live-line); }
 .help-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: center; }
-.help-phone { font: 400 17px/1 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); margin-left: 10px; font-variant-numeric: tabular-nums; }
+.help-phone { font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 400; font-size: 17px; line-height: 1; letter-spacing: 0; color: var(--live-muted); margin-left: 10px; font-variant-numeric: tabular-nums; }
 .help-person { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
 .help-person .help-initials:first-child { position: relative; z-index: 1; box-shadow: 0 0 0 2px var(--live-paper); }
 .help-sheet .help-person .help-initials:first-child { box-shadow: 0 0 0 2px var(--help-sheet); }
@@ -174,7 +181,7 @@
 .help-timeline li[data-kind="money"] i { background: var(--help-ochre); }
 .help-timeline h3 { font: 400 23px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; margin: 0 0 3px; }
 .help-timeline p { margin: 0; font-size: 16px; color: var(--live-muted); }
-.help-amount { font: 400 25px/1 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 25px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
 .help-year { font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: #52644f; padding: 22px 0 4px 152px; }
 .help-opened { display: flex; flex-wrap: wrap; gap: 10px 34px; padding: 20px 0 0; border-top: 1px solid var(--live-line); font-size: 16px; color: var(--live-muted); }
 .help-opened strong { color: var(--live-ink); font-weight: 600; }
@@ -186,10 +193,10 @@
 .live-app table.help-ledger td { padding-top: 20px; padding-bottom: 20px; vertical-align: baseline; }
 .help-ledger tbody tr:hover { background: #f1efe2; }
 .help-ledger td:first-child { color: var(--live-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.help-ledger .help-what { font: 400 21px/1.3 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.01em; }
-.help-ledger .help-what small { display: block; font: 400 15px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); margin-top: 3px; }
+.help-ledger .help-what { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 21px; line-height: 1.3; letter-spacing: -0.01em; }
+.help-ledger .help-what small { display: block; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 400; font-size: 15px; line-height: 1.4; letter-spacing: 0; color: var(--live-muted); margin-top: 3px; }
 .help-money { text-align: right !important; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
-td.help-money { font: 400 21px/1.3 "Newsreader", "Newsreader Fallback", Georgia, serif; }
+td.help-money { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 21px; line-height: 1.3; font-variant-numeric: lining-nums tabular-nums; }
 td.help-money[data-in] { color: #3f6a45; }
 td.help-money[data-balance] { color: var(--live-muted); }
 .help-ledger tfoot td { border-top: 2px solid #596e51; border-bottom: 0; padding-top: 18px; font-weight: 600; }
@@ -200,7 +207,7 @@ td.help-money[data-balance] { color: var(--live-muted); }
   display: grid; grid-template-columns: 230px minmax(0, 1fr) 120px; gap: 26px; align-items: center;
   padding: 20px 0; border-bottom: 1px solid var(--live-line);
 }
-.help-bars h3 { font: 400 23px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; margin: 0 0 2px; }
+.help-bars h3 { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 23px; line-height: 1.2; letter-spacing: -0.015em; margin: 0 0 2px; }
 .help-bars p { margin: 0; font-size: 15px; color: var(--live-muted); }
 .help-bar { height: 14px; border-radius: 1px; background: #ebe9dc; overflow: hidden; }
 .help-bar span {

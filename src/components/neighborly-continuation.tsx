@@ -77,7 +77,6 @@ export function NeighborlyContinuation() {
             </div>
           </li>)}
         </ul>
-        <p className="neighborly-free"><em>Free.</em> For every conference.</p>
       </div>
       <ReliefLean within=".neighborly-rooms" />
       <ClosingBand />

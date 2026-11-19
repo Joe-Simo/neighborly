@@ -47,8 +47,9 @@ export function MadePage({ language }: { language: Language }) {
           <div>{blocks.map((block) => typeof block === "string"
             ? <p key={block}>{block}</p>
             : <ul key={block[0].lead} className="public-made-tones">{block.map(({ lead, rest, tone }) => <li key={lead} data-tone={tone}><strong>{lead}</strong> {rest}</li>)}</ul>)}
+</div>
           {/* eslint-disable-next-line @next/next/no-img-element -- a 960px working file shown as it is */}
-          {figure && <figure className="public-made-figure"><img src={figure.src} alt={figure.alt} width={960} height={480} loading="lazy" decoding="async" /><figcaption>{figure.caption}</figcaption></figure>}</div>
+          {figure && <figure className="public-made-figure"><img src={figure.src} alt={figure.alt} width={960} height={480} loading="lazy" decoding="async" /><figcaption>{figure.caption}</figcaption></figure>}
         </section>
       </Fragment>)}
       <section>

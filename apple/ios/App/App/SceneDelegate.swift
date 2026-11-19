@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import WidgetKit
 import CoreText
 import Capacitor
 
@@ -172,6 +173,33 @@ final class ShellViewController: CAPBridgeViewController {
         scripts.add(Felt { [weak self] what in self?.tap(for: what) }, name: "kindHelpsFelt")
         // A kept room opened with no connection asks to be opened again once the connection returns (live-app.tsx).
         scripts.add(ReloadRequest { [weak self] in self?.reloadUnderStill() }, name: "kindHelpsReload")
+        // The page says the moment its first screen is whole, so the launch cover lifts in that frame's turn instead
+        // of at the next of the watch's tenth-of-a-second looks (on average 50 ms sooner). The same test as the watch's
+        // (firstScreenWhole), asked again whenever the marks it reads change and when the fonts arrive; the watch stays
+        // as the fallback. It says so once per page.
+        scripts.addUserScript(WKUserScript(
+            source: """
+            (() => {
+              let said = false;
+              const look = () => {
+                if (said || !document.documentElement || !(\(Self.firstScreenWhole))) return;
+                said = true;
+                watch.disconnect();
+                window.webkit.messageHandlers.kindHelpsWhole.postMessage(null);
+              };
+              const watch = new MutationObserver(look);
+              watch.observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "data-room-in"] });
+              document.fonts.addEventListener("loadingdone", look);
+              document.fonts.ready.then(look);
+            })();
+            """,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
+        scripts.add(ReloadRequest { [weak self] in
+            guard let self, self.cover != nil else { return }
+            self.reveal(whileLoading: true)
+        }, name: "kindHelpsWhole")
         // At the accessibility text sizes the bar's words stay small; held, a tab shows its name large, as any iOS
         // tab bar does. The page says where its tabs are (shell.tsx); iOS turns the viewer on only at those sizes.
         scripts.add(BarTabs { [weak self] state in self?.barChanged?(state) }, name: "kindHelpsBar")
@@ -840,12 +868,32 @@ enum KeptRoom {
         } else {
             guard let file = file(.week) else { return }
             try? Data(json.utf8).write(to: file, options: [.atomic, .completeFileProtection])
+            shareWeek(object)
         }
+    }
+
+    /// The week's counts for the Home Screen widget, when this person may see them (the kept room says so).
+    private static func shareWeek(_ kept: [String: Any]) {
+        let room = kept["room"] as? [String: Any]
+        let note = room?["weekNote"] as? [String: Any]
+        let count = { (key: String) in (note?[key] as? NSNumber)?.intValue ?? 0 }
+        let figures = kept["allowed"] as? Bool == true && note != nil
+            ? WeekFigures(callsWaiting: count("callsWaiting"), oldestWaitingDays: count("oldestWaitingDays"), visitsPlanned: count("visitsPlanned"),
+                          requestsOpen: count("requestsOpen"), sample: (room?["church"] as? [String: Any])?["sample"] as? Bool == true)
+            : nil
+        guard figures != WeekFigures.read() else { return }
+        WeekFigures.write(figures)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Both are let go together: sign-out, or a room that is no longer this member's.
     static func forget() {
         for kind in [Kind.week, .helpLine] { if let file = file(kind) { try? FileManager.default.removeItem(at: file) } }
+        // The widget's counts go with them.
+        if WeekFigures.read() != nil {
+            WeekFigures.write(nil)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 }
 

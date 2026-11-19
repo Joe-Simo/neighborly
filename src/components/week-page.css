@@ -4,7 +4,7 @@
 .public-week-head{display:flex;flex-direction:column;gap:14px}
 .public-week .public-week-when{display:flex;align-items:center;gap:12px;margin:0;font-size:15px;letter-spacing:.02em;color:#3d4f43}
 /* The day's number on a small chip of the page's paper, raised one sheet. */
-.public-week-when span{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:3px 4px 3px 5px;background:#fbf9f4;box-shadow:0 1px 0 #3b2a1238,0 2px 4px #3b2a1224;font:400 19px/1 'Newsreader','Newsreader Fallback',Georgia,serif;color:#293f32}
+.public-week-when span{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:3px 4px 3px 5px;background:#fbf9f4;box-shadow:0 1px 0 #3b2a1238,0 2px 4px #3b2a1224;font-family: 'Newsreader','Newsreader Fallback',Georgia,serif; font-weight: 400; font-size: 19px; line-height: 1; font-variant-numeric: lining-nums tabular-nums;color:#293f32}
 .public-week .public-week-room{margin:0;font-size:15px;color:#3d4f43}
 .public-week-piece{display:block;margin:0 0 28px;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 6px 8px #3b2a121c)}
 .public-week-piece img{display:block;width:100%;height:auto;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
@@ -23,3 +23,5 @@
 }
 @media(min-width:2000px){.public-week-lede>div{font-size:24px}.public-week .public-week-when,.public-week .public-week-room{font-size:17px}}
 @media(min-width:2000px){.public-week-day>div:last-child{max-width:none}.public-week-day>div:last-child>p{max-width:28em}.public-week-day .public-week-piece{max-width:40em}}
+/* A day's title at a phone's width: room for a short title on one line, so no last word stands alone (es "Dos miembros visitan."). */
+@media(max-width:560px){.public-week .public-week-day h2{max-width:22ch}}

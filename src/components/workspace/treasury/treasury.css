@@ -104,7 +104,10 @@
   text-decoration-thickness: 1px;
 }
 .treasury-entry-amount {
-  font: 400 44px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1;
   letter-spacing: -0.03em;
   font-variant-numeric: lining-nums tabular-nums;
   margin: 4px 0 6px;
@@ -362,7 +365,10 @@
   color: #fff;
 }
 .treasury-gift-amount {
-  font: 400 21px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-weight: 400;
+  font-size: 21px;
+  line-height: 1;
   font-variant-numeric: lining-nums tabular-nums;
 }
 .treasury-gift-total {
@@ -374,7 +380,10 @@
   color: #68715f;
 }
 .treasury-gift-total strong {
-  font: 400 30px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: lining-nums tabular-nums;
   color: #283c32;
@@ -533,9 +542,12 @@
   line-height: 1.4;
 }
 .treasury-paid-line strong {
-  font: 400 24px/1.1 "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.1;
   letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .treasury-paid-line > span {
   white-space: nowrap;
@@ -582,4 +594,20 @@
 /* On a phone every request that waits keeps two lines for what it is for, so the presses fall on one beat. */
 @media (max-width: 560px) {
   .treasury-waiting .help-row p { min-height: 2lh; }
+}
+
+/* Figures stand in columns: every amount, count and date in the room sets lining figures at one width, and an
+   amount that ends a row sits at the row's right, so dollars line up under dollars down the page. */
+.treasury-day,
+.treasury-paid-line,
+.treasury-lines li,
+.treasury-gift-total,
+.treasury-figures dd small,
+.help-ledger.treasury-shelf td {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+@media (min-width: 851px) {
+  .treasury-lines li > :nth-child(2) {
+    text-align: right;
+  }
 }

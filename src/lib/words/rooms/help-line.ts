@@ -86,7 +86,7 @@ export const en = (t: Terms, place: string) => ({
     quiet: "No one is waiting for a call back. New messages from the help line will appear here.",
     /** No call waiting and none returned: the room has nothing to show, and the head carries "Log a call". */
     noneTitle: "Calls are written down here.",
-    none: "When someone calls the help line, log the call. It waits here until someone calls them back.",
+    none: "Log each call to the help line here. It stays on this list until someone calls the person back.",
     returnedThisWeek: "Returned this week",
     count: (count: number) => (count === 1 ? "1 call" : `${enN(count)} calls`),
     returned: "Returned",
@@ -204,7 +204,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     quietTitle: "Una mañana tranquila.",
     quiet: "Nadie espera que le devuelvan la llamada. Los mensajes nuevos de la línea de ayuda aparecerán aquí.",
     noneTitle: "Aquí se anotan las llamadas.",
-    none: "Cuando alguien llame a la línea de ayuda, anota la llamada. Se queda aquí hasta que alguien la devuelva.",
+    none: "Anota aquí cada llamada a la línea de ayuda. Se queda en esta lista hasta que alguien le devuelva la llamada a la persona.",
     returnedThisWeek: "Devueltas esta semana",
     count: (count) => (count === 1 ? "1 llamada" : `${esN(count)} llamadas`),
     returned: "Devuelta",
