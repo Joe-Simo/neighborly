@@ -156,7 +156,7 @@ export function es(set: WordSet): Words {
       announcementSees: `Todos en ${t.group === "grupo" ? "el grupo" : "la conferencia"} lo ven en Esta semana.`,
       announcementForm: { title: "Título", message: "Mensaje", save: "Compartir aviso", saving: "Compartiendo…" },
     },
-    dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora" },
+    dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora", time: "hora" },
     week: {
       quilt: "Esta semana: {calls} · {visits} · {yeses}",
       quiltCalls: (count) => (count === 1 ? "1 llamada devuelta" : `${esN(count)} llamadas devueltas`),
@@ -462,6 +462,7 @@ export function es(set: WordSet): Words {
       away: (count) => (count === 1 ? `1 ${t.member} está fuera esta semana.` : `${esN(count)} ${t.members} están fuera esta semana.`),
       done: "Ya lo leí",
       read: "Leer",
+      readLabel: "Leer la nota del lunes",
       brief: {
         label: "Nota del lunes",
         calls: (count) => (count === 1 ? "1 llamada por devolver" : `${esN(count)} llamadas por devolver`),

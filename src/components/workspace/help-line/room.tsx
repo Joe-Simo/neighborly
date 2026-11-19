@@ -81,7 +81,7 @@ export function KeptPrivate() {
  */
 /** The whole yes, from the sheet to its saved line, in this long: the line is whole and still by its end. */
 const WHOLE = 400;
-/** How long the sealed sheet's own words take to go, where they stand, before anything moves. */
+/** The beat between the sealed sheet's own words going (in one cut) and anything moving. */
 const WORDS_GONE = 64;
 /** How far above what follows the card's shadow ends, at its faintest. */
 const SHADOW_CLEAR = 4;
@@ -101,7 +101,7 @@ export function readSealedSheet() {
 }
 
 /**
- * The sealed sheet's words go where they stand, its seal with them, before anything moves: the close, the line and
+ * The sealed sheet's words go where they stand, its seal with them, in one cut, a beat before anything moves: the close, the line and
  * the line's own words then all start on one frame, and no word is ever on the page twice. Its paper and its green
  * corner stay. At once for anyone who asks for less motion.
  */
@@ -109,7 +109,7 @@ export async function letSheetWordsGo() {
   const sheet = document.querySelector<HTMLElement>(".help-sheet.help-sealed");
   if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   keepSheetWords(sheet);
-  const going = [...sheet.children].map((part) => part.animate([{ opacity: 1 }, { opacity: 0 }], { duration: WORDS_GONE, easing: "ease-out", fill: "forwards" }));
+  const going = [...sheet.children].map((part) => part.animate([{ opacity: 1 }, { opacity: 0 }], { duration: WORDS_GONE, easing: "step-start", fill: "forwards" }));
   await Promise.allSettled(going.map((move) => move.finished));
 }
 
@@ -144,13 +144,13 @@ function keepSheetWords(sheet: HTMLElement) {
     word.style.visibility = "hidden";
   }
 }
-/** The sheet's kept words give way: at once when nothing takes their place, or as the line's setting comes up. */
+/** The sheet's kept words give way: at once when nothing takes their place, or in one cut as the line's setting is in place. Words never fade. */
 export function dropSheetWords(over = 0) {
   const going = kept;
   kept = [];
   for (const { copy, word } of going) {
     const gone = () => copy.remove();
-    if (over) copy.animate([{ opacity: 1 }, { opacity: 0 }], { duration: over, easing: CARRY, fill: "forwards" }).finished.then(gone, gone);
+    if (over) copy.animate([{ opacity: 1 }, { opacity: 0 }], { duration: over, easing: "step-end", fill: "forwards" }).finished.then(gone, gone);
     else {
       // Nothing takes its place: the sheet has its own word back.
       word.style.visibility = "";

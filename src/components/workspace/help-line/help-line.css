@@ -93,7 +93,7 @@
 /* The yes is given: the corner folds to green (paper-fold), the sheet lifts and settles, a check is drawn. */
 /* A corner pressed into the paper. The flap turns about its crease, seen square on: it narrows toward the crease and
    widens back, so it stays hinged inside the sheet's outline and keeps its shade at the crease. Its colour is the face
-   it shows, never a blend between two. Nothing lifts the sheet, nothing fades.
+   it shows, never a blend between two. Nothing lifts the sheet, and the corner never fades.
    Save (the help line's drafted request): the corner folds half down on the press and holds there while the answer is
    on its way (the ochre ring after 400ms); saved, it lies down flat in the sheet's own paper, and the request waits on.
    A refusal lays the ochre corner back. Approve (the record's request, the decision to give help): once the yes is
@@ -121,9 +121,9 @@
 .help-fold-ring { position: absolute; top: 10px; right: 46px; width: 11px; height: 11px; border: 2px solid #a8791f; border-radius: 50%; visibility: hidden; animation: help-ring-due 0s 400ms forwards; }
 @keyframes help-ring-due { to { visibility: visible; } }
 .help-sealed .help-sheet-body { position: relative; }
-/* The buttons go as the seal comes: they fade where they stand, and keep their room. So does the line that said
+/* The buttons go as the seal comes: in one cut where they stand, and they keep their room. So does the line that said
    nothing was saved yet, so the sheet keeps its height until it closes. */
-.help-sealed .help-actions, .help-sealed .help-unsaved { visibility: hidden; opacity: 0; transition: opacity 120ms ease-out, visibility 0s linear 120ms; }
+.help-sealed .help-actions, .help-sealed .help-unsaved { visibility: hidden; }
 .help-seal {
   position: absolute; right: 0; bottom: 0; margin: 0 !important; min-height: 44px;
   display: flex; align-items: center; gap: 12px;

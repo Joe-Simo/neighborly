@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { languages, words, wordSets } from "./index";
-import { nextStep, notFound } from "../refusals-es";
+import { nextStep, notFound, serverRefusalsPlain } from "../refusals-es";
 
 type Leaf = string | ((count: number) => string) | ((section: string) => string);
 // A refusal pattern sits in a book too: its regular expression holds no phrase, its saying is one.
@@ -120,7 +120,7 @@ describe("refusals the backend writes out", () => {
     }
     const es = words("es").notices;
     for (const sentence of sentences) {
-      expect(sayRefused(words("en").notices, sentence), sentence).toBe(notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence);
+      expect(sayRefused(words("en").notices, sentence), sentence).toBe(serverRefusalsPlain[sentence]?.en ?? (notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence));
       const said = sayRefused(es, sentence);
       expect(said, sentence).not.toBe(sentence);
       expect(said.includes("${"), sentence).toBe(false);

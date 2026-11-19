@@ -39,7 +39,7 @@
 .card-offer{position:absolute;left:69%;top:77.6%;width:max(20.8%,240px);aspect-ratio:1.5;translate:-50% -50%;rotate:-4deg;display:block;min-height:56px;pointer-events:auto;color:#253e31;text-decoration:none;background:url(/assets/home/card-blank-480.webp) center/100% 100% #f7f2e6;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s}
 .card-offer>i{position:absolute;left:8%;top:14%;width:8%;aspect-ratio:1;background:#c8962e}
 .card-offer>svg{position:absolute;right:8%;top:12%;width:18px;height:18px}
-.card-offer-words{position:absolute;left:9%;right:8%;bottom:13%;display:flex;flex-direction:column;gap:6px;transition:opacity .24s linear .12s}
+.card-offer-words{position:absolute;left:9%;right:8%;bottom:13%;display:flex;flex-direction:column;gap:6px;transition:opacity 0s .12s}
 .card-offer strong{font:400 clamp(20px,1.85cqw,36px)/1.08 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.025em;text-wrap:balance}
 .card-offer small{font:400 clamp(15px,1.04cqw,20px)/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43}
 .card-offer:hover{translate:-50% calc(-50% - 4px);filter:drop-shadow(3px 10px 8px #2a1e1446)}
@@ -49,7 +49,7 @@
 .thread-live .card-offer:not(.is-here):not(:focus-visible){opacity:0;pointer-events:none}
 .thread-live .card-offer:not(.is-here):not(:focus-visible) .card-offer-words{opacity:0;transition:none}
 .card-offer[data-given]{opacity:0}
-/* Back on home, the card is in the hand already lettered: its words are not faded in again. */
+/* Back on home, the card is in the hand already lettered: its words are not cut in again. */
 .card-offer[data-back] .card-offer-words{opacity:1;transition:none}
 @media(max-width:1279px),(max-height:444px){.neighborly-close-offer{top:0}}
 @media(max-width:700px) and (orientation:portrait),(max-width:480px){
@@ -60,7 +60,7 @@
 }
 @media(prefers-reduced-motion:reduce){.card-offer,.card-offer-words{transition:none}.card-offer:hover,.card-offer:active{translate:-50% -50%}}
 /* "For ____": lettered on the card in the page's italic. The blank is a pencil rule until a name is written on it. */
-.card-offer-for{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 clamp(17px,1.5cqw,29px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;color:#3d4f43;white-space:nowrap;overflow:hidden;transition:opacity .24s linear .12s}
+.card-offer-for{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 clamp(17px,1.5cqw,29px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;color:#3d4f43;white-space:nowrap;overflow:hidden;transition:opacity 0s .12s}
 .card-offer-for span{flex:1;min-width:0;overflow:hidden;text-overflow:clip;color:#253e31;border-bottom:1px solid #3d4f4366;padding-bottom:1px}
 .card-offer-for span:not([data-blank]){border-bottom-color:transparent}
 /* The field that writes the line lies exactly over it, on a layer cut to the card's own size and turn, and moves as the card does. Its own letters are clear: the card shows them. */

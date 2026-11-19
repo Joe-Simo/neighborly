@@ -160,7 +160,7 @@ export function en(set: WordSet) {
       announcementSees: `Everyone in the ${t.group} sees this on This week.`,
       announcementForm: { title: "Title", message: "Message", save: "Share announcement", saving: "Sharing…" },
     },
-    dateField: { choose: "Choose a day", done: "Done", chooseTime: "Choose a time" },
+    dateField: { choose: "Choose a day", done: "Done", chooseTime: "Choose a time", time: "time" },
     week: {
       /** The week's quilt: its one caption, which is also what a screen reader hears. */
       quilt: "This week: {calls} · {visits} · {yeses}",
@@ -464,6 +464,7 @@ export function en(set: WordSet) {
       away: (count: number) => (count === 1 ? `1 ${t.member} is away this week.` : `${enN(count)} ${t.members} are away this week.`),
       done: "Done reading",
       read: "Read",
+      readLabel: "Read the Monday note",
       /** The note as one line, when something else already holds the sheet's place. */
       brief: {
         label: "Monday note",
