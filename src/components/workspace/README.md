@@ -122,8 +122,8 @@ Rows and links already lift on hover; do not add another hover of your own.
 
 - `<DateField name="start" required />` inside a `LiveField`. It takes and gives the same `"YYYY-MM-DD"` a date
   input does: read it from `FormData` by `name`, or pass `value` and `onChange(value)`. `min` and `max` bound the days.
-  Closed it reads "Thursday, November 19" with a chevron; open it is a month with 44px days (shadcn Popover with
-  react-day-picker on a desk, a sheet from the bottom under 700px). On a desk a day can be typed (11/19 in English,
+  Closed it reads "Thursday, November 19" with a chevron; open it is a month with 44px days, a plain month grid laid in
+  the form under the field (date-month.tsx). On a desk a day can be typed (11/19 in English,
   19/11 in Spanish, or 2026-11-19).
 - `<TimeField name="time" from="07:00" to="20:30" />` is a list of half hours as `"HH:mm"`, the range set by the room.
 

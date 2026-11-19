@@ -110,18 +110,15 @@ export function DateField({
   const month = (
     <Suspense fallback={null}>
     <Month
-      mode="single"
       language={words.locale}
       selected={chosen ? toDay(chosen) : undefined}
       defaultMonth={chosen ? toDay(chosen) : min ? toDay(min) : undefined}
-      disabled={[...(min ? [{ before: toDay(min) }] : []), ...(max ? [{ after: toDay(max) }] : [])]}
+      min={min ? toDay(min) : undefined}
+      max={max ? toDay(max) : undefined}
       // A day's name starts with the number it shows, then says the rest: "1, Sunday, November 2026".
-      labels={{
-        labelDayButton: (day) =>
-          `${day.getDate()}, ${formatDate(words.locale, day.getTime(), { weekday: "long" })}, ${formatDate(words.locale, day.getTime(), { month: "long", year: "numeric" })}`,
-      }}
+      labelDay={(day) =>
+        `${day.getDate()}, ${formatDate(words.locale, day.getTime(), { weekday: "long" })}, ${formatDate(words.locale, day.getTime(), { month: "long", year: "numeric" })}`}
       onSelect={(day) => {
-        if (!day) return;
         choose(toValue(day));
         close();
       }}
