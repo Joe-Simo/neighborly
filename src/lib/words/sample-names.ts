@@ -28,6 +28,9 @@ const es: Readonly<Record<string, string>> = {
   "Restock the food pantry shelf": "Reponer el estante de la despensa",
   "Bring the visit sheets to Tuesday's meeting": "Llevar las hojas de visita a la reunión del martes",
   "Send thank-you notes for the fall collection": "Enviar notas de agradecimiento por la colecta de otoño",
+  "Before Tuesday's meeting": "Antes de la reunión del martes",
+  "Two calls are waiting to be returned, a water bill needs a pair to visit, and one visit still needs its write-up.":
+    "Hay dos llamadas por devolver, un recibo de agua espera una pareja que visite, y a una visita le falta su informe.",
   "Winter coat drive starts next week": "La colecta de abrigos de invierno empieza la próxima semana",
   "Bring coats to the parish office. Home visitors, ask each family for sizes.":
     "Lleven los abrigos a la oficina parroquial. Visitadores a domicilio, pregunten a cada familia las tallas.",

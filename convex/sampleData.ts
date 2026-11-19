@@ -27,6 +27,11 @@ const DAY = 86400000;
 /** The last call of these households is this recent, so the demo always has open work whatever day it is loaded. */
 const recentCalls = new Map([[194, DAY / 8], [195, DAY], [196, 2 * DAY], [197, 7 * DAY], [198, 9 * DAY], [199, 12 * DAY]]);
 const HOUSEHOLDS = 200;
+/**
+ * The week a judge walks through is about households the year already knows: Rosa and Denise have called before,
+ * so their calls this week open records with a history; Marcus waits for his visit's write-up and Yolanda for a pair. Only the name changes; every draw stays where it was.
+ */
+const storyNames = new Map([[64, "Rosa Fontaine"], [63, "Denise Walker"], [20, "Marcus Bellamy"], [14, "Yolanda Price"]]);
 
 const volunteerNames = ["Marisol Vega", "Thomas Okafor", "Renee Baptiste", "Daniel Whitcombe", "Graciela Fuentes", "Samuel Adeyemi", "Colleen Marsh", "Jean-Luc Pierre", "Hannah Lindqvist", "Victor Salgado", "Priya Raman", "Walter Brzezinski"];
 // 200 first names, one for each household, in no order, and 40 family names. All invented.
@@ -292,7 +297,7 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   // Households, and for each its calls, requests for help, visits in pairs and payments.
   for (let index = 0; index < HOUSEHOLDS; index++) {
     const random = generator(1833 + index * 7919), look = generator(4127 + index * 104729), clock = clockFrom(look);
-    const name = `${firstNames[index]} ${familyNames[index]}`;
+    const name = storyNames.get(index) ?? `${firstNames[index]} ${familyNames[index]}`;
     const phone = `(10${index < 100 ? 0 : 1}) 555-01${String(index % 100).padStart(2, "0")}`;
     const firstCall = start + random.between(1, closedDays - 14) * DAY;
     const neighborId = await db.insert("neighbors", { churchId, name, nameKey: key(name), phone, phoneKey: phone.replace(/\D/g, ""), email: index % 5 === 0 ? `${key(name).replaceAll(" ", ".")}@${emailDomain}` : "", address: `${random.between(10, 980)} ${random.pick(streets)}, Apt ${random.between(1, 24)}`, adults: random.between(1, 3), children: random.between(0, 4), language: index % 4 === 1 ? "es" : index % 9 === 2 ? "ht" : "en", notes: index % 6 === 0 ? "Prefers a call after 5 PM." : "", createdBy: random.pick(staff), createdAt: firstCall });
@@ -463,11 +468,22 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   await db.insert("assistanceRequests", { churchId, neighborId: households[14], kind: "utility", summary: "Past-due water bill", amountRequested: 9500, status: "open", decisionNote: "", payeeKind: "utility", payeeName: "County Water Authority", source: "person", createdBy: staff[2], createdAt: clock(now - DAY, callSlots) });
 
   // A call waiting to be returned whose note names two amounts, so a draft from it leaves the amount for a person.
-  await db.insert("calls", { churchId, callerName: "Denise Walker", phone: "(102) 555-0163", note: "Light bill is $145, and $60 is past due from last month.", callback: "needed", takenBy: staff[2], takenAt: clock(now - DAY, callSlots) });
+  const deniseCall = await db.insert("calls", { churchId, neighborId: households[63], callerName: "Denise Walker", phone: "(100) 555-0163", note: "Light bill is $145, and $60 is past due from last month.", callback: "needed", takenBy: staff[2], takenAt: clock(now - DAY, callSlots) });
 
   // A call with a draft already made from it and waiting for a person's yes.
-  const drafted = await db.insert("calls", { churchId, callerName: "Rosa Fontaine", phone: "(102) 555-0164", note: "Behind on November rent, $450. The landlord is Mill Road Rentals.", callback: "needed", takenBy: staff[1], takenAt: clock(now - DAY, callSlots) });
+  const denise = await db.get("calls", deniseCall);
+  const drafted = await db.insert("calls", { churchId, neighborId: households[64], callerName: "Rosa Fontaine", phone: "(100) 555-0164", note: "Behind on November rent, $450. The landlord is Mill Road Rentals.", callback: "needed", takenBy: staff[1], takenAt: clock(now - DAY, callSlots) });
   await db.insert("requestDrafts", { churchId, callId: drafted, kind: "rent", amountRequested: 45000, payeeKind: "landlord", payeeName: "Mill Road Rentals", quote: "Behind on November rent, $450.", notes: [], verification: "checked", createdBy: staff[1], createdAt: now - DAY / 2 });
+  // The week's own note to the conference, pointing at what is waiting without naming a neighbor to every member.
+  // Written half an hour after the later of the two calls it counts, and never after now.
+  const rosa = await db.get("calls", drafted);
+  const counted = Math.max(rosa?.takenAt ?? 0, denise?.takenAt ?? 0);
+  await db.insert("announcements", { churchId, title: "Before Tuesday's meeting", body: "Two calls are waiting to be returned, a water bill needs a pair to visit, and one visit still needs its write-up.", authorId: owner, createdAt: Math.min(now - 60000, counted + 30 * 60000) });
+  // What the help line already knew when Rosa and Denise called again, and what Marcus and Yolanda's visitors should know, so their records read as one story.
+  await db.insert("neighborNotes", { churchId, neighborId: households[20], body: "Prefers a call in the morning; he hears the phone better then.", authorId: staff[0], createdAt: clock(now - 10 * DAY, callSlots) });
+  await db.insert("neighborNotes", { churchId, neighborId: households[14], body: "The bill came after a leak under the sink. The landlord fixed the leak; the water bill is hers.", authorId: staff[2], createdAt: clock(now - 2 * DAY, callSlots) });
+  await db.insert("neighborNotes", { churchId, neighborId: households[64], body: "Hours at the laundromat were cut in October. Mill Road Rentals has been patient so far.", authorId: staff[1], createdAt: clock(now - 9 * DAY, callSlots) });
+  await db.insert("neighborNotes", { churchId, neighborId: households[63], body: "The furnace went out, so she heats with a space heater. Expects the light bill to run high.", authorId: staff[2], createdAt: clock(now - 12 * DAY, callSlots) });
 
   // This week's returned calls from people who are not a household here, so the help line shows how a call ends.
   const returned = [

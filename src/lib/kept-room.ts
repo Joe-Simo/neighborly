@@ -20,16 +20,22 @@ export const canKeep = () => handler() !== undefined;
 /** The kept room the app handed this page at launch, if there is one. */
 export function keptRoom(): Kept | null {
   if (typeof window === "undefined") return null;
-  const kept = (window as { kindHelpsKept?: unknown }).kindHelpsKept as Partial<Kept> | undefined;
-  if (!kept || typeof kept.memberId !== "string" || typeof kept.churchId !== "string" || !kept.room) return null;
+  const kept: unknown = Reflect.get(window, "kindHelpsKept");
+  if (!isKept(kept)) return null;
   // No email is ever kept: the room is drawn with none, as for a member whose email is not theirs to see.
   if (!withoutEmails.has(kept.room)) {
     kept.room.user.email = "";
     for (const person of kept.room.people) person.email = "";
     withoutEmails.add(kept.room);
   }
-  return kept as Kept;
+  return kept;
 }
+const has = (value: unknown, key: string) => typeof value === "object" && value !== null && key in value;
+/** What the app hands over is the app's own file, read back as written: its two ids, and a room with a user and people. */
+const isKept = (value: unknown): value is Kept =>
+  has(value, "memberId") && has(value, "churchId") && has(value, "room") &&
+  typeof Reflect.get(Object(value), "memberId") === "string" && typeof Reflect.get(Object(value), "churchId") === "string" &&
+  has(Reflect.get(Object(value), "room"), "user") && Array.isArray(Reflect.get(Reflect.get(Object(value), "room"), "people"));
 const withoutEmails = new WeakSet<object>();
 
 /**
@@ -42,10 +48,13 @@ type KeptHelpLine = { memberId: string; churchId: string; answers: Record<string
 /** The help line the app handed this page at launch, if it is the kept room's own member and conference. */
 export function keptHelpLine(): KeptHelpLine | null {
   if (typeof window === "undefined") return null;
-  const kept = (window as { kindHelpsKeptHelpLine?: unknown }).kindHelpsKeptHelpLine as Partial<KeptHelpLine> | undefined;
+  const kept: unknown = Reflect.get(window, "kindHelpsKeptHelpLine");
   const room = keptRoom();
-  if (!kept || !room || kept.memberId !== room.memberId || kept.churchId !== room.churchId || !kept.answers) return null;
-  return kept as KeptHelpLine;
+  if (!room || !has(kept, "answers")) return null;
+  const field = (key: string): unknown => Reflect.get(Object(kept), key);
+  const answers = field("answers");
+  if (field("memberId") !== room.memberId || field("churchId") !== room.churchId || typeof answers !== "object" || answers === null) return null;
+  return { memberId: room.memberId, churchId: room.churchId, answers: Object.fromEntries(Object.entries(answers)) };
 }
 
 /** Keeps the help line's readings as the signed-in member has them now. Only inside the app. */

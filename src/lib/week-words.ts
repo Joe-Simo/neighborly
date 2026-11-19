@@ -6,7 +6,12 @@ import { sampleYear } from "@/lib/sample-year";
 const whole = new Intl.NumberFormat("en-US").format;
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format;
 const calls = whole(sampleYear.calls), visits = whole(sampleYear.visits);
-const help = dollars(sampleYear.helpPaid / 100), weekHelp = dollars(sampleYear.weekHelp / 100);
+const help = dollars(sampleYear.helpPaid / 100);
+// The week is the sample's own (convex/sampleData.ts, "The week a judge walks through"): Rosa Fontaine's rent call with its draft,
+// Denise Walker's light bill, Marcus Bellamy's visit waiting for its write-up, Yolanda Price's water bill waiting for a pair,
+// and the note "Before Tuesday's meeting". Rosa's call is seeded the day before the sample opens, at 10:55 a.m. New York time, and Denise's at 11:50, so the page names no weekday;
+// the visit and the yes are what a visitor does next, so they carry no time.
+const rent = dollars(450);
 
 /** One day of the week: when it is, what happened, and the room of the app it happened in. `picture` names the room's relief. */
 type WeekDay = { day: string; title: string; copy: string[]; room: string; picture: "call" | "visit" | "help" | "year"; alt: string };
@@ -20,16 +25,16 @@ const en = {
   preview: "A call, a visit, a yes, and the year. One made-up week, told in four steps.",
   enter: "Enter Kind Helps",
   translated: null as null | [string, string, string],
-  lede: "St. Example is a made‑up parish, and everyone in this week is made up too. It is told around a request in the sample conference’s records; the days and times are only to tell it.",
+  lede: "St. Example is a made‑up parish, and everyone in this week is made up too. It follows the people in the sample conference’s own records, so opening the sample finds them where the first day leaves them; the days and times are only to tell it.",
   days: [
-    { day: "Monday, 9:12 a.m.", picture: "call", room: "The help line", title: "A call comes in.", alt: "Two paper hands lifting a telephone receiver from its cradle, its cord curling across the sheet.",
-      copy: ["A mother of two leaves a message: the power bill is past due and the shutoff notice says Friday. The member on the phone this week writes it down once, in her words.", "Because of the date, the call rises to the top in ochre, waiting. By 10:40 it is returned, and a visit is set for Wednesday."] },
-    { day: "Wednesday, 6:30 p.m.", picture: "visit", room: "Visits in pairs", title: "Two members visit.", alt: "A paper hand knocking on a green door, the other open and waiting.",
-      copy: ["Two members go to the home together, as they always do. They sit at the kitchen table and listen, about the bill and about the rest.", "Each member’s own week shows the visit, the street and the other member’s name. On their phone calendars it shows only the time and the street, never the neighbor’s name or need."] },
-    { day: "Thursday, 8:05 p.m.", picture: "help", room: "The ledger", title: "The write-up, and the yes.", alt: "A paper hand passing an envelope, its flap open, into another’s open palm.",
-      copy: [`One of the two writes up what they saw and what was asked. The conference meets that evening and says yes: ${weekHelp} toward the power bill.`, "The neighbor hears before Friday."] },
+    { day: "Day one, 10:55 a.m.", picture: "call", room: "The help line", title: "A call comes in.", alt: "Two paper hands lifting a telephone receiver from its cradle, its cord curling across the sheet.",
+      copy: [`Rosa Fontaine leaves a message: she is behind on November rent, ${rent}, and the landlord is Mill Road Rentals. The member on the phone this week writes it down once, in her words. Her record already knows her: in October her hours at the laundromat were cut.`, "A draft request is made from the note and waits, in ochre, for a person’s yes. The same morning Denise Walker calls about her light bill. Her furnace went out, and she heats with a space heater."] },
+    { day: "Next, the visit", picture: "visit", room: "Visits in pairs", title: "Two members visit.", alt: "A paper hand knocking on a green door, the other open and waiting.",
+      copy: ["A note to the conference, “Before Tuesday’s meeting”, says what is waiting: two calls to return, a water bill that needs a pair to visit, and a visit still to be written up. Yolanda Price’s water bill came after a leak under the sink; Marcus Bellamy’s visit waits for its write-up.", "Two members go to Rosa’s home together. Each member’s own week shows the visit, the street and the other member’s name. On their phone calendars it shows only the time and the street, never the neighbor’s name or need."] },
+    { day: "Then, the yes", picture: "help", room: "The ledger", title: "The write-up, and the yes.", alt: "A paper hand passing an envelope, its flap open, into another’s open palm.",
+      copy: [`One of the two writes up what they saw and what was asked. An owner or coordinator approves ${rent} toward the rent, and the treasurer pays Mill Road Rentals directly, never Rosa. The payment can be reversed, never erased.`, "Rosa hears before the month is out."] },
     { day: "And at the year’s end", picture: "year", room: "The yearly report", title: "It counts itself.", alt: "An open paper book with a ribbon marker, a hand resting flat on its page.",
-      copy: [`Nobody adds the week up by hand. That call is one of ${calls} the sample conference took in its year, that visit one of ${visits}, and that ${weekHelp} part of ${help} in help.`, "When the year ends, the report is ready. The president checks the totals, then prints."] },
+      copy: [`Nobody adds the week up by hand. Rosa’s call becomes one of the ${calls} the sample conference took in its year, her visit one of ${visits}, and her ${rent} joins the ${help} of help the year had already given.`, "When the year ends, the report adds itself up. The president checks the totals, then prints."] },
   ] as WeekDay[],
   last: "Every name, number and household in the sample is made up. Kind Helps is independent, and not affiliated with or endorsed by the Society of St. Vincent de Paul.",
   open: "Open the sample conference",
@@ -43,16 +48,16 @@ const es: typeof en = {
   preview: "Una llamada, una visita, un sí y el año. Una semana inventada, contada en cuatro pasos.",
   enter: "Entrar a Kind Helps",
   translated: null,
-  lede: "San Ejemplo es una parroquia inventada, y todas las personas de esta semana también lo son. Se cuenta a partir de una petición de los registros de la conferencia de muestra; los días y las horas son solo para contarla.",
+  lede: "San Ejemplo es una parroquia inventada, y todas las personas de esta semana también lo son. Sigue a las personas de los registros de la propia conferencia de muestra, así que al abrir la muestra se las encuentra donde las deja el primer día; los días y las horas son solo para contarla.",
   days: [
-    { day: "Lunes, 9:12 a. m.", picture: "call", room: "La línea de ayuda", title: "Entra una llamada.", alt: "Dos manos de papel que levantan el auricular de un teléfono, con el cable enroscado sobre la hoja.",
-      copy: ["Una madre de dos hijos deja un mensaje: el recibo de la luz está vencido y el aviso de corte dice el viernes. El miembro que atiende el teléfono esta semana la anota una sola vez, con sus palabras.", "Por la fecha, la llamada pasa arriba en ocre, esperando. A las 10:40 ya se devolvió, y la visita queda para el miércoles."] },
-    { day: "Miércoles, 6:30 p. m.", picture: "visit", room: "Visitas en pareja", title: "Dos miembros visitan.", alt: "Una mano de papel que llama a una puerta verde, y la otra abierta, esperando.",
-      copy: ["Dos miembros van juntos a la casa, como siempre. Se sientan a la mesa de la cocina y escuchan: el recibo y todo lo demás.", "La semana de cada miembro muestra la visita, la calle y el nombre del otro miembro. En el calendario del teléfono solo aparecen la hora y la calle, nunca el nombre ni la necesidad de la persona."] },
-    { day: "Jueves, 8:05 p. m.", picture: "help", room: "El libro de cuentas", title: "Las notas, y el sí.", alt: "Una mano de papel que pone un sobre, con la solapa abierta, en la palma abierta de otra.",
-      copy: [`Uno de los dos escribe lo que vieron y lo que se pidió. La conferencia se reúne esa noche y dice que sí: ${weekHelp} para el recibo de la luz.`, "Antes del viernes, la noticia le llega a quien pidió la ayuda."] },
+    { day: "Primer día, 10:55 a. m.", picture: "call", room: "La línea de ayuda", title: "Entra una llamada.", alt: "Dos manos de papel que levantan el auricular de un teléfono, con el cable enroscado sobre la hoja.",
+      copy: [`Rosa Fontaine deja un mensaje: está atrasada con la renta de noviembre, ${rent}, y el casero es Mill Road Rentals. El miembro que atiende el teléfono esta semana la anota una sola vez, con sus palabras. Su registro ya la conoce: en octubre le recortaron las horas en la lavandería.`, "Con la nota se prepara un borrador de petición, que espera en ocre el sí de una persona. Esa misma mañana Denise Walker llama por el recibo de la luz. Se le dañó la calefacción y se calienta con un calentador eléctrico."] },
+    { day: "Después, la visita", picture: "visit", room: "Visitas en pareja", title: "Dos miembros visitan.", alt: "Una mano de papel que llama a una puerta verde, y la otra abierta, esperando.",
+      copy: ["Una nota a la conferencia, «Antes de la reunión del martes», dice lo que espera: dos llamadas por devolver, un recibo de agua que necesita una pareja que visite, y una visita a la que le falta su informe. El recibo de agua de Yolanda Price llegó tras una fuga bajo el fregadero; la visita a Marcus Bellamy espera su informe.", "Dos miembros van juntos a la casa de Rosa. La semana de cada miembro muestra la visita, la calle y el nombre del otro miembro. En el calendario del teléfono solo aparecen la hora y la calle, nunca el nombre ni la necesidad de la persona."] },
+    { day: "Luego, el sí", picture: "help", room: "El libro de cuentas", title: "Las notas, y el sí.", alt: "Una mano de papel que pone un sobre, con la solapa abierta, en la palma abierta de otra.",
+      copy: [`Uno de los dos escribe lo que vieron y lo que se pidió. Quien es responsable o quien coordina aprueba ${rent} para la renta, y el tesorero le paga directamente a Mill Road Rentals, nunca a Rosa. El pago se puede revertir, nunca borrar.`, "Rosa recibe la noticia antes de que termine el mes."] },
     { day: "Y al final del año", picture: "year", room: "El informe anual", title: "Se cuenta solo.", alt: "Un libro de papel abierto con una cinta de marcador y una mano apoyada sobre la página.",
-      copy: [`Nadie suma la semana a mano. Esa llamada es una de las ${calls} que la conferencia de muestra recibió en su año, esa visita una de ${visits}, y esos ${weekHelp} parte de ${help} en ayuda.`, "Cuando termina el año, el informe está listo. El presidente revisa los totales y lo imprime."] },
+      copy: [`Nadie suma la semana a mano. La llamada de Rosa pasa a ser una de las ${calls} que la conferencia de muestra recibió en su año, su visita una de ${visits}, y sus ${rent} se suman a los ${help} de ayuda que el año ya había dado.`, "Cuando termina el año, el informe se suma solo. El presidente revisa los totales y lo imprime."] },
   ],
   last: "Todos los nombres, números y hogares de la muestra son inventados. Kind Helps es independiente, y no tiene afiliación ni respaldo de la Sociedad de San Vicente de Paúl.",
   open: "Abrir la conferencia de muestra",
