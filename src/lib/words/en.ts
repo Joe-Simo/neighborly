@@ -151,7 +151,7 @@ export function en(set: WordSet) {
       commitmentTimes: (zone: string) => `Times are ${zone}.`,
       commitmentForm: {
         title: "Title", team: "Team", chooseTeam: "Choose a team…", starts: "Starts", ends: "Ends", where: "Where to meet",
-        preparation: "Preparation", preparationHelp: "What should the person know or do beforehand?",
+        preparation: "Preparation", preparationHelp: "What should the person know or do beforehand? The title, place and this note also go on calendars and the printed week, so leave neighbors’ names and addresses out.",
         repeats: "Repeats", everyWeek: "Every week", everyWeeks: (count: number) => `Every ${enN(count)} weeks`,
         times: "How many times", timesHelp: "1 is a single date. Up to 52 within one year.", save: "Save", saving: "Saving…",
       },
