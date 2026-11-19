@@ -26,7 +26,7 @@ import { readFailure } from "@/components/workspace/failure";
 import { sayRefused } from "@/lib/refusals";
 import { LaunchMark, LiveLoading } from "@/components/workspace/primitives";
 import { LiveConnection, LiveState, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
-import { zoneName } from "@/components/workspace/zone";
+import { sayZoneLater, zoneName, ZoneSaid } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { WorkspaceKeys } from "@/components/workspace/keys";
 import { KeptTyping } from "@/components/workspace/kept-typing";
@@ -158,6 +158,8 @@ export function LiveWorkspace({
   const when = (start: number, end: number) =>
     `${format(start, { weekday: "short" })} · ${format(start, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}–${format(end, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" })}`;
   const sampleSaid = sampleSayer(data.church.sample, words.locale);
+  // The conference's zone, said in sheets, is worked out once the room is drawn and the page is idle.
+  useEffect(() => sayZoneLater(data.church.timeZone, words.locale), [data.church.timeZone, words.locale]);
   const keepNames = nameKeeper(data.people.map((person) => person.name));
   const personName = (id: string | null) => {
     const name = data.people.find((person) => person.id === id)?.name;
@@ -852,7 +854,7 @@ export function LiveWorkspace({
           open={editingCommitment !== null}
           onClose={() => leaveDialog(() => setEditingCommitment(null))}
           title={sheets.edit.title}
-          description={sheets.edit.deck(zoneName(data.church.timeZone, words.locale))}
+          description={<ZoneSaid timeZone={data.church.timeZone} language={words.locale} say={sheets.edit.deck} />}
         >
             {editingCommitment && (
               <LiveCommitmentEditor

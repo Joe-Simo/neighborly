@@ -11,7 +11,7 @@ import * as firstDaysWords from "./rooms/first-days";
 import { measured as m } from "../jev-set";
 import type { Words } from "./en";
 import { refusals } from "../refusals";
-import { serverRefusalPatternsEs, serverRefusalsEs } from "../refusals-es";
+import { nextStep, notFound, serverRefusalPatternsEs, serverRefusalsEs, serverRefusalsPlain } from "../refusals-es";
 import type { Terms, WordSet } from "./sets";
 import { counter } from "./numbers";
 const esN = counter("es");
@@ -368,7 +368,7 @@ export function es(set: WordSet): Words {
       saved: "Guardado.",
       updated: "Actualizado.",
       failed: "No se pudo guardar el cambio. Inténtalo de nuevo.",
-      refused: {
+      refused: Object.fromEntries(Object.entries({
         [refusals.away]: "Ese día lo marcaste como libre. Cambia tus días libres o di que no puedes tomar este.",
         [refusals.busy]: "Ya tienes un compromiso a esa hora. Di que no puedes tomar este o pide al coordinador que lo cambie.",
         [refusals.changed]: "Este compromiso cambió. Revísalo de nuevo.",
@@ -389,7 +389,8 @@ export function es(set: WordSet): Words {
         [refusals.noTeamInvitation]: "No se encontró esa invitación al equipo.",
         [refusals.noMeetingInvitation]: "No se encontró esa invitación a la reunión.",
         ...serverRefusalsEs,
-      },
+        ...Object.fromEntries(Object.entries(serverRefusalsPlain).map(([sentence, said]) => [sentence, said.es]))
+      }).map(([sentence, said]) => [sentence, notFound.test(sentence) ? `${said} ${nextStep.es}` : said])),
       refusedLike: serverRefusalPatternsEs,
     },
     visits: {

@@ -7,14 +7,14 @@ type Block = string | [lead: string, rest: string][];
 const en = {
   path: "/privacy",
   title: "Privacy",
-  tab: "Privacy — Kind Helps",
-  description: "What a conference keeps in Kind Helps, who can see it, what the assistant is sent, and how a record, a person or a whole conference is removed.",
-  preview: "What a conference keeps in Kind Helps, who can see it, and how it is removed.",
-  enter: "Enter Kind Helps",
+  tab: "Privacy — Kind Helps",
+  description: "What a conference keeps in Kind Helps, who can see it, what the assistant is sent, and how a record, a person or a whole conference is removed.",
+  preview: "What a conference keeps in Kind Helps, who can see it, and how it is removed.",
+  enter: "Enter Kind Helps",
   /** Under the title of a page that is a translation: [before the link, the link to the English page, after it]. English has none. */
   translated: null as null | [string, string, string],
   sections: [
-    { title: "Your records belong to your conference", blocks: ["Kind Helps is free software for a conference to keep its own work in one place. What a conference writes here belongs to the conference, not to us."] },
+    { title: "Your records belong to your conference", blocks: ["Kind Helps is free software for a conference to keep its own work in one place. What a conference writes here belongs to the conference, not to us."] },
     { title: "What a conference keeps here", blocks: [[
       ["Its members:", "name, email, role, teams, availability, time off, commitments, tasks, meetings and announcements."],
       ["The neighbors it helps:", "name, phone, email, address, how many adults and children, language and notes. If the conference chooses to record them: who lives in the household by relationship and birth year (no names, no birth dates), monthly income and expenses, and landlord or utility account details."],
@@ -25,7 +25,7 @@ const en = {
       "Only people signed in to that conference. Neighbors’ records, calls, requests, visits and the ledger open to the conference’s owner and coordinators only. Other members see their own commitments and teams, and for a visit they are asked to make, its time, its street and the other visitor’s name. One conference cannot see another’s records.",
       "Opening a neighbor’s record is written in the conference’s own log, with who and when. So is each request to see a full account number, and each download of the conference’s records. A list or search of neighbors shows each household’s name, street, size, when it was last helped, and any open request or planned visit, and is not logged. Phone numbers, email, notes, household members, money and accounts reach the screen only when a record is opened.",
     ] },
-    { title: "Signing in and where records are held", blocks: ["Sign-in is handled by Clerk, which keeps your email address and your sign-in. The conference’s records are held in a Convex database. The site is served by Vercel. Each of these companies has its own privacy terms, which apply to what it holds."] },
+    { title: "Signing in and where records are held", blocks: ["Sign-in is handled by Clerk, which keeps your email address and your sign-in. The conference’s records are held in a Convex database. The site is served by Vercel. When email is turned on for the site, invitations, requests to cover a commitment and meeting invitations are sent through Resend, which receives the recipient’s email address and a short message with a link to sign in, and nothing from the conference’s records. The sample conference sends no email. Each of these companies has its own privacy terms, which apply to what it holds."] },
     { title: "The assistant", blocks: [
       "The assistant reads a call note, the notes on requests and visits when the year is checked, and the words a person types to name a new team, and answers set questions about them: what kind of help is asked for, whether a call is urgent, whether a record looks finished. It does not write text. A person approves every draft before a request is saved. A call it puts first shows why, and anyone on the help line can move it back.",
       "Everything sent to the assistant first passes through one step that takes out names, phone numbers, email addresses and street addresses. On any draft, “What the assistant saw” shows the note exactly as it was sent. The assistant is Jev, run by Typesafe.",
@@ -33,7 +33,7 @@ const en = {
     ] },
     { title: "What we do not do", blocks: [
       "No advertising. We do not sell or share records. The site loads no analytics or tracking scripts. The only outside services it uses are the ones named on this page.",
-      "So that it can open without a connection, the app keeps its own pages, pictures and fonts on your device. It does not keep your conference’s records there.",
+      "So that it can open without a connection, the app keeps its own pages, pictures and fonts on your device. In the iPhone and iPad app, the first screen of This week and of the help line is kept too, so the app opens at once: what those screens show, callers’ names and numbers among it, but never an email. It is held in the app’s own protected storage and let go after a day, or at once on signing out. In a browser, words typed into a form and not yet saved stay only in that tab, and signing out clears what the site kept there.",
     ] },
     { title: "The sample conference", blocks: ["“Look around a sample conference” opens a conference of made-up people with made-up phone numbers. It is rebuilt every night, and anything typed into it is thrown away then."] },
     { title: "Removing a record, a person or a whole conference", blocks: [
@@ -54,20 +54,20 @@ const en = {
     /** The project's address stands between these two. */
     before: "For the software itself, or if you cannot reach an owner, open an issue on the project’s public page: ",
     after: ". Do not put personal details in a public issue.",
-    independent: "Kind Helps is an independent project. It is not affiliated with or endorsed by the Society of St. Vincent de Paul.",
+    independent: "Kind Helps is an independent project. It is not affiliated with or endorsed by the Society of St. Vincent de Paul.",
   },
 };
 
 const es: typeof en = {
   path: "/privacidad",
   title: "Privacidad",
-  tab: "Privacidad — Kind Helps",
-  description: "Qué guarda una conferencia en Kind Helps, quién puede verlo, qué se le envía al asistente y cómo se elimina un registro, una persona o una conferencia entera.",
-  preview: "Qué guarda una conferencia en Kind Helps, quién puede verlo y cómo se elimina.",
-  enter: "Entrar a Kind Helps",
+  tab: "Privacidad — Kind Helps",
+  description: "Qué guarda una conferencia en Kind Helps, quién puede verlo, qué se le envía al asistente y cómo se elimina un registro, una persona o una conferencia entera.",
+  preview: "Qué guarda una conferencia en Kind Helps, quién puede verlo y cómo se elimina.",
+  enter: "Entrar a Kind Helps",
   translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],
   sections: [
-    { title: "Tus registros pertenecen a tu conferencia", blocks: ["Kind Helps es un programa gratuito para que una conferencia guarde su propio trabajo en un solo lugar. Lo que una conferencia escribe aquí pertenece a la conferencia, no a nosotros."] },
+    { title: "Tus registros pertenecen a tu conferencia", blocks: ["Kind Helps es un programa gratuito para que una conferencia guarde su propio trabajo en un solo lugar. Lo que una conferencia escribe aquí pertenece a la conferencia, no a nosotros."] },
     { title: "Qué guarda aquí una conferencia", blocks: [[
       ["Sus miembros:", "nombre, correo electrónico, rol, equipos, disponibilidad, días libres, compromisos, tareas, reuniones y avisos."],
       ["Los vecinos a quienes ayuda:", "nombre, teléfono, correo electrónico, dirección, cuántos adultos y niños, idioma y notas. Si la conferencia decide anotarlos: quién vive en el hogar, por parentesco y año de nacimiento (sin nombres ni fechas de nacimiento), ingresos y gastos mensuales, y datos de la cuenta del dueño de la vivienda o de los servicios."],
@@ -78,7 +78,7 @@ const es: typeof en = {
       "Solo las personas que iniciaron sesión en esa conferencia. Los registros de los vecinos, las llamadas, las peticiones, las visitas y el libro se abren solo para el responsable y los coordinadores de la conferencia. Los demás miembros ven sus propios compromisos y equipos y, de una visita a la que se les pide ir, la hora, la calle y el nombre del otro visitador. Una conferencia no puede ver los registros de otra.",
       "Cada vez que se abre el registro de un vecino, queda escrito en la bitácora de la propia conferencia, con quién y cuándo. Lo mismo pasa con cada petición de ver un número de cuenta completo y con cada descarga de los registros de la conferencia. Una lista o búsqueda de vecinos muestra de cada hogar el nombre, la calle, el tamaño, cuándo recibió ayuda por última vez y cualquier petición abierta o visita planeada, y no se anota en la bitácora. Los teléfonos, el correo electrónico, las notas, los miembros del hogar, el dinero y las cuentas llegan a la pantalla solo cuando se abre un registro.",
     ] },
-    { title: "El inicio de sesión y dónde se guardan los registros", blocks: ["Del inicio de sesión se encarga Clerk, que guarda tu correo electrónico y tu inicio de sesión. Los registros de la conferencia se guardan en una base de datos de Convex. El sitio lo sirve Vercel. Cada una de estas empresas tiene sus propios términos de privacidad, que se aplican a lo que guarda."] },
+    { title: "El inicio de sesión y dónde se guardan los registros", blocks: ["Del inicio de sesión se encarga Clerk, que guarda tu correo electrónico y tu inicio de sesión. Los registros de la conferencia se guardan en una base de datos de Convex. El sitio lo sirve Vercel. Cuando el correo está activado en el sitio, las invitaciones, las peticiones para cubrir un compromiso y las invitaciones a reuniones se envían a través de Resend, que recibe la dirección de correo electrónico de quien las recibe y un mensaje breve con un enlace para iniciar sesión, y nada de los registros de la conferencia. La conferencia de muestra no envía correos. Cada una de estas empresas tiene sus propios términos de privacidad, que se aplican a lo que guarda."] },
     { title: "El asistente", blocks: [
       "El asistente lee la nota de una llamada, las notas de las peticiones y las visitas cuando se revisa el año, y las palabras que alguien escribe para nombrar un equipo nuevo, y responde preguntas fijas sobre ellas: qué tipo de ayuda se pide, si una llamada es urgente, si un registro parece completo. No escribe texto. Una persona aprueba cada borrador antes de que se guarde una petición. Una llamada que pone primero muestra el motivo, y cualquiera de la línea de ayuda puede regresarla a su lugar.",
       "Todo lo que se le envía al asistente pasa primero por un paso que quita nombres, números de teléfono, correos electrónicos y direcciones. En cualquier borrador, «Lo que vio el asistente» muestra la nota exactamente como se envió. El asistente es Jev, operado por Typesafe.",
@@ -86,7 +86,7 @@ const es: typeof en = {
     ] },
     { title: "Lo que no hacemos", blocks: [
       "No hay publicidad. No vendemos ni compartimos registros. El sitio no carga programas de analítica ni de rastreo. Los únicos servicios externos que usa son los que se nombran en esta página.",
-      "Para poder abrirse sin conexión, la aplicación guarda en tu dispositivo sus propias páginas, imágenes y tipos de letra. No guarda ahí los registros de tu conferencia.",
+      "Para poder abrirse sin conexión, la aplicación guarda en tu dispositivo sus propias páginas, imágenes y tipos de letra. En la aplicación para iPhone y iPad también se guarda la primera pantalla de Esta semana y de la línea de ayuda, para que la aplicación se abra al instante: lo que esas pantallas muestran, incluidos los nombres y teléfonos de quienes llamaron, pero nunca un correo electrónico. Se guarda en el almacenamiento protegido de la propia aplicación y se borra al cabo de un día, o en cuanto cierras sesión. En un navegador, lo que escribes en un formulario y aún no se ha guardado se queda solo en esa pestaña, y al cerrar sesión se borra lo que el sitio guardó ahí.",
     ] },
     { title: "La conferencia de muestra", blocks: ["«Recorrer una muestra» abre una conferencia de personas inventadas con teléfonos inventados. Se vuelve a crear cada noche, y todo lo que se haya escrito en ella se descarta entonces."] },
     { title: "Eliminar un registro, una persona o una conferencia entera", blocks: [
@@ -105,7 +105,7 @@ const es: typeof en = {
     newTab: "(se abre en una pestaña nueva)",
     before: "Sobre el programa en sí, o si no puedes comunicarte con un responsable, abre un reporte («issue») en la página pública del proyecto: ",
     after: ". No pongas datos personales en un reporte público.",
-    independent: "Kind Helps es un proyecto independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo.",
+    independent: "Kind Helps es un proyecto independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo.",
   },
 };
 

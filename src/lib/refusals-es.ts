@@ -179,6 +179,37 @@ export const fieldLabelsEs: Readonly<Record<string, string>> = {
   "What they need": "Lo que necesita",
   "Who is paid": "A quién se paga",
 };
+/**
+ * Refusals the backend words for its own checks (an identifier, a page of rows, a setting). A person can meet them only
+ * on a stale page or a group not yet set up, so each is said in plain words in both languages: what happened, and what to do.
+ */
+export const serverRefusalsPlain: Record<string, { en: string; es: string }> = {
+  "Page size exceeds 100.": { en: "That list couldn’t be read. Reload the page.", es: "No se pudo leer esa lista. Vuelve a cargar la página." },
+  "Page size exceeds 25.": { en: "That list couldn’t be read. Reload the page.", es: "No se pudo leer esa lista. Vuelve a cargar la página." },
+  "Page size exceeds 10.": { en: "That list couldn’t be read. Reload the page.", es: "No se pudo leer esa lista. Vuelve a cargar la página." },
+  "Team memberships require pagination.": { en: "That team is too large to read at once. Reload the page.", es: "Ese equipo es demasiado grande para leerlo de una vez. Vuelve a cargar la página." },
+  "Pending requests require a narrower lookup.": { en: "There are too many waiting requests to read at once. Reload the page.", es: "Hay demasiadas peticiones en espera para leerlas de una vez. Vuelve a cargar la página." },
+  "Multiple pending requests require review.": { en: "More than one request is waiting for this. Reload the page and choose one.", es: "Hay más de una petición en espera para esto. Vuelve a cargar la página y elige una." },
+  "Multiple accepted requests require review.": { en: "More than one person has said yes to this. Reload the page and check who is going.", es: "Más de una persona dijo que sí a esto. Vuelve a cargar la página y revisa quién va." },
+  "Delivery record not found.": { en: "That message is no longer on file. Reload the page.", es: "Ese mensaje ya no está en el registro. Vuelve a cargar la página." },
+  "Recipient not found.": { en: "That person is no longer on the list. Reload the page.", es: "Esa persona ya no está en la lista. Vuelve a cargar la página." },
+  "Meeting recipient not found.": { en: "That person is no longer invited to the meeting. Reload the page.", es: "Esa persona ya no está invitada a la reunión. Vuelve a cargar la página." },
+  "Unknown kind of help.": { en: "That kind of help is no longer on the list. Choose another.", es: "Ese tipo de ayuda ya no está en la lista. Elige otro." },
+  "Request identifier already used.": { en: "This was already saved. Reload the page to see it.", es: "Esto ya se guardó. Vuelve a cargar la página para verlo." },
+  "Invalid request identifier.": { en: "That couldn’t be saved. Reload the page and try again.", es: "No se pudo guardar. Vuelve a cargar la página e inténtalo de nuevo." },
+  "Invalid batch identifier.": { en: "That couldn’t be saved. Reload the page and try again.", es: "No se pudo guardar. Vuelve a cargar la página e inténtalo de nuevo." },
+  "Invalid calendar address.": { en: "That calendar address couldn’t be made. Try again.", es: "No se pudo crear la dirección del calendario. Inténtalo de nuevo." },
+  "The calendar address is not available on this deployment.": { en: "Calendar addresses aren’t turned on for this group yet.", es: "Las direcciones de calendario todavía no están activadas para este grupo." },
+  "Email delivery is not configured.": { en: "Email isn’t set up for this group yet, so nothing was sent.", es: "El correo todavía no está configurado para este grupo, así que no se envió nada." },
+  "Invitations are not available until email delivery is configured.": { en: "Invitations go by email, and email isn’t set up for this group yet.", es: "Las invitaciones se envían por correo, y el correo todavía no está configurado para este grupo." },
+  "Only a sample group can be cleared.": { en: "Only the sample group can be cleared. Your own records stay as they are.", es: "Solo se puede vaciar el grupo de muestra. Tus propios registros se quedan como están." },
+  "A record fell outside the year it was read for.": { en: "The report couldn’t be made. Reload the page and try again.", es: "No se pudo preparar el informe. Vuelve a cargar la página e inténtalo de nuevo." },
+  "A planned row was patched before it was planned.": { en: "The file couldn’t be brought in. Nothing was changed. Try again.", es: "No se pudo traer el archivo. No se cambió nada. Inténtalo de nuevo." },
+  "The sample's rows name each other in a circle.": { en: "The sample couldn’t be set up. Nothing was changed. Try again.", es: "No se pudo preparar la muestra. No se cambió nada. Inténtalo de nuevo." },
+};
+/** A refusal for something no longer there ("Call not found."): the page is behind, so the next step is the same in each. */
+export const notFound = /not found\.$/;
+export const nextStep = { en: "Reload the page.", es: "Vuelve a cargar la página." };
 const fieldEs = (label: string) => fieldLabelsEs[label] ?? label;
 
 /**
@@ -186,14 +217,15 @@ const fieldEs = (label: string) => fieldLabelsEs[label] ?? label;
  * its dynamic part captured; the Spanish keeps that part as the backend said it.
  */
 export const serverRefusalPatternsEs: ReadonlyArray<readonly [RegExp, (...parts: string[]) => string]> = [
-  [/^(.+) is already on file with this phone number\.$/, (name) => `${name} ya está registrado con este teléfono.`],
-  [/^(.+) is already on file with this name\.$/, (name) => `${name} ya está registrado con este nombre.`],
+  // "Ya hay un registro de…": the sentence marks no gender for the named person.
+  [/^(.+) is already on file with this phone number\.$/, (name) => `Ya hay un registro de ${name} con este teléfono.`],
+  [/^(.+) is already on file with this name\.$/, (name) => `Ya hay un registro de ${name} con este nombre.`],
   [/^(.+) is needed\.$/, (label) => `Falta: ${fieldEs(label)}.`],
   [/^(.+) is too long\.$/, (label) => `${fieldEs(label)}: el texto es demasiado largo.`],
   [/^(.+) must be a dollar amount\.$/, (label) => `${fieldEs(label)}: escribe un monto en dólares.`],
   [/^(.+) must be a whole number\.$/, (label) => `${fieldEs(label)}: escribe un número entero.`],
   [/^(.+) is away that day\.$/, (name) => `${name} no está disponible ese día.`],
-  [/^(.+) is not an approved member yet\.$/, (name) => `${name} todavía no es un miembro aprobado.`],
+  [/^(.+) is not an approved member yet\.$/, (name) => `A ${name} todavía no se le ha aprobado como miembro.`],
   [
     /^(.+) has not said they are free that day\. Ask them to add the date under Time off, or ask someone else\.$/,
     (name) => `${name} no ha dicho que esté libre ese día. Pídele que agregue la fecha en Días libres, o pídeselo a otra persona.`,

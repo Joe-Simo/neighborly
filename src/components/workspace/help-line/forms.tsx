@@ -175,7 +175,7 @@ export function CallForm({
           .catch(() => null);
       }}
     >
-      <div className="live-form-grid">
+      <div className="live-form-grid help-caller-grid">
         <LiveField label={w.name}>
           <Input
             name="callerName"
@@ -781,7 +781,7 @@ export function NeighborForm({
         else setChecked(typed);
       }}
     >
-      <div className="live-form-grid">
+      <div className="live-form-grid help-caller-grid">
         <LiveField label={w.name}>
           <Input
             name="name"

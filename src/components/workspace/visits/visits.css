@@ -261,10 +261,11 @@
   .visits-paper-words { font-size: 12pt; margin-top: 3.5mm; }
   /* A long note from last time is cut at four lines on paper, so the sheet stays one page. */
   .visits-paper-last { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
-  .visits-paper-write { margin-top: 4mm; break-inside: avoid; }
+  .visits-paper-write { margin-top: 3mm; break-inside: avoid; }
   .visits-paper-write h3 { font-size: 16pt; }
-  .visits-lines i { height: 6.4mm; border-bottom-color: #555; }
-  .visits-paper-blanks { margin-top: 4mm; }
+  /* 6mm a line still takes a handwritten word; with the 3mm steps it keeps a Spanish sheet with a wrapped "Pidió" on one Letter page. */
+  .visits-lines i { height: 6mm; border-bottom-color: #555; }
+  .visits-paper-blanks { margin-top: 3mm; }
   .visits-paper footer { margin-top: 3mm; font-size: 10pt; }
   .visits-paper-blanks dt { font-size: 9pt; }
   .visits-paper-foot { display: flex; justify-content: space-between; margin: 3mm 0 0; padding-top: 2mm; border-top: 0.5pt solid #000; font-size: 9pt; }
@@ -278,7 +279,8 @@
 .visits-aside-day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .visits-aside-day li { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: baseline; }
 .visits-aside-day li > span:first-child { color: var(--live-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.visits-aside-day strong { display: block; font-weight: 400; color: var(--live-ink, #283c32); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A long name turns between its words, never cut short. */
+.visits-aside-day strong { display: block; font-weight: 400; color: var(--live-ink, #283c32); }
 .visits-aside-day em { display: block; font-style: normal; color: var(--help-plum, #6f5f93); }
 /* A name is never broken: a pair wraps between its two names only. */
 .visits-name { white-space: nowrap; }

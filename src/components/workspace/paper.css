@@ -416,7 +416,12 @@
    what can be seen (under the bar where the bar is held) for as long as it is on the page, then closes as ever.
    The page is never moved to it. It is one element, so it is said once. */
 :is(.live-app, .live-dialog) .live-success.help-done { position: sticky; top: calc(var(--live-bar, 0px) + var(--live-pan, 0px) + 8px); z-index: 15; }
-@media print { .live-app .live-success.help-done { position: static; } }
+/* A printed room is the record, not the moment: a saved line (and its Undo), the skip link and any focus ring are the
+   screen's, so none of them is printed. What a saved line said is already in the room's own rows. */
+@media print {
+  :is(.live-app, .live-dialog) .live-success.help-done, .live-skip { display: none !important; }
+  :is(.live-app, .live-dialog) :focus, :is(.live-app, .live-dialog) :focus-visible, :is(.live-app, .live-dialog) :focus-within { outline: none !important; }
+}
 
 /* The menu sheet fills the screen between the insets: its title, every room in a list that scrolls, and a foot that stays. */
 .live-mobile-menu[data-slot="dialog-content"] {
@@ -1407,6 +1412,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   white-space: normal;
   overflow-wrap: normal;
 }
+/* A name and the punctuation after it stay on one line. */
+.live-glue, .live-name-stop, .live-name-word { white-space: nowrap; }
 /* One press for every control in the rooms. A control is a slip of paper resting on the sheet: a filled or edged
    button stands on a hairline contact shadow; pressed, it goes down onto the sheet (transform 1px, its 1px shadow shortened by the same 1px to none) in 60ms and
    settles back in 200ms. Toggles and the month's days take the same 1px. Only these properties move, never
@@ -1494,7 +1501,6 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   :is(.live-app, .live-dialog) .live-success.help-done:not([data-filed-from]), .live-error { animation: none; }
 }
 @media (forced-colors: active) { :is(.live-app, .live-dialog) .live-success.help-done { border-left-width: 3px; } }
-@media print { :is(.live-app, .live-dialog) .live-success.help-done { background: none; } }
 
 /* Touch targets on a phone are at least 44px each way. Where the drawn control is smaller (the wordmark in the bar, a
    short word set as a link), the reach around it grows, not the control: nothing moves. */

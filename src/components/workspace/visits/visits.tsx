@@ -548,7 +548,12 @@ export function VisitsView({
                       <span>{part(visit.scheduledAt, { hour: "numeric", minute: "2-digit" })}</span>
                       <span>
                         {going.map((visitor) => (
-                          <strong key={visitor.memberId}>{visitor.name}</strong>
+                          <strong key={visitor.memberId}>
+                            {/* A long name turns between its words only, never at a hyphen inside one. */}
+                            {visitor.name.split(" ").map((word, index) => (
+                              <Fragment key={index}>{index ? " " : ""}<span className="live-name-word">{word}</span></Fragment>
+                            ))}
+                          </strong>
                         ))}
                         {going.length < 2 && <em>{standing(visit, text).text}</em>}
                       </span>

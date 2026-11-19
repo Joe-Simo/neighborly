@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { languages, words, wordSets } from "./index";
+import { nextStep, notFound } from "../refusals-es";
 
 type Leaf = string | ((count: number) => string) | ((section: string) => string);
 // A refusal pattern sits in a book too: its regular expression holds no phrase, its saying is one.
@@ -77,7 +78,8 @@ describe("refusals a member can meet", () => {
     const { refusals } = await import("../refusals");
     const backend = (await Promise.all(["workspace.ts", "pages.ts"].map((file) => Bun.file(`${import.meta.dir}/../../../convex/${file}`).text()))).join("\n");
     for (const [key, sentence] of Object.entries(refusals)) {
-      expect(words("en").notices.refused[sentence], `en ${key}`).toBe(sentence);
+      // A refusal for something no longer there adds its next step.
+      expect(words("en").notices.refused[sentence], `en ${key}`).toBe(notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence);
       for (const language of ["es"] as const) {
         const said = words(language).notices.refused[sentence];
         expect(said, `${language} ${key}`).toBeTruthy();
@@ -118,10 +120,30 @@ describe("refusals the backend writes out", () => {
     }
     const es = words("es").notices;
     for (const sentence of sentences) {
-      expect(sayRefused(words("en").notices, sentence), sentence).toBe(sentence);
+      expect(sayRefused(words("en").notices, sentence), sentence).toBe(notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence);
       const said = sayRefused(es, sentence);
       expect(said, sentence).not.toBe(sentence);
       expect(said.includes("${"), sentence).toBe(false);
     }
   });
 });
+
+describe("refusals the backend writes out", () => {
+  test("every sentence thrown in English has its Spanish, so no English shows in a Spanish room", async () => {
+    const { Glob } = await import("bun");
+    const convex = `${import.meta.dir}/../../../convex`;
+    const thrown: string[] = [];
+    for await (const file of new Glob("*.ts").scan(convex)) {
+      if (file.endsWith(".test.ts") || file.startsWith("_")) continue;
+      const text = await Bun.file(`${convex}/${file}`).text();
+      for (const [, sentence] of text.matchAll(/(?:ConvexError|new Error)\("([^"]+)"\)/g)) thrown.push(sentence);
+    }
+    expect(thrown.length).toBeGreaterThan(50);
+    const es = words("es").notices;
+    for (const sentence of thrown) {
+      const said = es.refused[sentence] ?? es.refusedLike.find(([pattern]) => pattern.test(sentence))?.[0];
+      expect(said, sentence).toBeTruthy();
+    }
+  });
+});
+

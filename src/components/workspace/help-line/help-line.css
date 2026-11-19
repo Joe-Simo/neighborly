@@ -380,3 +380,8 @@
   .live-app .help-row[data-call]:not([data-quiet]) > :first-child { grid-row: auto; }
   .live-app .help-row .live-date-leaf { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 0 0.4em; width: fit-content; min-height: 0; padding: 6px 0 0; border-bottom: 0; }
 }
+
+/* A caller's name is given the wider column beside the phone, so a full family name shows whole. */
+@media (min-width: 561px) {
+  .live-form-grid.help-caller-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+}
