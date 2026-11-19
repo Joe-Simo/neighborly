@@ -619,9 +619,11 @@ export function LiveWorkspace({
               event.preventDefault();
               requestAnimationFrame(() => tab.focus());
             }} onOpenAutoFocus={(event) => {
-              // Opening the menu lands on the sheet itself, not on its first control.
+              // Opening the menu lands on the sheet itself, not on its first control. In the sheet's first frame, as a
+              // room's sheet does (live-dialog.tsx): focusing inside the press made the browser work out the whole page's styles there.
               event.preventDefault();
-              if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
+              const sheet = event.currentTarget;
+              if (sheet instanceof HTMLElement) requestAnimationFrame(() => { if (sheet.isConnected) sheet.focus({ preventScroll: true }); });
             }}>
               {/* Close comes first, for a reader and for Tab; it sits where the eye expects it, top right. */}
               <DialogClose asChild><Button variant="ghost" size="icon-sm" className="live-menu-close absolute top-2 right-2" aria-label={words.shell.close}><X aria-hidden="true" /></Button></DialogClose>
