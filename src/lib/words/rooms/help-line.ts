@@ -14,7 +14,7 @@ export const en = (t: Terms, place: string) => ({
   log: "Log a call",
   /** The green line that says what changed. */
   done: {
-    savedToDecide: `Request saved. It waits for the ${t.group} to decide.`,
+    savedToDecide: `Request saved. When the ${t.group} meets, record its yes on {name}’s record.`,
     savedOnRecord: "Request saved. It is waiting for a decision on {name}’s record.",
     openRecord: "Open the record",
     draft: "Draft a request",
@@ -137,7 +137,7 @@ export const en = (t: Terms, place: string) => ({
 export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   log: "Anotar una llamada",
   done: {
-    savedToDecide: `Petición guardada. Espera a que tu ${t.group} decida.`,
+    savedToDecide: `Petición guardada. Cuando tu ${t.group} se reúna, anota su sí en el registro de {name}.`,
     savedOnRecord: "Petición guardada. Espera una decisión en el registro de {name}.",
     openRecord: "Abrir el registro",
     draft: "Preparar un borrador de petición",
@@ -162,8 +162,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       deck: "Esta llamada y su petición se guardarán en su registro.",
       saveAndRequest: `Guardar ${t.neighbor} y petición`,
       saveAndContinue: `Guardar ${t.neighbor} y continuar`,
-      saveNewAndRequest: `Guardar como ${t.neighbor} nuevo y guardar la petición`,
-      saveNewAndContinue: `Guardar como ${t.neighbor} nuevo y continuar`,
+      saveNewAndRequest: "Crear un registro nuevo y guardar la petición",
+      saveNewAndContinue: "Crear un registro nuevo y continuar",
       useAndSave: `Usar este ${t.neighbor} y guardar`,
       use: `Usar este ${t.neighbor}`,
     },
@@ -198,7 +198,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     callingBack: (name) => `${name} devuelve la llamada`,
     drafting: "Preparando el borrador…",
     draft: "Preparar un borrador de petición",
-    addNeighbor: `Agregar como ${t.neighbor}`,
+    addNeighbor: "Agregar al registro",
     markReturned: "Marcar como devuelta",
     markReturnedFor: (name) => `Marcar como devuelta: ${name}`,
     quietTitle: "Una mañana tranquila.",
