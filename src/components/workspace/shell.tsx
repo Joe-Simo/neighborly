@@ -696,7 +696,7 @@ export function LiveWorkspace({
             ))}
           <div className="live-page-head" data-rested={rested ? "" : undefined}>
             {heading.art && (
-              <div className="live-head-art" data-ready={pictured === area ? "" : undefined}>
+              <div className="live-head-art" data-area={area} data-ready={pictured === area ? "" : undefined}>
                 <ArrivingRelief key={heading.art.picture} name={heading.art.picture} focus={heading.art.focus} band={heading.art.band} onReady={picturedNow} />
               </div>
             )}

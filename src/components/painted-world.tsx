@@ -240,7 +240,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
         {heroOnly && onPass && !passed && <div className="painted-world-card" aria-hidden="true" onPointerDown={takeCard} onPointerMove={carryCard} onPointerUp={event => releaseCard(event)} onPointerCancel={event => releaseCard(event, true)} />}
         {heroOnly && <span className="painted-world-hand" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <span className="thread-empty"><img src="/assets/home/hand-empty.webp" alt="" loading="lazy" decoding="async" /><img src="/assets/home/hand-empty-mobile.webp" alt="" loading="lazy" decoding="async" /></span>
+          <span className="thread-empty"><img src="/assets/home/hand-empty.webp" srcSet="/assets/home/hand-empty.webp 360w, /assets/home/hand-empty-2x.webp 720w" sizes="28vw" alt="" loading="lazy" decoding="async" /><img src="/assets/home/hand-empty-mobile.webp" alt="" loading="lazy" decoding="async" /></span>
           <span className="card-station" data-station="hand" data-turn={7} />
         </span>}
         <div className="painted-world-shade" aria-hidden="true" />
