@@ -54,3 +54,8 @@
 .relief-turn[data-turned=no] :is(.relief-turn-shade,.relief-turn-back){visibility:hidden}
 .relief-turn[data-near] :is(.relief-turn-round,.relief-turn-page,.relief-turn-back,.relief-turn-roll,.relief-turn-shade){will-change:transform}
 @media print{.relief-turn-back,.relief-turn-shade{display:none!important}}
+/* While the help's page is partly turned the year's words stay unseen, so no frame holds two headings or lays the help's picture over the year's words;
+   they are there, whole, the moment the page is fully over. */
+.relief-panel[data-turn=from]:has(.relief-turn[data-turned=part]) + .relief-panel[data-turn=to] .relief-words{visibility:hidden}
+/* The help's own words are cut away just before the turning edge reaches them (chapter-sheets.tsx): a page edge never runs across words. */
+.relief-turn[data-words-cut] .relief-words{visibility:hidden}
