@@ -380,7 +380,7 @@ export function LedgerView({
                 <td className="help-money" data-in>
                   + {formatCents(ledger.moneyIn)}
                 </td>
-                <td className="help-money">{formatCents(ledger.moneyOut)}</td>
+                <td className="help-money" data-out={ledger.moneyOut > 0 || undefined}>{formatCents(ledger.moneyOut)}</td>
                 <td className="help-money" data-total>
                   <span>{w.columns.balance} </span>
                   {formatCents(ledger.opening + ledger.moneyIn - ledger.moneyOut)}
