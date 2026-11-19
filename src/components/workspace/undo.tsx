@@ -16,7 +16,13 @@ type UndoBridge = { webkit?: { messageHandlers?: { kindHelpsUndo?: { postMessage
 let newest: (() => void) | null = null;
 
 export function UndoAct({ run }: { run: () => Promise<void> }) {
-  const { words } = useWorkspace();
+  const { words, area } = useWorkspace();
+  // The room the line was put up in, and the room open now: the keys belong to the line only while they are the same.
+  const room = useRef(area);
+  const now = useRef(area);
+  useEffect(() => {
+    now.current = area;
+  }, [area]);
   const [going, setGoing] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   // The press and the app's own Undo run the same reverse, once.
@@ -37,13 +43,15 @@ export function UndoAct({ run }: { run: () => Promise<void> }) {
     }
   };
   // On a keyboard, the way back is also the usual keys (⌘Z, or Ctrl+Z), wherever focus is, while the line is up;
-  // never inside a box being typed in, where those keys undo the typing. Only the newest line answers them.
+  // never inside a box being typed in, where those keys undo the typing, nor while a sheet is open over the room, nor
+  // once the person has gone to another room. Only the newest line answers them, and it answers as its button does.
   useEffect(() => {
     const mine = () => void undo();
     newest = mine;
     const keys = (event: KeyboardEvent) => {
       if (newest !== mine || event.key.toLowerCase() !== "z" || event.shiftKey || event.altKey || !(event.metaKey || event.ctrlKey)) return;
       if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [contenteditable]")) return;
+      if (now.current !== room.current || document.querySelector('[role="dialog"], [role="alertdialog"]')) return;
       event.preventDefault();
       mine();
     };
