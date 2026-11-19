@@ -1,6 +1,7 @@
 "use client";
 
-import { Component, useCallback, useLayoutEffect, useState, type ReactNode } from "react";
+import { Component, startTransition, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { whenIdle } from "@/lib/idle";
 import { useAction } from "convex/react";
 import { useHour, useQuery } from "@/components/workspace/query";
 import { DateTime } from "luxon";
@@ -86,12 +87,16 @@ function Report() {
   const checking = Boolean(found && !found.result && !found.failed);
   const lookOver = useCallback(async () => {
     if (year === undefined) return;
-    setDone("");
-    setCheck({ year });
+    // The sheet that says the year is being read is drawn after the press is answered, not inside it.
+    startTransition(() => {
+      setDone("");
+      setCheck({ year });
+    });
     try {
-      setCheck({ year, result: await checkYear({ churchId, year }), at: Date.now() });
+      const result = await checkYear({ churchId, year });
+      startTransition(() => setCheck({ year, result, at: Date.now() }));
     } catch (cause) {
-      setCheck({ year, failed: sayFailure(words.notices,cause, w.check.failed, words.states.offlineSave) });
+      startTransition(() => setCheck({ year, failed: sayFailure(words.notices,cause, w.check.failed, words.states.offlineSave) }));
     }
   }, [checkYear, churchId, year, w, words]);
   // The check reads a whole year, so it steps aside while a quarter is shown.
@@ -108,15 +113,25 @@ function Report() {
     return () => setHeadAction(null);
   }, [canCheck, checking, lookOver, maybeBlank, setHeadAction, w]);
 
+  // The spreadsheet of what is shown is written out while the page is idle, so its press only hands the file over.
+  const written = useRef<{ report: typeof shown; text: string } | null>(null);
+  useEffect(() => {
+    if (!shown) return;
+    return whenIdle(() => {
+      written.current = { report: shown, text: reportCsv(shown, data.church.name, data.church.sample, words, sampleSaid) };
+    }, 2000);
+  }, [shown, data.church.name, data.church.sample, words, sampleSaid]);
+
   if (!onRecord || !shown || year === undefined) return <ReportLoading />;
 
   function saveSpreadsheet(saved: NonNullable<typeof shown>) {
     const name = csvFileName(saved, data.church.name);
-    const address = URL.createObjectURL(new Blob([reportCsv(saved, data.church.name, data.church.sample, words, sampleSaid)], { type: "text/csv;charset=utf-8" }));
+    const address = URL.createObjectURL(new Blob([written.current?.report === saved ? written.current.text : reportCsv(saved, data.church.name, data.church.sample, words, sampleSaid)], { type: "text/csv;charset=utf-8" }));
     const link = Object.assign(document.createElement("a"), { href: address, download: name });
     link.click();
     URL.revokeObjectURL(address);
-    setDone(w.saved(name));
+    // The saved line is said after the press is answered: the file is already on its way.
+    startTransition(() => setDone(w.saved(name)));
   }
 
   return (
@@ -136,16 +151,21 @@ function Report() {
             current={onRecord.current}
             year={year}
             onYear={(next) => {
-              setDone("");
-              setChosen(next);
+              // The figures for the year are laid out after the press is answered, as a room is (shell.tsx).
+              startTransition(() => {
+                setDone("");
+                setChosen(next);
+              });
             }}
           />
           {!blankYear && (
             <QuarterSwitch
               quarter={quarter}
               onQuarter={(next) => {
-                setDone("");
-                setQuarter(next);
+                startTransition(() => {
+                  setDone("");
+                  setQuarter(next);
+                });
               }}
             />
           )}
