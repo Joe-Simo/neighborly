@@ -13,15 +13,15 @@ export const ROSA_HELP = 450;
 
 /** Rosa's week, one slip a day, each laid on the figure it belongs to, which then reads the year's own pinned number. */
 const week = [
-  { figure: "calls", day: "Day one", line: "She calls about the rent.", ask: "Lay her call on the calls pile.", done: `${whole.format(sampleYear.calls)} calls.` },
-  { figure: "visits", day: "Day three", line: "Visited in pairs.", ask: "Lay the visit on the visits pile.", done: `${whole.format(sampleYear.visits)} home visits.` },
-  { figure: "paid", day: "Day four", line: "$450 toward rent, paid to the landlord.", ask: "Lay the help on the help.", done: `${dollars.format(sampleYear.helpPaid / 100)} in help.` },
+  { figure: "calls", day: "Day one", line: "She calls about the rent.", ask: "Add her call to the count.", done: `${whole.format(sampleYear.calls)} calls.` },
+  { figure: "visits", day: "Day three", line: "Visited in pairs.", ask: "Add the visit to the count.", done: `${whole.format(sampleYear.visits)} home visits.` },
+  { figure: "paid", day: "Day four", line: "$450 toward rent, paid to the landlord.", ask: "Add the $450 to what was paid.", done: `${dollars.format(sampleYear.helpPaid / 100)} in help.` },
 ] as const;
 const finals = { calls: whole.format(sampleYear.calls), visits: whole.format(sampleYear.visits), paid: dollars.format(sampleYear.helpPaid / 100) };
 
 /**
  * One neighbour's week beside the year: three slips, laid one after another (picked up and carried, or pressed from the keyboard or by tap),
- * each carried whole onto its figure's pile and laid on the top sheet, and the figure turns over to the year's own count.
+ * each carried whole onto its figure, and the figure turns over to the year's own count.
  * On the page only; nothing is sent or kept. With Reduce Motion each is laid at once.
  */
 export function HomeYearSlip() {
@@ -39,7 +39,6 @@ export function HomeYearSlip() {
     const element = slip.current, target = cell();
     if (!element || !target || laid || busy.current) return;
     busy.current = true;
-    const stack = target.querySelector<HTMLElement>(".home-year-stack");
     const figure = target.querySelector<HTMLElement>(`[data-figure=${today.figure}]`);
     const tab = target.querySelector<HTMLElement>(".home-year-tab");
     const turn = () => {
@@ -52,11 +51,11 @@ export function HomeYearSlip() {
       // The slip leaves with the press: the keyboard stays on the next day's slip, and after the last, goes to what came of it.
       requestAnimationFrame(() => (next < week.length ? element : document.getElementById("home-year-give"))?.focus({ preventScroll: true }));
     };
-    const onto = stack ?? tab;
+    // The piles are not drawn: the slip lands on its figure, which then turns over.
+    const onto = tab;
     if (!onto || matchMedia("(prefers-reduced-motion: reduce)").matches) return turn();
-    // From where it is held to the top of the pile (or, where money is not a pile, onto its figure).
     const to = onto.getBoundingClientRect();
-    void laySlip(element, to, stack ? to.bottom - 3 * Number(target.dataset.sheets) : to.bottom, { dx, dy }).finished.then(() => { turn(); tipTab(tab); }, turn);
+    void laySlip(element, to, to.bottom, { dx, dy }).finished.then(() => { turn(); tipTab(tab); }, turn);
   };
 
   const down = (event: PointerEvent<HTMLButtonElement>) => {
@@ -87,7 +86,7 @@ export function HomeYearSlip() {
     element.animate([{ transform: `translate(${held.dx}px, ${held.dy}px)` }, { transform: "none" }], { duration: 280, easing: PAPER_EASE });
   };
 
-  const said = laid ? `${week.map(day => day.done).join(" ")} Rosa's week is laid down, and the year with it.` : step ? `${week[step - 1].done} ${today.ask}` : today.ask;
+  const said = laid ? `${week.map(day => day.done).join(" ")} Rosa's week is in the year.` : step ? `${week[step - 1].done} ${today.ask}` : today.ask;
   return <div className="home-year-give">
     <button ref={slip} type="button" className="home-year-slip" data-laid={laid || undefined} disabled={laid} aria-hidden={laid || undefined} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
       onClick={() => { if (!carried.current) lay(); carried.current = false; }}
