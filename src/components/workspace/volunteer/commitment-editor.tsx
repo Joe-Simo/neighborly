@@ -7,7 +7,7 @@ import { WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveField } from "@/components/workspace/primitives";
-import { LiveWaiting, LiveFailure } from "@/components/workspace/states";
+import { LiveWaiting, LiveFailure, SaveLabel } from "@/components/workspace/states";
 import type { LiveCommand, LiveCommitment } from "@/components/workspace/types";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate } from "@/lib/words";
@@ -85,7 +85,7 @@ export function LiveCommitmentEditor({
             {text.back}
           </Button>
           <Button disabled={pending} onClick={() => void save(review)}>
-            {saving ? text.saving : text.confirm}
+            <SaveLabel saving={saving} idle={text.confirm} busy={text.saving} />
           </Button>
         </div>
       </div>
