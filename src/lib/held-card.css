@@ -14,9 +14,7 @@
   #card-held .card-held-marks>i{left:38.5%;top:38%;width:3.6%}
 }
 /* The one quiet line, low, where the door's card has it, if the room is not on its way yet. */
-#card-held .card-held-opening{position:fixed;inset:auto 24px 14vh;margin:0;text-align:center;font:400 17px/1.5 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;color:#68715f;animation:card-held-line 200ms ease backwards}
-@keyframes card-held-line{from{opacity:0}}
-@media(prefers-reduced-motion:reduce){#card-held .card-held-opening{animation:none}}
+#card-held .card-held-opening{position:fixed;inset:auto 24px 14vh;margin:0;text-align:center;font:400 17px/1.5 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;color:#68715f}
 /* The name the visitor wrote, lettered on the grown card exactly as the door's card letters it: italic 400, clamp(17px,2.4vw,30px)/1.1, ink #2b2a26, its foot 10px above its square. */
 /* Over the door's card until the door's line is drawn, the held card is on top and is the identical paper, marks and
    name; the door's are under it, covered, so nothing is ever drawn twice and no frame is without the line. */

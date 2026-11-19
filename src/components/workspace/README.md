@@ -100,7 +100,9 @@ button to a row only so that the sheet can offer it.
 
 One way of moving, in `paper.css`: paper lifts, slides and settles, with
 `var(--paper-ease)`, under 500ms, and still under Reduce Motion. The shell moves
-the head, the picture and the menu marker itself. Rooms use four classes:
+the head, the picture and the menu marker itself. Words never fade: a word is
+there or not, and it comes and goes in one cut, on its paper or on its own.
+Rooms use four classes:
 
 | Class | Does |
 | --- | --- |
