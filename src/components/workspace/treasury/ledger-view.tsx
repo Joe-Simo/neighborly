@@ -12,6 +12,7 @@ import { SavedWords } from "@/components/workspace/saved-words";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
 import { fill } from "@/lib/words/fill";
+import { formatList } from "@/lib/words/numbers";
 import { formatCents, formatDollars, formatFigure } from "@/components/workspace/treasury/money";
 import {
   categoryLabel,
@@ -168,7 +169,7 @@ export function LedgerView({
     ledger.neighborsHelped > 0 && w.figures.neighbors(ledger.neighborsHelped),
     gifts > 0 && w.figures.gifts(gifts),
     other > 0 && w.figures.others(other),
-  ].filter(Boolean);
+  ].filter((said) => said !== false);
   // The sheet stays on the request being paid, whatever the list says meanwhile. Once paid, it is its ledger
   // line; while it becomes that line no other sheet is laid, and the next request rises after.
   const gone = paying?.requestId ?? paid?.request.requestId;
@@ -209,7 +210,7 @@ export function LedgerView({
           <dd>
             <span className="count-up">{formatDollars(ledger.moneyIn)}</span>
             <small>
-              {ledger.incomeSources.map((source) => categoryLabel(room, source, sampleSaid)).join(", ") || w.figures.nothingIn}
+              {formatList(ledger.incomeSources.map((source) => categoryLabel(room, source, sampleSaid)), words.locale) || w.figures.nothingIn}
             </small>
           </dd>
         </div>
@@ -217,7 +218,7 @@ export function LedgerView({
           <dt>{w.figures.out(month)}</dt>
           <dd>
             <span className="count-up">{formatDollars(ledger.moneyOut)}</span>
-            <small>{paidFor.join(", ") || w.figures.nothingOut}</small>
+            <small>{formatList(paidFor, words.locale) || w.figures.nothingOut}</small>
           </dd>
         </div>
       </dl>
