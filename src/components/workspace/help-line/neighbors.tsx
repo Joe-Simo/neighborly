@@ -1,5 +1,6 @@
 "use client";
 
+import { keepTitle } from "@/lib/words/titles";
 import { useCallback, useDeferredValue, useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -167,7 +168,7 @@ function NeighborRow({
               <div>
                 <h3>
                   <Link className="help-row-open" href={recordHref(neighbor.id)}>
-                    {neighbor.name}
+                    {keepTitle(neighbor.name)}
                   </Link>
                 </h3>
                 {/* Each fact brings its own dot before it; a fact that starts a line has its dot cut off (help-line.css). */}
@@ -268,7 +269,7 @@ export function NeighborListView({
           <ul className="help-waiting-beside">
             {waiting.map((neighbor) => (
               <li key={neighbor.id}>
-                <Link className="help-row-open" href={recordHref(neighbor.id)}>{neighbor.name}</Link>
+                <Link className="help-row-open" href={recordHref(neighbor.id)}>{keepTitle(neighbor.name)}</Link>
                 <Asks neighbor={neighbor} format={format} />
               </li>
             ))}

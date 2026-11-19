@@ -1,5 +1,6 @@
 "use client";
 
+import { keepTitle } from "@/lib/words/titles";
 import "./people.css";
 import "@/components/workspace/for-good.css";
 import { useState } from "react";
@@ -111,7 +112,7 @@ export function PeopleSection() {
                   {opens ? (
                     // The one control of the row: its target is the whole row (people.css).
                     <button type="button" className="people-row-open" aria-label={text.manage.open(person.name)} onClick={() => setManagingId(person.id)}>
-                      {person.name}
+                      {keepTitle(person.name)}
                     </button>
                   ) : (
                     person.name

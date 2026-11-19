@@ -1,3 +1,4 @@
+import { keepTitle } from "./titles";
 import type { Language } from "./sets";
 
 /**
@@ -110,6 +111,10 @@ const inSpanish = (typed: string) => {
 const formerMember = { typed: "A former member", es: "Un miembro anterior" };
 const formerInSpanish = (typed: string) => (typed === formerMember.typed ? formerMember.es : typed);
 const allInSpanish = (typed: string) => formerInSpanish(inSpanish(typed));
+// Every name said keeps a title such as "St." joined to it, so it never breaks after the title.
+const titledAsTyped = (typed: string) => keepTitle(asTyped(typed));
+const titledAllInSpanish = (typed: string) => keepTitle(allInSpanish(typed));
+const titledFormerInSpanish = (typed: string) => keepTitle(formerInSpanish(typed));
 
 /**
  * How a name the backend wrote is said to this reader. In Spanish a removed member is "Un miembro anterior" in any
@@ -117,4 +122,4 @@ const allInSpanish = (typed: string) => formerInSpanish(inSpanish(typed));
  * each time, so nothing that names it runs again.
  */
 export const sampleSayer = (sample: boolean, language: Language) =>
-  language !== "es" ? asTyped : sample ? allInSpanish : formerInSpanish;
+  language !== "es" ? titledAsTyped : sample ? titledAllInSpanish : titledFormerInSpanish;

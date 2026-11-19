@@ -1,5 +1,6 @@
 "use client";
 
+import { keepTitle } from "@/lib/words/titles";
 import "@/components/workspace/for-good.css";
 import { useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { FunctionReturnType } from "convex/server";
@@ -899,7 +900,7 @@ export function NeighborForm({
           {duplicates.map((match) => (
             <div className="live-row" key={match.id}>
               <div>
-                <h3>{match.name}</h3>
+                <h3>{keepTitle(match.name)}</h3>
                 {match.address && <p>{match.address}</p>}
               </div>
               {useLabel ? (
