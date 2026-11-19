@@ -292,3 +292,10 @@ td.help-money[data-balance] { color: var(--live-muted); }
 /* Figures line up: every room table uses lining figures of one width,
    so a column of numbers reads straight down and a total never shifts as it changes. */
 .live-app table, .live-dialog table { font-variant-numeric: lining-nums tabular-nums; }
+/* Between the phone and the wide desk, a row that carries a status and two buttons (a visit someone can't go to) sets
+   them under its words, so the names and the address keep a full measure and never stack a word a line. */
+@media (min-width: 851px) and (max-width: 1279px) {
+  .help-row:has(> .live-row-actions [data-slot="button"] ~ [data-slot="button"]) { grid-template-columns: 96px minmax(0, 1fr); row-gap: 14px; }
+  .help-row:has(> .live-row-actions [data-slot="button"] ~ [data-slot="button"]) > :first-child { grid-row: 1 / span 2; }
+  .help-row:has(> .live-row-actions [data-slot="button"] ~ [data-slot="button"]) > .live-row-actions { grid-column: 2; justify-content: flex-start; }
+}
