@@ -30,7 +30,7 @@
 /* Laid one sheet up on the pile: a step in its shadow, with its lift. */
 .slip-folds-slip[data-risen="true"] .slip-folds-body{box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,6px 10px 12px -4px #3b2a1238}
 .slip-folds-figure figcaption{max-width:32ch;text-align:center;font-size:17px;line-height:1.45;color:#3d4f43}
-.slip-folds-link{display:inline-flex;align-items:center;min-height:44px;margin-top:-2px;color:#253e31;text-underline-offset:3px}
+.slip-folds-link{display:inline-flex;align-items:center;min-height:44px;margin-top:-2px;color:#253e31;text-decoration:underline 1px currentColor;text-underline-offset:3px}
 /* With less motion, or while the keyboard is in it, the slip is shown as it ends: folded, and laid on the pile. */
 @media(prefers-reduced-motion:reduce){
   .slip-folds{height:auto}
