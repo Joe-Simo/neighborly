@@ -55,21 +55,42 @@ const ease = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
 const monthZ = (month: number) => -month * GAP;
 
 /** Where the camera stands at `through` (0 to 1): from in front of October to just before September's fan, where it rests. */
-export const cameraZ = (through: number) => START + (monthZ(MONTHS - 1) + 2.4 - START) * ease(through);
+/** The flight takes the band's first 80%; in the last 20% the camera draws back and every leaf settles into its fan, so the band ends on the whole year. */
+const FLIGHT = .8;
+const settle = (through: number) => ease((through - FLIGHT) / (1 - FLIGHT));
+export const cameraZ = (through: number) => START + (monthZ(MONTHS - 1) + 2.4 - START) * ease(Math.min(1, through / FLIGHT));
 
 /** Which month is nearest in front of the camera: its leaf is the one being read. */
-export const monthAt = (through: number) => Math.max(0, Math.min(MONTHS - 1, Math.round((START - 2.4 - cameraZ(through)) / GAP)));
+export const monthAt = (through: number) => through > FLIGHT ? MONTHS - 1 : Math.max(0, Math.min(MONTHS - 1, Math.round((START - 2.4 - cameraZ(through)) / GAP)));
 
 /** How far a month's leaf has turned away (0 lying in its fan, 1 turned up past the camera). */
-const turned = (month: number, camera: number) => month === MONTHS - 1 ? 0 : ease((monthZ(month) + 2.6 - camera) / 2.2);
+const turned = (month: number, camera: number, through: number) => month === MONTHS - 1 ? 0 : through > FLIGHT ? 1 - settle(through) : ease((monthZ(month) + 2.6 - camera) / 2.2);
 
 /** The view and projection for a stage of `aspect`, with the camera at `camera`. */
-export function viewProjection(aspect: number, camera: number): Mat {
+/** A camera at `eye` looking at `at`, the world's up kept up. */
+const lookAt = (eye: readonly number[], at: readonly number[]): Mat => {
+  const f = [at[0] - eye[0], at[1] - eye[1], at[2] - eye[2]], fl = Math.hypot(...f);
+  const fz = f.map(v => v / fl), side = [-fz[2], 0, fz[0]], sl = Math.hypot(...side) || 1, x = side.map(v => v / sl);
+  const y = [x[1] * fz[2] - x[2] * fz[1], x[2] * fz[0] - x[0] * fz[2], x[0] * fz[1] - x[1] * fz[0]];
+  const dot = (a: number[], b: readonly number[]) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  return new Float32Array([x[0], y[0], -fz[0], 0, x[1], y[1], -fz[1], 0, x[2], y[2], -fz[2], 0, -dot(x, eye), -dot(y, eye), dot(fz, eye), 1]);
+};
+/** Where the camera ends: drawn back in front of October and a little above and aside, so all twelve fans stand in the window, receding to September. */
+const END_EYE = [2.2, 3.4, START + 2.5] as const, END_AT = [-1.7, -.2, monthZ(MONTHS - 1) * .4] as const;
+
+/** The view and projection for a stage of `aspect`, `through` the band. */
+export function viewProjection(aspect: number, through: number): Mat {
   // A tall stage keeps the wide one's sideways view, so the fan is never cut at its sides on a phone.
-  const f = Math.min(1, aspect / ASPECT.wide * 1.9) / Math.tan(FOV / 2), near = .1, far = 80;
+  const f = Math.min(1, aspect / ASPECT.wide * 1.6) / Math.tan(FOV / 2), near = .1, far = 120;
   const projection = new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, 2 * far * near / (near - far), 0]);
-  // A little above the stack and looking a little down on it, as one looks into a drawer of cards.
-  return mul(projection, mul(rotX(.22), translate(.18, -.95, -camera)));
+  // In flight: a little above the stack and looking a little down on it, as one looks into a drawer of cards.
+  const camera = cameraZ(through), eye = [-.18, .95, camera], at = [-.18, .95 - 10 * Math.sin(.22), camera - 10 * Math.cos(.22)];
+  // Drawing back, the camera rises clear of the fans first, then turns to take in the whole year.
+  const back = settle(through), rise = Math.sqrt(back);
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  const from = [lerp(eye[0], END_EYE[0], back), lerp(eye[1], END_EYE[1], rise), lerp(eye[2], END_EYE[2], back)];
+  const to = at.map((v, k) => lerp(v, END_AT[k], back));
+  return mul(projection, lookAt(from, to));
 }
 
 const HINGE = SLIP.h + .9;
@@ -89,7 +110,7 @@ export function placeSlips(through: number, out: Float32Array = new Float32Array
   let month = -1, leaf = 0;
   slips.forEach((slip, index) => {
     if (slip.month !== month) {
-      month = slip.month; leaf = turned(month, camera);
+      month = slip.month; leaf = turned(month, camera, through);
       if (leaf > 0) mul(mul(translate(0, HINGE, monthZ(month)), rotX(-leaf * 1.9)), translate(0, -HINGE, 0), leafTurn);
     }
     const at = index * 16;

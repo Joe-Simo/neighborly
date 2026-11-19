@@ -88,6 +88,7 @@
   .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-block: 2px 0; }
 }
 .help-bring { margin: 28px 0 0; font-size: 16px; }
+.help-bring .help-text-action[data-slot="button"] { min-height: 44px; }
 
 /* ── Paper motion of this room: the yes, and a call returned ───────────── */
 /* The yes is given: the corner folds to green (paper-fold), the sheet lifts and settles, a check is drawn. */
@@ -151,6 +152,8 @@
 /* On a narrow page the number sits under the name, so its reach starts below the name instead of over it. */
 @media (max-width: 850px) { .help-row a.help-phone { padding-top: 0; margin-top: 6px; } }
 @media (pointer: coarse) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
+/* Zoomed or narrow, the number keeps a full finger's height whatever the pointer. */
+@media (max-width: 850px) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
 @media (pointer: coarse) and (max-width: 850px) { .help-row a.help-phone { display: flex; width: fit-content; margin-top: 0; } }
 .help-row:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 4px; }
 .help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
@@ -379,6 +382,12 @@
   .live-app .help-row > *, .help-row[data-call]:not([data-quiet]) > :nth-child(2) > *, .help-row[data-call]:not([data-quiet]) > .help-row-more { grid-column: 1; }
   .live-app .help-row[data-call]:not([data-quiet]) > :first-child { grid-row: auto; }
   .live-app .help-row .live-date-leaf { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 0 0.4em; width: fit-content; min-height: 0; padding: 6px 0 0; border-bottom: 0; }
+  /* A household keeps its picture beside its words: one column would leave its words a sliver beside its acts. */
+  .live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr); }
+  .live-app .help-neighbor > :nth-child(2) { grid-column: 2; }
+  .live-app .help-neighbor > :nth-child(3) { grid-column: 2; }
+  /* "Add {name} as a neighbor" turns between words rather than being cut. */
+  .live-app .help-add, .live-app .help-add-long { white-space: normal; }
 }
 
 /* A caller's name is given the wider column beside the phone, so a full family name shows whole. */

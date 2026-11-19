@@ -1,28 +1,34 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { frameStep } from "@/lib/scroll-frame";
 import { viewport } from "@/lib/viewport";
-import { sampleYear } from "@/lib/sample-year";
-import { FIRST_MONTH, MONTHS, monthAt, SLIPS } from "@/lib/year-paper";
+import { FIRST_MONTH, MONTHS, monthAt } from "@/lib/year-paper";
 import { yearPaperWords } from "@/lib/year-paper-words";
+import type { Language } from "@/lib/words";
+import { numberLocales } from "@/lib/words/numbers";
 import type { YearPaperCanvas } from "./year-paper-gl";
 import "./year-paper.css";
 
-const monthName = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-const months = Array.from({ length: MONTHS }, (_, month) => monthName.format(new Date(FIRST_MONTH).setUTCMonth(new Date(FIRST_MONTH).getUTCMonth() + month)));
-const words = yearPaperWords.en;
-const whole = new Intl.NumberFormat("en-US");
-const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+/** Everything the band says, in one language: its words, its twelve months and its figures (es-US, as every Spanish page writes them). */
+const sayings = (language: Language) => {
+  const locale = numberLocales[language];
+  const monthName = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "UTC" });
+  const first = new Date(FIRST_MONTH);
+  // Spanish months are lowercase in running text; standing alone as a label they open with a capital, as a heading does.
+  const months = Array.from({ length: MONTHS }, (_, month) => { const name = monthName.format(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + month, 1)); return name.charAt(0).toLocaleUpperCase(locale) + name.slice(1); });
+  return { words: yearPaperWords[language], months };
+};
 
 /**
  * The year in paper: after the chapters, the sample conference's year as one slip for every request, fanned a month at a time in depth.
- * The scroll flies the reader down the stack and each month's leaf turns away overhead; the flight ends on the year's total, as Reports adds it up.
+ * The scroll flies the reader down the stack and each month's leaf turns away overhead; then the camera draws back and the band ends on all twelve months in their fans. Its figures are the next chapter's, "The year.", and are said only there.
  * The first frame is a poster drawn from the same numbers (scripts/year-paper-posters.mts); the canvas is loaded only once the band is near,
  * and takes the poster's place by a cut once it has drawn the same frame. Every word is the page's own text, beside the slips, never on them.
  * With Reduce Motion, or without script, the poster is the flight's end and nothing moves.
  */
-export function YearPaper() {
+export function YearPaper({ language = "en" }: { language?: Language }) {
+  const { words, months } = useMemo(() => sayings(language), [language]);
   const root = useRef<HTMLElement>(null);
   useEffect(() => {
     const band = root.current, frame = band?.querySelector<HTMLElement>(".year-paper-window"), month = band?.querySelector<HTMLElement>(".year-paper-month"), run = band?.querySelector<HTMLElement>(".year-paper-run");
@@ -67,9 +73,9 @@ export function YearPaper() {
     addEventListener("scroll", ask, { passive: true });
     addEventListener("resize", ask);
     return () => { gone = true; drop(); ahead.disconnect(); inSight.disconnect(); sized?.disconnect(); scene?.dispose(); removeEventListener("scroll", ask); removeEventListener("resize", ask); };
-  }, []);
+  }, [months]);
 
-  return <section ref={root} className="year-paper" data-live="false" aria-labelledby="year-paper-title">
+  return <section ref={root} className="year-paper" data-live="false" aria-labelledby="year-paper-title" lang={language === "en" ? undefined : language}>
     <div className="year-paper-run">
     <div className="year-paper-stage">
       <figure className="year-paper-figure">
@@ -88,15 +94,6 @@ export function YearPaper() {
         </figcaption>
       </figure>
     </div>
-    </div>
-    <div className="year-paper-total">
-      <p className="year-paper-count"><span>{whole.format(SLIPS)}</span> {words.requests}</p>
-      <dl>
-        <div><dt>{words.calls}</dt><dd>{whole.format(sampleYear.calls)}</dd></div>
-        <div><dt>{words.visits}</dt><dd>{whole.format(sampleYear.visits)}</dd></div>
-        <div><dt>{words.paid}</dt><dd>{dollars.format(sampleYear.helpPaid / 100)}</dd></div>
-      </dl>
-      <p className="year-paper-note">{words.note}</p>
     </div>
   </section>;
 }

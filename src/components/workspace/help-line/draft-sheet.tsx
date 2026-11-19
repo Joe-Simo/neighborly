@@ -130,7 +130,7 @@ export function DraftSheet({
         <div>
           {/* The card leads with the call it was made from, so the line under it is never taken for a ledger entry.
               The name is read from the call row for display only; it is not part of the draft or of what the assistant saw. */}
-          <p className="help-from">
+          <p className="help-from text-pretty">
             {call.neighborName || call.callerName ? (
               <strong>{caller(call, words)}</strong>
             ) : (

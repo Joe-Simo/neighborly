@@ -12,15 +12,6 @@
 .year-paper-title{grid-column:1;margin:0;font:400 clamp(28px,2.6vw,44px)/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.02em}
 .year-paper figcaption p{grid-column:1;max-width:60ch;margin:0;font-size:17px;line-height:1.4;color:#3d4f43}
 .year-paper figcaption .year-paper-month{grid-column:2;grid-row:1 / span 2;align-self:end;font:400 clamp(20px,1.6vw,28px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;font-feature-settings:"lnum","tnum";color:#293f32;white-space:nowrap}
-/* The flight ends on the year as Reports adds it up: the page's own text, in the flow after the stage, never over the slips. */
-.year-paper-total{min-height:100svh;display:grid;align-content:center;justify-items:start;gap:clamp(18px,2vw,30px);padding:0 calc((100vw - var(--yp-w)) / 2);background:#eee7d7}
-.year-paper-count{margin:0;display:grid;font-size:17px;color:#3d4f43}
-.year-paper-count span{font:400 clamp(88px,11vw,184px)/.95 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.05em;font-feature-settings:"lnum","tnum";color:#293f32}
-.year-paper-total dl{margin:0;display:flex;flex-wrap:wrap;gap:16px clamp(28px,4vw,72px);border-top:1px solid #293f3224;padding-top:clamp(14px,1.4vw,20px)}
-.year-paper-total dl div{display:flex;flex-direction:column-reverse}
-.year-paper-total dt{font-size:15px;color:#3d4f43}
-.year-paper-total dd{margin:0;font:400 clamp(30px,3vw,48px)/1.05 'Newsreader','Newsreader Fallback',Georgia,serif;font-feature-settings:"lnum","tnum";color:#293f32;white-space:nowrap}
-.year-paper-note{margin:0;font-size:15px;color:#3d4f43}
 @media(max-width:767px){
   .year-paper{--yp-w:min(100vw - 40px,(100svh - 210px) * .75)}
   .year-paper-window{aspect-ratio:3/4}
@@ -30,7 +21,6 @@
 /* Still: the poster is the flight's end, the stage simply stands in the page, and the total follows it. */
 @media(prefers-reduced-motion:reduce){
   .year-paper-run{height:auto}
-  .year-paper-stage{position:static;height:auto;padding:clamp(48px,9svh,96px) 20px 0}
-  .year-paper-total{min-height:0;padding-block:clamp(48px,9svh,96px)}
+  .year-paper-stage{position:static;height:auto;padding:clamp(48px,9svh,96px) 20px}
   .year-paper figcaption .year-paper-month{display:none}
 }

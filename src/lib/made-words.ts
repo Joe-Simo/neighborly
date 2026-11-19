@@ -76,9 +76,9 @@ const en = {
       [
         { lead: "Ochre means waiting.", rest: "A call not yet returned, a request not yet decided, a room still opening.", tone: "waiting" },
         { lead: "Plum means something is wrong.", rest: "There is no red anywhere. A mistake is named plainly, with the way to put it right.", tone: "wrong" },
-        { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned.", tone: "done" },
+        { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned. The words say it too, in the past tense and naming the thing: “Request saved.”, “Record removed.”", tone: "done" },
       ],
-      "Paper is the one material: things rise, fold and turn as a sheet would. A room is shown whole or not yet at all, so no one reads a half-drawn screen.",
+      "Paper is the one material: things rise, fold and turn as a sheet would. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Every raised surface takes one of three heights: a slip lies on the paper, a card stands on the page, and a sheet is laid over the room.",
       "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°.",
     ] },
     { title: "Responsible AI, with Jev", table: "eval", blocks: [
@@ -102,7 +102,7 @@ const en = {
     ] },
     { title: "Made for everyone", blocks: [
       "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on. These are our own checks, not a certification.",
-      "Every button is at least 44 pixels to a finger and 40 to a mouse, there is one focus ring and it is always seen, and no color carries meaning on its own: waiting, wrong and done are always said in words too.",
+      "Every button is at least 44 pixels to a finger and 40 to a mouse, there is one focus ring, the same 4px corner on every control, drawn when you move by keyboard, and no color carries meaning on its own: waiting, wrong and done are always said in words too. With Windows’ high-contrast colors on, the done tick and the waiting ring keep their shapes, so they still read without their colors.",
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
     { title: "Free for every conference", blocks: [
@@ -174,9 +174,9 @@ const es: typeof en = {
       [
         { lead: "Ocre es esperar.", rest: "Una llamada aún sin devolver, una petición aún sin decidir, una sección que todavía se abre.", tone: "waiting" },
         { lead: "Ciruela es que algo está mal.", rest: "No hay rojo en ninguna parte. Un error se nombra con claridad, junto con la manera de corregirlo.", tone: "wrong" },
-        { lead: "Verde es hecho.", rest: "Una visita con sus notas, un recibo pagado, una llamada devuelta.", tone: "done" },
+        { lead: "Verde es hecho.", rest: "Una visita con sus notas, un recibo pagado, una llamada devuelta. Las palabras también lo dicen, en pasado y nombrando la cosa: «Petición guardada.»", tone: "done" },
       ],
-      "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar.",
+      "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Cada superficie que se levanta tiene una de tres alturas: un papelito se apoya en el papel, una tarjeta se alza sobre la página y una hoja se pone sobre la sección.",
       "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
     ] },
     { title: "IA responsable, con Jev", table: "eval", blocks: [
@@ -200,7 +200,7 @@ const es: typeof en = {
     ] },
     { title: "Hecho para todos", blocks: [
       "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado. Son revisiones nuestras, no una certificación.",
-      "Cada botón mide al menos 44 píxeles para un dedo y 40 para un ratón, hay un solo anillo de foco y siempre se ve, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras.",
+      "Cada botón mide al menos 44 píxeles para un dedo y 40 para un ratón, hay un solo anillo de foco, con la misma esquina de 4 px en cada control, que aparece al moverse con el teclado, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras. Con los colores de alto contraste de Windows, la marca de hecho y el círculo de espera conservan su forma, así que se entienden sin su color.",
       "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",
     ] },
     { title: "Gratis para toda conferencia", blocks: [

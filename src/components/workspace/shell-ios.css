@@ -414,3 +414,17 @@
 :root[data-shell="ios"][data-text-large] .live-app .report-quarters { flex-wrap: wrap; justify-content: flex-start; gap: 0 18px; overflow: visible; }
 /* At the largest text a chosen value shows whole: the select grows to two lines rather than clipping. */
 :root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="native-select"] { height: auto; min-height: 44px; white-space: normal; overflow-wrap: break-word; padding-block: 8px; line-height: 1.25; }
+/* At the largest text a visit's pair, its line of what was given, an invitation's email and "Add {name} as a neighbor"
+   turn between words inside the column rather than running past it. An email may turn anywhere; a name never inside a word. */
+:root[data-shell="ios"][data-text-large] .live-app .visits-written-who :is(.help-person, .help-person > span, .help-person > span > span) { white-space: normal; min-width: 0; }
+:root[data-shell="ios"][data-text-large] .live-app .visits-written-found :is(span, strong) { min-width: 0; overflow-wrap: break-word; }
+:root[data-shell="ios"][data-text-large] .live-app .people-address > span { white-space: normal; min-width: 0; overflow-wrap: anywhere; }
+:root[data-shell="ios"][data-text-large] .live-app :is(.help-add, .help-add-long) { white-space: normal; }
+:root[data-shell="ios"][data-text-large] .live-app .visits-written-found { flex-wrap: wrap; }
+:root[data-shell="ios"][data-text-large] .live-app .visits-written-found > .visits-given { min-width: 0; max-width: 100%; }
+/* In the app every phone number is a finger's target, at any width. */
+:root[data-shell="ios"] .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; }
+:root[data-shell="ios"][data-text-large] .live-app .help-row-more > * { flex: 0 0 auto; max-width: 100%; }
+/* The same one column on a wide screen, where the room's own three columns would leave the time a sliver. */
+:root[data-shell="ios"][data-text-large] .live-app :is(.help-row, .help-row[data-call]:not([data-quiet])):not(.help-neighbor) { grid-template-columns: minmax(0, 1fr); }
+:root[data-shell="ios"][data-text-large] .live-app :is(.help-row, .help-row[data-call]:not([data-quiet])):not(.help-neighbor) > * { grid-column: 1; }
