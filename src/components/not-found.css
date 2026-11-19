@@ -1,7 +1,7 @@
 /* The page that leads nowhere: the courtyard's arch, cut from its sheet, standing alone on bare paper, with one line and one way back. */
 .lost-door{min-height:100svh;display:grid;justify-items:center;align-content:center;gap:clamp(28px,4.5svh,52px);padding:clamp(40px,8svh,96px) 20px;background:#e6decb;color:#293f32;text-align:center}
 /* The sheet stands on the ground with paper's tight shade at its foot. */
-.lost-door-arch{display:block;line-height:0;width:min(78vw,clamp(280px,36vw,640px),calc(58svh * 691 / 621));height:auto;transform-origin:50% 100%;filter:drop-shadow(0 1px .5px #3b2a1238) drop-shadow(0 7px 8px #3b2a121c)}
+.lost-door-arch{display:block;line-height:0;width:min(78vw,clamp(280px,36vw,640px),calc(58svh * 691 / 621));height:auto;transform-origin:50% 100%;filter:drop-shadow(0 1px .5px rgb(40 60 50 / 0.22)) drop-shadow(0 7px 8px rgb(40 60 50 / 0.11))}
 .lost-door-words{display:grid;justify-items:center;gap:clamp(14px,2svh,22px)}
 .lost-door-words h1{margin:0;font:400 clamp(36px,4.2vw,76px)/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.055em;text-wrap:balance}
 .lost-door-arch img{display:block;width:100%;height:auto}
@@ -18,7 +18,7 @@
 :root:lang(es) .lost-door [lang="en"],:root:not(:lang(es)) .lost-door [lang="es"]{display:none}
 
 /* A piece cut from a larger picture: only its own outline is shown, with the paper's tight shade under it, as the arch. */
-.lost-door-piece{position:relative;display:block;overflow:hidden;line-height:0;transform-origin:50% 100%;filter:drop-shadow(0 1px .5px #3b2a1238) drop-shadow(0 7px 8px #3b2a121c)}
+.lost-door-piece{position:relative;display:block;overflow:hidden;line-height:0;transform-origin:50% 100%;filter:drop-shadow(0 1px .5px rgb(40 60 50 / 0.22)) drop-shadow(0 7px 8px rgb(40 60 50 / 0.11))}
 .lost-door-piece img{position:absolute;left:var(--piece-x);top:var(--piece-y);width:var(--piece-w);height:auto;max-width:none}
 /* The kept page stands in the middle of the sheet, the size the arch stands. */
 .lost-door[data-piece=page] .lost-door-piece{width:min(52vw,clamp(200px,22vw,400px),calc(46svh * 528 / 548))}
@@ -28,8 +28,8 @@
 /* The lost slip (not-found.tsx): a call slip of the pile's own paper that found no one, lying alone a little turned, flat and still. */
 .lost-door[data-piece=slip]{gap:0}
 .lost-door[data-piece=slip] .lost-door-words{gap:clamp(28px,4.5svh,48px)}
-.lost-slip{position:relative;display:grid;gap:10px;width:min(calc(100vw - 40px),560px);padding:clamp(28px,4svh,40px) clamp(24px,4vw,40px) clamp(32px,4.5svh,44px);text-align:left;background:#f7f2e6;border-radius:1px;border-top:1px dashed #b0a08480;box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,6px 10px 14px -6px #3b2a1238;transform:rotate(-2.5deg)}
+.lost-slip{position:relative;display:grid;gap:10px;width:min(calc(100vw - 40px),560px);padding:clamp(28px,4svh,40px) clamp(24px,4vw,40px) clamp(32px,4.5svh,44px);text-align:left;background:#f7f2e6;border-radius:1px;border-top:1px dashed #b0a08480;box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,6px 10px 14px -6px rgb(40 60 50 / 0.22);transform:rotate(-2.5deg)}
 .lost-slip h1{margin:0;font:400 clamp(32px,3.6vw,56px)/1.05 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.04em;text-wrap:balance}
 .lost-slip p{margin:0;max-width:34em;font-size:clamp(16px,1.2vw,19px);line-height:1.45;color:#3d4f43;text-wrap:pretty}
-.lost-slip-corner{position:absolute;right:-1px;bottom:-1px;width:30px;height:30px;background:linear-gradient(315deg,#e6decb 50%,#c8962e calc(50% + 1px),#d6ad57 100%);border-top-left-radius:3px;box-shadow:3px -3px 6px -4px #3b3a2466}
+.lost-slip-corner{position:absolute;right:-1px;bottom:-1px;width:30px;height:30px;background:linear-gradient(315deg,#e6decb 50%,#c8962e calc(50% + 1px),#d6ad57 100%);border-top-left-radius:3px;box-shadow:3px -3px 6px -4px rgb(40 60 50 / 0.4)}
 @media(forced-colors:active){.lost-slip{border:1px solid CanvasText;box-shadow:none}.lost-slip-corner{forced-color-adjust:none;background:CanvasText;clip-path:polygon(100% 0,100% 100%,0 100%)}}
