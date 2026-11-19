@@ -1425,10 +1425,10 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   transition-timing-function: var(--paper-ease);
 }
 :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"]):focus-visible { --tw-ring-shadow: 0 0 #0000; }
-:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]) { box-shadow: 0 1px 0 rgb(40 60 50 / 0.18); }
+:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]) { box-shadow: var(--press-rest); }
 :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) {
   translate: none;
-  transform: translateY(1px);
+  transform: translateY(var(--press-y));
   transition-duration: 60ms;
 }
 :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) { box-shadow: 0 0 0 rgb(40 60 50 / 0); }
@@ -1473,7 +1473,6 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 [data-slot="dropdown-menu-content"][data-state="closed"] { animation: none; }
 [data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]) { min-height: 44px; border-radius: 4px; color: #283c32; font-size: 16px; }
 [data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]):is(:focus, [data-highlighted]) { background: #e7ecdc; color: #283c32; }
-[data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]):active:not([data-disabled]) { transform: translateY(1px); }
 @media (prefers-reduced-motion: reduce) { [data-slot="dropdown-menu-content"][data-state="open"] { animation: none; } }
 /* Sheets portalled outside the room (the month, a menu) take the room's ease too. */
 :is(.live-date-sheet, [data-slot="dropdown-menu-content"]) { --paper-ease: cubic-bezier(0.2, 0.7, 0.2, 1); }

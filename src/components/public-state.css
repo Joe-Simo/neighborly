@@ -29,7 +29,7 @@
 }
 /* A press goes 1px into the paper and its shadow closes under it. */
 .public-state [data-slot=button]{transition:translate 90ms ease,box-shadow 90ms ease}
-.public-state [data-slot=button]:active{translate:0 1px;box-shadow:none}
+.public-state [data-slot=button]:active{translate:none;transform:translateY(var(--press-y));box-shadow:none}
 @media (prefers-reduced-motion: reduce){.public-state [data-slot=button]{transition:none}}
 /* A page that carries both languages shows the reader's own (first-language.ts sets it on the root before paint). */
 :root:lang(es) .public-state [lang="en"],
