@@ -2,40 +2,8 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type AnimationEventHandler, type CSSProperties } from "react";
 import { ReliefPicture, reliefMoves, reliefSources, whenDecoded, type ReliefName } from "@/components/workspace/relief";
+import { ARRIVED, arrived, SIZES, unseen } from "@/components/workspace/relief-ahead";
 import { useRoomShown } from "@/components/workspace/room-sheet";
-
-const ARRIVED = "kind-helps-arrived";
-const arrived = () => (sessionStorage.getItem(ARRIVED) ?? "").split(" ").filter(Boolean);
-/** The iPhone app's first room, still under its launch cover: its picture is shown already in place. */
-const underLaunchCover = () => document.documentElement.dataset.shell === "ios" && !document.querySelector(".live-app[data-room-in]");
-/** True until this picture has made its move in this visit (a browser tab's life); never for anyone who asks for less motion. */
-function unseen(name: ReliefName) {
-  try {
-    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches && !underLaunchCover() && !arrived().includes(name);
-  } catch {
-    return false;
-  }
-}
-
-const SIZES = "(min-width: 900px) 46vw, 100vw";
-const fetched = new Set<string>();
-/**
- * Fetches the head pictures of rooms not yet opened, in the cut each will first be shown in, so that going
- * to a room finds its picture already here. Asked for once the first room has settled, never before it.
- */
-export function fetchAhead(names: readonly ReliefName[]) {
-  for (const name of names) {
-    const move = reliefMoves[name];
-    const cuts = move && unseen(name) ? ["-base", "-piece", ...(move.front ? ["-front"] : [])] : [""];
-    for (const cut of cuts) {
-      if (fetched.has(name + cut)) continue;
-      fetched.add(name + cut);
-      const link = document.createElement("link");
-      Object.assign(link, { rel: "preload", as: "image", type: "image/avif", imageSrcset: reliefSources(name + cut, "avif"), imageSizes: SIZES });
-      document.head.append(link);
-    }
-  }
-}
 
 /** What each laying of a picture was told, by its id: it plays, or it does not, for as long as it stands. */
 const decided = new Map<string, boolean>();

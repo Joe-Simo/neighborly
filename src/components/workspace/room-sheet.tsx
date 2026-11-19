@@ -240,7 +240,7 @@ function stillCopy(column: HTMLElement) {
       to[index].remove();
     }
   });
-  const moving = new Set(document.getAnimations().map((move) => (move.effect instanceof KeyframeEffect ? move.effect.target : null)));
+  const moving = new Set(column.getAnimations({ subtree: true }).map((move) => (move.effect instanceof KeyframeEffect ? move.effect.target : null)));
   from.forEach((element, index) => {
     if (gone.has(element)) return;
     const twin = to[index];

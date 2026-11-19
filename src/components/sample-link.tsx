@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ComponentProps, MouseEvent, MouseEventHandler, PointerEvent } from "react";
 import { askFirstRoom } from "@/lib/first-room";
+import { whenIdle } from "@/lib/idle";
 import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
 
 /**
@@ -38,12 +39,19 @@ export function SampleLink(props: Omit<ComponentProps<typeof Link>, "href">) {
 /** A phone has no pointing: as a ref, fetches Clerk's scripts once the way in comes near the window, before the tap. */
 export function warmWhenNear(link: HTMLElement | null) {
   if (!link) return;
+  let cancel = () => {};
   const near = new IntersectionObserver((seen) => {
     if (!seen.some((entry) => entry.isIntersecting)) return;
-    warmSignIn();
-    askFirstRoom();
     near.disconnect();
+    // Both lay tags and run code as they arrive, so they are asked for once the page is idle, never in a scroll's frame.
+    cancel = whenIdle(() => {
+      warmSignIn();
+      askFirstRoom();
+    }, 1000);
   }, { rootMargin: "600px 0px" });
   near.observe(link);
-  return () => near.disconnect();
+  return () => {
+    near.disconnect();
+    cancel();
+  };
 }

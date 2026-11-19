@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalS
 import { useRouter } from "next/navigation";
 import { noSessionKept } from "@/lib/no-session-kept";
 import { fetchRoom } from "@/components/workspace/sections";
-import { fetchAhead } from "@/components/workspace/relief-arrival";
+import { fetchAhead } from "@/components/workspace/relief-ahead";
 import { headings } from "@/components/workspace/navigation";
 import { useAction, useConvexConnectionState, useMutation, useQueries, type RequestForQueries } from "convex/react";
 import { useHour, usePaginatedQuery, useQuery } from "@/components/workspace/query";

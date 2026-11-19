@@ -25,7 +25,7 @@ export function askFirstRoom() {
   // Kept as it stands once it is here, so the room can be drawn from it in its very first pass, with no wait for a promise.
   void answer.then((room) => (asking.here = room));
   // The room's head picture is asked for with it, in the cut the room will show, so it is here when the room is laid.
-  void import("@/components/workspace/relief-arrival").then(({ fetchAhead }) => fetchAhead(["week"])).catch(() => {});
+  void import("@/components/workspace/relief-ahead").then(({ fetchAhead }) => fetchAhead(["week"])).catch(() => {});
 }
 
 /** The answer if it is already here: a room, null for none to be had, undefined while it is on its way, was never asked for, or is from an earlier hour. */

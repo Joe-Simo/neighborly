@@ -51,7 +51,8 @@ import { RowMenu } from "@/components/workspace/row-menu";
 import { useSystemTextSize } from "@/components/system-text-size";
 import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
-import { ArrivingRelief, fetchAhead } from "@/components/workspace/relief-arrival";
+import { fetchAhead } from "@/components/workspace/relief-ahead";
+import { ArrivingRelief } from "@/components/workspace/relief-arrival";
 import { fetchRoomsAhead, roomSection } from "@/components/workspace/sections";
 import { fetchMonthAhead } from "@/components/workspace/date-field";
 import type {
