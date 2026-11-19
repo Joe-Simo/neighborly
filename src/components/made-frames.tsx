@@ -7,6 +7,8 @@ type Said = (typeof madeWords)[Language]["frameStrip"];
 
 // The strip's height stands for 40 ms, so the 33 ms line sits near its top and the room under it shows; a longer frame is drawn to the top and is still counted as it was.
 const ceiling = 40;
+// Each frame is a mark at the height of its own time, not a bar from the floor, so a run of even frames reads as one fine line well under the 33 ms line.
+const mark = 1.6;
 const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 const days = { en: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }), es: new Intl.DateTimeFormat("es-US", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }) };
 const fill = (text: string, values: Record<string, string>) => text.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? "");
@@ -24,7 +26,7 @@ export function MadeFrames({ said, language }: { said: Said; language: Language 
         <p><strong>{said.widths[width]}</strong> {summary}</p>
         <div className="public-made-frames-plot" style={{ "--line": `${((ceiling - lateMs) / ceiling) * 100}%` } as CSSProperties}>
         <svg shapeRendering="crispEdges" viewBox={`0 0 ${all.length} ${ceiling}`} preserveAspectRatio="none" role="img" aria-label={`${said.widths[width]}. ${summary}`}>
-          {all.map((ms, frame) => <rect key={frame} x={frame} width={1} y={ceiling - Math.min(ms, ceiling)} height={Math.min(ms, ceiling)} data-late={late(ms) || undefined} />)}
+          {all.map((ms, frame) => <rect key={frame} x={frame} width={1} y={ceiling - Math.min(ms, ceiling)} height={mark} data-late={late(ms) || undefined} />)}
           <line x1={0} x2={all.length} y1={ceiling - lateMs} y2={ceiling - lateMs} />
         </svg>
         <span aria-hidden="true">{said.line}</span>
