@@ -299,6 +299,8 @@
 .visits-written-found { display: flex; gap: var(--space-16) 16px; font-size: 16px; line-height: 1.45; color: var(--live-muted); }
 .visits-written-found > span:last-child { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .visits-written-found .visits-given { flex: none; color: var(--live-ink); }
+/* Side by side, the facts hold one width so every row's note begins at the same x. */
+@media (min-width: 851px) { .visits-written-found .visits-given { min-width: 15em; } }
 @media (max-width: 699px) {
   .visits-written-who { flex-wrap: wrap; row-gap: 0; }
   .visits-written-found { flex-wrap: wrap; row-gap: 2px; }
