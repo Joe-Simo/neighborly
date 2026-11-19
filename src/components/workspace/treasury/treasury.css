@@ -623,3 +623,6 @@
   }
 }
 .treasury-waiting .help-row p { text-wrap: balance; }
+
+/* The money still on hand reads as a sentence, never a line of eighty letters on a wide screen. */
+.live-app .treasury-on-hand { max-width: 36em; }
