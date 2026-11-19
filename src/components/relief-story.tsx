@@ -16,7 +16,7 @@ import { CutHead } from "@/components/cut-heads";
 const story = [
   { picture: "call", plate: "call-ground", pieces: [{ name: "cord" }, { name: "piece", shadow: "piece" }], card: { on: null, x: 19, y: 80, w: 15, turn: -9 }, title: "The call.", copy: "Someone rings the help line. The message is kept until someone calls back." },
   { picture: "visit", plate: "visit-ground", pieces: [{ name: "light" }, { name: "leaf", shadow: "leaf" }, { name: "hands", shadow: "hands" }], card: { on: "hands", x: 22.6, y: 61.4, w: 12, turn: 7 }, title: "The visit.", copy: "Two members go to the home, together, and listen." },
-  { picture: "help", plate: "help", pieces: [{ name: "envelope", shadow: "piece" }, { name: "flap" }], card: { on: "envelope", x: 55.7, y: 41.4, w: 15, turn: -14, tuck: [-.3, -.5] }, title: "The help.", copy: "The conference agrees. The bill is paid straight to the landlord or the utility." },
+  { picture: "help", plate: "help", pieces: [{ name: "envelope", shadow: "piece" }, { name: "flap" }], card: { on: "envelope", x: 60, y: 54, w: 15, turn: -14, tuck: [-.3, -.5] }, title: "The help.", copy: "The conference agrees. The bill is paid straight to the landlord or the utility." },
   { picture: "year", plate: "year", pieces: [{ name: "page", shadow: "piece" }, { name: "ribbon" }], card: { on: "page", x: 66.5, y: 61.5, w: 13, turn: 11, waits: true, tuck: [.5, .12] }, title: "The year.", copy: "Every call, visit and dollar adds itself up for the yearly report." },
 ] as const;
 const sizes = "(max-width: 820px) 92vw, 56vw";
