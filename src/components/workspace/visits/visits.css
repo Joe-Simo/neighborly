@@ -311,3 +311,8 @@
 @media (max-width: 560px) {
   .visits-room .help-row > .live-row-actions > .live-status { flex-basis: 100%; }
 }
+
+/* On the narrowest screens a visit's pair turns between names rather than being cut. */
+@media (max-width: 380px) {
+  .live-app .visits-written-who :is(.help-person, .help-person > span, .help-person > span > span) { white-space: normal; min-width: 0; }
+}

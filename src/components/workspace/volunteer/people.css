@@ -145,3 +145,9 @@
 
 /* At 200% text a long invited address takes the whole line rather than pushing past it. */
 .live-app .people-row h3 { grid-template-columns: minmax(0, 1fr); }
+
+/* On the narrowest screens an invitation's email is said whole, turning where it must, never cut to a few letters. */
+@media (max-width: 380px) {
+  .people-address[data-one-line] { flex-wrap: wrap; }
+  .people-address > span { white-space: normal; overflow-wrap: anywhere; overflow: visible; }
+}
