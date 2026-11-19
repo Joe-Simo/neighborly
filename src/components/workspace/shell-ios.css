@@ -21,7 +21,7 @@
 @media (max-width: 699px) {
   :root[data-shell="ios"] .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { overscroll-behavior: contain; }
   /* The grabber is drawn on the held title, so it stays at the top of the sheet however far the form scrolls. */
-  :root[data-shell="ios"] .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { padding-top: 14px; }
+  :root[data-shell="ios"] .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { padding-top: var(--space-16); }
   :root[data-shell="ios"] .live-dialog.live-dialog-fixed [data-slot="dialog-header"]::before {
     content: "";
     position: absolute;
@@ -54,7 +54,7 @@
     width: var(--aside-wide);
   }
   :root[data-shell="ios"] .live-aside-sheet { padding-left: 24px; border-left: 1px solid var(--live-line); font-size: 15px; line-height: 1.5; }
-  :root[data-shell="ios"] .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; font-family: inherit; font-weight: 650; line-height: 1.5; }
+  :root[data-shell="ios"] .live-app .live-aside-sheet > .live-kicker { margin-bottom: var(--space-16); font-family: inherit; font-weight: 650; line-height: 1.5; }
 }
 
 /* An iPad held upright (or too narrow for both): the column waits behind a quiet link under the head, named by its title, and slides
@@ -102,7 +102,7 @@
   }
   :root[data-shell="ios"] .live-aside[data-open] { translate: 0 0; visibility: visible; transition: translate 320ms cubic-bezier(0.32, 0.72, 0, 1); }
   :root[data-shell="ios"] .live-aside-sheet { font-size: 15px; line-height: 1.5; }
-  :root[data-shell="ios"] .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; font-family: inherit; font-weight: 650; line-height: 1.5; }
+  :root[data-shell="ios"] .live-app .live-aside-sheet > .live-kicker { margin-bottom: var(--space-16); font-family: inherit; font-weight: 650; line-height: 1.5; }
 }
 @keyframes paper-scrim-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
@@ -118,7 +118,7 @@
 :root[data-shell="ios"][data-text-large] :is(.live-header, .live-app input[type="search"], .live-app [role="searchbox"]) { -webkit-text-size-adjust: 130% !important; }
 /* Figures are already set to the width they have; they do not grow at all. */
 :root[data-shell="ios"][data-text-large] :is(.report-year-pile, .count-up) { -webkit-text-size-adjust: 100% !important; }
-:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] { height: auto; min-height: 44px; max-width: 100%; white-space: normal; text-align: start; padding-block: 10px; align-items: flex-start; }
+:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] { height: auto; min-height: 44px; max-width: 100%; white-space: normal; text-align: start; padding-block: var(--space-8); align-items: flex-start; }
 /* A label that wraps keeps its sign level with its first line. */
 :root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] > svg { margin-top: calc((1lh - 1em) / 2); }
 :root[data-shell="ios"][data-text-large] :is(.visits-name, .volunteer-due, .volunteer-who) { white-space: normal; }
@@ -133,18 +133,18 @@
 :root[data-shell="ios"][data-text-large] .live-app .help-neighbor { grid-template-columns: auto minmax(0, 1fr); }
 :root[data-shell="ios"][data-text-large] .live-app .help-neighbor > :nth-child(n + 3) { grid-column: 2; }
 :root[data-shell="ios"][data-text-large] .live-app .help-neighbor :is(.help-asks, p, span) { white-space: normal; }
-:root[data-shell="ios"][data-text-large] .live-app :has(> .live-avatar) { flex-wrap: wrap; row-gap: 6px; }
+:root[data-shell="ios"][data-text-large] .live-app :has(> .live-avatar) { flex-wrap: wrap; row-gap: var(--space-8); }
 :root[data-shell="ios"][data-text-large] .live-app .help-initials + .help-initials { width: 2.9em; margin-left: -1.1em; padding-left: 0.6em; }
 :root[data-shell="ios"][data-text-large] .help-figures { display: grid; grid-template-columns: minmax(0, 1fr); }
 :root[data-shell="ios"][data-text-large] .help-figures > * { border-left: 0; padding-left: 0; }
 /* The Help line at the accessibility sizes: a call's time stands on its own line above the name ("SUN 10:10 AM"),
    read across like a line of the page, so the column beside the name never has to hold a grown time. */
-:root[data-shell="ios"][data-text-large] .help-row { grid-template-columns: minmax(0, 1fr); row-gap: 10px; }
+:root[data-shell="ios"][data-text-large] .help-row { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-8); }
 :root[data-shell="ios"][data-text-large] .help-row > *,
 :root[data-shell="ios"][data-text-large] .help-row[data-call]:not([data-quiet]) > :nth-child(2) > *,
 :root[data-shell="ios"][data-text-large] .help-row[data-call]:not([data-quiet]) > .help-row-more { grid-column: 1; }
 :root[data-shell="ios"][data-text-large] .help-row[data-call]:not([data-quiet]) > :first-child { grid-row: auto; }
-:root[data-shell="ios"][data-text-large] .help-row .live-date-leaf { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 0 0.4em; width: fit-content; min-height: 0; padding: 6px 0 0; border-bottom: 0; }
+:root[data-shell="ios"][data-text-large] .help-row .live-date-leaf { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 0 0.4em; width: fit-content; min-height: 0; padding: var(--space-8) 0 0; border-bottom: 0; }
 :root[data-shell="ios"][data-text-large] .help-row .live-date-leaf strong { font-size: 1.5em; }
 
 /* A mark set beside a line of words grows with them. */
@@ -168,7 +168,7 @@
   :root[data-shell="ios"] .live-app .live-header { padding-inline: max(56px, calc((100vw - var(--ipad-measure)) / 2)); }
   :root[data-shell="ios"] .live-app .live-page-head h1 { --head-size: 64px; }
   :root[data-shell="ios"] .live-app .live-page-head .live-deck { font-size: 19px; }
-  :root[data-shell="ios"] .live-app .live-page-head { margin-bottom: 40px; padding-bottom: 36px; }
+  :root[data-shell="ios"] .live-app .live-page-head { margin-bottom: var(--space-40); padding-bottom: var(--space-40); }
   /* The picture keeps the right half of the screen, flush to its edge; the words wrap before it. */
   :root[data-shell="ios"] .live-app :is(.live-head-words, .live-head-actions) { max-width: calc(50vw - var(--live-pad) - 24px); }
 }
@@ -295,7 +295,7 @@
     width: auto;
     height: 49px;
     min-height: 0;
-    padding: 7px 2px 0;
+    padding: var(--space-8) 2px 0;
     border: 0;
     border-radius: 0;
     background: none;
@@ -375,7 +375,7 @@
   right: 16px;
   max-width: 300px;
   margin-inline: auto;
-  padding: 4px 0;
+  padding: var(--space-4) 0;
   background: #fbfaf5;
   border-radius: 10px;
   box-shadow: 0 0 0 1px rgb(40 60 50 / 0.12), 0 6px 10px -6px rgb(46 36 22 / 0.4);
@@ -384,7 +384,7 @@
   display: block;
   width: 100%;
   min-height: 44px;
-  padding: 10px 18px;
+  padding: var(--space-8) 18px;
   border: 0;
   background: none;
   color: #283c32;
@@ -397,7 +397,7 @@
 /* ── The accessibility text sizes on a phone (data-text-ax, AX1 and up): the room's head picture yields to a thin
    band of itself, cut across its middle, so the title, its line and the room's first act fit on the first screen. ── */
 @media (max-width: 699px) {
-  :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art { height: 44px; aspect-ratio: auto; margin-bottom: 14px; }
+  :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art { height: 44px; aspect-ratio: auto; margin-bottom: var(--space-16); }
   :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art > .relief { position: absolute; inset: 0; top: 0; width: 100%; height: 100%; aspect-ratio: auto; -webkit-mask-image: none; mask-image: none; }
   :root[data-shell="ios"][data-text-ax] .live-app .live-page-head .live-head-art > .relief img { object-fit: cover; object-position: center calc(var(--relief-y, 0.5) * 100%) !important; }
 }
@@ -405,7 +405,7 @@
 /* A room kept on the device, shown with no connection: one still ochre line laid over the head's band, on a slip of
    the page's paper, so nothing under it moves when it comes or goes. */
 .live-app main.live-main:has(> .kept-offline) { position: relative; }
-.live-app .kept-offline { position: absolute; z-index: 3; top: 10px; left: var(--live-pad, 20px); margin: 0; padding: 4px 10px; border-radius: 4px; color: var(--ochre-ink, #8a5a12); font-size: 15px; line-height: 1.4; background: rgb(247 244 237 / 0.94); pointer-events: none; }
+.live-app .kept-offline { position: absolute; z-index: 3; top: 10px; left: var(--live-pad, 20px); margin: 0; padding: var(--space-4) 10px; border-radius: 4px; color: var(--ochre-ink, #8a5a12); font-size: 15px; line-height: 1.4; background: rgb(247 244 237 / 0.94); pointer-events: none; }
 
 /* iOS zooms the page into any field under 16px as it takes focus. The kit draws fields at 14px from 768px up (an iPad),
    so in the app every field keeps 16px at every width; fields drawn larger on purpose keep their own size. */
@@ -413,7 +413,7 @@
 /* At the largest text the five parts of the year wrap onto a second line rather than scroll sideways. */
 :root[data-shell="ios"][data-text-large] .live-app .report-quarters { flex-wrap: wrap; justify-content: flex-start; gap: 0 18px; overflow: visible; }
 /* At the largest text a chosen value shows whole: the select grows to two lines rather than clipping. */
-:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="native-select"] { height: auto; min-height: 44px; white-space: normal; overflow-wrap: break-word; padding-block: 8px; line-height: 1.25; }
+:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="native-select"] { height: auto; min-height: 44px; white-space: normal; overflow-wrap: break-word; padding-block: var(--space-8); line-height: 1.25; }
 /* At the largest text a visit's pair, its line of what was given, an invitation's email and "Add {name} as a neighbor"
    turn between words inside the column rather than running past it. An email may turn anywhere; a name never inside a word. */
 :root[data-shell="ios"][data-text-large] .live-app .visits-written-who :is(.help-person, .help-person > span, .help-person > span > span) { white-space: normal; min-width: 0; }

@@ -12,6 +12,12 @@
   --relief-card: inset 0 1px 0 #fff, 0 1px 0 rgb(40 60 50 / 0.08), 0 2px 5px -3px rgb(40 60 50 / 0.3), 0 16px 30px -24px rgb(40 60 50 / 0.42);
   --relief-sheet: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 0 0 1px rgb(40 60 50 / 0.1), 0 2px 3px rgb(40 60 50 / 0.12), 0 24px 60px rgb(40 60 50 / 0.18);
 }
+/* The rooms' vertical rhythm: one scale on a 4px step to 24, then 8px steps. Every margin, padding and row gap
+   between things in a room is one of these; a hairline (1-3px) is drawn, not spaced, and stays as it is. */
+:root {
+  --space-4: 4px; --space-8: 8px; --space-12: 12px; --space-16: 16px; --space-20: 20px; --space-24: 24px;
+  --space-32: 32px; --space-40: 40px; --space-48: 48px; --space-56: 56px; --space-64: 64px; --space-80: 80px;
+}
 :root {
   /* Read by the stale-page check in the head (layout.tsx): if this is missing, the page was drawn without its stylesheet. */
   --kh-styled: 1;

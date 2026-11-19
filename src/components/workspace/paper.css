@@ -190,7 +190,7 @@
     height: 100svh;
     min-height: 0;
     overflow-y: auto;
-    padding-top: 36px;
+    padding-top: var(--space-40);
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
   }
   .live-nav a { margin: 2px 0; }
@@ -202,12 +202,12 @@
 .live-app .live-page-head {
   position: relative;
   display: block;
-  margin-bottom: 36px;
-  padding-bottom: 30px;
+  margin-bottom: var(--space-40);
+  padding-bottom: var(--space-32);
   border-bottom: 1px solid var(--live-line);
 }
 .live-app .live-kicker,
-.live-app .live-main .live-page-head .live-kicker { font-size: 13px; letter-spacing: 0.11em; margin-bottom: 14px; }
+.live-app .live-main .live-page-head .live-kicker { font-size: 13px; letter-spacing: 0.11em; margin-bottom: var(--space-16); }
 .live-app .live-page-head h1 {
   --head-size: clamp(40px, 5vw, 76px);
   font: 400 var(--head-size) / 0.98 "Newsreader", "Newsreader Fallback", Georgia, serif;
@@ -221,11 +221,11 @@
   hyphens: none;
 }
 .live-head-words { container-type: inline-size; }
-.live-app .live-page-head .live-deck { margin-top: 18px; text-wrap: pretty; }
+.live-app .live-page-head .live-deck { margin-top: var(--space-16); text-wrap: pretty; }
 /* The way back from an inner view sits above the eyebrow. */
-.live-app .live-head-back { display: flex; width: fit-content; min-height: 44px; margin: -14px 0 4px; padding: 0; border: 0; background: none; cursor: pointer; }
+.live-app .live-head-back { display: flex; width: fit-content; min-height: 44px; margin: -14px 0 var(--space-4); padding: 0; border: 0; background: none; cursor: pointer; }
 .live-app .live-head-back:hover { text-decoration: underline; text-underline-offset: 4px; }
-.live-head-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.live-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-8) 10px; margin-top: var(--space-24); }
 .live-head-actions:empty { display: none; }
 /* From 900px every room's head is one height, so the rule under it lies level as the menu turns from room to room:
    a two-line title over a two-line deck. The deck stops 24px short of the picture, its faded edge included, and
@@ -318,7 +318,7 @@
   }
   .live-aside-sheet { padding-left: 28px; border-left: 1px solid var(--live-line); font-size: 15px; line-height: 1.5; }
   /* The column's title is a kicker like every other: the room's h2 face does not reach it. */
-  .live-app .live-aside-sheet > .live-kicker { margin-bottom: 16px; font-family: inherit; font-weight: 650; line-height: 1.5; }
+  .live-app .live-aside-sheet > .live-kicker { margin-bottom: var(--space-16); font-family: inherit; font-weight: 650; line-height: 1.5; }
 }
 @media print { .live-aside { display: none !important; } }
 
@@ -343,7 +343,7 @@
   .live-app .live-menu-trigger {
     display: inline-flex;
     height: 44px;
-    gap: 9px;
+    gap: var(--space-8) 9px;
     padding: 0 12px;
     font-size: 16px;
     font-weight: 500;
@@ -357,36 +357,36 @@
 }
 @media (max-width: 560px) {
   .live-app .live-main { --live-pad: 20px; --live-top: 30px; padding-bottom: calc(60px + env(safe-area-inset-bottom)); padding-left: max(20px, env(safe-area-inset-left)); }
-  .live-app .live-page-head { margin-bottom: 24px; padding-bottom: 22px; }
-  .live-app .live-kicker { margin-bottom: 10px; }
+  .live-app .live-page-head { margin-bottom: var(--space-24); padding-bottom: var(--space-24); }
+  .live-app .live-kicker { margin-bottom: var(--space-8); }
   .live-app .live-page-head h1 { --head-size: clamp(40px, 11.4vw, 48px); letter-spacing: -0.03em; }
-  .live-app .live-page-head .live-deck { font-size: 17px; margin-top: 14px; }
-  .live-head-actions { margin-top: 18px; }
+  .live-app .live-page-head .live-deck { font-size: 17px; margin-top: var(--space-16); }
+  .live-head-actions { margin-top: var(--space-16); }
 }
 /* A short phone (an iPhone SE, or any phone once the app's bars are counted): the head gives up
    height everywhere but the picture, so the room's first content shows without a scroll. */
 @media (max-width: 560px) and (max-height: 740px) {
-  .live-app .live-page-head { margin-bottom: 16px; padding-bottom: 16px; }
-  .live-app .live-main .live-page-head .live-kicker { margin-bottom: 8px; }
+  .live-app .live-page-head { margin-bottom: var(--space-16); padding-bottom: var(--space-16); }
+  .live-app .live-main .live-page-head .live-kicker { margin-bottom: var(--space-8); }
   .live-app .live-page-head h1 { --head-size: 38px; line-height: 1.02; }
-  .live-app .live-page-head .live-deck { font-size: 16px; line-height: 1.4; margin-top: 10px; }
-  .live-head-actions { margin-top: 14px; }
+  .live-app .live-page-head .live-deck { font-size: 16px; line-height: 1.4; margin-top: var(--space-8); }
+  .live-head-actions { margin-top: var(--space-16); }
 }
 /* The smallest phones (an iPhone SE is 568 or 667 tall): the band is lower and the head closer set, so the
    first thing in the room starts near the middle of the screen and reads as a thing, not as an edge. */
 @media (max-width: 560px) and (max-height: 700px) {
-  .live-head-art { height: 96px; margin-bottom: 10px; }
-  .live-app .live-page-head { margin-bottom: 12px; padding-bottom: 12px; }
-  .live-app .live-main .live-page-head .live-kicker { margin-bottom: 6px; }
+  .live-head-art { height: 96px; margin-bottom: var(--space-8); }
+  .live-app .live-page-head { margin-bottom: var(--space-12); padding-bottom: var(--space-12); }
+  .live-app .live-main .live-page-head .live-kicker { margin-bottom: var(--space-8); }
   .live-app .live-page-head h1 { --head-size: 34px; }
-  .live-app .live-page-head .live-deck { margin-top: 8px; }
-  .live-head-actions { margin-top: 12px; }
+  .live-app .live-page-head .live-deck { margin-top: var(--space-8); }
+  .live-head-actions { margin-top: var(--space-12); }
 }
 
 /* A phone, back in a room already opened in this visit: the head is at rest. The lower band, the kicker and the
    headline; the deck was read on arrival. The work starts about a hand higher. */
 @media (max-width: 699px) {
-  .live-page-head[data-rested] .live-head-art { height: 96px; margin-bottom: 10px; }
+  .live-page-head[data-rested] .live-head-art { height: 96px; margin-bottom: var(--space-8); }
   .live-app .live-page-head[data-rested] .live-deck { display: none; }
 }
 
@@ -404,14 +404,14 @@
   .live-main, .live-main * { scroll-margin-top: calc(var(--live-bar) + 12px); }
   /* The room's name, beside the wordmark. One line or not at all: a name that does not fit beside the 1px
      post wraps under it, out of the line's height, and is not drawn. */
-  .live-bar-room { display: flex; flex: 1 1 0; flex-wrap: wrap; min-width: 0; height: 20px; overflow: hidden; margin-top: 6.5px; font-size: 14px; line-height: 20px; color: var(--live-muted); opacity: 0; }
+  .live-bar-room { display: flex; flex: 1 1 0; flex-wrap: wrap; min-width: 0; height: 20px; overflow: hidden; margin-top: var(--space-8); font-size: 14px; line-height: 20px; color: var(--live-muted); opacity: 0; }
   .live-bar-room > i { width: 1px; height: 20px; }
   .live-bar-room > span { white-space: nowrap; }
   .live-bar-room[data-shown] { opacity: 1; }
 }
 @media (max-width: 899px) and (max-height: 699px) {
   .live-app { --live-bar: calc(52px + env(safe-area-inset-top, 0px)); }
-  .live-app .live-header { min-height: calc(52px + env(safe-area-inset-top)); padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: 4px; }
+  .live-app .live-header { min-height: calc(52px + env(safe-area-inset-top)); padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: var(--space-4); }
 }
 @media (prefers-reduced-motion: reduce) { .live-app .live-header, .live-bar-room { transition: none; } }
 @media print { .live-app .live-header { position: static; } }
@@ -450,22 +450,22 @@
   border-radius: 0;
   animation: paper-show 200ms ease backwards;
 }
-.live-mobile-menu [data-slot="dialog-header"] { display: flex; flex-flow: row wrap; align-items: baseline; gap: 2px 12px; padding: 14px 64px 12px 24px; text-align: left; }
+.live-mobile-menu [data-slot="dialog-header"] { display: flex; flex-flow: row wrap; align-items: baseline; gap: 2px 12px; padding: var(--space-16) 64px var(--space-12) 24px; text-align: left; }
 .live-mobile-menu [data-slot="dialog-title"] { flex-basis: 100%; font-size: 28px; }
 .live-mobile-menu .live-sample-mark { margin: 0; }
-.live-mobile-menu .live-menu-rooms nav a { min-height: 48px; padding-block: 10px; }
+.live-mobile-menu .live-menu-rooms nav a { min-height: 48px; padding-block: var(--space-8); }
 .live-mobile-menu :is([data-slot="dialog-close"], .live-menu-close) { top: 8px; right: 10px; width: 44px; height: 44px; }
 /* A list longer than the screen passes under the foot bar's cut edge in full ink: paper is cut, never faded. */
-.live-menu-rooms { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px 24px; border-top: 1px solid #d9ddce; scrollbar-width: thin; }
+.live-menu-rooms { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px var(--space-24); border-top: 1px solid #d9ddce; scrollbar-width: thin; }
 .live-mobile-menu .live-menu-rooms nav { margin-top: 0; border-top: 0; }
 .live-mobile-menu nav a { font-size: 17px; }
 .live-mobile-menu .live-menu-current { font-size: 13px; }
-.live-menu-rooms .live-row-actions { display: grid; gap: 10px; margin-top: 18px; }
+.live-menu-rooms .live-row-actions { display: grid; gap: var(--space-8) 10px; margin-top: var(--space-16); }
 .live-menu-rooms select { width: 100%; }
 /* Whose account the menu signs out of, set on the foot's paper just above it. */
-.live-menu-who { margin: 0; padding: 12px 14px 0; border-top: 1px solid #d9ddce; background: #efefe3; font-size: 14px; color: #4a5a50; overflow-wrap: anywhere; }
+.live-menu-who { margin: 0; padding: var(--space-12) 14px 0; border-top: 1px solid #d9ddce; background: #efefe3; font-size: 14px; color: #4a5a50; overflow-wrap: anywhere; }
 .live-menu-who + .live-menu-foot { border-top: 0; }
-.live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
+.live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12) 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
 .live-mobile-menu .live-menu-leave[data-slot="button"] { height: 44px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
 
 /* ── Empty: a serif line, its sentence and the one act. The room's picture is in its head, once; only a state
@@ -473,15 +473,15 @@
 .live-app .live-empty {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 32px;
+  gap: var(--space-32) 32px;
   align-items: center;
   max-width: 760px;
-  padding: 28px 0;
+  padding: var(--space-32) 0;
   background: none;
   border-top: 1px solid var(--live-line);
   border-radius: 0;
 }
-.live-app .live-empty[data-first] { border-top: 0; padding-top: 6px; }
+.live-app .live-empty[data-first] { border-top: 0; padding-top: var(--space-8); }
 .live-app .live-state[data-lead] { grid-template-columns: 180px minmax(0, 1fr); }
 /* Such a state holds the room's picture as a small card laid on the page: 3 to 2, a paper edge, a turn of
    three degrees and its shadow, the same card the home page passes. It settles once; under Reduce Motion it is simply there. */
@@ -496,9 +496,9 @@
 @keyframes paper-card-settle { from { opacity: 0; transform: translateY(16px) rotate(-6deg); } }
 @media (prefers-reduced-motion: reduce) { .paper-vignette { animation: none; } }
 .live-app .live-empty :is(h1, h2, h3) { font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0; color: var(--live-ink); }
-.live-app .live-empty p { margin: 8px 0 0; font-size: 17px; line-height: 1.5; }
+.live-app .live-empty p { margin: var(--space-8) 0 0; font-size: 17px; line-height: 1.5; }
 .live-app .live-empty p:empty { display: none; }
-.live-app .live-empty [data-slot="button"] { margin-top: 14px; }
+.live-app .live-empty [data-slot="button"] { margin-top: var(--space-16); }
 /* The help rooms' own empty state is words alone too. */
 .live-app .help-empty { grid-template-columns: minmax(0, 1fr); }
 
@@ -532,7 +532,7 @@
   display: grid;
   align-content: safe center;
   justify-items: center;
-  gap: 28px;
+  gap: var(--space-32) 28px;
   overflow: auto;
   padding: 32px max(24px, env(safe-area-inset-right)) 48px max(24px, env(safe-area-inset-left));
   background: #f5f3ec;
@@ -559,7 +559,7 @@
 .paper-loading-label,
 .live-app .live-opening {
   display: flex;
-  gap: 12px;
+  gap: var(--space-12) 12px;
   align-items: center;
   margin: 0;
   font-size: 17px;
@@ -594,14 +594,14 @@
 .live-loading { animation: live-wait-in 160ms ease 400ms backwards; }
 @keyframes live-wait-in { from { opacity: 0; } }
 .live-app .live-loading,
-.live-dialog .live-loading { background: none; border-top: 1px solid var(--live-line); padding: 24px 0; min-height: 0; font-size: 17px; }
+.live-dialog .live-loading { background: none; border-top: 1px solid var(--live-line); padding: var(--space-24) 0; min-height: 0; font-size: 17px; }
 
 /* ── The volunteer rooms ──────────────────────────────────────────────── */
 /* A note is a slip of paper with a green edge, not a grey box. */
 .live-app .live-note { background: #fffdf7; border: 1px solid #e0dccb; border-left: 3px solid #8a986e; border-radius: 0 3px 3px 0; font-size: 17px; }
 /* This week: three large figures, each a way into its room. One row at every width. */
-.week-figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 40px; border-top: 2px solid #596e51; border-bottom: 1px solid var(--live-line); }
-.week-figures a { display: grid; gap: 8px; align-content: start; padding: 22px 20px 22px 0; color: var(--live-ink); transition: transform 200ms var(--paper-ease); }
+.week-figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 var(--space-40); border-top: 2px solid #596e51; border-bottom: 1px solid var(--live-line); }
+.week-figures a { display: grid; gap: var(--space-8) 8px; align-content: start; padding: var(--space-24) 20px var(--space-24) 0; color: var(--live-ink); transition: transform 200ms var(--paper-ease); }
 .week-figures a + a { padding-left: clamp(12px, 2.4vw, 28px); border-left: 1px solid var(--live-line); }
 .week-figures .count-up { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: clamp(44px, 5vw, 72px); line-height: 0.98; font-variant-numeric: lining-nums tabular-nums; letter-spacing: -0.03em; }
 .week-figures a > span:nth-child(2) { font-size: 15px; line-height: 1.3; color: var(--live-muted); text-decoration: underline; text-decoration-color: #b9c4b0; text-decoration-thickness: 1px; text-underline-offset: 4px; }
@@ -610,14 +610,14 @@
 .week-figures a > small { min-height: 1lh; margin-top: -2px; font-size: 14px; line-height: 1.3; color: var(--help-plum, #6f5f93); }
 @media (max-width: 560px) { .week-figures a > small { min-height: 2lh; font-size: 13px; } }
 @media (hover: hover) { .week-figures a:hover { transform: translateY(-1px); } }
-@media (max-width: 560px) { .week-figures a { padding: 16px 8px 16px 0; } .week-figures a > span:nth-child(2) { font-size: 14px; } }
+@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 14px; } }
 /* Your choice: the answer is the filled button; Details is a quiet link after it. */
-.live-request-section .live-row-actions { gap: 10px 14px; }
+.live-request-section .live-row-actions { gap: var(--space-8) 14px; }
 .live-request-section .live-row-actions .tools-quiet { margin-left: 6px; }
 /* Teams: one line under each team, and a third column on wide screens. */
-.live-team-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; }
+.live-team-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8) 20px; }
 .live-team-line .live-meta { margin-right: auto; }
-.live-app .live-team p { margin-bottom: 14px; }
+.live-app .live-team p { margin-bottom: var(--space-16); }
 @media (min-width: 1500px) {
   .live-main > .live-room:has(> .live-teams) { max-width: var(--room-wide, 1400px); }
   .live-teams { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -627,16 +627,16 @@
 .live-person-row .live-meta { display: contents; }
 .live-person-row .live-row-actions { justify-content: flex-end; }
 .live-person-row .live-person p { overflow-wrap: anywhere; }
-.live-manage { display: grid; gap: 12px; }
+.live-manage { display: grid; gap: var(--space-12) 12px; }
 .live-dialog .live-manage [data-slot="button"] { min-height: 48px; font-size: 16px; justify-content: flex-start; }
 /* Commitments: the team filter, the size of its words. */
-.live-filter { display: flex; margin: -8px 0 18px; }
+.live-filter { display: flex; margin: -8px 0 var(--space-16); }
 .live-filter select { min-height: 44px; font-size: 16px; }
 /* Time off: fields and their button share the left edge; the button is a button's width. */
 .live-app .live-inline-form { max-width: 560px; }
 .live-app .live-inline-form input { min-height: 46px; font-size: 16px; }
 @media (max-width: 700px) {
-  .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-4); }
   .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
   .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
   .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
@@ -645,14 +645,14 @@
 /* An upright iPad (701px to 899px) and an iPad's room beside its sidebar are a phone's measure wider: a person's row is
    laid as on a phone, so no name or address is pressed to a sliver. */
 @media (min-width: 701px) and (max-width: 899px) {
-  :root .live-app .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  :root .live-app .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-4); }
   :root .live-app .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
   :root .live-app .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
   :root .live-app .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
   :root .live-app .live-person-row .live-person { grid-row: 1; }
 }
 @media (max-width: 1100px) {
-  :root[data-native-sidebar] .live-app .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  :root[data-native-sidebar] .live-app .live-person-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-4); }
   :root[data-native-sidebar] .live-app .live-person-row .live-person { grid-column: 1; grid-row: 1 / span 3; }
   :root[data-native-sidebar] .live-app .live-person-row .live-meta > span { grid-column: 1; padding-left: 57px; font-size: 14px; }
   :root[data-native-sidebar] .live-app .live-person-row .live-row-actions { grid-column: 2; grid-row: 1; width: auto; margin: 0; }
@@ -687,7 +687,7 @@
 .live-app .help-initials + .help-initials { margin-left: -14px; padding-left: 8px; width: 38px; }
 /* A commitment row reads title first; where and when sit under it. */
 .live-commitment-row .live-row-main { display: flex; flex-direction: column; }
-.live-commitment-row .live-row-main > .live-meta { order: 1; margin: 2px 0 4px; }
+.live-commitment-row .live-row-main > .live-meta { order: 1; margin: 2px 0 var(--space-4); }
 .live-commitment-row .live-row-main > h3 { order: 0; }
 .live-commitment-row .live-row-main > :not(.live-meta, h3) { order: 2; }
 @media (max-width: 560px) {
@@ -730,7 +730,7 @@
 .live-date-open svg { width: 16px; height: 16px; transition: transform 200ms var(--paper-ease); }
 .live-date[data-open] .live-date-open svg { transform: rotate(180deg); }
 .live-date-value { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
-.live-date-sheet { padding: 14px; border: 1px solid var(--relief-edge); border-radius: 4px; background: var(--relief-paper); color: #283c32; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; box-shadow: var(--relief-sheet); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
+.live-date-sheet { padding: var(--space-16) 14px; border: 1px solid var(--relief-edge); border-radius: 4px; background: var(--relief-paper); color: #283c32; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; box-shadow: var(--relief-sheet); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
 .live-date-sheet .rdp-months { position: relative; }
 .live-date-sheet .rdp-month_caption { display: flex; align-items: center; height: 44px; padding-left: 8px; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 21px; }
 .live-date-sheet .rdp-nav { position: absolute; top: 0; right: 0; display: flex; }
@@ -749,8 +749,8 @@
 .live-date-sheet .rdp-selected .rdp-day_button { background: #365c46; color: #f7f4ed; font-weight: 600; }
 .live-date-sheet .rdp-outside .rdp-day_button { color: #8b9384; }
 .live-date-sheet .rdp-disabled .rdp-day_button { color: #b3b9aa; cursor: default; background: none; }
-.live-date-sheet.live-date-bottom { position: fixed; inset: auto 0 0 0; top: auto; left: 0; translate: none; display: grid; justify-content: center; width: 100%; max-width: none; padding: 18px 12px max(18px, env(safe-area-inset-bottom)); border-width: 1px 0 0; border-radius: 14px 14px 0 0; animation: paper-sheet-up 280ms var(--paper-ease) both; }
-.live-date-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 308px; padding-left: 8px; }
+.live-date-sheet.live-date-bottom { position: fixed; inset: auto 0 0 0; top: auto; left: 0; translate: none; display: grid; justify-content: center; width: 100%; max-width: none; padding: var(--space-16) 12px max(18px, env(safe-area-inset-bottom)); border-width: 1px 0 0; border-radius: 14px 14px 0 0; animation: paper-sheet-up 280ms var(--paper-ease) both; }
+.live-date-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12) 12px; width: 308px; padding-left: 8px; }
 .live-date-bar h2 { margin: 0; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-size: 16px; font-weight: 600; color: #283c32; }
 .live-date-done { min-width: 44px; min-height: 44px; padding: 0 8px; border: 0; border-radius: 6px; background: none; color: #365c46; font: inherit; font-size: 16px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 .live-date-done:focus-visible { outline: 2px solid #283c32; outline-offset: 2px; }
@@ -765,8 +765,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 20px;
-  padding: 14px 18px 14px 16px;
+  gap: var(--space-12) 20px;
+  padding: var(--space-16) 18px var(--space-16) 16px;
   background: #fffdf7;
   border: 1px solid color-mix(in srgb, #6f5f93 26%, #f7f4ed);
   border-left: 3px solid #6f5f93;
@@ -777,14 +777,14 @@
   animation: paper-rise 320ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards;
 }
 .live-error > div { flex: 1 1 260px; min-width: 0; }
-.live-error .live-error-recovery { margin-top: 4px; font-size: 15px; color: #5d6657; }
+.live-error .live-error-recovery { margin-top: var(--space-4); font-size: 15px; color: #5d6657; }
 /* Clear of a dialog's pinned buttons when it is brought into view. */
 .live-failure { scroll-margin-block: calc(var(--live-bar, 0px) + 24px) 104px; }
 .live-failure [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
 .live-waiting { margin: 0; font-size: 15px; line-height: 1.5; color: #5d6657; }
 .live-connection {
-  margin: 0 0 24px;
-  padding: 14px 18px 14px 16px;
+  margin: 0 0 var(--space-24);
+  padding: var(--space-16) 18px var(--space-16) 16px;
   background: #fffdf7;
   /* Ochre: a lost connection is waiting, not wrong. Plum is kept for refusals. */
   border: 1px solid color-mix(in srgb, var(--paper-ochre, #c8962e) 26%, #f7f4ed);
@@ -795,7 +795,7 @@
   color: var(--paper-ink, #283c32);
 }
 .live-connection strong { font-weight: 600; }
-.live-app .live-state { border-top: 0; padding-top: 8px; }
+.live-app .live-state { border-top: 0; padding-top: var(--space-8); }
 .live-state:not([data-kind="empty"]) > .paper-vignette { border-color: #fffdf7; box-shadow: 0 0 0 1px #6f5f93, 0 14px 22px -12px rgb(40 60 50 / 0.42); }
 .live-app .live-state [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
 @media (prefers-reduced-motion: reduce) {
@@ -835,7 +835,7 @@
 @media (prefers-reduced-motion: reduce) { .live-dialog.live-dialog-fixed { animation: none; } }
 
 /* A day and a time side by side, one moment. */
-.live-when { display: grid; grid-template-columns: minmax(0, 1fr) minmax(118px, auto); gap: 8px; }
+.live-when { display: grid; grid-template-columns: minmax(0, 1fr) minmax(118px, auto); gap: var(--space-8) 8px; }
 /* The sentence for a missing day sits under the pair, never between the day and its time. */
 .live-when > .live-date-missing { grid-column: 1 / -1; order: 1; }
 .live-app .live-time select, .live-dialog .live-time select { height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; font-size: 16px; padding-left: 12px; }
@@ -847,19 +847,19 @@
    560px wide (640 for a commitment's details), 32px of paper around, words at 16px,
    help lines at 14px, and every field the full width except a day and time pair. */
 @media (min-width: 700px) {
-  .live-dialog.live-dialog-fixed { --live-dialog-pad: 32px; padding: 32px !important; }
+  .live-dialog.live-dialog-fixed { --live-dialog-pad: 32px; padding: var(--space-32) 32px !important; }
   .live-dialog.live-detail-dialog { max-width: 640px !important; }
 }
 .live-dialog { font-size: 16px; }
 .live-dialog .live-field small, .live-dialog .live-detail small { font-size: 14px; line-height: 1.45; }
 .live-dialog.live-detail-dialog p { font-size: 15px; line-height: 1.5; }
 .live-dialog .live-field > [data-slot="native-select-wrapper"] { width: 100%; }
-.live-dialog .live-manage [data-slot="button"] { height: auto; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 16px; white-space: normal; text-align: left; }
+.live-dialog .live-manage [data-slot="button"] { height: auto; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--space-12) 16px; white-space: normal; text-align: left; }
 .live-dialog .live-manage [data-slot="button"] small { font-size: 14px; font-weight: 400; color: var(--live-muted); }
 /* An act that takes something away is ink inside the same hairline as its neighbours: no colour, no fill. */
 .live-dialog .live-manage [data-slot="button"][data-danger] { color: #283c32; }
 @media (max-width: 699px) {
-  .live-app .live-state, .live-app .live-state[data-lead] { grid-template-columns: minmax(0, 1fr); gap: 18px; justify-items: start; }
+  .live-app .live-state, .live-app .live-state[data-lead] { grid-template-columns: minmax(0, 1fr); gap: var(--space-16) 18px; justify-items: start; }
 }
 
 /* A phone with the keyboard up: the dialog's title gives its place to the boxes. */
@@ -867,8 +867,8 @@
 /* The smallest phones with the keyboard up: title and button are both still held, each drawn closer, so the
    box being filled in, its label and the way to save are all in view at once. */
 [data-live-tight] .live-dialog-fixed [data-slot="dialog-title"] { font-size: 22px; line-height: 1.15; }
-[data-live-tight] .live-dialog-fixed .live-form-actions { padding-top: 8px; box-shadow: 0 8px 0 #f5f3ec; }
-[data-live-tight] .live-dialog.live-dialog-fixed { padding-bottom: 8px !important; }
+[data-live-tight] .live-dialog-fixed .live-form-actions { padding-top: var(--space-8); box-shadow: 0 8px 0 #f5f3ec; }
+[data-live-tight] .live-dialog.live-dialog-fixed { padding-bottom: var(--space-8) !important; }
 /* With the keyboard up under a dialog (LiveDialog marks it), the page behind steps back to plain paper, so a
    see-through keyboard and its bar never show the room's words under the sheet. It returns as the keyboard goes. */
 .live-app { transition: opacity 160ms ease; }
@@ -913,11 +913,11 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
 @media (max-height: 450px) and (max-width: 950px) {
   .live-app { --live-bar: 0px; }
   .live-app .live-header { position: static; }
-  .live-app .live-page-head { min-height: 0; margin-bottom: 14px; padding-bottom: 14px; }
-  .live-app .live-main .live-page-head .live-kicker { margin-bottom: 6px; }
+  .live-app .live-page-head { min-height: 0; margin-bottom: var(--space-16); padding-bottom: var(--space-16); }
+  .live-app .live-main .live-page-head .live-kicker { margin-bottom: var(--space-8); }
   .live-app .live-page-head h1 { --head-size: 32px; line-height: 1.04; }
   .live-app .live-page-head .live-deck { display: none; }
-  .live-app .live-head-actions { margin-top: 12px; }
+  .live-app .live-head-actions { margin-top: var(--space-12); }
 }
 @media (max-height: 450px) and (max-width: 699px) {
   .live-app .live-head-art { display: none; }
@@ -929,7 +929,7 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
 
 /* Sample visitors only: the one line that leads to the draft waiting for a yes. Ochre, because it waits. */
 .live-app .start-here {
-  display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; min-height: 44px; margin: -8px 0 20px;
+  display: flex; align-items: center; gap: var(--space-8) 10px; width: fit-content; max-width: 100%; min-height: 44px; margin: -8px 0 var(--space-20);
   font-size: 17px; line-height: 1.4; color: var(--paper-ink); text-decoration: none;
 }
 .live-app .start-here::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
@@ -943,17 +943,17 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
 /* Under 900px the card is laid above the sentence, smaller, leaning the same way: the empty place keeps its piece
    of paper, as at the desk, and the words take the whole measure beneath it. */
 @media (max-width: 899px) {
-  .live-app :is(.live-empty, .help-empty) { grid-template-columns: minmax(0, 1fr); gap: 20px; justify-items: start; align-items: start; }
+  .live-app :is(.live-empty, .help-empty) { grid-template-columns: minmax(0, 1fr); gap: var(--space-20) 20px; justify-items: start; align-items: start; }
   .live-app :is(.live-empty, .help-empty) > .paper-vignette { width: 132px; height: 88px; border-width: 5px; margin-left: 4px; }
 }
 
 /* ── Room heads at true size, as the home page lays its pictures ──────────────────────────────
-   Desk: the whole picture, never cropped, standing the full height of the head less 48px of paper under the hands,
+   Desk: the whole picture, never cropped, standing the full height of the head on its rule,
    anchored right with paper to its left. Phone: the whole picture above the heading, edge to edge. */
 @media (min-width: 700px) {
   .live-head-art { width: calc(var(--head-wide) * 0.5); }
   .live-head-art > .relief {
-    position: absolute; inset: 0 0 auto auto; width: auto; height: calc(100% - 48px); aspect-ratio: 3 / 2;
+    position: absolute; inset: 0 0 auto auto; width: auto; height: 100%; aspect-ratio: 3 / 2;
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%);
     mask-image: linear-gradient(90deg, transparent, #000 22%);
   }
@@ -968,9 +968,9 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
 /* ── This week: the three figures as cut paper ─────────────────────────────────────────────
    Each figure is a card laid on the page, hand-cut and leaning a little, its number cut from green paper and
    standing proud of the card, the same craft as the Reports year piece. Each card is still the way into its room. */
-nav.week-figures { gap: clamp(12px, 1.6vw, 20px); border: 0; margin-bottom: 44px; }
+nav.week-figures { gap: clamp(12px, 1.6vw, 20px); border: 0; margin-bottom: var(--space-48); }
 nav.week-figures a, nav.week-figures a + a {
-  position: relative; padding: 20px 22px 18px; border: 0;
+  position: relative; padding: var(--space-20) 22px var(--space-16); border: 0;
   background: var(--relief-paper); border-radius: 3px;
   box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-card);
   rotate: var(--lean, -0.7deg);
@@ -986,22 +986,22 @@ nav.week-figures .count-up {
   nav.week-figures a:hover { transform: none; translate: 0 -2px; box-shadow: 0 0 0 1px #d6cfb9, var(--relief-card), 0 22px 30px -22px rgb(40 60 50 / 0.3); }
 }
 @media (max-width: 560px) {
-  nav.week-figures { gap: 8px; }
-  nav.week-figures a, nav.week-figures a + a { padding: 14px 10px 12px; }
+  nav.week-figures { gap: var(--space-8) 8px; }
+  nav.week-figures a, nav.week-figures a + a { padding: var(--space-16) 10px var(--space-12); }
   nav.week-figures .count-up { font-size: 44px; }
 }
 @media (prefers-reduced-motion: reduce) { nav.week-figures a { transition: none; } }
 /* Numeral beside its words: a card is as tall as its number. What is waiting is said in ink beside the small ochre ring. */
-nav.week-figures a, nav.week-figures a + a { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 18px; row-gap: 4px; align-content: center; align-items: center; padding: 16px 20px; }
+nav.week-figures a, nav.week-figures a + a { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 18px; row-gap: var(--space-4); align-content: center; align-items: center; padding: var(--space-16) 20px; }
 nav.week-figures .count-up { grid-row: 1 / span 2; align-self: center; }
 nav.week-figures a > span:nth-child(2) { align-self: end; }
-nav.week-figures a > small { align-self: start; min-height: 0; margin: 0; color: var(--live-ink); display: inline-flex; align-items: center; gap: 8px; }
+nav.week-figures a > small { align-self: start; min-height: 0; margin: 0; color: var(--live-ink); display: inline-flex; align-items: center; gap: var(--space-8) 8px; }
 nav.week-figures a > small:empty { display: none; }
 nav.week-figures a > small::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #a8791f; }
 nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2; align-self: center; }
 @media (max-width: 560px) {
-  nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  nav.week-figures a, nav.week-figures a + a { padding: 10px 16px; column-gap: 16px; }
+  nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: var(--space-8) 10px; }
+  nav.week-figures a, nav.week-figures a + a { padding: var(--space-8) 16px; column-gap: 16px; }
   nav.week-figures .count-up { font-size: 44px; }
   nav.week-figures a > span:nth-child(2) { font-size: 16px; }
   nav.week-figures a > small { font-size: 14px; min-height: 0; }
@@ -1010,7 +1010,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* ── Visits and commitments mark their state as the neighbor record does ──────────────────
    Settled is the small circled green tick every done moment uses, waiting the small ochre ring with its words in ink, and what will not happen
    stays a quiet grey word. One mark for each meaning, the same in every room. */
-.live-app :is(.visits-room, .live-commitment-row) .live-status { gap: 8px; color: var(--live-ink); }
+.live-app :is(.visits-room, .live-commitment-row) .live-status { gap: var(--space-8) 8px; color: var(--live-ink); }
 .live-app :is(.visits-room, .live-commitment-row) .live-status:not([data-state])::before,
 .live-app .live-status.help-returned::before,
 .live-app :is(.visits-room, .live-commitment-row) .live-status[data-state="accepted"]::before {
@@ -1023,7 +1023,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 .live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="declined"], [data-state="released"]) { color: var(--live-muted); }
 /* A returned call is done: the same green tick as a visit the pair said yes to, in ink. */
-.live-app .live-status.help-returned { gap: 8px; color: var(--live-ink); }
+.live-app .live-status.help-returned { gap: var(--space-8) 8px; color: var(--live-ink); }
 @media (max-width: 429px) {
   .live-app :is(.visits-room, .live-commitment-row) .live-status:is(:not([data-state]), [data-state="accepted"])::before { width: 12px; height: 12px; }
 }
@@ -1046,7 +1046,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   outline: 2px solid #283c32; outline-offset: -2px; border-radius: 4px;
 }
 /* The card the visitor wrote on, handed back: the week opens addressed to the name on it, in the card's own lettering. */
-.card-greeting{margin:0 0 18px;font:400 clamp(24px,3vw,32px)/1.2 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.02em;color:#283c32;text-wrap:balance}
+.card-greeting{margin:0 0 var(--space-16);font:400 clamp(24px,3vw,32px)/1.2 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.02em;color:#283c32;text-wrap:balance}
 .card-greeting em{font-style:italic}
 
 /* A neighbor's record reads as one dated thread. Money that went out, and vouchers given, are done: the green
@@ -1056,7 +1056,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   background: #365c46 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23f7f4ed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.4 6.3 4.9 8.8 9.6 3.4'/%3E%3C/svg%3E") center / 10px 10px no-repeat;
 }
 @media (max-width: 850px) {
-  .live-app .help-timeline li[data-kind="money"] i { margin-top: 4px; margin-left: -2px; }
+  .live-app .help-timeline li[data-kind="money"] i { margin-top: var(--space-4); margin-left: -2px; }
 }
 /* An open request's sheet carries the small ochre ring in place of the rule before its label: waiting. */
 .live-app .help-sheet-label[data-waiting]::before { width: 9px; height: 9px; border-radius: 50%; background: none; box-shadow: inset 0 0 0 2px #a8791f; }
@@ -1077,7 +1077,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-list:has(> .live-commitment-row) { container-type: inline-size; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; column-gap: 22px; }
   .live-app .live-list > :not(.live-commitment-row) { grid-column: 1 / -1; }
   .live-app .live-list > .live-commitment-row { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-column: 1 / -1; align-items: start; gap: 0 22px; }
-  .live-app .live-list > .live-commitment-row .live-row-actions { grid-column: 2; justify-content: space-between; margin-top: 6px; }
+  .live-app .live-list > .live-commitment-row .live-row-actions { grid-column: 2; justify-content: space-between; margin-top: var(--space-8); }
   .live-app .live-list > .live-commitment-row .live-date-leaf { grid-row: 1 / span 2; }
   @container (min-width: 680px) {
     .live-app .live-list > .live-commitment-row { grid-template-columns: subgrid; align-items: center; }
@@ -1088,7 +1088,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
     .live-app .live-list > .live-commitment-row .live-meta { display: grid; gap: 0; }
   }
   @container (min-width: 860px) {
-    .live-app .live-list > .live-commitment-row .live-meta { display: flex; gap: 10px; white-space: nowrap; }
+    .live-app .live-list > .live-commitment-row .live-meta { display: flex; gap: var(--space-8) 10px; white-space: nowrap; }
   }
 }
 
@@ -1109,7 +1109,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   /* The two heads share one row, so when either heading turns onto a second line both heads grow together and their
      rules stay level. */
   .week-columns:not([data-far]) > .live-section { grid-row: span 2; display: grid; grid-template-rows: subgrid; }
-  .week-columns:not([data-far]) > .live-section > .live-section-head { min-height: 44px; align-items: flex-end; margin-bottom: 14px; }
+  .week-columns:not([data-far]) > .live-section > .live-section-head { min-height: 44px; align-items: flex-end; margin-bottom: var(--space-16); }
   .week-columns:not([data-far]) > .live-section > .live-section-head > * { margin-block: 0; }
   /* The link keeps its 44px reach but sets its words at its foot, on the heading's line, not floating mid-height. */
   .week-columns:not([data-far]) > .live-section > .live-section-head > [data-slot="button"].tools-quiet { align-items: flex-end; padding-bottom: 1px; }
@@ -1125,9 +1125,9 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* On a phone too, the rows of one list keep one shape, so they differ only where one truly says more.
    A commitment's state and its press share one line in every row, the longer press ("View preparation") too. */
 @media (max-width: 720px) {
-  .live-app .live-commitment-row .live-row-actions { flex-wrap: nowrap; justify-content: space-between; gap: 10px; }
+  .live-app .live-commitment-row .live-row-actions { flex-wrap: nowrap; justify-content: space-between; gap: var(--space-8) 10px; }
   .live-app .live-commitment-row .live-row-actions > .live-status { min-width: 0; }
-  .live-app .live-commitment-row .live-row-actions [data-slot="button"] { flex: none; padding-inline: 14px; gap: 6px; }
+  .live-app .live-commitment-row .live-row-actions [data-slot="button"] { flex: none; padding-inline: 14px; gap: var(--space-8) 6px; }
 }
 
 /* A person's name inside a title never breaks across lines (keep-names.tsx). */
@@ -1161,7 +1161,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* Its stitch lies on the head's own rule; what follows keeps the gap it had under the head. */
 .week-quilt { --size: 21px; margin: calc(-1 * var(--head-gap, 36px) - 5px - var(--size) / 2) 0 calc(var(--head-gap, 36px) + 8px); }
 .week-quilt-band {
-  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); column-gap: 6px; min-height: calc(var(--size) + 10px); align-items: start; padding-top: 5px;
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); column-gap: 6px; min-height: calc(var(--size) + 10px); align-items: start; padding-top: var(--space-4);
   /* One day's width, for the overlap below. */
   container-type: inline-size; --day: calc((100cqi - 36px) / 7);
   /* The stitch the pieces are laid on: a running stitch along the band, there before any piece. */
@@ -1187,7 +1187,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* Saved while the room is open: pressed once into its place. */
 .week-quilt-piece[data-laid] { animation: week-piece-pressed 200ms var(--paper-ease) both; }
 @keyframes week-piece-pressed { from { transform: translateY(-3px) scale(1.08); } }
-.week-quilt figcaption { margin-top: 8px; font-size: 13px; line-height: 1.4; color: var(--live-ink); }
+.week-quilt figcaption { margin-top: var(--space-8); font-size: 13px; line-height: 1.4; color: var(--live-ink); }
 @media (max-width: 850px) {
   .week-quilt { --head-gap: 24px; }
   .week-quilt-band { column-gap: 3px; --day: calc((100cqi - 18px) / 7); }
@@ -1221,7 +1221,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   box-shadow: 0 1px 1px rgb(60 45 15 / 0.28), 0 4px 10px rgb(60 45 15 / 0.16);
 }
 .file-away-pocket span {
-  position: absolute; left: 18px; top: -27px; padding: 4px 14px 6px; border-radius: 6px 6px 0 0; border: 1px solid #b89f6a; border-bottom: 0;
+  position: absolute; left: 18px; top: -27px; padding: var(--space-4) 14px var(--space-8); border-radius: 6px 6px 0 0; border: 1px solid #b89f6a; border-bottom: 0;
   background: #e2d3b0; font-size: 15px; line-height: 1.3; color: #283c32; white-space: nowrap;
 }
 /* A write-up the server refused stays flat, with a plum edge until it is tried again. */
@@ -1255,17 +1255,12 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-main {
     position: relative;
     background: #f7f4ed;
-    box-shadow: -1px 0 0 rgb(40 60 50 / 0.1), -12px 0 18px -14px rgb(40 60 50 / 0.34);
-  }
-  /* The sheet beneath the room: its edge shows by a few pixels, a little lower, with its own shade. */
-  .live-app .live-main::before {
-    content: ""; position: absolute; top: 18px; bottom: 0; left: -6px; width: 6px; border-radius: 3px 0 0 0; pointer-events: none;
-    background: #f1ece2;
-    box-shadow: -1px 0 0 rgb(40 60 50 / 0.1), -6px 0 10px -7px rgb(40 60 50 / 0.3);
+    /* The room's sheet over the menu: one edge and one contact shade, the slip's, from the relief scale. */
+    box-shadow: -1px 0 0 rgb(40 60 50 / 0.1), -2px 0 5px -3px rgb(40 60 50 / 0.3);
   }
   .live-app .live-header {
     position: relative; z-index: 2; border-bottom-color: transparent;
-    box-shadow: 0 1px 0 rgb(40 60 50 / 0.1), 0 10px 16px -14px rgb(40 60 50 / 0.34);
+    box-shadow: 0 1px 0 rgb(40 60 50 / 0.1), 0 2px 5px -3px rgb(40 60 50 / 0.3);
   }
 }
 /* Under 900px the held bar is the strip over the room: once the page moves, it lies on it with a contact shade, not a line. */
@@ -1277,7 +1272,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .live-app .live-main::before { content: none; }
   .live-app .live-nav, .live-app .live-header { border-color: CanvasText; }
 }
-@media print { .live-app .live-main, .live-app .live-header { box-shadow: none; } .live-app .live-main::before { content: none; } }
+@media print { .live-app .live-main, .live-app .live-header { box-shadow: none; } }
 
 /* ── The web shell's last paper (w88): lighting and edges only, no new colour, nothing fades ──
    The room chosen in the menu is a slip of the room's own paper lying on the menu's sheet, its edge lit and its
@@ -1289,16 +1284,12 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
     box-shadow: inset 3px 0 #55714c, inset 0 1px 0 rgb(255 255 255 / 0.7), 0 1px 1px rgb(40 60 50 / 0.14), 0 6px 10px -8px rgb(40 60 50 / 0.4);
   }
 }
-.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 1px 0 rgb(255 255 255 / 0.75), 0 9px 12px -10px rgb(40 60 50 / 0.3); }
-.live-app .live-page-head::before {
-  content: ""; position: absolute; left: 12px; right: 28px; bottom: -6px; height: 5px; pointer-events: none;
-  border-bottom: 1px solid rgb(40 60 50 / 0.1); box-shadow: 0 5px 8px -7px rgb(40 60 50 / 0.26);
-}
+/* The head's cut edge: one rule and one contact shade, the slip's, from the relief scale. */
+.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 2px 5px -3px rgb(40 60 50 / 0.3); }
 /* From 1728px a room with no second column ends its rule at the room's measure, so its light and shade end there too. */
 @media (min-width: 1728px) {
   .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head { box-shadow: none; }
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 1px 0 rgb(255 255 255 / 0.75), 0 9px 12px -10px rgb(40 60 50 / 0.3); }
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::before { right: auto; width: calc(min(1040px, 100%) - 40px); }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 2px 5px -3px rgb(40 60 50 / 0.3); }
 }
 @media (forced-colors: active) {
   .live-app .live-page-head { box-shadow: none; }
@@ -1308,9 +1299,9 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 @media print { .live-app .live-page-head, .live-app .live-page-head::after { box-shadow: none; } .live-app .live-page-head::before { content: none; } }
 
 /* w91: the workspace's keys on one sheet. Each key a small slip of paper, its name beside it. */
-.live-keys dl { display: grid; gap: 6px; margin: 4px 0 0; }
-.live-keys dl > div { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 12px; }
-.live-keys dl > div:nth-last-child(4) { margin-top: 10px; }
+.live-keys dl { display: grid; gap: var(--space-8) 6px; margin: var(--space-4) 0 0; }
+.live-keys dl > div { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: var(--space-12) 12px; }
+.live-keys dl > div:nth-last-child(4) { margin-top: var(--space-8); }
 .live-keys dt, .live-keys dd { margin: 0; }
 .live-keys dd { font-size: 15px; color: var(--live-ink, #283c32); overflow-wrap: anywhere; }
 .live-keys kbd {
@@ -1325,7 +1316,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    nothing here yet, the room's picture card for a state of the whole room. Its folded corner says which: ochre waits
    (no connection), plum is wrong, plain is plain. It is laid once, by movement only; nothing fades. ── */
 .paper-scene {
-  position: relative; display: block; flex: none; width: 132px; height: 92px; margin: 6px 0 0 6px;
+  position: relative; display: block; flex: none; width: 132px; height: 92px; margin: var(--space-8) 0 0 6px;
   filter: drop-shadow(0 1px 1px rgb(40 60 50 / 0.16)) drop-shadow(0 8px 10px rgb(40 60 50 / 0.16));
 }
 .paper-scene > i { position: absolute; inset: 0; background: #f7f4ed; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8); }
@@ -1353,13 +1344,13 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 @keyframes paper-scene-lay { from { translate: 0 -10px; rotate: -3deg; } }
 .live-app .live-state .paper-vignette { animation: paper-scene-lay 420ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) 100ms backwards; }
 /* The scene stands to the left of its words, on the words' first line; on a narrow window, above them. */
-.live-app :is(.live-empty, .help-empty):has(> .paper-scene) { grid-template-columns: auto minmax(0, 1fr); gap: 32px; align-items: start; }
+.live-app :is(.live-empty, .help-empty):has(> .paper-scene) { grid-template-columns: auto minmax(0, 1fr); gap: var(--space-32) 32px; align-items: start; }
 .live-app .live-state[data-lead] { grid-template-columns: 196px minmax(0, 1fr); }
 @media (max-width: 899px) {
   /* On a phone the pile is small and stands beside the words, so the line is read in the first screen. */
-  .live-app :is(.live-empty, .help-empty):has(> .paper-scene[data-kind="empty"]) { grid-template-columns: 76px minmax(0, 1fr); gap: 20px; }
-  .live-app :is(.live-empty, .help-empty) > .paper-scene[data-kind="empty"] { width: 64px; height: 46px; margin-top: 10px; }
-  .live-app .live-state[data-lead] { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .live-app :is(.live-empty, .help-empty):has(> .paper-scene[data-kind="empty"]) { grid-template-columns: 76px minmax(0, 1fr); gap: var(--space-20) 20px; }
+  .live-app :is(.live-empty, .help-empty) > .paper-scene[data-kind="empty"] { width: 64px; height: 46px; margin-top: var(--space-8); }
+  .live-app .live-state[data-lead] { grid-template-columns: minmax(0, 1fr); gap: var(--space-24) 22px; }
   .live-app .live-state .paper-scene[data-card] { width: 150px; height: 100px; }
 }
 @media (prefers-reduced-motion: reduce) { .paper-scene > *, .live-app .live-state .paper-vignette { animation: none; } }
@@ -1413,18 +1404,18 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* An empty state's title and line never leave one word alone on the last line. */
 .live-app :is(.live-empty, .help-empty, .live-state) :is(h1, h2, h3, p) { text-wrap: pretty; }
 @media (max-width: 560px) {
-  .live-app .live-section { margin-top: 40px; }
-  .live-app .live-section-head { margin-bottom: 16px; }
-  .live-app .live-main[data-room="help"] .live-section-head { gap: 8px 16px; }
-  .live-app .help-sheet h2 { font-size: 28px !important; margin-bottom: 8px !important; }
-  .live-app .help-sheet { padding: 24px; }
-  .live-app .help-empty :is(h2, h3) { font-size: 28px; margin-bottom: 8px; }
+  .live-app .live-section { margin-top: var(--space-40); }
+  .live-app .live-section-head { margin-bottom: var(--space-16); }
+  .live-app .live-main[data-room="help"] .live-section-head { gap: var(--space-8) 16px; }
+  .live-app .help-sheet h2 { font-size: 28px !important; margin-bottom: var(--space-8) !important; }
+  .live-app .help-sheet { padding: var(--space-24) 24px; }
+  .live-app .help-empty :is(h2, h3) { font-size: 28px; margin-bottom: var(--space-8); }
   .live-app .live-empty :is(h1, h2, h3) { font-size: 24px; }
-  .live-app .tools-leaf > h2 { font-size: 24px; margin-bottom: 8px; }
-  .live-app .help-row { column-gap: 16px; row-gap: 16px; }
+  .live-app .tools-leaf > h2 { font-size: 24px; margin-bottom: var(--space-8); }
+  .live-app .help-row { column-gap: 16px; row-gap: var(--space-16); }
   .live-app .help-row h3 { font-size: 24px; }
-  .live-app .live-kicker { margin-bottom: 8px; }
-  .live-app .week-columns:not([data-far]) > .live-section > .live-section-head { margin-bottom: 16px; }
+  .live-app .live-kicker { margin-bottom: var(--space-8); }
+  .live-app .week-columns:not([data-far]) > .live-section > .live-section-head { margin-bottom: var(--space-16); }
 }
 
 /* No word left alone on a line: every room's headings share their lines evenly, and its paragraphs and short
@@ -1521,7 +1512,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
    3px edge in the state's colour: green done, plum wrong. The quiet waiting line beside a form's buttons is ochre.
    Each slip (the connection strip keeps its own fold) is whole from its first frame and only rises 12px, as the month and the menus do; nothing fades. */
 :is(.live-app, .live-dialog) .live-success.help-done {
-  padding: 12px 18px 12px 16px;
+  padding: var(--space-12) 18px var(--space-12) 16px;
   background: #fffdf7;
   border: 1px solid color-mix(in srgb, #365c46 26%, #f7f4ed);
   border-left: 3px solid #365c46;
@@ -1554,9 +1545,9 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
    card shows below it: a smaller title and a tighter band, still one height in every room. */
 @media (min-width: 900px) and (max-height: 860px) {
   .live-app .live-page-head h1 { --head-size: clamp(40px, 4.2vw, 60px); }
-  .live-app .live-main .live-page-head { min-height: calc(184px + 1.96 * clamp(40px, 4.2vw, 60px)); margin-bottom: 28px; padding-bottom: 24px; }
-  .live-app .live-page-head .live-deck { margin-top: 14px; }
-  .live-head-actions { margin-top: 20px; }
+  .live-app .live-main .live-page-head { min-height: calc(184px + 1.96 * clamp(40px, 4.2vw, 60px)); margin-bottom: var(--space-32); padding-bottom: var(--space-24); }
+  .live-app .live-page-head .live-deck { margin-top: var(--space-16); }
+  .live-head-actions { margin-top: var(--space-20); }
 }
 
 /* A save button's two labels share one place (SaveLabel): the button keeps the width of the longer one throughout. */
@@ -1612,7 +1603,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
    keep inside the sheet's own margins (they set the sheet 30px wider than its padding before). */
 :is(.live-app, .live-dialog) .live-form-grid > .live-field { min-width: 0; }
 /* The month in the form: laid under its field, full width of the form's column, set in place without a rise. */
-.live-date-sheet.live-date-inline { display: grid; justify-content: start; gap: 4px; width: fit-content; max-width: 100%; margin-top: 8px; box-shadow: none; animation: none; }
+.live-date-sheet.live-date-inline { display: grid; justify-content: start; gap: var(--space-4) 4px; width: fit-content; max-width: 100%; margin-top: var(--space-8); box-shadow: none; animation: none; }
 .live-date-inline .live-date-bar { justify-content: flex-end; }
 @media (max-width: 699px) { .live-date-sheet.live-date-inline { width: 100%; justify-content: center; padding-inline: 4px; } }
 /* Teams on a tablet: three across from 1280, and where two stand side by side an odd last team takes the full row,

@@ -2,12 +2,12 @@
 .live-aside-sheet .volunteer-month,
 .live-aside-sheet .volunteer-teams-week { width: 100%; border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
 .live-aside-sheet :is(.volunteer-month, .volunteer-teams-week) :is(th, td) { border: 0; background: none; text-transform: none; letter-spacing: 0; }
-.live-aside-sheet .volunteer-month caption { caption-side: top; text-align: left; margin-bottom: 12px; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); }
-.live-aside-sheet :is(.volunteer-month, .volunteer-teams-week) thead th { padding: 0 0 8px; font-size: 13px; font-weight: 400; text-align: center; color: var(--live-muted); border-bottom: 1px solid var(--live-line); }
+.live-aside-sheet .volunteer-month caption { caption-side: top; text-align: left; margin-bottom: var(--space-12); font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); }
+.live-aside-sheet :is(.volunteer-month, .volunteer-teams-week) thead th { padding: 0 0 var(--space-8); font-size: 13px; font-weight: 400; text-align: center; color: var(--live-muted); border-bottom: 1px solid var(--live-line); }
 .live-aside-sheet .volunteer-teams-week tbody + tbody tr:first-child th { border-top: 1px solid var(--live-line); }
 .live-aside-sheet .volunteer-teams-week thead th[data-today] { font-weight: 600; color: var(--live-ink); }
 .live-aside-sheet .volunteer-month td { height: 36px; padding: 0; text-align: center; font-size: 15px; color: var(--live-ink); }
-.live-aside-sheet .volunteer-month tbody tr:first-child td { padding-top: 6px; }
+.live-aside-sheet .volunteer-month tbody tr:first-child td { padding-top: var(--space-8); }
 .live-aside-sheet .volunteer-month td > span:first-child { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid transparent; }
 .live-aside-sheet .volunteer-month td[data-mark="away"] > span:first-child { background: var(--live-ink); color: var(--live-paper, #f7f4ed); }
 /* Days offered read as one quiet band from first day to last, never a mark on every day. */
@@ -18,24 +18,24 @@
 .live-aside-sheet .volunteer-month td[data-run~="last"]::before { right: calc(50% - 15px); border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
 .live-aside-sheet .volunteer-month td[data-today] > span:first-child { font-weight: 700; border-color: var(--live-ink); }
 
-.live-aside-sheet .volunteer-key { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 16px 0 0; padding: 14px 0 0; list-style: none; border-top: 1px solid var(--live-line); font-size: 15px; color: var(--live-muted); }
-.live-aside-sheet .volunteer-key li { display: inline-flex; align-items: center; gap: 8px; }
+.live-aside-sheet .volunteer-key { display: flex; flex-wrap: wrap; gap: var(--space-8) 20px; margin: var(--space-16) 0 0; padding: var(--space-16) 0 0; list-style: none; border-top: 1px solid var(--live-line); font-size: 15px; color: var(--live-muted); }
+.live-aside-sheet .volunteer-key li { display: inline-flex; align-items: center; gap: var(--space-8) 8px; }
 .live-aside-sheet i[data-mark] { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; }
 .live-aside-sheet i[data-mark="away"], .live-aside-sheet i[data-mark="covered"] { background: var(--live-ink); }
 .live-aside-sheet i[data-mark="offered"] { width: 18px; height: 10px; border-radius: 5px; background: #e9eddf; box-shadow: inset 0 0 0 1px #c9d2b8; }
 .live-aside-sheet i[data-mark="today"] { border: 1px solid var(--live-ink); }
 .live-aside-sheet i[data-mark="open"] { border: 2px solid #a8791f; }
 
-.live-aside-sheet .volunteer-teams-week tbody th { padding: 14px 0 2px; text-align: left; font-weight: 400; }
+.live-aside-sheet .volunteer-teams-week tbody th { padding: var(--space-16) 0 2px; text-align: left; font-weight: 400; }
 .live-aside-sheet .volunteer-teams-week tbody th span { display: block; font-size: 15px; font-weight: 600; color: var(--live-ink); overflow-wrap: anywhere; }
-.live-aside-sheet .volunteer-teams-week tbody th small { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--live-muted); }
-.live-aside-sheet .volunteer-teams-week tbody td { height: 26px; padding: 4px 0 10px; text-align: center; vertical-align: top; line-height: 0; }
+.live-aside-sheet .volunteer-teams-week tbody th small { display: flex; align-items: center; gap: var(--space-8) 8px; font-size: 14px; color: var(--live-muted); }
+.live-aside-sheet .volunteer-teams-week tbody td { height: 26px; padding: var(--space-4) 0 var(--space-8); text-align: center; vertical-align: top; line-height: 0; }
 .live-aside-sheet .volunteer-teams-week tbody td i { display: block; margin: 0 auto 3px; }
 
 .live-aside-sheet .volunteer-next p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--live-muted); }
 .live-aside-sheet .volunteer-next .volunteer-next-day { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); text-wrap: balance; }
-.live-aside-sheet .volunteer-next .volunteer-next-title { margin: 10px 0 2px; font-weight: 600; color: var(--live-ink); }
-.live-aside-sheet .volunteer-next .volunteer-next-reply { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--live-line); color: var(--live-ink); }
+.live-aside-sheet .volunteer-next .volunteer-next-title { margin: var(--space-8) 0 2px; font-weight: 600; color: var(--live-ink); }
+.live-aside-sheet .volunteer-next .volunteer-next-reply { display: flex; align-items: center; gap: var(--space-8) 8px; margin-top: var(--space-16); padding-top: var(--space-16); border-top: 1px solid var(--live-line); color: var(--live-ink); }
 .live-aside-sheet .volunteer-next-reply::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
 .live-aside-sheet .volunteer-next-reply[data-reply="accepted"]::before { border: 0; background: #365c46; }
 .live-aside-sheet .volunteer-next-reply[data-reply="declined"]::before { border: 1px solid var(--live-ink); }

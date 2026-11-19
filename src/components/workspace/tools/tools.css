@@ -1,17 +1,17 @@
-.tools-address { display: flex; gap: 10px; align-items: center; max-width: 640px; margin-top: 22px; }
+.tools-address { display: flex; gap: var(--space-8) 10px; align-items: center; max-width: 640px; margin-top: var(--space-24); }
 .tools-address input { font-variant-numeric: tabular-nums; text-overflow: ellipsis; }
-.tools-small { font-size: 15px; color: var(--live-muted); line-height: 1.55; max-width: 640px; margin: 18px 0 0; }
-.tools-file { max-width: 560px; margin-top: 22px; }
-.tools-file .tools-small { margin-top: 14px; }
+.tools-small { font-size: 15px; color: var(--live-muted); line-height: 1.55; max-width: 640px; margin: var(--space-16) 0 0; }
+.tools-file { max-width: 560px; margin-top: var(--space-24); }
+.tools-file .tools-small { margin-top: var(--space-16); }
 .tools-file-name { font-size: 17px; color: var(--live-muted); overflow-wrap: anywhere; }
-:is(.live-app, .live-dialog) .tools-sample { display: inline-block; margin-top: 10px; padding: 11px 0; font-size: 16px; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
+:is(.live-app, .live-dialog) .tools-sample { display: inline-block; margin-top: var(--space-8); padding: var(--space-12) 0; font-size: 16px; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
 :is(.live-app, .live-dialog) .tools-sample:hover { text-decoration-color: currentColor; }
-.tools-problems { margin-top: 26px; }
-.tools-sheet { margin-top: 28px; }
-.tools-after { margin-top: 22px; }
-.tools-replace { margin-top: 16px; }
+.tools-problems { margin-top: var(--space-24); }
+.tools-sheet { margin-top: var(--space-32); }
+.tools-after { margin-top: var(--space-24); }
+.tools-replace { margin-top: var(--space-16); }
 :is(.live-app, .live-dialog) .help-actions .tools-first { border-color: var(--live-ink); font-weight: 600; }
-:is(.live-app, .live-dialog) .help-actions.tools-calendars { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 640px; }
+:is(.live-app, .live-dialog) .help-actions.tools-calendars { display: grid; grid-template-columns: 1fr; gap: var(--space-8) 10px; max-width: 640px; }
 :is(.live-app, .live-dialog) .tools-calendars [data-slot="button"] { width: 100%; min-height: 44px; margin: 0; }
 .tools-rota th:first-child, .tools-rota td:first-child { padding-left: 0; }
 :is(.live-app, .live-dialog) .tools-address [data-slot="button"], :is(.live-app, .live-dialog) .tools-week [data-slot="button"] { min-height: 44px; }
@@ -20,22 +20,22 @@
 @media (max-width: 700px) {
   .tools-address { flex-direction: column; align-items: stretch; }
 }
-.tools-rota { margin-top: 30px; }
+.tools-rota { margin-top: var(--space-32); }
 .tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--live-muted); }
-.tools-rota header h3 { margin: 4px 0 18px; font: 400 28px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
+.tools-rota header h3 { margin: var(--space-4) 0 var(--space-16); font: 400 28px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
 .tools-rota td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tools-rota td small { display: block; color: var(--live-muted); font-size: 15px; }
-.tools-rota .tools-rota-day th { padding-top: 26px; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 600; font-size: 16px; line-height: 1.3; font-variant-numeric: lining-nums tabular-nums; text-transform: none; letter-spacing: 0; color: var(--live-ink); }
+.tools-rota .tools-rota-day th { padding-top: var(--space-24); font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 600; font-size: 16px; line-height: 1.3; font-variant-numeric: lining-nums tabular-nums; text-transform: none; letter-spacing: 0; color: var(--live-ink); }
 .tools-rota .tools-rota-none td { color: var(--live-muted); font-style: italic; }
 .tools-rota-foot { display: none; }
 .tools-rota-open { display: inline-block; min-width: 9em; border-bottom: 1px solid currentColor; color: var(--live-muted); }
-.tools-week { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.tools-week { display: flex; flex-wrap: wrap; gap: var(--space-8) 10px; margin-top: var(--space-24); }
 .tools-week [data-size="icon"], .tools-week .tools-week-step { width: 44px; padding: 0; }
 @media (max-width: 700px) {
   .tools-week > :last-child { flex: 1; }
   .tools-rota thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .tools-rota tr:not(.tools-rota-day) { display: block; padding: 14px 0; border-bottom: 1px solid var(--live-line, #dcd8cb); }
+  .tools-rota tr:not(.tools-rota-day) { display: block; padding: var(--space-16) 0; border-bottom: 1px solid var(--live-line, #dcd8cb); }
   .tools-rota tr:not(.tools-rota-day) td { display: block; padding: 0; border: 0; font-size: 17px; }
   .tools-rota tr:not(.tools-rota-day) td:first-child { font-size: 15px; color: var(--live-muted); margin-bottom: 2px; }
   .tools-rota tr:not(.tools-rota-day) td:nth-child(2) { font-weight: 600; }
@@ -43,7 +43,7 @@
   .tools-rota td small::before { content: " · "; }
   .tools-rota .tools-rota-day th { display: block; padding-left: 0; }
   .tools-rota .tools-rota-day { display: block; }
-  .tools-rota .tools-rota-none, .tools-rota .tools-rota-none td { display: block; padding: 12px 0; border-bottom: 1px solid var(--live-line); }
+  .tools-rota .tools-rota-none, .tools-rota .tools-rota-none td { display: block; padding: var(--space-12) 0; border-bottom: 1px solid var(--live-line); }
 }
 /* On paper only the rota is left: black on white, each day kept whole, an open shift a line to write a name on. */
 .tools-rota { page: rota; }
@@ -68,24 +68,24 @@
 }
 
 :is(.live-app, .live-dialog) .tools-done:focus, :is(.live-app, .live-dialog) .tools-done:focus-visible { outline: none; }
-:is(.live-app, .live-dialog) .tools-progress { margin: 18px 0 0; font-size: 17px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
-.tools-records { margin-top: 22px; }
+:is(.live-app, .live-dialog) .tools-progress { margin: var(--space-16) 0 0; font-size: 17px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
+.tools-records { margin-top: var(--space-24); }
 .live-app .help-row .tools-one { padding-inline: 0; border: 0; background: none; box-shadow: none; border-radius: 2px; width: auto; justify-self: start; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
 .live-app .help-row .tools-one:hover { text-decoration-color: currentColor; }
 @media (min-width: 701px) { .live-app .help-row .tools-one { justify-self: end; } }
 @media (max-width: 700px) {
   .tools-records .help-row { row-gap: 0; }
   .tools-records .help-row .live-date-leaf { grid-row: span 2; }
-  :is(.live-app, .live-dialog) .tools-records .help-row .tools-one { margin-top: 5px; }
+  :is(.live-app, .live-dialog) .tools-records .help-row .tools-one { margin-top: var(--space-4); }
 }
 :is(.live-app, .live-dialog) .tools-quiet [data-slot="button"], :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet { min-height: 44px; padding-inline: 0; font-size: 16px; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
 :is(.live-app, .live-dialog) .tools-quiet [data-slot="button"]:hover, :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet:hover { text-decoration-color: currentColor; }
-p.tools-quiet { margin: 14px 0 0; }
+p.tools-quiet { margin: var(--space-16) 0 0; }
 .live-dialog.tools-rota-dialog { max-width: min(880px, calc(100vw - 32px)) !important; width: 100%; }
 /* In the dialog the rota is outside the app frame, so it brings the frame's table rules with it. */
 .live-dialog .tools-rota table { width: 100%; border-collapse: collapse; font-size: 17px; }
-.live-dialog .tools-rota th { text-align: left; color: var(--live-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; padding: 14px 10px; border-bottom: 1px solid var(--live-line); }
-.live-dialog .tools-rota td { padding: 20px 10px; border-bottom: 1px solid var(--live-line); }
+.live-dialog .tools-rota th { text-align: left; color: var(--live-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; padding: var(--space-16) 10px; border-bottom: 1px solid var(--live-line); }
+.live-dialog .tools-rota td { padding: var(--space-20) 10px; border-bottom: 1px solid var(--live-line); }
 .live-dialog .tools-rota th:first-child, .live-dialog .tools-rota td:first-child { padding-left: 0; }
 @media print {
   .live-dialog:has(.tools-rota) { position: static !important; inset: auto !important; translate: 0 0 !important; transition: none !important; animation: none !important; display: block !important; max-width: none !important; max-height: none !important; width: auto !important; overflow: visible !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: #fff !important; }
@@ -104,16 +104,16 @@ p.tools-quiet { margin: 14px 0 0; }
 :is(.live-app, .live-dialog) .tools-address input::selection { background: #dde5d3; color: var(--live-ink); }
 
 /* Your files, in paper: each thing to bring in is a leaf of paper; the one in use opens across the page. */
-.tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; margin-top: 36px; max-width: 1040px; }
-.tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: 28px 30px 26px; background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
-.live-app .tools-leaf > h2 { margin: 0 0 10px; font: 400 27px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
+.tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-24) 22px; margin-top: var(--space-40); max-width: 1040px; }
+.tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: var(--space-32) 30px var(--space-24); background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
+.live-app .tools-leaf > h2 { margin: 0 0 var(--space-8); font: 400 27px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
 .tools-leaf-deck { margin: 0; max-width: 62ch; font-size: 17px; line-height: 1.5; color: var(--live-muted); }
-.tools-leaf > .tools-file { max-width: none; margin-top: 22px; }
+.tools-leaf > .tools-file { max-width: none; margin-top: var(--space-24); }
 .tools-leaf .tools-small { max-width: 62ch; }
 .tools-leaf .tools-sheet { margin-bottom: 0; }
 .tools-leaf .help-sheet { background: var(--live-paper, #f7f4ed); box-shadow: var(--relief-slip); }
 .tools-leaf .help-sheet::after { background: linear-gradient(225deg, #fffdf7 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%); }
-.tools-leaf .live-error, .tools-leaf .tools-done { margin-top: 22px; }
+.tools-leaf .live-error, .tools-leaf .tools-done { margin-top: var(--space-24); }
 @media (min-width: 1000px) {
   .tools-leaves { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .tools-leaf { grid-column: span 3; }
@@ -121,18 +121,18 @@ p.tools-quiet { margin: 14px 0 0; }
   .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) { grid-column: 1 / -1; }
 }
 @media (max-width: 700px) {
-  .tools-leaves { gap: 16px; margin-top: 26px; }
-  .tools-leaf { padding: 22px 20px 20px; }
+  .tools-leaves { gap: var(--space-16) 16px; margin-top: var(--space-24); }
+  .tools-leaf { padding: var(--space-24) 20px var(--space-20); }
   .live-app .tools-leaf > h2 { font-size: 24px; }
 }
 /* A file being read: its first lines rise one by one, as they are on the page of the spreadsheet. */
-.tools-reading { list-style: none; margin: 22px 0 0; padding: 0; border-top: 1px solid var(--live-line); }
-.tools-reading li { display: flex; align-items: baseline; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--live-line); font-size: 17px; color: var(--live-ink); overflow-wrap: anywhere; }
+.tools-reading { list-style: none; margin: var(--space-24) 0 0; padding: 0; border-top: 1px solid var(--live-line); }
+.tools-reading li { display: flex; align-items: baseline; gap: var(--space-16) 16px; padding: var(--space-12) 0; border-bottom: 1px solid var(--live-line); font-size: 17px; color: var(--live-ink); overflow-wrap: anywhere; }
 .tools-reading li span { flex: none; width: 3ch; text-align: right; font-size: 13px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
 .tools-reading .tools-reading-more { padding-left: calc(3ch + 16px); font-size: 15px; color: var(--live-muted); }
 .tools-gathering { border-top: 0; }
 /* The bundle: three leaves, one in each colour, that lift together when the download is taken. */
-.tools-bundle-line { align-items: center; gap: 18px; }
+.tools-bundle-line { align-items: center; gap: var(--space-16) 18px; }
 .tools-bundle { position: relative; flex: none; width: 56px; height: 46px; }
 .tools-bundle i { position: absolute; left: 12px; right: 12px; bottom: 3px; height: 34px; border-radius: 2px; background: #fffdf7; border: 1px solid #d9d4c2; border-top: 3px solid #365c46; box-shadow: 0 2px 4px -2px #3b3a2455; transform-origin: 50% 100%; }
 .tools-bundle i:nth-child(1) { rotate: -13deg; left: 6px; right: 18px; border-top-color: #6f5f93; }
@@ -147,12 +147,12 @@ p.tools-quiet { margin: 14px 0 0; }
 .tools-leaf.paper-corner::after { background: linear-gradient(225deg, var(--live-paper, #f7f4ed) 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%); }
 .tools-leaf.paper-corner > h2 { padding-right: 34px; }
 /* The week on paper is a sheet of paper on the screen too: laid down when it opens, and again for each week turned to. */
-.tools-rota { padding: 26px 28px 12px; background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
-.tools-rota .help-empty { margin-bottom: 14px; }
-@media (max-width: 700px) { .tools-rota { padding: 20px 18px 6px; } }
+.tools-rota { padding: var(--space-24) 28px var(--space-12); background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
+.tools-rota .help-empty { margin-bottom: var(--space-16); }
+@media (max-width: 700px) { .tools-rota { padding: var(--space-20) 18px var(--space-8); } }
 @media print { .tools-rota { padding: 0; border: 0; border-radius: 0; box-shadow: none; background: none; animation: none; } .tools-rota * { animation: none !important; } }
 /* While one file is open, the other three fold down to a line each: the title and its one button. */
-.tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; padding-block: 14px; }
+.tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-8) 24px; padding-block: var(--space-16); }
 .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) :is(.tools-leaf-deck, .tools-small, .tools-sample) { display: none; }
 .live-app .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > h2 { margin: 0; font-size: 22px; }
 .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) > .tools-file { margin: 0; }
@@ -185,7 +185,7 @@ p.tools-quiet { margin: 14px 0 0; }
   .tools-rota-foot { margin-top: 6mm; font-size: 10pt; }
 }
 /* Fifteen files read as a folder's contents, not a long page: two columns on a wide screen, closer rows everywhere. */
-.live-app .tools-records .help-row { padding-block: 14px; }
+.live-app .tools-records .help-row { padding-block: var(--space-16); }
 .live-app .tools-records .help-row h3 { margin-bottom: 3px; font-size: 22px; }
 .live-app .tools-records .help-row p { font-size: 15px; }
 @media (min-width: 1000px) {

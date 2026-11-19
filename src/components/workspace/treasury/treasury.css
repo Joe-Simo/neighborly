@@ -2,7 +2,7 @@
 .treasury-month {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8) 6px;
 }
 .treasury-month h2 {
   margin: 0 10px 0 0;
@@ -18,7 +18,7 @@
   font-size: 16px;
 }
 .treasury-waiting {
-  margin-bottom: 52px;
+  margin-bottom: var(--space-56);
 }
 .treasury-waiting .help-amount {
   display: block;
@@ -61,7 +61,7 @@
   .live-app table.help-ledger tfoot td[data-total] {
     display: block !important;
     grid-column: 1 / -1;
-    margin-top: 6px;
+    margin-top: var(--space-8);
     font: 400 17px/1.3 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
     color: var(--live-muted);
   }
@@ -94,8 +94,8 @@
   transition: text-decoration-color 200ms ease;
 }
 /* The line reads as words, yet takes a tap or click of full height: padding that reaches past the line without moving it. */
-.live-app .help-what [data-slot="button"] { padding-block: 10px; margin-block: -10px; }
-@media (pointer: coarse) { .live-app .help-what [data-slot="button"] { padding-block: 14px; margin-block: -14px; } }
+.live-app .help-what [data-slot="button"] { padding-block: var(--space-8); margin-block: -10px; }
+@media (pointer: coarse) { .live-app .help-what [data-slot="button"] { padding-block: var(--space-16); margin-block: -14px; } }
 .live-app .help-what [data-slot="button"]:hover {
   text-decoration-color: #a9b697;
 }
@@ -110,7 +110,7 @@
   line-height: 1;
   letter-spacing: -0.03em;
   font-variant-numeric: lining-nums tabular-nums;
-  margin: 4px 0 6px;
+  margin: var(--space-4) 0 var(--space-8);
 }
 .treasury-entry-amount[data-in] {
   color: #365c46;
@@ -127,7 +127,7 @@
 /* An empty block that opens the room needs no rule of its own under the head's. */
 .help-empty[data-first] {
   border-top: 0;
-  padding-top: 8px;
+  padding-top: var(--space-8);
 }
 .treasury-dialog .live-field input[aria-invalid="true"] {
   border-color: #6f5f93;
@@ -135,22 +135,22 @@
 }
 /* The way from the ledger to the bank statement, and back. */
 .treasury-foot {
-  margin-top: 56px;
+  margin-top: var(--space-56);
   border-top: 1px solid var(--live-line);
 }
 .treasury-foot > div {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px 40px;
+  gap: var(--space-20) 40px;
   flex-wrap: wrap;
-  padding: 26px 0;
+  padding: var(--space-24) 0;
   border-bottom: 1px solid var(--live-line);
 }
 .treasury-foot h2 {
   font: 400 27px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.02em;
-  margin: 0 0 7px;
+  margin: 0 0 var(--space-8);
   text-wrap: balance;
 }
 .treasury-foot p {
@@ -204,7 +204,7 @@
 }
 .help-sheet .treasury-agree {
   display: flex;
-  gap: 12px;
+  gap: var(--space-12) 12px;
   align-items: center;
 }
 .treasury-agree svg {
@@ -215,9 +215,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 14px 40px;
+  gap: var(--space-16) 40px;
   flex-wrap: wrap;
-  padding: 0 0 22px;
+  padding: 0 0 var(--space-24);
 }
 .treasury-starter p {
   margin: 0;
@@ -241,7 +241,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     column-gap: 14px;
     align-items: center;
-    padding: 18px 0;
+    padding: var(--space-16) 0;
   }
   .treasury-uncleared .help-row > .live-date-leaf,
   .treasury-lately .help-row > .live-date-leaf {
@@ -266,7 +266,7 @@
 
 /* Quiet one-line lists: statements matched, voucher movements. */
 .treasury-moves {
-  margin-top: 52px;
+  margin-top: var(--space-56);
 }
 .treasury-lines {
   list-style: none;
@@ -277,8 +277,8 @@
 .treasury-lines li {
   display: grid;
   grid-template-columns: 96px minmax(140px, 0.6fr) minmax(0, 1fr);
-  gap: 6px 30px;
-  padding: 16px 0;
+  gap: var(--space-8) 30px;
+  padding: var(--space-16) 0;
   border-bottom: 1px solid var(--live-line);
   font-size: 17px;
   color: var(--live-muted);
@@ -288,7 +288,7 @@
   font-variant-numeric: lining-nums tabular-nums;
 }
 .help-sheet .treasury-keep {
-  margin-top: 16px;
+  margin-top: var(--space-16);
 }
 .help-ledger.treasury-shelf td.help-what {
   font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif;
@@ -315,11 +315,11 @@
 .treasury-gifts [data-slot="toggle"] {
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: var(--space-16) 14px;
   align-items: center;
   height: auto;
   min-height: 60px;
-  padding: 10px 6px;
+  padding: var(--space-8) 6px;
   border-radius: 0;
   border-bottom: 1px solid #d9ddce;
   background: none;
@@ -520,14 +520,14 @@
    sheet's own place. The line reads as the ledger does: the day, what and for whom, who was paid, the amount. */
 .live-app .treasury-paid {
   align-items: start;
-  margin-bottom: 52px;
+  margin-bottom: var(--space-56);
 }
 .treasury-paid > svg {
-  margin-top: 4px;
+  margin-top: var(--space-4);
 }
 .treasury-paid-words {
   display: grid;
-  gap: 4px;
+  gap: var(--space-4) 4px;
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -584,12 +584,12 @@
 
 /* From 1728px the ways on from the ledger are the room's side column: each a short line, its deck and its press. */
 .treasury-foot[data-beside] { margin-top: 0; border-top: 0; }
-.treasury-foot[data-beside] > div { display: block; padding: 0 0 22px; border-bottom: 0; }
-.treasury-foot[data-beside] > div + div { padding-top: 22px; border-top: 1px solid var(--live-line); }
+.treasury-foot[data-beside] > div { display: block; padding: 0 0 var(--space-24); border-bottom: 0; }
+.treasury-foot[data-beside] > div + div { padding-top: var(--space-24); border-top: 1px solid var(--live-line); }
 .treasury-foot[data-beside] > div:last-child { padding-bottom: 0; }
-.treasury-foot[data-beside] h2 { font-size: 22px; line-height: 1.2; margin-bottom: 6px; }
+.treasury-foot[data-beside] h2 { font-size: 22px; line-height: 1.2; margin-bottom: var(--space-8); }
 .treasury-foot[data-beside] p { font-size: 15px; }
-.live-app .treasury-foot[data-beside] [data-slot="button"] { margin-top: 14px; }
+.live-app .treasury-foot[data-beside] [data-slot="button"] { margin-top: var(--space-16); }
 
 /* On a phone every request that waits keeps two lines for what it is for, so the presses fall on one beat. */
 @media (max-width: 560px) {

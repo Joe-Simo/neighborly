@@ -9,27 +9,27 @@
 .neighborly-rooms picture{display:block}
 .neighborly-rooms img{display:block;width:100%;height:auto}
 .neighborly-rooms h3{margin:0;font:400 24px/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.03em}
-.neighborly-rooms li p{margin:8px 0 0;max-width:24em;font-size:17px;line-height:1.5;text-wrap:pretty;opacity:.84}
+.neighborly-rooms li p{margin:var(--space-8) 0 0;max-width:24em;font-size:17px;line-height:1.5;text-wrap:pretty;opacity:.84}
 /* The cards are on the desk before the section is reached: a fast drag never crosses bare paper, and nothing fades up from nothing in view. */
 .has-reveal .neighborly-rooms[data-reveal]{translate:none}
 /* Until a card is wide enough for words beside its picture (about 30 letters to a line), the words lie under it. */
 @media(max-width:1799px){
-  .neighborly-rooms li{grid-template-columns:minmax(0,1fr);gap:14px}
+  .neighborly-rooms li{grid-template-columns:minmax(0,1fr);gap:var(--space-16) 14px}
 }
 /* From 1101 to 1799 the six cards lie three to a row, so each picture stays near the size it was painted for and its line runs about 32 letters. The middle card of a row sits a little lower. */
 @media(min-width:1101px) and (max-width:1799px){
   .neighborly-rooms ul{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(24px,2.6vw,40px)}
   .neighborly-rooms li:nth-child(2n){margin-top:0}
   .neighborly-rooms li:nth-child(3n+2){margin-top:clamp(12px,1.6vw,28px)}
-  .neighborly-rooms li>div{padding:2px 4px 6px}
+  .neighborly-rooms li>div{padding:2px 4px var(--space-8)}
   .neighborly-rooms li p{max-width:16em;text-wrap:balance}
 }
 @media(max-width:700px){
   /* One column of rooms, each a picture with its name and line beside it, so the six read as one list on one screen, not three screens of cards. */
-  .neighborly-rooms ul{grid-template-columns:minmax(0,1fr);gap:22px}
+  .neighborly-rooms ul{grid-template-columns:minmax(0,1fr);gap:var(--space-24) 22px}
   .neighborly-rooms li{grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:0 16px}
   .neighborly-rooms h3{font-size:22px}
-  .neighborly-rooms li p{margin-top:6px;font-size:15px;line-height:1.45}
+  .neighborly-rooms li p{margin-top:var(--space-8);font-size:15px;line-height:1.45}
   .neighborly-rooms li{padding:0;background:none;box-shadow:none;rotate:none;translate:none}
   .neighborly-rooms li:nth-child(2n){margin-top:0}
   .neighborly-rooms img{box-shadow:0 1px 2px #51433024,0 10px 24px -10px #51433052}
