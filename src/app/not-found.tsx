@@ -4,7 +4,9 @@ import { ReaderLanguage } from "@/components/reader-language";
 import { edgeWords } from "@/lib/edge-words";
 import { readersLanguage } from "@/lib/first-language";
 import { linkCardIn, linkPreview } from "@/lib/link-preview";
-import { EdgeSheet } from "@/components/edge-sheet";
+import { languages } from "@/lib/words";
+import "@/components/not-found.css";
+import "@/components/public-touch.css";
 
 const lost = edgeWords.en.lostAbout;
 export const metadata: Metadata = {
@@ -16,13 +18,21 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** The one door on the site with nothing behind it: the courtyard's arch on bare paper, one line, and the way back to the courtyard. */
+/**
+ * The one address on the site with no one at it: a call slip that found nobody, lying alone on bare paper, a little turned,
+ * its ochre corner still waiting. Flat and still: it was never filed, so it never folds. One line on it, and the way back.
+ */
 export default function NotFound() {
-  return <EdgeSheet
-    piece="arch"
-    lines={{ en: edgeWords.en.lost, es: edgeWords.es.lost }}
-    ways={{ en: <Link href="/#your-community">{edgeWords.en.courtyard}</Link>, es: <Link href="/#your-community">{edgeWords.es.courtyard}</Link> }}>
+  return <main className="lost-door" data-piece="slip">
     <script dangerouslySetInnerHTML={{ __html: readersLanguage }} />
     <ReaderLanguage tabs={{ en: edgeWords.en.lostTab, es: edgeWords.es.lostTab }} abouts={{ en: edgeWords.en.lostAbout, es: edgeWords.es.lostAbout }} />
-  </EdgeSheet>;
+    {languages.map((language) => <div key={language} lang={language} className="lost-door-words" suppressHydrationWarning>
+      <div className="lost-slip">
+        <h1>{edgeWords[language].lostSlip}</h1>
+        <p>{edgeWords[language].lostAbout}</p>
+        <span className="lost-slip-corner" aria-hidden="true" />
+      </div>
+      <Link href="/#your-community">{edgeWords[language].courtyard}</Link>
+    </div>)}
+  </main>;
 }
