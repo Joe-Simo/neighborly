@@ -10,7 +10,7 @@
    sheet keeps the same width from here up, so a leaf turning in is never wider than the sheet it lands under. */
 @media(min-width:1024px){
   .public-words.public-made section{margin-inline:0;grid-template-columns:minmax(0,60ch) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:clamp(48px,6vw,120px);align-items:start}
-  .public-words.public-made section>h2{grid-column:1;grid-row:1;max-width:14ch;margin-bottom:clamp(20px,2.4vw,40px);font-size:clamp(56px,6vw,112px);line-height:var(--lead-2);letter-spacing:var(--track-2);align-self:start}
+  .public-words.public-made section>h2{grid-column:1;grid-row:1;text-wrap:balance;max-width:14ch;margin-bottom:clamp(20px,2.4vw,40px);font-size:clamp(56px,6vw,112px);line-height:var(--lead-2);letter-spacing:var(--track-2);align-self:start}
   .public-words.public-made section>h2::before{position:static;margin-bottom:.6em;font-size:13px;letter-spacing:.14em}
   .public-words.public-made section>div{grid-column:1;grid-row:2;max-width:60ch}
   .public-words.public-made :is(.public-made-figure,.public-made-eval){grid-column:2;grid-row:1/span 2;align-self:start;margin:0}
@@ -21,3 +21,6 @@
   .public-words.public-made section:has(>h2):not([data-figure])>div{grid-column:2;grid-row:1/span 2}
   .public-words.public-made section:has(>div>.public-words-last)>div{grid-column:1/-1;grid-row:1}
 }
+/* A sticky head inside a turning sheet is drawn out of shape by the 3D turn, so it is held in place until the sheet lies flat. The turn ends with the sheet's
+   top at 60% of the window, before the head would stick, so nothing jumps. */
+@media(min-width:1024px){.public-words.public-made>[data-leaf-turning]+section>h2{position:static}}
