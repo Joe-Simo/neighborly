@@ -45,7 +45,7 @@
 .book-table td { text-align: right; padding-left: 12px; white-space: nowrap; }
 .report-book .book-table thead th, .report-book-print .book-table thead th { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #4a5a50; border-bottom-color: var(--live-ink, #283c32); }
 .book-table thead th:not(:first-child) { text-align: right; }
-.book-table tfoot th, .book-table tfoot td { font-weight: 600; border-bottom: 0; border-top: 1px solid var(--live-ink, #283c32); }
+.book-table .book-total :is(th, td) { font-weight: 600; border-bottom: 0; border-top: 1px solid var(--live-ink, #283c32); }
 .book-table:not(.book-columns) td { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: clamp(22px, 2.6vw, 28px); line-height: 1.1; }
 
 /* The turn: the shared page turn's five parts (lib/page-turn.ts), drawn as the story's are (chapter-sheets.css). */
@@ -107,13 +107,13 @@
   .report-book-print .book-table :is(th, td) { border-bottom: 0; border-top: 0; }
   .report-book-print .book-table tr { border-bottom: 1px solid #bfbfbf; }
   .report-book-print .book-table thead tr { border-bottom-color: #000; }
-  .report-book-print .book-table tfoot tr:not(.book-note-row) { border-top: 1px solid #000; border-bottom: 0; }
-  .report-book-print .book-table tfoot .book-note-row { border: 0; }
+  .report-book-print .book-table .book-total { border-top: 1px solid #000; border-bottom: 0; }
+  .report-book-print .book-table .book-note-row { border: 0; }
   .report-book-print .book-table tr { break-inside: avoid; }
-  /* A long table runs on to the next page under its own head row; its total is said once, at its end (a footer
-     group would be printed again at the foot of every page, as if each page were added up). */
+  /* The closing group (report-book.tsx TableEnd) stays whole: two rows, the totals and the notes go together. */
+  .report-book-print .book-end { break-inside: avoid; }
+  /* A long table runs on to the next page under its own head row. */
   .report-book-print .book-table thead { display: table-header-group; }
-  .report-book-print .book-table tfoot { display: table-row-group; }
   /* The notes row never starts a page: it goes with the last rows of its table. */
   .report-book-print .book-note-row { break-before: avoid; }
   .report-book-print .book-table .book-note-row td { border: 0; }

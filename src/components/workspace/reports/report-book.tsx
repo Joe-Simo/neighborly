@@ -91,8 +91,8 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
               <th scope="col">{b.paid}</th>
             </tr>
           </thead>
-          <tbody>
-            {shownKinds.map((line) => (
+          <TableEnd
+            rows={shownKinds.map((line) => (
               <tr key={line.kind}>
                 <th scope="row">{kinds[line.kind]}</th>
                 <td>{count(line.requests)}</td>
@@ -100,16 +100,15 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
                 <td>{line.kind === "voucher" && line.paid === 0 ? "—" : dollars(line.paid)}</td>
               </tr>
             ))}
-          </tbody>
-          <tfoot>
-            <tr>
+          >
+            <tr className="book-total">
               <th scope="row">{b.total}</th>
               <td>{count(report.requests.received)}</td>
               <td>{count(report.history.householdsInAll)}</td>
               <td>{dollars(report.helpPaid)}</td>
             </tr>
             <NoteRow span={4} notes={[...(shownKinds.some((line) => line.kind === "voucher" && line.paid === 0) ? [b.vouchersNote] : []), b.householdsNote]} />
-          </tfoot>
+          </TableEnd>
         </table>
       ),
     },
@@ -124,25 +123,24 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
               <th scope="col">{w.time.hours}</th>
             </tr>
           </thead>
-          <tbody>
-            {serving.map((line) => (
+          <TableEnd
+            rows={serving.map((line) => (
               <tr key={line.name}>
                 <th scope="row">{line.name}</th>
                 <td>{count(line.hours)}</td>
               </tr>
             ))}
-          </tbody>
-          <tfoot>
-            <tr>
+          >
+            <tr className="book-total">
               <th scope="row">{b.allHours}</th>
               <td>{count(report.time.hours)}</td>
             </tr>
-            <tr>
+            <tr className="book-total">
               <th scope="row">{b.miles}</th>
               <td>{count(report.visitMiles)}</td>
             </tr>
             <NoteRow span={2} notes={[b.hoursNote]} />
-          </tfoot>
+          </TableEnd>
         </table>
       ),
     },
@@ -155,6 +153,22 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
       ]),
     },
   ] satisfies { key: string; title?: string; body: ReactNode }[];
+}
+
+/**
+ * A table's body, with its last two rows, its totals and its notes held as one closing group: a printed page never
+ * opens on a total with only the head row above it, nor on a note alone.
+ */
+function TableEnd({ rows, children }: { rows: ReactNode[]; children: ReactNode }) {
+  return (
+    <>
+      {rows.length > 2 && <tbody>{rows.slice(0, -2)}</tbody>}
+      <tbody className="book-end">
+        {rows.slice(-2)}
+        {children}
+      </tbody>
+    </>
+  );
 }
 
 /**
