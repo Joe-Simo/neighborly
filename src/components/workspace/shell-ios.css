@@ -184,11 +184,11 @@
 /* At the largest sizes nothing runs past the right edge: two fields stand one over the other and keep to the column, a
    neighbor's asks go under the name, a figure's label may hyphenate, an invitation's address keeps to the
    column and ends in an ellipsis, and a row of period switches wraps. */
-:root[data-shell="ios"][data-text-large] .live-app .live-form-grid { grid-template-columns: minmax(0, 1fr); }
+:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) .live-form-grid { grid-template-columns: minmax(0, 1fr); }
 :root[data-shell="ios"][data-text-large] .live-app .help-neighbor > :nth-child(1) { grid-area: 1 / 1; align-self: start; }
 :root[data-shell="ios"][data-text-large] .live-app .help-neighbor > :nth-child(2) { grid-area: 1 / 2; min-width: 0; }
 :root[data-shell="ios"][data-text-large] .live-app .help-neighbor > :nth-child(3) { grid-area: 2 / 2; min-width: 0; }
-:root[data-shell="ios"][data-text-large] .live-app .live-field > * { min-width: 0; max-width: 100%; }
+:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) .live-field > * { min-width: 0; max-width: 100%; }
 :root[data-shell="ios"][data-text-large] .live-app .report-year dt { hyphens: auto; }
 :root[data-shell="ios"][data-text-large] .live-app .people-row h3 { grid-template-columns: minmax(0, 1fr); }
 :root[data-shell="ios"][data-text-large] .live-app .people-address { min-width: 0; max-width: 100%; }
@@ -410,3 +410,7 @@
 /* iOS zooms the page into any field under 16px as it takes focus. The kit draws fields at 14px from 768px up (an iPad),
    so in the app every field keeps 16px at every width; fields drawn larger on purpose keep their own size. */
 :root[data-shell="ios"] :is(input, textarea, select, button[role="combobox"])[class*="md:text-sm"] { font-size: 16px; }
+/* At the largest text the five parts of the year wrap onto a second line rather than scroll sideways. */
+:root[data-shell="ios"][data-text-large] .live-app .report-quarters { flex-wrap: wrap; justify-content: flex-start; gap: 0 18px; overflow: visible; }
+/* At the largest text a chosen value shows whole: the select grows to two lines rather than clipping. */
+:root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="native-select"] { height: auto; min-height: 44px; white-space: normal; overflow-wrap: break-word; padding-block: 8px; line-height: 1.25; }

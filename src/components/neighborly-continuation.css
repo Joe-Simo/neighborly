@@ -6,7 +6,7 @@
 .has-reveal [data-reveal]:has(a,button){translate:none}
 
 /* The ending: what Kind Helps is, and the way in. It closes on the name itself, set across the paper. */
-.neighborly-together{position:relative;z-index:1;isolation:isolate;display:flex;flex-direction:column;gap:clamp(28px,3.4vw,52px);padding:clamp(64px,7vw,110px) 7% 0;outline:0}
+.neighborly-together{position:relative;z-index:1;isolation:isolate;display:flex;flex-direction:column;gap:clamp(28px,3.4vw,52px);padding:clamp(72px,12svh,128px) 7% 0;outline:0}
 .neighborly-together-paper{position:absolute;inset:0;z-index:-1;background:center bottom/cover no-repeat;-webkit-mask-image:linear-gradient(transparent,#000 34%);mask-image:linear-gradient(transparent,#000 34%)}
 .neighborly-together-paper[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
 .neighborly-together h2{margin:0;font:400 clamp(40px,4.8cqw,88px)/var(--lead-2) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-2)}
@@ -23,7 +23,9 @@
 .neighborly-final-links a:is(:hover,:focus-visible){background-size:100% 1px}
 .neighborly-final-actions small{font-size:14px;line-height:1.5;color:#3d4f43}
 .neighborly-colophon{container-type:inline-size;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px;padding:12px 0 calc(82px + env(safe-area-inset-bottom));font-size:15px}
-.neighborly-colophon>a{flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 calc(100cqi / 4.1)/.8 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:#293f32;text-decoration:none}
+.neighborly-colophon>a{flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 calc(100cqi / 4.1)/.8 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:#293f32;text-decoration:none;text-shadow:.008em .016em .012em #3b2a1240,.03em .07em .08em #3b2a1224}
+/* The name is cut from the green sheet and laid on the page: its two steps of shadow on the paper beneath. Drawn once; nothing moves. */
+@media(forced-colors:active){.neighborly-colophon>a{text-shadow:none}}
 /* The name is set to the measure: its ink runs from the column's left edge to its right, the last line of the page squared to every line above it. */
 /* The name stays on paper: beneath it the cloth is seen as through a thin sheet. */
 .neighborly-together::after{content:"";position:absolute;left:0;right:0;bottom:0;z-index:-1;height:calc(24vw + 120px);background:linear-gradient(#eee7d700,#eee7d7d9 38%,#eee7d7e6);pointer-events:none}

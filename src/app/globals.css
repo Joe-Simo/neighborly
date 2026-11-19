@@ -1106,6 +1106,13 @@ summary:focus-visible,
   font-synthesis: none;
   hanging-punctuation: first allow-end last;
 }
+/* Public prose is set as a page is: opening quotes and closing stops hang in the margin (where the browser can), no line ends on one short word, and every head breaks into even lines.
+   Tables and figures keep the fonts' default lining, tabular figures. (Old-style figures need the onum feature, which the served subsets of Newsreader and Source Sans 3 do not carry.) */
+:where(.public-words p, .public-words li, .public-words figcaption, .relief-words p, .neighborly-together p, .neighborly-rooms p, .public-state p) {
+  hanging-punctuation: first allow-end last;
+  text-wrap: pretty;
+}
+:where(.public-words h1, .public-words h2, .public-words h3, .relief-words h2, .neighborly-together h2, .neighborly-rooms h3, .public-state h1) { text-wrap: balance; }
 /* A painted layer far from the reader is not drawn (lib/far-layers.ts); it keeps its place, and it is drawn again before it is in sight. */
 [data-far]{visibility:hidden!important}
 
