@@ -181,6 +181,18 @@
 :root[data-shell="ios"][data-text-large] .live-app :has(> [data-slot="button"]) { flex-wrap: wrap; }
 :root[data-shell="ios"][data-text-large] .live-app .live-row { flex-wrap: wrap; }
 :root[data-shell="ios"][data-text-large] .live-app .live-row > * { max-width: 100%; }
+/* At the largest sizes nothing runs past the right edge: two fields stand one over the other and keep to the column, a
+   neighbor's asks go under the name, a figure's label may hyphenate, an invitation's address keeps to the
+   column and ends in an ellipsis, and a row of period switches wraps. */
+:root[data-shell="ios"][data-text-large] .live-app .live-form-grid { grid-template-columns: minmax(0, 1fr); }
+:root[data-shell="ios"][data-text-large] .live-app .help-neighbor > :nth-child(1) { grid-area: 1 / 1; align-self: start; }
+:root[data-shell="ios"][data-text-large] .live-app .help-neighbor > :nth-child(2) { grid-area: 1 / 2; min-width: 0; }
+:root[data-shell="ios"][data-text-large] .live-app .help-neighbor > :nth-child(3) { grid-area: 2 / 2; min-width: 0; }
+:root[data-shell="ios"][data-text-large] .live-app .live-field > * { min-width: 0; max-width: 100%; }
+:root[data-shell="ios"][data-text-large] .live-app .report-year dt { hyphens: auto; }
+:root[data-shell="ios"][data-text-large] .live-app .people-row h3 { grid-template-columns: minmax(0, 1fr); }
+:root[data-shell="ios"][data-text-large] .live-app .people-address { min-width: 0; max-width: 100%; }
+:root[data-shell="ios"][data-text-large] .live-app .report-switches [data-slot="toggle-group"] { flex-wrap: wrap; width: auto; max-width: 100%; }
 
 /* ── Sheets and menus in the iOS app move as paper (A4): each is whole from its first frame and only travels, and
    leaves the way it came. Nothing fades or zooms; the page behind is laid under its scrim in one cut. Radix keeps a

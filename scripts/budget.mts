@@ -21,6 +21,10 @@ const BUDGET = {
   roomLongTasks: 3,
   roomLongestTaskMs: 200,
   roomIdleFramesPerSecond: 0,
+  // Cold at 4x CPU on Slow 4G, measured 2026-11-19 on main a6e1573 in the cloud, two runs.
+  lcpMs: { "/": 1500, "/about": 1500, "/made": 1200, "/privacy": 1400, "/week": 1200, "/sign-in": 1200 }, // 1216-1232, 1232-1240, 976-980, 1132-1172, 956-980, 976-992
+  clsMilli: 10, // CLS × 1000: 0.1 at most (0.0001 CLS), against the web's 100 for good
+  inpMs: 200, // 16-80 for one tap on the first words; the web's line for good
   firstLoadJsKB: { "/": 900, "/about": 890, "/made": 820, "/privacy": 885, "/week": 820, "/sign-in": 820 }, // 854, 844, 780, 841, 780, 780
 } as const;
 
@@ -142,12 +146,65 @@ async function scrollOnce(url: string, settle: number) {
   return { forced, tasks, idle };
 }
 
+// Load quality: the largest paint and what it was, every layout shift and what moved, and the slowest response to a tap.
+const watchLoad = () => {
+  const name = (node: Node | null | undefined) => {
+    if (!(node instanceof Element)) return node ? node.nodeName.toLowerCase() : "?";
+    const id = node.id ? `#${node.id}` : "", kind = node.classList[0] ? `.${node.classList[0]}` : "";
+    const what = node instanceof HTMLImageElement ? ` ${node.currentSrc.split("/").pop()?.split("?")[0] ?? ""}`
+      : node instanceof HTMLAnchorElement ? ` → ${node.getAttribute("href") ?? ""}`
+      : ` "${(node.textContent ?? "").trim().slice(0, 40)}"`;
+    return `${node.tagName.toLowerCase()}${id}${kind}${what}`;
+  };
+  const load = { lcp: 0, lcpElement: "", cls: 0, shifted: new Set<string>(), inp: 0 };
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries() as (PerformanceEntry & { element?: Element | null })[]) { load.lcp = entry.startTime; load.lcpElement = name(entry.element); }
+  }).observe({ type: "largest-contentful-paint", buffered: true });
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries() as (PerformanceEntry & { value: number; hadRecentInput: boolean; sources?: { node?: Node | null }[] })[]) {
+      if (entry.hadRecentInput) continue;
+      load.cls += entry.value;
+      for (const source of entry.sources ?? []) load.shifted.add(name(source.node));
+    }
+  }).observe({ type: "layout-shift", buffered: true });
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries() as (PerformanceEntry & { interactionId?: number })[]) if (entry.interactionId) load.inp = Math.max(load.inp, entry.duration);
+  }).observe({ type: "event", buffered: true, durationThreshold: 16 } as PerformanceObserverInit);
+  window.__load = () => ({ lcp: load.lcp, lcpElement: load.lcpElement, cls: load.cls, shifted: [...load.shifted], inp: load.inp });
+};
+
+declare global {
+  interface Window { __load?: () => { lcp: number; lcpElement: string; cls: number; shifted: string[]; inp: number } }
+}
+
+/** A route opened cold at 4x CPU on Slow 4G (Lighthouse's mobile network), then tapped once on its first heading. */
+async function loadOnce(url: string) {
+  const context = await browser.newContext(phone);
+  await context.addInitScript(watchLoad);
+  const page = await context.newPage();
+  const session = await context.newCDPSession(page);
+  await session.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await session.send("Network.enable");
+  await session.send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
+  await page.goto(url, { waitUntil: "load", timeout: 120000 });
+  await page.waitForTimeout(3000);
+  // A tap on words, never on a link, so the page stays where it is.
+  const heading = page.locator("h1, h2, p").first();
+  const box = await heading.boundingBox();
+  if (box) await page.touchscreen.tap(box.x + Math.min(8, box.width / 2), box.y + Math.min(8, box.height / 2));
+  await page.waitForTimeout(1000);
+  const found = await page.evaluate(() => window.__load?.());
+  await context.close();
+  return found ?? { lcp: 0, lcpElement: "?", cls: 0, shifted: [], inp: 0 };
+}
+
 const phone = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
 const executablePath = process.env.BUDGET_BROWSER;
 const browser = await chromium.launch({
   ...(executablePath ? { executablePath } : { channel: "chrome" }),
   args: ["--enable-precise-memory-info", ...(process.platform === "linux" ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] : [])],
 });
+const loads = {} as Record<Route, Awaited<ReturnType<typeof loadOnce>>>;
 const found = { roomForcedLayouts: 0, roomLongTasks: 0, roomLongestTaskMs: 0, roomIdleFramesPerSecond: 0, longTasks: 0, longestTaskMs: 0, idleFramesPerSecond: 0, forcedLayouts: 0, firstLoadJsKB: {} as Record<Route, number>, webglTextureMB: 0, webglTextureAtEndMB: 0, layerMegapixels: 0, decodedImageMB: 0, jsHeapMB: 0, roomsHeapMB: 0 };
 try {
   // First-load JavaScript per route: every script the server's page names (script and modulepreload), as Next counts it.
@@ -190,6 +247,9 @@ try {
   await page.waitForTimeout(1000);
   await take();
   await context.close();
+
+  // Each public page cold, at a phone's CPU and network.
+  for (const route of ROUTES) loads[route] = await loadOnce(base + route);
 
   // Home again, scrolled top to bottom at a steady thumb's pace on a phone four times slower, then left still at the end.
   const home = await scrollOnce(base + "/", 9000);
@@ -243,6 +303,14 @@ check("Rooms: forced layouts, worst", found.roomForcedLayouts, BUDGET.roomForced
 check("Rooms: long tasks, worst", found.roomLongTasks, BUDGET.roomLongTasks);
 check("Rooms: longest task (ms)", found.roomLongestTaskMs, BUDGET.roomLongestTaskMs);
 check("Rooms: frames/s still", found.roomIdleFramesPerSecond, BUDGET.roomIdleFramesPerSecond);
+for (const route of ROUTES) {
+  const load = loads[route];
+  check(`LCP ${route} (ms)`, load.lcp, BUDGET.lcpMs[route]);
+  console.log(`       largest paint: ${load.lcpElement}`);
+  check(`CLS ${route} (x1000)`, load.cls * 1000, BUDGET.clsMilli);
+  if (load.shifted.length) console.log(`       shifted: ${load.shifted.join(", ")}`);
+  check(`INP ${route}, a tap (ms)`, load.inp, BUDGET.inpMs);
+}
 for (const route of ROUTES) check(`First-load JS ${route} (KB)`, found.firstLoadJsKB[route], BUDGET.firstLoadJsKB[route]);
 console.log(over.length ? `\nOver budget: ${over.join(", ")}` : "\nWithin budget.");
 process.exit(over.length ? 1 : 0);
