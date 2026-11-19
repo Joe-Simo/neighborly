@@ -57,3 +57,5 @@
   .slip-folds-body span{font-size:18px}
 }
 @media print{.slip-folds{height:auto}.slip-folds-stage{position:static;height:auto}}
+/* The way into the sample is the one thing to do here: it is set in the serif, a step above the sentence it ends, never below it. */
+.slip-folds-figure .slip-folds-link{display:flex;justify-content:center;margin-top:4px;white-space:nowrap;font-family:'Newsreader','Newsreader Fallback',Georgia,serif;font-size:1.1em;letter-spacing:-.01em}
