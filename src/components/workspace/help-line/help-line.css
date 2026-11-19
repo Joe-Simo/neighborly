@@ -153,7 +153,8 @@
 @media (max-width: 850px) { .help-row a.help-phone { padding-top: 0; margin-top: var(--space-8); } }
 @media (pointer: coarse) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
 /* Zoomed or narrow, the number keeps a full finger's height whatever the pointer. */
-@media (max-width: 850px) { .help-row a.help-phone { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
+/* On a phone the number takes its own line under the name in every row, never run into it. */
+@media (max-width: 850px) { .help-row a.help-phone { display: flex; width: fit-content; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
 @media (pointer: coarse) and (max-width: 850px) { .help-row a.help-phone { display: flex; width: fit-content; margin-top: 0; } }
 .help-row:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 4px; }
 .help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
