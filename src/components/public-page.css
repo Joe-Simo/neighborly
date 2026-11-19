@@ -148,3 +148,16 @@
 /* At 400 percent zoom (a window 320 wide) the name, the other language and the way in do not fit one row: the way in drops to a second row,
    right-aligned, so nothing runs past the window. */
 @media(max-width:359px){.public-page-header{flex-wrap:wrap;height:auto;row-gap:0;padding-block:6px}.public-page-header>a:last-child{margin-left:auto}}
+/* The eval table: four fields as rows, counted right, blank and wrong, set as a printed table on the chapter's sheet, figures tabular and
+   right-aligned, one hairline under the head; the source line under it in the caption's type. */
+.public-made-eval{grid-column:1/-1;margin:clamp(20px,3vw,40px) 0 0}
+.public-made-eval table{width:100%;max-width:34em;border-collapse:collapse;font-size:17px;line-height:1.4;font-variant-numeric:tabular-nums}
+.public-made-eval caption{text-align:left;padding-bottom:10px;font:400 clamp(19px,1.5vw,24px)/1.3 'Newsreader','Newsreader Fallback',Georgia,serif;color:#22362a}
+.public-made-eval th,.public-made-eval td{padding:9px 0;text-align:right;font-weight:400}
+.public-made-eval th:first-child{text-align:left;padding-right:16px}
+.public-made-eval thead th{font-size:15px;color:#3d4f43;border-bottom:1px solid #293f3240}
+.public-made-eval tbody tr+tr>*{border-top:1px solid #293f3214}
+.public-made-eval [data-tone=wrong]{color:#6a557f}
+.public-made-eval figcaption{max-width:34em;margin-top:12px;font-size:15px;line-height:1.5;color:#3d4f43}
+@media(min-width:1024px){.public-made-eval{grid-column:2}}
+.public-made-eval :is(td,thead th:not(:first-child)){width:1%;padding-left:18px;white-space:nowrap}

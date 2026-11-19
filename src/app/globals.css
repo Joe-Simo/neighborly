@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 /* Registered with the first stylesheet: registered late (paper.css comes with the yes card), it restyles the whole page mid-scroll. */
 @property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
+/* Every control presses like paper, one layer down: the 1px step and the contact shadow it leaves. One token, every room and page. */
+:root { --press-y: 1px; --press-rest: 0 1px 0 rgb(40 60 50 / 0.18); }
 :root {
   /* Read by the stale-page check in the head (layout.tsx): if this is missing, the page was drawn without its stylesheet. */
   --kh-styled: 1;
@@ -1106,3 +1108,7 @@ summary:focus-visible,
 }
 /* A painted layer far from the reader is not drawn (lib/far-layers.ts); it keeps its place, and it is drawn again before it is in sight. */
 [data-far]{visibility:hidden!important}
+
+/* The press, everywhere a button stands (public pages, sign-in, error pages): the workspace's own rules in paper.css
+   ease it and add the phone's finger rules. Disabled never presses; Reduce Motion keeps the step, which is not motion. */
+[data-slot="button"]:active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) { translate: none; transform: translateY(var(--press-y)); box-shadow: none; }

@@ -4,7 +4,7 @@ import type { Language } from "@/lib/words";
 export type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
-export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string } };
+export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
@@ -23,6 +23,12 @@ const en = {
     hint: "Drag the courtyard up or down, or use the arrow keys, to draw its sheets apart.",
     /** Said by the slider: whole, part apart ({n} is the percent), and fully apart. */
     amount: ["Whole", "{n}% apart", "All seven sheets apart"] as [string, string, string],
+  },
+  evalTable: {
+    caption: "The 12 held-out notes, field by field",
+    head: ["Field", "Right", "Blank", "Wrong"] as [string, string, string, string],
+    fields: { kind: "Kind of help", amount: "Amount", payeeKind: "Who is paid", signs: "Urgent signs" },
+    source: "Source: measure run 7, 19 November 2026, model jev-1.14.0. Its raw output is eval/jev/run-7.json in the code.",
   },
   sections: [
     { title: "Why it exists", blocks: [
@@ -51,7 +57,7 @@ const en = {
       "Paper is the one material: things rise, fold and turn as a sheet would. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Words are never smaller than 13 pixels in the app, and 15 on public pages like this one, where only the chapter numbers are 13.",
       "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°.",
     ] },
-    { title: "Responsible AI, with Jev", blocks: [
+    { title: "Responsible AI, with Jev", table: "eval", blocks: [
       "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does four clerical jobs: it drafts a request for help from a call note, puts urgent calls first with the reason shown, checks the year’s records before the report, and confirms the name read from a new team’s description. It does not write prose, and no request is saved without a person’s yes.",
       "A neighbor’s name, phone and address are taken out before anything is sent: everything passes first through one step of fixed rules, and on every draft “What the assistant saw” shows the note exactly as it left. A person reads every draft and decides. Saving a request is not granting it: the conference decides on the help, and an owner or coordinator records the decision.",
       "On 12 made-up call notes kept apart from the ones it was tuned on, it filled 42 of 48 fields correctly, left 6 blank and got none wrong. Twelve notes is a small set, and it will make mistakes, which is why a person checks every draft.",
@@ -98,6 +104,12 @@ const es: typeof en = {
     hint: "Arrastra el patio hacia arriba o hacia abajo, o usa las flechas, para separar sus hojas.",
     amount: ["Entero", "Separadas al {n}%", "Las siete hojas separadas"],
   },
+  evalTable: {
+    caption: "Las 12 notas apartadas, campo por campo",
+    head: ["Campo", "Bien", "En blanco", "Mal"],
+    fields: { kind: "Tipo de ayuda", amount: "Monto", payeeKind: "A quién se paga", signs: "Señales de urgencia" },
+    source: "Fuente: medición 7, 19 de noviembre de 2026, modelo jev-1.14.0. Su salida sin tocar está en eval/jev/run-7.json, en el código.",
+  },
   sections: [
     { title: "Por qué existe", blocks: [
       "Kind Helps es para los voluntarios de las conferencias de San Vicente de Paúl: quienes atienden la línea de ayuda, visitan los hogares y llevan las cuentas. Muchas conferencias llevan este trabajo en papel, en hojas de cálculo o en ServWare. Kind Helps lo reúne en un solo lugar, en inglés y en español, en el teléfono o en el escritorio.",
@@ -125,7 +137,7 @@ const es: typeof en = {
       "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta, donde solo los números de los capítulos miden 13.",
       "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
     ] },
-    { title: "IA responsable, con Jev", blocks: [
+    { title: "IA responsable, con Jev", table: "eval", blocks: [
       "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace cuatro tareas de oficina: redacta una petición de ayuda a partir de la nota de una llamada, pone primero las llamadas urgentes con el motivo a la vista, revisa los registros del año antes del informe y confirma el nombre que se lee en la descripción de un equipo nuevo. No escribe prosa, y ninguna petición se guarda sin el sí de una persona.",
       "El nombre, el teléfono y la dirección de un vecino se quitan antes de enviar nada: todo pasa antes por un paso de reglas fijas, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Una persona lee cada borrador y decide. Guardar una petición no es concederla: la conferencia decide la ayuda, y el responsable o un coordinador anota la decisión.",
       "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
