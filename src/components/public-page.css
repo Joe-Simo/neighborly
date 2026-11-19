@@ -176,3 +176,40 @@
 @media(max-width:430px){.public-words p a:not([class]),.public-words li a:not([class]),.public-words .public-words-note a,.public-words .public-words-address{padding-block:12px;margin-block:-12px}}
 /* Forced colours drop the paper tone, so each torn sheet keeps a plain system rule at its foot instead of a lone shade. */
 @media (forced-colors:active){.public-words :is(h1,section){filter:none;border-bottom:1px solid CanvasText}}
+
+/* Paper anatomy: the three relief heights drawn apart in a still three-quarter view. Each plate is paper with a visible edge,
+   lifted to its own height over a ground plane and wearing the app's token for that surface; the slip is the kraft of the
+   home's slips. Labels sit beside each plate in the display serif; below 640 they become a legend under the drawing. Nothing moves. */
+.public-made-anatomy{grid-column:1/-1;max-width:46rem;margin:clamp(24px,3vw,48px) 0 0;container-type:inline-size;position:relative}
+.public-made-anatomy-title{font-weight:600;margin:0 0 8px}
+.public-made-anatomy-stage{position:relative;margin-top:clamp(36px,10cqw,84px);height:clamp(220px,62cqw,400px);perspective:1600px;overflow:visible}
+.public-made-anatomy-space{position:absolute;left:4%;top:58%;width:min(56cqw,380px);aspect-ratio:3/2;transform-style:preserve-3d;transform:translateY(-50%) rotateX(60deg) rotateZ(-34deg)}
+.public-made-anatomy-ground,.public-made-anatomy-plate{position:absolute;transform-style:preserve-3d}
+.public-made-anatomy-ground{inset:-8% -6% -8% -10%;background:#e9e2d0;border-radius:2px;box-shadow:inset 0 0 0 1px #d6cfbb}
+.public-made-anatomy-plate{background:var(--relief-paper);border-radius:2px;border:1px solid var(--relief-edge)}
+.public-made-anatomy-plate::after{content:"";position:absolute;left:0;right:0;top:100%;height:var(--edge,5px);background:var(--relief-edge);transform-origin:top;transform:rotateX(-90deg)}
+.public-made-anatomy-plate[data-relief="sheet"]{left:48%;top:0;width:54%;height:50%;transform:translateZ(calc(var(--lift) * 3));box-shadow:var(--relief-sheet);--edge:4px}
+.public-made-anatomy-plate[data-relief="card"]{left:24%;top:27%;width:50%;height:46%;transform:translateZ(calc(var(--lift) * 2));box-shadow:var(--relief-card);--edge:6px}
+.public-made-anatomy-plate[data-relief="slip"]{left:2%;top:56%;width:44%;height:38%;transform:translateZ(var(--lift));background:#d4bc8f;border-color:#a88c5c;box-shadow:var(--relief-slip);--edge:3px}
+.public-made-anatomy-plate[data-relief="slip"]::after{background:#a88c5c}
+.public-made-anatomy{--lift:clamp(34px,10cqw,72px)}
+.public-words .public-made-anatomy-labels{list-style:none;margin:0;padding:0;position:absolute;left:calc(4% + min(56cqw,380px) + 56px);right:0;top:calc(2.5em + 4px + clamp(36px,10cqw,84px));height:clamp(220px,62cqw,400px)}
+.public-words .public-made-anatomy-labels li{position:absolute;left:0;right:0;margin:0;padding:0;font-family:"Newsreader","Newsreader Fallback",Georgia,serif;font-size:clamp(19px,2.2cqw,24px);line-height:1.25;text-indent:0}
+.public-words .public-made-anatomy-labels li::before{content:none;display:none}
+.public-made-anatomy-labels strong{display:block;font-weight:500;position:relative}
+.public-made-anatomy-labels strong::before{content:"";position:absolute;top:.65em;right:calc(100% + 8px);width:var(--leader);border-top:1px solid #283c32}
+.public-made-anatomy-labels span{display:block;font-family:"Source Sans 3","Source Sans 3 Fallback",sans-serif;font-size:16px;opacity:1;color:#4a5a50}
+.public-made-anatomy-labels [data-relief="sheet"]{top:calc(-7% - .65em);--leader:11cqw}
+.public-made-anatomy-labels [data-relief="card"]{top:calc(21.5% - .65em);--leader:19cqw}
+.public-made-anatomy-labels [data-relief="slip"]{top:calc(52% - .65em);--leader:28cqw}
+.public-made-anatomy-labels [data-relief="page"]{top:calc(78% - .65em);--leader:0}
+.public-made-anatomy-source{margin:20px 0 0;font-size:15px;max-width:40em}
+@container (max-width:639px){
+  .public-made-anatomy-space{width:70cqw;left:12%}
+  .public-made-anatomy-stage{height:62cqw}
+  .public-words .public-made-anatomy-labels{position:static;height:auto;display:grid;gap:10px;margin-top:4px}
+  .public-words .public-made-anatomy-labels li{position:static;font-size:19px}
+  .public-made-anatomy-labels strong::before{content:none}
+}
+@media (forced-colors:active){.public-made-anatomy-plate,.public-made-anatomy-ground{forced-color-adjust:none;border:1px solid CanvasText;background:Canvas}}
+@media print{.public-made-anatomy-plate{box-shadow:none !important;border-color:#283c32}.public-made-anatomy{break-inside:avoid}}
