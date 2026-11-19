@@ -154,6 +154,8 @@ export function DateField({
             aria-invalid={missing ? true : undefined}
             aria-describedby={missing ? missingId : undefined}
             placeholder={words.dateField.choose}
+            // Named by its field's own label alone ("Starts"), not by every word inside the label, the hour's included.
+            aria-label={label || undefined}
             value={typed ?? said}
             onChange={(event) => setTyped(event.target.value)}
             onBlur={keep}
@@ -171,7 +173,7 @@ export function DateField({
               }
             }}
           />
-          <button type="button" className="live-date-open" disabled={disabled} tabIndex={sheet ? -1 : 0} aria-label={words.dateField.choose} onClick={(event) => {
+          <button type="button" className="live-date-open" disabled={disabled} tabIndex={sheet ? -1 : 0} aria-label={label ? `${label}, ${words.dateField.choose.toLowerCase()}` : words.dateField.choose} onClick={(event) => {
             // The month opens below. A field low on the screen is brought up first; where the page ends
             // and there is still no room, the month opens beside the field, so it never covers what is being read above.
             const field = event.currentTarget.parentElement;
@@ -257,9 +259,18 @@ export function TimeField({
   );
   // A time already set outside the list keeps its own choice.
   const own = value ?? defaultValue;
+  // Beside a day in one field (WhenField), the hour is not the label's own control: it is named "Starts, time".
+  const [named, setNamed] = useState<string>();
   const choices = !own || halfHours.includes(own) ? halfHours : [...halfHours, own].sort();
   return (
-    <NativeSelect className="live-time w-full" {...select} {...(value === undefined ? { defaultValue: defaultValue ?? "" } : { value })}>
+    <NativeSelect
+      className="live-time w-full"
+      aria-label={named}
+      ref={(control: HTMLSelectElement | null) => {
+        const field = control?.closest("label");
+        if (control && field && field.control !== control) setNamed(`${field.querySelector("span")?.textContent ?? ""}, ${words.dateField.time}`);
+      }}
+      {...select} {...(value === undefined ? { defaultValue: defaultValue ?? "" } : { value })}>
       <NativeSelectOption value="" disabled>
         {words.dateField.chooseTime}
       </NativeSelectOption>

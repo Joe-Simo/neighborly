@@ -159,7 +159,7 @@ export function WeekNoteView({ counts, monday, brief, waiting = false, onDone }:
           <span>
             <strong className="font-[650] text-[var(--live-ink)]">{text.brief.label}{rest.length ? ":" : ""}</strong>{rest.length ? ` ${rest.map((line) => line.brief).join(", ")}.` : ""}
           </span>
-          <button type="button" className={quietLink} data-opens="" onClick={() => setOpen(true)}>
+          <button type="button" className={quietLink} aria-label={text.readLabel} data-opens="" onClick={() => setOpen(true)}>
             {text.read}
           </button>
         </p>
