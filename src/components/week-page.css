@@ -43,3 +43,5 @@
   .public-week-day .public-week-piece{grid-column:2;grid-row:1/span 6;margin:0}
   .public-week-day>div:last-child>p{grid-column:1;max-width:28em;margin-bottom:0}
 }
+/* On a phone the opening sentence keeps about thirty letters to a line. */
+@media(max-width:400px){.public-week .public-week-lede>div{font-size:20px}}

@@ -172,3 +172,5 @@
 /* On the widest screens the words' column stops at its measure, so the sheet split .62 to 1 left a bare third of paper at the right of every sheet.
    Split evenly there: the words start at the sheet's middle and the paper either side of them is level. */
 @media(min-width:1600px){.public-words section,.public-made .public-made-figure{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+/* On a phone a link inside a sentence (the translation note's, the project's address) is a 44px target: its padding reaches above and below the line without moving it. */
+@media(max-width:430px){.public-words p a:not([class]),.public-words li a:not([class]),.public-words .public-words-note a,.public-words .public-words-address{padding-block:12px;margin-block:-12px}}
