@@ -66,7 +66,7 @@ const en = {
     ] },
     { title: "One painting, made\u00a0of\u00a0paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
-      "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolors it or crops into it. What moves is the paper around it.",
+      "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page adds nothing to it. On the home page it moves by its own depth: near stone and far hills part as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next. Around it, the paper moves.",
     ] },
     { title: "Cut along its own depth", blocks: [
       "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
@@ -78,7 +78,7 @@ const en = {
         { lead: "Plum means something is wrong.", rest: "There is no red anywhere. A mistake is named plainly, with the way to put it right.", tone: "wrong" },
         { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned.", tone: "done" },
       ],
-      "Paper is the one material: things rise, fold and turn as a sheet would. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Words are never smaller than 13 pixels in the app, and 15 on public pages like this one.",
+      "Paper is the one material: things rise, fold and turn as a sheet would. A room is shown whole or not yet at all, so no one reads a half-drawn screen.",
       "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°.",
     ] },
     { title: "Responsible AI, with Jev", table: "eval", blocks: [
@@ -164,7 +164,7 @@ const es: typeof en = {
     ] },
     { title: "Una sola pintura, hecha de papel", blocks: [
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
-      "La obra pintada se hizo con una herramienta de imágenes con IA a partir de indicaciones escritas, y luego se eligió y se retocó a mano. La página nunca pinta encima, nunca le cambia el color ni la recorta. Lo que se mueve es el papel que la rodea.",
+      "La obra pintada se hizo con una herramienta de imágenes con IA a partir de indicaciones escritas, y luego se eligió y se retocó a mano. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
@@ -176,7 +176,7 @@ const es: typeof en = {
         { lead: "Ciruela es que algo está mal.", rest: "No hay rojo en ninguna parte. Un error se nombra con claridad, junto con la manera de corregirlo.", tone: "wrong" },
         { lead: "Verde es hecho.", rest: "Una visita con sus notas, un recibo pagado, una llamada devuelta.", tone: "done" },
       ],
-      "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta.",
+      "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar.",
       "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
     ] },
     { title: "IA responsable, con Jev", table: "eval", blocks: [

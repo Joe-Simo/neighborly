@@ -277,7 +277,7 @@ export function PeopleForm({
                 value={person.born}
                 inputMode="numeric"
                 pattern="\d{4}"
-                placeholder={text.year}
+                placeholder="1958"
                 onChange={(event) => set({ born: event.target.value })}
               />
             </LiveField>

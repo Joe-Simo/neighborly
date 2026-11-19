@@ -3,7 +3,7 @@
 import { LiveLoading } from "@/components/workspace/primitives";
 import "./tools.css";
 import { LiveFailure } from "@/components/workspace/states";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import Papa from "papaparse";
 import { CircleCheck, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -124,6 +124,7 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
   const { words: book } = useWorkspace();
   const text = book.rooms.tools.sheet;
   const chooser = useRef<HTMLInputElement>(null);
+  const fileHelpId = useId();
   // The sheet that waits for a yes stays the same sheet while the yes is being saved: still ochre, its buttons
   // at rest, its label saying what is being done. Green is for the line that comes after the save has answered.
   // If the save fails the sheet has not moved, so nothing turns back from done to waiting.
@@ -159,10 +160,10 @@ export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, 
             }}
           />
           <div className="help-actions">
-            <Button variant="outline" onClick={() => chooser.current?.click()}><FileUp size={18} aria-hidden="true" /> {text.chooseFile}</Button>
+            <Button variant="outline" aria-describedby={fileHelpId} onClick={() => chooser.current?.click()}><FileUp size={18} aria-hidden="true" /> {text.chooseFile}</Button>
             {state.fileName && <span className="tools-file-name">{state.fileName}</span>}
           </div>
-          <p className="tools-small">{words.fileHelp}</p>
+          <p className="tools-small" id={fileHelpId}>{words.fileHelp}</p>
           <a className="tools-sample" download={words.sample.fileName} href={`data:text/csv;charset=utf-8,${encodeURIComponent(words.sample.text)}`}>{text.sampleFile}</a>
         </div>
       )}
