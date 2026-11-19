@@ -1127,3 +1127,6 @@ summary:focus-visible,
 /* The press, everywhere a button stands (public pages, sign-in, error pages): the workspace's own rules in paper.css
    ease it and add the phone's finger rules. Disabled never presses; Reduce Motion keeps the step, which is not motion. */
 [data-slot="button"]:active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) { translate: none; transform: translateY(var(--press-y)); box-shadow: none; }
+/* The display serif is tracked tight (down to -.06em), and the space between words was tightened with it until
+   "How we" read "Howwe". Word spacing gives the tracking back, so each heading keeps a true word space at every size. */
+:where(h1, h2, h3) { word-spacing: 0.04em; }

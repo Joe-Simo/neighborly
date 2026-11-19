@@ -185,6 +185,7 @@ export const serverRefusalsPlain: Record<string, { en: string; es: string }> = {
   "A statement cannot be dated in the future.": { en: "A statement can’t be dated after today. Choose today or an earlier day.", es: "Un estado de cuenta no puede tener una fecha después de hoy. Elige hoy o un día anterior." },
   "An entry cannot be dated in the future.": { en: "An entry can’t be dated after today. Choose today or an earlier day.", es: "Un movimiento no puede tener una fecha después de hoy. Elige hoy o un día anterior." },
   "Church owner access required.": { en: "Only the owner can do this. Ask them to do it.", es: "Solo quien es responsable puede hacer esto. Pídeselo." },
+  "Please wait a minute before preparing another draft.": { en: "Wait a minute before preparing another draft.", es: "Espera un minuto antes de preparar otro borrador." },
   "Owner access required.": { en: "Only the owner can do this. Ask them to do it.", es: "Solo quien es responsable puede hacer esto. Pídeselo." },
   "Coordinator access required.": { en: "Only the owner and coordinators can do this. Ask one of them.", es: "Solo quien es responsable y quienes coordinan pueden hacer esto. Pídeselo a una de esas personas." },
   "Team coordinator access required.": { en: "Only the team’s coordinator can do this. Ask them.", es: "Solo quien coordina el equipo puede hacer esto. Pídeselo." },
