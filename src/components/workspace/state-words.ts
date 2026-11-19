@@ -12,7 +12,7 @@ export const stateWords = {
   offlineRoom: "This room opens when it returns.",
   offlineDeck: "What’s on screen stays. Your changes go out once this device is back online.",
   errorTitle: "This room didn’t open.",
-  errorDeck: "Nothing is lost. Try again; if it still won’t open, the other rooms are in the menu.",
+  errorDeck: "What you saved is safe. Try again; if it still won’t open, the other rooms are in the menu.",
   privateTitle: "Kept private.",
   privateDeck: "This room is made from the records of the neighbors we help, so only coordinators open it. Your commitments and your team are where they always are.",
   privateDeckTools: "This room brings records in from a file and downloads them all, including the neighbors’ private details, so it opens to the group’s owner and coordinators only. Your commitments and your team are where they always are.",

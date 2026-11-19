@@ -363,11 +363,10 @@ export function en(set: WordSet) {
       offlineRoom: "This room opens when it returns.",
       offlineDeck: "What’s on screen stays. Your changes go out once this device is back online.",
       /** Said in green in the same strip for a moment once the connection returns. */
-      /** The page shown in place of one that could not be fetched (/offline): its sentence and its tab. */
-      offlinePageDeck: "Nothing is lost. Your team’s week will be here as soon as this device is back online.",
+      /** The page shown in place of one that could not be fetched (/offline): its tab. */
       offlinePageTab: "No connection · Kind Helps",
       errorTitle: "This room didn’t open.",
-      errorDeck: `Nothing is lost. Try again; if it still won’t open, the rest of your ${place} is in the menu.`,
+      errorDeck: `What you saved is safe. Try again; if it still won’t open, the rest of your ${place} is in the menu.`,
       privateTitle: "Kept private.",
       privateDeck: `This room is made from the records of the ${t.neighbors} we help, so only coordinators open it. Your commitments and your team are where they always are.`,
       /** Tools, for a member: it brings whole files of records in and takes them out. */
