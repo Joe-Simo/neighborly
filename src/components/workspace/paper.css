@@ -676,7 +676,7 @@
 @media (prefers-reduced-motion: reduce) {
   .paper-rise, .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-mobile-menu { animation: none; }
   .paper-loading-label { animation-duration: 1ms; }
-  .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team, .live-nav-marker[data-sliding],
+  .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team,
   .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }
   :is(.live-row, .help-row):hover { transform: none; }
 }
