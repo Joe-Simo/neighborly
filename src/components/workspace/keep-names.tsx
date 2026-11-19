@@ -3,10 +3,11 @@ import type { ReactNode } from "react";
 
 /**
  * Says a line with every person's name in it kept whole: a name never breaks across lines,
- * so "Home visit with Renee Baptiste" wraps before "Renee", not between her names.
+ * so "Home visit with Renee Baptiste" wraps before "Renee", not between the two names,
+ * and a joined name such as "Jean-Luc" never parts at its hyphen.
  */
 export function nameKeeper(names: readonly string[]) {
-  const whole = [...new Set(names.filter((name) => /\s/.test(name.trim())).map(keepTitle))].sort((a, b) => b.length - a.length);
+  const whole = [...new Set(names.filter((name) => /[\s-]/.test(name.trim())).map(keepTitle))].sort((a, b) => b.length - a.length);
   if (!whole.length) return (text: string): ReactNode => text;
   const pattern = new RegExp(`(${whole.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`);
   return (text: string): ReactNode => {
