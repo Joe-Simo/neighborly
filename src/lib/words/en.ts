@@ -90,7 +90,7 @@ export function en(set: WordSet) {
       signOut: "Sign out",
       leaveSample: "Leave the sample",
       close: "Close",
-      sampleMark: "Sample · made-up people",
+      sampleMark: "Sample · made-up\u00a0people",
       /** After the conference's name in a room's kicker: "St. Example Conference · Sample". */
       sample: "Sample",
       language: "Language",
