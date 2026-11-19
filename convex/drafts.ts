@@ -314,6 +314,31 @@ export const noteAsSent = query({
  * model also picks from the closed list, so a note code cannot read still gets a kind; see settleKind.
  * The model is sent the note with names, phones, emails and addresses taken out, and it writes no text at all.
  */
+/**
+ * Keeps the call just made to the assistant about a call note (aiReads), as it was made: the text exactly as it left,
+ * each question with its answer, the model, and whether the reply was used. Returns a function that takes the result
+ * being returned, schedules the row and hands the result straight back: the row is written after the answer goes,
+ * and a failure to keep it never holds up or changes the answer or its fallback.
+ */
+function keepRead(ctx: ActionCtx, at: { churchId: Id<"churches">; callId: Id<"calls">; purpose: "draft" | "urgency" }, note: string, questions: Record<string, Question>, known: Known, answers: Record<string, unknown> | null) {
+  return async <Result extends { verification: "checked" | "review" }>(result: Result): Promise<Result> => {
+    try {
+      const sent = scrubbed({ note }, known) as { note: string };
+      const asked = Object.entries(questions).map(([key, { instructions }]) => {
+        const answer = answers?.[key];
+        const pick = picked(answer);
+        const said = pick ? pick.confidence : noul(answer);
+        // Yes is what the code took from the answer: sure enough to act on, the same line every reading uses.
+        return { key, question: instructions, answer: said, ...(pick && { choice: pick.kind }), yes: said !== null && said >= sureEnough };
+      });
+      await ctx.scheduler.runAfter(0, internal.aiReads.keep, { ...at, sentText: sent.note, asked, model, outcome: result.verification, at: Date.now() });
+    } catch (cause) {
+      console.error(`aiReads not kept: ${cause instanceof Error ? cause.name : "unknown"}`);
+    }
+    return result;
+  };
+}
+
 export const draftRequest = action({
   args: { churchId: v.id("churches"), callId: v.id("calls") }, returns: requestDraft,
   handler: async (ctx, args) => {
@@ -326,14 +351,16 @@ export const draftRequest = action({
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
     // Each question stands on its own in plain words. A bare field name ("proposed.kind") gave the model nothing to judge.
     const payeeShown = payeeIsShown(draft, note, { names, addresses, others });
-    const answers = await decide(env.TYPESAFE_API_KEY, { note }, {
+    const questions = {
       ...Object.fromEntries(Object.entries(draftQuestions(draft, payeeShown)).map(([field, instructions]) => [field, { type: "noul" as const, instructions }])),
       chosenKind: kindQuestion,
-    }, { names, addresses, others });
-    if (!answers) return fallback;
+    };
+    const answers = await decide(env.TYPESAFE_API_KEY, { note }, questions, { names, addresses, others });
+    const kept = keepRead(ctx, { ...args, purpose: "draft" }, note, questions, { names, addresses, others }, answers);
+    if (!answers) return kept(fallback);
     const sure = { kind: noul(answers.kind), payeeKind: noul(answers.payeeKind) }, pick = picked(answers.chosenKind);
     // A proposed field with no usable answer means the reply cannot be trusted; the person reads the draft as code made it.
-    if ((draft.kind && sure.kind === null && !pick) || (draft.payeeKind && payeeShown && sure.payeeKind === null)) return fallback;
+    if ((draft.kind && sure.kind === null && !pick) || (draft.payeeKind && payeeShown && sure.payeeKind === null)) return kept(fallback);
     // Field names, numbers and a kind from the closed list only, never the note: enough to see why a field came back blank.
     console.log(`jev ${JSON.stringify({ ...sure, chosenKind: pick?.kind, chosenConfidence: pick?.confidence })}`);
     const kind = settleKind(draft.kind, sure.kind, pick);
@@ -343,7 +370,7 @@ export const draftRequest = action({
       draft.payeeKind = null;
       draft.notes.push(draftNotes.confirmPayee);
     }
-    return { ...draft, kind, notes, verification: "checked" as const };
+    return kept({ ...draft, kind, notes, verification: "checked" as const });
   },
 });
 
@@ -376,15 +403,17 @@ async function readNote(ctx: ActionCtx, args: { churchId: Id<"churches">; callId
   const fallback = { signs, verification: "review" as const };
   if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
   if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-  const answers = await decide(env.TYPESAFE_API_KEY, { note }, Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])), { names, addresses, others });
-  if (!answers) return fallback;
+  const questions = Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)]));
+  const answers = await decide(env.TYPESAFE_API_KEY, { note }, questions, { names, addresses, others });
+  const kept = keepRead(ctx, { ...args, purpose: "urgency" }, note, questions, { names, addresses, others }, answers);
+  if (!answers) return kept(fallback);
   const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
-  if (signs.some(({ reason }) => sure[reason] === null)) return fallback;
+  if (signs.some(({ reason }) => sure[reason] === null)) return kept(fallback);
   console.log(`jev ${JSON.stringify(sure)}`);
-  return {
+  return kept({
     signs: urgentReasons.flatMap(reason => ((sure[reason] ?? 0) >= sureEnough ? [signs.find(sign => sign.reason === reason) ?? { reason, day: null }] : [])),
     verification: "checked" as const,
-  };
+  });
 }
 
 const yearFlagKinds = ["approvedNotPaid", "paidNoPayment", "visitNoHours", "noteSaysPaid", "visitNotMarked"] as const;

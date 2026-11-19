@@ -609,7 +609,7 @@ export const load = internalMutation({
 });
 
 /** The tables a conference's rows sit in, reached by their `by_church` index. */
-const churchTables = ["ledgerEntries", "visits", "requestDrafts", "assistanceRequests", "calls", "neighbors", "auditEvents", "calendarFeeds", "payees", "invitations", "outbox", "meetings", "meetingResponses", "series", "deposits", "voucherStock", "ledgerKinds", "bankStatements", "neighborNotes", "referralAgencies", "announcements", "tasks", "timeOff", "availability", "requests", "commitments", "teamMembers", "teams", "memberships"] as const;
+const churchTables = ["ledgerEntries", "visits", "aiReads", "requestDrafts", "assistanceRequests", "calls", "neighbors", "auditEvents", "calendarFeeds", "payees", "invitations", "outbox", "meetings", "meetingResponses", "series", "deposits", "voucherStock", "ledgerKinds", "bankStatements", "neighborNotes", "referralAgencies", "announcements", "tasks", "timeOff", "availability", "requests", "commitments", "teamMembers", "teams", "memberships"] as const;
 
 /**
  * Every row of a sample conference, each read once: its own tables, the two reached only through a parent

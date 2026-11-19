@@ -7,6 +7,7 @@ import { voucherGiven } from "./treasury";
 import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
 import { tally } from "./counts";
+import { dropReads } from "./aiReads";
 
 /**
  * The help line and requests for help.
@@ -491,6 +492,7 @@ export const takeBackCall = mutation({
         (await ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect()).some((request) => request.callId === callId));
     if (built) throw new ConvexError("This call has been worked on since. Change it from its record instead.");
     await ctx.db.delete("calls", callId);
+    await dropReads(ctx, callId);
     return null;
   },
 });
@@ -539,6 +541,8 @@ const keptDraft = v.object({
 async function dropDrafts(ctx: MutationCtx, callId: Id<"calls">) {
   const kept = await ctx.db.query("requestDrafts").withIndex("by_call", (q) => q.eq("callId", callId)).take(10);
   for (const draft of kept) await ctx.db.delete("requestDrafts", draft._id);
+  // What the assistant was sent for the draft goes with it.
+  await dropReads(ctx, callId, "draft");
 }
 
 /** Drafts waiting for a yes, newest first, each with its call. */

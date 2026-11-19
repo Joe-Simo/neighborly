@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import type { FunctionReturnType } from "convex/server";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { draftNotes, monthlyAllowance } from "@/lib/request-draft";
@@ -55,8 +56,8 @@ export function DraftToDo({ notes }: { notes: string[] }) {
 
 /**
  * The foot of a request the assistant filled in from a call note. One plum sentence says how it was made and why
- * a field is blank; "What the assistant saw" opens the note exactly as it was sent, with identity taken out, and
- * the limits that never change. It sits inside the plum `help-assistant` line.
+ * a field is blank; "What the assistant saw" opens the record kept when it was sent (the text, each question and
+ * answer, the model) and the limits that never change. With no record kept, only the fixed lines show: nothing is rebuilt. It sits inside the plum `help-assistant` line.
  *
  * The note is fetched only when the sheet is opened. A draft the assistant could not check was made by rules alone, and the sheet says so.
  */
@@ -68,10 +69,8 @@ export function AssistantLimits({ callId, verification, notes }: { callId: Id<"c
   const opened = useOpenedIntoView<HTMLSpanElement>(open);
   const opener = useRef<HTMLButtonElement>(null);
   const whys = useDraftNotes(notes).map((note) => note.why);
-  const removed: Record<string, string> = text.removed;
   const checked = verification === "checked";
-  const sent = useQuery(api.drafts.noteAsSent, open && checked ? { churchId: data.church.id as Id<"churches">, callId } : "skip");
-  const read = sent?.replace(/\[(name|phone|email|address|date)\]/g, (_: string, kind: string) => `[${removed[kind]}]`);
+  const record = useQuery(api.aiReads.latest, open ? { churchId: data.church.id as Id<"churches">, callId, purpose: "draft" } : "skip");
   return (
     <span className="block min-w-0">
       {/* Once the yes is given, "nothing is saved" is no longer true: the sealed sheet fades it where it stands. */}
@@ -85,14 +84,8 @@ export function AssistantLimits({ callId, verification, notes }: { callId: Id<"c
           {[
             {
               label: text.limits.read,
-              detail: checked ? (
-                <>
-                  <span className="mb-1.5 block min-h-[1.4em] border-l-2 border-[#cfc5dc] pl-3 font-serif text-[17px]" aria-busy={read === undefined}>{read}</span>
-                  {text.limits.readDetail}
-                </>
-              ) : (
-                text.limits.notSent
-              ),
+              // What was recorded when it was sent, as it was; a draft never sent says so.
+              detail: record === undefined ? <span className="block min-h-[1.4em]" aria-busy="true" /> : record ? <AssistantRecord record={record} /> : checked ? text.limits.readDetail : text.limits.notSent,
             },
             { label: text.limits.does, detail: text.limits.doesDetail },
             { label: text.limits.blank, detail: text.limits.blankDetail },
@@ -103,6 +96,74 @@ export function AssistantLimits({ callId, verification, notes }: { callId: Id<"c
               <span>{detail}</span>
             </span>
           ))}
+        </span>
+      )}
+    </span>
+  );
+}
+
+type Recorded = NonNullable<FunctionReturnType<typeof api.aiReads.latest>>;
+
+/**
+ * One call to the assistant exactly as the server recorded it: the text as it left, with what was taken out shown by
+ * its placeholder, each question as it was put and the answer that came back, and the model that answered.
+ * Nothing here is rebuilt: a question stands in the words it was sent in, and an answer as the number Jev returned.
+ */
+export function AssistantRecord({ record }: { record: Recorded }) {
+  const { words } = useWorkspace();
+  const text = useRoomWords();
+  const removed: Record<string, string> = text.removed;
+  const sent = record.sentText.replace(/\[(name|phone|email|address|date)\]/g, (_: string, kind: string) => `[${removed[kind]}]`);
+  const figure = new Intl.NumberFormat(words.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (
+    <>
+      <span className="mb-1.5 block border-l-2 border-[#cfc5dc] pl-3 font-serif text-[17px]">{sent}</span>
+      {text.limits.readDetail}
+      {/* The questions went in English; a reader in another language is told so once. */}
+      {words.locale !== "en" && <span className="mt-3 block text-[var(--live-muted)]">{text.limits.sentInEnglish}</span>}
+      {/* Question and answer side by side; what the code took as yes first, the rest after, every word kept. */}
+      <span className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-x-5 gap-y-2" role="table" aria-label={text.show}>
+        <span role="row" className="contents">
+          <span role="columnheader" className="font-[650]">{text.limits.question}</span>
+          <span role="columnheader" className="text-right font-[650]">{text.limits.answer}</span>
+        </span>
+        {[...record.asked].sort((a, b) => Number(b.yes) - Number(a.yes)).map((one) => (
+          <span key={one.key} role="row" className="contents">
+            <span role="cell" lang="en">{one.question}</span>
+            <span role="cell" className="text-right tabular-nums whitespace-nowrap">
+              {one.yes && <span className="font-[650]">{text.limits.yes} </span>}
+              {one.answer === null ? "—" : figure.format(one.answer)}
+              {one.choice && <span lang="en" className="block">{one.choice}</span>}
+            </span>
+          </span>
+        ))}
+      </span>
+      <span className="mt-3 block">{text.limits.model(record.model)}</span>
+    </>
+  );
+}
+
+/** On a call the assistant put first: "What the assistant saw" opens what it was sent about the call and what it answered. */
+export function UrgencyRead({ callId }: { callId: Id<"calls"> }) {
+  const { data } = useWorkspace();
+  const text = useRoomWords();
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const opened = useOpenedIntoView<HTMLSpanElement>(open);
+  const opener = useRef<HTMLButtonElement>(null);
+  const record = useQuery(api.aiReads.latest, open ? { churchId: data.church.id as Id<"churches">, callId, purpose: "urgency" } : "skip");
+  return (
+    <span className="help-first-read block min-w-0">
+      <button ref={opener} type="button" className={`${quiet} -my-2.5 text-inherit decoration-[#cfc5dc]`} aria-expanded={open} aria-controls={id} data-opens="" onClick={() => setOpen(!open)}>
+        {open ? text.hide : text.show}
+      </button>
+      {open && (
+        // Esc folds it away again and hands focus back to what opened it, as every sheet does.
+        <span id={id} ref={opened} tabIndex={-1} onKeyDown={(event) => { if (event.key !== "Escape") return; event.stopPropagation(); setOpen(false); opener.current?.focus(); }} className="paper-rise mt-4 grid scroll-my-24 gap-y-3 text-[15px] leading-snug text-[var(--live-ink)] outline-none">
+          <span className="grid gap-y-1">
+            <span className="font-[650]">{text.limits.read}</span>
+            <span>{record === undefined ? <span className="block min-h-[1.4em]" aria-busy="true" /> : record ? <AssistantRecord record={record} /> : text.limits.readDetail}</span>
+          </span>
         </span>
       )}
     </span>

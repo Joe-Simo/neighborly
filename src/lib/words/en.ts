@@ -553,6 +553,11 @@ export function en(set: WordSet) {
         blankDetail: "The note did not say it plainly, or the assistant was not sure. It leaves a blank before it guesses.",
         person: "You decide",
         personDetail: "A person saves every request, and a person decides on help. The assistant decides nothing about who is helped.",
+        question: "Question",
+        answer: "Answer",
+        yes: "Yes",
+        sentInEnglish: "Questions sent in English, as they were sent.",
+        model: (m: string) => `Answered by ${m}.`,
       },
       removed: { name: "name", phone: "phone", email: "email", address: "address", date: "date" },
       notes: {

@@ -542,6 +542,11 @@ export function es(set: WordSet): Words {
         blankDetail: "La nota no lo decía con claridad, o el asistente no estaba seguro. Deja el espacio en blanco antes que adivinar.",
         person: "Tú decides",
         personDetail: "Una persona guarda cada petición, y una persona decide sobre la ayuda. El asistente no decide nada sobre a quién se ayuda.",
+        question: "Pregunta",
+        answer: "Respuesta",
+        yes: "Sí",
+        sentInEnglish: "Preguntas enviadas en inglés, tal como se enviaron.",
+        model: (m: string) => `Respondió ${m}.`,
       },
       removed: { name: "nombre", phone: "teléfono", email: "correo", address: "dirección", date: "fecha" },
       notes: {

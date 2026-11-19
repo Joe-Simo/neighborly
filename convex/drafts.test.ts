@@ -191,6 +191,69 @@ describe("a call note drafted into a request", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  test("what was sent and each answer are kept with the call, open only to those who can open the note", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+      vi.stubGlobal("fetch", answers({ kind: 0.99, payeeKind: 0.99, chosenKind: 0.99 }));
+      const { t, ids, coordinator, member } = await helpLine();
+      const args = { churchId: ids.churchId, callId: ids.callId };
+      await coordinator.action(api.drafts.draftRequest, args);
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      const draft = await coordinator.query(api.aiReads.latest, { ...args, purpose: "draft" });
+      expect(draft).toMatchObject({ model: "jev-1.14.0", outcome: "checked" });
+      expect(draft?.sentText).not.toMatch(/rosa|delgado|555|0142|14 sample/i);
+      expect(draft?.asked.map((one) => [one.key, one.yes])).toEqual([["kind", true], ["payeeKind", true], ["chosenKind", true]]);
+      expect(draft?.asked[0].question).toContain("mention rent");
+      await expect(member.query(api.aiReads.latest, { ...args, purpose: "draft" })).rejects.toThrow("coordinators and owners only");
+      await expect(coordinator.query(api.aiReads.latest, { ...args, churchId: ids.otherChurch, purpose: "draft" })).rejects.toThrow();
+      // The draft going takes what was sent for it; the urgency reading stays with the note.
+      await coordinator.action(api.drafts.readUrgency, args);
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      expect(await coordinator.query(api.aiReads.latest, { ...args, purpose: "urgency" })).not.toBeNull();
+      await coordinator.mutation(api.assistance.discardDraft, args);
+      expect(await coordinator.query(api.aiReads.latest, { ...args, purpose: "draft" })).toBeNull();
+      // The neighbor's record removed: the note goes, and every row about it with it.
+      await t.run(async ctx => {
+        const own = await ctx.db.query("memberships").collect();
+        for (const one of own) if (one.role === "coordinator") await ctx.db.patch("memberships", one._id, { role: "owner" });
+      });
+      const neighborId = (await t.run(ctx => ctx.db.get("calls", ids.callId)))!.neighborId!;
+      await coordinator.mutation(api.neighbors.remove, { churchId: ids.churchId, neighborId, typedName: "Rosa Delgado" });
+      expect(await t.run(ctx => ctx.db.query("aiReads").collect())).toEqual([]);
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("a call removed takes its rows, and a failed keep never holds up the answer", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+      vi.stubGlobal("fetch", answers({ kind: 0.99, payeeKind: 0.99, chosenKind: 0.99 }));
+      const { t, ids, coordinator } = await helpLine();
+      const args = { churchId: ids.churchId, callId: ids.callId };
+      await coordinator.action(api.drafts.draftRequest, args);
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      await t.run(ctx => ctx.db.patch("calls", ids.callId, { takenAt: Date.now() }));
+      await coordinator.mutation(api.assistance.takeBackCall, args);
+      expect(await t.run(ctx => ctx.db.query("aiReads").collect())).toEqual([]);
+      // A keep that finds its call gone writes nothing and throws nothing.
+      await t.mutation(internal.aiReads.keep, { ...args, purpose: "draft", sentText: "x", asked: [], model: "jev-1.14.0", outcome: "review", at: 0 });
+      expect(await t.run(ctx => ctx.db.query("aiReads").collect())).toEqual([]);
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("a record of what was sent goes after 30 days, and a newer one stays", async () => {
+    const { t, ids } = await helpLine();
+    const day = 86_400_000;
+    await t.run(async ctx => {
+      for (const at of [Date.now() - 31 * day, Date.now() - day]) await ctx.db.insert("aiReads", { churchId: ids.churchId, callId: ids.callId, purpose: "draft", sentText: "behind on rent", asked: [], model: "jev-1.14.0", outcome: "review", at });
+    });
+    await t.mutation(internal.aiReads.dropOld, {});
+    const left = await t.run(ctx => ctx.db.query("aiReads").collect());
+    expect(left).toHaveLength(1);
+    expect(left[0].at).toBeGreaterThan(Date.now() - 2 * day);
+  });
+
   test("a group that has used its month's allowance gets the draft for review, not an error", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const fetch = answers({ kind: 0.99, amountRequested: 0.99, payeeKind: 0.99 });

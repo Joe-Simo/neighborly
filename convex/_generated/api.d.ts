@@ -9,6 +9,7 @@
  */
 
 import type * as access from "../access.js";
+import type * as aiReads from "../aiReads.js";
 import type * as assistance from "../assistance.js";
 import type * as calendar from "../calendar.js";
 import type * as closing from "../closing.js";
@@ -46,6 +47,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  aiReads: typeof aiReads;
   assistance: typeof assistance;
   calendar: typeof calendar;
   closing: typeof closing;

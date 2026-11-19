@@ -104,6 +104,22 @@ export default defineSchema({
     createdBy: v.id("memberships"),
     createdAt: v.number(),
   }).index("by_church", ["churchId", "createdAt"]).index("by_call", ["callId"]),
+  // One call to the assistant about a call note, as it was made: the text exactly as it left (already scrubbed, but held
+  // as sensitive, since the scrub works by rules), each question and the answer that came back, and the model that answered.
+  // It goes with the call it explains, and a draft's goes with the draft. "What the assistant saw" shows the latest.
+  aiReads: defineTable({
+    churchId: v.id("churches"),
+    callId: v.id("calls"),
+    purpose: v.union(v.literal("draft"), v.literal("urgency")),
+    sentText: v.string(),
+    // Each question's words are kept once, in aiQuestions: they are fixed by the code, and a row points at them.
+    asked: v.array(v.object({ key: v.string(), question: v.id("aiQuestions"), answer: v.union(v.number(), v.null()), choice: v.optional(v.string()), yes: v.boolean() })),
+    model: v.string(),
+    outcome: v.union(v.literal("checked"), v.literal("review")),
+    at: v.number(),
+  }).index("by_church", ["churchId", "at"]).index("by_call", ["callId", "purpose", "at"]).index("by_at", ["at"]),
+  // The words of one question the assistant was asked, as the code wrote them. They hold nothing from a note.
+  aiQuestions: defineTable({ text: v.string() }).index("by_text", ["text"]),
   assistanceRequests: defineTable({
     churchId: v.id("churches"),
     neighborId: v.id("neighbors"),

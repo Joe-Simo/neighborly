@@ -3,7 +3,7 @@
 import { DateLeaf } from "@/components/workspace/primitives";
 
 import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf, openUp, takeLine, useKeptLine } from "@/components/workspace/fold";
-import { AssistantLimits, DraftToDo } from "@/components/workspace/week-note/assistant-limits";
+import { AssistantLimits, DraftToDo, UrgencyRead } from "@/components/workspace/week-note/assistant-limits";
 import {
   startTransition,
   useCallback,
@@ -866,6 +866,7 @@ export function HelpLineView({
                         {whyFirst(call.urgent, words).join(" · ") ||
                           words.urgent.label}
                       </strong>
+                      {call.urgent.by === "assistant" && <UrgencyRead callId={call.id as Id<"calls">} />}
                     </p>
                   )}
                   {call.urgent?.by === "person" && call.urgent.byName && (

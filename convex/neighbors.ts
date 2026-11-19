@@ -10,6 +10,7 @@ import schema from "./schema";
 import { longestLanguageName, spokenName } from "./spoken";
 import { tally } from "./counts";
 import { addName, rebuildNames } from "./knownNames";
+import { dropReads } from "./aiReads";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
@@ -275,7 +276,11 @@ export const remove = mutation({
     for (const draft of drafts) await ctx.db.delete("requestDrafts", draft._id);
     for (const note of notes) await ctx.db.delete("neighborNotes", note._id);
     // What the year counts stays as a row with nothing in it that was said or written about the household.
-    for (const call of calls) await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });
+    for (const call of calls) {
+      await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });
+      // What the assistant was sent from the note goes with the note.
+      await dropReads(ctx, call._id);
+    }
     for (const visit of visits) await ctx.db.patch("visits", visit._id, { notes: "" });
     for (const request of requests) await ctx.db.patch("assistanceRequests", request._id, { summary: REMOVED, decisionNote: "", payeeName: "", referral: undefined, referrals: undefined });
     await tally(ctx, churchId, { households: -1, waiting: -requests.filter((request) => request.status === "open").length, gone: neighborId });
