@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, CircleCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { RoomAside, useFarScreen } from "@/components/workspace/aside";
 import { LiveLoading, PaperScene } from "@/components/workspace/primitives";
-import { openUp, useGrowsSmoothly, useSavedLine } from "@/components/workspace/fold";
+import { openUp, useFocusOnce, useGrowsSmoothly, useSavedLine } from "@/components/workspace/fold";
 import { SavedWords } from "@/components/workspace/saved-words";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
@@ -51,12 +51,13 @@ function PaidLine({ paid }: { paid: Paid }) {
   const line = useRef<HTMLDivElement>(null);
   const left = paid.request.remaining - paid.amount;
   const said = left > 0 ? w.saidLeft(formatFigure(left)) : w.said;
+  // Asked for before the line is said, so a line that takes focus is read by that and not said twice.
+  useFocusOnce(line, paid.entryId);
   const seen = useSavedLine(line, { of: paid.entryId });
   // After the saved line's own opening is set up, so the hand-over takes its place.
   useLayoutEffect(() => {
     if (line.current) handOver(line.current);
   }, []);
-  useEffect(() => line.current?.focus({ preventScroll: true }), []);
   const kind = categoryLabel(room, paid.request.kind);
   const day = dayLabel(words.locale, paid.date);
   const to = [sampleSaid(paid.request.payeeName), paid.checkNumber && room.lines.check(paid.checkNumber)].filter(Boolean).join(" · ");

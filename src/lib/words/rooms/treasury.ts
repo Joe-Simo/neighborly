@@ -50,8 +50,9 @@ export const en = (t: Terms, place: string) => ({
   },
   /** The line after a step is taken. */
   done: {
-    moneyOut: "{amount} to {name} is recorded in the ledger, and the balance is up to date.",
-    moneyIn: "{amount} from {name} is recorded in the ledger, and the balance is up to date.",
+    /** {name} stays exactly as the treasurer typed it. */
+    moneyOut: "{amount} to {name} recorded. The balance is up to date.",
+    moneyIn: "{amount} from {name} recorded. The balance is up to date.",
     deposit: (amount: string) => `A deposit of ${amount} is recorded. It will wait in Match the bank until the statement shows it.`,
     reversed: (amount: string) => `${amount} is taken back with a new entry dated today. The first entry stays in the ledger.`,
     /** The reason written on the entry that takes back one undone right after it was recorded. */
@@ -316,8 +317,9 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     deposit: { title: "Anotar un depósito", deck: "Los donativos que llevaste juntos al banco. Pasan a ser una sola línea para comparar con el estado de cuenta." },
   },
   done: {
-    moneyOut: "{amount} para {name} quedan anotados en el libro, y el saldo está al día.",
-    moneyIn: "{amount} de {name} quedan anotados en el libro, y el saldo está al día.",
+    // Said the same for $1 and $25: "anotado" agrees with the amount as one sum, not with the number of dollars.
+    moneyOut: "Anotado: {amount} para {name}. El saldo está al día.",
+    moneyIn: "Anotado: {amount} de {name}. El saldo está al día.",
     deposit: (amount) => `Quedó anotado un depósito de ${amount}. Esperará en Comparar con el banco hasta que el estado de cuenta lo muestre.`,
     reversed: (amount) => `${amount} se anulan con un movimiento nuevo con fecha de hoy. El primer movimiento se queda en el libro.`,
     undoneReason: "Deshecho justo después de anotarse.",

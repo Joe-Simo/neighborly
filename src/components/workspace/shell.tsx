@@ -998,7 +998,7 @@ declare global {
  * stays as a message for screen readers. Each new outcome is a new line (the old one is cleared first).
  */
 function Outcome({ children, action, ref }: { children: string; action?: ReactNode; ref: RefObject<HTMLDivElement | null> }) {
-  // It is laid down like a slip, and after six seconds (twelve with a way back) it closes up so the page below does not jump.
+  // It is laid down like a slip, and after six seconds (ten with a way back) it closes up so the page below does not jump.
   const seen = useSavedLine(ref, { action: !!action, of: children });
   return (
     // Not a status region of its own: the words are said in the page's one polite region (fold.ts), which was there first.

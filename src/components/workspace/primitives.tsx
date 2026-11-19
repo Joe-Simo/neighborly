@@ -166,7 +166,9 @@ export function FollowingHeading({ children, id }: { children: ReactNode; id?: s
  * focus (LiveField). The line goes once the person changes the answer. Call `form.checkValidity()` after marking.
  */
 export function markWrong(form: HTMLFormElement, name: string, said: string) {
-  const control = form.elements.namedItem(name);
+  let control = form.elements.namedItem(name);
+  // A day and a time (WhenField) answer under one hidden name; the problem is said on its day.
+  if (control instanceof HTMLInputElement && control.type === "hidden") control = control.parentElement?.querySelector(".live-date-value") ?? null;
   if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement) control.setCustomValidity(said);
 }
 

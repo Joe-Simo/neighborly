@@ -60,10 +60,10 @@ export function LiveTimeOffForm({
     >
       <div className="live-form-grid">
         <LiveField label={words.timeOffForm.firstDay}>
-          <DateField name="start" value={draft.start} onChange={(start) => setDraft({ ...draft, start })} required />
+          <DateField short name="start" value={draft.start} onChange={(start) => setDraft({ ...draft, start })} required />
         </LiveField>
         <LiveField label={words.timeOffForm.lastDay}>
-          <DateField name="end" value={draft.end} min={draft.start || undefined} onChange={(end) => setDraft({ ...draft, end })} required />
+          <DateField short name="end" value={draft.end} min={draft.start || undefined} onChange={(end) => setDraft({ ...draft, end })} required />
         </LiveField>
       </div>
       <LiveField

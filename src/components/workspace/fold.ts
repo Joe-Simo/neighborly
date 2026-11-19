@@ -426,6 +426,29 @@ export function speak(words: string) {
   window.setTimeout(() => (place.textContent = words), 120);
 }
 
+/** What each saved line said when it took focus: every saying takes focus once. */
+const focusTaken = new Set<unknown>();
+/**
+ * A saved line that tells a screen reader by taking focus takes it once, when it is first said and focus is free.
+ * Drawn again, or drawn as a sheet closes, it leaves focus where it is: a closing sheet hands it back to its opener.
+ * Where it does not take focus it is still said, in the page's polite region (useSavedLine).
+ */
+export function useFocusOnce(line: RefObject<HTMLElement | null>, saying: unknown) {
+  useEffect(() => {
+    if (focusTaken.has(saying)) return;
+    // After a closing sheet has handed focus back to its opener (live-dialog.tsx): the line takes focus only where
+    // focus has nowhere to be, as when the control that was pressed has left with the step it took.
+    const frame = requestAnimationFrame(() => {
+      const now = document.activeElement;
+      if (now && now !== document.body) return;
+      focusTaken.add(saying);
+      // Focus tells a screen reader; it must not pull the page away from where the sheet was.
+      line.current?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [line, saying]);
+}
+
 /**
  * The green line that says what was done, in every room. True while the line is on the page; then the line
  * closes up and the answer turns false, and the room keeps the words as a message for screen readers only.

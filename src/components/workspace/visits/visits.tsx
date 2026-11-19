@@ -2,7 +2,7 @@
 
 import { DateLeaf } from "@/components/workspace/primitives";
 
-import { FOLD_HOLD, closeUp, foldLeaves, openUp, useSavedLine } from "@/components/workspace/fold";
+import { FOLD_HOLD, closeUp, foldLeaves, openUp, useFocusOnce, useSavedLine } from "@/components/workspace/fold";
 import "./visits.css";
 import {
   Fragment,
@@ -349,8 +349,9 @@ export function VisitsDone({
   children: string;
 }) {
   const line = useRef<HTMLDivElement>(null);
+  // Asked for before the line is said, so a line that takes focus is read by that and not said twice.
+  useFocusOnce(line, children);
   const seen = useSavedLine(line);
-  useEffect(() => line.current?.focus({ preventScroll: true }), []);
   return (
     <div
       className={seen ? "live-success help-done visits-done paper-settle" : "sr-only"}

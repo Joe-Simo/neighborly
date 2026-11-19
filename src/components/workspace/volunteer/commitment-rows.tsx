@@ -1,9 +1,9 @@
 "use client";
 
 import { SavedWords } from "@/components/workspace/saved-words";
-import { FOLD_HOLD, arriving, foldLeaves, openUp, useSavedLine, viewTop } from "@/components/workspace/fold";
+import { FOLD_HOLD, arriving, foldLeaves, openUp, useFocusOnce, useSavedLine, viewTop } from "@/components/workspace/fold";
 import "./volunteer.css";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { ArrowRight, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -92,16 +92,15 @@ export function CommitmentRows({
  * The line that says a reply was taken. It is seen for six seconds, then leaves the
  * page and stays as a message for screen readers.
  */
-function Said({ children }: { children: string }) {
+function Said({ children, of }: { children: string; of: string }) {
   const line = useRef<HTMLParagraphElement>(null);
+  // Asked for before the line is said, so a line that takes focus is read by that and not said twice.
+  useFocusOnce(line, of);
   const seen = useSavedLine(line);
-  // Focus tells a screen reader; it must not pull the page away from where the sheet was.
-  useEffect(() => line.current?.focus({ preventScroll: true }), []);
   return (
     <p
       ref={line}
       tabIndex={-1}
-      role="status"
       className={seen ? "live-success help-done volunteer-said paper-settle" : "sr-only"}
     >
       {seen && <CircleCheck size={22} aria-hidden="true" />}
@@ -157,7 +156,7 @@ function WaitsToGo({ when }: { when: boolean }) {
  * The word that takes the buttons' place takes the focus they had, once, and only when focus has fallen to the
  * page with them: a person who has moved on to something else keeps their place.
  */
-const takeFocus = (word: HTMLElement | null) => {
+export const takeFocus = (word: HTMLElement | null) => {
   if (word && document.activeElement === document.body) word.focus({ preventScroll: true });
 };
 
@@ -278,7 +277,7 @@ export function IncomingRequests({
     await foldLeaves();
     flushSync(() => setGiven(undefined));
   };
-  const line = said && <Said key={said.of}>{said.words}</Said>;
+  const line = said && <Said key={said.of} of={said.of}>{said.words}</Said>;
   const waiting = shown.filter((request) => request.id !== taken?.id).length;
   return shown.length ? (
     <>
@@ -311,7 +310,7 @@ export function IncomingRequests({
                 </div>
                 {request.id === taken?.id ? (
                   // The buttons it replaces are gone, so the word takes focus: it is never left to fall to the page.
-                  <p className="volunteer-given" role="status" tabIndex={-1} ref={takeFocus}>
+                  <p className="volunteer-given" tabIndex={-1} ref={takeFocus}>
                     <CircleCheck size={22} aria-hidden="true" />
                     {statuses.accepted}
                   </p>
