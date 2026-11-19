@@ -4,6 +4,7 @@ import { frameStep } from "@/lib/scroll-frame";
 import { setAct } from "@/lib/chapter-act";
 import { Fragment, useEffect, useRef } from "react";
 import { HomeYear } from "./home-year";
+import { SlipFolds } from "./slip-folds";
 import { PageTurn } from "./chapter-sheets";
 import "./relief-journey.css";
 import { CutHead } from "@/components/cut-heads";
@@ -95,8 +96,12 @@ export function ReliefStory() {
     return () => { drop(); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
   }, []);
   return <section ref={root} className="relief-story" aria-label="What a conference does with Kind Helps">
-    {story.map((part, index) => <article key={part.picture} className="relief-panel" data-chapter={part.picture} data-side={index % 2 ? "left" : "right"}>
-      {part.picture === "help" ? <PageTurn>{hold(part)}</PageTurn> : hold(part)}
-    </article>)}
+    {story.map((part, index) => <Fragment key={part.picture}>
+      <article className="relief-panel" data-chapter={part.picture} data-side={index % 2 ? "left" : "right"}>
+        {part.picture === "help" ? <PageTurn>{hold(part)}</PageTurn> : hold(part)}
+      </article>
+      {/* The call, once written down, folds and is laid on the year's pile: the slip between the call and the visit (slip-folds.tsx). */}
+      {part.picture === "call" && <SlipFolds />}
+    </Fragment>)}
   </section>;
 }
