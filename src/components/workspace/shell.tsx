@@ -53,6 +53,7 @@ import { readyToSpeak, useSavedLine } from "@/components/workspace/fold";
 import type { ReliefName } from "@/components/workspace/relief";
 import { ArrivingRelief, fetchAhead } from "@/components/workspace/relief-arrival";
 import { fetchRoomsAhead, roomSection } from "@/components/workspace/sections";
+import { fetchMonthAhead } from "@/components/workspace/date-field";
 import type {
   LiveCommand,
   LiveConfirmation,
@@ -328,7 +329,7 @@ export function LiveWorkspace({
   const [rested, setRested] = useState(false);
   useEffect(() => void roomsOpened.add(area), [area]);
   // Once the first room is in, the others are fetched while nothing else is happening.
-  useEffect(() => fetchRoomsAhead(), []);
+  useEffect(() => fetchRoomsAhead(fetchMonthAhead), []);
   // The first room after the door is drawn finished under the sweep's paper (door.css). The next room arrives as rooms do.
   const firstArea = useRef(area);
   useLayoutEffect(() => {

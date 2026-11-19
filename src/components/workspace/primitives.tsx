@@ -190,6 +190,8 @@ export function LiveField({
   });
   const noteId = useId();
   const [note, setNote] = useState("");
+  // Only the first wrong field of a submit speaks; the others are marked and described, so a screen reader is not talked over.
+  const [first, setFirst] = useState(false);
   const workspace = useWorkspaceIfAny();
   // A needed answer left empty, or one the browser will not take: said under the field in our own
   // words, with the first such field in focus. The browser's own bubble never shows.
@@ -207,7 +209,9 @@ export function LiveField({
       if (control.getAttribute("aria-invalid") !== "true") control.dataset.needed = control.getAttribute("aria-invalid") ?? "";
       control.setAttribute("aria-invalid", "true");
       control.setAttribute("aria-describedby", noteId);
-      if (control.form?.querySelector(wrongControl) === control) control.focus();
+      const lead = control.form?.querySelector(wrongControl) === control;
+      setFirst(lead);
+      if (lead) control.focus();
       const time = control.classList.contains("live-time") && workspace?.words.dateField.chooseTime;
       const mine = ownWords.current;
       setNote(
@@ -246,7 +250,7 @@ export function LiveField({
       <span>{label}</span>
       {children}
       {note && (
-        <small id={noteId} className="live-field-needed" role="alert">
+        <small id={noteId} className="live-field-needed" role={first ? "alert" : undefined}>
           {note}
         </small>
       )}
