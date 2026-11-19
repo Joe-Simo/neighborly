@@ -370,8 +370,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       },
     },
     rota: {
-      printed: (date) => `Impreso el ${date}`,
-      printedSample: (date) => `Muestra · Impreso el ${date}`,
+      printed: (date) => `Impreso en ${date}`,
+      printedSample: (date) => `Muestra · Impreso en ${date}`,
     },
   };
 };
