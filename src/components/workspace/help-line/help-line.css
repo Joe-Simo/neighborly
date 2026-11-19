@@ -391,3 +391,5 @@
   .help-oldest::before, .help-row[data-old] .live-date-leaf > span:first-child::before,
   .help-timeline li[data-kind="note"] i, .help-timeline li[data-kind="closed"] i { forced-color-adjust: none; box-shadow: none; background: Canvas; border: 2px solid CanvasText; border-radius: 50%; box-sizing: border-box; }
 }
+/* The assistant's line keeps its rule the sheet's full width; its words stop at a reading measure. */
+.help-sheet .help-assistant-line > span { max-width: 68ch; }

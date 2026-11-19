@@ -927,3 +927,5 @@
   .report-outcomes [data-is="declined"], .report-legend [data-is="declined"]::before { background: repeating-linear-gradient(45deg, CanvasText 0 1px, transparent 1px 4px), repeating-linear-gradient(-45deg, CanvasText 0 1px, Canvas 1px 4px); }
   .report-outcomes [data-is="closed"], .report-legend [data-is="closed"]::before { background: Canvas; }
 }
+/* A note under the year's figures keeps a reading measure on a wide screen: about seventy letters, not the page's full width. */
+.report-aside,.report .help-footnote{max-width:36em}
