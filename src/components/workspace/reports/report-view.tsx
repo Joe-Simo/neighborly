@@ -1,11 +1,10 @@
 "use client";
 
 import "./reports.css";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronDown, CircleCheck, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ReportBook } from "@/components/workspace/reports/report-book";
 import { HelpDone, HelpEmpty } from "@/components/workspace/help-line/room";
@@ -159,32 +158,11 @@ export function ReportView({
       // Without storage the pile is laid each time Reports opens.
     }
   }, []);
-  /** The month whose exact figures are held up in a tip, as "yyyy-MM". */
-  const [tip, setTip] = useState<string>();
-  /** Months whose tip, held above them, would lie over the caption at the right of the heading: theirs is held to the left instead. */
-  const [crowded, setCrowded] = useState<ReadonlySet<string>>(new Set());
-  const months = useRef<HTMLOListElement>(null);
-  useEffect(() => {
-    const chart = months.current;
-    const caption = chart?.parentElement?.querySelector(".live-section-head .live-count");
-    if (!chart || !caption) return;
-    const measure = () => {
-      const kept = caption.getBoundingClientRect();
-      // A tip is about 240px wide and 150px tall, centred over its month.
-      const found = [...chart.querySelectorAll<HTMLElement>(".report-month-open")].flatMap((month) => {
-        const cell = month.getBoundingClientRect();
-        const middle = cell.left + cell.width / 2;
-        // Only where the tip has room at the month's left: on a phone it has none there, and a tip cut by the
-        // screen's edge is worse than one that lies over the caption for a moment.
-        return cell.top - 150 < kept.bottom && middle + 128 > kept.left && cell.left >= 252 && month.dataset.month ? [month.dataset.month] : [];
-      });
-      setCrowded((before) => (before.size === found.length && found.every((month) => before.has(month)) ? before : new Set(found)));
-    };
-    measure();
-    const watch = new ResizeObserver(measure);
-    watch.observe(chart);
-    return () => watch.disconnect();
-  }, [report]);
+  /** The month whose exact figures the line under the chart holds, as "yyyy-MM": a press sets it, with nothing to open. */
+  const [held, setHeld] = useState<string>();
+  const heldLine = useId();
+  const passed = report.months.filter((line) => line.month <= thisMonth);
+  const shown = passed.find((line) => line.month === held) ?? passed.at(-1);
   const soFar = !report.closed;
   const span = spanLabel(report, words);
   const blank = isBlank(report);
@@ -461,7 +439,7 @@ export function ReportView({
             <i className="report-key" aria-hidden="true" />{w.months.keyPaid} <span className="report-key-pair"><i className="report-key" data-of="visits" aria-hidden="true" />{w.months.keyVisits}</span>
           </span>
         </div>
-        <ol className="report-months" data-months={report.months.length} ref={months}>
+        <ol className="report-months" data-months={report.months.length}>
           {report.months.map((line) => {
             const ahead = line.month > thisMonth;
             return (
@@ -485,55 +463,30 @@ export function ReportView({
                   <p>{w.months.toCome}</p>
                 ) : (
                   <>
-                    {/* Whole dollars here; the cents are in the tip, the table and the ledger. */}
+                    {/* Whole dollars here; the cents are in the line under the chart, the table and the ledger. */}
                     <p className="help-amount" aria-hidden="true">{wholeDollars(line.paid)}</p>
                     <p aria-hidden="true">{w.months.visits(line.visits)}</p>
-                    <Popover open={tip === line.month} onOpenChange={(open) => setTip(open ? line.month : undefined)}>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className="report-month-open"
-                          data-month={line.month}
-                          // The month read as one sentence: "May 2026: $1,630 paid, 11 visits."
-                          aria-label={fill(w.months.said, { month: monthLabel(line.month, false, words), amount: wholeDollars(line.paid), visits: w.months.visits(line.visits) })}
-                          onFocus={(event) => {
-                            if (event.currentTarget.matches(":focus-visible")) setTip(line.month);
-                          }}
-                          onBlur={() => setTip((shown) => (shown === line.month ? undefined : shown))}
-                          // A mouse resting on the month holds the tip up; a click while it rests there must not put it away.
-                          onPointerEnter={(event) => {
-                            if (event.pointerType === "mouse") setTip(line.month);
-                          }}
-                          onPointerLeave={(event) => {
-                            if (event.pointerType === "mouse" && !event.currentTarget.matches(":focus-visible"))
-                              setTip((shown) => (shown === line.month ? undefined : shown));
-                          }}
-                          onClick={(event) => {
-                            if (tip === line.month && event.currentTarget.matches(":hover") && matchMedia("(hover: hover)").matches) event.preventDefault();
-                          }}
-                        />
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="report-tip"
-                        side={crowded.has(line.month) ? "left" : "top"}
-                        align={crowded.has(line.month) ? "start" : "center"}
-                        collisionPadding={12}
-                        onOpenAutoFocus={(event) => event.preventDefault()}
-                        onCloseAutoFocus={(event) => event.preventDefault()}
-                      >
-                        <p className="report-tip-month">{monthLabel(line.month, false, words)}</p>
-                        <p className="help-amount">{money(line.paid)}</p>
-                        <p>
-                          {w.months.tip(line.visits)}
-                        </p>
-                      </PopoverContent>
-                    </Popover>
+                    <button
+                      type="button"
+                      className="report-month-open"
+                      data-month={line.month}
+                      aria-pressed={shown?.month === line.month}
+                      aria-controls={heldLine}
+                      // The month read as one sentence: "May 2026: $1,630 paid, 11 visits."
+                      aria-label={fill(w.months.said, { month: monthLabel(line.month, false, words), amount: wholeDollars(line.paid), visits: w.months.visits(line.visits) })}
+                      onClick={() => setHeld(line.month)}
+                      onPointerEnter={(event) => { if (event.pointerType === "mouse") setHeld(line.month); }}
+                    />
                   </>
                 )}
               </li>
             );
           })}
         </ol>
+        {/* The month in hand, to the cent: the latest month that has passed until another is pressed. One line, always laid, so a press moves nothing. */}
+        <p className="report-month-held" id={heldLine} aria-live="polite">
+          {shown && <><span className="report-tip-month">{monthLabel(shown.month, false, words)}</span> <span className="help-amount">{money(shown.paid)}</span> <span>{w.months.tip(shown.visits)}</span></>}
+        </p>
       </section>
 
       {report.requests.received > 0 && (
