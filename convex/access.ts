@@ -34,12 +34,13 @@ export async function membership(ctx: QueryCtx | MutationCtx, church: Id<"church
 }
 
 /**
- * The one rule for who may open a neighbor's record: an active coordinator or owner of the group.
- * Team coordinators and members do not qualify. Every function that reads or writes neighbors,
- * calls, assistance requests, visits or the ledger starts with neighborAccess().
+ * The one rule for who may open a neighbor's record: the owner, or an active coordinator of the group whom the
+ * owner has approved. A coordinator who has just accepted an invitation waits for that approval, so a mistyped
+ * address never opens a family's file. Team coordinators and members do not qualify. Every function that reads or
+ * writes neighbors, calls, assistance requests, visits or the ledger starts with neighborAccess().
  */
-export function mayOpenNeighborRecords(member: Pick<Doc<"memberships">, "active" | "role">) {
-  return member.active && (member.role === "owner" || member.role === "coordinator");
+export function mayOpenNeighborRecords(member: Pick<Doc<"memberships">, "active" | "role" | "approved">) {
+  return member.active && (member.role === "owner" || (member.role === "coordinator" && member.approved));
 }
 export async function neighborAccess(ctx: QueryCtx | MutationCtx, church: Id<"churches">) {
   const member = await membership(ctx, church);

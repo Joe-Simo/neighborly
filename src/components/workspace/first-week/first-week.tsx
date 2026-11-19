@@ -18,7 +18,7 @@ import "./first-week.css";
 export function FirstWeekSlips() {
   const { data, now, words } = useWorkspace();
   const look = useFirstLook();
-  const leads = data.people.some((person) => person.id === data.user.id && (person.role === "owner" || person.role === "coordinator"));
+  const leads = data.people.some((person) => person.id === data.user.id && (person.role === "owner" || (person.role === "coordinator" && person.approved)));
   const eligible = !look && !data.church.sample && !isBrandNew(data) && isNewMember(data.user.joinedAt, now);
   const [state, setState] = useState<FirstWeek>(() => (eligible ? readFirstWeek(data.user.id) : { done: [], closed: true }));
   const slips = firstWeekSlips(leads);

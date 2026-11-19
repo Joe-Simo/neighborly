@@ -60,8 +60,8 @@ function useSampleAhead(sample: boolean, area: string): ReadonlySet<SampleAhead>
 
 export function RoomsAhead({ data, sample, area }: { data: LiveWorkspaceData; sample: boolean; area: string }) {
   const churchId = data.church.id;
-  const role = data.people.find((person) => person.id === data.user.id)?.role;
-  const leads = role === "owner" || role === "coordinator";
+  const me = data.people.find((person) => person.id === data.user.id);
+  const leads = me?.role === "owner" || (me?.role === "coordinator" && me.approved);
   // The same hour the rooms ask with, or the question would be a different one and nothing would be shared.
   const at = useHour();
   const roomIn = useSyncExternalStore(listenForFirstRoom, firstRoomIn, () => false);
