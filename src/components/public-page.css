@@ -1,6 +1,6 @@
 /* A public page of words, on the home page's paper: the name at the top, the words in one column, the closing band. */
 .public-page{min-height:100svh;background:#eee7d7;color:#293f32}
-.public-page a:focus-visible{outline:2px solid #283c32;outline-offset:3px}
+.public-page a:focus-visible{outline:2px solid #283c32;outline-offset:3px;border-radius:4px}
 .public-page-header{display:flex;align-items:center;justify-content:space-between;gap:20px;height:76px;padding:0 max(20px,4%)}
 .public-page-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:inherit;text-decoration:none}
 .public-page-language{display:inline-flex;align-items:center;min-height:44px;margin-left:auto;padding:0 2px;font-size:15px;color:inherit;text-decoration:none;border-bottom:1px solid #253e3140}
