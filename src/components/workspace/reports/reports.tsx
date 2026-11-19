@@ -66,7 +66,7 @@ function Report() {
     chosen ??
     (onRecord &&
       (fall && onRecord.years.includes(onRecord.current - 1) ? onRecord.current - 1 : onRecord.current));
-  const report = useQuery(api.reports.year, year === undefined || !at ? "skip" : { churchId, at, year, quarter });
+  const report = useQuery(api.reports.year, year === undefined || !at ? "skip" : { churchId, at: settledHour(at, year, quarter, data.church.timeZone), year, quarter });
   // The year last shown stays on screen while the next one is added up.
   const [shown, setShown] = useState(report);
   if (report && report !== shown) setShown(report);
@@ -176,6 +176,18 @@ function Report() {
       onSpreadsheet={() => saveSpreadsheet(shown)}
     />
   );
+}
+
+/**
+ * The hour a year's report is asked about. A period over for a day adds up the same at any later hour (its last
+ * shifts have ended), so it is asked about that one hour: every visitor, all day, shares one answer that Convex
+ * keeps, instead of the whole year being read again each hour. A period still open is asked about the present hour.
+ */
+function settledHour(at: number, year: number, quarter: Quarter | undefined, zone: string) {
+  const first = DateTime.fromObject({ year: year - 1, month: 10, day: 1 }, { zone }).plus({ months: quarter ? 3 * (quarter - 1) : 0 });
+  const settled = first.plus({ months: quarter ? 3 : 12, days: 1 }).toMillis();
+  const hour = Math.ceil(settled / 3_600_000) * 3_600_000;
+  return at >= hour ? hour : at;
 }
 
 export function ReportsSection() {
