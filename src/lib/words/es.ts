@@ -88,7 +88,7 @@ export function es(set: WordSet): Words {
       signOut: "Salir",
       leaveSample: "Salir de la muestra",
       close: "Cerrar",
-      sampleMark: "Muestra · personas inventadas",
+      sampleMark: "Muestra · personas\u00a0inventadas",
       /** After the conference's name in a room's kicker: "St. Example Conference · Sample". */
       sample: "Muestra",
       language: "Idioma",
