@@ -114,7 +114,10 @@ function gradeToStill(surface: T.Material, phone: boolean) {
 
 /** One renderer owns the continuous painted journey. No account state is read or changed. */
 export function createPaintedWorldController(host: HTMLElement, options: PaintedWorldOptions = {}) {
-  const renderer = new T.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
+  // On an iPhone or iPad (or a phone with little memory) the scene is drawn without multisampling: its four samples a pixel held several times the
+  // canvas's own memory, which Safari counts against the tab, and at that screen's density its painted edges show no steps without it.
+  const tight = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) || ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4;
+  const renderer = new T.WebGLRenderer({ alpha: true, antialias: !tight, powerPreference: "low-power" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
