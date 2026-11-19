@@ -4,7 +4,7 @@ import type { Language } from "@/lib/words";
 export type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
-export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" };
+export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
@@ -23,6 +23,15 @@ const en = {
     hint: "Drag the courtyard up or down, or use the arrow keys, to draw its sheets apart.",
     /** Said by the slider: whole, part apart ({n} is the percent), and fully apart. */
     amount: ["Whole", "{n}% apart", "All seven sheets apart"] as [string, string, string],
+  },
+  frameStrip: {
+    caption: "A scroll down this page on the Mac, frame by frame",
+    widths: { "1440": "At 1440 pixels", "390": "At 390 pixels, processor slowed four times" },
+    /** {n} frames, {over} of them late, {worst} the slowest in milliseconds. */
+    summary: ["{n} frames, none over 33 ms. The slowest took {worst} ms.", "{n} frames, {over} over 33 ms. The slowest took {worst} ms."] as [string, string],
+    line: "33 ms",
+    /** {day}, {commit} and {machine} come from the recorder's file. */
+    source: "Source: the Mac run of {day}, build {commit}, {machine}. Each bar is one frame; its raw times are eval/frames/made-scroll.json in the code.",
   },
   evalTable: {
     caption: "The 12 held-out notes, field by field",
@@ -66,7 +75,7 @@ const en = {
       "Every screen a volunteer uses is in English and Spanish, and so are the privacy page and this one. The Spanish is its own fixed words, written for each screen, not translated by a machine as the page opens, so the same button always says the same thing.",
       "The first Spanish text was read and approved by the founder, who speaks Spanish. Where a page is a translation it says so at the top, and the English governs.",
     ] },
-    { title: "Measured, not guessed", blocks: [
+    { title: "Measured, not guessed", table: "frames", blocks: [
       "The rule every change that moves something is held to: it is filmed at eight widths, from a 360‑pixel phone to a 1920‑pixel screen, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
       [
         { lead: "Under a second.", rest: "The sample conference opens in about 0.85 seconds at desk width and 1.1 on a phone, measured on our test machine." },
@@ -103,6 +112,13 @@ const es: typeof en = {
     hold: "Separar las hojas",
     hint: "Arrastra el patio hacia arriba o hacia abajo, o usa las flechas, para separar sus hojas.",
     amount: ["Entero", "Separadas al {n}%", "Las siete hojas separadas"],
+  },
+  frameStrip: {
+    caption: "Un desplazamiento por esta página en la Mac, cuadro a cuadro",
+    widths: { "1440": "A 1440 píxeles", "390": "A 390 píxeles, con el procesador cuatro veces más lento" },
+    summary: ["{n} cuadros, ninguno de más de 33 ms. El más lento tardó {worst} ms.", "{n} cuadros, {over} de más de 33 ms. El más lento tardó {worst} ms."],
+    line: "33 ms",
+    source: "Fuente: la medición en la Mac del {day}, versión {commit}, {machine}. Cada barra es un cuadro; sus tiempos sin tocar están en eval/frames/made-scroll.json, en el código.",
   },
   evalTable: {
     caption: "Las 12 notas apartadas, campo por campo",
@@ -146,7 +162,7 @@ const es: typeof en = {
       "Cada pantalla que usa un voluntario está en inglés y en español, y también la página de privacidad y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
       "El primer texto en español lo leyó y lo aprobó el fundador, que habla español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
-    { title: "Medido, no supuesto", blocks: [
+    { title: "Medido, no supuesto", table: "frames", blocks: [
       "La regla que cumple cada cambio que mueve algo: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
       [
         { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos 0.85 segundos en el ancho de escritorio y en 1.1 en un teléfono, medido en nuestra máquina de pruebas." },
