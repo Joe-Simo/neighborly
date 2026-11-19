@@ -1,7 +1,8 @@
 "use client";
 
 import { keepTitle } from "@/lib/words/titles";
-import { useCallback, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { speak } from "@/components/workspace/fold";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useSearchAsked } from "@/components/workspace/query";
@@ -70,6 +71,15 @@ function Neighbors() {
     search: asked || undefined,
     leading: true,
   });
+  // A search that has settled says its count once, in the page's polite region: never at each letter, never again
+  // for the same words. No match says the empty state's title, whose next step (add them) is right under it.
+  useEffect(() => {
+    if (!list || !asked || asked !== search.trim()) return;
+    const shown = list.rows.length + list.waitingRows.length;
+    const said = !shown ? text.list.noMatch.title : list.more ? text.list.foundFirst(shown) : text.list.found(shown);
+    const wait = window.setTimeout(() => speak(said), 600);
+    return () => window.clearTimeout(wait);
+  }, [list, asked, search, text.list]);
   // Nothing was searched for and the conference has no household: there is nothing to search yet.
   const none = !!list && !search.trim() && !asked && noNeighbors(list);
   return (
