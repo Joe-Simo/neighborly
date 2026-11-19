@@ -12,10 +12,10 @@ const BUDGET = {
   jsHeapMB: 12, // 8.6 (the heap moves more between runs and engines, so a wider margin)
   roomsHeapMB: 12, // 8.6
   // Scroll at 4x CPU, measured 2026-11-19 on main f9723d1 (scroll-ios 0002) in the cloud (software GL, so an upper bound; set again from the Mac).
-  longTasks: 5, // 0 (158-164 when the page was scrolled by its own script)
-  longestTaskMs: 200, // 0
+  longTasks: 1, // 0 on the Mac at a6e1573 + this batch (4x CPU); one allowed for noise
+  longestTaskMs: 50, // 0 on the Mac: no task reached 50 ms, the long-task floor
   idleFramesPerSecond: 0, // 0: nothing asks for frames once the page is still
-  forcedLayouts: 20, // 57-60 on f9723d1, before scroll-ios 0003 moves the window reads into the read half; about 1 after it
+  forcedLayouts: 18, // 16 on the Mac at a6e1573 + this batch, about 15% over
   // Each of the 13 rooms scrolled the same way, worst room, measured on f9723d1: 1 forced layout, no long task, no frames once still.
   roomForcedLayouts: 5,
   roomLongTasks: 3,
