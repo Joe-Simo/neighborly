@@ -169,3 +169,6 @@
 @media(min-width:600px) and (max-width:1023px){
   .public-words:has(.public-words-note) .public-words-relief{position:relative;display:block;top:auto;margin:-186px calc(-1 * max(12px,3%)) calc(186px - min(78vw,320px) * 2 / 3) auto}
 }
+/* On the widest screens the words' column stops at its measure, so the sheet split .62 to 1 left a bare third of paper at the right of every sheet.
+   Split evenly there: the words start at the sheet's middle and the paper either side of them is level. */
+@media(min-width:1600px){.public-words section,.public-made .public-made-figure{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
