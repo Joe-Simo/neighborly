@@ -1,6 +1,6 @@
-/* The slip folds (slip-folds.tsx). The band's length is set here, never measured: one window of scroll to fold and settle, held at the window's middle.
+/* The slip folds (slip-folds.tsx). The band's length is set here, never measured: four tenths of a window of scroll to fold and settle, so the slip reaches the visit within one screen, held at the window's middle.
    Only the top panel and the slip are moved, by transform alone; the crease's shade and the slip's lift change in steps, by attribute. */
-.slip-folds{position:relative;z-index:1;height:200svh;background:#eee7d7;color:#293f32}
+.slip-folds{position:relative;z-index:1;height:140svh;background:#eee7d7;color:#293f32}
 .slip-folds-stage{position:sticky;top:0;height:100svh;display:grid;place-items:center;padding:0 20px}
 .slip-folds-figure{margin:0;display:grid;justify-items:center;gap:56px;width:min(100%,360px)}
 .slip-folds-slip,.slip-folds-pile{grid-area:1/1}
