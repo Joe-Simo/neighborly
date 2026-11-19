@@ -25,9 +25,10 @@ export function WeeklyRotaView({ group, week, days, printed, sample, titled = tr
         <div className="tools-week">
           <Button variant="outline" className="tools-week-step" aria-label={text.before} onClick={onEarlier}><ChevronLeft size={18} aria-hidden="true" /></Button>
           <Button variant="outline" className="tools-week-step" aria-label={text.after} onClick={onLater}><ChevronRight size={18} aria-hidden="true" /></Button>
+          {/* Opened from This week (untitled, in its own sheet), the week is there to print: the sheet opens on Print, so Enter prints and Escape closes. */}
           {/* A week with nothing planned has nothing to print: the sheet below says so, and the button steps aside. */}
           {/* The empty place keeps the two steps their own width on a phone, where the last thing in the row stretches. */}
-          {planned ? <Button onClick={onPrint}><Printer size={16} aria-hidden="true" /> {text.print}</Button> : <span aria-hidden="true" />}
+          {planned ? <Button data-sheet-first={titled ? undefined : ""} onClick={onPrint}><Printer size={16} aria-hidden="true" /> {text.print}</Button> : <span aria-hidden="true" />}
         </div>
       )}
       <div className="tools-rota paper-settle" key={week}>

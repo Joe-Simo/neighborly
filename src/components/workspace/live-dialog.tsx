@@ -121,12 +121,13 @@ export function LiveDialog({
         }}
         onOpenAutoFocus={(event) => {
           opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          // A desk opens on the first box to fill, or on the one control a sheet marks as its point (data-sheet-first).
           const first =
             event.currentTarget instanceof HTMLElement &&
             event.currentTarget.querySelector<HTMLElement>(
               window.matchMedia(touchScreen).matches
                 ? '[data-slot="dialog-title"]'
-                : "input, textarea, select",
+                : "[data-sheet-first], input, textarea, select",
             );
           if (!first) return;
           event.preventDefault();
