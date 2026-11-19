@@ -2,6 +2,7 @@
 
 import { COURTYARD_STILL, type CourtyardStill } from "./courtyard-door";
 import { useEffect, useRef } from "react";
+import { whenScrollStill } from "@/lib/scroll-still";
 import { whenIdle } from "@/lib/idle";
 import { frameStep } from "@/lib/scroll-frame";
 import { ImageBitmapLoader, LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Texture, Vector2, Vector4, WebGLRenderer } from "three";
@@ -155,15 +156,17 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     const opened = new Promise<void>(resolve => { if (document.readyState === "complete") resolve(); else addEventListener("load", () => resolve(), { once: true }); });
     // The living courtyard holds about forty megabytes of graphics memory, which an iPhone counts against the tab: it is let go once the courtyard
     // is more than two windows away, and made again as it comes back within two, before it is in sight. Meanwhile the painted courtyard shows, as it always does first.
-    let ready = false, close = true;
-    const start = () => { if (ready && close && !cancelled && !stop) stop = live(frame, host, paintingSelector); };
+    // It is made only once the page is still: a new graphics context, its shaders and forty megabytes of textures held a phone's scroll for a second.
+    let ready = false, close = true, waiting: (() => void) | undefined;
+    const make = () => { waiting = undefined; if (ready && close && !cancelled && !stop) stop = live(frame, host, paintingSelector); };
+    const start = () => { if (ready && close && !cancelled && !stop && !waiting) waiting = whenScrollStill(make, { notBefore: 0, latest: Infinity }); };
     const near = new IntersectionObserver(entries => {
       close = entries[entries.length - 1].isIntersecting;
-      if (close) start(); else { stop?.(); stop = undefined; }
+      if (close) start(); else { waiting?.(); waiting = undefined; stop?.(); stop = undefined; }
     }, { rootMargin: "200% 0px" });
     near.observe(host);
     opened.then(() => new Promise<void>(resolve => { whenIdle(() => resolve(), 1500, 200); })).then(() => { ready = true; start(); });
-    return () => { cancelled = true; near.disconnect(); stop?.(); };
+    return () => { cancelled = true; near.disconnect(); waiting?.(); stop?.(); };
   }, [within, paintingSelector]);
 
   return <div ref={holder} className="living-courtyard" aria-hidden="true" />;
