@@ -211,7 +211,7 @@ export function LedgerView({
           <dd>
             <span className="count-up">{formatDollars(ledger.moneyIn)}</span>
             <small>
-              {formatList(ledger.incomeSources.map((source) => categoryLabel(room, source, sampleSaid)), words.locale) || w.figures.nothingIn}
+              {formatList(midSentence(ledger.incomeSources.map((source) => categoryLabel(room, source, sampleSaid))), words.locale) || w.figures.nothingIn}
             </small>
           </dd>
         </div>
@@ -219,7 +219,7 @@ export function LedgerView({
           <dt>{w.figures.out(month)}</dt>
           <dd>
             <span className="count-up">{formatDollars(ledger.moneyOut)}</span>
-            <small>{formatList(paidFor, words.locale) || w.figures.nothingOut}</small>
+            <small>{formatList(midSentence(paidFor), words.locale) || w.figures.nothingOut}</small>
           </dd>
         </div>
       </dl>
@@ -491,4 +491,12 @@ export function LedgerPrivate() {
       {words.states.privateDeckTreasury}
     </LiveState>
   );
+}
+
+/**
+ * A list of kinds read as one sentence: the first keeps its capital, and a later one in sentence case
+ * ("Donation", "Opening balance") takes a small letter. A name with capitals of its own ("Friends of the Poor Walk") keeps them.
+ */
+function midSentence(items: readonly string[]) {
+  return items.map((item, index) => (index > 0 && !/[A-ZÀ-Þ]/.test(item.slice(1)) ? item.charAt(0).toLocaleLowerCase() + item.slice(1) : item));
 }
