@@ -10,7 +10,8 @@ import { membership } from "./access";
  * Making a new address switches the old one off.
  *
  * Privacy: a planned visit is written as "Home visit" with the time and the street. The feed never holds a
- * neighbor's name, house number, phone or the reason for the visit.
+ * neighbor's name, house number, phone or the reason for the visit. A commitment's own words, typed by hand, go out
+ * with every neighbor's name and address on file, and any phone or email, taken out (withoutNeighbors).
  */
 const HOUR = 3600000;
 const DAY = 24 * HOUR;
@@ -24,6 +25,22 @@ const mostVisitsRead = 4000;
  * "412 Sample St, Apt 7" becomes "Sample St": enough to plan the drive, not enough to find the door.
  * Every house, unit and lot number goes, wherever it sits; only a numbered street ("22nd Ave") or highway ("US 41") keeps its number.
  */
+const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/**
+ * A commitment's title, place and preparation are typed by hand, so a coordinator may have written a neighbor into them.
+ * Before they leave for a calendar app: every neighbor's address and name on file, and any phone or email, are taken out.
+ * Only what the records hold is matched, so "Parish office" or the hall's own street is left as typed.
+ */
+export function withoutNeighbors(text: string, neighbors: { name: string; address: string }[]) {
+  let out = text;
+  for (const address of neighbors.map((one) => one.address.trim()).filter((one) => one.length > 3))
+    out = out.replace(new RegExp(escaped(address), "gi"), "[address]");
+  out = out.replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "[email]").replace(/(^|[^\d$])\+?\(?\d(?:[\s().-]*\d){6,}(?!\d)/g, "$1[phone]");
+  const parts = [...new Set(neighbors.flatMap((one) => one.name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "")).filter((part) => part.length > 1 && /^\p{Lu}/u.test(part)))];
+  if (parts.length) out = out.replace(new RegExp(`(^|[^\\p{L}])(?:${parts.map(escaped).join("|")})(?![\\p{L}])`, "gu"), "$1[name]");
+  return out;
+}
+
 export function streetOnly(address: string) {
   const words = address.split(",")[0].replace(/#\s*\S+/g, " ").trim().split(/\s+/);
   const kept: string[] = [];
@@ -92,10 +109,13 @@ export const feedText = internalQuery({
 
     const now = args.now, from = now - lookBack;
     const calendar = ical({ name: church.name, prodId: { company: "Kind Helps", product: "Calendar", language: "EN" }, ttl: HOUR / 1000 });
+    // Records removed for good carry no name or address, so they match nothing.
+    const neighbors = (await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", church._id)).take(5000)).filter((one) => one.nameKey);
+    const clean = (text: string | undefined) => (text ? withoutNeighbors(text, neighbors) : undefined);
     const shifts = await ctx.db.query("commitments").withIndex("by_assignee_end", (q) => q.eq("assigneeId", member._id).gt("end", from)).take(mostEvents);
     for (const shift of shifts) {
       if (shift.cancelled || shift.churchId !== church._id) continue;
-      calendar.createEvent({ id: `${shift._id}@kindhelps.com`, sequence: shift.version, stamp: new Date(now), start: new Date(shift.start), end: new Date(shift.end), summary: shift.title, location: shift.location, description: shift.preparation || undefined });
+      calendar.createEvent({ id: `${shift._id}@kindhelps.com`, sequence: shift.version, stamp: new Date(now), start: new Date(shift.start), end: new Date(shift.end), summary: clean(shift.title), location: clean(shift.location), description: clean(shift.preparation) });
     }
     // The narrow path past neighborAccess(): a calendar app cannot sign in, so the token stands for one member.
     // It reaches only visits still planned on which that member is a visitor, and only the street leaves the record.

@@ -183,7 +183,7 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   // a help-line morning and a home visit next week.
   const mine = monday.plus({ weeks: 1 });
   await db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start: mine.plus({ days: 1, hours: 9 }).toMillis(), end: mine.plus({ days: 1, hours: 12 }).toMillis(), location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: owner, coordinatorId: others[1], version: 1 });
-  await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Renee Baptiste", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
+  await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
   // Today on the help line: the morning is covered and the afternoon still has an open place, whatever day the sample is loaded.
   const todayStart = DateTime.fromMillis(now, { zone }).startOf("day");
   const helpLineToday = async (hour: number, hours: number, assigneeId: Id<"memberships"> | null) => {

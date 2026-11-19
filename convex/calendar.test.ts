@@ -113,6 +113,22 @@ describe("a member's calendar feed", () => {
     expect(streetOnly("412")).toBe("");
   });
 
+  test("a commitment typed with a neighbor in it leaves without them", async () => {
+    const { t, ids, as } = await setup();
+    await t.run(async (ctx) => {
+      const shift = (await ctx.db.query("commitments").withIndex("by_assignee_end", (q) => q.eq("assigneeId", ids.marisol.memberId)).order("desc").collect()).find((one) => !one.cancelled);
+      await ctx.db.insert("commitments", { ...shift!, _id: undefined, _creationTime: undefined, title: "Home visit with Celeste Hyppolite", location: "412 Placeholder Rd, Apt 7", preparation: "Call Celeste at (100) 555-0142 or celeste.hyppolite@neighborly.example first.", start: shift!.start + DAY, end: shift!.end + DAY } as never);
+    });
+    const text = unfolded(await (await t.fetch(path(await as(ids.marisol).action(api.calendar.createAddress, { churchId: ids.church })))).text());
+    for (const secret of ["Celeste", "Hyppolite", "412 Placeholder", "0142", "neighborly.example"]) expect(readable(text)).not.toContain(secret);
+    expect(text).toContain("SUMMARY:Home visit with [name]");
+    expect(text).toContain("LOCATION:[address]");
+    expect(text).toContain("Call [name] at [phone] or [email] first.");
+    // What names no neighbor is left as typed.
+    expect(text).toContain("SUMMARY:Help line morning");
+    expect(text).toContain("LOCATION:Parish office");
+  });
+
   test("one address opens one member's calendar: a visitor on no visit sees no street at all", async () => {
     const { t, ids, as } = await setup();
     const none = await t.run(async (ctx) => {

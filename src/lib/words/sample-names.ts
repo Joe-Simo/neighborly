@@ -16,6 +16,7 @@ const es: Readonly<Record<string, string>> = {
   // Commitments and the meeting
   "Help line morning": "Línea de ayuda por la mañana",
   "Help line afternoon": "Línea de ayuda por la tarde",
+  "Home visit": "Visita domiciliaria",
   "Pantry morning": "Despensa por la mañana",
   "Conference meeting": "Reunión de la conferencia",
   // Places
@@ -90,9 +91,6 @@ const es: Readonly<Record<string, string>> = {
   "Walk pledges": "las promesas de la caminata",
 };
 
-/** A title the seed writes around a person's name: the words are put in Spanish, the name is kept whole. */
-const withName: readonly (readonly [string, string])[] = [["Home visit with ", "Visita domiciliaria con "]];
-
 /** The seed's exact English names, for the test that holds this table to the seed. */
 export const sampleNames = Object.keys(es);
 
@@ -103,8 +101,7 @@ const inSpanish = (typed: string) => {
   // A call's note is the request's line with a full stop: the same line, said the same way everywhere.
   const line = typed.endsWith(".") ? es[typed.slice(0, -1)] : undefined;
   if (line) return `${line}.`;
-  const around = withName.find(([start]) => typed.startsWith(start));
-  return around ? around[1] + typed.slice(around[0].length) : typed;
+  return typed;
 };
 
 /** The name the backend gives a removed member's visits and hours (convex/people.ts formerMember), as a Spanish reader is told it. */
