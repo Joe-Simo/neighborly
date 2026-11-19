@@ -11,11 +11,11 @@ const BUDGET = {
   decodedImageMB: 65, // 56.6
   jsHeapMB: 12, // 8.6 (the heap moves more between runs and engines, so a wider margin)
   roomsHeapMB: 12, // 8.6
-  // Scroll at 4x CPU, measured 2026-11-19 on main d1336ef (scroll-ios 0001) in the cloud (software GL, so an upper bound; set again from the Mac).
-  longTasks: 185, // 158-164
-  longestTaskMs: 3000, // 1797-2624, the opening's scene built in software GL
+  // Scroll at 4x CPU, measured 2026-11-19 on main f9723d1 (scroll-ios 0002) in the cloud (software GL, so an upper bound; set again from the Mac).
+  longTasks: 5, // 0 (158-164 when the page was scrolled by its own script)
+  longestTaskMs: 200, // 0
   idleFramesPerSecond: 0, // 0: nothing asks for frames once the page is still
-  forcedLayouts: 135, // 117-118
+  forcedLayouts: 20, // 57-60 on f9723d1, before scroll-ios 0003 moves the window reads into the read half; about 1 after it
   firstLoadJsKB: { "/": 900, "/about": 890, "/made": 820, "/privacy": 885, "/week": 820, "/sign-in": 820 }, // 854, 844, 780, 841, 780, 780
 } as const;
 
@@ -167,15 +167,10 @@ try {
   await scrollPage.waitForTimeout(9000);
   await scrollSession.send("Emulation.setCPUThrottlingRate", { rate: 4 });
   await scrollPage.evaluate(() => window.__scroll?.tasks());
+  const scrollHeight = await scrollPage.evaluate(() => document.documentElement.scrollHeight - innerHeight);
   await browser.startTracing(scrollPage, { categories: ["devtools.timeline", "disabled-by-default-devtools.timeline.stack"] });
-  await scrollPage.evaluate(() => new Promise<void>((done) => {
-    const step = () => {
-      window.scrollBy(0, 24);
-      if (window.scrollY + innerHeight >= document.documentElement.scrollHeight - 1) done();
-      else requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }));
+  // Wheel scrolling sent by the browser from outside the page (a synthesized touch did not move it under phone emulation), so the measuring itself forces no layout.
+  await scrollSession.send("Input.synthesizeScrollGesture", { x: 195, y: 700, yDistance: -scrollHeight, speed: 1440, gestureSourceType: "mouse", preventFling: true });
   const trace = JSON.parse((await browser.stopTracing()).toString()) as { traceEvents: { name: string; args?: { beginData?: { stackTrace?: unknown[] } } }[] };
   found.forcedLayouts = trace.traceEvents.filter((event) => event.name === "Layout" && (event.args?.beginData?.stackTrace?.length ?? 0) > 0).length;
   const tasks = await scrollPage.evaluate(() => window.__scroll?.tasks() ?? []);
