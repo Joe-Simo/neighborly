@@ -1,5 +1,6 @@
 "use client";
 
+import { viewport } from "@/lib/viewport";
 import { type ReactNode, useEffect, useRef } from "react";
 import "./chapter-sheets.css";
 import { frameStep } from "@/lib/scroll-frame";
@@ -36,7 +37,7 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
       const crossed = sheets[to].pace(clamp((height - top) / height));
       if (to === "close") {
         // The close's sheet is part of the page above the rooms, so it is not moved: only its foot is, counted from the sheet's own top, which stands one window above the rooms' edge.
-        const edge = Math.max(36, Math.min(64, innerWidth * .044));
+        const edge = Math.max(36, Math.min(64, viewport.width * .044));
         const shown = top <= 0 || crossed <= 0 ? -200 : (still.matches ? Number(crossed >= .5) : crossed) * (height + edge) - edge - (top + sheets.close.under - own);
         const nowLie = `${shown.toFixed(1)}px`, nowTall = `${box.height.toFixed(0)}px`;
         if (nowLie !== lie) { lie = nowLie; sheet.style.setProperty("--lie", lie); sheet.toggleAttribute("data-away", shown === -200); }

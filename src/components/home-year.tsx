@@ -1,5 +1,6 @@
 "use client";
 
+import { viewport } from "@/lib/viewport";
 import { frameStep } from "@/lib/scroll-frame";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { whenIdle } from "@/lib/idle";
@@ -72,7 +73,7 @@ export function HomeYear() {
       // along the window's diagonal, has passed its own nearest corner; it stands by the time the crease is a quarter of the way past its far one.
       // Where no page is turned, it stands as it rises into the window, each a little after the one before.
       const turned = panel.dataset.turn === "to" ? panel.style.getPropertyValue("--turned") : "";
-      const w = innerWidth, h = innerHeight, far = Math.hypot(w, h);
+      const w = viewport.width, h = viewport.height, far = Math.hypot(w, h);
       const along = (x: number, y: number) => ((w - x) * w + (h - y) * h) / far;
       const rise = Math.max(0, Math.min(1, (h - listTop) / (h * .55)));
       const folds = cells.map((cell, index) => {
