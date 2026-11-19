@@ -184,23 +184,7 @@
 @media(max-width:900px){.painted-world-opening-actions a:not(.painted-world-primary-invitation){background:#eee7d7e6;padding:0 12px}}
 /* The cue keeps its words and its arrow apart at every width. */
 .painted-world[data-hero-only=true] .painted-world-scroll-cue span{max-width:none}
-/* The opening is set down as the paper it is, back to front within about 600ms: the painted plate drops into place, then the sheet that holds the words, and the headline reads by 700ms.
-   Nothing fades up from blank: each piece is whole from the first frame and only travels. Once a visit; under Reduce Motion it is simply there. */
-@keyframes painted-set{from{translate:0 -10px}}
-@keyframes painted-sheet{0%,30%{translate:0 -8px}}
-/* The headline rises from faintly present. On wide screens the painting fills the screen and browsers do not count it,
-   so the headline is what is measured as the first large thing painted; from nothing, it was never counted at all. */
-@keyframes painted-rise{from{opacity:.01;translate:0 12px}}
-@keyframes painted-fade{from{opacity:0}}
-@media(prefers-reduced-motion:no-preference){
-  :root:not([data-arrived]) .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){animation:painted-set 420ms cubic-bezier(.3,.6,.25,1) both}
-  :root:not([data-arrived]) .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback)::before{animation:painted-sheet 600ms cubic-bezier(.3,.6,.25,1) both}
-  :root:not([data-arrived]) .painted-world[data-hero-only=true] .painted-world-caption h1{animation:painted-rise 420ms cubic-bezier(.2,.65,.2,1) 260ms both}
-  :root:not([data-arrived]) .painted-world[data-hero-only=true] .painted-world-description{animation:painted-rise 400ms cubic-bezier(.2,.65,.2,1) 420ms both}
-  :root:not([data-arrived]) .painted-world[data-hero-only=true] .painted-world-opening-actions{animation:painted-rise 400ms cubic-bezier(.2,.65,.2,1) 520ms both}
-  /* The paper bar with the name is there from the first frame; only the tools wait. */
-  :root:not([data-arrived]) .painted-world[data-hero-only=true] .painted-world-tools{animation:painted-fade 500ms ease 600ms both}
-}
+/* Nothing moves on load: the opening is whole and still from its first frame. */
 
 /* ── The opening, in the paper world ───────────────────────────────────────── */
 /* The painting fills its box at every size: no pale bands, and never a straight cut through a figure. */

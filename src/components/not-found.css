@@ -11,9 +11,6 @@
 .lost-door-words :is(a,button):hover{text-decoration-color:currentColor}
 .lost-door :is(a,button):focus-visible{outline:2px solid #283c32;outline-offset:3px}
 @media(min-width:1600px){.lost-door-words :is(a,button){font-size:19px}}
-/* It stands up once as the page arrives, from lying back 60° (no sheet is seen further off upright), and then stays. */
-@keyframes lost-door-stands{from{transform:perspective(1200px) rotateX(60deg)}}
-@media(prefers-reduced-motion:no-preference){:is(.lost-door-arch,.lost-door-piece){animation:lost-door-stands .7s .12s cubic-bezier(.2,.75,.25,1) backwards}}
 /* The page carries both languages and shows the reader's own (first-language.ts sets it on the root before the words are drawn). */
 :root:lang(es) .lost-door [lang="en"],:root:not(:lang(es)) .lost-door [lang="es"]{display:none}
 
