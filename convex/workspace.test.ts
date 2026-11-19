@@ -25,6 +25,15 @@ async function setup(){
  return {t,ids,as:(id:string)=>signedIn(t, id, emails.has(id))};
 }
 describe("workspace access and consent",()=>{
+ test("leading a team never raises the church role, and a team's own coordinator still leads it",async()=>{
+  const {t,ids,as}=await setup();
+  await as(ids.owner).mutation(api.workspace.execute,{churchId:ids.church,command:{type:"setTeamRole",teamId:ids.team,personId:ids.volunteer,role:"coordinator"}});
+  expect((await t.run(ctx=>ctx.db.get("memberships",ids.volunteer)))?.role).toBe("member");
+  expect(await as(ids.vol).query(api.access.canOpenNeighborRecords,{churchId:ids.church})).toBe(false);
+  // A church member who coordinates the team asks for cover on it.
+  const other=await t.run(async ctx=>{const m=await ctx.db.insert("memberships",{churchId:ids.church,userId:await ctx.db.insert("users",{}),name:"Other",email:"o@example.org",role:"member",active:true,approved:true,coverOptIn:true});await ctx.db.insert("teamMembers",{churchId:ids.church,teamId:ids.team,memberId:m,teamRole:"member",approved:true,status:"active"});await ctx.db.insert("availability",{churchId:ids.church,memberId:m,start:"2099-01-01",end:"2099-12-31"});return m;});
+  await as(ids.vol).mutation(api.workspace.execute,{churchId:ids.church,command:{type:"requestCover",commitmentId:ids.slot,recipientId:other,expectedVersion:1}});
+ });
  test("request pages carry authorized context independently of assigned commitments and pagination",async()=>{
   const {t,ids,as}=await setup();
   await as(ids.coord).mutation(api.workspace.execute,{churchId:ids.church,command:{type:"requestCover",commitmentId:ids.slot,recipientId:ids.volunteer,expectedVersion:1}});
@@ -163,7 +172,7 @@ describe("workspace access and consent",()=>{
  test("revising an accepted commitment preserves history and requires a new acceptance",async()=>{
   const {t,ids,as}=await setup();await t.run(ctx=>ctx.db.patch("commitments",ids.slot,{assigneeId:ids.volunteer,version:2}));
   const command={type:"reviseCommitment" as const,commitmentId:ids.slot,expectedVersion:2,title:"Welcome updated",start:"2099-11-22T09:30",end:"2099-11-22T11:00",location:"New entrance",preparation:"Updated guide"};
-  await expect(as(ids.vol).mutation(api.workspace.execute,{churchId:ids.church,command})).rejects.toThrow("Coordinator access");
+  await expect(as(ids.vol).mutation(api.workspace.execute,{churchId:ids.church,command})).rejects.toThrow("Team coordinator access");
   await expect(as(ids.coord).mutation(api.workspace.execute,{churchId:ids.church,command:{...command,expectedVersion:1}})).rejects.toThrow("changed");
   await as(ids.coord).mutation(api.workspace.execute,{churchId:ids.church,command});
   const state=await t.run(async ctx=>({slot:await ctx.db.get("commitments",ids.slot),history:await ctx.db.query("commitmentHistory").withIndex("by_commitment",q=>q.eq("commitmentId",ids.slot)).collect()}));
