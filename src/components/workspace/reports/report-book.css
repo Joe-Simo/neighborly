@@ -35,6 +35,9 @@
 .book-sample { font-size: 13px; color: #5b6b61; }
 .book-mark { --size: 22px; display: flex; margin: 18px 0 auto; }
 .book-mark .week-quilt-piece { margin-left: -6px; }
+.book-contents { justify-content: center; }
+.book-contents ol { margin: 0; padding: 0; list-style: none; border-top: 1px solid rgb(40 60 50 / 0.16); }
+.book-contents li { padding: 12px 0; border-bottom: 1px solid rgb(40 60 50 / 0.16); font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: clamp(19px, 2vw, 23px); line-height: 1.25; }
 
 .book-table { width: 100%; border-collapse: collapse; }
 .book-table th, .book-table td { padding: 9px 0; font-size: 15px; letter-spacing: normal; text-transform: none; color: inherit; line-height: 1.4; border-bottom: 1px solid rgb(40 60 50 / 0.16); text-align: left; font-weight: 400; vertical-align: baseline; }

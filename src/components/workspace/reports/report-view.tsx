@@ -283,7 +283,6 @@ export function ReportView({
       {period}
       {sheet}
       {done && <HelpDone>{done}</HelpDone>}
-      {!report.quarter && <ReportBook report={report} groupName={groupName} sample={sample} />}
 
       {/* The year as one cut piece: what was paid, standing on a ledge, with the calls, requests and visits that led to it. */}
       <dl className="report-year">
@@ -331,6 +330,9 @@ export function ReportView({
           </div>
         ))}
       </dl>
+
+      {/* The bound year follows the figure it binds: the story leads, its printable pages come after. */}
+      {!report.quarter && <ReportBook report={report} groupName={groupName} sample={sample} />}
 
       {/* On paper the year is one sheet a council can file: the year's total over four figures, then each kind of
           help as a table. Set as plain words, since a printed page does not count up. */}
