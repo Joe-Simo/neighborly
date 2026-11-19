@@ -16,6 +16,11 @@ const BUDGET = {
   longestTaskMs: 200, // 0
   idleFramesPerSecond: 0, // 0: nothing asks for frames once the page is still
   forcedLayouts: 20, // 57-60 on f9723d1, before scroll-ios 0003 moves the window reads into the read half; about 1 after it
+  // Each of the 13 rooms scrolled the same way, worst room, measured on f9723d1: 1 forced layout, no long task, no frames once still.
+  roomForcedLayouts: 5,
+  roomLongTasks: 3,
+  roomLongestTaskMs: 200,
+  roomIdleFramesPerSecond: 0,
   firstLoadJsKB: { "/": 900, "/about": 890, "/made": 820, "/privacy": 885, "/week": 820, "/sign-in": 820 }, // 854, 844, 780, 841, 780, 780
 } as const;
 
@@ -109,13 +114,41 @@ declare global {
   interface Window { __scroll?: { tasks: () => number[]; frames: () => number } }
 }
 
+/** Scrolls a page top to bottom at 4x CPU by wheel from outside it, then leaves it still: forced layouts, long tasks (ms each), frames per second asked for once still. */
+async function scrollOnce(url: string, settle: number) {
+  const context = await browser.newContext(phone);
+  await context.addInitScript(watchScroll);
+  const page = await context.newPage();
+  const session = await context.newCDPSession(page);
+  await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+  await page.waitForTimeout(settle);
+  await session.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await page.evaluate(() => window.__scroll?.tasks());
+  // The farthest any part scrolls: the page itself, or a room's own scrolling column.
+  const distance = await page.evaluate(() => Math.max(0, ...[document.documentElement, ...document.querySelectorAll("body *")]
+    .filter((element) => element === document.documentElement || /auto|scroll/.test(getComputedStyle(element).overflowY))
+    .map((element) => element.scrollHeight - element.clientHeight)));
+  await browser.startTracing(page, { categories: ["devtools.timeline", "disabled-by-default-devtools.timeline.stack"] });
+  // Wheel scrolling sent by the browser from outside the page (a synthesized touch did not move it under phone emulation), so the measuring itself forces no layout.
+  if (distance > 0) await session.send("Input.synthesizeScrollGesture", { x: 195, y: 600, yDistance: -distance, speed: 1440, gestureSourceType: "mouse", preventFling: true });
+  const trace = JSON.parse((await browser.stopTracing()).toString()) as { traceEvents: { name: string; args?: { beginData?: { stackTrace?: unknown[] } } }[] };
+  const forced = trace.traceEvents.filter((event) => event.name === "Layout" && (event.args?.beginData?.stackTrace?.length ?? 0) > 0).length;
+  const tasks = await page.evaluate(() => window.__scroll?.tasks() ?? []);
+  await page.waitForTimeout(2000);
+  await page.evaluate(() => window.__scroll?.frames());
+  await page.waitForTimeout(3000);
+  const idle = ((await page.evaluate(() => window.__scroll?.frames())) ?? 0) / 3;
+  await context.close();
+  return { forced, tasks, idle };
+}
+
 const phone = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
 const executablePath = process.env.BUDGET_BROWSER;
 const browser = await chromium.launch({
   ...(executablePath ? { executablePath } : { channel: "chrome" }),
   args: ["--enable-precise-memory-info", ...(process.platform === "linux" ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] : [])],
 });
-const found = { longTasks: 0, longestTaskMs: 0, idleFramesPerSecond: 0, forcedLayouts: 0, firstLoadJsKB: {} as Record<Route, number>, webglTextureMB: 0, webglTextureAtEndMB: 0, layerMegapixels: 0, decodedImageMB: 0, jsHeapMB: 0, roomsHeapMB: 0 };
+const found = { roomForcedLayouts: 0, roomLongTasks: 0, roomLongestTaskMs: 0, roomIdleFramesPerSecond: 0, longTasks: 0, longestTaskMs: 0, idleFramesPerSecond: 0, forcedLayouts: 0, firstLoadJsKB: {} as Record<Route, number>, webglTextureMB: 0, webglTextureAtEndMB: 0, layerMegapixels: 0, decodedImageMB: 0, jsHeapMB: 0, roomsHeapMB: 0 };
 try {
   // First-load JavaScript per route: every script the server's page names (script and modulepreload), as Next counts it.
   for (const route of ROUTES) {
@@ -159,28 +192,20 @@ try {
   await context.close();
 
   // Home again, scrolled top to bottom at a steady thumb's pace on a phone four times slower, then left still at the end.
-  const smooth = await browser.newContext(phone);
-  await smooth.addInitScript(watchScroll);
-  const scrollPage = await smooth.newPage();
-  const scrollSession = await smooth.newCDPSession(scrollPage);
-  await scrollPage.goto(base + "/", { waitUntil: "networkidle", timeout: 60000 });
-  await scrollPage.waitForTimeout(9000);
-  await scrollSession.send("Emulation.setCPUThrottlingRate", { rate: 4 });
-  await scrollPage.evaluate(() => window.__scroll?.tasks());
-  const scrollHeight = await scrollPage.evaluate(() => document.documentElement.scrollHeight - innerHeight);
-  await browser.startTracing(scrollPage, { categories: ["devtools.timeline", "disabled-by-default-devtools.timeline.stack"] });
-  // Wheel scrolling sent by the browser from outside the page (a synthesized touch did not move it under phone emulation), so the measuring itself forces no layout.
-  await scrollSession.send("Input.synthesizeScrollGesture", { x: 195, y: 700, yDistance: -scrollHeight, speed: 1440, gestureSourceType: "mouse", preventFling: true });
-  const trace = JSON.parse((await browser.stopTracing()).toString()) as { traceEvents: { name: string; args?: { beginData?: { stackTrace?: unknown[] } } }[] };
-  found.forcedLayouts = trace.traceEvents.filter((event) => event.name === "Layout" && (event.args?.beginData?.stackTrace?.length ?? 0) > 0).length;
-  const tasks = await scrollPage.evaluate(() => window.__scroll?.tasks() ?? []);
-  found.longTasks = tasks.length;
-  found.longestTaskMs = Math.max(0, ...tasks);
-  await scrollPage.waitForTimeout(2000);
-  await scrollPage.evaluate(() => window.__scroll?.frames());
-  await scrollPage.waitForTimeout(3000);
-  found.idleFramesPerSecond = ((await scrollPage.evaluate(() => window.__scroll?.frames())) ?? 0) / 3;
-  await smooth.close();
+  const home = await scrollOnce(base + "/", 9000);
+  found.forcedLayouts = home.forced;
+  found.longTasks = home.tasks.length;
+  found.longestTaskMs = Math.max(0, ...home.tasks);
+  found.idleFramesPerSecond = home.idle;
+
+  // Each of the thirteen rooms, scrolled the same way in its own document.
+  for (const room of ROOMS) {
+    const each = await scrollOnce(`${base}/tools-sketch?area=${room}`, 2000);
+    found.roomForcedLayouts = Math.max(found.roomForcedLayouts, each.forced);
+    found.roomLongTasks = Math.max(found.roomLongTasks, each.tasks.length);
+    found.roomLongestTaskMs = Math.max(found.roomLongestTaskMs, ...each.tasks);
+    found.roomIdleFramesPerSecond = Math.max(found.roomIdleFramesPerSecond, each.idle);
+  }
 
   // Thirteen room switches in one document, the way a volunteer walks the rooms.
   const rooms = await browser.newContext(phone);
@@ -214,6 +239,10 @@ check("Long tasks, scroll 4x CPU", found.longTasks, BUDGET.longTasks);
 check("Longest task, scroll (ms)", found.longestTaskMs, BUDGET.longestTaskMs);
 check("Frames/s still at the end", found.idleFramesPerSecond, BUDGET.idleFramesPerSecond);
 check("Forced layouts, scroll", found.forcedLayouts, BUDGET.forcedLayouts);
+check("Rooms: forced layouts, worst", found.roomForcedLayouts, BUDGET.roomForcedLayouts);
+check("Rooms: long tasks, worst", found.roomLongTasks, BUDGET.roomLongTasks);
+check("Rooms: longest task (ms)", found.roomLongestTaskMs, BUDGET.roomLongestTaskMs);
+check("Rooms: frames/s still", found.roomIdleFramesPerSecond, BUDGET.roomIdleFramesPerSecond);
 for (const route of ROUTES) check(`First-load JS ${route} (KB)`, found.firstLoadJsKB[route], BUDGET.firstLoadJsKB[route]);
 console.log(over.length ? `\nOver budget: ${over.join(", ")}` : "\nWithin budget.");
 process.exit(over.length ? 1 : 0);
