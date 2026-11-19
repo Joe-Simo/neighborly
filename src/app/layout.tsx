@@ -57,7 +57,6 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: staleCheck }} />
         {/* Real light: the shadows' sun is where it is at the visitor's hour, from the first frame (src/lib/sun.ts). */}
         <script dangerouslySetInnerHTML={{ __html: sunLight }} />
-        <script dangerouslySetInnerHTML={{ __html: "try{var s=sessionStorage;if(s.getItem('arrived'))document.documentElement.dataset.arrived='';s.setItem('arrived','1')}catch(e){}" }} />
       </head>
       <body>
         <SerwistProvider swUrl="/serwist/sw.js" register={false} reloadOnOnline={false}>

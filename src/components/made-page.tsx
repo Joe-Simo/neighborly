@@ -49,7 +49,7 @@ export function MadePage({ language }: { language: Language }) {
       <PublicLanguage language={language} paths={{ en: madeWords.en.path, es: madeWords.es.path }} />
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
-    <main className="public-words public-made paper-rise" data-address={`kindhelps.com${said.path}`}>
+    <main className="public-words public-made" data-address={`kindhelps.com${said.path}`}>
       <h1>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={madeWords.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />

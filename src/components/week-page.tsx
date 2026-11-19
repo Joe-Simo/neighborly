@@ -39,7 +39,7 @@ export function WeekPage({ language }: { language: Language }) {
       <PublicLanguage language={language} paths={{ en: weekWords.en.path, es: weekWords.es.path }} />
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
-    <main className="public-words public-week paper-rise" data-address={`kindhelps.com${said.path}`}>
+    <main className="public-words public-week" data-address={`kindhelps.com${said.path}`}>
       <h1>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={weekWords.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />

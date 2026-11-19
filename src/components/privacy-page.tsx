@@ -40,7 +40,7 @@ export function PrivacyPage({ language, book = privacyWords }: { language: Langu
       <PublicLanguage language={language} paths={{ en: book.en.path, es: book.es.path }} />
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
-    <main className="public-words paper-rise" data-address={`kindhelps.com${said.path}`}>
+    <main className="public-words" data-address={`kindhelps.com${said.path}`}>
       <h1 style={{ "--word": Math.max(...said.title.split(/\s+/).map((word) => word.length)) } as CSSProperties}>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={book.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />
