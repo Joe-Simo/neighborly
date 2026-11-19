@@ -31,9 +31,15 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
   };
 }
 
+/**
+ * Where the home page's sample door leads: straight to the help line, where Rosa Fontaine's call waits with its drafted request,
+ * so one Yes is the whole walk (the one-minute walk). The visitor is signed in there, in that room, as at /app.
+ */
+export const SAMPLE_DOOR = "/app/help-line?intent=sample";
+
 /** The link into the sample conference. */
 export function SampleLink(props: Omit<ComponentProps<typeof Link>, "href">) {
-  return <Link {...props} href="/app?intent=sample" {...useSampleDoor()} />;
+  return <Link {...props} href={SAMPLE_DOOR} {...useSampleDoor()} />;
 }
 
 /** A phone has no pointing: as a ref, fetches Clerk's scripts once the way in comes near the window, before the tap. */

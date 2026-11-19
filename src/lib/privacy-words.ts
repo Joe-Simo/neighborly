@@ -37,7 +37,7 @@ const en = {
       "No advertising. We do not sell or share records. The site loads no analytics or tracking scripts. The only outside services it uses are the ones named on this page.",
       "So that it can open without a connection, the app keeps its own pages, pictures and fonts on your device. In the iPhone and iPad app, the first screen of This week and of the help line is kept too, so the app opens at once: what those screens show, callers’ names and numbers among it, but never an email. It is held in the app’s own protected storage and let go after a day, or at once on signing out. In a browser, words typed into a form and not yet saved stay only in that tab, and signing out clears what the site kept there.",
     ] },
-    { title: "The sample conference", blocks: ["“Look around a sample conference” opens a conference of made-up people with made-up phone numbers. It is rebuilt every night, and anything typed into it is thrown away then."] },
+    { title: "The sample conference", blocks: ["“Look around a sample conference” opens a conference of made‑up people with made‑up phone numbers. It is rebuilt every night, and anything typed into it is thrown away then."] },
     { title: "Removing a record, a person or a whole conference", blocks: [
       "Ask the owner of your conference first. The records are theirs, and only an owner can remove them. Each removal asks the owner to type the name, and it cannot be undone.",
       [
