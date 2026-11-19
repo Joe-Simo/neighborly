@@ -61,7 +61,7 @@ export function OnTheLine({ turns, calling }: { turns: Turn[]; calling: Owner[] 
           <ul className="help-aside-list">
             {calling.map((owner) => (
               <li key={owner.name ?? ""}>
-                <strong data-open={owner.name ? undefined : ""}>{owner.name ?? text.noOne}</strong>
+                <strong data-open={owner.name ? undefined : ""}>{owner.name ?? text.untaken}</strong>
                 <span>{text.calls(owner.calls)}</span>
               </li>
             ))}

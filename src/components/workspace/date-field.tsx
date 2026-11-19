@@ -173,6 +173,7 @@ export function DateField({
             aria-describedby={missing ? missingId : undefined}
             // Named by its field's own label alone ("Starts"), not by every word inside the label, the hour's included.
             aria-label={label || undefined}
+            placeholder={words.dateField.choose}
             value={typed ?? said}
             onChange={(event) => setTyped(event.target.value)}
             onBlur={keep}

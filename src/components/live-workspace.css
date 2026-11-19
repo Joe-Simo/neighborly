@@ -363,6 +363,11 @@
   border-color: #7d8874;
   font-size: 16px;
 }
+/* A box for writing grows with what is written, and opens at the lines its form asks for: a message is never one line tall. */
+.live-field textarea { min-height: calc(2 * 1.5em + 18px); line-height: 1.5; }
+.live-field textarea[rows="3"] { min-height: calc(3 * 1.5em + 18px); }
+.live-field textarea[rows="4"] { min-height: calc(4 * 1.5em + 18px); }
+.live-field textarea:is([rows="5"], [rows="6"]) { min-height: calc(5 * 1.5em + 18px); }
 .live-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

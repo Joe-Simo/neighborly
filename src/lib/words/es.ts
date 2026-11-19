@@ -240,6 +240,7 @@ export function es(set: WordSet): Words {
       canHelp: "Puedes ayudar",
       note: "Los días libres no te sacan de tus equipos. Los compromisos que ya tienes se cambian aparte, para que todos sepan qué está cubierto.",
       remove: "Quitar días libres",
+      removeDates: "Quitar estas fechas",
       removed: "Días libres quitados.",
       restored: "Días libres repuestos.",
       availabilityRemoved: "Fechas disponibles quitadas.",
@@ -510,6 +511,7 @@ export function es(set: WordSet): Words {
       alone: "Vive sin compañía",
       medical: "Una necesidad médica",
       notUrgent: "No es urgente",
+      putFirst: "Poner esta llamada primero",
     },
     assistant: {
       guide: {

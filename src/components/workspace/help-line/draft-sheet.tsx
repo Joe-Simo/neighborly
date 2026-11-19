@@ -189,8 +189,7 @@ export function DraftSheet({
           )}
           {onDiscard && (
             <Button
-              variant="link"
-              className="help-text-action"
+              variant="ghost"
               disabled={pending}
               onClick={onDiscard}
             >

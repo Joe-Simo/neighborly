@@ -923,7 +923,7 @@ function HelpLineView({
                     >
                       {isFirst(call)
                         ? words.urgent.notUrgent
-                        : words.urgent.label}
+                        : words.urgent.putFirst}
                     </Button>
                   )}
                 </p>
