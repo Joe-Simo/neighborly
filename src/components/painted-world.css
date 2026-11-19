@@ -1,5 +1,6 @@
 .painted-world{background:#f1eadb;color:#253e31}
 .painted-world-track{height:600svh;position:relative}
+.painted-world-lift,.painted-world-sheet{display:contents}
 .painted-world-viewport{height:100svh;min-height:0;position:sticky;top:0;overflow:hidden;isolation:isolate;background:#eee6d5;--story-progress:0}
 .painted-world-art,.painted-world-fallback{position:absolute;inset:0}
 .painted-world-art canvas{display:block;width:100%;height:100%;touch-action:pan-y}
@@ -309,8 +310,14 @@
 @media not ((max-height:500px) and (min-aspect-ratio:10/11)){
   .neighborly-connected-world.is-connected{--edge:clamp(52px,7.5vw,120px)}
   .neighborly-connected-world.is-connected,.neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{--sheet:calc((100svh + var(--edge)) * var(--entry-portrait))}
-  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{opacity:1;-webkit-mask:linear-gradient(#000,#000) 0 0/100% max(0px,calc(var(--sheet) - var(--edge) + 1px)) no-repeat,var(--cut-open-bottom) 0 calc(var(--sheet) - var(--edge))/100% var(--edge) no-repeat;mask:linear-gradient(#000,#000) 0 0/100% max(0px,calc(var(--sheet) - var(--edge) + 1px)) no-repeat,var(--cut-open-bottom) 0 calc(var(--sheet) - var(--edge))/100% var(--edge) no-repeat}
-  .neighborly-connected-world.is-connected::before{--sheet:inherit;content:"";position:fixed;z-index:1;left:0;right:0;top:calc(var(--sheet) - var(--edge));height:var(--edge);pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-40%25' width='140%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 36C200 24 380 44 560 32S860 26 1000 40L1000 -10L0 -10Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+  /* The cut is never redrawn: a sheet one edge taller than the window carries it as a fixed mask at its foot and is moved up, while the painting inside is moved
+     down by as much, so it holds still. Moving them is the compositor's work alone; a mask resized every frame had the whole window painted again. */
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-viewport{opacity:1;background:none}
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-sheet{background:#eee6d5}
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] :is(.painted-world-lift,.painted-world-sheet){--sheet:calc((100svh + var(--edge)) * var(--entry-portrait));display:block;position:absolute;left:0;right:0;top:0}
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-lift{height:calc(100% + var(--edge));transform:translateY(calc(var(--sheet) - 100% ));-webkit-mask:linear-gradient(#000,#000) 0 0/100% calc(100% - var(--edge) + 1px) no-repeat,var(--cut-open-bottom) 0 100%/100% var(--edge) no-repeat;mask:linear-gradient(#000,#000) 0 0/100% calc(100% - var(--edge) + 1px) no-repeat,var(--cut-open-bottom) 0 100%/100% var(--edge) no-repeat}
+  .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-sheet{height:calc(100% - var(--edge));transform:translateY(calc(100% + var(--edge) - var(--sheet)))}
+  .neighborly-connected-world.is-connected::before{--sheet:inherit;content:"";position:fixed;z-index:1;left:0;right:0;top:0;transform:translateY(calc(var(--sheet) - var(--edge)));height:var(--edge);pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-40%25' width='140%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 36C200 24 380 44 560 32S860 26 1000 40L1000 -10L0 -10Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
   .neighborly-connected-world.is-connected[data-lifted]::before{display:none}
   .neighborly-connected-world.is-connected .fresco-stage{opacity:1}
   .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] .painted-world-caption{opacity:1}

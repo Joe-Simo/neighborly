@@ -87,7 +87,7 @@ export function NeighborlyExperience() {
     let entryRequested = false;
     // Each value is written only on the few elements that draw with it, and only when it has changed: written on the whole page's root,
     // one changed value had every element of the page styled again on every frame of the scroll.
-    const drawnBy: Record<string, string | null> = { "--entry-portrait": ".painted-world-viewport", "--entry-door": ".fresco-stage", "--entry-caption": ".painted-world-caption" };
+    const drawnBy: Record<string, string | null> = { "--entry-portrait": ".painted-world-viewport, .painted-world-lift, .painted-world-sheet", "--entry-door": ".fresco-stage", "--entry-caption": ".painted-world-caption" };
     const written = new Map<string, string>();
     const write = (name: string, value: string) => {
       const selector = drawnBy[name];
