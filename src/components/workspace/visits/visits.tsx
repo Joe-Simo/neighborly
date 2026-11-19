@@ -264,7 +264,7 @@ function Visits() {
         <LiveDialog
           title={text.dialogs.writeUpTitle(step.visit.neighborName)}
           description={capital(fill(text.dialogs.writeUpDeck, {
-            day: day(step.visit.scheduledAt),
+            day: format(step.visit.scheduledAt, { weekday: "long", month: "long", day: "numeric" }),
             time: time(step.visit.scheduledAt),
             visitors: together(text, step.visit.visitors.map((visitor) => sampleSaid(visitor.name))),
           }))}
