@@ -159,12 +159,14 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
 
 /** One sheet as it is printed: its title, its body and its number at the foot. */
 function Sheet({ page, at, of, label }: { page: { title?: string; body: ReactNode; notes?: string[] }; at: number; of: number; label: string }) {
+  const pageOf = useWorkspace().words.rooms.reports.book.page;
   return (
     <article className="book-sheet" aria-label={label}>
       {page.title && <h3>{page.title}</h3>}
       {page.body}
       {page.notes?.map((note) => <p key={note} className="book-note">{note}</p>)}
-      <p className="book-folio">{fill(useWorkspace().words.rooms.reports.book.page, { page: String(at + 1), pages: String(of) })}</p>
+      {/* The cover carries no number: a count of screen sheets would not match the printed pages. */}
+      {at > 0 && <p className="book-folio">{fill(pageOf, { page: String(at + 1), pages: String(of) })}</p>}
     </article>
   );
 }
@@ -317,7 +319,19 @@ export function ReportBook({ report, groupName, sample = false }: { report: Year
   return (
     <section className="report-book" aria-label={b.label}>
       <div className="book-desk" data-facing={facing ? "" : undefined} tabIndex={0} onKeyDown={keys} aria-roledescription={b.label}>
-        {facing && <div className="book-left">{sheet(left)}</div>}
+        {/* Opposite the closed cover lies the inside board with what the book holds, so the spread reads as a book. */}
+        {facing && (
+          <div className="book-left">
+            {left === undefined ? (
+              <article className="book-sheet book-contents" aria-label={b.contents}>
+                <h3>{b.contents}</h3>
+                <ol>{pages.slice(1).map((page) => <li key={page.key}>{page.title}</li>)}</ol>
+              </article>
+            ) : (
+              sheet(left)
+            )}
+          </div>
+        )}
         <div className="book-right">
           {/* The next page already lies beneath, so a turn only has to lift the leaf off it. */}
           <div className="book-under" aria-hidden="true">{sheet(turning ? turning.under : open[at + 1]?.right)}</div>

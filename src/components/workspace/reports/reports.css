@@ -803,6 +803,14 @@
 @media (max-width: 600px) {
   .report-months:not([data-months="3"]) { column-gap: 8px; }
   .report-months:not([data-months="3"]) li { padding-inline: 0; }
+  /* Each row stands on one unbroken ledge: a bar's ledge reaches halfway into the gap on either side. */
+  .report-months:not([data-months="3"]) .report-month-bar { margin-inline: -4px; }
+  .report-months:not([data-months="3"]) li:nth-child(6n + 1) .report-month-bar { margin-left: 0; }
+  .report-months:not([data-months="3"]) li:nth-child(6n) .report-month-bar { margin-right: 0; }
+  /* The rule between the two rows runs unbroken too. */
+  .report-months:not([data-months="3"]) li:nth-child(n + 7) { border-image: linear-gradient(var(--live-line), var(--live-line)) 1 0 0 / 1px 0 0 / 0 4px; }
+  .report-months:not([data-months="3"]) li:nth-child(7) { border-image-outset: 0 4px 0 0; }
+  .report-months:not([data-months="3"]) li:nth-child(12) { border-image-outset: 0 0 0 4px; }
   .report-months:not([data-months="3"]) p.help-amount { font-size: 14px; letter-spacing: -0.03em; }
 }
 @media (max-width: 370px) {

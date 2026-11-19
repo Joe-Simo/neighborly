@@ -185,6 +185,7 @@ export const en = (t: Terms, place: string) => ({
   book: {
     label: "The yearly report",
     cover: "Yearly report",
+    contents: "Contents",
     page: "Page {page} of {pages}",
     next: "Next page",
     previous: "Previous page",
@@ -498,6 +499,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     book: {
       label: "El informe anual",
       cover: "Informe anual",
+      contents: "Contenido",
       page: "Página {page} de {pages}",
       next: "Página siguiente",
       previous: "Página anterior",
