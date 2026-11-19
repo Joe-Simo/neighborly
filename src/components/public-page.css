@@ -65,7 +65,7 @@
 }
 /* Between a phone and a desk the picture has room beside the name, and still crosses the sheet's cut edge. */
 @media(min-width:600px) and (max-width:1023px){.public-words h1{padding-inline:max(20px,calc((100% - 476px) / 2));padding-bottom:176px}.public-words-relief{top:104px}}
-/* A line under the title, on the title's sheet (the Spanish page says it is a translation). It takes no room of its own: it lies in the sheet's foot. Under 1024px the foot is made deeper for it and the picture lies below it, clear of a longer title. */
+/* A line under the title, on the title's sheet (the Spanish page says it is a translation). It gives back the room it stands in: it lies in the sheet's foot. Under 1024px the foot is made deeper for it and the picture lies below it, clear of a longer title. */
 .public-words .public-words-note{position:relative;z-index:12;height:0;max-width:none;margin:calc(14px - (var(--foot))) 0 calc((var(--foot)) - 14px);padding-inline:clamp(20px,5.4vw,104px);font-size:15px;line-height:1.5;color:#3d4f43;--foot:clamp(60px,7vw,130px)}
 @media(max-width:1023px){
   .public-words:has(.public-words-note) h1{padding-bottom:calc(clamp(250px,62vw,300px) + 72px)}
@@ -161,3 +161,11 @@
 .public-made-eval figcaption{max-width:34em;margin-top:12px;font-size:15px;line-height:1.5;color:#3d4f43}
 @media(min-width:1024px){.public-made-eval{grid-column:2}}
 .public-made-eval :is(td,thead th:not(:first-child)){width:1%;padding-left:18px;white-space:nowrap}
+/* The picture follows the title wherever the title ends: a title that takes two lines on a phone, or a translation note beside a desk-width name,
+   is never covered. It lies in the title's foot as before (the same 30px under the words), gives back the room it stands in, and still crosses the cut edge. */
+@media(max-width:599px){
+  .public-words-relief,.public-words:has(.public-words-note) .public-words-relief{position:relative;display:block;top:auto;margin:calc(30px - clamp(250px,62vw,300px)) calc(-1 * max(12px,3%)) calc(clamp(250px,62vw,300px) - 30px - min(78vw,320px) * 2 / 3) auto}
+}
+@media(min-width:600px) and (max-width:1023px){
+  .public-words:has(.public-words-note) .public-words-relief{position:relative;display:block;top:auto;margin:-186px calc(-1 * max(12px,3%)) calc(186px - min(78vw,320px) * 2 / 3) auto}
+}
