@@ -14,9 +14,11 @@ import { RecordsExport } from "@/components/workspace/tools/records-export";
 
 /** Your files: bring records in, then take them with you. The calendar address and the printed week live in their own rooms. */
 export function ToolsSection() {
-  const { data, isOwner, words } = useWorkspace();
-  // The menu shows this room to coordinators and owners only. A member who types the address is told why it is empty.
-  if (!isOwner && !data.canCoordinate)
+  const { data, words } = useWorkspace();
+  // The same people the server lets read neighbor records (convex/access.ts, mayOpenNeighborRecords): the group's owner and coordinators.
+  // A team coordinator who types the address is told why it is empty, as a member is.
+  const role = data.people.find((person) => person.id === data.user.id)?.role;
+  if (role !== "owner" && role !== "coordinator")
     return (
       <div className="tools-private">
         <LiveState
@@ -28,7 +30,7 @@ export function ToolsSection() {
             </Button>
           }
         >
-          {words.states.privateDeck}
+          {words.states.privateDeckTools}
         </LiveState>
       </div>
     );

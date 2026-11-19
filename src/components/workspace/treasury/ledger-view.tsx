@@ -488,7 +488,7 @@ export function LedgerPrivate() {
         </Button>
       }
     >
-      {words.states.privateDeck}
+      {words.states.privateDeckTreasury}
     </LiveState>
   );
 }

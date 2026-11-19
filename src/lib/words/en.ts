@@ -369,7 +369,11 @@ export function en(set: WordSet) {
       errorTitle: "This room didn’t open.",
       errorDeck: `Nothing is lost. Try again; if it still won’t open, the rest of your ${place} is in the menu.`,
       privateTitle: "Kept private.",
-      privateDeck: `This room names the ${t.neighbors} we help, so it is open to coordinators only. Your commitments and your team are where they always are.`,
+      privateDeck: `This room is made from the records of the ${t.neighbors} we help, so only coordinators open it. Your commitments and your team are where they always are.`,
+      /** Tools, for a member: it brings whole files of records in and takes them out. */
+      privateDeckTools: `This room brings records in from a file and downloads them all, including the ${t.neighbors}’ private details, so it opens to the ${t.group}’s owner and coordinators only. Your commitments and your team are where they always are.`,
+      /** Treasury, for a member: money in and out, and who it paid. */
+      privateDeckTreasury: `This room holds the ${t.group}’s money and who it paid, so only coordinators open it. Your commitments and your team are where they always are.`,
       privateAction: "My commitments",
       missingTitle: "This page isn’t here.",
       missingDeck: `The address may be old or mistyped. Your ${place} is where you left it.`,
