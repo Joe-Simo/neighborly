@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fragment } from "react";
+import { preload } from "react-dom";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { PublicLanguage } from "@/components/public-language";
@@ -34,6 +35,8 @@ export function madeMetadata(language: Language): Metadata {
 
 /** How Kind Helps was made: the same laid sheets as the privacy page, with the help's own piece of the painting on the title's sheet. */
 export function MadePage({ language }: { language: Language }) {
+  // The relief beside the heading is the page's largest paint, drawn from the stylesheet: asked for with the page, not once the styles are read.
+  preload("/assets/home/relief-kept-640.webp", { as: "image", fetchPriority: "high" });
   const said = madeWords[language];
   /* The code's address is kept whole on one line, never broken at its slash or hyphen. */
   const address = "github.com/Joe-Simo/neighborly";
