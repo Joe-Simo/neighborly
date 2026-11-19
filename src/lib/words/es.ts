@@ -211,7 +211,7 @@ export function es(set: WordSet): Words {
       unavailable: "No se pueden mostrar los detalles del compromiso",
       accept: "Aceptar",
       decline: "No puedo",
-      accepted: "Compromiso aceptado. Tu plan está al día.",
+      accepted: "Compromiso aceptado. Ya está en tu lista.",
       acceptedUnder: (place: string) => `Compromiso aceptado. Está en ${place}.`,
       declined: "Petición rechazada. No se agregó nada a tu plan.",
     },

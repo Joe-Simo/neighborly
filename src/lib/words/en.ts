@@ -214,8 +214,8 @@ export function en(set: WordSet) {
       unavailable: "Commitment details unavailable",
       accept: "Accept",
       decline: "Decline",
-      accepted: "Commitment accepted. Your plan is updated.",
-      acceptedUnder: (place: string) => `Commitment accepted. It is under ${place}.`,
+      accepted: "Commitment accepted. It’s on your list.",
+      acceptedUnder: (place: string) => `Commitment accepted. It’s in ${place}.`,
       declined: "Request declined. Nothing was added to your plan.",
     },
     detail: {

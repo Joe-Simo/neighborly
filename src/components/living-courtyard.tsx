@@ -2,6 +2,7 @@
 
 import { COURTYARD_STILL, type CourtyardStill } from "./courtyard-door";
 import { useEffect, useRef } from "react";
+import { whenIdle } from "@/lib/idle";
 import { ImageBitmapLoader, LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Texture, Vector2, Vector4, WebGLRenderer } from "three";
 
 const vertex = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`;
@@ -151,7 +152,7 @@ export function LivingCourtyard({ within = ".threshold-experience", painting: pa
     // milliseconds, and the painted courtyard beneath already shows exactly what it will draw first.
     let stop: (() => void) | undefined, cancelled = false;
     const opened = new Promise<void>(resolve => { if (document.readyState === "complete") resolve(); else addEventListener("load", () => resolve(), { once: true }); });
-    opened.then(() => new Promise<void>(resolve => { if ("requestIdleCallback" in window) requestIdleCallback(() => resolve(), { timeout: 1500 }); else setTimeout(resolve, 200); })).then(() => { if (!cancelled) stop = live(frame, host, paintingSelector); });
+    opened.then(() => new Promise<void>(resolve => { whenIdle(() => resolve(), 1500, 200); })).then(() => { if (!cancelled) stop = live(frame, host, paintingSelector); });
     return () => { cancelled = true; stop?.(); };
   }, [within, paintingSelector]);
 

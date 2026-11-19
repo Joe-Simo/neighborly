@@ -44,11 +44,6 @@ const eslintConfig = defineConfig([
     plugins: { "es-x": esX },
     rules: { "es-x/no-regexp-lookbehind-assertions": "error" },
   },
-  {
-    // Already guarded by hand, in files other work owns; each moves to whenIdle with its owner's next change, and leaves this list then.
-    files: ["src/components/painted-world.tsx", "src/components/living-courtyard.tsx", "src/components/workspace/sections.ts"],
-    rules: { "no-restricted-globals": "off", "no-restricted-properties": "off" },
-  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

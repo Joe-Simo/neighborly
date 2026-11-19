@@ -1,5 +1,6 @@
 import { createElement, use, type ComponentType } from "react";
 import { liveAreas, type LiveArea } from "@/components/workspace/areas";
+import { whenIdle } from "@/lib/idle";
 
 // Each room is its own file, fetched when it is needed: the room being opened at once, beside the frame, and every other room once the first is whole and the page is idle, so moving between rooms never waits on a fetch.
 const loaders: Record<LiveArea, () => Promise<ComponentType>> = {
@@ -46,8 +47,7 @@ export function fetchRoom(area: LiveArea) {
 export function fetchRoomsAhead() {
   // A room fetched ahead that does not come is no fault to anyone: it is fetched again when it is opened.
   const all = () => liveAreas.forEach((area) => void fetchRoom(area).catch(() => {}));
-  if ("requestIdleCallback" in window) window.requestIdleCallback(all, { timeout: 4000 });
-  else setTimeout(all, 1500);
+  whenIdle(all, 4000, 1500);
 }
 
 /** The fetch a room on the page is waiting on, and how it failed if it did. */

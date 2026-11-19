@@ -14,9 +14,9 @@ const es: Readonly<Record<string, string>> = {
   "Home visitors": "Visitadores a domicilio",
   Pantry: "Despensa",
   // Commitments and the meeting
-  "Help line morning": "Línea de ayuda, mañana",
-  "Help line afternoon": "Línea de ayuda, tarde",
-  "Pantry morning": "Despensa, mañana",
+  "Help line morning": "Línea de ayuda por la mañana",
+  "Help line afternoon": "Línea de ayuda por la tarde",
+  "Pantry morning": "Despensa por la mañana",
   "Conference meeting": "Reunión de la conferencia",
   // Places
   "Parish office": "Oficina parroquial",
