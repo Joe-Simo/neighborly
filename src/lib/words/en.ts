@@ -207,7 +207,7 @@ export function en(set: WordSet) {
       status: { accepted: "Accepted", open: "Open", cancelled: "Canceled" },
       viewPreparation: "View preparation",
       viewCommitment: "View commitment",
-      details: "Details",
+      details: "View details",
     },
     requests: {
       title: "Your choice",
@@ -570,8 +570,8 @@ export function en(set: WordSet) {
       checked: "The assistant checked the kind of help and what kind of payee it is against the note.",
       review: "The assistant could not check this. Read each detail against the note.",
       approve: "Save this request",
-      change: "Change",
-      discard: "Discard",
+      change: "Change the draft",
+      discard: "Discard the draft",
       saved: "Saved to the record",
       approved: `Request saved. The ${t.group} decides next.`,
       /** The draft's own sheet, sentence by sentence, so it reads whole in each language. */

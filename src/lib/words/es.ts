@@ -202,7 +202,7 @@ export function es(set: WordSet): Words {
       status: { accepted: "Aceptado", open: "Libre", cancelled: "Cancelado" },
       viewPreparation: "Ver la preparación",
       viewCommitment: "Ver el compromiso",
-      details: "Detalles",
+      details: "Ver detalles",
     },
     requests: {
       title: "Tú decides",
@@ -560,8 +560,8 @@ export function es(set: WordSet): Words {
       checked: "El asistente comparó con la nota el tipo de ayuda y qué tipo de destinatario del pago es.",
       review: "El asistente no pudo comprobarlo. Lee cada dato junto a la nota.",
       approve: "Guardar esta petición",
-      change: "Cambiar",
-      discard: "Descartar",
+      change: "Cambiar el borrador",
+      discard: "Descartar el borrador",
       saved: "Guardado en el registro",
       approved: `Petición guardada. Tu ${t.group} decide después.`,
       sheet: {
