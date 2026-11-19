@@ -49,15 +49,15 @@ describe("the year, line by line", () => {
   test("the spreadsheet holds plain numbers a person can add up, then the twelve months", () => {
     const rows = Papa.parse<string[]>(reportCsv(report, "St. Example Conference")).data;
     expect(rows[0]).toEqual(["St. Example Conference", "Fiscal year 2026", "October 1, 2025 to September 30, 2026"]);
-    expect(rows).toContainEqual(["Help paid", "All help paid", "450.5"]);
-    expect(rows).toContainEqual(["Cash in and out", "Ending balance", "899.5"]);
+    expect(rows).toContainEqual(["Help paid", "All help paid", "450.50"]);
+    expect(rows).toContainEqual(["Cash in and out", "Ending balance", "899.50"]);
     const months = rows.slice(rows.findIndex((row) => row[0] === "Month"), rows.findIndex((row) => row[0] === "Member") - 1);
     expect(months).toHaveLength(13);
-    expect(rows.slice(-2)).toEqual([["Member", "Home visits", "Shifts", "Hours", "Miles"], ["Sample Helper", "3", "2", "9.75", "32"]]);
+    expect(rows.slice(-2)).toEqual([["Member", "Home visits made", "Shifts", "Hours", "Miles"], ["Sample Helper", "3", "2", "9.75", "32"]]);
     const quarter = { ...report, quarter: 2 as const, firstDay: "2026-01-01", lastDay: "2026-03-31" };
     expect(Papa.parse<string[]>(reportCsv(quarter, "St. Example Conference")).data[0]).toEqual(["St. Example Conference", "Fiscal year 2026, second quarter", "January 1, 2026 to March 31, 2026"]);
     expect(csvFileName(quarter, "St. Example")).toBe("st-example-year-2026-quarter-2.csv");
-    expect(months[5]).toEqual(["February 2026", "0", "0", "0", "0", "450.5", "0"]);
+    expect(months[5]).toEqual(["February 2026", "0", "0", "0", "0", "450.50", "0.00"]);
     expect(Papa.parse<string[]>(reportCsv(report, "St. Example Conference", true)).data[1]).toEqual(["Sample"]);
     expect(csvFileName(report, "St. Example Conference (sample)")).toBe("st-example-conference-sample-year-2026.csv");
   });

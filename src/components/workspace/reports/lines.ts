@@ -66,6 +66,8 @@ export type ReportLine = {
   number: number;
   /** A ruled total closing its section. */
   total?: true;
+  /** Dollars, which the spreadsheet writes with their cents, as every money cell in every download is written. */
+  money?: true;
 };
 
 /** Every line of the year's report, in the order it is printed. The spreadsheet download is these rows. */
@@ -76,7 +78,7 @@ export function reportLines(report: YearReport, words: Words = english, said: (n
   const rows: ReportLine[] = [];
   const section = (name: string) => ({
     count: (line: string, value: number) => rows.push({ section: name, line, value: count(value), number: value }),
-    money: (line: string, cents: number, total?: true) => rows.push({ section: name, line, value: money(cents), number: cents / 100, ...(total && { total }) }),
+    money: (line: string, cents: number, total?: true) => rows.push({ section: name, line, value: money(cents), number: cents / 100, money: true, ...(total && { total }) }),
   });
 
   const neighbors = section(w.neighbors.section);
@@ -167,12 +169,15 @@ export function reportLines(report: YearReport, words: Words = english, said: (n
   return rows;
 }
 
+/** Cents as the downloads write money: dollars with two decimals and no sign or separator, "1745.00", so a spreadsheet adds it up. */
+const dollars = (cents: number) => (cents / 100).toFixed(2);
+
 /** The twelve months as spreadsheet rows, one column per count: the column names, then a row for each month. */
 export function monthLines(report: YearReport, words: Words = english) {
   const w = words.rooms.reports.rows.csv;
   return [
     [w.month, w.calls, w.requests, w.visits, w.households, w.paid, w.moneyIn],
-    ...report.months.map((line) => [monthLabel(line.month, false, words), line.calls, line.requests, line.visits, line.households, line.paid / 100, line.moneyIn / 100]),
+    ...report.months.map((line) => [monthLabel(line.month, false, words), line.calls, line.requests, line.visits, line.households, dollars(line.paid), dollars(line.moneyIn)]),
   ];
 }
 
@@ -188,7 +193,7 @@ export function memberLines(report: YearReport, words: Words = english) {
 /** The year as one CSV file: every line, then the months, then the members. No neighbor is named anywhere in it. */
 export function reportCsv(report: YearReport, groupName: string, sample = false, words: Words = english, said?: (name: string) => string) {
   const w = words.rooms.reports.rows.csv;
-  const lines = reportLines(report, words, said).map(({ section, line, number }) => [section, line, number]);
+  const lines = reportLines(report, words, said).map(({ section, line, number, money }) => [section, line, money ? number.toFixed(2) : number]);
   const members = memberLines(report, words);
   return Papa.unparse([
     [groupName, periodLabel(report, words), longSpanLabel(report, words)],
