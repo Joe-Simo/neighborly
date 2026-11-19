@@ -108,10 +108,10 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
               <td>{count(report.history.householdsInAll)}</td>
               <td>{dollars(report.helpPaid)}</td>
             </tr>
+            <NoteRow span={4} notes={[...(shownKinds.some((line) => line.kind === "voucher" && line.paid === 0) ? [b.vouchersNote] : []), b.householdsNote]} />
           </tfoot>
         </table>
       ),
-      notes: [...(shownKinds.some((line) => line.kind === "voucher" && line.paid === 0) ? [b.vouchersNote] : []), b.householdsNote],
     },
     {
       key: "hours",
@@ -141,10 +141,10 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
               <th scope="row">{b.miles}</th>
               <td>{count(report.visitMiles)}</td>
             </tr>
+            <NoteRow span={2} notes={[b.hoursNote]} />
           </tfoot>
         </table>
       ),
-      notes: [b.hoursNote],
     },
     {
       key: "served",
@@ -154,17 +154,30 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
         { label: b.peopleInAll, value: count(report.history.peopleInAll) },
       ]),
     },
-  ] satisfies { key: string; title?: string; body: ReactNode; notes?: string[] }[];
+  ] satisfies { key: string; title?: string; body: ReactNode }[];
+}
+
+/**
+ * A table's notes are its last row, so a printed page can never part them from the rows they speak of. On screen the
+ * row draws as the plain notes under the table did.
+ */
+function NoteRow({ span, notes }: { span: number; notes: string[] }) {
+  return (
+    <tr className="book-note-row">
+      <td colSpan={span}>
+        {notes.map((note) => <p key={note} className="book-note">{note}</p>)}
+      </td>
+    </tr>
+  );
 }
 
 /** One sheet as it is printed: its title, its body and its number at the foot. */
-function Sheet({ page, at, of, label }: { page: { title?: string; body: ReactNode; notes?: string[] }; at: number; of: number; label: string }) {
+function Sheet({ page, at, of, label }: { page: { title?: string; body: ReactNode }; at: number; of: number; label: string }) {
   const pageOf = useWorkspace().words.rooms.reports.book.page;
   return (
     <article className="book-sheet" aria-label={label}>
       {page.title && <h3>{page.title}</h3>}
       {page.body}
-      {page.notes?.map((note) => <p key={note} className="book-note">{note}</p>)}
       {/* The cover carries no number: a count of screen sheets would not match the printed pages. */}
       {at > 0 && <p className="book-folio">{fill(pageOf, { page: String(at + 1), pages: String(of) })}</p>}
     </article>

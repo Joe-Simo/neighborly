@@ -72,6 +72,9 @@
 .book-foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 15px; }
 /* The page arrows are 44px presses, like every control. */
 .book-foot [data-slot="button"] { width: 44px; height: 44px; }
+/* The notes row (report-book.tsx NoteRow) draws as the notes once did under the table: no rule, plain small words. */
+.book-table .book-note-row td { padding: 0; border: 0; text-align: left; white-space: normal; font: inherit; font-weight: 400; }
+.book-note-row .book-note { margin-top: 22px; }
 .book-note { margin: 4px 0 0; font-size: 13px; color: #4a5a50; }
 .book-print {
   margin-left: auto; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; color: var(--live-ink, #283c32);
@@ -104,15 +107,16 @@
   .report-book-print .book-table :is(th, td) { border-bottom: 0; border-top: 0; }
   .report-book-print .book-table tr { border-bottom: 1px solid #bfbfbf; }
   .report-book-print .book-table thead tr { border-bottom-color: #000; }
-  .report-book-print .book-table tfoot tr { border-top: 1px solid #000; border-bottom: 0; }
-  .report-book-print :is(.book-table tr, .book-note) { break-inside: avoid; }
+  .report-book-print .book-table tfoot tr:not(.book-note-row) { border-top: 1px solid #000; border-bottom: 0; }
+  .report-book-print .book-table tfoot .book-note-row { border: 0; }
+  .report-book-print .book-table tr { break-inside: avoid; }
   /* A long table runs on to the next page under its own head row; its total is said once, at its end (a footer
      group would be printed again at the foot of every page, as if each page were added up). */
+  .report-book-print .book-table thead { display: table-header-group; }
   .report-book-print .book-table tfoot { display: table-row-group; }
-  /* A note goes with the table it speaks of: it never starts a page on its own. */
-  .report-book-print .book-note { break-before: avoid; }
-  .report-book-print .book-table:has(+ .book-note) :is(tbody:last-child, tfoot) tr:last-child { break-after: avoid; }
-  .report-book-print .book-table:has(+ .book-note) { break-after: avoid; }
+  /* The notes row never starts a page: it goes with the last rows of its table. */
+  .report-book-print .book-note-row { break-before: avoid; }
+  .report-book-print .book-table .book-note-row td { border: 0; }
   .report-book-print .book-mark .week-quilt-piece { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   :root:not([data-print-book]) .report-book { display: none; }
 }
