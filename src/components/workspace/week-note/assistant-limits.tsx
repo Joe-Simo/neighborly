@@ -66,6 +66,7 @@ export function AssistantLimits({ callId, verification, notes }: { callId: Id<"c
   const [open, setOpen] = useState(false);
   const id = useId();
   const opened = useOpenedIntoView<HTMLSpanElement>(open);
+  const opener = useRef<HTMLButtonElement>(null);
   const whys = useDraftNotes(notes).map((note) => note.why);
   const removed: Record<string, string> = text.removed;
   const checked = verification === "checked";
@@ -75,11 +76,12 @@ export function AssistantLimits({ callId, verification, notes }: { callId: Id<"c
     <span className="block min-w-0">
       {/* Once the yes is given, "nothing is saved" is no longer true: the sealed sheet fades it where it stands. */}
       {text.made[verification]} {whys.join(" ")} {!whys.length && <span className="help-unsaved">{text.unsaved}</span>}{" "}
-      <button type="button" className={`${quiet} -my-2.5 text-inherit decoration-[#cfc5dc]`} aria-expanded={open} aria-controls={id} data-opens="" onClick={() => setOpen(!open)}>
+      <button ref={opener} type="button" className={`${quiet} -my-2.5 text-inherit decoration-[#cfc5dc]`} aria-expanded={open} aria-controls={id} data-opens="" onClick={() => setOpen(!open)}>
         {open ? text.hide : text.show}
       </button>
       {open && (
-        <span id={id} ref={opened} tabIndex={-1} className="paper-rise mt-4 grid scroll-my-24 gap-y-3 text-[15px] leading-snug text-[var(--live-ink)] outline-none">
+        // Esc folds it away again and hands focus back to what opened it, as every sheet does.
+        <span id={id} ref={opened} tabIndex={-1} onKeyDown={(event) => { if (event.key !== "Escape") return; event.stopPropagation(); setOpen(false); opener.current?.focus(); }} className="paper-rise mt-4 grid scroll-my-24 gap-y-3 text-[15px] leading-snug text-[var(--live-ink)] outline-none">
           {[
             {
               label: text.limits.read,

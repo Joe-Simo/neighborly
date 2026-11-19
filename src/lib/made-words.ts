@@ -40,7 +40,7 @@ const en = {
       ],
       "It is free because no conference should pay to help its neighbors.",
     ] },
-    { title: "One painting, made of paper", blocks: [
+    { title: "One painting, made\u00a0of\u00a0paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
       "The painted artwork was made with an AI image tool from written direction, then chosen and edited by hand. The page never paints over it, recolors it or crops into it. What moves is the paper around it.",
     ] },

@@ -13,6 +13,8 @@ import { evalTable } from "@/lib/made-proof";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
 import { CutHead } from "@/components/cut-heads";
+import { BookLeaves } from "@/components/book-leaves";
+import "@/components/made-book.css";
 
 export { privacyViewport as madeViewport } from "@/components/privacy-page";
 
@@ -47,7 +49,7 @@ export function MadePage({ language }: { language: Language }) {
       {said.sections.map(({ title, blocks, figure, table }, index) => <Fragment key={title}>
         {/* After the first sheet, the painting it speaks of is drawn apart into its paper and laid back together. */}
         {index === 1 && <MadeCourtyard {...said.courtyard} />}
-        <section>
+        <section data-figure={figure || table ? "" : undefined}>
           <CutHead>{title.replace(/ (\S+)$/, "\u00a0$1")}</CutHead>
           <div>{blocks.map((block) => typeof block === "string"
             ? <p key={block}>{block}</p>
@@ -69,6 +71,7 @@ export function MadePage({ language }: { language: Language }) {
         <div><p className="public-words-last">{lastLead}<span className="public-words-address">{address}</span>{lastTail}</p></div>
       </section>
     </main>
+    <BookLeaves sheets=".public-made > section" />
     <PublicEnding language={language} />
   </div>;
 }

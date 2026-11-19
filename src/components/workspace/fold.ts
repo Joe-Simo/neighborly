@@ -445,13 +445,22 @@ export function useFocusOnce(line: RefObject<HTMLElement | null>, saying: unknow
     if (focusTaken.has(saying)) return;
     // After a closing sheet has handed focus back to its opener (live-dialog.tsx): the line takes focus only where
     // focus has nowhere to be, as when the control that was pressed has left with the step it took.
-    const frame = requestAnimationFrame(() => {
+    // Watched for a second, not one frame: a sheet still closing holds focus, and only once it has handed focus back
+    // is it known whether its opener is still there. If the opener left with the step (a paid request's sheet), focus
+    // would fall to the page; the line takes it instead.
+    let frame = 0, left = 60;
+    const look = () => {
       const now = document.activeElement;
-      if (now && now !== document.body) return;
+      if (now && now !== document.body) {
+        if (!now.closest('[role="dialog"]') || left-- <= 0) return;
+        frame = requestAnimationFrame(look);
+        return;
+      }
       focusTaken.add(saying);
       // Focus tells a screen reader; it must not pull the page away from where the sheet was.
       line.current?.focus({ preventScroll: true });
-    });
+    };
+    frame = requestAnimationFrame(look);
     return () => cancelAnimationFrame(frame);
   }, [line, saying]);
 }

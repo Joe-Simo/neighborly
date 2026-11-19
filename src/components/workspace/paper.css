@@ -573,10 +573,16 @@
 @keyframes paper-late { from, to { clip-path: inset(50%); } }
 .live-main.paper-loading .paper-loading-words {
   top: calc(50vh + 76px);
-  left: max(var(--live-pad, 24px), env(safe-area-inset-left));
-  right: max(var(--live-pad, 24px), env(safe-area-inset-right));
+  /* Measured as the mark is, on the whole window (vw, a scrollbar included): the line's middle is the mark's middle. */
+  left: 0;
+  right: auto;
+  width: 100vw;
+  box-sizing: border-box;
+  padding-inline: max(24px, env(safe-area-inset-left), env(safe-area-inset-right));
   justify-items: center;
   text-align: center;
+  /* The room column's width cap is for a room's sheets; under the mark the line is centred on the whole screen at every width. */
+  max-width: none !important;
 }
 .live-app .live-opening > span { position: absolute; top: 0; left: 0; right: 0; }
 /* A room held by a lost connection shows the offline card in the same place, over the room that is not seen. */
@@ -1568,4 +1574,16 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   nav.week-figures a > small::before,
   .live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="waiting"], [data-state="pending"], [data-state="open"])::before,
   .live-app .help-sheet-label[data-waiting]::before { forced-color-adjust: none; box-shadow: none; background: none; border: 2px solid CanvasText; border-radius: 50%; box-sizing: border-box; }
+}
+/* On the widest screens the room's chrome (bar, rail, side sheet, kickers, buttons) goes up one step on its own scale, 13 to 14, 15 to 16, 16 to 17,
+   so it keeps its share of a window that has grown around it. Type size only: line heights are ratios and follow; nothing below 1600 changes. */
+@media (min-width: 1600px) {
+  .live-header-actions .live-account { font-size: 16px; }
+  .live-app .live-nav a { font-size: 16px; }
+  .live-app .live-main .live-page-head .live-kicker { font-size: 14px; }
+  .live-header .live-sample-mark { font-size: 14px; }
+  .live-aside-sheet { font-size: 16px; }
+  .live-aside-sheet .live-kicker { font-size: 14px; }
+  :is(.live-main, .live-dialog, .live-header-desk) [data-slot="button"]:not([data-size^="icon"]) { font-size: 16px; }
+  .live-app .live-head-actions [data-slot="button"] { font-size: 17px; }
 }
