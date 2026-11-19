@@ -6,7 +6,7 @@
 :is(.live-app, .live-dialog) .for-good .for-good-open { min-height: 44px; height: auto; padding: 0; border: 0; background: none; font-size: 16px; font-weight: 400; color: #283c32; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 :is(.live-app, .live-dialog) .for-good .for-good-open:hover { background: none; text-decoration-thickness: 2px; }
 .for-good-terms { display: grid; gap: var(--space-16) 14px; margin: 0; padding: 0 0 var(--space-16); border-bottom: 1px solid var(--live-line, #ded8cb); }
-.for-good-terms dt { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live-muted); margin-bottom: var(--space-4); }
+.for-good-terms dt { font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); margin-bottom: var(--space-4); }
 .for-good-terms dd { margin: 0; font-size: 17px; line-height: 1.5; color: #283c32; }
 .for-good-last { margin: 0; font-size: 15px; line-height: 1.45; color: var(--live-muted); }
 .live-dialog .for-good-confirm.for-good-confirm[data-slot="button"] { background: #283c32; border-color: #283c32; color: #f7f4ed; box-shadow: 0 2px 0 #18251f; }

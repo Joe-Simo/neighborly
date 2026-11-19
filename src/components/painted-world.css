@@ -22,7 +22,7 @@
 .painted-world[data-scene=visit] .painted-world-caption{left:auto;right:6%;width:36%}
 .painted-world[data-scene=opening] .painted-world-caption{top:31%;bottom:auto;max-width:690px;width:60%;color:#253e31}
 .painted-world[data-scene=opening] .painted-world-caption:before{display:none}
-.painted-world-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.16em;margin:0 0 20px;color:inherit;opacity:.78}
+.painted-world-kicker{font-size:11px;text-transform:uppercase;letter-spacing: var(--caps-track);margin:0 0 20px;color:inherit;opacity:.78}
 .painted-world-caption h1{font:400 clamp(45px,4.8vw,72px)/1.02 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.045em;margin:0}
 .painted-world[data-scene=opening] .painted-world-caption h1{font-size:clamp(50px,5.4vw,84px)}
 .painted-world-caption h1 em,.painted-world-end h2 em{font-weight:400}

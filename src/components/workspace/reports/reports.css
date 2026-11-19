@@ -17,7 +17,7 @@
   margin-right: 14px;
   font-size: 13px;
   font-weight: 650;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   text-transform: uppercase;
   color: #52644f;
 }
@@ -93,7 +93,7 @@
   margin-bottom: var(--space-4);
   font-size: 13px;
   font-weight: 650;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   text-transform: uppercase;
   color: #52644f;
 }
@@ -211,7 +211,7 @@
   .report-year > div:first-child dt { padding-right: 0; }
   .report-year > div:not(:first-child) dd { grid-row: 3; padding: var(--space-32) 6px 0; justify-content: center; }
   .report-year > div:not(:first-child) dt { grid-row: 4; padding: var(--space-8) 4px 0; text-align: center; justify-self: center; }
-  .report-year dd b { min-width: 72px; font-size: 34px; }
+  .report-year dd b { min-width: 72px; font-size: 35px; }
   /* On a phone the figure comes first: its sentence, the slips, and only then the two buttons. */
   .report { display: flex; flex-direction: column; }
   .report > .report-period, .report-period > .report-controls { display: contents; }
@@ -328,7 +328,7 @@
   margin: 0 0 var(--space-8);
   font-size: 13px;
   font-weight: 650;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   text-transform: uppercase;
   color: #52644f;
 }
@@ -338,7 +338,7 @@
   color: var(--live-muted);
 }
 .report-months p.help-amount {
-  font-size: 21px;
+  font-size: 22px;
   margin-bottom: 2px;
   color: var(--live-ink);
 }
@@ -349,13 +349,13 @@
 /* The month in hand is marked under its bars by a hairline of the ink; the line below the chart says its figures. */
 .report-month-open[aria-pressed="true"] { box-shadow: inset 0 -2px 0 #283c32; }
 .report-month-held { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; min-height: 2lh; margin: var(--space-12) 0 0; font-size: 15px; line-height: 1.5; color: #52644f; }
-.report-month-held .report-tip-month { font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+.report-month-held .report-tip-month { font-size: 13px; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; }
 .report-month-held .help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 22px; line-height: 1.15; color: #283c32; }
 .report-tip { min-width: 148px; padding: var(--space-12) 16px var(--space-12); border: 1px solid var(--relief-edge); border-radius: 4px; background: var(--relief-paper); color: #283c32; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; text-align: center; box-shadow: var(--relief-sheet); transform-origin: var(--radix-popover-content-transform-origin); animation: paper-rise 220ms var(--paper-ease) both; }
 /* The card is as wide as its longest line (Spanish runs longer), never wider than the screen. */
 .report-tip { width: max-content; max-width: calc(100vw - 24px); }
 .report-tip p { margin: 0; font-size: 15px; color: #52644f; }
-.report-tip .report-tip-month { margin-bottom: var(--space-4); font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+.report-tip .report-tip-month { margin-bottom: var(--space-4); font-size: 13px; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; }
 .report-tip .help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 26px; line-height: 1.15; color: #283c32; }
 .report-months li[data-quiet] p.help-amount,
 .report-months li[data-quiet] p {
@@ -405,7 +405,7 @@
   border-radius: 1px;
 }
 .report-legend strong {
-  font-weight: 400; font-size: 23px; line-height: 1; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-weight: 400; font-size: 24px; line-height: 1; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   color: var(--live-ink);
   margin-right: 4px;
 }
@@ -495,7 +495,7 @@
   text-align: left;
   font-size: 13px;
   font-weight: 650;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   text-transform: uppercase;
   color: #52644f;
 }
@@ -518,7 +518,7 @@
 .live-app .report-form td {
   text-align: right;
   white-space: nowrap;
-  font-weight: 400; font-size: 21px; line-height: 1.3; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-weight: 400; font-size: 22px; line-height: 1.3; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   color: var(--live-ink);
 }
 .live-app .report-form tr[data-total] th,
@@ -549,7 +549,7 @@
 @media (max-width: 1180px) {
   .report-form { column-gap: 44px; }
   .report-months li { padding-inline: 4px; }
-  .report-months p.help-amount { font-size: 18px; }
+  .report-months p.help-amount { font-size: 19px; }
 }
 @media (max-width: 850px) {
   .report-period { align-items: flex-start; flex-direction: column; }
@@ -600,7 +600,7 @@
   .report .report-period, .report .report-actions, .report .help-done, .report .report-month-bar, .report .report-month-open, .report .report-every-line { display: none !important; }
   /* The head of the sheet: whose year it is on the left, the wordmark on the right, one rule under both. */
   .report-print-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24pt; margin-bottom: 10pt; }
-  .report-print-head > div > p:first-child { font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+  .report-print-head > div > p:first-child { font-size: 9pt; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; }
   .report-print-head strong { font-weight: 400; font-size: 17pt; line-height: 1; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em; white-space: nowrap; }
   .report .report-aside { margin-top: 8pt; max-width: none; font-size: 11pt; line-height: 1.4; }
   .report .help-figures dd small .report-own-line { display: inline; }
@@ -799,8 +799,8 @@
 @media (max-width: 600px) {
   .report-year { order: -1; margin-top: var(--space-8); }
   .report :is(.help-bars:not(.report-teams)) li { row-gap: var(--space-8); column-gap: 16px; padding: var(--space-12) 0 var(--space-16); }
-  .report :is(.help-bars:not(.report-teams)) h3 { font-size: 21px; }
-  .report :is(.help-bars:not(.report-teams)) p { font-size: 14px; }
+  .report :is(.help-bars:not(.report-teams)) h3 { font-size: 22px; }
+  .report :is(.help-bars:not(.report-teams)) p { font-size: 13px; }
   .report :is(.help-bars:not(.report-teams)) .help-amount { font-size: 22px; }
   .report :is(.help-bars:not(.report-teams)) .help-bar { height: 8px; margin-top: 2px; }
 }
@@ -816,7 +816,7 @@
   .report-months:not([data-months="3"]) li:nth-child(n + 7) { border-image: linear-gradient(var(--live-line), var(--live-line)) 1 0 0 / 1px 0 0 / 0 4px; }
   .report-months:not([data-months="3"]) li:nth-child(7) { border-image-outset: 0 4px 0 0; }
   .report-months:not([data-months="3"]) li:nth-child(12) { border-image-outset: 0 0 0 4px; }
-  .report-months:not([data-months="3"]) p.help-amount { font-size: 14px; letter-spacing: -0.03em; }
+  .report-months:not([data-months="3"]) p.help-amount { font-size: 13px; letter-spacing: -0.03em; }
 }
 @media (max-width: 370px) {
   .report-months:not([data-months="3"]) p.help-amount { font-size: 13px; }
@@ -845,7 +845,7 @@
   .report-sheet-figures > div:not(:first-child) { display: grid; grid-row: 2 / span 2; grid-template-rows: subgrid; }
   .report-sheet-figures > div:not(:first-child) dt { align-self: end; }
   .report-sheet-figures > div + div:not(:nth-child(2)) { padding-left: 12pt; border-left: 1px solid var(--print-line); }
-  .report-sheet-figures dt { margin-bottom: 4pt; font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+  .report-sheet-figures dt { margin-bottom: 4pt; font-size: 9pt; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; }
   .report-sheet-figures dd { margin: 0; font-weight: 400; font-size: 24pt; line-height: 1; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; }
   .report-sheet-figures dd small { display: block; margin-top: 5pt; font-weight: 400; font-size: 10pt; line-height: 1.35; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; }
   .report-sheet-total { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 18pt; border-bottom: 1px solid var(--print-line); padding-bottom: 8pt !important; }
@@ -857,12 +857,12 @@
   .report-kinds-print { display: table; width: 100%; border-collapse: collapse; font-size: 11pt; break-inside: avoid; }
   .report-kinds-print th, .report-kinds-print td { padding: 3.5pt 0; border-bottom: 1px solid var(--print-line); text-align: right; font-weight: 400; }
   .report-kinds-print :is(th, td):first-child { text-align: left; }
-  .report-kinds-print thead th { padding-top: 0; font-size: 9pt; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; border-bottom-color: #000; }
+  .report-kinds-print thead th { padding-top: 0; font-size: 9pt; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; border-bottom-color: #000; }
   .report-kinds-print tbody th { font-weight: 600; }
   .report-kinds-print td:last-child { width: 26%; }
   .report-kinds-print td:nth-child(2), .report-kinds-print td:nth-child(3) { width: 18%; }
   .report-kinds-print .report-kinds-total :is(th, td) { font-weight: 650; border-top: 1.5pt solid #000; border-bottom: 0; }
-  .report-kinds-print .report-kinds-total th { font-size: 9.75pt; letter-spacing: 0.06em; text-transform: uppercase; }
+  .report-kinds-print .report-kinds-total th { font-size: 9.75pt; letter-spacing: var(--caps-track); text-transform: uppercase; }
   .report-kinds-print tbody th { text-transform: none; letter-spacing: 0; font-size: 11pt; }
   .report-kinds-print td { white-space: nowrap; }
   /* A gap before each figure, so a long kind ("Vales para la tienda de segunda mano") and a worded cell ("Entregados del estante") never touch. */

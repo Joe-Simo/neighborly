@@ -33,7 +33,7 @@
   font-size: 13px;
   font-weight: 650;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   color: #52644f;
   margin-bottom: var(--space-8);
 }
@@ -87,18 +87,18 @@
   gap: var(--space-8) 10px;
   font-size: 13px;
   font-weight: 650;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--caps-track);
   text-transform: uppercase;
   color: var(--help-ochre-ink);
   margin: 0 0 var(--space-16);
 }
 .help-sheet-label::before { content: ""; width: 22px; height: 1px; background: currentColor; }
-.help-sheet h2 { font-size: 34px !important; margin-bottom: var(--space-8) !important; overflow-wrap: break-word; }
+.help-sheet h2 { font-size: 35px !important; margin-bottom: var(--space-8) !important; overflow-wrap: break-word; }
 .help-sheet-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-24) 40px; align-items: end; }
 .help-sheet p { margin: 0 0 var(--space-8); color: var(--live-muted); line-height: 1.55; max-width: 58ch; }
 .help-sheet .help-why { color: var(--live-ink); }
 .help-quote {
-  font: italic 400 21px/1.45 "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font: italic 400 22px/1.45 "Newsreader", "Newsreader Fallback", Georgia, serif;
   color: #3c4a40 !important;
   border-left: 2px solid #c9b98a;
   padding: 2px 0 2px 18px;
@@ -122,7 +122,7 @@
   padding: var(--space-24) 0;
   border-bottom: 1px solid var(--live-line);
 }
-.help-row h3 { font: 400 27px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 var(--space-8); }
+.help-row h3 { font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 var(--space-8); }
 .help-row p { margin: 0; color: var(--live-muted); line-height: 1.5; font-size: 17px; }
 .help-row .live-meta { font-size: 15px; margin-bottom: var(--space-8); }
 .help-row[data-quiet] h3 { font-size: 22px; color: #4b564d; }
@@ -168,7 +168,7 @@
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-24) 26px;
   margin: 0 0 var(--space-56);
 }
-.help-record-facts dt { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; color: #52644f; margin-bottom: var(--space-8); }
+.help-record-facts dt { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: var(--caps-track); color: #52644f; margin-bottom: var(--space-8); }
 .help-record-facts dd { margin: 0; font-size: 19px; line-height: 1.4; }
 .help-timeline { list-style: none; margin: 0; padding: 0; position: relative; }
 .help-timeline::before { content: ""; position: absolute; left: 123px; top: 14px; bottom: 14px; width: 1px; background: var(--live-line); }
@@ -179,10 +179,10 @@
 .help-timeline time { font-size: 15px; color: var(--live-muted); text-align: right; font-variant-numeric: tabular-nums; }
 .help-timeline i { width: 11px; height: 11px; border-radius: 50%; background: #859472; box-shadow: 0 0 0 5px var(--live-paper); position: relative; top: 1px; justify-self: center; }
 .help-timeline li[data-kind="money"] i { background: var(--help-ochre); }
-.help-timeline h3 { font: 400 23px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; margin: 0 0 3px; }
+.help-timeline h3 { font: 400 24px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; margin: 0 0 3px; }
 .help-timeline p { margin: 0; font-size: 16px; color: var(--live-muted); }
-.help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 25px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
-.help-year { font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: #52644f; padding: var(--space-24) 0 var(--space-4) 152px; }
+.help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.help-year { font-size: 13px; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; color: #52644f; padding: var(--space-24) 0 var(--space-4) 152px; }
 .help-opened { display: flex; flex-wrap: wrap; gap: var(--space-8) 34px; padding: var(--space-20) 0 0; border-top: 1px solid var(--live-line); font-size: 16px; color: var(--live-muted); }
 .help-opened strong { color: var(--live-ink); font-weight: 600; }
 .help-private { display: inline-flex; align-items: center; gap: var(--space-8) 8px; }
@@ -193,13 +193,16 @@
 .live-app table.help-ledger td { padding-top: var(--space-20); padding-bottom: var(--space-20); vertical-align: baseline; }
 .help-ledger tbody tr:hover { background: #f1efe2; }
 .help-ledger td:first-child { color: var(--live-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.help-ledger .help-what { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 21px; line-height: 1.3; letter-spacing: -0.01em; }
+.help-ledger .help-what { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.3; letter-spacing: -0.01em; }
 .help-ledger .help-what small { display: block; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 400; font-size: 15px; line-height: 1.4; letter-spacing: 0; color: var(--live-muted); margin-top: 3px; }
 .help-money { text-align: right !important; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
-td.help-money { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 21px; line-height: 1.3; font-variant-numeric: lining-nums tabular-nums; }
+td.help-money { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.3; font-variant-numeric: lining-nums tabular-nums; }
 td.help-money[data-in] { color: #3f6a45; }
 td.help-money[data-balance] { color: var(--live-muted); }
 .help-ledger tfoot td { border-top: 2px solid #596e51; border-bottom: 0; padding-top: var(--space-16); font-weight: 600; }
+/* The total stands out by size and ink, not by a weight Newsreader does not have. */
+.help-ledger tfoot td.help-money { font-weight: 400; font-size: var(--serif-head); }
+.help-ledger tfoot td.help-money:not([data-in]) { color: #283c32; }
 
 /* ── Bars: the year by kind of help ───────────────────────────────────── */
 .help-bars { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--live-line); }
@@ -207,7 +210,7 @@ td.help-money[data-balance] { color: var(--live-muted); }
   display: grid; grid-template-columns: 230px minmax(0, 1fr) 120px; gap: var(--space-24) 26px; align-items: center;
   padding: var(--space-20) 0; border-bottom: 1px solid var(--live-line);
 }
-.help-bars h3 { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 23px; line-height: 1.2; letter-spacing: -0.015em; margin: 0 0 2px; }
+.help-bars h3 { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1.2; letter-spacing: -0.015em; margin: 0 0 2px; }
 .help-bars p { margin: 0; font-size: 15px; color: var(--live-muted); }
 .help-bar { height: 14px; border-radius: 1px; background: #ebe9dc; overflow: hidden; }
 .help-bar span {
@@ -225,8 +228,8 @@ td.help-money[data-balance] { color: var(--live-muted); }
 
 /* ── Small inputs in a row ────────────────────────────────────────────── */
 .help-inline { display: flex; gap: var(--space-12) 12px; align-items: end; flex-wrap: wrap; }
-.help-inline label { display: grid; gap: var(--space-8) 6px; font-size: 14px; color: var(--live-muted); }
-.live-app .help-inline input { width: 92px; height: 44px; font-size: 18px; background: var(--help-sheet); font-variant-numeric: tabular-nums; }
+.help-inline label { display: grid; gap: var(--space-8) 6px; font-size: 15px; color: var(--live-muted); }
+.live-app .help-inline input { width: 92px; height: 44px; font-size: 19px; background: var(--help-sheet); font-variant-numeric: tabular-nums; }
 
 /* ── States ───────────────────────────────────────────────────────────── */
 .help-empty {
@@ -234,10 +237,10 @@ td.help-money[data-balance] { color: var(--live-muted); }
   padding: var(--space-32) 0; border-top: 1px solid var(--live-line); border-bottom: 1px solid var(--live-line); max-width: 760px;
 }
 .help-empty :is(h2, h3) { font: 400 30px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 var(--space-8); }
-.help-empty p { margin: 0 0 var(--space-16); color: var(--live-muted); font-size: 18px; line-height: 1.5; max-width: 44ch; }
+.help-empty p { margin: 0 0 var(--space-16); color: var(--live-muted); font-size: 19px; line-height: 1.5; max-width: 44ch; }
 .help-done { display: flex; gap: var(--space-16) 14px; align-items: center; }
 .help-done svg { color: #3f6a45; flex-shrink: 0; }
-.help-state-label { font-size: 13px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: #52644f; margin: var(--space-56) 0 var(--space-16); }
+.help-state-label { font-size: 13px; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; color: #52644f; margin: var(--space-56) 0 var(--space-16); }
 .help-state-label:first-child { margin-top: 0; }
 
 /* ── Phone ────────────────────────────────────────────────────────────── */
@@ -245,14 +248,14 @@ td.help-money[data-balance] { color: var(--live-muted); }
   .help-figures { grid-template-columns: 1fr 1fr; }
   .help-figures > div:first-child { grid-column: 1 / -1; border-bottom: 1px solid var(--live-line); }
   .help-figures > div:nth-child(2) { padding-left: 0; border-left: 0; }
-  .help-figures dd { font-size: 34px; }
+  .help-figures dd { font-size: 35px; }
   .help-figures > div:first-child dd { font-size: 50px; }
   .help-sheet { padding: var(--space-24) 22px; }
   .help-sheet-body { grid-template-columns: 1fr; }
   .help-sheet h2 { font-size: 29px !important; }
   .help-actions [data-slot="button"] { flex: 1 1 auto; }
   .help-row { grid-template-columns: 66px minmax(0, 1fr); column-gap: 18px; row-gap: var(--space-16); align-items: start; }
-  .help-row .live-date-leaf strong { font-size: 27px; }
+  .help-row .live-date-leaf strong { font-size: 26px; }
   .live-main[data-room="help"] .live-section-head { flex-wrap: wrap; gap: var(--space-8) 16px; }
   .live-main[data-room="help"] .live-section-head h2 { margin-bottom: 0; }
   .help-row > :nth-child(3) { grid-column: 2; }

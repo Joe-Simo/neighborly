@@ -36,7 +36,7 @@
 .book-cover { display: flex; flex-direction: column; gap: var(--space-8) 10px; height: 100%; }
 .book-cover :is(h2, h3) { margin-top: auto; font-size: clamp(38px, 5vw, 56px); }
 .book-cover p { margin: 0; }
-.book-group { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.book-group { font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; }
 .book-sample { font-size: 13px; color: #5b6b61; }
 .book-mark { --size: 22px; display: flex; margin: var(--space-16) 0 auto; }
 .book-mark .week-quilt-piece { margin-left: -6px; }
@@ -53,7 +53,7 @@
 /* On the narrowest phones four columns of figures share a little over 300px: the figures step down a size and close up,
    so every column stays whole on the page and nothing is cut at its edge. */
 @container book-page (max-width: 330px) {
-  .book-columns :is(th, td) { font-size: 14px; }
+  .book-columns :is(th, td) { font-size: 13px; }
   .book-columns td, .book-columns thead th:not(:first-child) { padding-left: 8px; }
 }
 @container book-page (max-width: 300px) {
