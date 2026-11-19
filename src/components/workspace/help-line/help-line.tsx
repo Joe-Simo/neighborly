@@ -941,7 +941,7 @@ export function HelpLineView({
                   <h3>{caller(call, words)}</h3>
                   <p>{call.outcome || sampleSaid(call.note)}</p>
                 </div>
-                <span className="live-status">
+                <span className="live-status help-returned">
                   {call.returnedByName ? text.returnedBy(call.returnedByName) : text.returned}
                 </span>
               </div>
