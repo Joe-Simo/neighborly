@@ -87,7 +87,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
 }
 
 export function PeopleSection() {
-  const { data, pending, isOwner, confirm: setConfirmation, words } = useWorkspace();
+  const { data, pending, isOwner, confirm: setConfirmation, words, sampleSaid } = useWorkspace();
   const roles: Record<string, string> = words.people.roles;
   const text = words.rooms.peopleRoom;
   const sheets = words.rooms.sheets;
@@ -103,21 +103,22 @@ export function PeopleSection() {
         {data.people.map((person) => {
           // Only the owner has anything to open, and never on an owner's own row.
           const opens = isOwner && person.role !== "owner";
+          const name = sampleSaid(person.name);
           return (
           <div className="live-row live-person-row people-row" key={person.id} data-away={person.active ? undefined : ""} data-opens={opens ? "" : undefined}>
             <div className="live-person">
               <span className="live-avatar" aria-hidden="true">
-                {initials(person.name)}
+                {initials(name)}
               </span>
               <div>
                 <h3>
                   {opens ? (
                     // The one control of the row: its target is the whole row (people.css).
-                    <button type="button" className="people-row-open" aria-label={text.manage.open(person.name)} onClick={() => setManagingId(person.id)}>
-                      {keepTitle(person.name)}
+                    <button type="button" className="people-row-open" aria-label={text.manage.open(name)} onClick={() => setManagingId(person.id)}>
+                      {keepTitle(name)}
                     </button>
                   ) : (
-                    person.name
+                    name
                   )}
                   <span className="people-role">{person.active ? (roles[person.role] ?? person.role) : words.people.removed}</span>
                 </h3>
