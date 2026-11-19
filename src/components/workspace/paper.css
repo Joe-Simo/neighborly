@@ -1589,3 +1589,10 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 /* On a phone the bar's three things stand 8px apart, so a room's longer Spanish name ("Visitas domiciliarias" at 390) still stands whole beside the wordmark. */
 @media (max-width: 899px) { .live-app .live-header { column-gap: 8px; } }
+/* One look for each control (the consistency board, Nov 19). Where rooms had drifted into two of the same thing, they keep one:
+   a framed button is 18px in from its edges; every button's words are regular weight; a text action is the ink, not a second green;
+   a chooser is cut at the same 4px as the date and search fields. Sizes, focus rings and outlines are not touched here. */
+:is(.live-main, .live-dialog) [data-slot="button"][data-size="default"]:is([data-variant="default"], [data-variant="outline"]) { padding-inline: 18px; }
+:is(.live-main, .live-dialog) [data-slot="button"] { font-weight: 400; }
+.live-app :is(.live-main, .live-dialog) .help-text-action.help-text-action[data-slot="button"] { color: var(--paper-ink); }
+.live-app :is([data-slot="select-trigger"], select) { border-radius: 4px; }

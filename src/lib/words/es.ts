@@ -359,7 +359,7 @@ export function es(set: WordSet): Words {
       errorDeck: `No se perdió nada. Inténtalo de nuevo; si sigue sin abrirse, el resto de tu ${place} está en el menú.`,
       privateTitle: "Es privado.",
       privateDeck: `Esta sección se hace con los registros de los ${t.neighbors} que ayudamos, así que solo la abre quien coordina. Tus compromisos y tu equipo están donde siempre.`,
-      privateDeckTools: `Esta sección trae registros desde un archivo y los descarga todos, con los datos privados de los ${t.neighbors}, así que se abre solo para el responsable y los coordinadores de tu ${t.group}. Tus compromisos y tu equipo están donde siempre.`,
+      privateDeckTools: `Esta sección trae registros desde un archivo y los descarga todos, con los datos privados de los ${t.neighbors}, así que se abre solo para quien es responsable y quienes coordinan tu ${t.group}. Tus compromisos y tu equipo están donde siempre.`,
       privateDeckTreasury: `Esta sección guarda el dinero de tu ${t.group} y a quién se le pagó, así que solo la abre quien coordina. Tus compromisos y tu equipo están donde siempre.`,
       privateAction: "Mis compromisos",
       missingTitle: "Esta página no está aquí.",

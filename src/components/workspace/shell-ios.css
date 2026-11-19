@@ -12,8 +12,8 @@
   }
   :root[data-shell="ios"] .live-app .live-bar-room {
     transition: none;
-    opacity: clamp(0, calc(var(--head-gone, 0) * 2 - 1), 1);
-    translate: 0 calc((1 - clamp(0, calc(var(--head-gone, 0) * 2 - 1), 1)) * 6px);
+    /* Words never fade: the name is cut in, whole, once the head is half gone, at its place. */
+    opacity: clamp(0, calc((var(--head-gone, 0) - 0.5) * 100000), 1);
   }
 }
 
