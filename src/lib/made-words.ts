@@ -11,8 +11,8 @@ const en = {
   path: "/about/how-we-made-it",
   title: "How we made it",
   tab: "How we made it — Kind Helps",
-  description: "How Kind Helps was made: the painting, the rules its paper keeps, how the assistant is held to a person's say, and why it is free for every conference.",
-  preview: "The painting, the paper's rules, the assistant, and a promise: free for every conference.",
+  description: "How Kind Helps was made: the painting, the rules its paper keeps, how the assistant is held to a person’s say, and why it is free for every conference.",
+  preview: "The painting, the paper’s rules, the assistant, and a promise: free for every conference.",
   enter: "Enter Kind Helps",
   translated: null as null | [string, string, string],
   courtyard: {
@@ -43,7 +43,7 @@ const en = {
       "Nothing was painted in to fill a gap. Every cut edge is the painting’s, and laid together the sheets are the painting again.",
     ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "The courtyard in shades of grey: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The map the cut followed: the courtyard’s depth, far in dark and near in light." } },
     { title: "The rules the paper keeps", blocks: [
-      "A ministry's software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
+      "A ministry’s software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
       [
         { lead: "Ochre means waiting.", rest: "A call not yet returned, a request not yet decided, a room still opening.", tone: "waiting" },
         { lead: "Plum means something is wrong.", rest: "There is no red anywhere. A mistake is named plainly, with the way to put it right.", tone: "wrong" },
