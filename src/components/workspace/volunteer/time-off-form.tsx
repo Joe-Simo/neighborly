@@ -12,7 +12,7 @@ import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate } from "@/lib/words";
 import { readDays } from "@/components/workspace/volunteer/days";
-import { LiveField, LiveLoading } from "@/components/workspace/primitives";
+import { LiveField, LiveLoading, markWrong } from "@/components/workspace/primitives";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 
 export function LiveTimeOffForm({
@@ -50,11 +50,10 @@ export function LiveTimeOffForm({
       className="live-form"
       onSubmit={(event) => {
         event.preventDefault();
+        const form = event.currentTarget;
         const { start, end } = draft;
-        if (end < start) {
-          setError(words.timeOffForm.orderError);
-          return;
-        }
+        if (end < start) markWrong(form, "end", words.timeOffForm.orderError);
+        if (!form.checkValidity()) return;
         setError("");
         setReview({ ...draft });
       }}

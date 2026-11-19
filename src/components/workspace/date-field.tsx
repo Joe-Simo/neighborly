@@ -79,11 +79,16 @@ export function DateField({
   const [beside, setBeside] = useState(false);
   const chosen = value ?? own;
   const allowed = (day: string) => (!min || day >= min) && (!max || day <= max);
-  // A needed day left empty: said under the field in our own words, never the browser's bubble.
-  const [missing, setMissing] = useState(false);
+  // A needed day left empty, or one the form says is wrong (markWrong): said under the field in our own words,
+  // never the browser's bubble. A new day takes the line away.
+  const [missing, setMissing] = useState("");
+  // Only the first wrong field of a submit speaks (as LiveField).
+  const [first, setFirst] = useState(false);
   const missingId = useId();
+  const hidden = useRef<HTMLInputElement | null>(null);
   const choose = (day: string) => {
-    setMissing(false);
+    setMissing("");
+    hidden.current?.setCustomValidity("");
     setOwn(day);
     setTyped(undefined);
     onChange?.(day);
@@ -142,7 +147,7 @@ export function DateField({
             readOnly={sheet}
             aria-haspopup="dialog"
             aria-required={required || undefined}
-            aria-invalid={missing || undefined}
+            aria-invalid={missing ? true : undefined}
             aria-describedby={missing ? missingId : undefined}
             placeholder={words.dateField.choose}
             value={typed ?? said}
@@ -186,13 +191,16 @@ export function DateField({
             // The form's own check finds the empty day here; the answer goes to the field the person sees.
             onInvalid={(event) => {
               event.preventDefault();
-              setMissing(true);
-              const hidden = event.currentTarget;
-              if (hidden.form?.querySelector(wrongControl) === hidden)
-                hidden.parentElement?.querySelector<HTMLInputElement>(".live-date-words")?.focus();
+              const control = event.currentTarget;
+              setMissing(control.validity.customError ? control.validationMessage : `${words.dateField.choose}.`);
+              const lead = control.form?.querySelector(wrongControl) === control;
+              setFirst(lead);
+              if (lead)
+                control.parentElement?.querySelector<HTMLInputElement>(".live-date-words")?.focus();
             }}
             onChange={(event) => setOwn(event.target.value)}
             ref={(input) => {
+              hidden.current = input;
               const form = input?.form;
               if (!form) return;
               const clear = () => setOwn("");
@@ -203,8 +211,8 @@ export function DateField({
         </span>
       </PopoverAnchor>
       {missing && (
-        <small id={missingId} className="live-date-missing" role="alert">
-          {words.dateField.choose}.
+        <small id={missingId} className="live-date-missing" role={first ? "alert" : undefined}>
+          {missing}
         </small>
       )}
       <PopoverContent className="live-date-sheet" onCloseAutoFocus={backToOpener} aria-label={label || words.dateField.choose} collisionPadding={12} side={beside ? "right" : "bottom"} align={beside ? "end" : "start"}>
