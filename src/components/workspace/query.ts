@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useSyncExternalStore } from "react";
+import { useContext, useEffect, useState, useSyncExternalStore } from "react";
 import * as live from "convex/react";
 import type { OptionalRestArgsOrSkip, PaginatedQueryArgs, PaginatedQueryReference, UsePaginatedQueryReturnType } from "convex/react";
 import { getFunctionName, type FunctionReference, type FunctionReturnType } from "convex/server";
@@ -70,4 +70,20 @@ function onTheHour(changed: () => void) {
  */
 export function useHour() {
   return useSyncExternalStore(onTheHour, thisHour, () => 0);
+}
+
+/**
+ * What a search box asks for: the words once typing has paused, trimmed. Every different search is its own
+ * question to Convex, and each is kept for five minutes after it is left, so asking at every key would read the
+ * whole list again for each letter. Cleared, it is asked at once.
+ */
+export function useSearchAsked(typed: string, pause = 250) {
+  const words = typed.trim();
+  const [asked, setAsked] = useState(words);
+  useEffect(() => {
+    if (!words) return;
+    const wait = window.setTimeout(() => setAsked(words), pause);
+    return () => window.clearTimeout(wait);
+  }, [words, pause]);
+  return words ? asked : "";
 }

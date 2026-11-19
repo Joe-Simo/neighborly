@@ -1,10 +1,10 @@
 "use client";
 
 import { keepTitle } from "@/lib/words/titles";
-import { useCallback, useDeferredValue, useLayoutEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@/components/workspace/query";
+import { useQuery, useSearchAsked } from "@/components/workspace/query";
 import { ArrowRight, Lock, Search } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -64,7 +64,7 @@ function Neighbors() {
     setHeadAction({ label: text.add, run: add, plus: true });
     return () => setHeadAction(null);
   }, [setHeadAction, add, text.add]);
-  const asked = useDeferredValue(search).trim();
+  const asked = useSearchAsked(search);
   const list = useQuery(api.neighbors.list, {
     churchId,
     search: asked || undefined,

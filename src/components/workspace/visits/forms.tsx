@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DateTime } from "luxon";
 import { useMutation } from "convex/react";
-import { useQuery } from "@/components/workspace/query";
+import { useQuery, useSearchAsked } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -147,7 +147,7 @@ export function PlanForm({
 }) {
   const [search, setSearch] = useState("");
   const people = useQuery(api.visits.visitors, { churchId });
-  const neighbors = useQuery(api.neighbors.list, { churchId, search });
+  const neighbors = useQuery(api.neighbors.list, { churchId, search: useSearchAsked(search) });
   const plan = useMutation(api.visits.plan);
   const { pending, error, save } = useSave();
   return (
