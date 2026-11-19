@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCutHold } from "./cut-hold";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -78,9 +78,19 @@ export function Colophon({ home = "/", language = "en" }: { home?: string; langu
 
 /** How a public page other than the home page ends: the closing band, then the foot. */
 export function PublicEnding({ language = "en" }: { language?: Language }) {
+  // The paper is fetched as the reader nears it, a screen and more ahead, so the first screen loads alone.
+  const paper = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const node = paper.current;
+    if (!node) return;
+    const watch = new IntersectionObserver(([seen]) => { if (seen?.isIntersecting) { setNear(true); watch.disconnect(); } }, { rootMargin: "150% 0px" });
+    watch.observe(node);
+    return () => watch.disconnect();
+  }, []);
   return <div className="neighborly-continuation">
     <section className="neighborly-together" aria-labelledby="together-title">
-      <div className="neighborly-together-paper" data-settled="true" aria-hidden="true" />
+      <div ref={paper} className="neighborly-together-paper" data-settled={near} aria-hidden="true" />
       <ClosingBand language={language} />
       <Colophon language={language} />
     </section>
