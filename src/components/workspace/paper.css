@@ -499,9 +499,7 @@
 /* The mark is the app's launch picture, 240px square on the true centre of the screen (vw and vh, no insets),
    so the app's cover gives way to this page without a step. The same in every browser. */
 .paper-loading-mark { position: fixed; left: calc(50vw - 120px); top: calc(50vh - 120px); width: 240px; height: 240px; max-width: none; user-select: none; pointer-events: none; }
-/* The line stands where the room's title will be: the reading column's first line, beside the menu from 900px up,
-   under the held bar below that. A room that is still on its way says it in the same place (`.live-opening`), so a
-   fresh page waits with one line that never moves, and the title takes its place. */
+/* The words' frame; on the loading paper itself they stand centred under the mark (below). */
 .paper-loading-words {
   position: fixed;
   top: calc(86px + var(--live-top, 48px));
@@ -560,7 +558,18 @@
   line-height: 1.5;
   color: var(--live-muted);
 }
-.paper-loading-label { animation: paper-show 300ms ease 400ms backwards; }
+/* On the loading paper the mark is the one thing seen. Its line is said at once to a screen reader (a polite status),
+   and is seen only if the wait runs past 3 seconds: then it is cut in whole, centred under the mark. A clip, not a
+   fade, and not motion, so it is the same with Reduce Motion. */
+.paper-loading-label { animation: paper-late 3s linear; }
+@keyframes paper-late { from, to { clip-path: inset(50%); } }
+.live-main.paper-loading .paper-loading-words {
+  top: calc(50vh + 76px);
+  left: max(var(--live-pad, 24px), env(safe-area-inset-left));
+  right: max(var(--live-pad, 24px), env(safe-area-inset-right));
+  justify-items: center;
+  text-align: center;
+}
 .live-app .live-opening > span { position: absolute; top: 0; left: 0; right: 0; }
 /* A room held by a lost connection shows the offline card in the same place, over the room that is not seen. */
 .live-app .live-opening[data-lost] { display: block; color: inherit; font-size: inherit; }
@@ -675,7 +684,6 @@
 /* ── Stillness for those who ask for it ───────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .paper-rise, .paper-settle, .help-sheet, .paper-fold, .paper-fold::after, .live-mobile-menu { animation: none; }
-  .paper-loading-label { animation-duration: 1ms; }
   .paper-corner::after, .help-sheet::after, .live-row, .help-row, .live-team,
   .week-figures a, .live-app .live-link, .live-dialog .live-link { transition: none; }
   :is(.live-row, .help-row):hover { transform: none; }
