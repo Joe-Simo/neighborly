@@ -34,8 +34,8 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
 .neighborly-together .neighborly-together-paper{-webkit-mask:none;mask:none}
 /* While the closing sheet still lies above the cut (it is textured, not flat), the cut is a mask again, exactly as it was;
    it is only there for the short stretch where the sheet lifts away. */
-.neighborly-together:has(> .chapter-sheet-close:not([data-away])) .neighborly-together-paper{-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
-.neighborly-together:has(> .chapter-sheet-close:not([data-away])) .neighborly-together-paper::after{content:none}
+.neighborly-together[data-close-over] .neighborly-together-paper{-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
+.neighborly-together[data-close-over] .neighborly-together-paper::after{content:none}
 .neighborly-together .neighborly-together-paper::after{content:"";position:absolute;z-index:1;top:0;left:0;right:0;height:56px;pointer-events:none;background:var(--paper-above,#f1eadb);-webkit-mask:var(--cut-paper-above) 0 0/100% 100% no-repeat;mask:var(--cut-paper-above) 0 0/100% 100% no-repeat}
 .neighborly-together .neighborly-together-paper[data-settled=true]::before{content:"";z-index:0;position:absolute;top:0;left:0;right:0;height:56px;background:var(--shade-paper-top) 0 0/100% 100% no-repeat}
 /* An upright tablet: the opening's lower edge is cut. */

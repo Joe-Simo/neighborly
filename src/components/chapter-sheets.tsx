@@ -40,7 +40,7 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
         const edge = Math.max(36, Math.min(64, viewport.width * .044));
         const shown = top <= 0 || crossed <= 0 ? -200 : (still.matches ? Number(crossed >= .5) : crossed) * (height + edge) - edge - (top + sheets.close.under - own);
         const nowLie = `${shown.toFixed(1)}px`, nowTall = `${box.height.toFixed(0)}px`;
-        if (nowLie !== lie) { lie = nowLie; sheet.style.setProperty("--lie", lie); sheet.toggleAttribute("data-away", shown === -200); }
+        if (nowLie !== lie) { lie = nowLie; sheet.style.setProperty("--lie", lie); sheet.toggleAttribute("data-away", shown === -200); sheet.parentElement?.toggleAttribute("data-close-over", shown !== -200); }
         if (nowTall !== tall) { tall = nowTall; sheet.style.setProperty("--paper-h", tall); }
         return;
       }
@@ -50,12 +50,17 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
       if (nowAcross !== across) { across = nowAcross; sheet.style.setProperty("--across", across); sheet.toggleAttribute("data-away", across === "0"); }
       if (across !== "0" && nowFoot !== foot) { foot = nowFoot; sheet.style.setProperty("--foot", foot); }
     };
-    const { ask: request, drop } = frameStep(read, update);
+    const { ask, drop } = frameStep(read, update);
+    // Safari on iPhone can end a flick's momentum with no scroll event for where it came to rest, which left a sheet resting half across
+    // the chapter. The sheet is asked again a moment after the last scroll event, and when the browser says scrolling has ended.
+    let after = 0;
+    const request = () => { ask(); clearTimeout(after); after = window.setTimeout(ask, 160); };
     addEventListener("scroll", request, { passive: true });
+    addEventListener("scrollend", ask);
     addEventListener("resize", request);
     still.addEventListener("change", request);
     update();
-    return () => { drop(); removeEventListener("scroll", request); removeEventListener("resize", request); still.removeEventListener("change", request); };
+    return () => { drop(); clearTimeout(after); removeEventListener("scroll", request); removeEventListener("scrollend", ask); removeEventListener("resize", request); still.removeEventListener("change", request); };
   }, [to]);
   return <div ref={paper} className={to === "close" ? "chapter-sheet-close" : `chapter-sheet chapter-sheet-${to}`} data-away="" aria-hidden="true" />;
 }
