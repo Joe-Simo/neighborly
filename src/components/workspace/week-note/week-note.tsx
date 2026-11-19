@@ -132,7 +132,7 @@ export function WeekNote({ brief = false }: { brief?: boolean }) {
   );
 }
 
-const quietLink = "min-h-11 inline-flex items-center border-0 bg-transparent p-0 text-[17px] !text-[var(--live-accent)] !underline decoration-[#b9c4b0] underline-offset-4 hover:decoration-current cursor-pointer";
+const quietLink = "min-h-11 inline-flex items-center border-0 bg-transparent p-0 text-[17px] !text-[var(--live-accent)] !underline decoration-[#b9c4b0] underline-offset-4 hover:decoration-current active:decoration-2 active:decoration-current cursor-pointer";
 /** While waiting, the note keeps its room unseen: no bars, no empty card. It arrives with its words or not yet. */
 const held = "invisible";
 

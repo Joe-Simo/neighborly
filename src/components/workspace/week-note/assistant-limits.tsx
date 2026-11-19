@@ -11,7 +11,7 @@ import { measured } from "@/lib/jev-set";
 import { formatDay } from "@/lib/words";
 
 const noteKeys = Object.keys(draftNotes) as (keyof typeof draftNotes)[];
-const quiet = "inline-flex min-h-11 cursor-pointer items-center border-0 bg-transparent p-0 underline underline-offset-4 hover:decoration-current";
+const quiet = "inline-flex min-h-11 cursor-pointer items-center border-0 bg-transparent p-0 underline underline-offset-4 hover:decoration-current active:decoration-2 active:decoration-current";
 
 /**
  * For a part that opens in place below its link: on a phone it lands under the fold, and the link seems to do
