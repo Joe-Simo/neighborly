@@ -33,6 +33,8 @@
 /* Each link keeps its words on one line ("St. Example" is a name); on a phone the row turns between links instead. */
 .neighborly-colophon nav{display:flex;flex-wrap:wrap;gap:0 28px}
 .neighborly-colophon nav a{white-space:nowrap}
+/* On a phone the four links stand two and two, never three and one left alone. */
+@media (max-width:560px){.neighborly-colophon nav{display:grid;grid-template-columns:repeat(2,max-content)}}
 @media(max-width:900px){
   .neighborly-together{padding-inline:20px}
   .neighborly-together h2 em{margin-left:0}
