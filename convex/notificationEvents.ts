@@ -5,6 +5,7 @@ import { mutation, query, type MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { deliveryConfiguration, resend } from "./notifications";
 import { isSampleChurch } from "./demo";
+import { emailLanguage, paperEmail } from "../src/lib/email/paper-email";
 import { overlapsTimeOff, parseCalendarDate } from "../src/lib/scheduling";
 
 async function deliver(ctx: MutationCtx, row: Doc<"outbox">) {
@@ -49,10 +50,10 @@ async function deliver(ctx: MutationCtx, row: Doc<"outbox">) {
   } else return;
   const config = deliveryConfiguration();
   if (!config || (await isSampleChurch(ctx, row.churchId))) return;
-  const subject = row.kind === "cover_request" ? "A cover request on Kind Helps" : "A meeting invitation on Kind Helps";
-  const link = new URL("/app", config.site).toString();
-  const text = row.kind === "cover_request" ? `A coordinator has asked if you can cover a commitment. Sign in to review and choose whether to accept:\n\n${link}` : `You have a meeting invitation. Sign in to review the details and respond:\n\n${link}`;
-  const emailId = await resend.sendEmail(ctx, { from: config.sender, to: row.recipient, subject, text, idempotencyKey: `notification:${row.eventKey}` });
+  const church = await ctx.db.get("churches", row.churchId);
+  if (!church) return;
+  const email = paperEmail({ kind: row.kind, language: emailLanguage(member.language), set: church.wordSet ?? "general", place: church.name, link: new URL("/app", config.site).toString() });
+  const emailId = await resend.sendEmail(ctx, { from: config.sender, to: row.recipient, ...email, idempotencyKey: `notification:${row.eventKey}` });
   await ctx.db.patch("outbox", row._id, { state: "queued", providerId: emailId });
 }
 async function record(ctx: MutationCtx, row: Omit<Doc<"outbox">, "_id" | "_creationTime"> & { eventKey: string }) {
