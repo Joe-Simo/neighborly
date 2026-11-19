@@ -4,7 +4,7 @@ import "./tools.css";
 import { useState, useSyncExternalStore } from "react";
 import { useAction } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
-import { CalendarPlus, Check, Copy, Share } from "lucide-react";
+import { CalendarPlus, CircleCheck, Copy, Share } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +70,7 @@ export function CalendarAddressView({ address, busy, error, onCreate, titled = t
                 variant="outline"
                 onClick={() => void navigator.clipboard.writeText(address).then(() => setCopied(true))}
               >
-                {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />} {copied ? text.copied : text.copy}
+                {copied ? <CircleCheck size={16} aria-hidden="true" className="text-[var(--paper-green)]" /> : <Copy size={16} aria-hidden="true" />} {copied ? text.copied : text.copy}
               </Button>
             )}
           </div>

@@ -208,7 +208,7 @@
   align-items: center;
 }
 .treasury-agree svg {
-  color: #365c46;
+  color: var(--paper-green);
   flex-shrink: 0;
 }
 .treasury-starter {

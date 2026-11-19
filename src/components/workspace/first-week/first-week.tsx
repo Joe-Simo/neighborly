@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Check, X } from "lucide-react";
+import { ArrowRight, CircleCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { useFirstLook } from "@/components/workspace/first-look";
@@ -51,7 +51,7 @@ export function FirstWeekSlips() {
                 <span>{line.rest}</span>
                 {done ? (
                   <span className="first-week-mark">
-                    <Check size={16} aria-hidden="true" />
+                    <CircleCheck size={16} aria-hidden="true" />
                     {said.done}
                   </span>
                 ) : (
