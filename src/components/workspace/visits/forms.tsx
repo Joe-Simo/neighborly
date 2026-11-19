@@ -363,9 +363,6 @@ export function WriteUpForm({
   const text = words.rooms.visitsRoom.forms;
   const writeUp = useMutation(api.visits.writeUp);
   const { pending, error, save } = useSave();
-  const [problem, setProblem] = useState<"hours" | "miles" | "driver" | null>(
-    null,
-  );
   return (
     <form
       className="live-form"
@@ -376,12 +373,20 @@ export function WriteUpForm({
         const data = new FormData(form);
         const hours = typedNumber(data.get("hours"));
         const miles = typedNumber(data.get("miles"));
-        if (hours === null || hours <= 0 || hours > 24)
-          return setProblem("hours");
-        if (miles === null || miles > 1000) return setProblem("miles");
         const drove = String(data.get("drove") ?? "");
-        if (miles > 0 && !drove) return setProblem("driver");
-        setProblem(null);
+        // A field that can't be taken is said under that field, and the first one is put in focus (LiveField):
+        // the box that says nothing was saved is kept for a save that truly failed.
+        const wrong = (name: string, said: string) => {
+          const control = form.elements.namedItem(name);
+          if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
+          control.setCustomValidity(said);
+          control.checkValidity();
+        };
+        if (hours === null || hours <= 0 || hours > 24) wrong("hours", text.problems.hours);
+        if (miles === null || miles > 1000) wrong("miles", text.problems.miles);
+        else if (miles > 0 && !drove) wrong("drove", text.problems.driver);
+        if (!form.checkValidity()) return;
+        if (hours === null || miles === null) return;
         const driver = visit.visitors.find(
           (visitor) => visitor.memberId === drove,
         );
@@ -419,35 +424,35 @@ export function WriteUpForm({
       <div className="live-form-grid">
         <LiveField
           label={text.hours}
+          said={{ needed: text.problems.hours, neededCheck: text.problems.hours }}
           help={fill(text.hoursHelp, { first: firstName(visit.visitors[0]?.name ?? ""), second: firstName(visit.visitors[1]?.name ?? "") })}
         >
           <Input
             name="hours"
             inputMode="decimal"
             autoComplete="off"
-            placeholder="1.5"
-            aria-invalid={problem === "hours" || undefined}
+            onInput={(event) => event.currentTarget.setCustomValidity("")}
           />
         </LiveField>
-        <LiveField label={text.miles} help={text.milesHelp}>
+        <LiveField label={text.miles} help={text.milesHelp} said={{ needed: text.problems.miles, neededCheck: text.problems.miles }}>
           <Input
             name="miles"
             inputMode="decimal"
             autoComplete="off"
-            placeholder="12"
-            aria-invalid={problem === "miles" || undefined}
+            onInput={(event) => event.currentTarget.setCustomValidity("")}
           />
         </LiveField>
       </div>
       <LiveField
         label={text.drove}
         help={text.droveHelp}
+        said={{ neededChoice: text.problems.driver, neededCheck: text.problems.driver }}
       >
         <NativeSelect
           name="drove"
           defaultValue=""
           className="w-full"
-          aria-invalid={problem === "driver" || undefined}
+          onChange={(event) => event.currentTarget.setCustomValidity("")}
         >
           <NativeSelectOption value="" disabled>
             {text.chooseDrove}
@@ -463,15 +468,7 @@ export function WriteUpForm({
         </NativeSelect>
       </LiveField>
       <FormEnd
-        error={
-          problem === "hours"
-            ? text.problems.hours
-            : problem === "miles"
-              ? text.problems.miles
-              : problem === "driver"
-                ? text.problems.driver
-                : error
-        }
+        error={error}
         pending={pending}
         submit={text.saveWriteUp}
       />

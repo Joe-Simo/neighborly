@@ -28,7 +28,7 @@ export const en = (t: Terms, place: string) => ({
     planned: "{first} and {second} have been asked to visit {neighbor}. The visit is under Coming up.",
     second: "{joining} has been asked to visit {neighbor}.",
     replaced: "{joining} has been asked to visit {neighbor} in place of {leaving}.",
-    writtenUp: "Written up. The visit to {neighbor} now counts toward the year’s hours and miles.",
+    writtenUp: `Written up. The visit to {neighbor} now counts toward the year’s hours and miles. Bring it to the ${t.group}. Record its yes on the ${t.neighbor}’s record.`,
   },
   dialogs: {
     planDeck: "Two people go together, always.",
@@ -37,7 +37,7 @@ export const en = (t: Terms, place: string) => ({
     replaceDeck: "Choose who goes to {neighbor} with {other}.",
     replaceDeckOther: (name: string) => `Choose who goes to ${name} with the other visitor.`,
     writeUpTitle: (name: string) => `The visit to ${name}`,
-    writeUpDeck: "{day} at {time}, {visitors}.",
+    writeUpDeck: "{day}, {time}, with {visitors}.",
   },
   /** The sheet at the top of the room: one request, and the two people suggested for it. */
   suggested: {
@@ -217,7 +217,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       planned: "Se les pidió a {first} y a {second} que visiten a {neighbor}. La visita está en Próximas visitas.",
       second: "Se le pidió a {joining} que visite a {neighbor}.",
       replaced: "Se le pidió a {joining} que visite a {neighbor} en lugar de {leaving}.",
-      writtenUp: "Notas guardadas. La visita a {neighbor} ya cuenta para las horas y las millas del año.",
+      writtenUp: `Notas guardadas. La visita a {neighbor} ya cuenta para las horas y las millas del año. Llévala a tu ${t.group} y anota su sí en el registro de esta persona.`,
     },
     dialogs: {
       planDeck: "Siempre van dos personas juntas.",
@@ -226,7 +226,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       replaceDeck: "Elige quién va a visitar a {neighbor} con {other}.",
       replaceDeckOther: (name) => `Elige quién va a visitar a ${name} con el otro visitador.`,
       writeUpTitle: (name) => `La visita a ${name}`,
-      writeUpDeck: "{day}, {time}: {visitors}.",
+      writeUpDeck: "{day}, {time}, con {visitors}.",
     },
     suggested: {
       label: (name) => `Visita por organizar para ${name}`,
