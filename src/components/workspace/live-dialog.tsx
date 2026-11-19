@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { startTransition, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -111,9 +111,12 @@ export function LiveDialog({
     drawn.current = sheet;
   }, [sheet]);
   useLayoutEffect(() => () => leaving(drawn.current), []);
+  // Opened in a transition too: the press is answered in its own frame, and the sheet, form and all, is drawn in the next.
+  // It closes at once. What is drawn is the same; only the press no longer waits for the sheet to be built.
+  const ready = useDeferredValue(open, false);
   return (
     // Closed in a transition: the key or press is answered in the next frame, and the room under the sheet is drawn after.
-    <Dialog open={open} onOpenChange={(next) => !next && startTransition(onClose)}>
+    <Dialog open={open && ready} onOpenChange={(next) => !next && startTransition(onClose)}>
       <DialogContent
         // A dialog is drawn under <body>, outside its room: it says its own language, so a leaders' English
         // form is not read aloud in the page's Spanish.
