@@ -40,17 +40,25 @@ export function YearPaper() {
     };
     const { ask, drop } = frameStep(read, write);
     let sized: ResizeObserver | undefined;
-    const load = () => import("./year-paper-gl").then(({ yearPaperCanvas }) => {
-      if (gone) return;
+    const load = async () => {
+      const { yearPaperCanvas } = await import("./year-paper-gl");
       const canvas = document.createElement("canvas");
       canvas.className = "year-paper-canvas";
       canvas.setAttribute("aria-hidden", "true");
-      scene = yearPaperCanvas(canvas);
-      if (!scene) return;
+      const made = await yearPaperCanvas(canvas, () => gone);
+      if (!made || gone) return made?.dispose();
+      // The first frame is drawn while the canvas is still off the page, in idle time; it joins the page, over the poster, already drawn.
+      const box = frame.getBoundingClientRect();
+      made.size(box.width, box.height);
+      read();
+      made.draw(Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height))));
       frame.append(canvas);
+      scene = made;
       sized = new ResizeObserver(([entry]) => { scene?.size(entry.contentRect.width, entry.contentRect.height); drawn = -1; ask(); });
+      // The canvas is over the poster from here: the cut is now, with the poster's own frame on it.
+      band.dataset.live = "true";
       sized.observe(frame);
-    });
+    };
     // Asked for well before it is reached, never on first paint: a window and a half ahead.
     const ahead = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) { ahead.disconnect(); void load(); } }, { rootMargin: "150% 0px" });
     const inSight = new IntersectionObserver(entries => { near = entries.some(entry => entry.isIntersecting); if (near) ask(); });

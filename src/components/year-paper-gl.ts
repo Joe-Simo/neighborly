@@ -1,3 +1,4 @@
+import { whenIdle } from "@/lib/idle";
 import { cameraZ, DONE, EDGE, HAIRLINE, LIGHT, PAPER, placeSlips, SHADE, SHADOW, SLIP, slips, SLIPS, viewProjection, WAITING } from "@/lib/year-paper";
 
 /**
@@ -58,15 +59,27 @@ void main() {
 
 export type YearPaperCanvas = { draw: (through: number) => void; size: (width: number, height: number) => void; dispose: () => void };
 
-export function yearPaperCanvas(canvas: HTMLCanvasElement): YearPaperCanvas | null {
+const idle = () => new Promise<void>(done => { whenIdle(done, 500); });
+
+/**
+ * Made in idle time, never on a frame of the scroll: the shaders are handed to the driver and left to compile on its own thread where it can
+ * (KHR_parallel_shader_compile), asked after only between idle moments; the buffers are filled in another; the caller draws its first frame
+ * and shows the canvas only once all of it is ready, and the poster stands until then.
+ */
+export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boolean): Promise<YearPaperCanvas | null> {
   const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, powerPreference: "low-power", preserveDrawingBuffer: false });
   if (!gl) return null;
+  const parallel = gl.getExtension("KHR_parallel_shader_compile");
   const compile = (type: number, source: string) => { const shader = gl.createShader(type)!; gl.shaderSource(shader, source); gl.compileShader(shader); return shader; };
   const program = gl.createProgram()!;
   gl.attachShader(program, compile(gl.VERTEX_SHADER, vertex));
   gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragment));
   gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return null;
+  if (parallel) while (!gl.getProgramParameter(program, parallel.COMPLETION_STATUS_KHR)) { await idle(); if (gone()) return null; }
+  else await idle();
+  if (gone() || !gl.getProgramParameter(program, gl.LINK_STATUS)) return null;
+  await idle();
+  if (gone()) return null;
   gl.useProgram(program);
 
   const vao = gl.createVertexArray();
@@ -112,8 +125,10 @@ export function yearPaperCanvas(canvas: HTMLCanvasElement): YearPaperCanvas | nu
   let aspect = 1;
   return {
     size(width, height) {
-      const ratio = Math.min(2, devicePixelRatio || 1);
-      canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
+      const ratio = Math.min(2, devicePixelRatio || 1), w = Math.round(width * ratio), h = Math.round(height * ratio);
+      // Setting a canvas's size clears it: an unchanged size is left alone, so the frame already drawn stays.
+      if (w === canvas.width && h === canvas.height) return;
+      canvas.width = w; canvas.height = h;
       aspect = width / height;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(hair, .006, .006 * SLIP.w / SLIP.h);
