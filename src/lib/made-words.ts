@@ -48,7 +48,7 @@ const en = {
         { lead: "Plum means something is wrong.", rest: "There is no red anywhere. A mistake is named plainly, with the way to put it right.", tone: "wrong" },
         { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned.", tone: "done" },
       ],
-      "Nothing fades and nothing blurs. Paper does not dissolve: it is laid down, lifted, turned or folded, and every move on the page is one a sheet could make. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Words are never smaller than 13 pixels in the app, and 15 on public pages like this one, where only the chapter numbers are 13.",
+      "Paper is the one material: things rise, fold and turn as a sheet would. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Words are never smaller than 13 pixels in the app, and 15 on public pages like this one, where only the chapter numbers are 13.",
       "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°.",
     ] },
     { title: "Responsible AI, with Jev", blocks: [
@@ -122,7 +122,7 @@ const es: typeof en = {
         { lead: "Ciruela es que algo está mal.", rest: "No hay rojo en ninguna parte. Un error se nombra con claridad, junto con la manera de corregirlo.", tone: "wrong" },
         { lead: "Verde es hecho.", rest: "Una visita con sus notas, una factura pagada, una llamada devuelta.", tone: "done" },
       ],
-      "Nada se desvanece y nada se desenfoca. El papel no se disuelve: se pone, se levanta, se da vuelta o se dobla, y cada movimiento de la página es uno que una hoja podría hacer. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta, donde solo los números de los capítulos miden 13.",
+      "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta, donde solo los números de los capítulos miden 13.",
       "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
     ] },
     { title: "IA responsable, con Jev", blocks: [
