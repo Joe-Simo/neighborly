@@ -282,7 +282,7 @@ export function en(set: WordSet) {
       saving: "Saving…",
       confirm: "Confirm time off",
       failed:
-        "We couldn’t confirm these dates. The connection may have dropped, or your commitments changed. Nothing was saved. Go back to review the list, then confirm again.",
+        "We couldn’t confirm these dates. Nothing was saved. Go back, look over the list, then confirm again.",
       saved: "Time off saved. Only the reviewed commitments were released.",
     },
     /** Tasks & meetings, as a member sees them. Planning a meeting and reviewing replies are leaders' tools and stay English. */

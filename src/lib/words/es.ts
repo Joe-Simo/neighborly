@@ -280,7 +280,7 @@ export function es(set: WordSet): Words {
       saving: "Guardando…",
       confirm: "Confirmar días libres",
       failed:
-        "No pudimos confirmar estas fechas. Puede que se perdiera la conexión o que tus compromisos cambiaran. No se guardó nada. Vuelve para revisar la lista y confirma otra vez.",
+        "No pudimos confirmar estas fechas. No se guardó nada. Vuelve, revisa la lista y confirma otra vez.",
       saved: "Días libres guardados. Solo se liberaron los compromisos revisados.",
     },
     tasks: {
