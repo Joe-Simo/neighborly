@@ -13,7 +13,7 @@
     count-up      a large figure, at its value at once (the class sets its digits).
   All of them are still for anyone who asks for less motion.
 */
-@property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
+/* --paper-corner is registered in globals.css: a registration arriving with a late stylesheet restyles every element of the page (the home page's sample brings this file late). */
 .live-app,
 .live-dialog,
 .live-mobile-menu {
