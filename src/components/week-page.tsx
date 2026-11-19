@@ -10,6 +10,7 @@ import { weekWords } from "@/lib/week-words";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
 import "@/components/week-page.css";
+import { CutHead } from "@/components/cut-heads";
 
 export { privacyViewport as weekViewport } from "@/components/privacy-page";
 
@@ -43,7 +44,7 @@ export function WeekPage({ language }: { language: Language }) {
           <section key={picture} className="public-week-day" aria-labelledby={`week-${picture}`}>
             <div className="public-week-head">
               <p className="public-week-when"><span aria-hidden="true">{index + 1}</span>{day}</p>
-              <h2 id={`week-${picture}`}>{title}</h2>
+              <CutHead id={`week-${picture}`}>{title}</CutHead>
               <p className="public-week-room">{room}</p>
             </div>
             <div>

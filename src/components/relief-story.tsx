@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef } from "react";
 import { HomeYear } from "./home-year";
 import { PageTurn } from "./chapter-sheets";
 import "./relief-journey.css";
+import { CutHead } from "@/components/cut-heads";
 
 // Each picture is a plate with loose paper lying on it, listed from the lowest sheet up. A piece that names a shadow casts one on the plate.
 // `tuck` is the way it goes in under something, in card widths along its own edges.
@@ -25,7 +26,7 @@ const station = ({ picture, card }: (typeof story)[number]) => <span className="
 
 // One chapter: its words and its picture.
 const hold = (part: (typeof story)[number]) => <div className="relief-hold">
-      <div className="relief-words"><h2>{part.title}</h2><p>{part.copy}</p>{part.picture === "year" && <HomeYear />}</div>
+      <div className="relief-words"><CutHead>{part.title}</CutHead><p>{part.copy}</p>{part.picture === "year" && <HomeYear />}</div>
       <div className="relief-picture" data-picture={part.picture}>
         <div className="relief-layers">
           <picture>

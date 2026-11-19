@@ -10,6 +10,7 @@ import "./thread-card.css";
 import "./public-touch.css";
 import "./cut-edges.css";
 import type { Language } from "@/lib/words";
+import { CutHead } from "@/components/cut-heads";
 
 /** The closing band and the foot, in each language. The home page is English; a public page of words closes in its own. */
 export const endingWords = {
@@ -46,7 +47,7 @@ export function ClosingBand({ language = "en" }: { language?: Language }) {
       </picture>
     </span>
     <div className="neighborly-close-words">
-      <h2 id="together-title">{said.bring[0]}<br /><em>{said.bring[1]}</em></h2>
+      <CutHead id="together-title">{said.bring[0]}<br /><em>{said.bring[1]}</em></CutHead>
       <div className="neighborly-final-actions">
         <nav className="neighborly-final-links" aria-label={said.own}>
           <Link href="/app?intent=start">{said.start}<ArrowUpRight size={16} aria-hidden="true" /></Link>
