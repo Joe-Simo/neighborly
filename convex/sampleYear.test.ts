@@ -29,3 +29,20 @@ test("the home page's four figures are the sample's own yearly report", async ()
     helpPaid: sampleYear.helpPaid,
   });
 });
+
+test("the year's money in Reports is the Treasury's: same closing balance, same money in and out", async () => {
+  const t = convexTest(schema, modules);
+  const churchId = await t.mutation(internal.sampleData.load, {});
+  const owner = await t.run(async (ctx) => (await ctx.db.query("memberships").collect()).find((member) => member.role === "owner"));
+  if (!owner) throw new Error("The sample has no owner.");
+  const me = signedIn(t, owner.userId);
+  const report = await me.query(api.reports.year, { churchId, year: sampleYear.year, at: Date.parse(sampleYear.asOf) });
+  const flow = await me.query(api.treasury.cashFlow, { churchId, from: report.firstDay, to: report.lastDay });
+  // An opening balance entered inside the year is money in to the Treasury, and the year's beginning in Reports.
+  expect(report.money.endingBalance).toBe(flow.closing);
+  expect(report.money.beginningBalance + report.money.received).toBe(flow.opening + flow.moneyIn);
+  expect(report.money.spent).toBe(flow.moneyOut);
+  // What the year paid to neighbors is its help by kind, and the rest of what it spent is its other spending.
+  expect(report.kinds.reduce((paid, kind) => paid + kind.paid, 0)).toBe(report.helpPaid);
+  expect(report.helpPaid + report.money.otherSpending.reduce((spent, line) => spent + line.amount, 0)).toBe(report.money.spent);
+});
