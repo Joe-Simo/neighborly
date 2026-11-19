@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://kindhelps.com"),
   title: "Kind Helps — Good work, together.",
   description:
-    "Kind Helps keeps a conference’s help line, home visits, ledger and yearly report in one place, with the volunteers who do the work. Free for every conference.",
+    "Kind Helps keeps a conference’s help line, home visits, ledger and yearly report in one place, with the volunteers who do them. Free for every conference.",
   openGraph: {
     ...linkPreview,
     url: "/",
