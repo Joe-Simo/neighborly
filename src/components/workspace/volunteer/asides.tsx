@@ -1,5 +1,6 @@
 "use client";
 
+import { upcomingCommitments } from "@/lib/commitment-visibility";
 import "./asides.css";
 import { DateTime } from "luxon";
 import { weekDayOf } from "@/components/workspace/volunteer/week-days";
@@ -83,7 +84,8 @@ export function WeekByTeam() {
   // Each commitment's day, from the week's seven day starts worked out once (asking the calendar for every commitment,
   // for every team and day, held the room's first frame back).
   const dayOf = weekDayOf(sunday);
-  const week = data.commitments.filter((item) => item.status !== "cancelled" && item.start >= from && item.start < until);
+  // What is still ahead this week, as the list beside it counts it: a day already over shows no mark.
+  const week = upcomingCommitments(data.commitments, now).filter((item) => item.start >= from && item.start < until);
   const teams = data.teams
     .map((team) => {
       const own = week.filter((item) => item.teamId === team.id);

@@ -30,7 +30,7 @@
 .live-aside-sheet .volunteer-teams-week tbody th span { display: block; font-size: 15px; font-weight: 600; color: var(--live-ink); overflow-wrap: anywhere; }
 .live-aside-sheet .volunteer-teams-week tbody th small { display: flex; align-items: center; gap: var(--space-8) 8px; font-size: 13px; color: var(--live-muted); }
 .live-aside-sheet .volunteer-teams-week tbody td { height: 26px; padding: var(--space-4) 0 var(--space-8); text-align: center; vertical-align: top; line-height: 0; }
-.live-aside-sheet .volunteer-teams-week tbody td i { display: block; margin: 0 auto 3px; }
+.live-aside-sheet .volunteer-teams-week tbody td i { display: inline-block; margin: 0 1px; vertical-align: middle; }
 
 .live-aside-sheet .volunteer-next p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--live-muted); }
 .live-aside-sheet .volunteer-next .volunteer-next-day { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); text-wrap: balance; }

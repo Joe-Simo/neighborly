@@ -174,7 +174,7 @@
 /* The neighbor list reads under cut-paper letters, each riding above its group and held in view while those households
    pass. The rows keep the room's one left edge, the heading's and the search's, at every width. */
 .live-app .help-letter-head {
-  position: sticky; top: calc(var(--live-bar, 0px) + 12px); z-index: 2; margin: 0;
+  position: sticky; top: var(--live-bar, 0px); z-index: 2; margin: 0;
   font: 400 48px/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
   color: #d8cfb6;
   text-shadow: -1px -1px 0 #fffdf7, 1px 2px 0 #b9ad8e, 2px 4px 2px rgb(40 60 50 / 0.18), 4px 10px 14px rgb(40 60 50 / 0.24);
