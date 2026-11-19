@@ -64,7 +64,7 @@ const en = {
     caption: "A scroll down this page on the Mac, frame by frame",
     widths: { "1440": "At 1440 pixels", "390": "At 390 pixels, processor slowed four times" },
     /** {n} frames, {over} of them late, {worst} the slowest in milliseconds. */
-    summary: ["{n} frames, none over 33 ms. The slowest took {worst} ms.", "{n} frames, {over} over 33 ms. The slowest took {worst} ms."] as [string, string],
+    summary: ["{n} frames, none over 33 ms. The slowest took {worst} ms, within the line.", "{n} frames, {over} over 33 ms. The slowest took {worst} ms."] as [string, string],
     line: "33 ms",
     /** {day}, {commit} and {machine} come from the recorder's file. */
     source: "Source: the Mac run of {day}, build {commit}, {machine}. Each mark is one frame, at the height of its time; its raw times are eval/frames/made-scroll.json in the code.",
@@ -187,7 +187,7 @@ const es: typeof en = {
   frameStrip: {
     caption: "Un desplazamiento por esta página en la Mac, cuadro a cuadro",
     widths: { "1440": "A 1440 píxeles", "390": "A 390 píxeles, con el procesador cuatro veces más lento" },
-    summary: ["{n} cuadros, ninguno de más de 33 ms. El más lento tardó {worst} ms.", "{n} cuadros, {over} de más de 33 ms. El más lento tardó {worst} ms."],
+    summary: ["{n} cuadros, ninguno de más de 33 ms. El más lento tardó {worst} ms, dentro del límite.", "{n} cuadros, {over} de más de 33 ms. El más lento tardó {worst} ms."],
     line: "33 ms",
     source: "Fuente: la medición en la Mac del {day}, versión {commit}, {machine}. Cada marca es un cuadro, a la altura de su tiempo; sus tiempos sin tocar están en eval/frames/made-scroll.json, en el código.",
   },
