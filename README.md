@@ -1,6 +1,6 @@
 # kind helps
 
-Free software for the parish conferences of the Society of St. Vincent de Paul and groups like them: the help line, neighbor records, home visits in pairs, the treasury, the yearly report and the volunteers' own week, in English and Spanish. Live at [kindhelps.com](https://kindhelps.com), with a sample conference that anyone can open.
+Free software for the parish conferences of the Society of St. Vincent de Paul and groups like them: the help line, neighbor records, home visits in pairs, the treasury, the yearly report and the volunteers' own week, in English and Spanish. Live at [kindhelps.com](https://kindhelps.com). To try it without an account, open the home page and choose **Look around a sample conference**.
 
 Kind Helps is independent. It is not affiliated with or endorsed by the Society of St. Vincent de Paul. "Neighbor" always means the person being helped. The internal project name is Neighborly.
 
@@ -17,11 +17,11 @@ Kind Helps is independent. It is not affiliated with or endorsed by the Society 
 The only model is Jev (`jev-1.14.0`, pinned in `convex/drafts.ts`). It is reached through Typesafe from Convex actions, and the key (`TYPESAFE_API_KEY`) lives only in the Convex deployment's environment. Jev picks from fixed lists and answers yes or no. It writes no prose. It does four jobs: drafting a request from a call note, marking urgent calls with their reason, checking the year before the report, and reading a new team's name.
 
 - **Privacy:** before any text leaves for the model, `withoutIdentity` in `src/lib/request-draft.ts` takes identity out in two steps. First it removes the values the conference knows: the caller's and the neighbor's names and addresses, and the capitalised names of its other neighbors and members. Then it removes anything that matches a fixed pattern: emails, phone numbers, street addresses, dates written in figures, the words after "my name is" or "soy" or a title such as "Mrs.", and every capitalised word that doesn't open a sentence (days and months are kept). A name the conference does not know can still pass when it is written in lowercase, or when it opens a sentence on its own. Each draft offers a "What the assistant saw" link, which shows the note exactly as it was sent.
-- **A person decides:** a draft is saved only when a volunteer presses save. Saving a request does not grant it. Without the key, or past the monthly allowance (`monthlyAllowance` in `src/lib/request-draft.ts`), the app works by fixed rules and says so.
+- **A person decides:** a draft is saved only when a volunteer presses save. Saving a request does not grant it: a person approves every request, and an owner or coordinator records the decision. Without the key, or past the monthly allowance (`monthlyAllowance` in `src/lib/request-draft.ts`), the app works by fixed rules and says so.
 
 ## The evaluation
 
-`src/lib/jev-set.ts` holds 38 made-up call notes, each with the answer written before any run. Twelve of them are held out and were never used to tune the rules. `eval/jev/run-6.json` is a run's raw output. On the 12 held-out notes it scored 42 of 48 fields right, 6 blank and 0 wrong, across 8 English, 2 Spanish and 2 Haitian Creole notes. `src/lib/jev-eval.test.ts` counts those figures from the file. `eval/jev/README.md` explains how to run it again.
+`src/lib/jev-set.ts` holds made-up call notes, each with the answer written before any run. Twelve of them are held out and were never used to tune the rules. `eval/jev/run-6.json` and `run-7.json` are two runs' raw output. On the 12 held-out notes each scored 42 of 48 fields right, 6 blank and 0 wrong, across 8 English, 2 Spanish and 2 Haitian Creole notes. `src/lib/jev-eval.test.ts` counts those figures from run 6. `eval/jev/README.md` explains how to run it again.
 
 ## Run it locally
 
@@ -33,9 +33,9 @@ bunx convex dev          # creates your own development deployment and writes .e
 bun run dev              # http://localhost:3000
 ```
 
-Put these in `.env.local`: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` (from Clerk's development instance). Set these on the Convex deployment (`bunx convex env set …`): `CLERK_JWT_ISSUER_DOMAIN` (Clerk's Frontend API URL) and `SITE_URL`. `TYPESAFE_API_KEY` is optional. Without it, drafts are left for a person to write.
+Put these in `.env.local`: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` (from Clerk's development instance). Set these on the Convex deployment (`bunx convex env set …`): `CLERK_JWT_ISSUER_DOMAIN` (Clerk's Frontend API URL) and `SITE_URL`. `TYPESAFE_API_KEY` is optional. Without it, drafts are left for a person to write. Email is optional too: `RESEND_API_KEY`, `SENDER_EMAIL` and `EMAIL_DELIVERY_ENABLED`.
 
-**Sample data.** Every person, phone (555-01xx) and household in the sample is made up. To open the sample conference as yourself, sign in once, then set your Clerk user id on the deployment and load the sample:
+**Sample data.** All data in this repository and on the sample conference is synthetic. Every person, phone (555-01xx) and household in the sample is made up. To open the sample conference as yourself, sign in once, then set your Clerk user id on the deployment and load the sample:
 
 ```sh
 bunx convex env set DEMO_CLERK_USER_ID <your Clerk user id>
@@ -56,4 +56,4 @@ The backend tests simulate sign-in. `convex/sampleYear.test.ts` builds the sampl
 
 ## Licenses
 
-The fonts are under the SIL Open Font License. Their notices, and those for third-party art inputs, are in `licenses/`.
+The code's license is to be decided. The fonts are under the SIL Open Font License. Their notices, and those for third-party art inputs, are in `licenses/`.
