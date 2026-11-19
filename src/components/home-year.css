@@ -6,16 +6,18 @@
 .home-year dt{margin:6px 0 0;font-size:15px;line-height:1.35;color:#3d4f43}
 .home-year dd{position:relative;margin:0;font-family: 'Newsreader','Newsreader Fallback',Georgia,serif; font-weight: 400; font-size: clamp(44px,4.45vw,80px); line-height: 1;letter-spacing:-.045em;font-variant-numeric:lining-nums tabular-nums;color:#293f32;white-space:nowrap}
 /* Each figure stands on its own tab, cut from the page and hinged at its foot. At rest the tab lies flush: the page's own paper, its cut
-   shown only as a hairline of paper edge along its top and sides, and the type on it plain and selectable (no transform is left on it).
-   As the page is turned off the chapter, each tab stands up out of the page: the hole it leaves shows its cut line, and the tab throws
+   shown only by its lit top edge, and the type on it plain and selectable (no transform is left on it).
+   As the page is turned off the chapter, each tab stands up out of the page as a fold, and the tab throws
    a tight shade at its hinge, longer the lower it lies. The label under it stays on the page. */
 .home-year dd{position:relative;width:fit-content}
-.home-year-tab{position:relative;z-index:1;display:inline-block;margin:-6px calc(-6px - .045em) -6px -6px;padding:6px calc(6px + .045em) 6px 6px;background:#eee7d7;transform-origin:50% 100%}
-.home-year[data-folding=true] .home-year-tab{box-shadow:0 -1px 0 #d3c7ad,-1px 0 0 #d9cfb7,1px 0 0 #d9cfb7}
+/* The tab hugs its figure: 4px each side, as the slips above stand out from it, and 2px above and below the type. */
+.home-year dd{--tab-x:4px;--tab-y:2px}
+.home-year-tab{position:relative;z-index:1;display:inline-block;margin:calc(-1 * var(--tab-y)) calc(-1 * var(--tab-x) - .045em) calc(-1 * var(--tab-y)) calc(-1 * var(--tab-x));padding:var(--tab-y) calc(var(--tab-x) + .045em) var(--tab-y) var(--tab-x);background:#eee7d7;transform-origin:50% 100%}
+/* Lifted, a tab reads as a fold: only its lit top edge and the shade at its hinge, no box drawn round it. */
+.home-year[data-folding=true] .home-year-tab{box-shadow:0 -1px 0 #d3c7ad}
 .home-year[data-folding=true]{perspective:900px}
-.home-year[data-folding=true] .home-year-tab{transform:rotateX(calc((1 - var(--fold,1)) * 86deg))}
-.home-year[data-folding=true] dd::before{content:"";position:absolute;left:-6px;right:calc(-6px - .045em);top:-6px;bottom:-6px;box-shadow:inset 0 1px 0 #cdbf9f,inset 1px 0 0 #d6cbb2,inset -1px 0 0 #d6cbb2,inset 0 2px 3px #2e24161a;pointer-events:none}
-.home-year[data-folding=true] dd::after{content:"";position:absolute;z-index:2;left:-6px;right:calc(-6px - .045em);bottom:-6px;height:calc((1 - var(--fold,1)) * 14px);background:linear-gradient(#2e241600,#2e241633);pointer-events:none}
+.home-year[data-folding=true] .home-year-tab{will-change:transform;transform:rotateX(calc((1 - var(--fold,1)) * 86deg))}
+.home-year[data-folding=true] dd::after{content:"";position:absolute;z-index:2;left:calc(-1 * var(--tab-x));right:calc(-1 * var(--tab-x) - .045em);bottom:calc(-1 * var(--tab-y));height:14px;background:linear-gradient(#2e241600,#2e241633);transform:scaleY(calc(1 - var(--fold,1)));transform-origin:50% 100%;will-change:transform;pointer-events:none}
 .home-year[data-one-more] div:nth-child(2) dd{color:#365c46}
 /* Above each counted figure, its pile: cut sheets of the card's lighter paper, three pixels to a sheet, each with an ink-warm edge and a little off true,
    the width of the figure's tab and centred on it. The top sheet's face is seen from a little above. Laid a whole sheet at a time on scroll (home-year.tsx
