@@ -64,7 +64,7 @@ const es: typeof en = {
   path: "/privacidad",
   title: "Privacidad",
   tab: "Privacidad — Kind Helps",
-  description: "Qué guarda una conferencia en Kind Helps, quién puede verlo, qué se le envía al asistente y cómo se elimina un registro, una persona o una conferencia entera.",
+  description: "Qué guarda una conferencia en Kind Helps, quién lo ve, qué se le envía al asistente y cómo se elimina un registro, una persona o una conferencia.",
   preview: "Qué guarda una conferencia en Kind Helps, quién puede verlo y cómo se elimina.",
   enter: "Entrar a Kind Helps",
   translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],

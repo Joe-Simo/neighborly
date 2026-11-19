@@ -94,7 +94,7 @@ export function WeekSection() {
         <CommitmentRows
           items={withoutIncomingRequests(upcoming.filter((item) => item.start <= weekEnd && item.id !== held), incoming)}
           fresh={fresh}
-          empty={{ title: incoming.length ? words.week.choiceAboveTitle : words.week.quietTitle, detail: incoming.length ? words.week.choiceAboveDetail : words.week.quietDetail }}
+          empty={{ title: incoming.length ? words.week.choiceAboveTitle : words.week.quietTitle, detail: incoming.length ? words.week.choiceAboveDetail : words.week.quietDetail, go: incoming.length ? undefined : "commitments" }}
         />
       </section>
       {/* On the largest screens what the conference has said is the room's second column, under the picture;
