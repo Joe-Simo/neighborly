@@ -3,6 +3,7 @@
 import { COURTYARD_STILL, type CourtyardStill } from "./courtyard-door";
 import { useEffect, useRef } from "react";
 import { whenIdle } from "@/lib/idle";
+import { frameStep } from "@/lib/scroll-frame";
 import { ImageBitmapLoader, LinearFilter, LinearMipmapLinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Texture, Vector2, Vector4, WebGLRenderer } from "three";
 
 const vertex = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`;
@@ -171,7 +172,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     const release = () => { host.removeAttribute("data-living"); host.querySelectorAll<HTMLElement>(placedLayers).forEach(layer => { layer.style.removeProperty("scale"); layer.style.removeProperty("translate"); origins.delete(layer); }); };
     // Once the context is lost the scene is over for this visit: nothing draws again, and a start still under way does not show it.
     let gone = false;
-    const lost = (event: Event) => { event.preventDefault(); gone = true; cancelAnimationFrame(raf); release(); };
+    const lost = (event: Event) => { event.preventDefault(); gone = true; step.drop(); release(); };
     // The paintings' decoded copies are let go once they are on the graphics card, so a lost context is not brought back: the painted courtyard stays.
     const restored = () => {};
     renderer.domElement.addEventListener("webglcontextlost", lost);
@@ -257,16 +258,27 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     const journey = host.closest(".fresco-journey");
     // Walking through the doors, the near stone slides out past the window's edges faster than the far hills.
     const inside = () => Number(host.style.getPropertyValue("--inside") || 0);
-    let raf = 0, last = 0, began = 0, disposed = false, clock = 0;
+    let last = 0, began = 0, disposed = false, clock = 0;
+    // Everything the frame needs of the page's layout is read in the shared frame's first half, before any part has written (scroll-frame.ts):
+    // read after the doors' and the chapters' writes, each of these made the browser style the whole page again inside the frame.
+    let stage = frame.getBoundingClientRect(), painting: DOMRect | undefined, walked: DOMRect | undefined, worldBox: DOMRect | undefined, worldWidth = 1;
+    let frameWidth = 0, frameHeight = 0, tableShown = 0, hallShown = 0;
+    const read = () => {
+      stage = frame.getBoundingClientRect();
+      painting = host.querySelector(paintingSelector)?.getBoundingClientRect();
+      walked = journey?.getBoundingClientRect();
+      const world = host.querySelector<HTMLElement>(".threshold-world");
+      worldBox = world?.getBoundingClientRect(); worldWidth = world?.offsetWidth ?? 1;
+      frameWidth = frame.clientWidth; frameHeight = frame.clientHeight;
+      tableShown = shown(".threshold-table-welcome"); hallShown = shown(".threshold-hall-response");
+    };
     const tick = (time: number) => {
       if (gone) return;
-      raf = requestAnimationFrame(tick);
+      step.ask();
       if (!began) began = time;
       const elapsed = (time - last) / 1000 || .016;
       const dt = Math.min(.05, elapsed); last = time;
       const seconds = (time - began) / 1000;
-      const stage = frame.getBoundingClientRect();
-      const painting = host.querySelector(paintingSelector)?.getBoundingClientRect();
       // It goes on drawing for half a window beyond the screen's edges, so on a quick flick back it is already painted when it comes into view.
       if (!painting || stage.bottom < -innerHeight * .5 || stage.top > innerHeight * 1.5 || renderer.getContext().isContextLost()) return;
       // Behind shut doors nobody sees the courtyard: once it has been drawn at this size it rests, and the frame it holds is the one the doors open on.
@@ -281,10 +293,10 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
         shade = nowShade; drawn = false;
         renderer.domElement.style.transform = shade < 1 ? `scale(${1 / shade})` : "";
       }
-      const width = frame.clientWidth * shade, height = frame.clientHeight * shade;
-      renderer.setViewport(0, frame.clientHeight - height, width, height);
+      const width = frameWidth * shade, height = frameHeight * shade;
+      renderer.setViewport(0, frameHeight - height, width, height);
       renderer.setScissorTest(drawn);
-      renderer.setScissor(left * width, frame.clientHeight - height, Math.max(0, right - left) * width, height);
+      renderer.setScissor(left * width, frameHeight - height, Math.max(0, right - left) * width, height);
       // If the graphics card cannot keep pace, the painting is drawn a little smaller rather than letting the journey stutter.
       pace = mix(pace, Math.min(elapsed, .1), .06);
       strained = pace > .0195 ? strained + 1 : 0;
@@ -298,10 +310,9 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       look.y = mix(look.y, still ? 0 : pointer.y + driftY, follow);
       const evening = host.dataset.evening === "true";
       // Measured in the canvas's own units, so the scene stays in register when its holder is scaled on the page.
-      const unit = stage.width / Math.max(1, frame.clientWidth) || 1;
+      const unit = stage.width / Math.max(1, frameWidth) || 1;
       uniforms.uRect.value.set((painting.left - stage.left) / unit, (painting.top - stage.top) / unit, painting.width / unit, painting.height / unit);
       // Scrolling through the fresco, the near stone and the far hills part by about ten pixels from first sight to last.
-      const walked = journey?.getBoundingClientRect();
       const through = still || !walked ? .5 : Math.max(0, Math.min(1, (-walked.top / Math.max(1, innerHeight) - 3.65) / .9));
       const part = (through - .5) * 10 / (.9 * Math.max(1, painting.height));
       // Standing in the courtyard, its paper parts in depth as the page goes on: the near sheets come forward and lean further with the cursor or the tilt than the far ones.
@@ -314,10 +325,9 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       // Walking in: the near world grows faster than the far one as the doors are passed, and eases back for the last wide view.
       const entered = Math.min(1, Number(host.style.getPropertyValue("--door-progress") || 0) / .2);
       uniforms.uDolly.value = mix(uniforms.uDolly.value, still ? 0 : host.dataset.overview === "true" ? .5 : .2 + entered * entered * (3 - 2 * entered) + inside() * .25 + standing * .35, follow);
-      const world = host.querySelector<HTMLElement>(".threshold-world");
-      if (world && host.dataset.living === "true") {
-        const frameOfWorld = world.getBoundingClientRect();
-        const size = frameOfWorld.width / Math.max(1, world.offsetWidth);
+      if (worldBox && host.dataset.living === "true") {
+        const frameOfWorld = worldBox;
+        const size = frameOfWorld.width / Math.max(1, worldWidth);
         const centreX = (stage.left + stage.width / 2 - frameOfWorld.left) / size, centreY = (stage.top + stage.height / 2 - frameOfWorld.top) / size;
         const reach = Math.max(painting.width / 2, painting.height) / size;
         const open = host.dataset.open === "true" && !still;
@@ -344,8 +354,8 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       const place = host.dataset.destination ?? "";
       if (place !== notice.place) { notice.place = place; notice.since = seconds; }
       const ease = still ? 1 : 1 - Math.exp(-dt * 2.4);
-      const table = poseFor(answers.table, host.dataset.tableReady === "true" || shown(".threshold-table-welcome") > .5, "1", seconds);
-      const hall = poseFor(answers.hall, shown(".threshold-hall-response") > .5, "2", seconds);
+      const table = poseFor(answers.table, host.dataset.tableReady === "true" || tableShown > .5, "1", seconds);
+      const hall = poseFor(answers.hall, hallShown > .5, "2", seconds);
       uniforms.uLook.value = mix(uniforms.uLook.value, table.noticing, ease);
       uniforms.uWelcome.value = mix(uniforms.uWelcome.value, table.answering, ease);
       uniforms.uTurn.value = mix(uniforms.uTurn.value, hall.noticing, ease);
@@ -354,6 +364,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       renderer.render(scene, camera);
       drawn = true;
     };
+    const step = frameStep(read, tick);
 
     Promise.all([load("courtyard-quiet-plate-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)]).then(async textures => {
       if (disposed) { textures.forEach(texture => texture.dispose()); return; }
@@ -370,12 +381,12 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       await new Promise(requestAnimationFrame);
       if (disposed || gone) return;
       host.setAttribute("data-living", "true");
-      raf = requestAnimationFrame(tick);
+      step.ask();
     }).catch(() => { /* Without the living layers the painted courtyard shows exactly as it always has. */ });
 
     return () => {
       disposed = true;
-      cancelAnimationFrame(raf);
+      step.drop();
       observer.disconnect();
       removeEventListener("pointermove", onPointer);
       removeEventListener("deviceorientation", onTilt);

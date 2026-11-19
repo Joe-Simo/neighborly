@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useRef } from "react";
 import "./chapter-sheets.css";
+import { frameStep } from "@/lib/scroll-frame";
 import { placeTurn, setTurnGeometry, turnGeometry, type TurnGeometry } from "@/lib/page-turn";
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -24,16 +25,18 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
     const sheet = paper.current, next = sheet?.closest<HTMLElement>(sheets[to].next) ?? sheet?.parentElement?.querySelector<HTMLElement>(sheets[to].next);
     if (!sheet || !next) return;
     const still = matchMedia("(prefers-reduced-motion: reduce)");
-    let frame = 0, across = "", foot = "", lie = "", tall = "";
+    let across = "", foot = "", lie = "", tall = "";
+    // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
+    let box = next.getBoundingClientRect(), height = innerHeight, own = sheet.offsetHeight;
+    const read = () => { box = next.getBoundingClientRect(); height = innerHeight; if (to === "close") own = sheet.offsetHeight; };
     const update = () => {
-      frame = 0;
-      const box = next.getBoundingClientRect(), top = box.top, height = innerHeight;
+      const top = box.top;
       // The next chapter's paper comes over as that chapter's first edge rises from the foot of the window to its top.
       const crossed = sheets[to].pace(clamp((height - top) / height));
       if (to === "close") {
         // The close's sheet is part of the page above the rooms, so it is not moved: only its foot is, counted from the sheet's own top, which stands one window above the rooms' edge.
         const edge = Math.max(36, Math.min(64, innerWidth * .044));
-        const shown = top <= 0 || crossed <= 0 ? -200 : (still.matches ? Number(crossed >= .5) : crossed) * (height + edge) - edge - (top + sheets.close.under - sheet.offsetHeight);
+        const shown = top <= 0 || crossed <= 0 ? -200 : (still.matches ? Number(crossed >= .5) : crossed) * (height + edge) - edge - (top + sheets.close.under - own);
         const nowLie = `${shown.toFixed(1)}px`, nowTall = `${box.height.toFixed(0)}px`;
         if (nowLie !== lie) { lie = nowLie; sheet.style.setProperty("--lie", lie); sheet.toggleAttribute("data-away", shown === -200); }
         if (nowTall !== tall) { tall = nowTall; sheet.style.setProperty("--paper-h", tall); }
@@ -45,12 +48,12 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
       if (nowAcross !== across) { across = nowAcross; sheet.style.setProperty("--across", across); sheet.toggleAttribute("data-away", across === "0"); }
       if (across !== "0" && nowFoot !== foot) { foot = nowFoot; sheet.style.setProperty("--foot", foot); }
     };
-    const request = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const { ask: request, drop } = frameStep(read, update);
     addEventListener("scroll", request, { passive: true });
     addEventListener("resize", request);
     still.addEventListener("change", request);
     update();
-    return () => { cancelAnimationFrame(frame); removeEventListener("scroll", request); removeEventListener("resize", request); still.removeEventListener("change", request); };
+    return () => { drop(); removeEventListener("scroll", request); removeEventListener("resize", request); still.removeEventListener("change", request); };
   }, [to]);
   return <div ref={paper} className={to === "close" ? "chapter-sheet-close" : `chapter-sheet chapter-sheet-${to}`} data-away="" aria-hidden="true" />;
 }
@@ -72,7 +75,7 @@ export function PageTurn({ children }: { children: ReactNode }) {
     // Where chapters are not held (relief-journey.css lets them scroll as plain pages up to 820px), nothing is turned. Read from the media query, never from a computed style.
     const plain = matchMedia("(max-width: 820px)");
     // The page is the whole window, `tall` of it the chapter's own.
-    let frame = 0, on = false, tall = 0, last = -1, near = false, geometry: TurnGeometry | null = null;
+    let on = false, tall = 0, last = -1, near = false, geometry: TurnGeometry | null = null, bottom = 0;
     const measure = () => {
       // A page taller than the window, or one not held at all (phones), cannot be turned whole, and with less motion nothing is turned: the chapters then follow one another as plain pages.
       const fits = !still.matches && !plain.matches && hold.offsetHeight <= innerHeight + 1;
@@ -90,12 +93,13 @@ export function PageTurn({ children }: { children: ReactNode }) {
       to.style.setProperty("--e", "1"); to.style.setProperty("--h", "1");
       setTurnGeometry(turn, geometry);
       last = -1;
+      read();
       update();
     };
+    // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
+    const read = () => { if (on) bottom = from.getBoundingClientRect().bottom; };
     const update = () => {
-      frame = 0;
       if (!on || !geometry) return;
-      const bottom = from.getBoundingClientRect().bottom;
       const close = bottom < tall * 2.5 && bottom > -tall;
       if (close !== near) { near = close; turn.toggleAttribute("data-near", near); }
       const turned = clamp(1 - bottom / tall);
@@ -105,14 +109,14 @@ export function PageTurn({ children }: { children: ReactNode }) {
       to.style.setProperty("--turned", turned.toFixed(4));
       turn.dataset.turned = placeTurn(geometry, { round, page, back, roll, shade }, turned);
     };
-    const request = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const { ask: request, drop } = frameStep(read, update);
     const sizes = new ResizeObserver(measure);
     sizes.observe(hold); sizes.observe(page); if (beneath) sizes.observe(beneath);
     addEventListener("scroll", request, { passive: true });
     still.addEventListener("change", measure);
     plain.addEventListener("change", measure);
     measure();
-    return () => { cancelAnimationFrame(frame); sizes.disconnect(); removeEventListener("scroll", request); still.removeEventListener("change", measure); plain.removeEventListener("change", measure); };
+    return () => { drop(); sizes.disconnect(); removeEventListener("scroll", request); still.removeEventListener("change", measure); plain.removeEventListener("change", measure); };
   }, []);
   return <div ref={root} className="relief-turn" data-turned="no">
     <div className="relief-turn-shade" aria-hidden="true" />

@@ -1,4 +1,5 @@
 /* A chapter's paper drawn over the chapter before it. The sheet ends exactly where the story's own paper begins, so the two are one piece. */
+@property --turned{syntax:"<number>";inherits:false;initial-value:0}
 @property --across{syntax:"<number>";inherits:false;initial-value:0}
 /* The cut is drawn to the window's height, so on a tall wide screen it keeps its waves and does not stand as a straight line. */
 .chapter-sheet{--edge:max(clamp(64px,9vw,150px),min(14lvh,220px));--across:0;--foot:0px;position:fixed;z-index:2;top:0;left:calc(-1 * var(--edge));width:calc(100% + var(--edge));height:100lvh;pointer-events:none;contain:layout style;will-change:transform;clip-path:inset(0 0 calc(100% - var(--foot)) 0);transform:translateX(calc((1 - var(--across)) * 100%))}

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { ArrowUpRight } from "lucide-react";
 import { useCardFor } from "@/lib/card-for";
 import { paceOpening } from "@/lib/painted-world-scroll";
+import { frameStep } from "@/lib/scroll-frame";
 import "./thread-card.css";
 
 type Pose = { x: number; y: number; w: number; r: number; o: number };
@@ -28,7 +29,10 @@ export function ThreadCard() {
     // Every place the card lies after the doors, in order. A tucked place is entered along the card's own edge, by the card that lies there, so it goes under what covers it.
     const chapters = ["call", "visit", "help", "year", "sheet"].flatMap(name => { const at = station(name), panel = at?.closest<HTMLElement>(".relief-panel,.home-yes"); const tuck = at?.dataset.tuck?.split(",").map(Number); return at && panel ? [{ at, panel, tuck: tuck?.length === 2 ? tuck : null, short: false }] : []; });
     type Stop = (typeof chapters)[number];
-    const draw = (stop: Stop, share: number) => { share *= stop.short ? .4 : 1; const lying = stop.at.firstElementChild; if (stop.tuck && lying instanceof HTMLElement) lying.style.transform = share > .001 ? `translate(${(stop.tuck[0] * share * 100).toFixed(2)}%,${(stop.tuck[1] * share * 150).toFixed(2)}%)` : ""; };
+    // Each frame the card's way is worked out in the shared frame's first half, where the page's layout is read for free (scroll-frame.ts);
+    // what it changes is kept here and done in the second half, with every other part's writes.
+    let writes: (() => void)[] = [];
+    const draw = (stop: Stop, share: number) => { share *= stop.short ? .4 : 1; const lying = stop.at.firstElementChild, tuck = stop.tuck; if (tuck && lying instanceof HTMLElement) writes.push(() => { lying.style.transform = share > .001 ? `translate(${(tuck[0] * share * 100).toFixed(2)}%,${(tuck[1] * share * 150).toFixed(2)}%)` : ""; }); };
     const drawn = (to: Pose, stop: Stop): Pose => { if (!stop.tuck) return to; const slant = to.r * Math.PI / 180, far = stop.short ? .4 : 1, x = stop.tuck[0] * to.w * far, y = stop.tuck[1] * to.w * far; return { ...to, x: to.x + x * Math.cos(slant) - y * Math.sin(slant), y: to.y + x * Math.sin(slant) + y * Math.cos(slant) }; };
     const hand = station("hand"), end = station("end"), journey = world.querySelector<HTMLElement>(".fresco-journey"), frame = world.querySelector<HTMLElement>(".fresco-frame"), stage = world.querySelector<HTMLElement>(".painted-world-viewport");
     if (chapters.length < 4 || !end) return;
@@ -38,9 +42,9 @@ export function ThreadCard() {
       // A turned box reports the rectangle around it; the card's own width is found back from that.
       const width = (box.width * Math.cos(slant) - box.height * Math.sin(slant)) / Math.max(.2, Math.cos(2 * slant));
       return { x: box.left + box.width / 2, y: box.top + box.height / 2, w: width, r: turn, o: 1 }; };
-    let raf = 0, here: HTMLElement | null = null;
+    let here: HTMLElement | null = null;
     const update = () => {
-      raf = 0;
+      writes = [];
       const height = innerHeight;
       let pose: Pose | null = null, landed: HTMLElement | null = null, lift = 0, tone = 1;
       // From the open hand to the doors, and through them as they open.
@@ -52,7 +56,7 @@ export function ThreadCard() {
         const seam: Pose = { x: doors.left + doors.width / 2, y: doors.top + doors.height * .69, w: from.w * .62, r: -5, o: 1 };
         const sets = innerWidth <= 700 ? .5 : .45, out = clamp((entered - sets) / (.95 - sets)), through = smooth(clamp((-journey.getBoundingClientRect().top / height - 1.15) / .6));
         if (out > 0) { pose = between({ ...from, o: 0 }, seam, out); pose.o = 1 - through; pose.w *= 1 - through * .6; pose.y -= through * doors.height * .12; lift = Math.sin(out * Math.PI); tone = clamp(out * 2.5); }
-        hand.parentElement?.toggleAttribute("data-away", out > 0);
+        writes.push(() => hand.parentElement?.toggleAttribute("data-away", out > 0));
       }
       // Chapter by chapter: the card leaves one picture as the next comes into the window.
       let last: Pose = pose ? { ...pose, o: 0 } : { x: innerWidth / 2, y: -80, w: 96, r: 0, o: 0 };
@@ -101,24 +105,31 @@ export function ThreadCard() {
         if (down > .82 && down < 1) pose.y += Math.sin((down - .82) / .18 * Math.PI) * 5;
         lift = Math.sin(down * Math.PI); tone = 1; landed = down >= 1 ? end : null; lettered = true;
       }
-      element.toggleAttribute("data-lettered", lettered);
+      writes.push(() => element.toggleAttribute("data-lettered", lettered));
       // It never crosses the line under the fresco: it comes out onto the paper below it.
       const caption = world.querySelector<HTMLElement>(".fresco-caption")?.getBoundingClientRect();
       if (pose && caption && caption.bottom > 0 && chapters[0].panel.getBoundingClientRect().top < height) pose.o *= clamp((pose.y - pose.w / 3 - caption.bottom - 12) / 36);
-      if (landed !== here) { here?.classList.remove("is-here"); landed?.classList.add("is-here"); here = landed; }
       const shown = pose && !landed && pose.o > .01 && pose.y > -pose.w && pose.y < height + pose.w;
-      element.style.opacity = shown && pose ? pose.o.toFixed(3) : "0";
-      if (shown && pose) {
-        element.style.transform = `translate3d(${pose.x.toFixed(1)}px,${pose.y.toFixed(1)}px,0) rotate(${pose.r.toFixed(2)}deg) scale(${(pose.w / 240).toFixed(4)})`;
-        element.style.setProperty("--lift", lift.toFixed(3));
-        element.style.setProperty("--tone", tone.toFixed(3));
-      }
+      const at = pose, lands = landed;
+      writes.push(() => {
+        if (lands !== here) { here?.classList.remove("is-here"); lands?.classList.add("is-here"); here = lands; }
+        element.style.opacity = shown && at ? at.o.toFixed(3) : "0";
+        if (shown && at) {
+          element.style.transform = `translate3d(${at.x.toFixed(1)}px,${at.y.toFixed(1)}px,0) rotate(${at.r.toFixed(2)}deg) scale(${(at.w / 240).toFixed(4)})`;
+          element.style.setProperty("--lift", lift.toFixed(3));
+          element.style.setProperty("--tone", tone.toFixed(3));
+        }
+      });
     };
-    const request = () => { if (!raf) raf = requestAnimationFrame(update); };
+    // Answers whether the card moved, so it is asked once more and settles on where this frame's writes have put its places.
+    let drawnAs = "";
+    const write = () => { for (const change of writes) change(); writes = []; const now = `${element.style.transform}|${element.style.opacity}`; const moved = now !== drawnAs; drawnAs = now; return moved; };
+    const { ask: request, drop } = frameStep(update, write);
     addEventListener("scroll", request, { passive: true });
     addEventListener("resize", request);
     update();
-    return () => { cancelAnimationFrame(raf); removeEventListener("scroll", request); removeEventListener("resize", request); here?.classList.remove("is-here"); world.classList.remove("thread-live"); };
+    write();
+    return () => { drop(); removeEventListener("scroll", request); removeEventListener("resize", request); here?.classList.remove("is-here"); world.classList.remove("thread-live"); };
   }, [world]);
   /* eslint-disable @next/next/no-img-element */
   return <><span ref={mark} hidden />{world && createPortal(<div ref={card} className="thread-card" aria-hidden="true"><i /><img src="/assets/home/card-480.webp" width={480} height={320} alt="" decoding="async" /><img className="thread-card-light" src="/assets/home/card-light-480.webp" width={480} height={320} alt="" decoding="async" /><CardFace /></div>, world)}</>;

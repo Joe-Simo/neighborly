@@ -1,5 +1,6 @@
 "use client";
 
+import { frameStep } from "@/lib/scroll-frame";
 import { Fragment, useEffect, useRef } from "react";
 import { HomeYear } from "./home-year";
 import { PageTurn } from "./chapter-sheets";
@@ -60,31 +61,38 @@ export function ReliefStory() {
     const panels = [...element.querySelectorAll<HTMLElement>(".relief-panel")];
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const height = innerHeight;
+    // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
+    let height = innerHeight, near = false, boxes: DOMRect[] = [];
+    const read = () => {
+      height = innerHeight;
       const bounds = element.getBoundingClientRect();
-      if (bounds.bottom < -height || bounds.top > height * 2) return;
-      for (const panel of panels) {
+      near = !(bounds.bottom < -height || bounds.top > height * 2);
+      boxes = near ? panels.map(panel => panel.getBoundingClientRect()) : [];
+    };
+    const update = () => {
+      if (!near) return;
+      for (const [index, panel] of panels.entries()) {
         // The chapter found under a turned page is already lying in its place: the turn sets its act.
         if (panel.dataset.turn === "to") continue;
-        const box = panel.getBoundingClientRect();
+        const box = boxes[index];
         const holds = box.height > height * 1.2;
         // Coming in: 0 as the chapter's top enters the window, 1 once it reaches the top (or, where nothing holds, once the chapter is centred).
         const rest = holds ? 0 : (height - box.height) / 2;
         const e = Math.max(0, Math.min(1, (height * .92 - box.top) / Math.max(1, height * .92 - rest)));
         // Holding: the chapter's one act, done by 85% of the hold so the finished picture rests before the page moves on.
         const h = holds ? Math.max(0, Math.min(1, -box.top / Math.max(1, (box.height - height) * .85))) : Math.max(0, Math.min(1, (e - .35) / .65));
-        panel.style.setProperty("--e", (1 - (1 - e) ** 3).toFixed(4));
-        panel.style.setProperty("--h", (h * h * (3 - 2 * h)).toFixed(4));
+        // Written only when changed: a chapter at rest, or one not yet reached, is not styled again on every frame of the scroll.
+        const nowE = (1 - (1 - e) ** 3).toFixed(4), nowH = (h * h * (3 - 2 * h)).toFixed(4);
+        if (panel.style.getPropertyValue("--e") !== nowE) panel.style.setProperty("--e", nowE);
+        if (panel.style.getPropertyValue("--h") !== nowH) panel.style.setProperty("--h", nowH);
       }
     };
-    const request = () => { if (!raf) raf = requestAnimationFrame(update); };
+    const { ask: request, drop } = frameStep(read, update);
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("resize", request);
+    read();
     update();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
+    return () => { drop(); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
   }, []);
   return <section ref={root} className="relief-story" aria-label="What a conference does with Kind Helps">
     {story.map((part, index) => <article key={part.picture} className="relief-panel" data-chapter={part.picture} data-side={index % 2 ? "left" : "right"}>

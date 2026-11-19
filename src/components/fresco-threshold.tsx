@@ -9,6 +9,7 @@ import { CourtyardAssembly } from "./courtyard-assembly";
 import { CourtyardDoor, goInTurning } from "./courtyard-door";
 import { useRouter } from "next/navigation";
 import { useSettled } from "@/lib/use-settled";
+import { frameStep } from "@/lib/scroll-frame";
 import "./relief-journey.css";
 import { CutHead } from "@/components/cut-heads";
 
@@ -80,17 +81,21 @@ export function FrescoThreshold() {
     const track = journey.current, host = stage.current, wall = frame.current, scene = view.current;
     if (!track || !host || !wall || !scene) return;
     const media = matchMedia("(prefers-reduced-motion: reduce)");
-    let raf = 0;
+    // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
+    let width = 0, height = 0, trackTop = 0;
+    const read = () => { width = host.clientWidth; height = host.clientHeight; trackTop = track.getBoundingClientRect().top; };
     let placed: { size: string; top: number } | undefined;
     // Where the invitation's words end, measured once for each size of window (they never move within one), never on the frames of the walk.
     let words: { size: string; foot: number } | undefined;
+    // The parts drawn with each of the walk's values (relief-journey.css). The stage keeps its own copy of the values scripts read from it; those values are registered not to pass down (relief-journey.css).
+    const all = (selector: string) => [...host.querySelectorAll<HTMLElement>(selector)];
+    const drawnBy: Record<string, HTMLElement[]> = { "--door": all(".fresco-doors i"), "--grow": [wall, ...all(".fresco-doors, .fresco-ring")], "--inside": all(".fresco-doors i, .fresco-ring, .fresco-face"), "--come": all(".fresco-slot>span, .fresco-slip"), "--stand": all(".fresco-standing") };
+    const put = (name: string, value: string) => { if (name !== "--stand") host.style.setProperty(name, value); for (const part of drawnBy[name] ?? []) part.style.setProperty(name, value); };
     const update = () => {
-      raf = 0;
-      const width = host.clientWidth, height = host.clientHeight;
       // A phone on its side is wide but short: it takes the wide layout with a lower fresco.
       const short = height <= 500 && width > height;
       const phone = width <= 899 && !short;
-      const travelled = -track.getBoundingClientRect().top / Math.max(1, height);
+      const travelled = -trackTop / Math.max(1, height);
       const door = media.matches ? Number(travelled > 1.5) : ease(clamp((travelled - doorsOpen[0]) / (doorsOpen[1] - doorsOpen[0])));
       // With Reduce Motion there is no walk: the doors open onto the framed courtyard.
       const through = media.matches ? 0 : ease(clamp((travelled - walkThrough[0]) / (walkThrough[1] - walkThrough[0])));
@@ -139,22 +144,22 @@ export function FrescoThreshold() {
       scene.style.scale = String(cover);
       // The painting is centred in the opening by translate too, from the opening's corner.
       scene.style.translate = `calc(-50% + ${(w / 2 - held - pan).toFixed(2)}px) calc(-50% + ${(h / 2 + lift).toFixed(2)}px)`;
-      host.style.setProperty("--door", door.toFixed(4));
+      put("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
-      host.style.setProperty("--grow", grow.toFixed(4));
+      put("--grow", grow.toFixed(4));
       // How far inside the courtyard the visitor stands: the frame, the doors and the wall are gone at 1.
-      host.style.setProperty("--inside", inside.toFixed(4));
+      put("--inside", inside.toFixed(4));
       host.style.setProperty("--standing", standingIn.toFixed(4));
       // The doors' headline is drawn up out of two cuts in the wall's paper, a line at a time, as the opening is lifted off the wall; with Reduce Motion it is simply there.
       // On a narrow window the headline sits under the opening's sheet until it has cleared, so its cut comes later, ending as the doors begin to open.
       const come = media.matches ? 1 : phone ? clamp((travelled - .8) / .35) : clamp((travelled - .35) / .5);
-      host.style.setProperty("--come", come.toFixed(4));
+      put("--come", come.toFixed(4));
       // A line part way through its cut keeps the cut's edge and shade beside it, so no letter is ever seen without the paper it comes from.
       [0, 1].forEach(line => { const through = clamp((come - line * .3) / .7); host.dataset[`slip${line}`] = String(through > 0 && through < 1); });
       // Standing in the courtyard, the words are a strip of paper laid on the paving that stands up as the walk ends, and lies back down as the courtyard draws back into its frame.
       // It is never seen more than 60° off upright: hidden until the walk is past halfway, then stood up from 60°.
-      host.style.setProperty("--stand", ease(clamp((inside - .55) / .45)).toFixed(4));
+      put("--stand", ease(clamp((inside - .55) / .45)).toFixed(4));
       host.dataset.standing = String(inside > .55);
       host.dataset.stood = String(inside >= 1);
       host.dataset.inside = String(inside > .98);
@@ -175,24 +180,27 @@ export function FrescoThreshold() {
       const rested = grow > .999 && inside < .001 && !!line;
       const size = `${width}x${height}`;
       if (rested && placed?.size !== size) {
-        host.style.setProperty("--caption-top", `${captionTop}px`);
+        line.style.setProperty("--caption-top", `${captionTop}px`);
         const gap = line.getBoundingClientRect().top - wall.getBoundingClientRect().bottom;
         placed = { size, top: captionTop + Math.max(0, 12 - gap) };
       }
       if (!rested) placed = undefined;
       if (placed) captionTop = placed.top;
-      host.style.setProperty("--caption-top", `${captionTop}px`);
+      // Written on the line alone, and only when it has moved: it is the only part drawn with it, and it is placed by translate, so no frame lays out the stage.
+      const top = `${captionTop.toFixed(1)}px`;
+      if (line && line.style.getPropertyValue("--caption-top") !== top) line.style.setProperty("--caption-top", top);
       // Clear or hidden, never half under the frame: the line is shown only once the frame has rested and it has been placed, in place, with no fade.
       host.dataset.captioned = String(rested);
       setOpen(grow > .5 || inside > .5);
     };
-    const request = () => { if (!raf) raf = requestAnimationFrame(update); };
+    const { ask: request, drop } = frameStep(read, update);
     const observer = new ResizeObserver(request);
     observer.observe(host);
     window.addEventListener("scroll", request, { passive: true });
     media.addEventListener("change", request);
+    read();
     update();
-    return () => { cancelAnimationFrame(raf); observer.disconnect(); window.removeEventListener("scroll", request); media.removeEventListener("change", request); };
+    return () => { drop(); observer.disconnect(); window.removeEventListener("scroll", request); media.removeEventListener("change", request); };
   }, []);
   // Through the doors, the keyboard and a screen reader are set down on the courtyard's own line, told where they now stand,
   // and not left on a button that is gone.
@@ -266,11 +274,12 @@ export function FrescoThreshold() {
       <div className="fresco-invitation" aria-hidden={open}>
         {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
         <p className="fresco-kicker">One call. Two at the door.</p>
-        <CutHead><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span></span></CutHead>
+        <CutHead><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span><i className="fresco-slip" /></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span><i className="fresco-slip" /></span></CutHead>
         <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
       </div>
       <div ref={frame} className="fresco-frame">
+        <i className="fresco-ring" aria-hidden="true" />
         <div className="fresco-wall">
           <div ref={view} className="fresco-view">
             {/* The courtyard is one painting, seen once. A native image keeps it whole without the living layers. */}
@@ -281,6 +290,7 @@ export function FrescoThreshold() {
             {/* The hall's open arch in the painting is the way into Kind Helps, turned to like a page. */}
             <CourtyardDoor label="Enter Kind Helps" opening="Opening…" here={open} />
           </div>
+          <i className="fresco-face" aria-hidden="true" />
         </div>
         <div className="fresco-doors" aria-hidden="true"><i /><i /></div>
       </div>

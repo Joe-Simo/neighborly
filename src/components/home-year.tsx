@@ -1,5 +1,6 @@
 "use client";
 
+import { frameStep } from "@/lib/scroll-frame";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { whenIdle } from "@/lib/idle";
 import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
@@ -62,9 +63,10 @@ export function HomeYear() {
     const stand = () => { cells.forEach(cell => { cell.style.removeProperty("--fold"); cell.style.removeProperty("--laid"); }); list.dataset.folding = "false"; };
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still) { stand(); return () => window.removeEventListener(YES_GIVEN, given); }
-    let frame = 0, near = false, last = "";
+    let near = false, last = "", listTop = 0, cellBoxes: DOMRect[] = [];
+    // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
+    const read = () => { listTop = list.getBoundingClientRect().top; cellBoxes = panel.dataset.turn === "to" ? cells.map(cell => cell.getBoundingClientRect()) : []; };
     const follow = () => {
-      frame = 0;
       // No figure is ever seen more than 60° off upright: each tab lies at 60° until it is in sight, then stands.
       // Under a turned page (chapter-sheets.tsx sets --turned), a tab is in sight once the crease, travelling from the lower right corner
       // along the window's diagonal, has passed its own nearest corner; it stands by the time the crease is a quarter of the way past its far one.
@@ -72,12 +74,12 @@ export function HomeYear() {
       const turned = panel.dataset.turn === "to" ? panel.style.getPropertyValue("--turned") : "";
       const w = innerWidth, h = innerHeight, far = Math.hypot(w, h);
       const along = (x: number, y: number) => ((w - x) * w + (h - y) * h) / far;
-      const rise = Math.max(0, Math.min(1, (h - list.getBoundingClientRect().top) / (h * .55)));
+      const rise = Math.max(0, Math.min(1, (h - listTop) / (h * .55)));
       const folds = cells.map((cell, index) => {
         let t: number;
         if (turned && Number(turned) >= 1) t = 1;
         else if (turned) {
-          const box = cell.getBoundingClientRect(), gone = far * Number(turned), from = along(box.right, box.bottom), to = along(box.left, box.top) + far * .25;
+          const box = cellBoxes[index] ?? cell.getBoundingClientRect(), gone = far * Number(turned), from = along(box.right, box.bottom), to = along(box.left, box.top) + far * .25;
           t = (gone - from) / (to - from);
         } else t = (rise - .15 - index * .1) / .45;
         t = Math.max(0, Math.min(1, t));
@@ -96,13 +98,15 @@ export function HomeYear() {
           if (sheets) cell.style.setProperty("--laid", String(Math.round(sheets * (folds[index] - upright) / (1 - upright))));
         });
       }
-      if (near) frame = requestAnimationFrame(follow);
+      if (near) step.ask();
     };
-    const watch = new IntersectionObserver(entries => { near = entries.some(entry => entry.isIntersecting); if (near && !frame) frame = requestAnimationFrame(follow); });
+    const step = frameStep(read, follow);
+    const watch = new IntersectionObserver(entries => { near = entries.some(entry => entry.isIntersecting); if (near) step.ask(); });
     // The figures themselves are watched, not their chapter: held under a turned page, they can be in the window while the chapter's own box is not.
     watch.observe(list);
+    read();
     follow();
-    return () => { cancelAnimationFrame(frame); watch.disconnect(); window.removeEventListener(YES_GIVEN, given); };
+    return () => { step.drop(); watch.disconnect(); window.removeEventListener(YES_GIVEN, given); };
   }, []);
   return <>
     <dl className="home-year" ref={root}>
