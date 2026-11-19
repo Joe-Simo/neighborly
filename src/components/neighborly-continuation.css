@@ -6,7 +6,7 @@
 .has-reveal [data-reveal]:has(a,button){translate:none}
 
 /* The ending: what Kind Helps is, and the way in. It closes on the name itself, set across the paper. */
-.neighborly-together{position:relative;z-index:1;isolation:isolate;display:flex;flex-direction:column;gap:clamp(28px,3.4vw,52px);padding:clamp(64px,7vw,110px) 7% 0;outline:0}
+.neighborly-together{position:relative;z-index:1;isolation:isolate;display:flex;flex-direction:column;gap:clamp(28px,3.4vw,52px);padding:clamp(72px,12svh,128px) 7% 0;outline:0}
 .neighborly-together-paper{position:absolute;inset:0;z-index:-1;background:center bottom/cover no-repeat;-webkit-mask-image:linear-gradient(transparent,#000 34%);mask-image:linear-gradient(transparent,#000 34%)}
 .neighborly-together-paper[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
 .neighborly-together h2{margin:0;font:400 clamp(40px,4.8cqw,88px)/var(--lead-2) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-2)}
