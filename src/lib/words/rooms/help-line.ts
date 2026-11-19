@@ -28,7 +28,7 @@ export const en = (t: Terms, place: string) => ({
   },
   /** What went wrong, and what is still true. */
   refused: {
-    discard: "The draft couldn’t be discarded.",
+    discard: "The draft couldn’t be discarded. It is still here; try again.",
     /** `{reason}` is the refusal as the backend gave it. */
     stillOnSheet: "{reason} The draft is still on its sheet.",
     draft: "The assistant couldn’t draft this request. Nothing was saved.",
@@ -150,7 +150,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     neighborAdded: `Se agregó al ${t.neighbor}. Esta llamada ya está en su registro.`,
   },
   refused: {
-    discard: "No se pudo descartar el borrador.",
+    discard: "No se pudo descartar el borrador. Sigue aquí; inténtalo otra vez.",
     stillOnSheet: "{reason} El borrador sigue en su hoja.",
     draft: "El asistente no pudo preparar el borrador de esta petición. No se guardó nada.",
     stillHere: "El borrador sigue aquí. Elige Cambiar para corregirlo.",

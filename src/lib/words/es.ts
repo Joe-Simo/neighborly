@@ -208,12 +208,12 @@ export function es(set: WordSet): Words {
       awaiting: (count) =>
         count === 1 ? "1 espera tu respuesta" : `${esN(count)} esperan tu respuesta`,
       fallbackTitle: "Petición para cubrir un turno",
-      unavailable: "No se pueden mostrar los detalles del compromiso",
+      unavailable: "La fecha no aparece. Pídesela a tu coordinador.",
       accept: "Aceptar",
       decline: "No puedo",
       accepted: "Compromiso aceptado. Ya está en tu lista.",
       acceptedUnder: (place: string) => `Compromiso aceptado. Está en ${place}.`,
-      declined: "Petición rechazada. No se agregó nada a tu plan.",
+      declined: "Petición rechazada. No se agregó nada a tu lista.",
     },
     detail: {
       cancelled:

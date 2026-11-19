@@ -211,12 +211,12 @@ export function en(set: WordSet) {
       title: "Your choice",
       awaiting: (count: number) => `${enN(count)} awaiting your reply`,
       fallbackTitle: "Cover request",
-      unavailable: "Commitment details unavailable",
+      unavailable: "The date isn’t showing. Ask your coordinator for it.",
       accept: "Accept",
       decline: "Decline",
       accepted: "Commitment accepted. It’s on your list.",
       acceptedUnder: (place: string) => `Commitment accepted. It’s in ${place}.`,
-      declined: "Request declined. Nothing was added to your plan.",
+      declined: "Request declined. Nothing was added to your list.",
     },
     detail: {
       cancelled:
