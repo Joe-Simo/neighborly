@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { LiveField } from "@/components/workspace/primitives";
+import { LiveField, markWrong } from "@/components/workspace/primitives";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import {
@@ -306,7 +306,6 @@ export function RequestForm({
   const { pending, error, save } = useSave();
   const words = useWords();
   const w = words.rooms.helpLineForms.request;
-  const [amountError, setAmountError] = useState("");
   const [kind, setKind] = useState(start?.kind ?? "rent");
   // The shelf's kind that is chosen; null means a kind the shelf does not hold yet, named by hand.
   const [choice, setChoice] = useState<string | null>();
@@ -330,11 +329,11 @@ export function RequestForm({
     <form
       className="live-form help-form"
       onSubmit={async (event) => {
+        const form = event.currentTarget;
         const value = fieldsOf(event);
         const amountRequested = fromShelf ? 0 : cents(value("amount"));
-        if (amountRequested === null)
-          return setAmountError(w.amountNeeded);
-        setAmountError("");
+        if (amountRequested === null) markWrong(form, "amount", w.amountNeeded);
+        if (!form.checkValidity() || amountRequested === null) return;
         const details = {
           churchId,
           kind,
@@ -391,9 +390,7 @@ export function RequestForm({
             <Input
               name="amount"
               inputMode="decimal"
-              placeholder="450"
               required
-              aria-invalid={!!amountError}
               defaultValue={
                 typeof start?.amountRequested === "number"
                   ? (start.amountRequested / 100).toString()
@@ -493,7 +490,7 @@ export function RequestForm({
         </>
       )}
       <FormEnd
-        error={amountError || error}
+        error={error}
         pending={pending}
         submit={
           request
@@ -531,7 +528,6 @@ export function DecideForm({
   const [referred, setReferred] = useState<string[]>(request.referrals ?? []);
   const approving = decision === "approved";
   const { pending, error, save } = useSave(approving ? "decided" : "saved");
-  const [amountError, setAmountError] = useState("");
   const voucher = approving ? request.voucher : null;
   const shelf = useShelf(churchId, !!voucher);
   const w = useWords().rooms.helpLineForms.decide;
@@ -542,15 +538,14 @@ export function DecideForm({
     <form
       className="live-form help-form"
       onSubmit={async (event) => {
+        const form = event.currentTarget;
         const value = fieldsOf(event);
         const amountApproved =
           approving && !voucher ? cents(value("amount")) : null;
-        if (approving && !voucher && !amountApproved)
-          return setAmountError(w.amountNeeded);
+        if (approving && !voucher && !amountApproved) markWrong(form, "amount", w.amountNeeded);
         const places = [...referred, value("elsewhere")].filter(Boolean);
-        if (places.length > 4)
-          return setAmountError(w.tooManyPlaces);
-        setAmountError("");
+        if (places.length > 4) markWrong(form, "elsewhere", w.tooManyPlaces);
+        if (!form.checkValidity()) return;
         const outcome = await save(() =>
           decide({
             churchId,
@@ -596,7 +591,6 @@ export function DecideForm({
           <Input
             name="amount"
             inputMode="decimal"
-            aria-invalid={!!amountError}
             defaultValue={(request.amountRequested / 100).toString()}
           />
         </LiveField>
@@ -643,7 +637,7 @@ export function DecideForm({
         </LiveField>
       </fieldset>
       <FormEnd
-        error={amountError || error}
+        error={error}
         pending={pending}
         submit={approving ? w.approve : w.decline}
       />

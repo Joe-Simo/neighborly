@@ -11,7 +11,7 @@ import { LiveDialog } from "@/components/workspace/live-dialog";
 import { Input } from "@/components/ui/input";
 import { sayFailure } from "@/components/workspace/failure";
 import { DateField } from "@/components/workspace/date-field";
-import { LiveField, PaperScene } from "@/components/workspace/primitives";
+import { LiveField, markWrong, PaperScene } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { fill } from "@/lib/words/fill";
 import { LedgerLoading } from "@/components/workspace/treasury/ledger-view";
@@ -54,10 +54,10 @@ function VoucherForm({
       className="live-form"
       onSubmit={async (event) => {
         event.preventDefault();
-        if (!change)
-          return setError(w.wrong);
-        if (down && !note.trim())
-          return setError(w.sayWhy);
+        const form = event.currentTarget;
+        if (!change) markWrong(form, "count", w.wrong);
+        if (down && !note.trim()) markWrong(form, "note", w.sayWhy);
+        if (!form.checkValidity() || !change) return;
         setError("");
         setSaving(true);
         const refusal = await onSubmit({ item, change, date, note });
@@ -87,7 +87,6 @@ function VoucherForm({
             name="count"
             inputMode="numeric"
             autoComplete="off"
-            placeholder="20"
             value={count}
             onChange={(event) => setCount(event.target.value)}
             required

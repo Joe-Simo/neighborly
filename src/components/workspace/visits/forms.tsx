@@ -16,7 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace } from "@/components/workspace/context";
 import { DateField, TimeField } from "@/components/workspace/date-field";
-import { LiveField } from "@/components/workspace/primitives";
+import { LiveField, markWrong } from "@/components/workspace/primitives";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
 import { fileAway } from "@/components/workspace/visits/file-away";
@@ -376,15 +376,9 @@ export function WriteUpForm({
         const drove = String(data.get("drove") ?? "");
         // A field that can't be taken is said under that field, and the first one is put in focus (LiveField):
         // the box that says nothing was saved is kept for a save that truly failed.
-        const wrong = (name: string, said: string) => {
-          const control = form.elements.namedItem(name);
-          if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
-          control.setCustomValidity(said);
-          control.checkValidity();
-        };
-        if (hours === null || hours <= 0 || hours > 24) wrong("hours", text.problems.hours);
-        if (miles === null || miles > 1000) wrong("miles", text.problems.miles);
-        else if (miles > 0 && !drove) wrong("drove", text.problems.driver);
+        if (hours === null || hours <= 0 || hours > 24) markWrong(form, "hours", text.problems.hours);
+        if (miles === null || miles > 1000) markWrong(form, "miles", text.problems.miles);
+        else if (miles > 0 && !drove) markWrong(form, "drove", text.problems.driver);
         if (!form.checkValidity()) return;
         if (hours === null || miles === null) return;
         const driver = visit.visitors.find(
@@ -431,7 +425,6 @@ export function WriteUpForm({
             name="hours"
             inputMode="decimal"
             autoComplete="off"
-            onInput={(event) => event.currentTarget.setCustomValidity("")}
           />
         </LiveField>
         <LiveField label={text.miles} help={text.milesHelp} said={{ needed: text.problems.miles, neededCheck: text.problems.miles }}>
@@ -439,7 +432,6 @@ export function WriteUpForm({
             name="miles"
             inputMode="decimal"
             autoComplete="off"
-            onInput={(event) => event.currentTarget.setCustomValidity("")}
           />
         </LiveField>
       </div>
@@ -452,7 +444,6 @@ export function WriteUpForm({
           name="drove"
           defaultValue=""
           className="w-full"
-          onChange={(event) => event.currentTarget.setCustomValidity("")}
         >
           <NativeSelectOption value="" disabled>
             {text.chooseDrove}

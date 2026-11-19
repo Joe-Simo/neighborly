@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { DateField } from "@/components/workspace/date-field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useWorkspace } from "@/components/workspace/context";
-import { LiveField } from "@/components/workspace/primitives";
+import { LiveField, markWrong } from "@/components/workspace/primitives";
 import { parseCents } from "@/components/workspace/treasury/money";
 import {
   FormActions,
@@ -91,9 +91,10 @@ export function MoneyForm({
       className="live-form"
       onSubmit={async (event) => {
         event.preventDefault();
+        const form = event.currentTarget;
         const cents = parseCents(amount);
-        if (cents === null)
-          return setError(w.amountWrong);
+        if (cents === null) markWrong(form, "amount", w.amountWrong);
+        if (!form.checkValidity() || cents === null) return;
         setError("");
         setSaving(true);
         const refusal = await onSubmit({
@@ -197,7 +198,6 @@ export function MoneyForm({
             name="amount"
             inputMode="decimal"
             autoComplete="off"
-            placeholder="0.00"
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
             required
