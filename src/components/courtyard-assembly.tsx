@@ -77,14 +77,14 @@ export function CourtyardAssembly() {
   const width = innerWidth * devicePixelRatio > 1100 ? 1774 : 960;
   return <div ref={host} className="courtyard-assembly" aria-hidden="true">
     {/* eslint-disable-next-line @next/next/no-img-element -- the slots, cut from the sheets' own outlines, in register with them */}
-    <img src={`/assets/made/courtyard-slots-${width}.webp`} alt="" width={1774} height={887} decoding="async" />
+    <img src={`/assets/made/courtyard-slots-${width}.webp`} alt="" width={1774} height={887} loading="lazy" decoding="async" />
     {/* eslint-disable-next-line @next/next/no-img-element -- the sheets are cut at two widths and must stay in register with the painting, pixel for pixel */}
-    <img src={source(sheets[0], width)} alt="" width={1774} height={887} decoding="async" />
+    <img src={source(sheets[0], width)} alt="" width={1774} height={887} loading="lazy" decoding="async" />
     {/* Each nearer sheet with its shadow under it, both drawn and composited at their starting lie before anything plays. */}
     {sheets.slice(1).map(sheet => <span key={sheet} className="courtyard-rise">
       <i style={{ maskImage: `url(${source(sheet, width)})`, WebkitMaskImage: `url(${source(sheet, width)})` }} />
       {/* eslint-disable-next-line @next/next/no-img-element -- as above */}
-      <img src={source(sheet, width)} alt="" width={1774} height={887} decoding="async" />
+      <img src={source(sheet, width)} alt="" width={1774} height={887} loading="lazy" decoding="async" />
     </span>)}
   </div>;
 }
