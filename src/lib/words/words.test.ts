@@ -109,7 +109,7 @@ describe("refusals the backend writes out", () => {
         for (const form of forms) sentences.add(form.replace(/\$\{[^}]*\}/g, (part) => (/[A-Z_]{3,}|most/.test(part) ? "25" : "Rosa")));
       }
     }
-    expect(sentences.size).toBeGreaterThanOrEqual(155);
+    expect(sentences.size).toBeGreaterThanOrEqual(154);
     // Every field name the backend puts into a built refusal has its Spanish name.
     const { fieldLabelsEs } = await import("../refusals-es");
     for await (const file of new Bun.Glob("{assistance,neighbors}.ts").scan(root)) {

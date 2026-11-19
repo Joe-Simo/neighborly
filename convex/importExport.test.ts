@@ -368,7 +368,8 @@ describe("your files are kept to the people who may read neighbor records", () =
     await expect(as.mutation(api.importExport.importPayees, { churchId, rows: [] })).rejects.toThrow(refused);
     await expect(as.query(api.importExport.payees, { churchId })).rejects.toThrow(refused);
     await expect(as.query(api.importExport.checkMembers, { churchId, rows: [] })).rejects.toThrow();
-    await expect(as.query(api.importExport.exportPage, { churchId, file: "neighbors", cursor: null })).rejects.toThrow(refused);
+    const exported = await signedIn(t, ids.owner.userId).mutation(api.importExport.recordExport, { churchId });
+    await expect(as.query(api.importExport.exportPage, { churchId, exported, file: "neighbors", cursor: null })).rejects.toThrow(refused);
     await expect(as.mutation(api.importExport.recordExport, { churchId })).rejects.toThrow(refused);
     expect(await as.query(api.access.canOpenNeighborRecords, { churchId })).toBe(false);
   });
@@ -380,6 +381,7 @@ describe("your files are kept to the people who may read neighbor records", () =
       expect(await as(person).query(api.access.canOpenNeighborRecords, { churchId })).toBe(true);
       await expect(as(person).query(api.importExport.checkNeighbors, { churchId, rows: households })).resolves.toBeDefined();
     }
-    await expect(as(ids.owner).query(api.importExport.exportPage, { churchId, file: "neighbors", cursor: null })).resolves.toBeDefined();
+    const exported = await as(ids.owner).mutation(api.importExport.recordExport, { churchId });
+    await expect(as(ids.owner).query(api.importExport.exportPage, { churchId, exported, file: "neighbors", cursor: null })).resolves.toBeDefined();
   });
 });
