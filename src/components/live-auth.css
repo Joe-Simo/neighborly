@@ -23,6 +23,8 @@
   padding-top: max(32px, calc((100svh - 760px) / 2));
   background: var(--paper);
 }
+/* The wall runs to the window's edge: no scrollbar's place is kept beside it (the rooms keep theirs, paper.css). */
+html:has(.entry) { scrollbar-gutter: auto; }
 /* Room for a phone's keyboard: the page grows below by the keyboard's height while it is up. */
 .live-app:has(> .entry, .entry) { padding-bottom: var(--entry-keys, 0px); }
 .entry-sheet { --entry-top: env(safe-area-inset-top); }
