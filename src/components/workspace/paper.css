@@ -1068,7 +1068,10 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    needs and sets its words on its foot, the quiet link's too. From 1728px the second is the room's side column (week.tsx), and what is
    coming up has the measure to itself. */
 @media (min-width: 1100px) {
-  .week-columns:not([data-far]) { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); align-items: start; column-gap: 56px; }
+  .week-columns:not([data-far]) { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); grid-template-rows: auto auto; align-items: start; column-gap: 56px; }
+  /* The two heads share one row, so when either heading turns onto a second line both heads grow together and their
+     rules stay level. */
+  .week-columns:not([data-far]) > .live-section { grid-row: span 2; display: grid; grid-template-rows: subgrid; }
   .week-columns:not([data-far]) > .live-section > .live-section-head { min-height: 44px; align-items: flex-end; margin-bottom: 14px; }
   .week-columns:not([data-far]) > .live-section > .live-section-head > * { margin-block: 0; }
   /* The link keeps its 44px reach but sets its words at its foot, on the heading's line, not floating mid-height. */
