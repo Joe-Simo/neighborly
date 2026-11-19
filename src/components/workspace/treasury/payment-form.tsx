@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
-import { LiveField } from "@/components/workspace/primitives";
+import { LiveField, markWrong } from "@/components/workspace/primitives";
 import { fill } from "@/lib/words/fill";
 import { centsToInput, parseCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
@@ -39,19 +39,17 @@ export function PaymentForm({
   const [memo, setMemo] = useState("");
   const [checkNumber, setCheckNumber] = useState("");
   const [error, setError] = useState("");
-  const [amountWrong, setAmountWrong] = useState(false);
   const [saving, setSaving] = useState(false);
   return (
     <form
       className="live-form"
       onSubmit={async (event) => {
         event.preventDefault();
+        const form = event.currentTarget;
         const cents = parseCents(amount);
-        setAmountWrong(cents === null || cents > request.remaining);
-        if (cents === null)
-          return setError(w.amountWrong);
-        if (cents > request.remaining)
-          return setError(w.tooMuch(formatFigure(request.remaining)));
+        if (cents === null) markWrong(form, "amount", w.amountWrong);
+        else if (cents > request.remaining) markWrong(form, "amount", w.tooMuch(formatFigure(request.remaining)));
+        if (!form.checkValidity() || cents === null) return;
         setError("");
         setSaving(true);
         const refusal = await onSubmit({ amount: cents, date, memo, checkNumber });
@@ -69,11 +67,7 @@ export function PaymentForm({
             inputMode="decimal"
             autoComplete="off"
             value={amount}
-            aria-invalid={amountWrong || undefined}
-            onChange={(event) => {
-              setAmount(event.target.value);
-              setAmountWrong(false);
-            }}
+            onChange={(event) => setAmount(event.target.value)}
             required
           />
         </LiveField>

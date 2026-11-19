@@ -161,6 +161,15 @@ export function FollowingHeading({ children, id }: { children: ReactNode; id?: s
   return <Heading ref={place} id={id}>{children}</Heading>;
 }
 
+/**
+ * Says what is wrong with one named field, on that field: the plum line under it, read out, with the first wrong field in
+ * focus (LiveField). The line goes once the person changes the answer. Call `form.checkValidity()` after marking.
+ */
+export function markWrong(form: HTMLFormElement, name: string, said: string) {
+  const control = form.elements.namedItem(name);
+  if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement) control.setCustomValidity(said);
+}
+
 export function LiveField({
   label,
   children,
@@ -202,7 +211,9 @@ export function LiveField({
       const time = control.classList.contains("live-time") && workspace?.words.dateField.chooseTime;
       const mine = ownWords.current;
       setNote(
-        !control.validity.valueMissing
+        control.validity.customError
+          ? control.validationMessage
+          : !control.validity.valueMissing
           ? (mine?.neededCheck ?? ("neededCheck" in said ? said.neededCheck : stateWords.neededCheck))
           : control instanceof HTMLSelectElement
             ? (mine?.neededChoice ?? (time ? `${time}.` : "neededChoice" in said ? said.neededChoice : stateWords.neededChoice))
@@ -212,6 +223,7 @@ export function LiveField({
     const settle = () => {
       for (const control of label.querySelectorAll<HTMLElement>(`[aria-describedby="${noteId}"]`)) {
         control.removeAttribute("aria-describedby");
+        if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement) control.setCustomValidity("");
         const before = control.dataset.needed;
         if (before === undefined) continue;
         if (before) control.setAttribute("aria-invalid", before);
