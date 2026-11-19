@@ -27,4 +27,4 @@ export const readersLanguage = `(${sayReadersLanguage})()`;
  * Arriving by a link inside the site runs no script, so there <PageLanguage /> or <ReaderLanguage /> gives the same
  * answer before the first paint.
  */
-export const firstLanguage = `(function(){try{var p=location.pathname;if(/^\\/privacidad(\\/|$)/.test(p)){document.documentElement.lang="es";return}if(/^\\/(app|offline)(\\/|$)/.test(p))${readersLanguage}}catch(e){}})()`;
+export const firstLanguage = `(function(){try{var p=location.pathname;if(/^\\/(privacidad|sobre)(\\/|$)/.test(p)){document.documentElement.lang="es";return}if(/^\\/(app|offline)(\\/|$)/.test(p))${readersLanguage}}catch(e){}})()`;

@@ -906,3 +906,21 @@
 /* The year is drawn whole in the first frame Reports is shown: no sheet fades in or drops, no bar or month grows.
    Figures stand at their value, so the paper that pictures them stands too. Opening a list on request still rises. */
 .report :is(.report-year-figure, .report-stack i, .report-year dd b, .report-month-bar span, .report-month-bar i, .report-key, .report-outcomes, .help-bar span, .report-tip) { animation: none; }
+
+/* High contrast (forced colors) clears every fill, so the months' strips, the outcomes and their keys drew nothing.
+   Here they are drawn in the system's own ink, and told apart by pattern rather than shade:
+   help paid is solid, the visits behind it an open strip; paid solid, approved striped, open dotted, declined
+   cross-hatched, closed an empty box. */
+@media (forced-colors: active) {
+  .report-month-bar, .report-month-bar :is(span, i), .report-key, .report-outcomes span, .report-legend li::before, .help-bar, .help-bar span { forced-color-adjust: none; }
+  .report-month-bar { filter: none; border-bottom-color: CanvasText; }
+  .report-month-bar span, .report-key, .help-bar span { background: CanvasText; }
+  .report-month-bar i, .report-key[data-of="visits"] { background: Canvas; border: 1px solid CanvasText; box-sizing: border-box; }
+  .help-bar { background: Canvas; border: 1px solid CanvasText; }
+  .report-outcomes span, .report-legend li::before { border: 1px solid CanvasText; box-sizing: border-box; }
+  .report-outcomes [data-is="paid"], .report-legend [data-is="paid"]::before { background: CanvasText; }
+  .report-outcomes [data-is="approved"], .report-legend [data-is="approved"]::before { background: repeating-linear-gradient(45deg, CanvasText 0 2px, Canvas 2px 5px); }
+  .report-outcomes [data-is="open"], .report-legend [data-is="open"]::before { background: radial-gradient(CanvasText 1px, Canvas 1.5px) 0 0 / 4px 4px; }
+  .report-outcomes [data-is="declined"], .report-legend [data-is="declined"]::before { background: repeating-linear-gradient(45deg, CanvasText 0 1px, transparent 1px 4px), repeating-linear-gradient(-45deg, CanvasText 0 1px, Canvas 1px 4px); }
+  .report-outcomes [data-is="closed"], .report-legend [data-is="closed"]::before { background: Canvas; }
+}

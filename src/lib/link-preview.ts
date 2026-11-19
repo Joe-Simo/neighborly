@@ -8,8 +8,8 @@ import type { Metadata } from "next";
  */
 const picture = { url: "/assets/link-card.jpg", width: 1200, height: 630 };
 const described = {
-  en: "Two hands in layered paper relief, one passing a small card to the open palm of the other, under the words kind helps.",
-  es: "Dos manos en relieve de papel: una le pasa una tarjeta pequeña a la palma abierta de la otra, bajo las palabras kind helps.",
+  en: "Two hands in layered paper relief: one reaches toward a small card resting on the open palm of the other, under the words kind helps.",
+  es: "Dos manos en relieve de papel: una se acerca a una tarjeta pequeña que descansa en la palma abierta de la otra, bajo las palabras kind helps.",
 };
 /** A preview names its language the way the apps that read it expect: language and region. */
 const locales = { en: "en_US", es: "es_LA" };

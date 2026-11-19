@@ -28,7 +28,7 @@ const en = {
     { title: "Why it exists", blocks: [
       "Kind Helps is for the volunteers of St. Vincent de Paul conferences: the people who answer the help line, visit homes and keep the books. Many conferences keep this work on paper, in spreadsheets or in ServWare. Kind Helps keeps it in one place, in English and Spanish, on a phone or at a desk.",
       [
-        { lead: "A neighbor’s dignity.", rest: "Help is paid to the landlord, utility or store, never to the neighbor. Visits are made in pairs. A family’s name, phone and address are taken out before a note reaches the assistant." },
+        { lead: "A neighbor’s dignity.", rest: "Help is paid to the landlord, utility or store, never to the neighbor. Visits are made in pairs. A neighbor’s name, phone and address are taken out before a note reaches the assistant." },
         { lead: "A volunteer’s time.", rest: "A call note becomes a draft request, and the pair for a visit is suggested from who is free." },
         { lead: "Honest books.", rest: "Every gift and payment is recorded. A mistake is put right with a new entry, never erased." },
       ],
@@ -58,10 +58,10 @@ const en = {
     ] },
     { title: "In English and Spanish", blocks: [
       "Every screen a volunteer uses is in English and Spanish, and so are the privacy page and this one. The Spanish is its own fixed words, written for each screen, not translated by a machine as the page opens, so the same button always says the same thing.",
-      "It was read and approved by the founder, who speaks Spanish. Where a page is a translation it says so at the top, and the English governs.",
+      "The first Spanish text was read and approved by the founder, who speaks Spanish. Where a page is a translation it says so at the top, and the English governs.",
     ] },
     { title: "Measured, not guessed", blocks: [
-      "The rule every change is held to: it is filmed at eight widths, from a 360‑pixel phone to a 1920‑pixel screen, and it lands only when no frame of that film runs over 33 milliseconds.",
+      "The rule every change that moves something is held to: it is filmed at eight widths, from a 360‑pixel phone to a 1920‑pixel screen, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
       [
         { lead: "Under a second.", rest: "The sample conference opens in about 0.85 seconds at desk width and 1.1 on a phone, measured on our test machine." },
         { lead: "Three frames.", rest: "On the same machine, the first scroll is answered by the third frame, or within 60 pixels." },
@@ -102,7 +102,7 @@ const es: typeof en = {
     { title: "Por qué existe", blocks: [
       "Kind Helps es para los voluntarios de las conferencias de San Vicente de Paúl: quienes atienden la línea de ayuda, visitan los hogares y llevan las cuentas. Muchas conferencias llevan este trabajo en papel, en hojas de cálculo o en ServWare. Kind Helps lo reúne en un solo lugar, en inglés y en español, en el teléfono o en el escritorio.",
       [
-        { lead: "La dignidad del vecino.", rest: "La ayuda se paga al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al vecino. Las visitas se hacen de dos en dos. El nombre, el teléfono y la dirección de una familia se quitan antes de que una nota llegue al asistente." },
+        { lead: "La dignidad del vecino.", rest: "La ayuda se paga al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al vecino. Las visitas se hacen de dos en dos. El nombre, el teléfono y la dirección de un vecino se quitan antes de que una nota llegue al asistente." },
         { lead: "El tiempo del voluntario.", rest: "La nota de una llamada se vuelve un borrador de petición, y la pareja para una visita se sugiere según quién está libre." },
         { lead: "Cuentas honradas.", rest: "Cada donativo y cada pago queda anotado. Un error se corrige con una anotación nueva, nunca se borra." },
       ],
@@ -120,7 +120,7 @@ const es: typeof en = {
       [
         { lead: "Ocre es esperar.", rest: "Una llamada aún sin devolver, una petición aún sin decidir, una sección que todavía se abre.", tone: "waiting" },
         { lead: "Ciruela es que algo está mal.", rest: "No hay rojo en ninguna parte. Un error se nombra con claridad, junto con la manera de corregirlo.", tone: "wrong" },
-        { lead: "Verde es hecho.", rest: "Una visita con sus notas, una factura pagada, una llamada devuelta.", tone: "done" },
+        { lead: "Verde es hecho.", rest: "Una visita con sus notas, un recibo pagado, una llamada devuelta.", tone: "done" },
       ],
       "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Las letras nunca miden menos de 13 píxeles en la aplicación, ni menos de 15 en páginas públicas como esta, donde solo los números de los capítulos miden 13.",
       "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
@@ -132,10 +132,10 @@ const es: typeof en = {
     ] },
     { title: "En inglés y en español", blocks: [
       "Cada pantalla que usa un voluntario está en inglés y en español, y también la página de privacidad y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
-      "Lo leyó y lo aprobó el fundador, que habla español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
+      "El primer texto en español lo leyó y lo aprobó el fundador, que habla español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
     { title: "Medido, no supuesto", blocks: [
-      "La regla que cumple cada cambio: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro de ese video pasa de 33 milisegundos.",
+      "La regla que cumple cada cambio que mueve algo: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
       [
         { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos 0.85 segundos en el ancho de escritorio y en 1.1 en un teléfono, medido en nuestra máquina de pruebas." },
         { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde antes del tercer cuadro, o dentro de 60 píxeles." },

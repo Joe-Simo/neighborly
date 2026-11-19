@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ReaderLanguage } from "@/components/reader-language";
 import { edgeWords } from "@/lib/edge-words";
 import { readersLanguage } from "@/lib/first-language";
-import { linkPreview } from "@/lib/link-preview";
+import { linkCardIn, linkPreview } from "@/lib/link-preview";
 import { EdgeSheet } from "@/components/edge-sheet";
 
 const lost = edgeWords.en.lostAbout;
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description: lost,
   // A dead link pasted into a chat says so, with the site's picture and name, and does not pass as the home page.
   openGraph: { ...linkPreview, title: edgeWords.en.lostTab, description: lost },
+  twitter: { ...linkCardIn("en"), title: edgeWords.en.lostTab, description: lost },
   robots: { index: false, follow: false },
 };
 
