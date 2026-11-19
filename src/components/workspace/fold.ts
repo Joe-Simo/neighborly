@@ -419,11 +419,16 @@ function spokenPlace() {
 }
 /** The shell calls this once it is drawn, so the region is waiting long before the first saved line. */
 export const readyToSpeak = () => void spokenPlace();
-/** Says a line to a screen reader without moving focus. The same words said twice are spoken twice. */
-export function speak(words: string) {
+/**
+ * Says a line to a screen reader without moving focus. The same words said twice are spoken twice.
+ * `unless` is asked again as the words go out: a line that has taken focus by then is read by that, not twice.
+ */
+export function speak(words: string, unless?: () => boolean) {
   const place = spokenPlace();
   place.textContent = "";
-  window.setTimeout(() => (place.textContent = words), 120);
+  window.setTimeout(() => {
+    if (!unless?.()) place.textContent = words;
+  }, 120);
 }
 
 /** What each saved line said when it took focus: every saying takes focus once. */
@@ -471,8 +476,10 @@ export function useSavedLine(
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       const now = line.current;
-      if (!now || now === document.activeElement) return;
-      speak(typeof of === "string" ? of : (now.textContent ?? ""));
+      // Focus can reach the line a moment after it is drawn (the room puts it there once the save is answered).
+      const focused = () => !!now && (now === document.activeElement || now.contains(document.activeElement));
+      if (!now || focused()) return;
+      speak(typeof of === "string" ? of : (now.textContent ?? ""), focused);
     });
     return () => cancelAnimationFrame(frame);
   }, [line, of]);

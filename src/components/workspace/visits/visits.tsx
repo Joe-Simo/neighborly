@@ -355,7 +355,7 @@ export function VisitsDone({
   return (
     <div
       className={seen ? "live-success help-done visits-done paper-settle" : "sr-only"}
-      role="status"
+      // No live role: the line takes focus and is read by that, once.
       tabIndex={-1}
       ref={line}
     >
