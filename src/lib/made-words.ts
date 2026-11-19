@@ -4,7 +4,7 @@ import type { Language } from "@/lib/words";
 type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
-type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" };
+type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" | "process" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
@@ -48,6 +48,17 @@ const en = {
     ],
     page: "The page",
     note: "Spacing enlarged; each shadow is the app’s own, from the relief tokens.",
+  },
+  process: {
+    before: "Before",
+    after: "After",
+    pairs: [
+      { key: "end", why: "On a phone, the last screen cut the closing off below its heading. Now the painting, its words and both ways in end whole together.", alt: ["The home page’s last screen on a phone: the painting and “Bring this to your people”, with the links below cut off at the edge.", "The same screen after the change: the painting, the heading and both links whole on one screen."] },
+      { key: "words", why: "The display serif is tracked tight, and the space between words closed with it until “How we” read “Howwe”. A word space was given back to every heading.", alt: ["The page’s heading, How we made it, with the words nearly touching.", "The same heading with a clear space between each word."] },
+      { key: "relief", why: "Each room had grown its own shadow, tone and edge. Every raised surface now takes one of three heights from one scale.", alt: ["The home page’s room cards on a cream tone with a brown edge.", "The same cards on the app’s one paper tone and edge, with its card shadow."] },
+      { key: "slip", why: "A slip on A week had its own off-white and brown ink. It now lies on the paper as every slip in the app does.", alt: ["A day’s square on A week, in its own off-white with a brown shadow.", "The same square as a slip, in the paper tone with the slip shadow."] },
+    ],
+    source: "Source: the design reviews of 19 November 2026, each pair taken from the running site.",
   },
   frameStrip: {
     caption: "A scroll down this page on the Mac, frame by frame",
@@ -99,6 +110,9 @@ const en = {
     { title: "In English and Spanish", blocks: [
       "Every screen a volunteer uses is in English and Spanish, and so are the privacy page and this one. The Spanish is its own fixed words, written for each screen, not translated by a machine as the page opens, so the same button always says the same thing.",
       "The first Spanish text was read and approved by the founder, who speaks Spanish. Where a page is a translation it says so at the top, and the English governs.",
+    ] },
+    { title: "Drawn, judged, redrawn", table: "process", blocks: [
+      "Every screen was drawn, then judged against the rules above, then drawn again. These are four real pairs from this week’s reviews, each taken from the site before and after one change.",
     ] },
     { title: "Measured, not guessed", table: "frames", blocks: [
       "The rule every change that moves something is held to: it is filmed at eight widths, from a 360‑pixel phone to a 1920‑pixel screen, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
@@ -159,6 +173,17 @@ const es: typeof en = {
     page: "La página",
     note: "Separación ampliada; cada sombra es la de la aplicación, de los tokens de relieve.",
   },
+  process: {
+    before: "Antes",
+    after: "Después",
+    pairs: [
+      { key: "end", why: "En el teléfono, la última pantalla cortaba el cierre debajo de su título. Ahora la pintura, sus palabras y las dos entradas terminan enteras juntas.", alt: ["La última pantalla de la portada en un teléfono: la pintura y “Bring this to your people”, con los enlaces de abajo cortados en el borde.", "La misma pantalla después del cambio: la pintura, el título y los dos enlaces enteros en una sola pantalla."] },
+      { key: "words", why: "La serif de los títulos va muy apretada, y el espacio entre palabras se cerró con ella hasta que “How we” se leía “Howwe”. Cada título recuperó su espacio entre palabras.", alt: ["El título de la página, How we made it, con las palabras casi tocándose.", "El mismo título con un espacio claro entre cada palabra."] },
+      { key: "relief", why: "Cada sección tenía su propia sombra, tono y borde. Ahora toda superficie que se levanta toma una de tres alturas de una sola escala.", alt: ["Las tarjetas de las secciones en la portada, en tono crema con borde marrón.", "Las mismas tarjetas en el único tono y borde de papel de la aplicación, con su sombra de tarjeta."] },
+      { key: "slip", why: "Un papelito de Una semana tenía su propio blanco y tinta marrón. Ahora se apoya en el papel como todos los papelitos de la aplicación.", alt: ["El recuadro de un día en Una semana, en su propio blanco con sombra marrón.", "El mismo recuadro como papelito, en el tono del papel con la sombra de papelito."] },
+    ],
+    source: "Fuente: las revisiones de diseño del 19 de noviembre de 2026, cada par tomado del sitio en funcionamiento.",
+  },
   frameStrip: {
     caption: "Un desplazamiento por esta página en la Mac, cuadro a cuadro",
     widths: { "1440": "A 1440 píxeles", "390": "A 390 píxeles, con el procesador cuatro veces más lento" },
@@ -207,6 +232,9 @@ const es: typeof en = {
     { title: "En inglés y en español", blocks: [
       "Cada pantalla que usa un voluntario está en inglés y en español, y también la página de privacidad y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
       "El primer texto en español lo leyó y lo aprobó el fundador, que habla español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
+    ] },
+    { title: "Dibujado, juzgado, redibujado", table: "process", blocks: [
+      "Cada pantalla se dibujó, se juzgó con las reglas de arriba y se volvió a dibujar. Estos son cuatro pares reales de las revisiones de esta semana, tomados del sitio antes y después de un cambio.",
     ] },
     { title: "Medido, no supuesto", table: "frames", blocks: [
       "La regla que cumple cada cambio que mueve algo: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",

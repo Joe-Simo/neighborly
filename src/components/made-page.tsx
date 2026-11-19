@@ -16,6 +16,7 @@ import "@/components/public-page.css";
 import { CutHead } from "@/components/cut-heads";
 import { BookLeaves } from "@/components/book-leaves";
 import { MadeFrames } from "@/components/made-frames";
+import { MadeProcess } from "@/components/made-process";
 import { MadeAnatomy } from "@/components/made-anatomy";
 import { MadeChecked } from "@/components/made-checked";
 import "@/components/made-book.css";
@@ -70,6 +71,7 @@ export function MadePage({ language }: { language: Language }) {
             <figcaption>{said.evalTable.source}</figcaption>
           </figure>}
           {table === "frames" && <MadeFrames said={said.frameStrip} language={language} />}
+          {table === "process" && <MadeProcess said={said.process} />}
           {table === "anatomy" && <MadeAnatomy said={said.anatomy} />}
           {/* eslint-disable-next-line @next/next/no-img-element -- a 960px working file shown as it is */}
           {figure && <figure className="public-made-figure"><img src={figure.src} alt={figure.alt} width={960} height={480} loading="lazy" decoding="async" /><figcaption>{figure.caption}</figcaption></figure>}
