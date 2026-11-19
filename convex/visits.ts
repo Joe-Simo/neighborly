@@ -471,7 +471,7 @@ export const writeUp = mutation({
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
     const visit = await openVisit(ctx, args.churchId, args.visitId);
-    if (visit.status !== "scheduled") throw new ConvexError("This visit is already written up or was cancelled.");
+    if (visit.status !== "scheduled") throw new ConvexError("This visit is already written up or was canceled.");
     const notes = args.notes.trim();
     if (!notes) throw new ConvexError("Write a few words about what you found.");
     if (!Number.isFinite(args.hours) || args.hours <= 0 || args.hours > 24) throw new ConvexError("Enter the hours the visit took, such as 1.5.");
