@@ -313,7 +313,7 @@ export function es(set: WordSet): Words {
     people: {
       roles: { owner: "Responsable", coordinator: "Coordinador", member: "Miembro" },
       removed: "Sin acceso",
-      waiting: "Aún no está listo para servir",
+      waiting: "Aún no puede servir",
     },
     teams: {
       noDescription: "Un equipo donde hay lugar para ayudar.",
@@ -390,7 +390,7 @@ export function es(set: WordSet): Words {
         [refusals.noMeetingInvitation]: "No se encontró esa invitación a la reunión.",
         ...serverRefusalsEs,
         ...Object.fromEntries(Object.entries(serverRefusalsPlain).map(([sentence, said]) => [sentence, said.es]))
-      }).map(([sentence, said]) => [sentence, notFound.test(sentence) ? `${said} ${nextStep.es}` : said])),
+      }).map(([sentence, said]) => [sentence, notFound.test(sentence) && !said.endsWith(nextStep.es) ? `${said} ${nextStep.es}` : said])),
       refusedLike: serverRefusalPatternsEs,
     },
     visits: {
