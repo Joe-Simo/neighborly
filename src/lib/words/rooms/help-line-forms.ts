@@ -162,7 +162,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     payee: "A quién se le paga",
     payees: { landlord: "Arrendador", utility: "Compañía de servicios", vendor: "Tienda u otro negocio" },
     payeeName: "Su nombre",
-    payeeNote: `Los pagos van al arrendador, a la compañía de servicios o a la tienda, nunca al ${t.neighbor}.`,
+    payeeNote: `Los pagos van al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al ${t.neighbor}.`,
     saveChanges: "Guardar cambios",
     saveDraft: "Guardar esta petición",
     save: "Guardar petición",

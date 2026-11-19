@@ -98,7 +98,7 @@ export function es(set: WordSet): Words {
       more: {
         load: (what) => `Cargar más ${what}`,
         loading: (what) => `Cargando ${what}…`,
-        what: { commitments: "compromisos", people: "personas", invitations: "invitaciones", teams: "equipos", announcements: "avisos", cover: "pedidos de reemplazo", timeOff: "días libres", availability: "disponibilidad", tasks: "tareas", meetings: "reuniones" },
+        what: { commitments: "compromisos", people: "personas", invitations: "invitaciones", teams: "equipos", announcements: "avisos", cover: "peticiones para cubrir turnos", timeOff: "días libres", availability: "disponibilidad", tasks: "tareas", meetings: "reuniones" },
       },
       limited: "Algunas listas muestran solo una parte. Usa Cargar más en la sección correspondiente para ver el resto.",
     },
@@ -365,7 +365,7 @@ export function es(set: WordSet): Words {
       updated: "Actualizado.",
       failed: "No se pudo guardar el cambio. Inténtalo de nuevo.",
       refused: {
-        [refusals.away]: "Ese día figuras como ausente. Cambia tus días libres o di que no puedes tomar este.",
+        [refusals.away]: "Ese día lo marcaste como libre. Cambia tus días libres o di que no puedes tomar este.",
         [refusals.busy]: "Ya tienes un compromiso a esa hora. Di que no puedes tomar este o pide al coordinador que lo cambie.",
         [refusals.changed]: "Este compromiso cambió. Revísalo de nuevo.",
         [refusals.changedOrStarted]: "El compromiso cambió o ya empezó. Revísalo de nuevo.",
@@ -542,7 +542,7 @@ export function es(set: WordSet): Words {
         kindMissing: { why: "La nota no dice qué tipo de ayuda se pide.", act: "Elige el tipo de ayuda." },
         amountSeveral: { why: "La nota da más de un monto.", act: "Escribe el monto que se pide." },
         amountMissing: { why: "La nota no da un monto.", act: "Escribe el monto que se pide." },
-        payee: { why: "Aún no está anotado a quién se le paga.", act: `Confirma a quién se le paga: al arrendador, a la compañía de servicios o a la tienda, nunca al ${t.neighbor}.` },
+        payee: { why: "Aún no está anotado a quién se le paga.", act: `Confirma a quién se le paga: al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al ${t.neighbor}.` },
         doubtful: { why: "Una parte de la nota es una pregunta o no es segura, así que se dejó fuera.", act: "Lee la nota completa antes de guardar." },
         confirmKind: { why: "El asistente no estaba seguro del tipo de ayuda.", act: "Confirma el tipo de ayuda." },
         confirmPayee: { why: "El asistente no estaba seguro de a quién se le paga.", act: "Confirma a quién se le paga." },

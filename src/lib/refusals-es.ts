@@ -18,7 +18,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "A verified email is required.": "Se necesita un correo verificado.",
   "A visit for this request is already planned.": "Ya hay una visita planeada para esta petición.",
   "Add who is paid before approving. Payments go to the landlord, utility or store.":
-    "Anota a quién se le paga antes de aprobar. Se le paga al arrendador, a la compañía de servicios o a la tienda.",
+    "Anota a quién se le paga antes de aprobar. Se le paga al dueño de la vivienda, a la compañía de servicios o a la tienda.",
   "Add who is to be paid to the request first.": "Primero anota en la petición a quién se le paga.",
   "An accepted invitation cannot be revoked.": "Una invitación aceptada ya no se puede anular.",
   "An amount must be zero or more.": "Un monto debe ser cero o más.",
@@ -81,7 +81,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "Only the owner can remove a person.": "Solo el responsable puede quitar a una persona.",
   "Owner access required.": "Esto lo puede hacer solo un responsable.",
   "Payments go to the landlord, utility or store, never to the neighbor. Change who is paid on the request first.":
-    "Se le paga al arrendador, a la compañía de servicios o a la tienda, nunca al vecino. Primero cambia en la petición a quién se le paga.",
+    "Se le paga al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al vecino. Primero cambia en la petición a quién se le paga.",
   "Pending request not found.": "No se encontró esa petición en espera.",
   "Person must first accept team membership.": "Esa persona primero debe aceptar unirse al equipo.",
   "Person not found.": "No se encontró a esa persona.",
