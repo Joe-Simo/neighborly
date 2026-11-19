@@ -191,8 +191,9 @@ export function LiveField({
     ownWords.current = own;
   });
   const noteId = useId();
+  const labelId = useId();
   const [note, setNote] = useState("");
-  // Only the first wrong field of a submit speaks; the others are marked and described, so a screen reader is not talked over.
+  // Only the first wrong field of a form is said aloud as it is refused (it takes focus too); the rest are read when reached.
   const [first, setFirst] = useState(false);
   const workspace = useWorkspaceIfAny();
   // A needed answer left empty, or one the browser will not take: said under the field in our own
@@ -211,9 +212,14 @@ export function LiveField({
       if (control.getAttribute("aria-invalid") !== "true") control.dataset.needed = control.getAttribute("aria-invalid") ?? "";
       control.setAttribute("aria-invalid", "true");
       control.setAttribute("aria-describedby", noteId);
-      const lead = control.form?.querySelector(wrongControl) === control;
-      setFirst(lead);
-      if (lead) control.focus();
+      // The note sits inside the label, so the field is named by its label words alone: the note is said once, as its description.
+      if (!control.hasAttribute("aria-labelledby")) {
+        control.setAttribute("aria-labelledby", labelId);
+        control.dataset.namedForNote = "";
+      }
+      const leads = control.form?.querySelector(wrongControl) === control;
+      setFirst(leads);
+      if (leads) control.focus();
       const time = control.classList.contains("live-time") && workspace?.words.dateField.chooseTime;
       const mine = ownWords.current;
       setNote(
@@ -230,6 +236,10 @@ export function LiveField({
       for (const control of label.querySelectorAll<HTMLElement>(`[aria-describedby="${noteId}"]`)) {
         control.removeAttribute("aria-describedby");
         if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement) control.setCustomValidity("");
+        if (control.dataset.namedForNote !== undefined) {
+          control.removeAttribute("aria-labelledby");
+          delete control.dataset.namedForNote;
+        }
         const before = control.dataset.needed;
         if (before === undefined) continue;
         if (before) control.setAttribute("aria-invalid", before);
@@ -246,10 +256,10 @@ export function LiveField({
       label.removeEventListener("input", settle);
       label.removeEventListener("change", settle);
     };
-  }, [noteId, workspace]);
+  }, [noteId, labelId, workspace]);
   return (
     <label className="live-field" ref={field}>
-      <span>{label}</span>
+      <span id={labelId}>{label}</span>
       {children}
       {note && (
         <small id={noteId} className="live-field-needed" role={first ? "alert" : undefined}>
