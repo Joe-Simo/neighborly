@@ -296,7 +296,6 @@ export function LiveWorkspace({
       tell.postMessage({ covered: false, tabs: [], rooms: [] });
     };
   }, [inApp]);
-  useKeysInUse();
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
   const leave = () => setMobileMenuOpen(false);
   useEffect(readyToSpeak, []);
@@ -1016,28 +1015,6 @@ function focusWhenAwake(target: HTMLElement | undefined, tries = 90) {
   });
 }
 
-/**
- * A focus ring is for someone finding their way with keys. Focus that the app moves itself (back to Menu when
- * its sheet closes, onto a sheet as it opens) or that follows a tap draws none; boxes to type in always show it.
- * The page is marked while keys are in use, and the mark goes with the next touch or click.
- */
-function useKeysInUse() {
-  useEffect(() => {
-    const root = document.documentElement;
-    const keys = (event: KeyboardEvent) => {
-      const typing = event.target instanceof HTMLElement && event.target.matches("input, textarea, [contenteditable]");
-      if (event.key === "Tab" || (!typing && !event.metaKey && !event.ctrlKey && !event.altKey)) root.dataset.liveKeys = "";
-    };
-    const pointer = () => delete root.dataset.liveKeys;
-    window.addEventListener("keydown", keys, true);
-    window.addEventListener("pointerdown", pointer, true);
-    return () => {
-      window.removeEventListener("keydown", keys, true);
-      window.removeEventListener("pointerdown", pointer, true);
-      pointer();
-    };
-  }, []);
-}
 
 /**
  * The moment this workspace opened in the browser, read once and kept. A server

@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { LiveApp } from "@/components/live-app";
 import type { LiveEntryIntent } from "@/components/live-auth";
 import { areaTitles, liveAreas } from "@/components/workspace/areas";
+import { useKeysInUse } from "@/components/workspace/keys-in-use";
 import { askFirstRoom } from "@/lib/first-room";
 import { askSampleTicket } from "@/lib/sample-ticket";
 
@@ -20,6 +21,7 @@ const areaOf = (pathname: string) => {
  * asked of the server, so the next room is on screen at once and only its own content waits.
  */
 export function LiveFrame({ children, sampleEntry }: { children: ReactNode; sampleEntry: boolean }) {
+  useKeysInUse();
   const pathname = usePathname();
   const params = useSearchParams();
   const area = areaOf(pathname);
