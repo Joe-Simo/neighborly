@@ -13,7 +13,12 @@
 /* Focus shows on the sheet itself, inside its edge, so nothing is drawn under the book. */
 .book-desk:focus-visible .book-right > .book-turn .book-sheet { outline: 2px solid var(--live-ink, #283c32); outline-offset: -8px; }
 .book-desk:not(:focus-visible) .book-sheet { outline: none; }
-.book-left, .book-right { position: relative; aspect-ratio: 8.5 / 11; }
+.book-left, .book-right { position: relative; width: 100%; }
+/* The page's height: a letter page in proportion and every sheet as set, all in one grid cell and out of sight, so the
+   tallest decides it and every page on the desk is that size. The facing page stretches to the same row. */
+.book-measure { display: grid; visibility: hidden; pointer-events: none; }
+.book-measure::before { content: ""; grid-area: 1 / 1; aspect-ratio: 8.5 / 11; }
+.book-measure .book-sheet { grid-area: 1 / 1; position: relative; inset: auto; height: auto; overflow: visible; }
 /* Facing pages meet at a gutter: a soft shade into the fold on each side. */
 .book-desk[data-facing] .book-left .book-sheet { box-shadow: inset -18px 0 22px -20px rgb(40 30 10 / 0.3), 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3); }
 .book-desk[data-facing] .book-right .book-sheet { box-shadow: inset 18px 0 22px -20px rgb(40 30 10 / 0.3), 0 1px 1px rgb(40 60 50 / 0.12), 0 10px 22px -14px rgb(40 60 50 / 0.3); }
@@ -44,7 +49,23 @@
 .book-table th, .book-table td { padding: 9px 0; font-size: 15px; letter-spacing: normal; text-transform: none; color: inherit; line-height: 1.4; border-bottom: 1px solid rgb(40 60 50 / 0.16); text-align: left; font-weight: 400; vertical-align: baseline; }
 .book-table td { text-align: right; padding-left: 12px; white-space: nowrap; }
 .report-book .book-table thead th, .report-book-print .book-table thead th { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #4a5a50; border-bottom-color: var(--live-ink, #283c32); }
-.book-table thead th:not(:first-child) { text-align: right; }
+.book-table thead th:not(:first-child) { text-align: right; padding-left: 12px; }
+/* On the narrowest phones four columns of figures share a little over 300px: the figures step down a size and close up,
+   so every column stays whole on the page and nothing is cut at its edge. */
+@container book-page (max-width: 330px) {
+  .book-columns :is(th, td) { font-size: 14px; }
+  .book-columns td, .book-columns thead th:not(:first-child) { padding-left: 8px; }
+}
+@container book-page (max-width: 300px) {
+  .book-sheet { padding-inline: 16px; }
+  .book-columns :is(th, td) { font-size: 13px; }
+  .report-book .book-columns thead th { font-size: 12px; letter-spacing: 0.02em; }
+}
+.book-right { container: book-page / inline-size; }
+/* A total's rule is the ink one: the faint rule of the row above would otherwise win where the two meet. */
+.book-table tr:has(+ .book-total) > * { border-bottom-color: var(--live-ink, #283c32); }
+/* A row set apart from the column above it (miles under hours): a space, not a rule, and the weight of an ordinary row. */
+.book-table .book-apart :is(th, td) { border-bottom: 0; padding-top: 22px; }
 .book-table .book-total :is(th, td) { font-weight: 600; border-bottom: 0; border-top: 1px solid var(--live-ink, #283c32); }
 .book-table:not(.book-columns) td { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: clamp(22px, 2.6vw, 28px); line-height: 1.1; }
 
