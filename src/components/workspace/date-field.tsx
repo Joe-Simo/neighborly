@@ -137,16 +137,20 @@ export function DateField({
   // The month opens on its day, not on its arrows: the chosen day, else today, else the first day that can be chosen,
   // which the month itself keeps as its one Tab stop. Arrows move between days and Enter takes one. In the month's
   // first frame, not inside the press: focusing there made the browser work out the page's styles before it drew.
+  // A month opened by a click in the words leaves the caret there, so the day can still be typed.
+  const caretStays = useRef(false);
   useEffect(() => {
     if (!open) return;
-    let frame = requestAnimationFrame(function find() {
+    const typing = caretStays.current;
+    caretStays.current = false;
+    let frame = typing ? 0 : requestAnimationFrame(function find() {
       const day = grid.current?.querySelector<HTMLElement>('.rdp-day_button[tabindex="0"]');
       if (day) day.focus({ preventScroll: true });
       else frame = requestAnimationFrame(find);
     });
     // Escape closes the month alone, not the sheet the form lies in: it is caught before the sheet hears it.
     const escape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || !(event.target instanceof Node) || !grid.current?.contains(event.target)) return;
+      if (event.key !== "Escape" || !(event.target instanceof Node) || !(grid.current?.contains(event.target) || field.current?.contains(event.target))) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       close();
@@ -173,7 +177,13 @@ export function DateField({
             onChange={(event) => setTyped(event.target.value)}
             onBlur={keep}
             ref={(input) => setLabel(input?.labels?.[0]?.querySelector("span")?.textContent ?? "")}
-            onClick={() => sheet && setOpen(true)}
+            onClick={() => {
+              if (sheet) return setOpen(true);
+              // On a desktop a click in the words opens the month too, as ArrowDown does; the caret stays to type.
+              if (open) return;
+              caretStays.current = true;
+              setOpen(true);
+            }}
             onKeyDown={(event) => {
               const opener = event.currentTarget.nextElementSibling;
               if (event.key === "ArrowDown" || (sheet && (event.key === "Enter" || event.key === " "))) {
