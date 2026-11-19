@@ -55,7 +55,7 @@ export function WeekPage({ language }: { language: Language }) {
               {/* The room's piece of the relief, cut from its sheet and laid on this day's paper. */}
               <picture className="public-week-piece">
                 <source type="image/avif" srcSet={`/assets/relief/relief-${picture}-640.avif 640w, /assets/relief/relief-${picture}-1024.avif 1024w`} sizes="(max-width: 1023px) 92vw, (min-width: 2000px) 960px, 34vw" />
-                <img src={`/assets/relief/relief-${picture}-1024.webp`} srcSet={`/assets/relief/relief-${picture}-640.webp 640w, /assets/relief/relief-${picture}-1024.webp 1024w`} sizes="(max-width: 1023px) 92vw, (min-width: 2000px) 960px, 34vw" alt={alt} width={1024} height={683} loading={index ? "lazy" : "eager"} decoding="async" />
+                <img src={`/assets/relief/relief-${picture}-1024.webp`} srcSet={`/assets/relief/relief-${picture}-640.webp 640w, /assets/relief/relief-${picture}-1024.webp 1024w`} sizes="(max-width: 1023px) 92vw, (min-width: 2000px) 960px, 34vw" alt={alt} width={1024} height={683} loading="lazy" decoding="async" />
               </picture>
               {copy.map((line) => <p key={line}>{line}</p>)}
             </div>
