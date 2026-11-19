@@ -4,7 +4,7 @@ import type { Language } from "@/lib/words";
 export type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
-export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" };
+export type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
@@ -39,6 +39,16 @@ const en = {
       { lead: "{right} of {cells}.", rest: "On 12 call notes kept apart from the ones it was tuned on, the assistant filled {right} of {cells} fields right, left {blank} blank and got {wrong} wrong.", source: "Measure run 7, 19 November 2026, model jev-1.14.0. Raw output: eval/jev/run-7.json." },
     ],
   },
+  anatomy: {
+    caption: "The three heights, drawn apart",
+    layers: [
+      { name: "Sheet", rest: "laid over the room" },
+      { name: "Card", rest: "stands on the page" },
+      { name: "Slip", rest: "lies on the paper" },
+    ],
+    page: "The page",
+    note: "Spacing enlarged; each shadow is the app’s own, from the relief tokens.",
+  },
   frameStrip: {
     caption: "A scroll down this page on the Mac, frame by frame",
     widths: { "1440": "At 1440 pixels", "390": "At 390 pixels, processor slowed four times" },
@@ -71,7 +81,7 @@ const en = {
     { title: "Cut along its own depth", blocks: [
       "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
     ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The map the cut followed: the courtyard’s depth, far in dark and near in light." } },
-    { title: "The rules the paper keeps", blocks: [
+    { title: "The rules the paper keeps", table: "anatomy", blocks: [
       "A ministry’s software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
       [
         { lead: "Ochre means waiting.", rest: "A call not yet returned, a request not yet decided, a room still opening.", tone: "waiting" },
@@ -139,6 +149,16 @@ const es: typeof en = {
       { lead: "{right} de {cells}.", rest: "En 12 notas de llamadas apartadas de las que se usaron para ajustarlo, el asistente llenó bien {right} de {cells} campos, dejó {blank} en blanco y se equivocó en {wrong}.", source: "Medición 7, 19 de noviembre de 2026, modelo jev-1.14.0. Salida sin tocar: eval/jev/run-7.json." },
     ],
   },
+  anatomy: {
+    caption: "Las tres alturas, separadas",
+    layers: [
+      { name: "Hoja", rest: "se pone sobre la sección" },
+      { name: "Tarjeta", rest: "se alza sobre la página" },
+      { name: "Papelito", rest: "se apoya en el papel" },
+    ],
+    page: "La página",
+    note: "Separación ampliada; cada sombra es la de la aplicación, de los tokens de relieve.",
+  },
   frameStrip: {
     caption: "Un desplazamiento por esta página en la Mac, cuadro a cuadro",
     widths: { "1440": "A 1440 píxeles", "390": "A 390 píxeles, con el procesador cuatro veces más lento" },
@@ -169,7 +189,7 @@ const es: typeof en = {
     { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
     ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa que siguió el corte: la profundidad del patio, lo lejano en oscuro y lo cercano en claro." } },
-    { title: "Las reglas que guarda el papel", blocks: [
+    { title: "Las reglas que guarda el papel", table: "anatomy", blocks: [
       "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
       [
         { lead: "Ocre es esperar.", rest: "Una llamada aún sin devolver, una petición aún sin decidir, una sección que todavía se abre.", tone: "waiting" },
