@@ -12,6 +12,7 @@ import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
 import "@/components/week-page.css";
 import { CutHead } from "@/components/cut-heads";
+import { BookLeaves } from "@/components/book-leaves";
 
 export { privacyViewport as weekViewport } from "@/components/privacy-page";
 
@@ -67,6 +68,7 @@ export function WeekPage({ language }: { language: Language }) {
         </div>
       </section>
     </main>
+    <BookLeaves sheets=".public-week > section" />
     <PublicEnding language={language} />
   </div>;
 }

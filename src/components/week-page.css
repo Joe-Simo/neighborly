@@ -45,3 +45,13 @@
 }
 /* On a phone the opening sentence keeps about thirty letters to a line. */
 @media(max-width:400px){.public-week .public-week-lede>div{font-size:20px}}
+/* The week as the home page's book (book-leaves.tsx): from 1024 up each day's sheet after the first arrives as the next leaf, hinged at its top
+   edge, the sheet above showing the deeper crease while it turns; every sheet keeps one width there, so a turning leaf is never wider than the
+   sheet it lands under. Each day's head takes the home page's display size. Phones keep flat sheets and their own heads. */
+.public-week>section{transform-origin:50% 0}
+.public-week>[data-leaf-turning]+section{will-change:transform}
+.public-week>section[data-leaf-turning]::after{content:"";position:absolute;z-index:2;left:0;right:0;bottom:-14px;height:14px;pointer-events:none;background:linear-gradient(#3b2a121f,#3b2a1200)}
+@media(min-width:1024px){
+  .public-words.public-week section{margin-inline:0}
+  .public-week .public-week-day h2{max-width:12ch;font-size:clamp(56px,6vw,112px);line-height:var(--lead-2);letter-spacing:var(--track-2)}
+}

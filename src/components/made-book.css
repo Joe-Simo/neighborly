@@ -1,4 +1,4 @@
-/* How it was made, set as the home page's book. Each chapter is a leaf (made-leaves.tsx) hinged at its top edge; the sheet above shows the
+/* How it was made, set as the home page's book. Each chapter is a leaf (book-leaves.tsx) hinged at its top edge; the sheet above shows the
    deeper crease while the next one turns, as the home page's chapters do (relief-journey.css). */
 .public-made>section{transform-origin:50% 0}
 .public-made>[data-leaf-turning]+section{will-change:transform}

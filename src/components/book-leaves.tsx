@@ -4,14 +4,14 @@ import { useEffect } from "react";
 import { paperTurnAt, turnLeaf } from "@/lib/paper-turn";
 
 /**
- * The case study as the home page's book (paper-turn.ts): from 1024 up, each chapter's sheet after the first arrives as the next leaf, hinged
+ * A public page of laid sheets as the home page's book (paper-turn.ts): from 1024 up, each chapter's sheet after the first arrives as the next leaf, hinged
  * from its top edge, and the sheet above it shows the deeper crease while it turns. A sheet already in the window on the first frame, or one the
  * keyboard enters, lies flat until it has left the window below. Phones and Reduce Motion keep flat sheets.
  */
-export function MadeLeaves() {
+export function BookLeaves({ sheets: selector }: { sheets: string }) {
   useEffect(() => {
     const wide = matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)");
-    const sheets = [...document.querySelectorAll<HTMLElement>(".public-made > section")].slice(1);
+    const sheets = [...document.querySelectorAll<HTMLElement>(selector)].slice(1);
     if (!sheets.length) return;
     const flat = new Set<HTMLElement>();
     let frame = 0, seeded = false;
@@ -27,7 +27,7 @@ export function MadeLeaves() {
       });
     };
     const request = () => { if (!frame) frame = requestAnimationFrame(place); };
-    const focused = (event: FocusEvent) => { const sheet = (event.target as Element | null)?.closest<HTMLElement>(".public-made > section"); if (sheet) { flat.add(sheet); request(); } };
+    const focused = (event: FocusEvent) => { const sheet = (event.target as Element | null)?.closest<HTMLElement>(selector); if (sheet) { flat.add(sheet); request(); } };
     request();
     addEventListener("scroll", request, { passive: true });
     addEventListener("resize", request);
@@ -38,6 +38,6 @@ export function MadeLeaves() {
       removeEventListener("scroll", request); removeEventListener("resize", request); wide.removeEventListener("change", request); document.removeEventListener("focusin", focused);
       sheets.forEach(sheet => { sheet.style.transform = ""; (sheet.previousElementSibling as HTMLElement | null)?.removeAttribute("data-leaf-turning"); });
     };
-  }, []);
+  }, [selector]);
   return null;
 }

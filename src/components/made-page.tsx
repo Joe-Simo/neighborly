@@ -13,7 +13,7 @@ import { evalTable } from "@/lib/made-proof";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
 import { CutHead } from "@/components/cut-heads";
-import { MadeLeaves } from "@/components/made-leaves";
+import { BookLeaves } from "@/components/book-leaves";
 import "@/components/made-book.css";
 
 export { privacyViewport as madeViewport } from "@/components/privacy-page";
@@ -71,7 +71,7 @@ export function MadePage({ language }: { language: Language }) {
         <div><p className="public-words-last">{lastLead}<span className="public-words-address">{address}</span>{lastTail}</p></div>
       </section>
     </main>
-    <MadeLeaves />
+    <BookLeaves sheets=".public-made > section" />
     <PublicEnding language={language} />
   </div>;
 }
