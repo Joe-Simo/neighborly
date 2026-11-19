@@ -5,6 +5,8 @@
   --shade-close-top:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 34C140 22 260 40 420 30S700 14 820 26 960 36 1000 28L1000 -40L0 -40Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E");
   --cut-close-bottom:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cpath d='M0 24C120 34 300 20 470 30S760 40 880 26 980 30 1000 32L1000 -10L0 -10Z' fill='%23fff'/%3E%3C/svg%3E");
   --shade-close-bottom:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 24C120 34 300 20 470 30S760 40 880 26 980 30 1000 32L1000 100L0 100Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E");
+  /* The paper above the cloth's cut: the same wave as --cut-paper-top, filled on the other side. */
+  --cut-paper-above:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1000V24C820 40 710 38 520 28C330 18 180 40 0 30Z' fill='%23fff'/%3E%3C/svg%3E");
   --cut-paper-top:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30C180 40 330 18 520 28S820 40 1000 24L1000 60L0 60Z' fill='%23fff'/%3E%3C/svg%3E");
   --shade-paper-top:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeGaussianBlur stdDeviation='9 4'/%3E%3C/filter%3E%3Cpath d='M0 30C180 40 330 18 520 28S820 40 1000 24L1000 -40L0 -40Z' fill='%232e2416' fill-opacity='.42' filter='url%28%23b%29'/%3E%3C/svg%3E");
   --cut-open-left:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 900' preserveAspectRatio='none'%3E%3Cpath d='M150 0C120 120 175 230 140 360S100 560 150 690 120 840 135 900L240 900L240 0Z' fill='%23fff'/%3E%3C/svg%3E");
@@ -25,8 +27,17 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
 .neighborly-together .neighborly-close-art::before{top:0;background:var(--shade-close-top) 0 0/100% 100% no-repeat}
 .neighborly-together .neighborly-close-art::after{bottom:0;background:var(--shade-close-bottom) 0 0/100% 100% no-repeat}
 /* The cloth under the ending begins at a cut, not a haze. */
-.neighborly-together .neighborly-together-paper{-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
-.neighborly-together .neighborly-together-paper[data-settled=true]::before{content:"";position:absolute;top:0;left:0;right:0;height:56px;background:var(--shade-paper-top) 0 0/100% 100% no-repeat}
+/* The cloth under the ending begins at a cut, not a haze. The cloth itself is a plain picture, unmasked: a mask on a layer
+   this tall (2,192pt on a phone, 6,576 pixels at 3x) has the browser paint it twice on every scroll. The cut is drawn the
+   other way round, as the paper above it laid over the cloth's top 56px in the shape of the wave: a mask on that strip
+   costs next to nothing. It lies over the cut's shade too, which the mask used to trim. --paper-above is the flat paper the section stands on. */
+.neighborly-together .neighborly-together-paper{-webkit-mask:none;mask:none}
+/* While the closing sheet still lies above the cut (it is textured, not flat), the cut is a mask again, exactly as it was;
+   it is only there for the short stretch where the sheet lifts away. */
+.neighborly-together:has(> .chapter-sheet-close:not([data-away])) .neighborly-together-paper{-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
+.neighborly-together:has(> .chapter-sheet-close:not([data-away])) .neighborly-together-paper::after{content:none}
+.neighborly-together .neighborly-together-paper::after{content:"";position:absolute;z-index:1;top:0;left:0;right:0;height:56px;pointer-events:none;background:var(--paper-above,#f1eadb);-webkit-mask:var(--cut-paper-above) 0 0/100% 100% no-repeat;mask:var(--cut-paper-above) 0 0/100% 100% no-repeat}
+.neighborly-together .neighborly-together-paper[data-settled=true]::before{content:"";z-index:0;position:absolute;top:0;left:0;right:0;height:56px;background:var(--shade-paper-top) 0 0/100% 100% no-repeat}
 /* An upright tablet: the opening's lower edge is cut. */
 @media(min-width:701px) and (max-aspect-ratio:10/11){
   main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback)::before{display:none}
@@ -65,3 +76,5 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
   .neighborly-together .neighborly-colophon{position:relative;isolation:isolate}
   .neighborly-together .neighborly-colophon::before{content:"";position:absolute;z-index:-1;left:-20px;right:-20px;top:-24px;bottom:0;background:var(--background);-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
 }
+/* On the public pages the ending stands on the public sheet's paper. */
+.public-page .neighborly-together{--paper-above:#e6decb}
