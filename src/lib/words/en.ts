@@ -252,7 +252,7 @@ export function en(set: WordSet) {
       availabilityRestored: "Available dates put back.",
       emptyTitle: "Every day is open.",
       emptyDetail:
-        "Add dates when you won’t be available. Your place on the team stays the same.",
+        "Add the dates you won’t be available.",
       coverTitle: "Cover requests",
       coverDeck:
         "Choose whether coordinators may ask you to cover an open commitment. Every request still needs your acceptance.",

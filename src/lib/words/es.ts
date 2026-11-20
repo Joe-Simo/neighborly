@@ -248,7 +248,7 @@ export function es(set: WordSet): Words {
       availabilityRestored: "Fechas disponibles repuestas.",
       emptyTitle: "Todos tus días están libres.",
       emptyDetail:
-        "Agrega las fechas en que no estarás. Tu lugar en el equipo sigue igual.",
+        "Agrega las fechas en que no estarás.",
       coverTitle: "Peticiones para cubrir turnos",
       coverDeck:
         "Decide si los coordinadores pueden pedirte que cubras un compromiso libre. Cada petición necesita tu sí.",
