@@ -661,11 +661,16 @@
   clip-path: polygon(0 4px, 52% 0, 100% 3px, 100% 100%, 0 100%); rotate: -0.6deg;
 }
 .treasury-paper > div + div + div b { clip-path: polygon(0 0, 100% 5px, 100% 100%, 0 100%); rotate: 0.8deg; }
-/* Below 1181px the balance's figure (96px) no longer clears the month's two slips beside it: they stand under it,
-   side by side, and the figure keeps its size. */
-@media (max-width: 1180px) {
+/* The balance's figure (96px) clears the month's two slips only in a wide room. Where the room is narrower, by the
+   window or beside a sidebar (the desk menu, an iPad in split view, the iOS aside), the slips stand under it, side by
+   side. Keyed on the room's own width: 940px is a 1180px window less the menu. A narrow room also takes a smaller figure. */
+:has(> .treasury-paper) { container-type: inline-size; }
+@container (max-width: 940px) {
   .treasury-paper { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .treasury-balance { grid-column: 1 / -1; }
+}
+@container (max-width: 760px) {
+  .treasury-paper b { font-size: clamp(28px, 8vw, 36px); min-width: 0; }
 }
 @media (max-width: 850px) {
   .treasury-paper b { font-size: clamp(28px, 8vw, 36px); min-width: 0; }
