@@ -93,7 +93,7 @@ const en = {
     ] },
     { title: "One painting, made\u00a0of\u00a0paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
-      "The painted artwork was made with Codex’s image generator from written direction, and chosen by the author. The page adds nothing to it. On the home page it moves by its own depth: near stone and far hills part as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next. Around it, the paper moves.",
+      "The painted artwork was made with Codex’s image generator from written direction, and chosen by the author. The page adds nothing to it. On the home page it moves by its own depth: the near stone opens toward you as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next. Around it, the paper moves.",
     ] },
     { title: "Cut along its own depth", blocks: [
       "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
@@ -239,7 +239,7 @@ const es: typeof en = {
     ] },
     { title: "Una sola pintura, hecha de papel", blocks: [
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
-      "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y elegida por quien lo creó. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
+      "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y elegida por quien lo creó. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana se abre hacia ti al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
