@@ -28,8 +28,9 @@ const walkTime = 1400;
 const readyWait = 700;
 // How much larger than its frame the painting is drawn on a wide wall.
 const frescoInset = 1.064;
-// Where the bell tower ends, as a share of the painting's width from its left edge, with a little air.
-const towerClear = .4;
+// Standing in the courtyard on a phone, the window is narrow and tall: it is drawn on to the hall's arch and its open door (as shares of the
+// painting from its top left), a little closer, so the frame holds the arch, the door and the table's end, not the empty paving.
+const phoneFocus = { x: .78, y: .4, zoom: 1.24 } as const;
 
 /** The doors open once, onto the courtyard painted on the wall beyond them. */
 // The courtyard's light is drawn with the 3D library, which is fetched only when the doors are near, not with the page.
@@ -134,13 +135,14 @@ export function FrescoThreshold() {
       // On a wide wall the near pillar at the painting's left edge is left outside the frame: the painting is drawn a little larger and held to the right, so painted courtyard meets the frame on every side.
       // The painting is sized by the opening, except walking in, where it covers the window itself while the opening grows past it.
       const framed = Math.max(h / sceneHeight, w / (sceneHeight * 2)) * (phone ? 1 : frescoInset);
-      const cover = mix(framed, Math.max(height / sceneHeight, width / (sceneHeight * 2)), inside);
+      const cover = mix(framed, Math.max(height / sceneHeight, width / (sceneHeight * 2)) * (phone ? phoneFocus.zoom : 1), inside);
       const held = phone ? 0 : sceneHeight * cover * (1 - 1 / frescoInset) * (1 - inside);
-      const lift = (height / 2 - centreY) * inside;
-      // On a phone, walking in, the narrow window would cut the bell tower at its left edge: the painting is drawn on a little, so that edge always falls clear to the right of the tower.
-      const paintingWidth = sceneHeight * 2 * cover, seenLeft = Math.max(0, width / 2 - w / 2);
-      const leftEdge = (seenLeft - (width / 2 - paintingWidth / 2)) / paintingWidth;
-      const pan = phone ? Math.max(0, towerClear - leftEdge) * paintingWidth * Math.min(1, inside * 4) : 0;
+      // On a phone, walking in, the painting is drawn on to its focus: across to the arch and up from the paving, never past its own edges.
+      const paintingWidth = sceneHeight * 2 * cover, paintingHeight = sceneHeight * cover;
+      const toward = phone ? Math.min(1, inside * 1.6) : 0;
+      const pan = Math.max(0, Math.min((phoneFocus.x - .5) * paintingWidth, paintingWidth / 2 - width / 2)) * toward;
+      const raise = Math.max(0, Math.min((.5 - phoneFocus.y) * paintingHeight, paintingHeight / 2 - height / 2)) * toward;
+      const lift = (height / 2 - centreY) * inside + raise;
       scene.style.scale = String(cover);
       // The painting is centred in the opening by translate too, from the opening's corner.
       scene.style.translate = `calc(-50% + ${(w / 2 - held - pan).toFixed(2)}px) calc(-50% + ${(h / 2 + lift).toFixed(2)}px)`;
