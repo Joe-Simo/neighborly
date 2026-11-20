@@ -190,8 +190,8 @@ const es: typeof en = {
     before: "Antes",
     after: "Después",
     pairs: [
-      { key: "end", why: "En el teléfono, la última pantalla cortaba el cierre debajo de su título. Ahora la pintura, sus palabras y las dos entradas terminan enteras juntas.", alt: ["La última pantalla de la portada en un teléfono: la pintura y “Bring this to your people”, con los enlaces de abajo cortados en el borde.", "La misma pantalla después del cambio: la pintura, el título y los dos enlaces enteros en una sola pantalla."] },
-      { key: "words", why: "La serif de los títulos va muy apretada, y el espacio entre palabras se cerró con ella hasta que “How we” se leía “Howwe”. Cada título recuperó su espacio entre palabras.", alt: ["El título de la página, How we made it, con las palabras casi tocándose.", "El mismo título con un espacio claro entre cada palabra."] },
+      { key: "end", why: "En el teléfono, la última pantalla cortaba el cierre debajo de su título. Ahora la pintura, sus palabras y las dos entradas terminan enteras juntas.", alt: ["La última pantalla de la portada en un teléfono: la pintura y “Bring this to your people” (en inglés), con los enlaces de abajo cortados en el borde.", "La misma pantalla después del cambio: la pintura, el título y los dos enlaces enteros en una sola pantalla."] },
+      { key: "words", why: "La serif de los títulos va muy apretada, y el espacio entre palabras se cerró con ella hasta que “How we” se leía “Howwe”. Cada título recuperó su espacio entre palabras.", alt: ["El título de la página, How we made it (en inglés), con las palabras casi tocándose.", "El mismo título con un espacio claro entre cada palabra."] },
       { key: "relief", why: "Cada sección tenía su propia sombra, tono y borde. Ahora toda superficie que se levanta toma una de tres alturas de una sola escala.", alt: ["Las tarjetas de las secciones en la portada, en tono crema con borde marrón.", "Las mismas tarjetas en el único tono y borde de papel de la aplicación, con su sombra de tarjeta."] },
       { key: "slip", why: "Un papelito de Una semana tenía su propio blanco y tinta marrón. Ahora se apoya en el papel como todos los papelitos de la aplicación.", alt: ["El recuadro de un día en Una semana, en su propio blanco con sombra marrón.", "El mismo recuadro como papelito, en el tono del papel con la sombra de papelito."] },
     ],
@@ -200,8 +200,8 @@ const es: typeof en = {
   trace: {
     steps: [
       { key: "picture", name: "La imagen", why: "Unas indicaciones escritas fueron a un generador de imágenes, y el autor eligió esta: una mano que levanta el auricular, recortada en papel.", alt: "Un relieve de papel de una mano que levanta un auricular verde sobre un fondo ciruela, con un cable ocre." },
-      { key: "slip", name: "El papelito", why: "En la portada la misma llamada se vuelve un papelito: un nombre, una necesidad y la esquina ocre que dice que espera.", alt: "Un papelito que dice Rosa Fontaine, Behind on November rent, $450, con una esquina ocre, sobre otros dos papelitos." },
-      { key: "room", name: "La sección", why: "En Línea de ayuda la imagen encabeza la sección, y la llamada de Rosa espera como una petición en borrador hasta que una persona dice que sí.", alt: "La sección Línea de ayuda: el título Every call, returned, la imagen del auricular y la petición de 450 dólares de Rosa Fontaine esperando un sí." },
+      { key: "slip", name: "El papelito", why: "En la portada la misma llamada se vuelve un papelito: un nombre, una necesidad y la esquina ocre que dice que espera.", alt: "Un papelito que dice Rosa Fontaine, Behind on November rent, $450 (en inglés), con una esquina ocre, sobre otros dos papelitos." },
+      { key: "room", name: "La sección", why: "En Línea de ayuda la imagen encabeza la sección, y la llamada de Rosa espera como una petición en borrador hasta que una persona dice que sí.", alt: "La sección Línea de ayuda: el título Every call, returned (en inglés), la imagen del auricular y la petición de 450 dólares de Rosa Fontaine esperando un sí." },
     ],
     credit: "La imagen se hizo con el generador de imágenes de Codex, a partir de indicaciones escritas, y la eligió el autor. Imágenes del sitio en funcionamiento con la conferencia de muestra; todos los nombres son inventados.",
   },
