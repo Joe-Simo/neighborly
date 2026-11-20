@@ -400,6 +400,7 @@ export function ReportView({
         })}
       </ol>
       <table className="report-kinds-print">
+        <caption className="sr-only">{w.kinds.title}</caption>
         <thead>
           <tr>
             <th scope="col">{w.kinds.table.kind}</th>

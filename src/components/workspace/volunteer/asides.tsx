@@ -104,6 +104,7 @@ export function WeekByTeam() {
   return (
     <RoomAside title={text.weekByTeam}>
       <table className="volunteer-teams-week">
+        <caption className="sr-only">{text.weekByTeam}</caption>
         <thead>
           <tr>
             {weekdays.map((day, index) => <th key={day.long} scope="col" abbr={day.long} data-today={index === today.weekday % 7 || undefined}>{day.short}</th>)}

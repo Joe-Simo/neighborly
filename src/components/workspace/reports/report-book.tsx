@@ -36,8 +36,9 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
     { name: w.time.visits, hours: report.visitHours },
     ...report.time.teams.map((team) => ({ name: sampleSaid(team.name), hours: team.hours })),
   ];
-  const figures = (rows: { label: string; value: string }[]) => (
+  const figures = (caption: string, rows: { label: string; value: string }[]) => (
     <table className="book-table">
+      <caption className="sr-only">{caption}</caption>
       <tbody>
         {rows.map((row) => (
           <tr key={row.label}>
@@ -74,7 +75,7 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
     {
       key: "counts",
       title: b.counts,
-      body: figures([
+      body: figures(b.counts, [
         { label: w.year.calls, value: count(report.calls.taken) },
         { label: w.year.requests, value: count(report.requests.received) },
         { label: w.sheet.visits, value: count(report.visits) },
@@ -86,6 +87,7 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
       title: b.byKind,
       body: (
         <table className="book-table book-columns">
+          <caption className="sr-only">{b.byKind}</caption>
           <thead>
             <tr>
               <th scope="col">{b.kind}</th>
@@ -120,6 +122,7 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
       title: b.hoursMiles,
       body: (
         <table className="book-table book-columns">
+          <caption className="sr-only">{b.hoursMiles}</caption>
           <thead>
             <tr>
               <th scope="col">{b.given}</th>
@@ -152,7 +155,7 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
     {
       key: "served",
       title: b.served,
-      body: figures([
+      body: figures(b.served, [
         { label: b.householdsHelped, value: count(report.history.householdsInAll) },
         { label: b.peopleInAll, value: count(report.history.peopleInAll) },
       ]),
