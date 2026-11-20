@@ -82,7 +82,7 @@ export function ThreadCard() {
         const doors = frame.getBoundingClientRect(), from = poseOf(hand);
         // It rests on the doors where they meet, under the rings, and goes in ahead of the visitor as they open.
         const seam: Pose = { x: doors.left + doors.width / 2, y: doors.top + doors.height * .69, w: from.w * .62, r: -5, o: 1, k: 1 };
-        const sets = innerWidth <= 700 ? .5 : .45, out = clamp((entered - sets) / (.95 - sets)), through = smooth(clamp((-journey.getBoundingClientRect().top / height - .9) / .5));
+        const sets = innerWidth <= 700 ? .5 : .45, out = clamp((entered - sets) / (.95 - sets)), through = smooth(clamp((-journey.getBoundingClientRect().top / height - .9) / .6));
         if (out > 0) { pose = between({ ...from, o: 0 }, seam, out); pose.o = 1 - through; pose.w *= 1 - through * .6; pose.y -= through * doors.height * .12; lift = Math.sin(out * Math.PI); tone = clamp(out * 2.5); }
         writes.push(() => hand.parentElement?.toggleAttribute("data-away", out > 0));
       }

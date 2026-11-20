@@ -1,5 +1,5 @@
 /* The journey after the opening: the doors, the courtyard as a fresco, and the story in four pictures. One material: paper. */
-.fresco-journey{position:relative;height:435svh}
+.fresco-journey{position:relative;height:500svh}
 /* The walk's values are written on each part drawn with them, and do not pass down: one changed value no longer restyles the whole stage, painting and all, on every frame. */
 @property --door{syntax:"<number>";inherits:false;initial-value:0}
 @property --grow{syntax:"<number>";inherits:false;initial-value:0}
