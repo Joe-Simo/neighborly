@@ -52,6 +52,9 @@
 .home-year-slip[data-lying] > *{visibility:hidden}
 /* Once laid the slip's place is kept, so nothing below it moves. */
 .home-year-slip[data-laid]{visibility:hidden}
+/* After the yes, Rosa's slip stays on its last day, done: the year's green corner, with its tick. Not a control any more, so no hand. */
+.home-year-slip[data-done]{position:relative;cursor:default}
+.home-year-slip[data-done]::after{content:"";position:absolute;right:0;top:0;width:22px;height:22px;background:#365c46 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M11.5 6.5l2.5 2.5 4.5-4.5' fill='none' stroke='%23f7f2e6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0/100% 100%;clip-path:polygon(0 0,100% 0,100% 100%)}
 /* A wide window that is short (a tablet on its side, a small laptop): the chapter is held at the window's height, so the year must fit
    under it whole, note and all. The piles keep their sheets true to one another, two pixels to a sheet, and the figures sit a little closer. */
 @media(min-width:821px) and (max-height:860px){
