@@ -26,6 +26,12 @@
 .home-yes-sheet{position:relative;z-index:1;perspective:1600px}
 .home-yes-sheet .help-sheet{transform-origin:50% 0;backface-visibility:hidden}
 [data-step=filed] .home-yes-sheet .help-sheet{animation:home-yes-fold 380ms cubic-bezier(.45,.05,.55,.95) forwards}
+/* Move 4, the hand's fold (home-yes-card.tsx): while a held press folds the draft, the list lies beneath it to be found, still inert; held
+   to the end, the yes is filed with the fold already over, so it is not played again. */
+.home-yes-stage[data-held]>.home-yes-filed{visibility:visible}
+/* A finger held on the yes is a hold, never a scroll, a text pick or the phone's long-press menu, any of which would take the press away. */
+[data-step=waiting] .home-yes-sheet .help-actions>[data-slot=button]:first-child{touch-action:none;-webkit-touch-callout:none;user-select:none}
+.home-yes-stage[data-held][data-step=filed] .home-yes-sheet .help-sheet{animation:none;visibility:hidden}
 @keyframes home-yes-fold{0%{transform:none}99.9%{transform:rotateX(-90deg);visibility:visible}100%{transform:rotateX(-90deg);visibility:hidden}}
 .home-yes-filed{position:relative;padding:31px 35px 27px;visibility:hidden;pointer-events:none;background:#fffdf7;border:1px solid #e0dccb;border-radius:3px;box-shadow:inset 0 1px #fff,0 18px 34px -26px #3b3a2466,0 2px 5px -3px #3b3a2440}
 [data-step=filed]>.home-yes-filed{visibility:visible;pointer-events:auto}
