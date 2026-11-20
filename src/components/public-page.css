@@ -99,7 +99,7 @@
   .public-words h1::before,.public-words section::before{display:none}
   .public-words h1,.public-words:has(.public-words-note) h1{padding:0 0 5mm;font-size:34pt}
   .public-words .public-words-note{height:auto;margin:0 0 6mm;padding:0;max-width:none;font-size:10pt}
-  .public-words .public-words-note a::after{content:" (kindhelps.com/privacy)"}
+  .public-words .public-words-note a::after{content:" (kindhelps.com" attr(href) ")"}
   .public-words section{grid-template-columns:minmax(0,1fr);justify-items:start;gap:2mm;margin:0;padding:5mm 0;break-inside:avoid;border-top:1px solid #293f3224}
   .public-words section>*{width:auto;max-width:none}
   .public-words h2{font-size:15pt;break-after:avoid}
@@ -249,3 +249,7 @@
 @media(max-width:479px){.public-made-colophon>div{grid-template-columns:1fr;gap:var(--space-4)}}
 @media(min-width:1280px){.public-made-colophon{font-size:16px}}
 @media(min-width:1600px){.public-made-colophon{font-size:17px}}
+/* Printed, after the narrow-screen rules that set the picture back to block: no picture on paper at any width. */
+@media print{
+  .public-words .public-words-relief,.public-words:has(.public-words-note) .public-words-relief{display:none}
+}
