@@ -311,7 +311,8 @@ function leaving(sheet: HTMLElement | null) {
   // Its moves are asked for in the copy's first frame, where the browser works out its styles anyway: asked here,
   // inside the press, they make it work out the whole page's styles once more before it draws.
   requestAnimationFrame(() => {
-    const moves = frame.getAnimations({ subtree: true });
+    // Only a move with an end in time is waited for: one run by the sheet's scroll (its title's rule) never ends here.
+    const moves = frame.getAnimations({ subtree: true }).filter((move) => Number.isFinite(move.effect?.getComputedTiming().endTime));
     if (!moves.length) return frame.remove();
     void Promise.allSettled(moves.map((move) => move.finished)).then(() => frame.remove());
   });
