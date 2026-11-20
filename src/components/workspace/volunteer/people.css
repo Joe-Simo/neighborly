@@ -52,8 +52,9 @@
 .people-invited .live-avatar { border: 1px dashed #b9bca9; background: none; color: #68715f; }
 .people-invited h3 { min-width: 0; margin: 0; font-size: 19px; }
 .people-invited .live-person { align-items: center; }
-.people-address[data-one-line] { flex-wrap: nowrap; }
-.people-address[data-one-line] > span:last-child { flex: none; }
+/* An invitation's address stays on one line while it fits; when its column is too narrow it breaks at the at sign
+   rather than cutting the name before it down to a letter. */
+.people-address[data-one-line] > span:first-child { min-width: min(12ch, 100%); }
 .people-address[data-one-line] > span:first-child { flex: 0 1 auto; min-width: 2ch; }
 .people-row .live-meta > span[data-joined] { color: var(--paper-green); }
 .people-invitations + .live-empty, .people-deck + .live-empty { margin-top: var(--space-24); }
