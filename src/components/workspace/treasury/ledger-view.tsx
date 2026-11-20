@@ -329,6 +329,7 @@ export function LedgerView({
       {ledger.entries.length ? (
         <div className="live-table-scroll" ref={table}>
           <table className="help-ledger">
+            <caption className="sr-only">{monthAlone}</caption>
             <thead>
               <tr>
                 <th scope="col">{w.columns.date}</th>
@@ -350,7 +351,9 @@ export function LedgerView({
                     data-landed={entry.id === landed ? "" : undefined}
                   >
                     <td>{dayLabel(words.locale, entry.date)}</td>
-                    <td className="help-what">
+                    {/* A row header by role, not by tag: every rule in help.css and treasury.css is written for td, so a th would
+                        change how the ledger looks. */}
+                    <td className="help-what" role="rowheader">
                       <Button variant="ghost" onClick={() => onEntry(entry)}>
                         {title}
                       </Button>
@@ -383,7 +386,7 @@ export function LedgerView({
             <tfoot>
               <tr>
                 <td />
-                <td>
+                <td role="rowheader">
                   {ledger.month === ledger.today.slice(0, 7)
                     ? w.soFar(monthAlone)
                     : monthAlone}

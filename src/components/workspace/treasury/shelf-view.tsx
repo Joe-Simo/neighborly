@@ -140,6 +140,7 @@ function ShelfView({
           </div>
           <div className="live-table-scroll">
             <table className="help-ledger treasury-shelf">
+              <caption className="sr-only">{w.onHand}</caption>
               <thead>
                 <tr>
                   <th scope="col">{w.columns.voucher}</th>
@@ -157,7 +158,7 @@ function ShelfView({
               <tbody>
                 {shelf.items.map((row) => (
                   <tr key={row.item}>
-                    <td className="help-what">
+                    <td className="help-what" role="rowheader">
                       {sampleSaid(row.item)}
                       {row.onHand < 0 && (
                         <small>
