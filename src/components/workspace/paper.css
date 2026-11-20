@@ -718,7 +718,7 @@
 .live-field > .live-date, .live-date { box-sizing: border-box; min-width: 0; font-weight: 400; }
 :is(.live-app, .live-dialog) .live-field :is(input, select, textarea) { font-weight: 400; }
 .live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
-.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #283c32; outline-offset: 2px; }
+.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #283c32; outline-offset: 3px; }
 .live-date:has(:disabled) { opacity: 0.55; }
 .live-date[data-missing] { border-color: #6f5f93; box-shadow: 0 0 0 1px #6f5f93; }
 /* The frame around the field carries the plum; the words inside never draw a second one. */
