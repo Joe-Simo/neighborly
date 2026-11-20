@@ -31,7 +31,7 @@ const en = {
   checked: {
     title: "How it was checked",
     items: [
-      { lead: "78 of 78 axe checks pass.", rest: "Every signed-in room, in English and Spanish, at desktop width, phone width and 200% zoom (axe-core, WCAG 2.2 AA). The sign-in page passes at desktop and phone width too.", source: "axe-core 4.14, rooms on build 7e3513e, public pages on build 7db60ae." },
+      { lead: "No axe violations.", rest: "axe-core 4.14 (WCAG 2.2 A and AA) found none in the 13 rooms, in English and Spanish, as owner and as member, at 390 and 1440 pixels, nor on the 10 public pages, sign-in included.", source: "axe-core 4.14, rooms on build 7e3513e, public pages on build 7db60ae." },
       { lead: "By keyboard alone.", rest: "The core flow, from logging a call to recording a payment, walked with Tab, arrows, Enter and Esc in Chromium: 14 steps walked and passing after two fixes, and the step that records a yes checked in the code. The walk in Safari is still to come.", source: "Keyboard walk, Chromium at 1440, 19 November 2026." },
       { lead: "What a screen reader is told.", rest: "Each focus move and each spoken change recorded along the same flow: every done line said once, every refusal an alert, waiting always in words. One line said three times was fixed. The walk in VoiceOver is still to come.", source: "Screen-reader recording, Chromium at 1440, 19 November 2026." },
       { lead: "In high contrast.", rest: "With Windows’ forced colors on, the marks, the months and the printed year draw in the system’s own colors, checked in six rooms at 390 and 1440.", source: "Forced-colors pass, 19 November 2026." },
@@ -153,7 +153,7 @@ const es: typeof en = {
   checked: {
     title: "Cómo se comprobó",
     items: [
-      { lead: "78 de 78 pruebas de axe pasan.", rest: "Cada sección con sesión iniciada, en inglés y en español, en ancho de escritorio, de teléfono y con zoom al 200 % (axe-core, WCAG 2.2 AA). La página para entrar también pasa en ancho de escritorio y de teléfono.", source: "axe-core 4.14, secciones en la versión 7e3513e, páginas públicas en la versión 7db60ae." },
+      { lead: "Ningún fallo de axe.", rest: "axe-core 4.14 (WCAG 2.2 A y AA) no encontró ninguno en las 13 secciones, en inglés y en español, como responsable y como miembro, a 390 y 1440 píxeles, ni en las 10 páginas públicas, incluida la de entrar.", source: "axe-core 4.14, secciones en la versión 7e3513e, páginas públicas en la versión 7db60ae." },
       { lead: "Solo con el teclado.", rest: "El recorrido principal, de anotar una llamada a registrar un pago, hecho con Tab, flechas, Intro y Esc en Chromium: 14 pasos recorridos y correctos tras dos arreglos, y el paso que registra un sí comprobado en el código. Falta el recorrido en Safari.", source: "Recorrido con teclado, Chromium a 1440, 19 de noviembre de 2026." },
       { lead: "Lo que oye un lector de pantalla.", rest: "Cada movimiento del foco y cada cambio anunciado, grabados en el mismo recorrido: cada línea de hecho se dice una vez, cada rechazo es una alerta y la espera siempre se dice con palabras. Se arregló una línea que se decía tres veces. Falta el recorrido con VoiceOver.", source: "Grabación del lector de pantalla, Chromium a 1440, 19 de noviembre de 2026." },
       { lead: "En alto contraste.", rest: "Con los colores forzados de Windows, las marcas, los meses y el año impreso se dibujan con los colores del propio sistema, comprobado en seis secciones a 390 y 1440.", source: "Revisión de colores forzados, 19 de noviembre de 2026." },
