@@ -10,19 +10,26 @@ async function member(ctx:QueryCtx,church:Id<"churches">){
  const {id:user}=await account(ctx);
  const row=await ctx.db.query("memberships").withIndex("by_church_user",q=>q.eq("churchId",church).eq("userId",user)).unique();if(!row?.active)throw new ConvexError("Workspace access required.");return row;
 }
+/** The caller's membership in the named conference; with none named, their first active one (as the dashboard asks
+ * through the sample door), so a room's first lists can be asked beside the question of which conferences there are. */
+async function memberOf(ctx:QueryCtx,church:Id<"churches">|undefined){
+ if(church)return member(ctx,church);
+ const {id:user}=await account(ctx);
+ const row=await ctx.db.query("memberships").withIndex("by_user",q=>q.eq("userId",user)).filter(q=>q.eq(q.field("active"),true)).first();if(!row)throw new ConvexError("Workspace access required.");return row;
+}
 async function teamAccess(ctx:QueryCtx,team:Id<"teams">,me:Awaited<ReturnType<typeof member>>){
  if(me.role==="owner")return {visible:true,coordinate:true};
  const relation=await ctx.db.query("teamMembers").withIndex("by_team_member",q=>q.eq("teamId",team).eq("memberId",me._id)).unique();
  return {visible:relation?.status==="active",coordinate:relation?.status==="active"&&relation.teamRole==="coordinator"&&me.role==="coordinator"};
 }
 const commitmentItem=v.object({id:v.id("commitments"),teamId:v.id("teams"),title:text,start:v.number(),end:v.number(),location:text,preparation:text,assigneeId:v.union(v.id("memberships"),v.null()),version:v.number(),status:text,coordinatorName:text});
-export const commitmentsPage=query({args:{churchId,scope:v.union(v.literal("all"),v.literal("mine")),/** With a time given, only what has not ended by then, soonest first: the room’s first page is the coming weeks. */from:v.optional(v.number()),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(commitmentItem),handler:async(ctx,args)=>{
- const me=await member(ctx,args.churchId);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");
+export const commitmentsPage=query({args:{churchId:v.optional(churchId),scope:v.union(v.literal("all"),v.literal("mine")),/** With a time given, only what has not ended by then, soonest first: the room’s first page is the coming weeks. */from:v.optional(v.number()),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(commitmentItem),handler:async(ctx,args)=>{
+ const me=await memberOf(ctx,args.churchId);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");
  const from=args.from;
  const page=args.scope==="mine"
   ?await (from===undefined?ctx.db.query("commitments").withIndex("by_assignee",q=>q.eq("assigneeId",me._id)).order("desc"):ctx.db.query("commitments").withIndex("by_assignee_end",q=>q.eq("assigneeId",me._id).gte("end",from))).paginate(args.paginationOpts)
-  :await (from===undefined?ctx.db.query("commitments").withIndex("by_church",q=>q.eq("churchId",args.churchId)).order("desc"):ctx.db.query("commitments").withIndex("by_church_end",q=>q.eq("churchId",args.churchId).gte("end",from))).paginate(args.paginationOpts);
- const rows=await Promise.all(page.page.map(async c=>{if(c.churchId!==args.churchId)return null;const access=await teamAccess(ctx,c.teamId,me);if(!access.visible&&c.assigneeId!==me._id)return null;const coordinator=await ctx.db.get("memberships",c.coordinatorId);return {id:c._id,teamId:c.teamId,title:c.title,start:c.start,end:c.end,location:c.location,preparation:access.coordinate||c.assigneeId===me._id?c.preparation:"",assigneeId:c.assigneeId,version:c.version,status:c.cancelled?"cancelled":c.assigneeId?"accepted":"open",coordinatorName:coordinator?.name??"A former member"};}));
+  :await (from===undefined?ctx.db.query("commitments").withIndex("by_church",q=>q.eq("churchId",me.churchId)).order("desc"):ctx.db.query("commitments").withIndex("by_church_end",q=>q.eq("churchId",me.churchId).gte("end",from))).paginate(args.paginationOpts);
+ const rows=await Promise.all(page.page.map(async c=>{if(c.churchId!==me.churchId)return null;const access=await teamAccess(ctx,c.teamId,me);if(!access.visible&&c.assigneeId!==me._id)return null;const coordinator=await ctx.db.get("memberships",c.coordinatorId);return {id:c._id,teamId:c.teamId,title:c.title,start:c.start,end:c.end,location:c.location,preparation:access.coordinate||c.assigneeId===me._id?c.preparation:"",assigneeId:c.assigneeId,version:c.version,status:c.cancelled?"cancelled":c.assigneeId?"accepted":"open",coordinatorName:coordinator?.name??"A former member"};}));
  return {...page,page:rows.filter(row=>row!==null)};
 }});
 const taskItem=v.object({id:v.id("tasks"),title:text,dueAt:v.union(v.number(),v.null()),assigneeId:v.union(v.id("memberships"),v.null()),complete:v.boolean()});
@@ -32,21 +39,21 @@ export const meetingsPage=query({args:{churchId,paginationOpts:paginationOptsVal
 const personItem=v.object({id:v.id("memberships"),name:text,email:text,role:text,active:v.boolean(),approved:v.boolean(),coverOptIn:v.boolean()});
 export const peoplePage=query({args:{churchId,paginationOpts:paginationOptsValidator},returns:paginationResultValidator(personItem),handler:async(ctx,args)=>{const me=await member(ctx,args.churchId);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");const relations=await ctx.db.query("teamMembers").withIndex("by_member",q=>q.eq("memberId",me._id)).take(201);if(relations.length>200)throw new Error("Team memberships require pagination.");const active=relations.filter(r=>r.status==="active"),visible=new Set(active.map(r=>r.teamId)),coordinated=new Set(active.filter(r=>r.teamRole==="coordinator"&&me.role==="coordinator").map(r=>r.teamId));const page=await ctx.db.query("memberships").withIndex("by_church",q=>q.eq("churchId",args.churchId)).order("desc").paginate(args.paginationOpts);const rows=await Promise.all(page.page.map(async p=>{const own=p._id===me._id;if(me.role==="owner"||own)return {id:p._id,name:p.name,email:p.email,role:p.role,active:p.active,approved:p.approved,coverOptIn:p.coverOptIn};if(!p.active)return null;const teams=await ctx.db.query("teamMembers").withIndex("by_member",q=>q.eq("memberId",p._id)).take(201);if(teams.length>200)throw new Error("Team memberships require pagination.");if(!teams.some(t=>t.status==="active"&&visible.has(t.teamId)))return null;const canSee=teams.some(t=>t.status==="active"&&coordinated.has(t.teamId));return {id:p._id,name:p.name,email:canSee?p.email:"",role:p.role,active:p.active,approved:p.approved,coverOptIn:canSee?p.coverOptIn:false};}));return {...page,page:rows.filter(row=>row!==null)};}});
 const requestItem=v.object({id:v.id("requests"),commitmentId:v.id("commitments"),recipientId:v.id("memberships"),status:text,commitment:v.union(commitmentItem,v.null())});
-export const requestsPage=query({args:{churchId,paginationOpts:paginationOptsValidator},returns:paginationResultValidator(requestItem),handler:async(ctx,args)=>{
- const me=await member(ctx,args.churchId);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");
- const page=await ctx.db.query("requests").withIndex("by_church",q=>q.eq("churchId",args.churchId)).order("desc").paginate(args.paginationOpts);
+export const requestsPage=query({args:{churchId:v.optional(churchId),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(requestItem),handler:async(ctx,args)=>{
+ const me=await memberOf(ctx,args.churchId);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");
+ const page=await ctx.db.query("requests").withIndex("by_church",q=>q.eq("churchId",me.churchId)).order("desc").paginate(args.paginationOpts);
  const rows=await Promise.all(page.page.map(async r=>{
   const slot=await ctx.db.get("commitments",r.commitmentId);
-  const access=slot&&slot.churchId===args.churchId?await teamAccess(ctx,slot.teamId,me):null;
+  const access=slot&&slot.churchId===me.churchId?await teamAccess(ctx,slot.teamId,me):null;
   if(r.recipientId!==me._id&&me.role!=="owner"&&!access?.coordinate)return null;
-  const visible=slot&&slot.churchId===args.churchId&&(access?.visible||slot.assigneeId===me._id);
+  const visible=slot&&slot.churchId===me.churchId&&(access?.visible||slot.assigneeId===me._id);
   const coordinator=visible?await ctx.db.get("memberships",slot.coordinatorId):null;
   const commitment=visible?{id:slot._id,teamId:slot.teamId,title:slot.title,start:slot.start,end:slot.end,location:slot.location,preparation:access?.coordinate||slot.assigneeId===me._id?slot.preparation:"",assigneeId:slot.assigneeId,version:slot.version,status:slot.cancelled?"cancelled":slot.assigneeId?"accepted":"open",coordinatorName:coordinator?.name??"A former member"}:null;
   return {id:r._id,commitmentId:r.commitmentId,recipientId:r.recipientId,status:r.status,commitment};
  }));return {...page,page:rows.filter(row=>row!==null)};
 }});
 const announcementItem=v.object({id:v.id("announcements"),title:text,body:text,authorName:text,createdAt:v.number()});
-export const announcementsPage=query({args:{churchId,paginationOpts:paginationOptsValidator},returns:paginationResultValidator(announcementItem),handler:async(ctx,args)=>{await member(ctx,args.churchId);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");const page=await ctx.db.query("announcements").withIndex("by_church",q=>q.eq("churchId",args.churchId)).order("desc").paginate(args.paginationOpts);return {...page,page:await Promise.all(page.page.map(async a=>({id:a._id,title:a.title,body:a.body,authorName:(await ctx.db.get("memberships",a.authorId))?.name??"A former member",createdAt:a.createdAt})))};}});
+export const announcementsPage=query({args:{churchId:v.optional(churchId),paginationOpts:paginationOptsValidator},returns:paginationResultValidator(announcementItem),handler:async(ctx,args)=>{const me=await memberOf(ctx,args.churchId);if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");const page=await ctx.db.query("announcements").withIndex("by_church",q=>q.eq("churchId",me.churchId)).order("desc").paginate(args.paginationOpts);return {...page,page:await Promise.all(page.page.map(async a=>({id:a._id,title:a.title,body:a.body,authorName:(await ctx.db.get("memberships",a.authorId))?.name??"A former member",createdAt:a.createdAt})))};}});
 const invitationItem=v.object({id:v.id("invitations"),email:text,role:text,status:text});
 export const invitationsPage=query({args:{churchId,paginationOpts:paginationOptsValidator},returns:paginationResultValidator(invitationItem),handler:async(ctx,args)=>{const me=await member(ctx,args.churchId);if(me.role!=="owner")throw new ConvexError("Owner access required.");if(args.paginationOpts.numItems>100)throw new Error("Page size exceeds 100.");const page=await ctx.db.query("invitations").withIndex("by_church",q=>q.eq("churchId",args.churchId)).order("desc").paginate(args.paginationOpts);return {...page,page:page.page.map(i=>({id:i._id,email:i.email,role:i.role,status:i.status}))};}});
 const availabilityItem=v.object({id:v.id("availability"),personId:v.id("memberships"),start:text,end:text});

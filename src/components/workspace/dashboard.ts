@@ -18,6 +18,34 @@ type Dashboard = FunctionReturnType<typeof api.workspace.dashboard>;
  *   once without naming it, and kept that way: changing the question would read it all again.
  * useQueries resubscribes whenever it is handed a new object, so the question is built once per real change.
  */
+/**
+ * Which conference the first questions name, before the list of this person's conferences has arrived: the one last
+ * opened on this device, or, through the sample door, none (the backend answers for the account's one conference, and
+ * the question is kept that way). Once the list names one, that one. `null` while nothing can be asked yet.
+ */
+export function useFirstChurch({
+  churchId,
+  enterSample,
+  ready,
+  listing,
+}: {
+  /** The conference the list names: the one chosen, else the first. */
+  churchId: Id<"churches"> | undefined;
+  enterSample: boolean;
+  /** The account is known to the backend. */
+  ready: boolean;
+  /** The list of this person's conferences has not arrived yet. */
+  listing: boolean;
+}): { churchId?: Id<"churches"> } | null {
+  const [remembered] = useState(readRememberedChurch);
+  const askedChurch = churchId ?? (ready && listing ? remembered : undefined);
+  useEffect(() => {
+    if (churchId) rememberChurch(churchId);
+  }, [churchId]);
+  const [doorAsked] = useState(enterSample);
+  return useMemo(() => (doorAsked && ready ? {} : askedChurch ? { churchId: askedChurch } : null), [doorAsked, ready, askedChurch]);
+}
+
 export function useDashboard({
   churchId,
   enterSample,
@@ -34,21 +62,12 @@ export function useDashboard({
   listing: boolean;
   sampleVisitor: boolean | undefined;
 }) {
-  const [remembered] = useState(readRememberedChurch);
-  const askedChurch = churchId ?? (ready && listing ? remembered : undefined);
-  useEffect(() => {
-    if (churchId) rememberChurch(churchId);
-  }, [churchId]);
+  const asked = useFirstChurch({ churchId, enterSample, ready, listing });
   const [doorAsked] = useState(enterSample);
-  const doorOpen = doorAsked && ready;
+  const askedChurch = asked?.churchId;
   const queries = useMemo(
-    (): RequestForQueries =>
-      doorOpen
-        ? { dashboard: { query: api.workspace.dashboard, args: {} } }
-        : askedChurch
-          ? { dashboard: { query: api.workspace.dashboard, args: { churchId: askedChurch } } }
-          : {},
-    [doorOpen, askedChurch],
+    (): RequestForQueries => (asked ? { dashboard: { query: api.workspace.dashboard, args: asked } } : {}),
+    [asked],
   );
   const reading = useQueries(queries).dashboard as Dashboard | Error | undefined;
   // A failure for the conference the list names is a real one, and goes to the room's error state as before.

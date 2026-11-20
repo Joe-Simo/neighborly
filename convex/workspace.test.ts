@@ -53,6 +53,10 @@ describe("workspace access and consent",()=>{
   expect(coordinator.page.map(row=>row.commitmentId)).toEqual([ids.slot]);
   expect(coordinator.page[0].commitment?.preparation).toBe("Guide");
   await expect(as(ids.outsider).query(api.pages.requestsPage,{churchId:ids.church,paginationOpts:{numItems:10,cursor:null}})).rejects.toThrow("Workspace access");
+  // Asked with no conference named, the first lists answer for the caller's own conference, with the same gates.
+  expect(await as(ids.coord).query(api.pages.requestsPage,{paginationOpts:{numItems:10,cursor:null}})).toEqual(coordinator);
+  expect((await as(ids.vol).query(api.pages.announcementsPage,{paginationOpts:{numItems:10,cursor:null}})).page).toEqual((await as(ids.vol).query(api.pages.announcementsPage,{churchId:ids.church,paginationOpts:{numItems:10,cursor:null}})).page);
+  await expect(as(ids.outsider).query(api.pages.requestsPage,{paginationOpts:{numItems:10,cursor:null}})).rejects.toThrow("Workspace access");
  });
  test("rejects another church and hides teams outside a coordinator's scope",async()=>{
   const {ids,as}=await setup();

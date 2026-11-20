@@ -14,7 +14,7 @@ import { forgetThisBrowser, forgetWhoWasHere } from "@/lib/forget-browser";
 import { useAccount } from "@/components/live-providers";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import { useDashboard } from "@/components/workspace/dashboard";
+import { useDashboard, useFirstChurch } from "@/components/workspace/dashboard";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
 import { authWords, leftKey, useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
@@ -247,6 +247,8 @@ function LiveRooms({
     churches.find((church) => church.id === selectedChurch)?.id ??
     churches[0]?.id;
   const dashboard = useDashboard({ churchId, enterSample, ready: asking, listing: viewer === undefined, sampleVisitor });
+  // The first room's lists name the same conference the room data does, asked as early (dashboard.ts), not after the list.
+  const firstChurch = useFirstChurch({ churchId, enterSample, ready: asking, listing: viewer === undefined });
   // The page says which language it is showing, so a screen reader speaks Spanish as Spanish, in the rooms and in
   // every dialog (dialogs are drawn outside the rooms, straight under <body>). Before the rooms it is the door's.
   const shown = dashboard && !sampleVisitor ? dashboard.user.language : deviceLanguage;
@@ -260,8 +262,8 @@ function LiveRooms({
   const [openedAt] = useState(() => Math.floor(Date.now() / 3_600_000) * 3_600_000);
   const commitmentPage = usePaginatedQuery(
     api.pages.commitmentsPage,
-    churchId && (area === "commitments" || area === "mine")
-      ? { churchId, scope: area === "mine" ? "mine" : "all", from: openedAt }
+    firstChurch && (area === "commitments" || area === "mine")
+      ? { ...firstChurch, scope: area === "mine" ? "mine" : "all", from: openedAt }
       : "skip",
     { initialNumItems: 30 },
   );
@@ -282,14 +284,14 @@ function LiveRooms({
   );
   const requestPage = usePaginatedQuery(
     api.pages.requestsPage,
-    churchId && (area === "week" || area === "mine" || area === "commitments")
-      ? { churchId }
+    firstChurch && (area === "week" || area === "mine" || area === "commitments")
+      ? firstChurch
       : "skip",
     { initialNumItems: 30 },
   );
   const announcementPage = usePaginatedQuery(
     api.pages.announcementsPage,
-    churchId && area === "week" ? { churchId } : "skip",
+    firstChurch && area === "week" ? firstChurch : "skip",
     { initialNumItems: 30 },
   );
   const invitationPage = usePaginatedQuery(
