@@ -35,12 +35,13 @@ export function PrivacyPage({ language, book = privacyWords }: { language: Langu
   const said = book[language];
   return <div className="public-page" lang={language}>
     {language !== "en" && <ReaderLanguage page={language} />}
+    <a className="skip-link" href="#content">{edgeWords[language].skip}</a>
     <header className="public-page-header">
       <Link className="public-page-brand" href="/" aria-label={edgeWords[language].home}><span lang="en">kind helps</span></Link>
       <PublicLanguage language={language} paths={{ en: book.en.path, es: book.es.path }} />
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
-    <main className="public-words" data-address={`kindhelps.com${said.path}`}>
+    <main id="content" tabIndex={-1} className="public-words" data-address={`kindhelps.com${said.path}`}>
       <h1 style={{ "--word": Math.max(...said.title.split(/\s+/).map((word) => word.length)) } as CSSProperties}>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={book.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />

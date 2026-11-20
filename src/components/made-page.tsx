@@ -45,12 +45,13 @@ export function MadePage({ language }: { language: Language }) {
   const [lastLead, lastTail] = said.last.split(address);
   return <div className="public-page" lang={language}>
     {language !== "en" && <ReaderLanguage page={language} />}
+    <a className="skip-link" href="#content">{edgeWords[language].skip}</a>
     <header className="public-page-header">
       <Link className="public-page-brand" href="/" aria-label={edgeWords[language].home}><span lang="en">kind helps</span></Link>
       <PublicLanguage language={language} paths={{ en: madeWords.en.path, es: madeWords.es.path }} />
       <Link href="/app">{said.enter}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
-    <main className="public-words public-made" data-address={`kindhelps.com${said.path}`}>
+    <main id="content" tabIndex={-1} className="public-words public-made" data-address={`kindhelps.com${said.path}`}>
       <h1>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={madeWords.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />

@@ -328,7 +328,8 @@
 /* With less motion no scene opens, so nothing is said to be opening. */
 @media(prefers-reduced-motion:reduce){.painted-world-scroll-cue[data-waiting]{visibility:hidden}}
 /* A piece of the opening's words that the sheet's edge would reach has left the sheet in one cut (neighborly-experience.tsx). */
-.neighborly-connected-world.is-connected .painted-world[data-hero-only=true] [data-gone]{visibility:hidden}
+/* A piece the edge has passed is cut from sight in one step, but stays in the Tab order: Tab onto it and the opening comes back (neighborly-experience.tsx). */
+.neighborly-connected-world.is-connected .painted-world[data-hero-only=true] [data-gone]{opacity:0;pointer-events:none;transition:none}
 /* Under the head, what Kind Helps is, and a quiet way into the sample. */
 .painted-world-description.painted-world-what{max-width:38ch;pointer-events:auto}
 .painted-world-sample{white-space:nowrap;color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;pointer-events:auto}
