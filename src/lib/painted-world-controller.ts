@@ -113,7 +113,8 @@ function gradeToStill(surface: T.Material, phone: boolean) {
 }
 
 /** A pointer on the painting, in pixels from its upper left. */
-export type StagePointer = { type: string; x: number; y: number; pointerId: number; isPrimary: boolean; preventDefault?: () => void };
+/** `hover`: a mouse on a page that can hover, the only pointer the opening's hands lean toward. */
+export type StagePointer = { type: string; x: number; y: number; pointerId: number; isPrimary: boolean; hover?: boolean; preventDefault?: () => void };
 /**
  * Where the scene is drawn and what it hears: the page's own element (domStage), or a canvas handed to a worker
  * (painted-world-worker.ts), whose page tells it the same things by message.
@@ -154,7 +155,7 @@ function domStage(host: HTMLElement): PaintedStage {
     listen(on) {
       const point = (event: PointerEvent) => {
         const rect = host.getBoundingClientRect();
-        on.pointer({ type: event.type, x: event.clientX - rect.left, y: event.clientY - rect.top, pointerId: event.pointerId, isPrimary: event.isPrimary, preventDefault: () => event.preventDefault() });
+        on.pointer({ type: event.type, x: event.clientX - rect.left, y: event.clientY - rect.top, pointerId: event.pointerId, isPrimary: event.isPrimary, hover: event.pointerType === "mouse" && matchMedia("(hover: hover)").matches, preventDefault: () => event.preventDefault() });
       };
       const observer = new ResizeObserver(on.resize);
       const intersection = new IntersectionObserver(([entry]) => on.visible(entry.isIntersecting));
@@ -348,6 +349,9 @@ export function createPaintedWorld(stage: PaintedStage, options: PaintedWorldOpt
   let reduce = options.reducedMotion ?? stage.reducedMotion();
   const pointer = new T.Vector2();
   const pointerTarget = new T.Vector2();
+  /** Set by the first hovering mouse move: until then (and on touch) the hands stand as authored, so nothing leans on load. */
+  let leaning = false;
+  const LEAN = 2 * Math.PI / 180;
   const raycaster = new T.Raycaster();
   const dragPlane = new T.Plane(new T.Vector3(0, 0, 1), -3);
   const dragStart = new T.Vector3();
@@ -800,7 +804,12 @@ export function createPaintedWorld(stage: PaintedStage, options: PaintedWorldOpt
       openingModel.getObjectByName("BackgroundNarrow")?.traverse((object) => { object.visible = openingFrame.mobile && openingFrame.narrow; });
       const rig = openingModel.getObjectByName("ReliefRig");
       const rigScale = openingFrame.mobile ? phoneRig.scale : 1;
-      if (rig) { rig.scale.setScalar(rigScale); rig.position.set(0, openingFrame.mobile ? phoneRig.lift : 0, 0); }
+      if (rig) {
+        rig.scale.setScalar(rigScale); rig.position.set(0, openingFrame.mobile ? phoneRig.lift : 0, 0);
+        // The hands and card lean toward a resting mouse, at most 3 degrees all told (2 on each axis), by turning the rig only: the words are the page's.
+        const lean = leaning && !reduce && !openingFrame.mobile && current === "opening" ? LEAN : 0;
+        rig.rotation.set(-pointer.y * lean, pointer.x * lean, 0);
+      }
       if (openingGuide && openingOutcome === "rest" && !handing) {
         const lift = smooth(interaction);
         openingGuide.position.copy(openingGuidePosition);
@@ -926,6 +935,7 @@ export function createPaintedWorld(stage: PaintedStage, options: PaintedWorldOpt
     if (!event.isPrimary) return;
     const point = ndc(event);
     if (!reduce) pointerTarget.copy(point);
+    if (event.hover) leaning = true;
     if (dragging && pointerId === event.pointerId) {
       if (current === "meal") {
         raycaster.setFromCamera(point, camera);
