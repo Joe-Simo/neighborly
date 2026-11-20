@@ -17,7 +17,7 @@ const week = [
   { figure: "visits", day: "Day three", line: "Visited in pairs.", ask: "Add the visit to the count.", done: `${whole.format(sampleYear.visits)} home visits.` },
   { figure: "paid", day: "Day four", line: "$450 toward rent, paid to the landlord.", ask: "Add the $450 to what was paid.", done: `${dollars.format(sampleYear.helpPaid / 100)} in help.` },
 ] as const;
-const finals = { calls: whole.format(sampleYear.calls), visits: whole.format(sampleYear.visits), paid: dollars.format(sampleYear.helpPaid / 100) };
+export const finals = { calls: whole.format(sampleYear.calls), visits: whole.format(sampleYear.visits), paid: dollars.format(sampleYear.helpPaid / 100) };
 
 /**
  * One neighbour's week beside the year: three slips, laid one after another (picked up and carried, or pressed from the keyboard or by tap),

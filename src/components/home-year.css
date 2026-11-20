@@ -18,7 +18,7 @@
 .home-year[data-folding=true]{perspective:900px}
 .home-year[data-folding=true] .home-year-tab{will-change:transform;transform:rotateX(calc((1 - var(--fold,1)) * 86deg))}
 .home-year[data-folding=true] dd::after{content:"";position:absolute;z-index:2;left:calc(-1 * var(--tab-x));right:calc(-1 * var(--tab-x) - .045em);bottom:calc(-1 * var(--tab-y));height:14px;background:linear-gradient(#2e241600,#2e241633);transform:scaleY(calc(1 - var(--fold,1)));transform-origin:50% 100%;will-change:transform;pointer-events:none}
-.home-year[data-one-more] div:nth-child(2) dd{color:#365c46}
+.home-year[data-one-more] div:not(:nth-child(2)) dd{color:#365c46}
 /* Above each counted figure, its pile: cut sheets of the card's lighter paper, three pixels to a sheet, each with an ink-warm edge and a little off true,
    the width of the figure's tab and centred on it. The top sheet's face is seen from a little above. Laid a whole sheet at a time on scroll (home-year.tsx
    sets --laid: a sheet past it is not yet laid); at rest and without script the pile is whole. A tight contact shade where it meets the page. */
