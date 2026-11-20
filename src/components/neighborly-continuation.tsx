@@ -22,10 +22,10 @@ const detailSizes = "(max-width: 700px) 38vw, (max-width: 1023px) 43vw, 30vw";
 // What a conference has on its first day, in the order the work happens. Each line lies under its room's own picture,
 // set at the small angle it was put down at.
 const rooms = [
-  ["call", "The help line", "Every call is written down once, and the urgent ones rise to the top.", -1],
-  ["visit", "Visits in pairs", "What the two members saw, and what was asked, stays with the request.", .9],
+  ["call", "The help line", "Every call is written down once, and the urgent ones rise to the top.", -1],
+  ["visit", "Visits in pairs", "What the two members saw, and what was asked, stays with the request.", .9],
   ["help", "The ledger", "Every bill paid is on one page: to whom, for whom, and how much.", -.8],
-  ["year", "The yearly report", "Ready when the year ends. Check the totals, then print.", 1.1],
+  ["year", "The yearly report", "Ready when the year ends. Check the totals, then print.", 1.1],
   ["people", "Your people", "Each member sees what they said yes to, in English or Spanish.", -1.1],
   ["files", "The assistant", "It checks the draft request made from a call note. A person decides on every one.", .8],
 ] as const;

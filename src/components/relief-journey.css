@@ -105,7 +105,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .relief-panel:has([data-picture=call]){--drop:min(2.2vw,4svh)}
 .relief-panel:has([data-picture=help]){--drop:min(.8vw,1.5svh)}
 .relief-words h2{margin:0;font:400 clamp(64px,9.45vw,150px)/var(--lead-1) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-1);white-space:nowrap;translate:0 calc((1 - var(--e)) * 56px + var(--q) * 22px)}
-.relief-words p{margin:clamp(20px,2.2vw,36px) 0 0;max-width:12.4em;font-size:clamp(19px,1.6vw,24px);line-height:1.42;text-wrap:pretty;translate:0 calc((1 - var(--e)) * 80px + var(--q) * 10px)}
+.relief-words p{margin:round(nearest,clamp(20px,2.2vw,36px),4px) 0 0;max-width:12.4em;font-size:clamp(19px,1.6vw,24px);line-height:1.42;text-wrap:pretty;translate:0 calc((1 - var(--e)) * 80px + var(--q) * 10px)}
 /* A chapter's words come up into the window in full ink; they are never faded in. */
 /* The heading is set against its picture: it reaches a little way over the picture's own paper. */
 .relief-panel[data-side=left] .relief-words{margin-left:-4vw}
@@ -183,7 +183,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-words h2{font-size:clamp(60px,17.5vw,76px)}
   .relief-words p{font-size:19px;max-width:20em}
   /* On a phone each picture is a taller cut of itself, closer in, with less paper around it. The call's cut still holds the card and the whole receiver. */
-  .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:14px;padding:28px 0}
+  .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:var(--space-16);padding:28px 0}
   .relief-panel[data-chapter=visit] .relief-picture{aspect-ratio:1/1}
   .relief-panel[data-chapter=visit] .relief-layers{width:150%;margin-left:-8%}
   .relief-panel[data-chapter=help] .relief-picture{aspect-ratio:5/4}
@@ -195,7 +195,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
    bare paper stands above it, and the visit, whose door stands at the left, sets its words on the right, under the paper its picture leaves open.
    The year keeps the left, where its figures stand in columns. */
 @media(max-width:700px) and (orientation:portrait),(max-width:480px){
-  .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:10px;padding:20px 0 36px}
+  .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:var(--space-12);padding:20px 0 36px}
   .relief-panel[data-chapter=visit] .relief-words{text-align:right}
   .relief-panel[data-chapter=visit] .relief-words p{margin-left:auto;text-align:left;width:20em;max-width:100%}
   .relief-panel[data-chapter=call] .relief-picture{aspect-ratio:4/3}
