@@ -1,10 +1,11 @@
+import { weekWords } from "@/lib/week-words";
 import { card, contentType, size } from "@/app/og-card/card";
 import { accessibilityWords } from "@/lib/accessibility-words";
 
 export { contentType, size };
-export const alt = "A hand ties a gold ribbon on a green paper gift.";
+export const alt = weekWords.en.days[1].alt;
 
-/** The accessibility page's card: its title, beside the same paper as the privacy page. */
+/** The accessibility page's card: its title, beside the open door. */
 export default function Image() {
-  return card({ head: accessibilityWords.en.title, art: "assets/relief/relief-mine-1536.webp" });
+  return card({ head: accessibilityWords.en.title, art: "assets/relief/relief-visit-1024.webp" });
 }
