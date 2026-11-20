@@ -531,49 +531,63 @@ export function ReportView({
             {w.time.activeMembers(report.time.activeMembers)}
           </span>
         </div>
-        <dl className="help-figures">
-          <div>
-            <dt>{w.time.hours}</dt>
-            <dd>
-              <span className="count-up">{count(report.time.hours)}</span>
-              <small>
-                {serving
-                  .filter((line) => line.hours > 0)
-                  .map((line) => `${sampleSaid(line.name)} ${count(line.hours)}`)
-                  .join(" · ") || w.time.noHours}
-              </small>
-            </dd>
-          </div>
-          <div>
-            <dt>{w.time.miles}</dt>
-            <dd>
-              <span className="count-up">{count(report.visitMiles)}</span>
-              <small>{w.time.driven}</small>
-            </dd>
-          </div>
-          <div>
-            <dt>{w.time.returned}</dt>
-            <dd>
-              <span className="count-up">{count(report.calls.returned)}</span>
-              <small>
-                {w.time.ofCalls(report.calls.taken)}
-                {noCallBack > 0 && <span className="report-own-line">{w.time.noCallBack(noCallBack)}</span>}
-              </small>
-            </dd>
-          </div>
-        </dl>
+        {/* The year's time as cut paper, as the year's help is above: all its hours stand on one sheet for each kind of
+            service, each as thick as its share; the miles and the calls returned stand beside them as two slips. */}
+        <div className="report-hours">
+          <figure className="report-hours-pile">
+            <span className="report-hours-stand">
+            <span className="report-hours-figure">{count(report.time.hours)}</span>
+            <span className="report-hours-sheets" aria-hidden="true">
+              {serving.map((line, at) => (
+                <i key={line.name} data-line={at % 3} style={{ "--share": report.time.hours > 0 ? line.hours / report.time.hours : 0 } as CSSProperties} />
+              ))}
+            </span>
+            </span>
+            <figcaption>
+              <strong>{w.book.allHours}</strong>
+              {": "}
+              {serving
+                .filter((line) => line.hours > 0)
+                .map((line) => `${line.name} ${count(line.hours)}`)
+                .join(" · ") || w.time.noHours}
+            </figcaption>
+          </figure>
+          <dl className="report-hours-slips">
+            <div>
+              <dt>
+                {w.time.miles}
+                <small>{w.time.driven}</small>
+              </dt>
+              <dd>
+                <b>{count(report.visitMiles)}</b>
+              </dd>
+            </div>
+            <div>
+              <dt>
+                {w.time.returned}
+                <small>
+                  {w.time.ofCalls(report.calls.taken)}
+                  {noCallBack > 0 && <span className="report-own-line">{w.time.noCallBack(noCallBack)}</span>}
+                </small>
+              </dt>
+              <dd>
+                <b>{count(report.calls.returned)}</b>
+              </dd>
+            </div>
+          </dl>
+        </div>
         {report.time.teams.length > 0 && (
-          <ol className="help-bars report-teams">
-            {serving.map((line) => (
+          <ol className="report-hours-lines">
+            {serving.map((line, at) => (
               <li key={line.name}>
                 <div>
-                  <h3>{sampleSaid(line.name)}</h3>
+                  <h3>{line.name}</h3>
                   <p>{line.detail}</p>
                 </div>
-                <div className="help-bar" aria-hidden="true">
-                  <span style={share(line.hours, mostHours)} />
-                </div>
-                <span className="help-amount">{w.time.hoursCount(line.hours)}</span>
+                <span className="report-hours-strip" data-line={at % 3} aria-hidden="true">
+                  <i style={share(line.hours, mostHours)} />
+                </span>
+                <span className="report-hours-amount">{w.time.hoursCount(line.hours)}</span>
               </li>
             ))}
           </ol>

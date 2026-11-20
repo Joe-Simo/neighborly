@@ -7,7 +7,6 @@ import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
-import { cut, seeded } from "@/components/workspace/volunteer/week-quilt";
 import { placeTurn, setTurnGeometry, turnGeometry, type TurnGeometry } from "@/lib/page-turn";
 import { fill } from "@/lib/words/fill";
 import { count, kindLabels, longSpanLabel, money, periodLabel, type YearReport } from "@/components/workspace/reports/lines";
@@ -31,6 +30,7 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
   const b = w.book;
   const kinds = kindLabels(words);
   const period = `${periodLabel(report, words)}: ${longSpanLabel(report, words, !report.closed)}`;
+  const fullest = Math.max(0, ...report.months.map((line) => line.paid));
   const shownKinds = report.kinds.filter((line) => line.requests > 0 || line.paid > 0);
   const serving = [
     { name: w.time.visits, hours: report.visitHours },
@@ -54,17 +54,19 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
       body: (
         <div className="book-cover">
           <p className="book-group">{groupName}</p>
+          {/* The year in paper on its cover: one slip for each month, fanned from the spine's corner, each as long as that
+              month's help paid against the year's fullest month. No word is set on a slip. */}
+          <span className="book-fan" aria-hidden="true">
+            {report.months.map((line, at) => (
+              <i
+                key={line.month}
+                style={{ "--at": at, "--reach": fullest > 0 ? (0.34 + 0.66 * line.paid / fullest).toFixed(3) : 0.34 } as CSSProperties}
+              />
+            ))}
+          </span>
           <FollowingHeading>{b.cover}</FollowingHeading>
           <p className="book-period">{period}</p>
           <p className="book-total">{fill(b.coverTotal(report.history.householdsInAll), { amount: dollars(report.helpPaid) })}</p>
-          {/* The year's mark: the quilt's own three papers, a call, a visit and a yes, laid as a small patch. */}
-          <span className="book-mark" aria-hidden="true">
-            {(["call", "visit", "yes"] as const).map((kind) => (
-              <span key={kind} className="week-quilt-piece" data-kind={kind} style={{ "--lean": `${((seeded(`${report.year}${kind}`, 9) - 0.5) * 5).toFixed(2)}deg` } as CSSProperties}>
-                <i style={{ clipPath: cut(`${report.year}${kind}`) }} />
-              </span>
-            ))}
-          </span>
           {sample && <p className="book-sample">{b.sample}</p>}
         </div>
       ),
