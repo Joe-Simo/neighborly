@@ -8,7 +8,7 @@ import { FIRST_MONTH, MONTHS, monthAt } from "@/lib/year-paper-flight";
 import { yearPaperWords } from "@/lib/year-paper-words";
 import type { Language } from "@/lib/words";
 import { numberLocales } from "@/lib/words/numbers";
-import type { YearPaperCanvas } from "./year-paper-gl";
+import type { SlipTold, YearPaperCanvas } from "./year-paper-gl";
 import "./year-paper.css";
 
 /** Everything the band says, in one language: its words, its twelve months and its figures (es-US, as every Spanish page writes them). */
@@ -36,6 +36,10 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
     const band = root.current, ledger = band?.querySelector<HTMLElement>(".year-paper-station"), frame = band?.querySelector<HTMLElement>(".year-paper-window"), stage = band?.querySelector<HTMLElement>(".year-paper-stage"), month = band?.querySelector<HTMLElement>(".year-paper-month"), run = band?.querySelector<HTMLElement>(".year-paper-run");
     if (!band || !frame || !stage || !month || !run || matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
     let scene: YearPaperCanvas | null = null, gone = false, top = 0, tall = 0, near = false, drawn = -1, shown = 0, kept = false;
+    // The slip pointed at (a mouse's, a tap's) or walked to (the arrow keys), lifted one step and named under the title. A lift is a cut, never eased.
+    let lifted: SlipTold | null = null, liftedDrawn = -1, said = "", pointer: { x: number; y: number } | null = null, mouse = false;
+    let names: Record<string, string> = {};
+    const say = (slip: SlipTold) => `${months[slip.month]} · ${names[slip.kind] ?? names.o}${slip.waiting ? `, ${words.waiting}` : ""}`;
     // The travelling card lies on October's first slip and is that slip from the moment the band reaches the top (thread-card.tsx, the same
     // reading of the same frame): until then the canvas leaves that slip out and the place is marked for the card, at the slip's own size and turn.
     const held = () => top > 0 && !!band.closest(".thread-live");
@@ -55,15 +59,45 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
       if (!near) return;
       const through = Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height)));
       const at = monthAt(through);
-      if (at !== shown) month.textContent = months[shown = at];
+      const step0 = Math.round(through * 1000);
+      // A scroll moves the slips under a resting mouse: it is asked again. A tap's or a key's slip is let go when the page moves on.
+      if (scene && step0 !== drawn && drawn >= 0) { if (mouse && pointer) pick(pointer.x, pointer.y); else lifted = null; }
+      shown = at;
+      const line = lifted ? say(lifted) : months[at];
+      if (line !== said) month.textContent = said = line;
       // Drawn to the thousandth of the flight, so a still page or a scroll too small to see draws nothing.
       const step = Math.round(through * 1000), keep = held();
-      if (scene && (step !== drawn || keep !== kept)) { scene.draw(step / 1000, keep); if (keep) mark(step / 1000); drawn = step; kept = keep; if (band.dataset.live !== "true") band.dataset.live = "true"; }
+      const raise = lifted?.index ?? -1;
+      if (scene && (step !== drawn || keep !== kept || raise !== liftedDrawn)) { scene.draw(step / 1000, keep, raise); liftedDrawn = raise; if (keep) mark(step / 1000); drawn = step; kept = keep; if (band.dataset.live !== "true") band.dataset.live = "true"; }
     };
     const { ask, drop } = frameStep(read, write);
+    const pick = (x: number, y: number) => { const box = stage.getBoundingClientRect(); lifted = scene?.pick(x - box.left, y - box.top) ?? null; };
+    const point = (event: PointerEvent) => {
+      if (!scene || !near) return;
+      mouse = event.pointerType === "mouse";
+      pointer = { x: event.clientX, y: event.clientY };
+      pick(pointer.x, pointer.y); ask();
+    };
+    const leave = (event: PointerEvent) => { if (event.pointerType !== "mouse") return; pointer = null; lifted = null; ask(); };
+    const walk = (event: KeyboardEvent) => {
+      if (!scene) return;
+      const by = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+      if (event.key === "Escape") { lifted = null; ask(); return; }
+      if (!by) return;
+      event.preventDefault();
+      lifted = scene.first(Math.max(0, Math.min(months.length - 1, (lifted?.month ?? shown - by) + by)));
+      if (told) told.textContent = say(lifted);
+      ask();
+    };
+    const told = band.querySelector<HTMLElement>(".year-paper-told");
+    stage.addEventListener("pointermove", point, { passive: true });
+    stage.addEventListener("pointerdown", point, { passive: true });
+    stage.addEventListener("pointerleave", leave);
+    stage.addEventListener("keydown", walk);
     let sized: ResizeObserver | undefined;
     const load = async () => {
-      const { yearPaperCanvas } = await import("./year-paper-gl");
+      const { yearPaperCanvas, kindNames } = await import("./year-paper-gl");
+      names = kindNames[language];
       const canvas = document.createElement("canvas");
       canvas.className = "year-paper-canvas";
       canvas.setAttribute("aria-hidden", "true");
@@ -85,6 +119,8 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
       await idle(); if (gone) return made.dispose();
       stage.prepend(canvas);
       scene = made;
+      // Only a live year can be walked: the poster (Reduce Motion, or no canvas) stands as it is, and is not a stop for the keyboard.
+      stage.tabIndex = 0; stage.setAttribute("role", "group"); stage.setAttribute("aria-label", words.walk);
       mark(0);
       sized = new ResizeObserver(() => { scene?.size(measure()); mark(0); drawn = -1; ask(); });
       // The canvas is over the poster from here: the cut is now, with the poster's own frame on it.
@@ -98,8 +134,8 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
     inSight.observe(run);
     addEventListener("scroll", ask, { passive: true });
     addEventListener("resize", ask);
-    return () => { gone = true; drop(); ahead.disconnect(); inSight.disconnect(); sized?.disconnect(); scene?.dispose(); removeEventListener("scroll", ask); removeEventListener("resize", ask); };
-  }, [months]);
+    return () => { gone = true; drop(); stage.removeEventListener("pointermove", point); stage.removeEventListener("pointerdown", point); stage.removeEventListener("pointerleave", leave); stage.removeEventListener("keydown", walk); ahead.disconnect(); inSight.disconnect(); sized?.disconnect(); scene?.dispose(); removeEventListener("scroll", ask); removeEventListener("resize", ask); };
+  }, [months, words, language]);
 
   return <section ref={root} className="year-paper" data-live="false" aria-labelledby="year-paper-title" lang={language === "en" ? undefined : language}>
     <div className="year-paper-run">
@@ -118,6 +154,7 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
           <h2 id="year-paper-title" className="year-paper-title">{words.title}</h2>
           <p>{words.lead}</p>
           <p className="year-paper-month" aria-hidden="true">{months[0]}</p>
+          <span className="sr-only year-paper-told" aria-live="polite" />
         </figcaption>
       </figure>
     </div>

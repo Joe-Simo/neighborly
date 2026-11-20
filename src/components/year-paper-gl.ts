@@ -1,5 +1,7 @@
 import { whenIdle } from "@/lib/idle";
 import * as year from "@/lib/year-paper";
+import { kindsByMonth } from "@/lib/sample-year-kinds";
+export { kindNames } from "@/lib/sample-year-kinds";
 import { DECKLE, deckle, DONE, EDGE, HAIRLINE, INK, INSTANCES, kinds, KRAFT, KRAFT_EDGE, LIGHT, PAPER, lineEnd, placeSlips, SHADE, SHADOW, SLIP, viewProjection, WAITING } from "@/lib/year-paper";
 
 /**
@@ -99,7 +101,10 @@ export type Frame = { width: number; height: number; window: { x: number; y: num
 /** `quad`: its corners as the canvas draws them, top left, top right, bottom right, bottom left. */
 export type SlipOnStage = { x: number; y: number; w: number; h: number; r: number; line: number; quad: number[][]; outline: string; within: string };
 /** `draw`'s `held`: October's first slip is left out, while the travelling card is still on its way to lie there (thread-card.tsx). */
-export type YearPaperCanvas = { draw: (through: number, held?: boolean) => void; size: (frame: Frame) => void; slip: (through: number) => SlipOnStage; dispose: () => void };
+/** A slip the reader is pointing at: its month (0 is October), its request's kind of help (sample-year-kinds.ts) and whether it still waits. */
+export type SlipTold = { index: number; month: number; kind: string; waiting: boolean };
+/** `lifted`: the slip the reader points at, raised one step out of its fan. `pick`: the slip under a point on the stage (CSS pixels), front first. */
+export type YearPaperCanvas = { draw: (through: number, held?: boolean, lifted?: number) => void; pick: (x: number, y: number) => SlipTold | null; first: (month: number) => SlipTold; size: (frame: Frame) => void; slip: (through: number) => SlipOnStage; dispose: () => void };
 
 const idle = () => new Promise<void>(done => { whenIdle(done, 500); });
 
@@ -182,6 +187,9 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
   // The hairline is as wide as the shader draws it: `hair.x` of the slip's width (size, below).
   const outline = torn(0), within = torn(.006 * SLIP.w);
   const one = new Float32Array(INSTANCES * 16);
+  let seen = 0;
+  const told = (index: number): SlipTold => ({ index, month: year.slips[index].month, kind: kindsByMonth[year.slips[index].month][year.slips[index].place] ?? "o", waiting: year.slips[index].waiting });
+  const starts = year.slips.reduce<number[]>((at, slip, index) => { if (at.length === slip.month) at.push(index); return at; }, []);
   return {
     size({ width, height, window: box }) {
       stageWidth = width; stageHeight = height;
@@ -194,9 +202,12 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(hair, .006, .006 * SLIP.w / SLIP.h);
     },
-    draw(through, held = false) {
+    draw(through, held = false, lifted = -1) {
       placeSlips(through, matrices);
       if (held) matrices.fill(0, 0, 16);
+      // One step up along the slip's own height, out of the slips in front of it, so all of it can be read.
+      if (lifted >= 0) { const at = lifted * 16; for (let k = 0; k < 3; k++) matrices[at + 12 + k] += matrices[at + 4 + k] * SLIP.h * .42; }
+      seen = through;
       gl.bindBuffer(gl.ARRAY_BUFFER, models);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, matrices);
       gl.uniformMatrix4fv(view, false, viewProjection(aspect, through, place));
@@ -207,6 +218,33 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
       gl.uniform1f(pile, year.landed); gl.uniform1f(shade, 1); gl.depthMask(false); gl.enable(gl.BLEND);
       gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, INSTANCES);
     },
+    pick(x, y) {
+      // Each slip's quad through the matrices last drawn, onto the stage; of those under the point, the one nearest the eye. No allocation per slip.
+      const v = viewProjection(aspect, seen, place), px = x / stageWidth * 2 - 1, py = 1 - y / stageHeight * 2;
+      let best = -1, near = Infinity;
+      const cx = [0, 0, 0, 0], cy = [0, 0, 0, 0];
+      for (let index = 0; index < year.SLIPS; index++) {
+        const m = index * 16;
+        if (matrices[m + 15] === 0) continue;
+        let depth = 0;
+        for (let corner = 0; corner < 4; corner++) {
+          const lx = (corner === 1 || corner === 2 ? .5 : -.5) * SLIP.w, ly = corner < 2 ? SLIP.h : 0;
+          const wx = matrices[m] * lx + matrices[m + 4] * ly + matrices[m + 12], wy = matrices[m + 1] * lx + matrices[m + 5] * ly + matrices[m + 13], wz = matrices[m + 2] * lx + matrices[m + 6] * ly + matrices[m + 14];
+          const w = v[3] * wx + v[7] * wy + v[11] * wz + v[15];
+          if (w <= 0) { depth = Infinity; break; }
+          cx[corner] = (v[0] * wx + v[4] * wy + v[8] * wz + v[12]) / w; cy[corner] = (v[1] * wx + v[5] * wy + v[9] * wz + v[13]) / w; depth += w;
+        }
+        if (depth >= near) continue;
+        let inside = true, sign = 0;
+        for (let k = 0; k < 4 && inside; k++) {
+          const j = (k + 1) % 4, cross = (cx[j] - cx[k]) * (py - cy[k]) - (cy[j] - cy[k]) * (px - cx[k]);
+          if (cross !== 0) { if (sign === 0) sign = Math.sign(cross); else if (Math.sign(cross) !== sign) inside = false; }
+        }
+        if (inside) { best = index; near = depth; }
+      }
+      return best < 0 ? null : told(best);
+    },
+    first: (month) => told(starts[month]),
     slip(through) {
       // The first slip's four corners, through the same matrices the canvas draws with, onto the stage.
       placeSlips(through, one);
