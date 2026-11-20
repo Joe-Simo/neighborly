@@ -1395,7 +1395,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .live-app table:not(.book-table) :is(th, td) { border-bottom: 1px solid var(--live-line); }
 /* Heads: the display line set as the home page sets its own: optical size, balanced lines, hanging punctuation. */
 .live-app .live-page-head h1 { font-optical-sizing: auto; text-wrap: balance; hanging-punctuation: first last; font-kerning: normal; }
-.live-app .live-page-head .live-deck { text-wrap: pretty; }
+.live-app .live-page-head .live-deck { text-wrap: balance; }
 /* Selection: the sage wash the home page's paper is marked with, ink on it. */
 :is(.live-app, .live-dialog) ::selection { background: #dde5d3; color: #283c32; }
 /* Focus: the one ink ring, set off the control by a paper margin, as a cut edge is set off the sheet beneath. */
@@ -1669,3 +1669,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* A slow first load says one thing at a time: the launch mark alone, then, once the room says "Opening…", that line
    alone. A cut, not a fade. */
 .live-app:has(.live-opening) > .paper-loading-mark { display: none; }
+
+/* Chrome's "pretty" leaves a two-line sentence's last word alone (a room's deck, the line beside a figure): these short
+   lines are balanced instead. Wrapping only; no size, gap or measure changes. */
+:is(.live-app, .live-dialog) :is(.tools-leaf-deck, .help-why, .visits-written-found, .report-month-held, .treasury-on-hand) { text-wrap: balance; }
