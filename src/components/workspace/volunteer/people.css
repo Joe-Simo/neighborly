@@ -9,18 +9,19 @@
 /* A row the owner can open is one target: the name is the control, its reach is the whole row, and a
    quiet arrow at the end darkens when the row is under the pointer or holds the keyboard. The same
    pattern as the Neighbors list. */
-.people-row[data-opens] { position: relative; cursor: pointer; transition: background-color 160ms var(--paper-ease, ease); }
+.people-row[data-opens] { position: relative; cursor: pointer; border-radius: 3px; transition: background-color 120ms var(--paper-ease, ease); }
 :is(.live-app, .live-dialog) .people-row-open { margin: 0; padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; text-align: left; cursor: pointer; }
 .people-row-open::after { content: ""; position: absolute; inset: 0; }
 .live-app .people-row-open:focus-visible { outline: none; }
 .people-row[data-opens]:has(.people-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 4px; }
-.people-row-go { flex: none; color: #9aa193; transition: color 160ms var(--paper-ease, ease), transform 160ms var(--paper-ease, ease); }
+.people-row-go { flex: none; color: #9aa193; transition: color 120ms var(--paper-ease, ease); }
 .people-row[data-opens]:has(.people-row-open:focus-visible) .people-row-go { color: #283c32; }
 @media (hover: hover) {
-  .people-row[data-opens]:hover { background-color: color-mix(in srgb, #365c46 5%, transparent); }
-  .people-row[data-opens]:hover .people-row-go { color: #283c32; transform: translateX(2px); }
+  /* The lift is painted on the row itself: no stacking context, no layer of its own, no pseudo-element. */
+  .people-row[data-opens]:hover { background-color: var(--relief-paper); }
+  .people-row[data-opens]:hover .people-row-go { color: #283c32; }
 }
-@media (prefers-reduced-motion: reduce) { .people-row[data-opens], .people-row-go { transition: none; } .people-row[data-opens]:hover .people-row-go { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .people-row[data-opens], .people-row-go { transition: none; } }
 /* Removing for good: the shared sheet (for-good.css) with this room's spacing for the typed name. */
 .people-remove { display: grid; gap: var(--space-12) 12px; }
 .people-remove label { margin-top: var(--space-8); font-size: 16px; font-weight: 600; }

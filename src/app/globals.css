@@ -2,8 +2,8 @@
 @import "tw-animate-css";
 /* Registered with the first stylesheet: registered late (paper.css comes with the yes card), it restyles the whole page mid-scroll. */
 @property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
-/* Every control presses like paper, one layer down: the 1px step and the contact shadow it leaves. One token, every room and page. */
-:root { --press-y: 1px; --press-rest: 0 1px 0 rgb(40 60 50 / 0.18); }
+/* Every framed control rests on a hairline contact shadow; pressed, the shadow goes into the paper instead. One token pair, every room and page. */
+:root { --press-rest: 0 1px 0 rgb(40 60 50 / 0.18); --relief-press: inset 0 1px 2px rgb(40 60 50 / 0.2); }
 /* Paper relief: one tone, one edge, one 1px shadow family in the page's green ink, three heights.
    A slip lies on paper, a card stands on the page, a sheet is laid over the room. */
 :root {
@@ -1149,9 +1149,38 @@ summary:focus-visible,
 /* A painted layer far from the reader is not drawn (lib/far-layers.ts); it keeps its place, and it is drawn again before it is in sight. */
 [data-far]{visibility:hidden!important}
 
-/* The press, everywhere a button stands (public pages, sign-in, error pages): the workspace's own rules in paper.css
-   ease it and add the phone's finger rules. Disabled never presses; Reduce Motion keeps the step, which is not motion. */
-[data-slot="button"]:active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) { translate: none; transform: translateY(var(--press-y)); box-shadow: none; }
+/* ── Paper responds to the hand: one rule set for the rooms and the public pages. ──
+   Only shadow and colour change; nothing is translated, so no word ever moves under the hand.
+   Press: a framed button swaps its relief one step down the scale, from its contact shadow into the paper.
+   Lift: a row or card that opens something steps one height up while it is under the pointer or holds the keyboard
+   (a row from flat to a slip, a card to a sheet), in 120ms. Menu items take no press. Reduce Motion: the end states
+   are the same, reached at once. Disabled never presses. */
+[data-slot="button"] { transition-property: box-shadow, background-color, border-color, color; transition-duration: 120ms; transition-timing-function: var(--paper-ease, ease); }
+:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]) { box-shadow: var(--press-rest); }
+[data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup], [role="menuitem"]) { box-shadow: var(--relief-press); transition-duration: 0s; }
+[data-slot="button"]:active { translate: none; transform: none; }
+nav.week-figures a { transition: box-shadow 120ms var(--paper-ease, ease); }
+@media (hover: hover) {
+  nav.week-figures a:hover { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
+}
+nav.week-figures a:focus-visible { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
+@media (forced-colors: active), print { [data-slot="button"], nav.week-figures a { box-shadow: none !important; } }
+@media (prefers-reduced-motion: reduce) { [data-slot="button"], nav.week-figures a { transition: none; } }
+/* A Help line or commitment row that opens something lifts from flat to a slip: the slip is drawn once, under
+   the words, and only its opacity changes. People rows lift on the row itself (people.css). */
+.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens) { position: relative; isolation: isolate; }
+.help-row:has(.help-row-open)::before, .live-commitment-row:has(.live-row-opens)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  border-radius: 3px; background: var(--relief-paper); box-shadow: var(--relief-slip);
+  opacity: 0; transition: opacity 120ms var(--paper-ease, ease);
+}
+@media (hover: hover) {
+  :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover { background: none; box-shadow: none; }
+  :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover::before { opacity: 1; }
+}
+:is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):has(:focus-visible)::before { opacity: 1; }
+@media (forced-colors: active), print { :is(.help-row, .live-commitment-row)::before { box-shadow: none !important; } }
+@media (prefers-reduced-motion: reduce) { :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens))::before { transition: none; } }
 /* The display serif is tracked tight (down to -.06em), and the space between words was tightened with it until
    "How we" read "Howwe". Word spacing gives the tracking back, so each heading keeps a true word space at every size. */
 :where(h1, h2, h3) { word-spacing: 0.04em; }

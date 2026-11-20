@@ -157,8 +157,8 @@
 @media (max-width: 850px) { .help-row a.help-phone { display: flex; width: fit-content; align-items: center; min-height: 44px; padding-block: 0; margin-block: 0; } }
 @media (pointer: coarse) and (max-width: 850px) { .help-row a.help-phone { display: flex; width: fit-content; margin-top: 0; } }
 .help-row:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: -2px; border-radius: 4px; }
-.help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 200ms var(--paper-ease), transform 200ms var(--paper-ease); }
-.help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { color: var(--live-ink); transform: translateX(4px); }
+.help-row-arrow { flex: none; margin-left: 6px; color: #a9b0a4; transition: color 120ms var(--paper-ease); }
+.help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { color: var(--live-ink); }
 @media (max-width: 850px) {
   /* The seal is set where the buttons were, in the very cell they keep, so the sheet keeps its height and nothing
      under it moves. */
@@ -169,7 +169,6 @@
   .help-sheet.help-sealed, .help-seal, .help-seal path, .help-row[data-arrived] .live-status:before { animation: none; }
   .help-sealed .help-actions, .help-sealed .help-unsaved { transition: none; }
   .help-row-arrow { transition: none; }
-  .help-row:hover .help-row-arrow, .help-row:focus-within .help-row-arrow { transform: none; }
 }
 /* The neighbor list reads under cut-paper letters, each riding above its group and held in view while those households
    pass. The rows keep the room's one left edge, the heading's and the search's, at every width. */
