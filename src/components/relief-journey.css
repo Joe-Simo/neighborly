@@ -189,7 +189,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-words h2{font-size:clamp(60px,17.5vw,76px)}
   .relief-words p{font-size:19px;max-width:20em}
   /* On a phone each picture is a taller cut of itself, closer in, with less paper around it. The call's cut still holds the card and the whole receiver. */
-  .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:var(--space-16);padding:28px 0}
+  .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:var(--space-32);padding:28px 0}
   .relief-panel[data-chapter=visit] .relief-picture{aspect-ratio:1/1}
   .relief-panel[data-chapter=visit] .relief-layers{width:150%;margin-left:-8%}
   .relief-panel[data-chapter=help] .relief-picture{aspect-ratio:5/4}
