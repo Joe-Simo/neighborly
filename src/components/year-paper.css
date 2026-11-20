@@ -29,3 +29,6 @@
   .year-paper figcaption .year-paper-month{display:none}
 }
 .year-paper .year-paper-station{position:absolute;left:0;top:0;width:0;height:0;translate:none;aspect-ratio:auto;pointer-events:none;transform-origin:50% 50%}
+/* The stage fills the window, so a ring set off its edge would fall outside the window and never be seen. Focused, the ring is drawn round the caption's sheet, which names the slip the arrow keys are on; round the slips themselves it would cut across the book. */
+.year-paper .year-paper-stage[tabindex]:focus-visible{outline:none}
+.year-paper .year-paper-stage[tabindex]:focus-visible figcaption{outline:2px solid #283c32;outline-offset:3px}
