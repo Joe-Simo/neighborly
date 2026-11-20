@@ -125,6 +125,6 @@ export function HomeYear() {
       })}
     </dl>
     <HomeYearSlip />
-    <p className="home-year-note">Each sheet is ten. From the sample conference. Every person in it is made up.</p>
+    <p className="home-year-note">From the sample conference. Every person in it is made up.</p>
   </>;
 }
