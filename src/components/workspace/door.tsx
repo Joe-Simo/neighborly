@@ -141,7 +141,10 @@ const watch = (watcher: () => void) => {
 const afterAPaint = (then: () => void) => requestAnimationFrame(() => requestAnimationFrame(then));
 
 function restOnTheRoomHead() {
-  if (document.activeElement && document.activeElement !== document.body) return;
+  // Focus left on the door's way in (the sign-in sheet folded away, or anything else no longer in the room) is not
+  // something the person chose in the room, so it is moved too; focus already inside the room or a sheet over it stays.
+  const now = document.activeElement;
+  if (now && now !== document.body && now.isConnected && now.closest(".live-layout, .live-header, [role=dialog]") && !now.closest(".live-auth")) return;
   const head = document.querySelector<HTMLElement>(".live-app .live-page-head h1");
   if (!head) return;
   if (!head.hasAttribute("tabindex")) head.tabIndex = -1;
