@@ -106,7 +106,6 @@ const en = {
         { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned. The words say it too, in the past tense and naming the thing: “Request saved.”, “Record removed.”", tone: "done" },
       ],
       "Paper is the one material: things rise, fold and turn as a sheet would. A room’s lists arrive together, never row by row. Every raised surface takes one of three heights: a slip lies on the paper, a card stands on the page, and a sheet is laid over the room.",
-      "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°.",
     ] },
     { title: "Responsible AI, with Jev", table: "eval", blocks: [
       "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does four clerical checks, each on what fixed rules have already read: on the draft request made from a call note, it confirms the kind of help and what kind of payee it is; it confirms or adds the signs that put a call first, with the reason shown; it reads the few notes the year’s check picks out before the report; and on a new team it confirms the name, how often, how many and when from the description. It does not write prose, and no request is saved without a person’s yes.",
@@ -237,7 +236,6 @@ const es: typeof en = {
         { lead: "Verde es hecho.", rest: "Una visita con sus notas, un recibo pagado, una llamada devuelta. Las palabras también lo dicen, en pasado y nombrando la cosa: «Petición guardada.»", tone: "done" },
       ],
       "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Las listas de una sección llegan juntas, nunca fila por fila. Cada superficie que se levanta tiene una de tres alturas: un papelito se apoya en el papel, una tarjeta se alza sobre la página y una hoja se pone sobre la sección.",
-      "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
     ] },
     { title: "IA responsable, con Jev", table: "eval", blocks: [
       "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace cuatro comprobaciones de oficina, cada una sobre lo que unas reglas fijas ya leyeron: en el borrador de petición hecho con la nota de una llamada, confirma el tipo de ayuda y qué tipo de destinatario del pago es; confirma o añade las señales que ponen primero una llamada, con el motivo a la vista; lee las pocas notas que la revisión del año aparta antes del informe; y en un equipo nuevo confirma el nombre, cada cuánto, cuántas personas y a qué hora según la descripción. No escribe prosa, y ninguna petición se guarda sin el sí de una persona.",
