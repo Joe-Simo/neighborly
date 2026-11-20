@@ -33,8 +33,8 @@
 .public-made-frames-row p{margin:0 0 8px;font-size:15px;line-height:1.5;color:#3d4f43;font-feature-settings:"tnum","lnum"}
 .public-made-frames-row strong{font-weight:600;color:#22362a}
 .public-made-frames svg{display:block;width:100%;height:64px;border-bottom:1px solid #293f3240}
-.public-made-frames rect{fill:#7f8c82}
-.public-made-frames rect[data-late]{fill:#6a557f}
+.public-made-frames path{fill:#7f8c82}
+.public-made-frames path[data-late]{fill:#6a557f}
 .public-made-frames line{stroke:#293f32;stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:4 3}
 .public-made-frames-source{margin:12px 0 0;font-size:15px;line-height:1.5;color:#3d4f43}
 @media(min-width:1024px){.public-words.public-made .public-made-frames{grid-column:2;grid-row:1/span 2;align-self:start;margin:0}}
