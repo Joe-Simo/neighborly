@@ -13,7 +13,7 @@ const vertex = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position 
 // It is laid exactly where the painted layer sits on the page, so everything placed over the painting stays in register.
 const fragment = /* glsl */ `
 precision highp float;
-uniform sampler2D uMap, uDepth, uNormal, uFigures, uIdle, uAnswer;
+uniform sampler2D uMap, uPlane1, uPlane2, uPlane3, uDepth, uNormal, uFigures, uIdle, uAnswer;
 uniform vec2 uRes, uView, uSun;
 uniform vec4 uRect;
 uniform float uDolly, uAlive, uDusk, uLook, uTurn, uWelcome, uResponse, uTime, uWarm;
@@ -45,7 +45,9 @@ vec3 relight(vec3 col, vec3 n, vec2 t, float d){
   vec3 painted = normalize(vec3(-.45, -.55, .62));
   float lit = clamp(dot(n, sun) - dot(n, painted), -.3, .34) * uAlive;
   float shade = 0.;
+  // The far plane (sky and hills) takes no cast shade: the depth map's tower is broader than the painted one, and its shade would ghost beside it.
   for (int i = 1; i <= 6; i++) {
+    if (d < .1) break;
     float reach = float(i) * .009;
     shade = max(shade, smoothstep(.015, .09, depthAt(t + sun.xy * vec2(reach, reach * 2.)) - d - reach * .9) * (1. - float(i) / 8.));
   }
@@ -84,7 +86,8 @@ vec2 waveAt(vec2 t){
 vec3 person(vec3 col, vec2 b, vec2 pivot){
   float side = texAt(b, pivot, .19).x < .7 ? -1. : 1.;
   bool woman = side < 0.;
-  float nearness = woman ? .225 : .158;
+  // Each stands on the cloister plane, so no one is ever split from the ground they stand on.
+  float nearness = FOCUS;
   vec2 feet = woman ? vec2(.472, .572) : vec2(.852, .623);
   float noticing = woman ? uLook : uTurn;
   float answering = woman ? uWelcome : uResponse;
@@ -105,21 +108,24 @@ void main(){
   vec2 b = paintingAt(s * uRes);
   vec2 pivot = paintingAt(uRes * .5);
 
-  float hit = 1.;
-  float above = depthAt(texAt(b, pivot, 1.)) - 1.;
-  if (above < 0.) {
-    float lastH = 1.;
-    hit = 0.;
-    for (int i = 1; i <= 30; i++) {
-      float h = 1. - float(i) / 30.;
-      float diff = depthAt(texAt(b, pivot, h)) - h;
-      if (diff >= 0.) { hit = mix(lastH, h, above / (above - diff)); break; }
-      lastH = h; above = diff;
-    }
-  }
-  vec2 t = clamp(texAt(b, pivot, hit), 0., 1.);
-  float d = depthAt(t);
-  vec3 col = relight(texture2D(uMap, t).rgb, normalize(texture2D(uNormal, t).xyz * 2. - 1. + reliefAt(uMap, t)), t, d);
+  // The courtyard is four painted planes cut from the painting, each with its own filled back: far (sky and hills), the cloister and table,
+  // the near paving, and the bench and pillars nearest. Each is shifted by its own nearness and laid front to back, so where a near plane
+  // moves aside the plane behind it shows its own painting there, never a stretched one. Towards the side edges every plane settles onto
+  // the one that does not move, as the pillars there have nothing behind them.
+  float edge = smoothstep(.03, .12, b.x) * smoothstep(.97, .88, b.x);
+  // The two near planes stand on the paving, which runs back to the cloister: they lie on one tilted floor, at the cloister's own nearness where
+  // the paving meets it and nearer towards the foot of the picture, so the ground is never cut where one plane meets the next, and the bench
+  // both near planes carry is never seen twice. The sky settles at the picture's top edge, which has nothing above it.
+  float floorAt = mix(FOCUS, .7, smoothstep(.6, 1., b.y));
+  vec2 t3 = clamp(texAt(b, pivot, mix(FOCUS, floorAt, edge)), 0., 1.), t2 = clamp(texAt(b, pivot, mix(FOCUS, floorAt, edge)), 0., 1.);
+  vec2 t1 = clamp(texAt(b, pivot, FOCUS), 0., 1.), t0 = clamp(texAt(b, pivot, mix(FOCUS, .06, smoothstep(0., .08, b.y))), 0., 1.);
+  vec4 p3 = texture2D(uPlane3, t3), p2 = texture2D(uPlane2, t2), p1 = texture2D(uPlane1, t1), p0 = texture2D(uMap, t0);
+  // Each plane is lit by the relief of its own painting: the plate's normal map was drawn for the plate, and its edges do not match the cut planes'.
+  vec3 col = relight(p0.rgb, normalize(vec3(0., 0., 1.) + reliefAt(uMap, t0)), t0, .06);
+  if (p1.a > .004) col = mix(col, relight(p1.rgb, normalize(vec3(0., 0., 1.) + reliefAt(uPlane1, t1)), t1, depthAt(t1)), p1.a);
+  if (p2.a > .004) col = mix(col, relight(p2.rgb, normalize(vec3(0., 0., 1.) + reliefAt(uPlane2, t2)), t2, depthAt(t2)), p2.a);
+  if (p3.a > .004) col = mix(col, relight(p3.rgb, normalize(vec3(0., 0., 1.) + reliefAt(uPlane3, t3)), t3, depthAt(t3)), p3.a);
+  float d = p3.a > .5 ? floorAt : p2.a > .5 ? floorAt : p1.a > .5 ? FOCUS : .06;
   col = person(col, b, pivot);
 
   float motes = 0.;
@@ -204,7 +210,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     });
     const empty = { value: null as Texture | null };
     const uniforms = {
-      uMap: { ...empty }, uDepth: { ...empty }, uNormal: { ...empty }, uFigures: { ...empty }, uIdle: { ...empty }, uAnswer: { ...empty },
+      uMap: { ...empty }, uPlane1: { ...empty }, uPlane2: { ...empty }, uPlane3: { ...empty }, uDepth: { ...empty }, uNormal: { ...empty }, uFigures: { ...empty }, uIdle: { ...empty }, uAnswer: { ...empty },
       uRes: { value: new Vector2(1, 1) }, uRect: { value: new Vector4(0, 0, 2, 1) }, uView: { value: new Vector2() }, uSun: { value: new Vector2(-.45, -.55) },
       uDolly: { value: 0 }, uAlive: { value: 1 }, uDusk: { value: 0 }, uLook: { value: 0 }, uTurn: { value: 0 }, uWelcome: { value: 0 }, uResponse: { value: 0 }, uTime: { value: 0 }, uWarm: { value: 0 },
     };
@@ -339,7 +345,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       // Standing in the courtyard, its paper parts in depth as the page goes on: the near sheets come forward and lean further with the cursor or the tilt than the far ones.
       const standing = still ? 0 : Number(host.style.getPropertyValue("--standing") || 0);
       const lean = 1 + inside() * .8;
-      uniforms.uView.value.set(-look.x * .03 * lean, -look.y * .022 * lean + part);
+      uniforms.uView.value.set(-look.x * .08 * lean, -look.y * .055 * lean + part);
       // The light warms once, when the wall has opened, and the sun leans a little with it.
       uniforms.uWarm.value = mix(uniforms.uWarm.value, Number(host.dataset.open === "true"), still ? 1 : 1 - Math.exp(-dt * .9));
       uniforms.uSun.value.set(-.45 + look.x * 1.5 + uniforms.uWarm.value * .25, -.55 + look.y * .9);
@@ -387,9 +393,9 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     };
     const step = frameStep(read, tick);
 
-    Promise.all([load("courtyard-quiet-plate-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)]).then(async textures => {
+    Promise.all([load("courtyard-plane-0-v1", true), load("courtyard-plane-1-v1", true), load("courtyard-plane-2-v1", true), load("courtyard-plane-3-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)]).then(async textures => {
       if (disposed) { textures.forEach(texture => texture.dispose()); return; }
-      [uniforms.uMap.value, uniforms.uDepth.value, uniforms.uNormal.value, uniforms.uFigures.value, uniforms.uIdle.value, uniforms.uAnswer.value] = textures;
+      [uniforms.uMap.value, uniforms.uPlane1.value, uniforms.uPlane2.value, uniforms.uPlane3.value, uniforms.uDepth.value, uniforms.uNormal.value, uniforms.uFigures.value, uniforms.uIdle.value, uniforms.uAnswer.value] = textures;
       resize();
       // Each painting is handed to the graphics card on its own frame, and the shader is prepared in the background, so arriving in the courtyard costs nothing.
       for (const texture of textures) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.initTexture(texture); if (texture.image instanceof ImageBitmap) texture.image.close(); }
@@ -417,7 +423,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       renderer.domElement.removeEventListener("webglcontextrestored", restored);
       release();
-      [uniforms.uMap, uniforms.uDepth, uniforms.uNormal, uniforms.uFigures, uniforms.uIdle, uniforms.uAnswer].forEach(uniform => { if (uniform.value?.image instanceof ImageBitmap) uniform.value.image.close(); uniform.value?.dispose(); });
+      [uniforms.uMap, uniforms.uPlane1, uniforms.uPlane2, uniforms.uPlane3, uniforms.uDepth, uniforms.uNormal, uniforms.uFigures, uniforms.uIdle, uniforms.uAnswer].forEach(uniform => { if (uniform.value?.image instanceof ImageBitmap) uniform.value.image.close(); uniform.value?.dispose(); });
       geometry.dispose(); material.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove();
     };
 }
