@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { languages, type Language } from "@/lib/words";
+import { languages, type Language } from "@/lib/words/sets";
 import "@/components/not-found.css";
 import "@/components/public-touch.css";
 
