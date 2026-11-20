@@ -450,21 +450,21 @@
   animation: paper-show 200ms ease backwards;
 }
 .live-mobile-menu [data-slot="dialog-header"] { display: flex; flex-flow: row wrap; align-items: baseline; gap: 2px 12px; padding: var(--space-16) 64px var(--space-12) 24px; text-align: left; }
-.live-mobile-menu [data-slot="dialog-title"] { flex-basis: 100%; font-size: 28px; }
+.live-mobile-menu [data-slot="dialog-title"] { flex-basis: 100%; font-size: var(--serif-sheet); }
 .live-mobile-menu .live-sample-mark { margin: 0; }
 .live-mobile-menu .live-menu-rooms nav a { min-height: 48px; padding-block: var(--space-8); }
 .live-mobile-menu :is([data-slot="dialog-close"], .live-menu-close) { top: 8px; right: 10px; width: 44px; height: 44px; }
 /* A list longer than the screen passes under the foot bar's cut edge in full ink: paper is cut, never faded. */
-.live-menu-rooms { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px var(--space-24); border-top: 1px solid #d9ddce; scrollbar-width: thin; }
+.live-menu-rooms { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px var(--space-24); border-top: 1px solid #d9ddce; scrollbar-width: thin; }
 .live-mobile-menu .live-menu-rooms nav { margin-top: 0; border-top: 0; }
 .live-mobile-menu nav a { font-size: 17px; }
 .live-mobile-menu .live-menu-current { font-size: 13px; }
-.live-menu-rooms .live-row-actions { display: grid; gap: var(--space-8) 10px; margin-top: var(--space-16); }
+.live-menu-rooms .live-row-actions { display: grid; gap: var(--space-8) 8px; margin-top: var(--space-16); }
 .live-menu-rooms select { width: 100%; }
 /* Whose account the menu signs out of, set on the foot's paper just above it. */
-.live-menu-who { margin: 0; padding: var(--space-12) 14px 0; border-top: 1px solid #d9ddce; background: #efefe3; font-size: 15px; color: #4a5a50; overflow-wrap: anywhere; }
+.live-menu-who { margin: 0; padding: var(--space-12) 16px 0; border-top: 1px solid #d9ddce; background: #efefe3; font-size: 15px; color: #4a5a50; overflow-wrap: anywhere; }
 .live-menu-who + .live-menu-foot { border-top: 0; }
-.live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12) 12px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
+.live-menu-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12) 12px; padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #d9ddce; background: #efefe3; }
 .live-mobile-menu .live-menu-leave[data-slot="button"] { height: 44px; font-size: 16px; border-radius: 4px; background: #fffdf7; border-color: #d4dacb; color: var(--paper-ink); }
 
 /* ── Empty: a serif line, its sentence and the one act. The room's picture is in its head, once; only a state
@@ -612,7 +612,7 @@
 @media (max-width: 560px) { .week-figures a > small { min-height: 2lh; font-size: 13px; } }
 @media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 14px; } }
 /* Your choice: the answer is the filled button; Details is a quiet link after it. */
-.live-request-section .live-row-actions { gap: var(--space-8) 14px; }
+.live-request-section .live-row-actions { gap: var(--space-8) 16px; }
 .live-request-section .live-row-actions .tools-quiet { margin-left: 6px; }
 /* Teams: one line under each team, and a third column on wide screens. */
 .live-team-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8) 20px; }
@@ -825,7 +825,7 @@
   /* The held button's paper reaches the screen's foot: the sheet's foot is the home bar's height there, so the paper
      carried below the button is that height too, and nothing scrolls into view under the home bar. */
   .live-dialog.live-dialog-fixed .live-form-actions { box-shadow: 0 max(var(--live-dialog-pad), env(safe-area-inset-bottom)) 0 #f5f3ec; }
-  .live-dialog.live-dialog-fixed h2 { font-size: 28px; line-height: 1.12; }
+  .live-dialog.live-dialog-fixed h2 { font-size: var(--serif-sheet); line-height: 1.12; }
   .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { border-radius: 14px 14px 0 0; }
 }
 /* It closes the way it opened: it goes back down the way it rose (live-dialog.tsx keeps a copy that does this when
