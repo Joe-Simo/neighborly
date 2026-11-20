@@ -114,7 +114,11 @@ Rooms use four classes:
 | `count-up` | A large figure's digits. It stands at its value at once: nothing in the workspace counts up. |
 
 Set `--paper-order` (0 to 7) on an element to place it in a stagger by hand.
-Rows and links already lift on hover; do not add another hover of your own.
+Paper responds to the hand through one rule set in `globals.css` ("Paper responds to the hand"); do not add a hover or press of your own.
+- A row or card that opens something lifts one step on hover (pointer devices only, under `@media (hover: hover)`) and on keyboard focus: a row from flat to a slip, a week figure card from card to sheet. Nothing else lifts. Rows that open nothing keep the flat tone.
+- A framed button pressed swaps its contact shadow for `--relief-press`. Nothing is translated: no word moves under the hand.
+- Shadow and colour only, 120ms; Reduce Motion reaches the same end states at once. Menu items take no press.
+- A new openable row joins the selector list in `globals.css`; it is not styled in its room. People rows are the one exception: they lift on the row itself in `people.css`, because a slip layer per row missed the 33ms gate on the People hover sweep.
 
 ## The date and time fields
 

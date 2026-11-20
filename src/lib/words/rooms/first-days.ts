@@ -12,7 +12,7 @@ export const en = (t: Terms, place: string) => ({
     /** The room's own head while nothing has been made yet, for the owner and members alike, in place of "Good work, this week.", which needs work to praise. */
     head: "Your first week.",
     title: "Invite the people you serve with.",
-    detail: "What each one takes on, and what is waiting for a yes, gathers here.",
+    detail: "Once people join, their commitments and the ones still waiting for a yes show here.",
   },
   /** A new member's first week: three slips on This week, each leading to the real control. Shown once. */
   firstWeek: {
@@ -37,7 +37,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   week: {
     head: "Tu primera semana.",
     title: "Invita a las personas con quienes sirves.",
-    detail: "Aquí se junta lo que cada una toma a su cargo y lo que espera un sí.",
+    detail: "Cuando se unan personas, aquí verás sus compromisos y los que aún esperan un sí.",
   },
   firstWeek: {
     title: "Tu primera semana",

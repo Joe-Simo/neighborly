@@ -610,8 +610,7 @@
 /* The reason under a figure: plum, the attention colour, because it is only there when something waits. Its room is kept when it is empty. */
 .week-figures a > small { min-height: 1lh; margin-top: -2px; font-size: 13px; line-height: 1.3; color: var(--help-plum, #6f5f93); }
 @media (max-width: 560px) { .week-figures a > small { min-height: 2lh; font-size: 13px; } }
-@media (hover: hover) { .week-figures a:hover { transform: translateY(-1px); } }
-@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 13px; } }
+@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 14px; } }
 /* Your choice: the answer is the filled button; Details is a quiet link after it. */
 .live-request-section .live-row-actions { gap: var(--space-8) 14px; }
 .live-request-section .live-row-actions .tools-quiet { margin-left: 6px; }
@@ -995,10 +994,6 @@ nav.week-figures a:nth-child(3) { --lean: -0.25deg; }
 nav.week-figures .count-up {
   font-size: clamp(52px, 5.6vw, 84px); color: #3f6a50;
   text-shadow: 0 -1px 0 #5b8468, 1px 2px 0 #2c4a38, 3px 7px 8px rgb(40 60 50 / 0.28);
-}
-@media (hover: hover) {
-  nav.week-figures a { transition: translate 200ms var(--paper-ease), box-shadow 200ms var(--paper-ease); }
-  nav.week-figures a:hover { transform: none; translate: 0 -2px; box-shadow: 0 0 0 1px #d6cfb9, var(--relief-card), 0 22px 30px -22px rgb(40 60 50 / 0.3); }
 }
 @media (max-width: 560px) {
   nav.week-figures { gap: var(--space-8) 8px; }
@@ -1457,33 +1452,10 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 }
 /* A name and the punctuation after it stay on one line. */
 .live-glue, .live-name-stop, .live-name-word { white-space: nowrap; }
-/* One press for every control in the rooms. A control is a slip of paper resting on the sheet: a filled or edged
-   button stands on a hairline contact shadow; pressed, it goes down onto the sheet (transform 1px, its 1px shadow shortened by the same 1px to none) in 60ms and
-   settles back in 200ms. Toggles and the month's days take the same 1px. Only these properties move, never
-   layout, so nothing a press touches is drawn late. Focus is the one ink ring above: the kit's own blue halo is
-   taken off so a focused control never wears two rings. */
+/* The press itself is one shared rule set in globals.css ("Paper responds to the hand"). Focus is the one ink ring
+   above: the kit's own blue halo is taken off so a focused control never wears two rings. */
 :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) { --ring: #283c32; }
-:is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done) {
-  transition-property: transform, box-shadow, background-color, border-color, color;
-  transition-duration: 200ms;
-  transition-timing-function: var(--paper-ease);
-}
 :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"]):focus-visible { --tw-ring-shadow: 0 0 #0000; }
-:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]) { box-shadow: var(--press-rest); }
-:is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) {
-  translate: none;
-  transform: translateY(var(--press-y));
-  transition-duration: 60ms;
-}
-:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup]) { box-shadow: 0 0 0 rgb(40 60 50 / 0); }
-/* Disabled never presses (the kit's own 1px too). Reduce Motion: the sink is instant and there is no settle. */
-:is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done):is(:disabled, [aria-disabled="true"], [data-disabled]) { translate: none; transform: none; }
-@media (prefers-reduced-motion: reduce) { :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done):is(*, :active) { transition-duration: 0s; } }
-/* On a phone only the transform is eased: the contact shadow stays at rest and goes to none at once on the press,
-   and no colour is eased under the finger. */
-@media (max-width: 700px), (pointer: coarse) {
-  :is(.live-app, .live-dialog, .live-date-sheet, .live-mobile-menu) :is([data-slot="button"], [data-slot="toggle-group-item"], [data-slot="toggle"], .rdp-day_button, .rdp-nav button, .live-date-done) { transition-property: transform; }
-}
 @media (forced-colors: active), print { :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"] { box-shadow: none; } }
 
 /* Fields and menus are the same paper as the date field and its month sheet. A field is a sheet laid flush: paper

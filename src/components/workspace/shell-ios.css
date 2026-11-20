@@ -248,8 +248,7 @@
    comes back when the finger lifts; there is no grey flash. Rows, labels and buttons are
    not selected by a long press; what a person wrote (notes, quoted words, a record's facts) stays selectable. ── */
 :root[data-shell="ios"] :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:active:not(:disabled) {
-  transform: translateY(var(--press-y));
-  box-shadow: none;
+  box-shadow: var(--relief-press);
   transition: none;
 }
 :root[data-shell="ios"] :is(.live-row, .help-row, .live-team, .people-row, .live-commitment-row):has(:is(a, button):active):not(:has([data-slot="button"]:active)) {
