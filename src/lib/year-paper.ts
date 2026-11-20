@@ -18,7 +18,7 @@ const GAP = 3.4, DEPTH = .11, FOV = 38 * Math.PI / 180, START = 3.6;
 /** A slip: one by .62, in the world's units. */
 export const SLIP = { w: 1, h: .62 } as const;
 
-const hash = (a: number, b: number) => {
+export const hash = (a: number, b: number) => {
   let h = Math.imul(a + 1, 0x9e3779b1) ^ Math.imul(b + 1, 0x85ebca6b);
   h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
   return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
@@ -78,8 +78,11 @@ const lookAt = (eye: readonly number[], at: readonly number[]): Mat => {
 /** Where the camera ends: drawn back in front of October and a little above and aside, so all twelve fans stand in the window, receding to September. */
 const END_EYE = [2.2, 3.4, START + 2.5] as const, END_AT = [-1.7, -.2, monthZ(MONTHS - 1) * .4] as const;
 
-/** The view and projection for a stage of `aspect`, `through` the band. */
-export function viewProjection(aspect: number, through: number): Mat {
+/**
+ * The view and projection for a window of `aspect`, `through` the band. With `frame`, the window's place inside a larger canvas (x, y from its
+ * top left, w, h, each a share of the canvas), the same picture is drawn into that place and runs on past it to the canvas's own edges.
+ */
+export function viewProjection(aspect: number, through: number, frame?: { x: number; y: number; w: number; h: number }): Mat {
   // A tall stage keeps the wide one's sideways view, so the fan is never cut at its sides on a phone.
   const f = Math.min(1, aspect / ASPECT.wide * 1.6) / Math.tan(FOV / 2), near = .1, far = 120;
   const projection = new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, 2 * far * near / (near - far), 0]);
@@ -90,7 +93,10 @@ export function viewProjection(aspect: number, through: number): Mat {
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
   const from = [lerp(eye[0], END_EYE[0], back), lerp(eye[1], END_EYE[1], rise), lerp(eye[2], END_EYE[2], back)];
   const to = at.map((v, k) => lerp(v, END_AT[k], back));
-  return mul(projection, lookAt(from, to));
+  const picture = mul(projection, lookAt(from, to));
+  if (!frame) return picture;
+  const place = new Float32Array([frame.w, 0, 0, 0, 0, frame.h, 0, 0, 0, 0, 1, 0, 2 * frame.x + frame.w - 1, 1 - 2 * frame.y - frame.h, 0, 1]);
+  return mul(place, picture);
 }
 
 const HINGE = SLIP.h + .9;
@@ -130,6 +136,19 @@ export const PAPER = [0xf7 / 255, 0xf2 / 255, 0xe6 / 255] as const;
 export const EDGE = [0xb0 / 255, 0xa0 / 255, 0x84 / 255] as const;
 export const WAITING = [0xc8 / 255, 0x96 / 255, 0x2e / 255] as const;
 export const SHADOW = [0x3b / 255, 0x2a / 255, 0x12 / 255] as const;
+/** Slip material, the same family as the call's and the help's slips: some are kraft, the rest paper; each carries one line of ink, never letters. */
+export const KRAFT = [0xd4 / 255, 0xbc / 255, 0x8f / 255] as const;
+export const KRAFT_EDGE = [0xa8 / 255, 0x8c / 255, 0x5c / 255] as const;
+export const INK = [0x3d / 255, 0x4f / 255, 0x43 / 255] as const;
+/** Which slips are kraft (about one in four) and how far each one's line of ink runs, from the slip's own number: the canvas (by gl_InstanceID) and the poster read the same. */
+export const isKraft = (slip: number) => hash(slip + 2000, 7) < .28;
+export const lineEnd = (slip: number) => .46 + .3 * hash(slip + 3000, 3);
+/** The deckle: each edge torn in by a little, from knots along it, joined straight; in the world's units. Edges: 0 left, 1 right, 2 foot, 3 head. */
+export const DECKLE = { depth: .014, knots: 18 } as const;
+export const deckle = (slip: number, edge: number, along: number) => {
+  const k = Math.min(.99999, Math.max(0, along)) * DECKLE.knots, i = Math.floor(k), f = k - i, a = hash(slip * 4 + edge + 5000, i), b = hash(slip * 4 + edge + 5000, i + 1);
+  return DECKLE.depth * (.3 + .7 * (a + (b - a) * f));
+};
 export const DONE = [0x36 / 255, 0x5c / 255, 0x46 / 255] as const;
 export const shade = (m: Float32Array, at = 0) => {
   const nx = m[at + 8], ny = m[at + 9], nz = m[at + 10], length = Math.hypot(nx, ny, nz) || 1;

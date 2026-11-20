@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { whenIdle } from "@/lib/idle";
 import { frameStep } from "@/lib/scroll-frame";
 import { viewport } from "@/lib/viewport";
 import { FIRST_MONTH, MONTHS, monthAt } from "@/lib/year-paper";
@@ -24,15 +25,16 @@ const sayings = (language: Language) => {
  * The year in paper: after the chapters, the sample conference's year as one slip for every request, fanned a month at a time in depth.
  * The scroll flies the reader down the stack and each month's leaf turns away overhead; then the camera draws back and the band ends on all twelve months in their fans. Its figures are the next chapter's, "The year.", and are said only there.
  * The first frame is a poster drawn from the same numbers (scripts/year-paper-posters.mts); the canvas is loaded only once the band is near,
- * and takes the poster's place by a cut once it has drawn the same frame. Every word is the page's own text, beside the slips, never on them.
+ * and takes the poster's place by a cut once it has drawn the same frame. Live, the canvas fills the whole stage: the window frames the picture, and the slips
+ * run on past it to the screen's own edges, so paper never ends on a straight crop; the caption keeps its own sheet over them. Every word is the page's own text, beside the slips, never on them.
  * With Reduce Motion, or without script, the poster is the flight's end and nothing moves.
  */
 export function YearPaper({ language = "en" }: { language?: Language }) {
   const { words, months } = useMemo(() => sayings(language), [language]);
   const root = useRef<HTMLElement>(null);
   useEffect(() => {
-    const band = root.current, frame = band?.querySelector<HTMLElement>(".year-paper-window"), month = band?.querySelector<HTMLElement>(".year-paper-month"), run = band?.querySelector<HTMLElement>(".year-paper-run");
-    if (!band || !frame || !month || !run || matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    const band = root.current, frame = band?.querySelector<HTMLElement>(".year-paper-window"), stage = band?.querySelector<HTMLElement>(".year-paper-stage"), month = band?.querySelector<HTMLElement>(".year-paper-month"), run = band?.querySelector<HTMLElement>(".year-paper-run");
+    if (!band || !frame || !stage || !month || !run || matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
     let scene: YearPaperCanvas | null = null, gone = false, top = 0, tall = 0, near = false, drawn = -1, shown = 0;
     const read = () => { const box = run.getBoundingClientRect(); top = box.top; tall = box.height; };
     const write = () => {
@@ -54,16 +56,25 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
       const made = await yearPaperCanvas(canvas, () => gone);
       if (!made || gone) return made?.dispose();
       // The first frame is drawn while the canvas is still off the page, in idle time; it joins the page, over the poster, already drawn.
-      const box = frame.getBoundingClientRect();
-      made.size(box.width, box.height);
+      const measure = () => {
+        const outer = stage.getBoundingClientRect(), box = frame.getBoundingClientRect();
+        return { width: outer.width, height: outer.height, window: { x: box.left - outer.left, y: box.top - outer.top, w: box.width, h: box.height } };
+      };
+      // Each costly step in an idle moment of its own, never two in one frame: the drawing buffer is sized in one, the first frame (where the
+      // driver builds its pipeline) drawn in the next, and the canvas joins the page in a third, all well before the stage is reached.
+      const idle = () => new Promise<void>(done => { whenIdle(done, 500); });
+      await idle(); if (gone) return made.dispose();
+      made.size(measure());
+      await idle(); if (gone) return made.dispose();
       read();
       made.draw(Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height))));
-      frame.append(canvas);
+      await idle(); if (gone) return made.dispose();
+      stage.prepend(canvas);
       scene = made;
-      sized = new ResizeObserver(([entry]) => { scene?.size(entry.contentRect.width, entry.contentRect.height); drawn = -1; ask(); });
+      sized = new ResizeObserver(() => { scene?.size(measure()); drawn = -1; ask(); });
       // The canvas is over the poster from here: the cut is now, with the poster's own frame on it.
       band.dataset.live = "true";
-      sized.observe(frame);
+      sized.observe(stage); sized.observe(frame);
     };
     // Asked for well before it is reached, never on first paint: a window and a half ahead.
     const ahead = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) { ahead.disconnect(); void load(); } }, { rootMargin: "150% 0px" });
