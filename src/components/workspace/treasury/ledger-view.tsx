@@ -197,18 +197,23 @@ export function LedgerView({
 
   return (
     <>
-      <dl className="help-figures treasury-figures">
-        <div>
+      {/* The balance as cut paper, as the year is in Reports: its figure in green, standing on the passbook's leaves.
+          The month's money in and out stand beside it as two slips. Nothing moves; the figures carry no relief. */}
+      <dl className="treasury-paper">
+        <div className="treasury-balance">
           <dt>{w.figures.balance}</dt>
           <dd>
-            <span className="count-up">{formatDollars(ledger.balance)}</span>
+            <span className="treasury-balance-stand">
+              <span className="treasury-balance-figure">{formatDollars(ledger.balance)}</span>
+              <span className="treasury-balance-leaves" aria-hidden="true"><i /><i /><i /></span>
+            </span>
             <small>{w.figures.asOf(weekDayLabel(words.locale, ledger.today))}</small>
           </dd>
         </div>
         <div>
           <dt>{w.figures.in(month)}</dt>
           <dd>
-            <span className="count-up">{formatDollars(ledger.moneyIn)}</span>
+            <b>{formatDollars(ledger.moneyIn)}</b>
             <small>
               {formatList(midSentence(ledger.incomeSources.map((source) => categoryLabel(room, source, sampleSaid))), words.locale) || w.figures.nothingIn}
             </small>
@@ -217,7 +222,7 @@ export function LedgerView({
         <div>
           <dt>{w.figures.out(month)}</dt>
           <dd>
-            <span className="count-up">{formatDollars(ledger.moneyOut)}</span>
+            <b>{formatDollars(ledger.moneyOut)}</b>
             <small>{formatList(midSentence(paidFor), words.locale) || w.figures.nothingOut}</small>
           </dd>
         </div>
