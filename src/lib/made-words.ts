@@ -110,7 +110,7 @@ const en = {
     { title: "Responsible AI, with Jev", table: "eval", blocks: [
       "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does four clerical checks, each on what fixed rules have already read:",
       [
-        { lead: "A draft request.", rest: "Made from a call note, it confirms the kind of help and what kind of payee it is." },
+        { lead: "A draft request.", rest: "On the draft made from a call note, it confirms the kind of help and the kind of payee." },
         { lead: "An urgent call.", rest: "It confirms or adds the signs that put a call first, with the reason shown." },
         { lead: "The year’s check.", rest: "It reads the few notes the check picks out before the report." },
         { lead: "A new team.", rest: "It confirms the name, how often, how many and when from the description." },
@@ -256,7 +256,7 @@ const es: typeof en = {
     { title: "IA responsable, con Jev", table: "eval", blocks: [
       "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace cuatro comprobaciones de oficina, cada una sobre lo que unas reglas fijas ya leyeron:",
       [
-        { lead: "Un borrador de petición.", rest: "Hecho con la nota de una llamada, confirma el tipo de ayuda y qué tipo de destinatario del pago es." },
+        { lead: "Un borrador de petición.", rest: "En el borrador hecho con la nota de una llamada, confirma el tipo de ayuda y el tipo de destinatario del pago." },
         { lead: "Una llamada urgente.", rest: "Confirma o añade las señales que ponen primero una llamada, con el motivo a la vista." },
         { lead: "La revisión del año.", rest: "Lee las pocas notas que la revisión aparta antes del informe." },
         { lead: "Un equipo nuevo.", rest: "Confirma el nombre, cada cuánto, cuántas personas y a qué hora según la descripción." },
