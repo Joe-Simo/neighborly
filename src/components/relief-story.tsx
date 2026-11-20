@@ -19,7 +19,8 @@ const story = [
   { picture: "help", plate: "help", pieces: [{ name: "envelope", shadow: "piece" }, { name: "flap" }], card: { on: "envelope", x: 60, y: 54, w: 15, turn: -14, tuck: [-.3, -.5] }, title: "The help.", copy: "The conference agrees. The bill is paid straight to the landlord or the utility." },
   { picture: "year", plate: "year", pieces: [{ name: "page", shadow: "piece" }, { name: "ribbon" }], card: { on: "page", x: 66.5, y: 61.5, w: 13, turn: 11, waits: true, tuck: [.5, .12] }, title: "The year.", copy: "Every call, visit and dollar adds itself up for the yearly report." },
 ] as const;
-const sizes = "(max-width: 820px) 92vw, 56vw";
+/** How wide a layer is drawn, not its picture: each chapter cuts closer by drawing its layers wider than the picture (up to 180% on a phone, 125% at a desk). */
+const sizes = "(max-width: 820px) 180vw, 125vw";
 const layer = (name: string, small: number, large: number, type: string) => `/assets/home/relief-${name}-${small}.${type} ${small}w, /assets/home/relief-${name}-${large}.${type} ${large}w`;
 
 // The card as it lies in a picture. On a piece it is placed in the piece's own box, which is the picture with a margin all round.
