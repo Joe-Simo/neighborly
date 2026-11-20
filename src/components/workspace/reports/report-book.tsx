@@ -143,7 +143,8 @@ function usePages(report: YearReport, groupName: string, sample: boolean) {
               <th scope="row">{b.miles}</th>
               <td>{w.time.milesCount(report.visitMiles)}</td>
             </tr>
-            <NoteRow span={2} notes={[b.hoursNote]} />
+            {/* Said only when the rows above fall short of the total, so the note never contradicts the sum it sits under. */}
+            {serving.reduce((all, line) => all + line.hours, 0) !== report.time.hours && <NoteRow span={2} notes={[b.hoursNote]} />}
           </TableEnd>
         </table>
       ),
