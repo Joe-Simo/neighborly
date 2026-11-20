@@ -13,7 +13,7 @@ const GROWING = "paper-grows";
 const HELD_AWAY = "translateY(calc(-100% - 8px - var(--live-bar, 0px)))";
 
 /**
- * After the hold, whatever is marked `data-fold-leaves` goes: it fades and closes up over 360ms, so what
+ * After the hold, whatever is marked `data-fold-leaves` goes: it closes up over 360ms, its words at full ink, then is cut away, so what
  * is below glides into its place and the page never jumps. Await it, then take the sheet out of the data.
  * For anyone who asks for less motion it is a plain cut.
  * Every sheet is measured first, in one pass with the openings set to their end once, and only then does
@@ -134,7 +134,7 @@ function planClose(sheet: HTMLElement, after: "gone" | "put away", top: number):
     lost: page - without,
     unseen,
     // A saved line whose place is above the window is held in view under the top edge (paper.css). The person
-    // does see that one go: it fades where it is, and only then is its room above the window given up, at once.
+    // does see that one go: it goes where it is, in one cut, and only then is its room above the window given up, at once.
     carried: unseen && sheet.getBoundingClientRect().bottom > top,
     anchored: unseen && anchored(sheet),
   };
@@ -150,16 +150,17 @@ async function runClose({ sheet, held, from, to, lost = 0, unseen, carried, anch
     sheet.style.pointerEvents = "none";
     return;
   }
-  if (carried) await sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: LEAVE, fill: "forwards", easing: fade }).finished;
+  // Taken away as the fade used to leave it (see-through, still read by screen readers where it is "put away"), but in one cut.
+  if (carried) sheet.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 1, fill: "forwards" });
   if (unseen && !kept) window.scrollBy(0, -lost);
   const timing = { duration: unseen ? 0 : LEAVE, fill: "forwards" } as const;
-  // It stays readable to the end: the fade runs the whole length and is slow to start.
-  sheet.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, easing: fade });
+  // The paper closes up with its words on it at full ink, cut off below as it goes; never faded. Once closed it is taken away in one cut.
   await sheet.animate([from!, to!], { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" }).finished;
+  sheet.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 1, fill: "forwards" });
 }
 
 /**
- * One piece of paper fades and closes up over 360ms, ending at exactly the height the page will have
+ * One piece of paper closes up over 360ms, its words at full ink, and is then cut away, ending at exactly the height the page will have
  * without it; a plain cut for anyone who asks for less motion. `after` says what the room does with it next:
  * takes it out ("gone"), or keeps its words for screen readers only ("put away").
  */
