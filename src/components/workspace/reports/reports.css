@@ -185,7 +185,7 @@
 .report:has(.report-months li:nth-child(12):is(:hover, :focus-within)) .report-stack i:nth-child(12) {
   transform: translateY(-2px); box-shadow: 0 0.5px 0 rgb(40 60 50 / 0.28), 0 3px 4px -2px rgb(40 60 50 / 0.5);
 }
-.report-stack i { transition: transform 160ms var(--paper-ease), box-shadow 160ms var(--paper-ease); }
+/* The sheet lifts in one step: its rise and its shadow are laid together, at once, like an openable row. */
 .report-year dd b {
   display: block;
   min-width: 84px;
@@ -304,12 +304,12 @@
 }
 /* Under the pointer or the keyboard a month's strips are lifted a little off the paper. */
 .report-months li:is(:hover, :focus-within) .report-month-bar { filter: drop-shadow(3px 2px 0 rgb(40 60 50 / 0.14)) drop-shadow(10px 14px 12px rgb(40 60 50 / 0.2)); translate: 0 -2px; }
-.report-month-bar { transition: translate 160ms var(--paper-ease), filter 160ms var(--paper-ease); }
+/* The strips lift in one step: rise and shadow together, at once, like an openable row. */
 /* The caption's two small keys say which paper is which. */
 .report-key { display: inline-block; width: 10px; height: 10px; margin-right: 6px; background: #3d6a50; vertical-align: baseline; }
 .report-key[data-of="visits"] { background: #608b71; margin-left: 2px; }
 .report-key-pair { white-space: nowrap; }
-@media (prefers-reduced-motion: reduce) { .report-month-bar { transition: none; } .report-months li:is(:hover, :focus-within) .report-month-bar { translate: none; } }
+@media (prefers-reduced-motion: reduce) { .report-months li:is(:hover, :focus-within) .report-month-bar { translate: none; } }
 @media print { .report-month-bar { filter: none; } }
 .report-months li:nth-child(2) { --paper-order: 1; }
 .report-months li:nth-child(3) { --paper-order: 2; }

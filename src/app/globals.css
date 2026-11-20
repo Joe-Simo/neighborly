@@ -1161,13 +1161,12 @@ summary:focus-visible,
 :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]) { box-shadow: var(--press-rest); }
 [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup], [role="menuitem"]) { box-shadow: var(--relief-press); transition-duration: 0s; }
 [data-slot="button"]:active { translate: none; transform: none; }
-nav.week-figures a { transition: box-shadow 120ms var(--paper-ease, ease); }
 @media (hover: hover) {
   nav.week-figures a:hover { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
 }
 nav.week-figures a:focus-visible { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
 @media (forced-colors: active), print { [data-slot="button"], nav.week-figures a { box-shadow: none !important; } }
-@media (prefers-reduced-motion: reduce) { [data-slot="button"], nav.week-figures a { transition: none; } }
+@media (prefers-reduced-motion: reduce) { [data-slot="button"] { transition: none; } }
 /* A Help line or commitment row that opens something lifts from flat to a slip: the slip is drawn once, under
    the words, and only its opacity changes. People rows lift on the row itself (people.css). */
 .help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens) { position: relative; isolation: isolate; }
