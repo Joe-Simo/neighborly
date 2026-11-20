@@ -1,6 +1,5 @@
 import { sampleYear } from "@/lib/sample-year";
 import { cameraZ, ease, FLIGHT, MONTHS, monthZ } from "@/lib/year-paper-flight";
-export { FIRST_MONTH, MONTHS, monthAt } from "@/lib/year-paper-flight";
 
 /**
  * "The year in paper": the sample conference's year as one slip for every request it was asked, fanned in depth a month at a time,
@@ -17,7 +16,7 @@ const DEPTH = .11, FOV = 38 * Math.PI / 180;
 /** A slip: one by .62, in the world's units. */
 export const SLIP = { w: 1, h: .62 } as const;
 
-export const hash = (a: number, b: number) => {
+const hash = (a: number, b: number) => {
   let h = Math.imul(a + 1, 0x9e3779b1) ^ Math.imul(b + 1, 0x85ebca6b);
   h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
   return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
@@ -102,7 +101,8 @@ const poses = slips.map(slip => {
 const leafTurn = new Float32Array(16), turnedPose = new Float32Array(16);
 
 /** The book: two pages and the board under them, drawn after the slips as three more of the same quad. */
-export const BOOK = 3, INSTANCES = SLIPS + BOOK;
+const BOOK = 3;
+export const INSTANCES = SLIPS + BOOK;
 /** What each instance is, for the shader and the poster: 0 a slip done, 1 a slip still waiting, 2 a page of the book, 3 its board. */
 export const kinds = Float32Array.from({ length: INSTANCES }, (_, index) => index < SLIPS ? Number(slips[index].waiting) : index < INSTANCES - 1 ? 2 : 3);
 /** A quad lying flat on the floor at y, its near edge at z, `w` by `d`, turned `spin` about the upright. */
