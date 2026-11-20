@@ -108,7 +108,14 @@ const en = {
       "Paper is the one material: things rise, fold and turn as a sheet would. Every raised surface takes one of three heights: a slip lies on the paper, a card stands on the page, and a sheet is laid over the room.",
     ] },
     { title: "Responsible AI, with Jev", table: "eval", blocks: [
-      "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does four clerical checks, each on what fixed rules have already read: on the draft request made from a call note, it confirms the kind of help and what kind of payee it is; it confirms or adds the signs that put a call first, with the reason shown; it reads the few notes the year’s check picks out before the report; and on a new team it confirms the name, how often, how many and when from the description. It does not write prose, and no request is saved without a person’s yes.",
+      "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does four clerical checks, each on what fixed rules have already read:",
+      [
+        { lead: "A draft request.", rest: "Made from a call note, it confirms the kind of help and what kind of payee it is." },
+        { lead: "An urgent call.", rest: "It confirms or adds the signs that put a call first, with the reason shown." },
+        { lead: "The year’s check.", rest: "It reads the few notes the check picks out before the report." },
+        { lead: "A new team.", rest: "It confirms the name, how often, how many and when from the description." },
+      ],
+      "It does not write prose, and no request is saved without a person’s yes.",
       "A neighbor’s name, phone and address are taken out before anything is sent: everything passes first through one step of fixed rules, and on every draft “What the assistant saw” shows the note exactly as it left. Saving a request is not granting it: the conference decides on the help, and an owner or coordinator records the decision.",
       "On 12 made‑up call notes kept apart from the ones it was tuned on, it filled 42 of 48 fields correctly, left 6 blank and got none wrong. Twelve notes is a small set, and it will make mistakes, which is why a person checks every draft.",
     ] },
@@ -238,7 +245,14 @@ const es: typeof en = {
       "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Cada superficie que se levanta tiene una de tres alturas: un papelito se apoya en el papel, una tarjeta se alza sobre la página y una hoja se pone sobre la sección.",
     ] },
     { title: "IA responsable, con Jev", table: "eval", blocks: [
-      "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace cuatro comprobaciones de oficina, cada una sobre lo que unas reglas fijas ya leyeron: en el borrador de petición hecho con la nota de una llamada, confirma el tipo de ayuda y qué tipo de destinatario del pago es; confirma o añade las señales que ponen primero una llamada, con el motivo a la vista; lee las pocas notas que la revisión del año aparta antes del informe; y en un equipo nuevo confirma el nombre, cada cuánto, cuántas personas y a qué hora según la descripción. No escribe prosa, y ninguna petición se guarda sin el sí de una persona.",
+      "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace cuatro comprobaciones de oficina, cada una sobre lo que unas reglas fijas ya leyeron:",
+      [
+        { lead: "Un borrador de petición.", rest: "Hecho con la nota de una llamada, confirma el tipo de ayuda y qué tipo de destinatario del pago es." },
+        { lead: "Una llamada urgente.", rest: "Confirma o añade las señales que ponen primero una llamada, con el motivo a la vista." },
+        { lead: "La revisión del año.", rest: "Lee las pocas notas que la revisión aparta antes del informe." },
+        { lead: "Un equipo nuevo.", rest: "Confirma el nombre, cada cuánto, cuántas personas y a qué hora según la descripción." },
+      ],
+      "No escribe prosa, y ninguna petición se guarda sin el sí de una persona.",
       "El nombre, el teléfono y la dirección de un vecino se quitan antes de enviar nada: todo pasa antes por un paso de reglas fijas, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Guardar una petición no es concederla: la conferencia decide la ayuda, y el responsable o un coordinador anota la decisión.",
       "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
     ] },

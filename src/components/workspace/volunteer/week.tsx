@@ -111,8 +111,9 @@ export function WeekSection() {
       )}
       </div>
       )}
-      {/* The list above already closes on its own rule: the foot stands under it on space alone. */}
-      <p className="!mt-14 !mb-0">
+      {/* The list above already closes on its own rule: the foot stands under it on space alone. Under an empty room
+          it stands as far under what is seen: the empty state's own 32px padding plus one 24px step. */}
+      <p className="!mt-14 !mb-0 [.live-empty+&]:!mt-6">
         <AssistantGuide />
       </p>
       {printing && (

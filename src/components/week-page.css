@@ -53,5 +53,5 @@
 .public-week>section[data-leaf-turning]::after{content:"";position:absolute;z-index:2;left:0;right:0;bottom:-14px;height:14px;pointer-events:none;background:linear-gradient(#3b2a121f,#3b2a1200)}
 @media(min-width:1024px){
   .public-words.public-week section{margin-inline:0}
-  .public-week .public-week-day h2{max-width:12ch;font-size:clamp(56px,6vw,112px);line-height:var(--lead-2);letter-spacing:var(--track-2)}
+  .public-week .public-week-day h2{max-width:12ch;font-size:clamp(56px,6vw,104px);line-height:var(--lead-2);letter-spacing:var(--track-2)}
 }
