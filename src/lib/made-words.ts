@@ -31,12 +31,10 @@ const en = {
   checked: {
     title: "How it was checked",
     items: [
-      { lead: "Every frame.", rest: "A scroll down this page on a Mac, at 1440 pixels and at 390 with the processor slowed four times: {frames1440} and {frames390} frames, none over 33 milliseconds.", source: "Mac run, 19 November 2026, build e4eacc3. Raw times: eval/frames/made-scroll.json." },
-      { lead: "78 of 78.", rest: "An automated accessibility check (axe-core, WCAG 2.2 AA) found nothing wrong in any of the 13 rooms, in English and Spanish, at 1440, at 390 and at 200% zoom. Every public page passed it too, at 390 and 1440.", source: "axe-core 4.14, rooms on build 7e3513e, public pages on build 7db60ae." },
+      { lead: "78 of 78 axe checks pass.", rest: "Every signed-in room, in English and Spanish, at desktop width, phone width and 200% zoom (axe-core, WCAG 2.2 AA). The sign-in page passes at desktop and phone width too.", source: "axe-core 4.14, rooms on build 7e3513e, public pages on build 7db60ae." },
       { lead: "By keyboard alone.", rest: "The core flow, from logging a call to recording a payment, walked with Tab, arrows, Enter and Esc in Chromium: 14 steps walked and passing after two fixes, and the step that records a yes checked in the code. The walk in Safari is still to come.", source: "Keyboard walk, Chromium at 1440, 19 November 2026." },
       { lead: "What a screen reader is told.", rest: "Each focus move and each spoken change recorded along the same flow: every done line said once, every refusal an alert, waiting always in words. One line said three times was fixed. The walk in VoiceOver is still to come.", source: "Screen-reader recording, Chromium at 1440, 19 November 2026." },
       { lead: "In high contrast.", rest: "With Windows’ forced colors on, the marks, the months and the printed year draw in the system’s own colors, checked in six rooms at 390 and 1440.", source: "Forced-colors pass, 19 November 2026." },
-      { lead: "{right} of {cells}.", rest: "On 12 call notes kept apart from the ones it was tuned on, the assistant filled {right} of {cells} fields right, left {blank} blank and got {wrong} wrong.", source: "Measure run 7, 19 November 2026, model jev-1.14.0. Raw output: eval/jev/run-7.json." },
     ],
   },
   anatomy: {
@@ -87,7 +85,7 @@ const en = {
     ] },
     { title: "One painting, made\u00a0of\u00a0paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
-      "The painted artwork was made with Codex’s image generator from written direction, then chosen and edited by hand. The page adds nothing to it. On the home page it moves by its own depth: near stone and far hills part as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next. Around it, the paper moves.",
+      "The painted artwork was made with Codex’s image generator from written direction, and chosen by the author. The page adds nothing to it. On the home page it moves by its own depth: near stone and far hills part as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next. Around it, the paper moves.",
     ] },
     { title: "Cut along its own depth", blocks: [
       "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
@@ -108,8 +106,8 @@ const en = {
       "On 12 made‑up call notes kept apart from the ones it was tuned on, it filled 42 of 48 fields correctly, left 6 blank and got none wrong. Twelve notes is a small set, and it will make mistakes, which is why a person checks every draft.",
     ] },
     { title: "In English and Spanish", blocks: [
-      "Every screen a volunteer uses is in English and Spanish, and so are the privacy page and this one. The Spanish is its own fixed words, written for each screen, not translated by a machine as the page opens, so the same button always says the same thing.",
-      "The first Spanish text was read and approved by the founder, who speaks Spanish. Where a page is a translation it says so at the top, and the English governs.",
+      "Every screen a volunteer uses is in English and Spanish, and so are A week, the privacy and accessibility pages, and this one. The Spanish is its own fixed words, written for each screen, not translated by a machine as the page opens, so the same button always says the same thing.",
+      "The founder approved the Spanish. Where a page is a translation it says so at the top, and the English governs.",
     ] },
     { title: "Drawn, judged, redrawn", table: "process", blocks: [
       "Every screen was drawn, then judged against the rules above, then drawn again. These are four real pairs from this week’s reviews, each taken from the site before and after one change.",
@@ -126,7 +124,7 @@ const en = {
     ] },
     { title: "Made for everyone", blocks: [
       "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on. These are our own checks, not a certification.",
-      "Every button is at least 44 pixels to a finger and 40 to a mouse, there is one focus ring, the same 4px corner on every control, drawn when you move by keyboard, and no color carries meaning on its own: waiting, wrong and done are always said in words too. With Windows’ high-contrast colors on, the done tick and the waiting ring keep their shapes, so they still read without their colors.",
+      "There is one focus ring, the same 4px corner on every control, drawn when you move by keyboard, and no color carries meaning on its own: waiting, wrong and done are always said in words too. With Windows’ high-contrast colors on, the done tick and the waiting ring keep their shapes, so they still read without their colors.",
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
     { title: "Free for every conference", blocks: [
@@ -155,12 +153,10 @@ const es: typeof en = {
   checked: {
     title: "Cómo se comprobó",
     items: [
-      { lead: "Cada cuadro.", rest: "Un desplazamiento por esta página en una Mac, a 1440 píxeles y a 390 con el procesador cuatro veces más lento: {frames1440} y {frames390} cuadros, ninguno de más de 33 milisegundos.", source: "Medición en la Mac, 19 de noviembre de 2026, versión e4eacc3. Tiempos sin tocar: eval/frames/made-scroll.json." },
-      { lead: "78 de 78.", rest: "Una comprobación automática de accesibilidad (axe-core, WCAG 2.2 AA) no encontró nada mal en ninguna de las 13 secciones, en inglés y en español, a 1440, a 390 y con zoom al 200%. Todas las páginas públicas también la pasaron, a 390 y 1440.", source: "axe-core 4.14, secciones en la versión 7e3513e, páginas públicas en la versión 7db60ae." },
+      { lead: "78 de 78 pruebas de axe pasan.", rest: "Cada sección con sesión iniciada, en inglés y en español, en ancho de escritorio, de teléfono y con zoom al 200 % (axe-core, WCAG 2.2 AA). La página para entrar también pasa en ancho de escritorio y de teléfono.", source: "axe-core 4.14, secciones en la versión 7e3513e, páginas públicas en la versión 7db60ae." },
       { lead: "Solo con el teclado.", rest: "El recorrido principal, de anotar una llamada a registrar un pago, hecho con Tab, flechas, Intro y Esc en Chromium: 14 pasos recorridos y correctos tras dos arreglos, y el paso que registra un sí comprobado en el código. Falta el recorrido en Safari.", source: "Recorrido con teclado, Chromium a 1440, 19 de noviembre de 2026." },
       { lead: "Lo que oye un lector de pantalla.", rest: "Cada movimiento del foco y cada cambio anunciado, grabados en el mismo recorrido: cada línea de hecho se dice una vez, cada rechazo es una alerta y la espera siempre se dice con palabras. Se arregló una línea que se decía tres veces. Falta el recorrido con VoiceOver.", source: "Grabación del lector de pantalla, Chromium a 1440, 19 de noviembre de 2026." },
       { lead: "En alto contraste.", rest: "Con los colores forzados de Windows, las marcas, los meses y el año impreso se dibujan con los colores del propio sistema, comprobado en seis secciones a 390 y 1440.", source: "Revisión de colores forzados, 19 de noviembre de 2026." },
-      { lead: "{right} de {cells}.", rest: "En 12 notas de llamadas apartadas de las que se usaron para ajustarlo, el asistente llenó bien {right} de {cells} campos, dejó {blank} en blanco y se equivocó en {wrong}.", source: "Medición 7, 19 de noviembre de 2026, modelo jev-1.14.0. Salida sin tocar: eval/jev/run-7.json." },
     ],
   },
   anatomy: {
@@ -209,7 +205,7 @@ const es: typeof en = {
     ] },
     { title: "Una sola pintura, hecha de papel", blocks: [
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
-      "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y luego se eligió y se retocó a mano. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
+      "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y elegida por quien lo creó. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
@@ -230,8 +226,8 @@ const es: typeof en = {
       "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
     ] },
     { title: "En inglés y en español", blocks: [
-      "Cada pantalla que usa un voluntario está en inglés y en español, y también la página de privacidad y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
-      "El primer texto en español lo leyó y lo aprobó el fundador, que habla español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
+      "Cada pantalla del voluntariado está en inglés y en español, y también Una semana, las páginas de privacidad y de accesibilidad, y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
+      "Quien fundó el proyecto aprobó el texto en español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
     { title: "Dibujado, juzgado, redibujado", table: "process", blocks: [
       "Cada pantalla se dibujó, se juzgó con las reglas de arriba y se volvió a dibujar. Estos son cuatro pares reales de las revisiones de esta semana, tomados del sitio antes y después de un cambio.",
@@ -248,7 +244,7 @@ const es: typeof en = {
     ] },
     { title: "Hecho para todos", blocks: [
       "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado. Son revisiones nuestras, no una certificación.",
-      "Cada botón mide al menos 44 píxeles para un dedo y 40 para un ratón, hay un solo anillo de foco, con la misma esquina de 4 px en cada control, que aparece al moverse con el teclado, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras. Con los colores de alto contraste de Windows, la marca de hecho y el círculo de espera conservan su forma, así que se entienden sin su color.",
+      "Hay un solo anillo de foco, con la misma esquina de 4 px en cada control, que aparece al moverse con el teclado, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras. Con los colores de alto contraste de Windows, la marca de hecho y el círculo de espera conservan su forma, así que se entienden sin su color.",
       "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",
     ] },
     { title: "Gratis para toda conferencia", blocks: [
