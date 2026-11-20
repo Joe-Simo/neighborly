@@ -6,6 +6,7 @@ import { signedIn } from "./clerk.testing";
 import { api, internal } from "./_generated/api";
 import { DateTime } from "luxon";
 import { sampleYear } from "../src/lib/sample-year";
+import { kindsByMonth } from "../src/lib/sample-year-kinds";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 
@@ -35,6 +36,14 @@ test("the home page's four figures are the sample's own yearly report", async ()
   const byMonth = report.months.map(({ month }) => waiting.filter((request) => DateTime.fromMillis(request.createdAt, { zone: report.timeZone }).toFormat("yyyy-MM") === month).length);
   expect(byMonth).toEqual(sampleYear.waitingByMonth);
   expect(byMonth.reduce((sum, count) => sum + count, 0)).toBe(report.requests.open + report.requests.approved);
+  // Touching a slip names its request's kind of help: each month's kinds in the order the requests came in, the waiting ones last.
+  const all = await t.run(async (ctx) => (await ctx.db.query("assistanceRequests").collect()).sort((a, b) => a.createdAt - b.createdAt));
+  const still = (request: (typeof all)[number]) => request.status === "open" || request.status === "approved";
+  const letters = report.months.map(({ month }) => {
+    const mine = all.filter((request) => DateTime.fromMillis(request.createdAt, { zone: report.timeZone }).toFormat("yyyy-MM") === month);
+    return [...mine.filter((request) => !still(request)), ...mine.filter(still)].map((request) => request.kind[0]).join("");
+  });
+  expect(letters).toEqual(kindsByMonth);
   // The week page's yes is the sample's own: the electric bill with a shut-off notice, approved after the visit.
   const shutOff = await t.run(async (ctx) =>
     (await ctx.db.query("assistanceRequests").collect()).find((request) => request.summary === "Electric bill with a shut-off notice."),
