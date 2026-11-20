@@ -4,7 +4,7 @@ import { paperEmail } from "./paper-email";
 describe("paper email", () => {
   test("the plain text says what the page says, with the link written out", () => {
     const email = paperEmail({ kind: "invitation", language: "en", set: "vincentian", place: "St. Example", link: "https://kindhelps.com/app?invite=abc" });
-    expect(email.text).toContain("You’re invited to join St. Example on Kind Helps, where your conference");
+    expect(email.text).toContain("Your conference, St. Example, keeps its help line");
     expect(email.text).toContain("See the invitation: https://kindhelps.com/app?invite=abc");
     expect(email.html).toContain('href="https://kindhelps.com/app?invite=abc"');
   });

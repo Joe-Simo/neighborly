@@ -20,21 +20,21 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string):
       case "invitation": return {
         subject: `Te invitan a ${place} en Kind Helps`,
         head: "Te invitan a unirte.",
-        body: `Te invitan a unirte a ${place} en Kind Helps, donde tu ${g} lleva su línea de ayuda, sus visitas y sus cuentas. El enlace es solo para ti.`,
+        body: `Tu ${g}, ${place}, lleva en Kind Helps su línea de ayuda, sus visitas y sus cuentas. El enlace es solo para ti.`,
         action: "Ver la invitación",
         foot: "La invitación vence en siete días. Si no la esperabas, puedes ignorar este correo.",
       };
       case "cover_request": return {
         subject: "Te piden cubrir un compromiso",
         head: "¿Puedes cubrirlo?",
-        body: `Una persona que coordina en ${place} te pide cubrir un compromiso. Entra para ver cuál es y decir si puedes.`,
+        body: `Una persona que coordina en ${place} busca a alguien para un compromiso. Entra para ver cuál es y decir si puedes.`,
         action: "Ver la petición",
         foot: "Recibes este correo porque aceptas peticiones para cubrir turnos. Puedes dejar de recibirlas en Kind Helps.",
       };
       case "meeting": return {
         subject: `Una reunión de ${place}`,
         head: "Te invitan a una reunión.",
-        body: `Tienes una invitación a una reunión de ${place}. Entra para ver los detalles y responder.`,
+        body: `Es una reunión de ${place}. Entra para ver los detalles y responder.`,
         action: "Ver la reunión",
         foot: `Recibes este correo porque eres parte de ${place} en Kind Helps.`,
       };
@@ -44,21 +44,21 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string):
     case "invitation": return {
       subject: `You’re invited to ${place} on Kind Helps`,
       head: "You’re invited to join.",
-      body: `You’re invited to join ${place} on Kind Helps, where your ${g} keeps its help line, its visits and its books. The link is yours alone.`,
+      body: `Your ${g}, ${place}, keeps its help line, its visits and its books on Kind Helps. The link is yours alone.`,
       action: "See the invitation",
       foot: "The invitation ends after seven days. If you weren’t expecting it, you can ignore this email.",
     };
     case "cover_request": return {
       subject: "A request to cover a commitment",
       head: "Can you cover it?",
-      body: `A coordinator at ${place} has asked if you can cover a commitment. Sign in to see which one and say whether you can.`,
+      body: `A coordinator at ${place} needs someone for a commitment. Sign in to see which one and say whether you can.`,
       action: "See the request",
       foot: "You get this email because you take cover requests. You can stop them in Kind Helps.",
     };
     case "meeting": return {
       subject: `A meeting at ${place}`,
       head: "You’re invited to a meeting.",
-      body: `You have an invitation to a meeting at ${place}. Sign in to see the details and reply.`,
+      body: `It is a meeting of ${place}. Sign in to see the details and reply.`,
       action: "See the meeting",
       foot: `You get this email because you’re part of ${place} on Kind Helps.`,
     };
