@@ -329,3 +329,8 @@
 @media(prefers-reduced-motion:reduce){.painted-world-scroll-cue[data-waiting]{visibility:hidden}}
 /* A piece of the opening's words that the sheet's edge would reach has left the sheet in one cut (neighborly-experience.tsx). */
 .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] [data-gone]{visibility:hidden}
+/* Under the head, what Kind Helps is, and a quiet way into the sample. */
+.painted-world-description.painted-world-what{max-width:38ch;pointer-events:auto}
+.painted-world-sample{white-space:nowrap;color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;pointer-events:auto}
+/* Where the window is narrower, the line above takes the slogan's place, so the hands stay clear. */
+@media(max-width:1279px){.painted-world-slogan{display:none}}

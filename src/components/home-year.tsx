@@ -110,6 +110,7 @@ export function HomeYear() {
     return () => { step.drop(); watch.disconnect(); window.removeEventListener(YES_GIVEN, given); };
   }, []);
   return <>
+    <p className="home-year-label">Sample conference · made-up people</p>
     <dl className="home-year" ref={root}>
       {figures.map((figure, place) => {
         // Only the counts are stacked, one sheet for every ten, so the three stand true to one another; money is not a pile of the same paper.
@@ -125,6 +126,5 @@ export function HomeYear() {
       })}
     </dl>
     <HomeYearSlip />
-    <p className="home-year-note">From the sample conference. Every person in it is made up.</p>
   </>;
 }

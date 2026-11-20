@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SampleLink } from "@/components/sample-link";
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -260,8 +261,10 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
           <div aria-live="polite" aria-atomic="true">
           <p className="painted-world-kicker" aria-hidden={heroOnly || undefined}>{chapter.name}</p>
           <h1>{chapter.title}</h1>
-          <p className="painted-world-description">{chapter.copy}</p>
+          <p className={heroOnly ? "painted-world-description painted-world-slogan" : "painted-world-description"}>{chapter.copy}</p>
           </div>
+          {/* On the first frame it says what Kind Helps is, with a quiet way into the sample. */}
+          {heroOnly && <p className="painted-world-description painted-world-what">A free app for St. Vincent de Paul conferences: the help line, home visits in pairs, the ledger and the yearly report. <SampleLink className="painted-world-sample" prefetch={false}>Try the sample week</SampleLink></p>}
           {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Kind Helps">
             <a className="painted-world-primary-invitation" href="#neighborly-courtyard" onClick={event => { if (passed && onContinue) { event.preventDefault(); onContinue(); } else if (!passed && onPass) { event.preventDefault(); onPass(); } }}>{passed || !onPass ? "Go through the doors" : "Pass the card"}</a>
             <Link href="/app?intent=start">Start your conference <ArrowUpRight size={15} aria-hidden="true" /></Link>
