@@ -67,11 +67,12 @@ export function handOver(line: HTMLElement) {
   holdThePage();
   const box = { boxSizing: "border-box", overflow: "hidden" };
   line.animate([{ ...box, height: `${start}px` }, { ...box, height: `${height}px` }], { duration: 360, easing: CLOSE });
+  // The line's words are set down whole, at full ink, once the card has closed over them: never faded in.
   line.querySelectorAll<HTMLElement>(":scope > *").forEach((part) =>
-    part.animate([{ opacity: 0 }, { opacity: 0, offset: 0.1 }, { opacity: 1, offset: 0.45 }, { opacity: 1 }], { duration: 520, easing: "ease-out", fill: "backwards" }),
+    part.animate([{ visibility: "hidden" }, { visibility: "hidden" }], { duration: 160 }),
   );
   // The amount waits for the turning corner to be gone from over it.
-  line.querySelector(".treasury-paid-line strong")?.animate([{ opacity: 0 }, { opacity: 0, offset: 0.35 }, { opacity: 1, offset: 0.6 }, { opacity: 1 }], { duration: 520, easing: "ease-out", fill: "backwards" });
+  line.querySelector(".treasury-paid-line strong")?.animate([{ visibility: "hidden" }, { visibility: "hidden" }], { duration: 290 });
   Object.assign(card.style, {
     position: "fixed", left: `${from.left}px`, top: `${top}px`, width: `${from.width}px`, height: `${from.bottom - top}px`,
     margin: "0", zIndex: "29", pointerEvents: "none", overflow: "hidden", boxSizing: "border-box", animation: "none",
@@ -79,7 +80,8 @@ export function handOver(line: HTMLElement) {
   // Taken, not waiting: its corner is the green one with the tick from its first frame, as the yes has it.
   card.classList.add("treasury-handed", "paper-fold");
   (line.closest(".live-app") ?? document.body).append(card);
-  [...card.children].forEach((part) => (part as HTMLElement).animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100, easing: "ease-out", fill: "forwards" }));
+  // The card's own words leave with its first frame, in one cut: they are never faded.
+  [...card.children].forEach((part) => ((part as HTMLElement).style.visibility = "hidden"));
   const look = getComputedStyle(line);
   const done = () => card.remove();
   card.animate([{ height: `${from.bottom - top}px` }, { height: `${place.top + height - top}px` }], { duration: 360, easing: CLOSE, fill: "forwards" });
