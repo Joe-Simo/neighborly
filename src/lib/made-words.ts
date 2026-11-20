@@ -105,7 +105,7 @@ const en = {
         { lead: "Plum means something is wrong.", rest: "There is no red anywhere. A mistake is named plainly, with the way to put it right.", tone: "wrong" },
         { lead: "Green means done.", rest: "A visit written up, a bill paid, a call returned. The words say it too, in the past tense and naming the thing: “Request saved.”, “Record removed.”", tone: "done" },
       ],
-      "Paper is the one material: things rise, fold and turn as a sheet would. A room is shown whole or not yet at all, so no one reads a half-drawn screen. Every raised surface takes one of three heights: a slip lies on the paper, a card stands on the page, and a sheet is laid over the room.",
+      "Paper is the one material: things rise, fold and turn as a sheet would. A room’s lists arrive together, never row by row. Every raised surface takes one of three heights: a slip lies on the paper, a card stands on the page, and a sheet is laid over the room.",
       "No sheet is ever seen more than 60° off upright. Past that, a picture turns to a sliver and its words cannot be read, so a sheet that stands up starts from 60°.",
     ] },
     { title: "Responsible AI, with Jev", table: "eval", blocks: [
@@ -124,7 +124,7 @@ const en = {
       "One call, followed through the work: the picture that was chosen for it, the slip it became on the home page, and the room where a volunteer answers it.",
     ] },
     { title: "Measured, not guessed", table: "frames", blocks: [
-      "The rule every change that moves something is held to: it is filmed at eight widths, from a 360‑pixel phone to a 1920‑pixel screen, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
+      "The rule every change that moves something is held to: it is filmed on a Mac at desktop and phone widths, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
       [
         { lead: "Under a second.", rest: "The sample conference opens in about 0.85 seconds at desk width and 1.1 on a phone, measured on our test machine." },
         { lead: "Three frames.", rest: "On the same machine, the first scroll is answered by the third frame, or within 60 pixels." },
@@ -236,7 +236,7 @@ const es: typeof en = {
         { lead: "Ciruela es que algo está mal.", rest: "No hay rojo en ninguna parte. Un error se nombra con claridad, junto con la manera de corregirlo.", tone: "wrong" },
         { lead: "Verde es hecho.", rest: "Una visita con sus notas, un recibo pagado, una llamada devuelta. Las palabras también lo dicen, en pasado y nombrando la cosa: «Petición guardada.»", tone: "done" },
       ],
-      "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Una sección se muestra entera o todavía no se muestra, para que nadie lea una pantalla a medio dibujar. Cada superficie que se levanta tiene una de tres alturas: un papelito se apoya en el papel, una tarjeta se alza sobre la página y una hoja se pone sobre la sección.",
+      "El papel es el único material: todo sube, se dobla y gira como lo haría una hoja. Las listas de una sección llegan juntas, nunca fila por fila. Cada superficie que se levanta tiene una de tres alturas: un papelito se apoya en el papel, una tarjeta se alza sobre la página y una hoja se pone sobre la sección.",
       "Ninguna hoja se ve nunca a más de 60° de estar derecha. Pasado eso, una imagen se vuelve una tira y sus palabras no se pueden leer, así que una hoja que se levanta empieza desde 60°.",
     ] },
     { title: "IA responsable, con Jev", table: "eval", blocks: [
@@ -255,7 +255,7 @@ const es: typeof en = {
       "Una llamada, seguida por todo el trabajo: la imagen que se eligió para ella, el papelito que fue en la portada y la sección donde un voluntario la atiende.",
     ] },
     { title: "Medido, no supuesto", table: "frames", blocks: [
-      "La regla que cumple cada cambio que mueve algo: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
+      "La regla que cumple cada cambio que mueve algo: se filma en una Mac en anchos de escritorio y de teléfono, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
       [
         { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos 0.85 segundos en el ancho de escritorio y en 1.1 en un teléfono, medido en nuestra máquina de pruebas." },
         { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde antes del tercer cuadro, o dentro de 60 píxeles." },
