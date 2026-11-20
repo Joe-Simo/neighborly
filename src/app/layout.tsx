@@ -19,13 +19,13 @@ export const viewport: Viewport = {
 };
 export const metadata: Metadata = {
   metadataBase: new URL("https://kindhelps.com"),
-  title: "Kind Helps · Good work, together",
+  title: "Kind Helps · Help line, visits and books for a conference",
   description:
-    "Kind Helps keeps a conference’s help line, home visits, ledger and yearly report in one place, with the volunteers who do them. Free for every conference.",
+    "Kind Helps keeps a conference’s help line, home visits in pairs, ledger and yearly report in one place, in English and Spanish. Free for every conference.",
   openGraph: {
     ...linkPreview,
     url: "/",
-    title: "Kind Helps · Good work, together",
+    title: "Kind Helps · Help line, visits and books for a conference",
     description: "The help line, home visits in pairs, the ledger and the yearly report, with the volunteers who do the work. Free for every conference.",
   },
   twitter: linkCardIn("en"),

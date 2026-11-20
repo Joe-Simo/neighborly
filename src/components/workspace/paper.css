@@ -439,8 +439,8 @@
 /* Paper can't be pressed or typed into: a room's actions, filters and forms stay on screen. A trailing control left in
    print was the whole of a last page. A button that is a table cell's words (what a gift was for) is the record and prints. */
 @media print {
-  .live-app .live-main :is([data-slot="button"], input, select, textarea):not(td *), .live-app .live-main form { display: none !important; }
-  .live-app .live-main p:has(> :is(button, [data-slot="button"]):only-child):not(td *) { display: none !important; }
+  .live-app .live-main :is([data-slot="button"], input, select, textarea):not(td *, th[scope="row"] *), .live-app .live-main form { display: none !important; }
+  .live-app .live-main p:has(> :is(button, [data-slot="button"]):only-child):not(td *, th[scope="row"] *) { display: none !important; }
   /* A row is one record: it never splits across two sheets. */
   .live-app .live-main :is(.live-row, .help-row, tr) { break-inside: avoid; }
 }
@@ -690,7 +690,7 @@
 .live-app .live-meta,
 .live-app .live-count { font-size: 15px; }
 .live-app .live-status { font-size: 15px; }
-.live-app th { font-size: 13px; }
+.live-app th:not([scope="row"]) { font-size: 13px; }
 :is(.live-app, .live-dialog) .live-detail dt { font-size: 13px; }
 .live-app .live-date-leaf span { font-size: 13px; letter-spacing: 0.08em; }
 .live-app .live-commitment-row .live-meta { font-size: 15px; }
@@ -1414,7 +1414,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 }
 /* Lists and tables: set as type. Figures line up by the digit, the rules are hairlines, a table's heads are small letterspaced capitals. */
 .live-app :is(.live-list, table, .help-aside-list, .visits-aside-day, .week-figures) { font-variant-numeric: tabular-nums lining-nums; font-kerning: normal; }
-.live-app table:not(.book-table) th { font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
+.live-app table:not(.book-table) th:not([scope="row"]) { font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
 .live-app table:not(.book-table) :is(th, td) { border-bottom: 1px solid var(--live-line); }
 /* Heads: the display line set as the home page sets its own: optical size, balanced lines, hanging punctuation. */
 .live-app .live-page-head h1 { font-optical-sizing: auto; text-wrap: balance; hanging-punctuation: first last; font-kerning: normal; }

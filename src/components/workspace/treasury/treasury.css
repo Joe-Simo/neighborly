@@ -26,10 +26,10 @@
   color: var(--help-ochre-ink);
 }
 .help-ledger tr[data-reversed] .help-what,
-.help-ledger tr[data-reversed] td.help-money:not([data-balance]) {
+.help-ledger tr[data-reversed] :is(td, th[scope="row"]).help-money:not([data-balance]) {
   color: var(--live-muted);
 }
-.help-ledger tr[data-reversed] td.help-money:not([data-balance]) {
+.help-ledger tr[data-reversed] :is(td, th[scope="row"]).help-money:not([data-balance]) {
   color: var(--live-muted);
   text-decoration: line-through;
   text-decoration-thickness: 1px;
@@ -38,11 +38,11 @@
   font-size: 19px;
   color: #4b564d;
 }
-.help-ledger tr[data-quiet] td.help-money:not([data-balance]) {
+.help-ledger tr[data-quiet] :is(td, th[scope="row"]).help-money:not([data-balance]) {
   font-size: 19px;
   color: var(--live-muted);
 }
-.help-ledger td[data-total] span {
+.help-ledger :is(td, th[scope="row"])[data-total] span {
   display: none;
 }
 .treasury-form-grid {
@@ -53,13 +53,13 @@
 }
 /* Screen only: on paper the ledger stays a table (help.css). */
 @media screen and (max-width: 850px) {
-  .help-ledger td.help-what {
+  .help-ledger :is(td, th[scope="row"]).help-what {
     grid-column: 1;
   }
   .help-ledger tbody tr {
     column-gap: 16px;
   }
-  .live-app table.help-ledger tfoot td[data-total] {
+  .live-app table.help-ledger tfoot :is(td, th[scope="row"])[data-total] {
     display: block !important;
     grid-column: 1 / -1;
     margin-top: var(--space-8);
@@ -72,10 +72,10 @@
     font-feature-settings: "lnum" 1, "tnum" 1;
     color: var(--live-muted);
   }
-  .help-ledger td[data-total] span {
+  .help-ledger :is(td, th[scope="row"])[data-total] span {
     display: inline;
   }
-  .live-app table.help-ledger tbody td.help-money {
+  .live-app table.help-ledger tbody :is(td, th[scope="row"]).help-money {
     min-width: 104px;
     grid-column: 2;
     grid-row: 2;
@@ -297,14 +297,14 @@
 .help-sheet .treasury-keep {
   margin-top: var(--space-16);
 }
-.help-ledger.treasury-shelf td.help-what {
+.help-ledger.treasury-shelf :is(td, th[scope="row"]).help-what {
   font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.02em;
 }
-.help-ledger.treasury-shelf td[data-total] {
+.help-ledger.treasury-shelf :is(td, th[scope="row"])[data-total] {
   color: var(--live-ink);
 }
-.help-ledger.treasury-shelf td[data-total] small {
+.help-ledger.treasury-shelf :is(td, th[scope="row"])[data-total] small {
   margin-right: 10px;
   font: 400 15px/1 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
   letter-spacing: 0;
@@ -418,17 +418,17 @@
   .live-app table.help-ledger.treasury-shelf tbody tr {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .live-app table.help-ledger.treasury-shelf tbody td.help-what {
+  .live-app table.help-ledger.treasury-shelf tbody :is(td, th[scope="row"]).help-what {
     grid-column: 1 / -1;
   }
-  .live-app table.help-ledger.treasury-shelf tbody td.help-money {
+  .live-app table.help-ledger.treasury-shelf tbody :is(td, th[scope="row"]).help-money {
     display: block !important;
     grid-column: auto;
     grid-row: auto;
     min-width: 0;
     text-align: left;
   }
-  .help-ledger.treasury-shelf td.help-money::before {
+  .help-ledger.treasury-shelf :is(td, th[scope="row"]).help-money::before {
     content: attr(data-label);
     display: block;
     font: 400 13px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
@@ -452,7 +452,7 @@
     font-size: clamp(26px, 8vw, 34px);
   }
 }
-.help-ledger.treasury-shelf td.help-what {
+.help-ledger.treasury-shelf :is(td, th[scope="row"]).help-what {
   color: var(--live-ink);
 }
 
@@ -605,7 +605,7 @@
 .treasury-lines li,
 .treasury-gift-total,
 .treasury-figures dd small,
-.help-ledger.treasury-shelf td {
+.help-ledger.treasury-shelf :is(td, th[scope="row"]) {
   font-variant-numeric: lining-nums tabular-nums;
 }
 @media (min-width: 851px) {

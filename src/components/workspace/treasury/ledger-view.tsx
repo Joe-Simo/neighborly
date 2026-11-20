@@ -363,16 +363,14 @@ export function LedgerView({
                     data-landed={entry.id === landed ? "" : undefined}
                   >
                     <td>{dayLabel(words.locale, entry.date)}</td>
-                    {/* A row header by role, not by tag: every rule in help.css and treasury.css is written for td, so a th would
-                        change how the ledger looks. */}
-                    <td className="help-what" role="rowheader">
+                    <th scope="row" className="help-what">
                       <Button variant="ghost" onClick={() => onEntry(entry)}>
                         {title}
                       </Button>
                       <small>
                         {entry.reversed ? room.lines.reversed(detail) : detail}
                       </small>
-                    </td>
+                    </th>
                     <td data-for>
                       {entry.neighbor && (
                         <NeighborLink
@@ -398,11 +396,11 @@ export function LedgerView({
             <tfoot>
               <tr>
                 <td />
-                <td role="rowheader">
+                <th scope="row">
                   {ledger.month === ledger.today.slice(0, 7)
                     ? w.soFar(monthAlone)
                     : monthAlone}
-                </td>
+                </th>
                 <td />
                 <td className="help-money" data-in>
                   + {formatCents(ledger.moneyIn)}
