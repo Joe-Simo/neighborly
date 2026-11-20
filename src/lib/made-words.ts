@@ -97,7 +97,7 @@ const en = {
     ] },
     { title: "Cut along its own depth", blocks: [
       "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
-    ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The map the cut followed: the courtyard’s depth, far in dark and near in light." } },
+    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The map the cut followed: the courtyard’s depth, far in dark and near in light." } },
     { title: "The rules the paper keeps", table: "anatomy", blocks: [
       "A ministry’s software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
       [
@@ -243,7 +243,7 @@ const es: typeof en = {
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
-    ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa que siguió el corte: la profundidad del patio, lo lejano en oscuro y lo cercano en claro." } },
+    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa que siguió el corte: la profundidad del patio, lo lejano en oscuro y lo cercano en claro." } },
     { title: "Las reglas que guarda el papel", table: "anatomy", blocks: [
       "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
       [
