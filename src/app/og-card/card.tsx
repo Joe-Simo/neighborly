@@ -72,16 +72,6 @@ export async function card({ head, art, crop, aside, first }: { head: string | R
   );
 }
 
-/** A slip as the home page lays it: the caller's name and the call, on a sheet of its own. */
-export function Slip({ name, call }: { name: string; call: string }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, width: 420, padding: "18px 24px 20px", background: "#fbf9f3", border: "1px solid #ddd6c6", boxShadow: "0 14px 28px -16px rgba(40,60,50,0.45)" }}>
-      <div style={{ fontWeight: 600, fontSize: 22 }}>{name}</div>
-      <div style={{ fontFamily: "Newsreader", fontSize: 30, letterSpacing: -0.6 }}>{call}</div>
-    </div>
-  );
-}
-
 /** The year in paper's totals, each figure over its label. */
 export function Totals({ items }: { items: { value: string; label: string }[] }) {
   return (
