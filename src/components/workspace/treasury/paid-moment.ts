@@ -6,6 +6,9 @@ import { arriving, holdThePage } from "@/components/workspace/fold";
 import type { Payable } from "@/components/workspace/treasury/labels";
 
 /** The request a payment was just recorded for, and the ledger entry that payment became. */
+/** The share of the moment at which the closed card, corner and all, is cut away from over the paid line. */
+const CUT = 0.45;
+
 export type Paid = {
   request: Payable;
   amount: number;
@@ -81,6 +84,8 @@ export function handOver(line: HTMLElement) {
   card.classList.add("treasury-handed", "paper-fold");
   // Named for anyone checking the moment frame by frame: the card whose corner turns as it closes into the line.
   card.setAttribute("data-paid-turning", "");
+  // The name goes with the corner, in the frame the card is cut away.
+  setTimeout(() => card.removeAttribute("data-paid-turning"), Math.round(520 * CUT));
   (line.closest(".live-app") ?? document.body).append(card);
   // The card's own words leave with its first frame, in one cut: they are never faded.
   [...card.children].forEach((part) => ((part as HTMLElement).style.visibility = "hidden"));
@@ -91,13 +96,15 @@ export function handOver(line: HTMLElement) {
     [
       { backgroundColor: paper.backgroundColor, borderRadius: paper.borderRadius, boxShadow: paper.boxShadow, opacity: 1 },
       { backgroundColor: look.backgroundColor, borderRadius: look.borderRadius, boxShadow: "0 0 0 #0000", opacity: 1, offset: 0.15 },
-      { backgroundColor: look.backgroundColor, borderRadius: look.borderRadius, boxShadow: "0 0 0 #0000", opacity: 0, offset: 0.45 },
+      // Never see-through: the closed card stands whole over the line, and is cut away in one frame.
+      { backgroundColor: look.backgroundColor, borderRadius: look.borderRadius, boxShadow: "0 0 0 #0000", opacity: 1, offset: CUT },
+      { backgroundColor: look.backgroundColor, borderRadius: look.borderRadius, boxShadow: "0 0 0 #0000", opacity: 0, offset: CUT },
       { backgroundColor: look.backgroundColor, borderRadius: look.borderRadius, boxShadow: "0 0 0 #0000", opacity: 0 },
     ],
     { duration: 520, fill: "forwards" },
   ).finished.then(done, done);
   const corner = `${window.innerWidth < 700 ? 48 : 64}px`;
-  card.animate([{ width: "38px", height: "38px", opacity: 1 }, { width: corner, height: corner, opacity: 1, offset: 0.23 }, { width: corner, height: corner, opacity: 0, offset: 0.45 }, { opacity: 0 }], {
+  card.animate([{ width: "38px", height: "38px", opacity: 1 }, { width: corner, height: corner, opacity: 1, offset: 0.23 }, { width: corner, height: corner, opacity: 1, offset: CUT }, { width: corner, height: corner, opacity: 0, offset: CUT }, { opacity: 0 }], {
     duration: 520, easing: "cubic-bezier(0.3, 0, 0.2, 1)", fill: "forwards", pseudoElement: "::after",
   });
 }
