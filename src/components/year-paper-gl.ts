@@ -1,5 +1,5 @@
 import { whenIdle } from "@/lib/idle";
-import { DONE, EDGE, HAIRLINE, LIGHT, PAPER, placeSlips, SHADE, SHADOW, SLIP, slips, SLIPS, viewProjection, WAITING } from "@/lib/year-paper";
+import { DECKLE, DONE, EDGE, HAIRLINE, INK, KRAFT, KRAFT_EDGE, LIGHT, PAPER, placeSlips, SHADE, SHADOW, SLIP, slips, SLIPS, viewProjection, WAITING } from "@/lib/year-paper";
 
 /**
  * The year's slips on one canvas, in one instanced draw: every slip the same quad, placed by its own matrix (year-paper.ts).
@@ -16,7 +16,9 @@ uniform float shade;
 out vec2 uv;
 out float lit;
 out float waiting;
+flat out uint slip;
 void main() {
+  slip = uint(gl_InstanceID);
   // The shade pass draws each slip again, grown past its edge and set just behind it, down and away from the light.
   vec2 at = mix(corner, corner * (1.0 + 2.0 * ${SHADE.grow.toFixed(3)}) - ${SHADE.grow.toFixed(3)}, shade);
   uv = at;
@@ -26,13 +28,15 @@ void main() {
   vec3 local = vec3((at.x - 0.5) * ${SLIP.w.toFixed(3)}, at.y * ${SLIP.h.toFixed(3)}, 0.0) + shade * vec3(${SHADE.x.toFixed(3)}, ${SHADE.y.toFixed(3)}, ${SHADE.z.toFixed(3)});
   gl_Position = view * model * vec4(local, 1.0);
 }`;
-// The slip's face: its paper lit by its facing, a hairline edge of the pile's ink-warm colour, three ruled lines where a request is written
-// (never letters), and the done corner, the page's one done language, at its upper right.
+const v3 = (c: readonly number[]) => `vec3(${c.map(v => v.toFixed(4)).join(", ")})`;
+// The slip's face: kraft or paper, lit by its facing, its four edges deckled (torn in from knots, the same numbers the poster draws), a hairline
+// of its own darker tone along the tear, one line of ink where a request is written (never letters), and the done corner at its upper right.
 const fragment = `#version 300 es
 precision highp float;
 in vec2 uv;
 in float lit;
 in float waiting;
+flat in uint slip;
 uniform float shade;
 uniform vec3 shadow;
 uniform vec3 wait;
@@ -41,23 +45,40 @@ uniform vec3 edge;
 uniform vec3 done;
 uniform vec2 hair;
 out vec4 colour;
+// year-paper.ts's hash, in the same 32-bit steps.
+float hash(uint a, uint b) {
+  uint h = (a + 1u) * 0x9e3779b1u ^ (b + 1u) * 0x85ebca6bu;
+  h = (h ^ (h >> 15u)) * 0x2c1b3c6du;
+  return float(h ^ (h >> 13u)) / 4294967296.0;
+}
+float torn(uint side, float along) {
+  float k = clamp(along, 0.0, 0.99999) * ${DECKLE.knots}.0, i = floor(k);
+  uint at = slip * 4u + side + 5000u;
+  return ${DECKLE.depth.toFixed(4)} * (0.3 + 0.7 * mix(hash(at, uint(i)), hash(at, uint(i) + 1u), k - i));
+}
 void main() {
+  // How far in from each edge, in the world's units, less that edge's tear: below nothing, the paper is torn away.
+  float w = ${SLIP.w.toFixed(3)}, h = ${SLIP.h.toFixed(3)};
+  float inside = min(min(uv.x * w - torn(0u, uv.y), (1.0 - uv.x) * w - torn(1u, uv.y)), min(uv.y * h - torn(2u, uv.x), (1.0 - uv.y) * h - torn(3u, uv.x)));
   if (shade > 0.5) {
-    // Soft at its edge: full only inside the slip's own outline, fading to nothing at the grown edge.
-    vec2 inside = min(uv, 1.0 - uv);
-    float soft = smoothstep(-${SHADE.grow.toFixed(3)}, 0.0, min(inside.x, inside.y));
-    colour = vec4(shadow, ${SHADE.ink.toFixed(3)} * soft);
+    // The slip's own torn outline, blurred: full inside it, fading to nothing a little past its tear.
+    colour = vec4(shadow, ${SHADE.ink.toFixed(3)} * smoothstep(-${(SHADE.grow * SLIP.h).toFixed(4)}, 0.0, inside));
     return;
   }
-  vec3 c = paper;
-  float ruled = step(0.12, uv.x) * step(uv.x, 0.78) * (step(abs(uv.y - 0.62), hair.y) + step(abs(uv.y - 0.44), hair.y) + step(abs(uv.y - 0.26), hair.y) * step(uv.x, 0.56));
-  c = mix(c, edge, 0.55 * min(ruled, 1.0));
-  if ((1.0 - uv.x) * ${SLIP.w.toFixed(3)} + (1.0 - uv.y) * ${SLIP.h.toFixed(3)} < 0.085) c = waiting > 0.5 ? wait : done;
-  if (uv.x < hair.x || uv.x > 1.0 - hair.x || uv.y < hair.y || uv.y > 1.0 - hair.y) c = mix(paper, edge, ${HAIRLINE.toFixed(2)});
+  if (inside < 0.0) discard;
+  bool kraft = hash(slip + 2000u, 7u) < 0.28;
+  vec3 face = kraft ? ${v3(KRAFT)} : paper, rim = kraft ? ${v3(KRAFT_EDGE)} : edge;
+  vec3 c = face;
+  float ink = step(0.12, uv.x) * step(uv.x, 0.46 + 0.3 * hash(slip + 3000u, 3u)) * step(abs(uv.y - 0.5), hair.y * 1.4);
+  c = mix(c, ${v3(INK)}, 0.7 * ink);
+  if ((1.0 - uv.x) * w + (1.0 - uv.y) * h < 0.085 + ${DECKLE.depth.toFixed(4)}) c = waiting > 0.5 ? wait : done;
+  if (inside < hair.x * w) c = mix(face, rim, ${HAIRLINE.toFixed(2)});
   colour = vec4(c * lit, 1.0);
 }`;
 
-export type YearPaperCanvas = { draw: (through: number) => void; size: (width: number, height: number) => void; dispose: () => void };
+/** The canvas's size in CSS pixels, and the window's box inside it: the picture is framed by the window and runs on to the canvas's edges. */
+export type Frame = { width: number; height: number; window: { x: number; y: number; w: number; h: number } };
+export type YearPaperCanvas = { draw: (through: number) => void; size: (frame: Frame) => void; dispose: () => void };
 
 const idle = () => new Promise<void>(done => { whenIdle(done, 500); });
 
@@ -122,14 +143,15 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.clearColor(0xee / 255, 0xe7 / 255, 0xd7 / 255, 1);
 
-  let aspect = 1;
+  let aspect = 1, place = { x: 0, y: 0, w: 1, h: 1 };
   return {
-    size(width, height) {
+    size({ width, height, window: box }) {
+      place = { x: box.x / width, y: box.y / height, w: box.w / width, h: box.h / height };
+      aspect = box.w / box.h;
       const ratio = Math.min(2, devicePixelRatio || 1), w = Math.round(width * ratio), h = Math.round(height * ratio);
       // Setting a canvas's size clears it: an unchanged size is left alone, so the frame already drawn stays.
       if (w === canvas.width && h === canvas.height) return;
       canvas.width = w; canvas.height = h;
-      aspect = width / height;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(hair, .006, .006 * SLIP.w / SLIP.h);
     },
@@ -137,7 +159,7 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
       placeSlips(through, matrices);
       gl.bindBuffer(gl.ARRAY_BUFFER, models);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, matrices);
-      gl.uniformMatrix4fv(view, false, viewProjection(aspect, through));
+      gl.uniformMatrix4fv(view, false, viewProjection(aspect, through, place));
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       // The slips first, then their shades, tested against the slips' depth but never written: a shade lies only on the sheets behind its slip.
       gl.uniform1f(shade, 0); gl.depthMask(true); gl.disable(gl.BLEND);
