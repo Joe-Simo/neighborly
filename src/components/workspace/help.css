@@ -314,7 +314,7 @@ td.help-money[data-balance] { color: var(--live-muted); }
 .neighbors-tally dd { margin: 0; }
 .neighbors-tally b {
   display: inline-block; padding: var(--space-12) 12px 4px; min-width: 64px;
-  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 36px; line-height: 0.9; letter-spacing: -0.02em;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 35px; line-height: 0.9; letter-spacing: -0.02em;
   font-feature-settings: "lnum" 1, "tnum" 1; color: var(--live-ink);
   background: var(--relief-paper); box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-slip);
   clip-path: polygon(0 4px, 52% 0, 100% 3px, 100% 100%, 0 100%); rotate: -0.6deg;
