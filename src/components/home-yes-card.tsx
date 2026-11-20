@@ -18,6 +18,14 @@ const PAPER_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
 const GREEN = 300;
 /** The fold (home-yes-card.css): the list's words are set down only once the draft is past them. */
 const FOLD = 380;
+/** The fold's easing (home-yes-card.css), and the share of its time by which it has turned a share `turned` of its quarter turn. */
+const FOLD_EASE = [0.45, 0.05, 0.55, 0.95] as const;
+const bezier = (t: number, a: number, b: number) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
+const timeFor = (turned: number) => {
+  let low = 0, high = 1;
+  for (let step = 0; step < 24; step++) { const mid = (low + high) / 2; if (bezier(mid, FOLD_EASE[1], FOLD_EASE[3]) < turned) low = mid; else high = mid; }
+  return bezier((low + high) / 2, FOLD_EASE[0], FOLD_EASE[2]);
+};
 const format = (time: number, options?: Intl.DateTimeFormatOptions) => formatDate("en", time, { month: "short", day: "numeric", ...options });
 
 // The same made-up call the sample conference holds, so what is seen here is what waits behind the door.
@@ -58,6 +66,20 @@ export function HomeYesCard() {
     if (step !== "filed" || !tick || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const set = tick.animate([{ transform: "scale(0)" }, { transform: "scale(1.2)", offset: 0.7 }, { transform: "none" }], { duration: 260, delay: FOLD, easing: PAPER_EASE, fill: "backwards" });
     return () => set.cancel();
+  }, [step]);
+  // The list's lines are set down one by one, at full ink, the moment the folding draft has lifted clear of each: the draft folds back about its top
+  // edge, so its foot stands at cos(angle) of its height, and a line is bare once the foot has risen above the line's top. No frame is bare paper.
+  useLayoutEffect(() => {
+    const list = stage.current?.querySelector<HTMLElement>(".home-yes-filed"), draft = stage.current?.querySelector<HTMLElement>(".home-yes-sheet .help-sheet");
+    if (step !== "filed" || !list || !draft || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const tall = draft.offsetHeight;
+    const lines = [...list.children].flatMap(child => child.tagName === "OL" ? [...child.children] : [child]) as HTMLElement[];
+    const held = lines.map(line => {
+      const top = line.getBoundingClientRect().top - list.getBoundingClientRect().top;
+      const at = FOLD * timeFor(Math.acos(Math.max(0, Math.min(1, top / tall))) / (Math.PI / 2));
+      return line.animate([{ visibility: "hidden" }, { visibility: "hidden" }], { duration: Math.ceil(at) + 16 });
+    });
+    return () => held.forEach(hold => hold.cancel());
   }, [step]);
   useEffect(() => {
     // The press leaves with the button, so the keyboard is handed to what came of it; the page itself never moves.
