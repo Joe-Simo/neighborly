@@ -123,7 +123,7 @@ export function DateMonth({ language, selected, defaultMonth, min, max, labelDay
           {/* As the library drew them: both ways always open; a month with no day to take simply has none. */}
           {(["previous", "next"] as const).map((way) => (
             <button key={way} type="button" className={`rdp-button_${way}`} aria-label={words[way]} onClick={() => turn(way === "previous" ? -1 : 1)}>
-              <svg className="rdp-chevron" width="24" height="24" viewBox="0 0 24 24"><polygon points={chevron[way]} /></svg>
+              <svg className="rdp-chevron" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><polygon points={chevron[way]} /></svg>
             </button>
           ))}
         </nav>
