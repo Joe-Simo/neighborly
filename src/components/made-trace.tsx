@@ -12,7 +12,7 @@ export function MadeTrace({ said }: { said: Said }) {
       return <li key={key}><figure>
         {/* eslint-disable-next-line @next/next/no-img-element -- a still from the running site, shown as it was taken */}
         <img src={`/assets/made/trace/${key}.webp`} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
-        <figcaption><strong>{name}</strong> {why}</figcaption>
+        <figcaption><strong>{name}.</strong> {why}</figcaption>
       </figure></li>;
     })}</ol>
     <p className="public-made-process-source">{said.credit}</p>
