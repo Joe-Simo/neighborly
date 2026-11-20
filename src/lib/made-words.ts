@@ -33,7 +33,7 @@ const en = {
     items: [
       { lead: "No axe violations.", rest: "axe-core 4.14 (WCAG 2.2 A and AA) found none in the 13 rooms, in English and Spanish, as owner and as member, at 390 and 1440 pixels, nor on the 10 public pages, sign-in included.", source: "axe-core 4.14, rooms on build 7e3513e, public pages on build 7db60ae." },
       { lead: "By keyboard alone.", rest: "The core flow, from logging a call to recording a payment, walked with Tab, arrows, Enter and Esc in Chromium: 14 steps walked and passing after two fixes, and the step that records a yes checked in the code. The walk in Safari is still to come.", source: "Keyboard walk, Chromium at 1440, 19 November 2026." },
-      { lead: "What a screen reader is told.", rest: "Each focus move and each spoken change recorded along the same flow: every done line said once, every refusal an alert, waiting always in words. One line said three times was fixed. The walk in VoiceOver is still to come.", source: "Screen-reader recording, Chromium at 1440, 19 November 2026." },
+      { lead: "What a screen reader is told.", rest: "Each focus move and each spoken change recorded along the same flow: every done line said once, every refusal an alert, waiting always in words. One line said three times was fixed. VoiceOver was checked in the iPhone simulator. A walk on a real iPhone follows on November 24.", source: "Screen-reader recording, Chromium at 1440, 19 November 2026." },
       { lead: "In high contrast.", rest: "With Windows’ forced colors on, the marks, the months and the printed year draw in the system’s own colors, checked in six rooms at 390 and 1440.", source: "Forced-colors pass, 19 November 2026." },
     ],
   },
@@ -102,7 +102,7 @@ const en = {
     ] },
     { title: "Responsible AI, with Jev", table: "eval", blocks: [
       "The only AI in the app is Jev, a small model for structured decisions, reached through Typesafe from our server. It does four clerical checks, each on what fixed rules have already read: on the draft request made from a call note, it confirms the kind of help and what kind of payee it is; it confirms or adds the signs that put a call first, with the reason shown; it reads the few notes the year’s check picks out before the report; and on a new team it confirms the name, how often, how many and when from the description. It does not write prose, and no request is saved without a person’s yes.",
-      "A neighbor’s name, phone and address are taken out before anything is sent: everything passes first through one step of fixed rules, and on every draft “What the assistant saw” shows the note exactly as it left. A person reads every draft and decides. Saving a request is not granting it: the conference decides on the help, and an owner or coordinator records the decision.",
+      "A neighbor’s name, phone and address are taken out before anything is sent: everything passes first through one step of fixed rules, and on every draft “What the assistant saw” shows the note exactly as it left. Saving a request is not granting it: the conference decides on the help, and an owner or coordinator records the decision.",
       "On 12 made‑up call notes kept apart from the ones it was tuned on, it filled 42 of 48 fields correctly, left 6 blank and got none wrong. Twelve notes is a small set, and it will make mistakes, which is why a person checks every draft.",
     ] },
     { title: "In English and Spanish", blocks: [
@@ -110,7 +110,7 @@ const en = {
       "The founder approved the Spanish. Where a page is a translation it says so at the top, and the English governs.",
     ] },
     { title: "Drawn, judged, redrawn", table: "process", blocks: [
-      "Every screen was drawn, then judged against the rules above, then drawn again. These are four real pairs from this week’s reviews, each taken from the site before and after one change.",
+      "Every screen was drawn, then judged against the rules above, then drawn again. Here are four real pairs from this week’s reviews, each one change.",
     ] },
     { title: "Measured, not guessed", table: "frames", blocks: [
       "The rule every change that moves something is held to: it is filmed at eight widths, from a 360‑pixel phone to a 1920‑pixel screen, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
@@ -124,7 +124,7 @@ const en = {
     ] },
     { title: "Made for everyone", blocks: [
       "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on. These are our own checks, not a certification.",
-      "There is one focus ring, the same 4px corner on every control, drawn when you move by keyboard, and no color carries meaning on its own: waiting, wrong and done are always said in words too. With Windows’ high-contrast colors on, the done tick and the waiting ring keep their shapes, so they still read without their colors.",
+      "There is one focus ring, the same 4px corner on every control, drawn when you move by keyboard, and no color carries meaning on its own: waiting, wrong and done are always said in words too.",
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
     { title: "Free for every conference", blocks: [
@@ -155,7 +155,7 @@ const es: typeof en = {
     items: [
       { lead: "Ningún fallo de axe.", rest: "axe-core 4.14 (WCAG 2.2 A y AA) no encontró ninguno en las 13 secciones, en inglés y en español, como responsable y como miembro, a 390 y 1440 píxeles, ni en las 10 páginas públicas, incluida la de entrar.", source: "axe-core 4.14, secciones en la versión 7e3513e, páginas públicas en la versión 7db60ae." },
       { lead: "Solo con el teclado.", rest: "El recorrido principal, de anotar una llamada a registrar un pago, hecho con Tab, flechas, Intro y Esc en Chromium: 14 pasos recorridos y correctos tras dos arreglos, y el paso que registra un sí comprobado en el código. Falta el recorrido en Safari.", source: "Recorrido con teclado, Chromium a 1440, 19 de noviembre de 2026." },
-      { lead: "Lo que oye un lector de pantalla.", rest: "Cada movimiento del foco y cada cambio anunciado, grabados en el mismo recorrido: cada línea de hecho se dice una vez, cada rechazo es una alerta y la espera siempre se dice con palabras. Se arregló una línea que se decía tres veces. Falta el recorrido con VoiceOver.", source: "Grabación del lector de pantalla, Chromium a 1440, 19 de noviembre de 2026." },
+      { lead: "Lo que oye un lector de pantalla.", rest: "Cada movimiento del foco y cada cambio anunciado, grabados en el mismo recorrido: cada línea de hecho se dice una vez, cada rechazo es una alerta y la espera siempre se dice con palabras. Se arregló una línea que se decía tres veces. VoiceOver se revisó en el simulador de iPhone. La prueba en un iPhone real será el 24 de noviembre.", source: "Grabación del lector de pantalla, Chromium a 1440, 19 de noviembre de 2026." },
       { lead: "En alto contraste.", rest: "Con los colores forzados de Windows, las marcas, los meses y el año impreso se dibujan con los colores del propio sistema, comprobado en seis secciones a 390 y 1440.", source: "Revisión de colores forzados, 19 de noviembre de 2026." },
     ],
   },
@@ -222,7 +222,7 @@ const es: typeof en = {
     ] },
     { title: "IA responsable, con Jev", table: "eval", blocks: [
       "La única IA de la aplicación es Jev, un modelo pequeño para decisiones estructuradas, al que se llega por Typesafe desde nuestro servidor. Hace cuatro comprobaciones de oficina, cada una sobre lo que unas reglas fijas ya leyeron: en el borrador de petición hecho con la nota de una llamada, confirma el tipo de ayuda y qué tipo de destinatario del pago es; confirma o añade las señales que ponen primero una llamada, con el motivo a la vista; lee las pocas notas que la revisión del año aparta antes del informe; y en un equipo nuevo confirma el nombre, cada cuánto, cuántas personas y a qué hora según la descripción. No escribe prosa, y ninguna petición se guarda sin el sí de una persona.",
-      "El nombre, el teléfono y la dirección de un vecino se quitan antes de enviar nada: todo pasa antes por un paso de reglas fijas, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Una persona lee cada borrador y decide. Guardar una petición no es concederla: la conferencia decide la ayuda, y el responsable o un coordinador anota la decisión.",
+      "El nombre, el teléfono y la dirección de un vecino se quitan antes de enviar nada: todo pasa antes por un paso de reglas fijas, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Guardar una petición no es concederla: la conferencia decide la ayuda, y el responsable o un coordinador anota la decisión.",
       "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
     ] },
     { title: "En inglés y en español", blocks: [
@@ -230,7 +230,7 @@ const es: typeof en = {
       "Quien fundó el proyecto aprobó el texto en español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
     { title: "Dibujado, juzgado, redibujado", table: "process", blocks: [
-      "Cada pantalla se dibujó, se juzgó con las reglas de arriba y se volvió a dibujar. Estos son cuatro pares reales de las revisiones de esta semana, tomados del sitio antes y después de un cambio.",
+      "Cada pantalla se dibujó, se juzgó con las reglas de arriba y se volvió a dibujar. Estos son cuatro pares reales de las revisiones de esta semana, cada uno de un solo cambio.",
     ] },
     { title: "Medido, no supuesto", table: "frames", blocks: [
       "La regla que cumple cada cambio que mueve algo: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
@@ -244,7 +244,7 @@ const es: typeof en = {
     ] },
     { title: "Hecho para todos", blocks: [
       "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado. Son revisiones nuestras, no una certificación.",
-      "Hay un solo anillo de foco, con la misma esquina de 4 px en cada control, que aparece al moverse con el teclado, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras. Con los colores de alto contraste de Windows, la marca de hecho y el círculo de espera conservan su forma, así que se entienden sin su color.",
+      "Hay un solo anillo de foco, con la misma esquina de 4 px en cada control, que aparece al moverse con el teclado, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras.",
       "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",
     ] },
     { title: "Gratis para toda conferencia", blocks: [

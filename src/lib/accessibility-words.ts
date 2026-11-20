@@ -15,7 +15,7 @@ const en: PublicWords = {
   enter: "Enter Kind Helps",
   translated: null,
   sections: [
-    { title: "What we aim for", blocks: ["Kind Helps is built to meet WCAG 2.2 at levels A and AA, in English and in Spanish. This page says what was tested on November 19, 2026, and what each test found. A test passing means what it checked passed on that day; it is not a promise that nothing is wrong."] },
+    { title: "What we aim for", blocks: ["Kind Helps is built to meet WCAG 2.2 at levels A and AA, in English and in Spanish. Every test below was run on November 19, 2026. A test passing means what it checked passed on that day; it is not a promise that nothing is wrong."] },
     { title: "What was tested", blocks: [[
       ["No axe violations.", "axe-core 4.14 (WCAG 2.2 A and AA) found none in the 13 rooms, in English and Spanish, as owner and as member, at 390 and 1440 pixels, nor on the 10 public pages, sign-in included. Lighthouse 12.6 scored 100 for accessibility on all 66 of its runs."],
       ["Large text:", "each room in English and Spanish at 200% zoom, at the largest iOS text size at 360 and 1440 pixels, and reflowed to 320 pixels: 104 checks. The first walk found faults in 7 rooms, which were fixed. After the fixes 97 pass clean and 7 show something we chose on purpose, listed under known limits."],
@@ -47,7 +47,7 @@ const es: PublicWords = {
   enter: "Entrar a Kind Helps",
   translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],
   sections: [
-    { title: "Lo que buscamos", blocks: ["Kind Helps está hecho para cumplir las WCAG 2.2 en los niveles A y AA, en inglés y en español. Esta página dice qué se probó el 19 de noviembre de 2026 y qué encontró cada prueba. Que una prueba pase quiere decir que lo que revisó pasó ese día; no es una promesa de que nada falla."] },
+    { title: "Lo que buscamos", blocks: ["Kind Helps está hecho para cumplir las WCAG 2.2 en los niveles A y AA, en inglés y en español. Cada prueba de abajo se hizo el 19 de noviembre de 2026. Que una prueba pase quiere decir que lo que revisó pasó ese día; no es una promesa de que nada falla."] },
     { title: "Qué se probó", blocks: [[
       ["Ningún fallo de axe.", "axe-core 4.14 (WCAG 2.2 A y AA) no encontró ninguno en las 13 secciones, en inglés y en español, como responsable y como miembro, a 390 y 1440 píxeles, ni en las 10 páginas públicas, incluida la de entrar. Lighthouse 12.6 dio 100 en accesibilidad en sus 66 pasadas."],
       ["Letra grande:", "cada sala en inglés y en español con zoom al 200 %, con el tamaño de letra más grande de iOS a 360 y 1440 píxeles, y reacomodada a 320 píxeles: 104 revisiones. La primera vuelta encontró fallos en 7 salas, que se corrigieron. Después de corregirlas, 97 pasan limpias y 7 muestran algo que elegimos a propósito, que se explica en los límites conocidos."],
