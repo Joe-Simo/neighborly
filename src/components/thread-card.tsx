@@ -82,7 +82,7 @@ export function ThreadCard() {
         const doors = frame.getBoundingClientRect(), from = poseOf(hand);
         // It rests on the doors where they meet, under the rings, and goes in ahead of the visitor as they open.
         const seam: Pose = { x: doors.left + doors.width / 2, y: doors.top + doors.height * .69, w: from.w * .62, r: -5, o: 1, k: 1 };
-        const sets = innerWidth <= 700 ? .5 : .45, out = clamp((entered - sets) / (.95 - sets)), through = smooth(clamp((-journey.getBoundingClientRect().top / height - 1.15) / .6));
+        const sets = innerWidth <= 700 ? .5 : .45, out = clamp((entered - sets) / (.95 - sets)), through = smooth(clamp((-journey.getBoundingClientRect().top / height - .9) / .5));
         if (out > 0) { pose = between({ ...from, o: 0 }, seam, out); pose.o = 1 - through; pose.w *= 1 - through * .6; pose.y -= through * doors.height * .12; lift = Math.sin(out * Math.PI); tone = clamp(out * 2.5); }
         writes.push(() => hand.parentElement?.toggleAttribute("data-away", out > 0));
       }
@@ -121,7 +121,9 @@ export function ThreadCard() {
         const slant = over.r * Math.PI / 180, cos = Math.cos(slant), sin = Math.sin(slant), half = over.w / 2, tall = over.w * over.k / 3;
         // Its farthest corner's way onto the slip's.
         const warping = quad && slipBox ? Math.max(...[[-half, -tall], [half, -tall], [half, tall], [-half, tall]].map(([u, v], i) => Math.hypot(quad[i][0] + slipBox.left - (over.x + u * cos - v * sin), quad[i][1] + slipBox.top - (over.y + u * sin + v * cos)))) : 0;
-        const ahead = box.top - rest - span * (1 - .12 - share), needs = Math.max(span * share, travel * 2.2 / 1.5, warping * 2.5), late = Math.max(0, needs - (ahead - behind));
+        // A way that rises runs with the page, which already carries the card up 1px for 1px: only what is left of the 1.5 is the card's own.
+        const rising = hops ? 0 : Math.max(0, last.y - over.y);
+        const ahead = box.top - rest - span * (1 - .12 - share), needs = Math.max(span * share, travel * 2.2 / 1.5, rising * 2.2 / .5, warping * 2.5), late = Math.max(0, needs - (ahead - behind));
         const zone = Math.min(needs, Math.max(1, ahead - behind + late)), opened = 1 - (ahead + late) / zone;
         behind = (1 - opened) * zone;
         // In the book the card waits over the page while the page turns, and is laid down once the page lies flat (and the card is there: as late as it came).

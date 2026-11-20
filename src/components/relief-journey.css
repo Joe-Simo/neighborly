@@ -1,5 +1,5 @@
 /* The journey after the opening: the doors, the courtyard as a fresco, and the story in four pictures. One material: paper. */
-.fresco-journey{position:relative;height:555svh}
+.fresco-journey{position:relative;height:435svh}
 /* The walk's values are written on each part drawn with them, and do not pass down: one changed value no longer restyles the whole stage, painting and all, on every frame. */
 @property --door{syntax:"<number>";inherits:false;initial-value:0}
 @property --grow{syntax:"<number>";inherits:false;initial-value:0}
@@ -149,7 +149,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 [data-picture=year] [data-piece=ribbon]{transform:rotateY(calc(min(1,var(--q) * 1.35) * -98deg))}
 /* Each chapter is its own page: one window of scroll, and its own crop and scale of its picture. */
 @media(min-width:821px){
-  .relief-panel{min-height:108svh}
+  .relief-panel{min-height:100svh}
   /* The call: close in on the receiver, the picture as large as the window allows and off its top and right; the heading and its sentence share one line on the paper under it.
      The picture's width leaves that line its room: the window's height less the heading, at the picture's 16/10. */
   .relief-panel[data-chapter=call] .relief-hold{grid-template-columns:minmax(0,1fr);align-items:end;padding-bottom:5svh}

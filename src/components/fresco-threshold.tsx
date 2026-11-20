@@ -16,12 +16,12 @@ import { CutHead } from "@/components/cut-heads";
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const ease = (value: number) => value * value * (3 - 2 * value);
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
-// Screens of scrolling, counted from where the opening begins to give way: the doors rest, open, and the wall opens around the fresco.
-const doorsOpen = [1.15, 1.85] as const;
+// Screens of scrolling, counted from where the opening begins to give way: the doors come in, open at once, and the wall opens around the fresco.
+const doorsOpen = [.9, 1.45] as const;
 // Through the doors: the courtyard grows from the opening until it fills the window, holds a beat, then draws back into its frame on the wall.
-const walkThrough = [1.85, 2.45] as const;
-const standing = [2.45, 3.05] as const;
-const wallOpens = [3.05, 3.75] as const;
+const walkThrough = [1.45, 2] as const;
+const standing = [2, 2.3] as const;
+const wallOpens = [2.3, 2.85] as const;
 // The walk in, when the doors are opened by their button: long enough to read as steps, not a jump.
 const walkTime = 1400;
 // The longest the walk waits for the courtyard to be ready after the press.
@@ -155,7 +155,7 @@ export function FrescoThreshold() {
       host.style.setProperty("--standing", standingIn.toFixed(4));
       // The doors' headline is drawn up out of two cuts in the wall's paper, a line at a time, as the opening is lifted off the wall; with Reduce Motion it is simply there.
       // On a narrow window the headline sits under the opening's sheet until it has cleared, so its cut comes later, ending as the doors begin to open.
-      const come = media.matches ? 1 : phone ? clamp((travelled - .72) / .25) : clamp((travelled - .35) / .5);
+      const come = media.matches ? 1 : phone ? clamp((travelled - .62) / .25) : clamp((travelled - .35) / .5);
       put("--come", come.toFixed(4));
       // A line part way through its cut keeps the cut's edge and shade beside it, so no letter is ever seen without the paper it comes from.
       [0, 1].forEach(line => { const through = clamp((come - line * .3) / .7); host.dataset[`slip${line}`] = String(through > 0 && through < 1); });
