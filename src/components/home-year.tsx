@@ -5,7 +5,7 @@ import { frameStep } from "@/lib/scroll-frame";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { whenIdle } from "@/lib/idle";
 import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
-import { HomeYearSlip, ROSA_HELP } from "./home-year-slip";
+import { HomeYearSlip, ROSA_HELP, finals as rosaFinals } from "./home-year-slip";
 import "./home-year.css";
 
 const whole = new Intl.NumberFormat("en-US");
@@ -43,7 +43,7 @@ const pile = (place: number, sheets: number) => {
  * The year, folded up: four figures of the sample conference's own year, each cut into the page and standing up out of it
  * as the book's page turns, one after another, hinged at its foot. The figure is always the whole number, crisp and
  * selectable; only its fold follows the scroll. Without script, with Reduce Motion, or already past, they simply stand.
- * The visitor's yes adds one request.
+ * The visitor's yes completes the year with Rosa's help.
  */
 export function HomeYear() {
   const root = useRef<HTMLDListElement>(null);
@@ -57,8 +57,8 @@ export function HomeYear() {
       const source = /url\("(.*)"\)/.exec(getComputedStyle(stack).backgroundImage)?.[1];
       if (source) { const picture = new Image(); picture.src = source; void picture.decode().catch(() => {}); }
     }));
-    const requests = list.querySelector<HTMLElement>("[data-figure=requests]");
-    const given = () => { if (requests) requests.textContent = whole.format(sampleYear.requests + 1); list.dataset.oneMore = "true"; };
+    // The yes is Rosa's help: her call, her visit and her $450 complete the year, to the figures Reports gives. Requests already count hers.
+    const given = () => { for (const [key, value] of Object.entries(rosaFinals)) { const figure = list.querySelector<HTMLElement>(`[data-figure=${key}]`); if (figure) figure.textContent = value; } list.dataset.oneMore = "true"; };
     if (document.documentElement.dataset.yesGiven === "true") given();
     window.addEventListener(YES_GIVEN, given);
     const stand = () => { cells.forEach(cell => { cell.style.removeProperty("--fold"); cell.style.removeProperty("--laid"); }); list.dataset.folding = "false"; };

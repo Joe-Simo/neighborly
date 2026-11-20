@@ -21,5 +21,5 @@ export const sampleYear = {
   weekHelp: 21000,
 } as const;
 
-/** Said once by "Your turn." when the visitor's yes is given, so the year's count of requests goes up by one. On the page only. */
+/** Said once by "Your turn." when the visitor's yes is given, so the year takes Rosa's call, visit and $450 and stands at its full figures. On the page only. */
 export const YES_GIVEN = "kindhelps:yes";

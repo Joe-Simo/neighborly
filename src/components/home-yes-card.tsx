@@ -6,7 +6,8 @@ import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DraftSheet } from "@/components/workspace/help-line/draft-sheet";
 import { formatDate, words } from "@/lib/words";
-import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
+import { YES_GIVEN } from "@/lib/sample-year";
+import { finals as rosaFinals } from "./home-year-slip";
 import "@/components/workspace/help.css";
 import "@/components/workspace/paper.css";
 import "@/components/workspace/help-line/help-line.css";
@@ -124,7 +125,7 @@ export function HomeYesCard() {
           <small>Received {format(takenAt - one.days * DAY, { weekday: "long", month: "long" })}</small>
         </li>)}
       </ol>
-      <p className="home-yes-year">{(sampleYear.requests + 1).toLocaleString("en-US")} requests for help in the sample’s year. <em>One more than a minute ago.</em></p>
+      <p className="home-yes-year">{rosaFinals.calls} calls, {rosaFinals.visits} home visits and {rosaFinals.paid} paid in the sample’s year. <em>Her help completes it.</em></p>
       <p className="home-yes-after">
         <span>That is the whole idea.</span>
         <Button asChild variant="link" className="home-yes-in"><SampleLink ref={way}>Look around a sample conference<ArrowUpRight aria-hidden="true" /></SampleLink></Button>
