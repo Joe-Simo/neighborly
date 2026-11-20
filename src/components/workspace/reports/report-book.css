@@ -34,16 +34,26 @@
 .book-folio { margin: auto 0 0; font-size: 13px; color: #5b6b61; }
 
 .book-cover { display: flex; flex-direction: column; gap: var(--space-8) 10px; height: 100%; }
-.book-cover :is(h2, h3) { margin-top: auto; font-size: clamp(38px, 5vw, 56px); }
+.book-cover :is(h2, h3) { font-size: clamp(38px, 5vw, 56px); }
 .book-cover p { margin: 0; }
 /* The cover says the year it covers and what it came to, in the book's own sizes: the year as a page title, the total as body. */
 .book-period { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.2; letter-spacing: -0.015em; text-wrap: balance; }
 .book-total { font-size: 15px; font-feature-settings: "lnum" 1, "tnum" 1; color: var(--live-muted); }
 .book-group { font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; }
 .book-sample { font-size: 13px; color: #5b6b61; }
-.book-mark { --size: 22px; display: flex; margin: var(--space-16) 0 auto; }
-.book-mark .week-quilt-piece { margin-left: -6px; }
-.book-mark .week-quilt-piece:first-child { margin-left: 0; }
+/* The year in paper on the cover: twelve slips fanned from one corner, October lowest and September highest, across
+   a quarter turn; each slip as long as its month's help paid against the fullest month. Paper laid flat, never moving. */
+/* A square board, so the longest slip, at the fan's steepest, still ends inside it: the fan never lies over a word. */
+.book-fan { position: relative; flex: none; width: min(100%, 320px); aspect-ratio: 1; margin: auto 0 var(--space-16); overflow: clip; }
+.book-fan i {
+  position: absolute; left: 0; bottom: 4%; width: calc(var(--reach) * 92%); height: clamp(9px, 1.3vw, 14px);
+  transform-origin: 0 50%; rotate: calc(-4deg - var(--at) * 5.2deg);
+  background: linear-gradient(180deg, #fdfbf6 0, #f3efe4 70%, #e3ddcd 100%);
+  box-shadow: 0 0 0 0.5px rgb(40 60 50 / 0.2), 0 1px 0 rgb(40 60 50 / 0.12), 0 3px 6px -3px rgb(40 60 50 / 0.35);
+  clip-path: polygon(0 0, 100% 1px, calc(100% - 2px) 100%, 0 100%);
+}
+/* The months' green, as help paid is green everywhere in the room: the fullest months the deepest. */
+.book-fan i::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 18%; background: color-mix(in srgb, #4f7a61 calc(var(--reach) * 100%), #e3ddcd); }
 .book-contents { justify-content: center; }
 .book-contents ol { margin: 0; padding: 0; list-style: none; border-top: 1px solid rgb(40 60 50 / 0.16); }
 .book-contents li { padding: var(--space-12) 0; border-bottom: 1px solid rgb(40 60 50 / 0.16); font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: clamp(19px, 2vw, 23px); line-height: 1.25; }
@@ -113,7 +123,7 @@
 
 @media (forced-colors: active) {
   .book-sheet { border: 1px solid CanvasText; box-shadow: none !important; }
-  .book-mark .week-quilt-piece { forced-color-adjust: none; }
+  .book-fan { forced-color-adjust: none; }
 }
 
 /* "Print the report" prints these sheets and nothing else: one to a letter page, no shades, no motion. */
@@ -127,7 +137,8 @@
   .report-book-print .book-sheet + .book-sheet { margin-top: 28pt; }
   .report-book-print .book-cover { height: auto; }
   .report-book-print .book-cover :is(h2, h3) { margin-top: 0; }
-  .report-book-print .book-mark { margin: 8pt 0 0; }
+  .report-book-print .book-fan { width: 2.4in; margin: 12pt 0 18pt; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .report-book-print .book-fan i { box-shadow: 0 0 0 0.5pt #9a9a8a; }
   .report-book-print .book-folio { display: none; }
   .report-book-print .book-sheet h3 { break-after: avoid; }
   /* Each rule is drawn once, on its row, in an opaque grey: cell borders meeting mid-row printed a tick where they overlap. */
