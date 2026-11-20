@@ -2,14 +2,14 @@
 .neighborly-rooms{--lean-x:0;--lean-y:0;display:flex;flex-direction:column;gap:clamp(36px,4.4vw,72px)}
 .neighborly-rooms .neighborly-together-statement{max-width:30ch;font-size:clamp(26px,2.6vw,40px)}
 .neighborly-rooms-kicker{margin:0 0 clamp(14px,1.4vw,22px);font-size:15px;font-weight:650;line-height:1.3;letter-spacing: var(--caps-track);text-transform:uppercase;color:#52644f}
-.neighborly-rooms ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(30px,3vw,52px) clamp(28px,3.4vw,64px);margin:0;padding:0;list-style:none}
-.neighborly-rooms li{position:relative;display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);align-items:center;gap:0 clamp(20px,2vw,34px);padding:clamp(14px,1.2vw,20px);background:var(--relief-paper);box-shadow:var(--relief-card);rotate:var(--turn);translate:calc(var(--lean-x) * 9px) calc(var(--lean-y) * 6px)}
+.neighborly-rooms ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:round(nearest,clamp(30px,3vw,52px),4px) round(nearest,clamp(28px,3.4vw,64px),4px);margin:0;padding:0;list-style:none}
+.neighborly-rooms li{position:relative;display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);align-items:center;gap:0 round(nearest,clamp(20px,2vw,34px),4px);padding:round(nearest,clamp(14px,1.2vw,20px),4px);background:var(--relief-paper);box-shadow:var(--relief-card);rotate:var(--turn);translate:calc(var(--lean-x) * 9px) calc(var(--lean-y) * 6px)}
 /* The card is the paper; the second row sits a little lower than the first, as nothing is put down in line. */
-.neighborly-rooms li:nth-child(2n){margin-top:clamp(12px,1.6vw,28px)}
+.neighborly-rooms li:nth-child(2n){margin-top:round(nearest,clamp(12px,1.6vw,28px),4px)}
 .neighborly-rooms picture{display:block}
 .neighborly-rooms img{display:block;width:100%;height:auto}
 .neighborly-rooms h3{margin:0;font:400 24px/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.03em}
-.neighborly-rooms li p{margin:var(--space-8) 0 0;max-width:24em;font-size:17px;line-height:1.5;text-wrap:pretty;opacity:.84}
+.neighborly-rooms li p{margin:var(--space-8) 0 0;max-width:24em;font-size:17px;line-height:1.5;text-wrap:pretty;color:var(--muted-foreground)}
 /* The cards are on the desk before the section is reached: a fast drag never crosses bare paper, and nothing fades up from nothing in view. */
 .has-reveal .neighborly-rooms[data-reveal]{translate:none}
 /* Until a card is wide enough for words beside its picture (about 30 letters to a line), the words lie under it. */
