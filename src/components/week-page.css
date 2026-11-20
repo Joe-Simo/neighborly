@@ -58,5 +58,5 @@
   .public-words.public-week section{margin-inline:0}
   .public-week .public-week-day h2{max-width:12ch;font-size:clamp(56px,6vw,104px);line-height:var(--lead-2);letter-spacing:var(--track-2)}
 }
-/* On the widest screens each day's piece takes the room its picture is cut for (960 of its own 1024 pixels), not a phone's column, so the spread is not two-thirds bare paper. */
-@media(min-width:2000px){.public-words.public-week .public-week-day{grid-template-columns:minmax(0,26rem) minmax(0,960px)}.public-week-day .public-week-piece{max-width:none}}
+/* On the widest screens each day's piece takes the room its picture is cut for (960 of its own 1024 pixels), not a phone's column, so the spread is not two-thirds bare paper. The words' column is 27rem, so a head's longest word at 104px ("miembros", 428px) stays inside it. */
+@media(min-width:2000px){.public-words.public-week .public-week-day{grid-template-columns:minmax(0,27rem) minmax(0,960px)}.public-week-day .public-week-piece{max-width:none}}
