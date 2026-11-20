@@ -718,7 +718,7 @@
 .live-field > .live-date, .live-date { box-sizing: border-box; min-width: 0; font-weight: 400; }
 :is(.live-app, .live-dialog) .live-field :is(input, select, textarea) { font-weight: 400; }
 .live-date[data-open] { border-color: #365c46; box-shadow: 0 6px 18px -10px rgb(40 60 50 / 0.45); }
-.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #283c32; outline-offset: 2px; }
+.live-date:has(.live-date-words:focus-visible) { outline: 2px solid #283c32; outline-offset: 3px; }
 .live-date:has(:disabled) { opacity: 0.55; }
 .live-date[data-missing] { border-color: #6f5f93; box-shadow: 0 0 0 1px #6f5f93; }
 /* The frame around the field carries the plum; the words inside never draw a second one. */
@@ -1662,7 +1662,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 .room-tally dd, .room-tally-figure { margin: 0; }
 .room-tally b {
   position: relative; display: inline-block; padding: var(--space-12) 12px 4px; min-width: 56px;
-  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 36px; line-height: 0.9; letter-spacing: -0.02em;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 35px; line-height: 0.9; letter-spacing: -0.02em;
   font-feature-settings: "lnum" 1, "tnum" 1; color: var(--live-ink);
   background: var(--relief-paper); box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-slip);
   clip-path: polygon(0 4px, 52% 0, 100% 3px, 100% 100%, 0 100%); rotate: -0.6deg;

@@ -1169,6 +1169,9 @@ summary:focus-visible,
   nav.week-figures a:hover { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
 }
 nav.week-figures a:focus-visible { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
+/* The language menu in the bar is a menu trigger, not a [data-slot="button"], so the kit's transition-all reached its
+   focus ring: the ring grew in from 3px and its corner eased from 6px. The ring is there at once, like every other. */
+.live-header [data-slot="dropdown-menu-trigger"] { transition-property: background-color, border-color, color; }
 @media (forced-colors: active), print { [data-slot="button"], nav.week-figures a { box-shadow: none !important; } }
 @media (prefers-reduced-motion: reduce) { [data-slot="button"] { transition: none; } }
 /* A Help line or commitment row that opens something lifts from flat to a slip: the slip is drawn once, under
