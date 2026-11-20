@@ -354,8 +354,8 @@ export function en(set: WordSet) {
       neededCheck: "Look at this again.",
       launchTitle: `We couldn’t open your ${place}.`,
       launchDeck: "Nothing was lost. Try again in a moment.",
-      notSaved: "That couldn’t be saved. Try again.",
-      offlineSave: "No connection right now, so this wasn’t saved.",
+      notSaved: "That didn’t go through. Try again.",
+      offlineSave: "No connection right now.",
       kept: "Nothing was saved, and what you typed is still here.",
       tryAgain: "Try again",
       waiting: "Waiting for the connection. What you typed is kept and will be sent when it returns.",
@@ -431,6 +431,8 @@ export function en(set: WordSet) {
       get: "Get my calendar address",
       finding: "Finding your calendar",
       failed: "Your calendar address could not be made. Nothing has changed; check your connection, then try again.",
+      /** Offline, where no second line follows: what did not happen, and when to try. */
+      offline: "No connection right now. The address wasn’t made, so try again when you’re back online.",
     },
     /** The week as a sheet of paper for a wall or a door. */
     rota: {

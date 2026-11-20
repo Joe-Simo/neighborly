@@ -346,8 +346,8 @@ export function es(set: WordSet): Words {
       neededCheck: "Revisa esto.",
       launchTitle: `No pudimos abrir tu ${place}.`,
       launchDeck: "No se perdió nada. Inténtalo de nuevo en un momento.",
-      notSaved: "No se pudo guardar. Inténtalo de nuevo.",
-      offlineSave: "No hay conexión ahora, así que esto no se guardó.",
+      notSaved: "No se pudo completar. Inténtalo de nuevo.",
+      offlineSave: "No hay conexión ahora.",
       kept: "No se guardó nada, y lo que escribiste sigue aquí.",
       tryAgain: "Intentar de nuevo",
       waiting: "Esperando la conexión. Lo que escribiste está guardado aquí y se enviará cuando vuelva.",
@@ -430,6 +430,7 @@ export function es(set: WordSet): Words {
       get: "Obtener mi dirección de calendario",
       finding: "Buscando tu calendario",
       failed: "No se pudo crear tu dirección de calendario. No ha cambiado nada; revisa tu conexión e inténtalo de nuevo.",
+      offline: "Sin conexión por ahora. La dirección no se creó; inténtalo de nuevo cuando vuelvas a tener conexión.",
     },
     rota: {
       title: "La semana en papel",

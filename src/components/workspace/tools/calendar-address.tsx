@@ -120,7 +120,7 @@ export function CalendarAddress({ titled = true }: { titled?: boolean }) {
         setBusy(true);
         setError("");
         void create({ churchId: data.church.id })
-          .catch((cause: unknown) => setError(sayFailure(words.notices,cause, words.calendar.failed, words.states.offlineSave)))
+          .catch((cause: unknown) => setError(sayFailure(words.notices,cause, words.calendar.failed, words.calendar.offline)))
           .finally(() => setBusy(false));
       }}
     />
