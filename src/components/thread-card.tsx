@@ -74,36 +74,59 @@ export function ThreadCard() {
       let last: Pose = pose ? { ...pose, o: 0 } : { x: innerWidth / 2, y: -80, w: 96, r: 0, o: 0, k: 1 };
       const flight = Math.max(76, Math.min(124, innerWidth * .0722));
       let before: Stop | null = null;
+      let behind = -Infinity;
       for (const stop of chapters) {
         const { at, panel } = stop, box = panel.getBoundingClientRect(), holds = box.height > height * 1.2;
         const rest = holds ? 0 : (height - box.height) / 2;
         // A chapter that does not hold the window calls the card later, so the card has rested in the picture before.
-        const from = height * (holds ? .92 : .62), coming = clamp((from - box.top) / Math.max(1, from - rest));
-        if (coming <= 0) break;
-        tone = 1;
-        const waits = at.dataset.waits === "true", arrive = clamp((coming - .12) / (stop.tuck || waits ? .7 : .88));
-        // The place before lets its card out the way it went in, and only then does the card leave.
-        if (arrive <= 0) { if (before) draw(before, smooth(coming / .12)); break; }
+        const from = height * (holds ? .92 : .62), span = Math.max(1, from - rest);
+        const waits = at.dataset.waits === "true", share = stop.tuck || waits ? .7 : .88;
         const to = poseOf(at);
         // Where the words lie between two pictures (one column), the card does not cross them: it is lifted off one picture and set down in the next.
         const words = panel.querySelector<HTMLElement>(".relief-words,.home-yes-words")?.getBoundingClientRect(), place = at.getBoundingClientRect();
-        const hops = !!words && words.left < place.right && words.right > place.left && (words.bottom <= place.top + 4 || words.top >= place.bottom - 4);
+        const across = !!words && words.left < place.right && words.right > place.left && (words.bottom <= place.top + 4 || words.top >= place.bottom - 4);
+        // Nor does it cross the draft sheet's words on its way out to the year: where the straight way runs over the sheet, it is lifted off and set down instead.
+        const sheet = at.dataset.station === "ledger" ? world.querySelector<HTMLElement>(".home-yes-sheet")?.getBoundingClientRect() : null;
+        const overSheet = !!sheet && Array.from({ length: 11 }, (_, i) => i / 10).some(t => { const x = mix(last.x, to.x, t), y = mix(last.y, to.y, t); return x > sheet.left - 24 && x < sheet.right + 24 && y > sheet.top - 24 && y < sheet.bottom + 24; });
+        const hops = across || overSheet;
         // In one column there is less clear paper round a tucked place, so the card goes in over a shorter way.
         stop.short = hops;
         const ready = drawn(to, stop);
-        // In the book the card waits over the page while the page turns, and is laid down once the page lies flat.
-        const laid = !waits ? 1 : holds ? clamp((-box.top / Math.max(1, box.height - height) - .45) / .5) : clamp((rest - box.top) / (height * .18));
         const over: Pose = waits ? { ...ready, x: ready.x - to.w * .1, y: ready.y - to.w * 1.4, w: to.w * 1.12, r: to.r - 10 } : ready;
+        // Its way is a function of the scroll alone, and never quicker than 1.5px of travel to 1px of scroll: where the way between two places is long,
+        // it sets out earlier, over as much scroll as it needs (its eases run at most about 2.2 times their mean pace). It still arrives where it always did.
+        // A hop's way is its drop onto the place (set down from .7 of a card above, over the last .78 of its scroll, on an ease that runs at most 1.5 times its mean).
+        const travel = hops ? to.w * .7 * 1.3 + Math.abs(over.w - last.w) : Math.hypot(over.x - last.x, over.y - last.y) + Math.abs(over.w - last.w);
+        // It sets out no earlier than its way to the place before is done (that way's scroll left, `behind`, falls as this one's does, so their difference holds).
+        // Where that leaves too little scroll for the way, it lands that much later, rather than hurry.
+        // On its way to the year it is drawn onto the slip over arrive .5 to .9 (warp, below), on an ease up to 1.5 times its mean pace: that is travel too.
+        const quad = at.dataset.station === "ledger" && at.dataset.quad ? JSON.parse(at.dataset.quad) as Quad : null, slipBox = quad && at.parentElement?.getBoundingClientRect();
+        const slant = over.r * Math.PI / 180, cos = Math.cos(slant), sin = Math.sin(slant), half = over.w / 2, tall = over.w * over.k / 3;
+        // Its farthest corner's way onto the slip's.
+        const warping = quad && slipBox ? Math.max(...[[-half, -tall], [half, -tall], [half, tall], [-half, tall]].map(([u, v], i) => Math.hypot(quad[i][0] + slipBox.left - (over.x + u * cos - v * sin), quad[i][1] + slipBox.top - (over.y + u * sin + v * cos)))) : 0;
+        const ahead = box.top - rest - span * (1 - .12 - share), needs = Math.max(span * share, travel * 2.2 / 1.5, warping * 2.5), late = Math.max(0, needs - (ahead - behind));
+        const zone = Math.min(needs, Math.max(1, ahead - behind + late)), opened = 1 - (ahead + late) / zone;
+        behind = (1 - opened) * zone;
+        // In the book the card waits over the page while the page turns, and is laid down once the page lies flat (and the card is there: as late as it came).
+        const lies = box.top + late, laid = !waits ? 1 : holds ? clamp((-lies / Math.max(1, box.height - height) - .45) / .5) : clamp((rest - lies) / (height * .18));
+        // A card that waits over the book is done with its way only once it lies down: the next way sets out after that.
+        if (waits) behind = Math.max(behind, holds ? lies + .95 * Math.max(1, box.height - height) : lies - rest + height * .18);
+        // The place before lets its card out the way it went in, over the scroll just before the card leaves, and only then does the card leave.
+        if (opened <= 0) { const out = 1 + opened * zone / (span * .12); if (out > 0 && before) draw(before, smooth(clamp(out))); break; }
+        tone = 1;
+        const arrive = clamp(opened);
         if (arrive < 1 && hops) {
-          const up = clamp(arrive / .48), down = clamp((arrive - .5) / .5), above: Pose = { ...over, y: over.y - to.w * (stop.tuck ? 0 : .7), r: over.r - (stop.tuck ? 0 : 6), o: 0 };
-          pose = down > 0 ? between(above, over, down) : { ...last, y: last.y - to.w * .5 * swift(up), o: 1 - up };
-          pose.o = down > 0 ? clamp(down * 3) : before ? 1 - up : 0; lift = down > 0 ? 1 - down : up; landed = null;
+          const up = clamp(arrive / .2), down = clamp((arrive - .22) / .78), above: Pose = { ...over, y: over.y - to.w * (stop.tuck ? 0 : .7), r: over.r - (stop.tuck ? 0 : 6), o: 0 };
+          pose = down > 0 ? between(above, over, down) : { ...last, y: last.y - Math.min(to.w * .5, zone * .03) * swift(up), o: 1 - up };
+          pose.o = down > 0 ? clamp(down * 3) : before ? 1 - up : 0;
+          // Lifted off the sheet, it shows again only once it is clear of the sheet's foot: it never lies over the sheet's words.
+          if (overSheet && sheet && down > 0) pose.o *= clamp((pose.y - pose.w * pose.k / 3 - sheet.bottom) / 24); lift = down > 0 ? 1 - down : up; landed = null;
         }
         else if (arrive < 1) { pose = between(last, over, arrive); const air = Math.sin(arrive * Math.PI);
           // In the air it is a little larger than where it lies, rides a low arc and turns a few degrees; it closes on its shadow as it lands.
           pose.w = mix(pose.w, Math.max(pose.w, flight), air); pose.y -= air * flight * .2; pose.r += air * (over.x > last.x ? 5 : -5); pose.o = Math.max(pose.o, clamp(arrive * 6)); lift = Math.sin(arrive * Math.PI); landed = null; if (!waits && arrive > .82) pose.y += Math.sin((arrive - .82) / .18 * Math.PI) * 5; }
         else if (waits && laid < .66) { const down = laid / .66; pose = between(over, ready, down); lift = 1 - down; landed = null; if (down > .7) pose.y += Math.sin((down - .7) / .3 * Math.PI) * 5; }
-        else { draw(stop, 1 - smooth(!stop.tuck ? 1 : waits ? clamp((laid - .66) / .34) : clamp((coming - .82) / .18))); pose = to; landed = at; }
+        else { const tucked = 1 - smooth(!stop.tuck ? 1 : waits ? clamp((laid - .66) / .34) : clamp(((from - lies) / span - .82) / .18)); draw(stop, tucked); pose = { ...to, x: mix(to.x, ready.x, tucked), y: mix(to.y, ready.y, tucked) }; landed = at; }
         // Once it is on its way to the year it is Rosa's slip, decided: the year's own face, its corner green, as it lies in the pile.
         if (at.dataset.station === "ledger") { decided = true; warp = smooth(clamp((arrive - .5) / .4)); }
         last = ready; before = stop;
@@ -135,7 +158,8 @@ export function ThreadCard() {
       writes.push(() => {
         if (lands !== here) { here?.classList.remove("is-here"); lands?.classList.add("is-here"); here = lands; }
         element.style.opacity = shown && at ? at.o.toFixed(3) : "0";
-        if (shown && at) {
+        // Unseen, it is still kept where its way has it, so it is never found anywhere else when it shows.
+        if (at) {
           element.style.transformOrigin = laidOn ? "0 0" : "";
           element.style.transform = laidOn || `translate3d(${at.x.toFixed(1)}px,${at.y.toFixed(1)}px,0) rotate(${at.r.toFixed(2)}deg) scale(${(at.w / 240).toFixed(4)},${(at.w * at.k / 240).toFixed(4)})`;
           element.style.setProperty("--lift", lift.toFixed(3));
