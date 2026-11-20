@@ -8,6 +8,7 @@ import { readCardWord } from "@/lib/card-for";
 import { HELD_CARD, dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
 import { restWhatIsUnderneath, underneathIsReady } from "@/lib/room-whole";
 import { ROOM_WHOLE } from "@/components/workspace/room-sheet";
+import { roomTurn } from "@/components/workspace/room-turn";
 import "@/components/workspace/door.css";
 
 /**
@@ -21,8 +22,6 @@ import "@/components/workspace/door.css";
  * in, who goes from the launch mark straight to their room.
  */
 const SWEEP = 380;
-/** The last sheet is lifted up and off the room, which is already whole under it. */
-const LIFT = 220;
 /** A wait is quiet at first: the line is not drawn for this long after the paper is down. With no sweep the paper is down at once, so the quiet is longer. */
 const QUIET = 400;
 const QUIET_PLAIN = 1000;
@@ -134,6 +133,21 @@ const watch = (watcher: () => void) => {
 };
 
 
+/**
+ * Through the door, focus lands on the room's head once the paper is off it, as it does between rooms: a screen reader
+ * says where the person has arrived, and the next Tab goes on from the top of the room. Only when nothing else holds it.
+ */
+/** After the frame now being drawn has been painted: what follows never lands in the same frame as the paper going. */
+const afterAPaint = (then: () => void) => requestAnimationFrame(() => requestAnimationFrame(then));
+
+function restOnTheRoomHead() {
+  if (document.activeElement && document.activeElement !== document.body) return;
+  const head = document.querySelector<HTMLElement>(".live-app .live-page-head h1");
+  if (!head) return;
+  if (!head.hasAttribute("tabindex")) head.tabIndex = -1;
+  head.focus({ preventScroll: true });
+}
+
 export function DoorSweep() {
   const arrival = useSyncExternalStore(watch, () => arrivals, () => 0);
   const done = useSyncExternalStore(watch, () => finished, () => 0);
@@ -182,6 +196,7 @@ export function DoorSweep() {
           letGoOfTheSheet();
           setHolding(false);
           delete document.documentElement.dataset.door;
+          afterAPaint(restOnTheRoomHead);
           finished = arrival;
           for (const watch of watchers) watch();
         };
@@ -190,25 +205,45 @@ export function DoorSweep() {
         return;
       }
       const sheet = paper.current?.querySelector<HTMLElement>(".door-card, .door-paper");
-      const far = -((sheet?.getBoundingClientRect().bottom ?? window.innerHeight) + 70);
-      const away = { duration: LIFT, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" } as const;
-      const leave = sheet && !plain
-        ? sheet.animate([{ transform: "none" }, { transform: `translateY(${far}px)` }], away)
-        : paper.current?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, easing: "linear", fill: "forwards" });
-      if (sheet && !plain) {
-        // The sheets behind are long covered; they go at once, so the one sheet is all that is over the room.
-        for (const behind of paper.current?.querySelectorAll<SVGElement>(":scope > svg") ?? []) behind.style.display = "none";
-        sheet.style.visibility = "visible";
-        // The card's marks and the name are on the paper: they ride up and leave with it, and nothing is left over the room.
+      let leave: Promise<unknown> | undefined;
+      if (sheet && paper.current && !plain) {
+        // The last sheet is turned off the room as one room's page is turned off the next (room-turn.ts): its lower right corner
+        // lifts and folds back, and the room the door opens on is found lying beneath. The paper as it stands in the window is the page turned:
+        // a still copy of it, the sheets behind long covered and left out, its marks where they are, nothing moving on it.
+        const page = paper.current.cloneNode(true) as HTMLElement;
+        page.removeAttribute("aria-hidden");
+        // Named for anyone checking the door frame by frame: the still copy of the door's paper, and (below) the turn that carries it.
+        page.setAttribute("data-door-still", "");
+        page.querySelectorAll(":scope > svg, .door-opening").forEach((behind) => behind.remove());
+        for (const part of [page, ...page.querySelectorAll<HTMLElement>("*")]) part.style.animation = "none";
+        page.querySelector<HTMLElement>(".door-card, .door-paper")?.style.setProperty("visibility", "visible");
+        Object.assign(page.style, { position: "fixed", inset: "auto", width: `${window.innerWidth}px`, height: `${window.innerHeight}px`, zIndex: "auto" });
+        const frame = document.createElement("div");
+        frame.append(page);
+        const turn = roomTurn(page, frame);
+        // Over the whole window, as the door's paper is (door.css), not only over a room's column.
+        const turning = document.body.lastElementChild;
+        if (turning instanceof HTMLElement) {
+          turning.style.zIndex = "80";
+          turning.setAttribute("data-door-turn", "");
+        }
+        // The copy lies exactly where the paper lay: the paper goes in this same frame, and the turn's first frame only moves paper.
+        paper.current.style.visibility = "hidden";
+        leave = turn.play();
+      } else if (paper.current) {
+        // With less motion asked for (or no sheet to turn) the paper is simply gone: one cut, nothing played.
+        paper.current.style.visibility = "hidden";
       }
       const over = () => {
         setHolding(false);
         delete document.documentElement.dataset.door;
+        afterAPaint(restOnTheRoomHead);
         finished = arrival;
         for (const watch of watchers) watch();
       };
-      if (leave) leave.finished.then(over, over);
-      else over();
+      if (leave) leave.then(over, over);
+      // The cut is painted on its own frame; the room's settling comes after it, never in the same frame.
+      else afterAPaint(over);
     };
     const look = () => {
       if (lifting) return;

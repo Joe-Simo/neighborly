@@ -40,7 +40,7 @@
 @media (prefers-reduced-motion: reduce) { .door-opening[data-low]:not([data-spoken]) { inset: calc(50vh + 64px) 24px auto; } }
 /* A wait is the one quiet line, never a turning wheel. */
 @keyframes door-opening-in { from { opacity: 0; } }
-/* Reduce Motion: no sweep. The paper is simply there, and gives way in one short fade. */
+/* Reduce Motion: no sweep. The paper is simply there, and gives way in one cut (door.tsx). */
 @media (prefers-reduced-motion: reduce) {
   .door-sweep > svg { animation: none; }
   .door-card, .door-card > * { animation: none; }
