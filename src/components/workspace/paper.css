@@ -217,6 +217,10 @@
   word-break: normal;
   hyphens: none;
 }
+/* At tablet widths the head's picture comes close beside the words: a head's last glyph stays at least 24px from any
+   painted pixel of the art, so the words break sooner. */
+@media (min-width: 760px) and (max-width: 1200px) { .live-app .live-page-head h1 { max-width: min(100%, 12ch); }
+  .live-app .live-main:is(:has(.people-row), :has(.report-years)) .live-page-head h1 { max-width: min(100%, 9ch); } }
 .live-head-words { container-type: inline-size; }
 .live-app .live-page-head .live-deck { margin-top: var(--space-16); text-wrap: pretty; }
 /* The way back from an inner view sits above the eyebrow. */
