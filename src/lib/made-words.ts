@@ -116,7 +116,7 @@ const en = {
       "Every screen a volunteer uses is in English and Spanish, and so are A week, the privacy and accessibility pages, and this one. The Spanish is its own fixed words, written for each screen, not translated by a machine as the page opens, so the same button always says the same thing.",
       "The founder approved the Spanish. Where a page is a translation it says so at the top, and the English governs.",
     ] },
-    { title: "Drawn, judged, redrawn", table: "process", blocks: [
+    { title: "Drawn, judged, redrawn", table: "process", blocks: [
       "Every screen was drawn, then judged against the rules above, then drawn again. Here are four real pairs from this week’s reviews, each one change.",
     ] },
     { title: "From picture to room", table: "trace", blocks: [
@@ -137,7 +137,7 @@ const en = {
       "There is one focus ring, the same 4px corner on every control, drawn when you move by keyboard, and no color carries meaning on its own: waiting, wrong and done are always said in words too.",
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
-    { title: "Free for every conference", blocks: [
+    { title: "Free for every conference", blocks: [
       "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone, given through one quiet link at the foot of the public pages.",
     ] },
   ] as MadeSection[],
@@ -225,7 +225,7 @@ const es: typeof en = {
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
       "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y elegida por quien lo creó. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
     ] },
-    { title: "Cortado según su propia profundidad", blocks: [
+    { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
     ], figure: { src: "/assets/made/courtyard-depth-960.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa que siguió el corte: la profundidad del patio, lo lejano en oscuro y lo cercano en claro." } },
     { title: "Las reglas que guarda el papel", table: "anatomy", blocks: [
@@ -246,7 +246,7 @@ const es: typeof en = {
       "Cada pantalla del voluntariado está en inglés y en español, y también Una semana, las páginas de privacidad y de accesibilidad, y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
       "Quien fundó el proyecto aprobó el texto en español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
-    { title: "Dibujado, juzgado, redibujado", table: "process", blocks: [
+    { title: "Dibujado, juzgado, redibujado", table: "process", blocks: [
       "Cada pantalla se dibujó, se juzgó con las reglas de arriba y se volvió a dibujar. Estos son cuatro pares reales de las revisiones de esta semana, cada uno de un solo cambio.",
     ] },
     { title: "De la imagen a la sección", table: "trace", blocks: [
@@ -267,7 +267,7 @@ const es: typeof en = {
       "Hay un solo anillo de foco, con la misma esquina de 4 px en cada control, que aparece al moverse con el teclado, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras.",
       "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",
     ] },
-    { title: "Gratis para toda conferencia", blocks: [
+    { title: "Gratis para toda conferencia", blocks: [
       "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos, dados por un enlace discreto al pie de las páginas públicas.",
     ] },
   ],
