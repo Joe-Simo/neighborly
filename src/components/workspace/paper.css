@@ -99,11 +99,8 @@
 /* A large figure: lining, even-width digits on one line. It stands at its value at once; nothing counts up here. */
 .count-up { display: inline-block; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
 
-/* Rows and links answer a pointer the same way everywhere: a row takes one flat tone, standing 12px past its
-   words on either side, and the line under a link thickens. A row is part of its sheet: nothing lifts. */
-@media (hover: hover) {
-  :is(.live-row, .help-row):hover { background: #f1efe2; box-shadow: -12px 0 0 #f1efe2, 12px 0 0 #f1efe2; }
-}
+/* Links answer a pointer the same way everywhere: the line under a link thickens. A row answers the pointer only when
+   it opens something, and then it lifts one step (globals.css, people.css); a row that opens nothing does not answer it. */
 .live-app .live-link,
 .live-dialog .live-link { text-decoration-thickness: 1px; transition: text-decoration-thickness 160ms ease; }
 .live-app .live-link:is(:hover, :active),
