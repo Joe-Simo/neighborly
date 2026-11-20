@@ -18,6 +18,8 @@
 .made-courtyard-stack::after{content:"";position:absolute;z-index:1;inset:var(--ring);border:2px solid #283c32;border-radius:4px;pointer-events:none;visibility:hidden}
 .made-courtyard[data-live=true] .made-courtyard-stack:focus-visible{outline:none;clip-path:inset(var(--ring))}
 .made-courtyard-stack:focus-visible::after{visibility:visible}
+/* The sheet above lays its cut foot over the courtyard's top; while the ring shows, the courtyard is laid over that foot so the ring is drawn whole. */
+.made-courtyard:has(.made-courtyard-stack:focus-visible){z-index:11}
 .made-courtyard-stack img{-webkit-user-drag:none;pointer-events:none}
 /* The hint: the caption's type, one step quieter. */
 .made-courtyard-hint{margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;text-align:center;font:400 clamp(15px,1.15vw,19px)/1.45 'Newsreader','Newsreader Fallback',Georgia,serif;color:#3d4f43;text-wrap:balance}
