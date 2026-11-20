@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { createContext, useContext, useSyncExternalStore } from "react";
 import { languages, type Language } from "@/lib/words";
 
 /** Every phrase of the sign-in sheet. English is the source; the other two follow its shape. */
@@ -216,8 +216,15 @@ let chosenNow: Language | undefined;
 export const entryLanguageNow = () => (chosenNow ??= deviceLanguage());
 
 /** The sheet's language. The server writes English; the device's own answer takes over as the page wakes. */
+/**
+ * The language a copy of the door is drawn in while the page cannot yet know the device's (live-app.tsx): the server
+ * draws the sheet once in each, and the page's head shows the one for this device. `null`: the device's own.
+ */
+export const DrawnIn = createContext<Language | null>(null);
+
 export function useEntryLanguage(): [Language, (language: Language) => void] {
-  const language = useSyncExternalStore(
+  const drawnIn = useContext(DrawnIn);
+  const device = useSyncExternalStore(
     (watch) => {
       watchers.add(watch);
       return () => void watchers.delete(watch);
@@ -225,6 +232,7 @@ export function useEntryLanguage(): [Language, (language: Language) => void] {
     entryLanguageNow,
     () => "en" as Language,
   );
+  const language = drawnIn ?? device;
   return [
     language,
     (next) => {

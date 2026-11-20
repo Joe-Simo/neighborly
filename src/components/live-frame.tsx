@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useEffect, useLayoutEffect, type ReactNode } from "react";
+import { startTransition, Suspense, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LiveApp } from "@/components/live-app";
 import type { LiveEntryIntent } from "@/components/live-auth";
@@ -23,7 +23,10 @@ const areaOf = (pathname: string) => {
 export function LiveFrame({ children, sampleEntry }: { children: ReactNode; sampleEntry: boolean }) {
   useKeysInUse();
   const pathname = usePathname();
-  const params = useSearchParams();
+  // The query is read by a part of its own that waits for the browser (QueryReader), so the frame is drawn on the
+  // server as for an address with none, sign-in sheet and all; the browser's own query takes over as it wakes.
+  const [query, setQuery] = useState("");
+  const params = new URLSearchParams(query);
   const area = areaOf(pathname);
   const entry = pathname === "/app";
   const invite = (entry && params.get("invite")) || undefined;
@@ -107,6 +110,9 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
 
   return (
     <>
+      <Suspense fallback={null}>
+        <QueryReader onQuery={setQuery} />
+      </Suspense>
       {(area || entry) && (
         <LiveApp
           key={`${intent}:${invite ?? ""}`}
@@ -120,4 +126,11 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
       {children}
     </>
   );
+}
+
+/** The address's query, handed up to the frame whenever it changes. Draws nothing. */
+function QueryReader({ onQuery }: { onQuery: (query: string) => void }) {
+  const query = useSearchParams().toString();
+  useLayoutEffect(() => onQuery(query), [query, onQuery]);
+  return null;
 }

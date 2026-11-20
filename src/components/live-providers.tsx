@@ -37,7 +37,9 @@ export function useAccount() {
   const [entered, setEntered] = useState<string | null>(enteredSession);
   const [failure, setFailure] = useState<Error | null>(null);
   // The server cannot read the browser, so the page it sends says "not known"; the browser's own answer takes over as it wakes.
-  const cannotBeSignedIn = useSyncExternalStore(never, cannotBeSignedInYet, () => false);
+  // `null` on the server and while the page wakes: not known, so both the sheet and the launch line are drawn and the
+  // page's head (lib/door-early.ts) shows one before any script has run.
+  const cannotBeSignedIn = useSyncExternalStore<boolean | null>(never, cannotBeSignedInYet, () => null);
   useEffect(() => {
     if (!isAuthenticated || !sessionId) return;
     let current = true;
@@ -61,7 +63,9 @@ export function useAccount() {
     // backend is still confirming it, the answer is "not yet", never "signed out".
     // Before Clerk has answered, a browser that holds no session (lib/no-session-kept.ts) is already known to be signed out, so the
     // door's sheet is drawn at once instead of after Clerk's script has loaded. Once Clerk answers, its answer rules.
-    signedOut: isLoaded ? !isSignedIn && !isLoading && !isAuthenticated : cannotBeSignedIn,
+    signedOut: isLoaded ? !isSignedIn && !isLoading && !isAuthenticated : cannotBeSignedIn === true,
+    /** Drawn on the server or waking: whether anyone is signed in is not known to the page yet. */
+    unknown: !isLoaded && cannotBeSignedIn === null,
     /** Clerk itself has said who is here. Asked for by what must not run on the early answer alone. */
     clerkAnswered: isLoaded,
   };
