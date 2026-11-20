@@ -7,9 +7,20 @@ import { WeekByTeam } from "@/components/workspace/volunteer/asides";
 import { CommitmentRows } from "@/components/workspace/volunteer/commitment-rows";
 
 export function CommitmentsSection() {
-  const { data, now, teamFilter, setTeamFilter, words, sampleSaid, isOwner } = useWorkspace();
+  const { data, now, teamFilter, setTeamFilter, words, sampleSaid, isOwner, format } = useWorkspace();
   const text = words.commitments;
   const datedCommitments = upcomingCommitments(data.commitments, now, true);
+  const shown = datedCommitments.filter((item) => !teamFilter || item.teamId === teamFilter);
+  // Each week is named before its first row. A week starts on Sunday in the group's own calendar, and its name
+  // (the Sunday's date, in the reader's language) is also what tells one week from the next.
+  const sunday = new Intl.DateTimeFormat("en-US", { timeZone: data.church.timeZone, weekday: "short" });
+  const weeks: Record<string, string> = {};
+  let last = "";
+  for (const item of shown) {
+    const back = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(sunday.format(item.start));
+    const week = words.commitments.weekOf(format(item.start - back * 86_400_000, { weekday: undefined, month: "long", day: "numeric" }));
+    if (week !== last) weeks[item.id] = last = week;
+  }
   return (
     <>
       <WeekByTeam />
@@ -30,9 +41,8 @@ export function CommitmentsSection() {
         </NativeSelect>
       </div>}
       <CommitmentRows
-        items={datedCommitments.filter(
-          (item) => !teamFilter || item.teamId === teamFilter,
-        )}
+        items={shown}
+        weeks={weeks}
         empty={
           teamFilter && datedCommitments.length > 0
           ? { title: text.noneForTeamTitle, detail: text.noneForTeamDetail }

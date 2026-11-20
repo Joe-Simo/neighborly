@@ -195,6 +195,7 @@ export function en(set: WordSet) {
     },
     commitments: {
       weekByTeam: "This week by team",
+      weekOf: (date: string) => `Week of ${date}`,
       covered: "Covered",
       placesOpen: (count: number) => (count === 1 ? "1 place open" : `${enN(count)} places open`),
       filterLabel: "Filter by team",
