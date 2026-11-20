@@ -4,7 +4,7 @@ import { useHour, useQuery } from "@/components/workspace/query";
 import { useFirstLook } from "@/components/workspace/first-look";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { api } from "../../../../convex/_generated/api";
 import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspace } from "@/components/workspace/context";
@@ -143,11 +143,21 @@ function WeekNoteView({ counts, monday, brief, waiting = false, onDone }: { coun
   const [open, setOpen] = useState(false);
   // "Done reading" puts the sheet away like paper: it lifts, thins and the page closes over where it lay.
   const [leaving, setLeaving] = useState(false);
-  const putAway = () => {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return onDone();
-    setLeaving(true);
-    window.setTimeout(onDone, 320);
+  // Focus follows the reader: into the sheet's heading when Read opens it, and, once the note is put away for the
+  // week, onto the first of the figures that stay in its place (Read leaves with the note).
+  const heading = useRef<HTMLHeadingElement>(null);
+  const put = () => {
+    onDone();
+    requestAnimationFrame(() => document.querySelector<HTMLElement>("nav.week-figures a")?.focus({ preventScroll: true }));
   };
+  const putAway = () => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return put();
+    setLeaving(true);
+    window.setTimeout(put, 320);
+  };
+  useEffect(() => {
+    if (open) heading.current?.focus({ preventScroll: true });
+  }, [open]);
   const text = words.monday;
   const lines = weekLines(text, counts);
   if (!lines.length) return waiting ? null : <WeekFigures />;
@@ -185,7 +195,7 @@ function WeekNoteView({ counts, monday, brief, waiting = false, onDone }: { coun
           <p className={`help-sheet-label !text-[var(--live-muted)] ${waiting ? "invisible" : ""}`}>
             {text.weekOf(formatDate(words.locale, monday, { timeZone: data.church.timeZone, month: "long", day: "numeric" }))}
           </p>
-          <h2 id={waiting ? undefined : "week-note"} className={waiting ? held : undefined}>
+          <h2 ref={heading} tabIndex={-1} id={waiting ? undefined : "week-note"} className={`outline-none ${waiting ? held : ""}`}>
             <span>{text.title}</span>
           </h2>
           <div className={`week-figures !mt-6 !mb-0 !border-y-0 gap-y-4 ${waiting ? "" : "paper-rows"}`}>
