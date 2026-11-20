@@ -50,12 +50,6 @@
 /* Back on home, the card is in the hand already lettered: its words are not cut in again. */
 .card-offer[data-back] .card-offer-words{opacity:1;transition:none}
 @media(max-width:1279px),(max-height:444px){.neighborly-close-offer{top:0}}
-@media(max-width:700px) and (orientation:portrait),(max-width:480px){
-  .neighborly-close-offer{height:216.41cqw}
-  .card-offer,.card-for{left:58%;top:78.8%;width:68%}
-  .card-offer-for,.card-for-line{font-size:clamp(17px,5cqw,22px)}
-  .card-offer strong{font-size:clamp(20px,6.2cqw,26px)}
-}
 @media(prefers-reduced-motion:reduce){.card-offer,.card-offer-words{transition:none}.card-offer:hover,.card-offer:active{translate:-50% -50%}}
 /* "For ____": lettered on the card in the page's italic. The blank is a pencil rule until a name is written on it. */
 .card-offer-for{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 clamp(17px,1.5cqw,29px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;color:#3d4f43;white-space:nowrap;overflow:hidden;transition:opacity 0s .12s}
@@ -73,6 +67,13 @@
 .card-offer[data-given]~.card-for{opacity:0}
 /* The card's own face for its last flight, into the open hand: the same paper, square, words and line as the card it becomes, drawn at the travelling card's 240px. */
 /* A window 320 wide: the card is a little larger on the band, so its headline clears the "For" line and the gold square. */
+/* After the card's own rules, so on a phone the card beneath lies where the offered card does. */
+@media(max-width:700px) and (orientation:portrait),(max-width:480px){
+  .neighborly-close-offer{height:216.41cqw}
+  .card-offer,.card-for{left:58%;top:78.8%;width:68%}
+  .card-offer-for,.card-for-line{font-size:clamp(17px,5cqw,22px)}
+  .card-offer strong{font-size:clamp(20px,6.2cqw,26px)}
+}
 @media(max-width:359px){.card-offer,.card-for{left:56%;width:78%}}
 .card-offer-words>:is(strong,small){text-wrap:balance}
 /* On its way to the year the card is October's first slip, decided: the year's paper, its one line of ink and its green corner, drawn as the
