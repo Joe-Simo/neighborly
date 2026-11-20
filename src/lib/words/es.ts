@@ -113,11 +113,11 @@ export function es(set: WordSet): Words {
       tools: { title: "Trae tus registros. Llévatelos.", deck: "De ServWare o una hoja de cálculo, y de vuelta cuando quieras." },
       team: {
         title: "Un lugar en el equipo.",
-        deck: "Aquí cada persona tiene su lugar, aunque sus planes cambien.",
+        deck: "Cada equipo, quiénes sirven en él y cada cuánto.",
       },
       people: {
         title: "Todos juntos.",
-        deck: "Tu comunidad y los equipos que hace posibles.",
+        deck: "Todas las personas, con su papel y sus equipos.",
       },
       commitments: {
         title: "Compromisos claros.",
@@ -133,7 +133,7 @@ export function es(set: WordSet): Words {
       },
       mine: {
         title: "Tu parte.",
-        deck: "Lo que has aceptado, con lo necesario para llegar con calma.",
+        deck: "Lo que has aceptado y cómo prepararte.",
       },
       "time-off": {
         title: "Tiempo para la vida.",

@@ -117,11 +117,11 @@ export function en(set: WordSet) {
       tools: { title: "Your records, in and out.", deck: "From ServWare or a spreadsheet, and back out whenever you like." },
       team: {
         title: "A place on the team.",
-        deck: "People belong here, even when their plans change.",
+        deck: "Each team, who serves on it, and how often.",
       },
       people: {
         title: "People, together.",
-        deck: "Your community and the teams they make possible.",
+        deck: "Everyone here, with their role and their teams.",
       },
       commitments: {
         title: "Clear commitments.",
@@ -137,7 +137,7 @@ export function en(set: WordSet) {
       },
       mine: {
         title: "Your part in it.",
-        deck: "What you’ve accepted, with the preparation to feel ready.",
+        deck: "What you’ve said yes to, and how to prepare.",
       },
       "time-off": {
         title: "Room for life.",
