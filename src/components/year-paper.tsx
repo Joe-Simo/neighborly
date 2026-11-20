@@ -76,7 +76,10 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
       if (!scene || !near) return;
       mouse = event.pointerType === "mouse";
       pointer = { x: event.clientX, y: event.clientY };
+      const was = lifted?.index;
       pick(pointer.x, pointer.y); ask();
+      // A tap is said in the same polite line as the arrow keys, once for each new slip; a mouse's hover is not read out.
+      if (!mouse && lifted && lifted.index !== was && told) told.textContent = say(lifted);
     };
     const leave = (event: PointerEvent) => { if (event.pointerType !== "mouse") return; pointer = null; lifted = null; ask(); };
     const walk = (event: KeyboardEvent) => {
