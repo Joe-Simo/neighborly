@@ -1666,3 +1666,6 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 .people-tally { margin: 0 0 var(--space-24); }
 @media (max-width: 700px) { .room-tally { justify-items: start; } .room-tally .live-count { text-align: left; } }
 @media (forced-colors: active) { .room-tally b { border: 1px solid CanvasText; } }
+/* A slow first load says one thing at a time: the launch mark alone, then, once the room says "Opening…", that line
+   alone. A cut, not a fade. */
+.live-app:has(.live-opening) > .paper-loading-mark { display: none; }
