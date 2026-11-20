@@ -112,22 +112,92 @@ function gradeToStill(surface: T.Material, phone: boolean) {
   surface.customProgramCacheKey = () => `still-grade${ochre ? "-ochre" : ""}${phone ? "-phone" : ""}`;
 }
 
+/** A pointer on the painting, in pixels from its upper left. */
+export type StagePointer = { type: string; x: number; y: number; pointerId: number; isPrimary: boolean; preventDefault?: () => void };
+/**
+ * Where the scene is drawn and what it hears: the page's own element (domStage), or a canvas handed to a worker
+ * (painted-world-worker.ts), whose page tells it the same things by message.
+ */
+export type PaintedStage = {
+  canvas: HTMLCanvasElement | OffscreenCanvas;
+  /** A small 2D canvas for a drawn texture. */
+  sketch: (size: number) => HTMLCanvasElement | OffscreenCanvas;
+  /** True in a worker: pictures are decoded to bitmaps, as there is no image element. */
+  offscreen: boolean;
+  pixelRatio: number;
+  width: () => number;
+  height: () => number;
+  /** The painting's laid-out box, fractions and all, as the canvas is sized to it (not rounded as width and height are). */
+  box: () => { width: number; height: number };
+  hidden: () => boolean;
+  reducedMotion: () => boolean;
+  capture: (pointerId: number) => void;
+  release: (pointerId: number) => void;
+  listen: (on: { resize: () => void; visible: (value: boolean) => void; visibility: () => void; reduce: () => void; pointer: (event: StagePointer) => void }) => () => void;
+};
+
+/** The page's own element as the stage: the scene drawn on the main thread, as it always was. */
+function domStage(host: HTMLElement): PaintedStage {
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
+  canvas.style.touchAction = "pan-y";
+  host.appendChild(canvas);
+  const media = matchMedia("(prefers-reduced-motion: reduce)");
+  return {
+    canvas, offscreen: false, pixelRatio: devicePixelRatio,
+    sketch: (size) => Object.assign(document.createElement("canvas"), { width: size, height: size }),
+    width: () => host.clientWidth, height: () => host.clientHeight,
+    box: () => host.getBoundingClientRect(),
+    hidden: () => document.hidden, reducedMotion: () => media.matches,
+    capture: (id) => host.setPointerCapture(id),
+    release: (id) => { if (host.hasPointerCapture(id)) host.releasePointerCapture(id); },
+    listen(on) {
+      const point = (event: PointerEvent) => {
+        const rect = host.getBoundingClientRect();
+        on.pointer({ type: event.type, x: event.clientX - rect.left, y: event.clientY - rect.top, pointerId: event.pointerId, isPrimary: event.isPrimary, preventDefault: () => event.preventDefault() });
+      };
+      const observer = new ResizeObserver(on.resize);
+      const intersection = new IntersectionObserver(([entry]) => on.visible(entry.isIntersecting));
+      observer.observe(host);
+      intersection.observe(host);
+      host.addEventListener("pointerdown", point);
+      host.addEventListener("pointermove", point, { passive: true });
+      host.addEventListener("pointerup", point);
+      host.addEventListener("pointercancel", point);
+      document.addEventListener("visibilitychange", on.visibility);
+      media.addEventListener("change", on.reduce);
+      return () => {
+        observer.disconnect();
+        intersection.disconnect();
+        host.removeEventListener("pointerdown", point);
+        host.removeEventListener("pointermove", point);
+        host.removeEventListener("pointerup", point);
+        host.removeEventListener("pointercancel", point);
+        document.removeEventListener("visibilitychange", on.visibility);
+        media.removeEventListener("change", on.reduce);
+        canvas.remove();
+      };
+    },
+  };
+}
+
 /** One renderer owns the continuous painted journey. No account state is read or changed. */
 export function createPaintedWorldController(host: HTMLElement, options: PaintedWorldOptions = {}) {
+  return createPaintedWorld(domStage(host), options);
+}
+
+export function createPaintedWorld(stage: PaintedStage, options: PaintedWorldOptions = {}) {
   // On an iPhone or iPad (or a phone with little memory) the scene is drawn without multisampling: its four samples a pixel held several times the
   // canvas's own memory, which Safari counts against the tab, and at that screen's density its painted edges show no steps without it.
   const tight = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) || ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4;
-  const renderer = new T.WebGLRenderer({ alpha: true, antialias: !tight, powerPreference: "low-power" });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  const renderer = new T.WebGLRenderer({ canvas: stage.canvas, alpha: true, antialias: !tight, powerPreference: "low-power" });
+  renderer.setPixelRatio(Math.min(stage.pixelRatio, 1.5));
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFShadowMap;
   renderer.localClippingEnabled = true;
-  renderer.domElement.setAttribute("aria-hidden", "true");
-  renderer.domElement.style.touchAction = "pan-y";
-  host.appendChild(renderer.domElement);
 
   const scene = new T.Scene();
   scene.background = new T.Color("#efe8d9");
@@ -183,6 +253,8 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   const artwork = new Map<PaintedScene, Artwork>();
   const pending = new Map<string, Promise<Artwork>>();
   const loader = new T.TextureLoader();
+  // In a worker there is no image element: a picture is decoded to a bitmap, turned as the image element would be.
+  const bitmaps = stage.offscreen ? new T.ImageBitmapLoader().setOptions({ imageOrientation: "flipY", premultiplyAlpha: "none", colorSpaceConversion: "none" }) : undefined;
   let openingModel: T.Group | undefined;
   let openingLoaded = false;
   const released = new WeakSet<T.Texture>();
@@ -273,8 +345,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   let pendingScrollKey = "";
   let availableScrollKey = "";
   let reportedScrollScene: PaintedScene = "opening";
-  const media = matchMedia("(prefers-reduced-motion: reduce)");
-  let reduce = options.reducedMotion ?? media.matches;
+  let reduce = options.reducedMotion ?? stage.reducedMotion();
   const pointer = new T.Vector2();
   const pointerTarget = new T.Vector2();
   const raycaster = new T.Raycaster();
@@ -402,14 +473,14 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   function fitArtwork(value: Artwork) {
     const source = value.base.material.map?.image as { width?: number; height?: number } | undefined;
     const ratio = (source?.width ?? (portrait ? 900 : 1600)) / (source?.height ?? (portrait ? 1600 : 1000));
-    const openingFrame = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly);
+    const openingFrame = getPaintedOpeningFraming(stage.width(), stage.height(), worldWidth, worldHeight, options.openingOnly);
     const fitted = getPaintedArtworkFrame(worldWidth, worldHeight, ratio);
     value.contained = value.scene !== "opening" && fitted.contained;
     const width = value.scene === "opening"
       ? openingFrame.sourceWidth * openingFrame.scale
       : fitted.width;
     value.base.scale.set(width, value.scene === "opening" ? openingFrame.sourceHeight * openingFrame.scale : width / ratio, 1);
-    const portraitTabletOffset = portrait && host.clientWidth > 700 && value.scene !== "opening" && !value.contained ? -worldHeight * 0.045 : 0;
+    const portraitTabletOffset = portrait && stage.width() > 700 && value.scene !== "opening" && !value.contained ? -worldHeight * 0.045 : 0;
     value.base.position.y = value.scene === "opening" ? openingFrame.shiftY : portraitTabletOffset;
     value.completed?.scale.copy(value.base.scale);
     if (value.completed) value.completed.position.y = portraitTabletOffset;
@@ -427,12 +498,19 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     }
   }
   function loadTexture(src: string) {
-    return new Promise<T.Texture>((resolve, reject) => loader.load(src, (texture) => {
+    const took = (texture: T.Texture, resolve: (texture: T.Texture) => void, reject: (error: Error) => void) => {
       if (disposed) { texture.dispose(); reject(new Error("Painted scene was disposed.")); return; }
       texture.colorSpace = T.SRGBColorSpace;
       texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
       resolve(texture);
+    };
+    if (bitmaps) return new Promise<T.Texture>((resolve, reject) => bitmaps.load(src, (bitmap) => {
+      const texture = new T.Texture(bitmap);
+      texture.flipY = false;
+      texture.needsUpdate = true;
+      took(texture, resolve, reject);
     }, undefined, reject));
+    return new Promise<T.Texture>((resolve, reject) => loader.load(src, (texture) => took(texture, resolve, reject), undefined, reject));
   }
   function releaseArtwork(value: Artwork) {
     scene.remove(value.group);
@@ -450,7 +528,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     const requestedPortrait = portrait;
     const definition = definitionFor(id);
     const src = id === "opening"
-      ? getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly).poster
+      ? getPaintedOpeningFraming(stage.width(), stage.height(), worldWidth, worldHeight, options.openingOnly).poster
       : (requestedPortrait ? definition?.mobileSrc : definition?.src) ?? imagePath(id, requestedPortrait);
     const completedSrc = scrollMode ? undefined : requestedPortrait ? definition?.mobileCompletedSrc : definition?.completedSrc;
     const layerDefinitions = (requestedPortrait ? definition?.mobileLayers : definition?.layers) ?? options.layers?.[id] ?? [];
@@ -542,7 +620,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     bowl.rotation.z = Math.sin(p * Math.PI) * 0.035;
     const bowlImage = bowlTexture?.image as { width?: number; height?: number } | undefined;
     const bowlAspect = (bowlImage?.width ?? 640) / (bowlImage?.height ?? 427);
-    const bowlWidth = worldWidth * (portrait ? 150 : 196) / Math.max(1, host.clientWidth);
+    const bowlWidth = worldWidth * (portrait ? 150 : 196) / Math.max(1, stage.width());
     bowlSprite.scale.set(bowlWidth, bowlWidth / bowlAspect, 1);
     bowlTarget.position.copy(bowlTo);
     bowlTarget.position.z = 0.4;
@@ -643,7 +721,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
   }
   function draw(time: number) {
     frame = 0;
-    if (disposed || lost || !visible || document.hidden) return;
+    if (disposed || lost || !visible || stage.hidden()) return;
     const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 1 / 60;
     lastTime = time;
     openingPlayback?.advance(dt);
@@ -712,7 +790,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     }
     if (openingModel) {
       openingRoot.visible = openingOpacity > 0;
-      const openingFrame = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly);
+      const openingFrame = getPaintedOpeningFraming(stage.width(), stage.height(), worldWidth, worldHeight, options.openingOnly);
       const { sourceHeight, scale } = openingFrame;
       openingRoot.scale.setScalar(scale);
       openingRoot.position.y = openingFrame.shiftY;
@@ -749,9 +827,9 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
         landed = down ? reduce ? 1 : Math.min(1, landed + dt / cardSettle) : 0;
         // A soft ease out: quick at first, then the last of the drop is slow, as a hand gives under a small weight.
         const settled = 1 - (1 - landed) ** 3;
-        cardSeat.position.y += (1 - settled) * arrived * cardDrop * worldHeight / Math.max(1, host.clientHeight) / (scale * rigScale);
+        cardSeat.position.y += (1 - settled) * arrived * cardDrop * worldHeight / Math.max(1, stage.height()) / (scale * rigScale);
         taken = down ? reduce ? 1 : Math.min(1, taken + dt / takeTime) : 0;
-        const pixel = worldHeight / Math.max(1, host.clientHeight) / (scale * rigScale);
+        const pixel = worldHeight / Math.max(1, stage.height()) / (scale * rigScale);
         const dip = reduce ? 0 : Math.sin(Math.min(1, taken * 1.25) * Math.PI) * (1 - taken * .35) * takeDip * pixel, curl = reduce ? 0 : (1 - (1 - taken) ** 3) * takeCurl;
         // What was added last frame is taken off first, unless the playback has since written the bone afresh.
         if (receiver) { if (receiver.position.y === setDip) receiver.position.y += gaveDip; receiver.position.y -= dip; setDip = receiver.position.y; gaveDip = dip; }
@@ -795,7 +873,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     if ((!scrollMode && phase === "transitioning" && transitionReady) || interaction !== interactionTarget || !pointer.equals(pointerTarget) || openingPlayback?.isRunning() || ((openingPlayback?.passed() ?? 0) >= 1 && (landed < 1 || taken < 1))) wake();
   }
   function wake() {
-    if (!frame && !disposed && !lost && visible && !document.hidden) { frame = requestAnimationFrame(draw); }
+    if (!frame && !disposed && !lost && visible && !stage.hidden()) { frame = requestAnimationFrame(draw); }
   }
   function completeInteraction() {
     if (scrollMode || disposed || phase === "transitioning" || current === "complete") return;
@@ -821,9 +899,9 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     });
     wake();
   }
-  function ndc(event: PointerEvent) {
-    const rect = host.getBoundingClientRect();
-    return new T.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, 1 - (event.clientY - rect.top) / rect.height * 2);
+  function ndc(event: StagePointer) {
+    const box = stage.box();
+    return new T.Vector2(event.x / Math.max(1, box.width) * 2 - 1, 1 - event.y / Math.max(1, box.height) * 2);
   }
   const hit = (point: T.Vector2) => {
     if (current === "meal" && !bowlTexture) return false;
@@ -833,7 +911,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     const target = current === "opening" ? invitation : current === "meal" ? bowl : doors;
     return raycaster.intersectObject(target, true).length > 0;
   };
-  function onDown(event: PointerEvent) {
+  function onDown(event: StagePointer) {
     if (scrollMode || !event.isPrimary || phase === "transitioning" || current === "complete" || !ready || !hit(ndc(event))) return;
     pointerId = event.pointerId;
     down = ndc(event);
@@ -841,10 +919,10 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     setPhase("interacting");
     raycaster.setFromCamera(down, camera);
     raycaster.ray.intersectPlane(dragPlane, dragStart);
-    host.setPointerCapture(event.pointerId);
-    event.preventDefault();
+    stage.capture(event.pointerId);
+    event.preventDefault?.();
   }
-  function onMove(event: PointerEvent) {
+  function onMove(event: StagePointer) {
     if (!event.isPrimary) return;
     const point = ndc(event);
     if (!reduce) pointerTarget.copy(point);
@@ -859,24 +937,24 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     }
     wake();
   }
-  function onUp(event: PointerEvent) {
+  function onUp(event: StagePointer) {
     if (!dragging || pointerId !== event.pointerId) return;
     const wasTap = ndc(event).distanceTo(down) < 0.035;
     const accepted = event.type !== "pointercancel" && (interactionTarget > 0.8 || wasTap);
     dragging = false;
-    if (host.hasPointerCapture(event.pointerId)) host.releasePointerCapture(event.pointerId);
+    stage.release(event.pointerId);
     pointerId = null;
     if (accepted) completeInteraction();
     else { interactionTarget = 0; setPhase("idle"); wake(); }
   }
   function resize() {
-    const rect = host.getBoundingClientRect();
+    const rect = stage.box();
     if (!rect.width || !rect.height || disposed) return;
     // A pointer's drag plane belongs to the old viewport. End the gesture before
     // changing that plane so rotation/address-bar resizing cannot accept it.
     if (dragging) {
       dragging = false;
-      if (pointerId !== null && host.hasPointerCapture(pointerId)) host.releasePointerCapture(pointerId);
+      if (pointerId !== null) stage.release(pointerId);
       pointerId = null;
       interactionTarget = 0;
       if (phase === "interacting") setPhase("idle");
@@ -913,25 +991,20 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     }
     wake();
   }
-  function onVisibility() { lastTime = 0; if (!document.hidden) wake(); }
-  function onReduce() { reduce = options.reducedMotion ?? media.matches; openingPlayback?.apply(openingOutcome, false, reduce); pointerTarget.set(0, 0); wake(); }
+  function onVisibility() { lastTime = 0; if (!stage.hidden()) wake(); }
+  function onReduce() { reduce = options.reducedMotion ?? stage.reducedMotion(); openingPlayback?.apply(openingOutcome, false, reduce); pointerTarget.set(0, 0); wake(); }
   function onLost(event: Event) { event.preventDefault(); lost = true; cancelAnimationFrame(frame); frame = 0; options.onError?.(new Error("The painted scene renderer was interrupted.")); }
   function onRestored() { lost = false; resize(); wake(); }
-  const observer = new ResizeObserver(resize);
-  const intersection = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (visible) wake(); });
-  observer.observe(host);
-  intersection.observe(host);
-  host.addEventListener("pointerdown", onDown);
-  host.addEventListener("pointermove", onMove, { passive: true });
-  host.addEventListener("pointerup", onUp);
-  host.addEventListener("pointercancel", onUp);
-  renderer.domElement.addEventListener("webglcontextlost", onLost);
-  renderer.domElement.addEventListener("webglcontextrestored", onRestored);
-  document.addEventListener("visibilitychange", onVisibility);
-  media.addEventListener("change", onReduce);
+  const unlisten = stage.listen({
+    resize, visibility: onVisibility, reduce: onReduce,
+    visible: (value) => { visible = value; if (visible) wake(); },
+    pointer: (event) => (event.type === "pointerdown" ? onDown : event.type === "pointermove" ? onMove : onUp)(event),
+  });
+  stage.canvas.addEventListener("webglcontextlost", onLost);
+  stage.canvas.addEventListener("webglcontextrestored", onRestored);
   resize();
   function loadOpening() {
-    const framing = getPaintedOpeningFraming(host.clientWidth, host.clientHeight, worldWidth, worldHeight, options.openingOnly);
+    const framing = getPaintedOpeningFraming(stage.width(), stage.height(), worldWidth, worldHeight, options.openingOnly);
     const asset = `/assets/living-relief-opening-${framing.mobile ? framing.narrow ? "narrow" : "mobile" : "desktop"}.glb`;
     // The phone's still was taken from the scene with the card already large and tucked, so there the first frame starts tucked.
     if (framing.mobile) introduced = 1;
@@ -959,8 +1032,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       openingModel.traverse((object) => { if (object instanceof T.Mesh && /^Role[ _]guide[ _].*leaf[ _]1/.test(object.name)) leaf = object; });
       openingModel.updateMatrixWorld(true);
       cardWidth = Math.max(.01, new T.Box3().setFromObject(leaf).getSize(new T.Vector3()).x) || 1;
-      const blot = document.createElement("canvas");
-      blot.width = blot.height = 64;
+      const blot = stage.sketch(64);
       const pen = blot.getContext("2d");
       if (pen) {
         const fade = pen.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -1072,7 +1144,7 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
     goToScene(id: PaintedScene) {
       if (scrollMode || disposed || !paintedSequence.includes(id)) return;
       dragging = false;
-      if (pointerId !== null && host.hasPointerCapture(pointerId)) host.releasePointerCapture(pointerId);
+      if (pointerId !== null) stage.release(pointerId);
       pointerId = null;
       destination = null;
       interactionTarget = interaction;
@@ -1092,17 +1164,10 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       if (disposed) return;
       disposed = true;
       cancelAnimationFrame(frame);
-      observer.disconnect();
-      intersection.disconnect();
-      if (pointerId !== null && host.hasPointerCapture(pointerId)) host.releasePointerCapture(pointerId);
-      host.removeEventListener("pointerdown", onDown);
-      host.removeEventListener("pointermove", onMove);
-      host.removeEventListener("pointerup", onUp);
-      host.removeEventListener("pointercancel", onUp);
-      renderer.domElement.removeEventListener("webglcontextlost", onLost);
-      renderer.domElement.removeEventListener("webglcontextrestored", onRestored);
-      document.removeEventListener("visibilitychange", onVisibility);
-      media.removeEventListener("change", onReduce);
+      if (pointerId !== null) stage.release(pointerId);
+      stage.canvas.removeEventListener("webglcontextlost", onLost);
+      stage.canvas.removeEventListener("webglcontextrestored", onRestored);
+      unlisten();
       artwork.forEach(releaseArtwork);
       artwork.clear();
       geometries.forEach((geometry) => geometry.dispose());
@@ -1115,7 +1180,6 @@ export function createPaintedWorldController(host: HTMLElement, options: Painted
       renderer.dispose();
       // Its graphics memory is given back now, not whenever the browser collects the canvas: on an iPhone that is what keeps the tab alive.
       renderer.forceContextLoss();
-      renderer.domElement.remove();
     },
   };
 }

@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { whenScrollStill } from "@/lib/scroll-still";
 import { getPaintedScrollState } from "@/lib/painted-world-scroll";
 import { isPaintedPortrait, openingKeptAbove } from "@/lib/painted-world-framing";
-import type { PaintedScene, PaintedWorldOptions, createPaintedWorldController } from "@/lib/painted-world-controller";
+import type { PaintedScene, PaintedWorldOptions } from "@/lib/painted-world-controller";
+import type { PaintedWorld as World } from "@/lib/painted-world-offscreen";
+
+/** Whether this browser can hand a canvas to a worker at all (the worker learns whether it can draw on it). Kept here, so the
+ * worker's module is fetched only when the scene is made, never with the page. */
+const canDrawOffPage = () =>
+  typeof Worker !== "undefined" && typeof OffscreenCanvas !== "undefined" && "transferControlToOffscreen" in HTMLCanvasElement.prototype;
 import "./painted-world.css";
 import "./cut-edges.css";
 import "./public-touch.css";
@@ -34,7 +40,7 @@ function fallbackSource(scene: PaintedScene, mobile: boolean, accepted = false) 
  * the opening until then, and the swap is the same single cut as always.
  */
 const settleBeforeUpgrade = 250, upgradeAtLatest = 8000;
-type Controller = Pick<ReturnType<typeof createPaintedWorldController>, "setStoryProgress" | "setOpeningOutcome" | "setHandoff" | "setReducedMotion" | "dispose">;
+type Controller = World;
 // Where the card rests in the giving hand and in the open hand, as shares of each opening painting.
 const cardPath = {
   desktop: { size: [1440, 1024], from: [.443, .749], to: [.722, .772], empty: [880, 646, 360, 295], card: .118 },
@@ -76,7 +82,9 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     };
     fallbackRef.current = false;
     let nearNow = true;
-    const enhance = () => { void import("@/lib/painted-world-controller").then(({ createPaintedWorldController: createController }) => {
+    // The opening is drawn in a worker where the browser can hand it a canvas, so three.js never holds this page's
+    // thread; elsewhere it is drawn here, as before. Either way the still painting stays until its first frame.
+    const enhance = () => { void (canDrawOffPage() ? import("@/lib/painted-world-offscreen").then((code) => code.createOffPageWorld) : import("@/lib/painted-world-controller").then((code) => code.createPaintedWorldController)).then((createController) => {
       if (disposed || !host.current || !nearNow) return;
       active = createController(host.current, {
         scenes, mode: "scroll", openingOnly: heroOnly,
