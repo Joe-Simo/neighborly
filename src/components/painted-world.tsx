@@ -4,7 +4,6 @@ import Link from "next/link";
 import { SampleLink } from "@/components/sample-link";
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { whenScrollStill } from "@/lib/scroll-still";
 import { getPaintedScrollState } from "@/lib/painted-world-scroll";
 import { isPaintedPortrait, openingKeptAbove } from "@/lib/painted-world-framing";
@@ -224,7 +223,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
     back();
   };
 
-  return <main className="painted-world" id="story-start" data-scene={visibleScene} data-hero-only={heroOnly} data-passed={passed} data-ready={ready} data-failed={failed} tabIndex={-1}>
+  return <main className="painted-world" id="story-start" aria-label="Kind Helps" data-scene={visibleScene} data-hero-only={heroOnly} data-passed={passed} data-ready={ready} data-failed={failed} tabIndex={-1}>
     <a className="painted-world-skip" href={heroOnly ? "#how-neighborly-works" : "#your-community"}>Skip to how Kind Helps works</a>
     {/* Fixed to the screen, and early in the page so a keyboard reaches it before the journey. */}
     <section className="painted-world-track" ref={track} aria-label={heroOnly ? "An open hand" : "A story of care"}>
@@ -269,30 +268,13 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
             <a className="painted-world-primary-invitation" href="#neighborly-courtyard" onClick={event => { if (passed && onContinue) { event.preventDefault(); onContinue(); } else if (!passed && onPass) { event.preventDefault(); onPass(); } }}>{passed || !onPass ? "Go through the doors" : "Pass the card"}</a>
             <Link href="/app?intent=start">Start your conference <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </nav>}
-          {!heroOnly && scene === "complete" && <nav className="painted-world-scene-actions" aria-label="Start with Kind Helps">
-            <Button asChild className="painted-world-scene-start"><Link href="/app?intent=start">Start your conference <ArrowUpRight size={16} aria-hidden="true" /></Link></Button>
-            <Link href="/app?intent=join">Join your people <ArrowUpRight size={16} aria-hidden="true" /></Link>
-            <Link href="/app?intent=signin">Sign in</Link>
-            <a href="#story-start" className="painted-world-restart">See it again</a>
-          </nav>}
         </div>
         <footer className="painted-world-tools">
           <div className="painted-world-scroll-cue" aria-hidden="true" data-waiting={(loading || (!ready && !failed)) || undefined}><span>{/* An invitation from the first frame (never word of loading), and one cut to the scroll line once the scene is whole: the cue never swaps its words twice. */}{(loading || (!ready && !failed)) ? <>Begin<span className="painted-world-cue-more"> below</span></> : visibleScene === "complete" ? "Your story starts here" : <>Scroll<span className="painted-world-cue-more"> to continue</span></>}</span><ArrowDown size={15} /></div>
-          {!heroOnly && <div className="painted-world-progress" aria-hidden="true"><span>{chapter.number}</span><div><i /></div><span>04</span></div>}
         </footer>
         </div></div>
       </div>
     </section>
-    {!heroOnly && <section className="painted-world-end" id="your-community" tabIndex={-1} aria-labelledby="community-title">
-      <p className="painted-world-kicker">For every conference</p>
-      <h2 id="community-title">Your people.<br /><em>Your way to help.</em></h2>
-      <p>A shared place for the plans, people, and acts of care that matter to your community.</p>
-      <div className="painted-world-account">
-        <Button asChild className="painted-world-start"><Link href="/app?intent=start">Start your conference <ArrowUpRight aria-hidden="true" /></Link></Button>
-        <Link href="/app?intent=join">Join your people <ArrowUpRight size={16} aria-hidden="true" /></Link>
-        <Link href="/app?intent=signin">Sign in</Link>
-      </div>
-    </section>}
     {heroOnly && children}
   </main>;
 }

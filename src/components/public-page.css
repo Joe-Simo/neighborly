@@ -253,3 +253,5 @@
 @media print{
   .public-words .public-words-relief,.public-words:has(.public-words-note) .public-words-relief{display:none}
 }
+/* The skip link lands on the words; the page itself takes the focus quietly, as home's does. */
+.public-words:focus{outline:none}
