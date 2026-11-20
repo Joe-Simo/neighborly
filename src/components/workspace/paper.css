@@ -899,6 +899,14 @@
 /* A dialog or sheet never changes the page's width: the scrollbar's place is kept only while the page is locked
    behind it, so nothing shifts sideways when one opens or closes, and the lock's own compensation is not needed.
    At rest no place is kept: a room's picture runs to the window's own edge, or to the scrollbar where one is shown. */
+/* A sheet's scroll lock (Radix, via react-remove-scroll-bar) sets this on :root as it opens. Inherited, it would make the
+   browser work out every element's style again in the sheet's first frame; kept on :root alone, only :root is touched.
+   Nothing in the rooms reads it (the scrollbar's place is kept by scrollbar-gutter below). */
+@property --removed-body-scroll-bar-size { syntax: "<length>"; inherits: false; initial-value: 0px; }
+/* The same lock sets pointer-events: none on <body>, and every element below inherits it, so the whole room's style is
+   worked out again in that frame. The room says its own value instead, so the change stops at <body>. The sheet's shade
+   still lies over the whole room and takes every press outside the sheet. */
+.live-app { pointer-events: auto; }
 html:has(.live-app):has(> body[data-scroll-locked]) { overflow: hidden; scrollbar-gutter: stable; }
 /* The shade behind a sheet or the menu is cut, like everything of paper: whole in the sheet's first frame, gone
    after its last, never faded (the home page's own sheet keeps its own, .paper-overlay). While the sheet leaves,
