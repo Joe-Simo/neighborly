@@ -10,6 +10,6 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
     // Only what the offline page needs. The painted artwork and every
     // signed-in page stay on the network, so nothing private is kept on a
     // shared phone or tablet.
-    globPatterns: [".next/static/**/*.{js,css}", "public/fonts/*.woff2", "public/assets/living-relief-poster.webp"],
+    globPatterns: [".next/static/**/*.{js,css}", "public/fonts/*.woff2", "public/assets/living-relief-poster.webp", "public/assets/living-relief-poster-gl.webp"],
     additionalPrecacheEntries: [{ url: "/offline", revision }],
   });

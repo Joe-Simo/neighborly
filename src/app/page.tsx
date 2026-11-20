@@ -26,8 +26,8 @@ export default function Home() {
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(about) }} />
     {/* The first picture is asked for from the head, beside the styles, so it is ready for the first paint. One of the two applies. */}
-    <link rel="preload" as="image" type="image/avif" media="(max-width:700px)" imageSrcSet="/assets/living-relief-mobile-480.avif 480w, /assets/living-relief-mobile-780.avif 780w" imageSizes="100vw" fetchPriority="high" crossOrigin="anonymous" />
-    <link rel="preload" as="image" type="image/avif" media="(min-width:700.02px)" imageSrcSet="/assets/living-relief-poster-960.avif 960w, /assets/living-relief-poster-1440.avif 1440w, /assets/living-relief-poster-2880.avif 2880w" imageSizes="100vw" fetchPriority="high" crossOrigin="anonymous" />
+    <link rel="preload" as="image" type="image/avif" media="(max-width:700px)" imageSrcSet="/assets/living-relief-mobile-gl-390.avif 390w" imageSizes="100vw" fetchPriority="high" crossOrigin="anonymous" />
+    <link rel="preload" as="image" type="image/avif" media="(min-width:700.02px)" imageSrcSet="/assets/living-relief-poster-gl-1440.avif 1440w, /assets/living-relief-poster-gl-1920.avif 1920w" imageSizes="100vw" fetchPriority="high" crossOrigin="anonymous" />
     <NeighborlyExperience />
   </>;
 }
