@@ -1041,6 +1041,13 @@ nav.week-figures a > small { align-self: start; min-height: 0; margin: 0; color:
 nav.week-figures a > small:empty { display: none; }
 nav.week-figures a > small::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #a8791f; }
 nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2; align-self: center; }
+/* Side by side, the three cards read as one line: each figure and each label starts at the same height on its card,
+   whether a label takes one line or two and whether a waiting line follows it. */
+@media (min-width: 561px) {
+  nav.week-figures a, nav.week-figures a + a { align-content: start; align-items: start; }
+  nav.week-figures .count-up { align-self: start; }
+  nav.week-figures a > span:nth-child(2), nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1; align-self: start; margin-top: 0.35em; }
+}
 @media (max-width: 560px) {
   nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: var(--space-8) 10px; }
   nav.week-figures a, nav.week-figures a + a { padding: var(--space-8) 16px; column-gap: 16px; }
