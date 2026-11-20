@@ -243,8 +243,8 @@
 
 /* The cue rests at the foot of the page, in the middle, and leaves once the card has crossed. */
 .painted-world[data-hero-only=true] .painted-world-scroll-cue{grid-column:2;justify-self:center}
-/* Its words change once the scene is ready; they sit in a box wide enough for either, so the arrow beside them never moves. */
-.painted-world[data-hero-only=true] .painted-world-scroll-cue>span{min-width:9.5em;text-align:center}
+/* Its words change once the scene is ready; they sit in a box wide enough for either, so the arrow beside them never moves, and they stand against the arrow, so a short word is never left apart from it. */
+.painted-world[data-hero-only=true] .painted-world-scroll-cue>span{min-width:9.5em;text-align:end}
 .painted-world[data-hero-only=true][data-passed=true] .painted-world-scroll-cue{visibility:hidden}
 
 /* A phone on its side. Nothing is pinned: the phone painting stands at the left, whole, and the words beside it. The card is passed with the button. */
