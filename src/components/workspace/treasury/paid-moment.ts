@@ -79,6 +79,8 @@ export function handOver(line: HTMLElement) {
   });
   // Taken, not waiting: its corner is the green one with the tick from its first frame, as the yes has it.
   card.classList.add("treasury-handed", "paper-fold");
+  // Named for anyone checking the moment frame by frame: the card whose corner turns as it closes into the line.
+  card.setAttribute("data-paid-turning", "");
   (line.closest(".live-app") ?? document.body).append(card);
   // The card's own words leave with its first frame, in one cut: they are never faded.
   [...card.children].forEach((part) => ((part as HTMLElement).style.visibility = "hidden"));

@@ -917,6 +917,9 @@ html:has(.live-app):has(> body[data-scroll-locked]) { overflow: hidden; scrollba
    can cover, so for as long as a shade is up the page behind takes the shaded paper's colour there. */
 [data-slot="dialog-overlay"]:not(.paper-overlay) { animation: none; }
 [data-slot="dialog-overlay"]:not(.paper-overlay)[data-state="closed"] { animation: paper-shade-held 100ms step-end; }
+/* A dialog leaves whole, in one cut, as its shade does: its words are never faded out (the kit's own fade and shrink
+   are replaced). The phone's sheet still goes down the way it rose, with its words at full ink (above). */
+:is(.live-dialog, .live-mobile-menu)[data-state="closed"] { animation: paper-shade-held 100ms step-end; }
 @keyframes paper-shade-held { from, to { opacity: 1; } }
 @media (max-width: 699px) and (prefers-reduced-motion: no-preference) {
   [data-slot="dialog-overlay"]:has(+ .live-dialog.live-dialog-fixed:not(.tools-rota-dialog))[data-state="closed"] { animation-duration: 280ms; }

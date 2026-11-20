@@ -32,7 +32,8 @@
   min-height: 44px;
   color: #365c46;
   font-weight: 600;
-  animation: paper-rise 320ms var(--paper-ease) backwards;
+  /* The word given rises whole, at full ink, from its first frame: never faded in. */
+  animation: paper-rise-solid 320ms var(--paper-ease) backwards;
 }
 .volunteer-choice .volunteer-given { text-transform: capitalize; }
 /* On a phone the buttons sit 3px down; the word that takes their place sits where they sat, so the sheet keeps its height. */
