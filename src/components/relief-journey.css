@@ -271,3 +271,12 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 /* One green for the public page's framed way in: the doors' button is the hero's, at rest and under the pointer. */
 .fresco-open[data-slot=button]{background:#304e3c}
 .fresco-open[data-slot=button]:hover{background:#223e2d}
+/* Past one and a half of its own pixels a picture stops growing (the plates are 1536 wide, drawn at the layer's scale): there the help,
+   the one picture that would pass it, stops running off the window's edges and hangs as a print on the page's paper, centred, with a card's
+   edge and shadow instead of the waves. Up to 1920 nothing changes; only the widest screens see the print. */
+@media(min-width:821px){
+  .relief-panel[data-chapter=help] .relief-picture{--print:calc(1536px * 1.5 / 1.25)}
+}
+@media(min-width:2200px){
+  .relief-panel[data-chapter=help] .relief-picture{width:min(100vw,172svh,var(--print),calc((88svh - 400px) * 2));align-self:end;justify-self:center;margin-bottom:6svh;-webkit-mask:none;mask:none;border:1px solid var(--relief-edge);border-radius:3px;box-shadow:var(--relief-card);background:var(--relief-paper)}
+}
