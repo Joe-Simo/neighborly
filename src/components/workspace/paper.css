@@ -899,7 +899,9 @@
    A heading, a notice or a sheet that takes focus when it lands (tabindex -1) is for the
    screen reader's place, not the eye: no ring. The ring belongs to keyboard focus on real
    controls, which keep :focus-visible; so do controls that hold tabindex -1 for arrow keys. */
-[tabindex="-1"]:not(a, button, input, select, textarea, summary, [role="button"], [role="gridcell"], [role="tab"], [role="option"], [role="radio"], [role="checkbox"], [role="menuitem"], [role="switch"]):is(:focus, :focus-visible) {
+[tabindex="-1"]:not(a, button, input, select, textarea, summary, [role="button"], [role="gridcell"], [role="tab"], [role="option"], [role="radio"], [role="checkbox"], [role="menuitem"], [role="switch"]):is(:focus, :focus-visible),
+/* Inside the rooms and sheets, said as strongly as the keyboard's ring there, so it holds while keys are in use too. */
+:is(.live-app, .live-dialog, .live-mobile-menu, .live-date-sheet) [tabindex="-1"]:not(a, button, input, select, textarea, summary, [role="button"], [role="gridcell"], [role="tab"], [role="option"], [role="radio"], [role="checkbox"], [role="menuitem"], [role="switch"]):is(:focus, :focus-visible) {
   outline: none;
 }
 
