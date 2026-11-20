@@ -81,7 +81,8 @@ export function MadePage({ language }: { language: Language }) {
       </Fragment>)}
       <MadeChecked said={said.checked} />
       <section>
-        <div><p className="public-words-last">{lastLead}<span className="public-words-address">{address}</span>{lastTail}</p></div>
+        <div><dl className="public-made-colophon" aria-label={said.colophon.label}>{said.colophon.lines.map(([term, line]) => <div key={term}><dt>{term}</dt><dd>{line}</dd></div>)}</dl>
+        <p className="public-words-last">{lastLead}<span className="public-words-address">{address}</span>{lastTail}</p></div>
       </section>
     </main>
     <BookLeaves sheets=".public-made > section" />

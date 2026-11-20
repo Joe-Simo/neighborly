@@ -242,3 +242,10 @@
 .public-made-trace img{display:block;width:100%;height:auto;border:0;border-radius:2px;background:var(--relief-paper);box-shadow:var(--relief-card)}
 .public-made-trace strong{font-weight:600}
 @media (max-width:899px){.public-made-trace ol{grid-template-columns:1fr}}
+.public-made-colophon{display:grid;gap:var(--space-12);max-width:40em;margin:0 0 var(--space-24);font-size:15px;color:#3d4f43}
+.public-made-colophon>div{display:grid;grid-template-columns:8.5em 1fr;gap:var(--space-16)}
+.public-made-colophon dt{font-weight:600;color:#253e31}
+.public-made-colophon dd{margin:0}
+@media(max-width:479px){.public-made-colophon>div{grid-template-columns:1fr;gap:var(--space-4)}}
+@media(min-width:1280px){.public-made-colophon{font-size:16px}}
+@media(min-width:1600px){.public-made-colophon{font-size:17px}}
