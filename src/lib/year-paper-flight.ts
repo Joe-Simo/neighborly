@@ -4,7 +4,7 @@ import { sampleYear } from "@/lib/sample-year";
 export const MONTHS = 12;
 /** The first month of the sample's year (October 2025), as a UTC date; the year runs twelve months from it. */
 export const FIRST_MONTH = Date.UTC(sampleYear.year - 1, 9, 1);
-export const GAP = 3.4, START = 3.6;
+const GAP = 3.4, START = 3.6;
 export const ease = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
 export const monthZ = (month: number) => -month * GAP;
 /**

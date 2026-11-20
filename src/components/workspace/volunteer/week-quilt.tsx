@@ -12,14 +12,14 @@ import type { FunctionReturnType } from "convex/server";
 type Act = FunctionReturnType<typeof api.quilt.week>[number];
 
 /** A small number from a piece's id, so its cut and its lean are its own and the same on every visit. */
-export function seeded(id: string, salt: number) {
+function seeded(id: string, salt: number) {
   let hash = 2166136261 ^ salt;
   for (let at = 0; at < id.length; at++) hash = Math.imul(hash ^ id.charCodeAt(at), 16777619);
   return ((hash >>> 0) % 1000) / 1000;
 }
 
 /** The piece's own cut: four corners each a little in from square. */
-export function cut(id: string) {
+function cut(id: string) {
   const in_ = (salt: number) => `${(seeded(id, salt) * 9).toFixed(1)}%`;
   return `polygon(${in_(1)} ${in_(2)}, calc(100% - ${in_(3)}) ${in_(4)}, calc(100% - ${in_(5)}) calc(100% - ${in_(6)}), ${in_(7)} calc(100% - ${in_(8)}))`;
 }

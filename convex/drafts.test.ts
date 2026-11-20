@@ -542,7 +542,8 @@ describe("the sample's allowance is each visitor's own", () => {
     const session = (sid: string) => t.withIdentity({ subject: "clerk|visitor", email: "demo@kindhelps.com", emailVerified: true, sid });
     const ask = (sid: string) => session(sid).mutation(internal.drafts.reserve, { userId, churchId });
     // Five a minute each, so the clock moves a minute between rounds.
-    vi.useFakeTimers({ now: Date.parse("2026-11-20T12:00:00Z") });
+    // Noon UTC tomorrow: the test fails when the faked time is behind the real clock, so it always runs ahead of it.
+    vi.useFakeTimers({ now: (Math.floor(Date.now() / 86_400_000) + 1) * 86_400_000 + 43_200_000 });
     const answers: string[] = [];
     for (let i = 0; i < 14; i++) { if (i % 5 === 0) vi.advanceTimersByTime(60_000); answers.push(await ask("sess_a")); }
     expect(answers.filter(a => a === "ok")).toHaveLength(12);
