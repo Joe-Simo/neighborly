@@ -33,9 +33,23 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
   const { words, months } = useMemo(() => sayings(language), [language]);
   const root = useRef<HTMLElement>(null);
   useEffect(() => {
-    const band = root.current, frame = band?.querySelector<HTMLElement>(".year-paper-window"), stage = band?.querySelector<HTMLElement>(".year-paper-stage"), month = band?.querySelector<HTMLElement>(".year-paper-month"), run = band?.querySelector<HTMLElement>(".year-paper-run");
+    const band = root.current, ledger = band?.querySelector<HTMLElement>(".year-paper-station"), frame = band?.querySelector<HTMLElement>(".year-paper-window"), stage = band?.querySelector<HTMLElement>(".year-paper-stage"), month = band?.querySelector<HTMLElement>(".year-paper-month"), run = band?.querySelector<HTMLElement>(".year-paper-run");
     if (!band || !frame || !stage || !month || !run || matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
-    let scene: YearPaperCanvas | null = null, gone = false, top = 0, tall = 0, near = false, drawn = -1, shown = 0;
+    let scene: YearPaperCanvas | null = null, gone = false, top = 0, tall = 0, near = false, drawn = -1, shown = 0, kept = false;
+    // The travelling card lies on October's first slip and is that slip from the moment the band reaches the top (thread-card.tsx, the same
+    // reading of the same frame): until then the canvas leaves that slip out and the place is marked for the card, at the slip's own size and turn.
+    const held = () => top > 0 && !!band.closest(".thread-live");
+    const mark = (through: number) => {
+      if (!scene || !ledger) return;
+      const at = scene.slip(through);
+      ledger.style.cssText = `width:${at.w.toFixed(1)}px;height:${at.h.toFixed(1)}px;transform:translate(${(at.x - at.w / 2).toFixed(1)}px,${(at.y - at.h / 2).toFixed(1)}px) rotate(${at.r.toFixed(2)}deg)`;
+      ledger.dataset.turn = at.r.toFixed(2);
+      ledger.dataset.quad = JSON.stringify(at.quad.map(([x, y]) => [+x.toFixed(1), +y.toFixed(1)]));
+      const world = band.closest<HTMLElement>(".neighborly-connected-world");
+      world?.style.setProperty("--first-line", `${(at.line * 100).toFixed(1)}%`);
+      world?.style.setProperty("--first-deckle", at.outline);
+      world?.style.setProperty("--first-deckle-within", at.within);
+    };
     const read = () => { const box = run.getBoundingClientRect(); top = box.top; tall = box.height; };
     const write = () => {
       if (!near) return;
@@ -43,8 +57,8 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
       const at = monthAt(through);
       if (at !== shown) month.textContent = months[shown = at];
       // Drawn to the thousandth of the flight, so a still page or a scroll too small to see draws nothing.
-      const step = Math.round(through * 1000);
-      if (scene && step !== drawn) { scene.draw(step / 1000); drawn = step; if (band.dataset.live !== "true") band.dataset.live = "true"; }
+      const step = Math.round(through * 1000), keep = held();
+      if (scene && (step !== drawn || keep !== kept)) { scene.draw(step / 1000, keep); if (keep) mark(step / 1000); drawn = step; kept = keep; if (band.dataset.live !== "true") band.dataset.live = "true"; }
     };
     const { ask, drop } = frameStep(read, write);
     let sized: ResizeObserver | undefined;
@@ -67,11 +81,12 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
       made.size(measure());
       await idle(); if (gone) return made.dispose();
       read();
-      made.draw(Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height))));
+      made.draw(Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height))), kept = held());
       await idle(); if (gone) return made.dispose();
       stage.prepend(canvas);
       scene = made;
-      sized = new ResizeObserver(() => { scene?.size(measure()); drawn = -1; ask(); });
+      mark(0);
+      sized = new ResizeObserver(() => { scene?.size(measure()); mark(0); drawn = -1; ask(); });
       // The canvas is over the poster from here: the cut is now, with the poster's own frame on it.
       band.dataset.live = "true";
       sized.observe(stage); sized.observe(frame);
@@ -89,6 +104,7 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
   return <section ref={root} className="year-paper" data-live="false" aria-labelledby="year-paper-title" lang={language === "en" ? undefined : language}>
     <div className="year-paper-run">
     <div className="year-paper-stage">
+      <span className="card-station year-paper-station" data-station="ledger" aria-hidden="true" />
       <figure className="year-paper-figure">
         <div className="year-paper-window">
           <picture>

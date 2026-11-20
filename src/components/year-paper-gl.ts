@@ -1,6 +1,6 @@
 import { whenIdle } from "@/lib/idle";
 import * as year from "@/lib/year-paper";
-import { DECKLE, DONE, EDGE, HAIRLINE, INK, INSTANCES, kinds, KRAFT, KRAFT_EDGE, LIGHT, PAPER, placeSlips, SHADE, SHADOW, SLIP, viewProjection, WAITING } from "@/lib/year-paper";
+import { DECKLE, deckle, DONE, EDGE, HAIRLINE, INK, INSTANCES, kinds, KRAFT, KRAFT_EDGE, LIGHT, PAPER, lineEnd, placeSlips, SHADE, SHADOW, SLIP, viewProjection, WAITING } from "@/lib/year-paper";
 
 /**
  * The year's slips on one canvas, in one instanced draw: every slip the same quad, placed by its own matrix (year-paper.ts).
@@ -95,7 +95,11 @@ void main() {
 
 /** The canvas's size in CSS pixels, and the window's box inside it: the picture is framed by the window and runs on to the canvas's edges. */
 export type Frame = { width: number; height: number; window: { x: number; y: number; w: number; h: number } };
-export type YearPaperCanvas = { draw: (through: number) => void; size: (frame: Frame) => void; dispose: () => void };
+/** Where a slip lies on the stage, in CSS pixels: its middle, its width and height along its own edges, and its turn in degrees. */
+/** `quad`: its corners as the canvas draws them, top left, top right, bottom right, bottom left. */
+export type SlipOnStage = { x: number; y: number; w: number; h: number; r: number; line: number; quad: number[][]; outline: string; within: string };
+/** `draw`'s `held`: October's first slip is left out, while the travelling card is still on its way to lie there (thread-card.tsx). */
+export type YearPaperCanvas = { draw: (through: number, held?: boolean) => void; size: (frame: Frame) => void; slip: (through: number) => SlipOnStage; dispose: () => void };
 
 const idle = () => new Promise<void>(done => { whenIdle(done, 500); });
 
@@ -160,9 +164,27 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.clearColor(0xee / 255, 0xe7 / 255, 0xd7 / 255, 1);
 
-  let aspect = 1, place = { x: 0, y: 0, w: 1, h: 1 };
+  let aspect = 1, place = { x: 0, y: 0, w: 1, h: 1 }, stageWidth = 1, stageHeight = 1;
+  // October's first slip's torn outline, as the face shader tears it (torn, from deckle's knots), in the card's own percentages: top, right, bottom, left.
+  // October's first slip's torn outline, as the face shader tears it (torn, from deckle's knots), in the card's own percentages: top, right,
+  // bottom, left. Each edge stops where the next edge's tear begins, so the corners close without a spur. `rim` more in: the hairline's inner edge.
+  const steps = Array.from({ length: DECKLE.knots + 1 }, (_, i) => i / DECKLE.knots), pc = (u: number, v: number) => `${(u * 100).toFixed(2)}% ${(v * 100).toFixed(2)}%`;
+  const torn = (rim: number) => {
+    const t = (edge: number, along: number) => (deckle(0, edge, along) + rim), lo = (a: number, b: number) => (v: number) => Math.min(b, Math.max(a, v));
+    const top = lo(t(0, 1) / SLIP.w, 1 - t(1, 1) / SLIP.w), right = lo(t(3, 1) / SLIP.h, 1 - t(2, 1) / SLIP.h), bottom = lo(t(0, 0) / SLIP.w, 1 - t(1, 0) / SLIP.w), left = lo(t(3, 0) / SLIP.h, 1 - t(2, 0) / SLIP.h);
+    return `polygon(${[
+      ...steps.map(s => pc(top(s), t(3, s) / SLIP.h)),
+      ...steps.map(s => pc(1 - t(1, 1 - s) / SLIP.w, right(s))),
+      ...steps.map(s => pc(bottom(1 - s), 1 - t(2, 1 - s) / SLIP.h)),
+      ...steps.map(s => pc(t(0, s) / SLIP.w, left(1 - s))),
+    ].join(",")})`;
+  };
+  // The hairline is as wide as the shader draws it: `hair.x` of the slip's width (size, below).
+  const outline = torn(0), within = torn(.006 * SLIP.w);
+  const one = new Float32Array(INSTANCES * 16);
   return {
     size({ width, height, window: box }) {
+      stageWidth = width; stageHeight = height;
       place = { x: box.x / width, y: box.y / height, w: box.w / width, h: box.h / height };
       aspect = box.w / box.h;
       const ratio = Math.min(2, devicePixelRatio || 1), w = Math.round(width * ratio), h = Math.round(height * ratio);
@@ -172,8 +194,9 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(hair, .006, .006 * SLIP.w / SLIP.h);
     },
-    draw(through) {
+    draw(through, held = false) {
       placeSlips(through, matrices);
+      if (held) matrices.fill(0, 0, 16);
       gl.bindBuffer(gl.ARRAY_BUFFER, models);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, matrices);
       gl.uniformMatrix4fv(view, false, viewProjection(aspect, through, place));
@@ -183,6 +206,20 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
       gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, INSTANCES);
       gl.uniform1f(pile, year.landed); gl.uniform1f(shade, 1); gl.depthMask(false); gl.enable(gl.BLEND);
       gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, INSTANCES);
+    },
+    slip(through) {
+      // The first slip's four corners, through the same matrices the canvas draws with, onto the stage.
+      placeSlips(through, one);
+      const m = one.subarray(0, 16), v = viewProjection(aspect, through, place);
+      const on = (x: number, y: number) => {
+        const p = [0, 1, 2, 3].map(r => m[r] * x + m[4 + r] * y + m[12 + r]);
+        const c = [0, 1, 2, 3].map(r => v[r] * p[0] + v[4 + r] * p[1] + v[8 + r] * p[2] + v[12 + r] * p[3]);
+        return [(c[0] / c[3] + 1) / 2 * stageWidth, (1 - c[1] / c[3]) / 2 * stageHeight];
+      };
+      const [a, b, c, d] = [on(-SLIP.w / 2, 0), on(SLIP.w / 2, 0), on(-SLIP.w / 2, SLIP.h), on(SLIP.w / 2, SLIP.h)];
+      const len = (p: number[], q: number[]) => Math.hypot(q[0] - p[0], q[1] - p[1]);
+      const r = Math.atan2(b[1] - a[1] + d[1] - c[1], b[0] - a[0] + d[0] - c[0]) * 180 / Math.PI;
+      return { x: (a[0] + b[0] + c[0] + d[0]) / 4, y: (a[1] + b[1] + c[1] + d[1]) / 4, w: (len(a, b) + len(c, d)) / 2, h: (len(a, c) + len(b, d)) / 2, r, line: lineEnd(0), quad: [c, d, b, a], outline, within };
     },
     dispose() { gl.getExtension("WEBGL_lose_context")?.loseContext(); },
   };

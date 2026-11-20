@@ -46,8 +46,6 @@
 .card-offer:active{translate:-50% calc(-50% + 1px);filter:drop-shadow(1px 2px 2px #2a1e1460)}
 .card-offer:focus-visible{outline:2px solid #283c32;outline-offset:3px}
 /* While the travelling card is on its way it is the card; the way in is shown once it has landed, or at once to a keyboard. */
-.thread-live .card-offer:not(.is-here):not(:focus-visible){opacity:0;pointer-events:none}
-.thread-live .card-offer:not(.is-here):not(:focus-visible) .card-offer-words{opacity:0;transition:none}
 .card-offer[data-given]{opacity:0}
 /* Back on home, the card is in the hand already lettered: its words are not cut in again. */
 .card-offer[data-back] .card-offer-words{opacity:1;transition:none}
@@ -74,16 +72,14 @@
 .card-for-note{position:absolute;right:9%;top:calc(100% + 17px);width:max-content;padding:3px 10px 4px;background:#f7f2e6;box-shadow:0 1px 2px rgb(40 60 50 / 0.3);font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43;rotate:2.5deg;pointer-events:none}
 .card-offer[data-given]~.card-for{opacity:0}
 /* The card's own face for its last flight, into the open hand: the same paper, square, words and line as the card it becomes, drawn at the travelling card's 240px. */
-.thread-card-face{position:absolute;inset:0;display:none;background:url(/assets/home/card-blank-480.webp) center/100% 100% #f7f2e6;color:#253e31}
-.thread-card[data-lettered] .thread-card-face{display:block}
-.thread-card-face>b{position:absolute;left:8%;top:14%;width:8%;aspect-ratio:1;background:#c8962e}
-.thread-card-face>svg{position:absolute;right:8%;top:12%;width:18px;height:18px}
-.thread-card-face>em{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 17px/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;color:#3d4f43;white-space:nowrap;overflow:hidden}
-.thread-card-face>em span{flex:1;min-width:0;color:#253e31;border-bottom:1px solid #3d4f4366}
-.thread-card-face>em span:not([data-blank]){border-bottom-color:transparent}
-.thread-card-words{position:absolute;left:9%;right:8%;bottom:13%;display:flex;flex-direction:column;gap:6px}
-.thread-card-words strong{font:400 22px/1.08 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.025em;text-wrap:balance}
-.thread-card-words small{font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43}
 /* A window 320 wide: the card is a little larger on the band, so its headline clears the "For" line and the gold square. */
 @media(max-width:359px){.card-offer,.card-for{left:56%;width:78%}}
 .card-offer-words>:is(strong,small){text-wrap:balance}
+/* On its way to the year the card is October's first slip, decided: the year's paper, its one line of ink and its green corner, drawn as the
+   canvas draws that slip (year-paper-gl.ts), so the cut to the canvas is the same sheet. */
+.thread-card-slip{position:absolute;inset:0;display:none;background:#c8bead;clip-path:var(--first-deckle,none)}
+.thread-card-slip span{position:absolute;inset:0;background:#e5e1d6;clip-path:var(--first-deckle-within,none)}
+.thread-card-slip span::before{content:"";position:absolute;left:12%;right:calc(100% - var(--first-line,60%));top:50%;height:2.6%;translate:0 -50%;background:#6f7a6f}
+.thread-card-slip span::after{content:"";position:absolute;right:0;top:0;width:10%;height:16%;background:#365c46;clip-path:polygon(0 0,100% 0,100% 100%)}
+.thread-card[data-decided] .thread-card-slip{display:block}
+.thread-card[data-decided] img{visibility:hidden}
