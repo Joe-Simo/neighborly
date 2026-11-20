@@ -66,7 +66,7 @@ export const WorkspaceKeys = memo(function WorkspaceKeys({ nav, rooms: lines, ke
   ];
   return (
     <Dialog open={shown} onOpenChange={setShown}>
-      <DialogContent className="live-keys">
+      <DialogContent className="live-keys" closeLabel={k.close}>
         <DialogHeader>
           <DialogTitle>{k.title}</DialogTitle>
           <DialogDescription>{k.description}</DialogDescription>
