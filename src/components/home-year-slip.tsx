@@ -99,7 +99,7 @@ export function HomeYearSlip() {
     <button ref={slip} type="button" className="home-year-slip" data-laid={laid || undefined} data-done={done || undefined} disabled={laid || done} aria-hidden={laid || undefined} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
       onClick={() => { if (!carried.current) lay(); carried.current = false; }}
       aria-describedby="home-year-give">
-      <strong>Rosa Fontaine</strong>
+      <strong>Rosa Fontaine</strong>{" "}
       <span>{today.day}. {today.line}</span>
     </button>
     <p id="home-year-give" role="status" tabIndex={-1}>{said}</p>

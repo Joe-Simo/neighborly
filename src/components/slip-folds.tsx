@@ -50,7 +50,7 @@ export function SlipFolds() {
         <div className="slip-folds-slip" data-crease="0" data-risen="false">
           <div className="slip-folds-top"><p>St. Example Conference</p></div>
           <div className="slip-folds-body">
-            <strong>Rosa Fontaine</strong>
+            <strong>Rosa Fontaine</strong>{" "}
             <span>Behind on November rent, $450.</span>
           </div>
           <span className="slip-folds-corner" aria-hidden="true" />

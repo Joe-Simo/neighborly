@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useEffect, useRef, type CSSProperties } from "react";
 import { releaseFarLayers } from "@/lib/far-layers";
 import { FrescoThreshold } from "./fresco-threshold";
@@ -87,6 +89,12 @@ export function NeighborlyContinuation() {
         </ul>
       </div>
       <ReliefLean within=".neighborly-rooms" />
+      {/* Whose it is, and where it lives: plain facts, each backed in claims-audit.md. Still paper, no picture. */}
+      <div className="neighborly-trust" role="region" aria-labelledby="trust-title">
+        <h2 id="trust-title">Whose it is, and where it lives.</h2>
+        <p>Kind Helps is independent and free, and it is not affiliated with the Society of St. Vincent de Paul. Only people invited into a conference can see its work, and a neighbor’s record opens only to the owner and coordinators. A neighbor’s name, phone and address are taken out before anything reaches the assistant, and no request is saved without a person’s yes. The owner can download all of the conference’s records at any time.</p>
+        <Link href="/privacy">Privacy</Link>
+      </div>
       <ClosingBand />
       <Colophon home="#story-start" />
     </section>
