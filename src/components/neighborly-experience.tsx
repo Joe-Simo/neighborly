@@ -3,7 +3,7 @@
 import { viewport } from "@/lib/viewport";
 import { frameStep } from "@/lib/scroll-frame";
 import { whenIdle } from "@/lib/idle";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { paceOpening } from "@/lib/painted-world-scroll";
@@ -17,7 +17,7 @@ const sidewaysPhone = "(max-height:500px) and (min-aspect-ratio:10/11)";
 // comes alive first, and the doors, the story and the ending follow in a later turn instead of one long one.
 const NeighborlyContinuation = dynamic(() => import("./neighborly-continuation").then(module => module.NeighborlyContinuation));
 
-export function NeighborlyExperience({ proof }: { proof: ReactNode }) {
+export function NeighborlyExperience() {
   const [passed, setPassed] = useState(false);
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
@@ -209,5 +209,5 @@ export function NeighborlyExperience({ proof }: { proof: ReactNode }) {
     setPassed(true);
     clearTimeout(transitionTimer.current);
     transitionTimer.current = setTimeout(goToDoors, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 2100);
-  }}><NeighborlyContinuation proof={proof} /></PaintedWorld><div ref={carry} className="neighborly-paper-carry" aria-hidden="true"><span>kind helps</span></div></div>;
+  }}><NeighborlyContinuation /></PaintedWorld><div ref={carry} className="neighborly-paper-carry" aria-hidden="true"><span>kind helps</span></div></div>;
 }

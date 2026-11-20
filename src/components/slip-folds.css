@@ -59,7 +59,3 @@
 @media print{.slip-folds{height:auto}.slip-folds-stage{position:static;height:auto}}
 /* The way into the sample is the one thing to do here: it is set in the serif, a step above the sentence it ends, never below it. */
 .slip-folds-figure .slip-folds-link{display:flex;justify-content:center;margin-top:4px;white-space:nowrap;font-family:'Newsreader','Newsreader Fallback',Georgia,serif;font-size:1.1em;letter-spacing:-.01em}
-/* The sample week, shown: one still of the room on a paper card under the link that opens it. It does not move. */
-.slip-folds-proof{display:block;width:240px;margin-top:calc(var(--space-24) - 56px);padding:6px;background:var(--relief-paper);border:1px solid var(--relief-edge);border-radius:3px;box-shadow:var(--relief-card)}
-.slip-folds-proof img{display:block;width:100%;height:auto;border-radius:2px}
-@media(min-width:768px){.slip-folds-proof{width:320px}}
