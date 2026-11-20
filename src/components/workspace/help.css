@@ -107,7 +107,7 @@
 .help-assistant { display: inline-flex; align-items: center; gap: var(--space-8) 8px; font-size: 15px; color: var(--help-plum) !important; }
 .help-assistant svg { flex-shrink: 0; }
 .help-actions { display: flex; gap: var(--space-8) 10px; flex-wrap: wrap; align-items: center; }
-.live-app .help-actions [data-slot="button"], .live-app .help-row [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
+.live-app .help-actions [data-slot="button"], .live-app .help-row [data-slot="button"] { min-height: 44px; padding-inline: 16px; font-size: 16px; }
 @keyframes help-settle {
   from { opacity: 0; transform: translateY(14px) rotate(-0.4deg); }
   to { opacity: 1; transform: none; }

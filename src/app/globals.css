@@ -191,7 +191,7 @@ summary:focus-visible,
 }
 .mural-start[data-slot="button"] {
   background: #f5f3eceb;
-  padding: 10px 18px;
+  padding: 10px 16px;
   font-size: 16px;
   border: 0;
 }

@@ -79,7 +79,7 @@
 /* Final actions stay with the gathering; only these caption elements receive input. */
 .painted-world-scene-actions{display:flex;align-items:center;flex-wrap:wrap;gap:4px 22px;margin-top:24px;pointer-events:auto;max-width:440px}
 .painted-world-scene-actions>a{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 5px;font-size:12px;text-underline-offset:5px}
-.painted-world-scene-start[data-slot=button]{background:#fff8e9;color:#253e31;border-radius:0;min-height:48px;padding:0 18px;box-shadow:none}
+.painted-world-scene-start[data-slot=button]{background:#fff8e9;color:#253e31;border-radius:0;min-height:48px;padding:0 16px;box-shadow:none}
 .painted-world-scene-start[data-slot=button]:hover{background:#efe5cf}
 .painted-world-scene-actions .painted-world-restart{flex-basis:100%;justify-content:flex-start;width:fit-content;font-size:12px;opacity:.8}
 .painted-world-brand{display:inline-flex;align-items:center;min-height:44px}

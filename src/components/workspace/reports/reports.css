@@ -63,7 +63,7 @@
 .live-app .report-actions [data-slot="button"],
 .live-app .report .help-empty [data-slot="button"] {
   min-height: 44px;
-  padding-inline: 18px;
+  padding-inline: 16px;
   font-size: 16px;
 }
 .report .help-done {
@@ -421,7 +421,7 @@
 .live-app .report-every-line {
   justify-self: start;
   min-height: 44px;
-  padding-inline: 18px;
+  padding-inline: 16px;
   font-size: 16px;
 }
 .report-every-line svg {
@@ -528,7 +528,7 @@
 .live-app .report-error [data-slot="button"] {
   min-height: 44px;
   margin-top: var(--space-16);
-  padding-inline: 18px;
+  padding-inline: 16px;
   font-size: 16px;
 }
 .report-print-head,
@@ -737,7 +737,7 @@
 .report-check li > div .report-check-record { margin-top: 0; border-top: 1px dashed var(--live-line); }
 .report-check li > div { margin-top: var(--space-8); }
 .report-check-record .live-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-size: 17px; }
-.live-app .report-check > [data-slot="button"] { min-height: 44px; padding-inline: 18px; font-size: 16px; }
+.live-app .report-check > [data-slot="button"] { min-height: 44px; padding-inline: 16px; font-size: 16px; }
 @media (max-width: 850px) {
 }
 @media print {
