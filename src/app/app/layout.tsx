@@ -40,7 +40,9 @@ export default function LiveAppLayout({
       {/* The launch mark is asked for with the page itself, ahead of the styles, so the first paint already holds it. */}
       <link rel="preload" as="image" href="/launch/mark-240.png" imageSrcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x" fetchPriority="high" />
       <Suspense fallback={<Loading />}>
-        <ClerkProvider appearance={clerkAppearance} signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
+        {/* The door's forms are our own (useSignIn, useSignUp), so Clerk's prebuilt screens are never drawn: their
+            bundle is not asked for. Clerk waits for it before it starts the session, which held a cold room for its whole download. */}
+        <ClerkProvider prefetchUI={false} appearance={clerkAppearance} signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
           <LiveProviders>
             <LiveFrame sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}>{children}</LiveFrame>
           </LiveProviders>
