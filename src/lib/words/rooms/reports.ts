@@ -375,7 +375,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     period: {
       label: "Año fiscal",
       part: "Parte del año",
-      soFar: "hasta ahora",
+      soFar: "en curso",
       allYear: "Todo el año",
       year: (year) => `Año fiscal ${year}`,
       q1: (year) => `Año fiscal ${year}, primer trimestre`,
