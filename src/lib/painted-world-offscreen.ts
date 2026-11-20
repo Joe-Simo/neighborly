@@ -61,7 +61,7 @@ export function createOffPageWorld(host: HTMLElement, options: PaintedWorldOptio
   const reduce = () => send({ kind: "reduce", reduce: media.matches });
   const move = (event: PointerEvent) => {
     const rect = host.getBoundingClientRect();
-    send({ kind: "pointer", event: { type: event.type, x: event.clientX - rect.left, y: event.clientY - rect.top, pointerId: event.pointerId, isPrimary: event.isPrimary } });
+    send({ kind: "pointer", event: { type: event.type, x: event.clientX - rect.left, y: event.clientY - rect.top, pointerId: event.pointerId, isPrimary: event.isPrimary, hover: event.pointerType === "mouse" && matchMedia("(hover: hover)").matches } });
   };
   const stopListening = () => {
     observer.disconnect();
