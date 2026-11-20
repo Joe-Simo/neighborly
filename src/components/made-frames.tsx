@@ -11,6 +11,9 @@ const ceiling = 40;
 const mark = 1.6;
 const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 const days = { en: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }), es: new Intl.DateTimeFormat("es-US", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }) };
+/** Each frame's mark, as one subpath of a single path: a 1-wide box at the height of its own time. */
+const marks = (all: readonly number[], isLate: boolean) =>
+  all.map((ms, frame) => late(ms) === isLate ? `M${frame} ${ceiling - Math.min(ms, ceiling)}h1v${mark}h-1z` : "").join("");
 const fill = (text: string, values: Record<string, string>) => text.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? "");
 
 /**
@@ -26,7 +29,8 @@ export function MadeFrames({ said, language }: { said: Said; language: Language 
         <p><strong>{said.widths[width]}</strong> {summary}</p>
         <div className="public-made-frames-plot" style={{ "--line": `${((ceiling - lateMs) / ceiling) * 100}%` } as CSSProperties}>
         <svg shapeRendering="crispEdges" viewBox={`0 0 ${all.length} ${ceiling}`} preserveAspectRatio="none" role="img" aria-label={`${said.widths[width]}. ${summary}`}>
-          {all.map((ms, frame) => <rect key={frame} x={frame} width={1} y={ceiling - Math.min(ms, ceiling)} height={mark} data-late={late(ms) || undefined} />)}
+          {/* One path for the frames in time and one for the late ones: the same marks as a rect each, in two elements instead of thousands. */}
+          {([false, true] as const).map((isLate) => <path key={String(isLate)} data-late={isLate || undefined} d={marks(all, isLate)} />)}
           <line x1={0} x2={all.length} y1={ceiling - lateMs} y2={ceiling - lateMs} />
         </svg>
         <span aria-hidden="true">{said.line}</span>
