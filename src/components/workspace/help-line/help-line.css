@@ -125,6 +125,9 @@
 /* The buttons go as the seal comes: in one cut where they stand, and they keep their room. So does the line that said
    nothing was saved yet, so the sheet keeps its height until it closes. */
 .help-sealed .help-actions, .help-sealed .help-unsaved { visibility: hidden; }
+/* That cut is never eased: a button's own transition-all would carry its inherited visibility and its label for 150ms
+   under the rising seal, so the two lines would read as one. */
+.help-sealed .help-actions, .help-sealed .help-actions *, .help-sealed .help-unsaved { transition: none; }
 .help-seal {
   position: absolute; right: 0; bottom: 0; margin: 0 !important; min-height: 44px;
   display: flex; align-items: center; gap: var(--space-12) 12px;
