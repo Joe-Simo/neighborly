@@ -310,6 +310,16 @@ final class ShellViewController: CAPBridgeViewController {
         webView?.evaluateJavaScript(js)
     }
 
+    /// Large is iOS's default and keeps the page as designed; each step either side is the step Safari's own text zoom takes.
+    private func followTextSize(_ webView: WKWebView) {
+        let steps: [UIContentSizeCategory: CGFloat] = [
+            .extraSmall: 0.85, .small: 0.9, .medium: 0.95, .large: 1, .extraLarge: 1.1, .extraExtraLarge: 1.2,
+            .extraExtraExtraLarge: 1.3, .accessibilityMedium: 1.5, .accessibilityLarge: 1.75,
+            .accessibilityExtraLarge: 2, .accessibilityExtraExtraLarge: 2.5, .accessibilityExtraExtraExtraLarge: 3,
+        ]
+        webView.pageZoom = steps[traitCollection.preferredContentSizeCategory] ?? 1
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         guard let webView else { return }
@@ -326,6 +336,12 @@ final class ShellViewController: CAPBridgeViewController {
         // Capacitor turns bouncing off; without it a page cannot be pulled down to refresh.
         webView.scrollView.bounces = true
         webView.scrollView.refreshControl = refresh
+        // The page follows Settings > Text Size, as a native app does. Zoom reflows the room's own responsive
+        // layout, so a larger size reads as a narrower room, never as clipped words.
+        followTextSize(webView)
+        NotificationCenter.default.addObserver(forName: UIContentSizeCategory.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            if let self, let webView = self.webView { self.followTextSize(webView) }
+        }
         if let launch = UIStoryboard(name: "LaunchScreen", bundle: nil).instantiateInitialViewController()?.view {
             place(launch)
             cover = launch
