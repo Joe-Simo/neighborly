@@ -115,6 +115,9 @@ export const en = (t: Terms, place: string) => ({
     vouchers: (count: number) => (count === 1 ? "1 voucher" : `${n(count)} vouchers`),
     amountPaid: "{amount} paid",
     requestsPaid: (count: number) => (count === 1 ? "1 request paid" : `${n(count)} requests paid`),
+    /** Under the kind table, when its paid requests fall short of the "Paid" count: what makes up the rest. */
+    alsoPaid: (...parts: string[]) => `Also paid: ${parts.join(", and ")}.`,
+    alsoLater: (count: number) => (count === 1 ? "1 request paid after {month}" : `${n(count)} requests paid after {month}`),
     people: (count: number) => (count === 1 ? "1 person" : `${n(count)} people`),
     noneYear: "None this year",
     noneYetYear: "None yet this year",
@@ -436,6 +439,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       vouchers: (count) => (count === 1 ? "1 vale" : `${esN(count)} vales`),
       amountPaid: "{amount} pagados",
       requestsPaid: (count) => (count === 1 ? "1 petición pagada" : `${esN(count)} peticiones pagadas`),
+      alsoPaid: (...parts) => `También pagados: ${parts.join(", y ")}.`,
+      alsoLater: (count) => (count === 1 ? "1 petición pagada después de {month}" : `${esN(count)} peticiones pagadas después de {month}`),
       people: (count) => (count === 1 ? "1 persona" : `${esN(count)} personas`),
       noneYear: "Ninguna este año",
       noneYetYear: "Ninguna todavía este año",

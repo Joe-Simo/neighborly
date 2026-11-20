@@ -208,6 +208,15 @@ export function ReportView({
 
   const moved = report.history.requests > 0;
   const largestKind = Math.max(...report.kinds.map((line) => line.paid));
+  // The kind table counts requests with money paid in the period; "Paid" also counts requests met from the voucher
+  // shelf and requests paid after the period's last day. One quiet line names those, only when the counts differ.
+  const kindsPaid = report.kinds.reduce((all, line) => all + line.requestsPaid, 0);
+  const lastMonth = formatDate(words.locale, Date.parse(`${report.lastDay}T12:00:00Z`), { month: "long", timeZone: "UTC" });
+  const alsoParts = [
+    report.vouchers.requests > 0 && w.kinds.vouchers(report.vouchers.requests),
+    report.requests.paidLater.requests > 0 && fill(w.kinds.alsoLater(report.requests.paidLater.requests), { month: lastMonth }),
+  ].filter((part) => part !== false);
+  const alsoPaid = kindsPaid !== report.requests.paid + report.requests.closedAfterPart.requests && alsoParts.length > 0 ? w.kinds.alsoPaid(...alsoParts) : null;
   const largestMonth = Math.max(...report.months.map((line) => line.paid));
   const mostVisits = Math.max(...report.months.map((line) => line.visits));
   const serving = [
@@ -421,6 +430,7 @@ export function ReportView({
           </tr>
         </tbody>
       </table>
+      {alsoPaid && <p className="book-note report-kinds-note">{alsoPaid}</p>}
       {moved && (
         <p className="report-history">
           <span>{w.history.title}</span>
