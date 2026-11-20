@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { SampleLink } from "@/components/sample-link";
 import { frameStep } from "@/lib/scroll-frame";
 import { viewport } from "@/lib/viewport";
@@ -14,7 +14,7 @@ const clamp = (value: number) => Math.max(0, Math.min(1, value));
  * transform alone (the top panel and the slip); the crease's shade and the slip's lift are steps, set by attribute only when they change.
  * The band's height is the stylesheet's, so nothing is measured to lay it out, and its first frame is the flat slip, as it is drawn without script.
  */
-export function SlipFolds({ proof }: { proof: ReactNode }) {
+export function SlipFolds() {
   const band = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const element = band.current, slip = element?.querySelector<HTMLElement>(".slip-folds-slip"), panel = element?.querySelector<HTMLElement>(".slip-folds-top");
@@ -56,7 +56,6 @@ export function SlipFolds({ proof }: { proof: ReactNode }) {
           <span className="slip-folds-corner" aria-hidden="true" />
         </div>
         <figcaption id="slip-folds-title">Every call is written down once, and the urgent ones rise to the top. <SampleLink className="slip-folds-link">Look around a sample conference</SampleLink></figcaption>
-        {proof}
       </figure>
     </div>
   </div>;
