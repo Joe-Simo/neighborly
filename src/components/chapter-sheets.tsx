@@ -138,6 +138,10 @@ export function PageTurn({ children }: { children: ReactNode }) {
       // How far the page has been turned off the chapter beneath: what lies under it (the year's figures) stands up as it is uncovered.
       to.style.setProperty("--turned", turned.toFixed(4));
       turn.dataset.turned = placeTurn(geometry, { round, page, back, roll, shade }, turned, clear);
+      // The page's own words are cut away just before its turning edge would run across them (40px ahead of it), never covered by it.
+      const { far, nx, ny, r, x0, y0 } = geometry, ox = x0 + nx * (far * turned - r), oy = y0 + ny * (far * turned - r);
+      const reached = turned > 0 && clear.some(({ left, top, right, bottom }) => Math.min(...[[left, top], [right, top], [left, bottom], [right, bottom]].map(([x, y]) => (x - ox) * nx + (y - oy) * ny)) < 40);
+      turn.toggleAttribute("data-words-cut", reached);
     };
     const { ask: request, drop } = frameStep(read, update);
     const sizes = new ResizeObserver(measure);

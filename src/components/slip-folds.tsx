@@ -27,7 +27,7 @@ export function SlipFolds() {
       if (!near) return;
       const run = Math.max(1, tall - viewport.height);
       const through = clamp(-top / run);
-      // One window of scroll: the fold takes its first 70%, and the slip settles onto the pile in the last 30%.
+      // The band's run (slip-folds.css): the fold takes its first 70%, and the slip settles onto the pile in the last 30%.
       const folded = clamp(through / .7), risen = clamp((through - .7) / .3);
       const fold = `rotateX(${(180 * folded).toFixed(2)}deg)`, lift = `translate3d(0,${(-10 * risen).toFixed(2)}px,0)`;
       const crease = String(Math.min(3, Math.ceil(folded * 3))), risenStep = String(risen >= .5);
