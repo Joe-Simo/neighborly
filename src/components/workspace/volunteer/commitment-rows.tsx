@@ -4,7 +4,7 @@ import type { LiveArea } from "@/components/workspace/areas";
 import { SavedWords } from "@/components/workspace/saved-words";
 import { FOLD_HOLD, arriving, foldLeaves, openUp, useFocusOnce, useSavedLine, viewTop } from "@/components/workspace/fold";
 import "./volunteer.css";
-import { useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { ArrowRight, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,14 @@ export function CommitmentRows({
   items,
   empty,
   fresh,
+  weeks,
 }: {
   items: LiveWorkspaceData["commitments"];
   empty?: { title: string; detail: string; go?: LiveArea };
   /** The commitment just accepted: its row is laid in. */
   fresh?: string;
+  /** Words said before a row: where its week begins, in a long list. */
+  weeks?: Partial<Record<string, string>>;
 }) {
   const { data, format, when, personName, teamName, showCommitment, words, sampleSaid, keepNames } =
     useWorkspace();
@@ -47,11 +50,12 @@ export function CommitmentRows({
   return items.length ? (
       <div className="live-list">
         {items.map((item) => (
+          <Fragment key={item.id}>
+          {weeks?.[item.id] && <p className="live-week-label">{weeks[item.id]}</p>}
           <div
             className={`live-row live-commitment-row${item.id === fresh ? " volunteer-filed" : ""}`}
             data-row-menu=""
             ref={item.id === fresh ? arrive : undefined}
-            key={item.id}
           >
             <div className="live-date-leaf" aria-hidden="true"><span>{format(item.start, { day: undefined, month: "short" })}</span><strong>{format(item.start, { month: undefined, day: "numeric" })}</strong><span>{format(item.start, { month: undefined, day: undefined, weekday: "short" })}</span></div>
             <div className="live-row-main">
@@ -85,6 +89,7 @@ export function CommitmentRows({
               </Button>
             </div>
           </div>
+          </Fragment>
         ))}
       </div>
     ) : (

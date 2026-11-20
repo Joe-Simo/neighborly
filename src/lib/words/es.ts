@@ -190,6 +190,7 @@ export function es(set: WordSet): Words {
     },
     commitments: {
       weekByTeam: "Esta semana por equipo",
+      weekOf: (date) => `Semana del ${date}`,
       covered: "Cubierto",
       placesOpen: (count) => (count === 1 ? "1 lugar libre" : `${esN(count)} lugares libres`),
       filterLabel: "Filtrar por equipo",
