@@ -1,9 +1,9 @@
 /* The year in paper (year-paper.tsx). The band's run is the stylesheet's: five windows of scroll, the stage held in the window throughout.
    The slips' window is cut to one of two fixed shapes, so the poster drawn for that shape is the canvas's first frame to the pixel. */
-.year-paper{--yp-w:min(100vw - 40px,(100svh - 240px) * 1.6,1280px);position:relative;background:#eee7d7;color:#293f32}
+.year-paper{--yp-w:min(100vw - 64px,(100svh - 240px) * 1.6,1280px);position:relative;background:#eee7d7;color:#293f32}
 .year-paper-run{height:260svh}
 .year-paper-stage{position:sticky;top:0;height:100svh;display:grid;place-items:center;padding:0 20px}
-.year-paper-figure{margin:0;display:grid;gap:clamp(14px,1.6vw,24px);justify-items:start}
+.year-paper-figure{width:var(--yp-w);margin:0;display:grid;gap:clamp(14px,1.6vw,24px);justify-items:start}
 .year-paper-window{position:relative;width:var(--yp-w);aspect-ratio:16/10;overflow:hidden;background:#eee7d7}
 .year-paper-window img,.year-paper-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 /* Live, the canvas is the whole stage, under the figure: the window lets it through, and the caption stands on its own sheet above the slips. */
@@ -17,7 +17,7 @@
 .year-paper figcaption p{grid-column:1;max-width:60ch;margin:0;font-size:17px;line-height:1.4;color:#3d4f43}
 .year-paper figcaption .year-paper-month{grid-column:2;grid-row:1 / span 2;align-self:end;font:400 clamp(20px,1.6vw,28px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;font-feature-settings:"lnum","tnum";color:#293f32;white-space:nowrap}
 @media(max-width:767px){
-  .year-paper{--yp-w:min(100vw - 40px,(100svh - 260px) * .75)}
+  .year-paper{--yp-w:min(100vw - 64px,(100svh - 260px) * .75)}
   .year-paper-window{aspect-ratio:3/4}
   .year-paper figcaption{grid-template-columns:1fr}
   .year-paper figcaption .year-paper-month{grid-column:1;grid-row:auto}
