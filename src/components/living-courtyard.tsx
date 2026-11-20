@@ -340,8 +340,8 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       const unit = stage.width / Math.max(1, frameWidth) || 1;
       uniforms.uRect.value.set((painting.left - stage.left) / unit, (painting.top - stage.top) / unit, painting.width / unit, painting.height / unit);
       // Scrolling through the fresco, the near stone and the far hills part by about ten pixels from first sight to last.
-      const through = still || !walked ? .5 : Math.max(0, Math.min(1, (-walked.top / Math.max(1, innerHeight) - 3.65) / .9));
-      const part = (through - .5) * 10 / (.9 * Math.max(1, painting.height));
+      const through = still || !walked ? .5 : Math.max(0, Math.min(1, (-walked.top / Math.max(1, innerHeight) - 2.75) / .6));
+      const part = (through - .5) * 10 / (.6 * Math.max(1, painting.height));
       // Standing in the courtyard, its paper parts in depth as the page goes on: the near sheets come forward and lean further with the cursor or the tilt than the far ones.
       const standing = still ? 0 : Number(host.style.getPropertyValue("--standing") || 0);
       const lean = 1 + inside() * .8;
