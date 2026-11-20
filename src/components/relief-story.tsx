@@ -3,7 +3,7 @@
 import { frameStep } from "@/lib/scroll-frame";
 import { setAct } from "@/lib/chapter-act";
 import { paperTurnAt, turnLeaf } from "@/lib/paper-turn";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, type ReactNode, useEffect, useRef } from "react";
 import { HomeYear } from "./home-year";
 import { SlipFolds } from "./slip-folds";
 import { PageTurn } from "./chapter-sheets";
@@ -57,7 +57,7 @@ const hold = (part: (typeof story)[number]) => <div className="relief-hold">
 ;
 
 /** What a conference does with Kind Helps, one idea to a screen, each with its own cut-paper picture. */
-export function ReliefStory() {
+export function ReliefStory({ proof }: { proof: ReactNode }) {
   const root = useRef<HTMLElement>(null);
   useEffect(() => {
     const element = root.current;
@@ -121,7 +121,7 @@ export function ReliefStory() {
         {part.picture === "help" ? <PageTurn>{hold(part)}</PageTurn> : hold(part)}
       </article>
       {/* The call, once written down, folds and is laid on the year's pile: the slip between the call and the visit (slip-folds.tsx). */}
-      {part.picture === "call" && <SlipFolds />}
+      {part.picture === "call" && <SlipFolds proof={proof} />}
     </Fragment>)}
   </section>;
 }

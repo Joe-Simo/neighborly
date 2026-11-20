@@ -28,6 +28,9 @@ export default function Home() {
     {/* The first picture is asked for from the head, beside the styles, so it is ready for the first paint. One of the two applies. */}
     <link rel="preload" as="image" type="image/avif" media="(max-width:700px)" imageSrcSet="/assets/living-relief-mobile-gl-390.avif 390w" imageSizes="100vw" fetchPriority="high" crossOrigin="anonymous" />
     <link rel="preload" as="image" type="image/avif" media="(min-width:700.02px)" imageSrcSet="/assets/living-relief-poster-gl-1440.avif 1440w, /assets/living-relief-poster-gl-1920.avif 1920w" imageSizes="100vw" fetchPriority="high" crossOrigin="anonymous" />
-    <NeighborlyExperience />
+    <NeighborlyExperience proof={
+      // The sample week as it is: one still of its This week room, under the link that opens it. Rendered here, on the server, so it adds nothing to the page's script.
+      <picture className="slip-folds-proof"><img src="/assets/home/week-room-proof-560.avif" srcSet="/assets/home/week-room-proof-1098.avif 2x" width={1098} height={964} loading="lazy" alt="The sample This week room: 10 calls returned, 5 visits, 2 yeses; Pantry morning Saturday; 5 calls waiting, 6 requests awaiting a yes." /></picture>
+    } />
   </>;
 }
