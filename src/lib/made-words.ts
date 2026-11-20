@@ -148,6 +148,15 @@ const en = {
       "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone, given through one quiet link at the foot of the public pages.",
     ] },
   ] as MadeSection[],
+  colophon: {
+    label: "Colophon",
+    lines: [
+      ["Type", "Newsreader and Source Sans 3"],
+      ["Art", "made with Codex's image generator, from written direction, and chosen by the author"],
+      ["Built with", "Claude Code"],
+      ["Technologies", "Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, Convex, Clerk, Three.js, Serwist (offline), fflate, and Capacitor (the iPhone and iPad app, with a WidgetKit widget). Tested with Bun and Vitest, and hosted on Vercel."],
+    ] as [string, string][],
+  },
   last: "Kind Helps is independent. It is not affiliated with or endorsed by the Society of St. Vincent de Paul. The code is open at github.com/Joe-Simo/neighborly.",
 };
 
@@ -285,6 +294,15 @@ const es: typeof en = {
       "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos, dados por un enlace discreto al pie de las páginas públicas.",
     ] },
   ],
+  colophon: {
+    label: "Colofón",
+    lines: [
+      ["Letra", "Newsreader y Source Sans 3"],
+      ["Arte", "hecho con el generador de imágenes de Codex, a partir de indicaciones escritas, y elegido por el autor"],
+      ["Hecho con", "Claude Code"],
+      ["Tecnologías", "Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, Convex, Clerk, Three.js, Serwist (sin conexión), fflate y Capacitor (la aplicación de iPhone y iPad, con un widget de WidgetKit). Probado con Bun y Vitest, y alojado en Vercel."],
+    ] as [string, string][],
+  },
   last: "Kind Helps es independiente. No está afiliado a la Sociedad de San Vicente de Paúl ni cuenta con su respaldo. El código está abierto en github.com/Joe-Simo/neighborly.",
 };
 
