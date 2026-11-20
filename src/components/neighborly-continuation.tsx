@@ -19,6 +19,7 @@ import "./cut-edges.css";
 
 /** Everything after the opening: through the doors, the story of the work, and the way in. */
 /** How wide each room's picture stands (measured 360 to 2560): about 38% of a phone, 43% of a tablet, under 30% of a wide screen. A phone at 3x takes the 448, every other screen the 728. */
+const cuts = (picture: string, type: string) => [448, 728, 960].map(width => `/assets/relief/relief-${picture}-detail-${width}.${type} ${width}w`).join();
 const detailSizes = "(max-width: 700px) 38vw, (max-width: 1023px) 43vw, 30vw";
 
 // What a conference has on its first day, in the order the work happens. Each line lies under its room's own picture,
@@ -78,8 +79,8 @@ export function NeighborlyContinuation() {
           {rooms.map(([picture, title, line, turn], index) => <li key={title} style={{ "--turn": `${turn}deg`, "--i": index } as CSSProperties}>
             <picture>
               {/* A close detail of the room's relief, hand and object only, so no card repeats the story's pictures above it. */}
-              <source type="image/avif" srcSet={`/assets/relief/relief-${picture}-detail-448.avif 448w, /assets/relief/relief-${picture}-detail-728.avif 728w`} sizes={detailSizes} />
-              <img src={`/assets/relief/relief-${picture}-detail-728.webp`} srcSet={`/assets/relief/relief-${picture}-detail-448.webp 448w, /assets/relief/relief-${picture}-detail-728.webp 728w`} sizes={detailSizes} width={728} height={485} alt="" loading="lazy" decoding="async" />
+              <source type="image/avif" srcSet={cuts(picture, "avif")} sizes={detailSizes} />
+              <img src={`/assets/relief/relief-${picture}-detail-728.webp`} srcSet={cuts(picture, "webp")} sizes={detailSizes} width={728} height={485} alt="" loading="lazy" decoding="async" />
             </picture>
             <div>
               <h3>{title}</h3>
