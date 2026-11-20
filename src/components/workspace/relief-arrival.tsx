@@ -14,7 +14,8 @@ let pageLaid = false;
 function plays(name: ReliefName) {
   const switched = pageLaid;
   pageLaid = true;
-  return switched && unseen(name);
+  // With less motion asked for, the picture is laid flat and whole: its piece never moves home.
+  return switched && unseen(name) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /**
