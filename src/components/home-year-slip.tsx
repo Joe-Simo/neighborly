@@ -1,8 +1,8 @@
 "use client";
 
-import { type PointerEvent, useRef, useState } from "react";
+import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { laySlip, PAPER_EASE, tipTab } from "@/lib/lay-slip";
-import { sampleYear } from "@/lib/sample-year";
+import { sampleYear, YES_GIVEN } from "@/lib/sample-year";
 
 const whole = new Intl.NumberFormat("en-US");
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -30,14 +30,22 @@ export function HomeYearSlip() {
   const carried = useRef(false);
   const busy = useRef(false);
   const [step, setStep] = useState(0);
-  const today = week[Math.min(step, week.length - 1)];
-  const laid = step >= week.length;
+  // The visitor's yes is Rosa's help given: the year is complete (home-year.tsx), and her slip is cut, in the same frame, to its last day, done.
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    const given = () => { slip.current?.getAnimations().forEach(animation => animation.cancel()); busy.current = false; setDone(true); };
+    if (document.documentElement.dataset.yesGiven === "true") given();
+    window.addEventListener(YES_GIVEN, given);
+    return () => window.removeEventListener(YES_GIVEN, given);
+  }, []);
+  const today = week[done ? week.length - 1 : Math.min(step, week.length - 1)];
+  const laid = !done && step >= week.length;
 
   const cell = () => slip.current?.closest(".relief-words")?.querySelector<HTMLElement>(`.home-year div:has([data-figure=${today.figure}])`) ?? null;
 
   const lay = (dx = 0, dy = 0) => {
     const element = slip.current, target = cell();
-    if (!element || !target || laid || busy.current) return;
+    if (!element || !target || laid || done || busy.current) return;
     busy.current = true;
     const figure = target.querySelector<HTMLElement>(`[data-figure=${today.figure}]`);
     const tab = target.querySelector<HTMLElement>(".home-year-tab");
@@ -59,7 +67,7 @@ export function HomeYearSlip() {
   };
 
   const down = (event: PointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0 || laid || busy.current) return;
+    if (event.button !== 0 || laid || done || busy.current) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     carried.current = false;
     carry.current = { x: event.clientX, y: event.clientY, dx: 0, dy: 0, id: event.pointerId };
@@ -86,9 +94,9 @@ export function HomeYearSlip() {
     element.animate([{ transform: `translate(${held.dx}px, ${held.dy}px)` }, { transform: "none" }], { duration: 280, easing: PAPER_EASE });
   };
 
-  const said = laid ? `${week.map(day => day.done).join(" ")} Rosa's week is in the year.` : step ? `${week[step - 1].done} ${today.ask}` : today.ask;
+  const said = laid || done ? `${week.map(day => day.done).join(" ")} Rosa's week is in the year.` : step ? `${week[step - 1].done} ${today.ask}` : today.ask;
   return <div className="home-year-give">
-    <button ref={slip} type="button" className="home-year-slip" data-laid={laid || undefined} disabled={laid} aria-hidden={laid || undefined} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+    <button ref={slip} type="button" className="home-year-slip" data-laid={laid || undefined} data-done={done || undefined} disabled={laid || done} aria-hidden={laid || undefined} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
       onClick={() => { if (!carried.current) lay(); carried.current = false; }}
       aria-describedby="home-year-give">
       <strong>Rosa Fontaine</strong>
