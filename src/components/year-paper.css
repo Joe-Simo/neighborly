@@ -28,3 +28,4 @@
   .year-paper-stage{position:static;height:auto;padding:clamp(48px,9svh,96px) 20px}
   .year-paper figcaption .year-paper-month{display:none}
 }
+.year-paper .year-paper-station{position:absolute;left:0;top:0;width:0;height:0;translate:none;aspect-ratio:auto;pointer-events:none;transform-origin:50% 50%}
