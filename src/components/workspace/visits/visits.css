@@ -221,8 +221,8 @@
 }
 /* Paper motion of this room. A pair is made: the two sets of initials slide together.
    A visit is written up: its row is laid into Written up like a sheet into a folder. */
-@keyframes visits-join-first { from { opacity: 0; transform: translateX(-14px); } }
-@keyframes visits-join-second { from { opacity: 0; transform: translateX(22px); } }
+@keyframes visits-join-first { from { transform: translateX(-14px); } }
+@keyframes visits-join-second { from { transform: translateX(22px); } }
 @keyframes visits-filed { from { background-color: var(--help-sheet, #fdfcf8); box-shadow: 0 10px 24px rgb(40 60 50 / 0.1); } }
 .visits-join .help-initials { animation: visits-join-first 420ms var(--paper-ease) 180ms backwards; }
 .visits-join .help-initials + .help-initials { animation-name: visits-join-second; }

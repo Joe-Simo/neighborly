@@ -32,7 +32,7 @@
 .door-opening {
   position: fixed; inset: calc(50vh + 64px) 24px auto; display: flex; justify-content: center; align-items: center; gap: var(--space-12) 12px; margin: 0;
   font: 400 17px/1.5 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; color: #68715f; text-align: center;
-  animation: door-opening-in 200ms ease backwards;
+  animation: door-opening-in 1ms step-end backwards;
 }
 /* On the card the line is spoken, not drawn; after a long wait it is drawn low, clear of the card's marks. */
 .door-opening[data-spoken] { inset: auto; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

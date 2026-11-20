@@ -27,8 +27,9 @@
 }
 
 /* ── Motion ───────────────────────────────────────────────────────────── */
-@keyframes paper-rise { from { opacity: 0; transform: translateY(12px); } }
-@keyframes paper-settle { from { opacity: 0; transform: translateY(14px) rotate(-0.4deg); } }
+/* Paper moves; its words never fade: a line or sheet that rises is whole, at full ink, from its first frame. */
+@keyframes paper-rise { from { transform: translateY(12px); } }
+@keyframes paper-settle { from { transform: translateY(14px) rotate(-0.4deg); } }
 @keyframes paper-show { from { opacity: 0; } }
 /* Between rooms one picture is laid over the other: the old sheet slides back under, the new one comes to rest on it. */
 @keyframes paper-breathe { 50% { opacity: 0.55; } }
@@ -444,7 +445,8 @@
   translate: none;
   border: 0;
   border-radius: 0;
-  animation: paper-show 200ms ease backwards;
+  /* Whole in its first frame: the menu's words are never faded in. */
+  animation: paper-show 1ms step-end backwards;
 }
 .live-mobile-menu [data-slot="dialog-header"] { display: flex; flex-flow: row wrap; align-items: baseline; gap: 2px 12px; padding: var(--space-16) 64px var(--space-12) 24px; text-align: left; }
 .live-mobile-menu [data-slot="dialog-title"] { flex-basis: 100%; font-size: var(--serif-sheet); }
@@ -587,7 +589,7 @@
 /* A short wait inside a form or a dialog: just the line. */
 /* The one way to wait, everywhere: a quiet line, and only once the wait has lasted 400ms, so a quick
    answer never flashes it. No grey rows standing in for content. */
-.live-loading { animation: live-wait-in 160ms ease 400ms backwards; }
+.live-loading { animation: live-wait-in 1ms step-end 400ms backwards; }
 @keyframes live-wait-in { from { opacity: 0; } }
 .live-app .live-loading,
 .live-dialog .live-loading { background: none; border-top: 1px solid var(--live-line); padding: var(--space-24) 0; min-height: 0; font-size: 17px; }
@@ -880,10 +882,9 @@
 [data-live-tight] .live-dialog-fixed .live-form-actions { padding-top: var(--space-8); box-shadow: 0 8px 0 #f5f3ec; }
 [data-live-tight] .live-dialog.live-dialog-fixed { padding-bottom: var(--space-8) !important; }
 /* With the keyboard up under a dialog (LiveDialog marks it), the page behind steps back to plain paper, so a
-   see-through keyboard and its bar never show the room's words under the sheet. It returns as the keyboard goes. */
-.live-app { transition: opacity 160ms ease; }
+   see-through keyboard and its bar never show the room's words under the sheet. It returns as the keyboard goes, in one cut:
+   the words are never faded. */
 [data-live-keyboard] .live-app { opacity: 0; }
-@media (prefers-reduced-motion: reduce) { .live-app { transition: none; } }
 
 /* ── Focus the program moves draws no ring ──────────────────────────────────
    A heading, a notice or a sheet that takes focus when it lands (tabindex -1) is for the
