@@ -44,6 +44,8 @@ export const en = (t: Terms, place: string) => ({
     removing: "Removing…",
     confirm: "Remove this person",
   },
+  /** Under the count on its slip: the people who can be asked to serve, the figure standing apart. */
+  readyCount: (count: number): string => (count === 1 ? "ready to serve" : "ready to serve"),
   invitations: {
     title: "Invitations",
     deck: "An invitation gives someone a way to join. It never accepts work on their behalf.",
@@ -192,6 +194,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       removing: "Quitando…",
       confirm: "Quitar a esta persona",
     },
+    readyCount: (count) => (count === 1 ? "puede servir" : "pueden servir"),
     invitations: {
       title: "Invitaciones",
       deck: "Una invitación le da a alguien una manera de unirse. Nunca acepta trabajo en su nombre.",

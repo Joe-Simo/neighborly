@@ -99,6 +99,20 @@ export function PeopleSection() {
     <>
       {/* The rows are titled h3, so the list carries the h2 a screen reader steps by. */}
       <h2 className="sr-only">{words.menu.people}</h2>
+      {/* The one figure as paper: those who can be asked to serve, on a cut slip over the list. */}
+      {(() => {
+        const ready = data.people.filter((person) => person.active && person.approved).length;
+        return (
+          <div className="room-tally people-tally">
+            <dl>
+              <div>
+                <dt>{text.readyCount(ready)}</dt>
+                <dd><b>{new Intl.NumberFormat(words.locale).format(ready)}</b></dd>
+              </div>
+            </dl>
+          </div>
+        );
+      })()}
       <div className="live-list">
         {data.people.map((person) => {
           // Only the owner has anything to open, and never on an owner's own row.

@@ -71,6 +71,8 @@ export const en = (t: Terms, place: string) => ({
   coming: {
     title: "Coming up",
     thisWeek: (count: number) => `${enN(count)} this week`,
+    /** Under the week's count on its pair of slips, the figure standing apart. */
+    thisWeekLabel: "this week",
     short: (count: number) => (count === 1 ? "1 is short of a visitor" : `${enN(count)} are short of a visitor`),
     toArrange: (count: number) => (count === 1 ? "1 more needs a pair" : `${enN(count)} more need a pair`),
     askSecond: "Ask a second visitor",
@@ -257,6 +259,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     coming: {
       title: "Próximas visitas",
       thisWeek: (count) => `${esN(count)} esta semana`,
+      thisWeekLabel: "esta semana",
       short: (count) => (count === 1 ? "A 1 le falta un visitador" : `A ${esN(count)} les falta un visitador`),
       toArrange: (count) => (count === 1 ? "1 más necesita una pareja" : `${esN(count)} más necesitan una pareja`),
       askSecond: "Pedir un segundo visitador",
