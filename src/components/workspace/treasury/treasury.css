@@ -51,7 +51,8 @@
 .treasury-dialog .live-field small {
   font-size: 15px;
 }
-@media (max-width: 850px) {
+/* Screen only: on paper the ledger stays a table (help.css). */
+@media screen and (max-width: 850px) {
   .help-ledger td.help-what {
     grid-column: 1;
   }
@@ -666,3 +667,16 @@
   .treasury-paper b { font-size: clamp(28px, 8vw, 36px); min-width: 0; }
 }
 @media (forced-colors: active) { .treasury-paper b { border: 1px solid CanvasText; } }
+
+/* On paper the ledger is the record: its own page with a foot (ledger-view.tsx), black on white, no relief. Its head
+   row repeats on each sheet, a row never splits, and the month's total prints once, after the last row. */
+@media print {
+  @page treasury { margin: 14mm 14mm 19mm; }
+  .live-app:has(.help-ledger) { page: treasury; }
+  .help-ledger thead { display: table-header-group; }
+  .help-ledger tfoot { display: table-row-group; break-inside: avoid; break-before: avoid; }
+  .live-main:has(.help-ledger) :is(.treasury-paper, .treasury-sheet, .treasury-balance-stand, .help-sheet) { box-shadow: none !important; background-image: none !important; }
+  .live-main:has(.help-ledger) :is(.help-money, .treasury-balance-figure) { color: #000 !important; }
+  .live-main:has(.help-ledger) .treasury-balance-leaves { display: none; }
+  .live-main:has(.help-ledger) .treasury-sheet { break-inside: avoid; }
+}

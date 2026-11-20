@@ -12,6 +12,7 @@ import { LiveLoading } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
+import { printFoot } from "@/components/workspace/print-foot";
 import {
   count,
   dayLabel,
@@ -243,14 +244,10 @@ export function ReportView({
     { is: "closed", label: w.outcomes.closed(report.requests.closed - report.requests.closedAfterPart.requests), value: report.requests.closed - report.requests.closedAfterPart.requests },
   ].filter((outcome) => outcome.value > 0);
   const printedOn = formatDate(words.locale, printed, { dateStyle: "long", timeZone: report.timeZone });
-  // The foot of every printed page, set in the page margin so it never covers a line.
-  const quoted = (text: string) => `"${text.replace(/[\\"]/g, "\\$&").replace(/\s+/g, " ")}"`;
   const printedLine = fill(sample ? w.foot.printedSample : w.foot.printed, { date: printedOn });
-  // "page 2 of 5" is one sentence in the words; the printer puts its own two counters where the places are.
-  const [pageBefore = "", pageBetween = "", pageAfter = ""] = w.foot.page.split(/\{pages?\}/);
-  const pageCount = `${quoted(`${printedLine} · ${pageBefore}`)} counter(page) ${quoted(pageBetween)} counter(pages)${pageAfter ? ` ${quoted(pageAfter)}` : ""}`;
+  // The bound year's sheets carry the same foot as the year's one sheet.
   const footLine = `${groupName} · ${periodLabel(report, words)}, ${span}`;
-  const pageFoot = `@media print { @page year-report { margin: 14mm 14mm 19mm; @bottom-left { content: ${quoted(footLine)}; font: 9pt "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-feature-settings: "lnum" 1, "tnum" 1; color: #000; } @bottom-right { content: ${pageCount}; font: 9pt "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-feature-settings: "lnum" 1, "tnum" 1; color: #000; } } }`;
+  const pageFoot = printFoot({ pages: ["year-report", "report-book"], left: footLine, printed: printedLine, pageWords: w.foot.page });
   const sections = new Map<string, ReportLine[]>();
   for (const line of reportLines(report, words, sampleSaid))
     sections.set(line.section, [...(sections.get(line.section) ?? []), line]);

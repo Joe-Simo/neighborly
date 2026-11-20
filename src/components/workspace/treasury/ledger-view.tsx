@@ -12,6 +12,8 @@ import { SavedWords } from "@/components/workspace/saved-words";
 import { LiveState } from "@/components/workspace/states";
 import { sentence } from "@/lib/utils";
 import { fill } from "@/lib/words/fill";
+import { formatDate } from "@/lib/words";
+import { printFoot } from "@/components/workspace/print-foot";
 import { formatList } from "@/lib/words/numbers";
 import { formatCents, formatDollars, formatFigure } from "@/components/workspace/treasury/money";
 import {
@@ -134,7 +136,7 @@ export function LedgerView({
   /** The request whose payment is being sent; its sheet holds its place until the answer comes. */
   paying?: Payable | null;
 }) {
-  const { words, sampleSaid } = useWorkspace();
+  const { data, words, sampleSaid } = useWorkspace();
   const far = useFarScreen();
   const room = words.rooms.treasury;
   const w = room.ledger;
@@ -149,6 +151,15 @@ export function LedgerView({
   };
   const month = monthLabel(words.locale, ledger.month, ledger.today);
   const monthAlone = monthTitle(words.locale, ledger.month, ledger.today);
+  // The printed ledger's foot, as the printed year's: whose books and which month, the day printed and the page.
+  const foot = words.rooms.reports.foot;
+  const printedOn = formatDate(words.locale, Date.parse(`${ledger.today}T12:00:00Z`), { dateStyle: "long", timeZone: "UTC" });
+  const pageFoot = printFoot({
+    pages: ["treasury"],
+    left: `${data.church.name} · ${room.ledgerName}, ${month}`,
+    printed: fill(data.church.sample ? foot.printedSample : foot.printed, { date: printedOn }),
+    pageWords: foot.page,
+  });
   const position = ledger.months.indexOf(ledger.month);
   // Months are listed newest first.
   const earlier = ledger.months[position + 1];
@@ -197,6 +208,7 @@ export function LedgerView({
 
   return (
     <>
+      <style>{pageFoot}</style>
       {/* The balance as cut paper, as the year is in Reports: its figure in green, standing on the passbook's leaves.
           The month's money in and out stand beside it as two slips. Nothing moves; the figures carry no relief. */}
       <dl className="treasury-paper">

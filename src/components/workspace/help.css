@@ -271,6 +271,10 @@ td.help-money[data-balance] { color: var(--live-muted); }
   .help-year { padding-left: 27px; }
   .help-bars li { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-12); }
   .help-bars .help-bar { grid-column: 1 / -1; order: 3; }
+  .help-empty { grid-template-columns: 1fr; gap: var(--space-24) 22px; }
+}
+/* The ledger as cards on a narrow screen. On paper it stays a table, so its head row repeats on each sheet. */
+@media screen and (max-width: 850px) {
   .live-app table.help-ledger, .help-ledger tbody, .help-ledger tfoot { display: block; width: 100%; }
   .help-ledger thead { display: none; }
   .help-ledger tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; padding: var(--space-16) 0; border-bottom: 1px solid var(--live-line); }
@@ -284,7 +288,6 @@ td.help-money[data-balance] { color: var(--live-muted); }
   .help-ledger tfoot td[data-in] { grid-column: 2; }
   .help-ledger tfoot td:last-child { display: none !important; }
   .help-ledger tfoot td:empty { display: none; }
-  .help-empty { grid-template-columns: 1fr; gap: var(--space-24) 22px; }
 }
 
 /* ── Stillness for those who ask for it ───────────────────────────────── */
