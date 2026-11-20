@@ -567,13 +567,13 @@ function HelpLine() {
           <CallForm
             churchId={churchId}
             draftable
-            onSaved={(matched, callId, draft) =>
+            onSaved={(matched, callId, draft, waiting) =>
               draft
                 ? void draftFor(callId)
                 : finish(
                     matched
                       ? text.done.callMatched
-                      : text.done.callWaiting,
+                      : waiting ? text.done.callWaiting : text.done.callNoBack,
                     { draft: callId, back: { run: () => takeBackCall({ churchId, callId }), said: text.done.callTakenBack } },
                   )
             }

@@ -120,7 +120,7 @@ export function CallForm({
   churchId: ChurchId;
   neighbor?: Pick<Neighbor, "id" | "name" | "phone">;
   /** `draft` is true when the person asked to go straight on to the assistant's draft of a request. */
-  onSaved: (matched: boolean, callId: Call["id"], draft: boolean) => void;
+  onSaved: (matched: boolean, callId: Call["id"], draft: boolean, waiting: boolean) => void;
   /** Offers "Save and draft a request" beside the plain save. */
   draftable?: boolean;
 }) {
@@ -155,7 +155,7 @@ export function CallForm({
           }),
         );
         if (!outcome.saved) return;
-        onSaved(outcome.result.neighborId !== null, outcome.result.callId, draft);
+        onSaved(outcome.result.neighborId !== null, outcome.result.callId, draft, callback === "needed");
         if (callback === "none") return;
         // The assistant reads the note for a reason to call first. The call is already saved;
         // if the assistant is away or finds nothing, the list simply keeps its plain order.

@@ -17,7 +17,7 @@
 .home-yes-stage{align-items:stretch}
 .home-yes-sheet{display:grid}
 .home-yes-stage .help-sheet,.home-yes-stage .help-sheet.help-sealed{animation:none}
-.home-yes-stage .help-seal{animation-duration:200ms;animation-delay:0ms}
+.home-yes-stage .help-seal{animation-name:paper-rise-solid;animation-duration:200ms;animation-delay:0ms}
 .home-yes-stage .help-seal path{animation-duration:200ms;animation-delay:80ms}
 
 /* Filed: the slip's fold, finished. The draft folds back about its top edge and away from the reader, so perspective only narrows it inside
@@ -30,9 +30,8 @@
 .home-yes-filed{position:relative;padding:31px 35px 27px;visibility:hidden;pointer-events:none;background:#fffdf7;border:1px solid #e0dccb;border-radius:3px;box-shadow:inset 0 1px #fff,0 18px 34px -26px #3b3a2466,0 2px 5px -3px #3b3a2440}
 [data-step=filed]>.home-yes-filed{visibility:visible;pointer-events:auto}
 /* Its links are shown at once with their face, never eased in (a transition on all would hold them hidden past the focus they are given). */
-/* The fold passes only over bare paper: the list's words are set down, at once and never faded, the moment the draft has gone past them. */
-[data-step=filed]>.home-yes-filed>*{animation:home-yes-under 380ms step-end}
-@keyframes home-yes-under{from,to{visibility:hidden}}
+/* The fold passes only over bare paper: each line of the list is set down, at once and never faded, the moment the draft has lifted past it
+   (home-yes-card.tsx), so the card is never bare. */
 .home-yes-filed [data-slot=button]{transition-property:color,text-decoration-color,box-shadow}
 .home-yes-filed .help-sheet-label{color:#52644f;margin:0;padding-bottom:14px;border-bottom:1px solid var(--live-line)}
 .home-yes-filed ol{list-style:none;margin:0;padding:0}
@@ -72,7 +71,6 @@
 }
 @media(prefers-reduced-motion:reduce){
   [data-step=filed] .home-yes-sheet .help-sheet{animation:none;visibility:hidden}
-  [data-step=filed]>.home-yes-filed>*{animation:none}
 }
 
 /* On the public page the sheet labels keep the public minimum of 15px; the workspace keeps its own 13px. */
