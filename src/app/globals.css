@@ -8,6 +8,8 @@
    A slip lies on paper, a card stands on the page, a sheet is laid over the room. */
 :root {
   --relief-paper: #fffdf7; --relief-edge: #e0dccb;
+  /* Decorative letters on paper (the Neighbors cut-paper initials): tan ink, never text a reader needs. */
+  --relief-letter: #8a8065;
   --relief-slip: inset 0 1px 0 #fff, 0 1px 0 rgb(40 60 50 / 0.08), 0 2px 5px -3px rgb(40 60 50 / 0.3);
   --relief-card: inset 0 1px 0 #fff, 0 1px 0 rgb(40 60 50 / 0.08), 0 2px 5px -3px rgb(40 60 50 / 0.3), 0 16px 30px -24px rgb(40 60 50 / 0.42);
   --relief-sheet: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 0 0 1px rgb(40 60 50 / 0.1), 0 2px 3px rgb(40 60 50 / 0.12), 0 24px 60px rgb(40 60 50 / 0.18);
