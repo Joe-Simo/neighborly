@@ -84,8 +84,9 @@ export function handOver(line: HTMLElement) {
   card.classList.add("treasury-handed", "paper-fold");
   // Named for anyone checking the moment frame by frame: the card whose corner turns as it closes into the line.
   card.setAttribute("data-paid-turning", "");
-  // The name goes with the corner, in the frame the card is cut away.
-  setTimeout(() => card.removeAttribute("data-paid-turning"), Math.round(520 * CUT));
+  // Cut away whole, it is taken out of the page there and then, with its name: nothing invisible goes on being
+  // worked out and painted for the rest of the moment while the amount is set down.
+  setTimeout(() => card.remove(), Math.round(520 * CUT));
   (line.closest(".live-app") ?? document.body).append(card);
   // The card's own words leave with its first frame, in one cut: they are never faded.
   [...card.children].forEach((part) => ((part as HTMLElement).style.visibility = "hidden"));
