@@ -237,6 +237,12 @@
      sliver of the gutter (0.54 of the head's span over the column's 0.58). */
   .live-app .live-page-head .live-deck { max-width: calc(93.1cqw - 0.069 * var(--live-pad) - 60px); min-height: 2lh; }
 }
+/* From 700 to 1200px the picture stands closer to the words than the deck's two lines allow for, so a deck keeps
+   to 24ch and its last word stays at least 24px from paint. */
+@media (min-width: 700px) and (max-width: 899px) { .live-app .live-page-head .live-deck { max-width: 24ch; } }
+@media (min-width: 900px) and (max-width: 1200px) {
+  .live-app .live-page-head .live-deck { max-width: min(calc(93.1cqw - 0.069 * var(--live-pad) - 60px), 24ch); }
+}
 /* A room that ends short of the screen closes on the foot Reports ends on: one quiet sentence under a check. */
 .live-room-foot { grid-column: 1 / -1; max-width: 78ch; line-height: 1.5; }
 .live-room-foot svg { flex-shrink: 0; transform: translateY(3px); }
