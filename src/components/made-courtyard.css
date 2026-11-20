@@ -46,7 +46,8 @@
 @media print{.made-courtyard{display:none}}
 
 .public-made-figure{margin:28px 0 0}
-.public-made-figure img{display:block;width:100%;height:auto;box-shadow:0 1px 2px #3b2a1230,0 10px 20px -10px #3b2a1240}
+/* Never drawn past its 960px source, so the depth map stays sharp at 1920. */
+.public-made-figure img{display:block;width:100%;max-width:960px;height:auto;box-shadow:0 1px 2px #3b2a1230,0 10px 20px -10px #3b2a1240}
 .public-made-figure figcaption{margin-top:10px;font-size:15px;line-height:1.5;color:#3d4f43}
 /* On a wide screen the stage sits a little lower, so the ring keeps 24px of air below the paper of the section before it. */
 @media(min-width:701px) and (prefers-reduced-motion:no-preference){.made-courtyard-stage{padding-top:72px;padding-bottom:64px;box-sizing:border-box}}
