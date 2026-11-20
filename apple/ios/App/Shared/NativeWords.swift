@@ -25,14 +25,14 @@ struct NativeWords {
         tryAgain: "Try again",
         quickWeek: "This week",
         quickHelpLine: "Help line",
-        quickVisit: "Record a visit",
+        quickVisit: "Home visits",
         undo: "Undo",
         callsWaiting: "Calls waiting",
         callsWaitingAbout: "How many help line calls are waiting for a call back.",
         oldest: { $0 == 0 ? "Oldest, today" : $0 == 1 ? "Oldest, 1 day" : "Oldest, \($0) days" },
         sample: "Sample",
         visitsPlanned: "Visits planned",
-        requestsWaiting: "Awaiting a yes",
+        requestsWaiting: "Requests to decide",
         openToSee: "Open Kind Helps to see your week."
     )
 
@@ -42,14 +42,14 @@ struct NativeWords {
         tryAgain: "Intentar de nuevo",
         quickWeek: "Esta semana",
         quickHelpLine: "Línea de ayuda",
-        quickVisit: "Anotar una visita",
+        quickVisit: "Visitas",
         undo: "Deshacer",
         callsWaiting: "Llamadas por devolver",
         callsWaitingAbout: "Cuántas llamadas de la línea de ayuda esperan que les devuelvan la llamada.",
         oldest: { $0 == 0 ? "La más antigua, de hoy" : $0 == 1 ? "La más antigua, 1 día" : "La más antigua, \($0) días" },
         sample: "Muestra",
         visitsPlanned: "Visitas planeadas",
-        requestsWaiting: "Esperan un sí",
+        requestsWaiting: "Peticiones por decidir",
         openToSee: "Abre Kind Helps para ver tu semana."
     )
 
