@@ -123,7 +123,7 @@
 :root[data-shell="ios"][data-text-large] :is(.live-app, .live-dialog) [data-slot="button"] > svg { margin-top: calc((1lh - 1em) / 2); }
 :root[data-shell="ios"][data-text-large] :is(.visits-name, .volunteer-due, .volunteer-who) { white-space: normal; }
 /* Running words and addresses may break inside a word that cannot fit; a person's name only between its words. */
-:root[data-shell="ios"][data-text-large] .live-app :is(p, li, dd, dt, td) { overflow-wrap: break-word; }
+:root[data-shell="ios"][data-text-large] .live-app :is(p, li, dd, dt, td, th[scope="row"]) { overflow-wrap: break-word; }
 :root[data-shell="ios"][data-text-large] .live-app :is(h3, .visits-name, .help-row-open, .help-person) { overflow-wrap: normal; }
 :root[data-shell="ios"][data-text-large] .people-row, :root[data-shell="ios"][data-text-large] .live-person { flex-wrap: wrap; }
 :root[data-shell="ios"][data-text-large] .people-role { white-space: normal; }

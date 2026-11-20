@@ -158,14 +158,14 @@ function ShelfView({
               <tbody>
                 {shelf.items.map((row) => (
                   <tr key={row.item}>
-                    <td className="help-what" role="rowheader">
+                    <th scope="row" className="help-what">
                       {sampleSaid(row.item)}
                       {row.onHand < 0 && (
                         <small>
                           {w.short}
                         </small>
                       )}
-                    </td>
+                    </th>
                     <td className="help-money" data-label={w.columns.received}>
                       {row.received}
                     </td>

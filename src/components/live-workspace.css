@@ -501,7 +501,7 @@
   border-collapse: collapse;
   font-size: 15px;
 }
-.live-app th {
+.live-app th:not([scope="row"]) {
   text-align: left;
   color: var(--live-muted);
   font-size: 12px;
@@ -511,7 +511,7 @@
   padding: var(--space-16) 10px;
   border-bottom: 1px solid var(--live-line);
 }
-.live-app td {
+.live-app :is(td, th[scope="row"]) {
   padding: var(--space-20) 10px;
   border-bottom: 1px solid var(--live-line);
 }
