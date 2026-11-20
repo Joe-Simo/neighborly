@@ -112,6 +112,13 @@ export function ThreadCard() {
       // It never crosses the line under the fresco: it comes out onto the paper below it.
       const caption = world.querySelector<HTMLElement>(".fresco-caption")?.getBoundingClientRect();
       if (pose && caption && caption.bottom > 0 && chapters[0].panel.getBoundingClientRect().top < height) pose.o *= clamp((pose.y - pose.w / 3 - caption.bottom - 12) / 36);
+      // Nor does it cross "Your turn.": over the heading's height it keeps to the paper right of the last letter, eased in over 40px above and below.
+      const head = pose && !landed ? world.querySelector<HTMLElement>("#home-yes-title")?.getBoundingClientRect() : null;
+      if (pose && head && head.bottom > 0 && head.top < height) {
+        const reach = Math.hypot(pose.w / 2, pose.w * pose.k / 3) + 16, clear = head.right + reach;
+        const near = clamp(Math.min(pose.y + reach - head.top, head.bottom - pose.y + reach) / 40);
+        if (clear + reach < innerWidth && pose.x < clear) pose.x = mix(pose.x, clear, near);
+      }
       const shown = pose && !landed && pose.o > .01 && pose.y > -pose.w && pose.y < height + pose.w;
       // Over the last of its way to the year, its corners are drawn onto the slip's own (year-paper.tsx), so it is the slip, in depth, on the frame before the cut.
       const ledger = warp > 0 ? station("ledger") : null, quad = ledger?.dataset.quad ? JSON.parse(ledger.dataset.quad) as Quad : null, origin = ledger?.parentElement?.getBoundingClientRect();
