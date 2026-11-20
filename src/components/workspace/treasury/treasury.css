@@ -621,3 +621,42 @@
 
 /* The money still on hand reads as a sentence, never a line of eighty letters on a wide screen. */
 .live-app .treasury-on-hand { max-width: 36em; }
+
+/* The balance as cut paper (ledger-view.tsx): the figure in green, standing on three leaves of the passbook; the month's
+   money in and out as two slips beside it. The relief is on the paper only, never on a glyph, and nothing moves. */
+.treasury-paper {
+  display: grid; grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 200px)); align-items: end; gap: var(--space-24) clamp(20px, 3vw, 40px);
+  margin: 0 0 var(--space-48); padding-top: var(--space-24); border-top: 2px solid #596e51;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}
+.treasury-paper dt { margin-bottom: var(--space-12); font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: var(--caps-track); color: #52644f; }
+.treasury-paper dd { margin: 0; }
+.treasury-paper small { display: block; margin-top: var(--space-12); font-size: 15px; line-height: 1.4; color: var(--live-muted); }
+.treasury-balance-stand { display: inline-grid; margin-top: var(--space-8); }
+.treasury-balance-figure {
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400;
+  font-size: min(96px, 17vw); line-height: 0.8; letter-spacing: -0.04em; padding-bottom: 0.06em;
+  font-feature-settings: "lnum" 1, "tnum" 1; color: #335844;
+}
+.treasury-balance-leaves {
+  display: flex; flex-direction: column; margin-top: var(--space-4);
+  filter: drop-shadow(0 1px 0 rgb(40 60 50 / 0.22)) drop-shadow(0 6px 8px rgb(40 60 50 / 0.18));
+}
+.treasury-balance-leaves i { display: block; height: 5px; background: linear-gradient(180deg, #fdfbf6 0, #f3efe4 70%, #e3ddcd 100%); box-shadow: 0 0.5px 0 rgb(40 60 50 / 0.3); }
+.treasury-balance-leaves i:first-child { height: 8px; background: linear-gradient(180deg, #4f7a61, #3f6550); }
+.treasury-balance-leaves i:nth-child(2) { translate: 3px 0; width: calc(100% - 4px); rotate: 0.15deg; }
+.treasury-balance-leaves i:nth-child(3) { translate: -1px 0; width: calc(100% - 7px); rotate: -0.2deg; }
+.treasury-paper b {
+  display: inline-block; padding: var(--space-16) 14px 6px; min-width: 96px;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 40px; line-height: 0.9; letter-spacing: -0.02em;
+  font-feature-settings: "lnum" 1, "tnum" 1; color: var(--live-ink);
+  background: var(--relief-paper); box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-slip);
+  clip-path: polygon(0 4px, 52% 0, 100% 3px, 100% 100%, 0 100%); rotate: -0.6deg;
+}
+.treasury-paper > div + div + div b { clip-path: polygon(0 0, 100% 5px, 100% 100%, 0 100%); rotate: 0.8deg; }
+@media (max-width: 850px) {
+  .treasury-paper { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .treasury-balance { grid-column: 1 / -1; }
+  .treasury-paper b { font-size: clamp(28px, 8vw, 36px); min-width: 0; }
+}
+@media (forced-colors: active) { .treasury-paper b { border: 1px solid CanvasText; } }

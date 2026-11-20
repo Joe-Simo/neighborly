@@ -35,6 +35,9 @@ export const en = (t: Terms, place: string) => ({
     households: (count: number) => (count === 1 ? "1 household" : `${enN(count)} households`),
     waitingCount: (count: number) => `${enN(count)} waiting for a decision`,
     logged: "each opening is logged",
+    /** Set beside the figure on its slip, the figure itself standing apart: "200" over "households". */
+    householdsNoun: (count: number): string => (count === 1 ? "household" : "households"),
+    waitingNoun: (count: number): string => (count === 1 ? "waiting" : "waiting"),
     waiting: "Waiting for a decision",
     lastHelped: (date: string) => `last helped ${date}`,
     notHelped: "not helped yet",
@@ -262,6 +265,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     households: (count) => (count === 1 ? "1 hogar" : `${esN(count)} hogares`),
     waitingCount: (count) => (count === 1 ? "1 espera una decisión" : `${esN(count)} esperan una decisión`),
     logged: "cada apertura queda anotada",
+    householdsNoun: (count) => (count === 1 ? "hogar" : "hogares"),
+    waitingNoun: () => "en espera",
     waiting: "Esperan una decisión",
     lastHelped: (date) => `última ayuda: ${date}`,
     notHelped: "aún sin ayuda",

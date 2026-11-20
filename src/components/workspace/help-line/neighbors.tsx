@@ -261,18 +261,34 @@ function NeighborListView({
     <>
       <div className="live-section-head">
         <h2>{text.list.title}</h2>
-        <span className="live-count help-private">
-            <Lock size={14} aria-hidden="true" />
-            {(() => {
-              // The whole conference, from its running figures; before they are first counted, what is shown.
-              const households = list.households ?? shown;
-              const waitingAll = list.waiting ?? waiting.length;
-              // Three facts in a row, each whole, with a dot between them.
-              return [text.list.households(households), waitingAll ? text.list.waitingCount(waitingAll) : "", text.list.logged]
-                .filter(Boolean)
-                .join(" · ");
-            })()}
-        </span>
+        {(() => {
+          // The whole conference, from its running figures; before they are first counted, what is shown.
+          const households = list.households ?? shown;
+          const waitingAll = list.waiting ?? waiting.length;
+          const figure = new Intl.NumberFormat(words.locale);
+          // The conference's households as paper: the figure on a cut slip, those waiting on a smaller slip with the
+          // waiting ochre at its edge, and under them the one line that every opening is logged.
+          return (
+            <div className="neighbors-tally">
+              <dl>
+                <div>
+                  <dt>{text.list.householdsNoun(households)}</dt>
+                  <dd><b>{figure.format(households)}</b></dd>
+                </div>
+                {waitingAll > 0 && (
+                  <div data-waiting="">
+                    <dt>{text.list.waitingNoun(waitingAll)}</dt>
+                    <dd><b>{figure.format(waitingAll)}</b></dd>
+                  </div>
+                )}
+              </dl>
+              <span className="live-count help-private">
+                <Lock size={14} aria-hidden="true" />
+                {text.list.logged}
+              </span>
+            </div>
+          );
+        })()}
       </div>
       {beside && waiting.length > 0 && (
         <RoomAside title={text.list.waiting}>
