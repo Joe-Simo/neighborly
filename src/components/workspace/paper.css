@@ -243,6 +243,9 @@
 @media (min-width: 900px) and (max-width: 1200px) {
   .live-app .live-page-head .live-deck { max-width: min(calc(93.1cqw - 0.069 * var(--live-pad) - 60px), 24ch); }
 }
+/* From 700px the words' column ends 24px short of the picture's box, the half of the head where its paint can begin,
+   so a head's last glyph never comes nearer the art than that. */
+@media (min-width: 700px) { .live-app .live-head-words { max-width: min(660px, calc(50% - 24px)); } }
 /* A room that ends short of the screen closes on the foot Reports ends on: one quiet sentence under a check. */
 .live-room-foot { grid-column: 1 / -1; max-width: 78ch; line-height: 1.5; }
 .live-room-foot svg { flex-shrink: 0; transform: translateY(3px); }
