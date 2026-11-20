@@ -146,7 +146,7 @@ const en = {
 
 const es: typeof en = {
   path: "/sobre/como-lo-hicimos",
-  title: "Cómo lo hicimos",
+  title: "Cómo lo hicimos",
   tab: "Cómo lo hicimos · Kind Helps",
   description: "Cómo se hizo Kind Helps: la pintura, las reglas de su papel, cómo el asistente queda sujeto a una persona, y por qué es gratis para toda conferencia.",
   preview: "La pintura, las reglas del papel, el asistente y una promesa: gratis para toda conferencia.",
