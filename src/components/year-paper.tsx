@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { whenIdle } from "@/lib/idle";
 import { frameStep } from "@/lib/scroll-frame";
 import { viewport } from "@/lib/viewport";
 import { FIRST_MONTH, MONTHS, monthAt } from "@/lib/year-paper";
@@ -59,9 +60,15 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
         const outer = stage.getBoundingClientRect(), box = frame.getBoundingClientRect();
         return { width: outer.width, height: outer.height, window: { x: box.left - outer.left, y: box.top - outer.top, w: box.width, h: box.height } };
       };
+      // Each costly step in an idle moment of its own, never two in one frame: the drawing buffer is sized in one, the first frame (where the
+      // driver builds its pipeline) drawn in the next, and the canvas joins the page in a third, all well before the stage is reached.
+      const idle = () => new Promise<void>(done => { whenIdle(done, 500); });
+      await idle(); if (gone) return made.dispose();
       made.size(measure());
+      await idle(); if (gone) return made.dispose();
       read();
       made.draw(Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height))));
+      await idle(); if (gone) return made.dispose();
       stage.prepend(canvas);
       scene = made;
       sized = new ResizeObserver(() => { scene?.size(measure()); drawn = -1; ask(); });
