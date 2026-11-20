@@ -137,6 +137,9 @@ const watch = (watcher: () => void) => {
  * Through the door, focus lands on the room's head once the paper is off it, as it does between rooms: a screen reader
  * says where the person has arrived, and the next Tab goes on from the top of the room. Only when nothing else holds it.
  */
+/** After the frame now being drawn has been painted: what follows never lands in the same frame as the paper going. */
+const afterAPaint = (then: () => void) => requestAnimationFrame(() => requestAnimationFrame(then));
+
 function restOnTheRoomHead() {
   if (document.activeElement && document.activeElement !== document.body) return;
   const head = document.querySelector<HTMLElement>(".live-app .live-page-head h1");
@@ -193,7 +196,7 @@ export function DoorSweep() {
           letGoOfTheSheet();
           setHolding(false);
           delete document.documentElement.dataset.door;
-          restOnTheRoomHead();
+          afterAPaint(restOnTheRoomHead);
           finished = arrival;
           for (const watch of watchers) watch();
         };
@@ -234,12 +237,13 @@ export function DoorSweep() {
       const over = () => {
         setHolding(false);
         delete document.documentElement.dataset.door;
-        restOnTheRoomHead();
+        afterAPaint(restOnTheRoomHead);
         finished = arrival;
         for (const watch of watchers) watch();
       };
       if (leave) leave.then(over, over);
-      else over();
+      // The cut is painted on its own frame; the room's settling comes after it, never in the same frame.
+      else afterAPaint(over);
     };
     const look = () => {
       if (lifting) return;
