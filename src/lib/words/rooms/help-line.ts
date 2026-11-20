@@ -21,6 +21,8 @@ export const en = (t: Terms, place: string) => ({
     discarded: "Draft discarded. Nothing was saved.",
     callMatched: `Call saved, and added to the ${t.neighbor}’s record.`,
     callWaiting: "Call saved. It is waiting below until someone calls back.",
+    /** A call that needs no call back: saved, and nothing waits. */
+    callNoBack: "Call saved. No call back is needed.",
     returned: (name: string) => `Marked returned. ${name} has been called back.`,
     returnedUndone: (name: string) => `${name} put back on the call-back list.`,
     callTakenBack: "The call is off the call-back list.",
@@ -146,6 +148,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     discarded: "Borrador descartado. No se guardó nada.",
     callMatched: `Llamada guardada y agregada al registro del ${t.neighbor}.`,
     callWaiting: "Llamada guardada. Espera aquí abajo hasta que alguien devuelva la llamada.",
+    callNoBack: "Llamada guardada. No hace falta devolverla.",
     returned: (name) => `Marcada como devuelta. Ya se le devolvió la llamada a ${name}.`,
     returnedUndone: (name) => `${name} vuelve a esperar que le devuelvan la llamada.`,
     callTakenBack: "La llamada salió de las llamadas por devolver.",
