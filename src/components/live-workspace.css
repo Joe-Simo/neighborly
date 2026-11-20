@@ -210,7 +210,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--space-24) 22px;
+  gap: var(--space-24) 24px;
 }
 .live-row-main {
   min-width: 0;
@@ -223,7 +223,7 @@
 }
 .live-row-actions {
   display: flex;
-  gap: var(--space-8) 9px;
+  gap: var(--space-8) 8px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -307,7 +307,7 @@
 .live-person {
   display: flex;
   align-items: center;
-  gap: var(--space-16) 15px;
+  gap: var(--space-16) 16px;
 }
 .live-note {
   padding: var(--space-20) 24px;
@@ -399,7 +399,7 @@
 }
 .live-dialog h2 {
   font:
-    34px "Newsreader",
+    35px "Newsreader",
     "Newsreader Fallback",
     Georgia,
     serif;
@@ -551,7 +551,7 @@
     margin-bottom: var(--space-32);
   }
   .live-grid {
-    gap: var(--space-24) 22px;
+    gap: var(--space-24) 24px;
   }
   .live-account {
     display: none;
@@ -576,7 +576,7 @@
   }
   .live-row-actions {
     width: 100%;
-    margin-top: 3px;
+    margin-top: 4px;
   }
   .live-nav {
     padding: var(--space-8) 14px;
@@ -588,7 +588,7 @@
     padding: var(--space-32) 20px var(--space-64);
   }
   .live-dialog {
-    padding: var(--space-24) 25px !important;
+    padding: var(--space-24) 24px !important;
   }
   .live-app h1 {
     font-size: 44px;
@@ -687,12 +687,12 @@
   LiveDialog: the title and the way out stay in view while a long form scrolls,
   and so does the form's last line, the button.
 */
-.live-dialog-fixed { --live-dialog-pad: 30px; }
+.live-dialog-fixed { --live-dialog-pad: 32px; }
 .live-dialog-fixed [data-slot="dialog-header"] { position: sticky; top: 0; z-index: 2; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: var(--space-12) 12px; background: #f5f3ec; box-shadow: 0 -30px 0 #f5f3ec; padding-bottom: var(--space-8); }
 .live-dialog-fixed [data-slot="dialog-header"] :is([data-slot="button"], [data-slot="dialog-close"]) { flex: none; width: 44px; height: 44px; margin: -6px -10px 0 0; color: var(--live-muted); }
 .live-dialog-fixed [data-slot="dialog-description"] { margin-top: -14px; }
 .live-dialog-fixed .live-form-actions { position: sticky; bottom: 0; z-index: 1; margin: var(--space-8) calc(-1 * var(--live-dialog-pad)) 0; padding: var(--space-16) var(--live-dialog-pad) 0; background: #f5f3ec; border-top: 1px solid var(--live-line); box-shadow: 0 var(--live-dialog-pad) 0 #f5f3ec; }
-@media (max-width: 560px) { .live-dialog-fixed { --live-dialog-pad: 25px; } }
+@media (max-width: 560px) { .live-dialog-fixed { --live-dialog-pad: 24px; } }
 .live-dialog [data-slot="button"] { border-radius: 4px; }
 .live-dialog [data-slot="button"][data-variant="default"] {
   background: var(--live-accent);
@@ -806,7 +806,7 @@
 .live-mobile-menu [data-slot=dialog-title]{font:400 35px/1.1 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.025em}
 .live-mobile-menu [data-slot=dialog-description]{color:#68715f;font-size:15px}
 .live-mobile-menu nav{display:grid;margin-top:var(--space-12);border-top:1px solid #d9ddce}
-.live-mobile-menu nav a{display:flex;align-items:center;gap:var(--space-16) 14px;min-height:54px;padding:var(--space-12) 10px;border-bottom:1px solid #d9ddce;color:inherit;text-decoration:none;font-size:16px}
+.live-mobile-menu nav a{display:flex;align-items:center;gap:var(--space-16) 16px;min-height:54px;padding:var(--space-12) 12px;border-bottom:1px solid #d9ddce;color:inherit;text-decoration:none;font-size:16px}
 .live-mobile-menu nav a[aria-current=page]{background:#e5eadc;color:#31533a}
 .live-menu-current{margin-left:auto;font-size:11px;color:#617357}
 .live-menu-current{color:#4b5f42}
