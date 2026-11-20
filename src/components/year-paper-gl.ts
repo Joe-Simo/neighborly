@@ -1,5 +1,6 @@
 import { whenIdle } from "@/lib/idle";
-import { DECKLE, DONE, EDGE, HAIRLINE, INK, KRAFT, KRAFT_EDGE, LIGHT, PAPER, placeSlips, SHADE, SHADOW, SLIP, slips, SLIPS, viewProjection, WAITING } from "@/lib/year-paper";
+import * as year from "@/lib/year-paper";
+import { DECKLE, DONE, EDGE, HAIRLINE, INK, INSTANCES, kinds, KRAFT, KRAFT_EDGE, LIGHT, PAPER, placeSlips, SHADE, SHADOW, SLIP, viewProjection, WAITING } from "@/lib/year-paper";
 
 /**
  * The year's slips on one canvas, in one instanced draw: every slip the same quad, placed by its own matrix (year-paper.ts).
@@ -13,6 +14,7 @@ in float waits;
 uniform mat4 view;
 uniform vec3 light;
 uniform float shade;
+uniform float landed;
 out vec2 uv;
 out float lit;
 out float waiting;
@@ -27,6 +29,8 @@ void main() {
   lit = 0.8 + 0.2 * abs(dot(facing, light));
   vec3 local = vec3((at.x - 0.5) * ${SLIP.w.toFixed(3)}, at.y * ${SLIP.h.toFixed(3)}, 0.0) + shade * vec3(${SHADE.x.toFixed(3)}, ${SHADE.y.toFixed(3)}, ${SHADE.z.toFixed(3)});
   gl_Position = view * model * vec4(local, 1.0);
+  // In the pile, only the bottom slip throws a shade on the page: the rest lie on one another, and their shades would only darken its sides.
+  if (shade > 0.5 && gl_InstanceID > 0 && float(gl_InstanceID) < landed) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
 }`;
 const v3 = (c: readonly number[]) => `vec3(${c.map(v => v.toFixed(4)).join(", ")})`;
 // The slip's face: kraft or paper, lit by its facing, its four edges deckled (torn in from knots, the same numbers the poster draws), a hairline
@@ -60,6 +64,19 @@ void main() {
   // How far in from each edge, in the world's units, less that edge's tear: below nothing, the paper is torn away.
   float w = ${SLIP.w.toFixed(3)}, h = ${SLIP.h.toFixed(3)};
   float inside = min(min(uv.x * w - torn(0u, uv.y), (1.0 - uv.x) * w - torn(1u, uv.y)), min(uv.y * h - torn(2u, uv.x), (1.0 - uv.y) * h - torn(3u, uv.x)));
+  // The book's pages and board: bound, so cut straight; a page is ruled in faint ink with one margin line, the board is kraft.
+  if (waiting > 1.5) {
+    if (shade > 0.5) { vec2 inside = min(uv, 1.0 - uv); colour = vec4(shadow, ${SHADE.ink.toFixed(3)} * smoothstep(-${SHADE.grow.toFixed(3)}, 0.0, min(inside.x, inside.y))); return; }
+    vec3 c = waiting > 2.5 ? ${v3(KRAFT)} : paper;
+    if (waiting < 2.5) {
+      float rule = step(0.44, abs(fract(uv.y * 26.0) - 0.5));
+      c = mix(c, ${v3(INK)}, 0.16 * rule * step(0.07, uv.y) * step(uv.y, 0.95));
+      c = mix(c, ${v3(INK)}, 0.3 * (1.0 - step(0.003, abs(uv.x - 0.1))));
+    }
+    if (min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y)) < 0.004) c = mix(c, waiting > 2.5 ? ${v3(KRAFT_EDGE)} : edge, ${HAIRLINE.toFixed(2)});
+    colour = vec4(c * lit, 1.0);
+    return;
+  }
   if (shade > 0.5) {
     // The slip's own torn outline, blurred: full inside it, fading to nothing a little past its tear.
     colour = vec4(shadow, ${SHADE.ink.toFixed(3)} * smoothstep(-${(SHADE.grow * SLIP.h).toFixed(4)}, 0.0, inside));
@@ -112,7 +129,7 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
   gl.enableVertexAttribArray(corner);
   gl.vertexAttribPointer(corner, 2, gl.FLOAT, false, 0, 0);
 
-  const matrices = new Float32Array(SLIPS * 16);
+  const matrices = new Float32Array(INSTANCES * 16);
   const models = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, models);
   gl.bufferData(gl.ARRAY_BUFFER, matrices.byteLength, gl.DYNAMIC_DRAW);
@@ -125,7 +142,7 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
 
   const waits = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, waits);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(slips.map(slip => Number(slip.waiting))), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, kinds, gl.STATIC_DRAW);
   const waitsAt = gl.getAttribLocation(program, "waits");
   gl.enableVertexAttribArray(waitsAt);
   gl.vertexAttribPointer(waitsAt, 1, gl.FLOAT, false, 0, 0);
@@ -138,7 +155,7 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
   gl.uniform3fv(gl.getUniformLocation(program, "done"), DONE);
   gl.uniform3fv(gl.getUniformLocation(program, "shadow"), SHADOW);
   gl.uniform3fv(gl.getUniformLocation(program, "wait"), WAITING);
-  const shade = gl.getUniformLocation(program, "shade");
+  const shade = gl.getUniformLocation(program, "shade"), pile = gl.getUniformLocation(program, "landed");
   gl.enable(gl.DEPTH_TEST);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.clearColor(0xee / 255, 0xe7 / 255, 0xd7 / 255, 1);
@@ -163,9 +180,9 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       // The slips first, then their shades, tested against the slips' depth but never written: a shade lies only on the sheets behind its slip.
       gl.uniform1f(shade, 0); gl.depthMask(true); gl.disable(gl.BLEND);
-      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, SLIPS);
-      gl.uniform1f(shade, 1); gl.depthMask(false); gl.enable(gl.BLEND);
-      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, SLIPS);
+      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, INSTANCES);
+      gl.uniform1f(pile, year.landed); gl.uniform1f(shade, 1); gl.depthMask(false); gl.enable(gl.BLEND);
+      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, INSTANCES);
     },
     dispose() { gl.getExtension("WEBGL_lose_context")?.loseContext(); },
   };

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { whenIdle } from "@/lib/idle";
 import { frameStep } from "@/lib/scroll-frame";
 import { viewport } from "@/lib/viewport";
-import { FIRST_MONTH, MONTHS, monthAt } from "@/lib/year-paper";
+import { FIRST_MONTH, MONTHS, monthAt } from "@/lib/year-paper-flight";
 import { yearPaperWords } from "@/lib/year-paper-words";
 import type { Language } from "@/lib/words";
 import { numberLocales } from "@/lib/words/numbers";
