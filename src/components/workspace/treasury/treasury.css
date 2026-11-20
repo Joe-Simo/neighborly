@@ -14,7 +14,7 @@
 .live-app .help-empty [data-slot="button"],
 .treasury-dialog .live-form-actions [data-slot="button"] {
   min-height: 44px;
-  padding-inline: 18px;
+  padding-inline: 16px;
   font-size: 16px;
 }
 .treasury-waiting {
@@ -168,7 +168,7 @@
 .live-app .treasury-foot [data-slot="button"],
 .live-app .treasury-starter [data-slot="button"] {
   min-height: 44px;
-  padding-inline: 18px;
+  padding-inline: 16px;
   font-size: 16px;
 }
 .live-app .treasury-take-back[data-slot="button"] {

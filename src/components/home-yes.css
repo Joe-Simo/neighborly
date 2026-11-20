@@ -62,7 +62,7 @@
 .home-yes-still-from{color:var(--muted-foreground)}.home-yes-still-from strong{font-weight:400;color:#283c32;white-space:nowrap}
 .home-yes-still h3{margin:0 0 10px;font:calc(34px*var(--up,1))/1.12 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.7px}
 .home-yes-still .home-yes-still-quote{margin:14px 0 16px;padding:2px 0 2px 18px;border-left:2px solid #c9b98a;font:italic 400 calc(21px*var(--up,1))/1.45 "Newsreader","Newsreader Fallback",Georgia,serif;color:#3c4a40}
-.home-yes-still .home-yes-still-in{color:#fffdf5;text-decoration:none;height:auto;min-height:44px;margin-top:auto;padding-inline:18px;font-size:calc(16px*var(--up,1))}
+.home-yes-still .home-yes-still-in{color:#fffdf5;text-decoration:none;height:auto;min-height:44px;margin-top:auto;padding-inline:16px;font-size:calc(16px*var(--up,1))}
 .home-yes-still .home-yes-still-foot{display:flex;align-items:baseline;gap:8px;align-self:stretch;max-width:none;margin:18px 0 0;padding-top:16px;border-top:1px solid #e6e0ee;font-size:calc(16px*var(--up,1));color:#6a557f}
 .home-yes-still-foot svg{position:relative;top:2px;flex-shrink:0}
 @media(max-width:640px){
