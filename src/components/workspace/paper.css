@@ -136,7 +136,7 @@
 .live-app .live-main {
   --live-pad: clamp(24px, 5vw, 78px);
   --live-top: 48px;
-  padding: var(--live-top) max(var(--live-pad), env(safe-area-inset-right)) calc(100px + env(safe-area-inset-bottom)) var(--live-pad);
+  padding: var(--live-top) max(var(--live-pad), env(safe-area-inset-right)) calc(100px + env(safe-area-inset-bottom)) max(var(--live-pad), env(safe-area-inset-left));
 }
 .live-app .live-header {
   padding-left: max(34px, env(safe-area-inset-left));
@@ -824,6 +824,9 @@
   /* The held button's paper reaches the screen's foot: the sheet's foot is the home bar's height there, so the paper
      carried below the button is that height too, and nothing scrolls into view under the home bar. */
   .live-dialog.live-dialog-fixed .live-form-actions { box-shadow: 0 max(var(--live-dialog-pad), env(safe-area-inset-bottom)) 0 #f5f3ec; }
+  /* With the keyboard up the home bar is under it, so the sheet's foot drops the home bar's height and the button sits on the keys. */
+  [data-live-keyboard] .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { padding-bottom: var(--live-dialog-pad) !important; }
+  [data-live-keyboard] .live-dialog.live-dialog-fixed .live-form-actions { box-shadow: 0 var(--live-dialog-pad) 0 #f5f3ec; }
   .live-dialog.live-dialog-fixed h2 { font-size: var(--serif-sheet); line-height: 1.12; }
   .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { border-radius: 14px 14px 0 0; }
 }
