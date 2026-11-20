@@ -1673,3 +1673,11 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* Chrome's "pretty" leaves a two-line sentence's last word alone (a room's deck, the line beside a figure): these short
    lines are balanced instead. Wrapping only; no size, gap or measure changes. */
 :is(.live-app, .live-dialog) :is(.tools-leaf-deck, .help-why, .visits-written-found, .report-month-held, .treasury-on-hand) { text-wrap: balance; }
+
+/* Under a finger (phone, iPad): every tappable thing answers the press, nothing waits for a second tap to zoom,
+   and a row that opens something shows its slip while it is pressed, as it does under a resting pointer. */
+:is(.live-app, .live-dialog, .live-mobile-menu) :is(a, button, [role="button"], summary, label, select) { touch-action: manipulation; }
+@media (hover: none) {
+  :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):active::before { opacity: 1; transition: none; }
+  .people-row[data-opens]:active { background-color: var(--relief-paper); transition: none; }
+}

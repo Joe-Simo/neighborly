@@ -699,7 +699,7 @@
   color: #fffdf5;
   box-shadow: 0 2px 0 #263e2f;
 }
-.live-dialog [data-slot="button"][data-variant="default"]:hover { background: #294d38; }
+@media (hover: hover) { .live-dialog [data-slot="button"][data-variant="default"]:hover { background: #294d38; } }
 .live-dialog [data-slot="button"][data-variant="outline"] { background: #fffdf7; }
 .live-skip:focus-visible { transform: translateY(0); }
 .live-page-head > [data-slot="button"] { margin-top: var(--space-8); }
@@ -709,10 +709,13 @@
   color: #fffdf5;
   box-shadow: 0 2px 0 #263e2f;
 }
-.live-app [data-slot="button"][data-variant="default"]:hover { background: #294d38; }
+@media (hover: hover) { .live-app [data-slot="button"][data-variant="default"]:hover { background: #294d38; } }
 .live-app [data-slot="button"][data-variant="outline"] { background: #fffdf7; }
 /* A paper button answers the pointer as the filled one does: its face darkens one step. Ghost presses do the same, having no relief to press. */
-:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"][data-variant="outline"]:hover:not(:disabled) { background: #efede2; }
+:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"][data-variant="outline"]:active:not(:disabled) { background: #efede2; }
+:is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"][data-variant="default"]:active:not(:disabled) { background: #294d38; }
+/* Only a pointer that can rest hovers: on a phone or iPad the face that answered a finger never stays after it lifts. */
+@media (hover: hover) { :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"][data-variant="outline"]:hover:not(:disabled) { background: #efede2; } }
 :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"][data-variant="ghost"]:active:not(:disabled) { background: #e4e2d6; }
 .live-field input, .live-field textarea, .live-field select {
   border-radius: 4px;

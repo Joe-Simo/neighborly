@@ -79,7 +79,8 @@
   :is(.live-app, .live-dialog) .tools-records .help-row .tools-one { margin-top: var(--space-4); }
 }
 :is(.live-app, .live-dialog) .tools-quiet [data-slot="button"], :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet { min-height: 44px; padding-inline: 0; font-size: 16px; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
-:is(.live-app, .live-dialog) .tools-quiet [data-slot="button"]:hover, :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet:hover { text-decoration-color: currentColor; }
+:is(.live-app, .live-dialog) .tools-quiet [data-slot="button"]:active, :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet:active { text-decoration-color: currentColor; }
+@media (hover: hover) { :is(.live-app, .live-dialog) .tools-quiet [data-slot="button"]:hover, :is(.live-app, .live-dialog) [data-slot="button"].tools-quiet:hover { text-decoration-color: currentColor; } }
 p.tools-quiet { margin: var(--space-16) 0 0; }
 .live-dialog.tools-rota-dialog { max-width: min(880px, calc(100vw - 32px)) !important; width: 100%; }
 /* In the dialog the rota is outside the app frame, so it brings the frame's table rules with it. */
