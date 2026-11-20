@@ -29,10 +29,10 @@
 .public-words section:nth-of-type(1){z-index:10}.public-words section:nth-of-type(2){z-index:9}.public-words section:nth-of-type(3){z-index:8}.public-words section:nth-of-type(4){z-index:7}.public-words section:nth-of-type(5){z-index:6}.public-words section:nth-of-type(6){z-index:5}.public-words section:nth-of-type(7){z-index:4}.public-words section:nth-of-type(8){z-index:3}.public-words section:nth-of-type(9){z-index:2}.public-words section:nth-of-type(10){z-index:1}
 .public-words h2{margin:0;max-width:14ch;font:400 clamp(28px,2.7vw,44px)/var(--lead-3) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-3);text-wrap:balance}
 .public-words section>div{max-width:28em;font-size:17px;line-height:1.6}
-.public-words p,.public-words ul{margin:0 0 1em;text-wrap:pretty}
+.public-words p,.public-words ul{margin:0 0 round(nearest,1em,4px);text-wrap:pretty}
 .public-words section>div>:last-child{margin-bottom:0}
 .public-words ul{padding:0;list-style:none}
-.public-words li{margin:0 0 .7em;padding-left:1.1em;text-indent:-1.1em}
+.public-words li{margin:0 0 round(nearest,.7em,4px);padding-left:1.1em;text-indent:-1.1em}
 .public-words li::before{content:"·";display:inline-block;width:1.1em;text-indent:0;font-weight:600}
 .public-words strong{font-weight:600}
 .public-words a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#293f3266}

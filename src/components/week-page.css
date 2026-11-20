@@ -1,7 +1,7 @@
 /* A week at St. Example: the privacy page's laid sheets, one to a day. Each day's sheet carries its room's piece of the relief, cut on a wavy line with its own shadow. Nothing moves but the page's one rise. */
 .public-week .public-words-relief::before{background-image:url(/assets/relief/relief-week-640.webp)}
 .public-week-lede>div{font-size:19px}
-.public-week-head{display:flex;flex-direction:column;gap:14px}
+.public-week-head{display:flex;flex-direction:column;gap:16px}
 .public-week .public-week-when{display:flex;align-items:center;gap:12px;margin:0;font-size:15px;letter-spacing:.02em;color:#3d4f43}
 /* The day's number on a small chip of the page's paper, raised one sheet. */
 .public-week-when span{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:3px 4px 3px 5px;background:var(--relief-paper);box-shadow:var(--relief-slip);font-family: 'Newsreader','Newsreader Fallback',Georgia,serif; font-weight: 400; font-size: 19px; line-height: 1; font-variant-numeric: lining-nums tabular-nums;color:#293f32}
@@ -29,8 +29,8 @@
    standfirst; the close lays the way into the sample at the scale of a day's head, under the last day's words, with the plain note below it. */
 .public-week .public-week-lede>div{grid-column:1/-1;max-width:30em;font:400 clamp(22px,2.1vw,32px)/1.38 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.01em;color:#22362a}
 .public-week-close>div{grid-column:1/-1}
-.public-week .public-week-close .public-week-open{gap:14px;font:400 clamp(28px,2.7vw,44px)/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.02em;text-decoration-thickness:1px;text-underline-offset:.18em}
-.public-week .public-week-close .public-week-open{display:inline-block;min-height:44px;padding-block:3px;box-sizing:border-box}
+.public-week .public-week-close .public-week-open{gap:16px;font:400 clamp(28px,2.7vw,44px)/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.02em;text-decoration-thickness:1px;text-underline-offset:4px}
+.public-week .public-week-close .public-week-open{display:inline-block;min-height:44px;padding-block:4px;box-sizing:border-box}
 .public-week-close .public-week-open svg{display:inline;width:.6em;height:.6em;margin-left:.25em;vertical-align:.05em}
 @media(min-width:1024px){.public-week-close>div{grid-column:2;max-width:28em}}
 @media(min-width:2000px){.public-week .public-week-lede>div{font-size:clamp(32px,1.7vw,40px)}}
