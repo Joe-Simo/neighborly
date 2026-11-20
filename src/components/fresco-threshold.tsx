@@ -16,12 +16,12 @@ import { CutHead } from "@/components/cut-heads";
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const ease = (value: number) => value * value * (3 - 2 * value);
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
-// Screens of scrolling, counted from where the opening begins to give way: the doors come in, open at once, and the wall opens around the fresco.
-const doorsOpen = [.9, 1.45] as const;
+// Screens of scrolling, counted from where the opening begins to give way: the doors come in, open, and the wall opens around the fresco.
+const doorsOpen = [.9, 1.6] as const;
 // Through the doors: the courtyard grows from the opening until it fills the window, holds a beat, then draws back into its frame on the wall.
-const walkThrough = [1.45, 2] as const;
-const standing = [2, 2.3] as const;
-const wallOpens = [2.3, 2.85] as const;
+const walkThrough = [1.6, 2.2] as const;
+const standing = [2.2, 2.5] as const;
+const wallOpens = [2.5, 3.2] as const;
 // The walk in, when the doors are opened by their button: long enough to read as steps, not a jump.
 const walkTime = 1400;
 // The longest the walk waits for the courtyard to be ready after the press.
