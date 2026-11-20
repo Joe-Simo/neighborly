@@ -514,8 +514,9 @@
 .live-app .report-form tr[data-total] th,
 .live-app .report-form tr[data-total] td {
   border-top: 2px solid #596e51;
-  font-weight: 600;
 }
+/* The total's label is Source Sans at a real 600; its figure stays Newsreader 400, the only weight served. */
+.live-app .report-form tr[data-total] th { font-weight: 600; }
 .report .help-footnote {
   max-width: 78ch;
   line-height: 1.5;
