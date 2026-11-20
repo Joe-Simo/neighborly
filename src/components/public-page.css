@@ -234,3 +234,11 @@
 @media print{.public-made-process figure{break-inside:avoid}}
 /* The slip still is 390 pixels wide; it is never drawn larger than that, so it stays sharp at 1440 and 1920. */
 .public-made-process img[src*="/slip-"]{max-width:390px}
+.public-made-trace{grid-column:1/-1;display:grid;gap:var(--space-24);margin:var(--space-32) 0 0}
+.public-made-trace ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-24);align-items:start}
+.public-words .public-made-trace li{margin:0;padding:0;text-indent:0;list-style:none}
+.public-words .public-made-trace li::before{content:none}
+.public-made-trace figure{margin:0;display:grid;gap:var(--space-12)}
+.public-made-trace img{display:block;width:100%;height:auto;border:0;border-radius:2px;background:var(--relief-paper);box-shadow:var(--relief-card)}
+.public-made-trace strong{font-weight:600}
+@media (max-width:899px){.public-made-trace ol{grid-template-columns:1fr}}

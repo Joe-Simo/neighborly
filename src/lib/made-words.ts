@@ -4,7 +4,7 @@ import type { Language } from "@/lib/words";
 type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
-type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" | "process" };
+type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" | "process" | "trace" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
@@ -57,6 +57,14 @@ const en = {
       { key: "slip", why: "A slip on A week had its own off-white and brown ink. It now lies on the paper as every slip in the app does.", alt: ["A day’s square on A week, in its own off-white with a brown shadow.", "The same square as a slip, in the paper tone with the slip shadow."] },
     ],
     source: "Source: the design reviews of 19 November 2026, each pair taken from the running site.",
+  },
+  trace: {
+    steps: [
+      { key: "picture", name: "The picture", why: "Written direction went to an image generator, and the author chose this one: a hand lifting the receiver, cut from paper.", alt: "A paper relief of a hand lifting a green telephone receiver over a plum ground, with an ochre cord." },
+      { key: "slip", name: "The slip", why: "On the home page the same call becomes a slip: one name, one need, the ochre corner that means it is waiting.", alt: "A paper slip reading Rosa Fontaine, Behind on November rent, $450, with an ochre corner, laid on two more slips." },
+      { key: "room", name: "The room", why: "In Help line the picture heads the room, and Rosa’s call waits as a drafted request until a person says yes.", alt: "The Help line room: the heading Every call, returned, the receiver picture, and Rosa Fontaine’s request for $450 waiting for a yes." },
+    ],
+    credit: "The picture was made with Codex's image generator, from written direction, and chosen by the author. Stills from the running site with the sample conference; every name is made up.",
   },
   frameStrip: {
     caption: "A scroll down this page on the Mac, frame by frame",
@@ -111,6 +119,9 @@ const en = {
     ] },
     { title: "Drawn, judged, redrawn", table: "process", blocks: [
       "Every screen was drawn, then judged against the rules above, then drawn again. Here are four real pairs from this week’s reviews, each one change.",
+    ] },
+    { title: "From picture to room", table: "trace", blocks: [
+      "One call, followed through the work: the picture that was chosen for it, the slip it became on the home page, and the room where a volunteer answers it.",
     ] },
     { title: "Measured, not guessed", table: "frames", blocks: [
       "The rule every change that moves something is held to: it is filmed at eight widths, from a 360‑pixel phone to a 1920‑pixel screen, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
@@ -180,6 +191,14 @@ const es: typeof en = {
     ],
     source: "Fuente: las revisiones de diseño del 19 de noviembre de 2026, cada par tomado del sitio en funcionamiento.",
   },
+  trace: {
+    steps: [
+      { key: "picture", name: "La imagen", why: "Unas indicaciones escritas fueron a un generador de imágenes, y el autor eligió esta: una mano que levanta el auricular, recortada en papel.", alt: "Un relieve de papel de una mano que levanta un auricular verde sobre un fondo ciruela, con un cable ocre." },
+      { key: "slip", name: "El papelito", why: "En la portada la misma llamada se vuelve un papelito: un nombre, una necesidad y la esquina ocre que dice que espera.", alt: "Un papelito que dice Rosa Fontaine, Behind on November rent, $450, con una esquina ocre, sobre otros dos papelitos." },
+      { key: "room", name: "La sección", why: "En Línea de ayuda la imagen encabeza la sección, y la llamada de Rosa espera como una petición en borrador hasta que una persona dice que sí.", alt: "La sección Línea de ayuda: el título Every call, returned, la imagen del auricular y la petición de 450 dólares de Rosa Fontaine esperando un sí." },
+    ],
+    credit: "La imagen se hizo con el generador de imágenes de Codex, a partir de indicaciones escritas, y la eligió el autor. Imágenes del sitio en funcionamiento con la conferencia de muestra; todos los nombres son inventados.",
+  },
   frameStrip: {
     caption: "Un desplazamiento por esta página en la Mac, cuadro a cuadro",
     widths: { "1440": "A 1440 píxeles", "390": "A 390 píxeles, con el procesador cuatro veces más lento" },
@@ -231,6 +250,9 @@ const es: typeof en = {
     ] },
     { title: "Dibujado, juzgado, redibujado", table: "process", blocks: [
       "Cada pantalla se dibujó, se juzgó con las reglas de arriba y se volvió a dibujar. Estos son cuatro pares reales de las revisiones de esta semana, cada uno de un solo cambio.",
+    ] },
+    { title: "De la imagen a la sección", table: "trace", blocks: [
+      "Una llamada, seguida por todo el trabajo: la imagen que se eligió para ella, el papelito que fue en la portada y la sección donde un voluntario la atiende.",
     ] },
     { title: "Medido, no supuesto", table: "frames", blocks: [
       "La regla que cumple cada cambio que mueve algo: se filma en ocho anchos, desde un teléfono de 360 píxeles hasta una pantalla de 1920, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
