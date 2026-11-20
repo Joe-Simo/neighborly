@@ -577,17 +577,25 @@ function VisitsView({
         <section>
           <div className="live-section-head">
             <h2>{text.coming.title}</h2>
-            <span className="live-count">
-              {[
-                coming.length ? text.coming.thisWeek(thisWeek) : "",
-                short ? text.coming.short(short) : "",
-                board.toArrange.length
-                  ? text.coming.toArrange(board.toArrange.length)
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </span>
+            {/* The week's visits as paper: the figure on a slip laid over its pair, two by two, with the rest of the
+                week's state as a quiet line under it. */}
+            <div className="room-tally">
+              {coming.length > 0 && (
+                <dl>
+                  <div data-pair="">
+                    <dt>{text.coming.thisWeekLabel}</dt>
+                    <dd><b>{new Intl.NumberFormat(words.locale).format(thisWeek)}</b></dd>
+                  </div>
+                </dl>
+              )}
+              {(short > 0 || board.toArrange.length > 0) && (
+                <span className="live-count">
+                  {[short ? text.coming.short(short) : "", board.toArrange.length ? text.coming.toArrange(board.toArrange.length) : ""]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              )}
+            </div>
           </div>
           {coming.length ? (
             <div className="live-list">
