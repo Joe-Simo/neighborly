@@ -73,6 +73,8 @@ export const en = (t: Terms, place: string) => ({
   calls: {
     toCallBack: "To call back",
     messages: (count: number) => (count === 1 ? "1 message" : `${enN(count)} messages`),
+    /** Said to a screen reader after the waiting count, whose slip sits beside the heading: "5 to call back". */
+    messagesNoun: (count: number): string => (count === 1 ? "to call back" : "to call back"),
     oldestDays: (count: number) => (count === 1 ? "oldest waiting 1 day" : `oldest waiting ${enN(count)} days`),
     oldestHours: (count: number) => (count === 1 ? "oldest waiting 1 hour" : `oldest waiting ${enN(count)} hours`),
     oldestUnderHour: "oldest waiting under an hour",
@@ -195,6 +197,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   calls: {
     toCallBack: "Llamadas por devolver",
     messages: (count) => (count === 0 ? "Ningún mensaje" : count === 1 ? "1 mensaje" : `${esN(count)} mensajes`),
+    messagesNoun: () => "por devolver",
     oldestDays: (count) => (count === 1 ? "el más antiguo lleva 1 día esperando" : `el más antiguo lleva ${esN(count)} días esperando`),
     oldestHours: (count) => (count === 1 ? "el más antiguo lleva 1 hora esperando" : `el más antiguo lleva ${esN(count)} horas esperando`),
     oldestUnderHour: "el más antiguo lleva menos de una hora esperando",

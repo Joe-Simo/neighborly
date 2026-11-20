@@ -57,6 +57,17 @@ export function TasksSection() {
       <section>
         <div className="live-section-head">
           <h2 tabIndex={-1} data-tasks-head className={data.tasks.length ? undefined : "sr-only"}>{words.tasks.tasks}</h2>
+          {/* The tasks still open as paper: the figure on a cut slip. */}
+          {data.tasks.length > 0 && (
+            <div className="room-tally">
+              <dl>
+                <div>
+                  <dt>{words.tasks.openNoun(data.tasks.filter((task) => !task.complete).length)}</dt>
+                  <dd><b>{new Intl.NumberFormat(words.locale).format(data.tasks.filter((task) => !task.complete).length)}</b></dd>
+                </div>
+              </dl>
+            </div>
+          )}
         </div>
         {data.tasks.length ? (
           <div className="live-list">

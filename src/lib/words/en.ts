@@ -291,6 +291,8 @@ export function en(set: WordSet) {
     tasks: {
       nextMeeting: "Next meeting",
       tasks: "Tasks",
+      /** Under the open count on its slip, the figure standing apart. */
+      openNoun: (count: number): string => (count === 1 ? "open" : "open"),
       add: "Add a task",
       markDone: "Mark done",
       /** Saved lines: the act, then the task by its own title. */

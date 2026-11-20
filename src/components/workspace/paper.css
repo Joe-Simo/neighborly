@@ -1649,7 +1649,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 .room-tally dl { display: flex; align-items: flex-end; gap: clamp(14px, 2vw, 24px); margin: 0; }
 .room-tally dl > div { display: flex; flex-direction: column-reverse; align-items: flex-start; }
 .room-tally dt { margin-top: var(--space-8); font-size: 14px; line-height: 1.3; color: var(--live-muted); }
-.room-tally dd { margin: 0; }
+.room-tally dd, .room-tally-figure { margin: 0; }
 .room-tally b {
   position: relative; display: inline-block; padding: var(--space-12) 12px 4px; min-width: 56px;
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 36px; line-height: 0.9; letter-spacing: -0.02em;

@@ -288,6 +288,7 @@ export function es(set: WordSet): Words {
     tasks: {
       nextMeeting: "Próxima reunión",
       tasks: "Tareas",
+      openNoun: (count) => (count === 1 ? "pendiente" : "pendientes"),
       add: "Agregar una tarea",
       markDone: "Marcar como hecha",
       markedDone: (title) => `Marcada como hecha. ${title}`,
