@@ -160,14 +160,14 @@
 .public-made-eval{grid-column:1/-1;margin:clamp(20px,3vw,40px) 0 0}
 .public-made-eval table{width:100%;max-width:34em;border-collapse:collapse;font-size:17px;line-height:1.4;font-variant-numeric:tabular-nums}
 .public-made-eval caption{text-align:left;padding-bottom:10px;font:400 clamp(19px,1.5vw,24px)/1.3 'Newsreader','Newsreader Fallback',Georgia,serif;color:#22362a}
-.public-made-eval th,.public-made-eval td{padding:9px 0;text-align:right;font-weight:400}
+.public-made-eval th,.public-made-eval td{padding:var(--space-8) 0;text-align:right;font-weight:400}
 .public-made-eval th:first-child{text-align:left;padding-right:16px}
 .public-made-eval thead th{font-size:15px;color:#3d4f43;border-bottom:1px solid #293f3240}
 .public-made-eval tbody tr+tr>*{border-top:1px solid #293f3214}
 .public-made-eval [data-tone=wrong]{color:#6a557f}
 .public-made-eval figcaption{max-width:34em;margin-top:12px;font-size:15px;line-height:1.5;color:#3d4f43}
 @media(min-width:1024px){.public-made-eval{grid-column:2}}
-.public-made-eval :is(td,thead th:not(:first-child)){width:1%;padding-left:18px;white-space:nowrap}
+.public-made-eval :is(td,thead th:not(:first-child)){width:1%;padding-left:var(--space-16);white-space:nowrap}
 /* The picture follows the title wherever the title ends: a title that takes two lines on a phone, or a translation note beside a desk-width name,
    is never covered. It lies in the title's foot as before (the same 30px under the words), gives back the room it stands in, and still crosses the cut edge. */
 @media(max-width:599px){
@@ -214,7 +214,7 @@
 @container (max-width:639px){
   .public-made-anatomy-space{width:70cqw;left:12%}
   .public-made-anatomy-stage{height:62cqw}
-  .public-words .public-made-anatomy-labels{position:static;height:auto;display:grid;gap:10px;margin-top:4px}
+  .public-words .public-made-anatomy-labels{position:static;height:auto;display:grid;gap:var(--space-8);margin-top:var(--space-4)}
   .public-words .public-made-anatomy-labels li{position:static;font-size:19px}
   .public-made-anatomy-labels strong::before{content:none}
 }
@@ -225,7 +225,7 @@
 .public-made-process{grid-column:1/-1;display:grid;gap:clamp(28px,4vw,48px);margin:clamp(20px,3vw,40px) 0 0}
 .public-made-process figure{margin:0;display:grid;gap:12px}
 .public-made-process figure > div{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.6vw,20px);align-items:start}
-.public-made-process figure > div > div{display:grid;gap:6px}
+.public-made-process figure > div > div{display:grid;gap:var(--space-8)}
 .public-made-process span{font-size:13px;letter-spacing: var(--caps-track);text-transform:uppercase;color:#4a5a50}
 .public-made-process img{display:block;width:100%;height:auto;border:1px solid var(--relief-edge);border-radius:2px;background:var(--relief-paper)}
 .public-made-process figcaption{max-width:40em}
