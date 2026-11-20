@@ -22,12 +22,15 @@ export function HomeYes() {
   const desk = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!desk.current || !("IntersectionObserver" in window)) return setDue(true);
-    const near = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) setDue(true); }, { rootMargin: "200% 0px" });
+    const near = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) setDue(true); }, { rootMargin: "300% 0px" });
     near.observe(desk.current);
     return () => near.disconnect();
   }, []);
   useEffect(() => {
     if (!settled) return;
+    // The sheet's code is fetched as soon as the page is still, so that wherever it is called it is set down in the same frame:
+    // it takes more room than the desk holds for it at most widths, and set down late, it moved the year (and the card bound for it) mid-flight.
+    void import("./home-yes-card");
     const wait = setTimeout(() => setDue(true), 2000);
     return () => clearTimeout(wait);
   }, [settled]);
