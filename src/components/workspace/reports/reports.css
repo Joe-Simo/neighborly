@@ -579,6 +579,7 @@
    breakpoint, so the wide layout is stated again here. Page one is the summary, then every line. */
 @media print {
   /* A named page, so this room's margins and foot never reach another room's printed sheet. */
+  @page year-report { margin: 14mm 14mm 19mm; }
   .report { page: year-report; --print-line: #6b6b6b; }
   html, body, .live-app { background: #fff !important; }
   /* Only when the report is the page being printed: other rooms print their own sheets. */
@@ -879,6 +880,12 @@
   .report .report-history { padding: 0; border: 0; max-width: none; line-height: 1.4; }
   .report .report-history span { display: inline; margin: 0 6pt 0 0; font-size: 9pt; }
   .report .help-footnote { margin-top: 8pt; font-size: 9pt; }
+  /* The also-paid line is set as the other quiet notes under a table. */
+  .report .report-kinds-note { margin-top: 4pt; font-size: 9pt; }
+  /* One sheet in Spanish too: its longer words had sent the footnote alone to a second page. */
+  .report .live-section { margin-top: 7pt; }
+  .report .report-months li { padding-block: 4pt; }
+  .live-app .report .help-footnote { max-width: none; }
 }
 
 /* On a phone the year's figure leads and what chooses the year reads as a quiet line beneath it, not a form:
