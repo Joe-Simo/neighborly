@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { releaseFarLayers } from "@/lib/far-layers";
 import { FrescoThreshold } from "./fresco-threshold";
 import { ReliefStory } from "./relief-story";
@@ -32,7 +32,7 @@ const rooms = [
   ["files", "The assistant", "It checks the draft request made from a call note. A person decides on every one.", .8],
 ] as const;
 
-export function NeighborlyContinuation() {
+export function NeighborlyContinuation({ proof }: { proof: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
   const settled = useSettled();
   useEffect(() => {
@@ -61,7 +61,7 @@ export function NeighborlyContinuation() {
     </noscript>
     <ThreadCard />
     <ChapterSheet to="story" />
-    <ReliefStory />
+    <ReliefStory proof={proof} />
     <ReliefLean />
     <HomeYes />
     <YearPaper />
