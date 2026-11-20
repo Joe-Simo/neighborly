@@ -25,6 +25,9 @@
 @media(min-width:2000px){.public-week-day>div:last-child{max-width:none}.public-week-day>div:last-child>p{max-width:28em}.public-week-day .public-week-piece{max-width:40em}}
 /* A day's title at a phone's width: room for a short title on one line, so no last word stands alone (es "Dos miembros visitan."). */
 @media(max-width:560px){.public-week .public-week-day h2{max-width:22ch}}
+/* A day's last two words stay together while they fit its column; from 1024 the head is set at display size in a narrow column, where
+   "Dos miembros visitan." held whole ran under the picture, so there they break like any words. */
+@media(max-width:1023px){.public-week-keep{white-space:nowrap}}
 /* The week opens and closes across the whole sheet, not in the narrow column the day heads use. The opening is said in the title's face, as a
    standfirst; the close lays the way into the sample at the scale of a day's head, under the last day's words, with the plain note below it. */
 .public-week .public-week-lede>div{grid-column:1/-1;max-width:30em;font:400 clamp(22px,2.1vw,32px)/1.38 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.01em;color:#22362a}
