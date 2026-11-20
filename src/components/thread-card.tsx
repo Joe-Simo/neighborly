@@ -48,7 +48,24 @@ export function ThreadCard() {
     if (chapters.length < 4) return;
     world.classList.add("thread-live");
     // Where a station is on the window now: its middle, its drawn width and its turn.
-    const poseOf = (at: HTMLElement): Pose => { const box = at.getBoundingClientRect(); const turn = Number(at.dataset.turn ?? 0), slant = Math.abs(turn) * Math.PI / 180;
+    // A chapter's leaf hinges up as it comes in (paper-turn.ts), and sets out already turned: a place is read off its leaf as it will lie,
+    // so the card's way never jumps when the turn begins.
+    const flat = (at: HTMLElement) => {
+      const box = at.getBoundingClientRect(), leaf = at.closest<HTMLElement>(".relief-hold");
+      if (!leaf?.style.transform) return box;
+      const m = new DOMMatrix(getComputedStyle(leaf).transform), [ox, oy] = getComputedStyle(leaf).transformOrigin.split(" ").map(parseFloat);
+      // The leaf's turn maps its flat plane onto the window by a homography; each corner is taken back through its inverse.
+      const lies = leaf.getBoundingClientRect(), [a, b, c, d, e, f, g, h, i] = [m.m11, m.m21, m.m41, m.m12, m.m22, m.m42, m.m14, m.m24, m.m44];
+      const det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+      // Where the leaf stands before it is turned: it turns only while its chapter's top is still in the window, so it is not yet held.
+      const panel = leaf.offsetParent?.getBoundingClientRect(), base = { x: (panel?.left ?? lies.left) + leaf.offsetLeft, y: (panel?.top ?? lies.top) + leaf.offsetTop };
+      const back = (x: number, y: number) => { const u = x - base.x - ox, v = y - base.y - oy, w = (d * h - e * g) * u + (b * g - a * h) * v + (a * e - b * d);
+        return [((e * i - f * h) * u + (c * h - b * i) * v + (b * f - c * e)) / w + ox, ((f * g - d * i) * u + (a * i - c * g) * v + (c * d - a * f)) / w + oy]; };
+      const corners = [[box.left, box.top], [box.right, box.top], [box.right, box.bottom], [box.left, box.bottom]].map(([x, y]) => back(x, y));
+      const xs = corners.map(([x]) => x), ys = corners.map(([, y]) => y), left = Math.min(...xs) + base.x, top = Math.min(...ys) + base.y;
+      return det ? { left, top, width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) } : box;
+    };
+    const poseOf = (at: HTMLElement): Pose => { const box = flat(at); const turn = Number(at.dataset.turn ?? 0), slant = Math.abs(turn) * Math.PI / 180;
       // A turned box reports the rectangle around it; the card's own width is found back from that.
       const width = (box.width * Math.cos(slant) - box.height * Math.sin(slant)) / Math.max(.2, Math.cos(2 * slant));
       const height = (box.height * Math.cos(slant) - box.width * Math.sin(slant)) / Math.max(.2, Math.cos(2 * slant));
@@ -135,11 +152,12 @@ export function ThreadCard() {
       // It never crosses the line under the fresco: it comes out onto the paper below it.
       const caption = world.querySelector<HTMLElement>(".fresco-caption")?.getBoundingClientRect();
       if (pose && caption && caption.bottom > 0 && chapters[0].panel.getBoundingClientRect().top < height) pose.o *= clamp((pose.y - pose.w / 3 - caption.bottom - 12) / 36);
-      // Nor does it cross "Your turn.": over the heading's height it keeps to the paper right of the last letter, eased in over 160px above and below.
+      // Nor does it cross "Your turn.": over the heading's height it keeps to the paper right of the last letter, eased in over at least 160px above and below.
       const head = pose && !landed ? world.querySelector<HTMLElement>("#home-yes-title")?.getBoundingClientRect() : null;
       if (pose && head) {
         const reach = Math.hypot(pose.w / 2, pose.w * pose.k / 3) + 16, clear = head.right + reach;
-        const near = smooth(clamp((Math.min(pose.y + reach - head.top, head.bottom - pose.y + reach) + 160) / 160));
+        // The ease is as long as the way aside needs, so the card never goes aside quicker than 1.5px to 1px of scroll.
+        const ease = Math.max(160, Math.max(0, clear - pose.x) * 2.6), near = smooth(clamp((Math.min(pose.y + reach - head.top, head.bottom - pose.y + reach) + ease) / ease));
         // Where the window has no room right of the heading, the keeping-clear gives way gradually, never in one frame.
         const room = clamp((innerWidth - clear - reach) / 60);
         if (pose.x < clear) pose.x = mix(pose.x, clear, near * room);
