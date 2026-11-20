@@ -27,14 +27,14 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string):
       case "cover_request": return {
         subject: "Te piden cubrir un compromiso",
         head: "¿Puedes cubrirlo?",
-        body: `Una persona que coordina en ${place} busca a alguien para un compromiso. Entra para ver cuál es y decir si puedes.`,
+        body: `Una persona que coordina en ${place} busca a alguien para un compromiso. Inicia sesión para ver cuál es y decir si puedes.`,
         action: "Ver la petición",
         foot: "Recibes este correo porque aceptas peticiones para cubrir turnos. Puedes dejar de recibirlas en Kind Helps.",
       };
       case "meeting": return {
         subject: `Una reunión de ${place}`,
         head: "Te invitan a una reunión.",
-        body: `Es una reunión de ${place}. Entra para ver los detalles y responder.`,
+        body: "Inicia sesión para ver los detalles y responder.",
         action: "Ver la reunión",
         foot: `Recibes este correo porque eres parte de ${place} en Kind Helps.`,
       };
@@ -58,7 +58,7 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string):
     case "meeting": return {
       subject: `A meeting at ${place}`,
       head: "You’re invited to a meeting.",
-      body: `It is a meeting of ${place}. Sign in to see the details and reply.`,
+      body: "Sign in to see the details and reply.",
       action: "See the meeting",
       foot: `You get this email because you’re part of ${place} on Kind Helps.`,
     };
