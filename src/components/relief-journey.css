@@ -29,8 +29,9 @@
 .fresco-invitation .fresco-kicker{display:block;margin:0 0 clamp(14px,1.4vw,22px);font-size:15px;font-weight:650;line-height:1.3;letter-spacing: var(--caps-track);text-transform:uppercase;color:#52644f}
 .fresco-invitation h2{margin:0 0 24px;font:400 clamp(44px,4.7vw,76px)/var(--lead-2) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-2)}
 .fresco-invitation h2 em{font-weight:400}
-/* Below 1280 even 24px of offset leaves too little room, so the headline steps down with the doors, back to its own size by 1280. */
-@media(min-width:1024px) and (max-width:1279px){.fresco-invitation h2{font-size:clamp(44px,5.224vw - 9.1px,4.7vw)}}
+/* Only where the window is under about 880px wide does the 44px floor need to give way, so the words keep 16px of paper before the ring
+   ("There is room" inks about 5.73 of its size). From there up the headline is v2's own size. */
+@media(min-width:821px){.fresco-invitation h2{font-size:min(clamp(44px,4.7vw,76px),6.1vw - 9.5px)}}
 /* Each line of the headline is drawn up out of its own cut in the wall's paper: the cut's edge shows only while a line is coming through it. */
 .fresco-slot{display:block;overflow:hidden;margin:0 -.12em -.16em 0;padding:0 .12em .16em 0;position:relative}
 /* Each heading line is either whole in its slot or held far below it (300%, past the slot's padding), with no slide between: a
