@@ -50,3 +50,8 @@
 .public-words .public-made-checked .public-made-checked-source{margin-top:4px;font-size:15px;line-height:1.5;color:#3d4f43}
 /* Heads balance their lines at every width rather than tying the last two words: tied, a long last word ("profundidad") ran past the head's column at 1920. */
 .public-words.public-made section>h2{text-wrap:balance}
+/* The courtyard's four stills run under the chapter's words and its depth map, the full width of the sheet, four across from 1024. */
+.public-words.public-made section>ol.public-made-stills{grid-column:1/-1;max-width:none;margin:clamp(32px,4vw,56px) 0 0}
+.public-words.public-made .public-made-stills li{margin:0;padding:0;text-indent:0}
+.public-words.public-made .public-made-stills li::before{content:none}
+@media(min-width:1024px){.public-words.public-made section>ol.public-made-stills{grid-template-columns:repeat(4,minmax(0,1fr))}}

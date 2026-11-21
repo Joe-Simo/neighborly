@@ -55,10 +55,10 @@ export function MadePage({ language }: { language: Language }) {
       <h1>{said.title}</h1>
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={madeWords.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />
-      {said.sections.map(({ title, blocks, figure, table }, index) => <Fragment key={title}>
+      {said.sections.map(({ title, blocks, figure, stills, table }, index) => <Fragment key={title}>
         {/* After the first sheet, the painting it speaks of is drawn apart into its paper and laid back together. */}
         {index === 1 && <MadeCourtyard {...said.courtyard} />}
-        <section data-figure={figure || table ? "" : undefined}>
+        <section data-figure={figure || stills || table ? "" : undefined}>
           <CutHead>{title}</CutHead>
           <div>{blocks.map((block) => typeof block === "string"
             ? <p key={block}>{block}</p>
@@ -78,6 +78,11 @@ export function MadePage({ language }: { language: Language }) {
           {table === "anatomy" && <MadeAnatomy said={said.anatomy} />}
           {/* eslint-disable-next-line @next/next/no-img-element -- a 960px working file shown as it is */}
           {figure && <figure className="public-made-figure"><img src={figure.src} alt={figure.alt} width={960} height={480} loading="lazy" decoding="async" /><figcaption>{figure.caption}</figcaption></figure>}
+          {/* Four fixed stills, nothing moves: the same sheets as the courtyard above, from whole to apart. */}
+          {stills && <ol className="public-made-stills" aria-label={stills.label}>{stills.items.map(([caption, alt], still) => <li key={caption}><figure>
+            {/* eslint-disable-next-line @next/next/no-img-element -- fixed stills at two widths, shown as they are */}
+            <img src={`/assets/made/courtyard-apart-${still + 1}-640.webp`} srcSet={`/assets/made/courtyard-apart-${still + 1}-640.webp 640w, /assets/made/courtyard-apart-${still + 1}-1200.webp 1200w`} sizes="(max-width: 560px) 92vw, (max-width: 1023px) 46vw, 22vw" alt={alt} width={1200} height={750} loading="lazy" decoding="async" />
+            <figcaption>{caption}</figcaption></figure></li>)}</ol>}
         </section>
       </Fragment>)}
       <MadeChecked said={said.checked} />
