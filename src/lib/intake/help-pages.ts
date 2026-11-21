@@ -28,12 +28,12 @@ export type HelpView =
   /** The bot check, on its own page: the one view that loads a script (Turnstile's, in `check`). `seal` holds the form's values, encrypted. */
   | { kind: "check"; seal: string; check: string; failed?: boolean }
   | { kind: "code"; to: string; by: "email" | "phone"; wrong?: boolean; resent?: boolean }
-  | { kind: "sent"; team: string; by: string; callAt?: string; statusHref: string }
+  | { kind: "sent"; team: string; by: string; callAt?: string; statusHref: string; phone?: string }
   | { kind: "away"; finderHref: string }
   | { kind: "full" }
   | { kind: "limit"; phone: string }
   | { kind: "young"; youthLine: string }
-  | { kind: "status"; step: "received" | "contact" | "closed"; sentOn: string; by: string; late?: boolean; askHref: string; removing?: boolean; removed?: boolean };
+  | { kind: "status"; step: "received" | "contact" | "closed"; sentOn: string; by: string; late?: boolean; askHref: string; removing?: boolean; removed?: boolean; phone?: string };
 
 const NEEDS: NeedKind[] = ["rent", "utilities", "food", "vouchers", "other"];
 
@@ -127,7 +127,7 @@ ${field(w.code.label, `<input class="code" name="code" inputmode="numeric" autoc
 ${note(w.code.held)}`;
     case "sent":
       return `${head(w.sent.kicker, w.sent.title, w.sent.deck(view.team, view.by))}${view.callAt ? note(w.sent.callOnly(view.callAt)) : ""}
-${lines([view.statusHref, w.sent.status])}${note(w.sent.statusHelp)}`;
+${lines([view.statusHref, w.sent.status])}${view.phone ? `<p class="deck"><a href="${esc(tel(view.phone))}">${esc(w.sent.call(view.phone))}</a></p>` : ""}${note(w.sent.statusHelp)}`;
     case "away":
       return `${head(w.away.kicker, w.away.title, w.away.deck)}${lines(["tel:211", w.away.call211], [view.finderHref, w.away.finder, true])}${note(w.away.nothing)}`;
     case "full":
@@ -151,6 +151,7 @@ function status(w: IntakeWords, view: Extract<HelpView, { kind: "status" }>, act
 <ol class="ladder">${order.map((step, i) => `<li${i < at ? ' class="done"' : i === at ? ' class="now" aria-current="step"' : ""}>${esc(w.status.steps[step])}${i === 0 ? `<span>${esc(w.status.sentOn(view.sentOn))}</span>` : ""}</li>`).join("")}</ol>
 ${view.late && view.step !== "closed" ? `<div class="late"><p>${esc(w.status.late)}</p>${lines(["tel:211", w.away.call211])}</div>` : ""}
 ${view.step === "closed" ? lines([view.askHref, w.status.askAgain]) : ""}
+${view.phone && view.step !== "closed" ? `<p class="deck"><a href="${esc(tel(view.phone))}">${esc(w.status.call(view.phone))}</a></p>` : ""}
 <form method="post" action="${esc(action)}" class="remove">
 ${
   view.removing

@@ -128,6 +128,30 @@ describe("partners and deleting", () => {
     await takeStep("en", new Request(`https://kindhelps.com/help?p=${link}`, { method: "POST", body, headers: cookie }));
     expect(sent[0].body).toMatchObject({ partnerLink: link, partnerSession: "b".repeat(32) });
   });
+  test("the team's phone is shown once the request has reached it, and nothing on the device remembers it", async () => {
+    answer({ result: "landed", key: "0123456789abcdef0123456789abcdef", team: "St. Example", by: String(Date.UTC(2026, 10, 23)), timeZone: "America/Detroit", phone: "(313) 555-0100" });
+    const landed = await throughCheck({ ...good, email: "", phone: "3135550100", safe: "no", callAt: "after 5" });
+    expect(await landed.text()).toContain("tel:3135550100");
+    expect(landed.headers.get("set-cookie") ?? "").not.toContain("555");
+    // The next request from the same device: the limit page says 211, never the team.
+    answer({ result: "slow" });
+    const limit = await (await throughCheck(good)).text();
+    expect(limit).toContain("tel:211");
+    expect(limit).not.toContain("555-0100");
+  });
+  test("a signed-in partner over its limit sees its own team's phone", async () => {
+    answer({ result: "slow", phone: "(313) 555-0100" });
+    const link = "a".repeat(32);
+    const body = new FormData();
+    for (const [name, value] of Object.entries({ ...good, needs: "food" })) body.append(name, value);
+    const page = await (await takeStep("en", new Request(`https://kindhelps.com/help?p=${link}`, { method: "POST", body, headers: { cookie: `kh_partner=${"b".repeat(32)}` } }))).text();
+    expect(page).toContain("tel:3135550100");
+  });
+  test("a phone from the backend in any other shape is not shown", async () => {
+    answer({ result: "landed", key: "0123456789abcdef0123456789abcdef", team: "St. Example", by: String(Date.UTC(2026, 10, 23)), timeZone: "America/Detroit", phone: "<b>call</b>" });
+    const landed = await throughCheck({ ...good, email: "", phone: "3135550100", safe: "no", callAt: "after 5" });
+    expect(await landed.text()).not.toContain("call</b>");
+  });
   test("a team full this week says so", async () => {
     answer({ result: "full" });
     expect(await (await throughCheck(good)).text()).toContain("full this week");

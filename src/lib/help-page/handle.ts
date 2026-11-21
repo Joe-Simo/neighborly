@@ -65,6 +65,9 @@ function check(language: IntakeLanguage) {
 }
 /** When nothing can be taken (no backend, a failure): the page says to call 211, the line that never closes. */
 const closed = (language: IntakeLanguage) => page(language, { kind: "limit", phone: "211" }, 503);
+const PHONE_SHAPE = /^\(\d{3}\) \d{3}-\d{4}$/;
+/** A team's public phone from a backend answer, in its one shape, or nothing. */
+const phoneFrom = (answer: Record<string, unknown> | null) => (typeof answer?.phone === "string" && PHONE_SHAPE.test(answer.phone) ? answer.phone : undefined);
 
 const day = (language: IntakeLanguage, at: number, timeZone: string) =>
   new Intl.DateTimeFormat(language === "es" ? "es-US" : "en-US", { weekday: "long", month: "long", day: "numeric", timeZone }).format(at);
@@ -149,7 +152,8 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
     const answer = await call("/intake/confirm", { key, code: text(form, "code", 12), ip: senderIp(request) });
     if (answer?.result !== "confirmed") return page(language, { kind: "code", to, by: "email", wrong: true }, 200);
     const statusHref = `${paths[language].status}?k=${key}`;
-    return page(language, { kind: "sent", team: String(answer.team ?? ""), by: day(language, Number(answer.by), String(answer.timeZone || "America/New_York")), statusHref }, 200, {
+    const phone = phoneFrom(answer);
+    return page(language, { kind: "sent", team: String(answer.team ?? ""), by: day(language, Number(answer.by), String(answer.timeZone || "America/New_York")), statusHref, ...(phone ? { phone } : {}) }, 200, {
       "Set-Cookie": [setCookie(REQUEST, "", here, 0), setCookie(TO, "", here, 0)],
     });
   }
@@ -195,14 +199,16 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
       const key = readKey(answer.key);
       if (!key) return closed(language);
       // Not safe to message, or phone only: the link is shown once, here, and never sent.
-      return page(language, { kind: "sent", team: String(answer.team ?? ""), by: day(language, Number(answer.by), String(answer.timeZone || "America/New_York")), ...(callAt && !safe ? { callAt } : {}), statusHref: `${paths[language].status}?k=${key}` });
+      const phone = phoneFrom(answer);
+      return page(language, { kind: "sent", team: String(answer.team ?? ""), by: day(language, Number(answer.by), String(answer.timeZone || "America/New_York")), ...(callAt && !safe ? { callAt } : {}), statusHref: `${paths[language].status}?k=${key}`, ...(phone ? { phone } : {}) });
     }
     case "no_team": return page(language, { kind: "away", finderHref: SVDP_FINDER });
     case "full": return page(language, { kind: "full" });
     // The partner's device is no longer signed in (revoked, a new link, or 30 days): sign in again.
     case "partner": return partner ? partnerDoor(language, new Request(request.url), partner) : closed(language);
     case "unknown_zip": return page(language, { kind: "form", values, unplaced: true }, 400, {}, action);
-    case "slow": return page(language, { kind: "limit", phone: "211" }, 429);
+    // A partner's team is known from its sign-in. Nothing on the device remembers anyone else's team: 211.
+    case "slow": return page(language, { kind: "limit", phone: phoneFrom(answer) ?? "211" }, 429);
     case "check": return partner ? closed(language) : checkPage(true, 403);
     default: return closed(language);
   }
@@ -245,6 +251,6 @@ export async function showStatus(language: IntakeLanguage, request: Request) {
     if (!found || found.status === "pending") return Response.redirect(new URL(ask, request.url), 303);
     const step = found.status === "closed" ? "closed" : found.status === "received" ? "received" : "contact";
     const late = found.by !== null && Date.now() > found.by && found.status === "received";
-    return page(language, { kind: "status", step, sentOn: day(language, found.sentAt, found.timeZone), by: found.by ? day(language, found.by, found.timeZone) : "", late, askHref: ask, removing }, 200, extra, action);
+    return page(language, { kind: "status", step, sentOn: day(language, found.sentAt, found.timeZone), by: found.by ? day(language, found.by, found.timeZone) : "", late, askHref: ask, removing, ...(found.phone ? { phone: found.phone } : {}) }, 200, extra, action);
   }
 }

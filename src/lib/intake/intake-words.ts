@@ -73,6 +73,7 @@ const en = {
     callOnly: (time: string) => `They'll call only at the time you gave (${time}) and won't leave a message.`,
     status: "See your request",
     statusHelp: "Keep this link to yourself. Anyone with it can see your request.",
+    call: (phone: string) => `Need to talk sooner? Call the team at ${phone}.`,
   },
   away: {
     kicker: "Not in our area yet",
@@ -106,6 +107,7 @@ const en = {
   status: {
     exit: "Leave this page",
     exitHelp: "Goes to a weather page right away.",
+    call: (phone: string) => `The team's phone: ${phone}`,
     kicker: "Your request",
     steps: { received: "Received", contact: "Someone will be in touch", closed: "Closed" },
     sentOn: (day: string) => `Sent ${day}`,
@@ -241,6 +243,7 @@ const es: IntakeWords = {
     callOnly: (time) => `Te llamarán solo a la hora que diste (${time}) y no dejarán recado.`,
     status: "Ver tu petición",
     statusHelp: "No compartas este enlace. Quien lo tenga puede ver tu petición.",
+    call: (phone: string) => `¿Necesitas hablar antes? Llama al equipo al ${phone}.`,
   },
   away: {
     kicker: "Aún no llegamos a tu zona",
@@ -274,6 +277,7 @@ const es: IntakeWords = {
   status: {
     exit: "Salir de esta página",
     exitHelp: "Te lleva enseguida a una página del clima.",
+    call: (phone: string) => `Teléfono del equipo: ${phone}`,
     kicker: "Tu petición",
     steps: { received: "Recibida", contact: "Alguien se pondrá en contacto", closed: "Cerrada" },
     sentOn: (day) => `Enviada el ${day}`,
