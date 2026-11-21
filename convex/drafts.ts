@@ -82,7 +82,7 @@ type Question = { type: "noul" | "choice"; instructions: string; criteria?: Reco
  * The version every line in this file was measured on (the made-up notes in src/lib/jev-set.ts).
  * "jev-latest" moves when a release ships and scores move with it, so change this only with a new measuring run.
  */
-const model = "jev-1.14.0";
+export const model = "jev-1.14.0";
 
 type Known = { names: string[]; addresses: string[]; others?: string[] };
 
@@ -120,7 +120,7 @@ function noul(answer: unknown): number | null {
   return answer.noul;
 }
 
-async function confidence<Field extends string>(key: string, state: Record<string, unknown>, questions: Record<Field, string>, known?: Known): Promise<Record<Field, number> | null> {
+export async function confidence<Field extends string>(key: string, state: Record<string, unknown>, questions: Record<Field, string>, known?: Known): Promise<Record<Field, number> | null> {
   const fields = Object.keys(questions) as Field[];
   const answers = await decide(key, state, Object.fromEntries(fields.map(field => [field, { type: "noul" as const, instructions: questions[field] }])), known);
   if (!answers) return null;
@@ -146,7 +146,7 @@ const plainly = "Answer yes when the note says this in its own words or a plain 
  */
 const mentioned = "Answer yes when the note mentions this, in any wording, about the caller's own household. Answer no when the note does not mention it or says it is not so. Judge only what the note says.";
 /** At or above this the model's yes stands; below it the field is left blank for a person. */
-const sureEnough = 0.9;
+export const sureEnough = 0.9;
 const kindMeaning = { rent: "rent, a landlord or an eviction", utility: "a utility or its bill, such as power, electricity, water or gas", food: "food, groceries or a food pantry", voucher: "clothing, furniture or household goods", other: "a need other than rent, utilities, food or household goods" };
 const payeeMeaning = { landlord: "a landlord", utility: "a utility company", vendor: "a store or other business" };
 const signMeaning = {

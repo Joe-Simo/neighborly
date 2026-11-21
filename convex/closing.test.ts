@@ -48,6 +48,8 @@ async function setup() {
       requests: () => ctx.db.insert("requests", { churchId, commitmentId: commitment._id, recipientId: member._id, commitmentVersion: 1, status: "pending" }),
       series: () => ctx.db.insert("series", { churchId, teamId: team._id, intervalWeeks: 1, count: 4 }),
       neighborNotes: () => ctx.db.insert("neighborNotes", { churchId, neighborId: neighbor._id, body: "Prefers a call after five.", authorId: owner._id, createdAt: now }),
+      duplicatePairs: () => ctx.db.insert("duplicatePairs", { churchId, first: neighbor._id, second: neighbor._id, dismissedBy: owner._id, dismissedAt: now }),
+      duplicateDismissals: () => ctx.db.insert("duplicateDismissals", { churchId, kind: "phone", key: "1005550104", by: owner._id, at: now }),
       aiReads: () => ctx.db.insert("aiReads", { churchId, callId: call._id, purpose: "draft", sentText: "behind on rent", asked: [], model: "jev-1.14.0", outcome: "review", at: now }),
       requestDrafts: () => ctx.db.insert("requestDrafts", { churchId, callId: call._id, payeeName: "", quote: "behind on rent", notes: [], verification: "review", ...by }),
       referralAgencies: () => ctx.db.insert("referralAgencies", { churchId, name: "211", phone: "211", helpsWith: "Rent" }),

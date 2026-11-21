@@ -74,6 +74,7 @@ export const en = (t: Terms, place: string) => ({
       repeated: "The same name or phone number is on an earlier line of this file.",
       same_phone: `A ${t.neighbor} with this phone number is already on file.`,
       same_name: `A ${t.neighbor} with this name is already on file.`,
+      alike: `Looks like a ${t.neighbor} already on file.`,
     },
   },
   requests: {
@@ -256,6 +257,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
         repeated: "El mismo nombre o teléfono está en una línea anterior de este archivo.",
         same_phone: `Ya hay un ${t.neighbor} registrado con este teléfono.`,
         same_name: `Ya hay un ${t.neighbor} registrado con este nombre.`,
+        alike: `Parece un ${t.neighbor} ya registrado.`,
       },
     },
     requests: {

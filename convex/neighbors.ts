@@ -11,6 +11,7 @@ import { longestLanguageName, spokenName } from "./spoken";
 import { tally } from "./counts";
 import { addName, rebuildNames } from "./knownNames";
 import { dropReads } from "./aiReads";
+import { lookAlikes } from "./duplicates";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
@@ -152,9 +153,9 @@ const broughtOver = (request: Pick<Doc<"assistanceRequests">, "source" | "status
 
 /** Before adding someone: neighbors already on file with the same phone number or the same name. */
 export const matches = query({
-  args: { churchId: v.id("churches"), name: v.string(), phone: v.string() },
-  returns: v.array(v.object({ ...listRow.fields, same: v.union(v.literal("phone"), v.literal("name")) })),
-  handler: async (ctx, { churchId, name, phone }) => {
+  args: { churchId: v.id("churches"), name: v.string(), phone: v.string(), address: v.optional(v.string()) },
+  returns: v.array(v.object({ ...listRow.fields, same: v.union(v.literal("phone"), v.literal("name"), v.literal("alike")) })),
+  handler: async (ctx, { churchId, name, phone, address = "" }) => {
     await neighborAccess(ctx, churchId);
     const digits = phoneKey(phone), words = nameKey(name);
     const samePhone = digits ? await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", digits)).take(5) : [];
@@ -162,6 +163,8 @@ export const matches = query({
     return [
       ...samePhone.map((neighbor) => ({ ...toListRow(neighbor), same: "phone" as const })),
       ...sameName.filter((neighbor) => !samePhone.some((other) => other._id === neighbor._id)).map((neighbor) => ({ ...toListRow(neighbor), same: "name" as const })),
+      // A name alike, or the same street address: the same code that finds doubles on a record.
+      ...(await lookAlikes(ctx, churchId, { name, phone, address })).filter(({ row }) => !samePhone.some((other) => other._id === row._id) && !sameName.some((other) => other._id === row._id)).slice(0, 5).map(({ row }) => ({ ...toListRow(row), same: "alike" as const })),
     ];
   },
 });
@@ -181,6 +184,8 @@ export const create = mutation({
       const samePhone = record.phoneKey ? await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", record.phoneKey)).first() : null;
       const existing = samePhone ?? (await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).eq("nameKey", record.nameKey)).first());
       if (existing) throw new ConvexError(`${existing.name} is already on file with this ${samePhone ? "phone number" : "name"}.`);
+      const alike = (await lookAlikes(ctx, churchId, record))[0];
+      if (alike) throw new ConvexError(`${alike.row.name} may already be on file.`);
     }
     const neighborId = await ctx.db.insert("neighbors", { churchId, ...record, createdBy: member._id, createdAt: Date.now() });
     await addName(ctx, churchId, record.name);
@@ -284,7 +289,7 @@ export const remove = mutation({
     for (const visit of visits) await ctx.db.patch("visits", visit._id, { notes: "" });
     for (const request of requests) await ctx.db.patch("assistanceRequests", request._id, { summary: REMOVED, decisionNote: "", payeeName: "", referral: undefined, referrals: undefined });
     await tally(ctx, churchId, { households: -1, waiting: -requests.filter((request) => request.status === "open").length, gone: neighborId });
-    await ctx.db.patch("neighbors", neighborId, { name: REMOVED, nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", alert: undefined, household: undefined, money: undefined, accounts: undefined });
+    await ctx.db.patch("neighbors", neighborId, { name: REMOVED, nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", alert: undefined, household: undefined, money: undefined, accounts: undefined, mergedFrom: undefined });
     await rebuildNames(ctx, churchId);
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.removed", targetId: neighborId, at: Date.now() });
     return null;

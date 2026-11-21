@@ -1,0 +1,26 @@
+import { describe, expect, test } from "bun:test";
+import { addressKey, nameLikeness, needsNotes, sameBy } from "./duplicates";
+
+describe("duplicate households, by what code compares", () => {
+  test("an address written two ways is one address, and its unit counts", () => {
+    expect(addressKey("1402 Palm Avenue, Apt 3, Fort Myers, FL 33901")).toBe(addressKey("1402 palm ave #3"));
+    expect(addressKey("1402 Palm Ave Apt 3")).not.toBe(addressKey("1402 Palm Ave Apt 4"));
+    expect(addressKey("88 Calle Norte")).toBe(addressKey("88 calle n"));
+  });
+  test("names alike in any order, with a second family name or a typo", () => {
+    expect(nameLikeness("María García López", "Maria Garcia")).toBeGreaterThan(0.95);
+    expect(nameLikeness("Denise Walker", "Walker, Denise")).toBe(1);
+    expect(nameLikeness("Denise Walker", "Denice Walker")).toBeGreaterThan(0.9);
+    expect(nameLikeness("Denise Walker", "Marcus Bellamy")).toBeLessThan(0.6);
+  });
+  test("two shared things ask a person; one waits for the notes", () => {
+    const a = { name: "Rosa Fontaine", phone: "(100) 555-0101", address: "12 Oak St" };
+    const shared = sameBy(a, { name: "Rosa Fontain", phone: "1-100-555-0101", address: "12 Oak Street, Fort Myers" });
+    expect(shared).toEqual(["phone", "address", "name"]);
+    expect(needsNotes(shared)).toBe(false);
+    const phoneOnly = sameBy(a, { name: "Yolanda Price", phone: "100.555.0101", address: "" });
+    expect(phoneOnly).toEqual(["phone"]);
+    expect(needsNotes(phoneOnly)).toBe(true);
+    expect(sameBy(a, { name: "Marcus Bellamy", phone: "", address: "" })).toEqual([]);
+  });
+});
