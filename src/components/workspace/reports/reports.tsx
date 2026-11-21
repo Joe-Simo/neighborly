@@ -50,6 +50,8 @@ class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { 
 
 /** The week for the people who decide; its words and styles load with it, after the year. */
 const WeekDigest = lazy(() => import("@/components/workspace/reports/week-digest"));
+/** The Society's national annual form, for a whole year; it loads with the room's figures, not before. */
+const SvdpSheet = lazy(() => import("@/components/workspace/reports/svdp-sheet"));
 
 function Report() {
   const { data, now, sampleSaid, setHeadAction, words } = useWorkspace();
@@ -141,6 +143,7 @@ function Report() {
     <>
     <Suspense fallback={null}>
       <WeekDigest />
+      {!quarter && <SvdpSheet report={shown} />}
     </Suspense>
     <ReportView
       report={shown}

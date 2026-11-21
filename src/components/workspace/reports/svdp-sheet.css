@@ -1,0 +1,17 @@
+.svdp-open { justify-self: start; min-height: 44px; margin: 0 0 var(--space-24); }
+.svdp-form { display: grid; gap: var(--space-24); }
+.svdp-form p { margin: 0; }
+.svdp-form table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.svdp-form caption { text-align: left; font-weight: 650; padding-bottom: var(--space-8); }
+.svdp-form th, .svdp-form td { text-align: left; vertical-align: top; padding: var(--space-8) var(--space-8) var(--space-8) 0; border-top: 1px solid #e4dfd3; font-weight: 400; }
+.svdp-form thead th { font-size: 14px; color: var(--live-muted); border-top: 0; }
+.svdp-form td:first-child { width: 3.5rem; font-variant-numeric: tabular-nums; }
+.svdp-form td:last-child { width: 11rem; text-align: right; font-feature-settings: "tnum"; }
+.svdp-form tr[data-untracked] td:last-child { color: var(--live-muted); font-style: italic; }
+.svdp-form small { display: block; font-size: 14px; color: var(--live-muted); }
+.svdp-sign { display: grid; gap: var(--space-16); padding-top: var(--space-16); }
+@media print {
+  html[data-print="svdp"] body * { visibility: hidden; }
+  html[data-print="svdp"] .svdp-form, html[data-print="svdp"] .svdp-form * { visibility: visible; }
+  html[data-print="svdp"] .svdp-form { position: absolute; inset: 0 auto auto 0; width: 100%; }
+}
