@@ -8,7 +8,7 @@ import type { Language, WordSet } from "../words/sets";
  */
 type EmailKind = "invitation" | "cover_request" | "meeting" | "digest";
 /** The week's counts for the Monday email: numbers only, never a name, so nothing about a household leaves in a mailbox. */
-export type WeekCounts = { waiting: number; overdue: number; approved: number; budget: number | null };
+type WeekCounts = { waiting: number; overdue: number; approved: number; budget: number | null };
 type Email = { subject: string; text: string; html: string };
 
 const group = { en: { general: "group", vincentian: "conference" }, es: { general: "grupo", vincentian: "conferencia" } } as const;
