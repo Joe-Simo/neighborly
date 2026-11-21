@@ -1,7 +1,7 @@
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../../convex/_generated/api";
 import { formatMoney } from "@/lib/words/numbers";
-import type { Language } from "@/lib/words";
+import type { Language, Words } from "@/lib/words";
 
 export type Calls = FunctionReturnType<typeof api.assistance.calls>;
 export type Call = Calls["waiting"][number];
@@ -43,3 +43,18 @@ export const accountKinds = {
   utility: "Utility",
   other: "Other",
 } as const;
+
+/** Why a call is first, in the reader's language. An unknown reason from a newer backend is left out. */
+export function whyFirst(urgent: Pick<NonNullable<Call["urgent"]>, "reasons" | "day">, words: Words) {
+  const text = words.urgent;
+  const day = urgent.day ?? 0;
+  const known = new Map<string, string | ((day: number) => string)>(
+    Object.entries(text),
+  );
+  return urgent.reasons.flatMap((reason) => {
+    const say = ["label", "origin", "notUrgent"].includes(reason)
+      ? undefined
+      : known.get(reason);
+    return say === undefined ? [] : [typeof say === "string" ? say : say(day)];
+  });
+}

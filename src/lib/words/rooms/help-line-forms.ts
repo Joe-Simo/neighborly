@@ -64,6 +64,8 @@ export const en = (t: Terms, place: string) => ({
     places: "Places we refer people to",
     elsewhere: "Somewhere else",
     elsewhereHelp: "A place not listed. It is offered here next time.",
+    /** The assistant read the note against what each listed place helps with; a person chooses. */
+    mayFit: "From the note, the assistant suggests {places}. Choose any that fit.",
     where: "Where",
     whereHelp: "Such as 211 or the county rent program. It is offered here next time.",
     approve: "Approve this request",
@@ -183,6 +185,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     places: "Lugares a los que referimos a las personas",
     elsewhere: "Otro lugar",
     elsewhereHelp: "Un lugar que no está en la lista. La próxima vez se ofrecerá aquí.",
+    mayFit: "Por la nota, el asistente sugiere {places}. Elige los que sirvan.",
     where: "A dónde",
     whereHelp: "Por ejemplo, el 211 o el programa de alquiler del condado. La próxima vez se ofrecerá aquí.",
     approve: "Aprobar esta petición",

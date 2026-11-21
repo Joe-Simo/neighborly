@@ -2,7 +2,7 @@
 
 import { keepTitle } from "@/lib/words/titles";
 import "@/components/workspace/for-good.css";
-import { useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
@@ -515,6 +515,21 @@ export function DecideForm({
   );
   const agencies = known ?? listed;
   const [referred, setReferred] = useState<string[]>(request.referrals ?? []);
+  const suggestReferrals = useAction(api.drafts.suggestReferrals);
+  // Asked once, when the form opens on a request still open; the places stay a suggestion until a person presses one.
+  const [suggested, setSuggested] = useState<string[]>([]);
+  // The server asks only about places that say what they help with, and asks nothing when none do.
+  const asks = request.status === "open" && !!agencies?.length;
+  useEffect(() => {
+    if (!asks) return;
+    let current = true;
+    suggestReferrals({ churchId, requestId: request.id })
+      .then((found) => current && setSuggested(found.places))
+      .catch(() => null);
+    return () => {
+      current = false;
+    };
+  }, [asks, churchId, request.id, suggestReferrals]);
   const approving = decision === "approved";
   const { pending, error, save } = useSave(approving ? "decided" : "saved");
   const voucher = approving ? request.voucher : null;
@@ -593,6 +608,12 @@ export function DecideForm({
       </LiveField>
       <fieldset className="help-lines">
         <legend>{w.referred}</legend>
+        {suggested.length > 0 && (
+          <p className="help-assistant help-may-fit" role="status">
+            <Sparkles aria-hidden="true" size={16} />
+            {fill(w.mayFit, { places: suggested.join(", ") })}
+          </p>
+        )}
         {agencies && agencies.length > 0 && (
           <ToggleGroup
             type="multiple"
