@@ -99,7 +99,7 @@ export const yearReport = v.object({
   children: v.number(),
   /** Households that money went toward for more than one request in the period. */
   householdsHelpedAgain: v.number(),
-  householdsByLanguage: v.object({ en: v.number(), es: v.number(), ht: v.number() }),
+  householdsByLanguage: v.object({ en: v.number(), es: v.number() }),
   /** Households speaking any other language, by the name recorded, most households first. */
   householdsByOtherLanguage: v.array(v.object({ name: v.string(), households: v.number() })),
   /** Completed home visits whose planned time falls in the year. */
@@ -420,7 +420,7 @@ export const year = query({
     const peopleIn = (ids: Iterable<Id<"neighbors">>) => [...ids].reduce((people, id) => people + size(id), 0);
     const households = new Map([...known].filter(([id]) => helped.has(id)));
     const historyHouseholds = [...inHistory].filter((id) => known.has(id));
-    const householdsByLanguage = { en: 0, es: 0, ht: 0 };
+    const householdsByLanguage = { en: 0, es: 0 };
     const otherLanguages = new Map<string, { name: string; households: number }>();
     let adults = 0, children = 0;
     for (const neighbor of households.values()) {

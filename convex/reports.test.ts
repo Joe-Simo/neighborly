@@ -74,7 +74,7 @@ describe("the year's counts for the sample conference", () => {
     const from = Date.parse("2025-10-01T04:00:00Z"), to = Date.parse("2026-10-01T04:00:00Z");
     const inYear = (time: number) => time >= from && time < to;
     const inYearDay = (date: string) => date >= "2025-10-01" && date <= "2026-09-30";
-    const hand = { households: 0, people: 0, adults: 0, children: 0, visits: 0, peopleVisited: 0, hours: 0, miles: 0, helpPaid: 0, es: 0, ht: 0, en: 0 };
+    const hand = { households: 0, people: 0, adults: 0, children: 0, visits: 0, peopleVisited: 0, hours: 0, miles: 0, helpPaid: 0, es: 0, en: 0 };
     const byKind = { rent: { paid: 0, people: 0, households: 0, requestsPaid: 0 }, utility: { paid: 0, people: 0, households: 0, requestsPaid: 0 }, food: { paid: 0, people: 0, households: 0, requestsPaid: 0 }, voucher: { paid: 0, people: 0, households: 0, requestsPaid: 0 }, other: { paid: 0, people: 0, households: 0, requestsPaid: 0 } };
     for (const neighbor of data.neighbors) {
       const size = neighbor.adults + neighbor.children;
@@ -385,7 +385,7 @@ describe("the parts the sample conference does not exercise", () => {
     const report = await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2026 });
     expect(report.helpPaid).toBe(20000);
     expect(report.kinds[1]).toEqual({ kind: "utility", requests: 1, requestsPaid: 1, households: 1, people: 5, paid: 20000 });
-    expect(report).toMatchObject({ households: 1, people: 5, adults: 2, children: 3, householdsByLanguage: { en: 0, es: 1, ht: 0 }, visits: 0 });
+    expect(report).toMatchObject({ households: 1, people: 5, adults: 2, children: 3, householdsByLanguage: { en: 0, es: 1 }, visits: 0 });
     expect(report.requests).toMatchObject({ received: 1, approved: 1, referred: 1, amountApproved: 30000, paidTowardThese: 20000, paidTowardEarlier: 0 });
     // Seen from the next year, the same payments would be toward an earlier request; here the year after has none.
     expect((await as(ids.owner.userId).query(api.reports.year, { at: Math.floor(Date.now() / 3600000) * 3600000, churchId: ids.churchId, year: 2027 })).requests).toMatchObject({ received: 0, paidTowardThese: 0, paidTowardEarlier: 0 });

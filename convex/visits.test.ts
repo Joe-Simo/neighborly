@@ -34,7 +34,7 @@ async function setup() {
     const church = await ctx.db.insert("churches", { name: "Sample Conference", timeZone: zone });
     const other = await ctx.db.insert("churches", { name: "Example Conference", timeZone: "UTC" });
     const team = await ctx.db.insert("teams", { churchId: church, name: "Home visitors", description: "" });
-    const join = async (group: typeof church, name: string, role: "owner" | "coordinator" | "member", extra: { approved?: boolean; language?: "en" | "es" | "ht"; visitor?: boolean } = {}) => {
+    const join = async (group: typeof church, name: string, role: "owner" | "coordinator" | "member", extra: { approved?: boolean; language?: "en" | "es"; visitor?: boolean } = {}) => {
       const userId = await ctx.db.insert("users", {});
       const memberId = await ctx.db.insert("memberships", { churchId: group, userId, name, email: `${name.toLowerCase().replaceAll(" ", ".")}@neighborly.example`, role, active: true, approved: extra.approved ?? true, coverOptIn: false, language: extra.language });
       if (extra.visitor) {
@@ -392,7 +392,7 @@ describe("the suggested pair", () => {
       candidate("Colleen Marsh", { recent: 4 }),
       candidate("Daniel Whitcombe", { recent: 1 }),
       candidate("Graciela Fuentes", { language: "es", recent: 6 }),
-      candidate("Renee Baptiste", { language: "ht", recent: 2 }),
+      candidate("Renee Baptiste", { recent: 2 }),
     ];
     const match = suggestPair(people, visit);
     expect(match?.pair.map((person) => person.name)).toEqual(["Daniel Whitcombe", "Graciela Fuentes"]);

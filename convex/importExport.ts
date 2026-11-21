@@ -350,7 +350,7 @@ const exportColumns = {
   commitments: ["Date", "Start", "End", "Title", "Team", "Location", "Who", "Coordinator", "Cancelled"],
   history: ["Date", "Time", "Who", "What"],
 } as const;
-const languageNames = { en: "English", es: "Spanish", ht: "Creole" } as const;
+const languageNames = { en: "English", es: "Spanish" } as const;
 const title = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 const dollars = (cents: number | undefined) => (cents === undefined ? "" : (cents / 100).toFixed(2));
 const yesNo = (value: boolean) => (value ? "Yes" : "No");

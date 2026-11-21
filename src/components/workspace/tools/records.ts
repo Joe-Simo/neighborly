@@ -23,7 +23,7 @@ export type RecordFileKey = (typeof recordFiles)[number]["key"];
 /** A spreadsheet program runs a cell that begins like a formula. A leading apostrophe makes it plain text again. */
 const plain = (cell: string) => (/^[=+\-@\t\r]/.test(cell) ? `'${cell}` : cell);
 
-/** One file as CSV text, with a byte-order mark so Excel reads accents and Creole letters correctly. */
+/** One file as CSV text, with a byte-order mark so Excel reads accents correctly. */
 export function recordsCsv(columns: string[], rows: string[][]) {
   return `﻿${Papa.unparse({ fields: columns, data: rows.map((row) => row.map(plain)) })}`;
 }

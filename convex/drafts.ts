@@ -215,7 +215,7 @@ function picked(answer: unknown): { kind: RequestKind | "none"; confidence: numb
  * The kind of help to show, from what code proposed, how sure Jev is of that proposal, and Jev's own pick.
  * Jev's pick is the only reading of whether help is asked for at all: the confirming score says a kind is
  * mentioned, and a note can mention rent while asking for nothing. So the pick always has to carry the kind.
- * When code proposed the same kind it stands on the easier line; where code is silent (Spanish, Creole,
+ * When code proposed the same kind it stands on the easier line; where code is silent (Spanish,
  * "no food") it stands alone only at 0.9. Where the two disagree, or Jev picks "none", the field is left
  * for a person. The confirming score is used only when the reply holds no pick.
  */
@@ -225,7 +225,7 @@ function settleKind(proposed: RequestKind | null, sure: number | null, pick: Ret
   if (proposed) return pick.kind === proposed && pick.confidence >= agreed ? proposed : null;
   return pick.confidence >= sureEnough ? pick.kind : null;
 }
-/** One question per sign: a sign code found is confirmed; any other is read by Jev itself, so a note in Spanish or Creole is read too. */
+/** One question per sign: a sign code found is confirmed; any other is read by Jev itself, so a note in Spanish is read too. */
 function signQuestion(reason: UrgentReason, found: UrgentSign[]): Question {
   if (found.some(sign => sign.reason === reason)) return { type: "noul", instructions: signQuestions(found)[reason] };
   return { type: "noul", instructions: `Does note say this about the caller's own household: ${signMeaning[reason]}?`, criteria: signEnds[reason] };
@@ -382,7 +382,7 @@ const urgency = v.object({
 /**
  * Reads one call's note for signs that it should be returned first: a shut-off or eviction, no food,
  * a child, an elder, a medical need. A sign code finds is confirmed by the model; any other sign the model
- * reads for itself, so a note in Spanish or Creole is read too. A sign under 0.9 is not shown, and only code
+ * reads for itself, so a note in Spanish is read too. A sign under 0.9 is not shown, and only code
  * gives a sign its day. It keeps the call's mark (assistance.keepReading) and decides nothing about who is helped:
  * the screen shows the reason, and a person can always move the call.
  */

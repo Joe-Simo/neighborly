@@ -22,7 +22,7 @@ const neighborWords = (text: ToolsWords["neighbors"]): SheetWords => ({
   title: text.title,
   deck: text.deck,
   fileHelp: text.fileHelp,
-  sample: { fileName: "neighbors-sample.csv", text: "Name,Phone,Email,Address,Adults,Children,Language,Notes\nAlma Bellweather,(100) 555-0141,,\"18 Sample St, Apt 2\",2,3,English,Prefers a call after 3 PM\nBenito Castellanos,(100) 555-0142,benito.castellanos@sample.example,240 Example Ave,1,0,Spanish,\nMireille Desrosiers,(100) 555-0143,,7 Demo Ct,2,1,Creole,\n" },
+  sample: { fileName: "neighbors-sample.csv", text: "Name,Phone,Email,Address,Adults,Children,Language,Notes\nAlma Bellweather,(100) 555-0141,,\"18 Sample St, Apt 2\",2,3,English,Prefers a call after 3 PM\nBenito Castellanos,(100) 555-0142,benito.castellanos@sample.example,240 Example Ave,1,0,Spanish,\nMireille Desrosiers,(100) 555-0143,,7 Demo Ct,2,1,Spanish,\n" },
   yes: text.yes,
   nothingReady: text.nothingReady,
   promise: text.promise,

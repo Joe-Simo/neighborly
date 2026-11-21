@@ -534,7 +534,7 @@ export function es(set: WordSet): Words {
         limitDetail: (checks) => `${esN(checks)} consultas al mes por cada ${t.group} y cinco por minuto por persona. Pasado ese límite, o si el asistente no responde, las pantallas trabajan con reglas fijas y lo dicen.`,
         measured: "Cómo se midió",
         measuredDetail: (date) =>
-          `Con ${m.notes} notas de llamadas inventadas, apartadas de las que se usaron para ajustarlo, llenó bien ${m.right} de ${m.right + m.blank + m.wrong} campos, dejó ${m.blank} en blanco para una persona y se equivocó en ${m.wrong} (medido el ${date}). En una prueba anterior se equivocó en uno; corregimos la regla que lo causó, así que esas notas ya han influido en una regla. Es una prueba pequeña, y las notas en español y en criollo son una parte pequeña de ella.`,
+          `Con ${m.notes} notas de llamadas inventadas, apartadas de las que se usaron para ajustarlo, llenó bien ${m.right} de ${m.right + m.blank + m.wrong} campos, dejó ${m.blank} en blanco para una persona y se equivocó en ${m.wrong} (medido el ${date}). En una prueba anterior se equivocó en uno; corregimos la regla que lo causó, así que esas notas ya han influido en una regla. Es una prueba pequeña, y las notas en español son una parte pequeña de ella.`,
       },
       made: { checked: "Llenado a partir de la nota de la llamada; el asistente revisó el tipo de ayuda y qué tipo de destinatario del pago es.", review: "Llenado a partir de la nota de la llamada con reglas fijas. El asistente no pudo revisarlo, así que compara cada dato con la nota." },
       unsaved: "No se guarda nada hasta que tú lo digas.",

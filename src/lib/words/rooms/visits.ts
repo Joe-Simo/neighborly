@@ -19,8 +19,8 @@ export const en = (t: Terms, place: string) => ({
   /** What a visit is about: "Rent, $450". */
   need: "{kind}, {amount}",
   /** A person and the language they speak, in a list of people to choose from. */
-  speakers: { es: (name: string) => `${name} · Spanish`, ht: (name: string) => `${name} · Haitian Creole` },
-  languages: { en: "English", es: "Spanish", ht: "Haitian Creole", other: "Another language" },
+  speakers: { es: (name: string) => `${name} · Spanish` },
+  languages: { en: "English", es: "Spanish", other: "Another language" },
   refusedKept: "Nothing was changed. Try again, or choose the pair yourself.",
   /** The line after a step is taken. */
   done: {
@@ -57,7 +57,6 @@ export const en = (t: Terms, place: string) => ({
       free: (day: string) => `Both are free ${day} and neither is away.`,
       noPair: "No two home visitors are free on a weekday morning this coming week. Choose a time and a pair yourself.",
       es: { both: "Both speak Spanish.", one: (name: string) => `${name} speaks Spanish.`, none: "No one free that day speaks Spanish." },
-      ht: { both: "Both speak Haitian Creole.", one: (name: string) => `${name} speaks Haitian Creole.`, none: "No one free that day speaks Haitian Creole." },
       /** A language written in by hand: its name stays as it was typed. */
       other: { both: (language: string) => `Both speak ${language}.`, one: "{name} speaks {language}.", none: (language: string) => `No one free that day speaks ${language}.` },
       unnamed: { both: "Both speak another language.", one: (name: string) => `${name} speaks another language.`, none: "No one free that day speaks that language." },
@@ -211,8 +210,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     planVisit: "Planear una visita",
     pair: "{first} y {second}",
     need: "{kind}: {amount}",
-    speakers: { es: (name) => `${name} · habla español`, ht: (name) => `${name} · habla criollo haitiano` },
-    languages: { en: "Inglés", es: "Español", ht: "Criollo haitiano", other: "Otro idioma" },
+    speakers: { es: (name) => `${name} · habla español` },
+    languages: { en: "Inglés", es: "Español", other: "Otro idioma" },
     refusedKept: "No se cambió nada. Inténtalo de nuevo o elige tú a la pareja.",
     done: {
       askedOn: "Se les pidió a {first} y a {second} que visiten a {neighbor} el {day}, {time}.",
@@ -246,7 +245,6 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
         free: (day) => `Los dos están libres el ${day} y ninguno está ausente.`,
         noPair: "La próxima semana no hay dos visitadores libres en una mañana de lunes a viernes. Elige tú la hora y la pareja.",
         es: { both: "Los dos hablan español.", one: (name) => `${name} habla español.`, none: "Nadie que esté libre ese día habla español." },
-        ht: { both: "Los dos hablan criollo haitiano.", one: (name) => `${name} habla criollo haitiano.`, none: "Nadie que esté libre ese día habla criollo haitiano." },
         other: { both: (language) => `Los dos hablan ${language}.`, one: "{name} habla {language}.", none: (language) => `Nadie que esté libre ese día habla ${language}.` },
         unnamed: { both: "Los dos hablan otro idioma.", one: (name) => `${name} habla otro idioma.`, none: "Nadie que esté libre ese día habla ese idioma." },
       },

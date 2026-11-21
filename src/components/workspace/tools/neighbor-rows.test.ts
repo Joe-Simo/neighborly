@@ -9,7 +9,7 @@ describe("reading a neighbors spreadsheet", () => {
     ] });
   });
   test("joins first and last names, and says plainly when there is no name column or nobody in the file", () => {
-    expect(readNeighborRows("First,Last,Language\nFabrice,Greenhalgh,Creole")).toMatchObject({ rows: [{ line: 2, name: "Fabrice Greenhalgh", language: "Creole" }] });
+    expect(readNeighborRows("First,Last,Language\nFabrice,Greenhalgh,Spanish")).toMatchObject({ rows: [{ line: 2, name: "Fabrice Greenhalgh", language: "Spanish" }] });
     expect(readNeighborRows("Phone,Address\n(100) 555-0100,12 Sample St")).toEqual({ error: expect.stringContaining("Name column") });
     expect(readNeighborRows("Name,Phone\n")).toEqual({ error: expect.stringContaining("nobody") });
   });

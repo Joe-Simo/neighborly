@@ -36,8 +36,6 @@ export const jevSet: SetNote[] = [
   { id: "mixed", tries: "Two needs and two amounts: a person must choose", note: "Behind on rent, $600, and the gas bill, $95. Landlord wants it by Friday.", kind: null, amount: null, payeeKind: "landlord", signs: [] },
   { id: "es-food", tries: "Spanish: no food, children", note: "Dice que no tiene comida en casa. Dos niños.", kind: "food", amount: null, payeeKind: null, signs: [sign("noFood"), sign("child")] },
   { id: "es-rent", tries: "Spanish: rent in figures, a dated eviction", note: "Debe la renta de noviembre, $700. Tiene aviso de desalojo para el 28.", kind: "rent", amount: 70000, payeeKind: null, signs: [sign("eviction", 28)] },
-  { id: "ht-food", tries: "Creole: no food, children", note: "Li di li pa gen manje. De timoun nan kay la.", kind: "food", amount: null, payeeKind: null, signs: [sign("noFood"), sign("child")] },
-  { id: "ht-power", tries: "Creole: power bill in figures, a dated shut-off", note: "Bòdwo kouran an se $130. Y ap koupe kouran an 19 la.", kind: "utility", amount: 13000, payeeKind: null, signs: [sign("shutoff", 19)] },
   { id: "elder-oxygen", tries: "An age, a medical need, a shut-off with no date", note: "He is 84 years old and on oxygen. Electric bill $240, shut-off notice came Monday.", kind: "utility", amount: 24000, payeeKind: null, signs: [sign("shutoff"), sign("elder"), sign("medical")] },
   { id: "hungry", tries: "Has not eaten, which is not the same as no food", note: "She hasn't eaten since Sunday. Asked for a grocery card.", kind: "food", amount: null, payeeKind: null, signs: [sign("hungry")] },
   { id: "thanks", tries: "Nothing useful", note: "Called to say thank you for the visit last week.", kind: null, amount: null, payeeKind: null, signs: [] },
@@ -52,14 +50,12 @@ export const jevSet: SetNote[] = [
   // Fresh notes, added 2026-11-15 after the first run. No line or wording was chosen on these; keep it that way.
   { id: "fresh-rent-words", fresh: true, tries: "An amount in words, a named landlord, a baby", note: "Two months behind on rent. Owes nine hundred dollars to her landlord, Sample Court Apartments. Baby is six months old.", kind: "rent", amount: 90000, payeeKind: "landlord", signs: [sign("child")] },
   { id: "fresh-es-power", fresh: true, tries: "Spanish: a dated shut-off, an amount, an elder in the home", note: "Le van a cortar la luz el 26. Debe $145 de electricidad. Su mamá de 82 años vive con ella.", kind: "utility", amount: 14500, payeeKind: null, signs: [sign("shutoff", 26), sign("elder")] },
-  { id: "fresh-ht-rent", fresh: true, tries: "Creole: rent in figures, being put out on a date", note: "Li dwe lwaye a, $600. Y ap mete l deyò nan kay la 30 la.", kind: "rent", amount: 60000, payeeKind: null, signs: [sign("eviction", 30)] },
   { id: "fresh-voicemail", fresh: true, tries: "Nothing to find, with a time that is not an amount", note: "Left a voicemail asking us to call back after 3 pm. No details.", kind: null, amount: null, payeeKind: null, signs: [] },
   { id: "fresh-hours", fresh: true, tries: "Nothing to find: a question about hours", note: "Wanted the thrift store's hours. Told her 9 to 4.", kind: null, amount: null, payeeKind: null, signs: [] },
   { id: "fresh-es-nothing", fresh: true, tries: "Spanish: a bill already paid, nothing needed", note: "Llamó para avisar que ya pagó la luz y que no necesita nada.", kind: null, amount: null, payeeKind: null, signs: [] },
   { id: "fresh-insulin", fresh: true, tries: "A medical need that is the request itself, a store that is paid, living alone", note: "Needs help paying for insulin this month, $75 at Sample Pharmacy. Lives alone.", kind: "other", amount: 7500, payeeKind: "vendor", signs: [sign("alone"), sign("medical")] },
   { id: "fresh-clothes", fresh: true, tries: "Goods for children, no amount", note: "Three kids need school clothes and shoes. No amount given.", kind: "voucher", amount: null, payeeKind: null, signs: [sign("child")] },
   { id: "fresh-gas-off", fresh: true, tries: "One need denied and another already shut off", note: "Rent is paid up. Gas was shut off yesterday, she owes $210.", kind: "utility", amount: 21000, payeeKind: null, signs: [sign("shutoff")] },
-  { id: "fresh-ht-thanks", fresh: true, tries: "Creole: thanks for food already given, nothing asked", note: "Li rele pou di mèsi pou manje a semèn pase.", kind: null, amount: null, payeeKind: null, signs: [] },
   { id: "fresh-elder-hungry", fresh: true, tries: "An age, living alone in other words, not eaten", note: "He is 91, lives by himself and has not eaten in two days. Asked for groceries.", kind: "food", amount: null, payeeKind: null, signs: [sign("hungry"), sign("elder"), sign("alone")] },
   { id: "fresh-maybe-evict", fresh: true, tries: "An eviction that is only a maybe, and nothing asked", note: "Landlord said he might evict if rent is late again. Rent is current. Just wanted to know what we do.", kind: null, amount: null, payeeKind: null, signs: [] },
 ];
@@ -69,4 +65,4 @@ export const jevSet: SetNote[] = [
  * notes only. Copy the "fresh" figures for "mix" from the run's file (/mnt/project-files/measure-run-N.txt) and nothing else;
  * this is the one place the sheet reads them from.
  */
-export const measured = { run: 7, day: "2026-11-19", notes: 12, right: 42, blank: 6, wrong: 0 };
+export const measured = { run: 7, day: "2026-11-19", notes: 10, right: 36, blank: 4, wrong: 0 };

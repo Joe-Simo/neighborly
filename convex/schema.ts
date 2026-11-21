@@ -2,7 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { spoken } from "./spoken";
 const role = v.union(v.literal("owner"), v.literal("coordinator"), v.literal("member"));
-const language = v.union(v.literal("en"), v.literal("es"), v.literal("ht"));
+const language = v.union(v.literal("en"), v.literal("es"));
 /** Money is stored as whole cents, always positive; the entry kind says which way it moves. */
 const cents = v.number();
 /** Calendar days are "yyyy-MM-dd" in the group's time zone, as in timeOff and availability. */

@@ -124,7 +124,7 @@ export const en = (t: Terms, place: string) => ({
   /** What format.ts says of a household, a payee and a request. */
   format: {
     payees: { landlord: "Landlord", utility: "Utility company", vendor: "Store or other business" },
-    languages: { en: "English", es: "Spanish", ht: "Haitian Creole", other: "Another language" },
+    languages: { en: "English", es: "Spanish", other: "Another language" },
     livesAlone: "Lives alone",
     householdOf: (count: number) => `Household of ${enN(count)}`,
     adults: (count: number) => (count === 1 ? "1 adult" : `${enN(count)} adults`),
@@ -239,7 +239,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   },
   format: {
     payees: { landlord: "Arrendador", utility: "Compañía de servicios", vendor: "Tienda u otro negocio" },
-    languages: { en: "Inglés", es: "Español", ht: "Criollo haitiano", other: "Otro idioma" },
+    languages: { en: "Inglés", es: "Español", other: "Otro idioma" },
     livesAlone: "Vive sin compañía",
     householdOf: (count) => (count === 1 ? "Hogar de 1 persona" : `Hogar de ${esN(count)} personas`),
     adults: (count) => (count === 1 ? "1 adulto" : `${esN(count)} adultos`),

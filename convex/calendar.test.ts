@@ -33,7 +33,7 @@ async function setup() {
     await shift(marisol.memberId, now + 9 * DAY, { cancelled: true });
     await shift(marisol.memberId, now - 90 * DAY);
     await shift(thomas.memberId, now + 3 * DAY);
-    const neighbor = await ctx.db.insert("neighbors", { churchId: church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "celeste.hyppolite@neighborly.example", address: "412 Placeholder Rd, Apt 7", adults: 1, children: 2, language: "ht", notes: "Prefers afternoon visits.", createdBy: thomas.memberId, createdAt: now });
+    const neighbor = await ctx.db.insert("neighbors", { churchId: church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "celeste.hyppolite@neighborly.example", address: "412 Placeholder Rd, Apt 7", adults: 1, children: 2, language: "es", notes: "Prefers afternoon visits.", createdBy: thomas.memberId, createdAt: now });
     const request = await ctx.db.insert("assistanceRequests", { churchId: church, neighborId: neighbor, kind: "utility", summary: "Shut-off notice on the electric bill", amountRequested: 18000, status: "open", decisionNote: "", payeeKind: "utility", payeeName: "Demo Power & Light", source: "person", createdBy: thomas.memberId, createdAt: now });
     const visit = (visitors: (typeof marisol.memberId)[], status: "scheduled" | "cancelled" = "scheduled") => ctx.db.insert("visits", { churchId: church, neighborId: neighbor, requestId: request, scheduledAt: now + 4 * DAY, status, visitors: visitors.map((memberId) => ({ memberId, hours: 0, miles: 0 })), notes: "Bring the utility pledge form.", createdBy: thomas.memberId, createdAt: now });
     await visit([marisol.memberId, renee.memberId]);

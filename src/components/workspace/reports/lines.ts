@@ -87,7 +87,7 @@ export function reportLines(report: YearReport, words: Words = english, said: (n
   neighbors.count(w.neighbors.adults, report.adults);
   neighbors.count(w.neighbors.children, report.children);
   neighbors.count(w.neighbors.again, report.householdsHelpedAgain);
-  for (const language of ["en", "es", "ht"] as const)
+  for (const language of ["en", "es"] as const)
     if (report.householdsByLanguage[language])
       neighbors.count(w.neighbors.speaking(w.neighbors.languages[language]), report.householdsByLanguage[language]);
   for (const other of report.householdsByOtherLanguage) neighbors.count(w.neighbors.speaking(other.name), other.households);

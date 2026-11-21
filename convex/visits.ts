@@ -22,7 +22,7 @@ const HOUR = 3600000;
 const DAY = 24 * HOUR;
 /** How long a visit is taken to last when checking who is free or away. */
 export const VISIT_LENGTH = 2 * HOUR;
-const language = v.union(v.literal("en"), v.literal("es"), v.literal("ht"));
+const language = v.union(v.literal("en"), v.literal("es"));
 type Language = Infer<typeof language>;
 const kind = v.union(v.literal("rent"), v.literal("utility"), v.literal("food"), v.literal("voucher"), v.literal("other"));
 
