@@ -13,6 +13,9 @@ import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/help-line/use-save";
 import { recordHref } from "@/components/workspace/help-line/format";
 
+type Moved = { calls: number; requests: number; visits: number; ledger: number; notes: number };
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
 /** Only this sheet's words, in both languages, so they load with it and with no other room. */
 const said = {
   en: {
@@ -34,6 +37,10 @@ const said = {
     kept: "Nothing was merged.",
     confirm: "Merge records",
     merged: (name: string) => `${name} is merged into this record.`,
+    counting: "Counting what moves…",
+    moving: (m: Moved) => [plural(m.calls, "call", "calls"), plural(m.requests, "request", "requests"), plural(m.visits, "home visit", "home visits"), plural(m.ledger, "ledger line", "ledger lines"), plural(m.notes, "note", "notes")].join(", "),
+    history: "Merged into this record",
+    mergedBy: (name: string, who: string, when: string) => `${name}, merged by ${who} on ${when}.`,
   },
   es: {
     title: "Quizá el mismo hogar",
@@ -53,7 +60,11 @@ const said = {
     final: "Una unión no se puede deshacer.",
     kept: "No se unió nada.",
     confirm: "Unir registros",
-    merged: (name: string) => `${name} quedó unido a este registro.`,
+    merged: (name: string) => `El registro de ${name} se unió a este.`,
+    counting: "Contando lo que pasa…",
+    moving: (m: Moved) => [plural(m.calls, "llamada", "llamadas"), plural(m.requests, "solicitud", "solicitudes"), plural(m.visits, "visita", "visitas"), plural(m.ledger, "línea del libro", "líneas del libro"), plural(m.notes, "nota", "notas")].join(", "),
+    history: "Unidos a este registro",
+    mergedBy: (name: string, who: string, when: string) => `Registro de ${name}, unido por ${who} el ${when}.`,
   },
 } as const;
 
@@ -64,13 +75,11 @@ type Shown = { id: Id<"neighbors">; name: string };
  * of the notes where it agrees. A person merges one into this record or says it is not the same; nothing happens alone.
  */
 export function PossibleSame({ neighborId, onMerged }: { neighborId: Id<"neighbors">; onMerged: (said: string) => void }) {
-  const { data, words, sampleSaid } = useWorkspace();
+  const { data, words } = useWorkspace();
   const w = said[words.locale === "es" ? "es" : "en"];
   const churchId = data.church.id;
   const found = useQuery(api.duplicates.forRecord, { churchId, neighborId });
   const readPair = useAction(api.duplicates.readPair);
-  const dismiss = useMutation(api.duplicates.dismiss);
-  const [merging, setMerging] = useState<Shown | null>(null);
   // Each pair's notes are asked about once per opening, one after another; the answer comes back through the query.
   const asked = useRef(new Set<string>());
   const unread = found?.unread.join(" ") ?? "";
@@ -81,15 +90,54 @@ export function PossibleSame({ neighborId, onMerged }: { neighborId: Id<"neighbo
       for (const otherId of fresh) await readPair({ churchId, neighborId, otherId }).catch(() => null);
     })();
   }, [unread, churchId, neighborId, readPair]);
-  if (!found?.shown.length) return null;
+  return (
+    <>
+      {found?.shown.length ? <Candidates found={found.shown} w={w} neighborId={neighborId} onMerged={onMerged} /> : null}
+      <Merged neighborId={neighborId} w={w} />
+    </>
+  );
+}
+
+/** Who merged which record into this one, and when: the record's own trail of its merges. */
+function Merged({ neighborId, w }: { neighborId: Id<"neighbors">; w: Words }) {
+  const { data, format, sampleSaid } = useWorkspace();
+  const merges = useQuery(api.duplicates.merges, { churchId: data.church.id, neighborId });
+  if (!merges?.length) return null;
+  return (
+    <section className="live-section" aria-labelledby="merged-here">
+      <div className="live-section-head">
+        <h2 id="merged-here">{w.history}</h2>
+      </div>
+      <div className="live-list">
+        {merges.map((merge) => (
+          <div className="help-row" key={merge.at}>
+            <div>
+              <p>{w.mergedBy(sampleSaid(merge.name), merge.who, format(merge.at, { weekday: undefined, year: "numeric" }))}</p>
+              <p>{w.moving(merge.moved)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type Words = (typeof said)["en" | "es"];
+type Candidate = { id: Id<"neighbors">; name: string; address: string; adults: number; children: number; sameBy: ("phone" | "address" | "name")[]; notesAgree: boolean };
+
+function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w: Words; neighborId: Id<"neighbors">; onMerged: (said: string) => void }) {
+  const { data, sampleSaid } = useWorkspace();
+  const churchId = data.church.id;
+  const dismiss = useMutation(api.duplicates.dismiss);
+  const [merging, setMerging] = useState<Shown | null>(null);
   return (
     <section className="live-section" aria-labelledby="possible-same">
       <div className="live-section-head">
         <h2 id="possible-same">{w.title}</h2>
-        <span className="live-count">{w.count(found.shown.length)}</span>
+        <span className="live-count">{w.count(found.length)}</span>
       </div>
       <div className="live-list">
-        {found.shown.map((row) => (
+        {found.map((row) => (
           <div className="help-row" key={row.id}>
             <div>
               <h3>
@@ -134,8 +182,9 @@ export function PossibleSame({ neighborId, onMerged }: { neighborId: Id<"neighbo
   );
 }
 
-function MergeForm({ neighborId, other, w, onMerged }: { neighborId: Id<"neighbors">; other: Shown; w: (typeof said)["en" | "es"]; onMerged: () => void }) {
+function MergeForm({ neighborId, other, w, onMerged }: { neighborId: Id<"neighbors">; other: Shown; w: Words; onMerged: () => void }) {
   const { data } = useWorkspace();
+  const moving = useQuery(api.duplicates.mergeCounts, { churchId: data.church.id, otherId: other.id });
   const merge = useMutation(api.duplicates.merge);
   const { pending, error, save } = useSave("decided");
   return (
@@ -150,7 +199,10 @@ function MergeForm({ neighborId, other, w, onMerged }: { neighborId: Id<"neighbo
       <dl className="for-good-terms">
         <div>
           <dt>{w.moves}</dt>
-          <dd>{w.movesDetail}</dd>
+          <dd>
+            <strong>{moving ? w.moving(moving) : w.counting}</strong>
+            {` ${w.movesDetail}`}
+          </dd>
         </div>
         <div>
           <dt>{w.goes}</dt>
@@ -162,7 +214,7 @@ function MergeForm({ neighborId, other, w, onMerged }: { neighborId: Id<"neighbo
       <div className="live-form-actions">
         <LiveWaiting when={pending} />
         <SheetCancel disabled={pending} />
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending || !moving}>
           {w.confirm}
         </Button>
       </div>

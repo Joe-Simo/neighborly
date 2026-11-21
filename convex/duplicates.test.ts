@@ -52,7 +52,11 @@ describe("possible duplicate households", () => {
 
   test("merging moves the other record's history, keeps both notes and the figures straight", async () => {
     const { t, ids, as } = await setup();
-    await as(ids.coordinator).mutation(api.duplicates.merge, { churchId: ids.church, neighborId: ids.esperanza, otherId: ids.typo });
+    const caller = as(ids.coordinator);
+    const moving = { calls: 0, requests: 1, visits: 0, ledger: 0, notes: 0 };
+    expect(await caller.query(api.duplicates.mergeCounts, { churchId: ids.church, otherId: ids.typo })).toEqual(moving);
+    await caller.mutation(api.duplicates.merge, { churchId: ids.church, neighborId: ids.esperanza, otherId: ids.typo });
+    expect(await caller.query(api.duplicates.merges, { churchId: ids.church, neighborId: ids.esperanza })).toMatchObject([{ name: "Esperanza Montolla", who: "Thomas Okafor", moved: moving }]);
     const after = await t.run(async (ctx) => ({
       gone: await ctx.db.get("neighbors", ids.typo),
       kept: await ctx.db.get("neighbors", ids.esperanza),

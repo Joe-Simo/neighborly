@@ -289,7 +289,7 @@ export const remove = mutation({
     for (const visit of visits) await ctx.db.patch("visits", visit._id, { notes: "" });
     for (const request of requests) await ctx.db.patch("assistanceRequests", request._id, { summary: REMOVED, decisionNote: "", payeeName: "", referral: undefined, referrals: undefined });
     await tally(ctx, churchId, { households: -1, waiting: -requests.filter((request) => request.status === "open").length, gone: neighborId });
-    await ctx.db.patch("neighbors", neighborId, { name: REMOVED, nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", alert: undefined, household: undefined, money: undefined, accounts: undefined });
+    await ctx.db.patch("neighbors", neighborId, { name: REMOVED, nameKey: "", phone: "", phoneKey: "", email: "", address: "", notes: "", alert: undefined, household: undefined, money: undefined, accounts: undefined, mergedFrom: undefined });
     await rebuildNames(ctx, churchId);
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.removed", targetId: neighborId, at: Date.now() });
     return null;

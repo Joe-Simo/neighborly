@@ -194,6 +194,11 @@ export const merge = mutation({
       ...(!neighbor.money && other.money && { money: other.money }),
       ...(other.accounts?.length && { accounts: [...(neighbor.accounts ?? []), ...other.accounts].slice(0, 20) }),
       notes: notesBoth.slice(0, 2000),
+      // Who merged what and when, read on this record. The other record's own merges come along with it.
+      mergedFrom: [...(neighbor.mergedFrom ?? []), ...(other.mergedFrom ?? []), {
+        name: other.name, by: member._id, at: Date.now(),
+        moved: { calls: calls.length, requests: requests.length, visits: visits.length, ledger: ledger.length, notes: notes.length },
+      }].slice(-50),
     });
     // The other's waiting requests now wait under this record: the conference's figures move with them, not twice.
     const waiting = requests.filter((request) => request.status === "open").length;
@@ -201,7 +206,7 @@ export const merge = mutation({
     for (let index = 0; index < waiting; index++) await tally(ctx, churchId, { opened: neighborId });
     await ctx.db.delete("neighbors", otherId);
     await rebuildNames(ctx, churchId);
-    await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.merged", targetId: `${otherId}>${neighborId}`, at: Date.now() });
+    await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.merged", targetId: neighborId, at: Date.now() });
     return null;
   },
 });
@@ -287,5 +292,37 @@ export const dismissCheck = mutation({
     if (!await ctx.db.query("duplicateDismissals").withIndex("by_church", (q) => q.eq("churchId", churchId).eq("kind", kind).eq("key", key)).first())
       await ctx.db.insert("duplicateDismissals", { churchId, kind, key, by: member._id, at: Date.now() });
     return null;
+  },
+});
+
+const moved = v.object({ calls: v.number(), requests: v.number(), visits: v.number(), ledger: v.number(), notes: v.number() });
+/** Before a merge is confirmed: how much of the other record would move to this one. */
+export const mergeCounts = query({
+  args: { churchId: v.id("churches"), otherId: v.id("neighbors") },
+  returns: moved,
+  handler: async (ctx, { churchId, otherId }) => {
+    await neighborRecord(ctx, churchId, otherId);
+    const count = async (rows: Promise<unknown[]>) => (await rows).length;
+    const [calls, requests, visits, ledger, notes] = await Promise.all([
+      count(ctx.db.query("calls").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).take(1000)),
+      count(ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).take(1000)),
+      count(ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).take(1000)),
+      count(ctx.db.query("ledgerEntries").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).take(1000)),
+      count(ctx.db.query("neighborNotes").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).take(1000)),
+    ]);
+    return { calls, requests, visits, ledger, notes };
+  },
+});
+
+/** On the surviving record: every record merged into it, who merged it and when, and what moved. */
+export const merges = query({
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
+  returns: v.array(v.object({ name: v.string(), who: v.string(), at: v.number(), moved })),
+  handler: async (ctx, { churchId, neighborId }) => {
+    const { neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    return Promise.all((neighbor.mergedFrom ?? []).map(async (merge) => ({
+      name: merge.name, at: merge.at, moved: merge.moved,
+      who: (await ctx.db.get("memberships", merge.by))?.name || "A former member",
+    })).reverse());
   },
 });

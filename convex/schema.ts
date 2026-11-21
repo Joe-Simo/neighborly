@@ -69,6 +69,8 @@ export default defineSchema({
       kind: v.union(v.literal("landlord"), v.literal("utility"), v.literal("other")),
       name: v.string(), accountNumber: v.string(), phone: v.string(),
     }))),
+    /** Records a person merged into this one: the name it had, who merged it, when, and what moved. Cleared when the record is removed. */
+    mergedFrom: v.optional(v.array(v.object({ name: v.string(), by: v.id("memberships"), at: v.number(), moved: v.object({ calls: v.number(), requests: v.number(), visits: v.number(), ledger: v.number(), notes: v.number() }) }))),
     createdBy: v.id("memberships"),
     createdAt: v.number(),
   }).index("by_church", ["churchId"]).index("by_church_name", ["churchId", "nameKey"]).index("by_church_phone", ["churchId", "phoneKey"]).searchIndex("search_address", { searchField: "address", filterFields: ["churchId"] }),
