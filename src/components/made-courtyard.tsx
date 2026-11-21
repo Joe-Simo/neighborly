@@ -17,7 +17,8 @@ const source = (sheet: (typeof sheets)[number], width: 960 | 1774) =>
  * `--open` is 1 apart and 0 whole; the scroll sets it in the same event, so the first scroll answers at once.
  * A reader can also take hold of it: dragged up or down, or moved with the arrow keys, the sheets follow the hand
  * one for one, and the scroll lets them be until the courtyard has left the screen.
- * With Reduce Motion, or before the script arrives, the courtyard lies whole and is only a picture.
+ * Before the script arrives the courtyard lies whole and is only a picture. With Reduce Motion it lies whole in the page and the scroll
+ * leaves it be, but it can still be held: each key or tenth of a drag is one cut.
  */
 export function MadeCourtyard({ label, apart, whole, hold, hint, amount }: {
   label: string; apart: string; whole: string; hold: string; hint: string; amount: [whole: string, part: string, apart: string];
@@ -29,7 +30,9 @@ export function MadeCourtyard({ label, apart, whole, hold, hint, amount }: {
 
   useEffect(() => {
     const element = host.current, sheets = stack.current;
-    if (!element || !sheets || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!element || !sheets) return;
+    // With Reduce Motion the scroll never moves the sheets, and the hand moves them only in whole tenths: each step is one cut.
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let last = -1, start = 0, run = 1, held = false;
     // Where the courtyard's run begins and how long it is are measured once, and again only when the page's size changes,
     // so a scroll reads nothing from the layout and costs one style change.
@@ -48,7 +51,7 @@ export function MadeCourtyard({ label, apart, whole, hold, hint, amount }: {
       setPercent(Math.round(open * 100));
     };
     const place = () => {
-      if (held) return;
+      if (held || still) { if (last < 0) show(0); return; }
       // Apart for the first third of the run, laid together over the middle, whole for the last fifth.
       const travelled = Math.min(1, Math.max(0, ((scrollY - start) / run - .2) / .6));
       show(1 - travelled * travelled * (3 - 2 * travelled));
@@ -71,7 +74,10 @@ export function MadeCourtyard({ label, apart, whole, hold, hint, amount }: {
       sheets.setPointerCapture(event.pointerId);
       sheets.addEventListener("pointermove", moved);
     };
-    const moved = (event: PointerEvent) => show(opened + (from - event.clientY) / Math.max(1, sheets.offsetHeight / 3));
+    const moved = (event: PointerEvent) => {
+      const to = opened + (from - event.clientY) / Math.max(1, sheets.offsetHeight / 3);
+      show(still ? Math.round(to * 10) / 10 : to);
+    };
     const lifted = () => sheets.removeEventListener("pointermove", moved);
     const resized = () => { measure(); place(); };
     element.dataset.live = "true";
@@ -88,7 +94,7 @@ export function MadeCourtyard({ label, apart, whole, hold, hint, amount }: {
     const sized = new ResizeObserver(resized);
     sized.observe(document.documentElement);
     resized();
-    addEventListener("scroll", place, { passive: true });
+    if (!still) addEventListener("scroll", place, { passive: true });
     sheets.addEventListener("keydown", keyed);
     sheets.addEventListener("pointerdown", pressed);
     sheets.addEventListener("pointerup", lifted);
@@ -103,7 +109,7 @@ export function MadeCourtyard({ label, apart, whole, hold, hint, amount }: {
 
   return <div ref={host} className="made-courtyard" data-whole="true">
     <div className="made-courtyard-stage">
-      {/* Once it can be held, the courtyard is a slider: how far apart its sheets are. Before that, and with Reduce Motion, it is a picture. */}
+      {/* Once it can be held, the courtyard is a slider: how far apart its sheets are. Before that it is a picture. */}
       <div ref={stack} className="made-courtyard-stack" {...live
         ? { role: "slider", tabIndex: 0, "aria-label": hold, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": percent, "aria-valuetext": percent === 0 ? amount[0] : percent === 100 ? amount[2] : amount[1].replace("{n}", String(percent)), "aria-orientation": "vertical" as const, "aria-describedby": "made-courtyard-hint" }
         : { role: "img", "aria-label": label }}>

@@ -21,8 +21,8 @@ const en = {
     whole: "Laid together, they are the courtyard behind the doors.",
     hold: "Draw the sheets apart",
     hint: "Drag the courtyard up or down, or use the arrow keys, to draw its sheets apart.",
-    /** Said by the slider: whole, part apart ({n} is the percent), and fully apart. */
-    amount: ["Whole", "{n}% apart", "All seven sheets apart"] as [string, string, string],
+    /** Said by the slider: whole, part apart ({n} is the percent), and fully apart. Every step names the sheets, since all of them part together. */
+    amount: ["Whole: all seven sheets laid together as one painting", "{n}% apart: sky, cloister, people, table, garden, floor and doorway, each on its own sheet", "All seven sheets apart, back to front: the sky, the tower and far cloister, the people, the table and its arcade, the garden bench, the floor, the doorway"] as [string, string, string],
   },
   /**
    * The checks this page rests on, each with where it is recorded. Only what has been run is here. {frames1440}, {frames390}, {right}, {cells},
@@ -174,7 +174,7 @@ const es: typeof en = {
     whole: "Juntas, son el patio que hay tras las puertas.",
     hold: "Separar las hojas",
     hint: "Arrastra el patio hacia arriba o hacia abajo, o usa las flechas, para separar sus hojas.",
-    amount: ["Entero", "Separadas al {n}%", "Las siete hojas separadas"],
+    amount: ["Entero: las siete hojas juntas, una sola pintura", "Separadas al {n}%: cielo, claustro, personas, mesa, jardín, suelo y puerta, cada uno en su hoja", "Las siete hojas separadas, de atrás hacia adelante: el cielo, la torre y el claustro del fondo, las personas, la mesa y su arcada, el banco del jardín, el suelo, la puerta"],
   },
   checked: {
     title: "Cómo se comprobó",
