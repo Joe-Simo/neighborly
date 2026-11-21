@@ -847,9 +847,14 @@ function offCategoryQuestion(line: string): Question {
   };
 }
 /** How sure the model is of each line, 0 to 1, or null when any answer is not a number. One request for every line. */
+/**
+ * A request's kind is booked as its bare code ("voucher"), which tells the model nothing: run 2 read a thrift-store bed
+ * under "voucher" as spending elsewhere. Each code goes as what it means, the same words the help line asks with.
+ */
+const described = (category: string) => (category in kindMeaning ? kindMeaning[category as RequestKind] : category);
 async function offCategory(key: string, lines: { memo: string; category: string }[], known?: Known) {
   const answers = await decide(key,
-    { lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500), category: line.category }])) },
+    { lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500), category: described(line.category) }])) },
     Object.fromEntries(lines.map((_, index) => [`l${index}`, offCategoryQuestion(`lines.l${index}`)])),
     known,
   );
@@ -948,7 +953,7 @@ function spentOnQuestion(line: string, categories: number): Question {
 async function spentOn(key: string, lines: { memo: string; category: string }[], known?: Known) {
   const categories = [...new Set(lines.map(line => line.category))];
   const answers = await decide(key,
-    { categories: Object.fromEntries(categories.map((name, index) => [`c${index}`, name])), lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500) }])) },
+    { categories: Object.fromEntries(categories.map((name, index) => [`c${index}`, described(name)])), lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500) }])) },
     Object.fromEntries(lines.map((_, index) => [`l${index}`, spentOnQuestion(`lines.l${index}`, categories.length)])),
     known,
   );
@@ -957,7 +962,7 @@ async function spentOn(key: string, lines: { memo: string; category: string }[],
     const answer = answers[`l${index}`];
     if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number" || typeof answer.choice !== "string") return null;
     const own = `c${categories.indexOf(line.category)}`;
-    return { pick: answer.choice, confidence: answer.confidence, off: answer.choice !== own && answer.choice !== "unclear" && answer.confidence >= agreed };
+    return { pick: answer.choice, confidence: answer.confidence, elsewhere: answer.choice !== own && answer.choice !== "unclear" };
   });
 }
 
@@ -976,7 +981,9 @@ export const measureLedger = internalAction({
       const flagged = sure[index] >= sureEnough;
       const mark = flagged === item.off ? "right" as const : flagged ? "wrong" as const : "missed" as const;
       const pick = picks?.[index] ?? null;
-      const trialFlagged = !!pick?.off;
+      // Trial 3: the live yes stands; otherwise both readings must lean the same way: a near-certain pick of somewhere
+      // else (0.95) and a yes-or-no score of at least 0.5. Either alone is too loose (run 2: three wrong); below, it abstains.
+      const trialFlagged = flagged || (!!pick?.elsewhere && pick.confidence >= 0.95 && sure[index] >= 0.5);
       const trialMark = trialFlagged === item.off ? "right" as const : trialFlagged ? "wrong" as const : "missed" as const;
       return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, trialMark, heldOut: !!item.heldOut, ...(pick && { pick: pick.pick, pickConfidence: Math.round(pick.confidence * 100) / 100, trialFlagged }) };
     });
