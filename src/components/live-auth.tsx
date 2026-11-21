@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import { useContext, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { takeSampleTicket } from "@/lib/sample-ticket";
 import { useWaited } from "@/lib/use-waited";
 import { useFocusBack } from "@/lib/use-focus-back";
@@ -16,7 +16,7 @@ import { LiveField } from "@/components/workspace/primitives";
 import { carryTheCard } from "@/components/workspace/door";
 import { holdAndTurn } from "./courtyard-door";
 import { underneathIsReady } from "@/lib/room-whole";
-import { authWords, tabInReadersLanguage, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
+import { authWords, DrawnIn, tabInReadersLanguage, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import { EntrySheet } from "./entry-sheet";
 
 export type LiveEntryIntent = "start" | "join" | "signin";
@@ -332,11 +332,13 @@ export function LiveAuth({
 
   const openSample = useEffectEvent(() => void lookAround());
   const sampleAsked = useRef(false);
+  // Not from a copy the server drew in one language of two (live-app.tsx): once the page knows, the copy kept asks once.
+  const drawnCopy = useContext(DrawnIn) !== null;
   useEffect(() => {
-    if (!enterSample || !sampleEntry || sampleAsked.current) return;
+    if (!enterSample || !sampleEntry || drawnCopy || sampleAsked.current) return;
     sampleAsked.current = true;
     openSample();
-  }, [enterSample, sampleEntry]);
+  }, [enterSample, sampleEntry, drawnCopy]);
 
   function sendAgain() {
     void run(async () => {
