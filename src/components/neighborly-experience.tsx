@@ -60,7 +60,10 @@ export function NeighborlyExperience() {
       sheet.dataset.carrying = "true";
       rise = sheet.animate([{ transform: "translateY(100%)" }, { transform: "none" }], { duration: 380, easing: "cubic-bezier(.2,.65,.2,1)", fill: "forwards" });
       void rise.finished.then(() => {
-        router.push(href);
+        // The sheet now covers the whole window: the page is taken to its top under it, and the room is asked for without
+        // the router's own scroll, which measured the new page inside the commit that lays it.
+        scrollTo({ top: 0, behavior: "instant" });
+        router.push(href, { scroll: false });
         release = setTimeout(() => { delete sheet.dataset.carrying; rise?.cancel(); }, 6000);
       }, () => {});
     };
