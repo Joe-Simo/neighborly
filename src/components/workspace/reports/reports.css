@@ -999,3 +999,15 @@
   .report-hours-lines li { grid-template-columns: minmax(0, 1fr) auto; }
   .report-hours-strip { grid-column: 1 / -1; grid-row: 2; }
 }
+
+/* The Housing Provider Summary: a wide table of months that scrolls inside its own frame, never the page. */
+.housing-section { margin-top: var(--space-24); }
+.housing-note { margin: var(--space-8) 0; color: var(--live-ink); }
+.housing-scroll { max-width: 100%; overflow-x: auto; margin: var(--space-16) 0; border-top: 1px solid var(--live-line); }
+.housing-table { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 100%; }
+.housing-table th, .housing-table td { padding: var(--space-8); border-bottom: 1px solid var(--live-line); text-align: right; white-space: nowrap; color: var(--live-ink); }
+.housing-table th[scope="row"], .housing-table thead th:first-child { text-align: left; position: sticky; left: 0; background: var(--help-sheet); }
+.housing-table th small { display: block; color: var(--live-muted); font-weight: 400; }
+.housing-table abbr { text-decoration: none; }
+.housing-table tfoot th, .housing-table tfoot td { font-weight: 600; }
+@media print { .housing-section { display: none; } }
