@@ -159,11 +159,11 @@ export function es(set: WordSet): Words {
     },
     dateField: { choose: "Elige un día", done: "Listo", chooseTime: "Elige una hora", time: "hora" },
     week: {
-      quilt: "Esta semana: {calls} · {visits} · {yeses}",
       quiltCalls: (count) => (count === 1 ? "1 llamada devuelta" : `${esN(count)} llamadas devueltas`),
       quiltVisits: (count) => (count === 1 ? "1 visita" : `${esN(count)} visitas`),
       quiltYeses: (count) => (count === 1 ? "1 sí" : `${esN(count)} síes`),
       quiltNone: "Nada todavía esta semana",
+      quiltLead: "Esta semana:",
       figures: { calls: "Llamadas por devolver", visits: "Visitas planeadas", requests: "Peticiones que esperan un sí", oldest: (days) => (days === 1 ? "La más antigua, 1 día" : `La más antigua, ${esN(days)} días`), toPay: (count) => (count === 1 ? "1 aprobada, sin pagar" : `${esN(count)} aprobadas, sin pagar`) },
       startHere: { lead: "Empieza aquí", rest: "una llamada espera tu sí." },
       comingUp: "Lo que viene",

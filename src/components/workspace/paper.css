@@ -1238,7 +1238,10 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* Saved while the room is open: pressed once into its place. */
 .week-quilt-piece[data-laid] { animation: week-piece-pressed 200ms var(--paper-ease) both; }
 @keyframes week-piece-pressed { from { transform: translateY(-3px) scale(1.08); } }
-.week-quilt figcaption { margin-top: var(--space-8); font-size: 13px; line-height: 1.4; color: var(--live-ink); }
+.week-quilt figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) 16px; margin-top: var(--space-8); font-size: 14px; line-height: 1.4; color: var(--live-ink); }
+/* The key's swatch is a piece of the quilt itself, set level and a little smaller, beside the count it names. */
+.week-quilt-key { display: inline-flex; align-items: center; gap: 8px; }
+.week-quilt-key > .week-quilt-piece { --size: 12px; margin: 0; rotate: none; translate: none; }
 @media (max-width: 850px) {
   .week-quilt { --head-gap: 24px; }
   .week-quilt-band { column-gap: 3px; --day: calc((100cqi - 18px) / 7); }

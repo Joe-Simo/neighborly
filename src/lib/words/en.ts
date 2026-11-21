@@ -163,12 +163,12 @@ export function en(set: WordSet) {
     },
     dateField: { choose: "Choose a day", done: "Done", chooseTime: "Choose a time", time: "time" },
     week: {
-      /** The week's quilt: its one caption, which is also what a screen reader hears. */
-      quilt: "This week: {calls} · {visits} · {yeses}",
       quiltCalls: (count: number) => (count === 1 ? "1 call returned" : `${enN(count)} calls returned`),
       quiltVisits: (count: number) => (count === 1 ? "1 visit" : `${enN(count)} visits`),
       quiltYeses: (count: number) => (count === 1 ? "1 yes" : `${enN(count)} yeses`),
       quiltNone: "Nothing yet this week",
+      /** Before the quilt's key: each count follows a swatch of the paper its pieces are cut from. */
+      quiltLead: "This week:",
       figures: { calls: "Calls waiting", visits: "Visits planned", requests: "Requests awaiting a yes", oldest: (days: number) => (days === 1 ? "Oldest call, 1 day" : `Oldest call, ${enN(days)} days`), toPay: (count: number) => `${enN(count)} approved, not yet paid` },
       startHere: { lead: "Start here", rest: "a call is waiting for your yes." },
       comingUp: "Coming up",

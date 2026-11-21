@@ -25,7 +25,6 @@ import { Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import type { Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { useWorkspace, type Workspace, type WayBack } from "@/components/workspace/context";
 import { UndoAct } from "@/components/workspace/undo";
@@ -35,6 +34,7 @@ import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveWaiting } from "@/components/workspace/states";
 import {
   initials,
+  whyFirst,
   recordHref,
   type Call,
   type Calls,
@@ -661,21 +661,6 @@ function loadForms() {
     },
   );
   return formsComing;
-}
-
-/** Why a call is first, in the reader's language. An unknown reason from a newer backend is left out. */
-function whyFirst(urgent: NonNullable<Call["urgent"]>, words: Words) {
-  const text = words.urgent;
-  const day = urgent.day ?? 0;
-  const known = new Map<string, string | ((day: number) => string)>(
-    Object.entries(text),
-  );
-  return urgent.reasons.flatMap((reason) => {
-    const say = ["label", "origin", "notUrgent"].includes(reason)
-      ? undefined
-      : known.get(reason);
-    return say === undefined ? [] : [typeof say === "string" ? say : say(day)];
-  });
 }
 
 function HelpLineView({

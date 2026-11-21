@@ -100,6 +100,8 @@ export const en = (t: Terms, place: string) => ({
     hours: (count: number) => (count === 1 ? "1 hour" : `${enN(count)} hours`),
     miles: (count: number) => (count === 1 ? "1 mile" : `${enN(count)} miles`),
     noNotes: "No notes written.",
+    /** What the assistant read in the visit's note. Nothing is started from it. */
+    found: "The assistant read in the note: {what}. Nothing was started.",
   },
   forms: {
     day: "Day",
@@ -285,6 +287,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       hours: (count) => (count === 1 ? "1 hora" : `${esN(count)} horas`),
       miles: (count) => (count === 1 ? "1 milla" : `${esN(count)} millas`),
       noNotes: "No se escribieron notas.",
+      found: "El asistente leyó en la nota: {what}. No se inició nada.",
     },
     forms: {
       day: "Día",

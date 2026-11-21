@@ -17,7 +17,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation } from "convex/react";
 import { useHour, useQuery } from "@/components/workspace/query";
-import { ArrowRight, CircleCheck, Printer } from "lucide-react";
+import { ArrowRight, CircleCheck, Printer, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ import { RoomAside } from "@/components/workspace/aside";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { nameKeeper } from "@/components/workspace/keep-names";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { initials } from "@/components/workspace/help-line/format";
+import { initials, whyFirst } from "@/components/workspace/help-line/format";
 import {
   HelpEmpty,
   HelpLoading,
@@ -727,6 +727,17 @@ function VisitsView({
                     </span>
                     <span>{say(visit.notes) || text.written.noNotes}</span>
                   </p>
+                  {visit.found && (
+                    <p className="visits-found">
+                      <Sparkles size={15} aria-hidden="true" />
+                      {fill(text.written.found, {
+                        what: new Intl.ListFormat(words.locale, { type: "conjunction" }).format([
+                          ...(visit.found.kind ? [words.kinds[visit.found.kind]] : []),
+                          ...whyFirst({ reasons: visit.found.signs, day: null }, words),
+                        ]),
+                      })}
+                    </p>
+                  )}
                   {href && <ArrowRight className="help-row-arrow" size={20} aria-hidden="true" />}
                 </div>
               );
