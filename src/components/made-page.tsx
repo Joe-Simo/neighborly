@@ -16,6 +16,7 @@ import "@/components/public-page.css";
 import { CutHead } from "@/components/cut-heads";
 import { BookLeaves } from "@/components/book-leaves";
 import { MadeFrames } from "@/components/made-frames";
+import { MadeLighthouse } from "@/components/made-lighthouse";
 import { MadeProcess } from "@/components/made-process";
 import { MadeTrace } from "@/components/made-trace";
 import { MadeAnatomy } from "@/components/made-anatomy";
@@ -73,6 +74,7 @@ export function MadePage({ language }: { language: Language }) {
             <figcaption>{said.evalTable.source}</figcaption>
           </figure>}
           {table === "frames" && <MadeFrames said={said.frameStrip} language={language} />}
+          {table === "frames" && <MadeLighthouse said={said.lighthouse} language={language} />}
           {table === "process" && <MadeProcess said={said.process} />}
           {table === "trace" && <MadeTrace said={said.trace} />}
           {table === "anatomy" && <MadeAnatomy said={said.anatomy} />}

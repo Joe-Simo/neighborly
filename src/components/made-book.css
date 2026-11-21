@@ -50,3 +50,5 @@
 .public-words .public-made-checked .public-made-checked-source{margin-top:4px;font-size:15px;line-height:1.5;color:#3d4f43}
 /* Heads balance their lines at every width rather than tying the last two words: tied, a long last word ("profundidad") ran past the head's column at 1920. */
 .public-words.public-made section>h2{text-wrap:balance}
+/* Lighthouse at the freeze: six columns do not fit a phone, so under 640px each run is its own short list, each number under its own name. */
+@media(max-width:639px){.public-made-lighthouse thead{display:none}.public-made-lighthouse tr{display:grid;grid-template-columns:1fr auto;column-gap:16px;padding:12px 0}.public-made-lighthouse tr>*{display:contents}.public-made-lighthouse th[scope=row]{display:block;grid-column:1/-1;padding:0 0 4px}.public-made-lighthouse td::before{content:attr(data-head)}}

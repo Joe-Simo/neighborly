@@ -75,6 +75,16 @@ const en = {
     /** {day}, {commit} and {machine} come from the recorder's file. */
     source: "Source: the Mac run of {day}, build {commit}, {machine}. Each mark is one frame, at the height of its time; its raw times are eval/frames/made-scroll.json in the code.",
   },
+  lighthouse: {
+    caption: "Lighthouse on the home page at the freeze, every run",
+    head: ["Run", "Performance", "Accessibility", "Best practices", "SEO", "Largest paint"] as [string, string, string, string, string, string],
+    forms: { mobile: "Phone", desktop: "Desk" },
+    /** {form} is phone or desk, {n} the run's number. */
+    run: "{form}, run {n}",
+    seconds: "{s} s",
+    /** {day}, {commit}, {version} and {url} come from Lighthouse's own reports. */
+    source: "Source: Lighthouse {version} on {url}, {day}, build {commit}: the phone runs with its default slow phone and network, the desk runs with its desktop preset. Each run is shown as it came; the reports are summed up in eval/lighthouse/freeze.json in the code.",
+  },
   evalTable: {
     caption: "The 12 held-out notes, field by field",
     head: ["Field", "Right", "Blank", "Wrong"] as [string, string, string, string],
@@ -220,6 +230,14 @@ const es: typeof en = {
     summary: ["{n} cuadros, ninguno de más de 33 ms. El más lento tardó {worst} ms, dentro del límite.", "{n} cuadros, {over} de más de 33 ms. El más lento tardó {worst} ms."],
     line: "33 ms",
     source: "Fuente: la medición en la Mac del {day}, versión {commit}, {machine}. Cada marca es un cuadro, a la altura de su tiempo; sus tiempos sin tocar están en eval/frames/made-scroll.json, en el código.",
+  },
+  lighthouse: {
+    caption: "Lighthouse en la portada al cierre, cada pasada",
+    head: ["Pasada", "Rendimiento", "Accesibilidad", "Buenas prácticas", "SEO", "Mayor dibujo"],
+    forms: { mobile: "Teléfono", desktop: "Escritorio" },
+    run: "{form}, pasada {n}",
+    seconds: "{s} s",
+    source: "Fuente: Lighthouse {version} en {url}, {day}, versión {commit}: las pasadas de teléfono con su teléfono y red lentos de siempre, las de escritorio con su ajuste de escritorio. Cada pasada se muestra tal como salió; los informes se resumen en eval/lighthouse/freeze.json, en el código.",
   },
   evalTable: {
     caption: "Las 12 notas apartadas, campo por campo",
