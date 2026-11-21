@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useEffect, useState } from "react";
+import { useAction, useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveField } from "@/components/workspace/primitives";
+import { DateField } from "@/components/workspace/date-field";
 import { useHour, useQuery } from "@/components/workspace/query";
 import { LiveFailure } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
@@ -33,10 +34,17 @@ export function WebRequests() {
   const at = useHour();
   const settings = useQuery(api.intake.settings, { churchId });
   const requests = useQuery(api.intake.forTeam, at ? { churchId, at } : "skip");
+  const saveArea = useAction(api.intakeActions.saveArea);
   const saveSettings = useMutation(api.intake.saveSettings);
   const releaseAll = useMutation(api.intake.releaseAll);
+  const seen = useMutation(api.intake.seen);
   const { save, error } = useSave();
   const [editing, setEditing] = useState(false);
+  const [more, setMore] = useState(false);
+  // An owner or coordinator opened the Help line: the team is alive, so the form is not paused for silence.
+  useEffect(() => {
+    if (!data.church.sample) void seen({ churchId }).catch(() => undefined);
+  }, [churchId, data.church.sample, seen]);
   if (settings === undefined || data.church.sample) return null;
   const held = requests?.waiting.filter((row) => row.stage === "held") ?? [];
   const waiting = requests?.waiting.filter((row) => row.stage === "received") ?? [];
@@ -53,7 +61,7 @@ export function WebRequests() {
           onCancel={() => setEditing(false)}
           onSubmit={async (area: ServiceArea) => {
             try {
-              await saveSettings({ churchId, enabled: true, address: area.address, miles: area.miles });
+              await saveArea({ churchId, enabled: true, address: area.address, miles: area.miles });
               setEditing(false);
               return null;
             } catch (cause) {
@@ -63,7 +71,8 @@ export function WebRequests() {
         />
       ) : (
         <div className="web-area">
-          <p>{settings ? (settings.enabled ? w.area(settings.miles, settings.zip) : w.paused(settings.miles, settings.zip)) : w.off}</p>
+          <p>{settings ? (settings.enabled ? w.area(settings.miles, settings.zip) : settings.autoPaused ? w.autoPaused : w.paused(settings.miles, settings.zip)) : w.off}</p>
+          {settings?.placed === "zip" && <p className="live-muted">{w.placedByZip}</p>}
           <div className="live-row-actions">
             <Button type="button" variant="outline" onClick={() => setEditing(true)}>{w.setArea}</Button>
             {settings && (
@@ -71,10 +80,13 @@ export function WebRequests() {
                 {settings.enabled ? w.pause : w.resume}
               </Button>
             )}
+            {settings && <Button type="button" variant="ghost" aria-expanded={more} onClick={() => setMore(!more)}>{w.more}</Button>}
           </div>
         </div>
       )}
       {error && !editing && <LiveFailure message={error} />}
+      {settings && more && <AreaMore churchId={churchId} settings={settings} onDone={() => setMore(false)} />}
+      {settings && <Partners churchId={churchId} />}
       {held.length > 0 && (
         <div className="web-held">
           <p>{w.held(held.length)}</p>
@@ -97,7 +109,10 @@ export function WebRequests() {
 function WebRow({ row, churchId }: { row: Row; churchId: Id<"churches"> }) {
   const { words } = useWorkspace();
   const w = webWords(words.locale);
-  const [open, setOpen] = useState<"pass" | "block" | "close" | null>(null);
+  const [open, setOpen] = useState<"pass" | "block" | "close" | "back" | "flag" | null>(null);
+  const accept = useMutation(api.intake.accept);
+  const giveBack = useMutation(api.intake.giveBack);
+  const notGenuine = useMutation(api.intake.notGenuine);
   const passOn = useMutation(api.intake.passOn);
   const block = useMutation(api.intake.block);
   const close = useMutation(api.intake.close);
@@ -113,11 +128,36 @@ function WebRow({ row, churchId }: { row: Row; churchId: Id<"churches"> }) {
       {row.unverified && <p className="web-mark">{w.unverified}</p>}
       {row.doNotMessage && <p className="web-mark">{w.doNotMessage(row.callAt)}</p>}
       {row.meet && <p className="web-mark">{w.meet(row.meet)}</p>}
+      {row.checkArea && <p className="web-mark">{w.checkArea}</p>}
+      {row.partner && <p className="web-mark">{w.fromPartner}</p>}
       {row.late && <p className="web-mark web-late-note">{w.late}</p>}
+      {row.acceptBy !== null && (
+        <div className="web-ask">
+          <p>{w.acceptBy}</p>
+          <div className="live-row-actions">
+            <Button type="button" onClick={() => void save(() => accept({ churchId, requestId: row.id }))}>{w.accept}</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(open === "back" ? null : "back")}>{w.giveBack}</Button>
+          </div>
+        </div>
+      )}
+      {open === "back" && (
+        <form className="live-form" onSubmit={(event) => {
+          event.preventDefault();
+          const reason = String(new FormData(event.currentTarget).get("reason") ?? "");
+          void save(() => giveBack({ churchId, requestId: row.id, reason }));
+        }}>
+          <LiveField label={w.giveBackWhy}><Input name="reason" maxLength={160} required /></LiveField>
+          <div className="live-form-actions">
+            <Button type="button" variant="ghost" onClick={() => setOpen(null)}>{w.cancel}</Button>
+            <Button type="submit" disabled={pending}>{w.giveBack}</Button>
+          </div>
+        </form>
+      )}
       <div className="live-row-actions">
         <Button type="button" variant="outline" onClick={() => setOpen(open === "pass" ? null : "pass")}>{w.passOn}</Button>
         <Button type="button" variant="ghost" onClick={() => setOpen(open === "close" ? null : "close")}>{w.close}</Button>
         <Button type="button" variant="ghost" onClick={() => setOpen(open === "block" ? null : "block")}>{w.block}</Button>
+        <Button type="button" variant="ghost" onClick={() => setOpen(open === "flag" ? null : "flag")}>{w.notGenuine}</Button>
       </div>
       {open === "pass" && (
         <form
@@ -146,16 +186,92 @@ function WebRow({ row, churchId }: { row: Row; churchId: Id<"churches"> }) {
           )}
         </form>
       )}
-      {(open === "block" || open === "close") && (
+      {(open === "block" || open === "close" || open === "flag") && (
         <div className="web-ask">
-          <p>{open === "block" ? w.blockAsk : w.closeAsk}</p>
+          <p>{open === "block" ? w.blockAsk : open === "flag" ? w.notGenuineAsk : w.closeAsk}</p>
           <div className="live-form-actions">
             <Button type="button" variant="ghost" onClick={() => setOpen(null)}>{w.cancel}</Button>
-            <Button type="button" disabled={pending} onClick={() => void save(() => (open === "block" ? block : close)({ churchId, requestId: row.id }))}>{open === "block" ? w.block : w.close}</Button>
+            <Button type="button" disabled={pending} onClick={() => void save(() => (open === "block" ? block : open === "flag" ? notGenuine : close)({ churchId, requestId: row.id }))}>{open === "block" ? w.block : open === "flag" ? w.notGenuine : w.close}</Button>
           </div>
         </div>
       )}
       {error && <LiveFailure message={error} />}
     </article>
+  );
+}
+
+type Settings = NonNullable<FunctionReturnType<typeof api.intake.settings>>;
+/** A team's weekly limit, overlap order and closed days. */
+function AreaMore({ churchId, settings, onDone }: { churchId: Id<"churches">; settings: Settings; onDone: () => void }) {
+  const { words } = useWorkspace();
+  const w = webWords(words.locale);
+  const saveSettings = useMutation(api.intake.saveSettings);
+  const { save, error, pending } = useSave();
+  const [holidays, setHolidays] = useState(settings.holidays);
+  const [day, setDay] = useState("");
+  const whole = (text: FormDataEntryValue | null) => (String(text ?? "").trim() ? Number(text) : null);
+  return (
+    <form className="live-form web-more" onSubmit={(event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      void save(() => saveSettings({ churchId, enabled: settings.enabled, address: settings.address, miles: settings.miles, weeklyLimit: whole(form.get("weeklyLimit")), order: whole(form.get("order")), holidays })).then((done) => done.saved && onDone());
+    }}>
+      <LiveField label={w.weeklyLimit}><Input name="weeklyLimit" type="number" inputMode="numeric" min={1} max={1000} defaultValue={settings.weeklyLimit ?? ""} /></LiveField>
+      <LiveField label={w.order}><Input name="order" type="number" inputMode="numeric" min={0} max={1000} defaultValue={settings.order ?? ""} /></LiveField>
+      <LiveField label={w.holidays}><DateField value={day} onChange={setDay} /></LiveField>
+      <Button type="button" variant="outline" disabled={!day} onClick={() => { setHolidays([...new Set([...holidays, day])].sort()); setDay(""); }}>{w.addHoliday}</Button>
+      {holidays.length > 0 && (
+        <ul className="web-days">{holidays.map((one) => (
+          <li key={one}>{one} <Button type="button" variant="ghost" onClick={() => setHolidays(holidays.filter((other) => other !== one))}>{w.removeHoliday(one)}</Button></li>
+        ))}</ul>
+      )}
+      {error && <LiveFailure message={error} />}
+      <div className="live-form-actions">
+        <Button type="button" variant="ghost" onClick={onDone}>{w.cancel}</Button>
+        <Button type="submit" disabled={pending}>{w.saveMore}</Button>
+      </div>
+    </form>
+  );
+}
+
+/** The team's partners: add one (its link is shown once), give a new link, or revoke. */
+function Partners({ churchId }: { churchId: Id<"churches"> }) {
+  const { words } = useWorkspace();
+  const w = webWords(words.locale);
+  const partners = useQuery(api.intakePartners.list, { churchId });
+  const create = useAction(api.intakeActions.createPartner);
+  const relink = useAction(api.intakeActions.newPartnerLink);
+  const revoke = useMutation(api.intakePartners.revoke);
+  const { save, error, pending } = useSave();
+  const [link, setLink] = useState("");
+  const show = (token: string) => setLink(`${window.location.origin}${words.locale === "es" ? "/ayuda" : "/help"}?p=${token}`);
+  return (
+    <div className="web-partners">
+      <h3>{w.partners}</h3>
+      <p className="live-muted">{w.partnersHelp}</p>
+      {partners?.map((partner) => (
+        <div key={partner.id} className="web-partner">
+          <span>{partner.name} · {partner.email}{partner.active ? "" : ` · ${w.revoked}`}</span>
+          <Button type="button" variant="ghost" disabled={pending} onClick={() => void save(() => relink({ churchId, partnerId: partner.id })).then((done) => done.saved && show(done.result))}>{w.newLink}</Button>
+          {partner.active && <Button type="button" variant="ghost" disabled={pending} onClick={() => void save(() => revoke({ churchId, partnerId: partner.id }))}>{w.revoke}</Button>}
+        </div>
+      ))}
+      {link && <p className="web-link">{w.linkOnce} <code>{link}</code></p>}
+      <form className="live-form" onSubmit={(event) => {
+        event.preventDefault();
+        const target = event.currentTarget;
+        const form = new FormData(target);
+        void save(() => create({ churchId, name: String(form.get("name") ?? ""), email: String(form.get("email") ?? "") })).then((done) => {
+          if (!done.saved) return;
+          show(done.result);
+          target.reset();
+        });
+      }}>
+        <LiveField label={w.partnerName}><Input name="name" maxLength={80} required /></LiveField>
+        <LiveField label={w.partnerEmail}><Input name="email" type="email" maxLength={254} required /></LiveField>
+        {error && <LiveFailure message={error} />}
+        <Button type="submit" disabled={pending}>{w.addPartner}</Button>
+      </form>
+    </div>
   );
 }
