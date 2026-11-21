@@ -1,0 +1,245 @@
+/// <reference types="vite/client" />
+import { describe, expect, test } from "vitest";
+import { convexTest } from "convex-test";
+import schema from "./schema";
+import { signedIn } from "./clerk.testing";
+import { api, internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
+import { LIMITS, nextBusinessDay, statusKeyHash } from "./intake";
+import { circlePolygon, covers, distanceMiles, nearestCovering, validArea } from "./area";
+import { hasLink, readCode, readSubmission } from "../src/lib/intake-rules";
+
+const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
+// Made-up centre points, near enough to the real ones for these distances.
+const zips = [
+  { zip: "48201", lat: 42.347, lng: -83.06 }, // Detroit
+  { zip: "48124", lat: 42.298, lng: -83.253 }, // Dearborn, about 10.5 miles west
+  { zip: "48067", lat: 42.49, lng: -83.137 }, // Royal Oak, about 10.5 miles north
+  { zip: "94103", lat: 37.772, lng: -122.411 }, // San Francisco
+];
+
+async function setup() {
+  const t = convexTest(schema, modules);
+  await t.mutation(internal.intake.seedZips, { rows: zips });
+  const ids = await t.run(async (ctx) => {
+    const join = async (name: string) => {
+      const churchId = await ctx.db.insert("churches", { name, timeZone: "America/Detroit" });
+      const userId = await ctx.db.insert("users", {});
+      await ctx.db.insert("memberships", { churchId, userId, name: `${name} owner`, email: `${userId}@example.org`, role: "owner", active: true, approved: true, coverOptIn: false });
+      const member = await ctx.db.insert("users", {});
+      await ctx.db.insert("memberships", { churchId, userId: member, name: `${name} member`, email: `${member}@example.org`, role: "member", active: true, approved: true, coverOptIn: false });
+      return { churchId, userId, member };
+    };
+    return { detroit: await join("St. Example Detroit"), dearborn: await join("St. Sample Dearborn") };
+  });
+  const as = (userId: string) => signedIn(t, userId);
+  await as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, zip: "48201", miles: 10 });
+  await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: true, zip: "48124", miles: 5 });
+  return { t, ids, as };
+}
+
+const NOW_HOUR = Math.floor(Date.now() / 3_600_000) * 3_600_000;
+let serial = 0;
+function ask(overrides: Partial<{ zip: string; contactHash: string; ipHash: string; deviceHash: string; need: string; email: string }> = {}) {
+  serial++;
+  return {
+    kind: "rent" as const, need: overrides.need ?? "Behind on rent this month.", email: overrides.email ?? `person${serial}@example.org`, phone: "", zip: overrides.zip ?? "48201", language: "en" as const,
+    ipHash: overrides.ipHash ?? `ip${serial}`, deviceHash: overrides.deviceHash ?? `device${serial}`, contactHash: overrides.contactHash ?? `contact${serial}`,
+    statusKeyHash: `key${serial}`, codeHash: `code${serial}`, code: "123456", statusLink: "https://example.org/help/status#x",
+  };
+}
+
+describe("areas and routing", () => {
+  test("a circle polygon covers what is inside its miles and not what is outside", () => {
+    const center = zips[0];
+    const area = circlePolygon(center, 10);
+    expect(validArea(area)).toBe(true);
+    expect(covers(area, zips[1])).toBe(distanceMiles(center, zips[1]) <= 10);
+    expect(covers(area, { lat: center.lat + 0.1, lng: center.lng })).toBe(true);
+    expect(covers(area, zips[3])).toBe(false);
+  });
+  test("the nearest church wins where areas overlap", () => {
+    const teams = [
+      { id: "far", area: circlePolygon(zips[1], 25), center: zips[1] },
+      { id: "near", area: circlePolygon(zips[0], 25), center: zips[0] },
+    ];
+    expect(nearestCovering(teams, { lat: 42.35, lng: -83.07 })).toBe("near");
+    expect(nearestCovering(teams, zips[3])).toBe(null);
+  });
+  test("an open ring or too many vertices is refused", () => {
+    expect(validArea({ type: "Polygon", coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1]]] })).toBe(false);
+    const ring = Array.from({ length: 6000 }, (_, i) => [Math.cos(i), Math.sin(i)]);
+    ring.push(ring[0]);
+    expect(validArea({ type: "Polygon", coordinates: [ring] })).toBe(false);
+  });
+  test("a zip goes to the team that covers it; out of area and unknown keep nothing", async () => {
+    const { t, ids } = await setup();
+    expect(await t.mutation(internal.intake.receive, ask({ zip: "48124" }))).toBe("sent");
+    expect(await t.mutation(internal.intake.receive, ask({ zip: "94103" }))).toBe("no_team");
+    expect(await t.mutation(internal.intake.receive, ask({ zip: "99999" }))).toBe("unknown_zip");
+    const rows = await t.run((ctx) => ctx.db.query("webRequests").collect());
+    expect(rows.map((row) => row.churchId)).toEqual([ids.dearborn.churchId]);
+  });
+  test("a team that switches the form off is skipped", async () => {
+    const { t, ids, as } = await setup();
+    await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: false, zip: "48124", miles: 5 });
+    // Dearborn's centre is about 10.5 miles from Detroit's, outside Detroit's 10: with Dearborn off, nobody serves it.
+    expect(await t.mutation(internal.intake.receive, ask({ zip: "48124" }))).toBe("no_team");
+  });
+  test("settings refuse a distance outside 1 to 100 miles and a zip not on the list", async () => {
+    const { ids, as } = await setup();
+    for (const miles of [0, 101, 2.5]) await expect(as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, zip: "48201", miles })).rejects.toThrow("1 to 100");
+    await expect(as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, zip: "00000", miles: 10 })).rejects.toThrow("Census");
+  });
+  test("first contact is due one business day later, Friday's on Monday", () => {
+    const friday = Date.UTC(2026, 10, 20, 15);
+    expect(new Date(nextBusinessDay(friday, "America/Detroit")).getUTCDay()).toBe(1);
+  });
+});
+
+describe("limits, blocks and confirmation", () => {
+  test("an address is slowed after ten in an hour", async () => {
+    const { t } = await setup();
+    for (let i = 0; i < LIMITS.ipPerHour; i++) expect(await t.mutation(internal.intake.receive, ask({ ipHash: "same-ip" }))).toBe("sent");
+    expect(await t.mutation(internal.intake.receive, ask({ ipHash: "same-ip" }))).toBe("slow");
+  });
+  test("a contact past three a day still hears 'sent', and nothing more is kept or emailed", async () => {
+    const { t } = await setup();
+    for (let i = 0; i < 4; i++) expect(await t.mutation(internal.intake.receive, ask({ contactHash: "same-contact" }))).toBe("sent");
+    const outbox = await t.run((ctx) => ctx.db.query("outbox").collect());
+    expect(outbox).toHaveLength(3);
+  });
+  test("the right code makes a call on that team's Help line; a wrong code five times shuts it", async () => {
+    const { t, ids, as } = await setup();
+    const right = ask();
+    await t.mutation(internal.intake.receive, right);
+    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: right.statusKeyHash, codeHash: "nope", ipHash: "x" })).toBe(false);
+    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: right.statusKeyHash, codeHash: right.codeHash, ipHash: "x" })).toBe(true);
+    const calls = await t.run((ctx) => ctx.db.query("calls").collect());
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ churchId: ids.detroit.churchId, callback: "needed", fromWeb: true });
+    expect(calls[0].note).toContain("Behind on rent");
+    const seen = await as(ids.detroit.userId).query(api.intake.forTeam, { churchId: ids.detroit.churchId, at: NOW_HOUR });
+    expect(seen.waiting).toHaveLength(1);
+
+    const wrong = ask();
+    await t.mutation(internal.intake.receive, wrong);
+    for (let i = 0; i < LIMITS.codeTries; i++) await t.mutation(internal.intake.confirm, { statusKeyHash: wrong.statusKeyHash, codeHash: "nope", ipHash: "y" });
+    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: wrong.statusKeyHash, codeHash: wrong.codeHash, ipHash: "y" })).toBe(false);
+  });
+  test("the same contact twice joins its open request instead of a second call", async () => {
+    const { t } = await setup();
+    for (const need of ["Rent is late.", "Also the light bill."]) {
+      const one = ask({ contactHash: "one-person", need });
+      await t.mutation(internal.intake.receive, one);
+      await t.mutation(internal.intake.confirm, { statusKeyHash: one.statusKeyHash, codeHash: one.codeHash, ipHash: "z" });
+    }
+    const calls = await t.run((ctx) => ctx.db.query("calls").collect());
+    expect(calls).toHaveLength(1);
+    expect(calls[0].note).toContain("Also the light bill.");
+  });
+  test("a blocked contact hears 'sent' and nothing is kept", async () => {
+    const { t, ids, as } = await setup();
+    const first = ask({ contactHash: "pest" });
+    await t.mutation(internal.intake.receive, first);
+    await t.mutation(internal.intake.confirm, { statusKeyHash: first.statusKeyHash, codeHash: first.codeHash, ipHash: "z" });
+    const row = await t.run((ctx) => ctx.db.query("webRequests").first());
+    await as(ids.detroit.userId).mutation(api.intake.block, { churchId: ids.detroit.churchId, requestId: row!._id });
+    expect(await t.mutation(internal.intake.receive, ask({ contactHash: "pest" }))).toBe("sent");
+    expect(await t.run((ctx) => ctx.db.query("webRequests").filter((q) => q.eq(q.field("stage"), "pending")).collect())).toHaveLength(0);
+  });
+  test("in a flood, a contact confirmed before is not held", async () => {
+    const { t } = await setup();
+    const known = ask({ contactHash: "known" });
+    await t.mutation(internal.intake.receive, known);
+    await t.mutation(internal.intake.confirm, { statusKeyHash: known.statusKeyHash, codeHash: known.codeHash, ipHash: "k" });
+    await t.run(async (ctx) => { for (const row of await ctx.db.query("webRequests").collect()) await ctx.db.patch("webRequests", row._id, { stage: "closed" }); });
+    for (let i = 0; i < LIMITS.floodPerTeamHour; i++) {
+      const one = ask();
+      await t.mutation(internal.intake.receive, one);
+      await t.mutation(internal.intake.confirm, { statusKeyHash: one.statusKeyHash, codeHash: one.codeHash, ipHash: `f${i}` });
+    }
+    const again = ask({ contactHash: "known" });
+    await t.mutation(internal.intake.receive, again);
+    await t.mutation(internal.intake.confirm, { statusKeyHash: again.statusKeyHash, codeHash: again.codeHash, ipHash: "k2" });
+    const row = await t.run((ctx) => ctx.db.query("webRequests").withIndex("by_status_key", (q) => q.eq("statusKeyHash", again.statusKeyHash)).unique());
+    expect(row?.stage).toBe("received");
+  });
+  test("past twenty in an hour, a team's requests are held for a coordinator", async () => {
+    const { t, ids, as } = await setup();
+    for (let i = 0; i <= LIMITS.floodPerTeamHour; i++) {
+      const one = ask();
+      await t.mutation(internal.intake.receive, one);
+      await t.mutation(internal.intake.confirm, { statusKeyHash: one.statusKeyHash, codeHash: one.codeHash, ipHash: `c${i}` });
+    }
+    const held = await t.run((ctx) => ctx.db.query("webRequests").filter((q) => q.eq(q.field("stage"), "held")).collect());
+    expect(held).toHaveLength(1);
+    await as(ids.detroit.userId).mutation(api.intake.release, { churchId: ids.detroit.churchId, requestId: held[0]._id });
+    expect(await t.run((ctx) => ctx.db.query("calls").collect())).toHaveLength(LIMITS.floodPerTeamHour + 1);
+  });
+  test("the status page shows only where the request stands", async () => {
+    const { t } = await setup();
+    const key = "0123456789abcdef0123456789abcdef";
+    const one = { ...ask(), statusKeyHash: await statusKeyHash(key) };
+    await t.mutation(internal.intake.receive, one);
+    expect(await t.query(api.intake.status, { key })).toEqual({ status: "pending" });
+    await t.mutation(internal.intake.confirm, { statusKeyHash: one.statusKeyHash, codeHash: one.codeHash, ipHash: "s" });
+    expect(await t.query(api.intake.status, { key })).toEqual({ status: "received" });
+    expect(await t.query(api.intake.status, { key: "f".repeat(32) })).toBe(null);
+  });
+});
+
+describe("each team sees only its own", () => {
+  async function confirmed() {
+    const ready = await setup();
+    const one = ask();
+    await ready.t.mutation(internal.intake.receive, one);
+    await ready.t.mutation(internal.intake.confirm, { statusKeyHash: one.statusKeyHash, codeHash: one.codeHash, ipHash: "i" });
+    const row = await ready.t.run((ctx) => ctx.db.query("webRequests").first());
+    return { ...ready, requestId: row!._id as Id<"webRequests"> };
+  }
+  test("another team and a plain member are refused", async () => {
+    const { ids, as, requestId } = await confirmed();
+    const dearborn = as(ids.dearborn.userId);
+    await expect(dearborn.mutation(api.intake.close, { churchId: ids.dearborn.churchId, requestId })).rejects.toThrow("no longer here");
+    await expect(dearborn.query(api.intake.forTeam, { churchId: ids.detroit.churchId, at: 3_600_000 })).rejects.toThrow();
+    await expect(as(ids.detroit.member).query(api.intake.forTeam, { churchId: ids.detroit.churchId, at: 3_600_000 })).rejects.toThrow("coordinators and owners");
+    expect((await dearborn.query(api.intake.forTeam, { churchId: ids.dearborn.churchId, at: 3_600_000 })).waiting).toHaveLength(0);
+  });
+  test("passing on moves the request and its call, leaving only a one-line trace", async () => {
+    const { t, ids, as, requestId } = await confirmed();
+    const detroit = as(ids.detroit.userId);
+    const targets = await detroit.query(api.intake.passTargets, { churchId: ids.detroit.churchId, requestId });
+    expect(targets.map((team) => team.id)).toEqual([ids.dearborn.churchId]);
+    await detroit.mutation(api.intake.passOn, { churchId: ids.detroit.churchId, requestId, toChurchId: ids.dearborn.churchId, reason: "They live closer to Dearborn." });
+    const calls = await t.run((ctx) => ctx.db.query("calls").collect());
+    expect(calls.map((call) => call.churchId)).toEqual([ids.dearborn.churchId]);
+    const left = await detroit.query(api.intake.forTeam, { churchId: ids.detroit.churchId, at: NOW_HOUR });
+    expect(left.waiting).toHaveLength(0);
+    expect(left.passedOn).toEqual([expect.objectContaining({ toName: "St. Sample Dearborn", reason: "They live closer to Dearborn." })]);
+    expect(JSON.stringify(left)).not.toContain("example.org");
+    const there = await as(ids.dearborn.userId).query(api.intake.forTeam, { churchId: ids.dearborn.churchId, at: NOW_HOUR });
+    expect(there.waiting[0].passedFrom).toEqual({ name: "St. Example Detroit", reason: "They live closer to Dearborn." });
+  });
+});
+
+describe("what the form accepts", () => {
+  const good = { adult: true, kind: "food", need: "We need groceries.", email: "Ana@Example.org", phone: "(313) 555-0100", zip: "48201-1234", language: "es" };
+  test("a good submission is read and tidied", () => {
+    expect(readSubmission(good)).toEqual({ ok: true, value: { kind: "food", need: "We need groceries.", email: "ana@example.org", phone: "3135550100", zip: "48201", language: "es" } });
+  });
+  test.each([
+    [{ adult: false }, "adult"], [{ kind: "cash" }, "kind"], [{ need: "x" }, "need"], [{ need: "a".repeat(501) }, "need"], [{ need: "Visit https://spam.example" }, "need"],
+    [{ email: "not-an-email" }, "email"], [{ phone: "555" }, "phone"], [{ zip: "4820" }, "zip"], [{ language: "fr" }, "language"], [{ referredBy: "<script>" }, "referredBy"],
+  ])("refuses %o", (change, problem) => {
+    expect(readSubmission({ ...good, ...change })).toEqual({ ok: false, problem });
+  });
+  test("links are caught in disguise, everyday sentences are not", () => {
+    for (const spam of ["see bit . ly/x", "kindhelps dot com", "www .example", "visit exаmple.com", "hxxps://x"]) expect(hasLink(spam)).toBe(true);
+    for (const real of ["I need help. Me and my kids", "Necesito ayuda. Me cortaron la luz.", "Rent is due on the 1st. Us too", "We moved to Detroit"]) expect(hasLink(real)).toBe(false);
+  });
+  test("a code is six digits", () => {
+    expect(readCode("123 456")).toBe("123456");
+    expect(readCode("12345")).toBe(null);
+  });
+});

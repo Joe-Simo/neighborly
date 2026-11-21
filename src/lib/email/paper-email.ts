@@ -6,7 +6,7 @@ import type { Language, WordSet } from "../words/sets";
  * meaning here, so the sheet is ink on paper; the one link is ink too. Nothing is an image, so a mail app that
  * blocks pictures shows the whole email. Each comes with a plain-text twin that says the same thing.
  */
-type EmailKind = "invitation" | "cover_request" | "meeting" | "digest" | "announcement";
+type EmailKind = "invitation" | "cover_request" | "meeting" | "digest" | "announcement" | "help_code";
 /** The week's counts for the Monday email: numbers only, never a name, so nothing about a household leaves in a mailbox. */
 type WeekCounts = { waiting: number; overdue: number; approved: number; budget: number | null };
 /** An announcement carries its own words: its title becomes the head and its message the body. */
@@ -22,6 +22,14 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string, 
   if (kind === "digest") return weekSaid(language, place, week ?? { waiting: 0, overdue: 0, approved: 0, budget: null });
   if (language === "es") {
     switch (kind) {
+      // For help_code, place is the six-digit code: the person asked for help on the web form and confirms with it.
+      case "help_code": return {
+        subject: `Tu código de Kind Helps: ${place}`,
+        head: `Tu código de Kind Helps es ${place}.`,
+        body: "Escríbelo en la página donde empezaste. El enlace de abajo es tu página privada para ver cómo va.",
+        action: "Ver cómo va mi petición",
+        foot: "Si no lo pediste, puedes ignorar este correo y no se guardará nada.",
+      };
       case "invitation": return {
         subject: `Te invitan a ${place} en Kind Helps`,
         head: "Te invitan a unirte.",
@@ -53,6 +61,13 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string, 
     }
   }
   switch (kind) {
+    case "help_code": return {
+      subject: `Your Kind Helps code: ${place}`,
+      head: `Your Kind Helps code is ${place}.`,
+      body: "Type it on the page where you started. The link below is your private page to see how it is going.",
+      action: "See how my request is going",
+      foot: "If you didn’t ask for it, you can ignore this email and nothing is kept.",
+    };
     case "invitation": return {
       subject: `You’re invited to ${place} on Kind Helps`,
       head: "You’re invited to join.",

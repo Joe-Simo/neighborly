@@ -11,6 +11,7 @@
 import type * as access from "../access.js";
 import type * as aiReads from "../aiReads.js";
 import type * as announcementFanout from "../announcementFanout.js";
+import type * as area from "../area.js";
 import type * as assistance from "../assistance.js";
 import type * as calendar from "../calendar.js";
 import type * as closing from "../closing.js";
@@ -25,6 +26,8 @@ import type * as duplicates from "../duplicates.js";
 import type * as files from "../files.js";
 import type * as functions from "../functions.js";
 import type * as http from "../http.js";
+import type * as intake from "../intake.js";
+import type * as intakeHttp from "../intakeHttp.js";
 import type * as importExport from "../importExport.js";
 import type * as invitations from "../invitations.js";
 import type * as knownNames from "../knownNames.js";
@@ -59,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   access: typeof access;
   aiReads: typeof aiReads;
   announcementFanout: typeof announcementFanout;
+  area: typeof area;
   assistance: typeof assistance;
   calendar: typeof calendar;
   closing: typeof closing;
@@ -73,6 +77,8 @@ declare const fullApi: ApiFromModules<{
   files: typeof files;
   functions: typeof functions;
   http: typeof http;
+  intake: typeof intake;
+  intakeHttp: typeof intakeHttp;
   importExport: typeof importExport;
   invitations: typeof invitations;
   knownNames: typeof knownNames;
