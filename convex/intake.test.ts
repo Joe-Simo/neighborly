@@ -33,8 +33,8 @@ async function setup() {
     return { detroit: await join("St. Example Detroit"), dearborn: await join("St. Sample Dearborn") };
   });
   const as = (userId: string) => signedIn(t, userId);
-  await as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, zip: "48201", miles: 10 });
-  await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: true, zip: "48124", miles: 5 });
+  await as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, address: "1 Example St, Detroit, MI 48201", miles: 10 });
+  await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: true, address: "48124", miles: 5 });
   return { t, ids, as };
 }
 
@@ -82,14 +82,14 @@ describe("areas and routing", () => {
   });
   test("a team that switches the form off is skipped", async () => {
     const { t, ids, as } = await setup();
-    await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: false, zip: "48124", miles: 5 });
+    await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: false, address: "48124", miles: 5 });
     // Dearborn's centre is about 10.5 miles from Detroit's, outside Detroit's 10: with Dearborn off, nobody serves it.
     expect((await t.mutation(internal.intake.receive, ask({ zip: "48124" }))).result).toBe("no_team");
   });
   test("settings refuse a distance outside 1 to 100 miles and a zip not on the list", async () => {
     const { ids, as } = await setup();
-    for (const miles of [0, 101, 2.5]) await expect(as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, zip: "48201", miles })).rejects.toThrow("1 to 100");
-    await expect(as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, zip: "00000", miles: 10 })).rejects.toThrow("Census");
+    for (const miles of [0, 101, 2.5]) await expect(as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, address: "1 Example St, Detroit, MI 48201", miles })).rejects.toThrow("1 to 100");
+    await expect(as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, address: "00000", miles: 10 })).rejects.toThrow("Census");
   });
   test("first contact is due one business day later, Friday's on Monday", () => {
     const friday = Date.UTC(2026, 10, 20, 15);

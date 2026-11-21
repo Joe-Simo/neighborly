@@ -284,31 +284,33 @@ function publicStatus(request: Doc<"webRequests">, call: Doc<"calls"> | null) {
 
 // ——— The team's side: every function starts with neighborAccess and reads only its own church's rows. ———
 
-const settingsRow = v.union(v.null(), v.object({ enabled: v.boolean(), zip: v.string(), miles: v.number() }));
+const settingsRow = v.union(v.null(), v.object({ enabled: v.boolean(), address: v.string(), zip: v.string(), miles: v.number() }));
 export const settings = query({
   args: { churchId: v.id("churches") },
   returns: settingsRow,
   handler: async (ctx, { churchId }) => {
     await neighborAccess(ctx, churchId);
     const intake = (await ctx.db.get("churches", churchId))?.intake;
-    return intake ? { enabled: intake.enabled, zip: intake.zip, miles: intake.miles } : null;
+    return intake ? { enabled: intake.enabled, address: intake.address ?? intake.zip, zip: intake.zip, miles: intake.miles } : null;
   },
 });
 export const saveSettings = mutation({
-  args: { churchId: v.id("churches"), enabled: v.boolean(), zip: v.string(), miles: v.number() },
+  args: { churchId: v.id("churches"), enabled: v.boolean(), address: v.string(), miles: v.number() },
   returns: v.null(),
-  handler: async (ctx, { churchId, enabled, zip, miles }) => {
+  handler: async (ctx, { churchId, enabled, address, miles }) => {
     const member = await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     if (!church || church.sample) throw new ConvexError("The sample conference does not take requests from the web.");
-    const typed = zip.trim();
-    if (!validZip(typed)) throw new ConvexError("Enter a five-digit zip code.");
+    // The centre is the address's zip code's Census centre point for now; the Census address lookup will replace it.
+    const written = address.replace(/\s+/g, " ").trim().slice(0, 200);
+    const typed = written.match(/\b(\d{5})(?:-\d{4})?\s*$/)?.[1] ?? written.match(/\b\d{5}\b/g)?.pop() ?? "";
+    if (!validZip(typed)) throw new ConvexError("Add the church's five-digit zip code to the address.");
     if (!validMiles(miles)) throw new ConvexError("Choose a distance from 1 to 100 miles.");
     const center = await centroid(ctx, typed);
     if (!center) throw new ConvexError("That zip code is not on the Census list. Try the zip of the church itself.");
     const area = circlePolygon(center, miles);
     if (!validArea(area)) throw new ConvexError("That area could not be drawn. Try another distance.");
-    await ctx.db.patch("churches", churchId, { intake: { enabled, zip: typed, miles, area, bbox: bbox(area), center } });
+    await ctx.db.patch("churches", churchId, { intake: { enabled, address: written, zip: typed, miles, area, bbox: bbox(area), center } });
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "intake.settings", targetId: `${enabled ? "on" : "off"}:${typed}:${miles}`, at: Date.now() });
     return null;
   },
