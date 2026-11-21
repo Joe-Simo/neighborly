@@ -1,0 +1,234 @@
+import { ConvexError, v } from "convex/values";
+import { action, internalAction, internalMutation, internalQuery, mutation, query, env, type QueryCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
+import { neighborAccess, neighborRecord } from "./access";
+import { confidence, model, sureEnough } from "./drafts";
+import { namesFor, rebuildNames } from "./knownNames";
+import { tally } from "./counts";
+import { needsNotes, sameBy, type SameBy } from "../src/lib/duplicates";
+import { duplicateSet, type DuplicateSide } from "../src/lib/duplicate-set";
+import { nameKey } from "../src/lib/keys";
+
+/**
+ * Two records that may be one household. Code finds them by the phone, the street address and the name; the assistant
+ * is asked one yes-or-no question about the two records' notes, with names, phones and streets taken out; a person
+ * merges the two or says they are not the same. Nothing is merged or hidden without a person.
+ */
+const LOOK = 10;
+const sameByValue = v.array(v.union(v.literal("phone"), v.literal("address"), v.literal("name")));
+const ordered = (a: Id<"neighbors">, b: Id<"neighbors">) => (a < b ? [a, b] as const : [b, a] as const);
+const live = (row: Doc<"neighbors"> | null): row is Doc<"neighbors"> => row !== null && row.nameKey !== "";
+
+async function pairOf(ctx: QueryCtx, a: Id<"neighbors">, b: Id<"neighbors">) {
+  const [first, second] = ordered(a, b);
+  return ctx.db.query("duplicatePairs").withIndex("by_pair", (q) => q.eq("first", first).eq("second", second)).unique();
+}
+
+/** Records that may be this household, each with what it shares, read with indexes only: never the whole conference. */
+async function lookAlikes(ctx: QueryCtx, neighbor: Doc<"neighbors">) {
+  const churchId = neighbor.churchId;
+  const firstWord = nameKey(neighbor.name).split(" ")[0] ?? "";
+  const lastWord = nameKey(neighbor.name).split(" ").at(-1) ?? "";
+  const [byPhone, byFirst, byAddress] = await Promise.all([
+    neighbor.phoneKey.length >= 7 ? ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", neighbor.phoneKey)).take(LOOK) : [],
+    firstWord ? ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gte("nameKey", firstWord.slice(0, 3)).lt("nameKey", `${firstWord.slice(0, 3)}￿`)).take(40) : [],
+    neighbor.address.trim() ? ctx.db.query("neighbors").withSearchIndex("search_address", (q) => q.search("address", neighbor.address).eq("churchId", churchId)).take(LOOK) : [],
+  ]);
+  // A name written family name first ("Walker, Denise") is found by its last word too.
+  const byLast = lastWord && lastWord !== firstWord ? await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gte("nameKey", lastWord.slice(0, 3)).lt("nameKey", `${lastWord.slice(0, 3)}￿`)).take(40) : [];
+  const seen = new Map<Id<"neighbors">, Doc<"neighbors">>();
+  for (const row of [...byPhone, ...byFirst, ...byLast, ...byAddress]) if (row._id !== neighbor._id && live(row)) seen.set(row._id, row);
+  return [...seen.values()].map((row) => ({ row, shared: sameBy(neighbor, row) })).filter(({ shared }) => shared.length > 0);
+}
+
+/**
+ * On a record: the records that may be the same household. A pair code is sure of (two things in common) shows at once;
+ * a pair with one thing in common shows only once the notes have been read as the same household at 0.9 or more.
+ * `unread` lists the pairs whose notes the screen should ask about; the screen asks once and this answer follows.
+ */
+export const forRecord = query({
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors") },
+  returns: v.object({
+    shown: v.array(v.object({ id: v.id("neighbors"), name: v.string(), address: v.string(), adults: v.number(), children: v.number(), sameBy: sameByValue, notesAgree: v.boolean() })),
+    unread: v.array(v.id("neighbors")),
+  }),
+  handler: async (ctx, { churchId, neighborId }) => {
+    const { neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    const shown = [], unread: Id<"neighbors">[] = [];
+    for (const { row, shared } of (await lookAlikes(ctx, neighbor)).slice(0, LOOK)) {
+      const pair = await pairOf(ctx, neighborId, row._id);
+      if (pair?.dismissedAt) continue;
+      if (!pair?.read) unread.push(row._id);
+      const notesAgree = (pair?.read?.same ?? 0) >= sureEnough;
+      if (needsNotes(shared) && !notesAgree) continue;
+      shown.push({ id: row._id, name: row.name, address: row.address, adults: row.adults, children: row.children, sameBy: shared, notesAgree });
+    }
+    return { shown, unread };
+  },
+});
+
+/** What is said about a household, for the question: its own notes and its last few calls. Never its name or street. */
+async function said(ctx: QueryCtx, neighbor: Doc<"neighbors">): Promise<DuplicateSide> {
+  const calls = await ctx.db.query("calls").withIndex("by_neighbor", (q) => q.eq("neighborId", neighbor._id)).order("desc").take(3);
+  const notes = [neighbor.notes, ...calls.map((call) => call.note)].map((text) => text.trim()).filter(Boolean).join("\n").slice(0, 1000);
+  return { notes, adults: neighbor.adults, children: neighbor.children };
+}
+
+export const pairNotes = internalQuery({
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), otherId: v.id("neighbors") },
+  returns: v.union(v.null(), v.object({
+    userId: v.id("users"),
+    first: v.object({ notes: v.string(), adults: v.number(), children: v.number() }),
+    second: v.object({ notes: v.string(), adults: v.number(), children: v.number() }),
+    names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()),
+  })),
+  handler: async (ctx, { churchId, neighborId, otherId }) => {
+    const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    const other = await ctx.db.get("neighbors", otherId);
+    if (!live(other) || other.churchId !== churchId || neighborId === otherId) throw new ConvexError("Record not found.");
+    // Asked once per pair, and only about a pair code found.
+    if ((await pairOf(ctx, neighborId, otherId))?.read || !sameBy(neighbor, other).length) return null;
+    const [first, second] = await Promise.all([said(ctx, neighbor), said(ctx, other)]);
+    return {
+      userId: member.userId, first, second,
+      names: [neighbor.name, other.name], addresses: [neighbor.address, other.address].filter(Boolean),
+      others: await namesFor(ctx, churchId),
+    };
+  },
+});
+
+export const keepRead = internalMutation({
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), otherId: v.id("neighbors"), same: v.number() },
+  returns: v.null(),
+  handler: async (ctx, { churchId, neighborId, otherId, same }) => {
+    const [first, second] = ordered(neighborId, otherId);
+    const pair = await pairOf(ctx, first, second);
+    const read = { same, at: Date.now() };
+    if (pair) await ctx.db.patch("duplicatePairs", pair._id, { read });
+    else await ctx.db.insert("duplicatePairs", { churchId, first, second, read });
+    return null;
+  },
+});
+
+/** One question, shared with the measuring run so both ask the same thing. */
+const sameQuestion = {
+  same: "Do first and second describe the same household: the same people, in the same circumstances, written down on two occasions? Count the adults and children given. Answer no when they plainly differ in who lives there or in their circumstances, or when either says too little to tell. Judge only what is written.",
+};
+
+/**
+ * Reads the two records' notes and keeps how sure the assistant is that they describe one household. Names, phones,
+ * emails and streets are taken out before anything is sent, and the model writes no text. Asked once per pair.
+ */
+export const readPair = action({
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), otherId: v.id("neighbors") },
+  returns: v.union(v.literal("read"), v.literal("not asked")),
+  handler: async (ctx, args): Promise<"read" | "not asked"> => {
+    const asked = await ctx.runQuery(internal.duplicates.pairNotes, args);
+    const key = env.TYPESAFE_API_KEY;
+    if (!asked || !key || !asked.first.notes || !asked.second.notes) return "not asked";
+    if (await ctx.runMutation(internal.drafts.reserve, { userId: asked.userId, churchId: args.churchId }) !== "ok") return "not asked";
+    const sure = await confidence(key, { first: asked.first, second: asked.second }, sameQuestion, { names: asked.names, addresses: asked.addresses, others: asked.others });
+    if (!sure) return "not asked";
+    await ctx.runMutation(internal.duplicates.keepRead, { ...args, same: sure.same });
+    return "read";
+  },
+});
+
+/** A person says the two are different households; the pair is not shown again. */
+export const dismiss = mutation({
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), otherId: v.id("neighbors") },
+  returns: v.null(),
+  handler: async (ctx, { churchId, neighborId, otherId }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const [first, second] = ordered(neighborId, otherId);
+    const both = await Promise.all([ctx.db.get("neighbors", first), ctx.db.get("neighbors", second)]);
+    if (!both.every((row) => row?.churchId === churchId) || first === second) throw new ConvexError("Record not found.");
+    const pair = await pairOf(ctx, first, second);
+    const said = { dismissedBy: member._id, dismissedAt: Date.now() };
+    if (pair) await ctx.db.patch("duplicatePairs", pair._id, said);
+    else await ctx.db.insert("duplicatePairs", { churchId, first, second, ...said });
+    return null;
+  },
+});
+
+/**
+ * A person folds `otherId` into `neighborId`: every call, request, visit, note and ledger line of the other record moves
+ * to this one, a field this record leaves empty takes the other's, the other's notes are added under this one's, and the
+ * other record goes. Nothing is counted twice and nothing said about the household is lost. Written to the audit trail.
+ */
+export const merge = mutation({
+  args: { churchId: v.id("churches"), neighborId: v.id("neighbors"), otherId: v.id("neighbors") },
+  returns: v.null(),
+  handler: async (ctx, { churchId, neighborId, otherId }) => {
+    const { member, neighbor } = await neighborRecord(ctx, churchId, neighborId);
+    const other = await ctx.db.get("neighbors", otherId);
+    if (!live(other) || other.churchId !== churchId || otherId === neighborId) throw new ConvexError("Record not found.");
+    const [calls, requests, visits, notes, ledger, pairs] = await Promise.all([
+      ctx.db.query("calls").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).collect(),
+      ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).collect(),
+      ctx.db.query("visits").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).collect(),
+      ctx.db.query("neighborNotes").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).collect(),
+      ctx.db.query("ledgerEntries").withIndex("by_neighbor", (q) => q.eq("neighborId", otherId)).collect(),
+      Promise.all([
+        ctx.db.query("duplicatePairs").withIndex("by_pair", (q) => q.eq("first", otherId)).collect(),
+        ctx.db.query("duplicatePairs").withIndex("by_second", (q) => q.eq("second", otherId)).collect(),
+      ]).then((both) => both.flat()),
+    ]);
+    for (const row of calls) await ctx.db.patch("calls", row._id, { neighborId });
+    for (const row of requests) await ctx.db.patch("assistanceRequests", row._id, { neighborId });
+    for (const row of visits) await ctx.db.patch("visits", row._id, { neighborId });
+    for (const row of notes) await ctx.db.patch("neighborNotes", row._id, { neighborId });
+    for (const row of ledger) await ctx.db.patch("ledgerEntries", row._id, { neighborId });
+    for (const row of pairs) await ctx.db.delete("duplicatePairs", row._id);
+    const notesBoth = [neighbor.notes, other.notes].map((text) => text.trim()).filter((text, index, all) => text && all.indexOf(text) === index).join("\n\n");
+    await ctx.db.patch("neighbors", neighborId, {
+      ...(!neighbor.phone && other.phone && { phone: other.phone, phoneKey: other.phoneKey }),
+      ...(!neighbor.email && other.email && { email: other.email }),
+      ...(!neighbor.address && other.address && { address: other.address }),
+      ...(!neighbor.alert && other.alert && { alert: other.alert }),
+      ...(!neighbor.household?.length && other.household?.length && { household: other.household }),
+      ...(!neighbor.money && other.money && { money: other.money }),
+      ...(other.accounts?.length && { accounts: [...(neighbor.accounts ?? []), ...other.accounts].slice(0, 20) }),
+      notes: notesBoth.slice(0, 2000),
+    });
+    // The other's waiting requests now wait under this record: the conference's figures move with them, not twice.
+    const waiting = requests.filter((request) => request.status === "open").length;
+    await tally(ctx, churchId, { households: -1, gone: otherId });
+    for (let index = 0; index < waiting; index++) await tally(ctx, churchId, { opened: neighborId });
+    await ctx.db.delete("neighbors", otherId);
+    await rebuildNames(ctx, churchId);
+    await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "neighbor.merged", targetId: `${otherId}>${neighborId}`, at: Date.now() });
+    return null;
+  },
+});
+
+/**
+ * Measures the question on the made-up pairs (src/lib/duplicate-set.ts) with the same wording and the same 0.9 line the
+ * record uses. Run by hand from the Convex command line, never from a screen; it reads no record and saves none.
+ * Right: the notes were read as one household when they are, or not when they are not. Missed: one household not
+ * seen (a person still sees the pair when code is sure of it). Wrong: two households read as one.
+ */
+const tallied = v.object({ right: v.number(), missed: v.number(), wrong: v.number() });
+export const measure = internalAction({
+  args: { churchId: v.id("churches") },
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(), all: tallied, heldOut: tallied, rows: v.array(v.object({ id: v.string(), same: v.number() })) }),
+  handler: async (ctx, { churchId }) => {
+    const zero = { right: 0, missed: 0, wrong: 0 };
+    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const key = env.TYPESAFE_API_KEY;
+    if (!key) return { status: "no key" as const, ...none };
+    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: duplicateSet.length })) return { status: "no allowance" as const, ...none };
+    const rows = await Promise.all(duplicateSet.map(async (item) => {
+      // A pair with nothing written is never asked on a record; it is marked as the record would leave it.
+      const sure = item.a.notes && item.b.notes ? await confidence(key, { first: item.a, second: item.b }, sameQuestion) : { same: 0 };
+      const same = Math.round((sure?.same ?? 0) * 100) / 100;
+      const read = same >= sureEnough;
+      return { id: item.id, same, mark: read === item.same ? "right" as const : read ? "wrong" as const : "missed" as const, heldOut: !!item.heldOut };
+    }));
+    const add = (only: boolean) => rows.filter((row) => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row.mark]: sum[row.mark] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, same }) => ({ id, same })) };
+  },
+});
+
+export type { SameBy };

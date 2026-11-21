@@ -194,4 +194,12 @@ export default defineSchema({
   ledgerKinds: defineTable({ churchId: v.id("churches"), direction: v.union(v.literal("income"), v.literal("expense")), name: v.string(), nameKey: v.string(), retiredAt: v.optional(v.number()), recordedBy: v.id("memberships"), createdAt: v.number() }).index("by_church_key", ["churchId", "nameKey"]),
   // balance is in cents and may be zero or negative.
   bankStatements: defineTable({ churchId: v.id("churches"), endsOn: day, balance: v.number(), agreedBy: v.id("memberships"), agreedAt: v.number() }).index("by_church", ["churchId", "endsOn"]),
+  // Two records a person may need to look at as one household: once the notes have been read, or once a person said they are not.
+  // `first` is the lower id of the two, so a pair has one row. Neither name nor anything said about them is kept here.
+  duplicatePairs: defineTable({
+    churchId: v.id("churches"), first: v.id("neighbors"), second: v.id("neighbors"),
+    /** How sure the assistant was that the two records' notes describe one household, 0 to 1, and when it read them. */
+    read: v.optional(v.object({ same: v.number(), at: v.number() })),
+    dismissedBy: v.optional(v.id("memberships")), dismissedAt: v.optional(v.number()),
+  }).index("by_pair", ["first", "second"]).index("by_second", ["second"]).index("by_church", ["churchId"]),
 });
