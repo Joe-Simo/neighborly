@@ -1,29 +1,20 @@
 "use client";
-import "@/components/public-state.css";
-import { Button } from "@/components/ui/button";
-import { useEntryLanguage } from "@/components/live-auth-words";
-import { words as wordsFor } from "@/lib/words";
+import { EdgeSheet } from "@/components/edge-sheet";
+import { ReaderLanguage } from "@/components/reader-language";
+import { edgeWords } from "@/lib/edge-words";
 
-export default function WorkspaceError({
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  // Outside the workspace's own tables, so it speaks the language chosen at the door.
-  const [language] = useEntryLanguage();
-  const said = wordsFor(language);
-  return (
-    <div className="public-state">
-      <main className="live-auth" lang={said.locale}>
-        <div className="live-auth-art" aria-hidden="true" />
-        <p className="public-state-mark">kind helps</p>
-        <h1>{said.states.launchTitle}</h1>
-        <p className="live-deck">{said.states.launchDeck}</p>
-        <Button onClick={reset} style={{ marginTop: 24 }}>
-          {said.states.tryAgain}
-        </Button>
-      </main>
-    </div>
-  );
+const tabs = { en: edgeWords.en.failedTab, es: edgeWords.es.failedTab };
+
+/**
+ * A room that failed to open: the same sheet as a public page that failed (the home page's kept page, one line, and the one way back,
+ * to try again), with the line that matters inside the app, that what was saved is safe. The root already says the reader's language.
+ */
+export default function WorkspaceError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  return <EdgeSheet
+    piece="page"
+    lines={{ en: edgeWords.en.failed, es: edgeWords.es.failed }}
+    abouts={{ en: edgeWords.en.failedDeck, es: edgeWords.es.failedDeck }}
+    ways={{ en: <button type="button" onClick={reset}>{edgeWords.en.tryAgain}</button>, es: <button type="button" onClick={reset}>{edgeWords.es.tryAgain}</button> }}>
+    <ReaderLanguage tabs={tabs} />
+  </EdgeSheet>;
 }
