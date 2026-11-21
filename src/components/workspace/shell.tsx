@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useConvexConnectionState } from "convex/react";
-import { memo, Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode, type RefObject } from "react";
+import { Activity, memo, Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, CircleCheck, LogOut, Menu, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -355,7 +355,7 @@ export function LiveWorkspace({
   const pulled = useEffectEvent(() => {
     // A sheet is open: a pull would take the words being typed with it. The page stays as it is and says nothing.
     if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return true;
-    const room = document.querySelector(".live-app .live-room");
+    const room = document.querySelector(".live-app .live-room:not([hidden])");
     const current = isWebSocketConnected && !roomWaiting && !!room && !room.querySelector('.live-state[data-kind="error"]');
     if (!current) return false;
     setError("");
@@ -388,12 +388,17 @@ export function LiveWorkspace({
   }, [area]);
   // The room's code is chosen as the room is entered and kept while it stands, so the room is never drawn afresh.
   const [entered, setEntered] = useState(() => ({ area, Section: roomSection(area) }));
+  // Rooms already opened are kept built, hidden (React's Activity: no effects, nothing drawn), up to KEPT_ROOMS of
+  // them, the latest first. Going back to one shows a room already made instead of making all of it in one frame.
+  // What it reads stays kept too (query.ts keeps a reading five minutes after its room is left), so it is shown as it was.
+  const [built, setBuilt] = useState(() => [entered]);
   if (entered.area !== area) {
-    setEntered({ area, Section: roomSection(area) });
+    const next = built.find((room) => room.area === area) ?? { area, Section: roomSection(area) };
+    setEntered(next);
+    setBuilt([next, ...built.filter((room) => room.area !== area)].slice(0, KEPT_ROOMS));
     setRested(roomsOpened.has(area));
   }
   // (A render in which the room has just changed is drawn again at once with the room entered, before anything is shown.)
-  const { Section } = entered;
   // The room whose picture is in and can be painted: the room is not shown before it.
   const [pictured, setPictured] = useState<LiveArea>();
   const picturedNow = useCallback(() => setPictured(area), [area]);
@@ -827,13 +832,20 @@ export function LiveWorkspace({
             </Outcome>
           )}
           <LiveConnection />
-          <AsidePlace key={`aside-${area}`} on={wide}>
-          <div className="live-room" key={area}>
-            <RoomBoundary key={area}>
-              <RoomBody Section={Section} waiting={roomWaiting} label={words.states.opening} pagination={pagination} />
-            </RoomBoundary>
-          </div>
-          </AsidePlace>
+          {built.map((room) => {
+            const here = room.area === entered.area;
+            return (
+              <AsidePlace key={`aside-${room.area}`} on={wide && here}>
+                <div className="live-room" hidden={!here}>
+                  <Activity mode={here ? "visible" : "hidden"}>
+                    <RoomBoundary>
+                      <RoomBody Section={room.Section} waiting={here && roomWaiting} label={words.states.opening} pagination={here ? pagination : null} />
+                    </RoomBoundary>
+                  </Activity>
+                </div>
+              </AsidePlace>
+            );
+          })}
         </main>
         </RoomShown>
         </RoomStill>
@@ -1118,6 +1130,9 @@ const roomsOpened = new Set<LiveArea>();
  * The room itself, drawn again only when the room or its pages change. Showing a room the shell held unseen changes
  * the shell, not the room: drawing every row again then was most of the frame the room is shown in.
  */
+/** How many rooms are kept built at once, the one shown among them. */
+const KEPT_ROOMS = 4;
+
 const RoomBody = memo(function RoomBody({ Section, waiting, label, pagination }: { Section: ComponentType; waiting: boolean; label: string; pagination: ReactNode }) {
   return (
     <>

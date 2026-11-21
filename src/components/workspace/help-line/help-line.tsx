@@ -48,6 +48,7 @@ import {
 import { useSave } from "@/components/workspace/help-line/use-save";
 import { DraftSheet, caller } from "@/components/workspace/help-line/draft-sheet";
 import { laySlip, PAPER_EASE, tipTab } from "@/lib/lay-slip";
+import { lessMotion } from "@/lib/less-motion";
 import {
   HelpDone,
   dropSheetWords,
@@ -698,7 +699,8 @@ function HelpLineView({
   useLayoutEffect(() => {
     // Only a call changing lists moves anything. Otherwise (the room being put in, or turned to whole) where the rows and
     // headings lie is read once the frame has been painted: read here, it made the browser lay out the whole room inside it.
-    const changed = placed.current !== undefined && placed.current !== lineup;
+    // With less motion asked for nothing moves, so nothing is read in the frame either.
+    const changed = !lessMotion() && placed.current !== undefined && placed.current !== lineup;
     placed.current = lineup;
     if (!changed) {
       let after = 0;
@@ -720,7 +722,6 @@ function HelpLineView({
       };
     }
     const now = new Map<string, { top: number; waiting: boolean }>();
-    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     // A row gliding under a resting pointer is not being pointed at: it takes no hover wash until it has landed.
     const travel = (piece: HTMLElement, by: number) => {
       piece.style.pointerEvents = "none";
@@ -747,15 +748,15 @@ function HelpLineView({
         laid.push({ row, from: was.top - window.scrollY });
         travelled = true;
         row.dataset.arrived = "";
-        if (still) return;
         row.style.animation = "none";
         // Its place is already kept in "Returned this week". It is drawn there only when the heading and the
         // rows around it have landed (their move is 480ms), so it never lies under or across any of them.
         row.animate(
           [
-            { opacity: 0, transform: "translateY(10px)", easing: "linear" },
-            { opacity: 0, transform: "translateY(10px)", offset: 480 / 700, easing: "ease-out" },
-            { opacity: 1, transform: "none" },
+            // Words never fade: the row is out of sight, then there whole, and settles its last 10px.
+            { visibility: "hidden", transform: "translateY(10px)", easing: "linear" },
+            { visibility: "visible", transform: "translateY(10px)", offset: 480 / 700, easing: "ease-out" },
+            { visibility: "visible", transform: "none" },
           ],
           { duration: 700 },
         );
@@ -768,14 +769,14 @@ function HelpLineView({
     });
     if (travelled) {
       holdThePage();
-      if (!still) stayed.forEach(([piece, by]) => Math.abs(by) > 1 && travel(piece, by));
+      stayed.forEach(([piece, by]) => Math.abs(by) > 1 && travel(piece, by));
     }
     before.current = now;
     others.current = heads;
     // Play the yes, in the room: the returned call's slip is carried from where it waited and laid on the "returned" count, which then steps up
     // by one; undone, it is lifted back off and carried home, and the count steps down. The home page's own move (lay-slip.ts), nothing new.
     const count = lists.current?.querySelector<HTMLElement>("[data-returned-count]");
-    if (still || !count || (!laid.length && !lifted.length)) return;
+    if (!count || (!laid.length && !lifted.length)) return;
     const said = calls.returned.length;
     // Nothing is laid while a sheet is still on the page (closing, its paper over the list) or the rows are still finding their places:
     // the slip starts at its own size once the room is still, and every place is read in that frame, never as the change lands.
