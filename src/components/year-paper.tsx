@@ -27,14 +27,16 @@ const sayings = (language: Language) => {
  * The first frame is a poster drawn from the same numbers (scripts/year-paper-posters.mts); the canvas is loaded only once the band is near,
  * and takes the poster's place by a cut once it has drawn the same frame. Live, the canvas fills the whole stage: the window frames the picture, and the slips
  * run on past it to the screen's own edges, so paper never ends on a straight crop; the caption keeps its own sheet over them. Every word is the page's own text, beside the slips, never on them.
- * With Reduce Motion, or without script, the poster is the flight's end and nothing moves.
+ * With Reduce Motion the canvas stands at the flight's end and only the walked slips lift, by cuts; without script the poster is that end.
  */
 export function YearPaper({ language = "en" }: { language?: Language }) {
   const { words, months } = useMemo(() => sayings(language), [language]);
   const root = useRef<HTMLElement>(null);
   useEffect(() => {
     const band = root.current, ledger = band?.querySelector<HTMLElement>(".year-paper-station"), frame = band?.querySelector<HTMLElement>(".year-paper-window"), stage = band?.querySelector<HTMLElement>(".year-paper-stage"), month = band?.querySelector<HTMLElement>(".year-paper-month"), run = band?.querySelector<HTMLElement>(".year-paper-run");
-    if (!band || !frame || !stage || !month || !run || matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    if (!band || !frame || !stage || !month || !run || !("IntersectionObserver" in window)) return;
+    // With Reduce Motion the year stands at its end, as the poster does, and the scroll moves nothing; the slips can still be walked, each lift a cut.
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let scene: YearPaperCanvas | null = null, gone = false, top = 0, tall = 0, near = false, drawn = -1, shown = 0, kept = false;
     // The slip pointed at (a mouse's, a tap's) or walked to (the arrow keys), lifted one step and named under the title. A lift is a cut, never eased.
     let lifted: SlipTold | null = null, liftedDrawn = -1, said = "", pointer: { x: number; y: number } | null = null, mouse = false;
@@ -57,7 +59,7 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
     const read = () => { const box = run.getBoundingClientRect(); top = box.top; tall = box.height; };
     const write = () => {
       if (!near) return;
-      const through = Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height)));
+      const through = still ? 1 : Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height)));
       const at = monthAt(through);
       const step0 = Math.round(through * 1000);
       // A scroll moves the slips under a resting mouse: it is asked again. A tap's or a key's slip is let go when the page moves on.
@@ -118,11 +120,11 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
       made.size(measure());
       await idle(); if (gone) return made.dispose();
       read();
-      made.draw(Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height))), kept = held());
+      made.draw(still ? 1 : Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height))), kept = held());
       await idle(); if (gone) return made.dispose();
       stage.prepend(canvas);
       scene = made;
-      // Only a live year can be walked: the poster (Reduce Motion, or no canvas) stands as it is, and is not a stop for the keyboard.
+      // Only a live year can be walked: without a canvas the poster stands as it is, and is not a stop for the keyboard.
       stage.tabIndex = 0; stage.setAttribute("role", "group"); stage.setAttribute("aria-label", words.walk);
       mark(0);
       sized = new ResizeObserver(() => { scene?.size(measure()); mark(0); drawn = -1; ask(); });
