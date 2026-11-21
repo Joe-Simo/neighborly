@@ -49,6 +49,8 @@ const visitRow = v.object({
   visitors: v.array(v.object({ memberId: v.id("memberships"), name: v.string(), hours: v.number(), miles: v.number(), response, removed: v.boolean() })),
   notes: v.string(),
   completedAt: v.union(v.number(), v.null()),
+  /** What the assistant read in the written-up note, for a person to act on; null when it found nothing or was not asked. */
+  found: v.union(v.object({ kind: v.union(kind, v.null()), signs: v.array(v.string()) }), v.null()),
   /** The neighbor's record was removed for good: no name, street, reason or note is carried. */
   recordRemoved: v.boolean(),
 });
@@ -171,7 +173,7 @@ function toVisitRow(found: Awaited<ReturnType<typeof names>>, visit: Doc<"visits
   if (recordRemoved(neighbor))
     return {
       id: visit._id, neighborId: visit.neighborId, neighborName: RECORD_REMOVED, address: "", requestId: null, kind: null, amount: null,
-      scheduledAt: visit.scheduledAt, status: visit.status, notes: "", completedAt: visit.completedAt ?? null, recordRemoved: true,
+      scheduledAt: visit.scheduledAt, status: visit.status, notes: "", completedAt: visit.completedAt ?? null, found: null, recordRemoved: true,
       visitors: visit.visitors.map((visitor) => ({ ...visitor, response: visitor.response ?? "accepted", name: found.member.get(visitor.memberId) ?? formerMember, removed: !found.member.has(visitor.memberId) })),
     };
   return {
@@ -188,6 +190,7 @@ function toVisitRow(found: Awaited<ReturnType<typeof names>>, visit: Doc<"visits
     visitors: visit.visitors.map((visitor) => ({ ...visitor, response: visitor.response ?? "accepted", name: found.member.get(visitor.memberId) ?? formerMember, removed: !found.member.has(visitor.memberId) })),
     notes: visit.notes,
     completedAt: visit.completedAt ?? null,
+    found: visit.found && (visit.found.kind || visit.found.signs.length) ? { kind: visit.found.kind ?? null, signs: visit.found.signs } : null,
     recordRemoved: false,
   };
 }

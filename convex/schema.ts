@@ -155,6 +155,8 @@ export default defineSchema({
     visitors: v.array(v.object({ memberId: v.id("memberships"), hours: v.number(), miles: v.number(), response: v.optional(v.union(v.literal("pending"), v.literal("accepted"), v.literal("declined"))) })),
     notes: v.string(),
     completedAt: v.optional(v.number()),
+    /** What the assistant read in the written-up note: a kind of help and signs, each at 0.9 or more. A person decides what follows. */
+    found: v.optional(v.object({ kind: v.optional(v.union(v.literal("rent"), v.literal("utility"), v.literal("food"), v.literal("voucher"), v.literal("other"))), signs: v.array(v.string()), at: v.number() })),
     /** Who called the visit off, and when: so that one member can undo it from the line that said so. */
     cancelledBy: v.optional(v.id("memberships")),
     cancelledAt: v.optional(v.number()),
