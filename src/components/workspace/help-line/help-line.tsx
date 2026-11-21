@@ -30,12 +30,6 @@ import { fill } from "@/lib/words/fill";
 import { useWorkspace, type Workspace, type WayBack } from "@/components/workspace/context";
 import { UndoAct } from "@/components/workspace/undo";
 import { sayFailure } from "@/components/workspace/failure";
-import {
-  CallForm,
-  NeighborForm,
-  RequestForm,
-  ReturnForm,
-} from "@/components/workspace/help-line/forms";
 import { OnTheLine, lineIsSet, owners, turnsToday } from "@/components/workspace/help-line/on-the-line";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { LiveWaiting } from "@/components/workspace/states";
@@ -157,6 +151,23 @@ function HelpLine() {
   const settle = (call: Call) =>
     setDrafts((all) => all.filter((one) => one.call.id !== call.id));
   const [step, setStep] = useState<Step | null>(null);
+  // The sheets' forms are fetched when the person first presses in the room, never while it is put in or switched
+  // to, and a sheet is drawn when its form is here, whole.
+  const [forms, setForms] = useState(formsHere);
+  useEffect(() => {
+    if (forms) return;
+    // A press on the menu or the tabs is a way out of the room: nothing is fetched under the switch it starts.
+    const press = (event: Event) => {
+      if (!(event.target instanceof Element) || !event.target.closest("header, nav, .live-mobile-menu")) void loadForms().then(setForms, () => {});
+    };
+    window.addEventListener("pointerdown", press, { passive: true });
+    window.addEventListener("keydown", press, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", press);
+      window.removeEventListener("keydown", press);
+    };
+  }, [forms]);
+  useEffect(() => void (step && !forms && loadForms().then(setForms, () => {})), [step, forms]);
   // A line with its way back is kept while the person steps into another room, and is here again on return in its time.
   const [returned] = useState(() => takeLine<Done>("help-line"));
   const [done, setDone] = useState<Done | null>(returned?.value ?? null);
@@ -507,13 +518,13 @@ function HelpLine() {
           )
         }
       />
-      {step?.kind === "join" && (
+      {forms && step?.kind === "join" && (
         <LiveDialog
           title={text.sheets.join.title}
           description={text.sheets.join.deck}
           onClose={close}
         >
-          <NeighborForm
+          <forms.NeighborForm
             churchId={churchId}
             call={step.drafted.call}
             submit={
@@ -539,13 +550,13 @@ function HelpLine() {
           />
         </LiveDialog>
       )}
-      {step?.kind === "change" && changeFor && (
+      {forms && step?.kind === "change" && changeFor && (
         <LiveDialog
           title={text.sheets.change.title}
           description={text.sheets.change.deck(caller(step.drafted.call, words))}
           onClose={close}
         >
-          <RequestForm
+          <forms.RequestForm
             churchId={churchId}
             neighborId={changeFor}
             callId={step.drafted.call.id}
@@ -559,13 +570,13 @@ function HelpLine() {
           />
         </LiveDialog>
       )}
-      {step?.kind === "log" && (
+      {forms && step?.kind === "log" && (
         <LiveDialog
           title={text.log}
           description={text.sheets.log.deck}
           onClose={close}
         >
-          <CallForm
+          <forms.CallForm
             churchId={churchId}
             draftable
             onSaved={(matched, callId, draft, waiting) =>
@@ -581,13 +592,13 @@ function HelpLine() {
           />
         </LiveDialog>
       )}
-      {step?.kind === "return" && (
+      {forms && step?.kind === "return" && (
         <LiveDialog
           title={text.sheets.returned.title}
           description={`${caller(step.call, words)}${step.call.phone ? `, ${step.call.phone}` : ""}`}
           onClose={close}
         >
-          <ReturnForm
+          <forms.ReturnForm
             churchId={churchId}
             call={step.call}
             onSaved={() =>
@@ -599,13 +610,13 @@ function HelpLine() {
           />
         </LiveDialog>
       )}
-      {step?.kind === "request" && step.call.neighborId && (
+      {forms && step?.kind === "request" && step.call.neighborId && (
         <LiveDialog
           title={text.sheets.request.title}
           description={text.sheets.request.deck(caller(step.call, words))}
           onClose={close}
         >
-          <RequestForm
+          <forms.RequestForm
             churchId={churchId}
             neighborId={step.call.neighborId}
             callId={step.call.id}
@@ -614,7 +625,7 @@ function HelpLine() {
           />
         </LiveDialog>
       )}
-      {step?.kind === "neighbor" && (
+      {forms && step?.kind === "neighbor" && (
         <LiveDialog
           title={text.sheets.neighbor.title}
           description={
@@ -624,7 +635,7 @@ function HelpLine() {
           }
           onClose={close}
         >
-          <NeighborForm
+          <forms.NeighborForm
             churchId={churchId}
             call={step.call}
             onSaved={() =>
@@ -635,6 +646,21 @@ function HelpLine() {
       )}
     </>
   );
+}
+
+type Forms = Pick<typeof import("@/components/workspace/help-line/forms"), "CallForm" | "NeighborForm" | "RequestForm" | "ReturnForm">;
+let formsHere: Forms | undefined;
+let formsComing: Promise<Forms> | undefined;
+/** The sheets' forms, fetched once; a fetch that fails is forgotten, so the next sheet asks again. */
+function loadForms() {
+  formsComing ??= import("@/components/workspace/help-line/forms").then(
+    ({ CallForm, NeighborForm, RequestForm, ReturnForm }) => (formsHere = { CallForm, NeighborForm, RequestForm, ReturnForm }),
+    (error: unknown) => {
+      formsComing = undefined;
+      throw error;
+    },
+  );
+  return formsComing;
 }
 
 /** Why a call is first, in the reader's language. An unknown reason from a newer backend is left out. */
