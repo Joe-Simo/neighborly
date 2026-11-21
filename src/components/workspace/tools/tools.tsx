@@ -20,6 +20,8 @@ const YourFilesMore = lazy(() => import("@/components/workspace/tools/your-files
 /** Fetched with the room only once the room is drawn: most visits to Tools never run the check. */
 /** Drawn only for an owner, never in the sample: fetched only when it is. */
 const CloseConference = lazy(() => import("@/components/workspace/closing/close-conference").then((module) => ({ default: module.CloseConference })));
+/** A conference's link to a district or council: drawn only for an owner, and fetched only then. */
+const CouncilLink = lazy(() => import("@/components/workspace/tools/council-link"));
 const RecordsCheck = lazy(() => import("@/components/workspace/tools/records-check").then((module) => ({ default: module.RecordsCheck })));
 
 export function ToolsSection() {
@@ -59,6 +61,7 @@ export function ToolsSection() {
         )}
         <RecordsExport />
         <Suspense><RecordsCheck /></Suspense>
+        <Suspense><CouncilLink /></Suspense>
       </div>
       {/* The last thing in the room, after the way to take everything out. It draws only for an owner, never in the sample. */}
       <Suspense><CloseConference /></Suspense>

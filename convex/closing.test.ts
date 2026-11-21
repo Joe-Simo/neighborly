@@ -57,6 +57,7 @@ async function setup() {
       payees: () => ctx.db.insert("payees", { churchId, kind: "utility", name: "Example Power", nameKey: "example power", address: "", phone: "", email: "", notes: "", ...by }),
       aiUsageByChurch: () => ctx.db.insert("aiUsageByChurch", { churchId, month: "2026-11", count: 3 }),
       auditEvents: () => ctx.db.insert("auditEvents", { churchId, actorId: owner.userId, action: "neighbor.opened", targetId: neighbor._id, at: now }),
+      councilLinks: async () => ctx.db.insert("councilLinks", { councilId: await ctx.db.insert("councils", { name: "Sample District Council", timeZone: "UTC", createdAt: now }), churchId, status: "accepted", createdAt: now }),
       availability: () => ctx.db.insert("availability", { churchId, memberId: member._id, start: "2026-11-01", end: "2026-11-02" }),
     };
     for (const table of swept) {
