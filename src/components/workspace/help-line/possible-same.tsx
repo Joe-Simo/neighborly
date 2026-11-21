@@ -13,10 +13,10 @@ import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/help-line/use-save";
 import { recordHref } from "@/components/workspace/help-line/format";
 import { heldOutFigure } from "@/lib/duplicate-set";
-import run2 from "../../../../eval/duplicates/run-2.json";
+import run3 from "../../../../eval/duplicates/run-3.json";
 
-/** What the record quotes: the held-out pairs of run 2, where today's question was measured as a trial before it went live. */
-const figure = heldOutFigure(run2);
+/** What the record quotes: the held-out pairs of run 3, the live question and rule measured after they went live. */
+const figure = heldOutFigure(run3);
 
 type Figure = ReturnType<typeof heldOutFigure>;
 type Moved = { calls: number; requests: number; visits: number; ledger: number; notes: number };
@@ -29,7 +29,7 @@ const said = {
     count: (n: number) => (n === 1 ? "1 record" : `${n} records`),
     by: { phone: "Same phone", address: "Same address", name: "Similar name" },
     notes: "The assistant reads both records' notes as one household.",
-    measured: (f: Figure) => `Measured on ${f.pairs} made-up pairs kept apart from the ones its line was set on, as a trial before this question went live: ${f.right} right, ${f.missed} missed, ${f.wrong} wrong. A small test.`,
+    measured: (f: Figure) => `Measured on ${f.pairs} made-up pairs kept apart from the ones its line was set on: ${f.right} right, ${f.missed} missed, ${f.wrong} wrong. A small test.`,
     people: (adults: number, children: number) => `${adults} ${adults === 1 ? "adult" : "adults"}, ${children} ${children === 1 ? "child" : "children"}`,
     merge: "Merge into this record",
     mergeThis: (name: string) => `Merge into this record: ${name}`,
@@ -54,7 +54,7 @@ const said = {
     count: (n: number) => (n === 1 ? "1 registro" : `${n} registros`),
     by: { phone: "Mismo teléfono", address: "Misma dirección", name: "Nombre parecido" },
     notes: "El asistente lee las notas de ambos registros como un solo hogar.",
-    measured: (f: Figure) => `Medido con ${f.pairs} pares inventados, apartados de los que se usaron para fijar su línea, como prueba antes de que esta pregunta se usara: ${f.right} bien, ${f.missed} sin detectar, ${f.wrong} mal. Es una prueba pequeña.`,
+    measured: (f: Figure) => `Medido con ${f.pairs} pares inventados, apartados de los que se usaron para fijar su línea: ${f.right} bien, ${f.missed} sin detectar, ${f.wrong} mal. Es una prueba pequeña.`,
     people: (adults: number, children: number) => `${adults} ${adults === 1 ? "adulto" : "adultos"}, ${children} ${children === 1 ? "niño" : "niños"}`,
     merge: "Unir a este registro",
     mergeThis: (name: string) => `Unir a este registro: ${name}`,

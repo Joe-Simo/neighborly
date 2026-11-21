@@ -471,8 +471,9 @@ export const respond = mutation({
  * Miles go to the one who drove, so a pair in one car is not counted twice in the yearly totals.
  * With no driver named, each drove their own car and each is given the miles.
  */
+const visitPlace = v.union(v.literal("home"), v.literal("prison"), v.literal("hospital"), v.literal("eldercare"), v.literal("other"));
 export const writeUp = mutation({
-  args: { churchId: v.id("churches"), visitId: v.id("visits"), notes: v.string(), hours: v.number(), miles: v.number(), driverId: v.optional(v.id("memberships")) },
+  args: { churchId: v.id("churches"), visitId: v.id("visits"), notes: v.string(), hours: v.number(), miles: v.number(), driverId: v.optional(v.id("memberships")), place: v.optional(visitPlace), guestHours: v.optional(v.number()) },
   returns: v.null(),
   handler: async (ctx, args) => {
     const member = await neighborAccess(ctx, args.churchId);
@@ -482,8 +483,9 @@ export const writeUp = mutation({
     if (!notes) throw new ConvexError("Write a few words about what you found.");
     if (!Number.isFinite(args.hours) || args.hours <= 0 || args.hours > 24) throw new ConvexError("Enter the hours the visit took, such as 1.5.");
     if (!Number.isFinite(args.miles) || args.miles < 0 || args.miles > 1000) throw new ConvexError("Enter the miles driven, or 0.");
+    if (args.guestHours !== undefined && (!Number.isFinite(args.guestHours) || args.guestHours < 0 || args.guestHours > 200)) throw new ConvexError("Enter the other volunteers' hours, such as 2, or leave it empty.");
     if (args.driverId && !visit.visitors.some((visitor) => visitor.memberId === args.driverId)) throw new ConvexError("The driver must be one of the two visitors.");
-    await ctx.db.patch("visits", visit._id, { status: "completed", notes, completedAt: Date.now(), visitors: visit.visitors.map((visitor) => ({ ...visitor, hours: args.hours, miles: !args.driverId || visitor.memberId === args.driverId ? args.miles : 0 })) });
+    await ctx.db.patch("visits", visit._id, { status: "completed", notes, completedAt: Date.now(), ...(args.place && args.place !== "home" && { place: args.place }), ...(args.guestHours && { guestHours: Math.round(args.guestHours * 10) / 10 }), visitors: visit.visitors.map((visitor) => ({ ...visitor, hours: args.hours, miles: !args.driverId || visitor.memberId === args.driverId ? args.miles : 0 })) });
     // The assistant reads the note for a need the visit was not for, after the save; a sample visitor's read counts against their own session.
     const identity = await ctx.auth.getUserIdentity();
     const session = isSampleVisitor(identity?.subject) ? (typeof identity?.sid === "string" ? identity.sid : "unnamed") : undefined;

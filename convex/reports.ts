@@ -82,6 +82,8 @@ const memberLine = v.object({
 });
 const teamLine = v.object({ teamId: v.id("teams"), name: v.string(), shifts: v.number(), people: v.number(), hours: v.number() });
 
+const placeLine = v.object({ visits: v.number(), people: v.number() });
+const goodsLine = v.object({ times: v.number(), items: v.number() });
 export const yearReport = v.object({
   year: v.number(),
   /** 1 to 4 when the report covers one quarter, null for the whole year. */
@@ -109,6 +111,12 @@ export const yearReport = v.object({
   /** Hours and miles as each visitor logged them; a pair is two people's hours. */
   visitHours: v.number(),
   visitMiles: v.number(),
+  /** Completed visits by where they were, and the people in the household each time; a visit with no place is a home visit. */
+  visitsByPlace: v.object({ home: placeLine, prison: placeLine, hospital: placeLine, eldercare: placeLine, other: placeLine }),
+  /** Hours non-members gave on completed visits. */
+  guestHours: v.number(),
+  /** Goods handed over with requests received in the period: how many times, and how many items. */
+  goods: v.object({ food: goodsLine, furniture: goodsLine, clothing: goodsLine }),
   /** Cents paid toward requests in the year, less reversals. Always to a landlord, utility or vendor. */
   helpPaid: v.number(),
   kinds: v.array(kindLine),
@@ -471,6 +479,17 @@ export const year = query({
       peopleVisited: visits.reduce((people, visit) => people + size(visit.neighborId), 0),
       visitHours: round(visitHours),
       visitMiles: round(visitMiles),
+      visitsByPlace: visits.reduce((byPlace, visit) => {
+        const line = byPlace[visit.place ?? "home"];
+        line.visits += 1;
+        line.people += size(visit.neighborId);
+        return byPlace;
+      }, { home: { visits: 0, people: 0 }, prison: { visits: 0, people: 0 }, hospital: { visits: 0, people: 0 }, eldercare: { visits: 0, people: 0 }, other: { visits: 0, people: 0 } }),
+      guestHours: round(visits.reduce((hours, visit) => hours + (visit.guestHours ?? 0), 0)),
+      goods: (["food", "furniture", "clothing"] as const).reduce((all, kind) => {
+        const given = requests.filter((request) => (request.goods?.[kind] ?? 0) > 0);
+        return { ...all, [kind]: { times: given.length, items: given.reduce((sum, request) => sum + (request.goods?.[kind] ?? 0), 0) } };
+      }, { food: { times: 0, items: 0 }, furniture: { times: 0, items: 0 }, clothing: { times: 0, items: 0 } }),
       helpPaid,
       kinds: kinds.map((value) => {
         const line = kindLineFor(value);

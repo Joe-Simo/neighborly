@@ -267,14 +267,16 @@ async function referredTo(ctx: MutationCtx, churchId: Id<"churches">, names: str
  * shelf and finishes the request, since nothing is left to pay; `quantity` changes how many are given.
  */
 export const decide = mutation({
-  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), decision: v.union(v.literal("approved"), v.literal("declined")), amountApproved: v.optional(v.number()), quantity: v.optional(v.number()), note: v.string(), referral: v.optional(v.string()), referrals: v.optional(v.array(v.string())) },
+  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), decision: v.union(v.literal("approved"), v.literal("declined")), amountApproved: v.optional(v.number()), quantity: v.optional(v.number()), note: v.string(), referral: v.optional(v.string()), referrals: v.optional(v.array(v.string())), goods: v.optional(v.object({ food: v.number(), furniture: v.number(), clothing: v.number() })) },
   returns: v.null(),
-  handler: async (ctx, { churchId, requestId, decision, amountApproved, quantity, note, referral, referrals }) => {
+  handler: async (ctx, { churchId, requestId, decision, amountApproved, quantity, note, referral, referrals, goods }) => {
     const member = await neighborAccess(ctx, churchId);
     const existing = await ownRequest(ctx, churchId, requestId);
     if (existing.status !== "open") throw new ConvexError("This request has already been decided.");
     const places = referrals === undefined ? existing.referrals : await referredTo(ctx, churchId, referrals);
-    const decided = { decisionNote: text(note, "The note", 500), referrals: places, referral: referral === undefined ? existing.referral : text(referral, "The referral", 500), decidedBy: member._id, decidedAt: Date.now() };
+    if (goods && Object.values(goods).some(n => !Number.isInteger(n) || n < 0 || n > 500)) throw new ConvexError("Goods given are whole counts, up to 500 of each.");
+    const given = goods && Object.values(goods).some(n => n > 0) ? { goods } : {};
+    const decided = { ...given, decisionNote: text(note, "The note", 500), referrals: places, referral: referral === undefined ? existing.referral : text(referral, "The referral", 500), decidedBy: member._id, decidedAt: Date.now() };
     if (decision === "declined") {
       await ctx.db.patch("assistanceRequests", requestId, { status: "declined", ...decided }); await tally(ctx, churchId, { waiting: -1, settled: existing.neighborId });
       return null;

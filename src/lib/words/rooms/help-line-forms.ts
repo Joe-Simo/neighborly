@@ -23,6 +23,12 @@ export const en = (t: Terms, place: string) => ({
     outcome: "What came of it",
     outcomeHelp: `For example: ${t.visit} planned for Thursday, or referred to 211.`,
     markReturned: "Mark returned",
+    /** While a call is typed: households on file the name or phone already matches, so the call is tied at once. */
+    onFile: "Already on file",
+    use: "Use this household",
+    useThis: (name: string) => `Use ${name}’s record for this call`,
+    linked: (name: string) => `This call goes on ${name}’s record.`,
+    unlink: "Not them",
   },
   /** Writing a request, or changing one that is still open. */
   request: {
@@ -64,6 +70,9 @@ export const en = (t: Terms, place: string) => ({
     places: "Places we refer people to",
     elsewhere: "Somewhere else",
     elsewhereHelp: "A place not listed. It is offered here next time.",
+    goods: "Goods given",
+    goodsHelp: "How many items, if any were handed over. For the yearly report.",
+    goodsKinds: { food: "Food", furniture: "Furniture", clothing: "Clothing" },
     /** The assistant read the note against what each listed place helps with; a person chooses. */
     mayFit: "From the note, the assistant suggests {places}. Choose any that fit.",
     where: "Where",
@@ -150,6 +159,11 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     outcome: "En qué quedó",
     outcomeHelp: `Por ejemplo: ${t.visit} planeada para el jueves, o se le refirió al 211.`,
     markReturned: "Marcar como devuelta",
+    onFile: "Ya en el registro",
+    use: "Usar este hogar",
+    useThis: (name: string) => `Usar el registro de ${name} para esta llamada`,
+    linked: (name: string) => `Esta llamada va al registro de ${name}.`,
+    unlink: "No es este",
   },
   request: {
     kind: "Tipo de ayuda",
@@ -187,6 +201,9 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     places: "Lugares a los que referimos a las personas",
     elsewhere: "Otro lugar",
     elsewhereHelp: "Un lugar que no está en la lista. La próxima vez se ofrecerá aquí.",
+    goods: "Bienes entregados",
+    goodsHelp: "Cuántos artículos, si se entregó alguno. Para el informe anual.",
+    goodsKinds: { food: "Comida", furniture: "Muebles", clothing: "Ropa" },
     mayFit: "Por la nota, el asistente sugiere {places}. Elige los que sirvan.",
     where: "A dónde",
     whereHelp: "Por ejemplo, el 211 o el programa de alquiler del condado. La próxima vez se ofrecerá aquí.",
