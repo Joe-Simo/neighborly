@@ -23,3 +23,6 @@ export const visitSet: VisitNote[] = [
   { id: "ho-hungry", note: "The kids had not eaten since yesterday. Mom asked about a coat too.", kind: null, signs: ["hungry", "child"], heldOut: true },
 ];
 
+
+/** The last run of drafts:measureVisits (jev-1.14.0) on the held-out notes: the kind and each of eight signs, per note. */
+export const visitsMeasured = { day: "2026-11-21", notes: 4, right: 33, missed: 3, wrong: 0 };

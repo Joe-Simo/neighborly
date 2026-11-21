@@ -4,9 +4,15 @@ import { memo, useEffect, useState, type RefObject } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Words } from "@/lib/words";
 
-/** A key pressed while a box is being typed in, a sheet is open, or with a modifier belongs to that, not to the workspace. */
+/** In the iPad app a hardware keyboard's shortcuts are held with ⌘, as in every iPad app; the website keeps the bare keys. */
+const onIpad = () => document.documentElement.dataset.shell === "ios";
+/** ⌘ keys the app answers, and the bare key each stands for: ⌘F finds and ⌘N makes, as anywhere on an iPad. */
+const held: Record<string, string> = { f: "/", n: "n", "/": "?", "[": "[", "]": "]" };
+
+/** The workspace key this press stands for, or nothing: a key pressed while a box is being typed in, a sheet is open, or with a modifier the workspace does not use belongs to that, not to the workspace. */
 function forTheWorkspace(event: KeyboardEvent) {
-  if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.isComposing) return false;
+  if (event.defaultPrevented || event.ctrlKey || event.altKey || event.isComposing) return false;
+  if (event.metaKey && !(onIpad() && (/^[1-9]$/.test(event.key) || event.key.toLowerCase() in held))) return false;
   const at = event.target;
   if (at instanceof HTMLElement && at.closest("input, textarea, select, [contenteditable], [role=dialog], [role=listbox], [role=menu]")) return false;
   return !document.querySelector("[role=dialog][data-state=open], dialog[open]");
@@ -21,13 +27,16 @@ export const WorkspaceKeys = memo(function WorkspaceKeys({ nav, rooms: lines, ke
   const [shown, setShown] = useState(false);
   const rooms = lines.split("\n");
   useEffect(() => {
-    const press = (event: KeyboardEvent) => {
-      if (event.key === "?" && (shown || forTheWorkspace(event))) {
+    const press = (pressed: KeyboardEvent) => {
+      // ⌘ and the key, in the iPad app, is read as the bare key.
+      const ipadKey = pressed.metaKey ? (/^[1-9]$/.test(pressed.key) ? pressed.key : held[pressed.key.toLowerCase()]) : undefined;
+      const event = { key: ipadKey ?? pressed.key, preventDefault: () => pressed.preventDefault() };
+      if (event.key === "?" && (shown || forTheWorkspace(pressed))) {
         event.preventDefault();
         setShown((was) => !was);
         return;
       }
-      if (!forTheWorkspace(event)) return;
+      if (!forTheWorkspace(pressed)) return;
       const main = document.getElementById("workspace-content");
       if (/^[1-9]$/.test(event.key)) {
         const link = nav.current?.querySelectorAll<HTMLAnchorElement>("a[href]")[Number(event.key) - 1];
@@ -57,12 +66,14 @@ export const WorkspaceKeys = memo(function WorkspaceKeys({ nav, rooms: lines, ke
     window.addEventListener("keydown", press);
     return () => window.removeEventListener("keydown", press);
   }, [nav, shown]);
+  // Read when the sheet is drawn, which is only ever in the browser, after the app has marked the page.
+  const cmd = shown && onIpad() ? "⌘" : "";
   const rows: [string, string][] = [
-    ...rooms.slice(0, 9).map((room, at): [string, string] => [String(at + 1), room]),
-    ["[ ]", k.step],
-    ["/", k.find],
-    ["n", k.act],
-    ["?", k.show],
+    ...rooms.slice(0, 9).map((room, at): [string, string] => [cmd + String(at + 1), room]),
+    [cmd + "[ ]", k.step],
+    [cmd ? "⌘F" : "/", k.find],
+    [cmd ? "⌘N" : "n", k.act],
+    [cmd ? "⌘/" : "?", k.show],
   ];
   return (
     <Dialog open={shown} onOpenChange={setShown}>
