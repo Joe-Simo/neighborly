@@ -759,7 +759,7 @@ export function NeighborForm({
     name: neighbor?.name ?? call?.callerName ?? "",
     phone: neighbor?.phone ?? call?.phone ?? "",
   });
-  const [checked, setChecked] = useState<typeof typed | null>(null);
+  const [checked, setChecked] = useState<(typeof typed & { address: string }) | null>(null);
   // An older backend does not send or accept the alert yet.
   const hasAlert = typeof neighbor?.alert === "string";
   // A household speaks what it speaks: the three met most often are offered, and any other is named.
@@ -768,7 +768,7 @@ export function NeighborForm({
     api.neighbors.matches,
     !neighbor && checked ? { churchId, ...checked } : "skip",
   );
-  const duplicates = checked === typed ? (onFile ?? []) : [];
+  const duplicates = checked?.name === typed.name && checked.phone === typed.phone ? (onFile ?? []) : [];
   return (
     <form
       className="live-form help-form"
@@ -805,7 +805,7 @@ export function NeighborForm({
           }),
         );
         if (outcome.saved) onSaved(outcome.result);
-        else setChecked(typed);
+        else setChecked({ ...typed, address: details.address });
       }}
     >
       <div className="live-form-grid help-caller-grid">
@@ -913,7 +913,7 @@ export function NeighborForm({
       {duplicates.length > 0 && (
         <div className="live-error help-matches" role="alert">
           <p>
-            {fill(w.onFile[duplicates[0].same === "phone" ? "phone" : "name"], { name: duplicates[0].name })}
+            {fill(w.onFile[duplicates[0].same], { name: duplicates[0].name })}
           </p>
           <p className="live-error-recovery">
             {w.recovery[useLabel ? "use" : "open"][duplicates[0].same === "phone" ? "phone" : "name"]}

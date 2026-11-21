@@ -370,7 +370,10 @@ describe("adding and finding neighbors", () => {
     const created = await as(ids.owner).mutation(api.neighbors.create, { churchId, ...sameHouse, confirmedNew: true });
     expect((await readRecord(as(ids.owner), { churchId, neighborId: created })).neighbor).toMatchObject({ name: "Alma Montoya", language: "es" });
     // The same phone in another group is not a duplicate here.
-    await as(ids.owner).mutation(api.neighbors.create, { churchId, ...pat, name: "Celeste Greenhalgh", phone: "(100) 555-0102" });
+    await as(ids.owner).mutation(api.neighbors.create, { churchId, ...pat, name: "Celeste Greenhalgh", phone: "(100) 555-0102", address: "9 Other Ln" });
+    // A name alike, or the same street, is caught before a household is entered twice.
+    await expect(as(ids.owner).mutation(api.neighbors.create, { churchId, ...pat, name: "Esperansa Montoya", phone: "", address: "" })).rejects.toThrow("Esperanza Montoya may already be on file.");
+    expect(await as(ids.owner).query(api.neighbors.matches, { churchId, name: "Someone New", phone: "", address: "14 Sample Street #2" })).toMatchObject([{ id: ids.rosa, same: "alike" }]);
   });
 
   test("a new neighbor can be tied to the call that brought them", async () => {

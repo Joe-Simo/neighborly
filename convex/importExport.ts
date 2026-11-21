@@ -8,6 +8,7 @@ import { nameKey, phoneKey } from "./assistance";
 import { longestLanguageName, readSpoken, spokenName, type Spoken } from "./spoken";
 import { tally } from "./counts";
 import { rebuildNames } from "./knownNames";
+import { lookAlikes } from "./duplicates";
 
 /**
  * Bringing a members list in from a spreadsheet. Nobody is added on their behalf: every good row
@@ -103,7 +104,7 @@ const neighborRow = v.object({ line: v.number(), name: v.string(), phone: v.stri
 /** The name a removed record keeps (see neighbors.remove). A line with this name is never a household to bring in. */
 const REMOVED = "Record removed";
 const removedKey = nameKey(REMOVED);
-const neighborProblem = v.union(v.literal("no_name"), v.literal("too_long"), v.literal("bad_count"), v.literal("repeated"), v.literal("same_phone"), v.literal("same_name"));
+const neighborProblem = v.union(v.literal("no_name"), v.literal("too_long"), v.literal("bad_count"), v.literal("repeated"), v.literal("same_phone"), v.literal("same_name"), v.literal("alike"));
 const neighborChecked = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("ready"), neighborProblem) });
 const neighborImported = v.object({ line: v.number(), name: v.string(), outcome: v.union(v.literal("added"), neighborProblem) });
 
@@ -131,6 +132,7 @@ async function reviewNeighbors(ctx: QueryCtx, churchId: Id<"churches">, rows: In
     seenNames.add(keys.nameKey);
     if (keys.phoneKey && (await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", keys.phoneKey)).first())) return verdict("same_phone");
     if (await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).eq("nameKey", keys.nameKey)).first()) return verdict("same_name");
+    if ((await lookAlikes(ctx, churchId, { name, phone, address })).length) return verdict("alike");
     return verdict("ready", { adults, children, ...speaks });
   }));
 }

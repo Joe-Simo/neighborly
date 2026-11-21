@@ -6,9 +6,9 @@ import { neighborAccess, neighborRecord } from "./access";
 import { confidence, model, sureEnough } from "./drafts";
 import { namesFor, rebuildNames } from "./knownNames";
 import { tally } from "./counts";
-import { nameLikeness, namesAlike, needsNotes, sameBy, type SameBy } from "../src/lib/duplicates";
+import { nameLikeness, namesAlike, needsNotes, sameBy, type Comparable, type SameBy } from "../src/lib/duplicates";
 import { duplicateSet, type DuplicateSide } from "../src/lib/duplicate-set";
-import { nameKey } from "../src/lib/keys";
+import { nameKey, phoneKey } from "../src/lib/keys";
 
 /**
  * Two records that may be one household. Code finds them by the phone, the street address and the name; the assistant
@@ -25,21 +25,24 @@ async function pairOf(ctx: QueryCtx, a: Id<"neighbors">, b: Id<"neighbors">) {
   return ctx.db.query("duplicatePairs").withIndex("by_pair", (q) => q.eq("first", first).eq("second", second)).unique();
 }
 
-/** Records that may be this household, each with what it shares, read with indexes only: never the whole conference. */
-async function lookAlikes(ctx: QueryCtx, neighbor: Doc<"neighbors">) {
-  const churchId = neighbor.churchId;
-  const firstWord = nameKey(neighbor.name).split(" ")[0] ?? "";
-  const lastWord = nameKey(neighbor.name).split(" ").at(-1) ?? "";
-  const [byPhone, byFirst, byAddress] = await Promise.all([
-    neighbor.phoneKey.length >= 7 ? ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", neighbor.phoneKey)).take(LOOK) : [],
-    firstWord ? ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gte("nameKey", firstWord.slice(0, 3)).lt("nameKey", `${firstWord.slice(0, 3)}￿`)).take(40) : [],
-    neighbor.address.trim() ? ctx.db.query("neighbors").withSearchIndex("search_address", (q) => q.search("address", neighbor.address).eq("churchId", churchId)).take(LOOK) : [],
+/**
+ * Records that may be this household, each with what it shares, read with indexes only: never the whole conference.
+ * `household` is a record on file, or what is being typed for a new one (then `except` is left out).
+ */
+export async function lookAlikes(ctx: QueryCtx, churchId: Id<"churches">, household: Comparable, except?: Id<"neighbors">) {
+  const phone = phoneKey(household.phone);
+  const words = nameKey(household.name).split(" ").filter(Boolean);
+  const byName = (word: string) => ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gte("nameKey", word.slice(0, 3)).lt("nameKey", `${word.slice(0, 3)}￿`)).take(40);
+  const found = await Promise.all([
+    phone.length >= 7 ? ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", churchId).eq("phoneKey", phone)).take(LOOK) : [],
+    words[0] ? byName(words[0]) : [],
+    // A name written family name first ("Walker, Denise") is found by its last word too.
+    words.length > 1 ? byName(words[words.length - 1]) : [],
+    household.address.trim() ? ctx.db.query("neighbors").withSearchIndex("search_address", (q) => q.search("address", household.address).eq("churchId", churchId)).take(LOOK) : [],
   ]);
-  // A name written family name first ("Walker, Denise") is found by its last word too.
-  const byLast = lastWord && lastWord !== firstWord ? await ctx.db.query("neighbors").withIndex("by_church_name", (q) => q.eq("churchId", churchId).gte("nameKey", lastWord.slice(0, 3)).lt("nameKey", `${lastWord.slice(0, 3)}￿`)).take(40) : [];
   const seen = new Map<Id<"neighbors">, Doc<"neighbors">>();
-  for (const row of [...byPhone, ...byFirst, ...byLast, ...byAddress]) if (row._id !== neighbor._id && live(row)) seen.set(row._id, row);
-  return [...seen.values()].map((row) => ({ row, shared: sameBy(neighbor, row) })).filter(({ shared }) => shared.length > 0);
+  for (const row of found.flat()) if (row._id !== except && live(row)) seen.set(row._id, row);
+  return [...seen.values()].map((row) => ({ row, shared: sameBy(household, row) })).filter(({ shared }) => shared.length > 0);
 }
 
 /**
@@ -56,7 +59,7 @@ export const forRecord = query({
   handler: async (ctx, { churchId, neighborId }) => {
     const { neighbor } = await neighborRecord(ctx, churchId, neighborId);
     const shown = [], unread: Id<"neighbors">[] = [];
-    for (const { row, shared } of (await lookAlikes(ctx, neighbor)).slice(0, LOOK)) {
+    for (const { row, shared } of (await lookAlikes(ctx, churchId, neighbor, neighborId)).slice(0, LOOK)) {
       const pair = await pairOf(ctx, neighborId, row._id);
       if (pair?.dismissedAt) continue;
       if (!pair?.read) unread.push(row._id);

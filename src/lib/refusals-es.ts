@@ -266,6 +266,7 @@ export const serverRefusalPatternsEs: ReadonlyArray<readonly [RegExp, (...parts:
   // "Ya hay un registro de…": the sentence marks no gender for the named person.
   [/^(.+) is already on file with this phone number\.$/, (name) => `Ya hay un registro de ${name} con este teléfono.`],
   [/^(.+) is already on file with this name\.$/, (name) => `Ya hay un registro de ${name} con este nombre.`],
+  [/^(.+) may already be on file\.$/, (name) => `Quizá ya hay un registro de ${name}.`],
   [/^(.+) is needed\.$/, (label) => `Falta: ${fieldEs(label)}.`],
   [/^(.+) is too long\.$/, (label) => `${fieldEs(label)}: el texto es demasiado largo.`],
   [/^(.+) must be a dollar amount\.$/, (label) => `${fieldEs(label)}: escribe un monto en dólares.`],

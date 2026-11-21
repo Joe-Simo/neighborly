@@ -91,6 +91,7 @@ const households = [
   { line: 8, ...blank, name: "celeste hyppolite", phone: "(100) 555-0199" },
   { line: 9, ...blank, name: "Esperanza Figueroa", language: "  mandarin " },
   { line: 10, ...blank, name: "Fabrice Greenhalgh", language: "español", children: "0" },
+  { line: 11, ...blank, name: "Celeste Hypolite" },
 ];
 
 describe("bringing neighbors in from a spreadsheet", () => {
@@ -104,11 +105,11 @@ describe("bringing neighbors in from a spreadsheet", () => {
   test("good rows are added; a duplicate phone or name, in the file or on file, is caught and reported", async () => {
     const { ids, as, neighbors } = await withNeighbor();
     const preview = await as(ids.coordinator).query(api.importExport.checkNeighbors, { churchId: ids.church, rows: households });
-    expect(preview.map((row) => [row.line, row.outcome])).toEqual([[2, "ready"], [3, "same_phone"], [4, "no_name"], [5, "bad_count"], [6, "repeated"], [7, "repeated"], [8, "same_name"], [9, "ready"], [10, "ready"]]);
+    expect(preview.map((row) => [row.line, row.outcome])).toEqual([[2, "ready"], [3, "same_phone"], [4, "no_name"], [5, "bad_count"], [6, "repeated"], [7, "repeated"], [8, "same_name"], [9, "ready"], [10, "ready"], [11, "alike"]]);
     expect(await neighbors()).toHaveLength(1);
 
     const results = await as(ids.coordinator).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households });
-    expect(results.map((row) => row.outcome)).toEqual(["added", "same_phone", "no_name", "bad_count", "repeated", "repeated", "same_name", "added", "added"]);
+    expect(results.map((row) => row.outcome)).toEqual(["added", "same_phone", "no_name", "bad_count", "repeated", "repeated", "same_name", "added", "added", "alike"]);
     const added = (await neighbors()).filter((neighbor) => neighbor.name !== "Celeste Hyppolite");
     expect(added).toMatchObject([
       { name: "Alma Almonte", nameKey: "alma almonte", phone: "(100) 555-0100", phoneKey: "1005550100", address: "12 Sample St, Apt 3", adults: 2, children: 3, language: "es", notes: "Prefers a call after 5.", createdBy: ids.coordinator.memberId },
