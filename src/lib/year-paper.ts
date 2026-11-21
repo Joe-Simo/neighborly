@@ -67,6 +67,7 @@ const lookAt = (eye: readonly number[], at: readonly number[]): Mat => {
 /** The ledger book, open on the floor just past September's fan: the middle of its spine. Its pages are 1.5 wide and 2 deep, on a kraft board. */
 const BOOK_AT = [.35, 0, monthZ(MONTHS - 1) - 4.2] as const, PAGE = { w: 1.5, d: 2 } as const;
 /** Where the camera ends: risen above the book and a little before it, looking down on the pile on its right-hand page. */
+const YEAR_ASIDE = .44, YEAR_FIT = .26;
 const END_EYE = [BOOK_AT[0] + .9, 2.9, BOOK_AT[2] + 2.7] as const, END_AT = [BOOK_AT[0] + .25, .2, BOOK_AT[2] - .15] as const;
 
 /**
@@ -77,15 +78,18 @@ export function viewProjection(aspect: number, through: number, frame?: { x: num
   // A tall stage keeps the wide one's sideways view, so the fan is never cut at its sides on a phone.
   // The band opens close on October's fan, so the slips fill the window; the lens widens to the flight's own in its first tenth.
   const fov = FOV * (.46 + .54 * ease(through / .1));
-  const f = Math.min(1, aspect / ASPECT.wide * 1.6) / Math.tan(fov / 2), near = .1, far = 120;
+  // On a tall stage the book is drawn a little smaller and further left of the camera at the end, so its board lies whole inside the window's margins.
+  const tall = Math.max(0, Math.min(1, (ASPECT.wide - aspect) / (ASPECT.wide - ASPECT.tall))) * ease(Math.min(1, settle(through) / .3));
+  const f = Math.min(1, aspect / ASPECT.wide * 1.6) / Math.tan(fov / 2) * (1 - YEAR_FIT * tall), near = .1, far = 120;
   const projection = new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, 2 * far * near / (near - far), 0]);
   // In flight: a little above the stack and looking a little down on it, as one looks into a drawer of cards.
   const camera = cameraZ(through), eye = [-.18, .95, camera], at = [-.18, .95 - 10 * Math.sin(.22), camera - 10 * Math.cos(.22)];
   // Over the book, the camera rises first, then comes round to look down on it, and is there before the last slips are set down.
   const back = ease(settle(through) / .6), rise = Math.sqrt(back);
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-  const from = [lerp(eye[0], END_EYE[0], back), lerp(eye[1], END_EYE[1], rise), lerp(eye[2], END_EYE[2], back)];
-  const to = at.map((v, k) => lerp(v, END_AT[k], back));
+  const aside = YEAR_ASIDE * tall;
+  const from = [lerp(eye[0], END_EYE[0], back) - aside, lerp(eye[1], END_EYE[1], rise), lerp(eye[2], END_EYE[2], back)];
+  const to = at.map((v, k) => lerp(v, END_AT[k], back) - (k ? 0 : aside));
   const picture = mul(projection, lookAt(from, to));
   if (!frame) return picture;
   const place = new Float32Array([frame.w, 0, 0, 0, 0, frame.h, 0, 0, 0, 0, 1, 0, 2 * frame.x + frame.w - 1, 1 - 2 * frame.y - frame.h, 0, 1]);
