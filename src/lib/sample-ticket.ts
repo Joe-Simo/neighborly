@@ -1,5 +1,11 @@
 import { preconnect, prefetchDNS, preload } from "react-dom";
-import { clerkJSScriptUrl, clerkUIScriptUrl, loadClerkJSScript, loadClerkUIScript } from "@clerk/shared/loadClerkJsScript";
+
+/**
+ * Clerk's script loader, fetched the first time a way in is reached for (pointer, focus, touch) rather than with the home
+ * page: it is only ever used on the way in, and it weighed on every page's first load.
+ */
+let clerkLoader: Promise<typeof import("@clerk/shared/loadClerkJsScript")> | undefined;
+const loader = () => (clerkLoader ??= import("@clerk/shared/loadClerkJsScript"));
 
 /**
  * The way into the sample conference starts before the visitor arrives at it.
@@ -51,8 +57,10 @@ export function takeSampleTicket() {
 export function warmSignIn() {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   if (!publishableKey) return;
-  preload(clerkJSScriptUrl({ publishableKey }), { as: "script", crossOrigin: "anonymous" });
-  preload(clerkUIScriptUrl({ publishableKey }), { as: "script", crossOrigin: "anonymous" });
+  void loader().then(({ clerkJSScriptUrl, clerkUIScriptUrl }) => {
+    preload(clerkJSScriptUrl({ publishableKey }), { as: "script", crossOrigin: "anonymous" });
+    preload(clerkUIScriptUrl({ publishableKey }), { as: "script", crossOrigin: "anonymous" });
+  }, () => undefined);
   // Clerk's bot check loads its script from here before any sign-in is sent. Only its address is looked up now (0.65 s on a
   // phone): an opened connection left unused is closed by the browser after about ten seconds, so that waits for the press.
   prefetchDNS(protect);
@@ -68,6 +76,8 @@ export function startSignIn() {
   // The bot check's script is fetched in CORS mode, so only an anonymous connection is one it can use; it is asked for
   // about 1.3 s after the press, time enough for the connection (0.9 s on a phone, measured live).
   preconnect(protect, { crossOrigin: "anonymous" });
-  void loadClerkJSScript({ publishableKey }).catch(() => undefined);
-  void loadClerkUIScript({ publishableKey }).catch(() => undefined);
+  void loader().then(({ loadClerkJSScript, loadClerkUIScript }) => {
+    void loadClerkJSScript({ publishableKey }).catch(() => undefined);
+    void loadClerkUIScript({ publishableKey }).catch(() => undefined);
+  }, () => undefined);
 }

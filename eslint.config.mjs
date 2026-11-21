@@ -52,6 +52,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "convex/_generated/**",
+    // Written by `cn build` (next.config.ts).
+    "src/lib/cn-tables.ts",
     // Upstream Three.js decoder distribution, copied without modification.
     "public/assets/painted-world/draco/**",
   ]),

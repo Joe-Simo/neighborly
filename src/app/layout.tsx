@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../../public/fonts/fonts.css";
-import { SerwistProvider } from "@serwist/turbopack/react";
 import { OfflineWorker } from "@/components/offline-worker";
 import { PublicTurn } from "@/components/public-turn";
 import "@/components/public-turn.css";
@@ -62,11 +61,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: sunLight }} />
       </head>
       <body>
-        <SerwistProvider swUrl="/serwist/sw.js" register={false} reloadOnOnline={false}>
-          <OfflineWorker />
-          <PublicTurn />
-          {children}
-        </SerwistProvider>
+        <OfflineWorker />
+        <PublicTurn />
+        {children}
       </body>
     </html>
   );
