@@ -659,7 +659,8 @@
   position: fixed;
   z-index: 100;
   top: 12px;
-  left: 16px;
+  left: max(16px, env(safe-area-inset-left));
+  max-width: calc(100vw - 32px);
   padding: var(--space-12) 18px;
   background: #283c32;
   color: #fffdf5;

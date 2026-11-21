@@ -144,10 +144,13 @@ summary:focus-visible,
   background: #dde5d3;
   color: #283c32;
 }
+/* Shown on focus, whole, inside the page's 16px gutter (and clear of a notch), never cut by the window's edge. */
 .skip-link {
   position: fixed;
   top: -70px;
-  left: 20px;
+  left: max(16px, env(safe-area-inset-left));
+  max-width: calc(100vw - 32px);
+  white-space: nowrap;
   z-index: 100;
   background: var(--foreground);
   color: white;
