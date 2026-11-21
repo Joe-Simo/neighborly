@@ -33,9 +33,9 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
     const offer = event.currentTarget, href = offer.getAttribute("href") ?? "/app";
     // The grow starts from the card as it lies, not as it leans: without the mark it lies flat at once, with no easing back.
     offer.removeAttribute("data-leaning");
-    const turn = Number(offer.dataset.turn ?? 0), slant = Math.abs(turn) * Math.PI / 180, box = offer.getBoundingClientRect();
-    // The turned card's own size, found back from the rectangle around it.
-    const width = (box.width * Math.cos(slant) - box.height * Math.sin(slant)) / Math.max(.2, Math.cos(2 * slant)), height = width / 1.5;
+    const turn = Number(offer.dataset.turn ?? 0), box = offer.getBoundingClientRect();
+    // The card's own size as laid out, before its turn: it grows past 3:2 when its words need the room.
+    const width = offer.offsetWidth, height = offer.offsetHeight;
     // Drawn on the body, outside the page, so it stays over the window while the next page comes in under it. It is the card itself, copied.
     const held = document.createElement("div");
     held.id = HELD_CARD;

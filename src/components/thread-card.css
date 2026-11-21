@@ -36,45 +36,48 @@
 /* The ending: the card is no longer painted in the hand. The hand is open, and holds out the card that is the way into the sample. */
 :root .neighborly-close .neighborly-close-hand .thread-empty{opacity:1}
 .neighborly-close-offer{position:absolute;z-index:2;left:0;width:100%;overflow-x:clip;top:calc(28% - 19.911cqw);height:71.111cqw;pointer-events:none}
-.card-offer{position:absolute;left:69%;top:77.6%;width:max(20.8%,240px);aspect-ratio:1.5;translate:-50% -50%;rotate:-4deg;display:block;min-height:56px;pointer-events:auto;color:#253e31;text-decoration:none;background:url(/assets/home/card-blank-480.webp) center/100% 100% #f7f2e6;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s}
+/* The card and the field over it share one turned stack, anchored at the card's resting middle; the card grows to its words, the note follows it in flow. */
+.card-stack{--card-w:max(20.8cqw,240px);position:absolute;left:69%;top:calc(77.6% - var(--card-w) / 3);width:var(--card-w);translate:-50% 0;rotate:-4deg;display:grid}
+.card-offer{grid-area:1/1;position:relative;aspect-ratio:1.5;display:flex;flex-direction:column;justify-content:flex-end;padding:calc(7.4% + 1.6 * clamp(17px,1.5cqw,29px)) 8% 8.7% 9%;pointer-events:auto;color:#253e31;text-decoration:none;background:url(/assets/home/card-blank-480.webp) center/100% 100% #f7f2e6;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s cubic-bezier(.2,.7,.2,1),filter .2s}
 .card-offer>i{position:absolute;left:8%;top:14%;width:8%;aspect-ratio:1;background:#c8962e}
 .card-offer>svg{position:absolute;right:8%;top:12%;width:18px;height:18px}
-.card-offer-words{position:absolute;left:9%;right:8%;bottom:13%;display:flex;flex-direction:column;gap:6px;transition:opacity 0s .12s}
+.card-offer-words{display:flex;flex-direction:column;gap:6px;transition:opacity 0s .12s}
 .card-offer strong{font:400 clamp(20px,1.85cqw,36px)/1.08 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.025em;text-wrap:balance}
 .card-offer small{font:400 clamp(15px,1.04cqw,20px)/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43}
-.card-offer:hover{translate:-50% calc(-50% - 4px);filter:drop-shadow(3px 10px 8px #2a1e1446)}
-.card-offer:active{translate:-50% calc(-50% + 1px);filter:drop-shadow(1px 2px 2px #2a1e1460)}
+.card-offer:hover{translate:0 -4px;filter:drop-shadow(3px 10px 8px #2a1e1446)}
+.card-offer:active{translate:0 1px;filter:drop-shadow(1px 2px 2px #2a1e1460)}
 .card-offer:focus-visible{outline:2px solid #283c32;outline-offset:3px}
 /* While the travelling card is on its way it is the card; the way in is shown once it has landed, or at once to a keyboard. */
 .card-offer[data-given]{opacity:0}
 /* Back on home, the card is in the hand already lettered: its words are not cut in again. */
 .card-offer[data-back] .card-offer-words{opacity:1;transition:none}
 @media(max-width:1279px),(max-height:444px){.neighborly-close-offer{top:0}}
-@media(prefers-reduced-motion:reduce){.card-offer,.card-offer-words{transition:none}.card-offer:hover,.card-offer:active{translate:-50% -50%}}
+@media(prefers-reduced-motion:reduce){.card-offer,.card-offer-words{transition:none}.card-offer:hover,.card-offer:active{translate:none}}
 /* "For ____": lettered on the card in the page's italic. The blank is a pencil rule until a name is written on it. */
 .card-offer-for{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 clamp(17px,1.5cqw,29px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;color:#3d4f43;white-space:nowrap;overflow:hidden;transition:opacity 0s .12s}
 .card-offer-for span{flex:1;min-width:0;overflow:hidden;text-overflow:clip;color:#253e31;border-bottom:1px solid #3d4f4366;padding-bottom:1px}
 .card-offer-for span:not([data-blank]){border-bottom-color:transparent}
 /* The field that writes the line lies exactly over it, on a layer cut to the card's own size and turn, and moves as the card does. Its own letters are clear: the card shows them. */
-.card-for{position:absolute;left:69%;top:77.6%;width:max(20.8%,240px);aspect-ratio:1.5;translate:-50% -50%;rotate:-4deg;pointer-events:none;z-index:1;transition:translate .2s cubic-bezier(.2,.7,.2,1)}
-.neighborly-close-offer:has(.card-offer:hover) .card-for{translate:-50% calc(-50% - 4px)}
+.card-for{grid-area:1/1;position:relative;pointer-events:none;z-index:1;transition:translate .2s cubic-bezier(.2,.7,.2,1)}
+.neighborly-close-offer:has(.card-offer:hover) .card-for{translate:0 -4px}
 .card-for-line{position:absolute;left:21%;right:24%;top:11%;display:flex;align-items:baseline;gap:.3em;font:italic 400 clamp(17px,1.5cqw,29px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;pointer-events:auto;cursor:text}
 .card-for-line>span{visibility:hidden}
 .card-for-line input{flex:1;min-width:0;min-height:44px;margin:-12px 0;padding:0 0 1px;border:0;background:transparent;font:inherit;color:transparent;caret-color:#253e31;outline:none}
 .card-for-line:has(input:focus-visible){outline:2px solid #283c32;outline-offset:3px;border-radius:4px}
 /* The note is written on a slip of the card's own paper, so it reads over the cloth, the cut and the foot alike. */
-.card-for-note{position:absolute;right:9%;top:calc(100% + 17px);width:max-content;padding:3px 10px 4px;background:#f7f2e6;box-shadow:0 1px 2px rgb(40 60 50 / 0.3);font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43;rotate:2.5deg;pointer-events:none}
-.card-offer[data-given]~.card-for{opacity:0}
+.card-for-note{grid-row:2;justify-self:end;margin:8px 9% 0 0;width:max-content;max-width:82%;padding:3px 10px 4px;background:#f7f2e6;box-shadow:0 1px 2px rgb(40 60 50 / 0.3);font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43;rotate:2.5deg;pointer-events:none}
+.card-offer[data-given]~:is(.card-for,.card-for-note){opacity:0}
 /* The card's own face for its last flight, into the open hand: the same paper, square, words and line as the card it becomes, drawn at the travelling card's 240px. */
 /* A window 320 wide: the card is a little larger on the band, so its headline clears the "For" line and the gold square. */
 /* After the card's own rules, so on a phone the card beneath lies where the offered card does. */
 @media(max-width:700px) and (orientation:portrait),(max-width:480px){
   .neighborly-close-offer{height:216.41cqw}
-  .card-offer,.card-for{left:58%;top:78.8%;width:68%}
+  .card-stack{--card-w:68cqw;left:58%;top:calc(78.8% - var(--card-w) / 3)}
+  .card-offer{padding-top:calc(7.4% + 1.6 * clamp(17px,5cqw,22px))}
   .card-offer-for,.card-for-line{font-size:clamp(17px,5cqw,22px)}
   .card-offer strong{font-size:clamp(20px,6.2cqw,26px)}
 }
-@media(max-width:359px){.card-offer,.card-for{left:56%;width:78%}}
+@media(max-width:359px){.card-stack{--card-w:78cqw;left:56%}}
 .card-offer-words>:is(strong,small){text-wrap:balance}
 /* On its way to the year the card is October's first slip, decided: the year's paper, its one line of ink and its green corner, drawn as the
    canvas draws that slip (year-paper-gl.ts), so the cut to the canvas is the same sheet. */
