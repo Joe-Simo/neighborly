@@ -221,6 +221,9 @@
 .help-done > a { min-height: 44px; display: inline-flex; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .help-reading-title { animation: none; } }
 .help-sheet .help-blank { margin: 0 0 var(--space-12); font-size: 17px; }
+/* What the note left blank is waiting for a person, not wrong: ink, with the ochre waiting ring every waiting line wears. */
+.help-sheet .help-assistant.help-blank { display: flex; align-items: baseline; gap: 8px; color: var(--live-ink) !important; }
+.help-sheet .help-assistant.help-blank::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 2px #a8791f; translate: 0 -1px; }
 
 /* Removing a record: quiet at the foot, in ink, never red. */
 

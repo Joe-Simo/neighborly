@@ -632,7 +632,7 @@
 .live-app .treasury-on-hand { max-width: 36em; }
 
 /* The balance as cut paper (ledger-view.tsx): the figure in green, standing on three leaves of the passbook; the month's
-   money in and out as two slips beside it. The relief is on the paper only, never on a glyph, and nothing moves. */
+   money in and out beside it, in ink on the page's own paper. The relief is on the paper only, never on a glyph, and nothing moves. */
 .treasury-paper {
   display: grid; grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 200px)); align-items: end; gap: var(--space-24) clamp(20px, 3vw, 40px);
   margin: 0 0 var(--space-48); padding-top: var(--space-24); border-top: 2px solid #596e51;
@@ -656,13 +656,10 @@
 .treasury-balance-leaves i:nth-child(2) { translate: 3px 0; width: calc(100% - 4px); rotate: 0.15deg; }
 .treasury-balance-leaves i:nth-child(3) { translate: -1px 0; width: calc(100% - 7px); rotate: -0.2deg; }
 .treasury-paper b {
-  display: inline-block; padding: var(--space-16) 14px 6px; min-width: 96px;
+  display: inline-block;
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 40px; line-height: 0.9; letter-spacing: -0.02em;
   font-feature-settings: "lnum" 1, "tnum" 1; color: var(--live-ink);
-  background: var(--relief-paper); box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-slip);
-  clip-path: polygon(0 4px, 52% 0, 100% 3px, 100% 100%, 0 100%); rotate: -0.6deg;
 }
-.treasury-paper > div + div + div b { clip-path: polygon(0 0, 100% 5px, 100% 100%, 0 100%); rotate: 0.8deg; }
 /* The balance's figure (96px) clears the month's two slips only in a wide room. Where the room is narrower, by the
    window or beside a sidebar (the desk menu, an iPad in split view, the iOS aside), the slips stand under it, side by
    side. Keyed on the room's own width: 940px is a 1180px window less the menu. A narrow room also takes a smaller figure. */
@@ -677,7 +674,6 @@
 @media (max-width: 850px) {
   .treasury-paper b { font-size: clamp(28px, 8vw, 36px); min-width: 0; }
 }
-@media (forced-colors: active) { .treasury-paper b { border: 1px solid CanvasText; } }
 
 /* On paper the ledger is the record: its own page with a foot (ledger-view.tsx), black on white, no relief. Its head
    row repeats on each sheet, a row never splits, and the month's total prints once, after the last row. */

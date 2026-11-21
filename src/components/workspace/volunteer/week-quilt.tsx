@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { useHour, useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
@@ -10,17 +10,17 @@ import type { FunctionReturnType } from "convex/server";
 
 type Act = FunctionReturnType<typeof api.quilt.week>[number];
 
-/** A small number from a piece's id, so its cut and its lean are its own and the same on every visit. */
+/** A small number from a piece's id, so its cut is its own and the same on every visit. */
 function seeded(id: string, salt: number) {
   let hash = 2166136261 ^ salt;
   for (let at = 0; at < id.length; at++) hash = Math.imul(hash ^ id.charCodeAt(at), 16777619);
   return ((hash >>> 0) % 1000) / 1000;
 }
 
-/** The piece's own cut: four corners each a little in from square. */
+/** The piece's own cut: its top corners each a little in from square, its foot square on the line every piece stands on. */
 function cut(id: string) {
   const in_ = (salt: number) => `${(seeded(id, salt) * 9).toFixed(1)}%`;
-  return `polygon(${in_(1)} ${in_(2)}, calc(100% - ${in_(3)}) ${in_(4)}, calc(100% - ${in_(5)}) calc(100% - ${in_(6)}), ${in_(7)} calc(100% - ${in_(8)}))`;
+  return `polygon(${in_(1)} ${in_(2)}, calc(100% - ${in_(3)}) ${in_(4)}, calc(100% - ${in_(5)}) 100%, ${in_(7)} 100%)`;
 }
 
 /**
@@ -47,8 +47,7 @@ export function WeekQuilt() {
     <figure className="week-quilt">
       <div className="week-quilt-band" aria-hidden="true">
         {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-          // Its count sets how tightly its pieces overlap, so every saved piece stays in sight.
-          <span key={day} className="week-quilt-day" style={{ "--n": acts.filter((act) => act.day === day).length } as CSSProperties}>
+          <span key={day} className="week-quilt-day">
             {acts
               .filter((act) => act.day === day)
               .map((act) => (
@@ -57,7 +56,6 @@ export function WeekQuilt() {
                   className="week-quilt-piece"
                   data-kind={act.kind}
                   data-laid={!seen || seen.has(act.id) ? undefined : ""}
-                  style={{ "--lean": `${((seeded(act.id, 9) - 0.5) * 5).toFixed(2)}deg`, "--rise": `${((seeded(act.id, 10) - 0.5) * 3).toFixed(1)}px` } as CSSProperties}
                 >
                   <i style={{ clipPath: cut(act.id) }} />
                 </span>
