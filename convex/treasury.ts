@@ -820,13 +820,13 @@ export const sumApproved = (rows: { amountApproved?: number }[]) => rows.reduce(
 /** The month's budget and the help approved in it so far. `month` is "2026-11", in the group's time zone. */
 export const budget = query({
   args: { churchId: v.id("churches"), month: v.string() },
-  returns: v.object({ budget: v.union(v.number(), v.null()), approved: v.number() }),
+  returns: v.object({ budget: v.union(v.number(), v.null()), approved: v.number(), householdCap: v.union(v.number(), v.null()) }),
   handler: async (ctx, { churchId, month }) => {
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     const start = DateTime.fromISO(`${month}-01`, { zone: church?.timeZone ?? "America/New_York" });
     if (!church || !start.isValid || !/^\d{4}-\d{2}$/.test(month)) throw new ConvexError("Ask for a month such as 2026-11.");
-    return { budget: church.monthlyBudget ?? null, approved: sumApproved(await approvedBetween(ctx, churchId, start.toMillis(), start.plus({ months: 1 }).toMillis())) };
+    return { budget: church.monthlyBudget ?? null, householdCap: church.householdYearCap ?? null, approved: sumApproved(await approvedBetween(ctx, churchId, start.toMillis(), start.plus({ months: 1 }).toMillis())) };
   },
 });
 
@@ -838,6 +838,18 @@ export const setBudget = mutation({
     await neighborAccess(ctx, churchId);
     if (budget !== null && (!Number.isInteger(budget) || budget < 100 || budget > 100_000_000)) throw new ConvexError("The budget must be between $1 and $1,000,000.");
     await ctx.db.patch("churches", churchId, { monthlyBudget: budget ?? undefined });
+    return null;
+  },
+});
+
+/** Sets the most to approve for one household in twelve months, or clears it with null. Said before each decision; it refuses nothing. */
+export const setHouseholdCap = mutation({
+  args: { churchId: v.id("churches"), cap: v.union(v.number(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { churchId, cap }) => {
+    await neighborAccess(ctx, churchId);
+    if (cap !== null && (!Number.isInteger(cap) || cap < 100 || cap > 100_000_000)) throw new ConvexError("The budget must be between $1 and $1,000,000.");
+    await ctx.db.patch("churches", churchId, { householdYearCap: cap ?? undefined });
     return null;
   },
 });

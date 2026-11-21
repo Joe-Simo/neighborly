@@ -285,8 +285,13 @@ describe("monthly budget", () => {
     });
     const signed = t.withIdentity({ subject: "clerk|coordinator", email: "c@example.org", emailVerified: true });
     await signed.mutation(api.treasury.setBudget, { churchId, budget: 200000 });
-    expect(await signed.query(api.treasury.budget, { churchId, month: "2026-11" })).toEqual({ budget: 200000, approved: 0 });
+    expect(await signed.query(api.treasury.budget, { churchId, month: "2026-11" })).toEqual({ budget: 200000, approved: 0, householdCap: null });
     await expect(signed.mutation(api.treasury.setBudget, { churchId, budget: 12.5 })).rejects.toThrow("between $1");
+    await signed.mutation(api.treasury.setHouseholdCap, { churchId, cap: 60000 });
+    expect((await signed.query(api.treasury.budget, { churchId, month: "2026-11" })).householdCap).toBe(60000);
+    await expect(signed.mutation(api.treasury.setHouseholdCap, { churchId, cap: 0 })).rejects.toThrow("between $1");
+    await signed.mutation(api.treasury.setHouseholdCap, { churchId, cap: null });
+    expect((await signed.query(api.treasury.budget, { churchId, month: "2026-11" })).householdCap).toBeNull();
     await signed.mutation(api.treasury.setBudget, { churchId, budget: null });
     expect((await signed.query(api.treasury.budget, { churchId, month: "2026-11" })).budget).toBeNull();
     await expect(t.mutation(api.treasury.setBudget, { churchId, budget: 100 })).rejects.toThrow();

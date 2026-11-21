@@ -1119,6 +1119,7 @@ const amountBaseline = 10;
  */
 const spent = v.object({
   month: v.number(), thisMonth: v.number(), lastYear: v.number(), budget: v.union(v.number(), v.null()),
+  household: v.number(), householdCap: v.union(v.number(), v.null()),
   kind: kindValidator, asked: v.number(), approvals: v.number(), median: v.number(), above: v.number(),
 });
 export const spending = internalQuery({
@@ -1141,6 +1142,8 @@ export const spending = internalQuery({
     const amounts = year.filter(one => one.kind === request.kind && one._id !== requestId).map(one => one.amountApproved ?? 0).sort((a, b) => a - b);
     return {
       month: start.month, thisMonth: sum(thisMonth), lastYear: sum(lastYear), budget: church.monthlyBudget ?? null,
+      // Approved to this household in the twelve months before, this request apart; and the group's limit, when set.
+      household: sum(year.filter(one => one.neighborId === request.neighborId && one._id !== requestId)), householdCap: church.householdYearCap ?? null,
       kind: request.kind, asked: request.amountRequested, approvals: amounts.length,
       median: amounts.length ? amounts[Math.floor((amounts.length - 1) / 2)] : 0,
       // How many of the past year's approvals of this kind were below what is asked now.

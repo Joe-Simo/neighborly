@@ -23,6 +23,9 @@ const said = {
     noDeck: (month: string) => `${month}. No monthly budget is set.`,
     set: "Set a monthly budget", change: "Change the budget", label: "Monthly budget",
     help: "Leave it empty for no budget.", wrong: "Write the budget in dollars, such as 2000.", save: "Save budget", cancel: "Cancel",
+    cap: (cap: string) => `Each household can have up to ${cap} in 12 months.`, noCap: "No limit per household is set.",
+    setCap: "Set a household limit", changeCap: "Change the household limit", capLabel: "Limit per household, per 12 months",
+    capHelp: "Shown before each decision. Leave it empty for no limit.", saveCap: "Save limit",
   },
   es: {
     line: (approved: string, budget: string) => `${approved} de ${budget} aprobados`,
@@ -31,6 +34,9 @@ const said = {
     noDeck: (month: string) => `${month}. No hay presupuesto mensual.`,
     set: "Fijar un presupuesto mensual", change: "Cambiar el presupuesto", label: "Presupuesto mensual",
     help: "Déjalo vacío para no tener presupuesto.", wrong: "Escribe el presupuesto en dólares, como 2000.", save: "Guardar presupuesto", cancel: "Cancelar",
+    cap: (cap: string) => `Cada hogar puede recibir hasta ${cap} en 12 meses.`, noCap: "No hay límite por hogar.",
+    setCap: "Fijar un límite por hogar", changeCap: "Cambiar el límite por hogar", capLabel: "Límite por hogar, cada 12 meses",
+    capHelp: "Se muestra antes de cada decisión. Déjalo vacío para no tener límite.", saveCap: "Guardar límite",
   },
 } satisfies Record<Language, unknown>;
 
@@ -41,12 +47,14 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
   const month = today.slice(0, 7);
   const found = useQuery(api.treasury.budget, { churchId, month });
   const setBudget = useMutation(api.treasury.setBudget);
-  const [editing, setEditing] = useState(false);
-  // The button gives way to the form and comes back for it: focus goes with each, so it is never left on nothing.
-  const opener = useRef<HTMLButtonElement>(null);
+  const [editing, setEditing] = useState<"budget" | "cap" | null>(null);
+  const setHouseholdCap = useMutation(api.treasury.setHouseholdCap);
+  // Each button gives way to the form and comes back for it: focus goes with each, so it is never left on nothing.
+  const budgetOpener = useRef<HTMLButtonElement>(null);
+  const capOpener = useRef<HTMLButtonElement>(null);
   const was = useRef(editing);
   useEffect(() => {
-    if (was.current && !editing) opener.current?.focus();
+    if (was.current && !editing) (was.current === "cap" ? capOpener : budgetOpener).current?.focus();
     was.current = editing;
   }, [editing]);
   const { pending, error, save } = useSave();
@@ -58,13 +66,14 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
       <div aria-live="polite">
         <h2>{found.budget ? w.line(money(found.approved), money(found.budget)) : w.none(money(found.approved))}</h2>
         <p>{found.budget ? w.deck(title) : w.noDeck(title)}</p>
+        <p>{found.householdCap ? w.cap(money(found.householdCap)) : w.noCap}</p>
       </div>
       {editing ? (
         <form
           className="live-form"
           onSubmit={async (event) => {
             event.preventDefault();
-            const field = event.currentTarget.elements.namedItem("budget") as HTMLInputElement;
+            const field = event.currentTarget.elements.namedItem("amount") as HTMLInputElement;
             const typed = field.value.replace(/[$,\s]/g, "");
             const dollars = typed ? Number(typed) : null;
             if (dollars !== null && !(Number.isInteger(dollars) && dollars > 0)) {
@@ -72,22 +81,26 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
               field.reportValidity();
               return;
             }
-            const outcome = await save(() => setBudget({ churchId, budget: dollars === null ? null : dollars * 100 }));
-            if (outcome.saved) setEditing(false);
+            const cents = dollars === null ? null : dollars * 100;
+            const outcome = await save(() => (editing === "cap" ? setHouseholdCap({ churchId, cap: cents }) : setBudget({ churchId, budget: cents })));
+            if (outcome.saved) setEditing(null);
           }}
         >
-          <LiveField label={w.label} help={w.help}>
-            <Input name="budget" inputMode="numeric" autoFocus defaultValue={found.budget ? String(found.budget / 100) : ""} onInput={(event) => event.currentTarget.setCustomValidity("")} />
+          <LiveField label={editing === "cap" ? w.capLabel : w.label} help={editing === "cap" ? w.capHelp : w.help}>
+            <Input key={editing} name="amount" inputMode="numeric" autoFocus defaultValue={String(((editing === "cap" ? found.householdCap : found.budget) ?? 0) / 100 || "")} onInput={(event) => event.currentTarget.setCustomValidity("")} />
           </LiveField>
           {error && <LiveFailure message={error} />}
           <div className="live-form-actions">
             <LiveWaiting when={pending} />
-            <Button type="button" variant="ghost" disabled={pending} onClick={() => setEditing(false)}>{w.cancel}</Button>
-            <Button type="submit" disabled={pending}>{w.save}</Button>
+            <Button type="button" variant="ghost" disabled={pending} onClick={() => setEditing(null)}>{w.cancel}</Button>
+            <Button type="submit" disabled={pending}>{editing === "cap" ? w.saveCap : w.save}</Button>
           </div>
         </form>
       ) : (
-        <Button ref={opener} type="button" variant="outline" onClick={() => setEditing(true)}>{found.budget ? w.change : w.set}</Button>
+        <div className="live-form-actions">
+          <Button ref={budgetOpener} type="button" variant="outline" onClick={() => setEditing("budget")}>{found.budget ? w.change : w.set}</Button>
+          <Button ref={capOpener} type="button" variant="outline" onClick={() => setEditing("cap")}>{found.householdCap ? w.changeCap : w.setCap}</Button>
+        </div>
       )}
     </section>
   );
