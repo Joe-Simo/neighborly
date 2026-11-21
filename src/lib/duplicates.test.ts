@@ -35,5 +35,7 @@ describe("the notes rule, against runs 1 and 2", () => {
     for (const item of duplicateSet.filter((pair) => !pair.heldOut))
       expect(notesSayOne(run2.rows.find((row) => row.id === item.id)?.people ?? 0, item.a, item.b), item.id).toBe(item.same);
     expect(heldOutFigure(run2)).toEqual({ pairs: 5, right: 5, missed: 0, wrong: 0 });
+    // Run 3 asked the live question alone, after it went live: the figure the record quotes.
+    expect(heldOutFigure((await import("../../eval/duplicates/run-3.json")).default)).toEqual({ pairs: 5, right: 5, missed: 0, wrong: 0 });
   });
 });
