@@ -394,7 +394,8 @@ export function ReportBook({ report, groupName, sample = false }: { report: Year
         <Button variant="ghost" size="icon" aria-label={b.next} disabled={at >= open.length - 1} onClick={() => go(at + 1)}><ChevronRight aria-hidden="true" /></Button>
         <button type="button" className="book-print" onClick={print}>{b.print}</button>
       </div>
-      {printing && createPortal(<div className="report-book-print" aria-hidden="true">{pages.map((_, index) => sheet(index))}</div>, document.body)}
+      {/* Not hidden from assistive tech: it is display:none on screen (report-book.css), and in print it is the document a saved PDF is tagged from. */}
+      {printing && createPortal(<div className="report-book-print">{pages.map((_, index) => sheet(index))}</div>, document.body)}
     </section>
   );
 }
