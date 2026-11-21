@@ -104,7 +104,9 @@
   padding: 2px 0 2px 18px;
   margin: var(--space-16) 0 var(--space-16) !important;
 }
-.help-assistant { display: inline-flex; align-items: center; gap: var(--space-8) 8px; font-size: 15px; color: var(--help-plum) !important; }
+/* The assistant's own lines: muted ink, its sparkle in ink in front. Plum is kept for what is wrong. */
+.help-assistant { display: inline-flex; align-items: center; gap: var(--space-8) 8px; font-size: 15px; color: var(--live-muted) !important; }
+.help-assistant svg { color: var(--live-ink); }
 .help-assistant svg { flex-shrink: 0; }
 .help-actions { display: flex; gap: var(--space-8) 10px; flex-wrap: wrap; align-items: center; }
 .live-app .help-actions [data-slot="button"], .live-app .help-row [data-slot="button"] { min-height: 44px; padding-inline: 16px; font-size: 16px; }
@@ -141,18 +143,18 @@
   display: inline-grid; place-items: center;
   background: #e1e6d9; color: #35553c; font-size: 11px; font-weight: 650; letter-spacing: 0.02em;
 }
-.help-initials + .help-initials { margin-left: -13px; background: var(--help-plum-wash); padding-left: 7px; width: 33px; color: var(--help-plum); }
+.help-initials + .help-initials { margin-left: -13px; background: #ebe3d1; padding-left: 7px; width: 33px; color: var(--live-ink); }
 .help-avatar {
   width: 58px; height: 58px; border-radius: 50%;
   display: grid; place-items: center; justify-self: center;
   background: #e1e6d9; color: #35553c;
   font: 400 22px/1 "Newsreader", "Newsreader Fallback", Georgia, serif;
 }
-.help-row:nth-child(3n + 2) .help-avatar { background: var(--help-plum-wash); color: var(--help-plum); }
+.help-row:nth-child(3n + 2) .help-avatar { background: #ebe3d1; color: var(--live-ink); }
 .help-row:nth-child(3n) .help-avatar { background: var(--help-ochre-wash); color: var(--help-ochre-ink); }
 .live-app .live-main[data-room="help"] .live-status { font-size: 15px; }
 .live-status[data-state="waiting"] { color: var(--help-ochre-ink); }
-.live-status[data-state="assistant"] { color: var(--help-plum); }
+.live-status[data-state="assistant"] { color: var(--live-muted); }
 @keyframes help-rise {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
