@@ -261,7 +261,7 @@
 .help-aside-none { margin: 0; }
 .live-app .live-aside-sheet h3.live-kicker { margin: var(--space-32) 0 var(--space-16); }
 /* Waiting is one quiet line, and it is not drawn for the first 400ms. */
-.help-opening { animation: help-opening 1ms linear 400ms backwards; }
+.help-opening { animation: help-opening 1ms step-end 400ms backwards; }
 @keyframes help-opening { from { opacity: 0; } }
 /* Beside the side column the room's own column is narrow until about 1720px, so a sheet reads down, as on a tablet. */
 @media (min-width: 1280px) and (max-width: 1719px) {

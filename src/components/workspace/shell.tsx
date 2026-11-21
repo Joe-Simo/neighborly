@@ -464,10 +464,13 @@ export function LiveWorkspace({
     if (!view) return;
     const root = document.documentElement.style;
     const read = () => root.setProperty("--live-pan", `${Math.max(0, view.offsetTop)}px`);
-    read();
+    // Read in the next frame, not here: asked in the frame a room or sheet is first laid, the view's place made the
+    // browser lay out the whole new page inside the commit. Until then the view is where it opened (0 by default).
+    const first = requestAnimationFrame(read);
     view.addEventListener("resize", read);
     view.addEventListener("scroll", read);
     return () => {
+      cancelAnimationFrame(first);
       view.removeEventListener("resize", read);
       view.removeEventListener("scroll", read);
       root.removeProperty("--live-pan");
@@ -504,21 +507,18 @@ export function LiveWorkspace({
       delete frame.dataset.roomIn;
     };
   }, [roomIn]);
-  // Arriving by keyboard from the home page's card, the card that held focus is gone and the browser has lost its
-  // place: the first Tab would be spent finding it. Focus rests on the page itself once the room is in, so the
-  // first Tab is "Skip to your conference". No ring is drawn and nothing new joins the Tab order.
+  const headline = useRef<HTMLHeadingElement>(null);
+  // Arriving with focus nowhere (a room opened by its address, or from the home page's card, which is gone), focus
+  // rests on the room's headline once the room is in: a screen reader says the room by its name, and the next Tab goes
+  // on from the top of the room. No ring is drawn for a pointer; a room with no headline yet leaves focus as it is.
   useEffect(() => {
     if (!roomIn || (document.activeElement && document.activeElement !== document.body)) return;
-    const page = document.body;
-    page.tabIndex = -1;
-    page.focus({ preventScroll: true });
-    page.removeAttribute("tabindex");
+    headline.current?.focus({ preventScroll: true });
   }, [roomIn]);
   // Moving to another room, focus lands on its headline once the room is at rest (the page turn over), also when the
   // room was picked from the phone's Menu, whose closing hands focus back to its button first: a screen
   // reader says the room once, by its name, and the next Tab goes on from the top of the room. A ring is drawn there
   // only for someone on keys. The first room keeps focus where the arrival put it.
-  const headline = useRef<HTMLHeadingElement>(null);
   const focusedArea = useRef(area);
   useEffect(() => {
     if (!settled || focusedArea.current === area) return;
@@ -1027,7 +1027,11 @@ function useNavMarker(area: LiveArea) {
       const next = link && (known ?? places.current.get(link) ?? measure(link));
       if (next) for (const [name, value] of Object.entries(next)) marker.style.setProperty(name, value);
     };
-    place(current());
+    // A line already measured is placed at once. One not yet measured (the shell's first frame) is left to the
+    // observer's first call, made after that frame's layout: measured here, it laid out the whole new room inside
+    // React's commit, a phone's longest frame on arrival.
+    const now = current();
+    if (now && places.current.has(now)) place(now);
     const resized = new ResizeObserver(() => {
       for (const link of element.querySelectorAll<HTMLElement>("a")) measure(link);
       const now = current();

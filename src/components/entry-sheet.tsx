@@ -44,10 +44,13 @@ export function EntrySheet({
     if (!view || document.documentElement.dataset.shell === "ios") return;
     const root = document.documentElement.style;
     const read = () => root.setProperty("--live-pan", `${Math.max(0, view.offsetTop)}px`);
-    read();
+    // Read in the next frame, not here: asked in the frame a room or sheet is first laid, the view's place made the
+    // browser lay out the whole new page inside the commit. Until then the view is where it opened (0 by default).
+    const first = requestAnimationFrame(read);
     view.addEventListener("resize", read);
     view.addEventListener("scroll", read);
     return () => {
+      cancelAnimationFrame(first);
       view.removeEventListener("resize", read);
       view.removeEventListener("scroll", read);
       root.removeProperty("--live-pan");
