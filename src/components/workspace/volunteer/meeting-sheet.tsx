@@ -65,14 +65,14 @@ export default function MeetingSheet({ meetingId, title }: { meetingId: Id<"meet
       <Button variant="outline" aria-label={`${w.open}: ${title}`} onClick={() => setOpen(true)}>{w.open}</Button>
       {open && (
         <LiveDialog title={title} closeLabel={words.shell.close} onClose={() => setOpen(false)} className="meeting-dialog">
-          <Agenda churchId={churchId} meetingId={meetingId} language={words.locale} day={(at) => format(at, { month: "long", day: "numeric" })} />
+          <Agenda churchId={churchId} meetingId={meetingId} language={words.locale} leave={() => setOpen(false)} day={(at) => format(at, { month: "long", day: "numeric" })} />
         </LiveDialog>
       )}
     </div>
   );
 }
 
-function Agenda({ churchId, meetingId, language, day }: { churchId: Id<"churches">; meetingId: Id<"meetings">; language: Language; day: (at: number) => string }) {
+function Agenda({ churchId, meetingId, language, leave, day }: { churchId: Id<"churches">; meetingId: Id<"meetings">; language: Language; leave: () => void; day: (at: number) => string }) {
   const w = said[language];
   const sheet = useQuery(api.minutes.sheet, { churchId, meetingId });
   const keep = useMutation(api.minutes.keep);
@@ -104,7 +104,7 @@ function Agenda({ churchId, meetingId, language, day }: { churchId: Id<"churches
             {sheet.waiting.map((row) => (
               <li key={row.requestId}>
                 <span>{`${row.name} · ${w.kinds[row.kind]} · ${money(row.amount)}`}</span>
-                <Link href={recordHref(row.neighborId)} className="meeting-decide">{w.decide}</Link>
+                <Link href={recordHref(row.neighborId)} className="meeting-decide" onClick={leave}>{w.decide}</Link>
               </li>
             ))}
           </ul>
@@ -143,7 +143,13 @@ function Agenda({ churchId, meetingId, language, day }: { churchId: Id<"churches
       {done && <p role="status">{done}</p>}
       <div className="live-form-actions">
         <LiveWaiting when={pending} />
-        <Button type="button" variant="ghost" onClick={() => window.print()}><Printer aria-hidden="true" />{w.print}</Button>
+        <Button type="button" variant="ghost" onClick={() => {
+          // The print rule holds only while this sheet is printing, so no other page's print is blanked by it.
+          const root = document.documentElement;
+          root.dataset.print = "meeting";
+          window.addEventListener("afterprint", () => delete root.dataset.print, { once: true });
+          window.print();
+        }}><Printer aria-hidden="true" />{w.print}</Button>
         <Button type="button" variant="outline" disabled={pending || !sheet.kept.savedAt} onClick={async () => {
           const outcome = await save(() => send({ churchId, meetingId }));
           if (outcome.saved) setDone(outcome.result === "sent" ? w.sent : w.notSent);
