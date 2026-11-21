@@ -19,14 +19,15 @@
   --cut-c:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V3C82 4 71 9 49 8S16 2 0 7Z'/%3E%3C/svg%3E")}
 .public-words h1,.public-words section{position:relative;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 5px 7px #3b2a1218)}
 .public-words h1::before,.public-words section::before{content:"";position:absolute;inset:0;z-index:-1;background:#f7f4ed;-webkit-mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,linear-gradient(#000,#000) top/100% calc(100% - 29px) no-repeat;mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,linear-gradient(#000,#000) top/100% calc(100% - 29px) no-repeat}
-.public-words h1{z-index:11;margin:0;padding:clamp(40px,5.6vw,104px) clamp(20px,5.4vw,104px) clamp(250px,62vw,300px);font:400 clamp(64px,9vw,144px)/var(--lead-1) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-1)}
+.public-words h1{z-index:15;margin:0;padding:clamp(40px,5.6vw,104px) clamp(20px,5.4vw,104px) clamp(250px,62vw,300px);font:400 clamp(64px,9vw,144px)/var(--lead-1) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-1)}
 /* The head and its words stand as one pair from the left edge: the head's column fits its 14ch, the words' their 28em, with no gap stretched between them on a wide window. */
 .public-words section{display:grid;grid-template-columns:minmax(0,24rem) minmax(0,28em);justify-content:start;gap:12px clamp(40px,6vw,110px);margin-top:-30px;padding:clamp(64px,6vw,104px) clamp(20px,5.4vw,104px) clamp(56px,5.4vw,92px)}
 .public-words section:nth-of-type(3n+2){--cut:var(--cut-b)}
 .public-words section:nth-of-type(3n){--cut:var(--cut-c)}
 .public-words section:nth-of-type(3n)::before{background:#f4efe4}
 .public-words section:nth-of-type(even)::before{background:#f1ebde;scale:-1 1}
-.public-words section:nth-of-type(1){z-index:10}.public-words section:nth-of-type(2){z-index:9}.public-words section:nth-of-type(3){z-index:8}.public-words section:nth-of-type(4){z-index:7}.public-words section:nth-of-type(5){z-index:6}.public-words section:nth-of-type(6){z-index:5}.public-words section:nth-of-type(7){z-index:4}.public-words section:nth-of-type(8){z-index:3}.public-words section:nth-of-type(9){z-index:2}.public-words section:nth-of-type(10){z-index:1}
+/* Each sheet lies over the one after it, all the way down: 14 places, so a page of up to 14 sheets never has one laid under a later one. */
+.public-words section:nth-of-type(1){z-index:14}.public-words section:nth-of-type(2){z-index:13}.public-words section:nth-of-type(3){z-index:12}.public-words section:nth-of-type(4){z-index:11}.public-words section:nth-of-type(5){z-index:10}.public-words section:nth-of-type(6){z-index:9}.public-words section:nth-of-type(7){z-index:8}.public-words section:nth-of-type(8){z-index:7}.public-words section:nth-of-type(9){z-index:6}.public-words section:nth-of-type(10){z-index:5}.public-words section:nth-of-type(11){z-index:4}.public-words section:nth-of-type(12){z-index:3}.public-words section:nth-of-type(13){z-index:2}.public-words section:nth-of-type(14){z-index:1}
 .public-words h2{margin:0;max-width:14ch;font:400 clamp(28px,2.7vw,44px)/var(--lead-3) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-3);text-wrap:balance}
 .public-words section>div{max-width:28em;font-size:17px;line-height:1.6}
 .public-words p,.public-words ul{margin:0 0 round(nearest,1em,4px);text-wrap:pretty}
@@ -41,7 +42,7 @@
 .public-words .public-words-address{white-space:nowrap}
 .public-words-last{max-width:30em;font-size:15px;color:#3d4f43}
 /* What is kept, tied and closed: the page's one picture, a piece cut along one wavy line with its own shadow, lying on the name's sheet and running off the screen's edge so the hand leaves whole. Never drawn wider than it was painted. */
-.public-words-relief{position:absolute;z-index:12;right:0;top:clamp(150px,41vw,196px);width:min(78vw,320px);aspect-ratio:3/2;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 6px 8px #3b2a121c)}
+.public-words-relief{position:absolute;z-index:16;right:0;top:clamp(150px,41vw,196px);width:min(78vw,320px);aspect-ratio:3/2;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 6px 8px #3b2a121c)}
 .public-words-relief::before{content:"";position:absolute;inset:0;background:url(/assets/home/relief-kept-640.webp) center/cover no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 4C20 0 35 7 55 3S85 0 100 4V96C80 100 62 93 42 97S9 99 0 82Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
 @media(min-width:1024px){
   /* Laid by hand: each sheet sits a little in or out of the last, never turned, so the lines stay level. */
@@ -73,7 +74,7 @@
 /* Between a phone and a desk the picture has room beside the name, and still crosses the sheet's cut edge. */
 @media(min-width:600px) and (max-width:1023px){.public-words h1{padding-inline:max(20px,calc((100% - 476px) / 2));padding-bottom:176px}.public-words-relief{top:104px}}
 /* A line under the title, on the title's sheet (the Spanish page says it is a translation). It gives back the room it stands in: it lies in the sheet's foot. Under 1024px the foot is made deeper for it and the picture lies below it, clear of a longer title. */
-.public-words .public-words-note{position:relative;z-index:12;height:0;max-width:none;margin:calc(14px - (var(--foot))) 0 calc((var(--foot)) - 14px);padding-inline:clamp(20px,5.4vw,104px);font-size:15px;line-height:1.5;color:#3d4f43;--foot:clamp(60px,7vw,130px)}
+.public-words .public-words-note{position:relative;z-index:16;height:0;max-width:none;margin:calc(14px - (var(--foot))) 0 calc((var(--foot)) - 14px);padding-inline:clamp(20px,5.4vw,104px);font-size:15px;line-height:1.5;color:#3d4f43;--foot:clamp(60px,7vw,130px)}
 @media(max-width:1023px){
   .public-words:has(.public-words-note) h1{padding-bottom:calc(clamp(250px,62vw,300px) + 72px)}
   .public-words:has(.public-words-note) .public-words-relief{top:calc(clamp(150px,41vw,196px) + 72px)}
