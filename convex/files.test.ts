@@ -62,7 +62,7 @@ describe("uploaded files", () => {
     await expect(member.query(api.files.conference, { churchId: ids.church })).rejects.toThrow(refused);
     await expect(member.mutation(api.files.remove, { churchId: ids.church, id })).rejects.toThrow(refused);
     const stranger = as(ids.stranger);
-    await expect(stranger.mutation(api.files.remove, { churchId: ids.other, id })).rejects.toThrow("Record not found.");
+    await expect(stranger.mutation(api.files.remove, { churchId: ids.other, id })).rejects.toThrow("That file was not found.");
     await expect(stranger.mutation(api.files.uploadUrl, { churchId: ids.other, neighborId: ids.neighbor })).rejects.toThrow("Record not found.");
   });
 
@@ -70,9 +70,9 @@ describe("uploaded files", () => {
     const { t, ids, as } = await setup();
     const owner = as(ids.owner);
     const big = await stored(t, new Uint8Array(10 * 1024 * 1024 + 1), "application/pdf");
-    await expect(owner.action(api.files.save, { churchId: ids.church, storageId: big, name: "Big.pdf" })).rejects.toThrow("Enter a valid value.");
+    await expect(owner.action(api.files.save, { churchId: ids.church, storageId: big, name: "Big.pdf" })).rejects.toThrow("Files can be at most 10 MB.");
     const script = await stored(t, "<script>", "text/html");
-    await expect(owner.action(api.files.save, { churchId: ids.church, storageId: script, name: "page.html" })).rejects.toThrow("Enter a valid value.");
+    await expect(owner.action(api.files.save, { churchId: ids.church, storageId: script, name: "page.html" })).rejects.toThrow("This kind of file cannot be kept.");
     expect(await owner.query(api.files.conference, { churchId: ids.church })).toEqual([]);
     // A refused file's bytes are gone, not left behind in storage.
     expect(await blobs(t)).toBe(0);
