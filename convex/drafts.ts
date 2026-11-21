@@ -648,3 +648,107 @@ export const measure = internalAction({
     return { status: "done" as const, notes: jevSet.length, unanswered: rows.filter(row => !row.confirm).length, model, ...lines(false), fresh: lines(true), rows };
   },
 });
+
+/** A request's own words, the call it came from, and the group's places that say what they help with. Never sent as it is. */
+export const referralNote = internalQuery({
+  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests") },
+  returns: v.object({ userId: v.id("users"), note: v.string(), agencies: v.array(v.object({ name: v.string(), helpsWith: v.string() })), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
+  handler: async (ctx, { churchId, requestId }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const request = await ctx.db.get("assistanceRequests", requestId);
+    if (!request || request.churchId !== churchId) throw new ConvexError("Request not found.");
+    const [neighbor, call, places] = await Promise.all([
+      ctx.db.get("neighbors", request.neighborId),
+      request.callId ? ctx.db.get("calls", request.callId) : null,
+      ctx.db.query("referralAgencies").withIndex("by_church", q => q.eq("churchId", churchId)).take(100),
+    ]);
+    // A place with nothing written under "helps with" gives the model nothing to judge, so it is never asked about.
+    const agencies = places.filter(place => place.helpsWith.trim()).slice(0, 12).map(place => ({ name: place.name, helpsWith: place.helpsWith.trim().slice(0, 200) }));
+    return {
+      userId: member.userId,
+      note: [request.summary, call?.note ?? ""].map(text => text.trim()).filter(Boolean).join("\n"),
+      agencies,
+      names: [neighbor?.name ?? "", call?.callerName ?? ""].filter(Boolean),
+      addresses: neighbor?.address ? [neighbor.address] : [],
+      // Place names are taken out too: the model judges what a place helps with, never which place it is.
+      others: agencies.length ? [...(await namesFor(ctx, churchId)), ...places.map(place => place.name)] : [],
+    };
+  },
+});
+
+/**
+ * Where else the neighbor could be sent, for the approve or decline form. The model is given the request's note and
+ * each of the group's own places as only what it helps with (no place's name), and says yes or no for each. A place
+ * is offered only at 0.9 or more, and only a person adds it: this saves nothing and refers no one.
+ */
+export const suggestReferrals = action({
+  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests") },
+  returns: v.object({ places: v.array(v.string()), verification: v.union(v.literal("review"), v.literal("checked")) }),
+  handler: async (ctx, args): Promise<{ places: string[]; verification: "review" | "checked" }> => {
+    const { userId, note, agencies, names, addresses, others } = await ctx.runQuery(internal.drafts.referralNote, args);
+    const none = { places: [], verification: "review" as const };
+    if (!agencies.length || !note || !env.TYPESAFE_API_KEY || note.length > 2000) return none;
+    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return none;
+    const key = (index: number) => `p${index}`;
+    const sure = await confidence(env.TYPESAFE_API_KEY,
+      { note, places: Object.fromEntries(agencies.map((place, index) => [key(index), place.helpsWith])) },
+      Object.fromEntries(agencies.map((_, index) => [key(index), `Does note describe a need of the caller's own household that places.${key(index)} helps with? ${mentioned}`])),
+      { names, addresses, others },
+    );
+    if (!sure) return none;
+    return { places: agencies.flatMap((place, index) => (sure[key(index)] >= sureEnough ? [place.name] : [])), verification: "checked" };
+  },
+});
+
+/** A written-up visit's note, with the names and addresses that must be taken out of it. */
+export const visitNote = internalQuery({
+  args: { churchId: v.id("churches"), visitId: v.id("visits") },
+  returns: v.object({ userId: v.id("users"), note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
+  handler: async (ctx, { churchId, visitId }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const visit = await ctx.db.get("visits", visitId);
+    if (!visit || visit.churchId !== churchId || visit.status !== "completed") throw new ConvexError("Visit not found.");
+    const neighbor = await ctx.db.get("neighbors", visit.neighborId);
+    return {
+      userId: member.userId, note: visit.notes,
+      names: neighbor?.name ? [neighbor.name] : [],
+      addresses: neighbor?.address ? [neighbor.address] : [],
+      others: await namesFor(ctx, churchId),
+    };
+  },
+});
+
+export const keepFound = internalMutation({
+  args: { visitId: v.id("visits"), kind: v.union(...requestKinds.map(kind => v.literal(kind)), v.null()), signs: v.array(v.string()) },
+  returns: v.null(),
+  handler: async (ctx, { visitId, kind, signs }) => {
+    await ctx.db.patch("visits", visitId, { found: { ...(kind && { kind }), signs, at: Date.now() } });
+    return null;
+  },
+});
+
+/**
+ * After a visit is written up: whether its note shows a need the visit was not for. The same measured questions as
+ * the help line (the kind-of-help pick and each urgent sign, at 0.9 or more) are asked of the note with names and
+ * addresses taken out. What passes is kept on the visit and shown under it; nothing is started, and a person decides.
+ */
+export const readVisit = action({
+  args: { churchId: v.id("churches"), visitId: v.id("visits") },
+  returns: v.object({ kind: v.union(...requestKinds.map(kind => v.literal(kind)), v.null()), signs: v.array(v.union(...urgentReasons.map(reason => v.literal(reason)))), verification: v.union(v.literal("review"), v.literal("checked")) }),
+  handler: async (ctx, args): Promise<{ kind: RequestKind | null; signs: UrgentReason[]; verification: "review" | "checked" }> => {
+    const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.visitNote, args);
+    const none = { kind: null, signs: [], verification: "review" as const };
+    if (!note.trim() || !env.TYPESAFE_API_KEY || note.length > 2000) return none;
+    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return none;
+    const found = urgentSigns(note);
+    const questions = { ...Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, found)])), chosenKind: kindQuestion };
+    const answers = await decide(env.TYPESAFE_API_KEY, { note }, questions, { names, addresses, others });
+    if (!answers) return none;
+    const pick = picked(answers.chosenKind);
+    const kind = pick && pick.kind !== "none" && pick.confidence >= sureEnough ? pick.kind : null;
+    const signs = urgentReasons.filter(reason => (noul(answers[reason]) ?? 0) >= sureEnough);
+    console.log(`jev visit ${JSON.stringify({ kind, signs })}`);
+    await ctx.runMutation(internal.drafts.keepFound, { visitId: args.visitId, kind, signs });
+    return { kind, signs, verification: "checked" };
+  },
+});
