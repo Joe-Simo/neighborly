@@ -27,12 +27,24 @@ describe("reviewable team drafting", () => {
     expect(sent).toContain("every");
     expect(sent).not.toMatch(/Rosa|Delgado|555-0142|rosa@|14 Sample/);
     // The dialog shows the person exactly what left: the same scrubbed words, and nothing when nothing was asked.
-    expect(draft.sent).toContain("welcome team serves every Sunday");
+    expect(draft.sent).toContain("team serves every Sunday");
     expect(draft.sent).not.toMatch(/Rosa|Delgado|555-0142|rosa@|14 Sample/);
     expect(sent).toContain(JSON.stringify(draft.sent).slice(1, -1));
     const unread = await signed.action(api.drafts.suggestTeam, { description: "Ask Rosa Delgado, (239) 555-0142, about Saturdays." });
     expect(unread).toMatchObject({ teamName: "", verification: "review", sent: "" });
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  test("a name typed into the team's name never leaves, and the name is not asked about", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = vi.fn<(url: string, init: { body: string }) => Promise<Response>>(async () => Response.json({ answers: { recurrence: { type: "noul", noul: 0.99 }, peopleCount: { type: "noul", noul: 0.99 }, time: { type: "noul", noul: 0.99 } } }));
+    vi.stubGlobal("fetch", fetch);
+    const { signed } = await setup();
+    const draft = await signed.action(api.drafts.suggestTeam, { description: "Rosalind Teams group serves every Sunday from 9am to 10am. We need two people." });
+    const body = fetch.mock.calls[0][1].body;
+    expect(body).not.toMatch(/rosalind/i);
+    expect(Object.keys((JSON.parse(body) as { questions: object }).questions)).not.toContain("teamName");
+    expect(draft.verification).toBe("checked");
   });
 
   test("there is one door to the model, and it takes identity out of everything it is handed", async () => {

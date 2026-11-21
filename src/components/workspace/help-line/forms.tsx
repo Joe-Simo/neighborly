@@ -2,7 +2,7 @@
 
 import { keepTitle } from "@/lib/words/titles";
 import "@/components/workspace/for-good.css";
-import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
@@ -11,14 +11,15 @@ import { Check, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { SheetCancel } from "@/components/workspace/live-dialog";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LiveField, markWrong } from "@/components/workspace/primitives";
-import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
+import { FormEnd } from "@/components/workspace/help-line/form-end";
+import { NameToConfirm, nameKey } from "@/components/workspace/help-line/name-to-confirm";
+import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import {
   cents,
   shortMoney,
@@ -81,35 +82,6 @@ const onShelf = (shelf: Shelf, item: string) =>
 /** The shelf's name for a voucher as a sentence carries it: lower case, and "voucher" said once, by the sentence. */
 const itemOf = (voucher: { item: string }) =>
   voucher.item.toLowerCase().replace(/\s+vouchers?$/, "");
-
-export function FormEnd({
-  error,
-  pending,
-  submit,
-  value,
-  children,
-}: {
-  error: string;
-  pending: boolean;
-  submit: string;
-  /** Sent as the button's value, for a form with more than one way to save. */
-  value?: string;
-  children?: ReactNode;
-}) {
-  return (
-    <>
-      {error && <LiveFailure message={error} />}
-      <div className="live-form-actions">
-        <LiveWaiting when={pending} />
-        <SheetCancel disabled={pending} />
-        {children}
-        <Button type="submit" value={value} disabled={pending}>
-          {submit}
-        </Button>
-      </div>
-    </>
-  );
-}
 
 export function CallForm({
   churchId,
@@ -958,59 +930,6 @@ export function NeighborForm({
 }
 
 /** The same reading of a name the backend makes, so the button wakes only when the names agree. */
-const nameKey = (name: string) =>
-  name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-
-/**
- * The box where a name is typed to confirm an act that cannot be undone. While the person types, nothing is
- * said. When they leave the box or press Enter with something in it that is not the name, one quiet line
- * gives the name as it is written; it goes as soon as they type again.
- */
-export function NameToConfirm({
-  label,
-  name,
-  typed,
-  onTyped,
-}: {
-  label: string;
-  name: string;
-  typed: string;
-  onTyped: (typed: string) => void;
-}) {
-  const note = useId();
-  const w = useWords().rooms.helpLineForms.confirm;
-  const [left, setLeft] = useState(false);
-  const off = left && typed.trim() !== "" && nameKey(typed) !== nameKey(name);
-  return (
-    <LiveField label={label}>
-      <Input
-        value={typed}
-        onChange={(event) => {
-          setLeft(false);
-          onTyped(event.target.value);
-        }}
-        onBlur={() => setLeft(true)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") setLeft(true);
-        }}
-        autoComplete="off"
-        autoCapitalize="words"
-        spellCheck={false}
-        aria-describedby={off ? note : undefined}
-        required
-      />
-      {off && (
-        <small id={note} className="live-field-needed" role="status">
-          {w.noMatch}{" "}
-          <span className={name.length <= 28 ? "help-name-whole" : undefined}>{name}.</span>
-        </small>
-      )}
-    </LiveField>
-  );
-}
 
 /**
  * Removes a neighbor's record for good: says what goes and what stays, and asks for the

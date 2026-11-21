@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { fill } from "@/lib/words/fill";
 import { LiveField } from "@/components/workspace/primitives";
-import { FormEnd } from "@/components/workspace/help-line/forms";
+import { FormEnd } from "@/components/workspace/help-line/form-end";
 import {
   accountKinds,
   cents,

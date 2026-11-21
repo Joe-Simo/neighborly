@@ -103,6 +103,10 @@ function foldTheSheet(hold: HTMLElement) {
   const up = top.animate([{ transform: "none" }, { transform: `translateY(${-Math.round(window.innerHeight * 0.5 + 40)}px)` }], { duration: CARRY, delay: FOLD - 40, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" });
   return up.finished.then(() => undefined);
 }
+/** The home story's sheet that the sweep came up over (paper-arrival.tsx) is let go, under the door's paper. */
+function letGoOfTheStory() {
+  document.querySelector(".neighborly-paper-carry[data-carrying]")?.removeAttribute("data-carrying");
+}
 function letGoOfTheSheet() {
   heldSheet?.remove();
   heldSheet = null;
@@ -197,6 +201,7 @@ export function DoorSweep() {
       if (folds) {
         const over = () => {
           letGoOfTheSheet();
+          letGoOfTheStory();
           setHolding(false);
           delete document.documentElement.dataset.door;
           afterAPaint(restOnTheRoomHead);
@@ -233,9 +238,13 @@ export function DoorSweep() {
         // The copy lies exactly where the paper lay: the paper goes in this same frame, and the turn's first frame only moves paper.
         paper.current.style.visibility = "hidden";
         leave = turn.play();
+        // The home story's sheet, kept under the sweep (paper-arrival.tsx), goes only once the turning copy has been
+        // painted over it, however long that first frame takes: no frame is left with only the bare paper.
+        afterAPaint(letGoOfTheStory);
       } else if (paper.current) {
         // With less motion asked for (or no sheet to turn) the paper is simply gone: one cut, nothing played.
         paper.current.style.visibility = "hidden";
+        letGoOfTheStory();
       }
       const over = () => {
         setHolding(false);

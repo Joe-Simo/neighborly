@@ -8,6 +8,8 @@ import { restWhatIsUnderneath, wholeUnderneath } from "@/lib/room-whole";
 const LIFT = 240;
 /** If nothing under the sheet settles, it lifts anyway: what is there says for itself that it is opening. */
 const LONGEST = 1200;
+/** If the sample neither opens nor says why, the sheet lifts off whatever is there. */
+const NO_DOOR = 12000;
 
 
 /**
@@ -28,8 +30,26 @@ export function PaperArrival() {
     const since = performance.now();
     let frame = 0;
     let lift: Animation | undefined;
+    // Going to the sample, what is under the sheet first is only the waiting paper: the door's sweep, not this sheet,
+    // is what comes off it. The sheet stays until the sweep has come up over it, then goes under it unseen, so no frame
+    // ever shows the empty paper between the two: the door takes it away in the frame its own paper starts to lift
+    // (door.tsx). A first look is a room, and the sheet lifts off it as off any room.
+    const toSample = new URLSearchParams(window.location.search).get("intent") === "sample";
     const look = () => {
-      if (!wholeUnderneath() && performance.now() - since < LONGEST) {
+      const waited = performance.now() - since;
+      if (element.dataset.carrying === undefined) return settle();
+      const sweeping = document.documentElement.dataset.door !== undefined;
+      // Until a room is drawn, the door sweeps, or the sheet with the sample's refusal on it is shown.
+      // Without a first look the room under the sheet is only the signed-out page, taken down the moment the session
+      // lands, so the sheet never lifts off it by itself: the sweep takes it. A first look is waited on until whole.
+      // The sign-in sheet counts only once it says the sample would not open: the copy the server drew of it, there
+      // for a moment before the page knows where it is going, is not somewhere to lift onto.
+      const coming = toSample && waited < NO_DOOR && !document.querySelector(".live-app .entry .live-failure") && !(document.documentElement.hasAttribute("data-first-look") && wholeUnderneath());
+      if (sweeping || coming) {
+        frame = requestAnimationFrame(look);
+        return;
+      }
+      if (!wholeUnderneath() && waited < LONGEST) {
         frame = requestAnimationFrame(look);
         return;
       }

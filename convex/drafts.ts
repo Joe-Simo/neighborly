@@ -272,7 +272,9 @@ export const suggestTeam = action({
     const draft = prepareDraft(description);
     const fallback = { ...draft, verification: "review" as const, sent: "" };
     if (!env.TYPESAFE_API_KEY) return fallback;
-    const fields = ["teamName", "recurrence", "peopleCount", "time"] as const;
+    // The team's name is read by code and never sent or asked about: a name typed into it ("Rosa's team") would leave
+    // with it, and code already read it word for word from the description. It stands as read, like a request's amount.
+    const fields = ["recurrence", "peopleCount", "time"] as const;
     const present = fields.filter(field => draft[field]);
     // Field names only, never the description: enough to see on the wire that nothing was read, so nothing was asked.
     if (!present.length) {
@@ -280,10 +282,9 @@ export const suggestTeam = action({
       return fallback;
     }
     if (await ctx.runMutation(internal.drafts.reserve, { userId }) !== "ok") throw new ConvexError("Please wait a minute before preparing another draft.");
-    // A team's name is what the question is about, and a capitalised "Welcome" would leave as "[name]" and could
-    // never be confirmed. So the name code read goes in small letters, which the scrubbing lets through.
-    const plain = draft.teamName ? description.replace(new RegExp(draft.teamName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), draft.teamName.toLowerCase()) : description;
-    const sure = await confidence(env.TYPESAFE_API_KEY, { description: plain, proposed: { ...draft, teamName: draft.teamName.toLowerCase() } }, Object.fromEntries(present.map(field => [field,
+    const plain = description;
+    const { teamName: _unsent, ...proposed } = draft;
+    const sure = await confidence(env.TYPESAFE_API_KEY, { description: plain, proposed }, Object.fromEntries(present.map(field => [field,
       `Does description explicitly and unambiguously support proposed.${field}? ${stated} Never infer availability, consent, qualifications, membership, or a new fact.`,
     ])) as Record<(typeof present)[number], string>);
     // The words left even when no usable answer came back, so the person is still shown them.
@@ -292,7 +293,7 @@ export const suggestTeam = action({
     for (const field of present) {
       if (sure[field] < sureEnough) {
         draft[field] = "";
-        draft.notes.push(`Please confirm ${field === "teamName" ? "the team name" : field === "peopleCount" ? "how many people are needed" : field === "time" ? "the start and end time" : "how often the team meets"}.`);
+        draft.notes.push(`Please confirm ${field === "peopleCount" ? "how many people are needed" : field === "time" ? "the start and end time" : "how often the team meets"}.`);
       }
     }
     return { ...draft, verification: "checked" as const, sent };

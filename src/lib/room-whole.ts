@@ -28,5 +28,7 @@ export function restWhatIsUnderneath() {
 export function wholeUnderneath() {
   if (!document.querySelector(".live-app h1") || !underneathIsReady()) return false;
   const picture = document.querySelector<HTMLImageElement>(".entry-art img");
-  return !picture || picture.complete;
+  // A room's head picture says when it is drawn (`data-ready`): the paper never lifts onto the space it will fill.
+  const art = document.querySelector(".live-app .live-head-art:not(.live-room[hidden] *)");
+  return (!picture || picture.complete) && (!art || art.hasAttribute("data-ready"));
 }

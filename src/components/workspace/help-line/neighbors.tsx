@@ -12,7 +12,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import { NeighborForm } from "@/components/workspace/help-line/forms";
+import { useFormsLater } from "@/components/workspace/help-line/forms-later";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { RoomAside, useFarScreen } from "@/components/workspace/aside";
 import { fill } from "@/lib/words/fill";
@@ -61,6 +61,7 @@ function Neighbors() {
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
   const add = useCallback(() => setAdding(true), []);
+  const forms = useFormsLater(adding);
   useLayoutEffect(() => {
     setHeadAction({ label: text.add, run: add, plus: true });
     return () => setHeadAction(null);
@@ -107,13 +108,13 @@ function Neighbors() {
       ) : (
         <HelpLoading />
       )}
-      {adding && (
+      {adding && forms && (
         <LiveDialog
           title={text.add}
           description={text.list.addHelp}
           onClose={() => setAdding(false)}
         >
-          <NeighborForm
+          <forms.NeighborForm
             churchId={churchId}
             onSaved={(id) => router.push(recordHref(id))}
           />
