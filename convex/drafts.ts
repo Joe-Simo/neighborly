@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
+import { referralPlaces, referralSet, type ReferralPlace } from "../src/lib/referral-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { hour, hourAsked, neighborAccess, user } from "./access";
 import { isSampleVisitor } from "./demo";
@@ -649,6 +650,11 @@ export const measure = internalAction({
   },
 });
 
+/** One yes or no per place, by index; shared with measureReferrals so both ask the same thing. */
+function referralQuestions(count: number) {
+  return Object.fromEntries(Array.from({ length: count }, (_, index) => [`p${index}`, `Does note describe a need of the caller's own household that places.p${index} helps with? ${mentioned}`]));
+}
+
 /** A request's own words, the call it came from, and the group's places that say what they help with. Never sent as it is. */
 export const referralNote = internalQuery({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests") },
@@ -692,7 +698,7 @@ export const suggestReferrals = action({
     const key = (index: number) => `p${index}`;
     const sure = await confidence(env.TYPESAFE_API_KEY,
       { note, places: Object.fromEntries(agencies.map((place, index) => [key(index), place.helpsWith])) },
-      Object.fromEntries(agencies.map((_, index) => [key(index), `Does note describe a need of the caller's own household that places.${key(index)} helps with? ${mentioned}`])),
+      referralQuestions(agencies.length),
       { names, addresses, others },
     );
     if (!sure) return none;
@@ -750,5 +756,32 @@ export const readVisit = action({
     console.log(`jev visit ${JSON.stringify({ kind, signs })}`);
     await ctx.runMutation(internal.drafts.keepFound, { visitId: args.visitId, kind, signs });
     return { kind, signs, verification: "checked" };
+  },
+});
+
+/**
+ * Measures the referral question on the made-up set (src/lib/referral-set.ts), with the same wording and the same 0.9
+ * line the form uses. For each note and place: right (offered and fits, or left out and does not), missed, or wrong.
+ */
+const referralTally = v.object({ right: v.number(), missed: v.number(), wrong: v.number() });
+export const measureReferrals = internalAction({
+  args: { churchId: v.id("churches") },
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(), all: referralTally, heldOut: referralTally, rows: v.array(v.object({ id: v.string(), offered: v.array(v.string()), scores: v.record(v.string(), v.number()) })) }),
+  handler: async (ctx, { churchId }) => {
+    const zero = { right: 0, missed: 0, wrong: 0 };
+    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const key = env.TYPESAFE_API_KEY;
+    if (!key) return { status: "no key" as const, ...none };
+    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: referralSet.length })) return { status: "no allowance" as const, ...none };
+    const places = Object.keys(referralPlaces) as ReferralPlace[];
+    const rows = await Promise.all(referralSet.map(async item => {
+      const sure = await confidence(key, { note: item.note, places: Object.fromEntries(places.map((place, index) => [`p${index}`, referralPlaces[place]])) }, referralQuestions(places.length));
+      const scores = Object.fromEntries(places.map((place, index) => [place, Math.round((sure?.[`p${index}`] ?? 0) * 100) / 100]));
+      const offered = places.filter(place => scores[place] >= sureEnough);
+      const marks = places.map(place => (offered.includes(place) === item.fits.includes(place) ? "right" : offered.includes(place) ? "wrong" : "missed"));
+      return { id: item.id, offered, scores, marks, heldOut: !!item.heldOut };
+    }));
+    const add = (only: boolean) => rows.filter(row => !only || row.heldOut).flatMap(row => row.marks).reduce((sum, mark) => ({ ...sum, [mark]: sum[mark] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, offered, scores }) => ({ id, offered, scores })) };
   },
 });
