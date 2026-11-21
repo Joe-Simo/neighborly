@@ -18,8 +18,8 @@ const said = {
   en: {
     yours: "Yours",
     whole: "The conference at a glance",
-    visits: "Coming up, next 7 days",
-    visitsLine: (next: string) => (next ? `Next ${next}` : "Nothing in the next 7 days"),
+    visits: "Yours, next 7 days",
+    visitsLine: (next: string) => (next ? `Next ${next}` : "Nothing of yours in the next 7 days"),
     asks: (n: number) => (n ? `${n} home visit${n === 1 ? "" : "s"} waiting for your answer` : ""),
     tasks: "Your tasks",
     tasksLine: (late: number) => (late ? `${late} past due` : "None past due"),
@@ -48,8 +48,8 @@ const said = {
   es: {
     yours: "Lo tuyo",
     whole: "La conferencia de un vistazo",
-    visits: "Lo que viene, próximos 7 días",
-    visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada en los próximos 7 días"),
+    visits: "Lo tuyo, próximos 7 días",
+    visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada tuyo en los próximos 7 días"),
     asks: (n: number) => (n ? `${n} visita${n === 1 ? "" : "s"} esperan tu respuesta` : ""),
     tasks: "Tus tareas",
     tasksLine: (late: number) => (late ? `${late} con la fecha pasada` : "Ninguna con la fecha pasada"),
@@ -133,8 +133,8 @@ export function Glance({ quiet = false }: { quiet?: boolean }) {
   const { own, conference, councils } = home;
   // A group in its first days stays on its first-week state until the conference holds anything to count.
   if (quiet && !councils.length && own.tasks + own.visitAsks === 0 && (!conference || (conference.callbacks.owed + conference.year.approved.now + conference.visits.due + conference.visits.late === 0 && !conference.balance))) return null;
-  // Coming up's own list (comingUp), so the tile and the list under it always agree.
-  const week = comingUp(data, now);
+  // Coming up's own list (comingUp), this person's rows only, so the tile always agrees with the rows under it.
+  const week = comingUp(data, now).filter((item) => item.assigneeId === data.user.id);
   const next = week[0];
   const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
   const mine: Tile[] = [
