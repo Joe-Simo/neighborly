@@ -244,3 +244,30 @@ describe("a caller who needs Spanish", () => {
     expect(waiting.find(call => call.id === linked)?.spanish).toBe("record");
   });
 });
+
+describe("spending before a decision", () => {
+  test("the month's approved help and an amount above every earlier one come from the records, with no model", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "");
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const t = convexTest(schema, modules);
+    const ids = await t.run(async ctx => {
+      const churchId = await ctx.db.insert("churches", { name: "Sample Conference", timeZone: "America/New_York" });
+      const userId = await ctx.db.insert("users", { clerkId: "clerk|coordinator" });
+      const memberId = await ctx.db.insert("memberships", { churchId, userId, name: "Ana Visitor", email: "c@example.org", role: "coordinator", active: true, approved: true, coverOptIn: false });
+      const neighborId = await ctx.db.insert("neighbors", { churchId, name: "Rosa Delgado", nameKey: "rosa delgado", phone: "", phoneKey: "", email: "", address: "", adults: 1, children: 0, language: "en", notes: "", createdBy: memberId, createdAt: 0 });
+      const base = { churchId, neighborId, kind: "rent" as const, summary: "", decisionNote: "", payeeKind: "landlord" as const, payeeName: "", source: "person" as const, createdBy: memberId };
+      const now = Date.now();
+      for (let i = 0; i < 10; i++) await ctx.db.insert("assistanceRequests", { ...base, amountRequested: 30000, amountApproved: 30000, status: "paid", decidedAt: now - 1000 - i, createdAt: now - 2000 - i });
+      const requestId = await ctx.db.insert("assistanceRequests", { ...base, amountRequested: 90000, status: "open", createdAt: now });
+      return { churchId, requestId };
+    });
+    const signed = t.withIdentity({ subject: "clerk|coordinator", email: "c@example.org", emailVerified: true });
+    const found = await signed.action(api.drafts.checkRepeat, ids);
+    expect(found.lines.map(line => line.text)).toEqual(expect.arrayContaining([
+      expect.stringMatching(/^Approved so far in \w+: \$3,000\. \w+ last year: none\.$/),
+      "This amount is above every rent approval in the past year. The middle amount was $300.",
+    ]));
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});

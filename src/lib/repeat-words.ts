@@ -38,3 +38,38 @@ export function repeatLines(language: Language, timeZone: string, found: { recen
     ...found.differs.map(item => ({ text: w.differs(w.records[item.what], date(item.at)), assistant: true })),
   ];
 }
+
+const months = {
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+} satisfies Record<Language, string[]>;
+const pace = {
+  en: {
+    month: (month: string, spent: string, before: string) => `Approved so far in ${month}: ${spent}. ${month} last year: ${before}.`,
+    none: "none",
+    highest: (kind: string, median: string) => `This amount is above every ${kind} approval in the past year. The middle amount was ${median}.`,
+    amount: (above: number, kind: string, median: string) => `This amount is above ${above} of every 10 ${kind} approvals in the past year. The middle amount was ${median}.`,
+    kinds: { rent: "rent", utility: "utility", food: "food", voucher: "voucher", other: "other" },
+  },
+  es: {
+    month: (month: string, spent: string, before: string) => `Aprobado hasta ahora en ${month}: ${spent}. En ${month} del año pasado: ${before}.`,
+    none: "nada",
+    highest: (kind: string, median: string) => `Esta cantidad supera todas las aprobaciones de ${kind} del último año. La cantidad media fue ${median}.`,
+    amount: (above: number, kind: string, median: string) => `Esta cantidad supera ${above} de cada 10 aprobaciones de ${kind} del último año. La cantidad media fue ${median}.`,
+    kinds: said.es.kinds,
+  },
+} satisfies Record<Language, { kinds: Record<RequestKind, string>; [line: string]: unknown }>;
+
+/**
+ * The group's spending, from the records, ahead of the household lines: this month against the same month last year,
+ * and, with enough earlier approvals of the kind, where the asked amount falls when it is above nine in ten of them.
+ */
+export function paceLines(language: Language, spent: { month: number; thisMonth: number; lastYear: number; kind: RequestKind; asked: number; approvals: number; median: number; above: number; baseline: number }): RepeatLine[] {
+  const w = pace[language];
+  const money = (cents: number) => formatMoney(cents / 100, language, cents % 100 === 0);
+  const lines: RepeatLine[] = [];
+  if (spent.thisMonth || spent.lastYear) lines.push({ text: w.month(months[language][spent.month - 1], money(spent.thisMonth), spent.lastYear ? money(spent.lastYear) : w.none), assistant: false });
+  const tenths = spent.approvals ? Math.floor((spent.above / spent.approvals) * 10) : 0;
+  if (spent.kind !== "voucher" && spent.approvals >= spent.baseline && tenths >= 9) lines.push({ text: spent.above === spent.approvals ? w.highest(w.kinds[spent.kind], money(spent.median)) : w.amount(tenths, w.kinds[spent.kind], money(spent.median)), assistant: false });
+  return lines;
+}

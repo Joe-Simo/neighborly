@@ -9,8 +9,9 @@ import { nextStepSet, nextSteps, type NextStep } from "../src/lib/next-step-set"
 import { visitSet } from "../src/lib/visit-set";
 import { referralPlaces, referralSet, type ReferralPlace } from "../src/lib/referral-set";
 import { repeatSet } from "../src/lib/repeat-set";
-import { repeatLines, type RepeatLine } from "../src/lib/repeat-words";
+import { paceLines, repeatLines, type RepeatLine } from "../src/lib/repeat-words";
 import { spanishSet } from "../src/lib/spanish-set";
+import { DateTime } from "luxon";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { hour, hourAsked, neighborAccess, user } from "./access";
 import { isSampleVisitor } from "./demo";
@@ -921,6 +922,45 @@ export const repeatHistory = internalQuery({
   },
 });
 
+/** An amount is said to stand out only against this many earlier approvals of its kind. */
+const amountBaseline = 10;
+/**
+ * The group's own spending around a request, from the records alone: help approved this month and in the same month a
+ * year before (by decision date, in the group's time zone), and where the asked amount falls among the past year's
+ * approvals of its kind. `at` is the moment the sheet asked, passed in because a query never reads the clock.
+ */
+export const spending = internalQuery({
+  args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), at: v.number() },
+  returns: v.object({
+    month: v.number(), thisMonth: v.number(), lastYear: v.number(),
+    kind: kindValidator, asked: v.number(), approvals: v.number(), median: v.number(), above: v.number(),
+  }),
+  handler: async (ctx, { churchId, requestId, at }) => {
+    await neighborAccess(ctx, churchId);
+    const [church, request] = await Promise.all([ctx.db.get("churches", churchId), ctx.db.get("assistanceRequests", requestId)]);
+    if (!church || !request || request.churchId !== churchId) throw new ConvexError("Request not found.");
+    const zone = church.timeZone;
+    const start = DateTime.fromMillis(at, { zone }).startOf("month");
+    const before = start.minus({ years: 1 });
+    const decided = async (from: number, to: number) => (await ctx.db.query("assistanceRequests").withIndex("by_church", q => q.eq("churchId", churchId).gte("createdAt", from - 120 * 86_400_000).lte("createdAt", to)).take(4000))
+      .filter(one => (one.status === "approved" || one.status === "paid" || one.status === "closed") && (one.amountApproved ?? 0) > 0 && one.decidedAt !== undefined && one.decidedAt >= from && one.decidedAt < to);
+    const sum = (rows: { amountApproved?: number }[]) => rows.reduce((total, one) => total + (one.amountApproved ?? 0), 0);
+    const [thisMonth, lastYear, year] = await Promise.all([
+      decided(start.toMillis(), at),
+      decided(before.toMillis(), before.endOf("month").toMillis()),
+      decided(at - repeatYear, at),
+    ]);
+    const amounts = year.filter(one => one.kind === request.kind && one._id !== requestId).map(one => one.amountApproved ?? 0).sort((a, b) => a - b);
+    return {
+      month: start.month, thisMonth: sum(thisMonth), lastYear: sum(lastYear),
+      kind: request.kind, asked: request.amountRequested, approvals: amounts.length,
+      median: amounts.length ? amounts[Math.floor((amounts.length - 1) / 2)] : 0,
+      // How many of the past year's approvals of this kind were below what is asked now.
+      above: amounts.filter(amount => amount < request.amountRequested).length,
+    };
+  },
+});
+
 type RepeatFlag = { at: number; what: "request" | "note" | "visit"; kind?: RequestKind };
 type RepeatFound = { recent: { at: number; kind: RequestKind; status: "approved" | "paid"; amount: number }[]; same: RepeatFlag[]; differs: RepeatFlag[]; lines: RepeatLine[]; verification: "review" | "checked" };
 const repeatFlag = v.object({ at: v.number(), what: recordWhat, kind: v.optional(kindValidator) });
@@ -940,8 +980,12 @@ export const checkRepeat = action({
     verification: v.union(v.literal("review"), v.literal("checked")),
   }),
   handler: async (ctx, args): Promise<RepeatFound> => {
-    const { userId, request, language, timeZone, records, recent, names, addresses, others } = await ctx.runQuery(internal.drafts.repeatHistory, args);
-    const unread = { recent, same: [], differs: [], lines: repeatLines(language, timeZone, { recent, same: [], differs: [] }), verification: "review" as const };
+    const [{ userId, request, language, timeZone, records, recent, names, addresses, others }, spent] = await Promise.all([
+      ctx.runQuery(internal.drafts.repeatHistory, args),
+      ctx.runQuery(internal.drafts.spending, { ...args, at: Date.now() }),
+    ]);
+    const pace = paceLines(language, { ...spent, baseline: amountBaseline });
+    const unread = { recent, same: [], differs: [], lines: [...pace, ...repeatLines(language, timeZone, { recent, same: [], differs: [] })], verification: "review" as const };
     if (!records.length || !request || !env.TYPESAFE_API_KEY || request.length > 2000) return unread;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return unread;
     const sure = await confidence(env.TYPESAFE_API_KEY,
@@ -953,7 +997,7 @@ export const checkRepeat = action({
     const flagged = (question: "same" | "differs") => records.flatMap((record, index) => (sure[`${question}${index}`] >= sureEnough ? [{ at: record.at, what: record.what, ...("kind" in record && record.kind ? { kind: record.kind } : {}) }] : []));
     const same = flagged("same");
     const differs = flagged("differs");
-    return { recent, same, differs, lines: repeatLines(language, timeZone, { recent, same, differs }), verification: "checked" as const };
+    return { recent, same, differs, lines: [...pace, ...repeatLines(language, timeZone, { recent, same, differs })], verification: "checked" as const };
   },
 });
 
