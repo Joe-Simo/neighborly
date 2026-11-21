@@ -325,7 +325,7 @@ function stillFrame(column: HTMLElement, copy: HTMLElement) {
  * only lays it down. It stands for the room exactly as it is: any change in the room, a scroll, a resize or a
  * typed letter puts it aside, and it is taken again once the page is quiet. Without one, the copy is taken then.
  */
-let ready: { column: HTMLElement; copy: HTMLElement; y: number; width: number; height: number } | null = null;
+let ready: { column: HTMLElement; copy: HTMLElement; place: DOMRect; tall: number } | null = null;
 function keepReady(column: HTMLElement) {
   let cancel = () => {};
   let settle = 0, waiting = false;
@@ -338,7 +338,8 @@ function keepReady(column: HTMLElement) {
       // the room cannot be left from under it. Closing the sheet changes the room again, which takes it then.
       // The phone's menu is not over the room's frames, and a room left is mostly left from it: the copy is taken under it.
       if (document.querySelector('[role="dialog"][data-state="open"]:not(.live-mobile-menu)')) { waiting = true; return; }
-      ready = { column, copy: stillCopy(column), y: window.scrollY, width: window.innerWidth, height: window.innerHeight };
+      const place = column.getBoundingClientRect();
+      ready = { column, copy: stillCopy(column), place, tall: sheetHeight(place.top) };
     }, 1500);
   };
   const stale = () => {
@@ -372,25 +373,28 @@ function keepReady(column: HTMLElement) {
   };
 }
 /** The copy taken ahead, when it is still the room as it stands now. */
+// Nothing is read from the page when the copy is still good: a scroll, a resize or any change to the room has already
+// thrown it away (keepReady), and it is only taken with the room at rest. Read here, in the commit that changes room,
+// the page would work out the room's styles and layout once more inside the frame the room changes in.
 function readyCopy(column: HTMLElement) {
   const kept = ready;
   ready = null;
-  const same = kept && kept.column === column && kept.y === window.scrollY && kept.width === window.innerWidth && kept.height === window.innerHeight;
-  return same && !stillMoving(column).length ? kept.copy : stillCopy(column);
+  if (kept?.column === column) return kept;
+  const place = column.getBoundingClientRect();
+  return { copy: stillCopy(column), place, tall: sheetHeight(place.top) };
 }
 
 /** Lays the still copy over the column, where the column lies on the screen. */
 function hold(column: HTMLElement | null) {
   // A room that was never shown is not copied: the copy already lying there, or the "Opening…" line, stays.
   if (!column || still || column.hasAttribute("data-room-held")) return;
-  const place = column.getBoundingClientRect();
-  const copy = readyCopy(column);
+  const { copy, place, tall } = readyCopy(column);
   Object.assign(copy.style, {
     position: "fixed",
     top: `${place.top}px`,
     left: `${place.left}px`,
     width: `${place.width}px`,
-    height: `${sheetHeight(place.top)}px`,
+    height: `${tall}px`,
     margin: "0",
     overflow: "hidden",
     zIndex: "19",
@@ -399,7 +403,7 @@ function hold(column: HTMLElement | null) {
   still = stillFrame(column, copy);
   document.body.append(still);
   // Taken back by the finger, the room before comes back over from the left; any other change turns the corner.
-  turning = (finger.on ? edgeTurn : roomTurn)(copy, still);
+  turning = (finger.on ? edgeTurn : roomTurn)(copy, still, { top: place.top, left: place.left, width: place.width, height: tall });
 }
 
 /**

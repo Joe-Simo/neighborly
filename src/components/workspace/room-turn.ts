@@ -39,8 +39,12 @@ const piece = (className: string, style: Partial<CSSStyleDeclaration>) => {
  * Makes the turn for the still sheet `sheet` (the copy, fixed over the column) held in `frame` (its frame of twins,
  * removed at the end). The sheet's own box is the page that turns.
  */
-export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
-  const place = sheet.getBoundingClientRect();
+/** The sheet's box on the screen. */
+type Box = { top: number; left: number; width: number; height: number };
+
+export function roomTurn(sheet: HTMLElement, frame: HTMLElement, laid?: Box): RoomTurn {
+  // Where the sheet was just laid, when the caller knows it: asking the page would lay it out inside the frame that turns it.
+  const place = laid ?? sheet.getBoundingClientRect();
   const width = place.width;
   const height = place.height;
   // The fold runs up and to the left, a little flatter than the diagonal, so the corner leads.
@@ -156,8 +160,9 @@ export function roomTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
  * back, and just left of the crease the page's underside shows as it curves over, throwing a close shade on the
  * sheet it is about to cover. `drive(progress)` is the finger's place across the column, as it is, with no ease.
  */
-export function edgeTurn(sheet: HTMLElement, frame: HTMLElement): RoomTurn {
-  const place = sheet.getBoundingClientRect();
+export function edgeTurn(sheet: HTMLElement, frame: HTMLElement, laid?: Box): RoomTurn {
+  // Where the sheet was just laid, when the caller knows it: asking the page would lay it out inside the frame that turns it.
+  const place = laid ?? sheet.getBoundingClientRect();
   const width = place.width;
   const height = place.height;
   const turn = piece("room-turn", { top: `${place.top}px`, left: `${place.left}px`, width: `${width}px`, height: `${height}px` });
