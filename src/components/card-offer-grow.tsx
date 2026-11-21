@@ -105,7 +105,10 @@ export function CardOfferGrow({ said }: { said: CardWords }) {
     const ask = () => {
       if (!held.isConnected) return;
       if (Number(cover.currentTime ?? 0) < covered && cover.playState !== "finished") return void requestAnimationFrame(ask);
-      router.push(href);
+      // The page is taken to its top here, under the paper that now covers the whole window, and the room is asked for
+      // without the router's own scroll: that one measured the new page inside the commit that lays it, a frame's worth.
+      scrollTo({ top: 0, behavior: "instant" });
+      router.push(href, { scroll: false });
     };
     requestAnimationFrame(ask);
     // A visitor already inside goes straight to a room without the sweep: the card lifts off it on "grown and the room whole", in the
