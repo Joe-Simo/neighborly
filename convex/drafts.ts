@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
+import { visitSet } from "../src/lib/visit-set";
 import { referralPlaces, referralSet, type ReferralPlace } from "../src/lib/referral-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { hour, hourAsked, neighborAccess, user } from "./access";
@@ -783,5 +784,33 @@ export const measureReferrals = internalAction({
     }));
     const add = (only: boolean) => rows.filter(row => !only || row.heldOut).flatMap(row => row.marks).reduce((sum, mark) => ({ ...sum, [mark]: sum[mark] + 1 }), { ...zero });
     return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, offered, scores }) => ({ id, offered, scores })) };
+  },
+});
+
+/**
+ * Measures the visit read on the made-up set (src/lib/visit-set.ts) with the same questions and 0.9 line readVisit uses.
+ * The kind and each of the eight signs is one mark: right, missed (left out but true) or wrong (shown but untrue).
+ */
+export const measureVisits = internalAction({
+  args: { churchId: v.id("churches") },
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(), all: referralTally, heldOut: referralTally, rows: v.array(v.object({ id: v.string(), kind: v.union(v.string(), v.null()), signs: v.array(v.string()) })) }),
+  handler: async (ctx, { churchId }) => {
+    const zero = { right: 0, missed: 0, wrong: 0 };
+    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const key = env.TYPESAFE_API_KEY;
+    if (!key) return { status: "no key" as const, ...none };
+    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: visitSet.length })) return { status: "no allowance" as const, ...none };
+    const rows = await Promise.all(visitSet.map(async item => {
+      const found = urgentSigns(item.note);
+      const answers = await decide(key, { note: item.note }, { ...Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, found)])), chosenKind: kindQuestion });
+      const pick = answers ? picked(answers.chosenKind) : null;
+      const kind = pick && pick.kind !== "none" && pick.confidence >= sureEnough ? pick.kind : null;
+      const signs = answers ? urgentReasons.filter(reason => (noul(answers[reason]) ?? 0) >= sureEnough) : [];
+      const mark = (shown: boolean, wanted: boolean) => (shown === wanted ? "right" : shown ? "wrong" : "missed");
+      const marks = [kind === item.kind ? "right" : kind ? "wrong" : "missed", ...urgentReasons.map(reason => mark(signs.includes(reason), item.signs.includes(reason)))] as const;
+      return { id: item.id, kind, signs, marks, heldOut: !!item.heldOut };
+    }));
+    const add = (only: boolean) => rows.filter(row => !only || row.heldOut).flatMap(row => row.marks).reduce((sum, mark) => ({ ...sum, [mark]: sum[mark] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, kind, signs }) => ({ id, kind, signs })) };
   },
 });
