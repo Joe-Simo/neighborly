@@ -700,15 +700,15 @@
 .report-check[data-reading] > p:last-child { margin-bottom: 0; }
 /* The title takes focus so a screen reader says the verdict; it is not a control, so it draws no ring. */
 .report-check h2:focus { outline: none; }
-/* The honest line when the assistant could not read: plum, the attention colour, and never louder than the findings. */
-.report-check .report-check-unsure { padding: var(--space-16) 18px; border-left: 2px solid var(--help-plum); background: color-mix(in srgb, var(--help-plum) 7%, transparent); }
-.report-check li[data-source="unread"] { border-left: 2px dashed var(--help-plum); padding-left: 18px; }
+/* A line the assistant flagged or could not read waits on a person: ochre, the waiting colour, and never louder than the findings. */
+.report-check .report-check-unsure { padding: var(--space-16) 18px; border-left: 2px solid var(--help-ochre); background: var(--help-ochre-wash); }
+.report-check li[data-source="unread"] { border-left: 2px dashed var(--help-ochre); padding-left: 18px; }
 .report-check > p:not(.help-sheet-label) { margin-bottom: var(--space-24); }
 /* The findings rise one by one, once the sheet has been laid down. */
 .report-check ul { --paper-wait: 240ms; }
 .report-check ul { list-style: none; margin: 0 0 var(--space-24); padding: 0; border-top: 1px solid var(--live-line); }
 .report-check li { padding: var(--space-16) 0 var(--space-16); border-bottom: 1px solid var(--live-line); }
-.report-check li[data-source="assistant"] { border-left: 2px solid var(--help-plum); padding-left: 18px; }
+.report-check li[data-source="assistant"] { border-left: 2px solid var(--help-ochre); padding-left: 18px; }
 .report-check li p { margin: 0; max-width: none; }
 .report-check li .help-why { font-size: 19px; margin-bottom: 3px; }
 .report-check li .help-assistant { font-size: 17px; }
