@@ -504,21 +504,18 @@ export function LiveWorkspace({
       delete frame.dataset.roomIn;
     };
   }, [roomIn]);
-  // Arriving by keyboard from the home page's card, the card that held focus is gone and the browser has lost its
-  // place: the first Tab would be spent finding it. Focus rests on the page itself once the room is in, so the
-  // first Tab is "Skip to your conference". No ring is drawn and nothing new joins the Tab order.
+  const headline = useRef<HTMLHeadingElement>(null);
+  // Arriving with focus nowhere (a room opened by its address, or from the home page's card, which is gone), focus
+  // rests on the room's headline once the room is in: a screen reader says the room by its name, and the next Tab goes
+  // on from the top of the room. No ring is drawn for a pointer; a room with no headline yet leaves focus as it is.
   useEffect(() => {
     if (!roomIn || (document.activeElement && document.activeElement !== document.body)) return;
-    const page = document.body;
-    page.tabIndex = -1;
-    page.focus({ preventScroll: true });
-    page.removeAttribute("tabindex");
+    headline.current?.focus({ preventScroll: true });
   }, [roomIn]);
   // Moving to another room, focus lands on its headline once the room is at rest (the page turn over), also when the
   // room was picked from the phone's Menu, whose closing hands focus back to its button first: a screen
   // reader says the room once, by its name, and the next Tab goes on from the top of the room. A ring is drawn there
   // only for someone on keys. The first room keeps focus where the arrival put it.
-  const headline = useRef<HTMLHeadingElement>(null);
   const focusedArea = useRef(area);
   useEffect(() => {
     if (!settled || focusedArea.current === area) return;
