@@ -5,6 +5,7 @@
 .svdp-form caption { text-align: left; font-weight: 650; padding-bottom: var(--space-8); }
 .svdp-form th, .svdp-form td { text-align: left; vertical-align: top; padding: var(--space-8) var(--space-8) var(--space-8) 0; border-top: 1px solid #e4dfd3; font-weight: 400; }
 .svdp-form thead th { font-size: 14px; color: var(--live-muted); border-top: 0; }
+.svdp-form thead th:last-child { text-align: right; }
 .svdp-form td:first-child { width: 3.5rem; font-variant-numeric: tabular-nums; }
 .svdp-form td:last-child { width: 11rem; text-align: right; font-feature-settings: "tnum"; }
 .svdp-form tr[data-untracked] td:last-child { color: var(--live-muted); font-style: italic; }
@@ -14,4 +15,9 @@
   html[data-print="svdp"] body * { visibility: hidden; }
   html[data-print="svdp"] .svdp-form, html[data-print="svdp"] .svdp-form * { visibility: visible; }
   html[data-print="svdp"] .svdp-form { position: absolute; inset: 0 auto auto 0; width: 100%; }
+}
+/* From 1280 up the national form sheet is 760px, with a value column wide enough that "Not tracked in Kind Helps" sits on one line. Phones keep the dialog's own width. */
+@media (min-width: 1280px) {
+  .live-dialog.svdp-dialog { max-width: 760px !important; width: 760px; }
+  .svdp-form td:last-child { width: 240px; white-space: nowrap; }
 }
