@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, type ActionCtx } from "./_generated/server";
+import { internalQuery, type ActionCtx } from "./_generated/server";
+import { internalMutation } from "./functions";
 import { internal } from "./_generated/api";
 import type { Point } from "./area";
 

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, type MutationCtx } from "./_generated/server";
+import { internalQuery, type MutationCtx } from "./_generated/server";
+import { internalMutation } from "./functions";
 import type { Doc, Id } from "./_generated/dataModel";
 import { mayOpenNeighborRecords } from "./access";
 import { businessDaysBetween, moveTo, route } from "./intake";
