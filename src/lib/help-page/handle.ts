@@ -3,10 +3,12 @@ import { api } from "../../../convex/_generated/api";
 import { PAGE_KINDS, readKey, readSubmission, soundsUnsafe, type Problem } from "../intake-rules";
 import { esc, helpPage, type HelpErrors, type HelpValues, type HelpView } from "../intake/help-pages";
 import type { IntakeLanguage, NeedKind } from "../intake/intake-words";
+import { seal, unseal } from "./seal";
 
 /**
  * The server side of /help and /ayuda and their status pages: finished HTML from src/lib/intake/help-pages.ts, no
- * script of ours (Turnstile's widget is the one script, in the form's check slot), and every step a plain form POST.
+ * script of ours, and every step a plain form POST. The form saves nothing: it answers with "One quick check", the one
+ * page that loads a script (Turnstile's), carrying the values sealed (./seal.ts); that page's POST sends the request.
  * The backend (convex/intakeHttp.ts) is reached only from here, with INTAKE_SERVER_SECRET, and is told the sender's
  * address as Vercel saw it. It checks Turnstile before anything is kept or any code is sent.
  */
@@ -54,7 +56,7 @@ async function call(path: string, body: Record<string, unknown>): Promise<Record
   } catch { return null; }
 }
 
-/** Cloudflare's widget for the form's check slot: the page's one script, theirs. */
+/** Cloudflare's widget, for the check page only: the one script on any of these pages, theirs. */
 function check(language: IntakeLanguage) {
   const ready = backend();
   return ready
@@ -72,7 +74,7 @@ export async function showForm(language: IntakeLanguage, request: Request) {
   if (!backend()) return closed(language);
   const partner = partnerLink(request);
   if (partner) return partnerDoor(language, request, partner);
-  return page(language, { kind: "form", check: check(language) }, 200, device(request).set);
+  return page(language, { kind: "form" }, 200, device(request).set);
 }
 
 /** A partner's link (?p=…): the partner's own link token, never a person's. */
@@ -86,7 +88,7 @@ async function partnerDoor(language: IntakeLanguage, request: Request, link: str
   const action = partnerAction(language, link);
   if (!wrong && readKey(cookie(request, PARTNER))) return page(language, { kind: "form" }, 200, {}, action);
   const answer = wrong ? { result: "code", to: "" } : await call("/intake/partner/start", { link });
-  if (answer?.result !== "code") return page(language, { kind: "form", check: check(language) }, 200, {}, paths[language].form);
+  if (answer?.result !== "code") return page(language, { kind: "form" }, 200, {}, paths[language].form);
   return page(language, { kind: "code", to: String(answer.to ?? ""), by: "email", wrong }, 200, {}, action);
 }
 
@@ -107,15 +109,23 @@ const submission = (values: HelpValues, language: IntakeLanguage) => ({
   adult: values.adult === "yes", kinds: (values.needs ?? []).map((kind) => PAGE_KINDS[kind]), need: values.said ?? "", email: values.email ?? "", phone: values.phone ?? "",
   zip: values.zip ?? "", nearby: values.nearby ?? "", language: values.speaks ?? language, safe: values.safe, callAt: values.callAt ?? "",
 });
+/** What a check page's seal held, read again as untrusted (it is ours, but checked like any form). */
+function readHeld(held: unknown): { values: HelpValues; urgent: boolean } | null {
+  if (typeof held !== "object" || held === null || !("values" in held) || typeof held.values !== "object" || held.values === null) return null;
+  const form = new FormData();
+  for (const [name, value] of Object.entries(held.values)) for (const one of Array.isArray(value) ? value : [value]) if (typeof one === "string") form.append(name, one);
+  return { values: valuesFrom(form), urgent: "urgent" in held && held.urgent === true };
+}
 const errorsFrom = (problems: Problem[]): HelpErrors => Object.fromEntries(problems.map((problem) => [problem, true]));
 
 /** POST /help or /ayuda: one step of the form. */
 export async function takeStep(language: IntakeLanguage, request: Request) {
   if (!backend()) return closed(language);
-  if (Number(request.headers.get("content-length") ?? "0") > 16384) return page(language, { kind: "form", check: check(language) }, 413);
+  if (Number(request.headers.get("content-length") ?? "0") > 16384) return page(language, { kind: "form" }, 413);
   let form: FormData;
-  try { form = await request.formData(); } catch { return page(language, { kind: "form", check: check(language) }, 400); }
-  const step = text(form, "step", 20);
+  try { form = await request.formData(); } catch { return page(language, { kind: "form" }, 400); }
+  // A page's hidden step comes first and a pressed button's last: the button wins.
+  const step = String(form.getAll("step").filter((one) => typeof one === "string").at(-1) ?? "").slice(0, 20);
   const { id: deviceId, set } = device(request);
   const here = paths[language].form;
   const partner = partnerLink(request);
@@ -127,12 +137,11 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
     return page(language, { kind: "form" }, 200, { "Set-Cookie": setCookie(PARTNER, session, here, 30 * 86400) }, partnerAction(language, partner));
   }
   const action = partner ? partnerAction(language, partner) : undefined;
-  const slot = partner ? undefined : check(language);
 
   if (step === "code" || step === "resend") {
     const key = readKey(cookie(request, REQUEST));
     const to = decodeURIComponent(cookie(request, TO) ?? "");
-    if (!key) return page(language, { kind: "form", check: check(language) });
+    if (!key) return page(language, { kind: "form" });
     if (step === "resend") {
       await call("/intake/resend", { key, language, ip: senderIp(request) });
       return page(language, { kind: "code", to, by: "email", resent: true });
@@ -145,18 +154,34 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
     });
   }
 
-  const values = valuesFrom(form);
-  if (step === "edit") return page(language, { kind: "form", values, check: slot }, 200, {}, action);
+  const secret = backend()!.secret;
+  // The check page: its sealed values, or back to the form with them.
+  let values: HelpValues, urgent: boolean;
+  const sealed = text(form, "seal", 8000);
+  if (!partner && sealed && (step === "check" || step === "edit")) {
+    const opened = await unseal(secret, sealed);
+    const held = opened && opened !== "expired" ? readHeld(opened.value) : null;
+    if (!held) return page(language, { kind: "form", ...(opened === "expired" ? { errors: { expired: true } } : {}) }, 400);
+    ({ values, urgent } = held);
+    if (step === "edit") return page(language, { kind: "form", values });
+  } else {
+    values = valuesFrom(form);
+    urgent = step === "send-anyway";
+    if (step === "edit") return page(language, { kind: "form", values }, 200, {}, action);
+  }
   // Under 18: nothing is kept or sent.
   if (values.adult === "no") return page(language, { kind: "young", youthLine: YOUTH_LINE });
   const read = readSubmission(submission(values, language));
-  if (!read.ok) return page(language, { kind: "form", values, errors: errorsFrom(read.problems), check: slot }, 400, set, action);
+  if (!read.ok) return page(language, { kind: "form", values, errors: errorsFrom(read.problems) }, 400, set, action);
   // Words that sound like danger show 911 and 988 first; sending anyway marks the call so the team sees why. Nothing else changes.
-  if (step !== "send-anyway" && soundsUnsafe(`${read.value.need} ${read.value.meet ?? ""}`)) return page(language, { kind: "danger", values, check: slot }, 200, {}, action);
+  if (!urgent && soundsUnsafe(`${read.value.need} ${read.value.meet ?? ""}`)) return page(language, { kind: "danger", values }, 200, {}, action);
+  // Not a partner: nothing is sent until the check page's POST. A partner's signed-in device skips it.
+  const checkPage = async (failed: boolean, status = 200) => page(language, { kind: "check", seal: await seal(secret, { values, urgent }), check: check(language), failed }, status, set);
+  if (!partner && step !== "check") return checkPage(false);
 
   const { kinds, need, email, phone, zip, safe, callAt, meet } = read.value;
   const answer = await call("/intake/submit", {
-    adult: true, kinds, need, email, phone, zip, nearby: meet ?? "", language: read.value.language, safe: safe ? "yes" : "no", callAt: callAt ?? "", urgent: step === "send-anyway",
+    adult: true, kinds, need, email, phone, zip, nearby: meet ?? "", language: read.value.language, safe: safe ? "yes" : "no", callAt: callAt ?? "", urgent,
     street: values.street ?? "", token: text(form, "cf-turnstile-response", 2048), ip: senderIp(request), device: deviceId,
     ...(partner ? { partnerLink: partner, partnerSession: readKey(cookie(request, PARTNER)) ?? "" } : {}),
   });
@@ -176,9 +201,9 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
     case "full": return page(language, { kind: "full" });
     // The partner's device is no longer signed in (revoked, a new link, or 30 days): sign in again.
     case "partner": return partner ? partnerDoor(language, new Request(request.url), partner) : closed(language);
-    case "unknown_zip": return page(language, { kind: "form", values, unplaced: true, check: slot }, 400, {}, action);
+    case "unknown_zip": return page(language, { kind: "form", values, unplaced: true }, 400, {}, action);
     case "slow": return page(language, { kind: "limit", phone: "211" }, 429);
-    case "check": return page(language, { kind: "form", values, errors: { check: true }, check: slot }, 403, {}, action);
+    case "check": return partner ? closed(language) : checkPage(true, 403);
     default: return closed(language);
   }
 }

@@ -25,6 +25,8 @@ export type HelpErrors = Partial<Record<keyof IntakeWords["errors"], true>>;
 export type HelpView =
   | { kind: "form"; values?: HelpValues; errors?: HelpErrors; unplaced?: boolean; check?: string }
   | { kind: "danger"; values: HelpValues; check?: string }
+  /** The bot check, on its own page: the one view that loads a script (Turnstile's, in `check`). `seal` holds the form's values, encrypted. */
+  | { kind: "check"; seal: string; check: string; failed?: boolean }
   | { kind: "code"; to: string; by: "email" | "phone"; wrong?: boolean; resent?: boolean }
   | { kind: "sent"; team: string; by: string; callAt?: string; statusHref: string }
   | { kind: "away"; finderHref: string }
@@ -104,6 +106,14 @@ function body(w: IntakeWords, view: HelpView, action: string): string {
       return `${head(null, w.dangerSend.title)}${danger(w)}
 <form method="post" action="${esc(action)}">${hidden(view.values)}<input type="hidden" name="step" value="send-anyway">${view.check ?? ""}
 <p class="lines"><button class="btn" type="submit">${esc(w.dangerSend.send)}</button><button class="btn quiet" type="submit" name="step" value="edit">${esc(w.dangerSend.back)}</button></p>
+</form>`;
+    case "check":
+      return `${head(w.check.kicker, w.check.title, w.check.deck)}
+<form method="post" action="${esc(action)}" class="form">
+<input type="hidden" name="step" value="check"><input type="hidden" name="seal" value="${esc(view.seal)}">
+${view.check}<noscript><p class="problem">${esc(w.check.noScript)}</p>${lines(["tel:211", w.away.call211])}</noscript>
+${view.failed ? `<p class="problem" role="alert">${esc(w.errors.check)}</p>` : ""}
+<p class="lines"><button class="btn" type="submit">${esc(w.check.send)}</button><button class="btn quiet" type="submit" name="step" value="edit">${esc(w.check.back)}</button></p>
 </form>`;
     case "code":
       return `${head(w.code.kicker, w.code.title, view.by === "email" ? w.code.deck(view.to) : w.code.deckPhone(view.to))}
@@ -207,7 +217,7 @@ ${choices("speaks", w.language, [["en", "English", "en"], ["es", "Español", "es
 ${choices("safe", w.safe.legend, [["yes", w.safe.yes], ["no", w.safe.no]], v.safe, false, e.safe ? w.errors.safe : undefined)}
 <div class="when">${field(w.whenIfNo, `<input name="callAt" maxlength="60"${val(v.callAt)}${wrong("when")}>`, w.safe.whenHelp, bad("when"))}</div>
 ${choices("adult", w.adult.legend, [["yes", w.adult.yes], ["no", w.adult.no]], v.adult, false, e.adult ? w.errors.adult : undefined)}
-${check ?? ""}${e.check ? `<p class="problem">${esc(w.errors.check)}</p>` : ""}
+${check ?? ""}${e.check ? `<p class="problem">${esc(w.errors.check)}</p>` : ""}${e.expired ? `<p class="problem">${esc(w.errors.expired)}</p>` : ""}
 <p class="said">${esc(w.assistant)}</p>
 <p class="lines"><button class="btn" type="submit">${esc(w.send)}</button></p>
 </form>`;
