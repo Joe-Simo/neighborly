@@ -49,7 +49,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         return room
     }
 
-    private static func shell(in root: UIViewController?) -> ShellViewController? {
+    static func shell(in root: UIViewController?) -> ShellViewController? {
         if #available(iOS 18.0, *), let tabs = root as? ShellTabs { return tabs.shell }
         return root as? ShellViewController
     }

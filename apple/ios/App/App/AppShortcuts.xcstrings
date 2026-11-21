@@ -1,0 +1,46 @@
+{
+  "sourceLanguage": "en",
+  "version": "1.0",
+  "strings": {
+    "Log a call in ${applicationName}": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anotar una llamada en ${applicationName}"
+          }
+        }
+      }
+    },
+    "${applicationName} log a call": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "${applicationName} anotar una llamada"
+          }
+        }
+      }
+    },
+    "Open This week in ${applicationName}": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Esta semana en ${applicationName}"
+          }
+        }
+      }
+    },
+    "${applicationName} this week": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "${applicationName} esta semana"
+          }
+        }
+      }
+    }
+  }
+}
