@@ -10,9 +10,9 @@ export const ROOM_WHOLE = "kh-room-whole";
  * is not a room and not the waiting screen (a first welcome, a plain notice).
  */
 export function underneathIsReady() {
-  const room = document.querySelector(".live-app .live-room");
+  const room = document.querySelector(".live-app .live-room:not([hidden])");
   // A part of the room that is still on its way says so (`data-room-pending`), and the paper waits for it too.
-  if (room) return document.querySelector(".live-app[data-room-shown]") !== null && document.querySelector(".live-app [data-room-pending]") === null;
+  if (room) return document.querySelector(".live-app[data-room-shown]") !== null && document.querySelector(".live-app [data-room-pending]:not(.live-room[hidden] *)") === null;
   return document.querySelector(".paper-loading") === null;
 }
 

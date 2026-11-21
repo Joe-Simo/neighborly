@@ -260,7 +260,9 @@ function stillPicture(shown: HTMLImageElement, twin: HTMLImageElement) {
  */
 function stillCopy(column: HTMLElement) {
   const copy = column.cloneNode(true) as HTMLElement;
-  const from = [column, ...column.querySelectorAll<HTMLElement>("*")];
+  // The rooms kept built out of sight (shell.tsx) are not on the sheet.
+  for (const away of copy.querySelectorAll(".live-room[hidden]")) away.remove();
+  const from = [column, ...column.querySelectorAll<HTMLElement>(":not(.live-room[hidden], .live-room[hidden] *)")];
   const to = [copy, ...copy.querySelectorAll<HTMLElement>("*")];
   // What lies wholly below the screen is never seen on the sheet (the sheet is cut at the screen's foot), so it is
   // left out of the copy, whole branches at a time: the press then waits only on what can be seen.
@@ -334,7 +336,8 @@ function keepReady(column: HTMLElement) {
       if (!column.isConnected || column.hasAttribute("data-room-held") || still) return;
       // Not while a sheet lies over the room: the copy would be taken in the middle of the sheet's own frames, and
       // the room cannot be left from under it. Closing the sheet changes the room again, which takes it then.
-      if (document.querySelector('[role="dialog"][data-state="open"]')) { waiting = true; return; }
+      // The phone's menu is not over the room's frames, and a room left is mostly left from it: the copy is taken under it.
+      if (document.querySelector('[role="dialog"][data-state="open"]:not(.live-mobile-menu)')) { waiting = true; return; }
       ready = { column, copy: stillCopy(column), y: window.scrollY, width: window.innerWidth, height: window.innerHeight };
     }, 1500);
   };
@@ -344,7 +347,11 @@ function keepReady(column: HTMLElement) {
     window.clearTimeout(settle);
     settle = window.setTimeout(take, 200);
   };
-  const changed = new MutationObserver(stale);
+  // A dialog opening hides the room from screen readers (aria-hidden, inert on the column): nothing seen has changed.
+  const unseen = new Set(["aria-hidden", "data-aria-hidden", "inert"]);
+  const changed = new MutationObserver((records) => {
+    if (records.some((record) => record.target !== column || !unseen.has(record.attributeName ?? ""))) stale();
+  });
   changed.observe(column, { subtree: true, childList: true, attributes: true, characterData: true });
   window.addEventListener("scroll", stale, { passive: true });
   window.addEventListener("resize", stale);
@@ -418,12 +425,13 @@ export class RoomStill extends Component<{ area: string; column: RefObject<HTMLE
  * side column are drawn, no part of it is still on its way, and the page's faces are loaded.
  */
 function isWhole(column: HTMLElement) {
-  const room = column.querySelector(".live-room");
+  const room = column.querySelector(".live-room:not([hidden])");
   if (!room?.querySelector(":scope > :not([hidden])")) return false;
-  if (column.querySelector(".live-loading, .help-opening, [data-room-pending]")) return false;
-  const art = column.querySelector(".live-head-art");
+  // Only the room shown counts: the rooms kept out of sight (shell.tsx) are not waited on.
+  if (column.querySelector(":is(.live-loading, .help-opening, [data-room-pending]):not(.live-room[hidden] *)")) return false;
+  const art = column.querySelector(".live-head-art:not(.live-room[hidden] *)");
   if (art && !art.hasAttribute("data-ready")) return false;
-  if (column.querySelector(".live-head-actions [data-unsettled]")) return false;
+  if (column.querySelector(".live-head-actions [data-unsettled]:not(.live-room[hidden] *)")) return false;
   return document.fonts.status === "loaded";
 }
 

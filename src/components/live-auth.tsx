@@ -229,7 +229,7 @@ export function LiveAuth({
       });
       // The room before, held as a still while the room lays in over it (room-sheet.tsx), is gone too.
       const stillHeld = !!document.querySelector("body > [data-room-frame]");
-      return ![...document.querySelectorAll(".live-app .entry")].some(under) && !!document.querySelector(".live-app .live-room") && underneathIsReady() && !arriving && !stillHeld;
+      return ![...document.querySelectorAll(".live-app .entry")].some(under) && !!document.querySelector(".live-app .live-room:not([hidden])") && underneathIsReady() && !arriving && !stillHeld;
     });
   }
 

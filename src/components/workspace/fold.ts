@@ -524,6 +524,8 @@ export function useGrowsSmoothly(box: RefObject<HTMLElement | null>) {
   const was = useRef<{ width: number; height: number }>(undefined);
   // Its own growing, kept here: asking the page what moves would make it work out every style in the room first.
   const growing = useRef<Animation>(undefined);
+  // A room put out of sight and shown again (shell.tsx keeps rooms built) is a box laid anew: nothing to grow from.
+  useLayoutEffect(() => () => void (was.current = undefined), []);
   useLayoutEffect(() => {
     const paper = box.current;
     if (!paper) return;
