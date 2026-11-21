@@ -17,7 +17,7 @@ const nameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ")
 /** Every table that holds a conference's rows, in the order they are swept. The test holds this against the schema. */
 export const swept = [
   "memberships", "invitations", "calendarFeeds",
-  "aiReads", "requestDrafts", "calls", "neighborNotes", "visits", "ledgerEntries", "voucherStock", "assistanceRequests", "duplicatePairs", "duplicateDismissals", "neighbors",
+  "webRequests", "webBlocks", "aiReads", "requestDrafts", "calls", "neighborNotes", "visits", "ledgerEntries", "voucherStock", "assistanceRequests", "duplicatePairs", "duplicateDismissals", "neighbors",
   "files", "referralAgencies", "payees", "deposits", "ledgerKinds", "bankStatements",
   "outbox", "meetingResponses", "meetingInvitees", "meetings", "requests", "commitmentHistory", "commitments", "series",
   "teamMembers", "teams", "availability", "timeOff", "tasks", "announcements", "aiUsageByChurch", "knownNames", "auditEvents", "councilLinks", "yearRollups",
@@ -34,6 +34,10 @@ async function rows(ctx: MutationCtx, table: Swept, churchId: Id<"churches">, li
       return ctx.db.query(table).withIndex("by_church_key", (q) => q.eq("churchId", churchId)).take(limit);
     case "yearRollups":
       return ctx.db.query(table).withIndex("by_church_year", (q) => q.eq("churchId", churchId)).take(limit);
+    case "webRequests":
+      return ctx.db.query(table).withIndex("by_church_stage", (q) => q.eq("churchId", churchId)).take(limit);
+    case "webBlocks":
+      return ctx.db.query(table).withIndex("by_church_hash", (q) => q.eq("churchId", churchId)).take(limit);
     case "memberships":
       return ctx.db.query(table).withIndex("by_church", (q) => q.eq("churchId", churchId)).take(limit);
     case "commitmentHistory": {

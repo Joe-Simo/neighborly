@@ -356,7 +356,7 @@ export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Inf
     note: call.note,
     callback: call.callback,
     takenAt: call.takenAt,
-    takenByName: await found.memberName(call.takenBy),
+    takenByName: call.takenBy ? await found.memberName(call.takenBy) : "The web form",
     ownerName: call.ownerId ? await found.memberName(call.ownerId) : null,
     returnedAt: call.returnedAt ?? null,
     returnedByName: call.returnedBy ? await found.memberName(call.returnedBy) : null,
@@ -407,7 +407,7 @@ export const calls = query({
  * to start. The team is the one named "Help line". Nobody, when there is no such team or the
  * commitment is still open.
  */
-async function callbackOwner(ctx: QueryCtx, churchId: Id<"churches">, now: number) {
+export async function callbackOwner(ctx: QueryCtx, churchId: Id<"churches">, now: number) {
   const teams = await ctx.db.query("teams").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(100);
   const helpLine = teams.find((team) => nameKey(team.name) === "help line");
   if (!helpLine) return undefined;

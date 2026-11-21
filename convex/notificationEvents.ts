@@ -124,5 +124,7 @@ export const status = query({ args: { churchId: v.id("churches") }, returns: v.a
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", churchId).eq("userId", userId)).unique();
   if (!member?.active || member.role !== "owner") throw new ConvexError("Church owner access required.");
   const rows = await ctx.db.query("outbox").withIndex("by_church", q => q.eq("churchId", churchId)).order("desc").take(100);
-  return Promise.all(rows.map(async row => { const state = row.providerId ? await resend.status(ctx, row.providerId as EmailId) : null; return { id: row._id, kind: row.kind, recipient: row.recipient, state: row.state, providerStatus: state?.status ?? null, failed: state?.failed ?? false }; }));
+  // A web form's code goes to a person asking for help, not a member: it is not the owner's to see.
+  const members = rows.filter((row): row is Doc<"outbox"> & { kind: "invitation" | "cover_request" | "meeting" } => row.kind !== "help_code");
+  return Promise.all(members.map(async row => { const state = row.providerId ? await resend.status(ctx, row.providerId as EmailId) : null; return { id: row._id, kind: row.kind, recipient: row.recipient, state: row.state, providerStatus: state?.status ?? null, failed: state?.failed ?? false }; }));
 } });
