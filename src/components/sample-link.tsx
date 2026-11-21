@@ -15,7 +15,7 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
   return {
     onPointerEnter: () => { warmSignIn(); warmAppStyles(); },
     onFocus: () => { warmSignIn(); warmAppStyles(); },
-    onTouchStart: warmAppStyles,
+    onTouchStart: () => { warmSignIn(); warmAppStyles(); },
     onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
       if (event.button !== 0) return;
       askSampleTicket();
