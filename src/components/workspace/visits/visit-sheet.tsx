@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DateTime } from "luxon";
@@ -21,6 +21,9 @@ import { fill } from "@/lib/words/fill";
 import type { Words } from "@/lib/words";
 import { capital, firstName, need, spoken, together, useVisitDates, type Sheet } from "@/components/workspace/visits/format";
 
+// The printed request is fetched only when someone asks to print one.
+const RequestDetailFromVisit = lazy(() => import("@/components/workspace/help-line/request-detail").then((module) => ({ default: module.RequestDetailFromVisit })));
+
 /**
  * What the pair carries to the door, made to be printed.
  * Opening it shows a neighbor's details, so it is written down first, like opening the record.
@@ -34,10 +37,12 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   // One neighbor's details: a plain head, with no painting.
   const { title, deck, didNotOpen } = text;
   const notices = words.notices;
+  // The request this visit answers, laid out to print in place of the sheet; the way back returns to the sheet.
+  const [printing, setPrinting] = useState(false);
   useLayoutEffect(() => {
-    setHeading({ title, deck });
+    setHeading(printing ? { title, deck, back: { label: title, run: () => setPrinting(false) } } : { title, deck });
     return () => setHeading(null);
-  }, [setHeading, title, deck]);
+  }, [setHeading, title, deck, printing]);
   const router = useRouter();
   const openSheet = useMutation(api.visits.openSheet);
   const cancel = useMutation(api.visits.cancel);
@@ -114,6 +119,26 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
       </form>
     );
   if (!sheet) return <HelpLoading label={text.opening} />;
+  if (printing && sheet.request && opened)
+    return (
+      <Suspense fallback={<HelpLoading />}>
+        <RequestDetailFromVisit
+          churchId={churchId}
+          neighborId={sheet.neighborId}
+          requestId={sheet.request.id}
+          opening={opened}
+          neighbor={{
+            name: sheet.neighbor.name,
+            address: sheet.neighbor.address,
+            phone: sheet.neighbor.phone,
+            householdSize: sheet.neighbor.adults + sheet.neighbor.children,
+            speaks: spoken(words.rooms.visitsRoom, sheet.neighbor),
+            alert: sheet.neighbor.alert,
+          }}
+          visit={{ at: sheet.scheduledAt, visitors: sheet.visitors }}
+        />
+      </Suspense>
+    );
   return (
     <>
       <VisitSheetView
@@ -124,6 +149,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
         sample={data.church.sample}
         say={sampleSaid}
         onPrint={() => window.print()}
+        onPrintRequest={sheet.request ? () => setPrinting(true) : undefined}
         onCallOff={() => setStep("callOff")}
         onChangeTime={() => setStep("time")}
       />
@@ -232,6 +258,7 @@ function VisitSheetView({
   sample,
   say,
   onPrint,
+  onPrintRequest,
   onCallOff,
   onChangeTime,
 }: {
@@ -246,6 +273,8 @@ function VisitSheetView({
   sample?: boolean;
   /** How the sample's own words are said to this reader; anything typed comes back as typed. */
   say: (typed: string) => string;
+  /** Lays the request this visit answers out as its own printed page, with the help given before. */
+  onPrintRequest?: () => void;
   onCallOff: () => void;
   onChangeTime: () => void;
 }) {
@@ -279,6 +308,11 @@ function VisitSheetView({
                 {text.callOff}
               </Button>
             </>
+          )}
+          {onPrintRequest && (
+            <Button variant="link" className="visits-quiet-link" onClick={onPrintRequest}>
+              {words.locale === "es" ? "Imprimir petición" : "Print request"}
+            </Button>
           )}
         </div>
         <Button onClick={onPrint}>
