@@ -1,5 +1,6 @@
 "use client";
 
+import { lessMotion } from "@/lib/less-motion";
 import { keepTitle } from "@/lib/words/titles";
 import { useId } from "react";
 
@@ -107,7 +108,7 @@ export function readSealedSheet() {
  */
 export async function letSheetWordsGo() {
   const sheet = document.querySelector<HTMLElement>(".help-sheet.help-sealed");
-  if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!sheet || lessMotion()) return;
   keepSheetWords(sheet);
   const going = [...sheet.children].map((part) => part.animate([{ opacity: 1 }, { opacity: 0 }], { duration: WORDS_GONE, easing: "step-start", fill: "forwards" }));
   await Promise.allSettled(going.map((move) => move.finished));
@@ -172,7 +173,7 @@ function fileAway(line: HTMLElement) {
   const sheet = document.querySelector<HTMLElement>(".help-sheet.help-sealed");
   // Once for a line, however often its effects are run.
   if (line.dataset.filedFrom !== undefined) return;
-  if (!sheet || matchMedia("(prefers-reduced-motion: reduce)").matches) return dropSheetWords();
+  if (!sheet || lessMotion()) return dropSheetWords();
   line.dataset.filedFrom = "";
   // Measured where the line will rest: its own arriving move is put aside for the measure (nothing has been painted yet).
   line.style.animation = "none";

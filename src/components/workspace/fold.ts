@@ -1,3 +1,4 @@
+import { lessMotion } from "@/lib/less-motion";
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 
 /**
@@ -20,7 +21,7 @@ const HELD_AWAY = "translateY(calc(-100% - 8px - var(--live-bar, 0px)))";
  * any of them start to move: the page is laid out for the measures, never once per sheet between moves.
  */
 export async function foldLeaves() {
-  if (reduced()) return;
+  if (lessMotion()) return;
   const sheets = [...document.querySelectorAll<HTMLElement>("[data-fold-leaves]")];
   if (!sheets.length) return;
   const top = viewTop();
@@ -89,8 +90,6 @@ function onceOpened<T>(measure: () => T) {
   moves.forEach((move, index) => (move.currentTime = at[index]));
   return found;
 }
-
-const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 type Plan = {
   sheet: HTMLElement;
@@ -165,7 +164,7 @@ async function runClose({ sheet, held, from, to, lost = 0, unseen, carried, anch
  * takes it out ("gone"), or keeps its words for screen readers only ("put away").
  */
 export async function closeUp(sheet: HTMLElement, after: "gone" | "put away" = "gone") {
-  if (reduced()) return;
+  if (lessMotion()) return;
   const top = viewTop();
   await runClose(onceOpened(() => planClose(sheet, after, top)));
 }
@@ -234,7 +233,7 @@ export function openUp(sheet: HTMLElement, { stays = false }: { stays?: boolean 
     window.scrollBy({ top: document.body.offsetHeight - pageWithout(sheet, "put away"), behavior: "instant" });
     return;
   }
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (lessMotion()) return;
   // Asked twice, it opens once: an opening already under way is dropped before the paper is measured.
   openingOf(sheet)?.cancel();
   openings.delete(sheet);
@@ -268,7 +267,7 @@ export function openUp(sheet: HTMLElement, { stays = false }: { stays?: boolean 
  * what the person is looking at. Call it before the browser paints. Nothing moves for anyone who asks for less motion.
  */
 export function openInPlaceOf(sheet: HTMLElement, going: HTMLElement) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (lessMotion()) return;
   if (home(going).bottom > viewTop()) return openRoom(sheet);
   if (!anchored(sheet)) window.scrollBy(0, document.body.offsetHeight - pageWithout(sheet, "gone"));
 }
@@ -304,18 +303,20 @@ function foldedMargin(sheet: HTMLElement, style: CSSStyleDeclaration) {
   // always ends at once on no margin. It is said here without laying the page out to find it.
   if (sheet.closest('[role="dialog"]')) return "0px";
   const column = sheet.parentElement;
-  if (!column || style.position !== "static" || style.float !== "none") return null;
+  // Relative or sticky, it is laid out as if static: only what is drawn out of the flow is refused.
+  if (!column || /^(abs|fix)/.test(style.position) || style.float !== "none") return null;
   const flow = getComputedStyle(column).display;
   if (flow !== "block" && flow !== "flow-root") return null;
-  const above = inFlow(sheet, "previousElementSibling");
   const below = inFlow(sheet, "nextElementSibling");
+  // First in its column, over a neighbour with no top margin: what the column's top folds with is the same with the
+  // sheet as without, so it is worked out as a neighbour above with none (a green line at the head of a room).
+  const above = sheet.previousElementSibling ? inFlow(sheet, "previousElementSibling") : below?.marginTop == "0px" ? below : null;
   if (!above || !below) return null;
-  const up = parseFloat(above.marginBottom);
+  const up = above == below ? 0 : parseFloat(above.marginBottom);
   const down = parseFloat(below.marginTop);
   // Without the sheet its neighbours' margins fold together; shut, it keeps its borders and holds them apart.
   const wanted = fold2(up, down) - fold2(up, 0) - parseFloat(edge(style));
-  const margin = down >= 0 ? (wanted > down ? wanted : wanted - down) : wanted > down ? wanted - down : wanted;
-  if (!Number.isFinite(margin)) return null;
+  const margin = down >= 0 == wanted > down ? wanted : wanted - down;
   return `${Math.round(margin * 100) / 100}px`;
 }
 
@@ -543,7 +544,7 @@ export function useGrowsSmoothly(box: RefObject<HTMLElement | null>) {
     const now = { width: paper.offsetWidth, height: paper.offsetHeight };
     was.current = now;
     const grown = now.width === before.width ? now.height - before.height : 0;
-    if (grown <= 0 || grown > 200 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (grown <= 0 || grown > 200 || lessMotion()) return;
     holdThePage();
     growing.current = paper.animate(
       [{ height: `${before.height}px`, overflow: "hidden" }, { height: `${now.height}px`, overflow: "hidden" }],
