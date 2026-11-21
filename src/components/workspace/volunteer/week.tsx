@@ -16,6 +16,7 @@ import { COMING_UP } from "@/components/workspace/first-week/first-week-state";
 import { WeekQuilt } from "@/components/workspace/volunteer/week-quilt";
 import { CardGreeting } from "@/components/workspace/volunteer/card-greeting";
 import { WeekNote } from "@/components/workspace/week-note/week-note";
+import { Glance } from "@/components/workspace/glance/glance";
 import {
   CommitmentRows,
   IncomingRequests,
@@ -75,6 +76,7 @@ export function WeekSection() {
       <StartHere />
       <FirstWeekSlips />
       <WeekNote brief={briefed || incoming.length > 0} />
+      {!firstDays && <Glance />}
       {!choiceFirst && choices}
       {firstDays ? (
         <LiveEmpty title={first.title}>

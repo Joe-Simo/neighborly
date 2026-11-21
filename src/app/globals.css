@@ -1166,13 +1166,13 @@ summary:focus-visible,
 [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup], [role="menuitem"]) { box-shadow: var(--relief-press); transition-duration: 0s; }
 [data-slot="button"]:active { translate: none; transform: none; }
 @media (hover: hover) {
-  nav.week-figures a:hover { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
+  :is(nav.week-figures, nav.glance-tiles) a:hover { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
 }
-nav.week-figures a:focus-visible { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
+nav:is(.week-figures, .glance-tiles) a:focus-visible { box-shadow: 0 0 0 1px var(--relief-edge), var(--relief-sheet); }
 /* The language menu in the bar is a menu trigger, not a [data-slot="button"], so the kit's transition-all reached its
    focus ring: the ring grew in from 3px and its corner eased from 6px. The ring is there at once, like every other. */
 .live-header [data-slot="dropdown-menu-trigger"] { transition-property: background-color, border-color, color; }
-@media (forced-colors: active), print { [data-slot="button"], nav.week-figures a { box-shadow: none !important; } }
+@media (forced-colors: active), print { [data-slot="button"], nav:is(.week-figures, .glance-tiles) a { box-shadow: none !important; } }
 @media (prefers-reduced-motion: reduce) { [data-slot="button"] { transition: none; } }
 /* A Help line or commitment row that opens something lifts from flat to a slip: the slip is drawn once, under
    the words, and only its opacity changes. People rows lift on the row itself (people.css). */
