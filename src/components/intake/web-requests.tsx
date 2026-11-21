@@ -73,6 +73,7 @@ export function WebRequests() {
         <div className="web-area">
           <p>{settings ? (settings.enabled ? w.area(settings.miles, settings.zip) : settings.autoPaused ? w.autoPaused : w.paused(settings.miles, settings.zip)) : w.off}</p>
           {settings?.placed === "zip" && <p className="live-muted">{w.placedByZip}</p>}
+          {settings?.phone && <p className="live-muted">{w.phoneShown(settings.phone)}</p>}
           <div className="live-row-actions">
             <Button type="button" variant="outline" onClick={() => setEditing(true)}>{w.setArea}</Button>
             {settings && (
@@ -87,6 +88,7 @@ export function WebRequests() {
       {error && !editing && <LiveFailure message={error} />}
       {settings && more && <AreaMore churchId={churchId} settings={settings} onDone={() => setMore(false)} />}
       {settings && <Partners churchId={churchId} />}
+      <Review churchId={churchId} />
       {held.length > 0 && (
         <div className="web-held">
           <p>{w.held(held.length)}</p>
@@ -214,8 +216,9 @@ function AreaMore({ churchId, settings, onDone }: { churchId: Id<"churches">; se
     <form className="live-form web-more" onSubmit={(event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
-      void save(() => saveSettings({ churchId, enabled: settings.enabled, address: settings.address, miles: settings.miles, weeklyLimit: whole(form.get("weeklyLimit")), order: whole(form.get("order")), holidays })).then((done) => done.saved && onDone());
+      void save(() => saveSettings({ churchId, enabled: settings.enabled, address: settings.address, miles: settings.miles, weeklyLimit: whole(form.get("weeklyLimit")), order: whole(form.get("order")), holidays, phone: String(form.get("phone") ?? "").trim() || null })).then((done) => done.saved && onDone());
     }}>
+      <LiveField label={w.teamPhone} help={w.teamPhoneHelp}><Input name="phone" type="tel" inputMode="tel" autoComplete="off" maxLength={30} defaultValue={settings.phone ?? ""} /></LiveField>
       <LiveField label={w.weeklyLimit}><Input name="weeklyLimit" type="number" inputMode="numeric" min={1} max={1000} defaultValue={settings.weeklyLimit ?? ""} /></LiveField>
       <LiveField label={w.order}><Input name="order" type="number" inputMode="numeric" min={0} max={1000} defaultValue={settings.order ?? ""} /></LiveField>
       <LiveField label={w.holidays}><DateField value={day} onChange={setDay} /></LiveField>
@@ -231,6 +234,49 @@ function AreaMore({ churchId, settings, onDone }: { churchId: Id<"churches">; se
         <Button type="submit" disabled={pending}>{w.saveMore}</Button>
       </div>
     </form>
+  );
+}
+
+/**
+ * Owners only (the query answers null to anyone else): the team's own requests marked not genuine, and the contacts
+ * another team marked too, as a piece of a hash and a count. "Genuine" takes the mark back; "Not genuine" keeps it.
+ */
+function Review({ churchId }: { churchId: Id<"churches"> }) {
+  const { words } = useWorkspace();
+  const w = webWords(words.locale);
+  const list = useQuery(api.intakeReview.forOwner, { churchId });
+  const decideMarked = useMutation(api.intakeReview.decideMarked);
+  const decideShared = useMutation(api.intakeReview.decideShared);
+  const { save, error, pending } = useSave();
+  if (!list) return null;
+  const day = (at: number) => new Intl.DateTimeFormat(words.locale === "es" ? "es-US" : "en-US", { month: "short", day: "numeric" }).format(at);
+  const actions = (decide: (genuine: boolean) => Promise<null>) => (
+    <span className="live-row-actions">
+      <Button type="button" variant="outline" disabled={pending} onClick={() => void save(() => decide(true))}>{w.genuine}</Button>
+      <Button type="button" variant="ghost" disabled={pending} onClick={() => void save(() => decide(false))}>{w.keepMark}</Button>
+    </span>
+  );
+  return (
+    <div className="web-review">
+      <h3>{w.review}</h3>
+      <p className="live-muted">{w.reviewHelp}</p>
+      {list.marked.length + list.shared.length === 0 && <p className="live-muted">{w.reviewNone}</p>}
+      {list.marked.length > 0 && <h4>{w.reviewOwn}</h4>}
+      {list.marked.map((row) => (
+        <div key={row.id} className="web-partner">
+          <span>{w.markedOn(row.kinds.map((kind) => w.kinds[kind]).join(", "), day(row.at), row.referredBy)}</span>
+          {actions((genuine) => decideMarked({ churchId, requestId: row.id, genuine }))}
+        </div>
+      ))}
+      {list.shared.length > 0 && <><h4>{w.reviewShared}</h4><p className="live-muted">{w.reviewSharedHelp}</p></>}
+      {list.shared.map((row) => (
+        <div key={row.id} className="web-partner">
+          <span>{w.sharedCase(row.hash, row.teams)}</span>
+          {actions((genuine) => decideShared({ churchId, flagId: row.id, genuine }))}
+        </div>
+      ))}
+      {error && <LiveFailure message={error} />}
+    </div>
   );
 }
 
