@@ -43,7 +43,7 @@ let serial = 0;
 function ask(overrides: Partial<{ zip: string; contactHash: string; ipHash: string; deviceHash: string; need: string; email: string }> = {}) {
   serial++;
   return {
-    kind: "rent" as const, need: overrides.need ?? "Behind on rent this month.", email: overrides.email ?? `person${serial}@example.org`, phone: "", zip: overrides.zip ?? "48201", language: "en" as const,
+    kinds: ["rent" as const], safe: true, urgent: false, need: overrides.need ?? "Behind on rent this month.", email: overrides.email ?? `person${serial}@example.org`, phone: "", zip: overrides.zip ?? "48201", language: "en" as const,
     ipHash: overrides.ipHash ?? `ip${serial}`, deviceHash: overrides.deviceHash ?? `device${serial}`, contactHash: overrides.contactHash ?? `contact${serial}`,
     statusKeyHash: `key${serial}`, codeHash: `code${serial}`, code: "123456", statusLink: "https://example.org/help/status#x",
   };
@@ -74,9 +74,9 @@ describe("areas and routing", () => {
   });
   test("a zip goes to the team that covers it; out of area and unknown keep nothing", async () => {
     const { t, ids } = await setup();
-    expect(await t.mutation(internal.intake.receive, ask({ zip: "48124" }))).toBe("sent");
-    expect(await t.mutation(internal.intake.receive, ask({ zip: "94103" }))).toBe("no_team");
-    expect(await t.mutation(internal.intake.receive, ask({ zip: "99999" }))).toBe("unknown_zip");
+    expect((await t.mutation(internal.intake.receive, ask({ zip: "48124" }))).result).toBe("sent");
+    expect((await t.mutation(internal.intake.receive, ask({ zip: "94103" }))).result).toBe("no_team");
+    expect((await t.mutation(internal.intake.receive, ask({ zip: "99999" }))).result).toBe("unknown_zip");
     const rows = await t.run((ctx) => ctx.db.query("webRequests").collect());
     expect(rows.map((row) => row.churchId)).toEqual([ids.dearborn.churchId]);
   });
@@ -84,7 +84,7 @@ describe("areas and routing", () => {
     const { t, ids, as } = await setup();
     await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: false, zip: "48124", miles: 5 });
     // Dearborn's centre is about 10.5 miles from Detroit's, outside Detroit's 10: with Dearborn off, nobody serves it.
-    expect(await t.mutation(internal.intake.receive, ask({ zip: "48124" }))).toBe("no_team");
+    expect((await t.mutation(internal.intake.receive, ask({ zip: "48124" }))).result).toBe("no_team");
   });
   test("settings refuse a distance outside 1 to 100 miles and a zip not on the list", async () => {
     const { ids, as } = await setup();
@@ -100,12 +100,12 @@ describe("areas and routing", () => {
 describe("limits, blocks and confirmation", () => {
   test("an address is slowed after ten in an hour", async () => {
     const { t } = await setup();
-    for (let i = 0; i < LIMITS.ipPerHour; i++) expect(await t.mutation(internal.intake.receive, ask({ ipHash: "same-ip" }))).toBe("sent");
-    expect(await t.mutation(internal.intake.receive, ask({ ipHash: "same-ip" }))).toBe("slow");
+    for (let i = 0; i < LIMITS.ipPerHour; i++) expect((await t.mutation(internal.intake.receive, ask({ ipHash: "same-ip" }))).result).toBe("sent");
+    expect((await t.mutation(internal.intake.receive, ask({ ipHash: "same-ip" }))).result).toBe("slow");
   });
   test("a contact past three a day still hears 'sent', and nothing more is kept or emailed", async () => {
     const { t } = await setup();
-    for (let i = 0; i < 4; i++) expect(await t.mutation(internal.intake.receive, ask({ contactHash: "same-contact" }))).toBe("sent");
+    for (let i = 0; i < 4; i++) expect((await t.mutation(internal.intake.receive, ask({ contactHash: "same-contact" }))).result).toBe("sent");
     const outbox = await t.run((ctx) => ctx.db.query("outbox").collect());
     expect(outbox).toHaveLength(3);
   });
@@ -113,8 +113,8 @@ describe("limits, blocks and confirmation", () => {
     const { t, ids, as } = await setup();
     const right = ask();
     await t.mutation(internal.intake.receive, right);
-    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: right.statusKeyHash, codeHash: "nope", ipHash: "x" })).toBe(false);
-    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: right.statusKeyHash, codeHash: right.codeHash, ipHash: "x" })).toBe(true);
+    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: right.statusKeyHash, codeHash: "nope", ipHash: "x" })).toBe(null);
+    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: right.statusKeyHash, codeHash: right.codeHash, ipHash: "x" })).toMatchObject({ team: "St. Example Detroit" });
     const calls = await t.run((ctx) => ctx.db.query("calls").collect());
     expect(calls).toHaveLength(1);
     expect(calls[0]).toMatchObject({ churchId: ids.detroit.churchId, callback: "needed", fromWeb: true });
@@ -125,7 +125,7 @@ describe("limits, blocks and confirmation", () => {
     const wrong = ask();
     await t.mutation(internal.intake.receive, wrong);
     for (let i = 0; i < LIMITS.codeTries; i++) await t.mutation(internal.intake.confirm, { statusKeyHash: wrong.statusKeyHash, codeHash: "nope", ipHash: "y" });
-    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: wrong.statusKeyHash, codeHash: wrong.codeHash, ipHash: "y" })).toBe(false);
+    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: wrong.statusKeyHash, codeHash: wrong.codeHash, ipHash: "y" })).toBe(null);
   });
   test("the same contact twice joins its open request instead of a second call", async () => {
     const { t } = await setup();
@@ -145,7 +145,7 @@ describe("limits, blocks and confirmation", () => {
     await t.mutation(internal.intake.confirm, { statusKeyHash: first.statusKeyHash, codeHash: first.codeHash, ipHash: "z" });
     const row = await t.run((ctx) => ctx.db.query("webRequests").first());
     await as(ids.detroit.userId).mutation(api.intake.block, { churchId: ids.detroit.churchId, requestId: row!._id });
-    expect(await t.mutation(internal.intake.receive, ask({ contactHash: "pest" }))).toBe("sent");
+    expect((await t.mutation(internal.intake.receive, ask({ contactHash: "pest" }))).result).toBe("sent");
     expect(await t.run((ctx) => ctx.db.query("webRequests").filter((q) => q.eq(q.field("stage"), "pending")).collect())).toHaveLength(0);
   });
   test("in a flood, a contact confirmed before is not held", async () => {
@@ -165,6 +165,24 @@ describe("limits, blocks and confirmation", () => {
     const row = await t.run((ctx) => ctx.db.query("webRequests").withIndex("by_status_key", (q) => q.eq("statusKeyHash", again.statusKeyHash)).unique());
     expect(row?.stage).toBe("received");
   });
+  test("phone only lands at once, unverified, three a team a day; then held", async () => {
+    const { t } = await setup();
+    for (let i = 0; i < 4; i++) {
+      const answer = await t.mutation(internal.intake.receive, { ...ask(), email: "", phone: "3135550100", safe: false, callAt: "after six" });
+      expect(answer).toMatchObject({ result: "landed", team: "St. Example Detroit" });
+    }
+    const rows = await t.run((ctx) => ctx.db.query("webRequests").collect());
+    expect(rows.map((row) => row.stage).sort()).toEqual(["held", "received", "received", "received"]);
+    expect(await t.run((ctx) => ctx.db.query("outbox").collect())).toHaveLength(0);
+    const calls = await t.run((ctx) => ctx.db.query("calls").collect());
+    expect(calls[0].note).toContain("Do not text, email or leave a message. Call only: after six.");
+  });
+  test("one device or network gets one unverified request a day", async () => {
+    const { t } = await setup();
+    const phoneOnly = (ipHash: string) => ({ ...ask({ ipHash, deviceHash: `d-${ipHash}` }), email: "", phone: "3135550100" });
+    expect((await t.mutation(internal.intake.receive, phoneOnly("same"))).result).toBe("landed");
+    expect((await t.mutation(internal.intake.receive, phoneOnly("same"))).result).toBe("slow");
+  });
   test("past twenty in an hour, a team's requests are held for a coordinator", async () => {
     const { t, ids, as } = await setup();
     for (let i = 0; i <= LIMITS.floodPerTeamHour; i++) {
@@ -182,9 +200,9 @@ describe("limits, blocks and confirmation", () => {
     const key = "0123456789abcdef0123456789abcdef";
     const one = { ...ask(), statusKeyHash: await statusKeyHash(key) };
     await t.mutation(internal.intake.receive, one);
-    expect(await t.query(api.intake.status, { key })).toEqual({ status: "pending" });
+    expect(await t.query(api.intake.status, { key })).toMatchObject({ status: "pending" });
     await t.mutation(internal.intake.confirm, { statusKeyHash: one.statusKeyHash, codeHash: one.codeHash, ipHash: "s" });
-    expect(await t.query(api.intake.status, { key })).toEqual({ status: "received" });
+    expect(await t.query(api.intake.status, { key })).toMatchObject({ status: "received", timeZone: "America/Detroit" });
     expect(await t.query(api.intake.status, { key: "f".repeat(32) })).toBe(null);
   });
 });
@@ -224,15 +242,26 @@ describe("each team sees only its own", () => {
 });
 
 describe("what the form accepts", () => {
-  const good = { adult: true, kind: "food", need: "We need groceries.", email: "Ana@Example.org", phone: "(313) 555-0100", zip: "48201-1234", language: "es" };
+  const good = { adult: true, kinds: ["food", "rent"], need: "We need groceries.", email: "Ana@Example.org", phone: "(313) 555-0100", zip: "48201-1234", language: "es", safe: "yes" };
   test("a good submission is read and tidied", () => {
-    expect(readSubmission(good)).toEqual({ ok: true, value: { kind: "food", need: "We need groceries.", email: "ana@example.org", phone: "3135550100", zip: "48201", language: "es" } });
+    expect(readSubmission(good)).toEqual({ ok: true, value: { kinds: ["food", "rent"], need: "We need groceries.", email: "ana@example.org", phone: "3135550100", zip: "48201", language: "es", safe: true } });
   });
   test.each([
-    [{ adult: false }, "adult"], [{ kind: "cash" }, "kind"], [{ need: "x" }, "need"], [{ need: "a".repeat(501) }, "need"], [{ need: "Visit https://spam.example" }, "need"],
-    [{ email: "not-an-email" }, "email"], [{ phone: "555" }, "phone"], [{ zip: "4820" }, "zip"], [{ language: "fr" }, "language"], [{ referredBy: "<script>" }, "referredBy"],
+    [{ adult: false }, "adult"], [{ kinds: ["cash"] }, "needs"], [{ email: "not-an-email" }, "email"], [{ phone: "555" }, "phone"], [{ email: "", phone: "" }, "reach"],
+    [{ zip: "4820" }, "zip"], [{ zip: "", nearby: "the library on Main" }, "nearby"], [{ safe: "maybe" }, "safe"], [{ safe: "no" }, "when"],
   ])("refuses %o", (change, problem) => {
-    expect(readSubmission({ ...good, ...change })).toEqual({ ok: false, problem });
+    const read = readSubmission({ ...good, ...change });
+    expect(read.ok).toBe(false);
+    if (!read.ok) expect(read.problems).toContain(problem);
+  });
+  test("a nearby zip places someone with no address; links are taken out of the words", () => {
+    const read = readSubmission({ ...good, zip: "", nearby: "48124", need: "Call me, or see bit . ly/x for my story" });
+    expect(read.ok && read.value.zip).toBe("48124");
+    expect(read.ok && read.value.need).toBe("Call me, or see [link removed] for my story");
+  });
+  test("not safe to message needs a phone and a time", () => {
+    expect(readSubmission({ ...good, safe: "no", callAt: "after 6pm", phone: "" })).toMatchObject({ ok: false, problems: ["reach"] });
+    expect(readSubmission({ ...good, safe: "no", callAt: "after 6pm" })).toMatchObject({ ok: true, value: { safe: false, callAt: "after 6pm" } });
   });
   test("links are caught in disguise, everyday sentences are not", () => {
     for (const spam of ["see bit . ly/x", "kindhelps dot com", "www .example", "visit exаmple.com", "hxxps://x"]) expect(hasLink(spam)).toBe(true);

@@ -71,32 +71,36 @@ async function turnstile(token: unknown, ip: string) {
   } catch { return false; }
 }
 
+function statusLink(language: "en" | "es", key: string) {
+  const site = siteOrigin();
+  return site ? `${site}${language === "es" ? "/ayuda/estado" : "/help/status"}?k=${key}` : null;
+}
+
 export const submit = httpAction(async (ctx, request) => {
   if (!(await fromSite(request))) return reply(403, { result: "refused" });
   const input = await body(request);
-  if (!input) return reply(400, { result: "invalid", problem: "need" });
+  if (!input) return reply(400, { result: "invalid" });
   const read = readSubmission(input);
-  if (!read.ok) return reply(400, { result: "invalid", problem: read.problem });
+  if (!read.ok) return reply(400, { result: "invalid" });
   const ip = address(input.ip);
   // The bot check comes before anything is kept or any code is sent.
   if (!(await turnstile(input.token, ip))) return reply(403, { result: "check" });
   const device = typeof input.device === "string" && /^[\w-]{8,64}$/.test(input.device) ? input.device : `none:${ip}`;
-  const site = siteOrigin();
-  if (!site) return reply(503, { result: "closed" });
   const { value } = read;
   const statusKey = hex(random(16));
+  const link = statusLink(value.language, statusKey);
+  if (!link) return reply(503, { result: "closed" });
   const code = sixDigits();
-  const page = value.language === "es" ? "/ayuda/estado?k=" : "/help/status?k=";
-  const result = await ctx.runMutation(internal.intake.receive, {
-    ...value,
-    ipHash: await keyed(`ip:${ip}`), deviceHash: await keyed(`device:${device}`), contactHash: await keyed(`email:${value.email}`),
-    ...(value.phone ? { phoneHash: await keyed(`phone:${value.phone}`) } : {}),
-    statusKeyHash: await statusKeyHash(statusKey), codeHash: await keyed(`code:${statusKey}:${code}`), code, statusLink: `${site}${page}${statusKey}`,
+  const { kinds, need, email, phone, zip, language, safe, callAt, meet, referredBy } = value;
+  const answer = await ctx.runMutation(internal.intake.receive, {
+    kinds, need, email, phone, zip, language, safe, urgent: input.urgent === true, ...(callAt ? { callAt } : {}), ...(meet ? { meet } : {}), ...(referredBy ? { referredBy } : {}),
+    ipHash: await keyed(`ip:${ip}`), deviceHash: await keyed(`device:${device}`), contactHash: await keyed(email ? `email:${email}` : `phone:${phone}`),
+    ...(phone ? { phoneHash: await keyed(`phone:${phone}`) } : {}),
+    statusKeyHash: await statusKeyHash(statusKey), codeHash: await keyed(`code:${statusKey}:${code}`), code, statusLink: link,
   });
-  if (result === "no_team" || result === "unknown_zip") return reply(200, { result });
-  if (result === "slow") return reply(429, { result: "slow" });
-  // The key goes back even when nothing was sent (a limit, a block): the reply looks the same either way.
-  return reply(200, { result: "sent", key: statusKey });
+  if (answer.result === "sent") return reply(200, { result: "sent", key: statusKey });
+  if (answer.result === "landed") return reply(200, { result: "landed", key: statusKey, team: answer.team ?? "", by: String(answer.by ?? ""), timeZone: answer.timeZone ?? "" });
+  return reply(answer.result === "slow" ? 429 : 200, { result: answer.result });
 });
 
 export const confirm = httpAction(async (ctx, request) => {
@@ -104,6 +108,27 @@ export const confirm = httpAction(async (ctx, request) => {
   const input = await body(request);
   const key = readKey(input?.key), code = readCode(input?.code);
   if (!key || !code) return reply(400, { result: "wrong" });
-  const ok = await ctx.runMutation(internal.intake.confirm, { statusKeyHash: await statusKeyHash(key), codeHash: await keyed(`code:${key}:${code}`), ipHash: await keyed(`ip:${address(input?.ip)}`) });
-  return reply(200, { result: ok ? "confirmed" : "wrong" });
+  const shown = await ctx.runMutation(internal.intake.confirm, { statusKeyHash: await statusKeyHash(key), codeHash: await keyed(`code:${key}:${code}`), ipHash: await keyed(`ip:${address(input?.ip)}`) });
+  return reply(200, shown ? { result: "confirmed", team: shown.team, by: String(shown.by), timeZone: shown.timeZone } : { result: "wrong" });
+});
+
+export const resendCode = httpAction(async (ctx, request) => {
+  if (!(await fromSite(request))) return reply(403, { result: "refused" });
+  const input = await body(request);
+  const key = readKey(input?.key);
+  const language = input?.language === "es" ? "es" : "en";
+  const link = key ? statusLink(language, key) : null;
+  if (key && link) {
+    const code = sixDigits();
+    await ctx.runMutation(internal.intake.resendCode, { statusKeyHash: await statusKeyHash(key), codeHash: await keyed(`code:${key}:${code}`), code, statusLink: link, ipHash: await keyed(`ip:${address(input?.ip)}`) });
+  }
+  return reply(200, { result: "sent" });
+});
+
+export const remove = httpAction(async (ctx, request) => {
+  if (!(await fromSite(request))) return reply(403, { result: "refused" });
+  const input = await body(request);
+  const key = readKey(input?.key);
+  if (key) await ctx.runMutation(internal.intake.remove, { statusKeyHash: await statusKeyHash(key) });
+  return reply(200, { result: "removed" });
 });

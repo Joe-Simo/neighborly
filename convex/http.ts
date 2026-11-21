@@ -3,7 +3,7 @@ import { httpAction } from "./_generated/server";
 import { resend } from "./notifications";
 import { feed } from "./calendar";
 import { preflight, read } from "./files";
-import { confirm, submit } from "./intakeHttp";
+import { confirm, remove, resendCode, submit } from "./intakeHttp";
 
 const http = httpRouter();
 http.route({ path: "/resend-webhook", method: "POST", handler: httpAction(async (ctx, request) => resend.handleResendEventWebhook(ctx, request)) });
@@ -15,4 +15,6 @@ http.route({ pathPrefix: "/files/", method: "OPTIONS", handler: preflight });
 // The public "Ask for help" form, called by the site's own server (src/app/help, src/app/ayuda), never by a browser.
 http.route({ path: "/intake/submit", method: "POST", handler: submit });
 http.route({ path: "/intake/confirm", method: "POST", handler: confirm });
+http.route({ path: "/intake/resend", method: "POST", handler: resendCode });
+http.route({ path: "/intake/remove", method: "POST", handler: remove });
 export default http;

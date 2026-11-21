@@ -255,13 +255,15 @@ export default defineSchema({
   webRequests: defineTable({
     churchId: v.id("churches"),
     kind: helpKind,
+    /** Every kind the person chose; kind is the first. */
+    kinds: v.optional(v.array(helpKind)),
     need: v.string(),
     phone: v.string(),
     email: v.string(),
     zip: v.string(),
     language,
     stage: v.union(v.literal("pending"), v.literal("held"), v.literal("received"), v.literal("closed")),
-    /** SHA-256 of the private status link's key; the key itself is only in the sender's link. */
+    /** SHA-256 of the private status link's key; the key itself is only in the sender's link. The link stops working 30 days after closing. */
     statusKeyHash: v.string(),
     codeHash: v.string(),
     codeTries: v.number(),
@@ -270,6 +272,15 @@ export default defineSchema({
     phoneHash: v.optional(v.string()),
     ipHash: v.string(),
     referredBy: v.optional(v.string()),
+    /** false: not safe to text, email or leave a message. Nothing is ever sent; the team calls only at callAt. */
+    safe: v.optional(v.boolean()),
+    callAt: v.optional(v.string()),
+    /** A place to meet, for someone with no address. */
+    meet: v.optional(v.string()),
+    /** Never confirmed by a code (phone only, or not safe to message): shown apart, capped per team, never read by the assistant. */
+    unverified: v.optional(v.boolean()),
+    /** The words sounded like danger and the person chose to send anyway: a mark on the call the team can clear, nothing more. */
+    urgent: v.optional(v.boolean()),
     createdAt: v.number(),
     confirmedAt: v.optional(v.number()),
     /** One business day after confirmation: past it with no call returned, the request is late (ochre). */

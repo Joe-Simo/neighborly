@@ -19,7 +19,7 @@ import { paperEmail } from "../src/lib/email/paper-email";
  */
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
-export const LIMITS = { ipPerHour: 10, devicePerHour: 5, contactPerDay: 3, confirmTriesPerIpHour: 20, codeTries: 5, floodPerTeamHour: 20 } as const;
+export const LIMITS = { ipPerHour: 10, devicePerHour: 5, contactPerDay: 3, confirmTriesPerIpHour: 20, codeTries: 5, floodPerTeamHour: 20, unverifiedPerTeamDay: 3 } as const;
 const JOIN_DAYS = 7;
 
 /** Counts one more in a fixed window; false when that would pass `max`. */
@@ -77,63 +77,121 @@ export const coverage = query({
   },
 });
 
+const answer = v.object({
+  result: v.union(v.literal("sent"), v.literal("landed"), v.literal("no_team"), v.literal("unknown_zip"), v.literal("slow")),
+  /** For "landed" (unverified, shown at once): the team's name and when first contact is due. */
+  team: v.optional(v.string()),
+  by: v.optional(v.number()),
+  timeZone: v.optional(v.string()),
+});
+const submission = {
+  kinds: v.array(helpKind), need: v.string(), email: v.string(), phone: v.string(), zip: v.string(), language: v.union(v.literal("en"), v.literal("es")),
+  safe: v.boolean(), callAt: v.optional(v.string()), meet: v.optional(v.string()), referredBy: v.optional(v.string()), urgent: v.boolean(),
+};
+
+/**
+ * One submission, after the site's server checked Turnstile and the input. With an email and safe to message: kept
+ * pending and a code is emailed ("sent"). Otherwise (phone only, or not safe to message) nothing is ever sent to the
+ * person: it lands at once as unverified, at most UNVERIFIED_PER_TEAM_DAY a day per team, the rest held for a coordinator.
+ */
 export const receive = internalMutation({
-  args: {
-    kind: helpKind, need: v.string(), email: v.string(), phone: v.string(), zip: v.string(), language: v.union(v.literal("en"), v.literal("es")), referredBy: v.optional(v.string()),
-    ipHash: v.string(), deviceHash: v.string(), contactHash: v.string(), phoneHash: v.optional(v.string()), statusKeyHash: v.string(), codeHash: v.string(), code: v.string(), statusLink: v.string(),
-  },
-  returns: v.union(v.literal("sent"), v.literal("no_team"), v.literal("unknown_zip"), v.literal("slow")),
+  args: { ...submission, ipHash: v.string(), deviceHash: v.string(), contactHash: v.string(), phoneHash: v.optional(v.string()), statusKeyHash: v.string(), codeHash: v.string(), code: v.string(), statusLink: v.string() },
+  returns: answer,
   handler: async (ctx, args) => {
     const now = Date.now();
-    if (!(await bump(ctx, `ip:${args.ipHash}`, HOUR, LIMITS.ipPerHour, now)) || !(await bump(ctx, `device:${args.deviceHash}`, HOUR, LIMITS.devicePerHour, now))) return "slow";
+    const unverified = !args.email || !args.safe;
+    if (!(await bump(ctx, `ip:${args.ipHash}`, HOUR, LIMITS.ipPerHour, now)) || !(await bump(ctx, `device:${args.deviceHash}`, HOUR, LIMITS.devicePerHour, now))) return { result: "slow" as const };
+    // The unverified door is the open one, so it is narrow: one a day per device and per network.
+    if (unverified && (!(await bump(ctx, `unv-ip:${args.ipHash}`, DAY, 1, now)) || !(await bump(ctx, `unv-device:${args.deviceHash}`, DAY, 1, now)))) return { result: "slow" as const };
     const churchId = await route(ctx, args.zip);
-    if (churchId === "unknown") return "unknown_zip";
-    if (!churchId) return "no_team";
-    // From here on every answer is "sent", so the reply never says whether a contact is known, over its limit or blocked.
-    if (!(await bump(ctx, `contact:${args.contactHash}`, DAY, LIMITS.contactPerDay, now))) return "sent";
-    if (await blocked(ctx, churchId, [args.contactHash, args.phoneHash, args.ipHash])) return "sent";
+    if (churchId === "unknown") return { result: "unknown_zip" as const };
+    if (!churchId) return { result: "no_team" as const };
+    const church = await ctx.db.get("churches", churchId);
+    if (!church) return { result: "no_team" as const };
+    const quiet = unverified ? { result: "landed" as const, team: church.name, by: nextBusinessDay(now, church.timeZone), timeZone: church.timeZone } : { result: "sent" as const };
+    // From here on every answer is the same, so the reply never says whether a contact is known, over its limit or blocked.
+    // Codes per destination: three a day per email (and per phone).
+    if (!(await bump(ctx, `contact:${args.contactHash}`, DAY, LIMITS.contactPerDay, now))) return quiet;
+    if (await blocked(ctx, churchId, [args.contactHash, args.phoneHash, args.ipHash])) return quiet;
     // A second try from the same contact replaces the first one still waiting for its code.
     const earlier = await ctx.db.query("webRequests").withIndex("by_contact", (q) => q.eq("contactHash", args.contactHash).gte("createdAt", now - DAY)).take(20);
     for (const row of earlier) if (row.stage === "pending") await ctx.db.delete("webRequests", row._id);
     const requestId = await ctx.db.insert("webRequests", {
-      churchId, kind: args.kind, need: args.need, phone: args.phone, email: args.email, zip: args.zip, language: args.language, stage: "pending",
-      statusKeyHash: args.statusKeyHash, codeHash: args.codeHash, codeTries: 0, contactHash: args.contactHash, phoneHash: args.phoneHash, ipHash: args.ipHash,
-      referredBy: args.referredBy, createdAt: now,
+      churchId, kind: args.kinds[0] ?? "other", kinds: args.kinds, need: args.need, phone: args.phone, email: args.email, zip: args.zip, language: args.language, stage: "pending",
+      statusKeyHash: args.statusKeyHash, codeHash: unverified ? "" : args.codeHash, codeTries: 0, contactHash: args.contactHash, phoneHash: args.phoneHash, ipHash: args.ipHash,
+      referredBy: args.referredBy, safe: args.safe, callAt: args.callAt, meet: args.meet, urgent: args.urgent || undefined, unverified: unverified || undefined, createdAt: now,
     });
-    const outboxId = await ctx.db.insert("outbox", { churchId, webRequestId: requestId, kind: "help_code", recipient: args.email, state: "awaiting_configuration", createdAt: now });
-    const config = deliveryConfiguration();
-    if (config) {
-      const email = paperEmail({ kind: "help_code", language: args.language, set: "general", place: args.code, link: args.statusLink });
-      const providerId = await resend.sendEmail(ctx, { from: config.sender, to: args.email, ...email, idempotencyKey: `help_code:${requestId}` });
-      await ctx.db.patch("outbox", outboxId, { state: "queued", providerId });
+    if (unverified) {
+      await ctx.db.patch("webRequests", requestId, { confirmedAt: now });
+      const request = await ctx.db.get("webRequests", requestId);
+      if (!request) return quiet;
+      if (await bump(ctx, `unv-team:${churchId}`, DAY, LIMITS.unverifiedPerTeamDay, now)) await land(ctx, request, now);
+      else await ctx.db.patch("webRequests", requestId, { stage: "held" });
+      return quiet;
     }
-    return "sent";
+    await sendCode(ctx, requestId, churchId, args.email, args.language, args.code, args.statusLink, now);
+    return quiet;
   },
 });
 
+async function sendCode(ctx: MutationCtx, requestId: Id<"webRequests">, churchId: Id<"churches">, to: string, language: "en" | "es", code: string, statusLink: string, now: number) {
+  const outboxId = await ctx.db.insert("outbox", { churchId, webRequestId: requestId, kind: "help_code", recipient: to, state: "awaiting_configuration", createdAt: now });
+  const config = deliveryConfiguration();
+  if (!config) return;
+  // Neutral on purpose: the code and the person's own link, never the need or the team.
+  const email = paperEmail({ kind: "help_code", language, set: "general", place: code, link: statusLink });
+  const providerId = await resend.sendEmail(ctx, { from: config.sender, to, ...email, idempotencyKey: `help_code:${requestId}:${now}` });
+  await ctx.db.patch("outbox", outboxId, { state: "queued", providerId });
+}
+
+/** A new code for a request still waiting for one, inside the same per-destination cap. Always answers the same. */
+export const resendCode = internalMutation({
+  args: { statusKeyHash: v.string(), codeHash: v.string(), code: v.string(), statusLink: v.string(), ipHash: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    if (!(await bump(ctx, `ip:${args.ipHash}`, HOUR, LIMITS.ipPerHour, now))) return null;
+    const request = await ctx.db.query("webRequests").withIndex("by_status_key", (q) => q.eq("statusKeyHash", args.statusKeyHash)).unique();
+    if (!request || request.stage !== "pending" || !request.email || request.createdAt < now - DAY) return null;
+    if (!(await bump(ctx, `contact:${request.contactHash}`, DAY, LIMITS.contactPerDay, now))) return null;
+    await ctx.db.patch("webRequests", request._id, { codeHash: args.codeHash, codeTries: 0 });
+    await sendCode(ctx, request._id, request.churchId, request.email, request.language, args.code, args.statusLink, now);
+    return null;
+  },
+});
+
+const KIND_NOTE = { rent: "rent", utility: "utility bill", food: "food", voucher: "voucher", other: "other" } as const;
 const LANGUAGE_NOTE = { en: "English", es: "Spanish" } as const;
-/** The call a confirmed web request becomes on its team's Help line. This is the one place a verified request turns into work. */
+/** The call a confirmed web request becomes on its team's Help line. This is the one place a web request turns into work. */
 export async function createWebCall(ctx: MutationCtx, request: Doc<"webRequests">, now: number) {
-  const contact = [request.phone && `Phone: ${request.phone}`, `Email: ${request.email}`].filter(Boolean).join(" · ");
-  const note = `${request.need}\n\nFrom the web form (${request.kind}, zip ${request.zip}, ${LANGUAGE_NOTE[request.language]}${request.referredBy ? `, referred by ${request.referredBy}` : ""}). ${contact}`;
+  const kinds = (request.kinds ?? [request.kind]).map((kind) => KIND_NOTE[kind]).join(", ");
+  const contact = [request.phone && `Phone: ${request.phone}`, request.email && `Email: ${request.email}`].filter(Boolean).join(" · ");
+  const flags = [
+    request.unverified && "Unverified: not confirmed by a code.",
+    request.safe === false && `Do not text, email or leave a message. Call only${request.callAt ? `: ${request.callAt}` : ""}.`,
+    request.meet && `No address; can be met at: ${request.meet}.`,
+  ].filter(Boolean).join(" ");
+  const note = `${request.need || kinds}\n\nFrom the web form (${kinds}; zip ${request.zip}; ${LANGUAGE_NOTE[request.language]}${request.referredBy ? `; referred by ${request.referredBy}` : ""}). ${contact}${flags ? `\n${flags}` : ""}`;
   return ctx.db.insert("calls", {
     churchId: request.churchId, callerName: request.phone ? "Web request" : request.email, phone: request.phone, note: note.slice(0, 2000),
-    callback: "needed", fromWeb: true, takenAt: now, ownerId: await callbackOwner(ctx, request.churchId, now), ...(request.language === "es" ? { spanish: true } : {}),
+    callback: "needed", fromWeb: true, takenAt: now, ownerId: await callbackOwner(ctx, request.churchId, now),
+    ...(request.language === "es" ? { spanish: true } : {}), ...(request.urgent ? { urgent: { reasons: ["marked"], by: "rules" as const } } : {}),
   });
 }
 /**
  * Lays a received request on its team: a new call. One contact has one open request across all of Kind Helps: when the
- * same email already has one waiting (from the last 7 days), the new words join that call, at whichever team holds it.
+ * same contact already has one waiting (from the last 7 days), the new words join that call, at whichever team holds it.
+ * Only confirmed requests join, so a typed-in email cannot attach itself to someone else's request.
  */
 async function land(ctx: MutationCtx, request: Doc<"webRequests">, now: number) {
   const church = await ctx.db.get("churches", request.churchId);
   if (!church) return;
   const firstContactBy = nextBusinessDay(now, church.timeZone);
-  const recent = await ctx.db.query("webRequests").withIndex("by_contact", (q) => q.eq("contactHash", request.contactHash).gte("createdAt", now - JOIN_DAYS * DAY)).take(20);
-  const joined = recent.find((row) => row._id !== request._id && row.stage === "received" && row.callId);
+  const recent = request.unverified ? [] : await ctx.db.query("webRequests").withIndex("by_contact", (q) => q.eq("contactHash", request.contactHash).gte("createdAt", now - JOIN_DAYS * DAY)).take(20);
+  const joined = recent.find((row) => row._id !== request._id && row.stage === "received" && row.callId && !row.unverified);
   const call = joined?.callId ? await ctx.db.get("calls", joined.callId) : null;
   if (joined && call && call.callback === "needed") {
-    await ctx.db.patch("calls", call._id, { note: `${call.note}\n\nAdded from the web: ${request.need}`.slice(0, 2000) });
+    await ctx.db.patch("calls", call._id, { note: `${call.note}\n\nAdded from the web: ${request.need || (request.kinds ?? [request.kind]).join(", ")}`.slice(0, 2000) });
     await ctx.db.patch("webRequests", request._id, { churchId: joined.churchId, stage: "received", callId: call._id, firstContactBy: joined.firstContactBy ?? firstContactBy });
     return;
   }
@@ -142,33 +200,55 @@ async function land(ctx: MutationCtx, request: Doc<"webRequests">, now: number) 
 
 export const confirm = internalMutation({
   args: { statusKeyHash: v.string(), codeHash: v.string(), ipHash: v.string() },
-  returns: v.boolean(),
+  returns: v.union(v.null(), v.object({ team: v.string(), by: v.number(), timeZone: v.string() })),
   handler: async (ctx, { statusKeyHash, codeHash, ipHash }) => {
     const now = Date.now();
-    if (!(await bump(ctx, `confirm:${ipHash}`, HOUR, LIMITS.confirmTriesPerIpHour, now))) return false;
+    if (!(await bump(ctx, `confirm:${ipHash}`, HOUR, LIMITS.confirmTriesPerIpHour, now))) return null;
     const request = await ctx.db.query("webRequests").withIndex("by_status_key", (q) => q.eq("statusKeyHash", statusKeyHash)).unique();
-    if (!request || request.stage !== "pending" || request.createdAt < now - DAY || request.codeTries >= LIMITS.codeTries) return false;
+    if (!request || request.stage !== "pending" || !request.codeHash || request.createdAt < now - DAY || request.codeTries >= LIMITS.codeTries) return null;
     if (request.codeHash !== codeHash) {
       await ctx.db.patch("webRequests", request._id, { codeTries: request.codeTries + 1 });
-      return false;
+      return null;
     }
-    // A blocked contact's request was never kept, so a block made since is the one case left: it goes quietly.
+    const church = await ctx.db.get("churches", request.churchId);
+    const shown = { team: church?.name ?? "", by: nextBusinessDay(now, church?.timeZone ?? "America/New_York"), timeZone: church?.timeZone ?? "America/New_York" };
+    // A block made since the code was sent: it goes quietly, and the answer looks the same.
     if (await blocked(ctx, request.churchId, [request.contactHash, request.phoneHash, request.ipHash])) {
       await ctx.db.delete("webRequests", request._id);
-      return true;
+      return shown;
     }
     await ctx.db.patch("webRequests", request._id, { confirmedAt: now, codeHash: "" });
     // A flood: past the team's hourly share, requests from contacts never confirmed before wait for a coordinator to let them
     // in. A contact confirmed before is trusted and always lands, so a flood cannot bury the people a team already knows.
     const before = await ctx.db.query("webRequests").withIndex("by_contact", (q) => q.eq("contactHash", request.contactHash).lt("createdAt", request.createdAt)).take(20);
-    const trusted = before.some((row) => row.confirmedAt !== undefined);
+    const trusted = before.some((row) => row.confirmedAt !== undefined && !row.unverified);
     const underShare = await bump(ctx, `team:${request.churchId}`, HOUR, LIMITS.floodPerTeamHour, now);
     if (!underShare && !trusted) {
       await ctx.db.patch("webRequests", request._id, { stage: "held" });
-      return true;
+      return shown;
     }
     const fresh = await ctx.db.get("webRequests", request._id);
     if (fresh) await land(ctx, fresh, now);
+    const landed = await ctx.db.get("webRequests", request._id);
+    const holder = landed && landed.churchId !== request.churchId ? await ctx.db.get("churches", landed.churchId) : null;
+    // Joined to the same person's open request at another team: they hear about the team that has it.
+    return holder ? { team: holder.name, by: landed?.firstContactBy ?? shown.by, timeZone: holder.timeZone } : shown;
+  },
+});
+
+/** The person deletes their own request from its private page: the request goes, and its call if no one has returned it yet. */
+export const remove = internalMutation({
+  args: { statusKeyHash: v.string() },
+  returns: v.boolean(),
+  handler: async (ctx, { statusKeyHash }) => {
+    const request = await ctx.db.query("webRequests").withIndex("by_status_key", (q) => q.eq("statusKeyHash", statusKeyHash)).unique();
+    if (!request) return false;
+    if (request.callId) {
+      const call = await ctx.db.get("calls", request.callId);
+      const sharing = await ctx.db.query("webRequests").withIndex("by_call", (q) => q.eq("callId", request.callId)).take(2);
+      if (call && call.callback === "needed" && sharing.length <= 1) await ctx.db.delete("calls", call._id);
+    }
+    await ctx.db.delete("webRequests", request._id);
     return true;
   },
 });
@@ -176,21 +256,28 @@ export const confirm = internalMutation({
 const sha256 = async (text: string) =>
   Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text))), (byte) => byte.toString(16).padStart(2, "0")).join("");
 export const statusKeyHash = (key: string) => sha256(`status:${key}`);
+const LINK_DAYS_AFTER_CLOSE = 30;
 
-/** The sender's private page: only where the request stands. No team, member names or notes. */
+/** The sender's private page: only where the request stands, when it was sent and when contact is due. No names, no notes. */
 export const status = query({
   args: { key: v.string() },
-  returns: v.union(v.null(), v.object({ status: v.union(v.literal("pending"), v.literal("received"), v.literal("assigned"), v.literal("contacted"), v.literal("closed")) })),
+  returns: v.union(v.null(), v.object({
+    status: v.union(v.literal("pending"), v.literal("received"), v.literal("assigned"), v.literal("contacted"), v.literal("closed")),
+    sentAt: v.number(), by: v.union(v.number(), v.null()), timeZone: v.string(),
+  })),
   handler: async (ctx, { key }) => {
     if (!/^[0-9a-f]{32}$/.test(key)) return null;
     const hashed = await statusKeyHash(key);
     const request = await ctx.db.query("webRequests").withIndex("by_status_key", (q) => q.eq("statusKeyHash", hashed)).unique();
-    return request ? { status: await publicStatus(ctx, request) } : null;
+    if (!request) return null;
+    const call = request.callId ? await ctx.db.get("calls", request.callId) : null;
+    if (request.stage === "closed" && (call?.returnedAt ?? request.confirmedAt ?? request.createdAt) < Date.now() - LINK_DAYS_AFTER_CLOSE * DAY) return null;
+    const church = await ctx.db.get("churches", request.churchId);
+    return { status: publicStatus(request, call), sentAt: request.confirmedAt ?? request.createdAt, by: request.firstContactBy ?? null, timeZone: church?.timeZone ?? "America/New_York" };
   },
 });
-async function publicStatus(ctx: QueryCtx, request: Doc<"webRequests">) {
+function publicStatus(request: Doc<"webRequests">, call: Doc<"calls"> | null) {
   if (request.stage === "pending" || request.stage === "closed") return request.stage;
-  const call = request.callId ? await ctx.db.get("calls", request.callId) : null;
   if (call?.callback === "done") return "contacted" as const;
   return call?.ownerId ? ("assigned" as const) : ("received" as const);
 }
@@ -231,6 +318,7 @@ const webRow = v.object({
   id: v.id("webRequests"), kind: helpKind, need: v.string(), phone: v.string(), email: v.string(), zip: v.string(), language: v.union(v.literal("en"), v.literal("es")),
   stage: v.union(v.literal("held"), v.literal("received")), confirmedAt: v.number(), late: v.boolean(), referredBy: v.union(v.string(), v.null()),
   passedFrom: v.union(v.null(), v.object({ name: v.string(), reason: v.string() })),
+  kinds: v.array(helpKind), unverified: v.boolean(), doNotMessage: v.boolean(), callAt: v.union(v.string(), v.null()), meet: v.union(v.string(), v.null()), passes: v.number(),
 });
 /** The team's web requests that wait: held ones (a flood) to let in, and received ones whose call is not yet returned. */
 export const forTeam = query({
@@ -254,6 +342,7 @@ export const forTeam = query({
         stage: request.stage === "held" ? ("held" as const) : ("received" as const), confirmedAt: request.confirmedAt ?? request.createdAt,
         late: request.firstContactBy !== undefined && now >= request.firstContactBy, referredBy: request.referredBy ?? null,
         passedFrom: request.passedFrom ? { name: from?.name ?? "Another team", reason: request.passedFrom.reason } : null,
+        kinds: request.kinds ?? [request.kind], unverified: !!request.unverified, doNotMessage: request.safe === false, callAt: request.callAt ?? null, meet: request.meet ?? null, passes: request.passes ?? 0,
       });
     }
     // Passed-on requests lead, as the design asks; then the longest waiting.
