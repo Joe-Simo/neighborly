@@ -335,3 +335,12 @@
 .painted-world-sample{white-space:nowrap;color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;pointer-events:auto}
 /* Where the window is narrower, the line above takes the slogan's place, so the hands stay clear. */
 @media(max-width:1279px){.painted-world-slogan{display:none}}
+/* Large screens: the opening's words and actions keep their share of the window, at the same steps as the slip folds (1.25x from 1800x1000, 1.5x from 2400x1300), in real sizes. */
+@media(min-width:1800px) and (min-height:1000px){:root{--big:1.25}}
+@media(min-width:2400px) and (min-height:1300px){:root{--big:1.5}}
+@media(min-width:1800px) and (min-height:1000px){
+  .painted-world[data-hero-only=true] .painted-world-description{font-size:calc(18px * var(--big));margin-top:calc(24px * var(--big))}
+  .painted-world[data-hero-only=true] .painted-world-opening-actions{gap:calc(28px * var(--big));margin-top:calc(28px * var(--big))}
+  .painted-world[data-hero-only=true] .painted-world-opening-actions a,.painted-world[data-hero-only=true] .painted-world-opening-actions .painted-world-primary-invitation{font-size:calc(16px * var(--big));min-height:calc(48px * var(--big))}
+  .painted-world[data-hero-only=true] .painted-world-opening-actions .painted-world-primary-invitation{height:calc(48px * var(--big));padding:0 calc(24px * var(--big))}
+}
