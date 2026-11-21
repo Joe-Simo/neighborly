@@ -44,7 +44,7 @@
   font-size: 44px;
   line-height: 1;
   letter-spacing: -0.03em;
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
   color: var(--live-ink);
 }
 .help-figures > div:first-child dd { font-size: 62px; }
@@ -54,7 +54,7 @@
   font-weight: 400;
   font-size: 16px;
   line-height: 1.45;
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
   letter-spacing: 0;
   color: var(--live-muted);
   margin-top: var(--space-12);
@@ -187,7 +187,7 @@
 .help-timeline li[data-kind="money"] i { background: var(--help-ochre); }
 .help-timeline h3 { font: 400 24px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; margin: 0 0 3px; }
 .help-timeline p { margin: 0; font-size: 16px; color: var(--live-muted); }
-.help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.help-amount { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1; letter-spacing: -0.02em; font-feature-settings: "lnum" 1, "tnum" 1; white-space: nowrap; }
 .help-year { font-size: 13px; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; color: #52644f; padding: var(--space-24) 0 var(--space-4) 152px; }
 .help-opened { display: flex; flex-wrap: wrap; gap: var(--space-8) 34px; padding: var(--space-20) 0 0; border-top: 1px solid var(--live-line); font-size: 16px; color: var(--live-muted); }
 .help-opened strong { color: var(--live-ink); font-weight: 600; }
@@ -198,12 +198,12 @@
 .live-app table.help-ledger th:not([scope="row"]) { font-size: 13px; letter-spacing: 0.1em; padding-bottom: var(--space-16); }
 /* A row's heading is a th for screen readers, and set as the cells beside it: none of the browser's own bold or centring. */
 .help-ledger th[scope="row"] { font-weight: inherit; text-align: start; }
-.live-app table.help-ledger :is(td, th[scope="row"]) { padding-top: var(--space-20); padding-bottom: var(--space-20); vertical-align: baseline; }
+.live-app table.help-ledger :is(td, th[scope="row"]) { padding-top: var(--space-16); padding-bottom: var(--space-16); vertical-align: baseline; }
 .help-ledger :is(td, th[scope="row"]):first-child { color: var(--live-muted); white-space: nowrap; font-feature-settings: "lnum" 1, "tnum" 1; }
 .help-ledger .help-what { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.3; letter-spacing: -0.01em; }
 .help-ledger .help-what small { display: block; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 400; font-size: 15px; line-height: 1.4; letter-spacing: 0; color: var(--live-muted); margin-top: 3px; }
-.help-money { text-align: right !important; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
-td.help-money { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.3; font-variant-numeric: lining-nums tabular-nums; }
+.help-money { text-align: right !important; font-feature-settings: "lnum" 1, "tnum" 1; white-space: nowrap; }
+td.help-money { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.3; font-feature-settings: "lnum" 1, "tnum" 1; }
 td.help-money[data-in] { color: #3f6a45; }
 td.help-money[data-balance] { color: var(--live-muted); }
 .help-ledger tfoot :is(td, th[scope="row"]) { border-top: 2px solid #596e51; border-bottom: 0; padding-top: var(--space-16); font-weight: 600; }
@@ -304,7 +304,7 @@ td.help-money[data-balance] { color: var(--live-muted); }
 
 /* Figures line up: every room table uses lining figures of one width,
    so a column of numbers reads straight down and a total never shifts as it changes. */
-.live-app table, .live-dialog table { font-variant-numeric: lining-nums tabular-nums; }
+.live-app table, .live-dialog table { font-feature-settings: "lnum" 1, "tnum" 1; }
 /* Between the phone and the wide desk, a row that carries a status and two buttons (a visit someone can't go to) sets
    them under its words, so the names and the address keep a full measure and never stack a word a line. */
 @media (min-width: 851px) and (max-width: 1279px) {

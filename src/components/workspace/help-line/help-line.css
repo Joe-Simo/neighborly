@@ -189,7 +189,7 @@
 }
 .help-letter > .help-letter-head + .live-list { border-top: 0; }
 .help-letter + .help-letter > .live-list { border-top: 0; }
-.help-letter + .help-letter { margin-top: var(--space-32); }
+.help-letter + .help-letter { margin-top: var(--space-24); }
 /* The households waiting for a decision come first, under a small head of their own. */
 .live-app .help-waiting-head { margin: 0 0 var(--space-8); font: 600 13px/1.4 inherit; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-ink); }
 /* What a household is waiting on is lifted to the row's right, in ink beside its ochre ring. */

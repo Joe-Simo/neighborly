@@ -2,7 +2,7 @@
    plain at rest, ochre while it waits for someone's yes, green once the yes is given. */
 
 /* ── People ───────────────────────────────────────────────────────────── */
-.live-app .people-row { min-height: 80px; padding-block: var(--space-12); }
+.live-app .people-row { min-height: 80px; padding-block: var(--space-16); }
 .people-row h3 { font-size: 19px; }
 .people-row .live-person p { margin: 2px 0 0; font-size: 16px; overflow-wrap: normal; }
 .people-row .live-person, .people-row .live-person > div { min-width: 0; }

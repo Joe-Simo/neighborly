@@ -116,7 +116,7 @@
   font-size: 44px;
   line-height: 1;
   letter-spacing: -0.03em;
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
   margin: var(--space-4) 0 var(--space-8);
 }
 .treasury-entry-amount[data-in] {
@@ -293,7 +293,7 @@
 }
 .treasury-lines li > :nth-child(2) {
   color: var(--live-ink);
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 .help-sheet .treasury-keep {
   margin-top: var(--space-16);
@@ -377,7 +377,7 @@
   font-weight: 400;
   font-size: 22px;
   line-height: 1;
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 .treasury-gift-total {
   display: flex;
@@ -393,7 +393,7 @@
   font-size: 30px;
   line-height: 1;
   letter-spacing: -0.02em;
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
   color: #283c32;
 }
 .treasury-dialog .treasury-retire[data-slot="button"] {
@@ -556,7 +556,7 @@
   font-size: 24px;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 .treasury-paid-line > span {
   white-space: nowrap;
@@ -608,7 +608,7 @@
 .treasury-gift-total,
 .treasury-figures dd small,
 .help-ledger.treasury-shelf :is(td, th[scope="row"]) {
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 @media (min-width: 851px) {
   .treasury-lines li > :nth-child(2) {
@@ -701,3 +701,5 @@
 .treasury-check li > p { margin: 2px 0 0; font-size: 13px; color: var(--live-muted); }
 .treasury-check li:has(> .help-assistant) { border-left: 2px solid var(--help-ochre); padding-left: 18px; }
 .treasury-check li > .help-assistant { display: flex; font-size: 13px; }
+/* Treasury is a dense room: its rows keep the 8-step, 16 between rows. */
+.treasury-waiting .help-row { padding-block: var(--space-16); }
