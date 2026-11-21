@@ -60,7 +60,8 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
     const write = () => {
       if (!near) return;
       const through = still ? 1 : Math.max(0, Math.min(1, -top / Math.max(1, tall - viewport.height)));
-      const at = monthAt(through);
+      // Standing still, the year is told from its first month, as the flight starts.
+      const at = still ? 0 : monthAt(through);
       const step0 = Math.round(through * 1000);
       // A scroll moves the slips under a resting mouse: it is asked again. A tap's or a key's slip is let go when the page moves on.
       if (scene && step0 !== drawn && drawn >= 0) { if (mouse && pointer) pick(pointer.x, pointer.y); else lifted = null; }
@@ -90,7 +91,8 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
       if (event.key === "Escape") { lifted = null; ask(); return; }
       if (!by) return;
       event.preventDefault();
-      lifted = scene.first(Math.max(0, Math.min(months.length - 1, (lifted?.month ?? shown - by) + by)));
+      // The first press, either way, lifts the month told under the title; each press after it steps a month.
+      lifted = scene.first(lifted ? Math.max(0, Math.min(months.length - 1, lifted.month + by)) : shown);
       if (told) told.textContent = say(lifted);
       ask();
     };
