@@ -247,7 +247,12 @@
 }
 /* From 700 to 1200px the picture stands closer to the words than the deck's two lines allow for, so a deck keeps
    to 24ch and its last word stays at least 24px from paint. */
-@media (min-width: 700px) and (max-width: 899px) { .live-app .live-page-head .live-deck { max-width: 24ch; } }
+@media (min-width: 700px) and (max-width: 899px) {
+  .live-app .live-page-head .live-deck { max-width: 24ch; }
+  /* Here too every room's head is one height, the tallest head's (a two-line title over a three-line deck and its
+     action), so the picture keeps one size and the rule one place as the menu turns from room to room. */
+  .live-app .live-main .live-page-head { min-height: 316px; }
+}
 @media (min-width: 900px) and (max-width: 1200px) {
   .live-app .live-page-head .live-deck { max-width: min(calc(93.1cqw - 0.069 * var(--live-pad) - 60px), 24ch); }
 }
