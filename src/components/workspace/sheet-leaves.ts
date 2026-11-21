@@ -1,4 +1,5 @@
 import { useEffect, type RefObject } from "react";
+import { lessMotion } from "@/lib/less-motion";
 import { frameStep } from "@/lib/scroll-frame";
 import { paperTurnAt, turnLeaf } from "@/lib/paper-turn";
 
@@ -12,10 +13,11 @@ import { paperTurnAt, turnLeaf } from "@/lib/paper-turn";
 export function useSheetLeaves(room: RefObject<HTMLElement | null>, shown: string | null) {
   useEffect(() => {
     const column = room.current;
-    if (!column || !shown || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!column || !shown || lessMotion()) return;
     const alone = (sheet: Element) => !sheet.previousElementSibling?.matches(".help-sheet") && !sheet.nextElementSibling?.matches(".help-sheet");
     const sheets = () => [...column.querySelectorAll<HTMLElement>(".help-sheet")].filter(alone);
-    let height = innerHeight;
+    // The window's height too is read by the watcher: asked here, it makes the browser work out the new room's styles.
+    let height = 0;
     let read: { sheet: HTMLElement; top: number }[] = [];
     // Where each sheet lies untouched: its box less the 0 to 24px its own turn has set it down.
     const down = new WeakMap<HTMLElement, number>();
@@ -39,6 +41,7 @@ export function useSheetLeaves(room: RefObject<HTMLElement | null>, shown: strin
     // Read only while a sheet is near the window: the rest of the room's scroll asks nothing of the frame.
     const near = new Set<Element>();
     const watch = new IntersectionObserver((seen) => {
+      height = innerHeight;
       for (const one of seen) {
         if (!looked.has(one.target)) {
           looked.add(one.target);
