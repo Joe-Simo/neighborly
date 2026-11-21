@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { WeeklyRota } from "@/components/workspace/tools/weekly-rota";
-import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-visibility";
 import { isBrandNew } from "@/lib/first-days";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
@@ -22,6 +21,7 @@ import {
   IncomingRequests,
   useAcceptedArrival,
   incomingRequests,
+  comingUp,
 } from "@/components/workspace/volunteer/commitment-rows";
 
 export function WeekSection() {
@@ -30,8 +30,6 @@ export function WeekSection() {
   const firstDays = isBrandNew(data);
   const first = words.rooms.firstDays.week;
   const [printing, setPrinting] = useState(false);
-  const weekEnd = now + 7 * 86400000;
-  const upcoming = upcomingCommitments(data.commitments, now);
   const incoming = incomingRequests(data);
   const { held, fresh, requests } = useAcceptedArrival();
   // Once the note has been kept short for a request, it stays short for this visit: answering the last
@@ -77,7 +75,7 @@ export function WeekSection() {
       {choiceFirst && choices}
       <FirstWeekSlips />
       <WeekNote brief={briefed || incoming.length > 0} />
-      {!firstDays && <Glance />}
+      <Glance quiet={firstDays} />
       {!choiceFirst && choices}
       {firstDays ? (
         <LiveEmpty title={first.title}>
@@ -95,7 +93,7 @@ export function WeekSection() {
           )}
         </div>
         <CommitmentRows
-          items={withoutIncomingRequests(upcoming.filter((item) => item.start <= weekEnd && item.id !== held), incoming)}
+          items={comingUp(data, now).filter((item) => item.id !== held)}
           fresh={fresh}
           empty={{ title: incoming.length ? words.week.choiceAboveTitle : words.week.quietTitle, detail: incoming.length ? words.week.choiceAboveDetail : words.week.quietDetail, go: incoming.length ? undefined : "commitments" }}
         />

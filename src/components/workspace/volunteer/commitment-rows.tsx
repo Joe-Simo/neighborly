@@ -12,6 +12,12 @@ import { LiveEmpty } from "@/components/workspace/primitives";
 import { useConnectionLost } from "@/components/workspace/states";
 import { useWorkspace } from "@/components/workspace/context";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
+import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-visibility";
+
+/** What This week lists under Coming up: the next 7 days of commitments, less those still asked of this person above. The glance counts the same list. */
+export function comingUp(data: LiveWorkspaceData, now: number) {
+  return withoutIncomingRequests(upcomingCommitments(data.commitments, now).filter((item) => item.start <= now + 7 * 86_400_000), incomingRequests(data));
+}
 
 export function incomingRequests(data: LiveWorkspaceData) {
   return data.requests.filter(

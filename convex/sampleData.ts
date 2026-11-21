@@ -187,11 +187,21 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
     if (start < now) { passed.push({ start, assigneeId: others[(week * 3 + slot) % others.length] }); continue; }
     await db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start, end: start + 3 * 3600000, location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: week === 4 ? null : others[(week * 3 + slot) % others.length], coordinatorId: others[1], version: 1 });
   }
-  // The owner's own part, so "My commitments" and the calendar link have something to show:
-  // a help-line morning and a home visit next week.
+  // The owner's own part, so "My commitments" and the calendar link have something to show: a help-line morning next week.
+  // The home visit that week is Daniel Whitcombe's, with Thomas Okafor, so a member's week holds two of their own.
   const mine = monday.plus({ weeks: 1 });
   await db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start: mine.plus({ days: 1, hours: 9 }).toMillis(), end: mine.plus({ days: 1, hours: 12 }).toMillis(), location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: owner, coordinatorId: others[1], version: 1 });
-  await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
+  await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Thomas Okafor", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: members[volunteerNames.indexOf("Daniel Whitcombe") + (visitor ? 1 : 0)] ?? owner, coordinatorId: others[0], version: 1 });
+  // A member's own week: Daniel Whitcombe goes on a home visit with Colleen Marsh on the next weekday after tomorrow,
+  // so a member's This week always has one commitment of their own, in Coming up and in the glance alike.
+  const daniel = members[volunteerNames.indexOf("Daniel Whitcombe") + (visitor ? 1 : 0)];
+  if (daniel) {
+    // The loop above puts every other person in Home visitors; Daniel joins it here when he fell to the help line.
+    if (others.indexOf(daniel) % 2) await db.insert("teamMembers", { churchId, teamId: homeVisits, memberId: daniel, teamRole: "member", approved: true, status: "active" });
+    let day = DateTime.fromMillis(now, { zone }).startOf("day").plus({ days: 2 });
+    while (day.weekday > 5) day = day.plus({ days: 1 });
+    await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Colleen Marsh", start: day.plus({ hours: 10 }).toMillis(), end: day.plus({ hours: 11, minutes: 30 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: daniel, coordinatorId: others[0] ?? owner, version: 1 });
+  }
   // Today on the help line: the morning is covered and the afternoon still has an open place, whatever day the sample is loaded.
   const todayStart = DateTime.fromMillis(now, { zone }).startOf("day");
   const helpLineToday = async (hour: number, hours: number, assigneeId: Id<"memberships"> | null) => {

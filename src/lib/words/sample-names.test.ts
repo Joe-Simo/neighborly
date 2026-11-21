@@ -6,7 +6,7 @@ import { sampleSentences } from "./sample-sentences";
 test("a Spanish reader of the sample meets the seed's names in Spanish; no one else's words are touched", () => {
   const es = sampleSayer(true, "es");
   expect(es("Help line morning")).toBe("Línea de ayuda por la mañana");
-  expect(es("Home visit")).toBe("Visita domiciliaria");
+  expect(es("Home visit with Thomas Okafor")).toBe("Visita domiciliaria con Thomas Okafor");
   // A call's note is the request's line with a full stop; a caller's own words are not in the table.
   expect(es("Past-due water bill.")).toBe("Recibo de agua vencido.");
   // The seed's own notes are said sentence by sentence; one unknown sentence keeps the whole note as typed.

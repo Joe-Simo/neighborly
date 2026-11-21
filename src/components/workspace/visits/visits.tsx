@@ -655,7 +655,7 @@ function VisitsView({
       )}
 
       {toWriteUp.length > 0 && (
-        <section className="live-section">
+        <section className="live-section" id="to-write-up">
           <div className="live-section-head">
             <h2>{text.toWriteUp.title}</h2>
             <span className="live-count">

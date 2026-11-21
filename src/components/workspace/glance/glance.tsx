@@ -7,7 +7,7 @@ import { useHour, useQuery } from "@/components/workspace/query";
 import { useWorkspace } from "@/components/workspace/context";
 import { useFirstLook } from "@/components/workspace/first-look";
 import { formatDate, formatMoney, type Language } from "@/lib/words";
-import { upcomingCommitments } from "@/lib/commitment-visibility";
+import { comingUp } from "@/components/workspace/volunteer/commitment-rows";
 import "@/components/workspace/glance/glance.css";
 
 type Home = FunctionReturnType<typeof api.glance.home>;
@@ -18,7 +18,7 @@ const said = {
   en: {
     yours: "Yours",
     whole: "The conference at a glance",
-    visits: "Yours this week",
+    visits: "Yours, next 7 days",
     visitsLine: (next: string) => (next ? `Next ${next}` : "Nothing of yours in the next 7 days"),
     asks: (n: number) => (n ? `${n} home visit${n === 1 ? "" : "s"} waiting for your answer` : ""),
     tasks: "Your tasks",
@@ -31,13 +31,14 @@ const said = {
     lastYear: (amount: string) => `${amount} the same month last year`,
     year: (year: number) => `Help, fiscal ${year}`,
     byNow: (amount: string) => `Last year by now: ${amount}`,
-    households: "Households served",
+    households: "Households approved for help",
     unwritten: "Past visits not written up",
     dueLine: (n: number) => (n === 1 ? "1 more planned this week" : `${n} more planned this week`),
     volunteers: "Active members",
     away: (names: string[]) => (names.length ? `Away today: ${names.join(", ")}` : "Nobody away today"),
     balance: "Treasury balance",
     balanceLine: "Every ledger entry added up",
+    balanceLong: "The ledger is too long to add up here; Treasury shows it",
     flags: "Assistant's marks for you",
     flagLine: (urgent: number, drafts: number, doubles: number) => [urgent ? `${urgent} urgent call${urgent === 1 ? "" : "s"}` : "", drafts ? `${drafts} draft${drafts === 1 ? "" : "s"} to check` : "", doubles ? `${doubles} possible double${doubles === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ") || "Nothing to check",
     council: (name: string, n: number) => `${name}, ${n} conference${n === 1 ? "" : "s"}`,
@@ -47,7 +48,7 @@ const said = {
   es: {
     yours: "Lo tuyo",
     whole: "La conferencia de un vistazo",
-    visits: "Lo tuyo esta semana",
+    visits: "Lo tuyo, próximos 7 días",
     visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada tuyo en los próximos 7 días"),
     asks: (n: number) => (n ? `${n} visita${n === 1 ? "" : "s"} esperan tu respuesta` : ""),
     tasks: "Tus tareas",
@@ -60,13 +61,14 @@ const said = {
     lastYear: (amount: string) => `${amount} el mismo mes del año pasado`,
     year: (year: number) => `Ayuda, año fiscal ${year}`,
     byNow: (amount: string) => `El año pasado a estas alturas: ${amount}`,
-    households: "Hogares atendidos",
+    households: "Hogares con ayuda aprobada",
     unwritten: "Visitas pasadas sin anotar",
     dueLine: (n: number) => (n === 1 ? "1 más prevista esta semana" : `${n} más previstas esta semana`),
     volunteers: "Miembros activos",
     away: (names: string[]) => (names.length ? `Fuera hoy: ${names.join(", ")}` : "Nadie fuera hoy"),
     balance: "Saldo de tesorería",
     balanceLine: "La suma de todo el libro",
+    balanceLong: "El libro es demasiado largo para sumarlo aquí; Tesorería lo muestra",
     flags: "Avisos del asistente para ti",
     flagLine: (urgent: number, drafts: number, doubles: number) => [urgent ? `${urgent} llamada${urgent === 1 ? "" : "s"} urgente${urgent === 1 ? "" : "s"}` : "", drafts ? `${drafts} borrador${drafts === 1 ? "" : "es"} por revisar` : "", doubles ? `${doubles} posible${doubles === 1 ? "" : "s"} duplicado${doubles === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ") || "Nada que revisar",
     council: (name: string, n: number) => `${name}, ${n} conferencia${n === 1 ? "" : "s"}`,
@@ -98,9 +100,9 @@ function conferenceTiles(c: Conference, w: Said, money: (cents: number) => strin
   const flags = c.flags.urgent + c.flags.drafts + c.flags.doubles;
   return [
     // The week's figures above already count calls waiting, visits planned and requests open: these say what they do not.
-    { href: "/app/help-line", label: w.callbacks, figure: `${c.callbacks.late}`, line: w.callbackLine(c.callbacks.owed, c.callbacks.mine), waits: c.callbacks.late > 0 },
+    { href: "/app/help-line?late=1", label: w.callbacks, figure: `${c.callbacks.late}`, line: w.callbackLine(c.callbacks.owed, c.callbacks.mine), waits: c.callbacks.late > 0 },
     { href: "/app/help-line", label: w.flags, figure: `${flags}`, line: w.flagLine(c.flags.urgent, c.flags.drafts, c.flags.doubles), waits: flags > 0 },
-    { href: "/app/visits", label: w.unwritten, figure: `${c.visits.late}`, line: w.dueLine(c.visits.due), waits: c.visits.late > 0 },
+    { href: "/app/visits#to-write-up", label: w.unwritten, figure: `${c.visits.late}`, line: w.dueLine(c.visits.due), waits: c.visits.late > 0 },
     {
       href: "/app/treasury", label: w.month(w.months[c.month.month - 1] ?? ""), figure: money(c.month.approved.now),
       line: [c.month.budget ? w.budget(money(c.month.budget), spent, day) : w.noBudget, w.lastYear(money(c.month.approved.before))],
@@ -108,7 +110,7 @@ function conferenceTiles(c: Conference, w: Said, money: (cents: number) => strin
     },
     { href: "/app/reports", label: w.year(c.year.fiscalYear), figure: money(c.year.approved.now), line: w.byNow(money(c.year.approved.before)) },
     { href: "/app/reports", label: w.households, figure: `${c.year.households.now}`, line: w.byNow(`${c.year.households.before}`) },
-    { href: "/app/treasury", label: w.balance, figure: money(c.balance), line: w.balanceLine },
+    { href: "/app/treasury", label: w.balance, figure: c.balance === null ? "—" : money(c.balance), line: c.balance === null ? w.balanceLong : w.balanceLine },
     { href: "/app/people", label: w.volunteers, figure: `${c.volunteers.active}`, line: w.away(c.volunteers.away) },
   ];
 }
@@ -118,7 +120,7 @@ function conferenceTiles(c: Conference, w: Said, money: (cents: number) => strin
  * records, the whole conference; for a council's owner, the council's year. Each figure opens the room it is dealt with in.
  * Until it arrives its place is held unseen, so nothing under it moves when it lands.
  */
-export function Glance() {
+export function Glance({ quiet = false }: { quiet?: boolean }) {
   const { data, words, now } = useWorkspace();
   const look = useFirstLook();
   const at = useHour();
@@ -129,8 +131,10 @@ export function Glance() {
   const w = said[locale];
   const money = (cents: number) => formatMoney(cents / 100, locale, true);
   const { own, conference, councils } = home;
-  // The same list Coming up reads, cut the same way, so the two always agree.
-  const week = upcomingCommitments(data.commitments, now).filter((item) => item.assigneeId === data.user.id && item.start <= now + 7 * 86_400_000);
+  // A group in its first days stays on its first-week state until the conference holds anything to count.
+  if (quiet && !councils.length && own.tasks + own.visitAsks === 0 && (!conference || (conference.callbacks.owed + conference.year.approved.now + conference.visits.due + conference.visits.late === 0 && !conference.balance))) return null;
+  // Coming up's own list (comingUp), this person's rows only, so the tile always agrees with the rows under it.
+  const week = comingUp(data, now).filter((item) => item.assigneeId === data.user.id);
   const next = week[0];
   const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
   const mine: Tile[] = [
@@ -151,13 +155,14 @@ export function Glance() {
         <section aria-labelledby="glance-whole">
           <h2 id="glance-whole">{w.whole}</h2>
           <nav className="glance-tiles">{conferenceTiles(conference, w, money).map((tile) => <TileLink key={tile.label} tile={tile} />)}</nav>
-          {councils.map((council) => (
-            <p className="glance-council" key={council.name}>
-              <strong>{w.council(council.name, council.conferences)}</strong> {w.councilLine(council.households, money(council.helpPaid), council.visits, council.updating)}
-            </p>
-          ))}
         </section>
       )}
+      {/* A council's owner may hold no leader's seat here: their council stands on its own. */}
+      {councils.map((council) => (
+        <p className="glance-council" key={council.name}>
+          <strong>{w.council(council.name, council.conferences)}</strong> {w.councilLine(council.households, money(council.helpPaid), council.visits, council.updating)}
+        </p>
+      ))}
     </div>
   );
 }
