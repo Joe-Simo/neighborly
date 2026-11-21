@@ -1001,9 +1001,11 @@
 }
 
 /* The Housing Provider Summary: a wide table of months that scrolls inside its own frame, never the page. */
-.housing-section { margin-top: var(--space-24); }
+.housing-section { margin-top: var(--space-24); min-width: 0; max-width: 100%; }
+/* The table is wider than a phone: the frame scrolls, never the page. width 0 with min-width 100% keeps the table's width from reaching any grid or flex parent. */
+.housing-body { min-width: 0; max-width: 100%; }
 .housing-note { margin: var(--space-8) 0; color: var(--live-ink); }
-.housing-scroll { max-width: 100%; overflow-x: auto; margin: var(--space-16) 0; border-top: 1px solid var(--live-line); }
+.housing-scroll { width: 0; min-width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; padding: var(--space-4) 0; margin: var(--space-16) 0; border-top: 1px solid var(--live-line); }
 .housing-table { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 100%; }
 .housing-table th, .housing-table td { padding: var(--space-8); border-bottom: 1px solid var(--live-line); text-align: right; white-space: nowrap; color: var(--live-ink); }
 .housing-table th[scope="row"], .housing-table thead th:first-child { text-align: left; position: sticky; left: 0; background: var(--help-sheet); }
