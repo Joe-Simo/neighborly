@@ -6,6 +6,7 @@ import WidgetKit
 /// oldest has waited. Medium: that, beside visits planned and requests awaiting a yes. The sample conference's
 /// figures are marked as the sample's; with nothing kept (signed out, or not allowed to see them) it asks to open the
 /// app. Tapping it opens the help line. In the tinted and clear modes the paper is let go and the figures are accented.
+/// On the Lock Screen (iPhone and iPad) it comes round, as a line over the clock, or as the count with the oldest wait.
 struct CallsWaitingEntry: TimelineEntry {
     let date: Date
     let figures: WeekFigures?
@@ -38,7 +39,10 @@ struct CallsWaitingView: View {
 
     var body: some View {
         Group {
-            if let figures = entry.figures {
+            if family == .accessoryCircular { circular(entry.figures) }
+            else if family == .accessoryRectangular { rectangular(entry.figures) }
+            else if family == .accessoryInline { inline(entry.figures) }
+            else if let figures = entry.figures {
                 if family == .systemMedium { medium(figures) } else { small(figures) }
             } else {
                 VStack(alignment: .leading, spacing: 6) {
@@ -51,7 +55,7 @@ struct CallsWaitingView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             }
         }
-        .containerBackground(for: .widget) { paper }
+        .containerBackground(for: .widget) { family.isAccessory ? Color.clear : paper }
         .widgetURL(URL(string: "kindhelps://help-line"))
         .accessibilityElement(children: .combine)
     }
@@ -119,6 +123,46 @@ struct CallsWaitingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 
+    // ── The Lock Screen: the system draws these in its own tint, so they carry no paper and no colour of their own. ──
+
+    /// The count alone, on the system's round backing; with nothing kept, the help line's symbol.
+    private func circular(_ figures: WeekFigures?) -> some View {
+        ZStack {
+            AccessoryWidgetBackground()
+            if let figures {
+                VStack(spacing: -2) {
+                    Text("\(figures.callsWaiting)").font(.system(size: 22, weight: .semibold, design: .serif)).widgetAccentable()
+                    Image(systemName: "phone").font(.system(size: 10, weight: .semibold))
+                }
+            } else {
+                Image(systemName: "phone").font(.system(size: 18, weight: .medium))
+            }
+        }
+        .accessibilityLabel(figures.map { words.callsInline($0.callsWaiting) } ?? words.openToSee)
+    }
+
+    /// The help line's count and how long the oldest has waited, under its name; the sample's mark if it is the sample.
+    private func rectangular(_ figures: WeekFigures?) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(words.callsWaiting).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+            if let figures {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(figures.callsWaiting)").font(.system(size: 26, weight: .regular, design: .serif)).widgetAccentable()
+                    if figures.sample { Text(words.sample).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary) }
+                }
+                if figures.callsWaiting > 0 { Text(words.oldest(figures.oldestWaitingDays)).font(.system(size: 12)).lineLimit(1) }
+            } else {
+                Text(words.openToSee).font(.system(size: 13)).lineLimit(2)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// One line over the clock.
+    private func inline(_ figures: WeekFigures?) -> some View {
+        Label(figures.map { words.callsInline($0.callsWaiting) } ?? words.callsWaiting, systemImage: "phone")
+    }
+
     private var rule: some View {
         Rectangle().fill(full ? ink.opacity(0.15) : Color.primary.opacity(0.3)).frame(width: 1).padding(.horizontal, 10)
     }
@@ -133,6 +177,10 @@ struct CallsWaitingView: View {
     }
 }
 
+private extension WidgetFamily {
+    var isAccessory: Bool { self == .accessoryCircular || self == .accessoryRectangular || self == .accessoryInline }
+}
+
 struct CallsWaitingWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "com.kindhelps.app.calls-waiting", provider: CallsWaitingProvider()) { entry in
@@ -140,7 +188,7 @@ struct CallsWaitingWidget: Widget {
         }
         .configurationDisplayName(NativeWords.current.callsWaiting)
         .description(NativeWords.current.callsWaitingAbout)
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
 

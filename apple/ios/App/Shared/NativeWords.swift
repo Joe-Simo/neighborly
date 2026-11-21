@@ -18,6 +18,7 @@ struct NativeWords {
     let visitsPlanned: String
     let requestsWaiting: String
     let openToSee: String
+    let callsInline: (Int) -> String
 
     static let en = NativeWords(
         opening: "Opening…",
@@ -33,7 +34,8 @@ struct NativeWords {
         sample: "Sample",
         visitsPlanned: "Visits planned",
         requestsWaiting: "Requests to decide",
-        openToSee: "Open Kind Helps to see your week."
+        openToSee: "Open Kind Helps to see your week.",
+        callsInline: { $0 == 1 ? "1 call waiting" : "\($0) calls waiting" }
     )
 
     static let es = NativeWords(
@@ -50,7 +52,8 @@ struct NativeWords {
         sample: "Muestra",
         visitsPlanned: "Visitas planeadas",
         requestsWaiting: "Peticiones por decidir",
-        openToSee: "Abre Kind Helps para ver tu semana."
+        openToSee: "Abre Kind Helps para ver tu semana.",
+        callsInline: { $0 == 1 ? "1 llamada por devolver" : "\($0) llamadas por devolver" }
     )
 
     /// The device's language: Spanish where it is first, English otherwise.

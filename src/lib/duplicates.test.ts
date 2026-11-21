@@ -25,12 +25,15 @@ describe("duplicate households, by what code compares", () => {
   });
 });
 
-describe("the notes rule, against run 1", () => {
+describe("the notes rule, against runs 1 and 2", () => {
   test("the line set on the pairs not held out gets them all right, and the held-out figure is what run 1 says", async () => {
     const run = (await import("../../eval/duplicates/run-1.json")).default;
     const { duplicateSet, heldOutFigure, notesSayOne } = await import("./duplicate-set");
     for (const item of duplicateSet.filter((pair) => !pair.heldOut))
       expect(notesSayOne(run.rows.find((row) => row.id === item.id)?.same ?? 0, item.a, item.b), item.id).toBe(item.same);
-    expect(heldOutFigure(run)).toEqual({ pairs: 5, right: 4, missed: 1, wrong: 0 });
+    const run2 = (await import("../../eval/duplicates/run-2.json")).default;
+    for (const item of duplicateSet.filter((pair) => !pair.heldOut))
+      expect(notesSayOne(run2.rows.find((row) => row.id === item.id)?.people ?? 0, item.a, item.b), item.id).toBe(item.same);
+    expect(heldOutFigure(run2)).toEqual({ pairs: 5, right: 5, missed: 0, wrong: 0 });
   });
 });

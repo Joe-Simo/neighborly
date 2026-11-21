@@ -111,3 +111,6 @@ export const repeatSet: RepeatCase[] = [
     same: [0], differs: [0], heldOut: true,
   },
 ];
+
+/** The last measuring run on the held-out cases (drafts:measureRepeats, jev-1.14.0): one mark per earlier record and question. */
+export const repeatsMeasured = { day: "2026-11-21", cases: 5, right: 9, missed: 1, wrong: 0 };

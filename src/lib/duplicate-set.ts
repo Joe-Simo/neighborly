@@ -59,17 +59,19 @@ export const duplicateSet: DuplicatePair[] = [
  * When the notes count as one household: the assistant's yes at this line or more, and the same number of adults and
  * children on both records, which code compares itself. Set from run 1 (eval/duplicates/run-1.json) on the pairs that are
  * not held out: every pair that is one household scored 0.76 to 0.89 and every other pair 0.03 or less, so 0.9 missed all
- * five; 0.7 sits inside that gap. Change it only with a new run, and never on the held-out pairs.
+ * five; 0.7 sits inside that gap. In run 2 the "same people" question, asked beside it as a trial, scored the same
+ * pairs 0.83 to 0.93 and the others 0.41 or less under this same line, and it became the question asked. Change the line
+ * or the question only with a new run, and never on the held-out pairs.
  */
 const notesLine = 0.7;
 type Size = Pick<DuplicateSide, "adults" | "children">;
 export const notesSayOne = (same: number, a: Size, b: Size) => same >= notesLine && a.adults === b.adults && a.children === b.children;
 
 /** The held-out pairs of a run, counted by the record's own rule: the figure the record quotes. */
-export function heldOutFigure(run: { rows: { id: string; same: number }[] }) {
+export function heldOutFigure(run: { rows: { id: string; people: number }[] }) {
   const tally = { pairs: 0, right: 0, missed: 0, wrong: 0 };
   for (const item of duplicateSet.filter((pair) => pair.heldOut)) {
-    const same = run.rows.find((row) => row.id === item.id)?.same ?? 0;
+    const same = run.rows.find((row) => row.id === item.id)?.people ?? 0;
     const read = notesSayOne(same, item.a, item.b);
     tally.pairs++;
     tally[read === item.same ? "right" : read ? "wrong" : "missed"]++;

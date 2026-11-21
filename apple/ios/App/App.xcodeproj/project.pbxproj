@@ -16,6 +16,9 @@
 		7AC10E5B2C11DE0100A1B001 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 7AC10E5B2C11DE0100A1B002 /* AppIcon.icon */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		7AC1A2000000000000000002 /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A2000000000000000001 /* Shortcuts.swift */; };
+		7AC1A2000000000000000004 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 7AC1A2000000000000000003 /* Localizable.xcstrings */; };
+		7AC1A2000000000000000006 /* AppShortcuts.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7AC1A2000000000000000005 /* AppShortcuts.strings */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		7AC1A1D00000000000000005 /* CallsWaitingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1A1D00000000000000002 /* CallsWaitingWidget.swift */; };
 		7AC1A1D00000000000000006 /* KindHelpsWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7AC1A1D00000000000000001 /* KindHelpsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -60,6 +63,10 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		7AC1A2000000000000000001 /* Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shortcuts.swift; sourceTree = "<group>"; };
+		7AC1A2000000000000000003 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		7AC1A2000000000000000007 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
+		7AC1A2000000000000000008 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		7AC1A1D00000000000000001 /* KindHelpsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KindHelpsWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,6 +119,9 @@
 			isa = PBXGroup;
 			children = (
 				9582B6822FE993A50072D4E8 /* SceneDelegate.swift */,
+				7AC1A2000000000000000001 /* Shortcuts.swift */,
+				7AC1A2000000000000000003 /* Localizable.xcstrings */,
+				7AC1A2000000000000000005 /* AppShortcuts.strings */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -222,6 +232,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				es,
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
@@ -246,6 +257,8 @@
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
 				50B271D11FEDC1A000F3C39B /* public in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
+				7AC1A2000000000000000004 /* Localizable.xcstrings in Resources */,
+				7AC1A2000000000000000006 /* AppShortcuts.strings in Resources */,
 				7AC10E5B2C11DE0100A1B001 /* AppIcon.icon in Resources */,
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
@@ -269,6 +282,7 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
+				7AC1A2000000000000000002 /* Shortcuts.swift in Sources */,
 				7AC1A1E00000000000000003 /* NativeWords.swift in Sources */,
 				7AC1A1F00000000000000002 /* WeekFigures.swift in Sources */,
 			);
@@ -295,6 +309,15 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		7AC1A2000000000000000005 /* AppShortcuts.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7AC1A2000000000000000007 /* en */,
+				7AC1A2000000000000000008 /* es */,
+			);
+			name = AppShortcuts.strings;
+			sourceTree = "<group>";
+		};
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (

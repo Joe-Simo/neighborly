@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, startTransition, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Component, Suspense, lazy, startTransition, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { whenIdle } from "@/lib/idle";
 import { useAction } from "convex/react";
 import { useHour, useQuery } from "@/components/workspace/query";
@@ -47,6 +47,9 @@ class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { 
     );
   }
 }
+
+/** The week for the people who decide; its words and styles load with it, after the year. */
+const WeekDigest = lazy(() => import("@/components/workspace/reports/week-digest"));
 
 function Report() {
   const { data, now, sampleSaid, setHeadAction, words } = useWorkspace();
@@ -135,6 +138,10 @@ function Report() {
   }
 
   return (
+    <>
+    <Suspense fallback={null}>
+      <WeekDigest />
+    </Suspense>
     <ReportView
       report={shown}
       groupName={data.church.name}
@@ -195,6 +202,7 @@ function Report() {
       onPrint={() => window.print()}
       onSpreadsheet={() => saveSpreadsheet(shown)}
     />
+    </>
   );
 }
 
