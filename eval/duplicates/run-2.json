@@ -1,0 +1,103 @@
+{
+  "all": {
+    "missed": 1,
+    "right": 14,
+    "wrong": 0
+  },
+  "heldOut": {
+    "missed": 1,
+    "right": 4,
+    "wrong": 0
+  },
+  "model": "jev-1.14.0",
+  "rows": [
+    {
+      "id": "same-power",
+      "people": 0.9,
+      "same": 0.8
+    },
+    {
+      "id": "same-elder",
+      "people": 0.83,
+      "same": 0.82
+    },
+    {
+      "id": "diff-family",
+      "people": 0.02,
+      "same": 0.02
+    },
+    {
+      "id": "diff-same-building",
+      "people": 0.02,
+      "same": 0.02
+    },
+    {
+      "id": "es-same",
+      "people": 0.93,
+      "same": 0.91
+    },
+    {
+      "id": "es-diff",
+      "people": 0.02,
+      "same": 0.02
+    },
+    {
+      "id": "same-moved",
+      "people": 0.91,
+      "same": 0.76
+    },
+    {
+      "id": "diff-shared-phone",
+      "people": 0.05,
+      "same": 0.02
+    },
+    {
+      "id": "empty-notes",
+      "people": 0,
+      "same": 0
+    },
+    {
+      "id": "same-short",
+      "people": 0.84,
+      "same": 0.74
+    },
+    {
+      "id": "ho-same-kids",
+      "people": 0.93,
+      "same": 0.88
+    },
+    {
+      "id": "ho-diff-ages",
+      "people": 0.03,
+      "same": 0.02
+    },
+    {
+      "id": "ho-es-same",
+      "people": 0.89,
+      "same": 0.63
+    },
+    {
+      "id": "ho-es-diff",
+      "people": 0.02,
+      "same": 0.02
+    },
+    {
+      "id": "ho-same-household-split",
+      "people": 0.41,
+      "same": 0.03
+    }
+  ],
+  "status": "done",
+  "trial": {
+    "all": {
+      "missed": 0,
+      "right": 15,
+      "wrong": 0
+    },
+    "heldOut": {
+      "missed": 0,
+      "right": 5,
+      "wrong": 0
+    }
+  }
+}

@@ -201,7 +201,7 @@ export default defineSchema({
   duplicatePairs: defineTable({
     churchId: v.id("churches"), first: v.id("neighbors"), second: v.id("neighbors"),
     /** How sure the assistant was that the two records' notes describe one household, 0 to 1, and when it read them. */
-    read: v.optional(v.object({ same: v.number(), at: v.number() })),
+    read: v.optional(v.object({ same: v.number(), at: v.number(), /** The question it answered; none means the first wording, which is asked again. */ question: v.optional(v.literal("people")) })),
     dismissedBy: v.optional(v.id("memberships")), dismissedAt: v.optional(v.number()),
   }).index("by_pair", ["first", "second"]).index("by_second", ["second"]).index("by_church", ["churchId"]),
   // A pair of members, or a phone shared by several households, that a person looked at and said is fine. `key` is the sorted ids, or the phone's digits.

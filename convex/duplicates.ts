@@ -62,8 +62,9 @@ export const forRecord = query({
     for (const { row, shared } of (await lookAlikes(ctx, churchId, neighbor, neighborId)).slice(0, LOOK)) {
       const pair = await pairOf(ctx, neighborId, row._id);
       if (pair?.dismissedAt) continue;
-      if (!pair?.read) unread.push(row._id);
-      const notesAgree = notesSayOne(pair?.read?.same ?? 0, neighbor, row);
+      const read = pair?.read?.question === asked ? pair.read : null;
+      if (!read) unread.push(row._id);
+      const notesAgree = notesSayOne(read?.same ?? 0, neighbor, row);
       if (needsNotes(shared) && !notesAgree) continue;
       shown.push({ id: row._id, name: row.name, address: row.address, adults: row.adults, children: row.children, sameBy: shared, notesAgree });
     }
@@ -91,7 +92,7 @@ export const pairNotes = internalQuery({
     const other = await ctx.db.get("neighbors", otherId);
     if (!live(other) || other.churchId !== churchId || neighborId === otherId) throw new ConvexError("Record not found.");
     // Asked once per pair, and only about a pair code found.
-    if ((await pairOf(ctx, neighborId, otherId))?.read || !sameBy(neighbor, other).length) return null;
+    if ((await pairOf(ctx, neighborId, otherId))?.read?.question === asked || !sameBy(neighbor, other).length) return null;
     const [first, second] = await Promise.all([said(ctx, neighbor), said(ctx, other)]);
     return {
       userId: member.userId, first, second,
@@ -107,17 +108,22 @@ export const keepRead = internalMutation({
   handler: async (ctx, { churchId, neighborId, otherId, same }) => {
     const [first, second] = ordered(neighborId, otherId);
     const pair = await pairOf(ctx, first, second);
-    const read = { same, at: Date.now() };
+    const read = { same, at: Date.now(), question: asked };
     if (pair) await ctx.db.patch("duplicatePairs", pair._id, { read });
     else await ctx.db.insert("duplicatePairs", { churchId, first, second, read });
     return null;
   },
 });
 
-/** One question, shared with the measuring run so both ask the same thing. */
-const sameQuestion = {
-  same: "Do first and second describe the same household: the same people, in the same circumstances, written down on two occasions? Count the adults and children given. Answer no when they plainly differ in who lives there or in their circumstances, or when either says too little to tell. Judge only what is written.",
+/**
+ * One question, shared with the measuring run so both ask the same thing: who lives there, not what they ask for this
+ * time. Measured as a trial beside the first wording in run 2 (eval/duplicates/run-2.json) and promoted on its result.
+ */
+const peopleQuestion = {
+  people: "Do first and second describe the same people? Judge from who lives in the household and their lasting circumstances (work, age, health, family), not from what they ask for this time. Answer no when the people plainly differ or when either says too little to tell.",
 };
+/** Marks a reading made with that question; one made with the first wording is read again. */
+const asked = "people" as const;
 
 /**
  * Reads the two records' notes and keeps how sure the assistant is that they describe one household. Names, phones,
@@ -131,9 +137,9 @@ export const readPair = action({
     const key = env.TYPESAFE_API_KEY;
     if (!asked || !key || !asked.first.notes || !asked.second.notes) return "not asked";
     if (await ctx.runMutation(internal.drafts.reserve, { userId: asked.userId, churchId: args.churchId }) !== "ok") return "not asked";
-    const sure = await confidence(key, { first: asked.first, second: asked.second }, sameQuestion, { names: asked.names, addresses: asked.addresses, others: asked.others });
+    const sure = await confidence(key, { first: asked.first, second: asked.second }, peopleQuestion, { names: asked.names, addresses: asked.addresses, others: asked.others });
     if (!sure) return "not asked";
-    await ctx.runMutation(internal.duplicates.keepRead, { ...args, same: sure.same });
+    await ctx.runMutation(internal.duplicates.keepRead, { ...args, same: sure.people });
     return "read";
   },
 });
@@ -218,32 +224,28 @@ export const merge = mutation({
  * seen (a person still sees the pair when code is sure of it). Wrong: two households read as one.
  */
 const tallied = v.object({ right: v.number(), missed: v.number(), wrong: v.number() });
-/** A narrower question, measured beside the live one and never shown: who lives there, not what they ask for this time. */
-const trialQuestion = {
-  people: "Do first and second describe the same people? Judge from who lives in the household and their lasting circumstances (work, age, health, family), not from what they ask for this time. Answer no when the people plainly differ or when either says too little to tell.",
-};
 export const measure = internalAction({
   args: { churchId: v.id("churches") },
   returns: v.object({
     status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(),
-    all: tallied, heldOut: tallied, trial: v.object({ all: tallied, heldOut: tallied }),
-    rows: v.array(v.object({ id: v.string(), same: v.number(), people: v.number() })),
+    all: tallied, heldOut: tallied,
+    rows: v.array(v.object({ id: v.string(), people: v.number() })),
   }),
   handler: async (ctx, { churchId }) => {
     const zero = { right: 0, missed: 0, wrong: 0 };
-    const none = { model, all: zero, heldOut: zero, trial: { all: zero, heldOut: zero }, rows: [] };
+    const none = { model, all: zero, heldOut: zero, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: duplicateSet.length })) return { status: "no allowance" as const, ...none };
-    const mark = (read: boolean, same: boolean) => (read === same ? "right" as const : read ? "wrong" as const : "missed" as const);
     const rows = await Promise.all(duplicateSet.map(async (item) => {
       // A pair with nothing written is never asked on a record; it is marked as the record would leave it.
-      const sure = item.a.notes && item.b.notes ? await confidence(key, { first: item.a, second: item.b }, { ...sameQuestion, ...trialQuestion }) : null;
-      const same = Math.round((sure?.same ?? 0) * 100) / 100, people = Math.round((sure?.people ?? 0) * 100) / 100;
-      return { id: item.id, same, people, live: mark(notesSayOne(same, item.a, item.b), item.same), trial: mark(notesSayOne(people, item.a, item.b), item.same), heldOut: !!item.heldOut };
+      const sure = item.a.notes && item.b.notes ? await confidence(key, { first: item.a, second: item.b }, peopleQuestion) : null;
+      const people = Math.round((sure?.people ?? 0) * 100) / 100;
+      const read = notesSayOne(people, item.a, item.b);
+      return { id: item.id, people, mark: read === item.same ? "right" as const : read ? "wrong" as const : "missed" as const, heldOut: !!item.heldOut };
     }));
-    const add = (arm: "live" | "trial", only: boolean) => rows.filter((row) => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row[arm]]: sum[row[arm]] + 1 }), { ...zero });
-    return { status: "done" as const, model, all: add("live", false), heldOut: add("live", true), trial: { all: add("trial", false), heldOut: add("trial", true) }, rows: rows.map(({ id, same, people }) => ({ id, same, people })) };
+    const add = (only: boolean) => rows.filter((row) => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row.mark]: sum[row.mark] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, people }) => ({ id, people })) };
   },
 });
 
