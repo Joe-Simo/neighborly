@@ -541,6 +541,9 @@ export function LiveAuth({
     );
 
   if (behind) return null;
+  // Come through the sample door, the sheet is never seen on the way in: the door's turn stands over the sign-in by
+  // ticket, and its form, held while it runs, dimmed its words. It shows only if the sample could not be opened.
+  if (enterSample && sampleEntry && !sampleError) return null;
   return (
     <EntrySheet
       page={`${flow}:${step}`}
