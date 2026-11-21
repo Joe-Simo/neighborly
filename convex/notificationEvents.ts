@@ -10,6 +10,7 @@ import { overlapsTimeOff, parseCalendarDate } from "../src/lib/scheduling";
 
 async function deliver(ctx: MutationCtx, row: Doc<"outbox">) {
   if (row.state !== "awaiting_configuration") return;
+  let content: { title: string; body: string } | undefined;
   const member = row.memberId ? await ctx.db.get("memberships", row.memberId) : null;
   if (!member?.active || member.churchId !== row.churchId || member.email.toLowerCase() !== row.recipient.toLowerCase()) {
     await ctx.db.patch("outbox", row._id, { state: "cancelled" }); return;
@@ -47,12 +48,18 @@ async function deliver(ctx: MutationCtx, row: Doc<"outbox">) {
     if (!meeting || meeting.churchId !== row.churchId || !invitee || invitee.churchId !== row.churchId || meeting.start <= Date.now() || response) {
       await ctx.db.patch("outbox", row._id, { state: "cancelled" }); return;
     }
+  } else if (row.kind === "announcement") {
+    const announcement = row.announcementId ? await ctx.db.get("announcements", row.announcementId) : null;
+    if (!announcement || announcement.churchId !== row.churchId || !member.approved) {
+      await ctx.db.patch("outbox", row._id, { state: "cancelled" }); return;
+    }
+    content = { title: announcement.title, body: announcement.body };
   } else return;
   const config = deliveryConfiguration();
   if (!config || (await isSampleChurch(ctx, row.churchId))) return;
   const church = await ctx.db.get("churches", row.churchId);
   if (!church) return;
-  const email = paperEmail({ kind: row.kind, language: emailLanguage(member.language), set: church.wordSet ?? "general", place: church.name, link: new URL("/app", config.site).toString() });
+  const email = paperEmail({ kind: row.kind, language: emailLanguage(member.language), set: church.wordSet ?? "general", place: church.name, link: new URL("/app", config.site).toString(), content });
   const emailId = await resend.sendEmail(ctx, { from: config.sender, to: row.recipient, ...email, idempotencyKey: `notification:${row.eventKey}` });
   await ctx.db.patch("outbox", row._id, { state: "queued", providerId: emailId });
 }
@@ -77,6 +84,13 @@ export async function queueMeetingInvitation(ctx: MutationCtx, meetingId: Id<"me
   if (!meeting || !member || !member.active || member.churchId !== meeting.churchId || !invitee || invitee.churchId !== meeting.churchId) throw new Error("Meeting recipient not found.");
   await record(ctx, { churchId: meeting.churchId, meetingId, memberId, eventKey: `meeting:${meetingId}:${memberId}`, kind: "meeting", recipient: member.email, state: "awaiting_configuration", createdAt: Date.now() });
 }
+/** One email per approved, active member for an announcement the owner chose to send; the event key keeps it to one. */
+export async function queueAnnouncementEmail(ctx: MutationCtx, announcementId: Id<"announcements">, memberId: Id<"memberships">) {
+  const announcement = await ctx.db.get("announcements", announcementId);
+  const member = await ctx.db.get("memberships", memberId);
+  if (!announcement || !member || !member.active || !member.approved || member.removedAt || member.churchId !== announcement.churchId) return;
+  await record(ctx, { churchId: announcement.churchId, announcementId, memberId, eventKey: `announcement:${announcementId}:${memberId}`, kind: "announcement", recipient: member.email, state: "awaiting_configuration", createdAt: Date.now() });
+}
 /** Cancellation prevents delivery only while the provider still has the message queued. */
 export async function cancelPendingNotification(ctx: MutationCtx, churchId: Id<"churches">, eventKey: string) {
   const row = await ctx.db.query("outbox").withIndex("by_church_event", q => q.eq("churchId", churchId).eq("eventKey", eventKey)).unique();
@@ -98,13 +112,13 @@ async function owner(ctx: MutationCtx, churchId: Id<"churches">) {
 export const queuePending = mutation({ args: { churchId: v.id("churches") }, returns: v.number(), handler: async (ctx, { churchId }) => {
   await owner(ctx, churchId);
   if (!deliveryConfiguration()) throw new Error("Email delivery is not configured.");
-  const batches = await Promise.all((["cover_request", "meeting"] as const).map(kind => ctx.db.query("outbox").withIndex("by_church_kind_state", q => q.eq("churchId", churchId).eq("kind", kind).eq("state", "awaiting_configuration")).take(25)));
+  const batches = await Promise.all((["cover_request", "meeting", "announcement"] as const).map(kind => ctx.db.query("outbox").withIndex("by_church_kind_state", q => q.eq("churchId", churchId).eq("kind", kind).eq("state", "awaiting_configuration")).take(25)));
   const rows = batches.flat();
   let processed = 0;
   for (const row of rows) if (row.kind !== "invitation") { await deliver(ctx, row); processed++; }
   return processed;
 } });
-export const status = query({ args: { churchId: v.id("churches") }, returns: v.array(v.object({ id: v.id("outbox"), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerStatus: v.union(vStatus, v.null()), failed: v.boolean() })), handler: async (ctx, { churchId }) => {
+export const status = query({ args: { churchId: v.id("churches") }, returns: v.array(v.object({ id: v.id("outbox"), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting"), v.literal("announcement")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerStatus: v.union(vStatus, v.null()), failed: v.boolean() })), handler: async (ctx, { churchId }) => {
   const { id: userId } = await user(ctx);
   const member = await ctx.db.query("memberships").withIndex("by_church_user", q => q.eq("churchId", churchId).eq("userId", userId)).unique();
   if (!member?.active || member.role !== "owner") throw new ConvexError("Church owner access required.");

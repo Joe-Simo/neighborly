@@ -185,6 +185,8 @@ describe("planning a visit by hand", () => {
     const visitId = await owner.mutation(api.visits.plan, { churchId, neighborId: ids.rosa, requestId: ids.request, at: morning(3).at, visitorIds: [ids.daniel.memberId, ids.graciela.memberId] });
     const sheet = await readSheet(owner, { churchId, visitId });
     expect(sheet).toMatchObject({ group: "Sample Conference", visitors: ["Daniel Whitcombe", "Graciela Fuentes"], neighbor: { name: "Benito Desrosiers", address: "214 Orchard St, Apt 2" }, request: { kind: "rent", amount: 45000, payeeName: "Orchard Street Apartments" } });
+    // It names the neighbor and the request, so the request can be printed with the help given before, read with the same line.
+    expect(sheet).toMatchObject({ neighborId: ids.rosa, request: { id: ids.request } });
     const lines = await t.run((ctx) => ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", ids.rosa)).collect());
     expect(lines).toHaveLength(1);
     expect(lines[0].actorId).toBe(ids.owner.userId);

@@ -1,7 +1,7 @@
 "use client";
 
 import "./volunteer.css";
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { takeFocus } from "@/components/workspace/volunteer/commitment-rows";
 import { usePaginatedQuery } from "@/components/workspace/query";
 import { Check, CircleCheck, Plus } from "lucide-react";
@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { useWorkspace } from "@/components/workspace/context";
 import { NextMeeting } from "@/components/workspace/volunteer/asides";
+
+/** A meeting's agenda and minutes, for coordinators; its words load with it. */
+const MeetingSheet = lazy(() => import("@/components/workspace/volunteer/meeting-sheet"));
 
 /**
  * While a task is saved its button sleeps, and a sleeping button drops the keyboard's focus to the page.
@@ -196,6 +199,9 @@ export function TasksSection() {
                       </div>
                     )}
                   </div>
+                  <Suspense fallback={null}>
+                    <MeetingSheet meetingId={meeting.id} title={sampleSaid(meeting.title)} />
+                  </Suspense>
                   {(isOwner || meeting.fanoutStatus === "processing") && (
                     <div className="volunteer-meeting-desk">
                       {meeting.fanoutStatus === "processing" && (

@@ -29,12 +29,12 @@ export default defineSchema({
   availability: defineTable({ churchId:v.id("churches"), memberId:v.id("memberships"), start:v.string(), end:v.string() }).index("by_church",["churchId"]).index("by_member",["memberId"]).index("by_member_end",["memberId","end"]),
   timeOff: defineTable({ churchId: v.id("churches"), memberId: v.id("memberships"), start: v.string(), end: v.string(), note: v.string() }).index("by_church", ["churchId"]).index("by_member", ["memberId"]).index("by_member_end", ["memberId","end"]),
   tasks: defineTable({ churchId: v.id("churches"), title: v.string(), dueAt: v.union(v.number(),v.null()), assigneeId: v.union(v.id("memberships"),v.null()), complete: v.boolean() }).index("by_church", ["churchId"]),
-  meetings: defineTable({ churchId: v.id("churches"), fanoutStatus:v.union(v.literal("processing"),v.literal("complete")), cutoff:v.number(), title: v.string(), start: v.number(), end: v.number(), location: v.string() }).index("by_church", ["churchId"]),
+  meetings: defineTable({ churchId: v.id("churches"), fanoutStatus:v.union(v.literal("processing"),v.literal("complete")), cutoff:v.number(), title: v.string(), start: v.number(), end: v.number(), location: v.string(), /** What the meeting kept: an opening reflection, its minutes, who came, when saved and when emailed (convex/minutes.ts). */ reflection: v.optional(v.string()), minutes: v.optional(v.string()), attended: v.optional(v.array(v.id("memberships"))), minutesSavedAt: v.optional(v.number()), minutesSentAt: v.optional(v.number()) }).index("by_church", ["churchId"]),
   meetingInvitees: defineTable({churchId:v.id("churches"),meetingId:v.id("meetings"),memberId:v.id("memberships")}).index("by_meeting_member",["meetingId","memberId"]).index("by_member",["memberId"]),
   meetingResponses: defineTable({ churchId: v.id("churches"), meetingId: v.id("meetings"), memberId: v.id("memberships"), response: v.union(v.literal("accepted"),v.literal("declined")) }).index("by_church", ["churchId"]).index("by_meeting_member", ["meetingId", "memberId"]).index("by_meeting", ["meetingId"]),
   announcements: defineTable({ churchId: v.id("churches"), title: v.string(), body: v.string(), authorId: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId"]),
   invitations: defineTable({ churchId: v.id("churches"), email: v.string(), role: v.union(v.literal("coordinator"),v.literal("member")), tokenHash: v.string(), expiresAt: v.number(), status: v.union(v.literal("pending"),v.literal("accepted"),v.literal("revoked")), createdBy: v.id("memberships"), acceptedBy: v.optional(v.id("users")), createdAt: v.number(), requestId: v.string() }).index("by_church", ["churchId"]).index("by_token", ["tokenHash"]).index("by_church_request", ["churchId", "requestId"]),
-  outbox: defineTable({ churchId: v.id("churches"), invitationId: v.optional(v.id("invitations")), requestId: v.optional(v.id("requests")), meetingId: v.optional(v.id("meetings")), memberId: v.optional(v.id("memberships")), eventKey: v.optional(v.string()), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerId: v.optional(v.string()), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_invitation", ["invitationId"]).index("by_church_event", ["churchId", "eventKey"]).index("by_church_state", ["churchId", "state"]).index("by_church_kind_state", ["churchId", "kind", "state"]),
+  outbox: defineTable({ churchId: v.id("churches"), invitationId: v.optional(v.id("invitations")), requestId: v.optional(v.id("requests")), meetingId: v.optional(v.id("meetings")), announcementId: v.optional(v.id("announcements")), memberId: v.optional(v.id("memberships")), eventKey: v.optional(v.string()), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting"), v.literal("announcement")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerId: v.optional(v.string()), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_invitation", ["invitationId"]).index("by_church_event", ["churchId", "eventKey"]).index("by_church_state", ["churchId", "state"]).index("by_church_kind_state", ["churchId", "kind", "state"]),
   auditEvents: defineTable({ churchId: v.id("churches"), actorId: v.id("users"), action: v.string(), invitationId: v.optional(v.id("invitations")), commitmentId: v.optional(v.id("commitments")), targetId: v.optional(v.string()), at: v.number() }).index("by_church", ["churchId"]).index("by_church_action_target", ["churchId", "action", "targetId"]),
   // One row per member: the private address of their calendar feed.
   calendarFeeds: defineTable({ churchId: v.id("churches"), memberId: v.id("memberships"), token: v.string(), createdAt: v.number() }).index("by_token", ["token"]).index("by_member", ["memberId"]).index("by_church", ["churchId"]),
@@ -57,8 +57,12 @@ export default defineSchema({
     languageName: v.optional(v.string()),
     notes: v.string(),
     alert: v.optional(v.string()),
-    // No names and a birth year, not a birth date, on purpose.
-    household: v.optional(v.array(v.object({ relationship: v.string(), child: v.boolean(), birthYear: v.optional(v.number()) }))),
+    // No names and a birth year, not a birth date, on purpose. `work` is an adult's employment, as ServWare asks it; `employer` only the place, never a supervisor or pay.
+    household: v.optional(v.array(v.object({
+      relationship: v.string(), child: v.boolean(), birthYear: v.optional(v.number()),
+      work: v.optional(v.union(v.literal("fullTime"), v.literal("partTime"), v.literal("looking"), v.literal("unable"), v.literal("retired"))),
+      employer: v.optional(v.string()),
+    }))),
     // Monthly amounts.
     money: v.optional(v.object({
       income: v.array(v.object({ label: v.string(), amount: cents })),
@@ -76,6 +80,8 @@ export default defineSchema({
   }).index("by_church", ["churchId"]).index("by_church_name", ["churchId", "nameKey"]).index("by_church_phone", ["churchId", "phoneKey"]).searchIndex("search_address", { searchField: "address", filterFields: ["churchId"] }),
   neighborNotes: defineTable({ churchId: v.id("churches"), neighborId: v.id("neighbors"), body: v.string(), authorId: v.id("memberships"), createdAt: v.number() }).index("by_neighbor", ["neighborId", "createdAt"]).index("by_church", ["churchId"]),
   referralAgencies: defineTable({ churchId: v.id("churches"), name: v.string(), phone: v.string(), helpsWith: v.string() }).index("by_church", ["churchId", "name"]),
+  /** Uploaded files: a conference's own (minutes, forms) with no neighborId, or one neighbor's (a lease, a bill). See convex/files.ts. */
+  files: defineTable({ churchId: v.id("churches"), neighborId: v.optional(v.id("neighbors")), storageId: v.id("_storage"), name: v.string(), contentType: v.string(), size: v.number(), uploadedBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_church_neighbor", ["churchId", "neighborId", "createdAt"]).index("by_storage", ["storageId"]),
   calls: defineTable({
     churchId: v.id("churches"),
     neighborId: v.optional(v.id("neighbors")),

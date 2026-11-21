@@ -52,6 +52,7 @@ async function setup() {
       duplicateDismissals: () => ctx.db.insert("duplicateDismissals", { churchId, kind: "phone", key: "1005550104", by: owner._id, at: now }),
       aiReads: () => ctx.db.insert("aiReads", { churchId, callId: call._id, purpose: "draft", sentText: "behind on rent", asked: [], model: "jev-1.14.0", outcome: "review", at: now }),
       requestDrafts: () => ctx.db.insert("requestDrafts", { churchId, callId: call._id, payeeName: "", quote: "behind on rent", notes: [], verification: "review", ...by }),
+      files: async () => ctx.db.insert("files", { churchId, storageId: await ctx.storage.store(new Blob(["Minutes of the November meeting"], { type: "application/pdf" })), name: "Minutes.pdf", contentType: "application/pdf", size: 30, uploadedBy: owner._id, createdAt: now }),
       referralAgencies: () => ctx.db.insert("referralAgencies", { churchId, name: "211", phone: "211", helpsWith: "Rent" }),
       payees: () => ctx.db.insert("payees", { churchId, kind: "utility", name: "Example Power", nameKey: "example power", address: "", phone: "", email: "", notes: "", ...by }),
       aiUsageByChurch: () => ctx.db.insert("aiUsageByChurch", { churchId, month: "2026-11", count: 3 }),

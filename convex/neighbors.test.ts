@@ -287,6 +287,27 @@ describe("removing a record", () => {
 });
 
 describe("the home on a record", () => {
+  test("an adult's work is kept, a place only with a job, and never for a child", async () => {
+    const { ids, as } = await setup();
+    const target = { churchId: ids.church, neighborId: ids.rosa };
+    await as(ids.coordinator).mutation(api.neighbors.saveHousehold, {
+      ...target,
+      household: [
+        { relationship: "Mother", child: false, work: "partTime", employer: "  Example Grocery  " },
+        { relationship: "Grandmother", child: false, work: "retired", employer: "Example Mill" },
+        { relationship: "Son", child: true, work: "fullTime", employer: "Example Diner" },
+        { relationship: "Uncle", child: false },
+      ],
+    });
+    const record = await readRecord(as(ids.coordinator), target);
+    expect(record.household.map(({ work, employer }) => ({ work, employer }))).toEqual([
+      { work: "partTime", employer: "Example Grocery" },
+      { work: "retired", employer: undefined },
+      { work: undefined, employer: undefined },
+      { work: undefined, employer: undefined },
+    ]);
+  });
+
   test("who lives there sets the counts, the month adds up, and account numbers stay covered until asked for", async () => {
     const { t, ids, as } = await setup();
     const target = { churchId: ids.church, neighborId: ids.rosa };

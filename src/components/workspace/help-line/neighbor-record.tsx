@@ -43,6 +43,10 @@ import {
 
 /** Other records that may be this household: fetched with the record's own code only once the record is on the page. */
 const PossibleSame = lazy(() => import("@/components/workspace/help-line/possible-same").then((module) => ({ default: module.PossibleSame })));
+// The printed request is fetched only when someone asks to print one.
+/** The files kept with the record: fetched only once a record is open. */
+const UploadedFiles = lazy(() => import("@/components/workspace/tools/uploaded-files"));
+const RequestDetailView = lazy(() => import("@/components/workspace/help-line/request-detail").then((module) => ({ default: module.RequestDetailView })));
 
 type Step =
   | { kind: "request" | "details" | "note" | "remove" | HomeStep }
@@ -191,12 +195,14 @@ export function NeighborRecord({
     ]
       .filter(Boolean)
       .join(" · ");
+  // One request laid out to print, in place of the record; the way back returns to the record.
+  const [printing, setPrinting] = useState<HelpRequest["id"] | null>(null);
   // The record's page head is the neighbor's name, with no painting: private and plain.
   useLayoutEffect(() => {
     if (!title || !deck) return;
-    setHeading({ title, deck });
+    setHeading(printing ? { title, deck, back: { label: title, run: () => setPrinting(null) } } : { title, deck });
     return () => setHeading(null);
-  }, [setHeading, title, deck]);
+  }, [setHeading, title, deck, printing]);
   const [step, setStep] = useState<Step | null>(null);
   const forms = useFormsLater(step !== null);
   const [done, setDone] = useState("");
@@ -283,6 +289,24 @@ export function NeighborRecord({
     );
   if (!record) return <HelpLoading />;
   const { neighbor } = record;
+  if (printing)
+    return (
+      <Suspense fallback={<HelpLoading />}>
+        <RequestDetailView
+          neighbor={{
+            name: neighbor.name,
+            address: neighbor.address,
+            phone: neighbor.phone,
+            householdSize: neighbor.adults + neighbor.children,
+            speaks: neighbor.language === "other" ? neighbor.languageName || words.rooms.neighbors.languages.other : words.rooms.neighbors.languages[neighbor.language],
+            alert: neighbor.alert,
+          }}
+          rows={record.requests}
+          requestId={printing}
+          visit={null}
+        />
+      </Suspense>
+    );
   return (
     <>
       {undoRefused && !done && (
@@ -321,6 +345,12 @@ export function NeighborRecord({
         // Under an open dialog the page says nothing: the dialog says it.
         covered={step ? null : covered}
         approvedNow={approvedNow}
+        onPrint={setPrinting}
+        files={typeof opened === "object" && !removing && !removed ? (
+          <Suspense fallback={null}>
+            <UploadedFiles neighborId={neighborId} opening={opened.line} />
+          </Suspense>
+        ) : null}
         onShowNumbers={() => void reveal()}
         alike={<Suspense><PossibleSame neighborId={neighborId} onMerged={(said) => finish(said)} /></Suspense>}
         onStep={(next) => {
@@ -576,7 +606,9 @@ function NeighborRecordView({
   approvedNow = null,
   onShowNumbers = () => {},
   alike = null,
+  onPrint,
   onStep,
+  files = null,
 }: {
   /** Other records that may be the same household, laid under the home's details. */
   alike?: ReactNode;
@@ -590,7 +622,11 @@ function NeighborRecordView({
   /** The request given its yes in this visit, whose corner turns over to green as it is shown approved. */
   approvedNow?: HelpRequest["id"] | null;
   onShowNumbers?: () => void;
+  /** Lays one request out as a printed page, for a home visit. */
+  onPrint?: (requestId: HelpRequest["id"]) => void;
   onStep: (step: Step) => void;
+  /** The files kept with the record, drawn just above who opened it. */
+  files?: ReactNode;
 }) {
   const { words, sampleSaid } = useWorkspace();
   const text = words.rooms.neighbors.record;
@@ -672,6 +708,11 @@ function NeighborRecordView({
                 {first.status === "approved" &&
                   ` ${fill(text.sheet.approvedBy, { name: first.decidedByName ?? "", amount: money(first.amountApproved ?? 0), payee: first.payeeName })}`}
               </p>
+              {onPrint && (
+                <Button variant="link" className="help-text-action" onClick={() => onPrint(first.id)}>
+                  {words.locale === "es" ? "Imprimir petición" : "Print request"}
+                </Button>
+              )}
             </div>
             {first.status === "approved" && (
               <div className="help-actions">
@@ -853,6 +894,8 @@ function NeighborRecordView({
           </HelpEmpty>
         )}
       </section>
+
+      {files}
 
       <section className="live-section">
         <div className="live-section-head">

@@ -12,6 +12,7 @@ import { tally } from "./counts";
 import { addName, rebuildNames } from "./knownNames";
 import { dropReads } from "./aiReads";
 import { lookAlikes } from "./duplicates";
+import { dropNeighborFiles } from "./files";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
@@ -280,6 +281,7 @@ export const remove = mutation({
 
     for (const draft of drafts) await ctx.db.delete("requestDrafts", draft._id);
     for (const note of notes) await ctx.db.delete("neighborNotes", note._id);
+    await dropNeighborFiles(ctx, churchId, neighborId);
     // What the year counts stays as a row with nothing in it that was said or written about the household.
     for (const call of calls) {
       await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });
@@ -342,7 +344,10 @@ export const saveHousehold = mutation({
       if (person.birthYear !== undefined && (!Number.isInteger(person.birthYear) || person.birthYear < 1900 || person.birthYear > thisYear)) throw new ConvexError("A birth year looks wrong.");
       const relationship = short(person.relationship, "A relationship", 60);
       if (!relationship) throw new ConvexError("Each person needs a relationship, such as mother or son.");
-      return { relationship, child: person.child, birthYear: person.birthYear };
+      // Work is asked of adults only, and a place of work only of someone who has one.
+      const work = person.child ? undefined : person.work;
+      const employer = work === "fullTime" || work === "partTime" ? short(person.employer ?? "", "An employer", 80) || undefined : undefined;
+      return { relationship, child: person.child, birthYear: person.birthYear, ...(work ? { work } : {}), ...(employer ? { employer } : {}) };
     });
     if (people?.length && !people.some((person) => !person.child)) throw new ConvexError("A household needs at least one adult.");
     await ctx.db.patch("neighbors", neighborId, {

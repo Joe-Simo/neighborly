@@ -10,6 +10,7 @@
 
 import type * as access from "../access.js";
 import type * as aiReads from "../aiReads.js";
+import type * as announcementFanout from "../announcementFanout.js";
 import type * as assistance from "../assistance.js";
 import type * as calendar from "../calendar.js";
 import type * as closing from "../closing.js";
@@ -19,12 +20,14 @@ import type * as demo from "../demo.js";
 import type * as digest from "../digest.js";
 import type * as drafts from "../drafts.js";
 import type * as duplicates from "../duplicates.js";
+import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as importExport from "../importExport.js";
 import type * as invitations from "../invitations.js";
 import type * as knownNames from "../knownNames.js";
 import type * as language from "../language.js";
 import type * as meetingFanout from "../meetingFanout.js";
+import type * as minutes from "../minutes.js";
 import type * as nameKeys from "../nameKeys.js";
 import type * as neighbors from "../neighbors.js";
 import type * as notificationEvents from "../notificationEvents.js";
@@ -32,6 +35,7 @@ import type * as notifications from "../notifications.js";
 import type * as pages from "../pages.js";
 import type * as people from "../people.js";
 import type * as quilt from "../quilt.js";
+import type * as referralAgencies from "../referralAgencies.js";
 import type * as reports from "../reports.js";
 import type * as sampleData from "../sampleData.js";
 import type * as spoken from "../spoken.js";
@@ -50,6 +54,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   access: typeof access;
   aiReads: typeof aiReads;
+  announcementFanout: typeof announcementFanout;
   assistance: typeof assistance;
   calendar: typeof calendar;
   closing: typeof closing;
@@ -59,12 +64,14 @@ declare const fullApi: ApiFromModules<{
   digest: typeof digest;
   drafts: typeof drafts;
   duplicates: typeof duplicates;
+  files: typeof files;
   http: typeof http;
   importExport: typeof importExport;
   invitations: typeof invitations;
   knownNames: typeof knownNames;
   language: typeof language;
   meetingFanout: typeof meetingFanout;
+  minutes: typeof minutes;
   nameKeys: typeof nameKeys;
   neighbors: typeof neighbors;
   notificationEvents: typeof notificationEvents;
@@ -72,6 +79,7 @@ declare const fullApi: ApiFromModules<{
   pages: typeof pages;
   people: typeof people;
   quilt: typeof quilt;
+  referralAgencies: typeof referralAgencies;
   reports: typeof reports;
   sampleData: typeof sampleData;
   spoken: typeof spoken;

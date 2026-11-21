@@ -5,6 +5,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, neighborAccess } from "./access";
 import { spokenName } from "./spoken";
 import { incomeSources, paidTowardRequest } from "./treasury";
+import { nameKey } from "./assistance";
 
 /**
  * The year's counts, read straight from the records. Nothing here writes, and nothing here
@@ -526,5 +527,86 @@ export const year = query({
       money: { beginningBalance, received, sources: lines(sources), otherSpending: lines(otherSpending), spent, endingBalance: beginningBalance + received - spent },
       months: span.months.map(month),
     };
+  },
+});
+
+/**
+ * The Housing Provider Summary, as ServWare prints it: what the group paid each landlord, month by month across the
+ * fiscal year, and the year to date. A payment counts when it is an expense that is not voided, not a reversal and
+ * not reversed, and it went either toward a request whose payee is a landlord or to a payee saved as a landlord.
+ * It names landlords only, never a neighbor.
+ */
+export const housingProviderReport = v.object({
+  year: v.number(),
+  firstDay: v.string(),
+  lastDay: v.string(),
+  /** "yyyy-MM", October first. */
+  months: v.array(v.string()),
+  /** Most paid first; `months` lines up with the months above, in cents. */
+  landlords: v.array(v.object({ name: v.string(), months: v.array(v.number()), total: v.number(), payments: v.number() })),
+  monthTotals: v.array(v.number()),
+  total: v.number(),
+});
+export type HousingProviderReport = Infer<typeof housingProviderReport>;
+
+type LandlordEntry = Pick<Doc<"ledgerEntries">, "_id" | "kind" | "amount" | "date" | "payee" | "requestId" | "voidedAt" | "reverses">;
+
+/** Adds up the landlord payments of one fiscal year. Kept apart from the query so it can be tested on its own. */
+export function housingProviders(
+  year: number,
+  span: Pick<ReturnType<typeof fiscalYear>, "firstDay" | "lastDay" | "months">,
+  entries: LandlordEntry[],
+  landlordRequests: ReadonlySet<string>,
+  landlordNames: ReadonlySet<string>,
+  key: (name: string) => string,
+): HousingProviderReport {
+  const reversed = new Set(entries.flatMap((entry) => (entry.reverses ? [entry.reverses] : [])));
+  const column = new Map(span.months.map((month, index) => [month, index]));
+  const lines = new Map<string, { name: string; months: number[]; total: number; payments: number }>();
+  for (const entry of entries) {
+    if (entry.kind !== "expense" || entry.voidedAt !== undefined || entry.reverses || reversed.has(entry._id)) continue;
+    const at = column.get(entry.date.slice(0, 7));
+    if (at === undefined) continue;
+    const name = entry.payee.trim();
+    const toLandlord = (entry.requestId !== undefined && landlordRequests.has(entry.requestId)) || landlordNames.has(key(name));
+    if (!toLandlord || !name) continue;
+    const line = lines.get(key(name)) ?? { name, months: span.months.map(() => 0), total: 0, payments: 0 };
+    line.months[at] = (line.months[at] ?? 0) + entry.amount;
+    line.total += entry.amount;
+    line.payments += 1;
+    lines.set(key(name), line);
+  }
+  const landlords = [...lines.values()].sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+  const monthTotals = span.months.map((_, index) => landlords.reduce((sum, line) => sum + (line.months[index] ?? 0), 0));
+  return {
+    year,
+    firstDay: span.firstDay,
+    lastDay: span.lastDay,
+    months: span.months,
+    landlords,
+    monthTotals,
+    total: monthTotals.reduce((sum, value) => sum + value, 0),
+  };
+}
+
+export const housingProviderSummary = query({
+  args: { churchId: v.id("churches"), at: hour, year: v.number() },
+  returns: housingProviderReport,
+  handler: async (ctx, args) => {
+    await neighborAccess(ctx, args.churchId);
+    const church = await ctx.db.get("churches", args.churchId);
+    if (!church) throw new ConvexError("Group not found.");
+    if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new ConvexError("Choose a year.");
+    hourAsked(args.at);
+    const span = fiscalYear(args.year, church.timeZone);
+    const [entries, payees] = await Promise.all([
+      whole(ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("date", span.firstDay).lt("date", span.dayAfter)), LEDGER_LIMIT),
+      whole(ctx.db.query("payees").withIndex("by_church", (q) => q.eq("churchId", args.churchId))),
+    ]);
+    const requestIds = [...new Set(entries.flatMap((entry) => (entry.kind === "expense" && entry.requestId ? [entry.requestId] : [])))];
+    const requests = await Promise.all(requestIds.map((id) => ctx.db.get("assistanceRequests", id)));
+    const landlordRequests = new Set(requests.flatMap((request) => (request && request.churchId === args.churchId && request.payeeKind === "landlord" ? [request._id] : [])));
+    const landlordNames = new Set(payees.filter((payee) => payee.kind === "landlord").map((payee) => payee.nameKey));
+    return housingProviders(args.year, span, entries, landlordRequests, landlordNames, nameKey);
   },
 });

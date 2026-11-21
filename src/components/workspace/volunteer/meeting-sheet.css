@@ -1,0 +1,13 @@
+.meeting-sheet section { display: grid; gap: var(--space-8); }
+.meeting-sheet h3 { margin: 0; font-size: 17px; font-weight: 650; }
+.meeting-sheet ul { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.meeting-sheet li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-8); }
+.meeting-sheet p { margin: 0; }
+.meeting-decide { min-height: 44px; display: inline-flex; align-items: center; }
+.meeting-people { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+.meeting-people [data-slot="toggle"] { min-height: 44px; }
+@media print {
+  body:has(.meeting-dialog) > :not([data-slot="dialog-portal"]):not(:has(.meeting-dialog)) { display: none !important; }
+  .meeting-dialog .live-form-actions, .meeting-dialog [data-slot="dialog-close"] { display: none !important; }
+  .meeting-dialog { position: static !important; transform: none !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; }
+}

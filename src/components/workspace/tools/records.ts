@@ -2,7 +2,7 @@ import Papa from "papaparse";
 
 /** Every record a conference keeps here, in the order a person would look for them: the people helped, the money, then the conference itself. */
 export const recordFiles = [
-  { key: "neighbors", holds: "Each household: name, phone, address, who lives there, language and notes.", title: "Neighbors", gathering: "neighbors" },
+  { key: "neighbors", holds: "Each household: name, phone, address, who lives there and their work, language and notes.", title: "Neighbors", gathering: "neighbors" },
   { key: "notes", holds: "Every note written on a neighbor’s record, with who wrote it and when.", title: "Notes on neighbors", gathering: "notes on neighbors" },
   { key: "calls", holds: "The help line’s log: who called, what they said, and when the call was returned.", title: "Help line calls", gathering: "help line calls" },
   { key: "requests", holds: "Every request for help, what was asked, what was decided and what was given.", title: "Requests and their outcomes", gathering: "requests" },

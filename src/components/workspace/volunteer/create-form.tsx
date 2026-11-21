@@ -1,7 +1,7 @@
 "use client";
 
 import { keepTitle } from "@/lib/words/titles";
-import { useState, type FormEvent } from "react";
+import { lazy, Suspense, useState, type FormEvent } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,9 @@ import { refusals } from "@/lib/refusals";
 import { LiveWaiting, LiveFailure, SaveLabel } from "@/components/workspace/states";
 import type { ActionKind } from "@/components/workspace/navigation";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
+
+// Where an announcement goes is asked only on an announcement: its own chunk.
+const AnnouncementSend = lazy(() => import("@/components/workspace/volunteer/announcement-send"));
 
 export function LiveCreateForm({
   kind,
@@ -157,6 +160,7 @@ export function LiveCreateForm({
           type: "createAnnouncement",
           title: value("title"),
           body: value("body"),
+          emailEveryone: value("send") === "email",
         };
         break;
     }
@@ -351,6 +355,11 @@ export function LiveCreateForm({
         <LiveField label={form.message}>
           <Textarea name="body" required rows={5} maxLength={6000} />
         </LiveField>
+      )}
+      {kind === "announcement" && (
+        <Suspense fallback={null}>
+          <AnnouncementSend />
+        </Suspense>
       )}
       {error && <LiveFailure message={error} />}
       {/* With the connection lost the save is held, not failed: one line says the entry is kept and will go by itself. */}

@@ -12,7 +12,7 @@ import { sayFailure } from "@/components/workspace/failure";
 import type { Words } from "@/lib/words";
 import { HelpRoom } from "@/components/workspace/help-line/room";
 import { LiveFailure, LiveState } from "@/components/workspace/states";
-import { csvFileName, isBlank, reportCsv } from "@/components/workspace/reports/lines";
+import { csvFileName, isBlank, longSpanLabel, money, monthLabel, reportCsv } from "@/components/workspace/reports/lines";
 import { YearCheck, YearChecking, type YearCheckResult } from "@/components/workspace/reports/year-check";
 import {
   ReportLoading,
@@ -52,6 +52,18 @@ class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { 
 const WeekDigest = lazy(() => import("@/components/workspace/reports/week-digest"));
 /** The Society's national annual form, for a whole year; it loads with the room's figures, not before. */
 const SvdpSheet = lazy(() => import("@/components/workspace/reports/svdp-sheet"));
+// The landlord summary, its words and all, is its own chunk: the room carries only this line to fetch it.
+const HousingSection = lazy(() => import("@/components/workspace/reports/housing-providers"));
+/**
+ * The summary's reading, handed to the chunk: read here, through the room's own query module, so the chunk does
+ * not pull that module in after it (which moves shared code into a chunk of its own on every page's first load).
+ */
+const housingLines = { money, monthLabel, longSpanLabel };
+function useHousingSummary(year: number, asked: boolean) {
+  const { data } = useWorkspace();
+  const at = useHour();
+  return useQuery(api.reports.housingProviderSummary, asked && at ? { churchId: data.church.id, at, year } : "skip");
+}
 
 function Report() {
   const { data, now, sampleSaid, setHeadAction, words } = useWorkspace();
@@ -205,6 +217,9 @@ function Report() {
       onPrint={() => window.print()}
       onSpreadsheet={() => saveSpreadsheet(shown)}
     />
+    <Suspense fallback={null}>
+      <HousingSection key={year} year={year} read={useHousingSummary} lines={housingLines} />
+    </Suspense>
     </>
   );
 }

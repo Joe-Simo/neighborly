@@ -1,0 +1,98 @@
+import { counter } from "@/lib/words/numbers";
+import type { Language } from "@/lib/words/sets";
+const enN = counter("en");
+const esN = counter("es");
+
+/**
+ * The printed detail of one assistance request: who asked, what for, the help given before, and the visit.
+ * Every sentence is written whole in each language; nothing is joined from pieces on the screen. Kept with the
+ * printed page's own chunk, not in the shared words book, so no room's first load carries them.
+ */
+const en = {
+  print: "Print request",
+  printNow: "Print",
+  opening: "Opening the request…",
+  label: (name: string) => `Assistance request for ${name}`,
+  kicker: (group: string) => `Assistance request · ${group}`,
+  kickerSample: (group: string) => `Assistance request · ${group} · Sample`,
+  neighbor: "Neighbor",
+  address: "Address",
+  phone: "Phone",
+  noPhone: "No phone saved",
+  household: "Household",
+  householdOf: (count: number) => (count === 1 ? "Lives alone" : `Household of ${enN(count)}`),
+  speaks: "Speaks",
+  alert: "Alert",
+  request: "The request",
+  kind: "Kind",
+  asked: "Asked for",
+  approved: "Approved",
+  notDecided: "Not yet decided",
+  payee: "Paid to",
+  noPayee: "No one named",
+  status: "Status",
+  statuses: { open: "Open", approved: "Approved, to be paid", declined: "Declined", paid: "Paid", closed: "Closed" },
+  referrals: "Referred to",
+  noReferrals: "None",
+  takenOn: "Asked {date}. Taken by {name}.",
+  visit: "Home visit",
+  visitOn: "Visit on",
+  visitors: "Visitors",
+  pair: "{first} and {second}",
+  noVisitors: "Not yet named",
+  past: "Past help",
+  pastNone: "No earlier requests.",
+  columns: { date: "Date", kind: "Kind", asked: "Asked", approved: "Approved", status: "Status" },
+  totals: "Totals",
+  totalsLine: (count: number) => (count === 1 ? "1 earlier request" : `${enN(count)} earlier requests`),
+  private: "Private. Keep this page with you and shred it after the visit.",
+  printed: (date: string) => `Printed ${date}`,
+  printedSample: (date: string) => `Sample · Printed ${date}`,
+  pageFoot: "page {page} of {pages}",
+};
+
+const es: typeof en = {
+  print: "Imprimir petición",
+  printNow: "Imprimir",
+  opening: "Abriendo la petición…",
+  label: (name) => `Petición de ayuda de ${name}`,
+  kicker: (group) => `Petición de ayuda · ${group}`,
+  kickerSample: (group) => `Petición de ayuda · ${group} · Muestra`,
+  neighbor: "Vecino",
+  address: "Dirección",
+  phone: "Teléfono",
+  noPhone: "No hay teléfono guardado",
+  household: "Hogar",
+  householdOf: (count) => (count === 1 ? "Vive solo" : `Hogar de ${esN(count)}`),
+  speaks: "Habla",
+  alert: "Aviso",
+  request: "La petición",
+  kind: "Tipo",
+  asked: "Pidió",
+  approved: "Aprobado",
+  notDecided: "Aún sin decidir",
+  payee: "Se paga a",
+  noPayee: "Nadie indicado",
+  status: "Estado",
+  statuses: { open: "Abierta", approved: "Aprobada, por pagar", declined: "No aprobada", paid: "Pagada", closed: "Cerrada" },
+  referrals: "Remitido a",
+  noReferrals: "Ninguno",
+  takenOn: "Se pidió el {date}. La anotó {name}.",
+  visit: "Visita domiciliaria",
+  visitOn: "Fecha de la visita",
+  visitors: "Visitantes",
+  pair: "{first} y {second}",
+  noVisitors: "Aún sin nombrar",
+  past: "Ayuda anterior",
+  pastNone: "No hay peticiones anteriores.",
+  columns: { date: "Fecha", kind: "Tipo", asked: "Pidió", approved: "Aprobado", status: "Estado" },
+  totals: "Totales",
+  totalsLine: (count) => (count === 1 ? "1 petición anterior" : `${esN(count)} peticiones anteriores`),
+  private: "Privado. Lleve esta hoja consigo y destrúyala después de la visita.",
+  printed: (date) => `Impresa el ${date}`,
+  printedSample: (date) => `Muestra · Impresa el ${date}`,
+  pageFoot: "página {page} de {pages}",
+};
+
+/** The printed request's words in the reader's language. */
+export const requestDetailWords = (language: Language) => (language === "es" ? es : en);

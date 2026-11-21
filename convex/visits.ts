@@ -307,8 +307,10 @@ export const sheet = query({
     scheduledAt: v.number(),
     status: visitRow.fields.status,
     visitors: v.array(v.string()),
-    neighbor: v.object({ name: v.string(), phone: v.string(), address: v.string(), adults: v.number(), children: v.number(), language: spoken, languageName: v.optional(v.string()), notes: v.string() }),
-    request: v.union(v.object({ kind, summary: v.string(), amount: v.number(), payeeName: v.string() }), v.null()),
+    /** Whose visit it is, so the request it answers can be printed with the help given before. */
+    neighborId: v.id("neighbors"),
+    neighbor: v.object({ name: v.string(), phone: v.string(), address: v.string(), adults: v.number(), children: v.number(), language: spoken, languageName: v.optional(v.string()), notes: v.string(), alert: v.string() }),
+    request: v.union(v.object({ id: v.id("assistanceRequests"), kind, summary: v.string(), amount: v.number(), payeeName: v.string() }), v.null()),
     /** What the pair before them found, so nobody asks the neighbor to tell it all again. */
     lastVisit: v.union(v.object({ at: v.number(), visitors: v.array(v.string()), notes: v.string() }), v.null()),
   }),
@@ -334,8 +336,9 @@ export const sheet = query({
       status: visit.status,
       // On a visit still planned, a removed member is not going: only the one who is, is named.
       visitors: toVisitRow(found, visit).visitors.filter((visitor) => visit.status !== "scheduled" || !visitor.removed).map((visitor) => visitor.name),
-      neighbor: { name: neighbor.name, phone: neighbor.phone, address: neighbor.address, adults: neighbor.adults, children: neighbor.children, language: neighbor.language, ...(neighbor.language === "other" ? { languageName: spokenName(neighbor) } : {}), notes: neighbor.notes },
-      request: request ? { kind: request.kind, summary: request.summary, amount: request.amountRequested, payeeName: request.payeeName } : null,
+      neighborId: neighbor._id,
+      neighbor: { name: neighbor.name, phone: neighbor.phone, address: neighbor.address, adults: neighbor.adults, children: neighbor.children, language: neighbor.language, ...(neighbor.language === "other" ? { languageName: spokenName(neighbor) } : {}), notes: neighbor.notes, alert: neighbor.alert ?? "" },
+      request: request ? { id: request._id, kind: request.kind, summary: request.summary, amount: request.amountRequested, payeeName: request.payeeName } : null,
       lastVisit: last ? { at: last.completedAt ?? last.scheduledAt, visitors: toVisitRow(await names(ctx, [last]), last).visitors.map((visitor) => visitor.name), notes: last.notes } : null,
     };
   },
