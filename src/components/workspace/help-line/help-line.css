@@ -406,7 +406,9 @@
 .help-first-read > button { padding-left: 23px; }
 
 /* The one next step the assistant read in a returned call's outcome: one plum line, never faded. */
-.help-row .help-next-step { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: var(--space-4); }
+/* The mark keeps beside its words, as on the Spanish line; the way on sits under the words, never under the mark. */
+.help-row .help-next-step { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; margin-top: var(--space-4); }
+.help-next-step > [data-slot="button"] { grid-column: 2; justify-self: start; }
 .help-next-step svg { position: relative; top: 2px; flex: none; }
 /* The household's lines lie in the form as its own lines; their box is only there to be said aloud as they arrive. */
 .help-repeat { display: contents; }
