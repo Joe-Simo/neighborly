@@ -68,6 +68,7 @@ async function setup() {
         await ctx.db.insert("webPartnerCodes", { partnerId, codeHash: "c", tries: 0, expiresAt: now + 1 });
         return partnerId;
       },
+      webNotices: () => ctx.db.insert("webNotices", { churchId, count: 1, since: now }),
       webBlocks: () => ctx.db.insert("webBlocks", { churchId, hash: "c", by: owner._id, at: now }),
       availability: () => ctx.db.insert("availability", { churchId, memberId: member._id, start: "2026-11-01", end: "2026-11-02" }),
     };

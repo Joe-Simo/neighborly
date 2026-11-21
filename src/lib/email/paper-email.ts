@@ -6,7 +6,7 @@ import type { Language, WordSet } from "../words/sets";
  * meaning here, so the sheet is ink on paper; the one link is ink too. Nothing is an image, so a mail app that
  * blocks pictures shows the whole email. Each comes with a plain-text twin that says the same thing.
  */
-type EmailKind = "invitation" | "cover_request" | "meeting" | "digest" | "announcement" | "help_code" | "intake_late" | "intake_late_owner" | "intake_paused";
+type EmailKind = "invitation" | "cover_request" | "meeting" | "digest" | "announcement" | "help_code" | "intake_late" | "intake_late_owner" | "intake_paused" | "intake_new";
 /** The week's counts for the Monday email: numbers only, never a name, so nothing about a household leaves in a mailbox. */
 type WeekCounts = { waiting: number; overdue: number; approved: number; budget: number | null };
 /** An announcement carries its own words: its title becomes the head and its message the body. */
@@ -17,7 +17,7 @@ const group = { en: { general: "group", vincentian: "conference" }, es: { genera
 
 type Said = { subject: string; head: string; body: string; action: string; foot: string };
 
-function said(kind: EmailKind, language: Language, set: WordSet, place: string, week?: WeekCounts, content?: Content): Said {
+function said(kind: EmailKind, language: Language, set: WordSet, place: string, week?: WeekCounts, content?: Content, count = 1): Said {
   const g = group[language][set];
   if (kind === "digest") return weekSaid(language, place, week ?? { waiting: 0, overdue: 0, approved: 0, budget: null });
   if (language === "es") {
@@ -36,6 +36,14 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string, 
         body: `Hay peticiones del formulario web en ${place} que llevan tres días hábiles o más sin contacto. Nada se cierra solo: alguien del equipo tiene que llamar.`,
         action: "Abrir la línea de ayuda",
         foot: "Recibes este correo porque eres responsable del grupo en Kind Helps.",
+      };
+      // For intake_new, how many requests reached the Help line in the last few minutes: a count, never a person.
+      case "intake_new": return {
+        subject: count === 1 ? `1 nueva petición de ayuda en ${place}` : `${count} nuevas peticiones de ayuda en ${place}`,
+        head: count === 1 ? "1 nueva petición de ayuda." : `${count} nuevas peticiones de ayuda.`,
+        body: `Llegaron a la línea de ayuda de ${place}. Ábrela para verlas y devolver la llamada.`,
+        action: "Abrir la línea de ayuda",
+        foot: "Puedes apagar estos correos en la línea de ayuda.",
       };
       case "intake_paused": return {
         subject: `El formulario web de ${place} está en pausa`,
@@ -97,6 +105,13 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string, 
       action: "Open the Help line",
       foot: "You get this email because you’re responsible for the group on Kind Helps.",
     };
+    case "intake_new": return {
+      subject: count === 1 ? `1 new request for help at ${place}` : `${count} new requests for help at ${place}`,
+      head: count === 1 ? "1 new request for help." : `${count} new requests for help.`,
+      body: `They reached the Help line at ${place}. Open it to see them and call back.`,
+      action: "Open the Help line",
+      foot: "You can turn these emails off on the Help line.",
+    };
     case "intake_paused": return {
       subject: `The web form for ${place} is paused`,
       head: "We paused your web form.",
@@ -148,8 +163,8 @@ const escape = (text: string) => text.replace(/[&<>"']/g, (c) => `&#${c.charCode
 const display = "Newsreader,Georgia,'Times New Roman',serif";
 const body = "'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif";
 
-export function paperEmail({ kind, language, set, place, link, week, content }: { kind: EmailKind; language: Language; set: WordSet; place: string; link: string; week?: WeekCounts; content?: Content }): Email {
-  return render(language, said(kind, language, set, place, week, content), link);
+export function paperEmail({ kind, language, set, place, link, week, content, count }: { kind: EmailKind; language: Language; set: WordSet; place: string; link: string; week?: WeekCounts; content?: Content; count?: number }): Email {
+  return render(language, said(kind, language, set, place, week, content, count), link);
 }
 
 /** One sheet of paper: the head, the words (a line break kept as one), the one way in, and the foot. */
