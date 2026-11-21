@@ -1024,7 +1024,11 @@ function useNavMarker(area: LiveArea) {
       const next = link && (known ?? places.current.get(link) ?? measure(link));
       if (next) for (const [name, value] of Object.entries(next)) marker.style.setProperty(name, value);
     };
-    place(current());
+    // A line already measured is placed at once. One not yet measured (the shell's first frame) is left to the
+    // observer's first call, made after that frame's layout: measured here, it laid out the whole new room inside
+    // React's commit, a phone's longest frame on arrival.
+    const now = current();
+    if (now && places.current.has(now)) place(now);
     const resized = new ResizeObserver(() => {
       for (const link of element.querySelectorAll<HTMLElement>("a")) measure(link);
       const now = current();
