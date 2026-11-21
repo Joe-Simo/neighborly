@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { noSessionKept } from "@/lib/no-session-kept";
 import { fetchRoom } from "@/components/workspace/sections";
@@ -251,6 +251,10 @@ function LiveRooms({
     churches.find((church) => church.id === selectedChurch)?.id ??
     churches[0]?.id;
   const dashboard = useDashboard({ churchId, enterSample, ready: asking, listing: viewer === undefined, sampleVisitor });
+  // The rooms are first drawn in a transition, not in the update that brought their data: React then builds them a few
+  // milliseconds at a time between frames, where in one piece they held a phone's frame for 60ms. The page stands as
+  // it was meanwhile; a room already in hand (kept, or seen before) is drawn at once.
+  const roomDrawn = useDeferredValue(!!dashboard);
   // The first room's lists name the same conference the room data does, asked as early (dashboard.ts), not after the list.
   const firstChurch = useFirstChurch({ churchId, enterSample, ready: asking, listing: viewer === undefined });
   // The page says which language it is showing, so a screen reader speaks Spanish as Spanish, in the rooms and in
@@ -514,7 +518,7 @@ function LiveRooms({
         }}
       />
     );
-  if (!dashboard)
+  if (!dashboard || !roomDrawn)
     return (
       <LiveRoomLoading />
     );
