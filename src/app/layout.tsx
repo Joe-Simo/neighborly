@@ -33,7 +33,6 @@ export const metadata: Metadata = {
     capable: true,
     title: "Kind Helps",
     statusBarStyle: "default",
-    startupImage: launchScreens,
   },
 };
 // The headline's two faces are asked for with the page, so the first paint is already in them. The text face is left to the stylesheet:
@@ -47,6 +46,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* iOS's launch pictures are part of the page's own head, not of its metadata: metadata is set down afresh on every
+            move between pages, and these forty-odd links, laid again inside the commit that opens the workspace, were most of
+            that frame's work. Here they are laid once, with the first page, and stay. */}
+        {launchScreens.map(({ url, media }) => <link key={url} rel="apple-touch-startup-image" href={url} media={media} />)}
         {/* The paper's colour is in the document itself, so the page is paper from its first frame, before any stylesheet arrives. */}
         <style dangerouslySetInnerHTML={{ __html: "html{background:#f5f3ec}" }} />
         {firstFaces.map((face) => <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />)}
