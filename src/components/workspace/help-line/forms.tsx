@@ -620,8 +620,8 @@ export function DecideForm({
           />
         </LiveField>
       )}
-      {/* The household's lines come a moment after the sheet opens, often after a reader has passed this place: they are said as they arrive. */}
-      <div className="help-repeat" aria-live="polite">
+      {/* The household's lines come a moment after the sheet opens, often after a reader has passed this place: they are said as they arrive. The aside's rule is drawn only once there is something under it. */}
+      <div className={repeat.length > 0 ? "help-records-said" : undefined} aria-live="polite">
         {repeat.map((line) => (
           <p key={line.text} className={line.assistant ? "help-assistant" : "help-form-note"}>
             {line.assistant && <Sparkles aria-hidden="true" size={16} />}
