@@ -9,7 +9,7 @@ import { nextStepSet, nextSteps, type NextStep } from "../src/lib/next-step-set"
 import { visitSet } from "../src/lib/visit-set";
 import { referralPlaces, referralSet, type ReferralPlace } from "../src/lib/referral-set";
 import { repeatSet } from "../src/lib/repeat-set";
-import { paceLines, repeatLines, type RepeatLine } from "../src/lib/repeat-words";
+import type { RepeatFacts } from "../src/lib/repeat-words";
 import { ledgerSet } from "../src/lib/ledger-set";
 import { spanishSet } from "../src/lib/spanish-set";
 import { DateTime } from "luxon";
@@ -1061,7 +1061,7 @@ function repeatState(request: string, earlier: { daysBefore: number; text: strin
 export const repeatHistory = internalQuery({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests") },
   returns: v.object({
-    userId: v.id("users"), request: v.string(), language: v.union(v.literal("en"), v.literal("es")), timeZone: v.string(),
+    userId: v.id("users"), request: v.string(), timeZone: v.string(),
     records: v.array(v.object({ at: v.number(), what: recordWhat, kind: v.optional(kindValidator), daysBefore: v.number(), text: v.string() })),
     recent: v.array(v.object({ at: v.number(), kind: kindValidator, status: v.union(v.literal("approved"), v.literal("paid")), amount: v.number() })),
     sameAmount: v.array(v.object({ at: v.number(), kind: kindValidator, amount: v.number() })),
@@ -1100,7 +1100,7 @@ export const repeatHistory = internalQuery({
       .sort((a, b) => b.at - a.at).slice(0, repeatRecords)
       .map(record => ({ ...record, daysBefore: Math.round((now - record.at) / 86_400_000) }));
     return {
-      userId: member.userId, language: member.language ?? "en", timeZone: church?.timeZone ?? "America/New_York",
+      userId: member.userId, timeZone: church?.timeZone ?? "America/New_York",
       request: [request.summary, call?.note ?? ""].map(text => text.trim()).filter(Boolean).join("\n"),
       records: texts, recent, sameAmount,
       names: [neighbor?.name ?? "", call?.callerName ?? ""].filter(Boolean),
@@ -1117,12 +1117,13 @@ const amountBaseline = 10;
  * year before (by decision date, in the group's time zone), and where the asked amount falls among the past year's
  * approvals of its kind. `at` is the moment the sheet asked, passed in because a query never reads the clock.
  */
+const spent = v.object({
+  month: v.number(), thisMonth: v.number(), lastYear: v.number(), budget: v.union(v.number(), v.null()),
+  kind: kindValidator, asked: v.number(), approvals: v.number(), median: v.number(), above: v.number(),
+});
 export const spending = internalQuery({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), at: v.number() },
-  returns: v.object({
-    month: v.number(), thisMonth: v.number(), lastYear: v.number(), budget: v.union(v.number(), v.null()),
-    kind: kindValidator, asked: v.number(), approvals: v.number(), median: v.number(), above: v.number(),
-  }),
+  returns: spent,
   handler: async (ctx, { churchId, requestId, at }) => {
     await neighborAccess(ctx, churchId);
     const [church, request] = await Promise.all([ctx.db.get("churches", churchId), ctx.db.get("assistanceRequests", requestId)]);
@@ -1149,7 +1150,7 @@ export const spending = internalQuery({
 });
 
 type RepeatFlag = { at: number; what: "request" | "note" | "visit"; kind?: RequestKind };
-type RepeatFound = { recent: { at: number; kind: RequestKind; status: "approved" | "paid"; amount: number }[]; same: RepeatFlag[]; differs: RepeatFlag[]; lines: RepeatLine[]; verification: "review" | "checked" };
+type RepeatFound = RepeatFacts & { same: RepeatFlag[]; differs: RepeatFlag[]; verification: "review" | "checked" };
 const repeatFlag = v.object({ at: v.number(), what: recordWhat, kind: v.optional(kindValidator) });
 /**
  * Before an approver decides: what the household's own records say about this request. Same-kind help approved or paid
@@ -1162,17 +1163,18 @@ export const checkRepeat = action({
   returns: v.object({
     recent: v.array(v.object({ at: v.number(), kind: kindValidator, status: v.union(v.literal("approved"), v.literal("paid")), amount: v.number() })),
     same: v.array(repeatFlag), differs: v.array(repeatFlag),
-    /** What the sheet shows, in the approver's language and the group's time zone; `assistant` marks the model's readings. */
-    lines: v.array(v.object({ text: v.string(), assistant: v.boolean() })),
+    /** Facts, never sentences: the sheet words them in the language on the screen (src/lib/repeat-words.ts). */
+    sameAmount: v.array(v.object({ at: v.number(), kind: kindValidator, amount: v.number() })),
+    spent, baseline: v.number(), timeZone: v.string(),
     verification: v.union(v.literal("review"), v.literal("checked")),
   }),
   handler: async (ctx, args): Promise<RepeatFound> => {
-    const [{ userId, request, language, timeZone, records, recent, sameAmount, names, addresses, others }, spent] = await Promise.all([
+    const [{ userId, request, timeZone, records, recent, sameAmount, names, addresses, others }, spent] = await Promise.all([
       ctx.runQuery(internal.drafts.repeatHistory, args),
       ctx.runQuery(internal.drafts.spending, { ...args, at: Date.now() }),
     ]);
-    const pace = paceLines(language, { ...spent, baseline: amountBaseline });
-    const unread = { recent, same: [], differs: [], lines: [...pace, ...repeatLines(language, timeZone, { recent, sameAmount, same: [], differs: [] })], verification: "review" as const };
+    const facts = { recent, sameAmount, spent, baseline: amountBaseline, timeZone };
+    const unread = { ...facts, same: [], differs: [], verification: "review" as const };
     if (!records.length || !request || !env.TYPESAFE_API_KEY || request.length > 2000) return unread;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return unread;
     const sure = await confidence(env.TYPESAFE_API_KEY,
@@ -1184,7 +1186,7 @@ export const checkRepeat = action({
     const flagged = (question: "same" | "differs") => records.flatMap((record, index) => (repeatHit(sure, question, index) ? [{ at: record.at, what: record.what, ...("kind" in record && record.kind ? { kind: record.kind } : {}) }] : []));
     const same = flagged("same");
     const differs = flagged("differs");
-    return { recent, same, differs, lines: [...pace, ...repeatLines(language, timeZone, { recent, sameAmount, same, differs })], verification: "checked" as const };
+    return { ...facts, same, differs, verification: "checked" as const };
   },
 });
 

@@ -31,6 +31,7 @@ import {
 import { useSave } from "@/components/workspace/help-line/use-save";
 import { words as wordsFor } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
+import { decisionLines } from "@/lib/repeat-words";
 
 /** English, for a sheet laid outside the workspace shell. */
 const english = wordsFor();
@@ -538,12 +539,12 @@ export function DecideForm({
     };
   }, [asks, churchId, request.id, suggestReferrals]);
   const checkRepeat = useAction(api.drafts.checkRepeat);
-  // The household's own records, read once before an open request is decided; the lines come written in the reader's language.
-  const [repeat, setRepeat] = useState<{ text: string; assistant: boolean }[]>([]);
+  // The household's own records, read once before an open request is decided: facts, worded below in the screen's language.
+  const [repeat, setRepeat] = useState<Parameters<typeof decisionLines>[1] | null>(null);
   const open = request.status === "open";
   useEffect(() => {
     let current = true;
-    if (open) checkRepeat({ churchId, requestId: request.id }).then((found) => current && setRepeat(found.lines)).catch(() => null);
+    if (open) checkRepeat({ churchId, requestId: request.id }).then((found) => current && setRepeat(found)).catch(() => null);
     return () => {
       current = false;
     };
@@ -552,7 +553,9 @@ export function DecideForm({
   const { pending, error, save } = useSave(approving ? "decided" : "saved");
   const voucher = approving ? request.voucher : null;
   const shelf = useShelf(churchId, !!voucher);
-  const w = useWords().rooms.helpLineForms.decide;
+  const all = useWords();
+  const w = all.rooms.helpLineForms.decide;
+  const lines = repeat ? decisionLines(all.locale, repeat) : [];
   // What the shelf holds of the voucher asked for, as its own whole sentence after what was asked.
   const held = voucher && shelf ? onShelf(shelf, voucher.item) : null;
   const shelfLine = !voucher || !shelf ? "" : held ? w.shelfHas(held.onHand) : w.notOnShelf;
@@ -621,8 +624,8 @@ export function DecideForm({
         </LiveField>
       )}
       {/* The household's lines come a moment after the sheet opens, often after a reader has passed this place: they are said as they arrive. The aside's rule is drawn only once there is something under it. */}
-      <div className={repeat.length > 0 ? "help-records-said" : undefined} aria-live="polite">
-        {repeat.map((line) => (
+      <div className={lines.length > 0 ? "help-records-said" : undefined} aria-live="polite">
+        {lines.map((line) => (
           <p key={line.text} className={line.assistant ? "help-assistant" : "help-form-note"}>
             {line.assistant && <Sparkles aria-hidden="true" size={16} />}
             {line.text}
