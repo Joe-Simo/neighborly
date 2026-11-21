@@ -16,7 +16,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useDashboard, useFirstChurch } from "@/components/workspace/dashboard";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
-import { authWords, leftKey, useEntryLanguage } from "@/components/live-auth-words";
+import { authWords, DrawnIn, leftKey, useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
 import type { LiveArea } from "@/components/workspace/areas";
 import { stateWords } from "@/components/workspace/failure";
@@ -73,6 +73,10 @@ function useOffline() {
 }
 
 /** The app, with the door's sweep above whatever it is showing. */
+let opened: number | undefined;
+/** The hour this page was opened in, the same for every reading of it. */
+const hourOpened = () => (opened ??= Math.floor(Date.now() / 3_600_000) * 3_600_000);
+
 export function LiveApp(props: Parameters<typeof LiveRooms>[0]) {
   useRoomAhead(props.area ?? "week");
   return (
@@ -113,7 +117,7 @@ function LiveRooms({
 }) {
   const router = useRouter();
   const [entryHandled, setEntryHandled] = useState(false);
-  const { ready, isAuthenticated, signedOut, clerkAnswered } = useAccount();
+  const { ready, isAuthenticated, signedOut, unknown, clerkAnswered } = useAccount();
   // Through the sample door, This week is first drawn from the seed's public answer while the session is being made
   // (first-look.tsx). The look ends when the signed-in room is whole in hand, or when the sample will not open.
   // The seed's look is This week's: arriving in another room, the room simply waits for the session.
@@ -259,10 +263,11 @@ function LiveRooms({
     };
   }, [shown]);
   // Asked from the hour the app was opened, so the question stays the same and the first page is what is coming.
-  const [openedAt] = useState(() => Math.floor(Date.now() / 3_600_000) * 3_600_000);
+  // Read after the page wakes (0 on the server, which has no present hour), so the server can draw the door.
+  const openedAt = useSyncExternalStore(noChange, hourOpened, () => 0);
   const commitmentPage = usePaginatedQuery(
     api.pages.commitmentsPage,
-    firstChurch && (area === "commitments" || area === "mine")
+    firstChurch && openedAt && (area === "commitments" || area === "mine")
       ? { ...firstChurch, scope: area === "mine" ? "mine" : "all", from: openedAt }
       : "skip",
     { initialNumItems: 30 },
@@ -436,7 +441,7 @@ function LiveRooms({
   if (look && !(kept && offline) && ((waiting && waitedLong) || (!waiting && !signedOut && sampleVisitor === true && !churchId))) setLookOver(true);
   // A kept room whose member has no conference any more (removed, or the conference closed) ends here too.
   if (kept && look && !waiting && !signedOut && viewer && !churchId) setLookOver(true);
-  if (look || signedOut) {
+  if (look || signedOut || unknown) {
     // A sample visitor reads the rooms in their own device's language, kept room or not; a member in their saved one.
     const lookLanguage = kept && !kept.visiting ? kept.room.user.language : deviceLanguage;
     const first = look && firstLookData(look, lookLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting, answers: helpKept?.answers } : {});
@@ -446,11 +451,21 @@ function LiveRooms({
     // Someone with an invitation in hand came to join their own people: the sample is not offered on the way.
     return (
       <>
-        {signedOut && sheetKnown && (
-          <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry && !liveToken} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing} onSampleRefused={() => setLookOver(true)} />
-        )}
+        {/* Drawn by the server too, with the launch line beside it: the page's head shows the one that holds
+            (lib/door-early.ts), and the sheet is the same element once the page knows, so it is never drawn twice. */}
+        {(signedOut || unknown) && sheetKnown && (unknown ? (["en", "es"] as const) : [deviceLanguage]).map((language) => (
+          <div key={`door-${language}`} className="door-out" data-maybe={unknown ? "" : undefined} data-language={language}>
+            <DrawnIn value={unknown ? language : null}>
+              <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry && !liveToken} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing} onSampleRefused={() => setLookOver(true)} />
+            </DrawnIn>
+          </div>
+        ))}
         {/* Nor is the sheet drawn before it is known whether a room will be: the launch line stands until then. */}
-        {!first && (lookComing || !sheetKnown) && <LiveRoomLoading key="wait" />}
+        {!first && (unknown || lookComing || !sheetKnown) && (
+          <div key="wait" className="door-wait" data-maybe={unknown ? "" : undefined}>
+            <LiveRoomLoading />
+          </div>
+        )}
         {first && (
           <FirstLookProvider key="room" value={first.look}>
             <LiveWorkspace

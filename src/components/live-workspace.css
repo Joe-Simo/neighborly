@@ -1001,3 +1001,9 @@
 @media (prefers-contrast: more) {
   .live-app, .live-dialog { --live-muted: #3d453a; --live-line: #8f9488; }
 }
+
+/* The door while the page wakes (live-app.tsx): the server draws the sign-in sheet and the launch line, and the
+   page's head (lib/door-early.ts) shows the sheet only to a browser that cannot be signed in. The wrappers lay out nothing. */
+.door-out, .door-wait { display: contents; }
+html:not([data-door-early]) .door-out[data-maybe], html[data-door-early] .door-wait[data-maybe],
+html[data-door-early="en"] .door-out[data-maybe][data-language="es"], html[data-door-early="es"] .door-out[data-maybe][data-language="en"] { display: none; }
