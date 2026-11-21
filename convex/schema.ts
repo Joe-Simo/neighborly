@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { spoken } from "./spoken";
+import { councilFigures } from "./councilFigures";
 const role = v.union(v.literal("owner"), v.literal("coordinator"), v.literal("member"));
 const language = v.union(v.literal("en"), v.literal("es"));
 /** Money is stored as whole cents, always positive; the entry kind says which way it moves. */
@@ -20,6 +21,16 @@ export default defineSchema({
   aiUsageByChurch: defineTable({ churchId: v.id("churches"), month: v.string(), count: v.number() }).index("by_church_month", ["churchId", "month"]),
   churches: defineTable({ name: v.string(), timeZone: v.string(), sample: v.optional(v.boolean()), wordSet: v.optional(v.union(v.literal("general"), v.literal("vincentian"))), /** What the group means to approve in help each month, in cents; unset until someone sets it. */ monthlyBudget: v.optional(v.number()), /** The most the group means to approve for one household in twelve months, in cents; unset until someone sets it. */ householdYearCap: v.optional(v.number()), /** Running figures kept by convex/counts.ts. */ householdCount: v.optional(v.number()), waitingCount: v.optional(v.number()), waitingHouseholdIds: v.optional(v.array(v.id("neighbors"))) }),
   memberships: defineTable({ churchId: v.id("churches"), userId: v.id("users"), name: v.string(), email: v.string(), role, active: v.boolean(), approved: v.boolean(), coverOptIn: v.boolean(), language: v.optional(language), /** Wants the week for deciders by email on Monday morning (convex/digest.ts). */ digestEmail: v.optional(v.boolean()), /** Set when the owner removed this person for good: the row stays, nameless, so their logged work still counts. */ removedAt: v.optional(v.number()) }).index("by_user", ["userId"]).index("by_church_user", ["churchId", "userId"]).index("by_church", ["churchId"]),
+  /**
+   * A district or particular council: a group of conferences that adds up their yearly counts together. Only counts
+   * and sums cross a link (convex/councils.ts); a council never reads a conference's neighbors, calls or notes.
+   */
+  councils: defineTable({ name: v.string(), timeZone: v.string(), createdAt: v.number() }),
+  councilMembers: defineTable({ councilId: v.id("councils"), userId: v.id("users"), role: v.literal("owner") }).index("by_user", ["userId"]).index("by_council_user", ["councilId", "userId"]),
+  /** A council's invitation to a conference, accepted by that conference's owner. Either side may end it. */
+  councilLinks: defineTable({ councilId: v.id("councils"), churchId: v.id("churches"), status: v.union(v.literal("pending"), v.literal("accepted")), createdAt: v.number() }).index("by_council", ["councilId"]).index("by_church", ["churchId"]).index("by_council_church", ["councilId", "churchId"]),
+  /** One conference's fiscal year, added up for its councils (convex/rollups.ts). Dirty once a record under it changed, until recomputed. */
+  yearRollups: defineTable({ churchId: v.id("churches"), year: v.number(), figures: councilFigures, computedAt: v.number(), dirty: v.boolean() }).index("by_church_year", ["churchId", "year"]).index("by_dirty", ["dirty"]),
   teams: defineTable({ churchId: v.id("churches"), name: v.string(), description: v.string() }).index("by_church", ["churchId"]),
   teamMembers: defineTable({ churchId: v.id("churches"), teamId: v.id("teams"), memberId: v.id("memberships"), teamRole: v.union(v.literal("coordinator"),v.literal("member")), approved:v.boolean(), status: v.union(v.literal("invited"), v.literal("active")) }).index("by_church", ["churchId"]).index("by_team_member", ["teamId", "memberId"]).index("by_member", ["memberId"]),
   series: defineTable({ churchId: v.id("churches"), teamId: v.id("teams"), intervalWeeks:v.number(), count:v.number() }).index("by_church", ["churchId"]),

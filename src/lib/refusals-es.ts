@@ -4,6 +4,13 @@
  * words. A sentence with a dynamic part is matched by its pattern instead.
  */
 export const serverRefusalsEs: Record<string, string> = {
+  "A council can hold 200 conferences.": "Un consejo puede tener hasta 200 conferencias.",
+  "Council not found.": "No se encontró ese consejo.",
+  "Council owner access required.": "Esto lo puede hacer solo quien administra el consejo.",
+  "Name the council.": "Ponle nombre al consejo.",
+  "No conference has that code.": "Ninguna conferencia tiene ese código.",
+  "That conference is already invited.": "Esa conferencia ya está invitada.",
+  "Choose a time zone.": "Elige una zona horaria.",
   "A birth year looks wrong.": "Un año de nacimiento no parece correcto.",
   "A deposit cannot clear the bank before the day it was made.": "Un depósito no puede pasar por el banco antes del día en que se hizo.",
   "A gift cannot be deposited before the day it was received.": "Un donativo no se puede depositar antes del día en que se recibió.",

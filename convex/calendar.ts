@@ -1,7 +1,8 @@
 import ical from "ical-generator";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, httpAction, internalMutation, internalQuery, query } from "./_generated/server";
+import { action, httpAction, internalQuery, query } from "./_generated/server";
+import { internalMutation } from "./functions";
 import { membership } from "./access";
 
 /**

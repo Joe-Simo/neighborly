@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalMutation } from "./_generated/server";
+import { internalMutation } from "./functions";
 import { queueAnnouncementEmail } from "./notificationEvents";
 /** Emails an announcement to the group's active, approved members, a bounded page at a time; each outbox record is idempotent. */
 export const process = internalMutation({

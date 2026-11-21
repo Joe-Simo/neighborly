@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { internalMutation, query, type MutationCtx } from "./_generated/server";
+import { query, type MutationCtx } from "./_generated/server";
+import { internalMutation } from "./functions";
 import type { Id } from "./_generated/dataModel";
 import { neighborAccess } from "./access";
 import schema from "./schema";

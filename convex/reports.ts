@@ -1,6 +1,6 @@
 import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
-import { query } from "./_generated/server";
+import { query, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, neighborAccess } from "./access";
 import { spokenName } from "./spoken";
@@ -85,6 +85,7 @@ const teamLine = v.object({ teamId: v.id("teams"), name: v.string(), shifts: v.n
 
 const placeLine = v.object({ visits: v.number(), people: v.number() });
 const goodsLine = v.object({ times: v.number(), items: v.number() });
+
 export const yearReport = v.object({
   year: v.number(),
   /** 1 to 4 when the report covers one quarter, null for the whole year. */
@@ -244,291 +245,301 @@ export const flagged = query({
   },
 });
 
+const quarterArg = v.optional(v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4)));
+
 export const year = query({
-  args: { churchId: v.id("churches"), at: hour, year: v.number(), quarter: v.optional(v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4))) },
+  args: { churchId: v.id("churches"), at: hour, year: v.number(), quarter: quarterArg },
   returns: yearReport,
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    const church = await ctx.db.get("churches", args.churchId);
-    if (!church) throw new ConvexError("Group not found.");
-    if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new ConvexError("Choose a year.");
-    const zone = church.timeZone;
-    const span = fiscalYear(args.year, zone, args.quarter);
-    const now = hourAsked(args.at);
-    const monthOf = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM");
-    const inChurch = { churchId: args.churchId };
-
-    const [calls, everyRequest, plannedVisits, ledger, memberships, teams, shelf] = await Promise.all([
-      whole(ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("takenAt", span.start).lt("takenAt", span.end))),
-      whole(ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("createdAt", span.start).lt("createdAt", span.end))),
-      whole(ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("scheduledAt", span.start).lt("scheduledAt", span.end))),
-      // The ledger from its first day to the end of the year: what came before is the beginning balance.
-      whole(ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", args.churchId).lt("date", span.dayAfter)), LEDGER_LIMIT),
-      whole(ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", inChurch.churchId))),
-      whole(ctx.db.query("teams").withIndex("by_church", (q) => q.eq("churchId", inChurch.churchId)), 200),
-      whole(ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("date", span.firstDay).lt("date", span.dayAfter))),
-    ]);
-    const visits = plannedVisits.filter((visit) => visit.status === "completed");
-    const requests = everyRequest.filter((request) => request.source !== "import");
-    const imported = everyRequest.filter((request) => request.source === "import");
-
-    const months = new Map(span.months.map((month) => [month, { month, calls: 0, requests: 0, visits: 0, households: 0, paid: 0, moneyIn: 0 }]));
-    const monthHouseholds = new Map(span.months.map((month) => [month, new Set<Id<"neighbors">>()]));
-    const month = (key: string) => {
-      const line = months.get(key);
-      if (!line) throw new Error("A record fell outside the year it was read for.");
-      return line;
-    };
-    const helpedIn = (key: string, neighborId: Id<"neighbors">) => monthHouseholds.get(key)?.add(neighborId);
-
-    // Money. A reversal is a new opposite entry, so an entry belongs to the side of the one it undoes.
-    let beginningBalance = 0, received = 0, spent = 0;
-    const sources = new Map<string, number>(), otherSpending = new Map<string, number>();
-    const paidByRequest = new Map<Id<"assistanceRequests">, { kind: Kind; neighborId: Id<"neighbors"> | undefined; paid: number; month: string }>();
-    for (const entry of ledger) {
-      const signed = entry.kind === "income" ? entry.amount : -entry.amount;
-      // What the group began with is a balance, not money received, even when it was entered inside the period.
-      if (entry.date < span.firstDay || (entry.category === incomeSources.opening && !entry.requestId)) { beginningBalance += signed; continue; }
-      const moneyIn = (entry.kind === "income") !== Boolean(entry.reverses);
-      if (entry.requestId) {
-        // Help toward a request: expenses less income among the entries carrying its id.
-        const toward = paidByRequest.get(entry.requestId) ?? { kind: isKind(entry.category) ? entry.category : "other", neighborId: entry.neighborId, paid: 0, month: entry.date.slice(0, 7) };
-        toward.paid -= signed;
-        paidByRequest.set(entry.requestId, toward);
-        month(entry.date.slice(0, 7)).paid -= signed;
-        spent -= signed;
-      } else if (moneyIn) {
-        add(sources, entry.category, signed);
-        month(entry.date.slice(0, 7)).moneyIn += signed;
-        received += signed;
-      } else {
-        add(otherSpending, entry.category, -signed);
-        spent -= signed;
-      }
-    }
-
-    const byKind = new Map(kinds.map((value) => [value, { kind: value, requests: 0, requestsPaid: 0, paid: 0, neighbors: new Set<Id<"neighbors">>() }]));
-    const kindLineFor = (value: Kind) => {
-      const line = byKind.get(value);
-      if (!line) throw new Error("Unknown kind of help.");
-      return line;
-    };
-    const helped = new Set<Id<"neighbors">>();
-    const requestsPaidFor = new Map<Id<"neighbors">, number>();
-    let helpPaid = 0;
-    for (const toward of paidByRequest.values()) {
-      const line = kindLineFor(toward.kind);
-      line.paid += toward.paid;
-      helpPaid += toward.paid;
-      if (toward.paid <= 0) continue;
-      line.requestsPaid += 1;
-      if (!toward.neighborId) continue;
-      line.neighbors.add(toward.neighborId);
-      add(requestsPaidFor, toward.neighborId, 1);
-      helped.add(toward.neighborId);
-      helpedIn(toward.month, toward.neighborId);
-    }
-
-    const status = { open: 0, approved: 0, paid: 0, declined: 0, closed: 0 };
-    let referred = 0, amountRequested = 0, amountApproved = 0;
-    for (const request of requests) {
-      kindLineFor(request.kind).requests += 1;
-      status[request.status] += 1;
-      month(monthOf(request.createdAt)).requests += 1;
-      if (request.referral) referred += 1;
-      amountRequested += request.amountRequested;
-      if (request.status === "approved" || request.status === "paid") amountApproved += request.amountApproved ?? 0;
-    }
-
-    // A request closed after money went out was helped in part; what was paid stays counted as paid.
-    const closedAfterPart = { requests: 0, paid: 0, approved: 0 };
-    await Promise.all(
-      requests.filter((request) => request.status === "closed").map(async (request) => {
-        const paid = await paidTowardRequest(ctx, request._id);
-        if (paid <= 0) return;
-        closedAfterPart.requests += 1;
-        closedAfterPart.paid += paid;
-        closedAfterPart.approved += request.amountApproved ?? 0;
-      }),
-    );
-
-    // Vouchers from the shelf. A line tied to a request goes down when given and up when taken back.
-    const vouchers = { given: 0, takenBack: 0 };
-    const heldByRequest = new Map<Id<"assistanceRequests">, { held: number; month: string }>();
-    for (const line of shelf) {
-      if (!line.requestId) continue;
-      // Given is what stayed given: a voucher taken back comes off it.
-      vouchers.given -= line.change;
-      if (line.change > 0) vouchers.takenBack += line.change;
-      const held = heldByRequest.get(line.requestId) ?? { held: 0, month: line.date.slice(0, 7) };
-      held.held -= line.change;
-      heldByRequest.set(line.requestId, held);
-    }
-    const voucherLine = kindLineFor("voucher");
-    const voucherHouseholds = new Set<Id<"neighbors">>();
-    let voucherRequests = 0;
-    const requestById = new Map(everyRequest.map((request) => [request._id, request]));
-    await Promise.all(
-      [...heldByRequest].map(async ([requestId, { held, month: key }]) => {
-        if (held <= 0) return;
-        const request = requestById.get(requestId) ?? (await ctx.db.get("assistanceRequests", requestId));
-        if (!request || request.churchId !== args.churchId) return;
-        voucherRequests += 1;
-        voucherHouseholds.add(request.neighborId);
-        voucherLine.neighbors.add(request.neighborId);
-        helped.add(request.neighborId);
-        helpedIn(key, request.neighborId);
-      }),
-    );
-
-    for (const call of calls) month(monthOf(call.takenAt)).calls += 1;
-
-    const receivedIds = new Set(requests.map((request) => request._id));
-    let paidTowardThese = 0;
-    for (const [requestId, toward] of paidByRequest) if (receivedIds.has(requestId)) paidTowardThese += toward.paid;
-    const paidLater = { requests: 0, amount: 0 };
-    for (const request of requests) {
-      // A voucher from the shelf is marked paid and owes no money, so no payment is ever coming for it.
-      if (request.status !== "paid" || !request.amountApproved) continue;
-      const paid = paidByRequest.get(request._id)?.paid ?? 0;
-      if (paid <= 0) paidLater.requests += 1;
-      paidLater.amount += Math.max(0, (request.amountApproved ?? 0) - paid);
-    }
-
-    const serving = new Map<Id<"memberships">, { visits: number; shifts: number; hours: number; miles: number }>();
-    const served = (memberId: Id<"memberships">) => {
-      const line = serving.get(memberId) ?? { visits: 0, shifts: 0, hours: 0, miles: 0 };
-      serving.set(memberId, line);
-      return line;
-    };
-    let visitHours = 0, visitMiles = 0;
-    for (const visit of visits) {
-      helped.add(visit.neighborId);
-      const key = monthOf(visit.scheduledAt);
-      month(key).visits += 1;
-      helpedIn(key, visit.neighborId);
-      for (const visitor of visit.visitors) {
-        const line = served(visitor.memberId);
-        line.visits += 1;
-        line.hours += visitor.hours;
-        line.miles += visitor.miles;
-        visitHours += visitor.hours;
-        visitMiles += visitor.miles;
-      }
-    }
-
-    // Household sizes, read once per household and never returned.
-    const inHistory = new Set(imported.map((request) => request.neighborId));
-    const known = new Map<Id<"neighbors">, Doc<"neighbors">>();
-    for (const neighbor of await Promise.all([...new Set([...helped, ...inHistory])].map((id) => ctx.db.get("neighbors", id))))
-      if (neighbor && neighbor.churchId === args.churchId) known.set(neighbor._id, neighbor);
-    const size = (id: Id<"neighbors">) => {
-      const neighbor = known.get(id);
-      return neighbor ? neighbor.adults + neighbor.children : 0;
-    };
-    const peopleIn = (ids: Iterable<Id<"neighbors">>) => [...ids].reduce((people, id) => people + size(id), 0);
-    const households = new Map([...known].filter(([id]) => helped.has(id)));
-    const historyHouseholds = [...inHistory].filter((id) => known.has(id));
-    const householdsByLanguage = { en: 0, es: 0 };
-    const otherLanguages = new Map<string, { name: string; households: number }>();
-    let adults = 0, children = 0;
-    for (const neighbor of households.values()) {
-      adults += neighbor.adults;
-      children += neighbor.children;
-      if (neighbor.language === "other") {
-        // One line per language however its capitals were typed; the first spelling met is the one shown.
-        const name = spokenName(neighbor), key = name.toLowerCase();
-        otherLanguages.set(key, { name: otherLanguages.get(key)?.name ?? name, households: (otherLanguages.get(key)?.households ?? 0) + 1 });
-      } else householdsByLanguage[neighbor.language] += 1;
-    }
-    for (const [key, set] of monthHouseholds) month(key).households = set.size;
-
-    // Time on shifts: assigned, not cancelled, begun in the year and already over.
-    const shiftEnd = Math.min(span.end, now);
-    const teamLines = await Promise.all(teams.map(async (team) => {
-      const shifts = (await whole(ctx.db.query("commitments").withIndex("by_team_start", (q) => q.eq("teamId", team._id).gte("start", span.start).lt("start", shiftEnd))))
-        .filter((shift) => shift.assigneeId && !shift.cancelled && shift.end <= now);
-      const people = new Set<Id<"memberships">>();
-      for (const shift of shifts) {
-        if (!shift.assigneeId) continue;
-        people.add(shift.assigneeId);
-        const line = served(shift.assigneeId);
-        line.shifts += 1;
-        line.hours += (shift.end - shift.start) / 3600000;
-      }
-      return { teamId: team._id, name: team.name, shifts: shifts.length, people: people.size, hours: round(shifts.reduce((hours, shift) => hours + (shift.end - shift.start) / 3600000, 0)) };
-    }));
-    const shiftHours = round(teamLines.reduce((hours, team) => hours + team.hours, 0));
-
-    const names = new Map(memberships.map((member) => [member._id, member.name]));
-
-    return {
-      year: args.year,
-      quarter: args.quarter ?? null,
-      firstDay: span.firstDay,
-      lastDay: span.lastDay,
-      timeZone: zone,
-      closed: now >= span.end,
-      households: households.size,
-      people: adults + children,
-      adults,
-      children,
-      householdsHelpedAgain: [...requestsPaidFor.values()].filter((paid) => paid > 1).length,
-      householdsByLanguage,
-      householdsByOtherLanguage: [...otherLanguages.values()].sort((a, b) => b.households - a.households || a.name.localeCompare(b.name)),
-      visits: visits.length,
-      peopleVisited: visits.reduce((people, visit) => people + size(visit.neighborId), 0),
-      visitHours: round(visitHours),
-      visitMiles: round(visitMiles),
-      visitsByPlace: visits.reduce((byPlace, visit) => {
-        const line = byPlace[visit.place ?? "home"];
-        line.visits += 1;
-        line.people += size(visit.neighborId);
-        return byPlace;
-      }, { home: { visits: 0, people: 0 }, prison: { visits: 0, people: 0 }, hospital: { visits: 0, people: 0 }, eldercare: { visits: 0, people: 0 }, other: { visits: 0, people: 0 } }),
-      guestHours: round(visits.reduce((hours, visit) => hours + (visit.guestHours ?? 0), 0)),
-      goods: (["food", "furniture", "clothing"] as const).reduce((all, kind) => {
-        const given = requests.filter((request) => (request.goods?.[kind] ?? 0) > 0);
-        return { ...all, [kind]: { times: given.length, items: given.reduce((sum, request) => sum + (request.goods?.[kind] ?? 0), 0) } };
-      }, { food: { times: 0, items: 0 }, furniture: { times: 0, items: 0 }, clothing: { times: 0, items: 0 } }),
-      helpPaid,
-      kinds: kinds.map((value) => {
-        const line = kindLineFor(value);
-        return { kind: value, requests: line.requests, requestsPaid: line.requestsPaid, households: line.neighbors.size, people: [...line.neighbors].reduce((people, id) => people + size(id), 0), paid: line.paid };
-      }),
-      requests: { received: requests.length, ...status, referred, amountRequested, amountApproved, paidTowardThese, paidLater, closedAfterPart, paidTowardEarlier: helpPaid - paidTowardThese },
-      history: {
-        requests: imported.length,
-        households: historyHouseholds.length,
-        people: peopleIn(historyHouseholds),
-        amount: imported.reduce((amount, request) => amount + (request.importedAmount ?? 0), 0),
-        kinds: kinds.map((value) => {
-          const ofKind = imported.filter((request) => request.kind === value);
-          return { kind: value, requests: ofKind.length, amount: ofKind.reduce((amount, request) => amount + (request.importedAmount ?? 0), 0) };
-        }),
-        householdsInAll: known.size,
-        peopleInAll: peopleIn(known.keys()),
-      },
-      vouchers: { ...vouchers, requests: voucherRequests, households: voucherHouseholds.size },
-      calls: { taken: calls.length, returned: calls.filter((call) => call.callback === "done").length, waiting: calls.filter((call) => call.callback === "needed").length },
-      time: {
-        // The one total every surface prints (the sheet's "Hours given", the book's "All hours of service"): the sum
-        // of the very lines the book lists under it, visits and each team, so the total and its lines never disagree.
-        hours: round(round(visitHours) + shiftHours),
-        shiftHours,
-        // The council's report counts the people who can serve: with access, and marked ready to serve.
-        activeMembers: memberships.filter((member) => member.active && member.approved).length,
-        membersServing: serving.size,
-        teams: teamLines.filter((team) => team.shifts > 0).sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
-        members: [...serving]
-          .map(([memberId, line]) => ({ memberId, name: names.get(memberId) ?? "A former member", visits: line.visits, shifts: line.shifts, hours: round(line.hours), miles: round(line.miles) }))
-          .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
-      },
-      money: { beginningBalance, received, sources: lines(sources), otherSpending: lines(otherSpending), spent, endingBalance: beginningBalance + received - spent },
-      months: span.months.map(month),
-    };
+    return yearFigures(ctx, { churchId: args.churchId, year: args.year, quarter: args.quarter }, hourAsked(args.at));
   },
 });
+
+/**
+ * The year's report for one group, with no access check of its own: every caller checks first. `year` above checks
+ * that the reader may open the group's records; convex/councils.ts checks that the reader owns a council the group
+ * has joined, and passes on only the counts and sums, never a line that names anyone.
+ */
+export async function yearFigures(ctx: QueryCtx, args: { churchId: Id<"churches">; year: number; quarter?: 1 | 2 | 3 | 4 }, now: number): Promise<YearReport> {
+  const church = await ctx.db.get("churches", args.churchId);
+  if (!church) throw new ConvexError("Group not found.");
+  if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new ConvexError("Choose a year.");
+  const zone = church.timeZone;
+  const span = fiscalYear(args.year, zone, args.quarter);
+  const monthOf = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM");
+  const inChurch = { churchId: args.churchId };
+
+  const [calls, everyRequest, plannedVisits, ledger, memberships, teams, shelf] = await Promise.all([
+    whole(ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("takenAt", span.start).lt("takenAt", span.end))),
+    whole(ctx.db.query("assistanceRequests").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("createdAt", span.start).lt("createdAt", span.end))),
+    whole(ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("scheduledAt", span.start).lt("scheduledAt", span.end))),
+    // The ledger from its first day to the end of the year: what came before is the beginning balance.
+    whole(ctx.db.query("ledgerEntries").withIndex("by_church", (q) => q.eq("churchId", args.churchId).lt("date", span.dayAfter)), LEDGER_LIMIT),
+    whole(ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", inChurch.churchId))),
+    whole(ctx.db.query("teams").withIndex("by_church", (q) => q.eq("churchId", inChurch.churchId)), 200),
+    whole(ctx.db.query("voucherStock").withIndex("by_church", (q) => q.eq("churchId", args.churchId).gte("date", span.firstDay).lt("date", span.dayAfter))),
+  ]);
+  const visits = plannedVisits.filter((visit) => visit.status === "completed");
+  const requests = everyRequest.filter((request) => request.source !== "import");
+  const imported = everyRequest.filter((request) => request.source === "import");
+
+  const months = new Map(span.months.map((month) => [month, { month, calls: 0, requests: 0, visits: 0, households: 0, paid: 0, moneyIn: 0 }]));
+  const monthHouseholds = new Map(span.months.map((month) => [month, new Set<Id<"neighbors">>()]));
+  const month = (key: string) => {
+    const line = months.get(key);
+    if (!line) throw new Error("A record fell outside the year it was read for.");
+    return line;
+  };
+  const helpedIn = (key: string, neighborId: Id<"neighbors">) => monthHouseholds.get(key)?.add(neighborId);
+
+  // Money. A reversal is a new opposite entry, so an entry belongs to the side of the one it undoes.
+  let beginningBalance = 0, received = 0, spent = 0;
+  const sources = new Map<string, number>(), otherSpending = new Map<string, number>();
+  const paidByRequest = new Map<Id<"assistanceRequests">, { kind: Kind; neighborId: Id<"neighbors"> | undefined; paid: number; month: string }>();
+  for (const entry of ledger) {
+    const signed = entry.kind === "income" ? entry.amount : -entry.amount;
+    // What the group began with is a balance, not money received, even when it was entered inside the period.
+    if (entry.date < span.firstDay || (entry.category === incomeSources.opening && !entry.requestId)) { beginningBalance += signed; continue; }
+    const moneyIn = (entry.kind === "income") !== Boolean(entry.reverses);
+    if (entry.requestId) {
+      // Help toward a request: expenses less income among the entries carrying its id.
+      const toward = paidByRequest.get(entry.requestId) ?? { kind: isKind(entry.category) ? entry.category : "other", neighborId: entry.neighborId, paid: 0, month: entry.date.slice(0, 7) };
+      toward.paid -= signed;
+      paidByRequest.set(entry.requestId, toward);
+      month(entry.date.slice(0, 7)).paid -= signed;
+      spent -= signed;
+    } else if (moneyIn) {
+      add(sources, entry.category, signed);
+      month(entry.date.slice(0, 7)).moneyIn += signed;
+      received += signed;
+    } else {
+      add(otherSpending, entry.category, -signed);
+      spent -= signed;
+    }
+  }
+
+  const byKind = new Map(kinds.map((value) => [value, { kind: value, requests: 0, requestsPaid: 0, paid: 0, neighbors: new Set<Id<"neighbors">>() }]));
+  const kindLineFor = (value: Kind) => {
+    const line = byKind.get(value);
+    if (!line) throw new Error("Unknown kind of help.");
+    return line;
+  };
+  const helped = new Set<Id<"neighbors">>();
+  const requestsPaidFor = new Map<Id<"neighbors">, number>();
+  let helpPaid = 0;
+  for (const toward of paidByRequest.values()) {
+    const line = kindLineFor(toward.kind);
+    line.paid += toward.paid;
+    helpPaid += toward.paid;
+    if (toward.paid <= 0) continue;
+    line.requestsPaid += 1;
+    if (!toward.neighborId) continue;
+    line.neighbors.add(toward.neighborId);
+    add(requestsPaidFor, toward.neighborId, 1);
+    helped.add(toward.neighborId);
+    helpedIn(toward.month, toward.neighborId);
+  }
+
+  const status = { open: 0, approved: 0, paid: 0, declined: 0, closed: 0 };
+  let referred = 0, amountRequested = 0, amountApproved = 0;
+  for (const request of requests) {
+    kindLineFor(request.kind).requests += 1;
+    status[request.status] += 1;
+    month(monthOf(request.createdAt)).requests += 1;
+    if (request.referral) referred += 1;
+    amountRequested += request.amountRequested;
+    if (request.status === "approved" || request.status === "paid") amountApproved += request.amountApproved ?? 0;
+  }
+
+  // A request closed after money went out was helped in part; what was paid stays counted as paid.
+  const closedAfterPart = { requests: 0, paid: 0, approved: 0 };
+  await Promise.all(
+    requests.filter((request) => request.status === "closed").map(async (request) => {
+      const paid = await paidTowardRequest(ctx, request._id);
+      if (paid <= 0) return;
+      closedAfterPart.requests += 1;
+      closedAfterPart.paid += paid;
+      closedAfterPart.approved += request.amountApproved ?? 0;
+    }),
+  );
+
+  // Vouchers from the shelf. A line tied to a request goes down when given and up when taken back.
+  const vouchers = { given: 0, takenBack: 0 };
+  const heldByRequest = new Map<Id<"assistanceRequests">, { held: number; month: string }>();
+  for (const line of shelf) {
+    if (!line.requestId) continue;
+    // Given is what stayed given: a voucher taken back comes off it.
+    vouchers.given -= line.change;
+    if (line.change > 0) vouchers.takenBack += line.change;
+    const held = heldByRequest.get(line.requestId) ?? { held: 0, month: line.date.slice(0, 7) };
+    held.held -= line.change;
+    heldByRequest.set(line.requestId, held);
+  }
+  const voucherLine = kindLineFor("voucher");
+  const voucherHouseholds = new Set<Id<"neighbors">>();
+  let voucherRequests = 0;
+  const requestById = new Map(everyRequest.map((request) => [request._id, request]));
+  await Promise.all(
+    [...heldByRequest].map(async ([requestId, { held, month: key }]) => {
+      if (held <= 0) return;
+      const request = requestById.get(requestId) ?? (await ctx.db.get("assistanceRequests", requestId));
+      if (!request || request.churchId !== args.churchId) return;
+      voucherRequests += 1;
+      voucherHouseholds.add(request.neighborId);
+      voucherLine.neighbors.add(request.neighborId);
+      helped.add(request.neighborId);
+      helpedIn(key, request.neighborId);
+    }),
+  );
+
+  for (const call of calls) month(monthOf(call.takenAt)).calls += 1;
+
+  const receivedIds = new Set(requests.map((request) => request._id));
+  let paidTowardThese = 0;
+  for (const [requestId, toward] of paidByRequest) if (receivedIds.has(requestId)) paidTowardThese += toward.paid;
+  const paidLater = { requests: 0, amount: 0 };
+  for (const request of requests) {
+    // A voucher from the shelf is marked paid and owes no money, so no payment is ever coming for it.
+    if (request.status !== "paid" || !request.amountApproved) continue;
+    const paid = paidByRequest.get(request._id)?.paid ?? 0;
+    if (paid <= 0) paidLater.requests += 1;
+    paidLater.amount += Math.max(0, (request.amountApproved ?? 0) - paid);
+  }
+
+  const serving = new Map<Id<"memberships">, { visits: number; shifts: number; hours: number; miles: number }>();
+  const served = (memberId: Id<"memberships">) => {
+    const line = serving.get(memberId) ?? { visits: 0, shifts: 0, hours: 0, miles: 0 };
+    serving.set(memberId, line);
+    return line;
+  };
+  let visitHours = 0, visitMiles = 0;
+  for (const visit of visits) {
+    helped.add(visit.neighborId);
+    const key = monthOf(visit.scheduledAt);
+    month(key).visits += 1;
+    helpedIn(key, visit.neighborId);
+    for (const visitor of visit.visitors) {
+      const line = served(visitor.memberId);
+      line.visits += 1;
+      line.hours += visitor.hours;
+      line.miles += visitor.miles;
+      visitHours += visitor.hours;
+      visitMiles += visitor.miles;
+    }
+  }
+
+  // Household sizes, read once per household and never returned.
+  const inHistory = new Set(imported.map((request) => request.neighborId));
+  const known = new Map<Id<"neighbors">, Doc<"neighbors">>();
+  for (const neighbor of await Promise.all([...new Set([...helped, ...inHistory])].map((id) => ctx.db.get("neighbors", id))))
+    if (neighbor && neighbor.churchId === args.churchId) known.set(neighbor._id, neighbor);
+  const size = (id: Id<"neighbors">) => {
+    const neighbor = known.get(id);
+    return neighbor ? neighbor.adults + neighbor.children : 0;
+  };
+  const peopleIn = (ids: Iterable<Id<"neighbors">>) => [...ids].reduce((people, id) => people + size(id), 0);
+  const households = new Map([...known].filter(([id]) => helped.has(id)));
+  const historyHouseholds = [...inHistory].filter((id) => known.has(id));
+  const householdsByLanguage = { en: 0, es: 0 };
+  const otherLanguages = new Map<string, { name: string; households: number }>();
+  let adults = 0, children = 0;
+  for (const neighbor of households.values()) {
+    adults += neighbor.adults;
+    children += neighbor.children;
+    if (neighbor.language === "other") {
+      // One line per language however its capitals were typed; the first spelling met is the one shown.
+      const name = spokenName(neighbor), key = name.toLowerCase();
+      otherLanguages.set(key, { name: otherLanguages.get(key)?.name ?? name, households: (otherLanguages.get(key)?.households ?? 0) + 1 });
+    } else householdsByLanguage[neighbor.language] += 1;
+  }
+  for (const [key, set] of monthHouseholds) month(key).households = set.size;
+
+  // Time on shifts: assigned, not cancelled, begun in the year and already over.
+  const shiftEnd = Math.min(span.end, now);
+  const teamLines = await Promise.all(teams.map(async (team) => {
+    const shifts = (await whole(ctx.db.query("commitments").withIndex("by_team_start", (q) => q.eq("teamId", team._id).gte("start", span.start).lt("start", shiftEnd))))
+      .filter((shift) => shift.assigneeId && !shift.cancelled && shift.end <= now);
+    const people = new Set<Id<"memberships">>();
+    for (const shift of shifts) {
+      if (!shift.assigneeId) continue;
+      people.add(shift.assigneeId);
+      const line = served(shift.assigneeId);
+      line.shifts += 1;
+      line.hours += (shift.end - shift.start) / 3600000;
+    }
+    return { teamId: team._id, name: team.name, shifts: shifts.length, people: people.size, hours: round(shifts.reduce((hours, shift) => hours + (shift.end - shift.start) / 3600000, 0)) };
+  }));
+  const shiftHours = round(teamLines.reduce((hours, team) => hours + team.hours, 0));
+
+  const names = new Map(memberships.map((member) => [member._id, member.name]));
+
+  return {
+    year: args.year,
+    quarter: args.quarter ?? null,
+    firstDay: span.firstDay,
+    lastDay: span.lastDay,
+    timeZone: zone,
+    closed: now >= span.end,
+    households: households.size,
+    people: adults + children,
+    adults,
+    children,
+    householdsHelpedAgain: [...requestsPaidFor.values()].filter((paid) => paid > 1).length,
+    householdsByLanguage,
+    householdsByOtherLanguage: [...otherLanguages.values()].sort((a, b) => b.households - a.households || a.name.localeCompare(b.name)),
+    visits: visits.length,
+    peopleVisited: visits.reduce((people, visit) => people + size(visit.neighborId), 0),
+    visitHours: round(visitHours),
+    visitMiles: round(visitMiles),
+    visitsByPlace: visits.reduce((byPlace, visit) => {
+      const line = byPlace[visit.place ?? "home"];
+      line.visits += 1;
+      line.people += size(visit.neighborId);
+      return byPlace;
+    }, { home: { visits: 0, people: 0 }, prison: { visits: 0, people: 0 }, hospital: { visits: 0, people: 0 }, eldercare: { visits: 0, people: 0 }, other: { visits: 0, people: 0 } }),
+    guestHours: round(visits.reduce((hours, visit) => hours + (visit.guestHours ?? 0), 0)),
+    goods: (["food", "furniture", "clothing"] as const).reduce((all, kind) => {
+      const given = requests.filter((request) => (request.goods?.[kind] ?? 0) > 0);
+      return { ...all, [kind]: { times: given.length, items: given.reduce((sum, request) => sum + (request.goods?.[kind] ?? 0), 0) } };
+    }, { food: { times: 0, items: 0 }, furniture: { times: 0, items: 0 }, clothing: { times: 0, items: 0 } }),
+    helpPaid,
+    kinds: kinds.map((value) => {
+      const line = kindLineFor(value);
+      return { kind: value, requests: line.requests, requestsPaid: line.requestsPaid, households: line.neighbors.size, people: [...line.neighbors].reduce((people, id) => people + size(id), 0), paid: line.paid };
+    }),
+    requests: { received: requests.length, ...status, referred, amountRequested, amountApproved, paidTowardThese, paidLater, closedAfterPart, paidTowardEarlier: helpPaid - paidTowardThese },
+    history: {
+      requests: imported.length,
+      households: historyHouseholds.length,
+      people: peopleIn(historyHouseholds),
+      amount: imported.reduce((amount, request) => amount + (request.importedAmount ?? 0), 0),
+      kinds: kinds.map((value) => {
+        const ofKind = imported.filter((request) => request.kind === value);
+        return { kind: value, requests: ofKind.length, amount: ofKind.reduce((amount, request) => amount + (request.importedAmount ?? 0), 0) };
+      }),
+      householdsInAll: known.size,
+      peopleInAll: peopleIn(known.keys()),
+    },
+    vouchers: { ...vouchers, requests: voucherRequests, households: voucherHouseholds.size },
+    calls: { taken: calls.length, returned: calls.filter((call) => call.callback === "done").length, waiting: calls.filter((call) => call.callback === "needed").length },
+    time: {
+      // The one total every surface prints (the sheet's "Hours given", the book's "All hours of service"): the sum
+      // of the very lines the book lists under it, visits and each team, so the total and its lines never disagree.
+      hours: round(round(visitHours) + shiftHours),
+      shiftHours,
+      // The council's report counts the people who can serve: with access, and marked ready to serve.
+      activeMembers: memberships.filter((member) => member.active && member.approved).length,
+      membersServing: serving.size,
+      teams: teamLines.filter((team) => team.shifts > 0).sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
+      members: [...serving]
+        .map(([memberId, line]) => ({ memberId, name: names.get(memberId) ?? "A former member", visits: line.visits, shifts: line.shifts, hours: round(line.hours), miles: round(line.miles) }))
+        .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name)),
+    },
+    money: { beginningBalance, received, sources: lines(sources), otherSpending: lines(otherSpending), spent, endingBalance: beginningBalance + received - spent },
+    months: span.months.map(month),
+  };
+}
 
 /**
  * The Housing Provider Summary, as ServWare prints it: what the group paid each landlord, month by month across the

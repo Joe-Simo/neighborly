@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { DateTime } from "luxon";
-import { internalAction, internalMutation, internalQuery, mutation, query, type QueryCtx } from "./_generated/server";
+import { internalAction, internalQuery, query, type QueryCtx } from "./_generated/server";
+import { internalMutation, mutation } from "./functions";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { hour, hourAsked, mayOpenNeighborRecords, neighborAccess } from "./access";

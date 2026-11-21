@@ -45,4 +45,4 @@ export const ledgerSet: LedgerMemo[] = [
 ];
 
 /** The last measured run of the fresh memos with the rule the month check uses (offLine in convex/drafts.ts). */
-export const ledgerMeasured = { day: "2026-11-21", notes: 7, right: 7, missed: 0, wrong: 0 };
+export const ledgerMeasured = { day: "2026-11-21", notes: 19, right: 18, missed: 1, wrong: 0 };

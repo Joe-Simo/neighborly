@@ -4,7 +4,8 @@ import { parseScheduledTime, parseCalendarDate, overlapsTimeOff, expandWeeklySch
 import { internal } from "./_generated/api";
 import { accountEmailConfiguration } from "./notifications";
 import { queueCoverRequest, cancelPendingNotification } from "./notificationEvents";
-import { query, mutation, type QueryCtx, type MutationCtx } from "./_generated/server";
+import { query, type QueryCtx, type MutationCtx } from "./_generated/server";
+import { mutation } from "./functions";
 import { user, membership, firstMembership } from "./access";
 import { isSampleVisitor } from "./demo";
 import type { Id } from "./_generated/dataModel";

@@ -54,6 +54,8 @@ const WeekDigest = lazy(() => import("@/components/workspace/reports/week-digest
 const SvdpSheet = lazy(() => import("@/components/workspace/reports/svdp-sheet"));
 // The landlord summary, its words and all, is its own chunk: the room carries only this line to fetch it.
 const HousingSection = lazy(() => import("@/components/workspace/reports/housing-providers"));
+/** The district or council report: fetched only for a real conference, and read only once it is opened. */
+const CouncilSection = lazy(() => import("@/components/workspace/reports/council"));
 /**
  * The summary's reading, handed to the chunk: read here, through the room's own query module, so the chunk does
  * not pull that module in after it (which moves shared code into a chunk of its own on every page's first load).
@@ -220,6 +222,11 @@ function Report() {
     <Suspense fallback={null}>
       <HousingSection key={year} year={year} read={useHousingSummary} lines={housingLines} />
     </Suspense>
+    {!data.church.sample && (
+      <Suspense fallback={null}>
+        <CouncilSection key={year} year={year} money={housingLines.money} />
+      </Suspense>
+    )}
     </>
   );
 }

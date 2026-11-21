@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalMutation, mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./functions";
 import { membership } from "./access";
 import { cancelPendingNotification } from "./notificationEvents";
 import { rebuildNames } from "./knownNames";

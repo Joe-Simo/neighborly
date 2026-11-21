@@ -10,4 +10,6 @@ crons.daily("drop what the assistant was sent, after 30 days", { hourUTC: 9, min
 crons.weekly("the week for deciders, by email", { dayOfWeek: "monday", hourUTC: 11, minuteUTC: 0 }, internal.digest.monday);
 // Uploaded bytes no file row names, a day on: a refused or abandoned upload (files.sweep).
 crons.daily("drop uploads that were never kept, after a day", { hourUTC: 10, minuteUTC: 0 }, internal.files.sweep, {});
+// A council's stored years still marked stale, in case a recompute was lost (convex/rollups.ts).
+crons.hourly("add up council years left stale", { minuteUTC: 15 }, internal.councils.recomputeDirty, {});
 export default crons;

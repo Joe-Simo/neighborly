@@ -20,6 +20,20 @@ const eslintConfig = defineConfig([
     },
   },
   {
+    // Every write goes through convex/functions.ts, so the council rollups hear of it (convex/rollups.ts).
+    files: ["convex/**/*.ts"],
+    ignores: ["convex/functions.ts", "convex/**/*.test.ts", "convex/_generated/**"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        paths: [{
+          name: "./_generated/server",
+          importNames: ["mutation", "internalMutation"],
+          message: "Import mutation and internalMutation from ./functions, so council rollups are kept fresh.",
+        }],
+      }],
+    },
+  },
+  {
     // APIs Safari does not have. Calling one unguarded throws on iPhone and iPad (it crashed the home page once), so every use goes through
     // the one helper that falls back where they are missing.
     files: ["src/**/*.{ts,tsx}"],
