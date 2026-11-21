@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
@@ -19,7 +19,7 @@ async function group() {
     await ctx.db.insert("referralAgencies", { churchId, name: "County Rent Program", phone: "", helpsWith: "rent and eviction help" });
     await ctx.db.insert("referralAgencies", { churchId, name: "Unwritten Place", phone: "", helpsWith: "" });
     const visitId = await ctx.db.insert("visits", { churchId, neighborId, requestId, scheduledAt: 0, status: "completed", visitors: [{ memberId, hours: 1, miles: 0 }], notes: "Ana Visitor met Rosa Delgado. Kitchen empty, no food in the house. Two kids, one on insulin.", completedAt: 1, createdBy: memberId, createdAt: 0 });
-    return { churchId, requestId, visitId };
+    return { churchId, requestId, visitId, userId };
   });
   return { t, ids, signed: t.withIdentity({ subject: "clerk|coordinator", email: "c@example.org", emailVerified: true }) };
 }
@@ -58,8 +58,8 @@ describe("what a visit found", () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const fetch = replying({ noFood: yes(0.98), child: yes(0.95), medical: yes(0.93), alone: yes(0.6), chosenKind: { type: "choice", choice: "food", confidence: 0.94 } });
     vi.stubGlobal("fetch", fetch);
-    const { t, ids, signed } = await group();
-    const read = await signed.action(api.drafts.readVisit, { churchId: ids.churchId, visitId: ids.visitId });
+    const { t, ids } = await group();
+    const read = await t.action(internal.drafts.readVisit, { churchId: ids.churchId, visitId: ids.visitId, userId: ids.userId });
     expect(read).toEqual({ kind: "food", signs: ["noFood", "child", "medical"], verification: "checked" });
     expect(fetch.mock.calls[0][1].body).not.toMatch(/Rosa|Delgado|Ana Visitor/);
     const visit = await t.run(ctx => ctx.db.get("visits", ids.visitId));
@@ -70,11 +70,11 @@ describe("what a visit found", () => {
   test("an unsure pick is left out, and with no reply nothing is kept", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     vi.stubGlobal("fetch", replying({ chosenKind: { type: "choice", choice: "food", confidence: 0.7 } }));
-    const { t, ids, signed } = await group();
-    expect(await signed.action(api.drafts.readVisit, { churchId: ids.churchId, visitId: ids.visitId })).toMatchObject({ kind: null, signs: [] });
+    const { t, ids } = await group();
+    expect(await t.action(internal.drafts.readVisit, { churchId: ids.churchId, visitId: ids.visitId, userId: ids.userId })).toMatchObject({ kind: null, signs: [] });
     vi.stubGlobal("fetch", vi.fn(async () => new Response("", { status: 500 })));
     await t.run(ctx => ctx.db.patch("visits", ids.visitId, { found: undefined }));
-    expect(await signed.action(api.drafts.readVisit, { churchId: ids.churchId, visitId: ids.visitId })).toMatchObject({ verification: "review" });
+    expect(await t.action(internal.drafts.readVisit, { churchId: ids.churchId, visitId: ids.visitId, userId: ids.userId })).toMatchObject({ verification: "review" });
     expect((await t.run(ctx => ctx.db.get("visits", ids.visitId)))?.found).toBeUndefined();
   });
 });

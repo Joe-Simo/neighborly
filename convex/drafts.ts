@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
+import { visitSet } from "../src/lib/visit-set";
 import { referralPlaces, referralSet, type ReferralPlace } from "../src/lib/referral-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { hour, hourAsked, neighborAccess, user } from "./access";
@@ -37,14 +38,15 @@ export const sampleSessionAllowance = 12;
  * visitor's own sign-in session instead: one visitor can never use up the sample for everyone.
  */
 export const reserve = internalMutation({
-  args: { userId: v.id("users"), churchId: v.optional(v.id("churches")) },
+  /** `session`: a sample visitor's sign-in session, from a read scheduled after their own save, when no identity is at hand. */
+  args: { userId: v.id("users"), churchId: v.optional(v.id("churches")), session: v.optional(v.string()) },
   returns: v.union(v.literal("ok"), v.literal("minute"), v.literal("month")),
-  handler: async (ctx, { userId, churchId }) => {
+  handler: async (ctx, { userId, churchId, session: scheduledFor }) => {
     const windowStart = Math.floor(Date.now() / 60_000) * 60_000;
     const identity = await ctx.auth.getUserIdentity();
-    const visitor = isSampleVisitor(identity?.subject);
+    const visitor = scheduledFor !== undefined || isSampleVisitor(identity?.subject);
     // Clerk names the session in `sid`; a token without one counts as a single session, so it is held tightest.
-    const session = visitor ? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
+    const session = visitor ? scheduledFor ?? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
     const day = new Date().toISOString().slice(0, 10);
     const own = session ? await ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", session).eq("day", day)).unique() : null;
     const previous = session ? null : await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
@@ -709,14 +711,13 @@ export const suggestReferrals = action({
 /** A written-up visit's note, with the names and addresses that must be taken out of it. */
 export const visitNote = internalQuery({
   args: { churchId: v.id("churches"), visitId: v.id("visits") },
-  returns: v.object({ userId: v.id("users"), note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
+  returns: v.object({ note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
   handler: async (ctx, { churchId, visitId }) => {
-    const member = await neighborAccess(ctx, churchId);
     const visit = await ctx.db.get("visits", visitId);
     if (!visit || visit.churchId !== churchId || visit.status !== "completed") throw new ConvexError("Visit not found.");
     const neighbor = await ctx.db.get("neighbors", visit.neighborId);
     return {
-      userId: member.userId, note: visit.notes,
+      note: visit.notes,
       names: neighbor?.name ? [neighbor.name] : [],
       addresses: neighbor?.address ? [neighbor.address] : [],
       others: await namesFor(ctx, churchId),
@@ -737,15 +738,16 @@ export const keepFound = internalMutation({
  * After a visit is written up: whether its note shows a need the visit was not for. The same measured questions as
  * the help line (the kind-of-help pick and each urgent sign, at 0.9 or more) are asked of the note with names and
  * addresses taken out. What passes is kept on the visit and shown under it; nothing is started, and a person decides.
+ * Scheduled by visits.writeUp, inside the member's own save, so it is never reachable from outside and needs no sign-in of its own.
  */
-export const readVisit = action({
-  args: { churchId: v.id("churches"), visitId: v.id("visits") },
+export const readVisit = internalAction({
+  args: { churchId: v.id("churches"), visitId: v.id("visits"), userId: v.id("users"), session: v.optional(v.string()) },
   returns: v.object({ kind: v.union(...requestKinds.map(kind => v.literal(kind)), v.null()), signs: v.array(v.union(...urgentReasons.map(reason => v.literal(reason)))), verification: v.union(v.literal("review"), v.literal("checked")) }),
   handler: async (ctx, args): Promise<{ kind: RequestKind | null; signs: UrgentReason[]; verification: "review" | "checked" }> => {
-    const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.visitNote, args);
+    const { note, names, addresses, others } = await ctx.runQuery(internal.drafts.visitNote, { churchId: args.churchId, visitId: args.visitId });
     const none = { kind: null, signs: [], verification: "review" as const };
     if (!note.trim() || !env.TYPESAFE_API_KEY || note.length > 2000) return none;
-    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return none;
+    if (await ctx.runMutation(internal.drafts.reserve, { userId: args.userId, churchId: args.churchId, session: args.session }) !== "ok") return none;
     const found = urgentSigns(note);
     const questions = { ...Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, found)])), chosenKind: kindQuestion };
     const answers = await decide(env.TYPESAFE_API_KEY, { note }, questions, { names, addresses, others });
@@ -783,5 +785,33 @@ export const measureReferrals = internalAction({
     }));
     const add = (only: boolean) => rows.filter(row => !only || row.heldOut).flatMap(row => row.marks).reduce((sum, mark) => ({ ...sum, [mark]: sum[mark] + 1 }), { ...zero });
     return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, offered, scores }) => ({ id, offered, scores })) };
+  },
+});
+
+/**
+ * Measures the visit read on the made-up set (src/lib/visit-set.ts) with the same questions and 0.9 line readVisit uses.
+ * The kind and each of the eight signs is one mark: right, missed (left out but true) or wrong (shown but untrue).
+ */
+export const measureVisits = internalAction({
+  args: { churchId: v.id("churches") },
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(), all: referralTally, heldOut: referralTally, rows: v.array(v.object({ id: v.string(), kind: v.union(v.string(), v.null()), signs: v.array(v.string()) })) }),
+  handler: async (ctx, { churchId }) => {
+    const zero = { right: 0, missed: 0, wrong: 0 };
+    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const key = env.TYPESAFE_API_KEY;
+    if (!key) return { status: "no key" as const, ...none };
+    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: visitSet.length })) return { status: "no allowance" as const, ...none };
+    const rows = await Promise.all(visitSet.map(async item => {
+      const found = urgentSigns(item.note);
+      const answers = await decide(key, { note: item.note }, { ...Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, found)])), chosenKind: kindQuestion });
+      const pick = answers ? picked(answers.chosenKind) : null;
+      const kind = pick && pick.kind !== "none" && pick.confidence >= sureEnough ? pick.kind : null;
+      const signs = answers ? urgentReasons.filter(reason => (noul(answers[reason]) ?? 0) >= sureEnough) : [];
+      const mark = (shown: boolean, wanted: boolean) => (shown === wanted ? "right" : shown ? "wrong" : "missed");
+      const marks = [kind === item.kind ? "right" : kind ? "wrong" : "missed", ...urgentReasons.map(reason => mark(signs.includes(reason), item.signs.includes(reason)))] as const;
+      return { id: item.id, kind, signs, marks, heldOut: !!item.heldOut };
+    }));
+    const add = (only: boolean) => rows.filter(row => !only || row.heldOut).flatMap(row => row.marks).reduce((sum, mark) => ({ ...sum, [mark]: sum[mark] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, kind, signs }) => ({ id, kind, signs })) };
   },
 });

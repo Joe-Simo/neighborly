@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DateTime } from "luxon";
-import { useAction, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { useQuery, useSearchAsked } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -364,7 +364,6 @@ export function WriteUpForm({
   const { words } = useWorkspace();
   const text = words.rooms.visitsRoom.forms;
   const writeUp = useMutation(api.visits.writeUp);
-  const readVisit = useAction(api.drafts.readVisit);
   const { pending, error, save } = useSave();
   return (
     <form
@@ -407,8 +406,6 @@ export function WriteUpForm({
         });
         // Only once the save has committed is the sheet folded into the household's file; a refusal leaves it flat.
         if (!outcome.saved) return;
-        // The assistant reads the note for a need the visit was not for; what it finds is kept on the visit and shown under it.
-        void readVisit({ churchId, visitId: visit.id }).catch(() => null);
         await fileAway(form.closest<HTMLElement>(".live-dialog"), visit.neighborName);
         onSaved();
       }}

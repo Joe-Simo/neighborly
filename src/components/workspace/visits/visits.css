@@ -26,11 +26,6 @@
 }
 /* What pressing the button will do, said just above it. */
 :is(.live-app, .live-dialog) .visits-consequence { margin: 0; color: var(--live-muted); font-size: 16px; line-height: 1.5; max-width: 52ch; }
-.visits-found {
-  color: #4b564d !important;
-  max-width: 62ch;
-  margin-bottom: var(--space-8) !important;
-}
 .visits-given {
   color: var(--live-muted);
   font-variant-numeric: tabular-nums;
@@ -326,5 +321,4 @@
 }
 :root[data-shell="ios"][data-text-large] .live-app .visits-written-found > span:last-child { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
 /* What the assistant read in a written-up visit's note: its words in plum, whole, never faded. */
-.visits-found { display: flex; align-items: center; gap: var(--space-8) 8px; margin-top: var(--space-4); font-size: 15px; line-height: 1.45; color: var(--paper-plum); }
-.visits-found svg { flex: none; }
+.visits-found { margin-top: var(--space-4); font-size: 15px; line-height: 1.45; color: var(--paper-plum); }

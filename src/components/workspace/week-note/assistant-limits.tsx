@@ -179,6 +179,12 @@ export function AssistantGuide() {
   const { words } = useWorkspace();
   const text = words.assistant.guide;
   const [open, setOpen] = useState(false);
+  // Its words load only when the sheet opens, so they weigh nothing in the rooms that carry the link.
+  const [referrals, setReferrals] = useState("");
+  useEffect(() => {
+    if (!open) return;
+    void import("@/components/workspace/week-note/referral-words").then((m) => setReferrals(m.referralWords(words.locale)));
+  }, [open, words.locale]);
   return (
     <>
       <button type="button" className={`${quiet} text-[15px] !text-[var(--live-muted)] decoration-[#b9c4b0]`} data-opens="" onClick={() => setOpen(true)}>
@@ -194,6 +200,7 @@ export function AssistantGuide() {
               [text.person, text.personDetail],
               [text.limit, text.limitDetail(monthlyAllowance)],
               [text.measured, text.measuredDetail(formatDay(words.locale, measured.day))],
+              ...(referrals ? [referrals.split("|")] : []),
             ].map(([label, detail]) => (
               <div key={label} className="grid gap-x-6 gap-y-1 min-[700px]:grid-cols-[10.5rem_minmax(0,1fr)]">
                 <dt className="text-[17px] font-[650] text-[var(--live-ink)]">{label}</dt>
