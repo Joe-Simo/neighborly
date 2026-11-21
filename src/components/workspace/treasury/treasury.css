@@ -239,6 +239,7 @@
     width: 100%;
   }
   .treasury-foot [data-slot="button"],
+  .treasury-budget > [data-slot="button"],
   .treasury-starter > [data-slot="button"] {
     width: 100%;
   }
@@ -493,6 +494,7 @@
     flex: none;
   }
   .live-app .treasury-foot [data-slot="button"],
+  .live-app .treasury-budget > [data-slot="button"],
   .live-app .treasury-starter > [data-slot="button"] {
     width: auto;
   }
@@ -689,8 +691,10 @@
   .live-main:has(.help-ledger) .treasury-balance-leaves { display: none; }
   .live-main:has(.help-ledger) .treasury-sheet { break-inside: avoid; }
 }
-.treasury-budget { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8) var(--space-16); margin-top: var(--space-24); }
-.treasury-budget > p { margin: 0; }
+/* The month's budget is one more of the ways on from the ledger, set as the foot's rows are: its figure as the heading. */
+.treasury-budget { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-20) 40px; padding: var(--space-24) 0; border-bottom: 1px solid var(--live-line); }
+.treasury-budget h2 { font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 var(--space-8); font-feature-settings: "lnum", "tnum"; }
+.treasury-budget p { margin: 0; color: var(--live-muted); font-size: 17px; }
 .treasury-budget > form { flex-basis: 100%; }
 /* The month check: waiting is ochre; a flag the assistant raised is plum (.help-assistant); nothing is red. */
 .treasury-check { margin-top: var(--space-24); }
