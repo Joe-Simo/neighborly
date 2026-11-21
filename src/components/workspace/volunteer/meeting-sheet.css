@@ -7,7 +7,7 @@
 .meeting-people { display: flex; flex-wrap: wrap; gap: var(--space-8); }
 .meeting-people [data-slot="toggle"] { min-height: 44px; }
 @media print {
-  body:has(.meeting-dialog) > :not([data-slot="dialog-portal"]):not(:has(.meeting-dialog)) { display: none !important; }
-  .meeting-dialog .live-form-actions, .meeting-dialog [data-slot="dialog-close"] { display: none !important; }
-  .meeting-dialog { position: static !important; transform: none !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; }
+  html[data-print="meeting"] body > :not([data-slot="dialog-portal"]):not(.meeting-dialog):not(:has(.meeting-dialog)) { display: none !important; }
+  html[data-print="meeting"] .meeting-dialog .live-form-actions, html[data-print="meeting"] .meeting-dialog [data-slot="dialog-close"] { display: none !important; }
+  html[data-print="meeting"] .meeting-dialog { position: static !important; transform: none !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; }
 }
