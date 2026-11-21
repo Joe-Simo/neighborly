@@ -5,6 +5,8 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, logNeighborOpening, membership, neighborAccess, neighborRecord, openedBy, opening } from "./access";
 import { streetOnly } from "./calendar";
 import { mayUndo } from "./undo";
+import { isSampleVisitor } from "./demo";
+import { internal } from "./_generated/api";
 import { formerMember } from "./people";
 import { spoken, spokenName, type Spoken } from "./spoken";
 import { overlapsTimeOff, parseCalendarDate, parseScheduledTime } from "../src/lib/scheduling";
@@ -473,7 +475,7 @@ export const writeUp = mutation({
   args: { churchId: v.id("churches"), visitId: v.id("visits"), notes: v.string(), hours: v.number(), miles: v.number(), driverId: v.optional(v.id("memberships")) },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await neighborAccess(ctx, args.churchId);
+    const member = await neighborAccess(ctx, args.churchId);
     const visit = await openVisit(ctx, args.churchId, args.visitId);
     if (visit.status !== "scheduled") throw new ConvexError("This visit is already written up or was canceled.");
     const notes = args.notes.trim();
@@ -482,6 +484,10 @@ export const writeUp = mutation({
     if (!Number.isFinite(args.miles) || args.miles < 0 || args.miles > 1000) throw new ConvexError("Enter the miles driven, or 0.");
     if (args.driverId && !visit.visitors.some((visitor) => visitor.memberId === args.driverId)) throw new ConvexError("The driver must be one of the two visitors.");
     await ctx.db.patch("visits", visit._id, { status: "completed", notes, completedAt: Date.now(), visitors: visit.visitors.map((visitor) => ({ ...visitor, hours: args.hours, miles: !args.driverId || visitor.memberId === args.driverId ? args.miles : 0 })) });
+    // The assistant reads the note for a need the visit was not for, after the save; a sample visitor's read counts against their own session.
+    const identity = await ctx.auth.getUserIdentity();
+    const session = isSampleVisitor(identity?.subject) ? (typeof identity?.sid === "string" ? identity.sid : "unnamed") : undefined;
+    await ctx.scheduler.runAfter(0, internal.drafts.readVisit, { churchId: args.churchId, visitId: visit._id, userId: member.userId, session });
     return null;
   },
 });

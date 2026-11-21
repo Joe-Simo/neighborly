@@ -38,14 +38,15 @@ export const sampleSessionAllowance = 12;
  * visitor's own sign-in session instead: one visitor can never use up the sample for everyone.
  */
 export const reserve = internalMutation({
-  args: { userId: v.id("users"), churchId: v.optional(v.id("churches")) },
+  /** `session`: a sample visitor's sign-in session, from a read scheduled after their own save, when no identity is at hand. */
+  args: { userId: v.id("users"), churchId: v.optional(v.id("churches")), session: v.optional(v.string()) },
   returns: v.union(v.literal("ok"), v.literal("minute"), v.literal("month")),
-  handler: async (ctx, { userId, churchId }) => {
+  handler: async (ctx, { userId, churchId, session: scheduledFor }) => {
     const windowStart = Math.floor(Date.now() / 60_000) * 60_000;
     const identity = await ctx.auth.getUserIdentity();
-    const visitor = isSampleVisitor(identity?.subject);
+    const visitor = scheduledFor !== undefined || isSampleVisitor(identity?.subject);
     // Clerk names the session in `sid`; a token without one counts as a single session, so it is held tightest.
-    const session = visitor ? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
+    const session = visitor ? scheduledFor ?? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
     const day = new Date().toISOString().slice(0, 10);
     const own = session ? await ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", session).eq("day", day)).unique() : null;
     const previous = session ? null : await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
@@ -710,14 +711,13 @@ export const suggestReferrals = action({
 /** A written-up visit's note, with the names and addresses that must be taken out of it. */
 export const visitNote = internalQuery({
   args: { churchId: v.id("churches"), visitId: v.id("visits") },
-  returns: v.object({ userId: v.id("users"), note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
+  returns: v.object({ note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
   handler: async (ctx, { churchId, visitId }) => {
-    const member = await neighborAccess(ctx, churchId);
     const visit = await ctx.db.get("visits", visitId);
     if (!visit || visit.churchId !== churchId || visit.status !== "completed") throw new ConvexError("Visit not found.");
     const neighbor = await ctx.db.get("neighbors", visit.neighborId);
     return {
-      userId: member.userId, note: visit.notes,
+      note: visit.notes,
       names: neighbor?.name ? [neighbor.name] : [],
       addresses: neighbor?.address ? [neighbor.address] : [],
       others: await namesFor(ctx, churchId),
@@ -738,15 +738,16 @@ export const keepFound = internalMutation({
  * After a visit is written up: whether its note shows a need the visit was not for. The same measured questions as
  * the help line (the kind-of-help pick and each urgent sign, at 0.9 or more) are asked of the note with names and
  * addresses taken out. What passes is kept on the visit and shown under it; nothing is started, and a person decides.
+ * Scheduled by visits.writeUp, inside the member's own save, so it is never reachable from outside and needs no sign-in of its own.
  */
-export const readVisit = action({
-  args: { churchId: v.id("churches"), visitId: v.id("visits") },
+export const readVisit = internalAction({
+  args: { churchId: v.id("churches"), visitId: v.id("visits"), userId: v.id("users"), session: v.optional(v.string()) },
   returns: v.object({ kind: v.union(...requestKinds.map(kind => v.literal(kind)), v.null()), signs: v.array(v.union(...urgentReasons.map(reason => v.literal(reason)))), verification: v.union(v.literal("review"), v.literal("checked")) }),
   handler: async (ctx, args): Promise<{ kind: RequestKind | null; signs: UrgentReason[]; verification: "review" | "checked" }> => {
-    const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.visitNote, args);
+    const { note, names, addresses, others } = await ctx.runQuery(internal.drafts.visitNote, { churchId: args.churchId, visitId: args.visitId });
     const none = { kind: null, signs: [], verification: "review" as const };
     if (!note.trim() || !env.TYPESAFE_API_KEY || note.length > 2000) return none;
-    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return none;
+    if (await ctx.runMutation(internal.drafts.reserve, { userId: args.userId, churchId: args.churchId, session: args.session }) !== "ok") return none;
     const found = urgentSigns(note);
     const questions = { ...Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, found)])), chosenKind: kindQuestion };
     const answers = await decide(env.TYPESAFE_API_KEY, { note }, questions, { names, addresses, others });

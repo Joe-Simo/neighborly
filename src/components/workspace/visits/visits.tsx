@@ -17,7 +17,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation } from "convex/react";
 import { useHour, useQuery } from "@/components/workspace/query";
-import { ArrowRight, CircleCheck, Printer, Sparkles } from "lucide-react";
+import { ArrowRight, CircleCheck, Printer } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -729,12 +729,11 @@ function VisitsView({
                   </p>
                   {visit.found && (
                     <p className="visits-found">
-                      <Sparkles size={15} aria-hidden="true" />
                       {fill(text.written.found, {
-                        what: new Intl.ListFormat(words.locale, { type: "conjunction" }).format([
+                        what: [
                           ...(visit.found.kind ? [words.kinds[visit.found.kind]] : []),
                           ...whyFirst({ reasons: visit.found.signs, day: null }, words),
-                        ]),
+                        ].join(", "),
                       })}
                     </p>
                   )}
