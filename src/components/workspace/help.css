@@ -122,6 +122,10 @@
   padding: var(--space-24) 0;
   border-bottom: 1px solid var(--live-line);
 }
+/* A row with no date or face in front (a likely double, a merge on the record) gives its words the leading column too. */
+.help-row[data-plain], .help-row[data-plain]:has(> .live-row-actions [data-slot="button"] ~ [data-slot="button"]) { grid-template-columns: minmax(0, 1fr) auto; }
+.help-row[data-plain] > .live-row-actions { grid-column: auto; }
+@media (max-width: 850px) { .help-row[data-plain], .help-row[data-plain]:has(> .live-row-actions [data-slot="button"] ~ [data-slot="button"]) { grid-template-columns: minmax(0, 1fr); } .help-row[data-plain] > .live-row-actions { grid-column: 1; justify-content: flex-start; } }
 .help-row h3 { font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 var(--space-8); }
 .help-row p { margin: 0; color: var(--live-muted); line-height: 1.5; font-size: 17px; }
 .help-row .live-meta { font-size: 15px; margin-bottom: var(--space-8); }

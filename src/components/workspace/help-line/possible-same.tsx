@@ -118,7 +118,7 @@ function Merged({ neighborId, w }: { neighborId: Id<"neighbors">; w: Words }) {
       </div>
       <div className="live-list">
         {merges.map((merge) => (
-          <div className="help-row" key={merge.at}>
+          <div className="help-row" data-plain key={merge.at}>
             <div>
               <p>{w.mergedBy(sampleSaid(merge.name), merge.who, format(merge.at, { weekday: undefined, year: "numeric" }))}</p>
               <p>{w.moving(merge.moved)}</p>
@@ -146,7 +146,7 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
       </div>
       <div className="live-list">
         {found.map((row) => (
-          <div className="help-row" key={row.id}>
+          <div className="help-row" data-plain key={row.id}>
             <div>
               <h3>
                 <Link className="live-link" href={recordHref(row.id)} scroll={false}>
