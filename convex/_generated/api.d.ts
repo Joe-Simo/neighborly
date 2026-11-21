@@ -26,6 +26,7 @@ import type * as duplicates from "../duplicates.js";
 import type * as files from "../files.js";
 import type * as functions from "../functions.js";
 import type * as geocode from "../geocode.js";
+import type * as glance from "../glance.js";
 import type * as http from "../http.js";
 import type * as importExport from "../importExport.js";
 import type * as intake from "../intake.js";
@@ -83,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   files: typeof files;
   functions: typeof functions;
   geocode: typeof geocode;
+  glance: typeof glance;
   http: typeof http;
   importExport: typeof importExport;
   intake: typeof intake;
