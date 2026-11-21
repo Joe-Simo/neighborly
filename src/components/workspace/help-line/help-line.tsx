@@ -906,6 +906,8 @@ function HelpLineView({
                     // A neighbor's record is a plain fact; only the assistant's reading takes its mark.
                     <p className={call.spanish === "assistant" ? "help-assistant help-spanish" : "help-spanish"}>
                       {call.spanish === "assistant" && <Sparkles size={15} aria-hidden="true" />}
+                      {/* The mark is seen; a screen reader is told in words whose reading this is. */}
+                      {call.spanish === "assistant" && <span className="sr-only">{`${lineWords(words.locale).spanishRead} `}</span>}
                       {lineWords(words.locale).spanish(formatList(calls.spanishSpeakers ?? [], words.locale), (calls.spanishSpeakers?.length ?? 0) > 1)}
                     </p>
                   )}
