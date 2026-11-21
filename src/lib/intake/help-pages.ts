@@ -1,10 +1,11 @@
 import { intakeWords, type IntakeLanguage, type IntakeWords, type NeedKind } from "./intake-words";
 
 /**
- * kindhelps.com/help and /ayuda, and the status page: finished HTML from a route handler, with no script and one inline
- * style block (budget: /mnt/project-files/app-load/intake-budget/budget.md). The paper feel comes from type, rules and
- * colour alone: one sheet with a folded corner, kraft slips beside it, no picture. Everything works with JavaScript off.
- * Every value written into the page goes through `esc`.
+ * kindhelps.com/help and /ayuda, and the status page: finished HTML from a route handler, one inline style block
+ * (budget: /mnt/project-files/app-load/intake-budget/budget.md), and on the pages that post to /help or /ayuda one small
+ * script of ours (HELP_SCRIPT, built from src/lib/help-page/botid-client.ts): Vercel BotID, which only judges requests
+ * sent with fetch, so the script sends those forms with fetch. With JavaScript off the form says to call 211. The status
+ * page has no script and works without it. Every value written into the page goes through `esc`.
  */
 
 export type HelpValues = Partial<{
@@ -23,10 +24,8 @@ export type HelpValues = Partial<{
 export type HelpErrors = Partial<Record<keyof IntakeWords["errors"], true>>;
 
 export type HelpView =
-  | { kind: "form"; values?: HelpValues; errors?: HelpErrors; unplaced?: boolean; check?: string }
-  | { kind: "danger"; values: HelpValues; check?: string }
-  /** The bot check, on its own page: the one view that loads a script (Turnstile's, in `check`). `seal` holds the form's values, encrypted. */
-  | { kind: "check"; seal: string; check: string; failed?: boolean }
+  | { kind: "form"; values?: HelpValues; errors?: HelpErrors; unplaced?: boolean }
+  | { kind: "danger"; values: HelpValues }
   | { kind: "code"; to: string; by: "email" | "phone"; wrong?: boolean; resent?: boolean }
   | { kind: "sent"; team: string; by: string; callAt?: string; statusHref: string; phone?: string }
   | { kind: "away"; finderHref: string }
@@ -35,9 +34,12 @@ export type HelpView =
   | { kind: "young"; youthLine: string }
   | { kind: "status"; step: "received" | "contact" | "closed"; sentOn: string; by: string; late?: boolean; askHref: string; removing?: boolean; removed?: boolean; phone?: string };
 
+/** The pages' one script: built into public/ by scripts/help-script.mts on every build. */
+export const HELP_SCRIPT = "/help-botid.js";
+
 const NEEDS: NeedKind[] = ["rent", "utilities", "food", "vouchers", "other"];
 
-export const esc = (text: string) =>
+const esc = (text: string) =>
   text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
 const tel = (number: string) => `tel:${number.replace(/[^\d+]/g, "")}`;
 
@@ -56,6 +58,7 @@ export function helpPage(language: IntakeLanguage, view: HelpView, action = lang
 <meta name="referrer" content="no-referrer">
 ${status ? '<meta name="robots" content="noindex">' : ""}
 <title>${esc(title)}</title>
+${status ? "" : `<script src="${HELP_SCRIPT}" defer></script>`}
 <style>${CSS}</style>
 </head>
 <body>
@@ -101,19 +104,11 @@ const note = (text: string) => `<p class="note">${esc(text)}</p>`;
 function body(w: IntakeWords, view: HelpView, action: string): string {
   switch (view.kind) {
     case "form":
-      return head(w.kicker, w.title, w.deck) + form(w, view.values ?? {}, view.errors ?? {}, action, view.unplaced, view.check);
+      return head(w.kicker, w.title, w.deck) + form(w, view.values ?? {}, view.errors ?? {}, action, view.unplaced);
     case "danger":
       return `${head(null, w.dangerSend.title)}${danger(w)}
-<form method="post" action="${esc(action)}">${hidden(view.values)}<input type="hidden" name="step" value="send-anyway">${view.check ?? ""}
+<form method="post" action="${esc(action)}">${hidden(view.values)}<input type="hidden" name="step" value="send-anyway">
 <p class="lines"><button class="btn" type="submit">${esc(w.dangerSend.send)}</button><button class="btn quiet" type="submit" name="step" value="edit">${esc(w.dangerSend.back)}</button></p>
-</form>`;
-    case "check":
-      return `${head(w.check.kicker, w.check.title, w.check.deck)}
-<form method="post" action="${esc(action)}" class="form">
-<input type="hidden" name="step" value="check"><input type="hidden" name="seal" value="${esc(view.seal)}">
-${view.check}<noscript><p class="problem">${esc(w.check.noScript)}</p>${lines(["tel:211", w.away.call211])}</noscript>
-${view.failed ? `<p class="problem" role="alert">${esc(w.errors.check)}</p>` : ""}
-<p class="lines"><button class="btn" type="submit">${esc(w.check.send)}</button><button class="btn quiet" type="submit" name="step" value="edit">${esc(w.check.back)}</button></p>
 </form>`;
     case "code":
       return `${head(w.code.kicker, w.code.title, view.by === "email" ? w.code.deck(view.to) : w.code.deckPhone(view.to))}
@@ -193,7 +188,7 @@ function choices(name: string, legend: string, options: [value: string, label: s
     .join("")}</div>${problem ? `<span class="problem">${esc(problem)}</span>` : ""}</fieldset>`;
 }
 
-function form(w: IntakeWords, v: HelpValues, e: HelpErrors, action: string, unplaced?: boolean, check?: string) {
+function form(w: IntakeWords, v: HelpValues, e: HelpErrors, action: string, unplaced?: boolean) {
   const val = (text?: string) => (text ? ` value="${esc(text)}"` : "");
   const bad = (key: keyof HelpErrors): [string, string] | undefined => (e[key] ? [`e-${key}`, w.errors[key]] : undefined);
   const wrong = (key: keyof HelpErrors) => (e[key] ? ` aria-invalid="true" aria-describedby="e-${key}"` : "");
@@ -218,7 +213,7 @@ ${choices("speaks", w.language, [["en", "English", "en"], ["es", "Español", "es
 ${choices("safe", w.safe.legend, [["yes", w.safe.yes], ["no", w.safe.no]], v.safe, false, e.safe ? w.errors.safe : undefined)}
 <div class="when">${field(w.whenIfNo, `<input name="callAt" maxlength="60"${val(v.callAt)}${wrong("when")}>`, w.safe.whenHelp, bad("when"))}</div>
 ${choices("adult", w.adult.legend, [["yes", w.adult.yes], ["no", w.adult.no]], v.adult, false, e.adult ? w.errors.adult : undefined)}
-${check ?? ""}${e.check ? `<p class="problem">${esc(w.errors.check)}</p>` : ""}${e.expired ? `<p class="problem">${esc(w.errors.expired)}</p>` : ""}
+<noscript><p class="problem">${esc(w.noScript)}</p><p class="lines"><a class="btn" href="tel:211">${esc(w.away.call211)}</a></p></noscript>
 <p class="said">${esc(w.assistant)}</p>
 <p class="lines"><button class="btn" type="submit">${esc(w.send)}</button></p>
 </form>`;

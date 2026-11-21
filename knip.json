@@ -2,7 +2,8 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
     "src/app/sw.ts",
-    "scripts/*.mts"
+    "scripts/*.mts",
+    "src/lib/help-page/botid-client.ts"
   ],
   "ignore": [
     "apple/**",

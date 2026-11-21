@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && bun scripts/app-styles.mts",
+    "build": "bun scripts/help-script.mts && next build && bun scripts/app-styles.mts",
     "start": "next start",
     "lint": "eslint",
     "unused": "knip",
@@ -25,6 +25,7 @@
     "@convex-dev/resend": "^0.2.10",
     "@serwist/turbopack": "^9.5.13",
     "@serwist/window": "9.5.13",
+    "botid": "^1.5.13",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
     "convex": "^1.50.0",

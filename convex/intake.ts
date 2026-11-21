@@ -14,7 +14,7 @@ import { paperEmail } from "../src/lib/email/paper-email";
 import { noteLanded } from "./intakeNotify";
 
 /**
- * The public "Ask for help" form, behind convex/intakeHttp.ts (which checks Turnstile and the input, and hashes).
+ * The public "Ask for help" form, behind convex/intakeHttp.ts (which takes the site's BotID verdict, checks the input, and hashes).
  *
  * receive: routes the zip to the nearest team that covers it, or answers "no_team" and keeps nothing. Otherwise it
  * keeps a pending request and emails a six-digit code. confirm: on the right code the request becomes a call on that
@@ -132,7 +132,7 @@ const submission = {
 };
 
 /**
- * One submission, after the site's server checked Turnstile and the input. With an email and safe to message: kept
+ * One submission, after the site's server checked Vercel BotID and the input. With an email and safe to message: kept
  * pending and a code is emailed ("sent"). Otherwise (phone only, or not safe to message) nothing is ever sent to the
  * person: it lands at once as unverified, at most UNVERIFIED_PER_TEAM_DAY a day per team, the rest held for a coordinator.
  */

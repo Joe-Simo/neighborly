@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { withSerwist } from "@serwist/turbopack";
 import { withCn } from "cn/next";
+import { withBotId } from "botid/next/config";
 
 // The backend's own web address. Calendar feeds live there, but people see them on this site's domain.
 const convexSite = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
@@ -33,4 +34,5 @@ const nextConfig: NextConfig = {
 };
 
 // The class-merging tables are fitted to src on every build and dev start (src/lib/utils.ts).
-export default withCn(withSerwist(nextConfig), { content: ["src/**/*.{ts,tsx}"], out: "src/lib/cn-tables.ts" });
+// BotID's own paths (its challenge script and proxy) are rewritten to Vercel; see src/lib/help-page/botid-client.ts.
+export default withCn(withBotId(withSerwist(nextConfig)), { content: ["src/**/*.{ts,tsx}"], out: "src/lib/cn-tables.ts" });
