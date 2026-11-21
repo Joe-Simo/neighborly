@@ -32,9 +32,9 @@ const said = {
     measured: (f: Figure) => `Measured on ${f.pairs} made-up pairs kept apart from the ones its line was set on, as a trial before this question went live: ${f.right} right, ${f.missed} missed, ${f.wrong} wrong. A small test.`,
     people: (adults: number, children: number) => `${adults} ${adults === 1 ? "adult" : "adults"}, ${children} ${children === 1 ? "child" : "children"}`,
     merge: "Merge into this record",
-    mergeThis: (name: string) => `Merge ${name} into this record`,
+    mergeThis: (name: string) => `Merge into this record: ${name}`,
     notSame: "Not the same",
-    notSameThis: (name: string) => `${name} is not the same household`,
+    notSameThis: (name: string) => `Not the same: ${name}`,
     sheet: (name: string) => `Merge ${name} into this record`,
     moves: "What moves here",
     movesDetail: "Every call, request, home visit, note and ledger line on the other record. Its phone, email or address fills any that this record leaves empty, and its notes are added under these.",
@@ -57,9 +57,9 @@ const said = {
     measured: (f: Figure) => `Medido con ${f.pairs} pares inventados, apartados de los que se usaron para fijar su línea, como prueba antes de que esta pregunta se usara: ${f.right} bien, ${f.missed} sin detectar, ${f.wrong} mal. Es una prueba pequeña.`,
     people: (adults: number, children: number) => `${adults} ${adults === 1 ? "adulto" : "adultos"}, ${children} ${children === 1 ? "niño" : "niños"}`,
     merge: "Unir a este registro",
-    mergeThis: (name: string) => `Unir ${name} a este registro`,
+    mergeThis: (name: string) => `Unir a este registro: ${name}`,
     notSame: "No es el mismo",
-    notSameThis: (name: string) => `${name} no es el mismo hogar`,
+    notSameThis: (name: string) => `No es el mismo: ${name}`,
     sheet: (name: string) => `Unir ${name} a este registro`,
     moves: "Lo que pasa aquí",
     movesDetail: "Cada llamada, solicitud, visita, nota y línea del libro del otro registro. Su teléfono, correo o dirección llena lo que este registro deja vacío, y sus notas se añaden debajo de estas.",
@@ -118,7 +118,7 @@ function Merged({ neighborId, w }: { neighborId: Id<"neighbors">; w: Words }) {
       </div>
       <div className="live-list">
         {merges.map((merge) => (
-          <div className="help-row" key={merge.at}>
+          <div className="help-row" data-plain key={merge.at}>
             <div>
               <p>{w.mergedBy(sampleSaid(merge.name), merge.who, format(merge.at, { weekday: undefined, year: "numeric" }))}</p>
               <p>{w.moving(merge.moved)}</p>
@@ -146,7 +146,7 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
       </div>
       <div className="live-list">
         {found.map((row) => (
-          <div className="help-row" key={row.id}>
+          <div className="help-row" data-plain key={row.id}>
             <div>
               <h3>
                 <Link className="live-link" href={recordHref(row.id)} scroll={false}>
@@ -158,13 +158,13 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
               {row.notesAgree && <p className="help-why">{w.notes}</p>}
             </div>
             <div className="live-row-actions">
-              <Button variant="outline" aria-label={w.mergeThis(row.name)} onClick={() => setMerging(row)}>
+              <Button variant="outline" aria-label={w.mergeThis(sampleSaid(row.name))} onClick={() => setMerging(row)}>
                 {w.merge}
               </Button>
               <Button
                 variant="link"
                 className="help-text-action"
-                aria-label={w.notSameThis(row.name)}
+                aria-label={w.notSameThis(sampleSaid(row.name))}
                 onClick={() => void dismiss({ churchId, neighborId, otherId: row.id }).catch(() => null)}
               >
                 {w.notSame}

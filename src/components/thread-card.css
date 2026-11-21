@@ -87,3 +87,5 @@
 .thread-card-slip span::after{content:"";position:absolute;right:0;top:0;width:10%;height:16%;background:#365c46;clip-path:polygon(0 0,100% 0,100% 100%)}
 .thread-card[data-decided] .thread-card-slip{display:block}
 .thread-card[data-decided] img{visibility:hidden}
+/* From 1600 up the call's picture grows into the heading's row: the card's stop there lifts into the paper between them, clear of "The call." by 24px or more. */
+@media(min-width:1600px){[data-station=call]{translate:-50% calc(-50% - 3vw)}}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -22,6 +22,7 @@ const said = {
     by: { email: "Same email", name: "Similar name" },
     fine: "They are different",
     fineThis: (what: string) => `${what}: they are different`,
+    found: (n: number) => (n === 1 ? "1 to look at." : `${n} to look at.`),
     people_: "Open People",
   },
   es: {
@@ -35,6 +36,7 @@ const said = {
     by: { email: "Mismo correo", name: "Nombre parecido" },
     fine: "Son distintos",
     fineThis: (what: string) => `${what}: son distintos`,
+    found: (n: number) => (n === 1 ? "1 para revisar." : `${n} para revisar.`),
     people_: "Abrir Personas",
   },
 } as const;
@@ -47,6 +49,12 @@ export function RecordsCheck() {
   const [asked, setAsked] = useState(false);
   const found = useQuery(api.duplicates.recordsCheck, asked ? { churchId } : "skip");
   const dismiss = useMutation(api.duplicates.dismissCheck);
+  // Pressed, the button waits and then goes: focus goes to the leaf's name and the answer is said when it comes, so neither is lost.
+  const name = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (asked) name.current?.focus();
+  }, [asked]);
+  const count = found ? found.people.length + found.phones.length : 0;
   const fine = (kind: "person" | "phone", key: string, what: string) => (
     <Button variant="link" className="help-text-action" aria-label={w.fineThis(what)} onClick={() => void dismiss({ churchId, kind, key }).catch(() => null)}>
       {w.fine}
@@ -54,14 +62,15 @@ export function RecordsCheck() {
   );
   return (
     <section className="tools-leaf tools-leaf-wide paper-corner" aria-labelledby="records-check-name">
-      <h2 id="records-check-name">{w.title}</h2>
+      <h2 id="records-check-name" ref={name} tabIndex={-1}>{w.title}</h2>
       <p className="tools-leaf-deck">{w.deck}</p>
+      <p className="sr-only" role="status">{!found ? "" : count ? w.found(count) : w.none}</p>
       {!found ? (
         <div className="help-actions">
           <Button variant="outline" disabled={asked} onClick={() => setAsked(true)}>{asked ? w.checking : w.run}</Button>
         </div>
       ) : !found.people.length && !found.phones.length ? (
-        <p role="status">{w.none}</p>
+        <p aria-hidden="true">{w.none}</p>
       ) : (
         <>
           {found.people.length > 0 && (
@@ -69,7 +78,7 @@ export function RecordsCheck() {
               <h3>{w.people}</h3>
               <div className="live-list">
                 {found.people.map((row) => (
-                  <div className="help-row" key={row.key}>
+                  <div className="help-row" data-plain key={row.key}>
                     <div>
                       <p>{`${row.first.name} · ${row.first.email}`}</p>
                       <p>{`${row.second.name} · ${row.second.email}`}</p>
@@ -89,7 +98,7 @@ export function RecordsCheck() {
               <h3>{w.phones}</h3>
               <div className="live-list">
                 {found.phones.map((row) => (
-                  <div className="help-row" key={row.key}>
+                  <div className="help-row" data-plain key={row.key}>
                     <div>
                       <p className="help-tel">{row.phone}</p>
                       {row.households.map((home) => (

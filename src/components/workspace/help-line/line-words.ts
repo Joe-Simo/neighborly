@@ -36,6 +36,8 @@ const books = {
       returned: "Returned",
       returnedBy: (name: string) => `Returned by ${name}`,
     },
+    /** Said before the Spanish line when it is the assistant's reading, not the record's: the mark is only seen. */
+    spanishRead: "The assistant read this in the call note:",
     /** Under a call whose caller needs Spanish: the team members who speak it, as a list, and "many" when more than one. */
     spanish: (names: string, many: boolean) => (names ? `Speaks Spanish. ${names} speak${many ? "" : "s"} Spanish.` : "Speaks Spanish."),
     /** Under a returned call: the one next step the assistant read in its outcome. A person decides; nothing follows from it. */
@@ -70,6 +72,7 @@ const books = {
       returned: "Devuelta",
       returnedBy: (name: string) => `Devuelta por ${name}`,
     },
+    spanishRead: "El asistente lo leyó en la nota de la llamada:",
     spanish: (names: string, many: boolean) => (names ? `Habla español. ${names} habla${many ? "n" : ""} español.` : "Habla español."),
     nextStep: {
       resolved: "Por el resultado, el asistente sugiere: nada más.",

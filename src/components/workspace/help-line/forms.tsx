@@ -582,12 +582,15 @@ export function DecideForm({
           />
         </LiveField>
       )}
-      {repeat.map((line) => (
-        <p key={line.text} className={line.assistant ? "help-assistant" : "help-form-note"}>
-          {line.assistant && <Sparkles aria-hidden="true" size={16} />}
-          {line.text}
-        </p>
-      ))}
+      {/* The household's lines come a moment after the sheet opens, often after a reader has passed this place: they are said as they arrive. */}
+      <div className="help-repeat" aria-live="polite">
+        {repeat.map((line) => (
+          <p key={line.text} className={line.assistant ? "help-assistant" : "help-form-note"}>
+            {line.assistant && <Sparkles aria-hidden="true" size={16} />}
+            {line.text}
+          </p>
+        ))}
+      </div>
       <LiveField
         label={
           approving ? w.note : w.why

@@ -115,6 +115,9 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-leaf .help-sheet { background: var(--live-paper, #f7f4ed); box-shadow: var(--relief-slip); }
 .tools-leaf .help-sheet::after { background: linear-gradient(225deg, #fffdf7 50%, var(--paper-corner) 50%, color-mix(in srgb, var(--paper-corner), #fff 22%) 100%); }
 .tools-leaf .live-error, .tools-leaf .tools-done { margin-top: var(--space-24); }
+.tools-leaf > .help-actions { margin-top: var(--space-24); }
+.tools-leaf > h3 { margin: var(--space-32) 0 0; font-size: 17px; }
+.tools-leaf > p[role="status"] { margin: var(--space-24) 0 0; }
 @media (min-width: 1000px) {
   .tools-leaves { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .tools-leaf { grid-column: span 3; }

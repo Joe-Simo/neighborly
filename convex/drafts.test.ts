@@ -343,6 +343,57 @@ describe("a call note drafted into a request", () => {
     expect((await t.run(ctx => ctx.db.get("assistanceRequests", made.noteSaysPaid)))?.status).toBe("approved");
   });
 
+  test("before a month is closed: rules flag the lines, the model reads memos only, at 0.9, with no payee named", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = answers({ l0: 0.95, l1: 0.89 });
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids, coordinator, member } = await helpLine();
+    const month = new Date().toISOString().slice(0, 7), prior = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5)) - 2, 1)).toISOString().slice(0, 7);
+    const made = await t.run(async ctx => {
+      const neighbor = (await ctx.db.query("neighbors").first())!;
+      const requestId = await ctx.db.insert("assistanceRequests", { churchId: ids.churchId, neighborId: neighbor._id, kind: "rent", summary: "", amountRequested: 45000, amountApproved: 40000, status: "paid", decisionNote: "", payeeKind: "landlord", payeeName: "Sample Property Co", source: "person", createdBy: ids.coordinator.memberId, createdAt: 0 });
+      const line = (date: string, fields: Partial<{ kind: "income" | "expense"; amount: number; category: string; payee: string; memo: string; voidedAt: number; requestId: typeof requestId }>) =>
+        ctx.db.insert("ledgerEntries", { churchId: ids.churchId, kind: "expense", amount: 5000, category: "food", payee: "Corner Market", memo: "", date, recordedBy: ids.coordinator.memberId, createdAt: 0, ...fields });
+      const first = await line(`${prior}-28`, { amount: 7000, payee: "Lakeside Power" });
+      const again = await line(`${month}-02`, { amount: 7000, payee: "Lakeside Power" });
+      // The same payee and amount, but one was voided: not a double.
+      await line(`${month}-03`, { amount: 1200, payee: "Rivera Hardware", category: "other", memo: "" });
+      await line(`${month}-04`, { amount: 1200, payee: "Rivera Hardware", category: "other", voidedAt: 1 });
+      const over = await line(`${month}-01`, { amount: 45000, category: "rent", payee: "Sample Property Co", requestId, memo: "Rent for Rosa Delgado, Sample Property Co cashed it." });
+      const noCategory = await line(`${month}-01`, { category: "", payee: "Corner Market", amount: 900 });
+      const noPayee = await line(`${month}-01`, { payee: "", amount: 800, memo: "Groceries for two weeks." });
+      await line(`${month}-01`, { kind: "income", amount: 3000, payee: "Second collection", category: "collection", memo: "Sunday" });
+      return { first, again, over, noCategory, noPayee };
+    });
+    const result = await coordinator.action(api.drafts.checkMonth, { churchId: ids.churchId, month });
+    expect(result.verification).toBe("checked");
+    const by = (source: string) => result.flags.filter(flag => flag.source === source).map(({ kind, entryId }) => [kind, entryId]);
+    expect(by("rule")).toEqual(expect.arrayContaining([["double", made.again], ["overApproved", made.over], ["noCategory", made.noCategory], ["noPayee", made.noPayee]]));
+    expect(by("rule")).toHaveLength(4);
+    // Read in date order, l0 is the rent memo (0.95, flagged) and l1 the groceries (0.89, not).
+    expect(by("assistant")).toEqual([["offCategory", made.over]]);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const sent = fetch.mock.calls[0][1].body;
+    expect(sent).toContain("other than lines.l0.category");
+    expect(sent).toContain('"category":"rent"');
+    expect(sent).not.toMatch(/Rosa|Delgado|Property|Lakeside|Corner Market|Rivera/);
+    expect(JSON.stringify(result)).not.toMatch(/Rosa|Property|Lakeside/);
+    expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(1);
+    // Nothing is changed by the check.
+    expect((await t.run(ctx => ctx.db.get("ledgerEntries", made.again)))?.voidedAt).toBeUndefined();
+    // Refused for a member who may not open the ledger, and for no one signed in.
+    await expect(member.action(api.drafts.checkMonth, { churchId: ids.churchId, month })).rejects.toThrow("coordinators and owners only");
+    await expect(t.action(api.drafts.checkMonth, { churchId: ids.churchId, month })).rejects.toThrow("Sign in");
+    await expect(coordinator.action(api.drafts.checkMonth, { churchId: ids.otherChurch, month })).rejects.toThrow("Workspace access required");
+    await expect(coordinator.action(api.drafts.checkMonth, { churchId: ids.churchId, month: "2999-01" })).rejects.toThrow("Choose a month");
+    // With no key the rules still stand and the memos wait for a person.
+    vi.stubEnv("TYPESAFE_API_KEY", "");
+    const calm = await coordinator.action(api.drafts.checkMonth, { churchId: ids.churchId, month });
+    expect(calm.verification).toBe("review");
+    expect(calm.flags.every(flag => flag.source === "rule")).toBe(true);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   test("the Monday note is counted by code, asks the model nothing and names no one", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const fetch = vi.fn();
