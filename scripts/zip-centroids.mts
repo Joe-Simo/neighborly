@@ -30,14 +30,15 @@ function text(bytes: Uint8Array, name: string) {
 
 const bytes = path ? (existsSync(path) ? new Uint8Array(readFileSync(path)) : (() => { throw new Error(`${path} not found`); })()) : await latest();
 const [header, ...lines] = text(bytes, path ?? "x.zip").trim().split(/\r?\n/);
-const columns = header.split("\t").map((column) => column.trim());
+const sep = header.includes("|") ? "|" : "\t";
+const columns = header.split(sep).map((column) => column.trim());
 const at = (name: string) => {
   const index = columns.indexOf(name);
   if (index < 0) throw new Error(`No ${name} column in the Gazetteer header.`);
   return index;
 };
 const [zip, lat, lng, land] = [at("GEOID"), at("INTPTLAT"), at("INTPTLONG"), at("ALAND_SQMI")];
-const rows = lines.map((line) => line.split("\t")).map((cells) => ({ zip: cells[zip].trim(), lat: Number(cells[lat]), lng: Number(cells[lng]), sqmi: Number(cells[land]) }))
+const rows = lines.map((line) => line.split(sep)).map((cells) => ({ zip: cells[zip].trim(), lat: Number(cells[lat]), lng: Number(cells[lng]), sqmi: Number(cells[land]) }))
   .filter((row) => /^\d{5}$/.test(row.zip) && Number.isFinite(row.lat) && Number.isFinite(row.lng));
 console.log(`${rows.length} zip codes read.`);
 for (let start = 0; start < rows.length; start += 500) {
