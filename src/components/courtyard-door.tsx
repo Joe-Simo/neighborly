@@ -1,4 +1,5 @@
 "use client";
+import { warmAppStyles } from "@/lib/app-styles";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,8 +33,8 @@ export function CourtyardDoor({ label, opening, here }: { label: string; opening
   const router = useRouter();
   const enter = (event: MouseEvent<HTMLAnchorElement>) => goInTurning(event, router.push, opening);
   // Fetched before the press, so no cold first frame can land inside the turn.
-  const ready = () => router.prefetch("/app");
-  return <Link href="/app" className="fresco-door" aria-label={label} tabIndex={here ? undefined : -1} aria-hidden={here ? undefined : true} onClick={enter} onPointerEnter={ready} onFocus={ready} />;
+  const ready = () => { router.prefetch("/app"); warmAppStyles(); };
+  return <Link href="/app" className="fresco-door" aria-label={label} tabIndex={here ? undefined : -1} aria-hidden={here ? undefined : true} onClick={enter} onPointerEnter={ready} onFocus={ready} onTouchStart={ready} />;
 }
 
 /** Where the visitor stood on home when they went in, so Back returns them there (card-offer-grow.tsx restores it). */
