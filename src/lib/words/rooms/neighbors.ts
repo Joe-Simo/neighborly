@@ -26,7 +26,7 @@ export const en = (t: Terms, place: string) => ({
     amountTo: "{kind}, {amount} to {payee}",
     vouchers: (count: number) => (count === 1 ? "1 {item} voucher" : `${enN(count)} {item} vouchers`),
   },
-  languages: { en: "English", es: "Spanish", ht: "Haitian Creole", other: "Another language" },
+  languages: { en: "English", es: "Spanish", other: "Another language" },
   list: {
     find: `Find a ${t.neighbor}`,
     findBy: "Name, phone or street",
@@ -62,7 +62,7 @@ export const en = (t: Terms, place: string) => ({
     deck: {
       livesAlone: "lives alone",
       householdOf: (count: number) => `household of ${enN(count)}`,
-      speaks: { en: "speaks English", es: "speaks Spanish", ht: "speaks Haitian Creole", other: "speaks another language" },
+      speaks: { en: "speaks English", es: "speaks Spanish", other: "speaks another language" },
       speaksNamed: (language: string) => `speaks ${language}`,
       since: (date: string) => `on file since ${date}`,
     },
@@ -256,7 +256,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     amountTo: "{kind}, {amount} a {payee}",
     vouchers: (count) => (count === 1 ? "1 vale de {item}" : `${esN(count)} vales de {item}`),
   },
-  languages: { en: "Inglés", es: "Español", ht: "Criollo haitiano", other: "Otro idioma" },
+  languages: { en: "Inglés", es: "Español", other: "Otro idioma" },
   list: {
     find: `Buscar a un ${t.neighbor}`,
     findBy: "Nombre, teléfono o calle",
@@ -288,7 +288,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     deck: {
       livesAlone: "vive sin compañía",
       householdOf: (count) => (count === 1 ? "hogar de 1 persona" : `hogar de ${esN(count)} personas`),
-      speaks: { en: "habla inglés", es: "habla español", ht: "habla criollo haitiano", other: "habla otro idioma" },
+      speaks: { en: "habla inglés", es: "habla español", other: "habla otro idioma" },
       speaksNamed: (language) => `habla ${language}`,
       since: (date) => `en el registro desde ${date}`,
     },

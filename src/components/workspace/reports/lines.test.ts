@@ -4,7 +4,7 @@ import { csvFileName, isBlank, longSpanLabel, money, reportCsv, reportLines, spa
 
 const report = {
   year: 2026, quarter: null, firstDay: "2025-10-01", lastDay: "2026-09-30", timeZone: "America/New_York", closed: true,
-  households: 2, people: 7, adults: 3, children: 4, householdsHelpedAgain: 1, householdsByLanguage: { en: 1, es: 1, ht: 0 }, householdsByOtherLanguage: [],
+  households: 2, people: 7, adults: 3, children: 4, householdsHelpedAgain: 1, householdsByLanguage: { en: 1, es: 1 }, householdsByOtherLanguage: [],
   visits: 3, peopleVisited: 11, visitHours: 7.5, visitMiles: 64, helpPaid: 45050,
   kinds: [
     { kind: "rent", requests: 1, requestsPaid: 1, households: 1, people: 4, paid: 40000 },

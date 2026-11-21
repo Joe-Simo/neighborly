@@ -90,13 +90,13 @@ const households = [
   { line: 7, ...blank, name: "Darnell Eastman", phone: "100.555.0100" },
   { line: 8, ...blank, name: "celeste hyppolite", phone: "(100) 555-0199" },
   { line: 9, ...blank, name: "Esperanza Figueroa", language: "  mandarin " },
-  { line: 10, ...blank, name: "Fabrice Greenhalgh", language: "kreyòl", children: "0" },
+  { line: 10, ...blank, name: "Fabrice Greenhalgh", language: "español", children: "0" },
 ];
 
 describe("bringing neighbors in from a spreadsheet", () => {
   async function withNeighbor() {
     const world = await setup();
-    await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "ht", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
+    await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "es", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
     const neighbors = () => world.t.run((ctx) => ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", world.ids.church)).collect());
     return { ...world, neighbors };
   }
@@ -114,7 +114,7 @@ describe("bringing neighbors in from a spreadsheet", () => {
       { name: "Alma Almonte", nameKey: "alma almonte", phone: "(100) 555-0100", phoneKey: "1005550100", address: "12 Sample St, Apt 3", adults: 2, children: 3, language: "es", notes: "Prefers a call after 5.", createdBy: ids.coordinator.memberId },
       // Any language is kept as written: it is the household's, not one of the app's.
       { name: "Esperanza Figueroa", language: "other", languageName: "Mandarin" },
-      { name: "Fabrice Greenhalgh", phone: "", phoneKey: "", adults: 1, children: 0, language: "ht" },
+      { name: "Fabrice Greenhalgh", phone: "", phoneKey: "", adults: 1, children: 0, language: "es" },
     ]);
     // Sending the file again adds nobody: everyone in it is now on file.
     const again = await as(ids.coordinator).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: households });
@@ -153,7 +153,7 @@ describe("bringing past requests over from another system", () => {
   const recent = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
   async function withNeighbor() {
     const world = await setup();
-    const neighborId = await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "ht", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
+    const neighborId = await world.t.run((ctx) => ctx.db.insert("neighbors", { churchId: world.ids.church, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd", adults: 1, children: 2, language: "es", notes: "", createdBy: world.ids.owner.memberId, createdAt: 0 }));
     const requests = () => world.t.run((ctx) => ctx.db.query("assistanceRequests").withIndex("by_neighbor", (q) => q.eq("neighborId", neighborId)).collect());
     return { ...world, requests };
   }
@@ -231,7 +231,7 @@ describe("taking the records out", () => {
     const { ids } = world;
     await world.t.run(async (ctx) => {
       const base = { churchId: ids.church, createdBy: ids.owner.memberId, createdAt: Date.UTC(2026, 2, 14, 16) };
-      const neighborId = await ctx.db.insert("neighbors", { ...base, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd, Apt 7", adults: 1, children: 2, language: "ht", notes: "=cmd", accounts: [{ kind: "utility", name: "Demo Power & Light", accountNumber: "0098 7654 4821", phone: "" }] });
+      const neighborId = await ctx.db.insert("neighbors", { ...base, name: "Celeste Hyppolite", nameKey: "celeste hyppolite", phone: "(100) 555-0142", phoneKey: "1005550142", email: "", address: "412 Placeholder Rd, Apt 7", adults: 1, children: 2, language: "es", notes: "=cmd", accounts: [{ kind: "utility", name: "Demo Power & Light", accountNumber: "0098 7654 4821", phone: "" }] });
       const requestId = await ctx.db.insert("assistanceRequests", { ...base, neighborId, kind: "utility", summary: "Shut-off notice", amountRequested: 8650, amountApproved: 8000, status: "paid", decisionNote: "", payeeKind: "utility", payeeName: "Demo Power & Light", source: "person" });
       await ctx.db.insert("visits", { ...base, neighborId, requestId, scheduledAt: Date.UTC(2026, 2, 16, 14), status: "completed", visitors: [{ memberId: ids.coordinator.memberId, hours: 1.5, miles: 6 }, { memberId: ids.member.memberId, hours: 1.5, miles: 0 }], notes: "Kind welcome" });
       await ctx.db.insert("ledgerEntries", { churchId: ids.church, kind: "expense", amount: 8000, date: "2026-03-17", category: "utility", payee: "Demo Power & Light", memo: "", requestId, neighborId, checkNumber: "1042", recordedBy: ids.owner.memberId, createdAt: 0 });
@@ -258,7 +258,7 @@ describe("taking the records out", () => {
     const exported = await as(ids.owner).mutation(api.importExport.recordExport, { churchId: ids.church });
     const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, exported, file, cursor: null })] as const)));
     for (const file of files) expect(pages[file].done).toBe(true);
-    expect(pages.neighbors.rows).toEqual([["Celeste Hyppolite", "(100) 555-0142", "", "412 Placeholder Rd, Apt 7", "1", "2", "Haitian Creole", "=cmd", "", "", "", "", "Utility: Demo Power & Light, account ending 4821"]]);
+    expect(pages.neighbors.rows).toEqual([["Celeste Hyppolite", "(100) 555-0142", "", "412 Placeholder Rd, Apt 7", "1", "2", "Spanish", "=cmd", "", "", "", "", "Utility: Demo Power & Light, account ending 4821"]]);
     expect(JSON.stringify(pages)).not.toContain("7654");
     expect(pages.requests.rows[0].slice(0, 9)).toEqual(["Celeste Hyppolite", "(100) 555-0142", "03/14/2026", "Completed", "Utility", "80.00", "Demo Power & Light", "Shut-off notice", "Paid"]);
     expect(pages.visits.rows).toEqual([["Celeste Hyppolite", "03/16/2026", "10:00 AM", "Completed", "Thomas; Renee", "3", "6", "Kind welcome", ""]]);
@@ -308,7 +308,7 @@ describe("taking the records out", () => {
     });
     const exported = await as(ids.owner).mutation(api.importExport.recordExport, { churchId: ids.church });
     const pages = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await as(ids.owner).query(api.importExport.exportPage, { churchId: ids.church, exported, file, cursor: null })] as const)));
-    expect(pages.neighbors.rows).toEqual([["Record removed", "", "", "", "1", "2", "Haitian Creole", "", "", "", "", "", ""]]);
+    expect(pages.neighbors.rows).toEqual([["Record removed", "", "", "", "1", "2", "Spanish", "", "", "", "", "", ""]]);
     expect(pages.notes.rows).toEqual([]);
     expect(pages.calls.rows).toEqual([["03/13/2026", "10:05 AM", "Record removed", "", "Record removed", "", "Returned", "Renee", "Thomas", "03/13/2026", "", ""]]);
     expect(pages.requests.rows[0].slice(0, 9)).toEqual(["Record removed", "", "03/14/2026", "Completed", "Utility", "80.00", "", "Record removed", "Paid"]);
@@ -318,7 +318,7 @@ describe("taking the records out", () => {
     for (const word of ["Celeste", "Hyppolite", "555-0142", "Placeholder", "4821", "Shut-off", "Kind welcome"]) expect(JSON.stringify(pages)).not.toContain(word);
 
     // Read back in, the line is left out: it is not a household, and its request has nobody to belong to.
-    const line = { line: 2, name: "Record removed", phone: "", email: "", address: "", adults: "1", children: "2", language: "Creole", notes: "" };
+    const line = { line: 2, name: "Record removed", phone: "", email: "", address: "", adults: "1", children: "2", language: "Spanish", notes: "" };
     expect((await as(ids.owner).mutation(api.importExport.importNeighbors, { churchId: ids.church, rows: [line, { ...line, line: 3, name: "record  REMOVED" }] })).map((row) => row.outcome)).toEqual(["no_name", "no_name"]);
     expect((await as(ids.owner).mutation(api.importExport.importRequests, { churchId: ids.church, rows: [{ line: 2, name: "Record removed", phone: "", date: "03/14/2026", status: "Completed", type: "Utility", amount: "80.00", payee: "", notes: "" }] })).map((row) => row.outcome)).toEqual(["no_name"]);
     expect(await t.run((ctx) => ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", ids.church)).collect())).toHaveLength(1);

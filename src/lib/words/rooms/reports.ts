@@ -230,7 +230,7 @@ export const en = (t: Terms, place: string) => ({
       children: "Children",
       again: "Households helped more than once",
       speaking: (language: string) => `Households speaking ${language}`,
-      languages: { en: "English", es: "Spanish", ht: "Haitian Creole" },
+      languages: { en: "English", es: "Spanish" },
     },
     visits: {
       section: "Home visits",
@@ -545,7 +545,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
         children: "Niños",
         again: "Hogares ayudados más de una vez",
         speaking: (language) => `Hogares que hablan ${language}`,
-        languages: { en: "inglés", es: "español", ht: "criollo haitiano" },
+        languages: { en: "inglés", es: "español" },
       },
       visits: {
         section: cap(t.visits),

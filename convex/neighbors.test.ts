@@ -41,7 +41,7 @@ async function setup() {
   return { t, ids, as: (person: { userId: string }) => signedIn(t, person.userId, emails.has(person.userId)) };
 }
 
-const pat = { name: "Fabrice Pemberton", phone: "(100) 555-0105", email: "", address: "220 Placeholder Rd", adults: 2, children: 4, language: "ht", notes: "" } as const;
+const pat = { name: "Fabrice Pemberton", phone: "(100) 555-0105", email: "", address: "220 Placeholder Rd", adults: 2, children: 4, language: "es", notes: "" } as const;
 const openings = (t: Awaited<ReturnType<typeof setup>>["t"]) => t.run((ctx) => ctx.db.query("auditEvents").collect());
 
 describe("who may use neighbor records", () => {
@@ -368,7 +368,7 @@ describe("adding and finding neighbors", () => {
     await expect(as(ids.owner).mutation(api.neighbors.create, { churchId, ...sameHouse })).rejects.toThrow("Esperanza Montoya is already on file with this phone number.");
     await expect(as(ids.owner).mutation(api.neighbors.create, { churchId, ...pat, name: "esperanza  MONTOYA" })).rejects.toThrow("already on file with this name");
     const created = await as(ids.owner).mutation(api.neighbors.create, { churchId, ...sameHouse, confirmedNew: true });
-    expect((await readRecord(as(ids.owner), { churchId, neighborId: created })).neighbor).toMatchObject({ name: "Alma Montoya", language: "ht" });
+    expect((await readRecord(as(ids.owner), { churchId, neighborId: created })).neighbor).toMatchObject({ name: "Alma Montoya", language: "es" });
     // The same phone in another group is not a duplicate here.
     await as(ids.owner).mutation(api.neighbors.create, { churchId, ...pat, name: "Celeste Greenhalgh", phone: "(100) 555-0102" });
   });
