@@ -90,6 +90,11 @@ async function ledgerEntries(ctx: Ctx, churchId: Id<"churches">) {
   return entries;
 }
 
+/** The balance today: every entry added up, as the ledger shows it. No access check inside; call it after neighborAccess(). */
+export async function balanceOf(ctx: Ctx, churchId: Id<"churches">) {
+  return (await ledgerEntries(ctx, churchId)).reduce((total, entry) => total + signed(entry), 0);
+}
+
 /**
  * Whole cents paid so far toward one request: payments, less any money that came back against it.
  * No access check inside; call it after neighborAccess().

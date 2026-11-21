@@ -1,0 +1,25 @@
+/* The home's glance (glance.tsx): figures on the page's own paper, cut by hairlines like the week's figures, each opening its room. */
+.glance { display: grid; gap: var(--space-32); margin: 0 0 var(--space-40); }
+.glance-held { min-height: 420px; }
+.glance h2 { margin: 0 0 var(--space-8); font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--live-muted); }
+.glance-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 2px solid #596e51; }
+.glance-tiles a { position: relative; display: grid; gap: 6px; align-content: start; min-height: 44px; padding: var(--space-16) 12px var(--space-16) 0; border-bottom: 1px solid var(--live-line); color: var(--live-ink); text-decoration: none; }
+.glance-tiles a:nth-child(2n) { padding-left: 12px; border-left: 1px solid var(--live-line); }
+.glance-tiles a > span:first-child { font-size: 14px; line-height: 1.3; color: var(--live-muted); text-decoration: underline; text-decoration-color: #b9c4b0; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.glance-tiles a:is(:hover, :active) > span:first-child { text-decoration-thickness: 2px; text-decoration-color: currentColor; }
+/* Something here waits for a person: a small ochre corner, the paper rule's colour for waiting. */
+.glance-tiles a[data-waits]::before { content: ""; position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: linear-gradient(225deg, var(--help-ochre, #b98a2f) 50%, transparent 50%); }
+.glance-tiles .count-up { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); line-height: 1; letter-spacing: -0.02em; font-feature-settings: "lnum" 1, "tnum" 1; overflow-wrap: anywhere; }
+.glance-tiles small { display: grid; gap: 2px; font-size: 13px; line-height: 1.35; color: var(--live-muted); }
+.glance-pace { position: relative; height: 4px; margin: 2px 0; background: #e4dfd3; }
+.glance-pace::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--spent); background: #596e51; }
+.glance-pace::after { content: ""; position: absolute; top: -3px; bottom: -3px; left: var(--day); width: 2px; background: var(--live-ink); }
+.glance-council { margin: var(--space-16) 0 0; font-size: 15px; line-height: 1.45; color: var(--live-muted); }
+.glance-council strong { font-weight: 600; color: var(--live-ink); }
+@media (min-width: 1100px) {
+  .glance-held { min-height: 380px; }
+  .glance-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .glance-tiles a:nth-child(2n) { padding-left: 0; border-left: 0; }
+  .glance-tiles a:not(:nth-child(4n + 1)) { padding-left: clamp(12px, 1.6vw, 24px); border-left: 1px solid var(--live-line); }
+}
+@media print { .glance { display: none; } }
