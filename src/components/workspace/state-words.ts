@@ -9,7 +9,6 @@ export const stateWords = {
   tryAgain: "Try again",
   waiting: "Waiting for the connection. What you typed is kept and will be sent when it returns.",
   offlineTitle: "No connection right now.",
-  offlineRoom: "This room opens when it returns.",
   offlineDeck: "What’s on screen stays. Your changes go out once this device is back online.",
   errorTitle: "This room didn’t open.",
   errorDeck: "What you saved is safe. Try again; if it still won’t open, the other rooms are in the menu.",

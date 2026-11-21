@@ -156,7 +156,7 @@ export function LiveEmpty({
  * section's h2, so a block that can sit in either place never skips a level.
  */
 export function FollowingHeading({ children, id }: { children: ReactNode; id?: string }) {
-  const [level, setLevel] = useState<1 | 2 | 3>(2);
+  const [level, setLevel] = useState<2 | 3>(2);
   const place = useRef<HTMLHeadingElement>(null);
   useLayoutEffect(() => {
     const here = place.current;
@@ -165,10 +165,9 @@ export function FollowingHeading({ children, id }: { children: ReactNode; id?: s
       // Only headings someone can reach count: one in a hidden part of the page is not above this one for anyone.
       .filter((heading) => heading !== here && heading.compareDocumentPosition(here) & Node.DOCUMENT_POSITION_FOLLOWING && !heading.closest("[hidden], [inert], [aria-hidden='true'], [data-room-held] > :not(.live-opening)"))
       .at(-1);
-    // A room held by a lost connection shows only its card: the card's line is then the page's own heading.
-    setLevel(!before && here.closest(".live-opening[data-lost]") ? 1 : !before || before.tagName === "H1" ? 2 : 3);
+    setLevel(!before || before.tagName === "H1" ? 2 : 3);
   }, []);
-  const Heading = level === 1 ? "h1" : level === 2 ? "h2" : "h3";
+  const Heading = level === 2 ? "h2" : "h3";
   return <Heading ref={place} id={id}>{children}</Heading>;
 }
 

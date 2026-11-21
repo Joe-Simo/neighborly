@@ -367,7 +367,6 @@ export function en(set: WordSet) {
       offlineTitle: "No connection right now.",
       keptOffline: "Offline — showing what you last saw",
       /** After the title, where a room that was never opened is waiting for the connection. */
-      offlineRoom: "This room opens when it returns.",
       offlineDeck: "What’s on screen stays. Your changes go out once this device is back online.",
       /** Said in green in the same strip for a moment once the connection returns. */
       /** The page shown in place of one that could not be fetched (/offline): its tab. */

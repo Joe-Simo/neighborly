@@ -357,7 +357,6 @@ export function es(set: WordSet): Words {
       answerKept: "Tu respuesta está guardada. Se enviará cuando vuelva la conexión.",
       offlineTitle: "Ahora no hay conexión.",
       keptOffline: "Sin conexión — lo último que viste",
-      offlineRoom: "Esta sección se abre cuando vuelva.",
       offlineDeck: "Lo que ves en pantalla se queda. Tus cambios se enviarán cuando vuelva la conexión.",
       offlinePageTab: "Sin conexión · Kind Helps",
       errorTitle: "Esta sección no se abrió.",

@@ -112,11 +112,11 @@
    the room just left stands still over the page (a copy, which cannot move), and once the wait has lasted 400ms
    the column is the one quiet "Opening…" line, where the room's title will be. */
 .live-app .live-main[data-room-held] { visibility: hidden; }
-/* Held by a lost connection the room stays a main landmark, with only its offline card in it to be seen or read.
-   Named on the column itself, not found by a test of what it holds (:has), which would make every change in the room
-   work out every style in it again. */
+/* Held by a lost connection the room stays a main landmark, drawn as any room is while offline: its head and the
+   connection's line, nothing else. Named on the column itself, not found by a test of what it holds (:has), which
+   would make every change in the room work out every style in it again. */
 .live-app .live-main[data-room-held][data-room-lost] { visibility: visible; }
-.live-app .live-main[data-room-held][data-room-lost] > :not(.live-opening) { visibility: hidden; }
+.live-app .live-main[data-room-held][data-room-lost] > :not(.live-page-head, .live-connection) { visibility: hidden; }
 /* The first room of a visit brings its bar and its menu with it, in the same frame: nothing of the workspace is
    seen before then but the "Opening…" line. Later rooms change under a bar and menu that stay. */
 .live-app[data-shell-held] > .live-header,
@@ -596,9 +596,6 @@
   max-width: none !important;
 }
 .live-app .live-opening > span { position: absolute; top: 0; left: 0; right: 0; }
-/* A room held by a lost connection shows the offline card in the same place, over the room that is not seen. */
-.live-app .live-opening[data-lost] { display: block; color: inherit; font-size: inherit; }
-.live-app .live-opening[data-lost] > .live-state { position: absolute; top: 0; left: 0; right: 0; }
 /* A short wait inside a form or a dialog: just the line. */
 /* The one way to wait, everywhere: a quiet line, and only once the wait has lasted 400ms, so a quick
    answer never flashes it. No grey rows standing in for content. */
