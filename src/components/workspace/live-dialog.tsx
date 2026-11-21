@@ -168,11 +168,12 @@ export function LiveDialog({
             );
           if (!first) return;
           event.preventDefault();
-          // Focus waits for the sheet's first frame: focusing in the same task as the sheet is put in makes the
-          // browser work out its styles and layout, and keep the box in view, inside the press itself.
-          requestAnimationFrame(() => {
+          // Focus waits until the sheet's first frame has been painted. A frame callback alone runs before that paint, so
+          // focusing there made the browser work out the sheet's styles and layout (and keep the box in view) inside the
+          // very frame that first draws it; one frame on, they are already worked out.
+          requestAnimationFrame(() => requestAnimationFrame(() => {
             if (first.isConnected && !first.closest("[inert]")) first.focus();
-          });
+          }));
         }}
       >
         <DialogHeader>

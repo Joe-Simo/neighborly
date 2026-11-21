@@ -19,7 +19,10 @@ export function useSheetLeaves(room: RefObject<HTMLElement | null>, shown: strin
     let read: { sheet: HTMLElement; top: number }[] = [];
     // Where each sheet lies untouched: its box less the 0 to 24px its own turn has set it down.
     const down = new WeakMap<HTMLElement, number>();
-    const flat = new Set<HTMLElement>(sheets().filter((sheet) => sheet.getBoundingClientRect().top < innerHeight));
+    // Which sheets are in the window as the room is shown is told by the first look of the watcher below, from the layout
+    // the frame has already made: asking each sheet here would lay the new room out before its first frame is drawn.
+    const flat = new Set<HTMLElement>();
+    const looked = new WeakSet<Element>();
     const { ask, drop } = frameStep(
       () => {
         height = innerHeight;
@@ -37,6 +40,10 @@ export function useSheetLeaves(room: RefObject<HTMLElement | null>, shown: strin
     const near = new Set<Element>();
     const watch = new IntersectionObserver((seen) => {
       for (const one of seen) {
+        if (!looked.has(one.target)) {
+          looked.add(one.target);
+          if (one.boundingClientRect.top < height) flat.add(one.target as HTMLElement);
+        }
         if (one.isIntersecting) near.add(one.target);
         else {
           near.delete(one.target);
