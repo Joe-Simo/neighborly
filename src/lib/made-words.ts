@@ -108,7 +108,7 @@ const en = {
       "The painted artwork was made with Codex’s image generator from written direction, and chosen by the author. The page adds nothing to it. On the home page it moves by its own depth: the near stone and the far hills part around the table as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next. Around it, the paper moves.",
     ] },
     { title: "Cut along its own depth", blocks: [
-      "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
+      "The courtyard was painted whole. Its own depth cuts it into sheets without painting anything new: drawn apart here as six sheets with the people at the table on a seventh, and on the home page laid into four planes that move as you walk in. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
     ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The depth map: lighter is nearer." }, stills: { label: "The courtyard’s sheets, from whole to drawn apart", items: [
       ["Whole, as the doors open on it.", "The courtyard painting, whole, seen straight on."],
       ["Turned, still one sheet.", "The same painting turned a little to the side, still lying as one sheet."],
@@ -267,7 +267,7 @@ const es: typeof en = {
       "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y elegida por quien lo creó. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan alrededor de la mesa al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
-      "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
+      "El patio se pintó entero. Su propia profundidad lo corta en hojas sin pintar nada nuevo: aquí se separa en seis hojas, con las personas de la mesa en una séptima, y en la página de inicio se reúne en cuatro planos que se mueven al entrar. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
     ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa de profundidad: lo claro está más cerca." }, stills: { label: "Las hojas del patio, de enteras a separadas", items: [
       ["Entero, como lo muestran las puertas al abrirse.", "La pintura del patio, entera, vista de frente."],
       ["Girado, todavía una sola hoja.", "La misma pintura girada un poco hacia un lado, todavía como una sola hoja."],
