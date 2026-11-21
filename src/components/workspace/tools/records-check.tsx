@@ -70,7 +70,7 @@ export function RecordsCheck() {
           <Button variant="outline" disabled={asked} onClick={() => setAsked(true)}>{asked ? w.checking : w.run}</Button>
         </div>
       ) : !found.people.length && !found.phones.length ? (
-        <p aria-hidden="true">{w.none}</p>
+        <p className="tools-done" aria-hidden="true">{w.none}</p>
       ) : (
         <>
           {found.people.length > 0 && (
