@@ -10,7 +10,7 @@ import { notesSayOne } from "../src/lib/duplicate-set";
 
 /**
  * The home's glance: one answer per signed-in person, holding only what their access allows. Everyone gets their own
- * week (visits they are on, tasks given to them, asks waiting on them). Whoever may open neighbor records also gets the
+ * asks: visits waiting for their answer and tasks given to them (their week's commitments the screen has already). Whoever may open neighbor records also gets the
  * whole conference: callbacks late, the money against last year and the budget, households served, visits, the volunteers,
  * the treasury and the assistant's marks waiting on a person. A council's owner gets the council's year as well.
  * Counts and sums only, from the records; no neighbor is named and no model is asked.
@@ -98,7 +98,7 @@ async function councilsOf(ctx: QueryCtx, userId: Id<"users">, at: number) {
 export const home = query({
   args: { churchId: v.id("churches"), at: hour },
   returns: v.object({
-    own: v.object({ visits: v.number(), nextVisit: v.union(v.number(), v.null()), visitAsks: v.number(), tasks: v.number(), tasksLate: v.number() }),
+    own: v.object({ visitAsks: v.number(), tasks: v.number(), tasksLate: v.number() }),
     conference: v.union(conference, v.null()),
     councils: v.array(council),
   }),
@@ -111,13 +111,11 @@ export const home = query({
       ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", at).lt("scheduledAt", at + 14 * DAY)).take(500),
       ctx.db.query("tasks").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1000),
     ]);
-    // Only this person's own: the visits they are on (when, never who), and the tasks given to them.
+    // Only this person's own: visits waiting for their answer (a count, never who), and the tasks given to them.
     const mine = visits.filter((visit) => visit.status === "scheduled" && visit.visitors.some((one) => one.memberId === me._id && one.response !== "declined"));
     const myTasks = tasks.filter((task) => task.assigneeId === me._id && !task.complete);
     return {
       own: {
-        visits: mine.length,
-        nextVisit: mine.reduce<number | null>((first, visit) => (first === null || visit.scheduledAt < first ? visit.scheduledAt : first), null),
         visitAsks: mine.filter((visit) => visit.visitors.some((one) => one.memberId === me._id && one.response === "pending")).length,
         tasks: myTasks.length,
         tasksLate: myTasks.filter((task) => task.dueAt !== null && task.dueAt < at).length,
