@@ -11,6 +11,7 @@
         "@convex-dev/rate-limiter": "^0.4.3",
         "@convex-dev/resend": "^0.2.10",
         "@serwist/turbopack": "^9.5.13",
+        "@serwist/window": "9.5.13",
         "class-variance-authority": "^0.7.1",
         "cn": "^0.5.2",
         "convex": "^1.50.0",
