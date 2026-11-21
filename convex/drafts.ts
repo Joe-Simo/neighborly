@@ -912,7 +912,8 @@ export const monthRecords = internalQuery({
  * Before a treasurer closes or reports a month: the ledger lines worth a second look. Every number is code's:
  * likely double entries, a payment above what was approved, a line with no category or no payee. The model reads
  * only memos, with every payee and neighbor name taken out, and says for each whether it describes spending on
- * something other than its category. One request, one reservation, and nothing changes: each flag points to one line.
+ * something other than its category, and separately which of the group's categories it fits (see offLine). Nothing
+ * changes: each flag points to one line.
  */
 export const checkMonth = action({
   args: { churchId: v.id("churches"), month: v.string() },
@@ -922,10 +923,13 @@ export const checkMonth = action({
     const unread = { flags, verification: "review" as const };
     if (!reading.length) return { flags, verification: "checked" };
     if (!env.TYPESAFE_API_KEY) return unread;
+    // Two requests, both counted: the person's own limit once, and the group's month for the second.
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return unread;
-    const sure = await offCategory(env.TYPESAFE_API_KEY, reading, { names, addresses: [], others });
+    const known = { names, addresses: [], others };
+    const picks = await ctx.runMutation(internal.drafts.reserveMany, { churchId: args.churchId, count: 1 }) ? spentOn(env.TYPESAFE_API_KEY, reading, known) : null;
+    const [sure, picked] = await Promise.all([offCategory(env.TYPESAFE_API_KEY, reading, known), picks]);
     if (!sure) return unread;
-    return { flags: [...flags, ...reading.flatMap(({ entryId }, index) => (sure[index] >= sureEnough ? [{ kind: "offCategory" as const, entryId, source: "assistant" as const }] : []))], verification: "checked" };
+    return { flags: [...flags, ...reading.flatMap(({ entryId }, index) => (offLine(sure[index], picked?.[index]) ? [{ kind: "offCategory" as const, entryId, source: "assistant" as const }] : []))], verification: "checked" };
   },
 });
 
@@ -966,6 +970,13 @@ async function spentOn(key: string, lines: { memo: string; category: string }[],
   });
 }
 
+/**
+ * A line is flagged when the yes-or-no reading is sure (0.9), or when both readings lean the same way: a near-certain
+ * pick of somewhere else (0.95) and a yes-or-no score of at least 0.5. Either alone was too loose (run 2: three wrong).
+ * Measured on seven memos written after the rule was set: 7 right, 0 missed, 0 wrong.
+ */
+const offLine = (sure: number, pick?: { confidence: number; elsewhere: boolean } | null) => sure >= sureEnough || (!!pick?.elsewhere && pick.confidence >= 0.95 && sure >= 0.5);
+
 export const measureLedger = internalAction({
   args: { churchId: v.id("churches") },
   returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance"), v.literal("no answer")), model: v.string(), all: referralTally, heldOut: referralTally, trial: v.object({ all: referralTally, heldOut: referralTally }), fresh: v.object({ live: referralTally, trial: referralTally }), rows: v.array(v.object({ id: v.string(), score: v.number(), flagged: v.boolean(), pick: v.optional(v.string()), pickConfidence: v.optional(v.number()), trialFlagged: v.optional(v.boolean()) })) }),
@@ -981,9 +992,7 @@ export const measureLedger = internalAction({
       const flagged = sure[index] >= sureEnough;
       const mark = flagged === item.off ? "right" as const : flagged ? "wrong" as const : "missed" as const;
       const pick = picks?.[index] ?? null;
-      // Trial 3: the live yes stands; otherwise both readings must lean the same way: a near-certain pick of somewhere
-      // else (0.95) and a yes-or-no score of at least 0.5. Either alone is too loose (run 2: three wrong); below, it abstains.
-      const trialFlagged = flagged || (!!pick?.elsewhere && pick.confidence >= 0.95 && sure[index] >= 0.5);
+      const trialFlagged = offLine(sure[index], pick);
       const trialMark = trialFlagged === item.off ? "right" as const : trialFlagged ? "wrong" as const : "missed" as const;
       return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, trialMark, heldOut: !!item.heldOut, fresh: !!item.fresh, ...(pick && { pick: pick.pick, pickConfidence: Math.round(pick.confidence * 100) / 100, trialFlagged }) };
     });

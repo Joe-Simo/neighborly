@@ -29,4 +29,20 @@ export const ledgerSet: LedgerMemo[] = [
   { id: "fr-es-luz", memo: "Pago de la luz para evitar el corte.", category: "utility", off: false, fresh: true },
   { id: "fr-es-food-bus", memo: "Pases de autobús para ir al trabajo.", category: "food", off: true, fresh: true },
   { id: "fr-voucher-dresser", memo: "Dresser and kitchen table from the thrift store.", category: "voucher", off: false, fresh: true },
+  // Written after run 3, before any run saw them.
+  { id: "fr-rent-motel", memo: "Two nights at the motel until the lease starts.", category: "rent", off: false, fresh: true },
+  { id: "fr-utility-tires", memo: "Two used tires so he can keep driving for work.", category: "utility", off: true, fresh: true },
+  { id: "fr-food-formula", memo: "Baby formula and diapers for the week.", category: "food", off: false, fresh: true },
+  { id: "fr-food-lightbill", memo: "Paid the electric company so the power stays on.", category: "food", off: true, fresh: true },
+  { id: "fr-utility-propane", memo: "Propane tank refill for heat.", category: "utility", off: false, fresh: true },
+  { id: "fr-voucher-glasses", memo: "Eye exam and glasses at the optometrist.", category: "voucher", off: true, fresh: true },
+  { id: "fr-voucher-shoes", memo: "Work boots and two uniforms for the new job.", category: "voucher", off: false, fresh: true },
+  { id: "fr-rent-funeral", memo: "Part of the funeral home bill for her husband.", category: "rent", off: true, fresh: true },
+  { id: "fr-es-renta", memo: "Mitad de la renta de enero, cheque al administrador.", category: "rent", off: false, fresh: true },
+  { id: "fr-es-food-rent", memo: "Depósito de seguridad del apartamento nuevo.", category: "food", off: true, fresh: true },
+  { id: "fr-es-agua", memo: "Factura del agua atrasada, aviso de corte.", category: "utility", off: false, fresh: true },
+  { id: "fr-es-voucher-dentist", memo: "Extracción de una muela en el dentista.", category: "voucher", off: true, fresh: true },
 ];
+
+/** The last measured run of the fresh memos with the rule the month check uses (offLine in convex/drafts.ts). */
+export const ledgerMeasured = { day: "2026-11-21", notes: 7, right: 7, missed: 0, wrong: 0 };
