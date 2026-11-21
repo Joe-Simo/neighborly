@@ -7,6 +7,8 @@
 .help-matches .live-row { padding: var(--space-16) 0; }
 .help-form .live-field { font-size: 16px; }
 .help-form .live-field small, .help-form-note { font-size: 15px; line-height: 1.45; color: var(--live-muted); margin: 0; }
+/* What the records say before a decision (the month against the budget, the same help given before) reads as one aside, set off by a rule. */
+.help-records-said { display: grid; gap: var(--space-8); padding: 2px 0 2px var(--space-16); border-left: 1px solid var(--live-line); }
 .help-form textarea { min-height: 96px; }
 .live-app .help-form [data-slot="button"] { min-height: 44px; padding-inline: 16px; font-size: 16px; }
 .help-row .help-row-more { margin-top: var(--space-8); font-size: 16px; }
@@ -406,7 +408,9 @@
 .help-first-read > button { padding-left: 23px; }
 
 /* The one next step the assistant read in a returned call's outcome: one plum line, never faded. */
-.help-row .help-next-step { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: var(--space-4); }
+/* The mark keeps beside its words, as on the Spanish line; the way on sits under the words, never under the mark. */
+.help-row .help-next-step { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; margin-top: var(--space-4); }
+.help-next-step > [data-slot="button"] { grid-column: 2; justify-self: start; }
 .help-next-step svg { position: relative; top: 2px; flex: none; }
 /* The household's lines lie in the form as its own lines; their box is only there to be said aloud as they arrive. */
 .help-repeat { display: contents; }

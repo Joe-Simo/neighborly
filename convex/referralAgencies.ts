@@ -6,8 +6,8 @@ import { nameKey } from "./assistance";
 
 /**
  * The places a group refers neighbors to, kept by hand: the way ServWare lets a conference keep its own local
- * referral agencies. Coordinators and owners only, through the same gate as every neighbor record. Its refusals
- * reuse sentences the app already says in Spanish (refusals-es.ts), so the shared words book does not grow.
+ * referral agencies. Coordinators and owners only, through the same gate as every neighbor record. Each refusal
+ * says exactly what was wrong, and refusals-es.ts says it in Spanish.
  */
 const agency = v.object({ id: v.id("referralAgencies"), name: v.string(), phone: v.string(), helpsWith: v.string() });
 const fields = { name: v.string(), phone: v.string(), helpsWith: v.string() };
@@ -15,8 +15,10 @@ const most = 200;
 
 function cleaned(args: { name: string; phone: string; helpsWith: string }) {
   const name = args.name.trim(), phone = args.phone.trim(), helpsWith = args.helpsWith.trim();
-  if (!name) throw new ConvexError("A name is needed.");
-  if (name.length > 120 || phone.length > 40 || helpsWith.length > 300) throw new ConvexError("Enter a valid value.");
+  if (!name) throw new ConvexError("An agency needs a name.");
+  if (name.length > 120) throw new ConvexError("An agency's name can be at most 120 characters.");
+  if (phone.length > 40) throw new ConvexError("An agency's phone number can be at most 40 characters.");
+  if (helpsWith.length > 300) throw new ConvexError("What an agency helps with can be at most 300 characters.");
   return { name, phone, helpsWith };
 }
 
@@ -43,8 +45,8 @@ export const add = mutation({
     const member = await neighborAccess(ctx, churchId);
     const row = cleaned(rest);
     const count = (await ctx.db.query("referralAgencies").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(most)).length;
-    if (count >= most) throw new ConvexError("Too many records to open at once.");
-    if (await nameTaken(ctx, churchId, row.name)) throw new ConvexError(`${row.name} is already on file with this name.`);
+    if (count >= most) throw new ConvexError("The list holds 200 agencies; remove one first.");
+    if (await nameTaken(ctx, churchId, row.name)) throw new ConvexError(`${row.name} is already on the list of agencies.`);
     const id = await ctx.db.insert("referralAgencies", { churchId, ...row });
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "referral_agency_added", targetId: id, at: Date.now() });
     return id;
@@ -57,9 +59,9 @@ export const edit = mutation({
   handler: async (ctx, { churchId, id, ...rest }) => {
     const member = await neighborAccess(ctx, churchId);
     const found = await ctx.db.get(id);
-    if (!found || found.churchId !== churchId) throw new ConvexError("Record not found.");
+    if (!found || found.churchId !== churchId) throw new ConvexError("That agency was not found.");
     const row = cleaned(rest);
-    if (await nameTaken(ctx, churchId, row.name, id)) throw new ConvexError(`${row.name} is already on file with this name.`);
+    if (await nameTaken(ctx, churchId, row.name, id)) throw new ConvexError(`${row.name} is already on the list of agencies.`);
     await ctx.db.patch(id, row);
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "referral_agency_edited", targetId: id, at: Date.now() });
     return null;
@@ -73,7 +75,7 @@ export const remove = mutation({
   handler: async (ctx, { churchId, id }) => {
     const member = await neighborAccess(ctx, churchId);
     const found = await ctx.db.get(id);
-    if (!found || found.churchId !== churchId) throw new ConvexError("Record not found.");
+    if (!found || found.churchId !== churchId) throw new ConvexError("That agency was not found.");
     await ctx.db.delete(id);
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "referral_agency_removed", targetId: id, at: Date.now() });
     return null;

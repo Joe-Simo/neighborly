@@ -17,14 +17,18 @@ import { formatMoney, type Language } from "@/lib/words";
 /** Only the treasury carries these words, so no other room pays for them. */
 const said = {
   en: {
-    line: (month: string, approved: string, budget: string) => `${month}: ${approved} approved of the ${budget} monthly budget.`,
-    none: (month: string, approved: string) => `${month}: ${approved} approved. No monthly budget is set.`,
+    line: (approved: string, budget: string) => `${approved} of ${budget} approved`,
+    none: (approved: string) => `${approved} approved`,
+    deck: (month: string) => `${month}, against the monthly budget.`,
+    noDeck: (month: string) => `${month}. No monthly budget is set.`,
     set: "Set a monthly budget", change: "Change the budget", label: "Monthly budget",
     help: "Leave it empty for no budget.", wrong: "Write the budget in dollars, such as 2000.", save: "Save budget", cancel: "Cancel",
   },
   es: {
-    line: (month: string, approved: string, budget: string) => `${month}: ${approved} aprobados del presupuesto mensual de ${budget}.`,
-    none: (month: string, approved: string) => `${month}: ${approved} aprobados. No hay presupuesto mensual.`,
+    line: (approved: string, budget: string) => `${approved} de ${budget} aprobados`,
+    none: (approved: string) => `${approved} aprobados`,
+    deck: (month: string) => `${month}, frente al presupuesto mensual.`,
+    noDeck: (month: string) => `${month}. No hay presupuesto mensual.`,
     set: "Fijar un presupuesto mensual", change: "Cambiar el presupuesto", label: "Presupuesto mensual",
     help: "Déjalo vacío para no tener presupuesto.", wrong: "Escribe el presupuesto en dólares, como 2000.", save: "Guardar presupuesto", cancel: "Cancelar",
   },
@@ -51,7 +55,10 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
   const title = monthTitle(locale, month, today);
   return (
     <section className="treasury-budget" aria-label={w.label}>
-      <p aria-live="polite">{found.budget ? w.line(title, money(found.approved), money(found.budget)) : w.none(title, money(found.approved))}</p>
+      <div aria-live="polite">
+        <h2>{found.budget ? w.line(money(found.approved), money(found.budget)) : w.none(money(found.approved))}</h2>
+        <p>{found.budget ? w.deck(title) : w.noDeck(title)}</p>
+      </div>
       {editing ? (
         <form
           className="live-form"
@@ -80,7 +87,7 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
           </div>
         </form>
       ) : (
-        <Button ref={opener} type="button" variant="ghost" onClick={() => setEditing(true)}>{found.budget ? w.change : w.set}</Button>
+        <Button ref={opener} type="button" variant="outline" onClick={() => setEditing(true)}>{found.budget ? w.change : w.set}</Button>
       )}
     </section>
   );

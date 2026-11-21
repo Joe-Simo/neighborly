@@ -9,7 +9,7 @@ import { nextStepSet, nextSteps, type NextStep } from "../src/lib/next-step-set"
 import { visitSet } from "../src/lib/visit-set";
 import { referralPlaces, referralSet, type ReferralPlace } from "../src/lib/referral-set";
 import { repeatSet } from "../src/lib/repeat-set";
-import { paceLines, repeatLines, type RepeatLine } from "../src/lib/repeat-words";
+import type { RepeatFacts } from "../src/lib/repeat-words";
 import { ledgerSet } from "../src/lib/ledger-set";
 import { spanishSet } from "../src/lib/spanish-set";
 import { DateTime } from "luxon";
@@ -847,9 +847,14 @@ function offCategoryQuestion(line: string): Question {
   };
 }
 /** How sure the model is of each line, 0 to 1, or null when any answer is not a number. One request for every line. */
+/**
+ * A request's kind is booked as its bare code ("voucher"), which tells the model nothing: run 2 read a thrift-store bed
+ * under "voucher" as spending elsewhere. Each code goes as what it means, the same words the help line asks with.
+ */
+const described = (category: string) => (category in kindMeaning ? kindMeaning[category as RequestKind] : category);
 async function offCategory(key: string, lines: { memo: string; category: string }[], known?: Known) {
   const answers = await decide(key,
-    { lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500), category: line.category }])) },
+    { lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500), category: described(line.category) }])) },
     Object.fromEntries(lines.map((_, index) => [`l${index}`, offCategoryQuestion(`lines.l${index}`)])),
     known,
   );
@@ -948,7 +953,7 @@ function spentOnQuestion(line: string, categories: number): Question {
 async function spentOn(key: string, lines: { memo: string; category: string }[], known?: Known) {
   const categories = [...new Set(lines.map(line => line.category))];
   const answers = await decide(key,
-    { categories: Object.fromEntries(categories.map((name, index) => [`c${index}`, name])), lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500) }])) },
+    { categories: Object.fromEntries(categories.map((name, index) => [`c${index}`, described(name)])), lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500) }])) },
     Object.fromEntries(lines.map((_, index) => [`l${index}`, spentOnQuestion(`lines.l${index}`, categories.length)])),
     known,
   );
@@ -957,16 +962,16 @@ async function spentOn(key: string, lines: { memo: string; category: string }[],
     const answer = answers[`l${index}`];
     if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number" || typeof answer.choice !== "string") return null;
     const own = `c${categories.indexOf(line.category)}`;
-    return { pick: answer.choice, confidence: answer.confidence, off: answer.choice !== own && answer.choice !== "unclear" && answer.confidence >= agreed };
+    return { pick: answer.choice, confidence: answer.confidence, elsewhere: answer.choice !== own && answer.choice !== "unclear" };
   });
 }
 
 export const measureLedger = internalAction({
   args: { churchId: v.id("churches") },
-  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance"), v.literal("no answer")), model: v.string(), all: referralTally, heldOut: referralTally, trial: v.object({ all: referralTally, heldOut: referralTally }), rows: v.array(v.object({ id: v.string(), score: v.number(), flagged: v.boolean(), pick: v.optional(v.string()), pickConfidence: v.optional(v.number()), trialFlagged: v.optional(v.boolean()) })) }),
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance"), v.literal("no answer")), model: v.string(), all: referralTally, heldOut: referralTally, trial: v.object({ all: referralTally, heldOut: referralTally }), fresh: v.object({ live: referralTally, trial: referralTally }), rows: v.array(v.object({ id: v.string(), score: v.number(), flagged: v.boolean(), pick: v.optional(v.string()), pickConfidence: v.optional(v.number()), trialFlagged: v.optional(v.boolean()) })) }),
   handler: async (ctx, { churchId }) => {
     const zero = { right: 0, missed: 0, wrong: 0 };
-    const none = { model, all: zero, heldOut: zero, trial: { all: zero, heldOut: zero }, rows: [] };
+    const none = { model, all: zero, heldOut: zero, trial: { all: zero, heldOut: zero }, fresh: { live: zero, trial: zero }, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: 2 })) return { status: "no allowance" as const, ...none };
@@ -976,13 +981,15 @@ export const measureLedger = internalAction({
       const flagged = sure[index] >= sureEnough;
       const mark = flagged === item.off ? "right" as const : flagged ? "wrong" as const : "missed" as const;
       const pick = picks?.[index] ?? null;
-      const trialFlagged = !!pick?.off;
+      // Trial 3: the live yes stands; otherwise both readings must lean the same way: a near-certain pick of somewhere
+      // else (0.95) and a yes-or-no score of at least 0.5. Either alone is too loose (run 2: three wrong); below, it abstains.
+      const trialFlagged = flagged || (!!pick?.elsewhere && pick.confidence >= 0.95 && sure[index] >= 0.5);
       const trialMark = trialFlagged === item.off ? "right" as const : trialFlagged ? "wrong" as const : "missed" as const;
-      return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, trialMark, heldOut: !!item.heldOut, ...(pick && { pick: pick.pick, pickConfidence: Math.round(pick.confidence * 100) / 100, trialFlagged }) };
+      return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, trialMark, heldOut: !!item.heldOut, fresh: !!item.fresh, ...(pick && { pick: pick.pick, pickConfidence: Math.round(pick.confidence * 100) / 100, trialFlagged }) };
     });
-    const add = (only: boolean, arm: "mark" | "trialMark") => rows.filter(row => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row[arm]]: sum[row[arm]] + 1 }), { ...zero });
+    const add = (only: boolean | "fresh", arm: "mark" | "trialMark") => rows.filter(row => (only === "fresh" ? row.fresh : !only || row.heldOut)).reduce((sum, row) => ({ ...sum, [row[arm]]: sum[row[arm]] + 1 }), { ...zero });
     return {
-      status: "done" as const, model, all: add(false, "mark"), heldOut: add(true, "mark"), trial: { all: add(false, "trialMark"), heldOut: add(true, "trialMark") },
+      status: "done" as const, model, all: add(false, "mark"), heldOut: add(true, "mark"), trial: { all: add(false, "trialMark"), heldOut: add(true, "trialMark") }, fresh: { live: add("fresh", "mark"), trial: add("fresh", "trialMark") },
       rows: rows.map(({ id, score, flagged, pick, pickConfidence, trialFlagged }) => ({ id, score, flagged, ...(pick !== undefined && { pick, pickConfidence, trialFlagged }) })),
     };
   },
@@ -1054,7 +1061,7 @@ function repeatState(request: string, earlier: { daysBefore: number; text: strin
 export const repeatHistory = internalQuery({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests") },
   returns: v.object({
-    userId: v.id("users"), request: v.string(), language: v.union(v.literal("en"), v.literal("es")), timeZone: v.string(),
+    userId: v.id("users"), request: v.string(), timeZone: v.string(),
     records: v.array(v.object({ at: v.number(), what: recordWhat, kind: v.optional(kindValidator), daysBefore: v.number(), text: v.string() })),
     recent: v.array(v.object({ at: v.number(), kind: kindValidator, status: v.union(v.literal("approved"), v.literal("paid")), amount: v.number() })),
     sameAmount: v.array(v.object({ at: v.number(), kind: kindValidator, amount: v.number() })),
@@ -1093,7 +1100,7 @@ export const repeatHistory = internalQuery({
       .sort((a, b) => b.at - a.at).slice(0, repeatRecords)
       .map(record => ({ ...record, daysBefore: Math.round((now - record.at) / 86_400_000) }));
     return {
-      userId: member.userId, language: member.language ?? "en", timeZone: church?.timeZone ?? "America/New_York",
+      userId: member.userId, timeZone: church?.timeZone ?? "America/New_York",
       request: [request.summary, call?.note ?? ""].map(text => text.trim()).filter(Boolean).join("\n"),
       records: texts, recent, sameAmount,
       names: [neighbor?.name ?? "", call?.callerName ?? ""].filter(Boolean),
@@ -1110,12 +1117,13 @@ const amountBaseline = 10;
  * year before (by decision date, in the group's time zone), and where the asked amount falls among the past year's
  * approvals of its kind. `at` is the moment the sheet asked, passed in because a query never reads the clock.
  */
+const spent = v.object({
+  month: v.number(), thisMonth: v.number(), lastYear: v.number(), budget: v.union(v.number(), v.null()),
+  kind: kindValidator, asked: v.number(), approvals: v.number(), median: v.number(), above: v.number(),
+});
 export const spending = internalQuery({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), at: v.number() },
-  returns: v.object({
-    month: v.number(), thisMonth: v.number(), lastYear: v.number(), budget: v.union(v.number(), v.null()),
-    kind: kindValidator, asked: v.number(), approvals: v.number(), median: v.number(), above: v.number(),
-  }),
+  returns: spent,
   handler: async (ctx, { churchId, requestId, at }) => {
     await neighborAccess(ctx, churchId);
     const [church, request] = await Promise.all([ctx.db.get("churches", churchId), ctx.db.get("assistanceRequests", requestId)]);
@@ -1142,7 +1150,7 @@ export const spending = internalQuery({
 });
 
 type RepeatFlag = { at: number; what: "request" | "note" | "visit"; kind?: RequestKind };
-type RepeatFound = { recent: { at: number; kind: RequestKind; status: "approved" | "paid"; amount: number }[]; same: RepeatFlag[]; differs: RepeatFlag[]; lines: RepeatLine[]; verification: "review" | "checked" };
+type RepeatFound = RepeatFacts & { same: RepeatFlag[]; differs: RepeatFlag[]; verification: "review" | "checked" };
 const repeatFlag = v.object({ at: v.number(), what: recordWhat, kind: v.optional(kindValidator) });
 /**
  * Before an approver decides: what the household's own records say about this request. Same-kind help approved or paid
@@ -1155,17 +1163,18 @@ export const checkRepeat = action({
   returns: v.object({
     recent: v.array(v.object({ at: v.number(), kind: kindValidator, status: v.union(v.literal("approved"), v.literal("paid")), amount: v.number() })),
     same: v.array(repeatFlag), differs: v.array(repeatFlag),
-    /** What the sheet shows, in the approver's language and the group's time zone; `assistant` marks the model's readings. */
-    lines: v.array(v.object({ text: v.string(), assistant: v.boolean() })),
+    /** Facts, never sentences: the sheet words them in the language on the screen (src/lib/repeat-words.ts). */
+    sameAmount: v.array(v.object({ at: v.number(), kind: kindValidator, amount: v.number() })),
+    spent, baseline: v.number(), timeZone: v.string(),
     verification: v.union(v.literal("review"), v.literal("checked")),
   }),
   handler: async (ctx, args): Promise<RepeatFound> => {
-    const [{ userId, request, language, timeZone, records, recent, sameAmount, names, addresses, others }, spent] = await Promise.all([
+    const [{ userId, request, timeZone, records, recent, sameAmount, names, addresses, others }, spent] = await Promise.all([
       ctx.runQuery(internal.drafts.repeatHistory, args),
       ctx.runQuery(internal.drafts.spending, { ...args, at: Date.now() }),
     ]);
-    const pace = paceLines(language, { ...spent, baseline: amountBaseline });
-    const unread = { recent, same: [], differs: [], lines: [...pace, ...repeatLines(language, timeZone, { recent, sameAmount, same: [], differs: [] })], verification: "review" as const };
+    const facts = { recent, sameAmount, spent, baseline: amountBaseline, timeZone };
+    const unread = { ...facts, same: [], differs: [], verification: "review" as const };
     if (!records.length || !request || !env.TYPESAFE_API_KEY || request.length > 2000) return unread;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return unread;
     const sure = await confidence(env.TYPESAFE_API_KEY,
@@ -1177,7 +1186,7 @@ export const checkRepeat = action({
     const flagged = (question: "same" | "differs") => records.flatMap((record, index) => (repeatHit(sure, question, index) ? [{ at: record.at, what: record.what, ...("kind" in record && record.kind ? { kind: record.kind } : {}) }] : []));
     const same = flagged("same");
     const differs = flagged("differs");
-    return { recent, same, differs, lines: [...pace, ...repeatLines(language, timeZone, { recent, sameAmount, same, differs })], verification: "checked" as const };
+    return { ...facts, same, differs, verification: "checked" as const };
   },
 });
 

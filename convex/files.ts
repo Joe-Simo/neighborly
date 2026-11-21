@@ -12,8 +12,8 @@ import { neighborAccess, neighborRecord, openedBy, opening } from "./access";
  * The bytes are never handed out by a lasting storage address: each file is read through the HTTP route
  * /files/<id> (convex/http.ts), which checks the caller's own sign-in and access on every request, so a copied
  * link opens nothing for anyone without access. Bytes that never got a row (a refused or abandoned upload) are
- * swept daily (crons.ts). Refusals reuse sentences the app already says in Spanish (refusals-es.ts), so the shared
- * words book does not grow; the screen checks size, kind and the count first and says those in its own words.
+ * swept daily (crons.ts). Each refusal says exactly what was wrong (refusals-es.ts says it in Spanish);
+ * the screen checks size, kind and the count first and says those in its own words.
  */
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 /** Enough for years of minutes; it keeps every list one bounded read. The screen checks it first (uploaded-files.tsx). */
@@ -103,18 +103,18 @@ export const keep = internalMutation({
   handler: async (ctx, { churchId, neighborId, storageId, name }) => {
     const member = await gate(ctx, churchId, neighborId);
     const stored = await ctx.db.system.get(storageId);
-    if (!stored) throw new ConvexError("Record not found.");
-    if (await ctx.db.query("files").withIndex("by_storage", (q) => q.eq("storageId", storageId)).first()) throw new ConvexError("Enter a valid value.");
+    if (!stored) throw new ConvexError("The upload was not found; try again.");
+    if (await ctx.db.query("files").withIndex("by_storage", (q) => q.eq("storageId", storageId)).first()) throw new ConvexError("That file is already kept.");
     const title = name.trim().slice(0, 200);
     const refuse = async (sentence: string) => {
       await ctx.storage.delete(storageId);
       return { refused: sentence };
     };
-    if (!title) return refuse("A name is needed.");
-    if (stored.size > MAX_FILE_BYTES) return refuse("Enter a valid value.");
+    if (!title) return refuse("A file needs a name.");
+    if (stored.size > MAX_FILE_BYTES) return refuse("Files can be at most 10 MB.");
     const contentType = allowedType(stored.contentType, title);
-    if (!contentType) return refuse("Enter a valid value.");
-    if ((await rowsFor(ctx, churchId, neighborId)).length >= MOST) return refuse("Too many records to open at once.");
+    if (!contentType) return refuse("This kind of file cannot be kept. Use PDF, JPEG, PNG, HEIC, Word or Excel.");
+    if ((await rowsFor(ctx, churchId, neighborId)).length >= MOST) return refuse("Up to 300 files can be kept here. Remove one first.");
     const id = await ctx.db.insert("files", { churchId, neighborId, storageId, name: title, contentType, size: stored.size, uploadedBy: member._id, createdAt: Date.now() });
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "file.added", targetId: id, at: Date.now() });
     return { id };
@@ -230,7 +230,7 @@ export const remove = mutation({
   handler: async (ctx, { churchId, id }) => {
     await neighborAccess(ctx, churchId);
     const found = await ctx.db.get("files", id);
-    if (!found || found.churchId !== churchId) throw new ConvexError("Record not found.");
+    if (!found || found.churchId !== churchId) throw new ConvexError("That file was not found.");
     const member = await gate(ctx, churchId, found.neighborId);
     await ctx.storage.delete(found.storageId);
     await ctx.db.delete("files", id);

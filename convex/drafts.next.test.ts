@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { decisionLines } from "../src/lib/repeat-words";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { api, internal } from "./_generated/api";
@@ -108,7 +109,7 @@ describe("repeat help before a decision", () => {
     expect(found.recent).toEqual([{ at: 190 * day, kind: "utility", status: "paid", amount: 21000 }]);
     expect(found.same).toEqual([{ at: 189 * day, what: "request", kind: "utility" }]);
     expect(found.differs).toEqual([{ at: 150 * day, what: "note" }]);
-    expect(found.lines).toEqual([
+    expect(decisionLines("en", found)).toEqual([
       { text: "Utility help was paid on July 9: $210.", assistant: false },
       { text: "The assistant reads this as the same need as the request from July 8.", assistant: true },
       { text: "The assistant reads the note from May 30 as saying otherwise. Read both before you decide.", assistant: true },
@@ -265,7 +266,7 @@ describe("spending before a decision", () => {
     });
     const signed = t.withIdentity({ subject: "clerk|coordinator", email: "c@example.org", emailVerified: true });
     const found = await signed.action(api.drafts.checkRepeat, ids);
-    expect(found.lines.map(line => line.text)).toEqual(expect.arrayContaining([
+    expect(decisionLines("en", found).map(line => line.text)).toEqual(expect.arrayContaining([
       expect.stringMatching(/^Approved so far in \w+: \$3,000\. \w+ last year: none\.$/),
       "This amount is above every rent approval in the past year. The middle amount was $300.",
     ]));

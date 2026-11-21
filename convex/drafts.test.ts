@@ -375,7 +375,7 @@ describe("a call note drafted into a request", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     const sent = fetch.mock.calls[0][1].body;
     expect(sent).toContain("other than lines.l0.category");
-    expect(sent).toContain('"category":"rent"');
+    expect(sent).toContain('"category":"rent, a landlord or an eviction"');
     expect(sent).not.toMatch(/Rosa|Delgado|Property|Lakeside|Corner Market|Rivera/);
     expect(JSON.stringify(result)).not.toMatch(/Rosa|Property|Lakeside/);
     expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(1);

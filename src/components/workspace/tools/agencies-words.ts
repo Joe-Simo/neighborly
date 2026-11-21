@@ -24,7 +24,6 @@ const en = (t: Terms) => ({
   saved: "Agency saved.",
   removed: "Agency removed.",
   failed: "That could not be saved. Nothing changed; try again.",
-  taken: "That agency is already on the list.",
 });
 
 const es = (t: Terms): ReturnType<typeof en> => ({
@@ -47,7 +46,6 @@ const es = (t: Terms): ReturnType<typeof en> => ({
   saved: "Se guardó la agencia.",
   removed: "Se quitó la agencia.",
   failed: "No se pudo guardar. Nada cambió; inténtalo otra vez.",
-  taken: "Esa agencia ya está en la lista.",
 });
 
 /** These words in the reader's language and the group's own terms. */

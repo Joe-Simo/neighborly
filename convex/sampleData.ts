@@ -462,6 +462,30 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   for (const [index, waiting] of ([[30, "rent", "Short on rent after a medical bill", 52500, "landlord", "Orchard Street Apartments", 8], [41, "utility", "Shut-off notice on the electric bill", 18000, "utility", "City Power & Light", 9], [52, "food", "Groceries until the next paycheck", 6500, "vendor", "Corner Family Market", 10]] as const).entries())
     await db.insert("assistanceRequests", { churchId, neighborId: households[waiting[0]], kind: waiting[1], summary: waiting[2], amountRequested: waiting[3], amountApproved: waiting[3], status: "approved", decisionNote: "Approved after the home visit.", decidedBy: owner, decidedAt: clock(now - (waiting[6] - 3) * DAY, callSlots), payeeKind: waiting[4], payeeName: waiting[5], source: "person", createdBy: staff[index % staff.length], createdAt: clock(now - waiting[6] * DAY, callSlots) });
 
+  // What the assistant has to show in the sample week, written apart from the loop and its draws and all inside the
+  // open month, so the closed year and its pinned totals never move. Every name and number is made up.
+  const recentDay = (days: number) => clock(now - days * DAY, callSlots);
+  // A caller who needs Spanish, with no record yet: the help line names who on the team speaks it.
+  await db.insert("calls", { churchId, callerName: "Graciela Ibarra", phone: "(100) 555-0188", note: "Caller spoke only Spanish. Her son translated: the gas company sent a final notice, and she asked for someone who speaks Spanish to call back.", callback: "needed", takenBy: staff[2], takenAt: Math.min(now - 3600000, recentDay(0.2)), spanish: true });
+  // A call returned with an outcome the assistant read as one next step: write the request.
+  const calledBack = await db.get("neighbors", households[47]);
+  if (calledBack) await db.insert("calls", { churchId, neighborId: households[47], callerName: calledBack.name, phone: calledBack.phone, note: "Landlord sent a notice; rent is two weeks late.", callback: "done", takenBy: staff[1], takenAt: recentDay(2), returnedBy: staff[3], returnedAt: recentDay(1), outcome: "Spoke with her. The landlord will wait if we cover half of this month's rent by Friday. She is sending the notice.", nextStep: { step: "request", at: recentDay(1) } });
+  // The same need asked again: an electric bill paid 40 days ago, and the household asking for the same bill this week.
+  const again = await db.get("neighbors", households[73]);
+  if (again) {
+    // Never before the open year begins, so a sample loaded early in October still leaves the closed year as it was.
+    const before = Math.max(recentDay(40), clock(thisFiscalYear.toMillis() + DAY, callSlots));
+    const paidBefore = await db.insert("assistanceRequests", { churchId, neighborId: households[73], kind: "utility", summary: "Electric bill with a shut-off notice.", amountRequested: 16500, amountApproved: 16500, status: "paid", decisionNote: "Approved after the home visit.", decidedBy: owner, decidedAt: Math.min(now - DAY, before + 2 * DAY), payeeKind: "utility", payeeName: "City Power & Light", source: "person", createdBy: staff[1], createdAt: before });
+    await entry("expense", Math.min(now - DAY, before + 3 * DAY), 16500, "Utilities", "City Power & Light", "Electric bill with a shut-off notice.", { requestId: paidBefore, neighborId: households[73] });
+    await db.insert("assistanceRequests", { churchId, neighborId: households[73], kind: "utility", summary: "Electric bill again; the shut-off notice came back.", amountRequested: 17000, status: "open", decisionNote: "", payeeKind: "utility", payeeName: "City Power & Light", source: "person", createdBy: staff[2], createdAt: recentDay(1) });
+    // One likely double: the same family entered again under a short form of the name, with the same phone.
+    const same = Object.fromEntries(Object.entries(again).filter(([field]) => !field.startsWith("_"))) as Omit<typeof again, "_id" | "_creationTime">;
+    await db.insert("neighbors", { ...same, name: again.name.replace(/^\S+/, (first) => `${first[0]}.`), nameKey: key(again.name.replace(/^\S+/, (first) => `${first[0]}.`)), address: again.address.replace(/Apt \d+/, "Apt 3B"), notes: "Entered at the parish office; may already be on file.", createdAt: recentDay(6) });
+  }
+  // Two more waiting for a yes this week, so the week for deciders has a page to read.
+  for (const [index, kind, summary, amount, payeeKind, payeeName, days] of [[88, "rent", "Rent short after a cut in hours", 45000, "landlord", "Chapel Lane Property Group", 2], [95, "food", "Groceries for a family of five until payday", 8000, "vendor", "Corner Family Market", 3]] as const)
+    await db.insert("assistanceRequests", { churchId, neighborId: households[index], kind, summary, amountRequested: amount, status: "open", decisionNote: "", payeeKind, payeeName, source: "person", createdBy: staff[index % staff.length], createdAt: recentDay(days) });
+
   // A visit made last week and not yet written up, so there is always a recent one waiting for its write-up.
   await db.insert("visits", { churchId, neighborId: households[20], scheduledAt: clock(now - 5 * DAY, visitSlots), status: "scheduled", visitors: [visitors[1], visitors[4]].map((memberId) => ({ memberId, hours: 0, miles: 0, response: "accepted" as const })), notes: "", createdBy: owner, createdAt: now - 8 * DAY });
 
@@ -571,7 +595,7 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
       if (act.visit) await db.patch("visits", act.visit.id, { completedAt: at });
     }
   }
-  await laying.patch("churches", churchId, { householdCount: figures.households, waitingCount: figures.waiting.length, waitingHouseholdIds: figures.waiting.slice(0, WAITING_KEPT) });
+  await laying.patch("churches", churchId, { monthlyBudget: 300000, householdCount: figures.households, waitingCount: figures.waiting.length, waitingHouseholdIds: figures.waiting.slice(0, WAITING_KEPT) });
 
   return churchId;
 }

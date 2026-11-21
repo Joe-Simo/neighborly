@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 import { useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
 import { Building2 } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -12,6 +11,7 @@ import { agenciesWords } from "@/components/workspace/tools/agencies-words";
 import { useQuery } from "@/components/workspace/query";
 import { LiveField, LiveLoading } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";
+import { sayFailure } from "@/components/workspace/failure";
 
 type Agency = { id: Id<"referralAgencies">; name: string; phone: string; helpsWith: string };
 type Fields = { name: string; phone: string; helpsWith: string };
@@ -43,7 +43,7 @@ export default function ReferralAgencies() {
       setSaid(done);
       return true;
     } catch (problem) {
-      setError(problem instanceof ConvexError && /already on file/.test(String(problem.data)) ? text.taken : text.failed);
+      setError(sayFailure(words.notices, problem, text.failed));
       return false;
     } finally {
       setBusy(false);

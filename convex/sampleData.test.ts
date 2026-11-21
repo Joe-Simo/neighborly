@@ -42,7 +42,8 @@ describe("sample conference", () => {
     const data = await everything(t);
     expect(data.churches).toMatchObject([{ _id: churchId, sample: true }]);
     expect(data.memberships.filter((member) => member.role === "owner")).toHaveLength(1);
-    expect(data.neighbors).toHaveLength(200);
+    // 200 households, and one of them entered a second time for the duplicate check to find.
+    expect(data.neighbors).toHaveLength(201);
     // The overview reads at most 200 commitments, so the coming weeks must come first and the total stay under it.
     expect(data.commitments.length).toBeLessThanOrEqual(200);
     const finished = data.commitments.filter((shift) => shift.end < Date.now());
@@ -217,7 +218,8 @@ describe("sample conference", () => {
       expect(neighbor.phone).toMatch(/^\(10[01]\) 555-01\d\d$/);
       if (neighbor.email) expect(neighbor.email).toMatch(/@kindhelps\.example$/);
     }
-    expect(new Set(data.neighbors.map((neighbor) => neighbor.nameKey)).size).toBe(200);
+    expect(new Set(data.neighbors.map((neighbor) => neighbor.nameKey)).size).toBe(201);
+    // The double shares its phone with the household it repeats.
     expect(new Set(data.neighbors.map((neighbor) => neighbor.phoneKey)).size).toBe(200);
   });
 

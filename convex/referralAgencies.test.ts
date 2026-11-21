@@ -29,10 +29,10 @@ describe("keeping the list of referral agencies", () => {
     const coordinator = as(ids.coordinator);
     const id = await coordinator.mutation(api.referralAgencies.add, { churchId: ids.church, name: " Example Food Pantry ", phone: "(100) 555-0100", helpsWith: "Groceries" });
     expect(await coordinator.query(api.referralAgencies.list, { churchId: ids.church })).toEqual([{ id, name: "Example Food Pantry", phone: "(100) 555-0100", helpsWith: "Groceries" }]);
-    await expect(coordinator.mutation(api.referralAgencies.add, { churchId: ids.church, name: "example food pantry", phone: "", helpsWith: "" })).rejects.toThrow(/already on file/);
+    await expect(coordinator.mutation(api.referralAgencies.add, { churchId: ids.church, name: "example food pantry", phone: "", helpsWith: "" })).rejects.toThrow("example food pantry is already on the list of agencies.");
     await coordinator.mutation(api.referralAgencies.edit, { churchId: ids.church, id, name: "Example Food Bank", phone: "", helpsWith: "Food" });
     expect((await coordinator.query(api.referralAgencies.list, { churchId: ids.church }))[0]).toMatchObject({ name: "Example Food Bank", helpsWith: "Food" });
-    await expect(coordinator.mutation(api.referralAgencies.edit, { churchId: ids.church, id, name: " ", phone: "", helpsWith: "" })).rejects.toThrow(/name is needed/);
+    await expect(coordinator.mutation(api.referralAgencies.edit, { churchId: ids.church, id, name: " ", phone: "", helpsWith: "" })).rejects.toThrow("An agency needs a name.");
     await coordinator.mutation(api.referralAgencies.remove, { churchId: ids.church, id });
     expect(await coordinator.query(api.referralAgencies.list, { churchId: ids.church })).toEqual([]);
   });
@@ -41,7 +41,7 @@ describe("keeping the list of referral agencies", () => {
     const { ids, as } = await setup();
     await expect(as(ids.member).mutation(api.referralAgencies.add, { churchId: ids.church, name: "Example Shelter", phone: "", helpsWith: "" })).rejects.toThrow();
     await expect(as(ids.member).query(api.referralAgencies.list, { churchId: ids.church })).rejects.toThrow();
-    await expect(as(ids.coordinator).mutation(api.referralAgencies.remove, { churchId: ids.church, id: ids.elsewhere })).rejects.toThrow(/Record not found/);
-    await expect(as(ids.coordinator).mutation(api.referralAgencies.edit, { churchId: ids.church, id: ids.elsewhere, name: "Taken over", phone: "", helpsWith: "" })).rejects.toThrow(/Record not found/);
+    await expect(as(ids.coordinator).mutation(api.referralAgencies.remove, { churchId: ids.church, id: ids.elsewhere })).rejects.toThrow("That agency was not found.");
+    await expect(as(ids.coordinator).mutation(api.referralAgencies.edit, { churchId: ids.church, id: ids.elsewhere, name: "Taken over", phone: "", helpsWith: "" })).rejects.toThrow("That agency was not found.");
   });
 });

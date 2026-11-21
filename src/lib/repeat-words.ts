@@ -4,8 +4,8 @@ import type { RequestKind } from "./request-draft";
 
 type What = "request" | "note" | "visit";
 /**
- * What the approve and decline sheets say about a household's own records, in the approver's language. Written on the
- * server so no room carries these words: the sheet only shows the lines it is sent.
+ * What the approve and decline sheets say about a household's own records, in the language on the screen. The server
+ * sends facts only (drafts.checkRepeat); the sheet words them here, so switching the language rewords them at once.
  */
 const said = {
   en: {
@@ -26,7 +26,7 @@ const said = {
   },
 } satisfies Record<Language, { kinds: Record<RequestKind, string>; records: Record<What, string>; [line: string]: unknown }>;
 
-export type RepeatLine = { text: string; assistant: boolean };
+type RepeatLine = { text: string; assistant: boolean };
 type Flag = { at: number; what: What };
 
 /** The records' own facts first, in plain ink; then the assistant's readings, which the sheet marks as the assistant's. */
@@ -76,4 +76,12 @@ export function paceLines(language: Language, spent: { month: number; thisMonth:
   const tenths = spent.approvals ? Math.floor((spent.above / spent.approvals) * 10) : 0;
   if (spent.kind !== "voucher" && spent.approvals >= spent.baseline && tenths >= 9) lines.push({ text: spent.above === spent.approvals ? w.highest(w.kinds[spent.kind], money(spent.median)) : w.amount(tenths, w.kinds[spent.kind], money(spent.median)), assistant: false });
   return lines;
+}
+
+type Spent = { month: number; thisMonth: number; lastYear: number; budget: number | null; kind: RequestKind; asked: number; approvals: number; median: number; above: number };
+export type RepeatFacts = { recent: { at: number; kind: RequestKind; status: "approved" | "paid"; amount: number }[]; sameAmount: { at: number; kind: RequestKind; amount: number }[]; spent: Spent; baseline: number; timeZone: string };
+
+/** Every line the sheet shows, in order: the group's spending, then the household's records, then the assistant's readings. */
+export function decisionLines(language: Language, found: RepeatFacts & { same: Flag[]; differs: Flag[] }): RepeatLine[] {
+  return [...paceLines(language, { ...found.spent, baseline: found.baseline }), ...repeatLines(language, found.timeZone, found)];
 }
