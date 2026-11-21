@@ -916,7 +916,7 @@ export function NeighborForm({
             {fill(w.onFile[duplicates[0].same], { name: duplicates[0].name })}
           </p>
           <p className="live-error-recovery">
-            {w.recovery[useLabel ? "use" : "open"][duplicates[0].same === "phone" ? "phone" : "name"]}
+            {w.recovery[useLabel ? "use" : "open"][duplicates[0].same]}
           </p>
           {duplicates.map((match) => (
             <div className="live-row" key={match.id}>

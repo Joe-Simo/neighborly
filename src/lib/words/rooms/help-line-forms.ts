@@ -100,16 +100,18 @@ export const en = (t: Terms, place: string) => ({
     alert: "Alert",
     alertHelp: "One line shown at the top of the record, such as “Call before visiting.” Leave empty for none.",
     /** Someone already on file has the same phone number, or the same name. */
-    onFile: { phone: "{name} is already on file with this phone number.", name: "{name} is already on file with this name.", alike: "{name} may already be on file." },
+    onFile: { phone: "{name} is already on file with this phone number.", name: "{name} is already on file with this name.", alike: "{name} may already be on file, with a similar name, the same phone or the same address." },
     /** What to do about it: `use` where that record can be chosen here, `open` where it can only be opened. */
     recovery: {
       use: {
         phone: `Use that record, or change the number. What you typed is still here. If this is someone else, save as a new ${t.neighbor}.`,
         name: `Use that record, or change the name. What you typed is still here. If this is someone else, save as a new ${t.neighbor}.`,
+        alike: `Use that record if it is the same household. What you typed is still here. If this is someone else, save as a new ${t.neighbor}.`,
       },
       open: {
         phone: `Open the record, or change the number. What you typed is still here. If this is someone else, save as a new ${t.neighbor}.`,
         name: `Open the record, or change the name. What you typed is still here. If this is someone else, save as a new ${t.neighbor}.`,
+        alike: `Open the record to see if it is the same household. What you typed is still here. If this is someone else, save as a new ${t.neighbor}.`,
       },
     },
     openRecord: "Open record",
@@ -216,15 +218,17 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     notesHelp: "La mejor hora para llamar, quién vive en casa, lo que deba saber quien haga la próxima visita.",
     alert: "Alerta",
     alertHelp: "Una línea que se muestra arriba en el registro, por ejemplo «Llamar antes de visitar». Déjala vacía si no hace falta.",
-    onFile: { phone: "Ya hay un registro de {name} con este número de teléfono.", name: "Ya hay un registro de {name} con este nombre.", alike: "Quizá ya hay un registro de {name}." },
+    onFile: { phone: "Ya hay un registro de {name} con este número de teléfono.", name: "Ya hay un registro de {name} con este nombre.", alike: "Quizá ya hay un registro de {name}, con un nombre parecido, el mismo teléfono o la misma dirección." },
     recovery: {
       use: {
         phone: `Usa ese registro o cambia el número. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
         name: `Usa ese registro o cambia el nombre. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
+        alike: `Usa ese registro si es el mismo hogar. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
       },
       open: {
         phone: `Abre el registro o cambia el número. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
         name: `Abre el registro o cambia el nombre. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
+        alike: `Abre el registro para ver si es el mismo hogar. Lo que escribiste sigue aquí. Si es otra persona, crea un registro nuevo.`,
       },
     },
     openRecord: "Abrir registro",
