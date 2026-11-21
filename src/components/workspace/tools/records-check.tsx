@@ -69,7 +69,7 @@ export function RecordsCheck() {
               <h3>{w.people}</h3>
               <div className="live-list">
                 {found.people.map((row) => (
-                  <div className="help-row" key={row.key}>
+                  <div className="help-row" data-plain key={row.key}>
                     <div>
                       <p>{`${row.first.name} · ${row.first.email}`}</p>
                       <p>{`${row.second.name} · ${row.second.email}`}</p>
@@ -89,7 +89,7 @@ export function RecordsCheck() {
               <h3>{w.phones}</h3>
               <div className="live-list">
                 {found.phones.map((row) => (
-                  <div className="help-row" key={row.key}>
+                  <div className="help-row" data-plain key={row.key}>
                     <div>
                       <p className="help-tel">{row.phone}</p>
                       {row.households.map((home) => (
