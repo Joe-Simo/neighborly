@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { addressKey, nameLikeness, needsNotes, sameBy } from "./duplicates";
+import { addressKey, intakeMatch, nameLikeness, needsNotes, sameBy } from "./duplicates";
 
 describe("duplicate households, by what code compares", () => {
   test("an address written two ways is one address, and its unit counts", () => {
@@ -37,5 +37,26 @@ describe("the notes rule, against runs 1 and 2", () => {
     expect(heldOutFigure(run2)).toEqual({ pairs: 5, right: 5, missed: 0, wrong: 0 });
     // Run 3 asked the live question alone, after it went live: the figure the record quotes.
     expect(heldOutFigure((await import("../../eval/duplicates/run-3.json")).default)).toEqual({ pairs: 5, right: 5, missed: 0, wrong: 0 });
+  });
+});
+
+describe("public intake finds the household a request belongs to", () => {
+  const rosa = { id: "rosa", name: "Rosa Fontaine", phone: "(100) 555-0101", address: "12 Oak St, Apt 3" };
+  const denise = { id: "denise", name: "Denise Walker", phone: "(100) 555-0102", address: "40 Pine Ave" };
+  const households = [rosa, denise];
+  test("the same phone attaches, however it is typed", () => {
+    expect(intakeMatch({ name: "R. Fontaine", phone: "1-100-555-0101", address: "" }, households)).toEqual({ household: rosa, by: "phone" });
+  });
+  test("a name alike at the same street attaches", () => {
+    expect(intakeMatch({ name: "Rosa Fontain", phone: "", address: "12 Oak Street #3" }, households)).toEqual({ household: rosa, by: "name_address" });
+  });
+  test("a name alone, an address alone or another unit is not enough", () => {
+    expect(intakeMatch({ name: "Rosa Fontaine", phone: "", address: "" }, households)).toBeNull();
+    expect(intakeMatch({ name: "Marcus Bellamy", phone: "", address: "40 Pine Ave" }, households)).toBeNull();
+    expect(intakeMatch({ name: "Rosa Fontaine", phone: "", address: "12 Oak St Apt 4" }, households)).toBeNull();
+  });
+  test("a phone shared by two households goes to the likelier name", () => {
+    const sister = { ...denise, id: "sister", phone: rosa.phone };
+    expect(intakeMatch({ name: "Denise Walker", phone: "100 555 0101", address: "" }, [rosa, sister])?.household.id).toBe("sister");
   });
 });

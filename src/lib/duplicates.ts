@@ -88,3 +88,18 @@ export function sameBy(a: Comparable, b: Comparable): SameBy[] {
  * address, a common name) is shown only when the model also reads the two records' notes as the same household.
  */
 export const needsNotes = (shared: SameBy[]) => shared.length < 2;
+
+/**
+ * Public intake: the household a verified request from outside belongs to, when code is sure enough to attach it for the
+ * team to confirm. The same phone, or a name alike at the same street address; a name alone, or an address alone, is not
+ * enough from a stranger's form. The phone wins over the name and address; among several, the likeliest name. No model.
+ */
+export function intakeMatch<Household extends Comparable>(request: Comparable, households: Household[]): { household: Household; by: "phone" | "name_address" } | null {
+  const scored = households.flatMap((household) => {
+    const shared = sameBy(request, household);
+    const by = shared.includes("phone") ? "phone" as const : shared.includes("name") && shared.includes("address") ? "name_address" as const : null;
+    return by ? [{ household, by, rank: (by === "phone" ? 2 : 0) + nameLikeness(request.name, household.name) }] : [];
+  });
+  const best = scored.sort((a, b) => b.rank - a.rank)[0];
+  return best ? { household: best.household, by: best.by } : null;
+}
