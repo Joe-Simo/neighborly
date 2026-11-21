@@ -13,13 +13,15 @@ import { recordHref } from "@/components/workspace/help-line/format";
 const said = {
   en: {
     title: "Check for doubles",
-    deck: "Members who may have signed up twice, and phone numbers several households give under different names. Read by code only.",
+    deck: "Members who may have signed up twice, households entered twice, and phone numbers several households give under different names. Read by code only.",
     run: "Check records",
     checking: "Checking…",
-    none: "Nothing to look at. No member appears twice, and no phone is shared under different names.",
+    none: "Nothing to look at. No member or household appears twice, and no phone is shared under different names.",
     people: "Maybe one person signed up twice",
+    households: "Maybe one household entered twice",
     phones: "One phone, different households",
-    by: { email: "Same email", name: "Similar name" },
+    by: { email: "Same email", name: "Similar name", phone: "Same phone", address: "Same address" },
+    open: "Open the record to merge",
     fine: "They are different",
     fineThis: (what: string) => `${what}: they are different`,
     found: (n: number) => (n === 1 ? "1 to look at." : `${n} to look at.`),
@@ -27,13 +29,15 @@ const said = {
   },
   es: {
     title: "Buscar duplicados",
-    deck: "Miembros que quizá se inscribieron dos veces, y teléfonos que varios hogares dan con nombres distintos. Solo lo revisa el código.",
+    deck: "Miembros que quizá se inscribieron dos veces, hogares anotados dos veces, y teléfonos que varios hogares dan con nombres distintos. Solo lo revisa el código.",
     run: "Revisar registros",
     checking: "Revisando…",
-    none: "No hay nada que revisar. Ningún miembro aparece dos veces y ningún teléfono se comparte con nombres distintos.",
+    none: "No hay nada que revisar. Ningún miembro ni hogar aparece dos veces y ningún teléfono se comparte con nombres distintos.",
     people: "Quizá una persona se inscribió dos veces",
+    households: "Quizá un hogar anotado dos veces",
     phones: "Un teléfono, hogares distintos",
-    by: { email: "Mismo correo", name: "Nombre parecido" },
+    by: { email: "Mismo correo", name: "Nombre parecido", phone: "Mismo teléfono", address: "Misma dirección" },
+    open: "Abrir el registro para unirlos",
     fine: "Son distintos",
     fineThis: (what: string) => `${what}: son distintos`,
     found: (n: number) => (n === 1 ? "1 para revisar." : `${n} para revisar.`),
@@ -49,12 +53,14 @@ export function RecordsCheck() {
   const [asked, setAsked] = useState(false);
   const found = useQuery(api.duplicates.recordsCheck, asked ? { churchId } : "skip");
   const dismiss = useMutation(api.duplicates.dismissCheck);
+  // The same yes-they-differ as on the record, so the record and this check always agree.
+  const differ = useMutation(api.duplicates.dismiss);
   // Pressed, the button waits and then goes: focus goes to the leaf's name and the answer is said when it comes, so neither is lost.
   const name = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (asked) name.current?.focus();
   }, [asked]);
-  const count = found ? found.people.length + found.phones.length : 0;
+  const count = found ? found.people.length + found.households.length + found.phones.length : 0;
   const fine = (kind: "person" | "phone", key: string, what: string) => (
     <Button variant="link" className="help-text-action" aria-label={w.fineThis(what)} onClick={() => void dismiss({ churchId, kind, key }).catch(() => null)}>
       {w.fine}
@@ -69,7 +75,7 @@ export function RecordsCheck() {
         <div className="help-actions">
           <Button variant="outline" disabled={asked} onClick={() => setAsked(true)}>{asked ? w.checking : w.run}</Button>
         </div>
-      ) : !found.people.length && !found.phones.length ? (
+      ) : !count ? (
         <p className="tools-done" aria-hidden="true">{w.none}</p>
       ) : (
         <>
@@ -87,6 +93,37 @@ export function RecordsCheck() {
                     <div className="live-row-actions">
                       <Link className="live-link" href="/app/people">{w.people_}</Link>
                       {fine("person", row.key, `${row.first.name}, ${row.second.name}`)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {found.households.length > 0 && (
+            <>
+              <h3>{w.households}</h3>
+              <div className="live-list">
+                {found.households.map((row) => (
+                  <div className="help-row" data-plain key={row.key}>
+                    <div>
+                      {[row.first, row.second].map((home) => (
+                        <p key={home.id}>
+                          <Link className="live-link" href={recordHref(home.id)}>{home.name}</Link>
+                          {home.address && ` · ${home.address}`}
+                        </p>
+                      ))}
+                      <p>{row.sameBy.map((by) => w.by[by]).join(" · ")}</p>
+                    </div>
+                    <div className="live-row-actions">
+                      <Link className="live-link" href={recordHref(row.first.id)}>{w.open}</Link>
+                      <Button
+                        variant="link"
+                        className="help-text-action"
+                        aria-label={w.fineThis(`${row.first.name}, ${row.second.name}`)}
+                        onClick={() => void differ({ churchId, neighborId: row.first.id, otherId: row.second.id }).catch(() => null)}
+                      >
+                        {w.fine}
+                      </Button>
                     </div>
                   </div>
                 ))}

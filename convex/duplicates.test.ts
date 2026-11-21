@@ -84,11 +84,17 @@ describe("the records check in Tools", () => {
     const caller = as(ids.coordinator);
     const found = await caller.query(api.duplicates.recordsCheck, { churchId: ids.church });
     expect(found.people.map((row) => row.sameBy)).toEqual([["email", "name"]]);
+    // The two alike names under one phone are the pair the record page shows; the check lists them the same way.
+    expect(found.households.map((row) => [row.first.name, row.second.name].sort())).toEqual([["Esperanza Montolla", "Esperanza Montoya"]]);
+    expect(found.households[0].sameBy).toEqual(expect.arrayContaining(["phone", "name"]));
+    const onRecord = await caller.query(api.duplicates.forRecord, { churchId: ids.church, neighborId: found.households[0].first.id });
+    expect(onRecord.shown.map((row) => row.id)).toContain(found.households[0].second.id);
     expect(found.phones).toHaveLength(1);
     expect(found.phones[0].households.map((row) => row.name).sort()).toEqual(["Darnell Joseph", "Esperanza Montolla", "Esperanza Montoya"]);
     await caller.mutation(api.duplicates.dismissCheck, { churchId: ids.church, kind: "phone", key: found.phones[0].key });
     await caller.mutation(api.duplicates.dismissCheck, { churchId: ids.church, kind: "person", key: found.people[0].key });
-    expect(await caller.query(api.duplicates.recordsCheck, { churchId: ids.church })).toEqual({ people: [], phones: [] });
+    await caller.mutation(api.duplicates.dismiss, { churchId: ids.church, neighborId: found.households[0].first.id, otherId: found.households[0].second.id });
+    expect(await caller.query(api.duplicates.recordsCheck, { churchId: ids.church })).toEqual({ people: [], households: [], phones: [] });
     await expect(as(ids.member).query(api.duplicates.recordsCheck, { churchId: ids.church })).rejects.toThrow("coordinators and owners");
   });
 });

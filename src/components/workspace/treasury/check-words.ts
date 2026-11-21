@@ -33,7 +33,7 @@ const books = {
       noPayee: "Sin beneficiario",
       offCategory: "El asistente leyó la nota como un gasto fuera de su categoría",
     },
-    failed: "No se pudo revisar. Inténtelo de nuevo en un minuto.",
+    failed: "No se pudo revisar. Inténtalo de nuevo en un minuto.",
   },
 } satisfies Record<Language, unknown>;
 

@@ -345,7 +345,10 @@ describe("a call note drafted into a request", () => {
 
   test("before a month is closed: rules flag the lines, the model reads memos only, at 0.9, with no payee named", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
-    const fetch = answers({ l0: 0.95, l1: 0.89 });
+    // The yes-or-no reading: l0 sure, l1 just under. The pick reading: l1 near-certain somewhere else, so both lean the same way.
+    const fetch = vi.fn<(url: string, init: { body: string }) => Promise<Response>>(async (_url, init) => Response.json({ answers: init.body.includes("\"type\":\"choice\"")
+      ? { l0: { type: "choice", choice: "c0", confidence: 0.99 }, l1: { type: "choice", choice: "elsewhere", confidence: 0.97 } }
+      : { l0: { type: "noul", noul: 0.95 }, l1: { type: "noul", noul: 0.89 } } }));
     vi.stubGlobal("fetch", fetch);
     const { t, ids, coordinator, member } = await helpLine();
     const month = new Date().toISOString().slice(0, 7), prior = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5)) - 2, 1)).toISOString().slice(0, 7);
@@ -370,15 +373,16 @@ describe("a call note drafted into a request", () => {
     const by = (source: string) => result.flags.filter(flag => flag.source === source).map(({ kind, entryId }) => [kind, entryId]);
     expect(by("rule")).toEqual(expect.arrayContaining([["double", made.again], ["overApproved", made.over], ["noCategory", made.noCategory], ["noPayee", made.noPayee]]));
     expect(by("rule")).toHaveLength(4);
-    // Read in date order, l0 is the rent memo (0.95, flagged) and l1 the groceries (0.89, not).
-    expect(by("assistant")).toEqual([["offCategory", made.over]]);
-    expect(fetch).toHaveBeenCalledTimes(1);
-    const sent = fetch.mock.calls[0][1].body;
+    // Read in date order, l0 is the rent memo (0.95, flagged) and l1 the groceries (0.89, flagged only because both agree).
+    expect(by("assistant")).toEqual([["offCategory", made.over], ["offCategory", made.noPayee]]);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch.mock.calls.map(call => call[1].body).join()).not.toMatch(/Rosa|Delgado|Property|Lakeside|Corner Market|Rivera/);
+    const sent = fetch.mock.calls.find(call => !call[1].body.includes("\"type\":\"choice\""))![1].body;
     expect(sent).toContain("other than lines.l0.category");
     expect(sent).toContain('"category":"rent, a landlord or an eviction"');
     expect(sent).not.toMatch(/Rosa|Delgado|Property|Lakeside|Corner Market|Rivera/);
     expect(JSON.stringify(result)).not.toMatch(/Rosa|Property|Lakeside/);
-    expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(1);
+    expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(2);
     // Nothing is changed by the check.
     expect((await t.run(ctx => ctx.db.get("ledgerEntries", made.again)))?.voidedAt).toBeUndefined();
     // Refused for a member who may not open the ledger, and for no one signed in.
@@ -391,7 +395,7 @@ describe("a call note drafted into a request", () => {
     const calm = await coordinator.action(api.drafts.checkMonth, { churchId: ids.churchId, month });
     expect(calm.verification).toBe("review");
     expect(calm.flags.every(flag => flag.source === "rule")).toBe(true);
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 
   test("the Monday note is counted by code, asks the model nothing and names no one", async () => {
