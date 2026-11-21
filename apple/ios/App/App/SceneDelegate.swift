@@ -513,11 +513,14 @@ final class ShellViewController: CAPBridgeViewController {
     /// Asks the page whether its first screen is whole. A room says so itself
     /// with `.live-app[data-room-in]`, set once its sheet has arrived and its
     /// head picture is in. Sign-in and the other screens without a room are
-    /// whole as soon as the waiting screen (`.paper-loading`) is gone.
+    /// whole as soon as the waiting screen (`.paper-loading`) is gone. A signed-out
+    /// phone is shown the server's sign-in sheet at the first paint (`html[data-door-early]`,
+    /// lib/door-early.ts), so that is whole once its fonts are in, without waiting on the session.
     private static let firstScreenWhole = """
-        !document.querySelector('.paper-loading') && document.fonts.status === 'loaded' && \
+        document.fonts.status === 'loaded' && (!!document.documentElement.dataset.doorEarly || \
+        (!document.querySelector('.paper-loading') && \
         (!!document.querySelector('.live-app[data-room-in]') || \
-        (!!document.querySelector('.live-app') && !document.querySelector('.live-room, .live-header')))
+        (!!document.querySelector('.live-app') && !document.querySelector('.live-room, .live-header')))))
         """
 
     /// The first screen is often whole well before the last picture has arrived

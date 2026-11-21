@@ -5,11 +5,11 @@
  * its source is what that script runs.
  * - Nobody can be signed in on this browser: the rule of lib/no-session-kept.ts, kept the same.
  * - The address asks for nothing but sign-in: an invitation, an intent or the sample door draw their own screen.
- * - Not inside the iOS app, which hands its own first room to the page.
+ * - Inside the iOS app, only when it has no first room of its own to hand the page (a signed-out phone keeps none).
  * Anything else, and the launch line stands until the page's own answer, as before.
  */
 export function doorEarly(): "en" | "es" | false {
-  if (navigator.userAgent.includes("KindHelpsApp")) return false;
+  if (navigator.userAgent.includes("KindHelpsApp") && Reflect.has(window, "kindHelpsKept")) return false;
   if (/[?&](intent|invite)=/.test(location.search)) return false;
   const signedOut = !document.cookie.split(/;\s*/).some((cookie) => {
     const [name, value = ""] = cookie.split("=");
