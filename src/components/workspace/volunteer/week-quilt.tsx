@@ -5,7 +5,6 @@ import { useHour, useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
 import { useFirstLook } from "@/components/workspace/first-look";
-import { fill } from "@/lib/words/fill";
 
 import type { FunctionReturnType } from "convex/server";
 
@@ -43,9 +42,7 @@ export function WeekQuilt() {
   if (acts && !seen) setSeen(new Set(acts.map((act) => act.id)));
   if (!acts) return null;
   const count = (kind: Act["kind"]) => acts.filter((act) => act.kind === kind).length;
-  const caption = acts.length
-    ? fill(words.week.quilt, { calls: words.week.quiltCalls(count("call")), visits: words.week.quiltVisits(count("visit")), yeses: words.week.quiltYeses(count("yes")) })
-    : words.week.quiltNone;
+  const said = { call: words.week.quiltCalls(count("call")), visit: words.week.quiltVisits(count("visit")), yes: words.week.quiltYeses(count("yes")) };
   return (
     <figure className="week-quilt">
       <div className="week-quilt-band" aria-hidden="true">
@@ -68,7 +65,23 @@ export function WeekQuilt() {
           </span>
         ))}
       </div>
-      <figcaption>{caption}</figcaption>
+      {/* The caption is the quilt's key: each count beside a swatch of its own paper, so every piece above is named. */}
+      <figcaption>
+        {acts.length ? (
+          <>
+            {words.week.quiltLead}
+            {(["call", "visit", "yes"] as const).map((kind) => (
+              <span key={kind} className="week-quilt-key">
+                {" "}
+                <span className="week-quilt-piece" data-kind={kind} aria-hidden="true"><i /></span>
+                {said[kind]}
+              </span>
+            ))}
+          </>
+        ) : (
+          words.week.quiltNone
+        )}
+      </figcaption>
     </figure>
   );
 }
