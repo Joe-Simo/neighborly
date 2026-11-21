@@ -328,10 +328,15 @@ function openRoom(sheet: HTMLElement) {
   holdThePage();
   const shut = { overflow: "hidden", boxSizing: "border-box", minHeight: "0px" };
   const from = pageBefore !== undefined ? closedMargin(sheet, pageBefore) : (foldedMargin(sheet, style) ?? closedMargin(sheet, pageWithout(sheet, "gone")));
+  // A line held over the page as it scrolls (sticky) is drawn whole from its first frame, its paper over what is
+  // under it, and only its room opens, below it: grown a frame at a time, the page under it showed through its band.
+  const whole = style.position == "sticky";
   const move = sheet.animate(
     [
-      { ...shut, height: edge(style), marginTop: "0px", marginBottom: from, paddingTop: "0px", paddingBottom: "0px" },
-      { ...shut, height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
+      whole
+        ? { marginTop: "0px", marginBottom: `${parseFloat(from) - height + parseFloat(edge(style))}px` }
+        : { ...shut, height: edge(style), marginTop: "0px", marginBottom: from, paddingTop: "0px", paddingBottom: "0px" },
+      whole ? { marginTop, marginBottom } : { ...shut, height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
     ],
     { id: OPENING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
   );

@@ -347,7 +347,10 @@ export function LiveWorkspace({
     };
   }, [inApp]);
   // A room change itself is taken by the frame (LiveFrame); the old room stays until the next one stands in its place.
-  const leave = () => setMobileMenuOpen(false);
+  const leave = () => {
+    toTop = true;
+    setMobileMenuOpen(false);
+  };
   useEffect(readyToSpeak, []);
   // The iPhone app's pull to refresh asks the page whether it is current (see `Window.kindHelpsPulled` below).
   // The answer comes from the connection the page already holds: nothing is read from the backend for it.
@@ -385,6 +388,10 @@ export function LiveWorkspace({
   const firstArea = useRef(area);
   useLayoutEffect(() => {
     if (area !== firstArea.current) delete document.documentElement.dataset.fromDoor;
+    // A room chosen from the menu or the tabs opens at its top. Next would read where the room lies to decide, laying out
+    // the whole room inside the switch; (0, 0) is never clamped, so the browser takes it without laying anything out.
+    if (toTop) window.scrollTo(0, 0);
+    toTop = false;
   }, [area]);
   // The room's code is chosen as the room is entered and kept while it stands, so the room is never drawn afresh.
   const [entered, setEntered] = useState(() => ({ area, Section: roomSection(area) }));
@@ -661,7 +668,7 @@ export function LiveWorkspace({
               <DialogClose asChild><Button variant="ghost" size="icon-sm" className="live-menu-close absolute top-2 right-2" aria-label={words.shell.close}><X aria-hidden="true" /></Button></DialogClose>
               <DialogHeader><DialogTitle>{words.shell.menuTitle}</DialogTitle><DialogDescription>{churchName}</DialogDescription>{data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}</DialogHeader>
               <div className="live-menu-rooms">
-                <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} aria-current={area === id ? "page" : undefined} onClick={leave}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
+                <nav aria-label={words.shell.allSections}>{menuItems.map(({ id, label, icon: Icon }) => <Link key={id} href={`/app/${id}`} scroll={false} aria-current={area === id ? "page" : undefined} onClick={leave}><Icon size={19} aria-hidden="true" /><span>{menu[id] ?? label}</span>{area === id && <span className="live-menu-current">{words.shell.current}</span>}</Link>)}</nav>
                 {selectChurch}
               </div>
               {!sampleVisitor && <p className="live-menu-who">{words.shell.signedInAs(data.user.name ? sampleSaid(data.user.name) : data.user.email)}</p>}
@@ -684,6 +691,7 @@ export function LiveWorkspace({
             <Link
               key={id}
               href={`/app/${id}`}
+              scroll={false}
               aria-current={menuArea === id ? "page" : undefined}
               onClick={leave}
             >
@@ -855,7 +863,7 @@ export function LiveWorkspace({
       {inApp && (
         <nav className="live-tab-bar" aria-label={words.shell.workspace}>
           {tabs.map(({ id, label, icon: Icon }) => (
-            <Link key={id} className="live-tab" href={`/app/${id}`} aria-current={menuArea === id ? "page" : undefined}>
+            <Link key={id} className="live-tab" href={`/app/${id}`} scroll={false} onClick={() => (toTop = true)} aria-current={menuArea === id ? "page" : undefined}>
               <Icon aria-hidden="true" />
               <span>{id === "visits" ? words.shell.tabVisits : id === "mine" ? words.shell.tabMine : (menu[id] ?? label)}</span>
             </Link>
@@ -1132,6 +1140,8 @@ const roomsOpened = new Set<LiveArea>();
  */
 /** How many rooms are kept built at once, the one shown among them. */
 const KEPT_ROOMS = 4;
+/** A room was chosen from the menu or the tabs: it opens at its top (a way back keeps where the person was). */
+let toTop = false;
 
 const RoomBody = memo(function RoomBody({ Section, waiting, label, pagination }: { Section: ComponentType; waiting: boolean; label: string; pagination: ReactNode }) {
   return (
