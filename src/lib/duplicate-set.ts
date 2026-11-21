@@ -61,7 +61,7 @@ export const duplicateSet: DuplicatePair[] = [
  * not held out: every pair that is one household scored 0.76 to 0.89 and every other pair 0.03 or less, so 0.9 missed all
  * five; 0.7 sits inside that gap. Change it only with a new run, and never on the held-out pairs.
  */
-export const notesLine = 0.7;
+const notesLine = 0.7;
 type Size = Pick<DuplicateSide, "adults" | "children">;
 export const notesSayOne = (same: number, a: Size, b: Size) => same >= notesLine && a.adults === b.adults && a.children === b.children;
 
