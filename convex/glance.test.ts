@@ -39,7 +39,7 @@ describe("the home's glance", () => {
   test("a leader sees the whole conference, from the records", async () => {
     const { churchId, lead } = await group();
     const { conference, own } = await lead.query(api.glance.home, { churchId, at });
-    expect(own).toMatchObject({ visits: 0, tasks: 0 });
+    expect(own).toEqual({ visitAsks: 0, tasks: 0, tasksLate: 0 });
     expect(conference).toEqual({
       callbacks: { owed: 2, late: 1, mine: 1 },
       month: { month: 11, approved: { now: 40000, before: 25000 }, budget: 200000, day: 16, days: 30 },
@@ -56,6 +56,6 @@ describe("the home's glance", () => {
     const { conference, own, councils } = await member.query(api.glance.home, { churchId, at });
     expect(conference).toBeNull();
     expect(councils).toEqual([]);
-    expect(own).toEqual({ visits: 1, nextVisit: at + 2 * DAY, visitAsks: 1, tasks: 1, tasksLate: 1 });
+    expect(own).toEqual({ visitAsks: 1, tasks: 1, tasksLate: 1 });
   });
 });
