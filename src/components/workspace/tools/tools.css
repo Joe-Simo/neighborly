@@ -5,7 +5,7 @@
 .tools-file .tools-small { margin-top: var(--space-16); }
 .tools-file-name { font-size: 17px; color: var(--live-muted); overflow-wrap: anywhere; }
 :is(.live-app, .live-dialog) .tools-sample { display: inline-block; margin-top: var(--space-8); padding: var(--space-12) 0; font-size: 16px; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
-:is(.live-app, .live-dialog) .tools-sample:hover { text-decoration-color: currentColor; }
+@media (hover: hover) { :is(.live-app, .live-dialog) .tools-sample:hover { text-decoration-color: currentColor; } }
 .tools-problems { margin-top: var(--space-24); }
 .tools-sheet { margin-top: var(--space-32); }
 .tools-after { margin-top: var(--space-24); }
@@ -71,7 +71,7 @@
 :is(.live-app, .live-dialog) .tools-progress { margin: var(--space-16) 0 0; font-size: 17px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
 .tools-records { margin-top: var(--space-24); }
 .live-app .help-row .tools-one { padding-inline: 0; border: 0; background: none; box-shadow: none; border-radius: 2px; width: auto; justify-self: start; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
-.live-app .help-row .tools-one:hover { text-decoration-color: currentColor; }
+@media (hover: hover) { .live-app .help-row .tools-one:hover { text-decoration-color: currentColor; } }
 @media (min-width: 701px) { .live-app .help-row .tools-one { justify-self: end; } }
 @media (max-width: 700px) {
   .tools-records .help-row { row-gap: 0; }

@@ -52,10 +52,10 @@
 .live-app .report-years [data-slot="toggle-group-item"] span {
   font-weight: 400; font-size: 15px; line-height: 1; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif;
 }
-.live-app .report-years [data-slot="toggle-group-item"]:hover {
+@media (hover: hover) { .live-app .report-years [data-slot="toggle-group-item"]:hover {
   background: var(--help-sage-wash);
   color: var(--live-ink);
-}
+} }
 .live-app .report-years [data-slot="toggle-group-item"][data-state="on"] {
   background: var(--live-accent);
   color: #fff;
@@ -724,7 +724,7 @@
   color: var(--live-accent);
   gap: var(--space-8) 8px;
 }
-.live-app .report-check .report-check-more:hover { background: none; text-decoration: underline; text-underline-offset: 4px; }
+@media (hover: hover) { .live-app .report-check .report-check-more:hover { background: none; text-decoration: underline; text-underline-offset: 4px; } }
 .report-check-more svg { transition: transform 220ms var(--paper-ease); }
 .report-check-more[aria-expanded="true"] svg { transform: rotate(180deg); }
 .report-check .report-check-record {

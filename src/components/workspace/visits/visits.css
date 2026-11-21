@@ -59,12 +59,12 @@
 }
 .visits-sheet-links { display: flex; align-items: center; gap: var(--space-8) 26px; flex-wrap: wrap; }
 .live-app .live-main .visits-quiet-link { min-height: 44px; height: auto; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; font-size: 16px; font-weight: 400; color: var(--live-muted); text-decoration: underline; text-decoration-color: #c5c9bb; text-underline-offset: 4px; }
-.live-app .live-main .visits-quiet-link:hover { color: var(--live-ink); text-decoration-color: currentColor; }
+@media (hover: hover) { .live-app .live-main .visits-quiet-link:hover { color: var(--live-ink); text-decoration-color: currentColor; } }
 .visits-paper-foot { display: none; }
 .visits-paper-last { font-style: inherit; }
-.visits-back:hover {
+@media (hover: hover) { .visits-back:hover {
   color: var(--live-ink);
-}
+} }
 .visits-paper {
   position: relative;
   max-width: 820px;

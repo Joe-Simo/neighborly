@@ -12,7 +12,7 @@
 .live-app .first-week-slip span { font-size: 15px; line-height: 1.4; color: var(--live-muted); text-wrap: pretty; overflow-wrap: normal; hyphens: manual; }
 .live-app .first-week-slip .first-week-mark { display: inline-flex; align-items: center; gap: var(--space-8) 6px; margin-top: var(--space-4); font-weight: 600; color: var(--paper-green); }
 .live-app .first-week-arrow { margin-top: var(--space-4); transition: transform 160ms var(--paper-ease); }
-.live-app .first-week-slip a:hover strong { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.live-app .first-week-slip a:hover .first-week-arrow { transform: translateX(3px); }
+@media (hover: hover) { .live-app .first-week-slip a:hover strong { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; } }
+@media (hover: hover) { .live-app .first-week-slip a:hover .first-week-arrow { transform: translateX(3px); } }
 @media (max-width: 700px) { .live-app .first-week-slips { grid-template-columns: 1fr; gap: var(--space-8) 8px; } .live-app .first-week-slip a { padding: var(--space-16) 44px var(--space-16) 16px; } }
 @media (prefers-reduced-motion: reduce) { .live-app .first-week-arrow { transition: none; } }

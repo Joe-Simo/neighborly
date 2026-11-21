@@ -103,9 +103,9 @@
 /* The line reads as words, yet takes a tap or click of full height: padding that reaches past the line without moving it. */
 .live-app .help-what [data-slot="button"] { padding-block: var(--space-8); margin-block: -10px; }
 @media (pointer: coarse) { .live-app .help-what [data-slot="button"] { padding-block: var(--space-16); margin-block: -14px; } }
-.live-app .help-what [data-slot="button"]:hover {
+@media (hover: hover) { .live-app .help-what [data-slot="button"]:hover {
   text-decoration-color: #a9b697;
-}
+} }
 .help-ledger tr[data-reversed] .help-what [data-slot="button"] {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
@@ -188,9 +188,9 @@
   padding-inline: 8px;
   text-decoration-color: #a9b697;
 }
-.live-app .treasury-take-back[data-slot="button"]:hover {
+@media (hover: hover) { .live-app .treasury-take-back[data-slot="button"]:hover {
   color: var(--live-ink);
-}
+} }
 .treasury-day {
   display: none;
 }
@@ -336,12 +336,12 @@
   font-weight: 400;
   color: #68715f;
 }
-.treasury-gifts [data-slot="toggle"]:hover {
+@media (hover: hover) { .treasury-gifts [data-slot="toggle"]:hover {
   background: none;
-}
-.treasury-gifts [data-slot="toggle"]:hover .treasury-gift-mark {
+} }
+@media (hover: hover) { .treasury-gifts [data-slot="toggle"]:hover .treasury-gift-mark {
   border-color: #365c46;
-}
+} }
 .treasury-gifts [data-state="off"] {
   color: #8b927f;
 }
@@ -465,10 +465,10 @@
 .help-ledger tbody tr {
   transition: background-color 400ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1));
 }
-.help-ledger tbody tr[data-landed],
+@media (hover: hover) { .help-ledger tbody tr[data-landed],
 .help-ledger tbody tr[data-landed]:hover {
   background-color: color-mix(in srgb, #c8962e 16%, transparent);
-}
+} }
 @media (prefers-reduced-motion: reduce) {
   .help-ledger tbody tr {
     transition: none;
