@@ -7,6 +7,7 @@ import { useHour, useQuery } from "@/components/workspace/query";
 import { useWorkspace } from "@/components/workspace/context";
 import { useFirstLook } from "@/components/workspace/first-look";
 import { formatDate, formatMoney, type Language } from "@/lib/words";
+import { upcomingCommitments } from "@/lib/commitment-visibility";
 import "@/components/workspace/glance/glance.css";
 
 type Home = FunctionReturnType<typeof api.glance.home>;
@@ -17,9 +18,9 @@ const said = {
   en: {
     yours: "Yours",
     whole: "The conference at a glance",
-    visits: "Your visits",
-    visitsLine: (next: string) => (next ? `Next ${next}` : "None in the next two weeks"),
-    asks: (n: number) => (n ? `${n} waiting for your answer` : ""),
+    visits: "Yours this week",
+    visitsLine: (next: string) => (next ? `Next ${next}` : "Nothing of yours in the next 7 days"),
+    asks: (n: number) => (n ? `${n} home visit${n === 1 ? "" : "s"} waiting for your answer` : ""),
     tasks: "Your tasks",
     tasksLine: (late: number) => (late ? `${late} past due` : "None past due"),
     callbacks: "Callbacks two days late",
@@ -46,9 +47,9 @@ const said = {
   es: {
     yours: "Lo tuyo",
     whole: "La conferencia de un vistazo",
-    visits: "Tus visitas",
-    visitsLine: (next: string) => (next ? `La próxima: ${next}` : "Ninguna en las próximas dos semanas"),
-    asks: (n: number) => (n ? `${n} esperan tu respuesta` : ""),
+    visits: "Lo tuyo esta semana",
+    visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada tuyo en los próximos 7 días"),
+    asks: (n: number) => (n ? `${n} visita${n === 1 ? "" : "s"} esperan tu respuesta` : ""),
     tasks: "Tus tareas",
     tasksLine: (late: number) => (late ? `${late} con la fecha pasada` : "Ninguna con la fecha pasada"),
     callbacks: "Llamadas con dos días de retraso",
@@ -118,7 +119,7 @@ function conferenceTiles(c: Conference, w: Said, money: (cents: number) => strin
  * Until it arrives its place is held unseen, so nothing under it moves when it lands.
  */
 export function Glance() {
-  const { data, words } = useWorkspace();
+  const { data, words, now } = useWorkspace();
   const look = useFirstLook();
   const at = useHour();
   const home = useQuery(api.glance.home, at && !look ? { churchId: data.church.id, at } : "skip");
@@ -128,13 +129,16 @@ export function Glance() {
   const w = said[locale];
   const money = (cents: number) => formatMoney(cents / 100, locale, true);
   const { own, conference, councils } = home;
-  const when = own.nextVisit ? formatDate(locale, own.nextVisit, { timeZone: data.church.timeZone, weekday: "long", hour: "numeric", minute: "2-digit" }) : "";
+  // The same list Coming up reads, cut the same way, so the two always agree.
+  const week = upcomingCommitments(data.commitments, now).filter((item) => item.assigneeId === data.user.id && item.start <= now + 7 * 86_400_000);
+  const next = week[0];
+  const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
   const mine: Tile[] = [
-    { href: "/app/mine", label: w.visits, figure: `${own.visits}`, line: [w.visitsLine(when), w.asks(own.visitAsks)].filter(Boolean).join(" · "), waits: own.visitAsks > 0 },
+    { href: "/app/mine", label: w.visits, figure: `${week.length}`, line: [w.visitsLine(when), w.asks(own.visitAsks)].filter(Boolean).join(" · "), waits: own.visitAsks > 0 },
     { href: "/app/tasks", label: w.tasks, figure: `${own.tasks}`, line: w.tasksLine(own.tasksLate), waits: own.tasksLate > 0 },
   ];
   // A leader with nothing of their own this fortnight sees the conference alone.
-  const showMine = !conference || own.visits + own.tasks > 0;
+  const showMine = !conference || week.length + own.tasks + own.visitAsks > 0;
   return (
     <div className="glance">
       {showMine && (
