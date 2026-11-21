@@ -13,14 +13,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace, type WayBack } from "@/components/workspace/context";
 import { UndoAct } from "@/components/workspace/undo";
-import {
-  CloseForm,
-  takingBack,
-  DecideForm,
-  NeighborForm,
-  RemoveForm,
-  RequestForm,
-} from "@/components/workspace/help-line/forms";
+import { useFormsLater } from "@/components/workspace/help-line/forms-later";
 import { sayFailure } from "@/components/workspace/failure";
 import { openUp } from "@/components/workspace/fold";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -205,6 +198,7 @@ export function NeighborRecord({
     return () => setHeading(null);
   }, [setHeading, title, deck]);
   const [step, setStep] = useState<Step | null>(null);
+  const forms = useFormsLater(step !== null);
   const [done, setDone] = useState("");
   const showAccounts = useMutation(api.neighbors.showAccounts);
   const [numbers, setNumbers] = useState<Accounts | null>(null);
@@ -395,13 +389,13 @@ export function NeighborRecord({
           <NoteForm target={target} onSaved={(noteId) => finish(text.done.note, { run: () => takeBackNote({ churchId: target.churchId, noteId }), said: text.done.noteTakenBack })} />
         </LiveDialog>
       )}
-      {step?.kind === "request" && (
+      {step?.kind === "request" && forms && (
         <LiveDialog
           title={text.sheets.request.title}
           description={text.sheets.request.about(neighbor.name)}
           onClose={close}
         >
-          <RequestForm
+          <forms.RequestForm
             churchId={churchId}
             neighborId={neighbor.id}
             onSaved={() =>
@@ -410,13 +404,13 @@ export function NeighborRecord({
           />
         </LiveDialog>
       )}
-      {step?.kind === "change" && (
+      {step?.kind === "change" && forms && (
         <LiveDialog
           title={text.sheets.change.title}
           description={text.sheets.change.about}
           onClose={close}
         >
-          <RequestForm
+          <forms.RequestForm
             churchId={churchId}
             neighborId={neighbor.id}
             request={step.request}
@@ -424,7 +418,7 @@ export function NeighborRecord({
           />
         </LiveDialog>
       )}
-      {(step?.kind === "approve" || step?.kind === "decline") && (
+      {(step?.kind === "approve" || step?.kind === "decline") && forms && (
         <LiveDialog
           title={
             step.kind === "approve" ? text.sheets.approve : text.sheets.decline
@@ -432,7 +426,7 @@ export function NeighborRecord({
           description={`${requestTitle(step.request)}. ${sampleSaid(step.request.summary)}`}
           onClose={close}
         >
-          <DecideForm
+          <forms.DecideForm
             churchId={churchId}
             request={step.request}
             decision={step.kind === "approve" ? "approved" : "declined"}
@@ -443,30 +437,30 @@ export function NeighborRecord({
           />
         </LiveDialog>
       )}
-      {step?.kind === "close" && (
+      {step?.kind === "close" && forms && (
         <LiveDialog
           title={
-            takingBack(step.request) ? text.sheets.takeBack : text.sheets.close
+            forms.takingBack(step.request) ? text.sheets.takeBack : text.sheets.close
           }
           description={`${requestTitle(step.request)}. ${sampleSaid(step.request.summary)}`}
           onClose={close}
         >
-          <CloseForm
+          <forms.CloseForm
             churchId={churchId}
             request={step.request}
             onSaved={() =>
-              finish(takingBack(step.request) ? text.done.takenBack(neighbor.name) : text.done.closed(neighbor.name))
+              finish(forms.takingBack(step.request) ? text.done.takenBack(neighbor.name) : text.done.closed(neighbor.name))
             }
           />
         </LiveDialog>
       )}
-      {step?.kind === "remove" && (
+      {step?.kind === "remove" && forms && (
         <LiveDialog
           title={text.sheets.remove.title}
           description={text.sheets.remove.about(neighbor.name)}
           onClose={close}
         >
-          <RemoveForm
+          <forms.RemoveForm
             churchId={churchId}
             neighbor={neighbor}
             onBegin={() => {
@@ -481,13 +475,13 @@ export function NeighborRecord({
           />
         </LiveDialog>
       )}
-      {step?.kind === "details" && (
+      {step?.kind === "details" && forms && (
         <LiveDialog
           title={text.sheets.details.title}
           description={text.sheets.details.about(neighbor.name)}
           onClose={close}
         >
-          <NeighborForm
+          <forms.NeighborForm
             churchId={churchId}
             neighbor={neighbor}
             onSaved={() => finish(text.done.details)}

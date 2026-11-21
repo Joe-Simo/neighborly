@@ -9,7 +9,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { NameToConfirm } from "@/components/workspace/help-line/forms";
+import { NameToConfirm } from "@/components/workspace/help-line/name-to-confirm";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
 import "@/components/workspace/for-good.css";

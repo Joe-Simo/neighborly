@@ -10,7 +10,7 @@ import { ArrowRight, Lock, Mail } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
-import { NameToConfirm } from "@/components/workspace/help-line/forms";
+import { NameToConfirm } from "@/components/workspace/help-line/name-to-confirm";
 import { sayFailure } from "@/components/workspace/failure";
 import { LiveEmpty } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";

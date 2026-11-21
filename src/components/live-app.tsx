@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Suspense, lazy, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { noSessionKept } from "@/lib/no-session-kept";
 import { fetchRoom } from "@/components/workspace/sections";
@@ -26,7 +26,6 @@ import { LiveWorkspace } from "@/components/workspace/shell";
 import { RoomsAhead } from "@/components/workspace/rooms-ahead";
 import { canKeep, emptyNote, forgetKeptRoom, keepRoom, keptHelpLine, keptRoom } from "@/lib/kept-room";
 import { DoorSweep, carryTheCard, useDoor } from "@/components/workspace/door";
-import { LiveWelcome } from "@/components/live-welcome";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 
@@ -71,6 +70,10 @@ function useOffline() {
   }, [link.isWebSocketConnected]);
   return offDevice || (unanswered && !link.isWebSocketConnected) || (!link.isWebSocketConnected && link.connectionRetries > 1);
 }
+
+/** The first welcome (start or join a conference) is met once by each member: it travels on its own, asked for at the sign-in sheet. */
+const welcome = () => import("@/components/live-welcome");
+const LiveWelcome = lazy(() => welcome().then(({ LiveWelcome }) => ({ default: LiveWelcome })));
 
 /** The app, with the door's sweep above whatever it is showing. */
 let opened: number | undefined;
@@ -146,6 +149,12 @@ function LiveRooms({
   // The sweep starts in the frame the sign-in sheet (or the sample's) leaves.
   // A first look is no door: the home page's card lifts off it by itself, and the session arriving behind it sweeps nothing.
   useDoor(signedOut && !look && !lookComing);
+  // Said on the page for the home story's sheet (paper-arrival.tsx): a first look is a room it may lift off by itself;
+  // without one, the door's sweep comes up over it and takes it.
+  const firstLook = look !== null || lookComing;
+  useLayoutEffect(() => void document.documentElement.toggleAttribute("data-first-look", firstLook), [firstLook]);
+  // Someone at the door may be about to start or join a conference: the welcome is fetched while they sign in.
+  useEffect(() => void (signedOut && welcome().catch(() => {})), [signedOut]);
   // With no seed answer the sample opens through the door as before, and the door's last sheet is the home page's card.
   // (The way in does not say so itself when it starts behind a look, where no sweep would ever take the card.)
   const noLook = viaSample && firstRoom === null;
@@ -499,6 +508,7 @@ function LiveRooms({
     (!entryHandled && !badInvite && (intent === "start" || intent === "join"))
   )
     return (
+      <Suspense fallback={<LiveRoomLoading />}>
       <LiveWelcome
         initialToken={liveToken}
         conference={invitedTo}
@@ -517,6 +527,7 @@ function LiveRooms({
           router.replace("/app");
         }}
       />
+      </Suspense>
     );
   if (!dashboard || !roomDrawn)
     return (
