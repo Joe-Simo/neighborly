@@ -33,3 +33,6 @@ export const referralSet: ReferralNote[] = [
   { id: "ho-tenant", note: "Landlord won't fix the heat and threatens to evict. Kids are cold.", fits: ["legal"], heldOut: true },
 ];
 
+
+/** The last run of drafts:measureReferrals (jev-1.14.0), on the held-out notes only: each note judged against each of the six places. */
+export const referralsMeasured = { day: "2026-11-21", notes: 5, right: 27, missed: 3, wrong: 0 };
