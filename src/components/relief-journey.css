@@ -168,6 +168,8 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-chapter=help] .relief-hold{grid-template-columns:minmax(0,1fr);padding:0}
   .relief-panel[data-chapter=help] .relief-words{--drop:0px;grid-area:1/1;align-self:start;margin:9svh 0 0 7vw;text-align:left}
   .relief-panel[data-chapter=help] .relief-words p{max-width:13em}
+  /* The head is as wide as its words, so its hinge turns about the words themselves, not the middle of an empty row. */
+  .relief-panel[data-chapter=help] .relief-words h2{width:fit-content}
   .relief-panel[data-chapter=help] .relief-picture{grid-area:1/1;align-self:end;justify-self:end;width:min(100vw,172svh);aspect-ratio:2/1}
   .relief-panel[data-chapter=help] .relief-layers{width:125%;height:166.7%;margin:-16% 0 0 -25%}
   /* The year: the open book large at the left, close enough to read the page; the figures beside it. */
