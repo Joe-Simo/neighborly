@@ -126,3 +126,18 @@ test("another neighbor the conference knows is taken out too, and an ordinary wo
   expect(sent).not.toMatch(/Marisol|Vega/);
   expect(sent).toContain("will pay");
 });
+
+describe("near-miss names", () => {
+  test("a misspelled household name goes; other words stay", async () => {
+    const { withoutNearNames } = await import("./request-draft");
+    const names = ["Rosa Delgado", "Darnell Okafor"];
+    expect(withoutNearNames("Delgadoo called. Rent is due Friday.", names)).toBe("[name] called. Rent is due Friday.");
+    expect(withoutNearNames("rossa delagdo and darnel okafur came by.", names, true)).toBe("[name] [name] and [name] [name] came by.");
+    // Lowercase words are left in text for the model; a different first letter never matches.
+    expect(withoutNearNames("rent rose and the hose broke.", names)).toBe("rent rose and the hose broke.");
+    expect(withoutNearNames("Nosa and Kosa.", names, true)).toBe("Nosa and Kosa.");
+  });
+  test("the scrub for the model also takes a misspelled name at a sentence's start", () => {
+    expect(withoutIdentity("Delgadoo is behind on rent.", { names: ["Rosa Delgado"], addresses: [] })).toBe("[name] is behind on rent.");
+  });
+});

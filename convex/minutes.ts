@@ -1,11 +1,11 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { internalMutation, mutation, query, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { neighborAccess } from "./access";
 import { isSampleChurch } from "./demo";
 import { deliveryConfiguration, resend } from "./notifications";
-import { withoutIdentity } from "../src/lib/request-draft";
+import { withoutIdentity, withoutNearNames } from "../src/lib/request-draft";
 import { emailLanguage, minutesEmail } from "../src/lib/email/paper-email";
 
 const DAY = 86_400_000;
@@ -88,10 +88,12 @@ export const keep = mutation({
 });
 
 /** The minutes as they may leave in an email: every neighbor's name in the conference taken out of the typed text. */
-async function minutesForEmail(ctx: MutationCtx, meeting: Doc<"meetings">) {
+export async function minutesForEmail(ctx: QueryCtx, meeting: Doc<"meetings">) {
   const neighbors = await ctx.db.query("neighbors").withIndex("by_church", q => q.eq("churchId", meeting.churchId)).take(5000);
   const known = { names: neighbors.filter(one => one.nameKey).map(one => one.name), addresses: neighbors.map(one => one.address).filter(Boolean) };
-  return { reflection: withoutIdentity(meeting.reflection ?? "", known), minutes: withoutIdentity(meeting.minutes ?? "", known) };
+  // Misspelled names go too, in any case: a lost word in the minutes costs less than a family's name in every mailbox.
+  const scrub = (text: string) => withoutNearNames(withoutIdentity(text, known), known.names, true);
+  return { reflection: scrub(meeting.reflection ?? ""), minutes: scrub(meeting.minutes ?? "") };
 }
 
 /**

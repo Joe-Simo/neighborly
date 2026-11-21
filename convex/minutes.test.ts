@@ -54,3 +54,21 @@ describe("a conference meeting's agenda and minutes", () => {
     expect(email.html).toContain("Mateo 25");
   });
 });
+
+describe("minutes leave without the households' names", () => {
+  test("exact and misspelled names and addresses are taken out", async () => {
+    const t = convexTest(schema, modules);
+    const scrubbed = await t.run(async ctx => {
+      const churchId = await ctx.db.insert("churches", { name: "Sample Conference", timeZone: "America/New_York" });
+      const userId = await ctx.db.insert("users", { clerkId: "clerk|coordinator" });
+      const memberId = await ctx.db.insert("memberships", { churchId, userId, name: "Ana Visitor", email: "c@example.org", role: "coordinator", active: true, approved: true, coverOptIn: false });
+      await ctx.db.insert("neighbors", { churchId, name: "Rosa Delgado", nameKey: "rosa delgado", phone: "", phoneKey: "", email: "", address: "14 Sample St", adults: 1, children: 2, language: "en", notes: "", createdBy: memberId, createdAt: 0 });
+      const meetingId = await ctx.db.insert("meetings", { churchId, title: "Weekly", start: 0, end: 1, location: "Hall", fanoutStatus: "complete", cutoff: 0, minutes: "Approved rent for rosa delagdo at 14 Sample St. Ana Visitor will call.", reflection: "" });
+      const meeting = await ctx.db.get("meetings", meetingId);
+      const { minutesForEmail } = await import("./minutes");
+      return minutesForEmail(ctx, meeting!);
+    });
+    expect(scrubbed.minutes).not.toMatch(/rosa|delagdo|Sample St/i);
+    expect(scrubbed.minutes).toContain("Approved rent for");
+  });
+});

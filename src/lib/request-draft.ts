@@ -220,6 +220,38 @@ function escape(text: string) {
  * shaped like one goes too, including every capitalised word that does not open a
  * sentence, so a landlord's or a child's name leaves with the rest.
  */
+/** Edits between two words (insert, delete, change one letter, or swap two side by side), stopping once past `most`. */
+function edits(a: string, b: string, most: number) {
+  if (Math.abs(a.length - b.length) > most) return most + 1;
+  let before = Array.from({ length: b.length + 1 }, (_, j) => j);
+  let previous = before;
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j++) {
+      row[j] = Math.min(before[j] + 1, row[j - 1] + 1, before[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) row[j] = Math.min(row[j], previous[j - 2] + 1);
+    }
+    previous = before;
+    before = row;
+    if (Math.min(...row) > most) return most + 1;
+  }
+  return before[b.length];
+}
+/**
+ * A household's name misspelled ("Delgadoo", "Rosaa", "Okafur") is still their name. A word of four letters or more that
+ * starts with the same letter as a name part and is one edit from it (two for a part of eight letters or more) goes too.
+ * `anyCase` also takes lowercase words: right for text leaving to people, where a lost word costs less than a kept name.
+ */
+export function withoutNearNames(text: string, names: string[], anyCase = false): string {
+  const parts = [...new Set(names.flatMap((name) => name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "").toLowerCase()).filter((part) => part.length >= 4))];
+  if (!parts.length) return text;
+  return text.replace(/\p{L}[\p{L}'’-]*/gu, (word) => {
+    if (word.length < 4 || (!anyCase && !/^\p{Lu}/u.test(word)) || isSafe(word)) return word;
+    const lower = word.toLowerCase();
+    return parts.some((part) => part[0] === lower[0] && edits(lower, part, part.length >= 8 ? 2 : 1) <= (part.length >= 8 ? 2 : 1)) ? "[name]" : word;
+  });
+}
+
 export function withoutIdentity(note: string, known: { names: string[]; addresses: string[]; others?: string[] }): string {
   let text = note;
   for (const address of known.addresses.map((value) => value.trim()).filter((value) => value.length > 3))
@@ -233,6 +265,8 @@ export function withoutIdentity(note: string, known: { names: string[]; addresse
   const parts = known.names.flatMap((name) => name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "")).filter((part) => part.length > 1);
   for (const part of new Set(parts))
     text = text.replace(new RegExp(`(^|[^\\p{L}])${escape(part)}(?![\\p{L}])`, "giu"), "$1[name]");
+  // The household's own names, misspelled, wherever written with a capital (a sentence's first word included).
+  text = withoutNearNames(text, known.names);
   // Everyone else the conference knows (its neighbors and members): taken out wherever written with a capital, in one
   // pass. Only the capitalised form, so a neighbor named Hope or Will never takes the plain word out of a note.
   const others = [...new Set((known.others ?? []).flatMap((name) => name.split(/\s+/)).map((part) => part.replace(/[^\p{L}'-]/gu, "")))]
