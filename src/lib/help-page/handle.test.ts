@@ -61,3 +61,34 @@ describe("the Ask for help pages", () => {
     expect(await answer.text()).not.toContain("0123456789abcdef");
   });
 });
+
+describe("partners and deleting", () => {
+  const answer = (body: Record<string, unknown>) => {
+    globalThis.fetch = (async (url: string, init: RequestInit) => {
+      sent.push({ url, body: JSON.parse(String(init.body)) as Record<string, unknown> });
+      return new Response(JSON.stringify(body));
+    }) as typeof fetch;
+  };
+  const link = "a".repeat(32);
+  test("a partner link with no signed-in device sends a code to the partner, not a form", async () => {
+    answer({ result: "code", to: "d•••@example.org" });
+    const page = await (await showForm("en", new Request(`https://kindhelps.com/help?p=${link}`))).text();
+    expect(sent[0].url).toBe("https://example.convex.site/intake/partner/start");
+    expect(page).toContain("d•••@example.org");
+    expect(page).not.toContain("challenges.cloudflare.com");
+  });
+  test("a signed-in partner gets the form with no bot check, and sends with its session", async () => {
+    answer({ result: "landed", key: "0123456789abcdef0123456789abcdef", team: "St. Example", by: String(Date.UTC(2026, 10, 23)), timeZone: "America/Detroit" });
+    const cookie = { cookie: `kh_partner=${"b".repeat(32)}` };
+    const form = await (await showForm("en", new Request(`https://kindhelps.com/help?p=${link}`, { headers: cookie }))).text();
+    expect(form).not.toContain("challenges.cloudflare.com");
+    const body = new FormData();
+    for (const [name, value] of Object.entries({ ...good, needs: "food" })) body.append(name, value);
+    await takeStep("en", new Request(`https://kindhelps.com/help?p=${link}`, { method: "POST", body, headers: cookie }));
+    expect(sent[0].body).toMatchObject({ partnerLink: link, partnerSession: "b".repeat(32) });
+  });
+  test("a team full this week says so", async () => {
+    answer({ result: "full" });
+    expect(await (await takeStep("en", post(good))).text()).toContain("full this week");
+  });
+});
