@@ -22,6 +22,11 @@ const pages: Record<string, string> = {
   "/privacidad": "privacidad.html",
   "/offline": "offline.html",
 };
+// The "Ask for help" pages are for someone on a cheap phone and a bad line, so their cap is set ahead and never moved by --write:
+// 100 KB, all of it. React's own runtime alone is over that, so these pages are sent as plain HTML with a form that posts without
+// script. Each is checked once its prerendered HTML exists.
+const askForHelp: Record<string, string> = { "/help": "help.html", "/ayuda": "ayuda.html" };
+const ASK_CAP = 100 * 1024;
 const rooms: Record<string, string> = {
   week: "WeekSection", team: "TeamsSection", people: "PeopleSection", commitments: "CommitmentsSection", mine: "MineSection",
   "time-off": "TimeOffSection", tasks: "TasksSection", "help-line": "HelpLineSection", neighbors: "NeighborsSection",
@@ -57,6 +62,12 @@ for (const [room, section] of Object.entries(rooms)) {
   measured[`/app/${room}`] = sum(files);
 }
 
+const fixed: Record<string, number> = {};
+for (const [route, file] of Object.entries(askForHelp)) {
+  if (existsSync(join(app, file))) fixed[route] = sum(named(readFileSync(join(app, file), "utf8")));
+  else console.log(`wait ${route.padEnd(24)} not built yet; its cap is ${ASK_CAP / 1024} KB`);
+}
+
 const kb = (size: number) => `${(size / 1024).toFixed(1)} KB`;
 if (process.argv.includes("--write") || !existsSync(CAPS)) {
   writeFileSync(CAPS, `${JSON.stringify(Object.fromEntries(Object.entries(measured).map(([route, size]) => [route, size + SLACK])), null, 2)}\n`);
@@ -69,6 +80,11 @@ for (const [route, size] of Object.entries(measured)) {
   const fails = cap === undefined || size > cap;
   if (fails) over++;
   console.log(`${fails ? "over" : "ok  "} ${route.padEnd(24)} ${kb(size).padStart(9)} of ${cap === undefined ? "no cap" : kb(cap)}`);
+}
+for (const [route, size] of Object.entries(fixed)) {
+  const fails = size > ASK_CAP;
+  if (fails) over++;
+  console.log(`${fails ? "over" : "ok  "} ${route.padEnd(24)} ${kb(size).padStart(9)} of ${kb(ASK_CAP)} (fixed)`);
 }
 if (over) {
   console.error(`${over} over budget. Make it smaller, or raise its cap with the reason in the landing note.`);
