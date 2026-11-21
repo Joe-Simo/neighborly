@@ -253,14 +253,17 @@ export type { SameBy };
 
 /**
  * The records check in Tools, all by code; nothing here reaches the model, because what it compares is names, emails and
- * phones. Two members who may be one person signed up twice (the same email, or names alike), and phones that more than
- * one household gives under names that are not alike. Asked only when a person presses the check, never on its own.
+ * phones. Two members who may be one person signed up twice (the same email, or names alike); two households under one
+ * phone that the record's own check would show (alike names and a second thing in common, by the same rule as forRecord);
+ * and phones that more than one household gives under names that are not alike. Asked only when a person presses the check, never on its own.
  */
+const householdSide = v.object({ id: v.id("neighbors"), name: v.string(), address: v.string() });
 const memberSide = v.object({ id: v.id("memberships"), name: v.string(), email: v.string(), role: v.string() });
 export const recordsCheck = query({
   args: { churchId: v.id("churches") },
   returns: v.object({
     people: v.array(v.object({ key: v.string(), first: memberSide, second: memberSide, sameBy: v.array(v.union(v.literal("email"), v.literal("name"))) })),
+    households: v.array(v.object({ key: v.string(), first: householdSide, second: householdSide, sameBy: sameByValue })),
     phones: v.array(v.object({ key: v.string(), phone: v.string(), households: v.array(v.object({ id: v.id("neighbors"), name: v.string(), address: v.string() })) })),
   }),
   handler: async (ctx, { churchId }) => {
@@ -289,7 +292,17 @@ export const recordsCheck = query({
       rows.length > 1 && rows.some((row, i) => rows.slice(i + 1).some((other) => nameLikeness(row.name, other.name) < namesAlike)) && !set.has(`phone:${key}`)
         ? [{ key, phone: rows[0].phone, households: rows.slice(0, 8).map((row) => ({ id: row._id, name: row.name, address: row.address })) }]
         : []);
-    return { people: people.slice(0, 50), phones: phones.slice(0, 50) };
+    // A household entered twice under one phone: the pairs the record page shows at once, and not where a person said they differ.
+    const twice = [];
+    for (const rows of byPhone.values()) for (let i = 0; i < rows.length && twice.length < 50; i++) for (const other of rows.slice(i + 1)) {
+      const shared = sameBy(rows[i], other);
+      if (!shared.includes("name") || needsNotes(shared)) continue;
+      const [first, second] = ordered(rows[i]._id, other._id);
+      if ((await pairOf(ctx, first, second))?.dismissedAt) continue;
+      const side = (row: Doc<"neighbors">) => ({ id: row._id, name: row.name, address: row.address });
+      twice.push({ key: `${first} ${second}`, first: side(rows[i]), second: side(other), sameBy: shared });
+    }
+    return { people: people.slice(0, 50), households: twice, phones: phones.slice(0, 50) };
   },
 });
 
