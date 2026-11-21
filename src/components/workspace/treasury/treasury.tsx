@@ -27,6 +27,7 @@ import { BankRoom } from "@/components/workspace/treasury/bank-view";
 import { ShelfRoom } from "@/components/workspace/treasury/shelf-view";
 import { DepositForm } from "@/components/workspace/treasury/deposit-form";
 
+import { MonthCheck } from "@/components/workspace/treasury/month-check";
 import { usePaidMoment } from "@/components/workspace/treasury/paid-moment";
 import { formatFigure } from "@/components/workspace/treasury/money";
 import { sentence } from "@/lib/utils";
@@ -300,6 +301,15 @@ export function TreasurySection() {
       <Suspense fallback={null}>
         <BudgetLine churchId={churchId} today={shown.today} />
       </Suspense>
+      {!empty && (
+        <MonthCheck
+          key={shown.month}
+          churchId={churchId}
+          month={shown.month}
+          entries={shown.entries}
+          onEntry={(entry) => show({ is: "entry", entry })}
+        />
+      )}
       <LiveDialog
         open={open !== null}
         onClose={() => setOpen(null)}

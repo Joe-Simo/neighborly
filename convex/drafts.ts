@@ -10,6 +10,7 @@ import { visitSet } from "../src/lib/visit-set";
 import { referralPlaces, referralSet, type ReferralPlace } from "../src/lib/referral-set";
 import { repeatSet } from "../src/lib/repeat-set";
 import { paceLines, repeatLines, type RepeatLine } from "../src/lib/repeat-words";
+import { ledgerSet } from "../src/lib/ledger-set";
 import { spanishSet } from "../src/lib/spanish-set";
 import { DateTime } from "luxon";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
@@ -820,6 +821,131 @@ export const measureReferrals = internalAction({
     }));
     const add = (only: boolean) => rows.filter(row => !only || row.heldOut).flatMap(row => row.marks).reduce((sum, mark) => ({ ...sum, [mark]: sum[mark] + 1 }), { ...zero });
     return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, offered, scores }) => ({ id, offered, scores })) };
+  },
+});
+
+const monthFlagKinds = ["double", "overApproved", "noCategory", "noPayee", "offCategory"] as const;
+const monthFlag = v.object({
+  kind: v.union(...monthFlagKinds.map(kind => v.literal(kind))),
+  entryId: v.id("ledgerEntries"),
+  /** "rule" was found by counting alone; "assistant" means the model read the memo. */
+  source: v.union(v.literal("rule"), v.literal("assistant")),
+});
+const memoToRead = v.object({ entryId: v.id("ledgerEntries"), memo: v.string(), category: v.string() });
+/**
+ * One line's question, with its two ends spelled out; shared with measureLedger so both ask the same thing. No free text
+ * goes in the question: the memo and the category are both read from the state, which decide() scrubs.
+ */
+function offCategoryQuestion(line: string): Question {
+  return {
+    type: "noul",
+    instructions: `Does ${line}.memo describe spending on something other than ${line}.category?`,
+    criteria: {
+      true: `${line}.memo plainly describes buying or paying for something that is not ${line}.category`,
+      false: `${line}.memo describes ${line}.category, says too little to tell, or does not describe spending at all`,
+    },
+  };
+}
+/** How sure the model is of each line, 0 to 1, or null when any answer is not a number. One request for every line. */
+async function offCategory(key: string, lines: { memo: string; category: string }[], known?: Known) {
+  const answers = await decide(key,
+    { lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500), category: line.category }])) },
+    Object.fromEntries(lines.map((_, index) => [`l${index}`, offCategoryQuestion(`lines.l${index}`)])),
+    known,
+  );
+  if (!answers) return null;
+  const sure = lines.map((_, index) => noul(answers[`l${index}`]));
+  return sure.every((value): value is number => value !== null) ? sure : null;
+}
+
+/**
+ * One month of the ledger, checked by rules alone, and the memos worth a reading. The month is the group's own:
+ * an entry's date is already a day on the group's clock, and a month ahead of today there is refused.
+ * No payee or neighbor name leaves this function except as a name to take out, and that never leaves the server.
+ */
+export const monthRecords = internalQuery({
+  args: { churchId: v.id("churches"), month: v.string() },
+  returns: v.object({ userId: v.id("users"), flags: v.array(monthFlag), toRead: v.array(memoToRead), names: v.array(v.string()), others: v.array(v.string()) }),
+  handler: async (ctx, { churchId, month }) => {
+    const member = await neighborAccess(ctx, churchId);
+    const church = await ctx.db.get("churches", churchId);
+    const start = DateTime.fromFormat(month, "yyyy-MM", { zone: church?.timeZone ?? "UTC" });
+    if (!church || !/^\d{4}-\d{2}$/.test(month) || !start.isValid || month > DateTime.now().setZone(church.timeZone).toFormat("yyyy-MM")) throw new ConvexError("Choose a month.");
+    // A week before the month too, so a payment entered again on the 2nd is seen beside the one on the 28th.
+    const from = start.minus({ days: 7 }).toFormat("yyyy-MM-dd"), to = start.plus({ months: 1 }).toFormat("yyyy-MM-dd");
+    const near = await ctx.db.query("ledgerEntries").withIndex("by_church", q => q.eq("churchId", churchId).gte("date", from).lt("date", to)).take(1000);
+    const taken = await Promise.all(near.map(entry => ctx.db.query("ledgerEntries").withIndex("by_reverses", q => q.eq("reverses", entry._id)).first()));
+    // A voided line, a reversal, and a line a reversal took back are all out of the check.
+    const live = near.filter((entry, index) => !entry.voidedAt && !entry.reverses && !taken[index]);
+    const inMonth = live.filter(entry => entry.date.startsWith(month));
+    const flags: (typeof monthFlag.type)[] = [];
+    const apart = (a: string, b: string) => Math.abs(DateTime.fromISO(a).diff(DateTime.fromISO(b), "days").days);
+    const same = (row: (typeof live)[number]) => `${row.kind}:${row.amount}:${row.payee.trim().toLowerCase()}`;
+    for (const entry of inMonth) {
+      const flag = (kind: (typeof monthFlagKinds)[number]) => flags.push({ kind, entryId: entry._id, source: "rule" });
+      if (entry.payee.trim() && live.some(other => other._id !== entry._id && same(other) === same(entry) && apart(other.date, entry.date) <= 7)) flag("double");
+      if (entry.kind !== "expense") continue;
+      if (entry.requestId) {
+        const request = await ctx.db.get("assistanceRequests", entry.requestId);
+        if (request?.amountApproved !== undefined && entry.amount > request.amountApproved) flag("overApproved");
+      }
+      if (!entry.category.trim()) flag("noCategory");
+      if (!entry.payee.trim()) flag("noPayee");
+    }
+    const reading = inMonth.filter(entry => entry.kind === "expense" && entry.memo.trim() && entry.category.trim()).slice(0, 20);
+    const neighbors = await Promise.all([...new Set(reading.flatMap(entry => entry.neighborId ?? []))].map(id => ctx.db.get("neighbors", id)));
+    return {
+      userId: member.userId, flags,
+      toRead: reading.map(entry => ({ entryId: entry._id, memo: entry.memo, category: entry.category })),
+      names: neighbors.flatMap(neighbor => (neighbor ? [neighbor.name] : [])),
+      others: reading.length ? [...await namesFor(ctx, churchId), ...new Set(near.map(entry => entry.payee.trim()).filter(Boolean))] : [],
+    };
+  },
+});
+
+/**
+ * Before a treasurer closes or reports a month: the ledger lines worth a second look. Every number is code's:
+ * likely double entries, a payment above what was approved, a line with no category or no payee. The model reads
+ * only memos, with every payee and neighbor name taken out, and says for each whether it describes spending on
+ * something other than its category. One request, one reservation, and nothing changes: each flag points to one line.
+ */
+export const checkMonth = action({
+  args: { churchId: v.id("churches"), month: v.string() },
+  returns: v.object({ flags: v.array(monthFlag), verification: v.union(v.literal("review"), v.literal("checked")) }),
+  handler: async (ctx, args): Promise<{ flags: (typeof monthFlag.type)[]; verification: "review" | "checked" }> => {
+    const { userId, flags, toRead: reading, names, others } = await ctx.runQuery(internal.drafts.monthRecords, args);
+    const unread = { flags, verification: "review" as const };
+    if (!reading.length) return { flags, verification: "checked" };
+    if (!env.TYPESAFE_API_KEY) return unread;
+    if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return unread;
+    const sure = await offCategory(env.TYPESAFE_API_KEY, reading, { names, addresses: [], others });
+    if (!sure) return unread;
+    return { flags: [...flags, ...reading.flatMap(({ entryId }, index) => (sure[index] >= sureEnough ? [{ kind: "offCategory" as const, entryId, source: "assistant" as const }] : []))], verification: "checked" };
+  },
+});
+
+/**
+ * Measures the month check's memo question on the made-up set (src/lib/ledger-set.ts), with the same wording and the
+ * same 0.9 line checkMonth uses, in one request. Run by hand from the Convex command line; it reads and saves no record.
+ */
+export const measureLedger = internalAction({
+  args: { churchId: v.id("churches") },
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance"), v.literal("no answer")), model: v.string(), all: referralTally, heldOut: referralTally, rows: v.array(v.object({ id: v.string(), score: v.number(), flagged: v.boolean() })) }),
+  handler: async (ctx, { churchId }) => {
+    const zero = { right: 0, missed: 0, wrong: 0 };
+    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const key = env.TYPESAFE_API_KEY;
+    if (!key) return { status: "no key" as const, ...none };
+    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: 1 })) return { status: "no allowance" as const, ...none };
+    const sure = await offCategory(key, ledgerSet);
+    if (!sure) return { status: "no answer" as const, ...none };
+    const rows = ledgerSet.map((item, index) => {
+      const flagged = sure[index] >= sureEnough;
+      const mark = flagged === item.off ? "right" as const : flagged ? "wrong" as const : "missed" as const;
+      return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, heldOut: !!item.heldOut };
+    });
+    const add = (only: boolean) => rows.filter(row => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row.mark]: sum[row.mark] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, score, flagged }) => ({ id, score, flagged })) };
   },
 });
 
