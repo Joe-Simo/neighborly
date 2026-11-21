@@ -1,16 +1,16 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
 import { PAGE_KINDS, readKey, readSubmission, soundsUnsafe, type Problem } from "../intake-rules";
-import { esc, helpPage, type HelpErrors, type HelpValues, type HelpView } from "../intake/help-pages";
+import { helpPage, type HelpErrors, type HelpValues, type HelpView } from "../intake/help-pages";
 import type { IntakeLanguage, NeedKind } from "../intake/intake-words";
-import { seal, unseal } from "./seal";
+import { checkBotId } from "botid/server";
 
 /**
- * The server side of /help and /ayuda and their status pages: finished HTML from src/lib/intake/help-pages.ts, no
- * script of ours, and every step a plain form POST. The form saves nothing: it answers with "One quick check", the one
- * page that loads a script (Turnstile's), carrying the values sealed (./seal.ts); that page's POST sends the request.
- * The backend (convex/intakeHttp.ts) is reached only from here, with INTAKE_SERVER_SECRET, and is told the sender's
- * address as Vercel saw it. It checks Turnstile before anything is kept or any code is sent.
+ * The server side of /help and /ayuda and their status pages: finished HTML from src/lib/intake/help-pages.ts, and one
+ * small script of ours on the pages that post here (Vercel BotID, which only judges requests sent with fetch). Every
+ * POST here is judged by BotID before anything else, except a partner's device already signed in; when BotID cannot
+ * run or says bot, the answer is the 211 page and nothing is kept or sent. The backend (convex/intakeHttp.ts) is
+ * reached only from here, with INTAKE_SERVER_SECRET, and is told the sender's address as Vercel saw it.
  */
 const SVDP_FINDER = "https://www.svdpusa.org/find-help/";
 /** National Runaway Safeline: free, any hour, for young people. */
@@ -25,7 +25,7 @@ function respond(body: string, status = 200, extra: Extra = {}) {
     "Cache-Control": "no-store",
     "Referrer-Policy": "no-referrer",
     "X-Content-Type-Options": "nosniff",
-    "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; font-src 'self'; script-src https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src https://challenges.cloudflare.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
   });
   for (const [name, value] of Object.entries(extra)) for (const one of Array.isArray(value) ? value : [value]) headers.append(name, one);
   return new Response(body, { status, headers });
@@ -43,8 +43,8 @@ function device(request: Request): { id: string; set: Extra } {
 const senderIp = (request: Request) => request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
 
 function backend() {
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL, site = process.env.NEXT_PUBLIC_CONVEX_SITE_URL, secret = process.env.INTAKE_SERVER_SECRET, siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  return url && site && secret && siteKey ? { url, site, secret, siteKey } : null;
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL, site = process.env.NEXT_PUBLIC_CONVEX_SITE_URL, secret = process.env.INTAKE_SERVER_SECRET;
+  return url && site && secret ? { url, site, secret } : null;
 }
 async function call(path: string, body: Record<string, unknown>): Promise<Record<string, unknown> | null> {
   const ready = backend();
@@ -56,12 +56,15 @@ async function call(path: string, body: Record<string, unknown>): Promise<Record
   } catch { return null; }
 }
 
-/** Cloudflare's widget, for the check page only: the one script on any of these pages, theirs. */
-function check(language: IntakeLanguage) {
-  const ready = backend();
-  return ready
-    ? `<div class="cf-turnstile" data-sitekey="${esc(ready.siteKey)}" data-action="ask-for-help" data-language="${language}" data-size="flexible"></div><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>`
-    : "";
+/**
+ * Vercel BotID's verdict on this request (botid/server reads its headers, added by the page's script). It fails closed:
+ * no verdict (not on Vercel, no OIDC token, BotID unreachable, a plain post without the headers) counts as a bot.
+ */
+async function human() {
+  try {
+    const verdict = await checkBotId();
+    return verdict.isHuman && !verdict.isBot;
+  } catch { return false; }
 }
 /** When nothing can be taken (no backend, a failure): the page says to call 211, the line that never closes. */
 const closed = (language: IntakeLanguage) => page(language, { kind: "limit", phone: "211" }, 503);
@@ -112,13 +115,6 @@ const submission = (values: HelpValues, language: IntakeLanguage) => ({
   adult: values.adult === "yes", kinds: (values.needs ?? []).map((kind) => PAGE_KINDS[kind]), need: values.said ?? "", email: values.email ?? "", phone: values.phone ?? "",
   zip: values.zip ?? "", nearby: values.nearby ?? "", language: values.speaks ?? language, safe: values.safe, callAt: values.callAt ?? "",
 });
-/** What a check page's seal held, read again as untrusted (it is ours, but checked like any form). */
-function readHeld(held: unknown): { values: HelpValues; urgent: boolean } | null {
-  if (typeof held !== "object" || held === null || !("values" in held) || typeof held.values !== "object" || held.values === null) return null;
-  const form = new FormData();
-  for (const [name, value] of Object.entries(held.values)) for (const one of Array.isArray(value) ? value : [value]) if (typeof one === "string") form.append(name, one);
-  return { values: valuesFrom(form), urgent: "urgent" in held && held.urgent === true };
-}
 const errorsFrom = (problems: Problem[]): HelpErrors => Object.fromEntries(problems.map((problem) => [problem, true]));
 
 /** POST /help or /ayuda: one step of the form. */
@@ -132,6 +128,9 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
   const { id: deviceId, set } = device(request);
   const here = paths[language].form;
   const partner = partnerLink(request);
+  // A partner's device signed in by a code to the partner's own email is trusted as before; everyone else is judged here.
+  const signedPartner = Boolean(partner && readKey(cookie(request, PARTNER)));
+  if (!signedPartner && !(await human())) return page(language, { kind: "limit", phone: "211" }, 403);
   if (partner && (step === "code" || step === "resend")) {
     if (step === "resend") return partnerDoor(language, new Request(request.url), partner);
     const answer = await call("/intake/partner/finish", { link: partner, code: text(form, "code", 12) });
@@ -158,35 +157,20 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
     });
   }
 
-  const secret = backend()!.secret;
-  // The check page: its sealed values, or back to the form with them.
-  let values: HelpValues, urgent: boolean;
-  const sealed = text(form, "seal", 8000);
-  if (!partner && sealed && (step === "check" || step === "edit")) {
-    const opened = await unseal(secret, sealed);
-    const held = opened && opened !== "expired" ? readHeld(opened.value) : null;
-    if (!held) return page(language, { kind: "form", ...(opened === "expired" ? { errors: { expired: true } } : {}) }, 400);
-    ({ values, urgent } = held);
-    if (step === "edit") return page(language, { kind: "form", values });
-  } else {
-    values = valuesFrom(form);
-    urgent = step === "send-anyway";
-    if (step === "edit") return page(language, { kind: "form", values }, 200, {}, action);
-  }
+  const values = valuesFrom(form);
+  const urgent = step === "send-anyway";
+  if (step === "edit") return page(language, { kind: "form", values }, 200, {}, action);
   // Under 18: nothing is kept or sent.
   if (values.adult === "no") return page(language, { kind: "young", youthLine: YOUTH_LINE });
   const read = readSubmission(submission(values, language));
   if (!read.ok) return page(language, { kind: "form", values, errors: errorsFrom(read.problems) }, 400, set, action);
   // Words that sound like danger show 911 and 988 first; sending anyway marks the call so the team sees why. Nothing else changes.
   if (!urgent && soundsUnsafe(`${read.value.need} ${read.value.meet ?? ""}`)) return page(language, { kind: "danger", values }, 200, {}, action);
-  // Not a partner: nothing is sent until the check page's POST. A partner's signed-in device skips it.
-  const checkPage = async (failed: boolean, status = 200) => page(language, { kind: "check", seal: await seal(secret, { values, urgent }), check: check(language), failed }, status, set);
-  if (!partner && step !== "check") return checkPage(false);
 
   const { kinds, need, email, phone, zip, safe, callAt, meet } = read.value;
   const answer = await call("/intake/submit", {
     adult: true, kinds, need, email, phone, zip, nearby: meet ?? "", language: read.value.language, safe: safe ? "yes" : "no", callAt: callAt ?? "", urgent,
-    street: values.street ?? "", token: text(form, "cf-turnstile-response", 2048), ip: senderIp(request), device: deviceId,
+    street: values.street ?? "", ...(signedPartner ? {} : { human: true }), ip: senderIp(request), device: deviceId,
     ...(partner ? { partnerLink: partner, partnerSession: readKey(cookie(request, PARTNER)) ?? "" } : {}),
   });
   switch (answer?.result) {
@@ -209,7 +193,6 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
     case "unknown_zip": return page(language, { kind: "form", values, unplaced: true }, 400, {}, action);
     // A partner's team is known from its sign-in. Nothing on the device remembers anyone else's team: 211.
     case "slow": return page(language, { kind: "limit", phone: phoneFrom(answer) ?? "211" }, 429);
-    case "check": return partner ? closed(language) : checkPage(true, 403);
     default: return closed(language);
   }
 }

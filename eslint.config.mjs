@@ -70,6 +70,8 @@ const eslintConfig = defineConfig([
     "src/lib/cn-tables.ts",
     // Upstream Three.js decoder distribution, copied without modification.
     "public/assets/painted-world/draco/**",
+    // Built by scripts/help-script.mts (the Ask for help pages' one script).
+    "public/help-botid.js",
   ]),
 ]);
 

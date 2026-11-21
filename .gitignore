@@ -60,3 +60,6 @@ public/assets/painted-world/rooms/
 *.rtf
 *.key
 /public/app-styles.json
+
+# Built by scripts/help-script.mts on every build (the Ask for help pages' one script)
+/public/help-botid.js
