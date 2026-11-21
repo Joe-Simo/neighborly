@@ -56,6 +56,22 @@
   .slip-folds-body strong{font-size:32px}
   .slip-folds-body span{font-size:18px}
 }
+/* On a large window the slip keeps its share of the screen: the same slip at k times, so the fold is not a scrap in an empty room. */
+@media(min-width:1800px) and (min-height:1000px){.slip-folds{--k:1.25}}
+@media(min-width:2400px) and (min-height:1300px){.slip-folds{--k:1.5}}
+@media(min-width:1800px) and (min-height:1000px){
+  .slip-folds-figure{width:calc(480px * var(--k));gap:calc(56px * var(--k))}
+  .slip-folds-figure figcaption{font-size:calc(20px * var(--k))}
+  .slip-folds-link{font-size:calc(18px * var(--k))}
+  .slip-folds-slip,.slip-folds-pile{height:calc(260px * var(--k))}
+  .slip-folds-slip{--top:calc(88px * var(--k))}
+  .slip-folds-top{padding:calc(24px * var(--k)) calc(28px * var(--k)) 0}
+  .slip-folds-top p{font-size:calc(15px * var(--k))}
+  .slip-folds-body{padding:calc(18px * var(--k)) calc(28px * var(--k)) 0}
+  .slip-folds-body strong{font-size:calc(32px * var(--k))}
+  .slip-folds-body span{font-size:calc(18px * var(--k))}
+  .slip-folds-corner{width:calc(30px * var(--k));height:calc(30px * var(--k))}
+}
 @media print{.slip-folds{height:auto}.slip-folds-stage{position:static;height:auto}}
 /* The way into the sample is the one thing to do here: it is set in the serif, a step above the sentence it ends, never below it. */
 .slip-folds-figure .slip-folds-link{display:flex;justify-content:center;margin-top:4px;white-space:nowrap;font-family:'Newsreader','Newsreader Fallback',Georgia,serif;font-size:1.1em;letter-spacing:-.01em}
