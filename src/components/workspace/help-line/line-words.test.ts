@@ -7,7 +7,7 @@ describe("help-line words", () => {
     expect(Object.keys(es.calls).sort()).toEqual(Object.keys(en.calls).sort());
     expect(Object.keys(es.nextStep).sort()).toEqual(Object.keys(en.nextStep).sort());
     for (const key of Object.keys(en.nextStep) as (keyof typeof en.nextStep)[]) expect(es.nextStep[key]).not.toBe(en.nextStep[key]);
-    expect(en.calls.quiet).not.toBe(es.calls.quiet);
+    expect(en.calls.quietTitle).not.toBe(es.calls.quietTitle);
   });
 
   test("the Spanish line names who speaks it, whole in each language", () => {
