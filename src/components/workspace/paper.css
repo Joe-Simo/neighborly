@@ -225,7 +225,7 @@
 .live-app .live-page-head .live-deck { margin-top: var(--space-16); text-wrap: pretty; }
 /* The way back from an inner view sits above the eyebrow. */
 .live-app .live-head-back { display: flex; width: fit-content; min-height: 44px; margin: -14px 0 var(--space-4); padding: 0; border: 0; background: none; cursor: pointer; }
-.live-app .live-head-back:hover { text-decoration: underline; text-underline-offset: 4px; }
+@media (hover: hover) { .live-app .live-head-back:hover { text-decoration: underline; text-underline-offset: 4px; } }
 .live-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-8) 10px; margin-top: var(--space-24); }
 .live-head-actions:empty { display: none; }
 /* From 900px every room's head is one height, so the rule under it lies level as the menu turns from room to room:
@@ -565,7 +565,7 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
 }
-.paper-noscript a:hover { text-decoration-thickness: 2px; }
+@media (hover: hover) { .paper-noscript a:hover { text-decoration-thickness: 2px; } }
 .paper-noscript a:focus-visible { outline: 2px solid var(--paper-ink); outline-offset: 4px; border-radius: 4px; }
 .paper-loading-label,
 .live-app .live-opening {
@@ -722,7 +722,7 @@
 /* ── The date field ──────────────────────────────────────────────────────────
    One field for every room: a paper button that opens a month. See date-field.tsx. */
 .live-date { position: relative; display: flex; align-items: center; width: 100%; height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; transition: border-color 160ms var(--paper-ease); }
-.live-date:hover { border-color: #365c46; }
+@media (hover: hover) { .live-date:hover { border-color: #365c46; } }
 /* A field's value is never in its label's weight, and the date box keeps to its column with its border inside. */
 .live-field > .live-date, .live-date { box-sizing: border-box; min-width: 0; font-weight: 400; }
 :is(.live-app, .live-dialog) .live-field :is(input, select, textarea) { font-weight: 400; }
@@ -752,14 +752,14 @@
 .live-date-sheet .rdp-month_caption { display: flex; align-items: center; height: 44px; padding-left: 8px; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 22px; }
 .live-date-sheet .rdp-nav { position: absolute; top: 0; right: 0; display: flex; }
 .live-date-sheet .rdp-nav button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 6px; background: none; color: #365c46; cursor: pointer; }
-.live-date-sheet .rdp-nav button:hover { background: #e7ecdc; }
+@media (hover: hover) { .live-date-sheet .rdp-nav button:hover { background: #e7ecdc; } }
 .live-date-sheet .rdp-nav button[aria-disabled="true"] { opacity: 0.35; cursor: default; }
 .live-date-sheet .rdp-chevron { width: 18px; height: 18px; fill: currentColor; }
 .live-date-sheet .rdp-month_grid { border-collapse: collapse; }
 .live-date-sheet .rdp-weekday { width: 44px; height: 32px; color: #66705f; font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; }
 .live-date-sheet .rdp-day { padding: 0; text-align: center; }
 .live-date-sheet .rdp-day_button { width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; color: inherit; font: inherit; font-size: 16px; cursor: pointer; transition: background-color 120ms var(--paper-ease); }
-.live-date-sheet .rdp-day_button:hover { background: #e7ecdc; }
+@media (hover: hover) { .live-date-sheet .rdp-day_button:hover { background: #e7ecdc; } }
 .live-date-sheet .rdp-day_button:focus-visible,
 .live-date-sheet .rdp-nav button:focus-visible { outline: 2px solid #283c32; outline-offset: 2px; }
 .live-date-sheet .rdp-today .rdp-day_button { box-shadow: inset 0 0 0 1px rgb(40 60 50 / 0.45); }
@@ -859,7 +859,7 @@
 /* The sentence for a missing day sits under the pair, never between the day and its time. */
 .live-when > .live-date-missing { grid-column: 1 / -1; order: 1; }
 .live-app .live-time select, .live-dialog .live-time select { height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; font-size: 16px; padding-left: 12px; }
-.live-time select:hover { border-color: #365c46; }
+@media (hover: hover) { .live-time select:hover { border-color: #365c46; } }
 /* Two moments never share a row: each keeps room to say its day in words. */
 :is(.live-app, .live-dialog) .live-form-grid:has(> .live-field > .live-when) { grid-template-columns: minmax(0, 1fr); }
 
@@ -982,8 +982,8 @@ html:not([data-live-keys]) .live-date:has(.live-date-words[readonly]:focus-visib
 .live-app .start-here[data-waiting] { opacity: 0; }
 .live-app .start-here strong { font-weight: 650; }
 .live-app .start-here svg { flex: none; transition: transform 160ms var(--paper-ease); }
-.live-app .start-here:hover svg { transform: translateX(3px); }
-.live-app .start-here:hover span { text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .live-app .start-here:hover svg { transform: translateX(3px); } }
+@media (hover: hover) { .live-app .start-here:hover span { text-decoration: underline; text-underline-offset: 3px; } }
 @media (prefers-reduced-motion: reduce) { .live-app .start-here svg { transition: none; } }
 
 /* Under 900px the card is laid above the sentence, smaller, leaning the same way: the empty place keeps its piece
@@ -1513,7 +1513,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   transition-timing-function: var(--paper-ease);
 }
 @media (max-width: 700px), (pointer: coarse) { :is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"]) { transition: none; } }
-:is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"]):hover:not(:disabled, [aria-invalid="true"]) { border-color: #365c46; }
+@media (hover: hover) { :is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"]):hover:not(:disabled, [aria-invalid="true"]) { border-color: #365c46; } }
 :is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"]):focus:not([aria-invalid="true"]) { border-color: #283c32; --tw-ring-shadow: 0 0 #0000; }
 :is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"], [data-slot="native-select"])[aria-invalid="true"] { --tw-ring-shadow: 0 0 #0000; }
 :is(.live-app, .live-dialog, .live-mobile-menu) :is([data-slot="input"], [data-slot="textarea"])::placeholder { color: #60685f; }

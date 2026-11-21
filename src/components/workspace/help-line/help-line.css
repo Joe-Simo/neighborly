@@ -1,7 +1,7 @@
 /* Only what the help line and neighbor screens add to the shared help-* styles in help.css. */
 .help-record-head { margin: -14px 0 var(--space-24); }
 .help-back { display: inline-flex; align-items: center; gap: var(--space-8) 6px; min-height: 44px; font-size: 16px; color: var(--live-muted); }
-.help-back:hover { color: var(--live-ink); }
+@media (hover: hover) { .help-back:hover { color: var(--live-ink); } }
 .help-note { font-size: 19px; line-height: 1.55; color: var(--live-muted); max-width: 62ch; margin: -30px 0 var(--space-48); }
 .help-matches { display: grid; gap: var(--space-4) 4px; }
 .help-matches .live-row { padding: var(--space-16) 0; }
@@ -356,7 +356,7 @@
 .help-waiting-beside li { position: relative; display: grid; gap: var(--space-4) 4px; padding: var(--space-16) 0; border-top: 1px solid var(--live-line); cursor: pointer; }
 .help-waiting-beside li:first-child { padding-top: 0; border-top: 0; }
 .help-waiting-beside .help-row-open { font: 400 22px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); }
-.help-waiting-beside li:hover .help-row-open { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+@media (hover: hover) { .help-waiting-beside li:hover .help-row-open { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; } }
 .help-waiting-beside li:has(.help-row-open:focus-visible) { outline: 2px solid #283c32; outline-offset: 4px; border-radius: 4px; }
 .live-app .help-waiting-beside .help-asks:before { width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #a8791f; }
 

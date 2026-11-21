@@ -112,10 +112,10 @@
   transition: background-color 160ms ease, color 160ms ease;
   font-weight: 500;
 }
-.live-nav a:hover {
+@media (hover: hover) { .live-nav a:hover {
   background: #ebece4;
   color: #242a27;
-}
+} }
 .live-nav a[aria-current="page"] {
   background: #dde5d3;
   color: #294c39;

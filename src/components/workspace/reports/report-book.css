@@ -117,7 +117,7 @@
   margin-left: auto; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; color: var(--live-ink, #283c32);
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; cursor: pointer;
 }
-.book-print:hover { text-decoration-thickness: 2px; }
+@media (hover: hover) { .book-print:hover { text-decoration-thickness: 2px; } }
 .book-print:focus-visible { outline: 2px solid var(--live-ink, #283c32); outline-offset: 4px; }
 .report-book-print { display: none; }
 
