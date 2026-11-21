@@ -4,7 +4,9 @@ import type { Language } from "@/lib/words";
 type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
-type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" | "process" | "trace" };
+type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string };
+  /** Four stills of the courtyard's sheets, from whole to drawn apart, in order (/assets/made/courtyard-apart-{1..4}-{640,1200}.webp). */
+  stills?: { label: string; items: [string, string][] }; table?: "eval" | "frames" | "anatomy" | "process" | "trace" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
@@ -107,7 +109,12 @@ const en = {
     ] },
     { title: "Cut along its own depth", blocks: [
       "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
-    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The depth map: lighter is nearer." } },
+    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The depth map: lighter is nearer." }, stills: { label: "The courtyard’s sheets, from whole to drawn apart", items: [
+      ["Whole, as the doors open on it.", "The courtyard painting, whole, seen straight on."],
+      ["Turned, still one sheet.", "The same painting turned a little to the side, still lying as one sheet."],
+      ["Drawn apart.", "The sheets parting: the sky and far cloister behind, the floor in front, paper showing between the cut edges."],
+      ["Seven sheets, each at its own depth.", "The seven sheets drawn fully apart, back to front: sky, tower and far cloister, people, table and arcade, garden bench, floor, doorway."],
+    ] } },
     { title: "The rules the paper keeps", table: "anatomy", blocks: [
       "A ministry’s software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
       [
@@ -261,7 +268,12 @@ const es: typeof en = {
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
-    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa de profundidad: lo claro está más cerca." } },
+    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa de profundidad: lo claro está más cerca." }, stills: { label: "Las hojas del patio, de enteras a separadas", items: [
+      ["Entero, como lo muestran las puertas al abrirse.", "La pintura del patio, entera, vista de frente."],
+      ["Girado, todavía una sola hoja.", "La misma pintura girada un poco hacia un lado, todavía como una sola hoja."],
+      ["Separándose.", "Las hojas se separan: el cielo y el claustro del fondo detrás, el suelo delante, y el papel visible entre los bordes cortados."],
+      ["Siete hojas, cada una a su profundidad.", "Las siete hojas del todo separadas, del fondo al frente: cielo, torre y claustro del fondo, personas, mesa y arcada, banco del jardín, suelo, portal."],
+    ] } },
     { title: "Las reglas que guarda el papel", table: "anatomy", blocks: [
       "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
       [

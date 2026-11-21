@@ -43,6 +43,28 @@ const esc = (text: string) =>
   text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
 const tel = (number: string) => `tel:${number.replace(/[^\d+]/g, "")}`;
 
+/** What a shared link to the form shows: the page's own head and deck, and its card (app/help/card, app/ayuda/card). */
+const cardAlt = {
+  en: "Two paper hands lifting a telephone receiver from its cradle, its cord curling across the sheet, beside the words Ask for help.",
+  es: "Dos manos de papel que levantan el auricular de un teléfono, con el cable enroscado sobre la hoja, junto a las palabras Pide ayuda.",
+} satisfies Record<IntakeLanguage, string>;
+function shareTags(language: IntakeLanguage, w: IntakeWords) {
+  const path = language === "es" ? "/ayuda" : "/help";
+  const head = `${w.title.replace(/\.$/, "")} · Kind Helps`;
+  return [
+    `<meta name="description" content="${esc(w.deck)}">`,
+    `<link rel="canonical" href="https://kindhelps.com${path}">`,
+    `<link rel="alternate" hreflang="${language === "es" ? "en" : "es"}" href="https://kindhelps.com${language === "es" ? "/help" : "/ayuda"}">`,
+    `<meta property="og:type" content="website"><meta property="og:site_name" content="Kind Helps">`,
+    `<meta property="og:locale" content="${language === "es" ? "es_LA" : "en_US"}">`,
+    `<meta property="og:url" content="https://kindhelps.com${path}">`,
+    `<meta property="og:title" content="${esc(head)}"><meta property="og:description" content="${esc(w.deck)}">`,
+    `<meta property="og:image" content="https://kindhelps.com${path}/card"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">`,
+    `<meta property="og:image:alt" content="${esc(cardAlt[language])}">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+  ].join("\n");
+}
+
 /** The page for one view. `action` is where the form posts (the same address, so no path ever names a person). */
 export function helpPage(language: IntakeLanguage, view: HelpView, action = language === "es" ? "/ayuda" : "/help") {
   const w = intakeWords[language];
@@ -59,6 +81,7 @@ export function helpPage(language: IntakeLanguage, view: HelpView, action = lang
 ${status ? '<meta name="robots" content="noindex">' : ""}
 <title>${esc(title)}</title>
 ${status ? "" : `<script src="${HELP_SCRIPT}" defer></script>`}
+${view.kind === "form" ? shareTags(language, w) : ""}
 <style>${CSS}</style>
 </head>
 <body>
