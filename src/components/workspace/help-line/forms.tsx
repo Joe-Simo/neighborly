@@ -530,6 +530,17 @@ export function DecideForm({
       current = false;
     };
   }, [asks, churchId, request.id, suggestReferrals]);
+  const checkRepeat = useAction(api.drafts.checkRepeat);
+  // The household's own records, read once before an open request is decided; the lines come written in the reader's language.
+  const [repeat, setRepeat] = useState<{ text: string; assistant: boolean }[]>([]);
+  const open = request.status === "open";
+  useEffect(() => {
+    let current = true;
+    if (open) checkRepeat({ churchId, requestId: request.id }).then((found) => current && setRepeat(found.lines)).catch(() => null);
+    return () => {
+      current = false;
+    };
+  }, [open, churchId, request.id, checkRepeat]);
   const approving = decision === "approved";
   const { pending, error, save } = useSave(approving ? "decided" : "saved");
   const voucher = approving ? request.voucher : null;
@@ -599,6 +610,12 @@ export function DecideForm({
           />
         </LiveField>
       )}
+      {repeat.map((line) => (
+        <p key={line.text} className={line.assistant ? "help-assistant" : "help-form-note"}>
+          {line.assistant && <Sparkles aria-hidden="true" size={16} />}
+          {line.text}
+        </p>
+      ))}
       <LiveField
         label={
           approving ? w.note : w.why
