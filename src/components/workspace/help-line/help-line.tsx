@@ -692,11 +692,22 @@ function HelpLineView({
   // the lists that the change moves (the rows under it, the next heading) glides to its new place in the same
   // move, and the page keeps its place: nothing the person is looking at jumps.
   const lists = useRef<HTMLDivElement>(null);
-  const before = useRef(new Map<string, { top: number; waiting: boolean }>());
-  const others = useRef(new Map<Element, number>());
+  const before = useRef(new Map<string, { row: HTMLElement; top: number; waiting: boolean }>());
+  const others = useRef(new Map<HTMLElement, number>());
   const placed = useRef<string | undefined>(undefined);
   const lineup = [...calls.waiting.map((call) => call.id), "|", ...calls.returned.map((call) => call.id)].join(" ");
   useLayoutEffect(() => {
+    // Where every row and heading lies on the page, read in the order they are drawn.
+    const read = () => {
+      const rows: typeof before.current = new Map(), heads = new Map<HTMLElement, number>();
+      lists.current?.querySelectorAll<HTMLElement>("[data-call], .live-section-head").forEach((piece) => {
+        const top = piece.getBoundingClientRect().top + window.scrollY;
+        if (piece.dataset.call === undefined) heads.set(piece, top);
+        else rows.set(piece.dataset.call, { row: piece, top, waiting: !("quiet" in piece.dataset) });
+      });
+      before.current = rows;
+      others.current = heads;
+    };
     // Only a call changing lists moves anything. Otherwise (the room being put in, or turned to whole) where the rows and
     // headings lie is read once the frame has been painted: read here, it made the browser lay out the whole room inside it.
     // With less motion asked for nothing moves, so nothing is read in the frame either.
@@ -705,43 +716,27 @@ function HelpLineView({
     if (!changed) {
       let after = 0;
       const frame = requestAnimationFrame(() => {
-        after = window.setTimeout(() => {
-          before.current = new Map();
-          others.current = new Map();
-          lists.current?.querySelectorAll<HTMLElement>("[data-call]").forEach((row) => {
-            before.current.set(row.dataset.call ?? "", { top: row.getBoundingClientRect().top + window.scrollY, waiting: !("quiet" in row.dataset) });
-          });
-          lists.current?.querySelectorAll<HTMLElement>(".live-section-head").forEach((head) => {
-            others.current.set(head, head.getBoundingClientRect().top + window.scrollY);
-          });
-        });
+        after = window.setTimeout(read);
       });
       return () => {
         cancelAnimationFrame(frame);
         window.clearTimeout(after);
       };
     }
-    const now = new Map<string, { top: number; waiting: boolean }>();
+    const rowsWere = before.current, headsWere = others.current;
+    read();
     // A row gliding under a resting pointer is not being pointed at: it takes no hover wash until it has landed.
     const travel = (piece: HTMLElement, by: number) => {
       piece.style.pointerEvents = "none";
       const move = piece.animate([{ transform: `translateY(${by}px)` }, { transform: "none" }], { duration: 480, easing: PAPER_EASE });
-      const land = () => void (piece.style.pointerEvents = "");
-      move.addEventListener("finish", land);
-      move.addEventListener("cancel", land);
+      move.onfinish = move.oncancel = () => void (piece.style.pointerEvents = "");
     };
     const stayed: [HTMLElement, number][] = [];
     // Calls that changed lists this time: laid onto the "returned" count, or (undone) lifted back off it.
     const laid: { row: HTMLElement; from: number }[] = [], lifted: HTMLElement[] = [];
     let travelled = false;
-    lists.current
-      ?.querySelectorAll<HTMLElement>("[data-call]")
-      .forEach((row) => {
-        const id = row.dataset.call ?? "";
-        const waiting = !("quiet" in row.dataset);
-        const top = row.getBoundingClientRect().top + window.scrollY;
-        now.set(id, { top, waiting });
-        const was = before.current.get(id);
+    before.current.forEach(({ row, top, waiting }, id) => {
+        const was = rowsWere.get(id);
         if (was && was.waiting === waiting) stayed.push([row, was.top - top]);
         if (was && !was.waiting && waiting) lifted.push(row);
         if (!was?.waiting || waiting) return;
@@ -756,23 +751,19 @@ function HelpLineView({
             // Words never fade: the row is out of sight, then there whole, and settles its last 10px.
             { visibility: "hidden", transform: "translateY(10px)", easing: "linear" },
             { visibility: "visible", transform: "translateY(10px)", offset: 480 / 700, easing: "ease-out" },
-            { visibility: "visible", transform: "none" },
+            { transform: "none" },
           ],
           { duration: 700 },
         );
       });
-    const heads = new Map<Element, number>();
-    lists.current?.querySelectorAll<HTMLElement>(".live-section-head").forEach((head) => {
-      heads.set(head, head.getBoundingClientRect().top + window.scrollY);
-      const was = others.current.get(head);
-      if (was !== undefined) stayed.push([head, was - (heads.get(head) ?? was)]);
+    others.current.forEach((top, head) => {
+      const was = headsWere.get(head);
+      if (was !== undefined) stayed.push([head, was - top]);
     });
     if (travelled) {
       holdThePage();
       stayed.forEach(([piece, by]) => Math.abs(by) > 1 && travel(piece, by));
     }
-    before.current = now;
-    others.current = heads;
     // Play the yes, in the room: the returned call's slip is carried from where it waited and laid on the "returned" count, which then steps up
     // by one; undone, it is lifted back off and carried home, and the count steps down. The home page's own move (lay-slip.ts), nothing new.
     const count = lists.current?.querySelector<HTMLElement>("[data-returned-count]");
@@ -1007,7 +998,7 @@ function ReadingSheet({ note }: { note?: string }) {
   useEffect(() => {
     sheet.current?.scrollIntoView({
       block: "nearest",
-      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+      behavior: lessMotion()
         ? "auto"
         : "smooth",
     });
