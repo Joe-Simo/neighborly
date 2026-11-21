@@ -43,7 +43,7 @@
 .painted-world-account>a{display:flex;align-items:center;gap:9px;min-height:44px;font-size:13px;text-underline-offset:5px}
 .painted-world-start[data-slot=button]{background:#304e3c;color:#fcf8ee;border-radius:0;min-height:52px;padding:0 24px;gap:22px}
 .painted-world a:focus-visible,.painted-world button:focus-visible{outline:2px solid #283c32;outline-offset:3px}
-.painted-world-skip{position:fixed;left:18px;top:-80px;z-index:20;background:#f9f2e2;padding:14px}
+.painted-world-skip{position:fixed;left:max(16px,env(safe-area-inset-left));max-width:calc(100vw - 32px);top:-80px;z-index:20;background:#f9f2e2;padding:14px}
 .painted-world-skip:focus{top:18px}
 @media(max-width:700px),(max-width:1000px) and (max-aspect-ratio:9/10){
   .painted-world-track{height:620svh}
