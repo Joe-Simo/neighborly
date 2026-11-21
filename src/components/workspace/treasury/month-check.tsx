@@ -16,7 +16,7 @@ type Result = FunctionReturnType<typeof api.drafts.checkMonth>;
 
 /**
  * Before a month is closed or reported: the lines worth a second look. It changes nothing; each row opens its entry.
- * Only a flag the assistant raised wears the plum assistant line; the rules' flags are plain.
+ * Only a flag the assistant raised wears the assistant line and an ochre edge, since it waits on a person; the rules' flags are plain.
  */
 export function MonthCheck({ churchId, month, entries, onEntry }: { churchId: Id<"churches">; month: string; entries: LedgerEntry[]; onEntry: (entry: LedgerEntry) => void }) {
   const { words } = useWorkspace();
