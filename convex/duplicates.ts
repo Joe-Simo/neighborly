@@ -6,7 +6,7 @@ import { neighborAccess, neighborRecord } from "./access";
 import { confidence, model, sureEnough } from "./drafts";
 import { namesFor, rebuildNames } from "./knownNames";
 import { tally } from "./counts";
-import { needsNotes, sameBy, type SameBy } from "../src/lib/duplicates";
+import { nameLikeness, namesAlike, needsNotes, sameBy, type SameBy } from "../src/lib/duplicates";
 import { duplicateSet, type DuplicateSide } from "../src/lib/duplicate-set";
 import { nameKey } from "../src/lib/keys";
 
@@ -232,3 +232,57 @@ export const measure = internalAction({
 });
 
 export type { SameBy };
+
+/**
+ * The records check in Tools, all by code; nothing here reaches the model, because what it compares is names, emails and
+ * phones. Two members who may be one person signed up twice (the same email, or names alike), and phones that more than
+ * one household gives under names that are not alike. Asked only when a person presses the check, never on its own.
+ */
+const memberSide = v.object({ id: v.id("memberships"), name: v.string(), email: v.string(), role: v.string() });
+export const recordsCheck = query({
+  args: { churchId: v.id("churches") },
+  returns: v.object({
+    people: v.array(v.object({ key: v.string(), first: memberSide, second: memberSide, sameBy: v.array(v.union(v.literal("email"), v.literal("name"))) })),
+    phones: v.array(v.object({ key: v.string(), phone: v.string(), households: v.array(v.object({ id: v.id("neighbors"), name: v.string(), address: v.string() })) })),
+  }),
+  handler: async (ctx, { churchId }) => {
+    await neighborAccess(ctx, churchId);
+    const [members, households, dismissed] = await Promise.all([
+      ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1000),
+      ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(3000),
+      ctx.db.query("duplicateDismissals").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1000),
+    ]);
+    const set = new Set(dismissed.map((row) => `${row.kind}:${row.key}`));
+    const kept = members.filter((member) => !member.removedAt && member.name.trim());
+    const people = [];
+    for (let i = 0; i < kept.length; i++) for (let j = i + 1; j < kept.length; j++) {
+      const [a, b] = [kept[i], kept[j]];
+      const sameBy = [
+        ...(a.email.trim() && a.email.trim().toLowerCase() === b.email.trim().toLowerCase() ? ["email" as const] : []),
+        ...(nameLikeness(a.name, b.name) >= namesAlike ? ["name" as const] : []),
+      ];
+      const key = [a._id, b._id].sort().join(" ");
+      if (sameBy.length && !set.has(`person:${key}`)) people.push({ key, sameBy, first: { id: a._id, name: a.name, email: a.email, role: a.role }, second: { id: b._id, name: b.name, email: b.email, role: b.role } });
+    }
+    const byPhone = new Map<string, Doc<"neighbors">[]>();
+    for (const row of households) if (live(row) && row.phoneKey.length >= 7) byPhone.set(row.phoneKey, [...(byPhone.get(row.phoneKey) ?? []), row]);
+    const phones = [...byPhone].flatMap(([key, rows]) =>
+      // Names alike under one phone are one household entered twice: the record's own check shows those.
+      rows.length > 1 && rows.some((row, i) => rows.slice(i + 1).some((other) => nameLikeness(row.name, other.name) < namesAlike)) && !set.has(`phone:${key}`)
+        ? [{ key, phone: rows[0].phone, households: rows.slice(0, 8).map((row) => ({ id: row._id, name: row.name, address: row.address })) }]
+        : []);
+    return { people: people.slice(0, 50), phones: phones.slice(0, 50) };
+  },
+});
+
+export const dismissCheck = mutation({
+  args: { churchId: v.id("churches"), kind: v.union(v.literal("person"), v.literal("phone")), key: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { churchId, kind, key }) => {
+    const member = await neighborAccess(ctx, churchId);
+    if (key.length > 100) throw new ConvexError("Record not found.");
+    if (!await ctx.db.query("duplicateDismissals").withIndex("by_church", (q) => q.eq("churchId", churchId).eq("kind", kind).eq("key", key)).first())
+      await ctx.db.insert("duplicateDismissals", { churchId, kind, key, by: member._id, at: Date.now() });
+    return null;
+  },
+});

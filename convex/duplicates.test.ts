@@ -69,3 +69,22 @@ describe("possible duplicate households", () => {
     expect(after.audit.map((row) => row.action)).toEqual(["neighbor.merged"]);
   });
 });
+
+describe("the records check in Tools", () => {
+  test("a person signed up twice, and one phone under different names, until a person says it is fine", async () => {
+    const { t, ids, as } = await setup();
+    await t.run(async (ctx) => {
+      const userId = await ctx.db.insert("users", {});
+      await ctx.db.insert("memberships", { churchId: ids.church, userId, name: "Tomas Okafor", email: "COORDINATOR@neighborly.example", role: "member", active: true, approved: true, coverOptIn: false });
+    });
+    const caller = as(ids.coordinator);
+    const found = await caller.query(api.duplicates.recordsCheck, { churchId: ids.church });
+    expect(found.people.map((row) => row.sameBy)).toEqual([["email", "name"]]);
+    expect(found.phones).toHaveLength(1);
+    expect(found.phones[0].households.map((row) => row.name).sort()).toEqual(["Darnell Joseph", "Esperanza Montolla", "Esperanza Montoya"]);
+    await caller.mutation(api.duplicates.dismissCheck, { churchId: ids.church, kind: "phone", key: found.phones[0].key });
+    await caller.mutation(api.duplicates.dismissCheck, { churchId: ids.church, kind: "person", key: found.people[0].key });
+    expect(await caller.query(api.duplicates.recordsCheck, { churchId: ids.church })).toEqual({ people: [], phones: [] });
+    await expect(as(ids.member).query(api.duplicates.recordsCheck, { churchId: ids.church })).rejects.toThrow("coordinators and owners");
+  });
+});

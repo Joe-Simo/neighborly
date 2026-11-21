@@ -2,6 +2,7 @@
 
 import "./tools.css";
 import Link from "next/link";
+import { lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { NeighborsImport } from "@/components/workspace/tools/neighbors-import";
 import { RequestsImport } from "@/components/workspace/tools/requests-import";
@@ -13,6 +14,9 @@ import { CloseConference } from "@/components/workspace/closing/close-conference
 import { RecordsExport } from "@/components/workspace/tools/records-export";
 
 /** Your files: bring records in, then take them with you. The calendar address and the printed week live in their own rooms. */
+/** Fetched with the room only once the room is drawn: most visits to Tools never run the check. */
+const RecordsCheck = lazy(() => import("@/components/workspace/tools/records-check").then((module) => ({ default: module.RecordsCheck })));
+
 export function ToolsSection() {
   const { data, words } = useWorkspace();
   // The same people the server lets read neighbor records (convex/access.ts, mayOpenNeighborRecords): the group's owner and coordinators.
@@ -42,6 +46,7 @@ export function ToolsSection() {
         <MembersImport />
         <PayeesImport />
         <RecordsExport />
+        <Suspense><RecordsCheck /></Suspense>
       </div>
       {/* The last thing in the room, after the way to take everything out. It draws only for an owner, never in the sample. */}
       <CloseConference />

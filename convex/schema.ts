@@ -202,4 +202,6 @@ export default defineSchema({
     read: v.optional(v.object({ same: v.number(), at: v.number() })),
     dismissedBy: v.optional(v.id("memberships")), dismissedAt: v.optional(v.number()),
   }).index("by_pair", ["first", "second"]).index("by_second", ["second"]).index("by_church", ["churchId"]),
+  // A pair of members, or a phone shared by several households, that a person looked at and said is fine. `key` is the sorted ids, or the phone's digits.
+  duplicateDismissals: defineTable({ churchId: v.id("churches"), kind: v.union(v.literal("person"), v.literal("phone")), key: v.string(), by: v.id("memberships"), at: v.number() }).index("by_church", ["churchId", "kind", "key"]),
 });
