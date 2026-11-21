@@ -511,10 +511,12 @@ export function LiveWorkspace({
   // Arriving with focus nowhere (a room opened by its address, or from the home page's card, which is gone), focus
   // rests on the room's headline once the room is in: a screen reader says the room by its name, and the next Tab goes
   // on from the top of the room. No ring is drawn for a pointer; a room with no headline yet leaves focus as it is.
+  // Asked again once the room is whole: in the frame the room comes in, its headline can still be held out of sight
+  // under the turn, and a focus asked of it then does not take.
   useEffect(() => {
     if (!roomIn || (document.activeElement && document.activeElement !== document.body)) return;
     headline.current?.focus({ preventScroll: true });
-  }, [roomIn]);
+  }, [roomIn, settled]);
   // Moving to another room, focus lands on its headline once the room is at rest (the page turn over), also when the
   // room was picked from the phone's Menu, whose closing hands focus back to its button first: a screen
   // reader says the room once, by its name, and the next Tab goes on from the top of the room. A ring is drawn there
