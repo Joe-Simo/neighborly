@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * The one address on the site with no one at it: a call slip that found nobody, lying alone on bare paper, a little turned,
+ * The one address on the site with no one at it: a call slip that found nobody, lying alone and straight on bare paper,
  * its ochre corner still waiting. Flat and still: it was never filed, so it never folds. One line on it, and the way back.
  */
 export default function NotFound() {
