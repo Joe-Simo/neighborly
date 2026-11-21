@@ -12,9 +12,10 @@
 .neighborly-together h2{margin:0;font:400 clamp(40px,4.8cqw,88px)/var(--lead-2) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-2)}
 .neighborly-together h2 em{font-weight:400}
 .neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start;gap:28px clamp(48px,6vw,110px)}
-/* Before the closing: whose it is, at body size, on the page's own paper. */
-.neighborly-trust{max-width:40em;padding:clamp(8px,2vw,24px) 0 clamp(24px,4vw,56px)}
-.neighborly-together .neighborly-trust h2{margin:0 0 12px;font:400 clamp(22px,1.8vw,28px)/1.25 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-4);word-spacing:.04em}
+/* Before the closing: whose it is, at body size, on a band of its own paper, edge to edge. */
+.neighborly-trust{margin-inline:-8.14%;padding:64px 8.14%;background:var(--relief-paper);box-shadow:0 1px 0 var(--relief-edge),0 -1px 0 var(--relief-edge)}
+.neighborly-trust>*{max-width:64ch}
+.neighborly-together .neighborly-trust h2{margin:0 0 12px;font:400 26px/1.25 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-4);word-spacing:.04em}
 .neighborly-trust p{margin:0;font-size:17px;line-height:1.6;text-wrap:pretty}
 .neighborly-trust a{display:inline-block;margin-top:12px;font-size:15px;color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .neighborly-together-statement{grid-column:2;grid-row:1;align-self:center;margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-4);text-wrap:pretty}
@@ -44,6 +45,7 @@
 @media (max-width:560px){.neighborly-colophon nav{display:grid;grid-template-columns:repeat(2,max-content)}}
 @media(max-width:900px){
   .neighborly-together{padding-inline:20px}
+  .neighborly-trust{margin-inline:-20px;padding:64px 20px}
   .neighborly-together h2 em{margin-left:0}
   .neighborly-together-bottom{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
   .neighborly-together-statement{grid-column:auto;grid-row:auto;max-width:22ch;font-size:clamp(24px,6.6vw,34px)}
