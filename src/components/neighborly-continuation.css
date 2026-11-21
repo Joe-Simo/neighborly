@@ -115,9 +115,11 @@
    beneath it. The close gives up exactly the foot's height, and the painting and the hand that holds the card are
    placed together by the same rule, so the card still sits in the hand. Other pages keep the name set large. */
 @media(min-width:1280px) and (min-height:445px){
-  .neighborly-continuation .neighborly-close{height:min(calc(100svh - var(--foot)),100vw / 1.40625)}
+  .neighborly-continuation .neighborly-close{--close-h:min(calc(100svh - var(--foot)),100vw / 1.40625);height:var(--close-h);--close-foot:calc(var(--close-h) * .38 - .771cqw)}
   .neighborly-continuation .neighborly-close-art img{object-position:50% 62%}
-  .neighborly-continuation .neighborly-close-hand{top:calc(62% - 44.089cqw)}
+  .neighborly-continuation :is(.neighborly-close-hand,.neighborly-close-offer){top:calc(62% - 44.089cqw)}
+  /* The card and its note stay on the picture's row, 24px or more above the close's foot, so the name below has a row of its own. */
+  .neighborly-continuation .card-stack{top:min(calc(77.6% - var(--card-w) / 3),calc(var(--close-h) * .38 + 44.089cqw - 63px - var(--card-w) * .7))}
 }
 @media(min-width:901px){
   .neighborly-continuation{--foot:clamp(92px,7.4vw,140px)}
