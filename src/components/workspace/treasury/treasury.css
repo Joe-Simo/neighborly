@@ -689,3 +689,6 @@
   .live-main:has(.help-ledger) .treasury-balance-leaves { display: none; }
   .live-main:has(.help-ledger) .treasury-sheet { break-inside: avoid; }
 }
+.treasury-budget { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8) var(--space-16); margin-top: var(--space-24); }
+.treasury-budget > p { margin: 0; }
+.treasury-budget > form { flex-basis: 100%; }

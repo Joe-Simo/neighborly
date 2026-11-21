@@ -24,3 +24,7 @@ describe("pace lines", () => {
     expect(paceLines("en", { ...base, thisMonth: 0, lastYear: 0, approvals: 9, above: 9 })).toEqual([]);
   });
 });
+
+test("a set budget is said in the month's line", () => {
+  expect(paceLines("en", { month: 11, thisMonth: 124000, lastYear: 0, budget: 200000, kind: "food", asked: 0, approvals: 0, median: 0, above: 0, baseline: 10 })[0].text).toBe("Approved so far in November: $1,240 of the $2,000 monthly budget. November last year: none.");
+});

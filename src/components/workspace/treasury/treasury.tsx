@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQueries } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -26,6 +26,7 @@ import { EntryDetail } from "@/components/workspace/treasury/entry-detail";
 import { BankRoom } from "@/components/workspace/treasury/bank-view";
 import { ShelfRoom } from "@/components/workspace/treasury/shelf-view";
 import { DepositForm } from "@/components/workspace/treasury/deposit-form";
+
 import { usePaidMoment } from "@/components/workspace/treasury/paid-moment";
 import { formatFigure } from "@/components/workspace/treasury/money";
 import { sentence } from "@/lib/utils";
@@ -54,6 +55,9 @@ function recordedSince(cause: unknown): { message: string; paid: number; last: {
   const data = cause.data as { message?: unknown; paid?: unknown; last?: { amount: number; by: string } | null };
   return typeof data.message === "string" && typeof data.paid === "number" ? { message: data.message, paid: data.paid, last: data.last ?? null } : null;
 }
+
+/** The monthly budget line comes with its own words, after the ledger, so the room's first load does not carry them. */
+const BudgetLine = lazy(() => import("@/components/workspace/treasury/budget"));
 
 const answered = <T,>(value: T | Error | undefined) =>
   value instanceof Error ? undefined : value;
@@ -293,6 +297,9 @@ export function TreasurySection() {
           setAtBank(true);
         }}
       />
+      <Suspense fallback={null}>
+        <BudgetLine churchId={churchId} today={shown.today} />
+      </Suspense>
       <LiveDialog
         open={open !== null}
         onClose={() => setOpen(null)}

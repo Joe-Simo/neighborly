@@ -17,7 +17,7 @@ import { hour, hourAsked, neighborAccess, user } from "./access";
 import { isSampleVisitor } from "./demo";
 import { fiscalYear } from "./reports";
 import { namesFor } from "./knownNames";
-import { paidTowardRequest } from "./treasury";
+import { approvedBetween, paidTowardRequest, sumApproved } from "./treasury";
 
 const draftResult = v.object({
   teamName: v.string(), recurrence: v.string(), peopleCount: v.string(),
@@ -932,7 +932,7 @@ const amountBaseline = 10;
 export const spending = internalQuery({
   args: { churchId: v.id("churches"), requestId: v.id("assistanceRequests"), at: v.number() },
   returns: v.object({
-    month: v.number(), thisMonth: v.number(), lastYear: v.number(),
+    month: v.number(), thisMonth: v.number(), lastYear: v.number(), budget: v.union(v.number(), v.null()),
     kind: kindValidator, asked: v.number(), approvals: v.number(), median: v.number(), above: v.number(),
   }),
   handler: async (ctx, { churchId, requestId, at }) => {
@@ -942,9 +942,8 @@ export const spending = internalQuery({
     const zone = church.timeZone;
     const start = DateTime.fromMillis(at, { zone }).startOf("month");
     const before = start.minus({ years: 1 });
-    const decided = async (from: number, to: number) => (await ctx.db.query("assistanceRequests").withIndex("by_church", q => q.eq("churchId", churchId).gte("createdAt", from - 120 * 86_400_000).lte("createdAt", to)).take(4000))
-      .filter(one => (one.status === "approved" || one.status === "paid" || one.status === "closed") && (one.amountApproved ?? 0) > 0 && one.decidedAt !== undefined && one.decidedAt >= from && one.decidedAt < to);
-    const sum = (rows: { amountApproved?: number }[]) => rows.reduce((total, one) => total + (one.amountApproved ?? 0), 0);
+    const decided = (from: number, to: number) => approvedBetween(ctx, churchId, from, to);
+    const sum = sumApproved;
     const [thisMonth, lastYear, year] = await Promise.all([
       decided(start.toMillis(), at),
       decided(before.toMillis(), before.endOf("month").toMillis()),
@@ -952,7 +951,7 @@ export const spending = internalQuery({
     ]);
     const amounts = year.filter(one => one.kind === request.kind && one._id !== requestId).map(one => one.amountApproved ?? 0).sort((a, b) => a - b);
     return {
-      month: start.month, thisMonth: sum(thisMonth), lastYear: sum(lastYear),
+      month: start.month, thisMonth: sum(thisMonth), lastYear: sum(lastYear), budget: church.monthlyBudget ?? null,
       kind: request.kind, asked: request.amountRequested, approvals: amounts.length,
       median: amounts.length ? amounts[Math.floor((amounts.length - 1) / 2)] : 0,
       // How many of the past year's approvals of this kind were below what is asked now.
