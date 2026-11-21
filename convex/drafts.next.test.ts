@@ -78,3 +78,53 @@ describe("what a visit found", () => {
     expect((await t.run(ctx => ctx.db.get("visits", ids.visitId)))?.found).toBeUndefined();
   });
 });
+
+describe("repeat help before a decision", () => {
+  const day = 86_400_000;
+  async function household() {
+    const t = convexTest(schema, modules);
+    const ids = await t.run(async ctx => {
+      const churchId = await ctx.db.insert("churches", { name: "Sample Conference", timeZone: "America/New_York" });
+      const userId = await ctx.db.insert("users", { clerkId: "clerk|coordinator" });
+      const memberId = await ctx.db.insert("memberships", { churchId, userId, name: "Ana Visitor", email: "c@example.org", role: "coordinator", active: true, approved: true, coverOptIn: false });
+      const neighborId = await ctx.db.insert("neighbors", { churchId, name: "Rosa Delgado", nameKey: "rosa delgado", phone: "", phoneKey: "", email: "", address: "14 Sample St", adults: 1, children: 2, language: "es", notes: "", createdBy: memberId, createdAt: 0 });
+      const base = { churchId, neighborId, decisionNote: "", payeeKind: "utility" as const, payeeName: "Lee Power", source: "person" as const, createdBy: memberId };
+      await ctx.db.insert("assistanceRequests", { ...base, kind: "utility", summary: "Rosa Delgado: power bill $210 for October.", amountRequested: 21000, amountApproved: 21000, status: "paid", decidedAt: 190 * day, createdAt: 189 * day });
+      await ctx.db.insert("assistanceRequests", { ...base, kind: "rent", summary: "Rent short $300.", amountRequested: 30000, status: "declined", createdAt: 30 * day });
+      await ctx.db.insert("neighborNotes", { churchId, neighborId, body: "Rosa Delgado lives with her two children at 14 Sample St.", authorId: memberId, createdAt: 150 * day });
+      const requestId = await ctx.db.insert("assistanceRequests", { ...base, kind: "utility", summary: "Rosa Delgado lives alone. Power bill $210 for October is unpaid.", amountRequested: 21000, status: "open", createdAt: 200 * day });
+      return { churchId, requestId };
+    });
+    return { t, ids, signed: t.withIdentity({ subject: "clerk|coordinator", email: "c@example.org", emailVerified: true }) };
+  }
+
+  test("recent same-kind help comes from the records; readings show only at 0.9; no names leave", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = replying({ same0: yes(0.97), differs0: yes(0.2), same1: yes(0.1), differs1: yes(0.95), same2: yes(0.3), differs2: yes(0.89) });
+    vi.stubGlobal("fetch", fetch);
+    const { ids, signed } = await household();
+    const found = await signed.action(api.drafts.checkRepeat, ids);
+    expect(found.recent).toEqual([{ at: 190 * day, kind: "utility", status: "paid", amount: 21000 }]);
+    expect(found.same).toEqual([{ at: 189 * day, what: "request", kind: "utility" }]);
+    expect(found.differs).toEqual([{ at: 150 * day, what: "note" }]);
+    expect(found.lines).toEqual([
+      { text: "Utility help was paid on July 9: $210.", assistant: false },
+      { text: "The assistant reads this as the same need as the request from July 8.", assistant: true },
+      { text: "The assistant reads the note from May 30 as saying otherwise. Read both before you decide.", assistant: true },
+    ]);
+    const body = JSON.parse(fetch.mock.calls[0][1].body) as Body;
+    // Three earlier records, newest first, two questions each; the declined rent request is asked about but not flagged.
+    expect(Object.keys(body.questions)).toHaveLength(6);
+    expect(fetch.mock.calls[0][1].body).not.toMatch(/Rosa|Delgado|14 Sample|Lee Power/);
+  });
+
+  test("with no key nothing leaves but the records still speak; signed-out is refused", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "");
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids, signed } = await household();
+    expect(await signed.action(api.drafts.checkRepeat, ids)).toMatchObject({ same: [], differs: [], verification: "review", recent: [{ kind: "utility" }] });
+    await expect(t.action(api.drafts.checkRepeat, ids)).rejects.toThrow("Sign in required.");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
