@@ -3,11 +3,11 @@ import { action, internalAction, internalMutation, internalQuery, mutation, quer
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { neighborAccess, neighborRecord } from "./access";
-import { confidence, model, sureEnough } from "./drafts";
+import { confidence, model } from "./drafts";
 import { namesFor, rebuildNames } from "./knownNames";
 import { tally } from "./counts";
 import { nameLikeness, namesAlike, needsNotes, sameBy, type Comparable, type SameBy } from "../src/lib/duplicates";
-import { duplicateSet, type DuplicateSide } from "../src/lib/duplicate-set";
+import { duplicateSet, notesSayOne, type DuplicateSide } from "../src/lib/duplicate-set";
 import { nameKey, phoneKey } from "../src/lib/keys";
 
 /**
@@ -47,7 +47,7 @@ export async function lookAlikes(ctx: QueryCtx, churchId: Id<"churches">, househ
 
 /**
  * On a record: the records that may be the same household. A pair code is sure of (two things in common) shows at once;
- * a pair with one thing in common shows only once the notes have been read as the same household at 0.9 or more.
+ * a pair with one thing in common shows only once the notes have been read as the same household (notesSayOne: the assistant at 0.7 or more, and the same number of adults and children).
  * `unread` lists the pairs whose notes the screen should ask about; the screen asks once and this answer follows.
  */
 export const forRecord = query({
@@ -63,7 +63,7 @@ export const forRecord = query({
       const pair = await pairOf(ctx, neighborId, row._id);
       if (pair?.dismissedAt) continue;
       if (!pair?.read) unread.push(row._id);
-      const notesAgree = (pair?.read?.same ?? 0) >= sureEnough;
+      const notesAgree = notesSayOne(pair?.read?.same ?? 0, neighbor, row);
       if (needsNotes(shared) && !notesAgree) continue;
       shown.push({ id: row._id, name: row.name, address: row.address, adults: row.adults, children: row.children, sameBy: shared, notesAgree });
     }
@@ -212,30 +212,38 @@ export const merge = mutation({
 });
 
 /**
- * Measures the question on the made-up pairs (src/lib/duplicate-set.ts) with the same wording and the same 0.9 line the
+ * Measures the question on the made-up pairs (src/lib/duplicate-set.ts) with the same wording and the same rule (notesSayOne) the
  * record uses. Run by hand from the Convex command line, never from a screen; it reads no record and saves none.
  * Right: the notes were read as one household when they are, or not when they are not. Missed: one household not
  * seen (a person still sees the pair when code is sure of it). Wrong: two households read as one.
  */
 const tallied = v.object({ right: v.number(), missed: v.number(), wrong: v.number() });
+/** A narrower question, measured beside the live one and never shown: who lives there, not what they ask for this time. */
+const trialQuestion = {
+  people: "Do first and second describe the same people? Judge from who lives in the household and their lasting circumstances (work, age, health, family), not from what they ask for this time. Answer no when the people plainly differ or when either says too little to tell.",
+};
 export const measure = internalAction({
   args: { churchId: v.id("churches") },
-  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(), all: tallied, heldOut: tallied, rows: v.array(v.object({ id: v.string(), same: v.number() })) }),
+  returns: v.object({
+    status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(),
+    all: tallied, heldOut: tallied, trial: v.object({ all: tallied, heldOut: tallied }),
+    rows: v.array(v.object({ id: v.string(), same: v.number(), people: v.number() })),
+  }),
   handler: async (ctx, { churchId }) => {
     const zero = { right: 0, missed: 0, wrong: 0 };
-    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const none = { model, all: zero, heldOut: zero, trial: { all: zero, heldOut: zero }, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: duplicateSet.length })) return { status: "no allowance" as const, ...none };
+    const mark = (read: boolean, same: boolean) => (read === same ? "right" as const : read ? "wrong" as const : "missed" as const);
     const rows = await Promise.all(duplicateSet.map(async (item) => {
       // A pair with nothing written is never asked on a record; it is marked as the record would leave it.
-      const sure = item.a.notes && item.b.notes ? await confidence(key, { first: item.a, second: item.b }, sameQuestion) : { same: 0 };
-      const same = Math.round((sure?.same ?? 0) * 100) / 100;
-      const read = same >= sureEnough;
-      return { id: item.id, same, mark: read === item.same ? "right" as const : read ? "wrong" as const : "missed" as const, heldOut: !!item.heldOut };
+      const sure = item.a.notes && item.b.notes ? await confidence(key, { first: item.a, second: item.b }, { ...sameQuestion, ...trialQuestion }) : null;
+      const same = Math.round((sure?.same ?? 0) * 100) / 100, people = Math.round((sure?.people ?? 0) * 100) / 100;
+      return { id: item.id, same, people, live: mark(notesSayOne(same, item.a, item.b), item.same), trial: mark(notesSayOne(people, item.a, item.b), item.same), heldOut: !!item.heldOut };
     }));
-    const add = (only: boolean) => rows.filter((row) => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row.mark]: sum[row.mark] + 1 }), { ...zero });
-    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, same }) => ({ id, same })) };
+    const add = (arm: "live" | "trial", only: boolean) => rows.filter((row) => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row[arm]]: sum[row[arm]] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add("live", false), heldOut: add("live", true), trial: { all: add("trial", false), heldOut: add("trial", true) }, rows: rows.map(({ id, same, people }) => ({ id, same, people })) };
   },
 });
 

@@ -1,0 +1,76 @@
+{
+  "all": {
+    "missed": 6,
+    "right": 9,
+    "wrong": 0
+  },
+  "heldOut": {
+    "missed": 1,
+    "right": 4,
+    "wrong": 0
+  },
+  "model": "jev-1.14.0",
+  "rows": [
+    {
+      "id": "same-power",
+      "same": 0.82
+    },
+    {
+      "id": "same-elder",
+      "same": 0.81
+    },
+    {
+      "id": "diff-family",
+      "same": 0.01
+    },
+    {
+      "id": "diff-same-building",
+      "same": 0.02
+    },
+    {
+      "id": "es-same",
+      "same": 0.89
+    },
+    {
+      "id": "es-diff",
+      "same": 0.03
+    },
+    {
+      "id": "same-moved",
+      "same": 0.76
+    },
+    {
+      "id": "diff-shared-phone",
+      "same": 0.03
+    },
+    {
+      "id": "empty-notes",
+      "same": 0
+    },
+    {
+      "id": "same-short",
+      "same": 0.76
+    },
+    {
+      "id": "ho-same-kids",
+      "same": 0.9
+    },
+    {
+      "id": "ho-diff-ages",
+      "same": 0.02
+    },
+    {
+      "id": "ho-es-same",
+      "same": 0.62
+    },
+    {
+      "id": "ho-es-diff",
+      "same": 0.02
+    },
+    {
+      "id": "ho-same-household-split",
+      "same": 0.03
+    }
+  ],
+  "status": "done"
+}
