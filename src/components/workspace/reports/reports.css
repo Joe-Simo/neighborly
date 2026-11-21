@@ -1012,6 +1012,12 @@
 .housing-table th small { display: block; color: var(--live-muted); font-weight: 400; }
 .housing-table abbr { text-decoration: none; }
 .housing-table tfoot th, .housing-table tfoot td { font-weight: 600; }
+/* On a phone the landlord column stays narrow and its names wrap, so about three months show beside it. */
+@media (max-width: 640px) {
+  .housing-table th[scope="row"], .housing-table thead th:first-child { width: 7.5rem; min-width: 7.5rem; max-width: 7.5rem; white-space: normal; overflow-wrap: anywhere; hyphens: auto; border-right: 1px solid var(--live-line); }
+  .housing-table th, .housing-table td { padding: var(--space-8) var(--space-4) var(--space-8) var(--space-12); }
+  .housing-table th[scope="row"], .housing-table thead th:first-child { padding-left: 0; }
+}
 @media print { .housing-section { display: none; } }
 .council-one { margin-top: var(--space-24); border-top: 1px solid var(--live-line); padding-top: var(--space-16); }
 .council-one h3, .council-form h3 { margin: 0 0 var(--space-8); font-size: 17px; color: var(--live-ink); }
