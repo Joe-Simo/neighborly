@@ -8,6 +8,7 @@
 .web-row.web-late { box-shadow: inset 3px 0 0 var(--paper-ochre, #c8962e); }
 .web-row .web-late-note { color: color-mix(in srgb, var(--paper-ochre, #c8962e) 70%, #283c32); }
 .web-row .web-choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
+.web-requests .web-notify { display: flex; gap: 8px; align-items: center; min-height: 44px; margin-top: 12px; }
 .web-requests .web-traces h3 { font-size: 13px; margin: 16px 0 4px; }
 .web-requests .web-traces ul { margin: 0; padding-left: 18px; font-size: 15px; }
 .service-area-figure { margin: 8px 0 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
