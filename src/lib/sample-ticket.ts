@@ -10,7 +10,12 @@ import { clerkJSScriptUrl, clerkUIScriptUrl, loadClerkJSScript, loadClerkUIScrip
 const fresh = 40_000;
 /** Where Clerk Protect, the bot check that every sign-in waits on, is served from. */
 export const protect = "https://cdn.protect.clerk.com";
-let asked: { at: number; reply: Promise<Response> } | null = null;
+/**
+ * The ticket asked for, and whether the sheet has taken it. A taken ticket is still remembered while it is fresh: the
+ * room's own ask on arrival runs after the sheet has taken the press's ticket (a parent's effect follows its child's),
+ * and must not ask for a second one.
+ */
+let asked: { at: number; reply: Promise<Response>; taken: boolean } | null = null;
 /**
  * A request that has had no answer in ten seconds is given up, so a hung one ends as any refusal does (the sheet
  * says the sample did not open) instead of leaving the visitor waiting on nothing. Ten, because the home page's card
@@ -27,14 +32,19 @@ export function askSampleTicket() {
   if ((asked && Date.now() - asked.at < fresh) || signedIn()) return;
   const reply = ask();
   reply.catch(() => undefined);
-  asked = { at: Date.now(), reply };
+  asked = { at: Date.now(), reply, taken: false };
 }
 
 /** The answer already on its way, or a new request. Each answer is used once. */
 export function takeSampleTicket() {
-  const early = asked && Date.now() - asked.at < fresh ? asked.reply : null;
-  asked = null;
-  return early ?? ask();
+  const early = asked && !asked.taken && Date.now() - asked.at < fresh ? asked : null;
+  if (early) {
+    early.taken = true;
+    return early.reply;
+  }
+  const reply = ask();
+  asked = { at: Date.now(), reply, taken: true };
+  return reply;
 }
 
 /** Fetches Clerk's two scripts, at the same addresses and in the same mode the workspace asks for them, so they come from the cache. */
