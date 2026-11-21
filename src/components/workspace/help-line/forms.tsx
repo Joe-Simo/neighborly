@@ -2,7 +2,7 @@
 
 import { keepTitle } from "@/lib/words/titles";
 import "@/components/workspace/for-good.css";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
@@ -111,6 +111,8 @@ export function CallForm({
   // so no record has to be added or looked up after. A call from a record is already tied.
   const [typed, setTyped] = useState({ name: "", phone: "" });
   const [chosen, setChosen] = useState<{ id: Neighbor["id"]; name: string } | null>(null);
+  // Choosing a household goes straight on to what the caller said.
+  const note = useRef<HTMLTextAreaElement>(null);
   const asks = !neighbor && (phoneDigits(typed.phone) >= 7 || typed.name.trim().split(/\s+/).length >= 2);
   const onFile = useQuery(api.neighbors.matches, asks ? { churchId, ...typed } : "skip");
   const leave = (field: "name" | "phone") => (event: { target: { value: string } }) => setTyped((now) => ({ ...now, [field]: event.target.value }));
@@ -152,6 +154,8 @@ export function CallForm({
             name="callerName"
             defaultValue={neighbor?.name}
             autoComplete="off"
+            // A new call starts at the caller's name, so the first word typed needs no tap first.
+            autoFocus={!neighbor}
             onBlur={leave("name")}
           />
         </LiveField>
@@ -181,7 +185,10 @@ export function CallForm({
                   <h3>{keepTitle(match.name)}</h3>
                   {match.address && <p>{match.address}</p>}
                 </div>
-                <Button type="button" variant="outline" size="sm" aria-label={w.useThis(match.name)} onClick={() => setChosen({ id: match.id, name: match.name })}>
+                <Button type="button" variant="outline" size="sm" aria-label={w.useThis(match.name)} onClick={() => {
+                    setChosen({ id: match.id, name: match.name });
+                    note.current?.focus();
+                  }}>
                   {w.use}
                 </Button>
               </div>
@@ -191,6 +198,7 @@ export function CallForm({
       )}
       <LiveField label={w.said}>
         <Textarea
+          ref={note}
           name="note"
           rows={4}
           required
