@@ -30,8 +30,8 @@ const readyWait = 700;
 // How much larger than its frame the painting is drawn on a wide wall.
 const frescoInset = 1.064;
 // Standing in the courtyard on a phone, the window is narrow and tall: it is drawn on to the hall's arch and its open door (as shares of the
-// painting from its top left), a little closer, so the frame holds the arch, the door and the table's end, not the empty paving.
-const phoneFocus = { x: .78, y: .4, zoom: 1.24 } as const;
+// painting from its top left), closer, so the frame holds the arch, the open door, the two members whole and the hall behind them, not the empty paving.
+const phoneFocus = { x: .82, y: .36, zoom: 1.3 } as const;
 
 /** The doors open once, onto the courtyard painted on the wall beyond them. */
 // The courtyard's light is drawn with the 3D library, which is fetched only when the doors are near, not with the page.
