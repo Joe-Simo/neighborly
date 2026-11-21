@@ -72,7 +72,8 @@
   .public-words h1[style*="--word"]{font-size:min(clamp(64px,19vw,96px),calc((100vw - 40px) / (var(--word) * .44)))}
 }
 /* Between a phone and a desk the picture has room beside the name, and still crosses the sheet's cut edge. */
-@media(min-width:600px) and (max-width:1023px){.public-words h1{padding-inline:max(20px,calc((100% - 476px) / 2));padding-bottom:176px}.public-words-relief{top:104px}}
+/* On a tablet the picture lies under the title's line, never over its letters, and the title's sheet is long enough to hold it. */
+@media(min-width:600px) and (max-width:1023px){.public-words h1{padding-inline:max(20px,calc((100% - 476px) / 2));padding-bottom:250px}.public-words-relief{top:calc(clamp(12px,2vw,32px) + clamp(40px,5.6vw,104px) + 144px)}}
 /* A line under the title, on the title's sheet (the Spanish page says it is a translation). It gives back the room it stands in: it lies in the sheet's foot. Under 1024px the foot is made deeper for it and the picture lies below it, clear of a longer title. */
 .public-words .public-words-note{position:relative;z-index:16;height:0;max-width:none;margin:calc(14px - (var(--foot))) 0 calc((var(--foot)) - 14px);padding-inline:clamp(20px,5.4vw,104px);font-size:15px;line-height:1.5;color:#3d4f43;--foot:clamp(60px,7vw,130px)}
 @media(max-width:1023px){
@@ -256,3 +257,13 @@
 }
 /* The skip link lands on the words; the page itself takes the focus quietly, as home's does. */
 .public-words:focus{outline:none}
+
+/* Large screens: the words keep their share of the window, at the steps of --big (globals.css), in real sizes. */
+@media(min-width:1800px) and (min-height:1000px){
+  .public-words section{grid-template-columns:minmax(0,calc(24rem * var(--big))) minmax(0,28em)}
+  .public-words h2{font-size:calc(36px * var(--big))}
+  .public-words section>div{font-size:calc(19px * var(--big))}
+  .public-words-last,.public-words .public-words-note{font-size:calc(16px * var(--big))}
+  .public-words-relief{width:calc(420px * var(--big))}
+  .public-page-header>a:last-child,.public-page-language{font-size:calc(15px * var(--big))}
+}

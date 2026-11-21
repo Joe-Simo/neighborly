@@ -41,3 +41,10 @@
 .lost-door-words button:hover{background:#efede2}
 .lost-door-words button:active{box-shadow:inset 0 1px 2px rgb(40 60 50 / .2)}
 @media(max-width:430px){.lost-door-brand{left:16px}.lost-door{padding-inline:16px}}
+
+/* Large screens: the piece, its line and the way back keep their share of the window, at the steps of --big (globals.css). */
+@media(min-width:1800px) and (min-height:1000px){
+  .lost-door-words h1{font-size:calc(64px * var(--big))}
+  .lost-door-words :is(p,a,button){font-size:calc(17px * var(--big))}
+  .lost-door[data-piece=bowl] .lost-door-piece{width:min(calc(440px * var(--big)),calc(46svh * 547 / 313))}
+}

@@ -47,7 +47,7 @@
 @media(min-width:1800px){
   .neighborly-rooms li{grid-template-columns:min(728px,max(360px,56%)) minmax(0,1fr)}
 }
-/* Large screens: each room's name and line keep their share of the window, at the opening's steps (--big, painted-world.css). */
+/* Large screens: each room's name and line keep their share of the window, at the opening's steps (--big, globals.css). */
 @media(min-width:1800px) and (min-height:1000px){
   .neighborly-rooms li{grid-template-columns:minmax(0,calc(360px * var(--big))) minmax(0,1fr)}
   .neighborly-rooms h3{font-size:calc(24px * var(--big))}
