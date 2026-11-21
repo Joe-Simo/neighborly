@@ -693,7 +693,32 @@ function HelpLineView({
   const lists = useRef<HTMLDivElement>(null);
   const before = useRef(new Map<string, { top: number; waiting: boolean }>());
   const others = useRef(new Map<Element, number>());
+  const placed = useRef<string | undefined>(undefined);
+  const lineup = [...calls.waiting.map((call) => call.id), "|", ...calls.returned.map((call) => call.id)].join(" ");
   useLayoutEffect(() => {
+    // Only a call changing lists moves anything. Otherwise (the room being put in, or turned to whole) where the rows and
+    // headings lie is read once the frame has been painted: read here, it made the browser lay out the whole room inside it.
+    const changed = placed.current !== undefined && placed.current !== lineup;
+    placed.current = lineup;
+    if (!changed) {
+      let after = 0;
+      const frame = requestAnimationFrame(() => {
+        after = window.setTimeout(() => {
+          before.current = new Map();
+          others.current = new Map();
+          lists.current?.querySelectorAll<HTMLElement>("[data-call]").forEach((row) => {
+            before.current.set(row.dataset.call ?? "", { top: row.getBoundingClientRect().top + window.scrollY, waiting: !("quiet" in row.dataset) });
+          });
+          lists.current?.querySelectorAll<HTMLElement>(".live-section-head").forEach((head) => {
+            others.current.set(head, head.getBoundingClientRect().top + window.scrollY);
+          });
+        });
+      });
+      return () => {
+        cancelAnimationFrame(frame);
+        window.clearTimeout(after);
+      };
+    }
     const now = new Map<string, { top: number; waiting: boolean }>();
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     // A row gliding under a resting pointer is not being pointed at: it takes no hover wash until it has landed.

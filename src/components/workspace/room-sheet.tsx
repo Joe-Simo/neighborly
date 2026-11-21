@@ -549,14 +549,20 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     // work out every style in the room, and asked on every frame of a turn that was most of the frame.
     const since = performance.now();
     let left = false;
-    let frame = 0;
+    let frame = 0, rest = 0;
+    let unidle = () => {};
     const look = (now: number) => {
       if (left) return;
       const moving = stillMoving(element);
       if (!moving.length || now - since >= LONGEST) {
-        // At rest, its pictures are decoded for the copy the next room change takes (stillPicture), off this thread.
-        decodeAhead(element);
-        return setSettled(area);
+        // At rest, the room is marked whole after the frame, never inside it: the render it brings is a task of its
+        // own. Its pictures are decoded for the copy the next room change takes (stillPicture) once the page is idle.
+        rest = window.setTimeout(() => {
+          if (left) return;
+          setSettled(area);
+          unidle = whenIdle(() => decodeAhead(element), 1500);
+        });
+        return;
       }
       const ends = Promise.all(moving.map((move) => move.finished.catch(() => undefined)));
       const late = new Promise((go) => setTimeout(go, Math.max(0, LONGEST - (now - since))));
@@ -568,6 +574,8 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     return () => {
       left = true;
       cancelAnimationFrame(frame);
+      window.clearTimeout(rest);
+      unidle();
     };
   }, [area, held, column]);
   // At rest, the copy the next room change lays down is taken ahead, and kept as the room it stands for.

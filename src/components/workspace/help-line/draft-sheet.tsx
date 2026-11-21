@@ -31,6 +31,24 @@ export const caller = (call: Pick<Call, "neighborName" | "callerName">, words?: 
  * (src/components/home-yes-card.tsx): whatever changes here changes there. Its still copy for readers without scripts
  * (src/components/home-yes.tsx, .home-yes-still) does not follow by itself: change it by hand.
  */
+/**
+ * "Add and save" names the neighbor while it fits on the button, and says the short form when it does not. Measured by a
+ * watcher once the browser has laid the sheet out, never inside the draw itself: measuring there made the browser lay
+ * out the whole room as it was put in. The width the whole words need is taken while they are shown, and kept.
+ */
+function fitTheAdd(label: HTMLSpanElement | null) {
+  if (!label) return;
+  label.removeAttribute("data-tight");
+  delete label.dataset.need;
+  const fit = () => {
+    if (!label.hasAttribute("data-tight")) label.dataset.need = String(label.scrollWidth);
+    label.toggleAttribute("data-tight", Number(label.dataset.need) > label.clientWidth);
+  };
+  const watch = new ResizeObserver(fit);
+  watch.observe(label);
+  return () => watch.disconnect();
+}
+
 export function DraftSheet({
   drafted: { call, draft },
   waiting = 1,
@@ -173,7 +191,7 @@ export function DraftSheet({
                 ) : (
                   // The caller's name rides in the button, kept whole. Where the line would not fit the button, the
                   // shorter words stand instead, decided as the button is laid, before it is drawn.
-                  <span className="help-add" ref={(label) => { label?.toggleAttribute("data-tight", label.scrollWidth > label.clientWidth); }}>
+                  <span className="help-add" key={callerName} ref={fitTheAdd}>
                     <span className="help-add-long">{nameKeeper([callerName])(sheet.addAndSave(callerName))}</span>
                     <span className="help-add-short">{sheet.addAndSave("")}</span>
                   </span>

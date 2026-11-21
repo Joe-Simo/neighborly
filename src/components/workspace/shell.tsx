@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { SavedWords } from "@/components/workspace/saved-words";
 import Link from "next/link";
 import { useConvexConnectionState } from "convex/react";
-import { Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
+import { memo, Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, CircleCheck, LogOut, Menu, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -830,8 +830,7 @@ export function LiveWorkspace({
           <AsidePlace key={`aside-${area}`} on={wide}>
           <div className="live-room" key={area}>
             <RoomBoundary key={area}>
-              {roomWaiting ? <LiveLoading label={words.states.opening} /> : <Suspense fallback={<LiveLoading label={words.states.opening} />}><Section /></Suspense>}
-              {pagination}
+              <RoomBody Section={Section} waiting={roomWaiting} label={words.states.opening} pagination={pagination} />
             </RoomBoundary>
           </div>
           </AsidePlace>
@@ -1114,3 +1113,16 @@ const openedAt = () => (opened ??= Date.now());
 const noChange = () => () => {};
 /** The rooms opened since the page was loaded. */
 const roomsOpened = new Set<LiveArea>();
+
+/**
+ * The room itself, drawn again only when the room or its pages change. Showing a room the shell held unseen changes
+ * the shell, not the room: drawing every row again then was most of the frame the room is shown in.
+ */
+const RoomBody = memo(function RoomBody({ Section, waiting, label, pagination }: { Section: ComponentType; waiting: boolean; label: string; pagination: ReactNode }) {
+  return (
+    <>
+      {waiting ? <LiveLoading label={label} /> : <Suspense fallback={<LiveLoading label={label} />}><Section /></Suspense>}
+      {pagination}
+    </>
+  );
+});
