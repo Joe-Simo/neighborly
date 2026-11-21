@@ -1,0 +1,6 @@
+.week-digest { display: grid; gap: var(--space-8); max-width: 72ch; margin: 0 0 var(--space-32); padding-bottom: var(--space-24); border-bottom: 1px solid #e4dfd3; }
+.week-digest h2 { margin: 0 0 var(--space-8); }
+.week-digest p { margin: 0; }
+.week-digest ul { display: grid; gap: var(--space-4); margin: 0 0 var(--space-8); padding: 0; list-style: none; }
+.week-digest li small { display: block; color: var(--live-muted); font-size: 15px; }
+.week-digest [data-slot="toggle"] { justify-self: start; min-height: 44px; }

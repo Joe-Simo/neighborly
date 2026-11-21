@@ -6,15 +6,18 @@ import type { Language, WordSet } from "../words/sets";
  * meaning here, so the sheet is ink on paper; the one link is ink too. Nothing is an image, so a mail app that
  * blocks pictures shows the whole email. Each comes with a plain-text twin that says the same thing.
  */
-type EmailKind = "invitation" | "cover_request" | "meeting";
+type EmailKind = "invitation" | "cover_request" | "meeting" | "digest";
+/** The week's counts for the Monday email: numbers only, never a name, so nothing about a household leaves in a mailbox. */
+export type WeekCounts = { waiting: number; overdue: number; approved: number; budget: number | null };
 type Email = { subject: string; text: string; html: string };
 
 const group = { en: { general: "group", vincentian: "conference" }, es: { general: "grupo", vincentian: "conferencia" } } as const;
 
 type Said = { subject: string; head: string; body: string; action: string; foot: string };
 
-function said(kind: EmailKind, language: Language, set: WordSet, place: string): Said {
+function said(kind: EmailKind, language: Language, set: WordSet, place: string, week?: WeekCounts): Said {
   const g = group[language][set];
+  if (kind === "digest") return weekSaid(language, place, week ?? { waiting: 0, overdue: 0, approved: 0, budget: null });
   if (language === "es") {
     switch (kind) {
       case "invitation": return {
@@ -71,8 +74,8 @@ const escape = (text: string) => text.replace(/[&<>"']/g, (c) => `&#${c.charCode
 const display = "Newsreader,Georgia,'Times New Roman',serif";
 const body = "'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif";
 
-export function paperEmail({ kind, language, set, place, link }: { kind: EmailKind; language: Language; set: WordSet; place: string; link: string }): Email {
-  const s = said(kind, language, set, place);
+export function paperEmail({ kind, language, set, place, link, week }: { kind: EmailKind; language: Language; set: WordSet; place: string; link: string; week?: WeekCounts }): Email {
+  const s = said(kind, language, set, place, week);
   const text = [s.head, "", s.body, "", `${s.action}: ${link}`, "", s.foot, "", "kind helps"].join("\n");
   const e = { head: escape(s.head), body: escape(s.body), action: escape(s.action), foot: escape(s.foot), link: escape(link) };
   const html = `<!doctype html>
@@ -132,3 +135,30 @@ export function paperEmail({ kind, language, set, place, link }: { kind: EmailKi
 
 /** A member's language for email: the app speaks English and Spanish; any other choice reads English. */
 export const emailLanguage = (language: string | undefined): Language => (language === "es" ? "es" : "en");
+
+function weekSaid(language: Language, place: string, week: WeekCounts): Said {
+  const n = new Intl.NumberFormat(language === "es" ? "es-US" : "en-US").format;
+  const money = (cents: number) => new Intl.NumberFormat(language === "es" ? "es-US" : "en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Math.round(cents / 100));
+  if (language === "es") return {
+    subject: `La semana en ${place}`,
+    head: "Tu semana para decidir.",
+    body: [
+      week.waiting === 1 ? "1 petición espera una decisión." : `${n(week.waiting)} peticiones esperan una decisión.`,
+      week.overdue === 1 ? "Una llamada espera respuesta desde hace dos días o más." : `${n(week.overdue)} llamadas esperan respuesta desde hace dos días o más.`,
+      week.budget ? `Aprobado este mes: ${money(week.approved)} de ${money(week.budget)}.` : `Aprobado este mes: ${money(week.approved)}.`,
+    ].join(" "),
+    action: "Ver la semana",
+    foot: "Sin nombres en este correo, a propósito. Puedes dejar de recibirlo en la misma página.",
+  };
+  return {
+    subject: `The week at ${place}`,
+    head: "Your week to decide.",
+    body: [
+      week.waiting === 1 ? "1 request is waiting on a decision." : `${n(week.waiting)} requests are waiting on a decision.`,
+      week.overdue === 1 ? "1 call has waited two days or more for a callback." : `${n(week.overdue)} calls have waited two days or more for a callback.`,
+      week.budget ? `Approved this month: ${money(week.approved)} of ${money(week.budget)}.` : `Approved this month: ${money(week.approved)}.`,
+    ].join(" "),
+    action: "See the week",
+    foot: "No names in this email, on purpose. You can stop it on the same page.",
+  };
+}

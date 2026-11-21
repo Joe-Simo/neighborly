@@ -16,6 +16,7 @@ import type * as closing from "../closing.js";
 import type * as counts from "../counts.js";
 import type * as crons from "../crons.js";
 import type * as demo from "../demo.js";
+import type * as digest from "../digest.js";
 import type * as drafts from "../drafts.js";
 import type * as duplicates from "../duplicates.js";
 import type * as http from "../http.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   counts: typeof counts;
   crons: typeof crons;
   demo: typeof demo;
+  digest: typeof digest;
   drafts: typeof drafts;
   duplicates: typeof duplicates;
   http: typeof http;
