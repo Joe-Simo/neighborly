@@ -5,10 +5,13 @@ import { internalMutation, mutation } from "./functions";
 import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, neighborAccess } from "./access";
 import { callbackOwner } from "./assistance";
+import { intakeMatch } from "../src/lib/duplicates";
+import { phoneKey } from "../src/lib/keys";
 import { bbox, byDistance, circlePolygon, covering, distanceMiles, reachOf, validArea, validMiles, validZip, type Point, type Team } from "./area";
 import { helpKind } from "./schema";
 import { deliveryConfiguration, resend } from "./notifications";
 import { paperEmail } from "../src/lib/email/paper-email";
+import { noteLanded } from "./intakeNotify";
 
 /**
  * The public "Ask for help" form, behind convex/intakeHttp.ts (which checks Turnstile and the input, and hashes).
@@ -264,7 +267,28 @@ async function land(ctx: MutationCtx, request: Doc<"webRequests">, now: number) 
     return;
   }
   await bump(ctx, weekKey(request.churchId), WEEK, Number.MAX_SAFE_INTEGER, now);
-  await ctx.db.patch("webRequests", request._id, { stage: "received", callId: await createWebCall(ctx, request, now), firstContactBy });
+  const callId = await createWebCall(ctx, request, now);
+  await ctx.db.patch("webRequests", request._id, { stage: "received", callId, firstContactBy });
+  // A new request on this team's Help line (a join above is not new): counted toward the team's next email.
+  await noteLanded(ctx, request.churchId, now);
+  // A request nobody confirmed is never matched to a household (abuse review #5): a typed-in phone proves nothing.
+  if (!request.unverified) {
+    const likely = await likelyHousehold(ctx, request);
+    if (likely) await ctx.db.patch("calls", callId, { likelyNeighborId: likely });
+  }
+}
+
+/**
+ * The household on file at the routed team that a confirmed web request is likely from, by code alone (intakeMatch). The
+ * form carries no name or street, so only the phone can match, and only when exactly one household gives it: a phone two
+ * households share says nothing about which. The call is only marked; a person confirms with "Use this household" before
+ * it is linked. No model is asked, and only the phone index is read.
+ */
+async function likelyHousehold(ctx: MutationCtx, request: Doc<"webRequests">) {
+  const phone = phoneKey(request.phone);
+  if (phone.length < 7) return null;
+  const households = (await ctx.db.query("neighbors").withIndex("by_church_phone", (q) => q.eq("churchId", request.churchId).eq("phoneKey", phone)).take(3)).filter((row) => row.nameKey);
+  return households.length === 1 ? (intakeMatch({ name: "", phone: request.phone, address: "" }, households)?.household._id ?? null) : null;
 }
 
 export const confirm = internalMutation({
@@ -339,19 +363,21 @@ function publicStatus(request: Doc<"webRequests">, call: Doc<"calls"> | null) {
 const settingsRow = v.union(v.null(), v.object({
   enabled: v.boolean(), autoPaused: v.boolean(), address: v.string(), zip: v.string(), miles: v.number(), placed: v.union(v.literal("address"), v.literal("zip")),
   weeklyLimit: v.union(v.number(), v.null()), order: v.union(v.number(), v.null()), holidays: v.array(v.string()), phone: v.union(v.string(), v.null()),
+  /** The caller's own choice: an email when new requests reach the Help line. */
+  newRequestEmail: v.boolean(),
 }));
 export const settings = query({
   args: { churchId: v.id("churches") },
   returns: settingsRow,
   handler: async (ctx, { churchId }) => {
-    await neighborAccess(ctx, churchId);
+    const member = await neighborAccess(ctx, churchId);
     const intake = (await ctx.db.get("churches", churchId))?.intake;
     if (!intake) return null;
     const zipCentre = intake.zip ? await centroid(ctx, intake.zip) : null;
     const placed = zipCentre && zipCentre.lat === intake.center.lat && zipCentre.lng === intake.center.lng ? "zip" : "address";
     return {
       enabled: intake.enabled, autoPaused: intake.pausedBy === "auto", address: intake.address ?? intake.zip, zip: intake.zip, miles: intake.miles, placed: placed as "address" | "zip",
-      weeklyLimit: intake.weeklyLimit ?? null, order: intake.order ?? null, holidays: intake.holidays ?? [], phone: intake.phone ?? null,
+      weeklyLimit: intake.weeklyLimit ?? null, order: intake.order ?? null, holidays: intake.holidays ?? [], phone: intake.phone ?? null, newRequestEmail: member.newRequestEmail !== false,
     };
   },
 });

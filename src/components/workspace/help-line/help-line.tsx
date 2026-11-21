@@ -695,6 +695,8 @@ function HelpLineView({
 }) {
   const { words, sampleSaid } = useWorkspace();
   const text = { ...words.rooms.helpLine.calls, ...lineWords(words.locale).calls };
+  const linkCall = useMutation(api.assistance.linkCall);
+  const churchId = useWorkspace().data.church.id;
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
   // How long a call has waited, from the room's hour: "5 hours", "2 days". Two days and more is old.
   const DAY = 24 * 60 * 60 * 1000;
@@ -949,6 +951,19 @@ function HelpLineView({
                     >
                       {reading === call.id ? text.drafting : text.draft}
                     </Button>
+                  )}
+                  {call.likely && !call.neighborId && (
+                    <>
+                      <span className="help-note">{text.likely(sampleSaid(call.likely.name))} </span>
+                      <Button
+                        variant="link"
+                        className="help-text-action"
+                        aria-label={text.useLikelyThis(sampleSaid(call.likely.name))}
+                        onClick={() => call.likely && void linkCall({ churchId, callId: call.id, neighborId: call.likely.id }).catch(() => null)}
+                      >
+                        {text.useLikely}
+                      </Button>
+                    </>
                   )}
                   {!call.neighborId && (
                     <Button

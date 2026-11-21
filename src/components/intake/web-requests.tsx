@@ -38,6 +38,7 @@ export function WebRequests() {
   const saveSettings = useMutation(api.intake.saveSettings);
   const releaseAll = useMutation(api.intake.releaseAll);
   const seen = useMutation(api.intake.seen);
+  const setNewRequestEmail = useMutation(api.intakeNotify.setNewRequestEmail);
   const { save, error } = useSave();
   const [editing, setEditing] = useState(false);
   const [more, setMore] = useState(false);
@@ -87,6 +88,12 @@ export function WebRequests() {
       )}
       {error && !editing && <LiveFailure message={error} />}
       {settings && more && <AreaMore churchId={churchId} settings={settings} onDone={() => setMore(false)} />}
+      {settings && (
+        <label className="web-choice web-notify">
+          <input type="checkbox" checked={settings.newRequestEmail} onChange={(event) => void save(() => setNewRequestEmail({ churchId, on: event.currentTarget.checked }))} />
+          <span>{w.newRequestEmail}</span>
+        </label>
+      )}
       {settings && <Partners churchId={churchId} />}
       <Review churchId={churchId} />
       {held.length > 0 && (

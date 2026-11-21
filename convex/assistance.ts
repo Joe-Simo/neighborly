@@ -345,7 +345,14 @@ export const callRow = v.object({
   urgent: v.union(v.object({ reasons: v.array(v.string()), day: v.union(v.number(), v.null()), by: urgentBy, byName: v.union(v.string(), v.null()) }), v.null()),
   /** The caller needs Spanish: "record" from the neighbor's record, "assistant" when the assistant read it in the note. */
   spanish: v.union(v.literal("record"), v.literal("assistant"), v.null()),
+  /** A household on file the web request may be, for a person to confirm with linkCall. */
+  likely: v.union(v.object({ id: v.id("neighbors"), name: v.string() }), v.null()),
 });
+async function likelyRow(found: Lookups, churchId: Id<"churches">, id: Id<"neighbors">) {
+  const neighbor = await found.neighbor(id);
+  // A record removed since has no name to offer, and another team's is never shown.
+  return neighbor?.nameKey && neighbor.churchId === churchId ? { id, name: neighbor.name } : null;
+}
 export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Infer<typeof callRow>> {
   return {
     id: call._id,
@@ -364,6 +371,7 @@ export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Inf
     nextStep: call.nextStep?.step ?? null,
     openRequest: call.neighborId ? await found.openRequest(call.neighborId) : false,
     urgent: call.urgent ? { reasons: call.urgent.reasons, day: call.urgent.day ?? null, by: call.urgent.by, byName: call.urgent.byMember ? await found.memberName(call.urgent.byMember) : null } : null,
+    likely: !call.neighborId && call.likelyNeighborId ? await likelyRow(found, call.churchId, call.likelyNeighborId) : null,
     spanish: call.neighborId ? ((await found.neighbor(call.neighborId))?.language === "es" ? "record" : null) : call.spanish ? "assistant" : null,
   };
 }
