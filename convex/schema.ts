@@ -130,6 +130,8 @@ export default defineSchema({
     takenBy: v.optional(v.id("memberships")),
     /** Came in by the public web form and was confirmed by its sender (convex/intake.ts). */
     fromWeb: v.optional(v.boolean()),
+    /** A web request whose phone or email a household on file already gives (convex/intake.ts, likelyHousehold): shown for the team to confirm, never linked alone. */
+    likelyNeighborId: v.optional(v.id("neighbors")),
     takenAt: v.number(),
     ownerId: v.optional(v.id("memberships")),
     returnedBy: v.optional(v.id("memberships")),

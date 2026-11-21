@@ -497,3 +497,30 @@ describe("daily care", () => {
     expect(call).toMatchObject({ callerName: "", phone: "", note: "" });
   });
 });
+describe("a confirmed request from a household on file", () => {
+  test("is marked with that household for a person to confirm; a phone two households share is not", async () => {
+    const { t, ids, as } = await setup();
+    const churchId = ids.detroit.churchId;
+    const [owner] = await t.run((ctx) => ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).collect());
+    const household = (name: string, phone: string) => t.run((ctx) => ctx.db.insert("neighbors", { churchId, name, nameKey: name.toLowerCase(), phone, phoneKey: phone.replace(/\D/g, ""), email: "", address: "", adults: 1, children: 0, language: "en", notes: "", createdBy: owner._id, createdAt: 0 }));
+    const rosa = await household("Rosa Fontaine", "(100) 555-0101");
+    await household("Denise Walker", "(100) 555-0102");
+    await household("Marcus Bellamy", "(100) 555-0102");
+    const send = async (phone: string) => {
+      const one = { ...ask(), phone };
+      await t.mutation(internal.intake.receive, one);
+      await t.mutation(internal.intake.confirm, { statusKeyHash: one.statusKeyHash, codeHash: one.codeHash, ipHash: `m${phone}` });
+    };
+    await send("100.555.0101");
+    await send("100-555-0102");
+    const calls = await t.run((ctx) => ctx.db.query("calls").collect());
+    expect(calls.map((call) => call.likelyNeighborId ?? null)).toEqual([rosa, null]);
+    expect(calls.every((call) => !call.neighborId)).toBe(true);
+    const caller = as(ids.detroit.userId);
+    const row = (await caller.query(api.assistance.calls, { churchId, at: NOW_HOUR })).waiting.find((call) => call.id === calls[0]._id);
+    expect(row?.likely).toEqual({ id: rosa, name: "Rosa Fontaine" });
+    await caller.mutation(api.assistance.linkCall, { churchId, callId: calls[0]._id, neighborId: rosa });
+    expect((await caller.query(api.assistance.calls, { churchId, at: NOW_HOUR })).waiting.find((call) => call.id === calls[0]._id)).toMatchObject({ neighborId: rosa, likely: null });
+  });
+});
+

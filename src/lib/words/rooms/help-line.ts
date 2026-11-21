@@ -72,6 +72,10 @@ export const en = (t: Terms, place: string) => ({
   /** The calls to return, and the calls returned this week: the rest of its words are in help-line/line-words.ts. */
   calls: {
     addNeighbor: `Add as a ${t.neighbor}`,
+    /** A web request whose phone one household on file already gives. */
+    likely: (name: string) => `Same phone as ${name}, already on file.`,
+    useLikely: "Use this household",
+    useLikelyThis: (name: string) => `Use ${name}’s record for this request`,
   },
   /** While the assistant reads a call note. */
   reading: {
@@ -173,6 +177,9 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   },
   calls: {
     addNeighbor: "Agregar al registro",
+    likely: (name: string) => `Mismo teléfono que el registro de ${name}.`,
+    useLikely: "Usar este hogar",
+    useLikelyThis: (name: string) => `Usar el registro de ${name} para esta solicitud`,
   },
   reading: {
     label: "El asistente",
