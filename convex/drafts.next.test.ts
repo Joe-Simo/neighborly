@@ -100,7 +100,8 @@ describe("repeat help before a decision", () => {
 
   test("recent same-kind help comes from the records; readings show only at 0.9; no names leave", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
-    const fetch = replying({ same0: yes(0.97), differs0: yes(0.2), same1: yes(0.1), differs1: yes(0.95), same2: yes(0.3), differs2: yes(0.89) });
+    const low = Object.fromEntries([0, 1, 2].flatMap(index => ["same", "differs", "home", "work", "paid"].map(field => [`${field}${index}`, yes(0.1)])));
+    const fetch = replying({ ...low, same0: yes(0.97), home1: yes(0.95), differs2: yes(0.89) });
     vi.stubGlobal("fetch", fetch);
     const { ids, signed } = await household();
     const found = await signed.action(api.drafts.checkRepeat, ids);
@@ -113,8 +114,8 @@ describe("repeat help before a decision", () => {
       { text: "The assistant reads the note from May 30 as saying otherwise. Read both before you decide.", assistant: true },
     ]);
     const body = JSON.parse(fetch.mock.calls[0][1].body) as Body;
-    // Three earlier records, newest first, two questions each; the declined rent request is asked about but not flagged.
-    expect(Object.keys(body.questions)).toHaveLength(6);
+    // Three earlier records, newest first, five questions each; the declined rent request is asked about but not flagged.
+    expect(Object.keys(body.questions)).toHaveLength(15);
     expect(fetch.mock.calls[0][1].body).not.toMatch(/Rosa|Delgado|14 Sample|Lee Power/);
   });
 

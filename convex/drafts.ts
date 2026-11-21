@@ -862,11 +862,22 @@ const recordWhat = v.union(v.literal("request"), v.literal("note"), v.literal("v
 
 /** Two yes-or-no questions per earlier record, by index; shared with measureRepeats so both ask the same thing. */
 function repeatQuestions(count: number) {
-  return Object.fromEntries(Array.from({ length: count }, (_, index) => [
-    [`same${index}`, `Does request ask for help with the same bill, the same rent or the same need, for the same period, as earlier.r${index}.text? Answer no when it is a new month's bill, a different bill or a different need. Judge only what the texts say.`],
-    [`differs${index}`, `Does request state something about the caller's own household, such as who lives there, work or income, or whether a bill was paid, that earlier.r${index}.text plainly states otherwise? Answer no when the two only add to each other, when the time between them could explain the change, or when either is unclear. Judge only what the texts say.`],
-  ]).flat());
+  const judge = "Judge only what the texts say.";
+  return Object.fromEntries(Array.from({ length: count }, (_, index) => {
+    const earlier = `earlier.r${index}.text`;
+    return [
+      [`same${index}`, `Is ${earlier} about the same bill, the same rent or the same need as request, for the same month or the same amount? Answer no when request is for a new month, a different bill or a different need. ${judge}`],
+      // "Says otherwise" is asked four ways, each narrow: one broad question scored real contradictions between 0.41 and 0.86.
+      [`differs${index}`, `Does request state something about the caller's own household that ${earlier} plainly states otherwise? Answer no when the two only add to each other, when the time between them could explain the change, or when either is unclear. ${judge}`],
+      [`home${index}`, `Does request say who lives in the household, such as living alone or having no children, in a way that ${earlier} contradicts? Answer no when they agree, when one only adds a detail, or when either says nothing about who lives there. ${judge}`],
+      [`work${index}`, `Does request say the household has no work or no income in a way that ${earlier} contradicts? Answer no when request says the work or income ended after ${earlier} was written, or when either says nothing about work or income. ${judge}`],
+      [`paid${index}`, `Does request say a bill is unpaid when ${earlier} says that same bill was already paid? Answer no when it is a different bill or a different month. ${judge}`],
+    ];
+  }).flat());
 }
+/** Whether a record is the same need again, or says otherwise (any of the four ways asked), at the 0.9 line. */
+const repeatHit = (sure: Record<string, number>, question: "same" | "differs", index: number) =>
+  (question === "same" ? [`same${index}`] : ["differs", "home", "work", "paid"].map(field => `${field}${index}`)).some(field => (sure[field] ?? 0) >= sureEnough);
 function repeatState(request: string, earlier: { daysBefore: number; text: string }[]) {
   return { request, earlier: Object.fromEntries(earlier.map((record, index) => [`r${index}`, record])) };
 }
@@ -881,6 +892,7 @@ export const repeatHistory = internalQuery({
     userId: v.id("users"), request: v.string(), language: v.union(v.literal("en"), v.literal("es")), timeZone: v.string(),
     records: v.array(v.object({ at: v.number(), what: recordWhat, kind: v.optional(kindValidator), daysBefore: v.number(), text: v.string() })),
     recent: v.array(v.object({ at: v.number(), kind: kindValidator, status: v.union(v.literal("approved"), v.literal("paid")), amount: v.number() })),
+    sameAmount: v.array(v.object({ at: v.number(), kind: kindValidator, amount: v.number() })),
     names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()),
   }),
   handler: async (ctx, { churchId, requestId }) => {
@@ -903,6 +915,10 @@ export const repeatHistory = internalQuery({
       if (other.kind !== request.kind || (other.status !== "approved" && other.status !== "paid") || now - at > repeatRecentDays * 86_400_000) return [];
       return [{ at, kind: other.kind, status: other.status, amount: other.amountApproved ?? 0 }];
     }).sort((a, b) => b.at - a.at);
+    // The same kind and the same amount asked again within 60 days, whatever was decided: an exact match, so no model is asked.
+    const shownRecent = new Set(recent.map(item => item.at));
+    const sameAmount = earlier.filter(other => other.kind === request.kind && request.amountRequested > 0 && other.amountRequested === request.amountRequested && now - other.createdAt <= 60 * 86_400_000 && !shownRecent.has(other.decidedAt ?? other.createdAt))
+      .map(other => ({ at: other.createdAt, kind: other.kind, amount: other.amountRequested })).sort((a, b) => b.at - a.at);
     const texts = [
       ...earlier.map(other => ({ at: other.createdAt, what: "request" as const, kind: other.kind, text: other.summary })),
       ...notes.filter(note => note.churchId === churchId).map(note => ({ at: note.createdAt, what: "note" as const, text: note.body })),
@@ -914,7 +930,7 @@ export const repeatHistory = internalQuery({
     return {
       userId: member.userId, language: member.language ?? "en", timeZone: church?.timeZone ?? "America/New_York",
       request: [request.summary, call?.note ?? ""].map(text => text.trim()).filter(Boolean).join("\n"),
-      records: texts, recent,
+      records: texts, recent, sameAmount,
       names: [neighbor?.name ?? "", call?.callerName ?? ""].filter(Boolean),
       addresses: neighbor?.address ? [neighbor.address] : [],
       others: texts.length ? [...(await namesFor(ctx, churchId)), request.payeeName].filter(Boolean) : [],
@@ -979,12 +995,12 @@ export const checkRepeat = action({
     verification: v.union(v.literal("review"), v.literal("checked")),
   }),
   handler: async (ctx, args): Promise<RepeatFound> => {
-    const [{ userId, request, language, timeZone, records, recent, names, addresses, others }, spent] = await Promise.all([
+    const [{ userId, request, language, timeZone, records, recent, sameAmount, names, addresses, others }, spent] = await Promise.all([
       ctx.runQuery(internal.drafts.repeatHistory, args),
       ctx.runQuery(internal.drafts.spending, { ...args, at: Date.now() }),
     ]);
     const pace = paceLines(language, { ...spent, baseline: amountBaseline });
-    const unread = { recent, same: [], differs: [], lines: [...pace, ...repeatLines(language, timeZone, { recent, same: [], differs: [] })], verification: "review" as const };
+    const unread = { recent, same: [], differs: [], lines: [...pace, ...repeatLines(language, timeZone, { recent, sameAmount, same: [], differs: [] })], verification: "review" as const };
     if (!records.length || !request || !env.TYPESAFE_API_KEY || request.length > 2000) return unread;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return unread;
     const sure = await confidence(env.TYPESAFE_API_KEY,
@@ -993,10 +1009,10 @@ export const checkRepeat = action({
       { names, addresses, others },
     );
     if (!sure) return unread;
-    const flagged = (question: "same" | "differs") => records.flatMap((record, index) => (sure[`${question}${index}`] >= sureEnough ? [{ at: record.at, what: record.what, ...("kind" in record && record.kind ? { kind: record.kind } : {}) }] : []));
+    const flagged = (question: "same" | "differs") => records.flatMap((record, index) => (repeatHit(sure, question, index) ? [{ at: record.at, what: record.what, ...("kind" in record && record.kind ? { kind: record.kind } : {}) }] : []));
     const same = flagged("same");
     const differs = flagged("differs");
-    return { recent, same, differs, lines: [...pace, ...repeatLines(language, timeZone, { recent, same, differs })], verification: "checked" as const };
+    return { recent, same, differs, lines: [...pace, ...repeatLines(language, timeZone, { recent, sameAmount, same, differs })], verification: "checked" as const };
   },
 });
 
@@ -1017,7 +1033,7 @@ export const measureRepeats = internalAction({
     const rows = await Promise.all(repeatSet.map(async item => {
       const sure = await confidence(key, repeatState(item.request, item.earlier), repeatQuestions(item.earlier.length));
       const scores = Object.fromEntries(Object.entries(sure ?? {}).map(([field, value]) => [field, Math.round(value * 100) / 100]));
-      const shown = (question: "same" | "differs") => item.earlier.flatMap((_, index) => ((scores[`${question}${index}`] ?? 0) >= sureEnough ? [index] : []));
+      const shown = (question: "same" | "differs") => item.earlier.flatMap((_, index) => (repeatHit(scores, question, index) ? [index] : []));
       const same = shown("same");
       const differs = shown("differs");
       const marks = (["same", "differs"] as const).flatMap(question => item.earlier.map((_, index) => {
