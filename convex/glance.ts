@@ -23,7 +23,7 @@ const conference = v.object({
   year: v.object({ fiscalYear: v.number(), approved: money, households: money }),
   visits: v.object({ due: v.number(), late: v.number() }),
   volunteers: v.object({ active: v.number(), away: v.array(v.string()) }),
-  balance: v.number(),
+  balance: v.union(v.number(), v.null()),
   flags: v.object({ urgent: v.number(), drafts: v.number(), doubles: v.number() }),
 });
 const council = v.object({ name: v.string(), conferences: v.number(), households: v.number(), helpPaid: v.number(), visits: v.number(), updating: v.boolean() });
@@ -33,8 +33,9 @@ function yearSpans(at: number, zone: string) {
   const year = fiscalYearOf(at, zone);
   const now = fiscalYear(year, zone);
   const before = fiscalYear(year - 1, zone);
-  const elapsed = DateTime.fromMillis(at, { zone }).diff(DateTime.fromMillis(now.start, { zone })).toObject();
-  return { year, now: { from: now.start, to: at }, before: { from: before.start, to: DateTime.fromMillis(before.start, { zone }).plus(elapsed).toMillis() } };
+  // The same calendar day a year back, never past that year's end (29 February reads as the 28th).
+  const back = Math.min(DateTime.fromMillis(at, { zone }).minus({ years: 1 }).toMillis(), before.end);
+  return { year, now: { from: now.start, to: at }, before: { from: before.start, to: back } };
 }
 const households = (rows: Doc<"assistanceRequests">[]) => new Set(rows.map((row) => row.neighborId)).size;
 
@@ -51,10 +52,12 @@ async function wholeConference(ctx: QueryCtx, church: Doc<"churches">, me: Doc<"
     approvedBetween(ctx, churchId, spans.now.from, spans.now.to),
     approvedBetween(ctx, churchId, spans.before.from, spans.before.to),
     ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", at).lt("scheduledAt", at + 7 * DAY)).take(500),
-    ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", at - 60 * DAY).lt("scheduledAt", at)).take(500),
+    // Every visit still planned, however old: one stays late until it is written up or called off.
+    ctx.db.query("visits").withIndex("by_church_status_completed", (q) => q.eq("churchId", churchId).eq("status", "scheduled")).take(1000),
     ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1000),
     ctx.db.query("timeOff").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1000),
-    balanceOf(ctx, churchId),
+    // A ledger too long to add up in one pass gives no balance, not a failed home.
+    balanceOf(ctx, churchId).catch(() => null),
     ctx.db.query("requestDrafts").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(200),
     ctx.db.query("duplicatePairs").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(200),
   ]);
@@ -69,7 +72,7 @@ async function wholeConference(ctx: QueryCtx, church: Doc<"churches">, me: Doc<"
     callbacks: { owed: owed.length, late: owed.filter((call) => at - call.takenAt >= callbackDays * DAY).length, mine: owed.filter((call) => call.ownerId === me._id).length },
     month: { month: month.month, approved: { now: sumApproved(monthNow), before: sumApproved(monthThen) }, budget: church.monthlyBudget ?? null, day: DateTime.fromMillis(at, { zone }).day, days: month.daysInMonth ?? 30 },
     year: { fiscalYear: spans.year, approved: { now: sumApproved(yearNow), before: sumApproved(yearThen) }, households: { now: households(yearNow), before: households(yearThen) } },
-    visits: { due: ahead.filter((visit) => visit.status === "scheduled").length, late: behind.filter((visit) => visit.status === "scheduled").length },
+    visits: { due: ahead.filter((visit) => visit.status === "scheduled").length, late: behind.filter((visit) => visit.scheduledAt < at).length },
     volunteers: { active: active.length, away: active.filter((member) => awayIds.has(member._id)).map((member) => member.name).sort((a, b) => a.localeCompare(b)) },
     balance,
     flags: {
@@ -109,11 +112,11 @@ export const home = query({
     if (!church) throw new ConvexError("Workspace access required.");
     const [visits, tasks] = await Promise.all([
       ctx.db.query("visits").withIndex("by_church", (q) => q.eq("churchId", churchId).gte("scheduledAt", at).lt("scheduledAt", at + 14 * DAY)).take(500),
-      ctx.db.query("tasks").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(1000),
+      ctx.db.query("tasks").withIndex("by_assignee_complete", (q) => q.eq("assigneeId", me._id).eq("complete", false)).take(500),
     ]);
     // Only this person's own: visits waiting for their answer (a count, never who), and the tasks given to them.
     const mine = visits.filter((visit) => visit.status === "scheduled" && visit.visitors.some((one) => one.memberId === me._id && one.response !== "declined"));
-    const myTasks = tasks.filter((task) => task.assigneeId === me._id && !task.complete);
+    const myTasks = tasks.filter((task) => task.churchId === churchId);
     return {
       own: {
         visitAsks: mine.filter((visit) => visit.visitors.some((one) => one.memberId === me._id && one.response === "pending")).length,

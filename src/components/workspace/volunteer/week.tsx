@@ -76,7 +76,7 @@ export function WeekSection() {
       <StartHere />
       <FirstWeekSlips />
       <WeekNote brief={briefed || incoming.length > 0} />
-      {!firstDays && <Glance />}
+      <Glance quiet={firstDays} />
       {!choiceFirst && choices}
       {firstDays ? (
         <LiveEmpty title={first.title}>
