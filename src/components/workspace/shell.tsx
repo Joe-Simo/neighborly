@@ -415,16 +415,31 @@ export function LiveWorkspace({
         app.current?.style.setProperty("--head-gone", `${Math.min(1, Math.max(0, (under - top) / tall))}`);
       }
     };
-    const first = requestAnimationFrame(read);
+    // A new room's headline is read once its first frame has been painted, never inside it: read in a frame callback
+    // (or as the room is put in) it made the browser lay out the whole new room before that frame could be drawn.
+    let frame = 0;
+    let after = 0;
+    const soon = () => {
+      if (frame || after) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        after = window.setTimeout(() => {
+          after = 0;
+          read();
+        });
+      });
+    };
+    soon();
     window.addEventListener("scroll", read, { passive: true });
     window.addEventListener("resize", read);
     // A new headline in the same room (a neighbor's record opened over the list, and the list again) is read as it
     // stands, not left at the last one's place under the bar.
     const head = app.current?.querySelector(".live-page-head");
-    const changed = new MutationObserver(read);
+    const changed = new MutationObserver(soon);
     if (head) changed.observe(head, { childList: true, subtree: true, characterData: true });
     return () => {
-      cancelAnimationFrame(first);
+      cancelAnimationFrame(frame);
+      window.clearTimeout(after);
       changed.disconnect();
       window.removeEventListener("scroll", read);
       window.removeEventListener("resize", read);
@@ -622,11 +637,14 @@ export function LiveWorkspace({
           <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <DialogTrigger asChild><Button variant="ghost" className="live-menu-trigger" aria-label={menuLabel ? words.shell.menuCurrent(menuLabel) : words.shell.menuLabel}><Menu aria-hidden="true" />{words.shell.menu}</Button></DialogTrigger>
             <DialogContent className="live-mobile-menu" aria-modal="true" showCloseButton={false} onCloseAutoFocus={(event) => {
-              // Where the foot bar stands the header has no Menu button: focus goes back to the bar's, once it is drawn again.
-              const tab = tabMenu.current;
-              if (!tab || !window.matchMedia("(max-width: 699px)").matches) return;
+              // Focus goes back to the Menu button (the foot bar's, where the bar stands) once the frame the menu leaves in
+              // has been painted. Given back at once, it made the browser work out the styles of the room just picked inside
+              // that frame. When a room was picked, its headline takes focus when the room is at rest (below).
               event.preventDefault();
-              requestAnimationFrame(() => tab.focus());
+              requestAnimationFrame(() => window.setTimeout(() => {
+                const back = window.matchMedia("(max-width: 699px)").matches && tabMenu.current ? tabMenu.current : app.current?.querySelector<HTMLElement>(".live-menu-trigger");
+                if ((!document.activeElement || document.activeElement === document.body) && back?.isConnected) back.focus({ preventScroll: true });
+              }));
             }} onOpenAutoFocus={(event) => {
               // Opening the menu lands on the sheet itself, not on its first control. In the sheet's first frame, as a
               // room's sheet does (live-dialog.tsx): focusing inside the press made the browser work out the whole page's styles there.
