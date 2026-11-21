@@ -44,6 +44,8 @@ import {
 /** Other records that may be this household: fetched with the record's own code only once the record is on the page. */
 const PossibleSame = lazy(() => import("@/components/workspace/help-line/possible-same").then((module) => ({ default: module.PossibleSame })));
 // The printed request is fetched only when someone asks to print one.
+/** The files kept with the record: fetched only once a record is open. */
+const UploadedFiles = lazy(() => import("@/components/workspace/tools/uploaded-files"));
 const RequestDetailView = lazy(() => import("@/components/workspace/help-line/request-detail").then((module) => ({ default: module.RequestDetailView })));
 
 type Step =
@@ -344,6 +346,11 @@ export function NeighborRecord({
         covered={step ? null : covered}
         approvedNow={approvedNow}
         onPrint={setPrinting}
+        files={typeof opened === "object" && !removing && !removed ? (
+          <Suspense fallback={null}>
+            <UploadedFiles neighborId={neighborId} opening={opened.line} />
+          </Suspense>
+        ) : null}
         onShowNumbers={() => void reveal()}
         alike={<Suspense><PossibleSame neighborId={neighborId} onMerged={(said) => finish(said)} /></Suspense>}
         onStep={(next) => {
@@ -601,6 +608,7 @@ function NeighborRecordView({
   alike = null,
   onPrint,
   onStep,
+  files = null,
 }: {
   /** Other records that may be the same household, laid under the home's details. */
   alike?: ReactNode;
@@ -617,6 +625,8 @@ function NeighborRecordView({
   /** Lays one request out as a printed page, for a home visit. */
   onPrint?: (requestId: HelpRequest["id"]) => void;
   onStep: (step: Step) => void;
+  /** The files kept with the record, drawn just above who opened it. */
+  files?: ReactNode;
 }) {
   const { words, sampleSaid } = useWorkspace();
   const text = words.rooms.neighbors.record;
@@ -884,6 +894,8 @@ function NeighborRecordView({
           </HelpEmpty>
         )}
       </section>
+
+      {files}
 
       <section className="live-section">
         <div className="live-section-head">

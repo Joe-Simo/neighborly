@@ -12,6 +12,7 @@ import { tally } from "./counts";
 import { addName, rebuildNames } from "./knownNames";
 import { dropReads } from "./aiReads";
 import { lookAlikes } from "./duplicates";
+import { dropNeighborFiles } from "./files";
 
 /** Neighbor records: the people a group helps. Never the volunteers. */
 const fields = schema.tables.neighbors.validator.fields;
@@ -280,6 +281,7 @@ export const remove = mutation({
 
     for (const draft of drafts) await ctx.db.delete("requestDrafts", draft._id);
     for (const note of notes) await ctx.db.delete("neighborNotes", note._id);
+    await dropNeighborFiles(ctx, churchId, neighborId);
     // What the year counts stays as a row with nothing in it that was said or written about the household.
     for (const call of calls) {
       await ctx.db.patch("calls", call._id, { callerName: "", phone: "", note: "", outcome: undefined, urgent: undefined });

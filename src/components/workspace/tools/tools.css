@@ -202,3 +202,12 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-agency span { color: var(--live-muted); font-size: 15px; }
 .tools-agency-form { display: grid; gap: var(--space-8); max-width: 560px; margin-top: var(--space-24); }
 :is(.live-app, .live-dialog) .tools-agency-form input { height: 44px; font-size: 17px; }
+
+/* Uploaded files: the conference's own in Your files, and one neighbor's on their record (uploaded-files.tsx). */
+.tools-files { list-style: none; padding: 0; margin: var(--space-16) 0 0; max-width: 640px; }
+.tools-files li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-8); padding: var(--space-12, 12px) 0; border-bottom: 1px solid var(--live-line, #dcd8cb); }
+.tools-file { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 17px; overflow-wrap: anywhere; }
+.tools-file span { color: var(--live-muted); font-size: 15px; }
+.tools-file-pick { margin-top: var(--space-16); }
+.tools-file-pick input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.tools-file .tools-file-open { height: auto; padding: 0; justify-content: flex-start; text-align: left; white-space: normal; font-size: inherit; overflow-wrap: anywhere; }

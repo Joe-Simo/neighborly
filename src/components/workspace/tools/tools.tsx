@@ -13,8 +13,8 @@ import { LiveState } from "@/components/workspace/states";
 import { RecordsExport } from "@/components/workspace/tools/records-export";
 import { useRecordsOffered } from "@/components/workspace/tools/sheet-import";
 
-/** Kept out of the room's first load: fetched only once the room opens for someone the server lets see it. */
-const ReferralAgencies = lazy(() => import("@/components/workspace/tools/referral-agencies"));
+/** Referral agencies and the conference's files, kept out of the room's first load: fetched once the room opens. */
+const YourFilesMore = lazy(() => import("@/components/workspace/tools/your-files-more"));
 
 /** Your files: bring records in, then take them with you. The calendar address and the printed week live in their own rooms. */
 /** Fetched with the room only once the room is drawn: most visits to Tools never run the check. */
@@ -24,7 +24,7 @@ const RecordsCheck = lazy(() => import("@/components/workspace/tools/records-che
 
 export function ToolsSection() {
   const { data, words } = useWorkspace();
-  // Agencies are read only once the server agrees, so their chunk is fetched only then.
+  // Agencies and files are read only once the server agrees, so their chunk is fetched only then.
   const offered = useRecordsOffered();
   // The same people the server lets read neighbor records (convex/access.ts, mayOpenNeighborRecords): the group's owner and coordinators.
   // A team coordinator who types the address is told why it is empty, as a member is.
@@ -54,7 +54,7 @@ export function ToolsSection() {
         <PayeesImport />
         {offered && (
           <Suspense fallback={null}>
-            <ReferralAgencies />
+            <YourFilesMore />
           </Suspense>
         )}
         <RecordsExport />

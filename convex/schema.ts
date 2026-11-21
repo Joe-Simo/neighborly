@@ -80,6 +80,8 @@ export default defineSchema({
   }).index("by_church", ["churchId"]).index("by_church_name", ["churchId", "nameKey"]).index("by_church_phone", ["churchId", "phoneKey"]).searchIndex("search_address", { searchField: "address", filterFields: ["churchId"] }),
   neighborNotes: defineTable({ churchId: v.id("churches"), neighborId: v.id("neighbors"), body: v.string(), authorId: v.id("memberships"), createdAt: v.number() }).index("by_neighbor", ["neighborId", "createdAt"]).index("by_church", ["churchId"]),
   referralAgencies: defineTable({ churchId: v.id("churches"), name: v.string(), phone: v.string(), helpsWith: v.string() }).index("by_church", ["churchId", "name"]),
+  /** Uploaded files: a conference's own (minutes, forms) with no neighborId, or one neighbor's (a lease, a bill). See convex/files.ts. */
+  files: defineTable({ churchId: v.id("churches"), neighborId: v.optional(v.id("neighbors")), storageId: v.id("_storage"), name: v.string(), contentType: v.string(), size: v.number(), uploadedBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_church_neighbor", ["churchId", "neighborId", "createdAt"]).index("by_storage", ["storageId"]),
   calls: defineTable({
     churchId: v.id("churches"),
     neighborId: v.optional(v.id("neighbors")),

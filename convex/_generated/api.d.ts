@@ -20,6 +20,7 @@ import type * as demo from "../demo.js";
 import type * as digest from "../digest.js";
 import type * as drafts from "../drafts.js";
 import type * as duplicates from "../duplicates.js";
+import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as importExport from "../importExport.js";
 import type * as invitations from "../invitations.js";
@@ -63,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   digest: typeof digest;
   drafts: typeof drafts;
   duplicates: typeof duplicates;
+  files: typeof files;
   http: typeof http;
   importExport: typeof importExport;
   invitations: typeof invitations;

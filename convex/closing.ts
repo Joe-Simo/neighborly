@@ -17,7 +17,7 @@ const nameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ")
 export const swept = [
   "memberships", "invitations", "calendarFeeds",
   "aiReads", "requestDrafts", "calls", "neighborNotes", "visits", "ledgerEntries", "voucherStock", "assistanceRequests", "duplicatePairs", "duplicateDismissals", "neighbors",
-  "referralAgencies", "payees", "deposits", "ledgerKinds", "bankStatements",
+  "files", "referralAgencies", "payees", "deposits", "ledgerKinds", "bankStatements",
   "outbox", "meetingResponses", "meetingInvitees", "meetings", "requests", "commitmentHistory", "commitments", "series",
   "teamMembers", "teams", "availability", "timeOff", "tasks", "announcements", "aiUsageByChurch", "knownNames", "auditEvents",
 ] as const satisfies readonly TableNames[];
@@ -59,7 +59,14 @@ async function sweepPage(ctx: MutationCtx, churchId: Id<"churches">, tables: rea
   let left = PAGE;
   for (const table of tables) {
     const found = await rows(ctx, table, churchId, left);
-    for (const row of found) await ctx.db.delete(table, row._id);
+    for (const row of found) {
+      // An uploaded file's stored bytes go with its row.
+      if (table === "files") {
+        const file = await ctx.db.get("files", row._id as Id<"files">);
+        if (file) await ctx.storage.delete(file.storageId);
+      }
+      await ctx.db.delete(table, row._id);
+    }
     left -= found.length;
     // A full page may hide more of the same table, so the next step starts here again.
     if (left <= 0) return false;
