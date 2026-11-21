@@ -37,8 +37,16 @@ async function rows(ctx: MutationCtx, table: Swept, churchId: Id<"churches">, li
     case "webRequests":
       return ctx.db.query(table).withIndex("by_church_stage", (q) => q.eq("churchId", churchId)).take(limit);
     case "webFlags":
-    case "webPartners":
       return ctx.db.query(table).withIndex("by_church", (q) => q.eq("churchId", churchId)).take(limit);
+    case "webPartners": {
+      // A partner's signed-in devices and waiting codes hold no conference id: they go with their partner, first.
+      const partners = await ctx.db.query(table).withIndex("by_church", (q) => q.eq("churchId", churchId)).take(limit);
+      for (const partner of partners) {
+        for (const session of await ctx.db.query("webPartnerSessions").withIndex("by_partner", (q) => q.eq("partnerId", partner._id)).take(500)) await ctx.db.delete("webPartnerSessions", session._id);
+        for (const code of await ctx.db.query("webPartnerCodes").withIndex("by_partner", (q) => q.eq("partnerId", partner._id)).take(50)) await ctx.db.delete("webPartnerCodes", code._id);
+      }
+      return partners;
+    }
     case "webBlocks":
       return ctx.db.query(table).withIndex("by_church_hash", (q) => q.eq("churchId", churchId)).take(limit);
     case "memberships":

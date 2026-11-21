@@ -62,7 +62,12 @@ async function setup() {
       yearRollups: () => ctx.db.insert("yearRollups", { churchId, year: 2027, figures: sum([]), computedAt: now, dirty: false }),
       webRequests: () => ctx.db.insert("webRequests", { churchId, kind: "food", need: "Groceries.", phone: "", email: "a@example.org", zip: "48201", language: "en", stage: "received", statusKeyHash: "k", codeHash: "", codeTries: 0, contactHash: "c", ipHash: "i", createdAt: now }),
       webFlags: () => ctx.db.insert("webFlags", { churchId, contactHash: "c", at: now }),
-      webPartners: () => ctx.db.insert("webPartners", { churchId, name: "Example Shelter", email: "desk@example.org", linkHash: "l", active: true, createdBy: owner._id, createdAt: now }),
+      webPartners: async () => {
+        const partnerId = await ctx.db.insert("webPartners", { churchId, name: "Example Shelter", email: "desk@example.org", linkHash: "l", active: true, createdBy: owner._id, createdAt: now });
+        await ctx.db.insert("webPartnerSessions", { partnerId, sessionHash: "s", expiresAt: now + 1 });
+        await ctx.db.insert("webPartnerCodes", { partnerId, codeHash: "c", tries: 0, expiresAt: now + 1 });
+        return partnerId;
+      },
       webBlocks: () => ctx.db.insert("webBlocks", { churchId, hash: "c", by: owner._id, at: now }),
       availability: () => ctx.db.insert("availability", { churchId, memberId: member._id, start: "2026-11-01", end: "2026-11-02" }),
     };
@@ -88,7 +93,7 @@ describe("closing a conference for good", () => {
     const { t, churchId, owner, member, other, as } = await setup();
     const before = await all(t);
     for (const table of swept) expect(before[table].some((row) => "churchId" in row && row.churchId === churchId), table).toBe(true);
-    const others = (rows: typeof before) => Object.fromEntries(tables.filter((table) => table !== "users").map((table) => [table, rows[table].filter((row) => !("churchId" in row) ? table !== "churches" || row._id !== churchId : row.churchId !== churchId)]));
+    const others = (rows: typeof before) => Object.fromEntries(tables.filter((table) => table !== "users" && table !== "webPartnerSessions" && table !== "webPartnerCodes").map((table) => [table, rows[table].filter((row) => !("churchId" in row) ? table !== "churches" || row._id !== churchId : row.churchId !== churchId)]));
 
     await as(owner).mutation(api.closing.close, { churchId, typedName: " st example  conference " });
     // The door is shut at once, before the sweep has run: the plain not-found a stranger would get.
@@ -100,6 +105,9 @@ describe("closing a conference for good", () => {
     expect(JSON.stringify(after)).not.toContain(churchId);
     for (const table of swept) expect(after[table].filter((row) => "churchId" in row && row.churchId === churchId), table).toEqual([]);
     expect(after.churches.map((church) => church._id)).toEqual([other]);
+    // A partner's sign-ins and codes carry no conference id but go with the partner.
+    expect(after.webPartnerSessions).toEqual([]);
+    expect(after.webPartnerCodes).toEqual([]);
     expect(others(after)).toEqual(others(before));
     // Accounts belong to the people, not to the conference: they keep theirs.
     expect(after.users.map((user) => user._id)).toEqual(before.users.map((user) => user._id));

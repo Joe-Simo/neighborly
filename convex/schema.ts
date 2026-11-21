@@ -261,7 +261,7 @@ export default defineSchema({
   /** Census geocoder answers, by a hash of the normalized address, so one address is looked up once. */
   geocodes: defineTable({ key: v.string(), lat: v.optional(v.number()), lng: v.optional(v.number()), at: v.number() }).index("by_key", ["key"]),
   /** A team's partners (a shelter, a parish office). The link names the partner; the partner signs in with a code to its confirmed email. */
-  webPartners: defineTable({ churchId: v.id("churches"), name: v.string(), email: v.string(), linkHash: v.string(), active: v.boolean(), createdBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_link", ["linkHash"]),
+  webPartners: defineTable({ churchId: v.id("churches"), name: v.string(), email: v.string(), /** The language of its sign-in email. */ language: v.optional(language), linkHash: v.string(), active: v.boolean(), createdBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_link", ["linkHash"]),
   /** A partner's signed-in device, 30 days. Only a hash of the cookie is kept. */
   webPartnerSessions: defineTable({ partnerId: v.id("webPartners"), sessionHash: v.string(), expiresAt: v.number() }).index("by_session", ["sessionHash"]).index("by_partner", ["partnerId"]),
   /** A partner's sign-in code, waiting. */

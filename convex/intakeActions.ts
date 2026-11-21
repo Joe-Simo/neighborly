@@ -32,7 +32,7 @@ export const hashPartnerLink = linkHash;
 
 /** A new partner, and its link (shown once: only its hash is kept). */
 export const createPartner = action({
-  args: { churchId: v.id("churches"), name: v.string(), email: v.string() },
+  args: { churchId: v.id("churches"), name: v.string(), email: v.string(), language: v.optional(v.union(v.literal("en"), v.literal("es"))) },
   returns: v.string(),
   handler: async (ctx, args): Promise<string> => {
     const token = linkToken();

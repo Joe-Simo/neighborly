@@ -14,25 +14,25 @@ const SESSION_DAYS = 30;
 
 export const list = query({
   args: { churchId: v.id("churches") },
-  returns: v.array(v.object({ id: v.id("webPartners"), name: v.string(), email: v.string(), active: v.boolean() })),
+  returns: v.array(v.object({ id: v.id("webPartners"), name: v.string(), email: v.string(), language: v.union(v.literal("en"), v.literal("es")), active: v.boolean() })),
   handler: async (ctx, { churchId }) => {
     await neighborAccess(ctx, churchId);
     const rows = await ctx.db.query("webPartners").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(100);
-    return rows.map((row) => ({ id: row._id, name: row.name, email: row.email, active: row.active }));
+    return rows.map((row) => ({ id: row._id, name: row.name, email: row.email, language: row.language ?? "en", active: row.active }));
   },
 });
 
 /** Called by intakeActions.createPartner, which makes the link (an action has real randomness); auth passes through. */
 export const add = internalMutation({
-  args: { churchId: v.id("churches"), name: v.string(), email: v.string(), linkHash: v.string() },
+  args: { churchId: v.id("churches"), name: v.string(), email: v.string(), language: v.optional(v.union(v.literal("en"), v.literal("es"))), linkHash: v.string() },
   returns: v.id("webPartners"),
-  handler: async (ctx, { churchId, name, email, linkHash }) => {
+  handler: async (ctx, { churchId, name, email, language, linkHash }) => {
     const member = await neighborAccess(ctx, churchId);
     const named = name.replace(/\s+/g, " ").trim();
     const address = email.trim().toLowerCase();
     if (!named || named.length > 80) throw new ConvexError("Give the partner a name.");
     if (address.length > 254 || !/^[^\s@<>()",;:]+@[^\s@<>()",;:]+\.[a-z]{2,}$/i.test(address)) throw new ConvexError("Check the email address.");
-    const id = await ctx.db.insert("webPartners", { churchId, name: named, email: address, linkHash, active: true, createdBy: member._id, createdAt: Date.now() });
+    const id = await ctx.db.insert("webPartners", { churchId, name: named, email: address, language: language ?? "en", linkHash, active: true, createdBy: member._id, createdAt: Date.now() });
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "intake.partner_added", targetId: id, at: Date.now() });
     return id;
   },
@@ -78,7 +78,7 @@ export const startSignIn = internalMutation({
     if (await bump(ctx, `partner-code:${partner._id}`, DAY, LIMITS.partnerCodesPerDay, now)) {
       for (const old of await ctx.db.query("webPartnerCodes").withIndex("by_partner", (q) => q.eq("partnerId", partner._id)).take(20)) await ctx.db.delete("webPartnerCodes", old._id);
       await ctx.db.insert("webPartnerCodes", { partnerId: partner._id, codeHash, tries: 0, expiresAt: now + DAY });
-      await sendCode(ctx, undefined, partner.churchId, { by: "email", to: partner.email }, "en", code, link, now);
+      await sendCode(ctx, undefined, partner.churchId, { by: "email", to: partner.email }, partner.language ?? "en", code, link, now);
     }
     return masked(partner.email);
   },

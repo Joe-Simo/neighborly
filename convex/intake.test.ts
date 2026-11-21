@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { signedIn } from "./clerk.testing";
@@ -9,6 +9,13 @@ import { LIMITS, businessDaysBetween, nextBusinessDay, statusKeyHash } from "./i
 import { firstMatch } from "./geocode";
 import { circlePolygon, covering, covers, distanceMiles, nearestCovering, reachOf, validArea } from "./area";
 import { hasLink, readCode, readSubmission } from "../src/lib/intake-rules";
+
+// Every email the code channel would write, so a test can read its language.
+const written = vi.hoisted(() => [] as { language: string; kind: string }[]);
+vi.mock("../src/lib/email/paper-email", async (load) => {
+  const real = await load<typeof import("../src/lib/email/paper-email")>();
+  return { ...real, paperEmail: (input: Parameters<typeof real.paperEmail>[0]) => { written.push({ language: input.language, kind: input.kind }); return real.paperEmail(input); } };
+});
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 // Made-up centre points, near enough to the real ones for these distances.
@@ -360,6 +367,14 @@ describe("passing, marking, deleting", () => {
 });
 
 describe("partners", () => {
+  test("a partner added in Spanish gets its sign-in code in Spanish", async () => {
+    const { t, ids, as } = await setup();
+    await as(ids.detroit.userId).mutation(internal.intakePartners.add, { churchId: ids.detroit.churchId, name: "Refugio", email: "mesa@example.org", linkHash: "es-link", language: "es" });
+    written.length = 0;
+    await t.mutation(internal.intakePartners.startSignIn, { linkHash: "es-link", codeHash: "pc", code: "222222", link: "https://example.org/ayuda?p=x" });
+    expect(written).toEqual([{ language: "es", kind: "help_code" }]);
+  });
+
   test("a partner signs in with a code to its own email, sends without a bot check, and stops when revoked", async () => {
     const { t, ids, as } = await setup();
     const partnerId = await as(ids.detroit.userId).mutation(internal.intakePartners.add, { churchId: ids.detroit.churchId, name: "Example Shelter", email: "Desk@Example.org", linkHash: "link" });
