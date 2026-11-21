@@ -106,7 +106,8 @@ function generator(seed: number) {
   return { next, between, pick };
 }
 const isoDay = (time: number) => DateTime.fromMillis(time, { zone }).toFormat("yyyy-MM-dd");
-const key = nameKey;
+// Looked up when called, not when this file loads: assistance.ts reaches this file again through demo.ts.
+const key = (name: string) => nameKey(name);
 
 /** Writes the whole made-up year through `db`: the real database, or the plan `renew` compares with what is there. */
 async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id<"churches">> {

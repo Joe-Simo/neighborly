@@ -87,7 +87,11 @@ export default defineSchema({
     returnedBy: v.optional(v.id("memberships")),
     returnedAt: v.optional(v.number()),
     outcome: v.optional(v.string()),
+    /** The one next step the assistant read in the outcome at 0.9 or more (drafts.readOutcome). Only a suggestion: nothing follows from it. */
+    nextStep: v.optional(v.object({ step: v.union(v.literal("resolved"), v.literal("request"), v.literal("refer"), v.literal("callAgain")), at: v.number() })),
     urgent: v.optional(v.object({ reasons: v.array(v.string()), day: v.optional(v.number()), by: v.union(v.literal("assistant"), v.literal("rules"), v.literal("person")), byMember: v.optional(v.id("memberships")) })),
+    /** Whether the assistant read the note as the caller needing Spanish, at 0.9 or more. Asked only of a call with no neighbor linked. */
+    spanish: v.optional(v.boolean()),
   }).index("by_church", ["churchId", "takenAt"]).index("by_church_callback", ["churchId", "callback"]).index("by_church_callback_returned", ["churchId", "callback", "returnedAt"]).index("by_neighbor", ["neighborId"]),
   // A request the assistant drafted from a call note, waiting for a person's yes. Kept so it survives a reload.
   // Only what the draft says, the call it came from, who asked and when: no neighbor name, phone or address.

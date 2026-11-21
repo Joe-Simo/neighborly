@@ -128,3 +128,119 @@ describe("repeat help before a decision", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+describe("the next step after a returned call", () => {
+  async function returned(outcome: string) {
+    const made = await group();
+    const callId = await made.t.run(async ctx => {
+      const member = (await ctx.db.query("memberships").first())!;
+      const neighbor = (await ctx.db.query("neighbors").first())!;
+      return ctx.db.insert("calls", { churchId: made.ids.churchId, neighborId: neighbor._id, callerName: "Rosa Delgado", phone: "", note: "Asked for a call back.", callback: "needed", takenBy: member._id, takenAt: Date.now() });
+    });
+    vi.useFakeTimers();
+    await made.signed.mutation(api.assistance.markReturned, { churchId: made.ids.churchId, callId, outcome });
+    await made.t.finishAllScheduledFunctions(vi.runAllTimers);
+    vi.useRealTimers();
+    const row = (await made.signed.query(api.assistance.calls, { churchId: made.ids.churchId, at: Math.floor(Date.now() / 3_600_000) * 3_600_000 })).returned.find(call => call.id === callId);
+    return { ...made, callId, row };
+  }
+
+  test("a step at 0.9 is kept on the call and shown; the outcome leaves without names; nothing is started", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = replying({ nextStep: { type: "choice", choice: "request", confidence: 0.95 } });
+    vi.stubGlobal("fetch", fetch);
+    const { t, row } = await returned("Rosa Delgado at 14 Sample St owes $150 on the power bill and asked us for help.");
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const body = JSON.parse(fetch.mock.calls[0][1].body) as Body;
+    expect(Object.keys(body.questions)).toEqual(["nextStep"]);
+    expect(Object.keys((body.questions.nextStep as { criteria: object }).criteria)).toEqual(["resolved", "request", "refer", "callAgain", "none"]);
+    expect(fetch.mock.calls[0][1].body).not.toMatch(/Rosa|Delgado|14 Sample/);
+    expect(row?.nextStep).toBe("request");
+    expect(await t.run(ctx => ctx.db.query("assistanceRequests").collect())).toHaveLength(1);
+  });
+
+  test("under 0.9, or \"none\", nothing is shown; an empty outcome is never sent", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "refer", confidence: 0.8 } }));
+    expect((await returned("Gave her the legal aid number.")).row?.nextStep).toBeNull();
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "none", confidence: 0.99 } }));
+    expect((await returned("Talked for a while.")).row?.nextStep).toBeNull();
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    expect((await returned("")).row?.nextStep).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test("a read that finishes after the return was undone keeps nothing", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "callAgain", confidence: 0.97 } }));
+    const { t, ids, callId } = await returned("No answer, try again tomorrow.");
+    await t.run(ctx => ctx.db.patch("calls", callId, { callback: "needed", returnedAt: undefined, nextStep: undefined }));
+    expect(await t.action(internal.drafts.readOutcome, { churchId: ids.churchId, callId, returnedAt: 1, userId: ids.userId })).toBeNull();
+    expect((await t.run(ctx => ctx.db.get("calls", callId)))?.nextStep).toBeUndefined();
+  });
+
+  test("the measured set is judged on the same 0.9 line", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "callAgain", confidence: 0.95 } }));
+    const { t, ids } = await group();
+    const run = await t.action(internal.drafts.measureNextStep, { churchId: ids.churchId });
+    expect(run.status).toBe("done");
+    expect(run.rows).toHaveLength(12);
+    expect(run.all).toEqual({ right: 3, missed: 0, wrong: 9 });
+    expect(run.heldOut).toEqual({ right: 1, missed: 0, wrong: 3 });
+  });
+});
+
+describe("a caller who needs Spanish", () => {
+  const at = () => Math.floor(Date.now() / 3600000) * 3600000;
+  async function withCalls() {
+    const { t, ids, signed } = await group();
+    const more = await t.run(async ctx => {
+      const memberId = (await ctx.db.query("memberships").first())!._id;
+      await ctx.db.patch("memberships", memberId, { language: "es" });
+      const luisUser = await ctx.db.insert("users", { clerkId: "clerk|luis" });
+      await ctx.db.insert("memberships", { churchId: ids.churchId, userId: luisUser, name: "Luis Helper", email: "l@example.org", role: "member", active: true, approved: true, coverOptIn: false, language: "es" });
+      const awayUser = await ctx.db.insert("users", { clerkId: "clerk|away" });
+      await ctx.db.insert("memberships", { churchId: ids.churchId, userId: awayUser, name: "Away Person", email: "a@example.org", role: "member", active: false, approved: true, coverOptIn: false, language: "es" });
+      const rosa = (await ctx.db.query("neighbors").first())!._id;
+      const base = { churchId: ids.churchId, phone: "", callback: "needed" as const, takenBy: memberId, takenAt: Date.now() };
+      return {
+        unlinked: await ctx.db.insert("calls", { ...base, callerName: "Marta Sample", note: "Marta Sample llamó. Le van a cortar la luz el viernes." }),
+        linked: await ctx.db.insert("calls", { ...base, callerName: "Rosa Delgado", neighborId: rosa, note: "Needs help with the power bill." }),
+      };
+    });
+    return { t, ids, signed, ...more };
+  }
+
+  test("an unlinked call asks one more question in the same request, kept at 0.9 and shown with who speaks Spanish", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = replying({ spanish: yes(0.96) });
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids, signed, unlinked } = await withCalls();
+    await signed.action(api.drafts.readUrgency, { churchId: ids.churchId, callId: unlinked });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const body = JSON.parse(fetch.mock.calls[0][1].body) as Body;
+    expect(body.questions.spanish).toEqual({ type: "noul", instructions: "Is note written in Spanish, or does it say the caller speaks Spanish?" });
+    expect(fetch.mock.calls[0][1].body).not.toMatch(/Marta/);
+    expect((await t.run(ctx => ctx.db.get("calls", unlinked)))?.spanish).toBe(true);
+    const { waiting, spanishSpeakers } = await signed.query(api.assistance.calls, { churchId: ids.churchId, at: at() });
+    expect(waiting.find(call => call.id === unlinked)?.spanish).toBe("assistant");
+    expect(spanishSpeakers.sort()).toEqual(["Ana Visitor", "Luis Helper"]);
+  });
+
+  test("under 0.9 nothing is shown; a linked neighbor's record answers without asking", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = replying({ spanish: yes(0.6) });
+    vi.stubGlobal("fetch", fetch);
+    const { t, ids, signed, unlinked, linked } = await withCalls();
+    await signed.action(api.drafts.readUrgency, { churchId: ids.churchId, callId: unlinked });
+    expect((await t.run(ctx => ctx.db.get("calls", unlinked)))?.spanish).toBe(false);
+    await signed.action(api.drafts.readUrgency, { churchId: ids.churchId, callId: linked });
+    expect(Object.keys((JSON.parse(fetch.mock.calls[1][1].body) as Body).questions)).not.toContain("spanish");
+    expect((await t.run(ctx => ctx.db.get("calls", linked)))?.spanish).toBeUndefined();
+    const { waiting } = await signed.query(api.assistance.calls, { churchId: ids.churchId, at: at() });
+    expect(waiting.find(call => call.id === unlinked)?.spanish).toBeNull();
+    expect(waiting.find(call => call.id === linked)?.spanish).toBe("record");
+  });
+});

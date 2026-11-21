@@ -5,10 +5,12 @@ import { internal } from "./_generated/api";
 import { prepareDraft } from "../src/lib/draft";
 import { draftNotes, draftPayeeKinds, monthlyAllowance, kindNotes, prepareRequestDraft, requestKinds, withoutIdentity, type RequestDraft, type RequestKind } from "../src/lib/request-draft";
 import { jevSet } from "../src/lib/jev-set";
+import { nextStepSet, nextSteps, type NextStep } from "../src/lib/next-step-set";
 import { visitSet } from "../src/lib/visit-set";
 import { referralPlaces, referralSet, type ReferralPlace } from "../src/lib/referral-set";
 import { repeatSet } from "../src/lib/repeat-set";
 import { repeatLines, type RepeatLine } from "../src/lib/repeat-words";
+import { spanishSet } from "../src/lib/spanish-set";
 import { urgentReasons, urgentSigns, type UrgentReason, type UrgentSign } from "../src/lib/urgency";
 import { hour, hourAsked, neighborAccess, user } from "./access";
 import { isSampleVisitor } from "./demo";
@@ -285,14 +287,14 @@ const requestDraft = v.object({
 /** One call's note for drafting, with the names and addresses that must be taken out of it. Coordinators and owners only. */
 export const callNote = internalQuery({
   args: { churchId: v.id("churches"), callId: v.id("calls") },
-  returns: v.object({ userId: v.id("users"), note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
+  returns: v.object({ userId: v.id("users"), note: v.string(), linked: v.boolean(), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
   handler: async (ctx, { churchId, callId }) => {
     const member = await neighborAccess(ctx, churchId);
     const call = await ctx.db.get("calls", callId);
     if (!call || call.churchId !== churchId) throw new ConvexError("Call not found.");
     const neighbor = call.neighborId ? await ctx.db.get("neighbors", call.neighborId) : null;
     return {
-      userId: member.userId, note: call.note,
+      userId: member.userId, note: call.note, linked: !!neighbor,
       names: [call.callerName, neighbor?.name ?? ""].filter(Boolean),
       addresses: neighbor?.address ? [neighbor.address] : [],
       others: await namesFor(ctx, churchId),
@@ -403,13 +405,16 @@ export const readUrgency = action({
 });
 
 async function readNote(ctx: ActionCtx, args: { churchId: Id<"churches">; callId: Id<"calls"> }): Promise<{ signs: UrgentSign[]; verification: "review" | "checked" }> {
-  const { userId, note, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
+  const { userId, note, linked, names, addresses, others } = await ctx.runQuery(internal.drafts.callNote, args);
   const signs = urgentSigns(note);
   const fallback = { signs, verification: "review" as const };
   if (!env.TYPESAFE_API_KEY || note.length > 2000) return fallback;
   if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return fallback;
-  const questions = Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)]));
+  // A linked neighbor's record already says what they speak, so the note is asked about Spanish only when there is none.
+  const questions: Record<string, Question> = { ...Object.fromEntries(urgentReasons.map(reason => [reason, signQuestion(reason, signs)])), ...(!linked && { spanish: spanishQuestion }) };
   const answers = await decide(env.TYPESAFE_API_KEY, { note }, questions, { names, addresses, others });
+  const spanish = linked ? null : noul(answers?.spanish);
+  if (spanish !== null) await ctx.runMutation(internal.assistance.keepSpanish, { ...args, spanish: spanish >= sureEnough });
   const kept = keepRead(ctx, { ...args, purpose: "urgency" }, note, questions, { names, addresses, others }, answers);
   if (!answers) return kept(fallback);
   const sure = Object.fromEntries(urgentReasons.map(reason => [reason, noul(answers[reason])]));
@@ -420,6 +425,9 @@ async function readNote(ctx: ActionCtx, args: { churchId: Id<"churches">; callId
     verification: "checked" as const,
   });
 }
+
+/** Asked with the urgent signs, in the same request; shared with measureSpanish so both ask the same thing. */
+const spanishQuestion = { type: "noul" as const, instructions: "Is note written in Spanish, or does it say the caller speaks Spanish?" };
 
 const yearFlagKinds = ["approvedNotPaid", "paidNoPayment", "visitNoHours", "noteSaysPaid", "visitNotMarked"] as const;
 const yearFlag = v.object({
@@ -953,5 +961,122 @@ export const measureRepeats = internalAction({
     }));
     const add = (only: boolean) => rows.filter(row => !only || row.heldOut).flatMap(row => row.marks).reduce((sum, mark) => ({ ...sum, [mark]: sum[mark] + 1 }), { ...zero });
     return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, same, differs, scores }) => ({ id, same, differs, scores })) };
+  },
+});
+
+/** What Jev may pick as the one next step after a returned call. "none" is there so it never has to force a step. */
+const nextStepChoice: Record<NextStep, string> = {
+  resolved: "The need is met or was never there: nothing more is needed",
+  request: "The caller asks this group for help it gives, such as money toward a bill or rent, food or goods: a help request should be started",
+  refer: "The need is one another place handles, and the caller should be sent there",
+  callAgain: "The caller was not reached, or asked to be called again later",
+  none: "The outcome is unclear, says too little, or points to two or more different steps",
+};
+const nextStepQuestion: Question = { type: "choice", instructions: "note is what a volunteer wrote after returning a call to a neighbor. What one next step does note point to?", criteria: nextStepChoice };
+const shownSteps = v.union(v.literal("resolved"), v.literal("request"), v.literal("refer"), v.literal("callAgain"));
+/** The step to show from Jev's answer: only at 0.9 or more, and never "none". */
+function shownStep(answer: unknown): Exclude<NextStep, "none"> | null {
+  if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number") return null;
+  const step = nextSteps.find(option => option === (answer as { choice: unknown }).choice);
+  return step && step !== "none" && answer.confidence >= sureEnough ? step : null;
+}
+
+/** A returned call's outcome, with the names and addresses that must be taken out of it. */
+export const outcomeNote = internalQuery({
+  args: { churchId: v.id("churches"), callId: v.id("calls") },
+  returns: v.object({ outcome: v.string(), returnedAt: v.union(v.number(), v.null()), names: v.array(v.string()), addresses: v.array(v.string()), others: v.array(v.string()) }),
+  handler: async (ctx, { churchId, callId }) => {
+    const call = await ctx.db.get("calls", callId);
+    if (!call || call.churchId !== churchId) throw new ConvexError("Call not found.");
+    const neighbor = call.neighborId ? await ctx.db.get("neighbors", call.neighborId) : null;
+    return {
+      outcome: call.callback === "done" ? (call.outcome ?? "") : "",
+      returnedAt: call.returnedAt ?? null,
+      names: [call.callerName, neighbor?.name ?? ""].filter(Boolean),
+      addresses: neighbor?.address ? [neighbor.address] : [],
+      others: await namesFor(ctx, churchId),
+    };
+  },
+});
+
+/** Keeps the suggested step on the call, only while it is still the same return: an undone or later return is left alone. */
+export const keepNextStep = internalMutation({
+  args: { callId: v.id("calls"), returnedAt: v.number(), step: shownSteps },
+  returns: v.null(),
+  handler: async (ctx, { callId, returnedAt, step }) => {
+    const call = await ctx.db.get("calls", callId);
+    if (call?.callback === "done" && call.returnedAt === returnedAt) await ctx.db.patch("calls", callId, { nextStep: { step, at: Date.now() } });
+    return null;
+  },
+});
+
+/**
+ * After a call is returned: the one next step its outcome points to, as one closed choice, asked of the outcome with names
+ * and addresses taken out. A step at 0.9 or more is kept on the call and shown as one line under it; nothing is started,
+ * and a person decides. Scheduled by assistance.markReturned, inside the member's own save.
+ */
+export const readOutcome = internalAction({
+  args: { churchId: v.id("churches"), callId: v.id("calls"), returnedAt: v.number(), userId: v.id("users"), session: v.optional(v.string()) },
+  returns: v.union(shownSteps, v.null()),
+  handler: async (ctx, args): Promise<Exclude<NextStep, "none"> | null> => {
+    const { outcome, returnedAt, names, addresses, others } = await ctx.runQuery(internal.drafts.outcomeNote, { churchId: args.churchId, callId: args.callId });
+    if (!outcome.trim() || returnedAt !== args.returnedAt || !env.TYPESAFE_API_KEY || outcome.length > 2000) return null;
+    if (await ctx.runMutation(internal.drafts.reserve, { userId: args.userId, churchId: args.churchId, session: args.session }) !== "ok") return null;
+    const answers = await decide(env.TYPESAFE_API_KEY, { note: outcome }, { nextStep: nextStepQuestion }, { names, addresses, others });
+    const step = answers ? shownStep(answers.nextStep) : null;
+    console.log(`jev outcome ${JSON.stringify({ step })}`);
+    if (step) await ctx.runMutation(internal.drafts.keepNextStep, { callId: args.callId, returnedAt: args.returnedAt, step });
+    return step;
+  },
+});
+
+/**
+ * Measures the next-step read on the made-up set (src/lib/next-step-set.ts) with the same question and 0.9 line readOutcome
+ * uses. Each outcome is one mark: right (the wanted step, or nothing shown when "none" is wanted), missed (nothing shown) or wrong.
+ */
+export const measureNextStep = internalAction({
+  args: { churchId: v.id("churches") },
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(), all: referralTally, heldOut: referralTally, rows: v.array(v.object({ id: v.string(), step: v.union(v.string(), v.null()) })) }),
+  handler: async (ctx, { churchId }) => {
+    const zero = { right: 0, missed: 0, wrong: 0 };
+    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const key = env.TYPESAFE_API_KEY;
+    if (!key) return { status: "no key" as const, ...none };
+    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: nextStepSet.length })) return { status: "no allowance" as const, ...none };
+    const rows = await Promise.all(nextStepSet.map(async item => {
+      const answers = await decide(key, { note: item.outcome }, { nextStep: nextStepQuestion });
+      const step = answers ? shownStep(answers.nextStep) : null;
+      const wanted = item.step === "none" ? null : item.step;
+      const mark: "right" | "missed" | "wrong" = step === wanted ? "right" : step ? "wrong" : "missed";
+      return { id: item.id, step, mark, heldOut: !!item.heldOut };
+    }));
+    const add = (only: boolean) => rows.filter(row => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row.mark]: sum[row.mark] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, step }) => ({ id, step })) };
+  },
+});
+
+
+/**
+ * Measures the Spanish question on the made-up set (src/lib/spanish-set.ts), with the same wording and the same 0.9
+ * line the help line uses. Each note is right (marked and speaks Spanish, or left and does not), missed, or wrong.
+ */
+const spanishTally = v.object({ right: v.number(), missed: v.number(), wrong: v.number() });
+export const measureSpanish = internalAction({
+  args: { churchId: v.id("churches") },
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance")), model: v.string(), all: spanishTally, heldOut: spanishTally, rows: v.array(v.object({ id: v.string(), score: v.union(v.number(), v.null()) })) }),
+  handler: async (ctx, { churchId }) => {
+    const zero = { right: 0, missed: 0, wrong: 0 };
+    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const key = env.TYPESAFE_API_KEY;
+    if (!key) return { status: "no key" as const, ...none };
+    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: spanishSet.length })) return { status: "no allowance" as const, ...none };
+    const rows = await Promise.all(spanishSet.map(async item => {
+      const score = noul((await decide(key, { note: item.note }, { spanish: spanishQuestion }))?.spanish);
+      const marked = score !== null && score >= sureEnough;
+      const mark = marked === item.spanish ? "right" as const : marked ? "wrong" as const : "missed" as const;
+      return { id: item.id, score: score === null ? null : Math.round(score * 100) / 100, mark, heldOut: !!item.heldOut };
+    }));
+    const add = (only: boolean) => rows.filter(row => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row.mark]: sum[row.mark] + 1 }), { ...zero });
+    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, score }) => ({ id, score })) };
   },
 });
